@@ -31,7 +31,37 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 60000,
+  // Phase 1a: HttpOnly access_token / refresh_token cookies must flow on
+  // every cross-origin request (Vercel → Railway in prod). Without this
+  // login responses won't persist cookies and silent-refresh can't work.
+  withCredentials: true,
 });
+
+// Coalesce concurrent refresh attempts. Refresh tokens are single-use, so
+// firing two parallel rotations against the same token causes the backend
+// to detect replay and revoke the entire session.
+let _refreshPromise = null;
+const _refreshOnce = async () => {
+  if (_refreshPromise) return _refreshPromise;
+  _refreshPromise = (async () => {
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/auth/refresh`,
+        {},
+        { withCredentials: true, timeout: 15000 }
+      );
+      return res.status >= 200 && res.status < 300;
+    } catch (e) {
+      return false;
+    } finally {
+      // microtask delay so concurrent callers see this attempt's result
+      Promise.resolve().then(() => {
+        _refreshPromise = null;
+      });
+    }
+  })();
+  return _refreshPromise;
+};
 
 // Request interceptor for auth token and timing
 axiosInstance.interceptors.request.use(
@@ -68,7 +98,7 @@ axiosInstance.interceptors.response.use(
 
     return response;
   },
-  (error) => {
+  async (error) => {
     // Calculate request duration even for errors
     const duration = Date.now() - (error.config?.metadata?.startTime || Date.now());
 
@@ -78,13 +108,32 @@ axiosInstance.interceptors.response.use(
     // Log errors
     console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${parsedError.status || 'Unknown'} (${duration}ms):`, parsedError.message);
 
-    // Handle 401 unauthorized - redirect to login (skip if already on login page)
-    if (parsedError.type === ErrorTypes.AUTH && parsedError.status === 401) {
+    // Phase 1a: on 401, attempt one silent refresh and replay the original
+    // request before bouncing the user. We skip retry on auth routes
+    // themselves (login / refresh / logout) to avoid loops, and skip when
+    // we've already retried this request.
+    const cfg = error.config || {};
+    const url = cfg.url || '';
+    const skipRefresh =
+      cfg._retry ||
+      url.includes('/auth/refresh') ||
+      url.includes('/auth/login') ||
+      url.includes('/auth/logout');
+
+    if (
+      parsedError.type === ErrorTypes.AUTH &&
+      parsedError.status === 401 &&
+      !skipRefresh
+    ) {
+      const refreshed = await _refreshOnce();
+      if (refreshed) {
+        cfg._retry = true;
+        return axiosInstance(cfg);
+      }
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
         Cookies.remove('token');
         Cookies.remove('userType');
         Cookies.remove('profileCompleted');
-        // Use setTimeout to allow current operation to complete
         setTimeout(() => {
           window.location.href = '/login';
         }, 100);

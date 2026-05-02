@@ -22,7 +22,8 @@
 | Area | Change | Files |
 |------|--------|-------|
 | API base URL | bumped from `/api` to `/api/v2` so the path-restricted refresh cookie matches | `services/apiClient.js`, `services/authService.js`, `services/createAndUpdateEvents.js`, `services/new-backend/apiClient.js` |
-| Silent refresh | `request()` retries once via `POST /auth/refresh` on 401, with concurrent-call coalescing; on failure redirects to `/{lang}/login` | `services/apiClient.js` |
+| Silent refresh (fetch path) | `apiClient.request()` retries once via `POST /auth/refresh` on 401, with concurrent-call coalescing; on failure redirects to `/{lang}/login` | `services/apiClient.js` |
+| Silent refresh (axios path) | `withCredentials: true` so HttpOnly cookies flow on cross-origin requests; response interceptor calls `_refreshOnce()` on 401 and replays the original request once before redirecting to login | `services/new-backend/apiClient.js` |
 | Store | `token` field documented as in-memory only (already excluded from `partialize`); zero functional change to existing flows because the cookies are HttpOnly | `stores/authStore.js` |
 
 ### Mobile
@@ -63,6 +64,7 @@
 - **Web Playwright smoke specs** — the smoke flow lives as a curl runbook + static contract checks. Migrating to actual Playwright specs (with the MCP server) is left to the broader testing track per master plan §6.
 - **Mobile reset-password screen (deep-link UI)** — `resetPasswordAPI` is wired but the `<ResetPasswordScreen />` and the `app.json` deep link are Phase 4 mobile-parity work. The API contract is in place so the screen drops in cleanly.
 - **`useAuthMutation.js` (web)** still calls `Cookies.set("token", ...)` for legacy UI hints. Harmless: the backend reads the HttpOnly `access_token` cookie, not this JS-readable value. Cleanup is part of the next polish pass.
+- **Mobile per-service `fetch(...)` callers don't auto-refresh**. A new `halla-mobile/services/apiClient.js` (`apiFetch`) provides the centralized refresh-on-401 pattern, but the 15+ existing services (events, messaging, subscriptions, etc.) still use raw `fetch` and so will fail an authenticated call once the access token hits its 15-min TTL until the user reopens the app (cold launch triggers refresh). Migrating those callers to `apiFetch` is Phase 4 (mobile parity) per the master plan; the wrapper is in place so the migration is mechanical.
 
 ## Anomalies
 

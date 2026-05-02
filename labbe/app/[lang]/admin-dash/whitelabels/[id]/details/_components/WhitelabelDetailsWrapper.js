@@ -29,9 +29,9 @@ const WhitelabelDetailsWrapper = ({ whitelabelData, error }) => {
       try {
         setLoadingFeatures(true);
         const API_BASE =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
         const response = await fetch(
-          `${API_BASE}/v2/admin/whitelabels/${whitelabel.id || whitelabel._id}/features`,
+          `${API_BASE}/admin/whitelabels/${whitelabel.id || whitelabel._id}/features`,
           {
             credentials: "include",
           },
@@ -55,9 +55,9 @@ const WhitelabelDetailsWrapper = ({ whitelabelData, error }) => {
   const handleFeatureToggle = async (featureName, enabled) => {
     try {
       const API_BASE =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
       const response = await fetch(
-        `${API_BASE}/v2/admin/whitelabels/${whitelabel._id}/features`,
+        `${API_BASE}/admin/whitelabels/${whitelabel._id}/features`,
         {
           method: "PATCH",
           headers: {

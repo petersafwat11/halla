@@ -5,7 +5,7 @@
 
 ## 0. Pre-existing items (not Phase 1b scope)
 
-- **Mobile templates broken** — `halla-mobile/services/templateService.js` references `ENDPOINTS.TEMPLATES.LIST`, `ENDPOINTS.TEMPLATES.CATEGORIES`, `ENDPOINTS.FONTS.LIST` that do not exist in `halla-mobile/config/api.js`. Pre-existing; defer to Phase 4 (mobile parity). Not fixed here.
+- **Mobile templates broken** — `halla-mobile/services/templateService.js` calls `ENDPOINTS.TEMPLATES.LIST` (`/templates`), `ENDPOINTS.TEMPLATES.CATEGORIES` (`/templates/categories`), and `ENDPOINTS.FONTS.LIST` (`/fonts`). The endpoints **are** declared in `halla-mobile/config/api.js` but the backend has no matching `/templates` or `/fonts` routes (only `/messaging/templates/approved` exists). Pre-existing; defer to Phase 4 (mobile parity). Not fixed here.
 
 ## 1. Grep results — what already exists
 

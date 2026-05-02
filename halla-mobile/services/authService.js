@@ -1,6 +1,19 @@
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
 
 /**
+ * Strip token + refreshToken before logging an auth response. Keeping the
+ * raw values in the React Native log stream would leak credentials to
+ * Metro / device logs.
+ */
+const redactTokens = (data) => {
+  if (!data || typeof data !== "object") return data;
+  const out = { ...data };
+  if (out.token) out.token = "[REDACTED]";
+  if (out.refreshToken) out.refreshToken = "[REDACTED]";
+  return out;
+};
+
+/**
  * Login with email and password (Vendors/Admins)
  * @param {Object} credentials - { email, password }
  * @returns {Promise<{token: string, user: Object}>}
@@ -19,7 +32,7 @@ export const loginWithEmailAPI = async ({ email, password }) => {
     console.log("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", data);
+    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Login failed");
@@ -77,7 +90,7 @@ export const signupVendorAPI = async (vendorData) => {
     console.log("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", data);
+    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Vendor signup failed");
@@ -151,7 +164,7 @@ export const signupWhitelabelAPI = async (whitelabelData) => {
     console.log("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", data);
+    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Whitelabel signup failed");
@@ -227,7 +240,7 @@ export const verifyOTPAPI = async ({ mobile, otp }) => {
     console.log("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", data);
+    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Invalid OTP code");
@@ -298,7 +311,7 @@ export const verifySignupOTPAPI = async ({ mobile, otp }) => {
     console.log("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", data);
+    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Invalid OTP code");
@@ -350,7 +363,7 @@ export const completeProfileAPI = async ({
     console.log("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", data);
+    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Failed to complete profile");

@@ -19,7 +19,7 @@ const VendorDetailsWrapper = ({ vendorData, error }) => {
     }
     // Use NEXT_PUBLIC_API_URL and extract base URL
     const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
     const baseUrl = apiUrl.replace("/api/v2", "").replace("/api", "");
     const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
     const fullUrl = `${baseUrl}${cleanPath}`;

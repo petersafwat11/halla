@@ -93,14 +93,38 @@ check("Auth controller: access_token + refresh_token cookies", () => {
 });
 
 // 8. Web client: silent refresh + new base URL
-check("Web apiClient: silent refresh + /api/v2 base", () => {
+check("Web apiClient (fetch): silent refresh + /api/v2 base", () => {
   const a = read("labbe/services/apiClient.js");
   expect(a.includes("/api/v2"), "Web apiClient default URL not bumped to /api/v2");
   expect(a.includes("_refreshOnce"), "Silent refresh helper missing");
   expect(a.includes("/auth/refresh"), "Refresh path not referenced");
 });
 
-// 9. Mobile: secureStorage wrapper + no role fallbacks
+// 8b. Axios client: cookies must flow + 401 retry must run
+check("Web apiClient (axios): withCredentials + silent refresh", () => {
+  const a = read("labbe/services/new-backend/apiClient.js");
+  expect(a.includes("withCredentials: true"), "axios instance missing withCredentials");
+  expect(a.includes("_refreshOnce"), "axios response interceptor missing _refreshOnce");
+  expect(a.includes("/api/v2"), "axios default URL not bumped to /api/v2");
+});
+
+// 8c. useAuthMutation.resetPassword must read user from data.user
+check("useAuthMutation: resetPassword unpacks data.user", () => {
+  const m = read("labbe/hooks/reactQueryHooks/useAuthMutation.js");
+  // Find the resetPassword mutation block and ensure it reads response.data?.user
+  const resetBlock = m.split("resetPassword:")[1]?.split("// Host Signup")[0] || "";
+  expect(/response\.data\??\.user/.test(resetBlock), "resetPassword should read response.data.user");
+});
+
+// 9. Mobile apiFetch wrapper for 401 + refresh
+check("Mobile apiFetch wrapper exists with refresh-on-401", () => {
+  const w = read("halla-mobile/services/apiClient.js");
+  expect(w.includes("apiFetch"), "apiFetch export missing");
+  expect(w.includes("refreshTokens"), "wrapper does not call store.refreshTokens()");
+  expect(w.includes("response.status === 401"), "wrapper does not check 401");
+});
+
+// 10. Mobile: secureStorage wrapper + no role fallbacks
 check("Mobile: secure storage + role fallback removed", () => {
   const ss = read("halla-mobile/services/secureStorage.js");
   expect(ss.includes("expo-secure-store"), "secureStorage doesn't reference expo-secure-store");
