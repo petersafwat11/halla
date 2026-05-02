@@ -323,38 +323,52 @@ class SubscriptionsService {
 
     // Concurrent subscriptions are allowed — do NOT cancel existing
 
-    // Phase 1b consumer wiring (FLOW-09 / FLOW-10 foundation): every
-    // subscription now goes through the payment provider before we save.
-    // In stub mode (no MOYASAR_API_KEY) this returns synthetic success so
-    // dev/CI flows are unaffected. Once real keys land the same call
-    // becomes a real charge and a failure response blocks the save.
-    const planPrice = plan?.pricing?.amount ?? plan?.pricing?.monthly ?? 0;
-    if (planPrice > 0) {
+    // Phase 2 (FLOW-09-F01 / trial guard): Plan schema stores price in
+    // `pricing.oneTime`. Free / trial plans must skip the payment provider —
+    // the stub returns synthetic success today, but real Moyasar rejects
+    // zero-amount charges.
+    const planPrice = plan?.pricing?.oneTime ?? 0;
+    const isFreePlan = planCode === 'trial' || planPrice <= 0;
+
+    let paymentTransactionId = null;
+    if (!isFreePlan) {
       const charge = await paymentProvider.charge({
         amount: planPrice,
-        currency: plan?.pricing?.currency || 'SAR',
+        currency: plan?.currency || 'SAR',
         customer: { id: userId },
         metadata: {
           planCode: plan.code,
           discountCode,
           description: `Subscription to ${plan.code}`,
         },
-        idempotencyKey: `subscribe:${userId}:${plan.code}`,
+        idempotencyKey:
+          subscriptionData?.idempotencyKey || `subscribe:${userId}:${plan.code}`,
       });
       if (!charge.success) {
         throw new ValidationError(
           charge.error || 'Payment failed; subscription not activated'
         );
       }
+      paymentTransactionId = charge.transactionId || null;
     }
 
     // Create new subscription
     const subscription = await Subscription.createForUser(userId, plan, {
+      pricePaid: isFreePlan ? 0 : planPrice,
+      currency: plan?.currency || 'SAR',
       createdBy: {
         user: userId,
         onBehalfOf: false,
       },
     });
+
+    if (paymentTransactionId) {
+      subscription.metadata = {
+        ...(subscription.metadata || {}),
+        paymentTransactionId,
+      };
+      await subscription.save();
+    }
 
     // Apply discount if code was provided
     if (discountCode) {
