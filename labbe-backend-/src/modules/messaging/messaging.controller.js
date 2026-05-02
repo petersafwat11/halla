@@ -4,10 +4,54 @@
  * @module modules/messaging/messaging.controller
  */
 
+const crypto = require('crypto');
 const messagingService = require('./messaging.service');
 const catchAsync = require('../../shared/utils/catchAsync');
 const { ValidationError } = require('../../shared/errors');
 const Guest = require('../../../models/GuestModel');
+
+/**
+ * Verify the Meta/WhatsApp HMAC signature on the incoming webhook payload.
+ * PIPELINE-F02 / FLOW-18-F01: this MUST fail closed. The previous code
+ * silently accepted requests when WHATSAPP_APP_SECRET was unset or the
+ * x-hub-signature-256 header was missing. WHATSAPP_APP_SECRET is now a
+ * required env var (see src/config/env.js), so the only ways verification
+ * can fail at runtime are a missing or invalid header — both must be
+ * rejected with 401.
+ *
+ * NOTE: This verifies over JSON.stringify(req.body), which matches the prior
+ * behavior. A more robust implementation reads the raw request bytes (since
+ * key ordering / whitespace are not guaranteed to match what Meta signed).
+ * Capturing raw body is out of scope for Phase 0 and tracked for Phase 3d.
+ */
+const verifyWebhookSignature = (req) => {
+  const signature = req.headers['x-hub-signature-256'];
+  if (!signature || typeof signature !== 'string') {
+    return { ok: false, reason: 'missing_signature' };
+  }
+
+  const secret = process.env.WHATSAPP_APP_SECRET;
+  if (!secret) {
+    // env.js validation should make this unreachable; defense in depth.
+    return { ok: false, reason: 'misconfigured_secret' };
+  }
+
+  const expected =
+    'sha256=' +
+    crypto
+      .createHmac('sha256', secret)
+      .update(JSON.stringify(req.body))
+      .digest('hex');
+
+  const sigBuf = Buffer.from(signature);
+  const expBuf = Buffer.from(expected);
+  if (sigBuf.length !== expBuf.length) {
+    return { ok: false, reason: 'invalid_signature' };
+  }
+
+  const matches = crypto.timingSafeEqual(sigBuf, expBuf);
+  return matches ? { ok: true } : { ok: false, reason: 'invalid_signature' };
+};
 
 /**
  * Send test message
@@ -127,18 +171,18 @@ exports.getStatus = catchAsync(async (req, res) => {
 /**
  * Webhook for Taqnyat/Meta status updates
  * POST /messaging/webhook
+ *
+ * PIPELINE-F02 / FLOW-18-F01: HMAC verification fails closed. Any request
+ * without a valid x-hub-signature-256 (computed with WHATSAPP_APP_SECRET) is
+ * rejected with 401. WHATSAPP_APP_SECRET is required at server startup; see
+ * src/config/env.js.
  */
 exports.webhook = catchAsync(async (req, res) => {
-  // Verify webhook signature
-  const signature = req.headers['x-hub-signature-256'];
-  if (process.env.WHATSAPP_APP_SECRET && signature) {
-    const crypto = require('crypto');
-    const expectedSig = 'sha256=' + crypto.createHmac('sha256', process.env.WHATSAPP_APP_SECRET)
-      .update(JSON.stringify(req.body))
-      .digest('hex');
-    if (signature !== expectedSig) {
-      return res.status(403).json({ status: 'error', message: 'Invalid signature' });
-    }
+  const verification = verifyWebhookSignature(req);
+  if (!verification.ok) {
+    return res
+      .status(401)
+      .json({ status: 'error', message: 'Invalid or missing signature', reason: verification.reason });
   }
 
   const { object, entry } = req.body;

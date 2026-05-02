@@ -41,6 +41,16 @@ const envSchema = Joi.object({
 
 
 
+  // WhatsApp / Taqnyat webhook security
+  // PIPELINE-F02 / FLOW-18-F01: HMAC verification on POST /messaging/webhook
+  // must fail closed. WHATSAPP_APP_SECRET is therefore required at startup —
+  // booting without it would silently accept unauthenticated payloads from
+  // anyone who can reach the public webhook URL.
+  WHATSAPP_APP_SECRET: Joi.string()
+    .min(1)
+    .required()
+    .description('Meta/WhatsApp app secret used to verify x-hub-signature-256 on webhook calls'),
+
   // Redis (Optional)
   REDIS_URL: Joi.string().allow(''),
   REDIS_ENABLED: Joi.string().valid('true', 'false').default('false'),

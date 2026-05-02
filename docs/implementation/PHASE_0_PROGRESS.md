@@ -2,8 +2,8 @@
 
 ## Status
 
-- TENANT-F01 / RBAC-F02 (filterByWhitelabel cross-tenant): **in progress** — diagnostic reads complete, implementation pending.
-- PIPELINE-F02 / FLOW-18-F01 (HMAC fail-open): **in progress** — diagnostic reads complete, implementation pending.
+- TENANT-F01 / RBAC-F02 (filterByWhitelabel cross-tenant): **committed** in `dc20aef` (`[TENANT-F01] scope ADMIN and MODERATOR to assigned whitelabel`).
+- PIPELINE-F02 / FLOW-18-F01 (HMAC fail-open): **committed** — see commit SHA recorded in `PHASE_0_REPORT.md` after the second commit lands.
 
 ## Last update
 
@@ -21,6 +21,9 @@
 - Read `labbe-backend-/src/modules/admin/admin.service.js` `createModerator` (lines 839–894) and `users.service.js` `createModerator` (lines 526–564). Both creation paths set `whitelabelId: null` for platform admin/moderator. Both need a require-guard.
 - Created `PHASE_0_PLAN.md` with file ownership map, no sub-agent dispatch, stop-gate criteria.
 - Started `PHASE_0_PROGRESS.md` (this file).
+- TENANT-F01: edited `whitelabel.js` to scope ADMIN/MODERATOR; updated `admin.controller.js`, `admin.service.js`, `users.controller.js`, `users.service.js` createModerator paths to require `whitelabelId`; created `scripts/audit-admin-whitelabel.js`. Syntax-checked all edits with `node -c`.
+- TENANT-F01 commit landed: `dc20aef` (8 files changed, 285 +/20 -).
+- PIPELINE-F02: extracted `verifyWebhookSignature` helper in `messaging.controller.js` using `crypto.timingSafeEqual`; webhook handler now returns 401 on missing or invalid signature. Required `WHATSAPP_APP_SECRET` in `env.js`. Added startup log line in `server.js` confirming HMAC verification active. Syntax-checked all edits with `node -c`.
 
 ## Open questions for Peter
 
