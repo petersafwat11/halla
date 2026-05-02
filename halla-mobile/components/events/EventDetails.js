@@ -8,7 +8,31 @@ import {
   TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
+import EventFailureBanner from "./EventFailureBanner";
+import { useAuthStore } from "../../stores/authStore";
+import { retryLaunch } from "../../services/eventsService2";
+
 const EventDetails = ({ event, onStatsPress, onBack }) => {
+  const { user, token } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  const handleRetry = async (eventId) => {
+    if (!token || !eventId) {
+      throw new Error("Missing token or event id");
+    }
+    const result = await retryLaunch(eventId, token);
+    // Invalidate the event-list query and the single-event-stats query
+    // so the UI reflects the new status (`scheduled` if the retry kicked
+    // off, `live` if it landed synchronously). React Query refetches
+    // automatically and the banner re-renders with the new state.
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["events"] }),
+      queryClient.invalidateQueries({ queryKey: ["events", "single-stats", eventId] }),
+    ]);
+    return result;
+  };
+
 
   // Format backend data - handle both flat format (from getMyEvents/_formatEvent)
   // and nested format (from getEventById with eventDetails object)
@@ -74,6 +98,9 @@ const EventDetails = ({ event, onStatsPress, onBack }) => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
+        {/* Phase 3c.5 — failure / retrying banner */}
+        <EventFailureBanner event={event} currentUser={user} onRetry={handleRetry} />
+
         {/* Event Image */}
         <View style={styles.imageWrapper}>
           <View style={styles.imageContainer}>

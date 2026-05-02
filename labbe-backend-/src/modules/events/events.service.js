@@ -319,8 +319,19 @@ class EventsService {
 
     if (!capacitySub) throw new Error('No active subscription with sufficient capacity');
 
+    // PIPELINE-F03 (Phase 3a.4): consume invites and create the event with
+    // a compensating return on failure. The previous flow debited the pool
+    // before `Event.save()` ever ran, so a save failure left the user with
+    // their pool quota silently consumed and no event to show for it.
+    //
+    // Approach: track whether we consumed (poolConsumed) and what we
+    // consumed (capacitySub._id, guestCount). If anything between
+    // consumption and the *final* save throws, release the invites and
+    // rethrow.
+    let poolConsumed = false;
     if (isPoolPlan(capacitySub.planId?.planType)) {
       await Subscription.consumeInvites(capacitySub._id, guestCount);
+      poolConsumed = true;
     } else if (isPerEventPlan(capacitySub.planId?.planType)) {
       const maxInvites = capacitySub.planId?.limits?.maxInvitesPerEvent;
       if (maxInvites !== null && maxInvites !== undefined && guestCount > maxInvites) {
@@ -328,87 +339,180 @@ class EventsService {
       }
     }
 
-    if (!subscription) {
-      // Attach capacity subscription to eventData for tracking
-      if (!eventData.subscriptionId) eventData.subscriptionId = capacitySub._id;
-    }
+    try {
+      if (!subscription) {
+        // Attach capacity subscription to eventData for tracking
+        if (!eventData.subscriptionId) eventData.subscriptionId = capacitySub._id;
+      }
 
-    // Handle file upload — resolves correctly for both S3 (file.location) and local (file.path/filename)
-    if (file) {
-      const templateImagePath = getFileUrl(file);
-      if (templateImagePath) {
-        if (eventData.invitationSettings) {
-          eventData.invitationSettings.templateImage = templateImagePath;
-        } else {
-          eventData.invitationSettings = { templateImage: templateImagePath };
+      // Handle file upload — resolves correctly for both S3 (file.location) and local (file.path/filename)
+      if (file) {
+        const templateImagePath = getFileUrl(file);
+        if (templateImagePath) {
+          if (eventData.invitationSettings) {
+            eventData.invitationSettings.templateImage = templateImagePath;
+          } else {
+            eventData.invitationSettings = { templateImage: templateImagePath };
+          }
         }
       }
-    }
 
-    // Set host and tracking info
-    eventData.host = userId;
-    eventData.createdBy = {
-      user: userId,
-      role: userRole || "host",
-      onBehalfOf: false,
-      createdAt: new Date(),
-    };
-    eventData.createdFor = {
-      user: userId,
-      role: userRole || "host",
-      isSelf: true,
-    };
+      // Set host and tracking info
+      eventData.host = userId;
+      eventData.createdBy = {
+        user: userId,
+        role: userRole || "host",
+        onBehalfOf: false,
+        createdAt: new Date(),
+      };
+      eventData.createdFor = {
+        user: userId,
+        role: userRole || "host",
+        isSelf: true,
+      };
 
-    // Set subscription reference and freeze guest limit (Bugs 4, 7)
-    if (subscription) {
-      eventData.subscriptionId = subscription._id;
-      eventData.planId = subscription.planId?._id || subscription.planId;
-      // Freeze guest limit from current subscription for this event
-      const plan = subscription.planId;
-      if (isPoolPlan(plan?.planType)) {
-        // Pool plans: unlimited per event; pool tracks capacity via invitesConsumed
-        eventData.guestLimit = -1;
-      } else {
-        // Per-event plans: use the plan's maxInvitesPerEvent directly (no addon or compensation added here)
-        eventData.guestLimit = plan?.limits?.maxInvitesPerEvent ?? null;
+      // Set subscription reference and freeze guest limit (Bugs 4, 7)
+      if (subscription) {
+        eventData.subscriptionId = subscription._id;
+        eventData.planId = subscription.planId?._id || subscription.planId;
+        // Freeze guest limit from current subscription for this event
+        const plan = subscription.planId;
+        if (isPoolPlan(plan?.planType)) {
+          // Pool plans: unlimited per event; pool tracks capacity via invitesConsumed
+          eventData.guestLimit = -1;
+        } else {
+          // Per-event plans: use the plan's maxInvitesPerEvent directly (no addon or compensation added here)
+          eventData.guestLimit = plan?.limits?.maxInvitesPerEvent ?? null;
+        }
       }
+
+      // Create event
+      const event = await Event.create(eventData);
+
+      // Create guests
+      const guestIds = await this.createGuestsFromList(
+        guestList,
+        event._id,
+        userId
+      );
+      event.guestList = guestIds;
+      await event.save();
+
+      // Increment subscription usage
+      if (subscription) {
+        await Subscription.findByIdAndUpdate(subscription._id, {
+          $inc: { "usage.eventsCreated": 1 },
+        });
+      }
+
+      // Populate and return
+      const populatedEvent = await Event.findById(event._id)
+        .populate("host", "username email phoneNumber")
+        .populate("guestList", "name email phone status");
+
+      // Send notifications (non-blocking)
+      this._notifyEventCreated(populatedEvent, userId, guestIds.length).catch(
+        console.error
+      );
+
+      return { event: populatedEvent };
+    } catch (err) {
+      // Compensating return: roll back the pool debit so the user isn't
+      // billed for an event that never landed. Failure here is logged but
+      // does not mask the original error.
+      if (poolConsumed) {
+        try {
+          await Subscription.releaseInvites(capacitySub._id, guestCount);
+        } catch (releaseErr) {
+          console.error(
+            `[events.createEvent] FAILED to release ${guestCount} invites on subscription ${capacitySub._id} after Event.save error:`,
+            releaseErr.message
+          );
+        }
+      }
+      throw err;
     }
-
-    // Create event
-    const event = await Event.create(eventData);
-
-    // Create guests
-    const guestIds = await this.createGuestsFromList(
-      guestList,
-      event._id,
-      userId
-    );
-    event.guestList = guestIds;
-    await event.save();
-
-    // Increment subscription usage
-    if (subscription) {
-      await Subscription.findByIdAndUpdate(subscription._id, {
-        $inc: { "usage.eventsCreated": 1 },
-      });
-    }
-
-    // Populate and return
-    const populatedEvent = await Event.findById(event._id)
-      .populate("host", "username email phoneNumber")
-      .populate("guestList", "name email phone status");
-
-    // Send notifications (non-blocking)
-    this._notifyEventCreated(populatedEvent, userId, guestIds.length).catch(
-      console.error
-    );
-
-    return { event: populatedEvent };
   }
 
   // ============================================
   // EVENT UPDATES
   // ============================================
+
+  /**
+   * Manual launch retry (Phase 3c.1, FLOW-15-F04).
+   *
+   * Permitted for the host (event creator), the whitelabel-admin who owns
+   * the event's whitelabel, or any global admin / super-admin (the route
+   * already restricts to those roles via `restrictTo`).
+   *
+   * Behavior: clears `attemptCount` and `failureReason`, flips status from
+   * `failed` → `scheduled`, then immediately runs the launch sequence.
+   * The same `runEventLaunch` helper used by the cron is reused so the
+   * lock + audit semantics match.
+   */
+  async retryEventLaunch(eventId, userContext) {
+    const event = await Event.findById(eventId);
+    if (!event) throw new NotFoundError("Event");
+
+    const userId = userContext._id?.toString() || userContext._id;
+    const role = userContext.role;
+
+    const isHost = event.host?.toString() === userId;
+    const isAdmin = ["admin", "super_admin"].includes(role);
+    const isWhitelabelAdmin =
+      role === "whitelabel_admin" &&
+      event.whitelabelId &&
+      userContext.whitelabelId &&
+      event.whitelabelId.toString() === userContext.whitelabelId.toString();
+
+    if (!isHost && !isAdmin && !isWhitelabelAdmin) {
+      throw new ForbiddenError("Not authorized to retry this event");
+    }
+
+    if (event.status !== "failed" && event.status !== "scheduled") {
+      // 409 — conflict with the resource's current state. We don't have a
+      // ConflictError class, so build an AppError directly with the right
+      // status code (the global error handler reads statusCode, not the
+      // string status field).
+      const AppError = require("../../shared/errors/AppError");
+      throw new AppError(
+        `Cannot retry an event in status '${event.status}'`,
+        409,
+        "EVENT_NOT_RETRYABLE"
+      );
+    }
+
+    event.attemptCount = 0;
+    // Mongoose treats `undefined` as a no-op on assignment; use `null` to
+    // explicitly clear the persisted value. (Worth using $unset if we
+    // ever need true "field absent" semantics — for our queries `null`
+    // suffices.)
+    event.failureReason = null;
+    event.failedAt = null;
+    event.status = "scheduled";
+    event.lastAttemptAt = null;
+    await event.save();
+
+    // Reuse the same launch helper as the cron — same lock, same audit.
+    const { runEventLaunch } = require("../../shared/utils/scheduledTasks");
+    const result = await runEventLaunch(event, `manual:${userId}`);
+
+    const { logAudit } = require("../../shared/utils/auditLog");
+    await logAudit({
+      action: "event.launch_manual_retry",
+      actor: userContext,
+      targetType: "event",
+      targetId: event._id,
+      whitelabelId: event.whitelabelId || null,
+      metadata: {
+        triggeredBy: userId,
+        triggeredByRole: role,
+        outcome: result.launched ? "launched" : result.reason,
+      },
+    });
+
+    return { ...result, eventId: event._id };
+  }
 
   /**
    * Update event
@@ -1294,12 +1398,18 @@ class EventsService {
   // ============================================
 
   /**
-   * Format event for response
-   * @private
+   * Format event for response.
+   *
+   * Phase 3c: surface the launch-lifecycle fields (`attemptCount`,
+   * `failureReason`, `failedAt`, `launchedAt`) so the failure-banner UI
+   * has them in list-view and detail-view payloads. Without these, the
+   * mobile EventDetails screen (which receives the event as a prop from
+   * the list) renders an empty banner on `failed` events.
    */
   _formatEvent(event) {
     return {
       id: event._id,
+      _id: event._id,
       title: event.eventDetails?.title,
       eventType: event.eventDetails?.type,
       date: event.eventDetails?.date,
@@ -1309,6 +1419,14 @@ class EventsService {
       guestCount: event.guestList?.length || 0,
       confirmedCount:
         event.guestList?.filter((g) => g.status === "confirmed").length || 0,
+      // Launch lifecycle (Phase 3a/3c)
+      attemptCount: event.attemptCount || 0,
+      failureReason: event.failureReason || null,
+      failedAt: event.failedAt || null,
+      launchedAt: event.launchedAt || null,
+      // Multi-tenant context (3c failure-banner RBAC needs this)
+      whitelabelId: event.whitelabelId || null,
+      host: event.host || null,
       createdAt: event.createdAt,
     };
   }

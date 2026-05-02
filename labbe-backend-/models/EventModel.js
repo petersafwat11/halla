@@ -158,12 +158,16 @@ const invitationSettingsSchema = new mongoose.Schema(
 );
 
 // Launch Settings sub-schema
+//
+// Phase 3a.5 dropped the Taqnyat native-scheduling path entirely: there is
+// no longer a `taqnyatDeleteId` field — every event launches via the cron
+// regardless of channel. If a legacy document still has `taqnyatDeleteId`
+// in the database, Mongoose will quietly ignore it on read; no migration is
+// needed.
 const launchSettingsSchema = new mongoose.Schema(
   {
     scheduledDate: Date,
     scheduledTime: String,
-    // deleteId returned by Taqnyat when SMS is natively scheduled — used to cancel before delivery
-    taqnyatDeleteId: Number,
   },
   { _id: false }
 );
@@ -365,8 +369,32 @@ const eventSchema = new mongoose.Schema(
       type: messagingStatusSchema,
       default: () => ({}),
     },
-    // Note: Guest statistics are calculated dynamically from populated guestList
-    // No need to store redundant guestStats - use guestList.length and filter by status
+
+    // ---------- Phase 3a / 3c launch lifecycle tracking ----------
+
+    // Cron worker lock (Phase 3a.3). Set when a cron tick begins a bulk
+    // send for this event so a parallel tick can't start a second send.
+    // Cleared when the send finishes (success or failure). A lock older
+    // than 10 minutes is treated as stale and forcibly retaken.
+    launchLock: {
+      lockedAt: Date,
+      lockedBy: String,
+    },
+
+    // Launch attempt tracking (Phase 3c.1). Incremented on every retry
+    // attempt; reset to 0 by the manual-retry endpoint.
+    attemptCount: {
+      type: Number,
+      default: 0,
+    },
+    lastAttemptAt: Date,
+    failureReason: String,
+
+    // Set on successful launch (status → 'live')
+    launchedAt: Date,
+
+    // Set when status transitions to 'failed'
+    failedAt: Date,
   },
   {
     timestamps: true,

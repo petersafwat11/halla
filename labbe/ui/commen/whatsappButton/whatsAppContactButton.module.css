@@ -1,0 +1,32 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.6rem;
+  border-radius: 0.8rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.button:hover {
+  filter: brightness(1.05);
+}
+
+.filled {
+  background: #25d366;
+  color: #ffffff;
+}
+
+.outlined {
+  background: transparent;
+  color: #25d366;
+  border: 1px solid #25d366;
+}
+
+.icon {
+  width: 2rem;
+  height: 2rem;
+}

@@ -13,10 +13,35 @@
 const express = require('express');
 const router = express.Router();
 
+const crypto = require('crypto');
 const guestsController = require('./guests.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { apiLimiter } = require('../../shared/middleware/rateLimiter');
 const { validateObjectId } = require('../../shared/middleware/validation');
+const { idempotency } = require('../../shared/middleware/idempotency');
+
+/**
+ * RSVP idempotency-key derivation (Phase 3d.2 / FLOW-19-F02 / decision D2).
+ *
+ * If the client doesn't send `Idempotency-Key`, derive one server-side
+ * from `${eventId}:${guestId}:${rsvpChoice}`. This means:
+ *   - A double-tap on the same answer is deduplicated (same key).
+ *   - A guest changing answers ('confirmed' → 'declined') is a fresh
+ *     request (different key, new write, new host notification).
+ */
+function deriveRsvpIdempotencyKey(req, _res, next) {
+  if (!req.get('idempotency-key')) {
+    const guestId = req.params.id;
+    const choice = req.body?.response || '';
+    const code = req.body?.invitationCode || '';
+    // The invitationCode is part of the canonical input (the same guest
+    // could in theory have multiple invitations across events).
+    const seed = `${guestId}:${choice}:${code}`;
+    const derived = crypto.createHash('sha256').update(seed).digest('hex').slice(0, 32);
+    req.headers['idempotency-key'] = `rsvp_${derived}`;
+  }
+  next();
+}
 
 // ============================================
 // PUBLIC ROUTES (Guest Portal)
@@ -94,7 +119,13 @@ router.get('/invitation/:code', apiLimiter, guestsController.getByInvitationCode
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.post('/:id/rsvp', apiLimiter, guestsController.submitRSVP);
+router.post(
+  '/:id/rsvp',
+  apiLimiter,
+  deriveRsvpIdempotencyKey,
+  idempotency({ scope: 'guests.rsvp' }),
+  guestsController.submitRSVP
+);
 
 // ============================================
 // PROTECTED ROUTES (Host Management)
@@ -266,5 +297,35 @@ router.patch('/events/:eventId/guests/:guestId', validateObjectId('eventId'), va
  *         $ref: '#/components/responses/NotFound'
  */
 router.delete('/events/:eventId/guests/:guestId', validateObjectId('eventId'), validateObjectId('guestId'), guestsController.deleteGuest);
+
+/**
+ * Phase 3e.3 — Rotate guest QR (FLOW-18-F03).
+ *
+ * Marks the active post_event GuestAccessToken `isRevoked: true` with
+ * `revokedReason: 'rotation'` and issues a fresh token. RBAC: host or
+ * whitelabel-admin (admin / super_admin via the routes-level
+ * `restrictTo` already in place).
+ */
+router.post(
+  '/events/:eventId/guests/:guestId/rotate-qr',
+  validateObjectId('eventId'),
+  validateObjectId('guestId'),
+  idempotency({ scope: 'guests.rotate_qr' }),
+  guestsController.rotateQR
+);
+
+/**
+ * Phase 3e.4 — Manual revoke (FLOW-21-F03).
+ *
+ * Distinct from rotation. Marks the active token revoked with
+ * `revokedReason: 'manual'`; subsequent scans → 410 Gone, `qr_revoked`.
+ */
+router.post(
+  '/events/:eventId/guests/:guestId/revoke-access',
+  validateObjectId('eventId'),
+  validateObjectId('guestId'),
+  idempotency({ scope: 'guests.revoke_access' }),
+  guestsController.revokeAccess
+);
 
 module.exports = router;

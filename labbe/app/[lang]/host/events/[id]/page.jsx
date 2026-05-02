@@ -5,6 +5,7 @@ import { API_PATHS } from "@/services/new-backend/api.config";
 import EventHeader from "./_components/EventHeader";
 import EventStats from "./_components/EventStats";
 import GuestTable from "./_components/GuestTable";
+import EventFailureBannerClient from "./_components/EventFailureBannerClient";
 
 export default async function SingleEventPage({ params }) {
   const { id } = await params;
@@ -38,6 +39,7 @@ export default async function SingleEventPage({ params }) {
     <QueryClientServerProvider queryClient={queryClient}>
       <div className={styles.page}>
         <EventHeader eventId={id} />
+        <EventFailureBannerClient eventId={id} />
         <div>
           <div className={styles.statsData}>
             <EventStats eventId={id} />

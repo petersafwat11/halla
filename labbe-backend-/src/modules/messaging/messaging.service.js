@@ -10,6 +10,8 @@ const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
 const config = require('../../config');
 const notificationService = require('../../shared/utils/notificationService');
+const { runBatched } = require('../../shared/utils/runBatched');
+const { withIdempotency } = require('../../shared/utils/idempotency');
 
 class MessagingService {
   constructor() {
@@ -205,14 +207,47 @@ class MessagingService {
   }
 
   /**
-   * Send invitations to multiple guests (bulk)
+   * Send invitations to multiple guests (bulk).
+   *
+   * Phase 3b.1 (FLOW-17-F01): replaces the 100-ms-per-guest serial loop
+   * with `runBatched` (concurrency 5, 10/sec cap). For 1000 guests this
+   * brings wall-time from ~100 s to roughly 100 s / concurrency (capped
+   * by the rate). The cron tick (1 min) plus the 60 s isDue window now
+   * comfortably covers events up to a few thousand guests; bigger events
+   * will need a higher rate cap negotiated with Taqnyat.
+   *
+   * Phase 3b.2 (FLOW-14-F04 / FLOW-17-F02): each per-guest send runs
+   * inside `withIdempotency(...)`. The key shape uses
+   * `lastAttemptAt.getTime()` as the attempt fingerprint — every
+   * `runEventLaunch` invocation stamps a fresh `lastAttemptAt` before
+   * calling sendBulk, so distinct attempts (cron tick #1, cron retry,
+   * manual retry after reset) never collide on the same key. Within
+   * an attempt (e.g. two near-simultaneous sendBulk calls under the
+   * lock — shouldn't happen, but defense in depth) the keys match and
+   * the second call hits the cache.
+   *
    * @param {Object} params
-   * @param {string[]} params.guestIds - Array of guest IDs
-   * @param {string} params.eventId - Event ID
+   * @param {string[]} params.guestIds
+   * @param {string} params.eventId
    * @param {string} params.channel - 'sms' or 'whatsapp'
+   * @param {string} [params.userId]
+   * @param {string} [params.scope='event_launch']  - one of
+   *        'event_launch' | 'reminder' | 'manual_resend' — controls the
+   *        idempotency-key namespace.
+   * @param {string|number} [params.attemptId] - optional override for the
+   *        attempt fingerprint. Used by callers like `retryFailed` that
+   *        run outside the runEventLaunch lifecycle and need their own
+   *        per-call namespace.
    * @returns {Promise<Object>}
    */
-  async sendBulk({ guestIds, eventId, channel = 'sms', userId }) {
+  async sendBulk({
+    guestIds,
+    eventId,
+    channel = 'sms',
+    userId,
+    scope = 'event_launch',
+    attemptId,
+  }) {
     const event = await Event.findById(eventId);
 
     if (!event) {
@@ -235,38 +270,62 @@ class MessagingService {
       'messagingStatus.preferredChannel': channel,
     });
 
-    const results = {
-      total: guestIds.length,
-      successful: 0,
-      failed: 0,
-      details: [],
-    };
+    // Attempt fingerprint priority:
+    //   1. explicit `attemptId` from caller (retryFailed)
+    //   2. event.lastAttemptAt.getTime() set by runEventLaunch
+    //   3. event.attemptCount (legacy fallback)
+    //
+    // The fingerprint must change between different launch attempts so
+    // a cached failure from attempt N doesn't poison attempt N+1.
+    const fingerprint =
+      attemptId !== undefined && attemptId !== null
+        ? attemptId
+        : event.lastAttemptAt
+        ? new Date(event.lastAttemptAt).getTime()
+        : event.attemptCount || 0;
 
-    // Send to each guest with rate limiting
-    for (const guestId of guestIds) {
-      const result = await this.sendToGuest({ guestId, eventId, channel });
+    const batched = await runBatched(
+      guestIds,
+      async (guestId) => {
+        const key = `${scope}:${eventId}:${guestId}:${fingerprint}`;
+        return withIdempotency(
+          key,
+          () => this.sendToGuest({ guestId, eventId, channel }),
+          { scope, userId }
+        );
+      },
+      { concurrency: 5, ratePerSecond: 10 }
+    );
 
-      if (result.success) {
-        results.successful++;
-      } else {
-        results.failed++;
-      }
+    const successful = batched.results.filter((r) => r.ok && r.value?.success).length;
+    const failed = batched.total - successful;
+    const details = batched.results.map((r) => ({
+      guestId: r.item,
+      ...(r.ok ? r.value : { success: false, error: r.error }),
+    }));
 
-      results.details.push({ guestId, ...result });
-
-      // Rate limiting: 100ms between messages
-      await new Promise(r => setTimeout(r, 100));
-    }
-
-    // Single atomic update after all sends complete
     await Event.findByIdAndUpdate(eventId, {
-      'messagingStatus.sentCount': results.successful,
-      'messagingStatus.failedCount': results.failed,
-      'messagingStatus.pendingCount': guestIds.length - results.successful - results.failed,
+      'messagingStatus.sentCount': successful,
+      'messagingStatus.failedCount': failed,
+      'messagingStatus.pendingCount': guestIds.length - successful - failed,
       'messagingStatus.bulkSendCompletedAt': new Date(),
     });
 
-    return { success: true, ...results };
+    // The bulk operation itself is `success: true` if at least one send
+    // succeeded — partial-failure recovery happens via `retryFailed`.
+    // It is `success: false` only when *all* sends failed; the cron
+    // treats that as a launch-level failure and lets the retry cron
+    // re-attempt.
+    const overallSuccess = successful > 0;
+
+    return {
+      success: overallSuccess,
+      total: guestIds.length,
+      successful,
+      failed,
+      details,
+      ...(!overallSuccess && { error: 'ALL_SENDS_FAILED', message: 'No invitations were delivered' }),
+    };
   }
 
   /**
@@ -310,6 +369,12 @@ class MessagingService {
       guestIds: failedGuests.map(g => g._id.toString()),
       eventId,
       channel,
+      // retryFailed runs outside the runEventLaunch lifecycle, so the
+      // event's `lastAttemptAt` may still point at the original cron
+      // attempt that produced the cached failures. Pass a fresh
+      // fingerprint to bust the cache and actually re-send.
+      attemptId: `retry_failed:${Date.now()}`,
+      scope: 'manual_resend',
     });
   }
 
@@ -393,7 +458,11 @@ class MessagingService {
 
   /**
    * Schedule bulk send for a future date/time
-   * Sets event launch settings so the cron job picks it up
+   *
+   * Sets event launch settings so the cron job picks it up. Phase 3a.5
+   * removed the Taqnyat-native SMS scheduling branch entirely: every
+   * channel now flows through `scheduleEventLaunch`, which gives us a
+   * single retry path, idempotency contract, and lock semantics.
    */
   async scheduleBulkSend({ eventId, scheduledDate, scheduledTime, channel = 'whatsapp' }) {
     const event = await Event.findById(eventId).populate('host', 'name username');
@@ -406,53 +475,16 @@ class MessagingService {
       return { success: false, error: 'NO_GUESTS', message: 'No guests with phone numbers to send to' };
     }
 
-    // Format scheduledDatetime for Taqnyat SMS API: YYYY-MM-DDTHH:mm
-    const scheduledDatetime = `${scheduledDate}T${scheduledTime}`;
-
-    let taqnyatDeleteId = null;
-
-    // For SMS-only events: offload scheduling entirely to Taqnyat.
-    // Taqnyat queues the bulk SMS and fires it at the exact scheduled time — no cron needed for SMS.
-    if (channel === 'sms') {
-      // Build a single body text for bulk SMS (no guest_name personalisation for native Taqnyat scheduling)
-      const title = event.eventDetails?.title || 'مناسبة';
-      const date = this._formatDate(event.eventDetails?.date);
-      const time = event.eventDetails?.time || '';
-      const location = event.eventDetails?.location?.address || '';
-      const smsBody = `أنت مدعو لحضور ${title}\nبتاريخ ${date} الساعة ${time}\n${location}`;
-
-      const phones = guests.map(g => g.phone);
-      // Batch up to 1000 recipients per Taqnyat SMS API limit
-      const BATCH_SIZE = 1000;
-      for (let i = 0; i < phones.length; i += BATCH_SIZE) {
-        const batch = phones.slice(i, i + BATCH_SIZE);
-        const smsResult = await taqnyat.sendBulkSMS(
-          batch,
-          smsBody,
-          { scheduledDatetime }
-        );
-        // Store the first deleteId (used if host wants to cancel the scheduled send)
-        if (smsResult.success && smsResult.messageId && taqnyatDeleteId === null) {
-          taqnyatDeleteId = smsResult.messageId;
-        }
-      }
-    }
-    // For WhatsApp: the cron job (scheduleEventLaunch) fires the WA sends at launch time.
-    // WhatsApp API has no native scheduling — this is a Meta platform constraint.
-
-    const updatePayload = {
+    await Event.findByIdAndUpdate(eventId, {
       status: 'scheduled',
       'launchSettings.scheduledDate': new Date(scheduledDate),
       'launchSettings.scheduledTime': scheduledTime,
       'messagingStatus.preferredChannel': channel,
       'messagingStatus.totalMessages': guests.length,
       'messagingStatus.pendingCount': guests.length,
-    };
-    if (taqnyatDeleteId !== null) {
-      updatePayload['launchSettings.taqnyatDeleteId'] = taqnyatDeleteId;
-    }
-
-    await Event.findByIdAndUpdate(eventId, updatePayload);
+      attemptCount: 0,
+      failureReason: null,
+    });
 
     return {
       success: true,
@@ -460,7 +492,6 @@ class MessagingService {
       scheduledTime,
       channel,
       guestCount: guests.length,
-      smsManagedByTaqnyat: channel === 'sms',
     };
   }
 

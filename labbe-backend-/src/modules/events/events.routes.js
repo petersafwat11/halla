@@ -16,6 +16,11 @@ const router = express.Router();
 
 // Controller
 const eventsController = require("./events.controller");
+// Cross-module controller — staff revoke endpoint lives under
+// `/events/:eventId/staff/:staffId/revoke` for URL-shape consistency with
+// the rest of the event-staff routes, but the handler itself ships with
+// the staff module.
+const staffController = require("../staff/staff.controller");
 
 // Middleware (using existing during migration)
 const { protect } = require("../../shared/middleware/auth");
@@ -30,6 +35,7 @@ const {
   injectWhitelabel,
 } = require("../../shared/middleware/whitelabel");
 const { uploadTemplateImage } = require("../../shared/utils/fileUpload");
+const { idempotency } = require("../../shared/middleware/idempotency");
 const {
   validateObjectId,
   validateArray,
@@ -839,6 +845,56 @@ router.delete(
   validateObjectId("eventId"),
   validateObjectId("staffId"),
   eventsController.deleteStaff
+);
+
+/**
+ * Revoke a staff access token (Phase 3e.1 / FLOW-20-F01).
+ * The `:staffId` here is the StaffAccessToken document _id.
+ * RBAC: host or whitelabel-admin (admin / super_admin allowed via
+ * `restrictTo` at the router head).
+ *
+ * Idempotent at the action level — re-revoke returns 200 with the same
+ * final state.
+ */
+router.post(
+  "/:eventId/staff/:staffId/revoke",
+  validateObjectId("eventId"),
+  validateObjectId("staffId"),
+  idempotency({ scope: "staff.revoke" }),
+  staffController.revokeStaffToken
+);
+
+// ============================================
+// LAUNCH RETRY (3c.1)
+// ============================================
+
+/**
+ * @swagger
+ * /events/{id}/retry-launch:
+ *   post:
+ *     summary: Manually retry a failed launch
+ *     description: Only the host (event creator), whitelabel admin (own whitelabel),
+ *                  admin or super_admin can retry. Resets attemptCount to 0 and
+ *                  fires the launch flow immediately. Returns 409 if the event
+ *                  is not in `failed` or `scheduled` state.
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/IdParam'
+ *     responses:
+ *       200:
+ *         description: Retry kicked off (whether or not the launch succeeded)
+ *       403:
+ *         description: Caller is not authorized to retry this event
+ *       409:
+ *         description: Event not in a retryable state
+ */
+router.post(
+  "/:id/retry-launch",
+  validateObjectId("id"),
+  idempotency({ scope: "events.retry_launch" }),
+  eventsController.retryLaunch
 );
 
 // ============================================

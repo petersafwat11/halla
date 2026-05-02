@@ -14,6 +14,8 @@ const Guest = require('../../../models/GuestModel');
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const { generateExcel } = require('../../shared/utils/excelExport');
+const GuestAccessToken = require('../../../models/GuestAccessTokenModel');
+const { logAudit } = require('../../shared/utils/auditLog');
 
 class GuestsService {
   /**
@@ -284,6 +286,156 @@ class GuestsService {
     }));
 
     return generateExcel(guestsForExport, `event-${eventId}-guests`);
+  }
+
+  /**
+   * Rotate the active GuestAccessToken for a guest (Phase 3e.3 / FLOW-18-F03 / D7).
+   *
+   * Marks the existing active post_event token revoked with reason
+   * `'rotation'`, then issues a new token (default 90-day expiry, falling
+   * back to 365 days for legacy events without `eventDetails.date`).
+   *
+   * RBAC: host or whitelabel-admin only (admin / super_admin allowed via
+   * the existing `restrictTo` setup at the route head).
+   */
+  async rotateGuestQR(eventId, guestId, actor) {
+    const event = await Event.findById(eventId);
+    if (!event) throw new NotFoundError('Event');
+
+    const actorId = actor?._id?.toString?.() || actor?._id;
+    const role = actor?.role;
+    const isHost = event.host?.toString() === actorId;
+    const isAdmin = ['admin', 'super_admin'].includes(role);
+    const isWhitelabelAdmin =
+      role === 'whitelabel_admin' &&
+      event.whitelabelId &&
+      actor?.whitelabelId &&
+      event.whitelabelId.toString() === actor.whitelabelId.toString();
+    if (!isHost && !isAdmin && !isWhitelabelAdmin) {
+      throw new ForbiddenError('Not authorized to rotate this QR');
+    }
+
+    const guest = await Guest.findOne({ _id: guestId, event: eventId });
+    if (!guest) throw new NotFoundError('Guest');
+
+    // Revoke any active post_event token(s) for this guest+event with
+    // reason 'rotation'.
+    await GuestAccessToken.updateMany(
+      {
+        guest: guestId,
+        event: eventId,
+        type: 'post_event',
+        isRevoked: false,
+      },
+      {
+        $set: {
+          isRevoked: true,
+          revokedAt: new Date(),
+          revokedBy: actor?._id || null,
+          revokedReason: 'rotation',
+        },
+      }
+    );
+
+    // Generate a new token. Expiry default per D8: event.eventDate + 90d
+    // when known, else createdAt + 90d.
+    const expiryDays = 90;
+    const eventDate = event.eventDetails?.date;
+    const expiresAt = eventDate
+      ? new Date(new Date(eventDate).getTime() + expiryDays * 24 * 60 * 60 * 1000)
+      : new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000);
+
+    const fresh = await GuestAccessToken.create({
+      guest: guestId,
+      event: eventId,
+      type: 'post_event',
+      token: GuestAccessToken.generateToken(),
+      expiresAt,
+    });
+
+    await logAudit({
+      action: 'guest_access_token.rotate',
+      actor,
+      targetType: 'guest_access_token',
+      targetId: fresh._id,
+      whitelabelId: event.whitelabelId || null,
+      metadata: { eventId, guestId, expiresAt },
+    });
+
+    return {
+      token: fresh.token,
+      qrUrl: GuestAccessToken.getTokenLink(fresh.token, 'post_event', 'ar'),
+      expiresAt: fresh.expiresAt,
+    };
+  }
+
+  /**
+   * Manually revoke a guest access token (Phase 3e.4 / FLOW-21-F03 / D8).
+   *
+   * Distinct from rotation: this revokes the active token and does NOT
+   * issue a replacement. Subsequent scans return 410 Gone with
+   * `reason: 'qr_revoked'`.
+   */
+  async revokeGuestAccess(eventId, guestId, actor) {
+    const event = await Event.findById(eventId);
+    if (!event) throw new NotFoundError('Event');
+
+    const actorId = actor?._id?.toString?.() || actor?._id;
+    const role = actor?.role;
+    const isHost = event.host?.toString() === actorId;
+    const isAdmin = ['admin', 'super_admin'].includes(role);
+    const isWhitelabelAdmin =
+      role === 'whitelabel_admin' &&
+      event.whitelabelId &&
+      actor?.whitelabelId &&
+      event.whitelabelId.toString() === actor.whitelabelId.toString();
+    if (!isHost && !isAdmin && !isWhitelabelAdmin) {
+      throw new ForbiddenError('Not authorized to revoke this QR');
+    }
+
+    // Verify guest exists in the event so we don't silently no-op on a
+    // typo'd guestId.
+    const guest = await Guest.findOne({ _id: guestId, event: eventId });
+    if (!guest) throw new NotFoundError('Guest');
+
+    const result = await GuestAccessToken.updateMany(
+      {
+        guest: guestId,
+        event: eventId,
+        type: 'post_event',
+        isRevoked: false,
+      },
+      {
+        $set: {
+          isRevoked: true,
+          revokedAt: new Date(),
+          revokedBy: actor?._id || null,
+          revokedReason: 'manual',
+        },
+      }
+    );
+
+    const affected = result?.modifiedCount || 0;
+
+    await logAudit({
+      action: 'guest_access_token.revoke',
+      actor,
+      targetType: 'guest_access_token',
+      targetId: guestId,
+      whitelabelId: event.whitelabelId || null,
+      metadata: { eventId, guestId, affected },
+    });
+
+    return {
+      // `revoked: true` only when at least one token transitioned. If
+      // the staff member already had no active tokens, the response is
+      // still 200 (idempotent action) but `revoked: false` +
+      // `wasAlreadyRevoked: true` so the UI can render the right
+      // message.
+      revoked: affected > 0,
+      affected,
+      wasAlreadyRevoked: affected === 0,
+    };
   }
 
   // ============================================

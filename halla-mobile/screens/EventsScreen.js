@@ -28,7 +28,7 @@ const EventsScreen = ({ navigation }) => {
     data: eventStats,
     isLoading: statsLoading,
     error: statsError
-  } = useSingleEventStats(selectedEventId);
+  } = useSingleEventStats(selectedEventId, selectedEvent?.status);
 
   const handleEventPress = (event) => {
     // EventDetails uses data from getEventStats (already loaded)

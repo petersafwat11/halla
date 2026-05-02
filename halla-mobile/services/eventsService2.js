@@ -282,6 +282,25 @@ export const updateInvitationSettings = async (
 };
 
 /**
+ * Phase 3c.1 — manually retry a failed event launch.
+ * RBAC enforced server-side.
+ * @param {string} eventId
+ * @param {string} token
+ * @returns {Promise<Object>}
+ */
+export const retryLaunch = async (eventId, token) => {
+  try {
+    const data = await authenticatedFetch(`/${eventId}/retry-launch`, token, {
+      method: "POST",
+    });
+    return data?.data || data;
+  } catch (error) {
+    console.error("[EVENTS SERVICE] Error retrying launch:", error.message);
+    throw error;
+  }
+};
+
+/**
  * Delete an event
  * @param {string} eventId - Event ID
  * @param {string} token - Auth token

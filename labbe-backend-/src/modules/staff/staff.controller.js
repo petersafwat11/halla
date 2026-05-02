@@ -104,3 +104,13 @@ exports.getEventStats = catchAsync(async (req, res) => {
   const stats = await staffService.getEventStats(eventId);
   sendSuccess(res, { stats });
 });
+
+/**
+ * Revoke a staff access token (Phase 3e.1 / FLOW-20-F01).
+ * POST /api/v2/events/:eventId/staff/:staffId/revoke
+ */
+exports.revokeStaffToken = catchAsync(async (req, res) => {
+  const { eventId, staffId } = req.params;
+  const result = await staffService.revokeStaffToken(eventId, staffId, req.user);
+  sendSuccess(res, result, 'Staff token revoked');
+});

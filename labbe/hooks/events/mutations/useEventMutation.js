@@ -292,6 +292,19 @@ export const useEventMutation = (action) => {
       },
     },
 
+    // Manual launch retry (Phase 3c.1) — for failed events.
+    retryLaunch: {
+      mutationFn: ({ eventId }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.events.retryLaunch(eventId),
+        }),
+      onSuccess: (_, { eventId }) => {
+        queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+        queryClient.invalidateQueries({ queryKey: ["events"] });
+      },
+    },
+
     // Submit WhatsApp template for approval
     submitTemplate: {
       mutationFn: ({ eventId }) =>
@@ -398,5 +411,10 @@ export const useSubmitTemplate = () => useEventMutation("submitTemplate");
  * Hook for scheduling bulk send
  */
 export const useScheduleSend = () => useEventMutation("scheduleSend");
+
+/**
+ * Hook for manually retrying a failed event launch (Phase 3c.1)
+ */
+export const useRetryLaunch = () => useEventMutation("retryLaunch");
 
 export default useEventMutation;
