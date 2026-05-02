@@ -113,13 +113,24 @@ exports.getGuestContent = catchAsync(async (req, res) => {
 });
 
 /**
- * Validate guest access token
+ * Validate guest access token (Phase 3e.3 / 3e.4).
  * GET /api/v2/post-event/validate?token=xxx
+ *
+ * Returns 410 Gone for rotated / revoked / expired tokens, with the
+ * structured `reason` in the body so the frontend can render the right
+ * message ("هذا الرمز انتهت صلاحيته" vs "تم إلغاء هذا الرمز" vs ...).
  */
 exports.validateToken = catchAsync(async (req, res) => {
   const { token } = req.query;
-  const result = await postEventService.validateGuestToken(token);
-  sendSuccess(res, result);
+  try {
+    const result = await postEventService.validateGuestToken(token);
+    sendSuccess(res, result);
+  } catch (err) {
+    if (err && err.statusCode === 410 && err.body) {
+      return res.status(410).json({ status: 'error', ...err.body });
+    }
+    throw err;
+  }
 });
 
 /**

@@ -2,12 +2,19 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import CardLayout from "@/ui/commen/card/CardLayout";
-import { useSingleEventStats } from "@/hooks/reactQueryHooks/useEvents";
+import { useSingleEventStats, useEvent } from "@/hooks/reactQueryHooks/useEvents";
 import styles from "../singleEvent.module.css";
 
 export default function EventStats({ eventId }) {
   const { t } = useTranslation("home-events");
-  const { data: statsData } = useSingleEventStats(eventId);
+  const { data: eventResp } = useEvent(eventId);
+  const eventStatus =
+    eventResp?.data?.event?.status ||
+    eventResp?.event?.status ||
+    null;
+  // Phase 3d.4: pass eventStatus so the polling cadence (30s while live,
+  // 5min while completed, none otherwise) kicks in.
+  const { data: statsData } = useSingleEventStats(eventId, { eventStatus });
 
   // Extract stats from response
   const data = statsData?.data || statsData;

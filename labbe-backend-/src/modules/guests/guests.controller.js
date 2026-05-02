@@ -97,6 +97,26 @@ exports.deleteGuest = catchAsync(async (req, res) => {
 });
 
 /**
+ * Rotate a guest's QR (Phase 3e.3 / FLOW-18-F03).
+ * POST /api/v2/guests/events/:eventId/guests/:guestId/rotate-qr
+ */
+exports.rotateQR = catchAsync(async (req, res) => {
+  const { eventId, guestId } = req.params;
+  const result = await guestsService.rotateGuestQR(eventId, guestId, req.user);
+  sendSuccess(res, result, 'QR rotated');
+});
+
+/**
+ * Manually revoke a guest's access token (Phase 3e.4 / FLOW-21-F03).
+ * POST /api/v2/guests/events/:eventId/guests/:guestId/revoke-access
+ */
+exports.revokeAccess = catchAsync(async (req, res) => {
+  const { eventId, guestId } = req.params;
+  const result = await guestsService.revokeGuestAccess(eventId, guestId, req.user);
+  sendSuccess(res, result, 'QR revoked');
+});
+
+/**
  * Export guests to Excel
  * GET /api/v2/guests/events/:eventId/export
  */

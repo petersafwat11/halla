@@ -55,12 +55,25 @@ const guestAccessTokenSchema = new mongoose.Schema(
     },
 
     // Token status
+    //
+    // Phase 3e.3 / 3e.4: `revokedReason` distinguishes a rotation
+    // (host pressed "rotate QR") from a manual revoke (host pressed
+    // "revoke QR"). The validation middleware uses this to render
+    // `qr_rotated` vs `qr_revoked` in the 410 Gone body.
     isRevoked: {
       type: Boolean,
       default: false,
     },
     revokedAt: Date,
-    revokedReason: String,
+    revokedReason: {
+      type: String,
+      enum: ['rotation', 'manual', 'admin', null],
+      default: null,
+    },
+    revokedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
 
     // Device tracking for security
     devices: [
@@ -153,22 +166,49 @@ guestAccessTokenSchema.statics.createForAllGuests = async function (
   return { created: tokens.length, tokens };
 };
 
-// Static method to validate token
+// Static method to validate token.
+//
+// Phase 3e.3 / 3e.4 (decisions D7 / D8): the failure response now carries
+// a structured `reason` string (`qr_rotated` | `qr_revoked` | `qr_expired`
+// | `qr_invalid`) so the controller can return 410 Gone with a precise
+// body. The previous "Token invalid or expired" string is kept as the
+// fallback for tokens that simply don't exist.
 guestAccessTokenSchema.statics.validateToken = async function (
   token,
   deviceInfo = {}
 ) {
-  const tokenDoc = await this.findOne({
-    token,
-    isRevoked: false,
-    expiresAt: { $gt: new Date() },
-  })
+  // Look up by token alone first so we can tell the caller *why* a token
+  // is invalid (revoked vs expired vs unknown).
+  const candidate = await this.findOne({ token })
     .populate("guest", "name phone email status")
     .populate("event", "eventDetails host status");
 
-  if (!tokenDoc) {
-    return { valid: false, reason: "Token invalid or expired" };
+  if (!candidate) {
+    return { valid: false, reason: "qr_invalid", message: "Token not found" };
   }
+
+  if (candidate.isRevoked) {
+    const reason =
+      candidate.revokedReason === "rotation" ? "qr_rotated" : "qr_revoked";
+    return {
+      valid: false,
+      reason,
+      message:
+        reason === "qr_rotated"
+          ? "This QR has been rotated; the guest has a newer one"
+          : "This QR has been revoked",
+    };
+  }
+
+  if (candidate.expiresAt && candidate.expiresAt <= new Date()) {
+    return {
+      valid: false,
+      reason: "qr_expired",
+      message: "This QR has expired",
+    };
+  }
+
+  const tokenDoc = candidate;
 
   // Update usage stats
   const now = new Date();

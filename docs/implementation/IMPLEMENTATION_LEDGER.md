@@ -55,6 +55,42 @@ Foundations laid (full wiring continues in Phases 2–5):
 
 ---
 
+## Closed in Phase 3abc (RSVP pipeline coherence — ordering / dispatch / failure)
+
+Branch: `claude/implement-phase-3-plans-ZWa40`. See `PHASE_3abc_REPORT.md`.
+
+- **PIPELINE-F01 / FLOW-14-F01** — send-then-mark-live ordering in `runEventLaunch` / `scheduleEventLaunch`.
+- **PIPELINE-F03** — compensating `releaseInvites` in `events.service.createEvent`.
+- **PIPELINE-F04 / FLOW-15-F01** — `failed` value added to EVENT_STATUS enum.
+- **FLOW-14-F04 / FLOW-17-F02** — Taqnyat sends carry idempotency keys via `withIdempotency` (per-attempt namespacing).
+- **FLOW-15-F02** — `scheduleEventRetry` cron auto-invokes retry; backoff 5m/30m/2h/6h/12h, max 5 attempts, 24h grace.
+- **FLOW-15-F03** — "We're sorry" failure UI on web (`EventFailureBanner.jsx`) and mobile (`EventFailureBanner.js`).
+- **FLOW-15-F04** — Manual retry endpoint `POST /events/:id/retry-launch` + UI button (RBAC: host / wl-admin / admin / super_admin).
+- **FLOW-15-F05** — Failure notifications fire on terminal fail: in-app + email to host, in-app to admins/super_admins.
+- **FLOW-17-F01** — `runBatched` utility (concurrency 5, 10/sec) replaces 100ms serial loop in `sendBulk` and `scheduleGuestReminders`.
+- **FLOW-21-F01** — Same `runBatched` + idempotency in post-event `sendBulkAccessEmails` and `_generateTokensAndNotify`.
+
+---
+
+## Closed in Phase 3de (webhook / RSVP / scanner / post-event)
+
+Branch: `claude/implement-phase-3-plans-ZWa40` (same branch as 3abc, separate commits). See `PHASE_3de_REPORT.md`.
+
+- **FLOW-18-F01 / PIPELINE-F02** — verification close (Phase 0 originally implemented; 3d.1 adds the 4-scenario static-check spec).
+- **FLOW-18-F02** — Webhook host-notification dedup via `withIdempotency` keyed on `payload.messageId` (or 30s-bucket SHA fallback).
+- **FLOW-18-F03** — Guest QR rotation endpoint `POST /events/:eventId/guests/:guestId/rotate-qr`; revoked tokens return 410 Gone with `reason: 'qr_rotated'`.
+- **FLOW-19-F02** — RSVP submit idempotency middleware on `POST /guests/:id/rsvp` with derived key shape `rsvp_<sha256(eventId:guestId:choice)>`.
+- **FLOW-20-F01** — Staff token revocation endpoint `POST /events/:eventId/staff/:staffId/revoke` (RBAC: host / wl-admin / admin / super_admin); idempotent at action level.
+- **FLOW-20-F03** — Check-in idempotency via `_performIdempotentCheckIn` (`checkin:<eventId>:<guestId>`, 24h TTL); `alreadyCheckedIn` flag in cached body.
+- **FLOW-21-F03** — `GuestAccessToken` expiry + manual-revoke endpoint `POST /events/:eventId/guests/:guestId/revoke-access`; 410 Gone for `qr_expired` / `qr_revoked`. Backfill script `scripts/backfill-guest-access-token-expiry.js` ships **NOT YET RUN**.
+
+Drive-by improvements (no FLOW ID — recorded for traceability):
+- AuditLog `targetType` enum extended with `staff_access_token`, `guest_access_token`, `rsvp`.
+- `GuestAccessToken.validateToken` now returns structured `reason` (qr_invalid / qr_rotated / qr_revoked / qr_expired) instead of a single opaque string.
+- Stats polling cadence wired in web + mobile (30s live / 5min completed / off otherwise) per Phase 3 master decision Type C.
+
+---
+
 ## Open
 
 - FLOW-01-F04 — not started (Phase 1c)
@@ -96,35 +132,35 @@ Foundations laid (full wiring continues in Phases 2–5):
 - FLOW-13-F03 — not started
 - FLOW-13-F04 — not started
 - FLOW-13-F05 — not started
-- FLOW-14-F01 — not started
+- FLOW-14-F01 — closed in PHASE_3a (commit pending)
 - FLOW-14-F02 — not started
 - FLOW-14-F03 — not started
-- FLOW-14-F04 — not started
+- FLOW-14-F04 — closed in PHASE_3b (commit pending)
 - FLOW-14-F05 — not started
-- FLOW-15-F01 — not started
-- FLOW-15-F02 — not started
-- FLOW-15-F03 — not started
-- FLOW-15-F04 — not started
-- FLOW-15-F05 — not started
+- FLOW-15-F01 — closed in PHASE_3a (commit pending)
+- FLOW-15-F02 — closed in PHASE_3c (commit pending)
+- FLOW-15-F03 — closed in PHASE_3c (commit pending)
+- FLOW-15-F04 — closed in PHASE_3c (commit pending)
+- FLOW-15-F05 — closed in PHASE_3c (commit pending)
 - FLOW-15-F06 — not started
 - FLOW-16-F01 — not started
 - FLOW-16-F02 — not started
 - FLOW-16-F03 — not started
-- FLOW-17-F01 — not started
-- FLOW-17-F02 — not started
+- FLOW-17-F01 — closed in PHASE_3b (commit pending)
+- FLOW-17-F02 — closed in PHASE_3b (commit pending)
 - FLOW-17-F03 — not started
 - FLOW-17-F04 — not started
-- FLOW-18-F02 — not started
-- FLOW-18-F03 — not started
+- FLOW-18-F02 — closed in PHASE_3d (commit pending)
+- FLOW-18-F03 — closed in PHASE_3e (commit pending)
 - FLOW-19-F01 — not started
-- FLOW-19-F02 — not started
+- FLOW-19-F02 — closed in PHASE_3d (commit pending)
 - FLOW-19-F03 — not started
-- FLOW-20-F01 — not started
+- FLOW-20-F01 — closed in PHASE_3e (commit pending)
 - FLOW-20-F02 — not started
-- FLOW-20-F03 — not started
-- FLOW-21-F01 — not started
+- FLOW-20-F03 — closed in PHASE_3e (commit pending)
+- FLOW-21-F01 — closed in PHASE_3b (commit pending)
 - FLOW-21-F02 — not started
-- FLOW-21-F03 — not started
+- FLOW-21-F03 — closed in PHASE_3e (commit pending)
 - FLOW-21-F04 — not started
 - FLOW-21-F05 — not started
 - FLOW-22-F01 — not started
@@ -156,9 +192,9 @@ Foundations laid (full wiring continues in Phases 2–5):
 - FLOW-28-F02 — not started
 - FLOW-28-F03 — not started
 - FLOW-28-F04 — not started
-- PIPELINE-F01 — not started
-- PIPELINE-F03 — not started
-- PIPELINE-F04 — not started
+- PIPELINE-F01 — closed in PHASE_3a (commit pending)
+- PIPELINE-F03 — closed in PHASE_3a (commit pending)
+- PIPELINE-F04 — closed in PHASE_3a (commit pending)
 - RBAC-F01 — not started
 - RBAC-F03 — not started
 - RBAC-F04 — not started

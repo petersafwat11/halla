@@ -40,12 +40,40 @@ export function useEventStats() {
 }
 
 /**
- * Hook to fetch statistics for a single event
- * @param {string} eventId - Event ID
- * @returns {Object} Query result with single event stats
+ * Stats polling cadence — Phase 3d.4 (decision D4).
+ *
+ *   live      → 30s
+ *   completed → 5min
+ *   draft / scheduled / failed → no polling
+ *
+ * Override for QA via the `EXPO_PUBLIC_STATS_POLL_INTERVAL_MS` env var.
  */
-export function useSingleEventStats(eventId) {
+const POLL_INTERVALS = {
+  live: 30 * 1000,
+  completed: 5 * 60 * 1000,
+};
+
+const _statsPollInterval = (eventStatus) => {
+  const override = parseInt(
+    process.env.EXPO_PUBLIC_STATS_POLL_INTERVAL_MS || '',
+    10
+  );
+  if (Number.isFinite(override) && override >= 1000) return override;
+  return POLL_INTERVALS[eventStatus] || false;
+};
+
+/**
+ * Hook to fetch statistics for a single event.
+ *
+ * Pass `eventStatus` to enable status-keyed polling per D4. Without it the
+ * hook is one-shot (with a 2-minute staleTime as before).
+ *
+ * @param {string} eventId
+ * @param {string} [eventStatus]
+ */
+export function useSingleEventStats(eventId, eventStatus) {
   const token = useAuthStore((state) => state.token);
+  const refetchInterval = _statsPollInterval(eventStatus);
 
   return useQuery({
     queryKey: ['events', 'single-stats', eventId],
@@ -54,7 +82,9 @@ export function useSingleEventStats(eventId) {
       return response;
     },
     enabled: !!token && !!eventId,
-    staleTime: 2 * 60 * 1000, // 2 minutes (more frequent for active event)
+    staleTime: refetchInterval ? 0 : 2 * 60 * 1000,
+    refetchInterval,
+    refetchIntervalInBackground: false,
   });
 }
 

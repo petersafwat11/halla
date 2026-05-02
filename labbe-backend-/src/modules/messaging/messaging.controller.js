@@ -9,6 +9,7 @@ const messagingService = require('./messaging.service');
 const catchAsync = require('../../shared/utils/catchAsync');
 const { ValidationError } = require('../../shared/errors');
 const Guest = require('../../../models/GuestModel');
+const { withIdempotency } = require('../../shared/utils/idempotency');
 
 /**
  * Verify the Meta/WhatsApp HMAC signature on the incoming webhook payload.
@@ -192,13 +193,16 @@ exports.webhook = catchAsync(async (req, res) => {
     for (const e of entry) {
       const changes = e.changes || [];
       for (const change of changes) {
-        // Handle message status updates
+        // Handle message status updates.
+        //
+        // Phase 3d.3 (FLOW-18-F02): per decision D3, the delivery-status
+        // *field* on the guest doc updates last-write-wins (no dedup);
+        // only host notifications are deduped, but updateDeliveryStatus
+        // doesn't dispatch any. The button-response branch below is the
+        // one that triggers a host notification, so the dedup wraps it.
         const statuses = change.value?.statuses || [];
         for (const status of statuses) {
           if (status.status === 'no_capability' || status.status === 'failed') {
-            // 'no_capability' = recipient has no WhatsApp account.
-            // Taqnyat already sent the SMS fallback natively.
-            // Mark the guest record to show "SMS (بديل)" on the events/[id] page.
             await Guest.findOneAndUpdate(
               { 'invitation.messageId': status.id },
               {
@@ -218,15 +222,33 @@ exports.webhook = catchAsync(async (req, res) => {
           }
         }
 
-        // Handle button responses (RSVP)
+        // Handle button responses (RSVP). Each button-response triggers a
+        // host notification inside `handleButtonResponse`. We dedup on
+        // the Taqnyat `messageId` if present, else a 30-second-bucket
+        // hash of phone+button (per D3) so a Meta retry within 30s
+        // doesn't double-notify the host.
         const messages = change.value?.messages || [];
         for (const message of messages) {
           if (message.type === 'button' && message.button) {
-            await messagingService.handleButtonResponse({
-              phoneNumber: message.from,
-              buttonText: message.button.text,
-              messageId: message.id,
-            });
+            const messageId = message.id;
+            const dedupKey = messageId
+              ? `webhook_button:${messageId}`
+              : `webhook_button:${crypto
+                  .createHash('sha256')
+                  .update(`${message.from}:${message.button.text}:${Math.floor(Date.now() / 30000)}`)
+                  .digest('hex')
+                  .slice(0, 32)}`;
+
+            await withIdempotency(
+              dedupKey,
+              () =>
+                messagingService.handleButtonResponse({
+                  phoneNumber: message.from,
+                  buttonText: message.button.text,
+                  messageId,
+                }),
+              { scope: 'webhook_dedup' }
+            );
           }
         }
       }

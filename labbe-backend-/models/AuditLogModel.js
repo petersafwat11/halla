@@ -40,6 +40,12 @@ const auditLogSchema = new mongoose.Schema(
     },
 
     // What type of resource was affected
+    //
+    // Phase 3de extends the enum with `staff_access_token`,
+    // `guest_access_token`, and `rsvp` so the new revoke / rotate /
+    // RSVP-idempotency audit rows have a precise target. Phase 5's
+    // audit-log-everywhere pass should add `plan` / `addon` (already
+    // tracked in the Phase 2 hand-off list).
     targetType: {
       type: String,
       enum: [
@@ -52,6 +58,9 @@ const auditLogSchema = new mongoose.Schema(
         "service",
         "notification",
         "system",
+        "staff_access_token",
+        "guest_access_token",
+        "rsvp",
       ],
       index: true,
     },
