@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.6rem;
+}
+.title {
+  color: var(--color-title);
+  font-size: 2.4rem;
+  font-weight: 600;
+  line-height: 2.8rem;
+}
+.login_text {
+  color: var(--color-description);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px; /* 150% */
+  letter-spacing: 0.024px;
+}
+
+@media screen and (max-width: 768px) {
+  .title {
+    font-size: 3.2rem;
+    line-height: 40px;
+  }
+  .login_text {
+    font-size: 14px;
+    line-height: 20px; /* 143% */
+  }
+}

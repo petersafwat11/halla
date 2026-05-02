@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -rf D:/halla/halla-mobile/.git)",
+      "Bash(rm -rf D:/halla/labbe/.git)",
+      "Bash(rm -rf \"D:/halla/labbe-backend-/.git\")"
+    ]
+  }
+}

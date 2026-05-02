@@ -1,0 +1,58 @@
+{
+  "success": "بنجاح",
+  "buttons": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "confirm": "تأكيد",
+    "back": "رجوع",
+    "next": "التالي",
+    "done": "تم",
+    "retry": "إعادة المحاولة",
+    "refresh": "تحديث"
+  },
+  "messages": {
+    "loading": "جاري التحميل...",
+    "noData": "لا توجد بيانات متاحة",
+    "error": "حدث خطأ ما",
+    "success": "تمت العملية بنجاح",
+    "networkError": "خطأ في الاتصال بالشبكة",
+    "tryAgain": "يرجى المحاولة مرة أخرى"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "events": "المناسبات",
+    "marketplace": "المتجر",
+    "plans": "الباقات",
+    "tickets": "الشكاوى",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "dashboard": "لوحة التحكم",
+    "hosts": "العملاء",
+    "more": "المزيد"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "clearAll": "مسح الكل",
+    "clearAllConfirm": "هل أنت متأكد من مسح جميع الإشعارات؟",
+    "loadMore": "تحميل المزيد",
+    "loading": "جاري التحميل...",
+    "empty": {
+      "title": "لا توجد إشعارات",
+      "message": "أنت على اطلاع بكل شيء! تحقق لاحقاً."
+    },
+    "delete": "حذف",
+    "justNow": "الآن"
+  },
+  "fonts": {
+    "cairo": { "displayName": "القاهرة" },
+    "inter": { "displayName": "إنتر" },
+    "lato": { "displayName": "لاتو" },
+    "amiri": { "displayName": "أميري" },
+    "ibm_plex_arabic": { "displayName": "IBM Plex Sans Arabic" },
+    "noto_sans_arabic": { "displayName": "Noto Sans Arabic" }
+  }
+}

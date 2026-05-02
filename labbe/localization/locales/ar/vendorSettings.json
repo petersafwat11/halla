@@ -1,0 +1,105 @@
+{
+  "pageTitle": "الإعدادات",
+  "tabs": {
+    "services": "الخدمات",
+    "accountSetup": "إعدادات الحساب",
+    "notifications": "الإشعارات"
+  },
+  "personalInfo": {
+    "title": "معلومات الحساب الشخصية",
+    "storeLogo": "شعار المتجر",
+    "uploadImage": "ارفع الصور",
+    "fullName": "الاسم بالكامل",
+    "fullNamePlaceholder": "اختر نوع المناسبة",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "ادخل بريدك الالكترونى",
+    "emailValidationExample": "قم بإدخال بريد الكترونى صحيح مثال : example@domain.com",
+    "verifyEmail": "توثيق البريد",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "*****************************",
+    "changePassword": "تغيير كلمة المرور",
+    "logout": "تسجيل خروج",
+    "clickToView": "اضغط للعرض",
+    "noLogo": "لا يوجد شعار"
+  },
+  "basicAccountInfo": {
+    "title": "معلومات الحساب الأساسية",
+    "businessType": "نوع النشاط",
+    "ownerFullName": "الاسم الكامل لصاحب المنشأة",
+    "businessName": "اسم المنشأة التجارى",
+    "email": "البريد الالكترونى",
+    "phoneWhatsapp": "رقم الهاتف  "
+  },
+  "serviceDetails": {
+    "title": "تفاصيل الخدمة او المتجر",
+    "nationalIdLabel": "رقم الهوية الوطنية - رقم الاقامة",
+    "commercialRegister": "نسخه من السجل التجارى( اختيارى)",
+    "otherLicenses": "تراخيص اخرى ( اختيارى)",
+    "serviceDescription": "وصف موجز للخدمة",
+    "serviceDescriptionPlaceholder": "نقدم لك خدمات متكاملة لتنظيم المناسبات والاحتفالات، تشمل تصميم الدعوات الرقمية والمطبوعة، تجهيز توزيعات وهدايا للضيوف، وتأجير قاعات واستراحات. نحن هنا لنساعدك في جعل كل مناسبة لا تُنسى.",
+    "activities": "الانشطة  المختلفة",
+    "activityList": {
+      "digitalInvitations": "تصميم الدعوات الرقمية والمطبوعة",
+      "videoEditing": "مونتاج فيديوهات للمناسبات",
+      "guestGifts": "تجهيز توزيعات وهدايا الضيوف",
+      "hallRental": "تأجير قاعات واستراحات",
+      "tableArrangement": "تنظيم طاولات وترتيب الجلوس"
+    },
+    "coverageArea": "نطاق التغطية",
+    "coverageAreaLocal": "محلى",
+    "city": "المدينة",
+    "uploaded": "تم الرفع",
+    "fileSize": "ميجابايت",
+    "clickToView": "اضغط للعرض",
+    "noImage": "لا توجد صورة",
+    "uploadLicense": "ارفع صورة الترخيص",
+    "uploadCommercial": "ارفع السجل التجاري",
+    "serviceLocation": "موقع الخدمة",
+    "region": "المنطقة",
+    "districts": "الأحياء",
+    "allCities": "جميع المدن",
+    "allDistricts": "جميع الأحياء",
+    "documentPreview": "معاينة المستند",
+    "selectRegion": "اختر المنطقة",
+    "selectedCount": "{{count}} محدد",
+    "selectDistricts": "اختر الأحياء",
+    "search": "بحث...",
+    "selectCityFirst": "اختر المدينة أولاً"
+  },
+  "imagesAndPricing": {
+    "title": "الصور والعروض والأسعار",
+    "previousWorkImages": "3 صور من أعمالك السابقة",
+    "priceListsAndPackages": "قوائم الاسعار والباقات",
+    "uploaded": "تم الرفع",
+    "clickToView": "اضغط للعرض",
+    "noImages": "لا توجد صور"
+  },
+  "paymentPolicy": {
+    "title": "سياسة التعامل والدفع",
+    "cancellationPolicy": "شروط الاستغناء والاسترجاع",
+    "paymentMethod": "اليه الدفع",
+    "paymentOptions": "خيارات الدفع"
+  },
+  "additionalLinks": {
+    "title": "روابط إضافية",
+    "websiteLink": "رابط موقع الكترونى",
+    "instagramLink": "رابط انستجرام",
+    "profileFile": "ملف تعريفى",
+    "facebookLink": "فيسبوك",
+    "twitterLink": "تويتر",
+    "tiktokLink": "تيك توك"
+  },
+  "buttons": {
+    "save": "حفظ",
+    "saving": "جاري الحفظ...",
+    "cancel": "الغاء",
+    "edit": "تعديل"
+  },
+  "messages": {
+    "saveSuccess": "تم حفظ التغييرات بنجاح",
+    "saveError": "فشل في حفظ التغييرات"
+  },
+  "errors": {
+    "boundary": "فشل في تحميل الإعدادات"
+  }
+}

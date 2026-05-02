@@ -1,0 +1,863 @@
+{
+  "dashboard": {
+    "title": "لوحة تحكم المسؤول",
+    "welcome": "مرحباً بعودتك",
+    "overview": "نظرة عامة",
+    "quickActions": "الإجراءات السريعة",
+    "recentActivity": "النشاط الأخير",
+    "loading": "جاري تحميل لوحة التحكم...",
+    "stats": {
+      "totalHosts": "إجمالي المضيفين",
+      "totalEvents": "إجمالي المناسبات",
+      "activeEvents": "الفعاليات النشطة",
+      "totalVendors": "إجمالي الموردين",
+      "totalRevenue": "إجمالي الإيرادات",
+      "activeHosts": "المضيفون النشطون",
+      "pendingEvents": "المناسبات المعلقة",
+      "activeVendors": "الموردون النشطون",
+      "monthlyRevenue": "الإيرادات الشهرية",
+      "openTickets": "التذاكر المفتوحة"
+    },
+    "actions": {
+      "createEvent": "إنشاء مناسبة",
+      "addHost": "إضافة مضيف",
+      "viewTickets": "عرض التذاكر",
+      "viewReports": "عرض التقارير",
+      "retry": "إعادة المحاولة"
+    },
+    "activity": {
+      "newHost": "تسجيل مضيف جديد",
+      "newEvent": "إنشاء مناسبة جديدة",
+      "ticketCreated": "إنشاء تذكرة دعم",
+      "paymentReceived": "استلام دفعة",
+      "justNow": "الآن",
+      "minutesAgo": "د مضت",
+      "hoursAgo": "س مضت",
+      "daysAgo": "ي مضت"
+    },
+    "charts": {
+      "subscriptions": "الاشتراكات حسب الباقة",
+      "noData": "لا توجد بيانات"
+    },
+    "recentHosts": {
+      "title": "المضيفون الجدد",
+      "viewAll": "عرض الكل"
+    },
+    "recentEvents": {
+      "title": "الفعاليات الأخيرة",
+      "viewAll": "عرض الكل"
+    },
+    "topVendors": {
+      "title": "أفضل الموردين",
+      "clicks": "نقرة"
+    }
+  },
+  "hosts": {
+    "title": "المضيفون",
+    "addHost": "إضافة مضيف",
+    "searchPlaceholder": "البحث عن المضيفين...",
+    "filters": {
+      "all": "جميع المضيفين",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "suspended": "موقوف",
+      "pending": "قيد الانتظار",
+      "premium": "مميز",
+      "basic": "أساسي"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "suspended": "موقوف",
+      "pending": "قيد الانتظار"
+    },
+    "subscription": {
+      "title": "الاشتراك",
+      "updateTitle": "تحديث الاشتراك",
+      "plan": "الخطة",
+      "status": "الحالة",
+      "startDate": "تاريخ البدء",
+      "endDate": "تاريخ الانتهاء",
+      "autoRenew": "التجديد التلقائي",
+      "edit": "تعديل الاشتراك",
+      "save": "حفظ التغييرات",
+      "cancel": "إلغاء",
+      "selectPlan": "اختر خطة",
+      "selectStatus": "اختر الحالة",
+      "billingCycle": "دورة الفوترة",
+      "loadingPlans": "جاري تحميل الخطط...",
+      "updated": "تم تحديث الاشتراك",
+      "updateFailed": "فشل تحديث الاشتراك",
+      "validation": "يرجى تحديد الخطة والحالة",
+      "updating": "جاري التحديث...",
+      "update": "تحديث",
+      "monthly": "شهري",
+      "yearly": "سنوي",
+      "trialPlan": "تجريبي",
+      "statusExpired": "منتهي",
+      "statusCancelled": "ملغي",
+      "subSuffix": "(اشتراك)"
+    },
+    "labels": {
+      "noPlan": "لا توجد خطة",
+      "joined": "انضم",
+      "unnamed": "مضيف بلا اسم"
+    },
+    "actions": {
+      "statusUpdated": "تم تحديث الحالة",
+      "statusUpdateFailed": "فشل تحديث الحالة",
+      "deleted": "تم الحذف",
+      "deleteFailed": "فشل حذف المضيف",
+      "managePlan": "الخطة"
+    },
+    "add": {
+      "title": "إضافة مضيف جديد",
+      "name": "الاسم",
+      "namePlaceholder": "أدخل اسم المضيف",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "example@email.com",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "رقم الهاتف",
+      "password": "كلمة المرور (اختياري)",
+      "passwordPlaceholder": "اتركه فارغاً للتوليد التلقائي",
+      "create": "إنشاء",
+      "creating": "جاري الإنشاء...",
+      "success": "تم إنشاء المضيف بنجاح",
+      "failed": "فشل إنشاء المضيف"
+    },
+    "deleteConfirm": {
+      "title": "حذف المضيف",
+      "message": "هل أنت متأكد من حذف هذا المضيف؟",
+      "bulkMessage": "هل أنت متأكد من حذف المضيفين المحددين؟"
+    },
+    "details": {
+      "title": "تفاصيل المضيف",
+      "info": "معلومات المضيف",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "joinDate": "تاريخ الانضمام",
+      "totalEvents": "إجمالي المناسبات",
+      "activeEvents": "المناسبات النشطة",
+      "rating": "التقييم",
+      "editSubscription": "تعديل الاشتراك",
+      "viewEvents": "عرض المناسبات",
+      "suspend": "إيقاف المضيف",
+      "activate": "تفعيل المضيف"
+    },
+    "empty": {
+      "title": "لا يوجد مضيفون",
+      "message": "لا يوجد مضيفون للعرض",
+      "action": "إضافة أول مضيف"
+    }
+  },
+  "moderators": {
+    "title": "المشرفون",
+    "addModerator": "إضافة مشرف",
+    "searchPlaceholder": "البحث عن المشرفين...",
+    "filters": {
+      "all": "جميع المشرفين",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "قيد الانتظار"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "قيد الانتظار",
+      "suspended": "موقوف"
+    },
+    "stats": {
+      "total": "الإجمالي",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "قيد الانتظار"
+    },
+    "add": {
+      "title": "إضافة مشرف",
+      "editTitle": "تعديل مشرف",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف (اختياري)",
+      "phoneRequired": "الهاتف",
+      "password": "كلمة المرور",
+      "role": "الدور",
+      "saveChanges": "حفظ التغييرات",
+      "cancel": "إلغاء",
+      "moderatorDesc": "صلاحيات الإشراف الأساسية",
+      "adminDesc": "صلاحيات المسؤول الكاملة"
+    },
+    "permissions": {
+      "manageHosts": "إدارة المضيفين",
+      "manageEvents": "إدارة المناسبات",
+      "manageVendors": "إدارة الموردين",
+      "manageTickets": "إدارة التذاكر",
+      "viewReports": "عرض التقارير"
+    },
+    "roles": {
+      "moderator": "مشرف",
+      "admin": "مسؤول",
+      "whitelabel_moderator": "مشرف وايت ليبل",
+      "whitelabel_admin": "مسؤول وايت ليبل"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "delete": "حذف",
+      "cancel": "إلغاء",
+      "suspend": "إيقاف",
+      "activate": "تفعيل"
+    },
+    "delete": {
+      "title": "حذف مشرف",
+      "message": "هل أنت متأكد من حذف",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "empty": {
+      "title": "لا يوجد مشرفون",
+      "message": "لا يوجد مشرفون للعرض",
+      "action": "إضافة أول مشرف"
+    }
+  },
+  "vendors": {
+    "title": "الموردون",
+    "addVendor": "إضافة مورد",
+    "searchPlaceholder": "البحث عن الموردين...",
+    "filters": {
+      "all": "جميع الموردين",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "قيد الانتظار",
+      "verified": "موثق"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "قيد الانتظار",
+      "verified": "موثق",
+      "suspended": "موقوف"
+    },
+    "categories": {
+      "catering": "تقديم الطعام",
+      "photography": "التصوير",
+      "decoration": "الديكور",
+      "entertainment": "الترفيه",
+      "venue": "المكان",
+      "other": "أخرى"
+    },
+    "details": {
+      "title": "تفاصيل المورد",
+      "info": "معلومات المورد",
+      "name": "الاسم",
+      "category": "الفئة",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "rating": "التقييم",
+      "totalBookings": "إجمالي الحجوزات",
+      "completedBookings": "الحجوزات المكتملة",
+      "description": "الوصف",
+      "services": "الخدمات",
+      "pricing": "التسعير",
+      "availability": "التوفر",
+      "editRating": "تعديل التقييم",
+      "approve": "الموافقة على المورد",
+      "reject": "رفض المورد",
+      "suspend": "إيقاف المورد",
+      "activate": "تفعيل المورد"
+    },
+    "rating": {
+      "title": "تقييم المورد",
+      "currentRating": "التقييم الحالي",
+      "newRating": "التقييم",
+      "review": "تعليق (اختياري)",
+      "reviewPlaceholder": "اكتب تقييمك أو ملاحظاتك...",
+      "selectRating": "الرجاء اختيار تقييم",
+      "save": "إرسال",
+      "cancel": "إلغاء"
+    },
+    "empty": {
+      "title": "لا يوجد موردون",
+      "message": "لا يوجد موردون للعرض",
+      "action": "إضافة أول مورد"
+    }
+  },
+  "events": {
+    "title": "المناسبات",
+    "searchPlaceholder": "البحث عن المناسبات...",
+    "filters": {
+      "all": "جميع المناسبات",
+      "upcoming": "القادمة",
+      "ongoing": "الجارية",
+      "scheduled": "مجدولة",
+      "live": "مباشر",
+      "draft": "مسودة",
+      "completed": "المكتملة",
+      "cancelled": "الملغاة",
+      "suspended": "موقوفة",
+      "pending": "قيد الموافقة"
+    },
+    "status": {
+      "upcoming": "قادمة",
+      "ongoing": "جارية",
+      "scheduled": "مجدولة",
+      "live": "مباشر",
+      "draft": "مسودة",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة",
+      "suspended": "موقوفة",
+      "pending": "قيد الانتظار"
+    },
+    "stats": {
+      "total": "الإجمالي",
+      "live": "مباشر",
+      "scheduled": "مجدولة",
+      "draft": "مسودة"
+    },
+    "details": {
+      "title": "تفاصيل المناسبة",
+      "info": "معلومات المناسبة",
+      "name": "اسم المناسبة",
+      "host": "المضيف",
+      "date": "التاريخ",
+      "time": "الوقت",
+      "location": "الموقع",
+      "type": "نوع المناسبة",
+      "status": "الحالة",
+      "capacity": "السعة",
+      "registered": "المسجلون",
+      "attended": "الحضور",
+      "description": "الوصف",
+      "guests": "الضيوف",
+      "moderators": "المشرفون",
+      "approve": "الموافقة على المناسبة",
+      "cancel": "إلغاء المناسبة",
+      "suspend": "إيقاف المناسبة",
+      "activate": "تفعيل المناسبة",
+      "viewHost": "عرض المضيف"
+    },
+    "guests": {
+      "title": "قائمة الضيوف",
+      "total": "إجمالي الضيوف",
+      "attended": "الحضور",
+      "pending": "قيد الانتظار",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "status": "الحالة",
+      "checkIn": "تسجيل الدخول",
+      "checkOut": "تسجيل الخروج"
+    },
+    "empty": {
+      "title": "لا توجد مناسبات",
+      "message": "لا توجد مناسبات للعرض"
+    },
+    "steps": {
+      "hostSelector": "اختر المضيف",
+      "eventDetails": "تفاصيل المناسبة",
+      "guestList": "قائمة الضيوف",
+      "template": "تصميم الدعوة",
+      "messages": "الرسائل",
+      "review": "المراجعة والإطلاق"
+    },
+    "hostSelector": {
+      "title": "لمن هذه المناسبة؟",
+      "subtitle": "اختر الحساب الذي سيتم إنشاء المناسبة تحته",
+      "tabs": {
+        "self": "لنفسي",
+        "host": "لمضيف",
+        "whitelabel": "لوايت ليبل"
+      },
+      "searchPlaceholder": "البحث برقم الهاتف",
+      "verify": "تحقق",
+      "searchResult": "نتيجة البحث",
+      "noResults": "لم يتم العثور على مضيف بهذا الرقم",
+      "selectHost": "اختر",
+      "selected": "تم الاختيار ✓",
+      "hostList": "جميع المضيفين",
+      "unlimited": "غير محدود",
+      "eventsRemaining": "{{count}} مناسبات متبقية"
+    },
+    "update": {
+      "title": "تعديل المناسبة",
+      "saveStep": "حفظ والتالي",
+      "saveAll": "حفظ التغييرات",
+      "loadError": "فشل تحميل بيانات المناسبة"
+    }
+  },
+  "tickets": {
+    "title": "تذاكر الدعم",
+    "searchPlaceholder": "البحث عن التذاكر...",
+    "noSubject": "بدون موضوع",
+    "assigned": "مسندة",
+    "filters": {
+      "all": "جميع التذاكر",
+      "open": "مفتوحة",
+      "inProgress": "قيد المعالجة",
+      "resolved": "محلولة",
+      "closed": "مغلقة"
+    },
+    "status": {
+      "open": "مفتوحة",
+      "inProgress": "قيد المعالجة",
+      "resolved": "محلولة",
+      "closed": "مغلقة"
+    },
+    "priority": {
+      "low": "منخفضة",
+      "medium": "متوسطة",
+      "high": "عالية",
+      "urgent": "عاجلة"
+    },
+    "details": {
+      "title": "تفاصيل التذكرة",
+      "ticketId": "رقم التذكرة",
+      "subject": "الموضوع",
+      "description": "الوصف",
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "category": "الفئة",
+      "createdBy": "أنشئت بواسطة",
+      "createdAt": "تاريخ الإنشاء",
+      "assignedTo": "مسندة إلى",
+      "lastUpdated": "آخر تحديث",
+      "assign": "إسناد التذكرة",
+      "resolve": "حل التذكرة",
+      "close": "إغلاق التذكرة",
+      "reopen": "إعادة فتح التذكرة"
+    },
+    "assign": {
+      "title": "إسناد التذكرة",
+      "selectModerator": "اختر مشرف",
+      "notes": "ملاحظات",
+      "assign": "إسناد",
+      "cancel": "إلغاء"
+    },
+    "resolve": {
+      "title": "حل التذكرة",
+      "resolution": "الحل",
+      "notes": "ملاحظات",
+      "resolve": "حل",
+      "cancel": "إلغاء"
+    },
+    "empty": {
+      "title": "لا توجد تذاكر",
+      "message": "لا توجد تذاكر دعم للعرض"
+    }
+  },
+  "payments": {
+    "title": "المدفوعات",
+    "searchPlaceholder": "البحث عن المدفوعات...",
+    "filters": {
+      "all": "جميع المدفوعات",
+      "completed": "مكتملة",
+      "pending": "قيد الانتظار",
+      "failed": "فاشلة",
+      "refunded": "مستردة"
+    },
+    "status": {
+      "completed": "مكتملة",
+      "pending": "قيد الانتظار",
+      "failed": "فاشلة",
+      "refunded": "مستردة"
+    },
+    "details": {
+      "paymentId": "رقم الدفعة",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "method": "طريقة الدفع",
+      "date": "التاريخ",
+      "host": "المضيف",
+      "plan": "الخطة",
+      "refund": "استرداد الدفعة"
+    },
+    "stats": {
+      "totalRevenue": "إجمالي الإيرادات",
+      "monthlyRevenue": "الإيرادات الشهرية",
+      "pendingPayments": "المدفوعات المعلقة",
+      "completedPayments": "المدفوعات المكتملة",
+      "pending": "معلق",
+      "completed": "مكتملة",
+      "failed": "فاشلة"
+    },
+    "empty": {
+      "title": "لا توجد مدفوعات",
+      "message": "لا توجد مدفوعات للعرض"
+    }
+  },
+  "whitelabels": {
+    "title": "الوايت ليبل",
+    "searchPlaceholder": "البحث عن الوايت ليبل...",
+    "filters": {
+      "all": "جميع الوايت ليبل",
+      "active": "نشط",
+      "pending": "قيد الانتظار",
+      "suspended": "موقوف"
+    },
+    "status": {
+      "active": "نشط",
+      "pending": "قيد الانتظار",
+      "suspended": "موقوف",
+      "expired": "منتهي",
+      "cancelled": "ملغي"
+    },
+    "actions": {
+      "activate": "تفعيل",
+      "suspend": "إيقاف",
+      "managePlan": "إدارة الخطة",
+      "delete": "حذف",
+      "bulkSuspendMessage": "إيقاف {{count}} وايت ليبل؟",
+      "bulkDeleteMessage": "حذف {{count}} وايت ليبل؟ لا يمكن التراجع عن هذا الإجراء."
+    },
+    "labels": {
+      "unnamed": "بدون اسم"
+    },
+    "subscription": {
+      "manageTitle": "إدارة الاشتراك",
+      "enterprisePlan": "خطة المؤسسة",
+      "statusLabel": "الحالة",
+      "loadingPlans": "جاري تحميل الخطط...",
+      "noPlansAvailable": "لا توجد خطط متاحة",
+      "noPlanSelected": "الرجاء اختيار خطة مؤسسية",
+      "updated": "تم تحديث الاشتراك بنجاح",
+      "updateFailed": "فشل تحديث الاشتراك",
+      "update": "تحديث",
+      "updating": "جاري التحديث...",
+      "cancel": "إلغاء",
+      "statusActive": "نشط",
+      "statusExpired": "منتهي",
+      "statusCancelled": "ملغي"
+    },
+    "empty": {
+      "title": "لا يوجد وايت ليبل",
+      "message": "لا يوجد تطبيقات وايت ليبل للعرض"
+    }
+  },
+  "plans": {
+    "title": "خطط الاشتراك",
+    "addPlan": "إضافة خطة",
+    "editPlan": "تعديل خطة",
+    "tabs": {
+      "all": "الكل"
+    },
+    "sections": {
+      "pricing": "التسعير",
+      "limits": "الحدود"
+    },
+    "fields": {
+      "nameEn": "الاسم بالإنجليزية",
+      "nameAr": "الاسم بالعربية",
+      "oneTimePrice": "سعر المرة الواحدة (ر.س)",
+      "monthlyPrice": "السعر الشهري (ر.س)",
+      "yearlyPrice": "السعر السنوي (ر.س)",
+      "maxEventsPerMonth": "الحد الأقصى للفعاليات شهرياً",
+      "hintFree": "أدخل 0 للخطط المجانية",
+      "hintUnlimited": "أدخل -1 لغير محدود",
+      "saveChanges": "حفظ التغييرات",
+      "disabled": "معطل"
+    },
+    "types": {
+      "single_event": "مناسبة واحدة",
+      "subscription": "اشتراك",
+      "enterprise": "مؤسسي",
+      "trial": "تجريبي"
+    },
+    "labels": {
+      "oneTime": "مرة واحدة",
+      "perMonth": "/شهر",
+      "perYear": "/سنة",
+      "free": "مجاني",
+      "unlimited": "غير محدود",
+      "eventsPerMonth": "فعالية/شهر",
+      "max": "حد أقصى",
+      "event": "فعالية",
+      "events": "فعاليات",
+      "oneEvent": "فعالية واحدة"
+    },
+    "details": {
+      "name": "اسم الخطة",
+      "description": "الوصف",
+      "price": "السعر",
+      "duration": "المدة",
+      "features": "المميزات",
+      "maxEvents": "الحد الأقصى للمناسبات",
+      "maxGuests": "الحد الأقصى للضيوف",
+      "support": "مستوى الدعم",
+      "active": "نشط",
+      "save": "حفظ",
+      "cancel": "إلغاء"
+    },
+    "empty": {
+      "title": "لا توجد خطط",
+      "message": "لا توجد خطط اشتراك للعرض",
+      "action": "إضافة أول خطة"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "general": {
+      "title": "الإعدادات العامة",
+      "siteName": "اسم الموقع",
+      "siteDescription": "وصف الموقع",
+      "contactEmail": "البريد الإلكتروني للتواصل",
+      "supportPhone": "هاتف الدعم",
+      "save": "حفظ التغييرات"
+    },
+    "notifications": {
+      "title": "إعدادات الإشعارات",
+      "appNotifications": "إشعارات التطبيق",
+      "appDescription": "تحكم في التنبيهات التي تظهر في جرس الإشعارات",
+      "emailNotifications": "إشعارات البريد الإلكتروني",
+      "emailDescription": "تحكم في التحديثات المرسلة إلى بريدك الإلكتروني",
+      "newUsers": "تسجيلات المستخدمين الجدد",
+      "vendorApprovals": "موافقات البائعين",
+      "supportTickets": "تذاكر الدعم",
+      "systemAlerts": "تنبيهات النظام",
+      "paymentAlerts": "تنبيهات المدفوعات",
+      "subscriptionAlerts": "تنبيهات الاشتراكات",
+      "dailyReport": "التقرير اليومي",
+      "weeklyReport": "التقرير الأسبوعي",
+      "criticalAlerts": "التنبيهات الحرجة",
+      "updateSuccess": "تم حفظ تفضيلات الإشعارات",
+      "updateError": "فشل في حفظ التفضيلات",
+      "save": "حفظ التغييرات"
+    },
+    "security": {
+      "title": "إعدادات الأمان",
+      "twoFactorAuth": "المصادقة الثنائية",
+      "sessionTimeout": "مهلة الجلسة",
+      "passwordPolicy": "سياسة كلمة المرور",
+      "save": "حفظ التغييرات"
+    }
+  },
+  "common": {
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "export": "تصدير",
+    "import": "استيراد",
+    "refresh": "تحديث",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "noData": "لا توجد بيانات متاحة",
+    "confirm": "تأكيد",
+    "yes": "نعم",
+    "no": "لا",
+    "actions": "الإجراءات",
+    "details": "التفاصيل",
+    "status": "الحالة",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "description": "الوصف",
+    "notes": "ملاحظات",
+    "total": "الإجمالي",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "unknown": "غير معروف",
+    "suspend": "إيقاف",
+    "activate": "تفعيل",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "rate": "تقييم",
+    "managePlan": "إدارة الخطة",
+    "guests": "الضيوف",
+    "confirmed": "مؤكد",
+    "deleteConfirmTitle": "تأكيد الحذف",
+    "deleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء.",
+    "suspendConfirmTitle": "تأكيد الإيقاف",
+    "activateConfirmTitle": "تأكيد التفعيل",
+    "noSearchResults": "حاول تعديل البحث أو الفلتر",
+    "joined": "انضم في",
+    "viewAll": "عرض الكل"
+  },
+  "discounts": {
+    "title": "أكواد الخصم",
+    "addDiscount": "إضافة كود",
+    "searchPlaceholder": "البحث في الأكواد...",
+    "filters": {
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "معطل"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "معطل",
+      "expired": "منتهي الصلاحية",
+      "exhausted": "مستنفد"
+    },
+    "type": {
+      "percentage": "نسبة مئوية",
+      "fixed": "مبلغ ثابت"
+    },
+    "form": {
+      "createTitle": "إضافة كود خصم",
+      "editTitle": "تعديل كود الخصم",
+      "code": "الكود",
+      "codePlaceholder": "مثال: SAVE20",
+      "descriptionEn": "الوصف (إنجليزي)",
+      "descriptionEnPlaceholder": "أدخل الوصف بالإنجليزية",
+      "descriptionAr": "الوصف (عربي)",
+      "descriptionArPlaceholder": "أدخل الوصف بالعربية",
+      "discountType": "نوع الخصم",
+      "value": "القيمة",
+      "valuePlaceholder": "مثال: 20",
+      "maxUses": "الحد الأقصى للاستخدام (0 = غير محدود)",
+      "maxUsesPlaceholder": "0",
+      "validFrom": "صالح من",
+      "validUntil": "صالح حتى",
+      "minimumAmount": "الحد الأدنى للمبلغ (ر.س)",
+      "minimumAmountPlaceholder": "0",
+      "isActive": "نشط",
+      "percentage": "نسبة مئوية (%)",
+      "fixed": "مبلغ ثابت (ر.س)",
+      "save": "حفظ",
+      "saving": "جاري الحفظ...",
+      "cancel": "إلغاء"
+    },
+    "labels": {
+      "code": "الكود",
+      "type": "النوع",
+      "value": "القيمة",
+      "usage": "الاستخدام",
+      "expires": "ينتهي",
+      "noExpiry": "بلا تاريخ",
+      "unlimited": "غير محدود",
+      "sar": "ر.س"
+    },
+    "actions": {
+      "activate": "تفعيل",
+      "deactivate": "تعطيل",
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "delete": {
+      "title": "حذف الخصم",
+      "message": "هل تريد حذف الكود"
+    },
+    "empty": {
+      "title": "لا توجد أكواد خصم",
+      "message": "لم يتم إنشاء أي أكواد خصم بعد"
+    },
+    "success": {
+      "created": "تم إنشاء كود الخصم",
+      "updated": "تم تحديث كود الخصم",
+      "deleted": "تم حذف كود الخصم",
+      "toggled": "تم تحديث الحالة"
+    },
+    "errors": {
+      "createFailed": "فشل إنشاء كود الخصم",
+      "updateFailed": "فشل تحديث كود الخصم",
+      "deleteFailed": "فشل حذف كود الخصم",
+      "toggleFailed": "فشل تحديث الحالة",
+      "codeRequired": "الكود مطلوب",
+      "valueRequired": "القيمة مطلوبة",
+      "valueInvalid": "يجب أن تكون القيمة أكبر من 0"
+    }
+  },
+  "whitelabelPlans": {
+    "title": "باقاتي",
+    "subtitle": "إدارة اشتراكك المؤسسي",
+    "currentPlan": "الباقة الحالية",
+    "noActivePlan": "لا يوجد اشتراك نشط",
+    "noActivePlanDesc": "اختر باقة أدناه للبدء",
+    "availablePlans": "الباقات المتاحة",
+    "billing": {
+      "monthly": "شهري",
+      "yearly": "سنوي",
+      "save": "وفر 20%",
+      "perMonth": "/شهر",
+      "perYear": "/سنة"
+    },
+    "planCard": {
+      "currentPlan": "باقتك الحالية",
+      "subscribe": "اشترك الآن",
+      "subscribing": "جاري الاشتراك..."
+    },
+    "limits": {
+      "eventsPerMonth": "مناسبة/شهر",
+      "guestsPerEvent": "ضيف/مناسبة",
+      "unlimited": "غير محدود"
+    },
+    "validUntil": "صالح حتى",
+    "active": "نشط",
+    "empty": {
+      "title": "لا توجد باقات",
+      "message": "لا توجد باقات مؤسسية متاحة حالياً"
+    }
+  },
+  "templates": {
+    "tab": "القوالب",
+    "list": {
+      "pageTitle": "القوالب",
+      "searchPlaceholder": "ابحث في القوالب...",
+      "filterByCategory": "تصفية حسب الفئة",
+      "allCategories": "جميع الفئات",
+      "emptyState": "لا توجد قوالب.",
+      "loading": "جاري تحميل القوالب..."
+    },
+    "stepThree": {
+      "categoriesLoading": "جاري تحميل الفئات...",
+      "allCategories": "الكل",
+      "templatesLoading": "جاري تحميل القوالب...",
+      "templatesEmpty": "لا توجد قوالب في هذه الفئة.",
+      "selectedTemplate": "المحدد: {{name}}",
+      "openFormBtn": "تخصيص",
+      "captureError": "فشل التقاط صورة الدعوة. يرجى المحاولة مجدداً.",
+      "customizeTitle": "تصميم قالب الدعوة",
+      "previewBtn": "معاينة الدعوة",
+      "confirmBtn": "تأكيد القالب",
+      "confirmed": "تم تأكيد القالب"
+    },
+    "fields": {
+      "validation": {
+        "required": "هذا الحقل مطلوب",
+        "minLength": "يجب أن يكون {{min}} حرفاً على الأقل",
+        "maxLength": "يجب أن يكون {{max}} حرفاً على الأكثر",
+        "invalidColor": "يجب أن يكون لوناً صحيحاً (مثال: #FF5733)",
+        "invalidNumber": "يجب أن يكون رقماً صحيحاً",
+        "invalidDate": "يجب أن يكون تاريخاً صحيحاً",
+        "invalidEmail": "يجب أن يكون بريداً إلكترونياً صحيحاً (مثال: user@example.com)"
+      }
+    }
+  },
+  "sendNotification": {
+    "sendTitle": "إرسال إشعار",
+    "broadcastTitle": "بث إشعار عام",
+    "to": "إلى",
+    "titleAr": "العنوان (عربي)",
+    "titleArPlaceholder": "عنوان الإشعار بالعربية",
+    "titleEn": "العنوان (إنجليزي)",
+    "titleEnPlaceholder": "عنوان الإشعار بالإنجليزية (اختياري)",
+    "messageAr": "الرسالة (عربي)",
+    "messageArPlaceholder": "محتوى الإشعار بالعربية",
+    "messageEn": "الرسالة (إنجليزي)",
+    "messageEnPlaceholder": "محتوى الإشعار بالإنجليزية (اختياري)",
+    "send": "إرسال",
+    "bulkWarning": "سيتم إرسال هذا الإشعار لجميع {{role}}",
+    "sendSuccess": "تم إرسال الإشعار بنجاح",
+    "broadcastSuccess": "تم بث الإشعار بنجاح",
+    "sendError": "فشل في إرسال الإشعار",
+    "error": "خطأ",
+    "titleRequired": "العنوان بالعربية مطلوب",
+    "messageRequired": "الرسالة بالعربية مطلوبة",
+    "roles": {
+      "host": "المضيفين",
+      "vendor": "مزودي الخدمات",
+      "moderator": "المشرفين",
+      "admin": "المديرين",
+      "whitelabel_admin": "مديري الوايت ليبل"
+    }
+  }
+}

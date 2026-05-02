@@ -1,0 +1,266 @@
+.feature_toggle_container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.feature_toggle_container:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.feature_info {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.feature_header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.feature_name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.status_badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status_enabled {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status_disabled {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.feature_description {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.toggle_wrapper {
+  flex-shrink: 0;
+}
+
+.toggle_button {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  background-color: #e5e7eb;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  padding: 0;
+}
+
+.toggle_button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.toggle_button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.toggle_enabled {
+  background-color: #10b981;
+}
+
+.toggle_disabled {
+  background-color: #e5e7eb;
+}
+
+.toggle_loading {
+  opacity: 0.7;
+}
+
+.toggle_slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.slider_enabled {
+  transform: translateX(24px);
+}
+
+.slider_disabled {
+  transform: translateX(0);
+}
+
+.loading_spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner_circle {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 45;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 60;
+  }
+  50% {
+    stroke-dashoffset: 15;
+  }
+  100% {
+    stroke-dashoffset: 60;
+  }
+}
+
+/* Feature Group Styles */
+.feature_group {
+  margin-bottom: 32px;
+}
+
+.group_header {
+  margin-bottom: 16px;
+}
+
+.group_title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.group_description {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.features_list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* RTL Support */
+[dir="rtl"] .feature_info {
+  margin-right: 0;
+  margin-left: 16px;
+}
+
+[dir="rtl"] .feature_header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .toggle_slider {
+  left: auto;
+  right: 2px;
+}
+
+[dir="rtl"] .slider_enabled {
+  transform: translateX(-24px);
+}
+
+[dir="rtl"] .slider_disabled {
+  transform: translateX(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .feature_toggle_container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .feature_info {
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .toggle_wrapper {
+    align-self: flex-end;
+  }
+
+  .feature_name {
+    font-size: 15px;
+  }
+
+  .feature_description {
+    font-size: 13px;
+  }
+
+  .group_title {
+    font-size: 16px;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .feature_toggle_container {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+
+  .feature_toggle_container:hover {
+    border-color: #4b5563;
+  }
+
+  .feature_name {
+    color: #f9fafb;
+  }
+
+  .feature_description {
+    color: #d1d5db;
+  }
+
+  .group_title {
+    color: #f9fafb;
+  }
+
+  .group_description {
+    color: #d1d5db;
+  }
+
+  .toggle_disabled {
+    background-color: #374151;
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "welcome": "Welcome",
+  "dashboard": {
+    "title": "Dashboard",
+    "stats": {
+      "totalEvents": "Total Events",
+      "upcomingEvents": "Upcoming Events",
+      "completedEvents": "Completed Events",
+      "all": "All",
+      "activeEvents": "Active",
+      "endedEvents": "Ended",
+      "draftEvents": "Drafts"
+    },
+    "submitTemplate": {
+      "successTitle": "Done",
+      "successMessage": "Template submitted for approval",
+      "errorTitle": "Error",
+      "errorMessage": "Failed to submit template"
+    }
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "createEvent": "Create Event",
+    "viewEvents": "View All Events",
+    "manageGuests": "Manage Guests"
+  }
+}

@@ -1,0 +1,135 @@
+.heroContainer {
+  padding: 2.4rem 4rem;
+  margin-bottom: 1rem;
+}
+
+.heroContent {
+  background: linear-gradient(135deg, #c28e5c 0%, #8a6541 100%);
+  border-radius: 12px;
+  padding: 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroContent::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -100px;
+  top: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.heroText {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  position: relative;
+  z-index: 1;
+}
+
+.welcomeIcon {
+  flex-shrink: 0;
+}
+.text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+}
+.title {
+  color: #fff;
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 3.6rem;
+  margin: 0;
+}
+
+.subtitle {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2rem;
+  /* margin: 0.8rem 0 0 0; */
+}
+
+.heroActions {
+  position: relative;
+  z-index: 1;
+}
+
+.actionCard {
+  background: rgba(249, 244, 239, 0.1);
+  border-radius: 8px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  min-width: 220px;
+}
+
+.createButton {
+  width: 100%;
+  padding: 1.2rem 1.6rem !important;
+  font-size: 1.6rem !important;
+  border-radius: 12px !important;
+  border: 1px solid #d6b392 !important;
+  background: #fff !important;
+  color: #6b4e33 !important;
+}
+
+.trialText {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+  margin: 0;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .heroContainer {
+    padding: 2.4rem;
+  }
+
+  .heroContent {
+    padding: 1.2rem;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .heroContent > * {
+    width: 100%;
+  }
+  .welcomeIcon {
+    width: 50px;
+    height: 50px;
+  }
+  .heroText {
+    /* flex-direction: column; */
+    /* text-align: center; */
+  }
+
+  .title {
+    font-size: 1.8rem;
+    line-height: 2.8rem;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+  }
+
+  .actionCard {
+    width: 100%;
+  }
+}

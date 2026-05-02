@@ -1,0 +1,204 @@
+.invitationsSection {
+  display: flex;
+  padding: 5rem 2rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 7.2rem;
+  background: transparent;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3.2rem;
+  max-width: 871px;
+}
+
+.title {
+  color: var(--text-title-black);
+  text-align: center;
+  font-size: 3.6rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 4.4rem;
+  margin: 0;
+}
+
+.description {
+  width: 811px;
+  color: var(--text-description);
+  text-align: center;
+  font-size: 2rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  margin: 0;
+}
+
+.carouselWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3.2rem;
+  width: 100%;
+}
+
+.carousel {
+  display: flex;
+  align-items: flex-start;
+  gap: 4.8rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 1rem;
+  width: 100%;
+  max-width: 1400px;
+  scrollbar-width: none;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.invitationCard {
+  display: flex;
+  width: 228.454px;
+  min-width: 228.454px;
+  height: 320px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 12px;
+  background: var(--bg-artboard);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+
+.invitationCard:hover {
+  transform: translateY(-8px);
+}
+
+.invitationCard img {
+  width: 208px;
+  height: 288px;
+  object-fit: cover;
+  border-radius: 12px;
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.indicators {
+  display: flex;
+  padding: 0.8rem;
+  align-items: center;
+  gap: 1.6rem;
+}
+
+.indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bg-artboard);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.indicator:hover {
+  transform: scale(1.2);
+}
+
+.indicator.active {
+  background: var(--color-primary-500);
+}
+
+@media (max-width: 1200px) {
+  .invitationsSection {
+    padding: 5rem 2rem;
+    gap: 5rem;
+  }
+
+  .carousel {
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .invitationsSection {
+    padding: 5rem 2rem;
+  }
+
+  .description {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .title {
+    font-size: 3rem;
+    line-height: 3.8rem;
+  }
+
+  .description {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .invitationsSection {
+    padding: 3rem 0;
+    gap: 3rem;
+  }
+
+  .title {
+    font-size: 2.6rem;
+    line-height: 3.4rem;
+  }
+
+  .description {
+    font-size: 1.6rem;
+  }
+
+  .carousel {
+    gap: 2rem;
+    justify-content: flex-start;
+  }
+
+  .invitationCard {
+    width: 180px;
+    min-width: 180px;
+    height: 252px;
+  }
+
+  .invitationCard img {
+    width: 164px;
+    height: 228px;
+  }
+}
+
+@media (max-width: 480px) {
+  .invitationsSection {
+    padding: 3rem 0;
+  }
+
+  .title {
+    font-size: 2.4rem;
+    line-height: 3.2rem;
+  }
+
+  .description {
+    font-size: 1.5rem;
+  }
+
+  .invitationCard {
+    width: 150px;
+    min-width: 150px;
+    height: 210px;
+  }
+
+  .invitationCard img {
+    width: 138px;
+    height: 190px;
+  }
+}

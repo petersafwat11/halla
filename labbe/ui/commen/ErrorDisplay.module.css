@@ -1,0 +1,157 @@
+.error_container {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error_content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.error_icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.error_text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.error_message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.error_action {
+  margin-top: 4px;
+}
+
+.action_link,
+.action_button {
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.action_link:hover,
+.action_button:hover {
+  opacity: 0.8;
+}
+
+/* Error type variants */
+.error_duplicate {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.error_duplicate .error_icon {
+  color: #dc2626;
+}
+
+.error_duplicate .action_link,
+.error_duplicate .action_button {
+  color: #dc2626;
+}
+
+.error_limit {
+  background-color: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.error_limit .error_icon {
+  color: #f59e0b;
+}
+
+.error_limit .action_link,
+.error_limit .action_button {
+  color: #f59e0b;
+}
+
+.error_validation {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.error_validation .error_icon {
+  color: #dc2626;
+}
+
+.error_validation .action_link,
+.error_validation .action_button {
+  color: #dc2626;
+}
+
+.error_general {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.error_general .error_icon {
+  color: #dc2626;
+}
+
+.error_general .action_link,
+.error_general .action_button {
+  color: #dc2626;
+}
+
+/* RTL Support */
+[dir="rtl"] .error_content {
+  direction: rtl;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .error_container {
+    padding: 10px 12px;
+  }
+
+  .error_message {
+    font-size: 13px;
+  }
+
+  .action_link,
+  .action_button {
+    font-size: 13px;
+  }
+}

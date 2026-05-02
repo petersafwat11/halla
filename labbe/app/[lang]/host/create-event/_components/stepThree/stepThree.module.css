@@ -1,0 +1,377 @@
+.stepThree {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  position: relative;
+  width: 100%;
+  padding: 0 2.4rem;
+}
+
+/* Success Badge - Desktop Only */
+.successBadge {
+  display: flex;
+  padding: 0.8rem 1.6rem;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 1.2rem;
+  background: #eaf4ef;
+  width: fit-content;
+  margin-bottom: 1.6rem;
+}
+
+.successBadge span {
+  color: #2a8c5b;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2rem;
+  letter-spacing: 0.035px;
+}
+
+.successBadge svg {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+/* Template Section */
+.templateSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.7rem;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--Natural-250, #dfdfdf);
+  background: #fff;
+}
+
+.sectionLabel {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+  text-align: right;
+}
+
+.templatesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.812rem, 1fr));
+  gap: 1.373rem;
+  width: 100%;
+}
+
+.templateCard {
+  width: 8.812rem;
+  height: 10.7rem;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+  box-shadow: 0 0.446px 1.337px 0 rgba(0, 0, 0, 0.1),
+    0 0.446px 0.892px -0.446px rgba(0, 0, 0, 0.1);
+  border-radius: 0.267rem;
+}
+
+.templateCard:hover {
+  transform: translateY(-2px);
+}
+
+.templateCardInner {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 0.267rem;
+  background: #fffaea;
+  overflow: hidden;
+  position: relative;
+}
+
+.templateImage {
+  width: 7.4rem;
+  height: 9.8rem;
+  border-radius: 0.458rem;
+  object-fit: cover;
+  margin: 0.4rem auto;
+}
+
+/* Radio Button */
+.radioButton {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  border: 0.858px solid #c28e5c;
+  background: #f9f4ef;
+  z-index: 2;
+}
+
+.radioButton.radioSelected::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #c28e5c;
+}
+
+/* Template Overlay */
+.templateOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.267rem;
+  z-index: 1;
+}
+
+.selectButton,
+.editButton {
+  display: inline-flex;
+  height: 2.2rem;
+  padding: 0.357rem 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 0.366rem;
+  background: #f5ece4;
+  border: none;
+  cursor: pointer;
+  color: #6b4e33;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: 0.06px;
+  transition: background 0.2s;
+}
+
+.selectButton:hover,
+.editButton:hover {
+  background: #ead9c8;
+}
+
+/* Selected Template Display */
+.selectedTemplate {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  margin-top: 1.6rem;
+}
+
+.selectedTemplate h3 {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 2rem;
+}
+
+/* Mobile Only Sections */
+.mobileOnly {
+  display: none;
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  margin-top: 2.4rem;
+}
+
+.repliesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.6rem 1.2rem;
+  border-radius: 1.2rem;
+  border: 1px dashed #dfdfdf;
+  background: #fdfdfd;
+}
+
+.replyTabs {
+  display: flex;
+  padding: 0 0.6rem;
+  align-items: center;
+  align-self: stretch;
+  border-radius: 0.8rem;
+  background: #f7f7f7;
+}
+
+.replyTab {
+  display: flex;
+  padding: 1rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex: 1 0 0;
+  border: none;
+  background: transparent;
+  color: #656565;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.6rem;
+  letter-spacing: 0.056px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 0.4rem;
+}
+
+.replyTab:hover {
+  color: #2c2c2c;
+}
+
+.replyTabActive {
+  background: #fff;
+  color: #09090b;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.optionalLabel {
+  color: #767676;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+  letter-spacing: 0.06px;
+  margin-top: -1.2rem;
+}
+
+/* Add Supervisors Button - Mobile Floating */
+.addStaffButton {
+  display: inline-flex;
+  padding: 1.6rem;
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 0.8rem;
+  background: #c28e5c;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  bottom: 10rem;
+  left: 2.3rem;
+  z-index: 100;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.addStaffButton:hover {
+  transform: scale(1.05);
+}
+
+.addStaffButton span {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: 0.056px;
+}
+
+.addStaffButton svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .stepThree {
+    padding: 2rem;
+  }
+
+  .templatesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .stepThree {
+    padding: 1.6rem;
+  }
+
+  .successBadge {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+  }
+
+  .templatesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 1.2rem;
+  }
+
+  .templateCard {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 0.823;
+  }
+
+  .templateImage {
+    width: 85%;
+    height: auto;
+    aspect-ratio: 0.755;
+  }
+
+  .radioButton {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .selectButton,
+  .editButton {
+    height: 2.5rem;
+    padding: 0.4rem 1.2rem;
+    font-size: 1.1rem;
+  }
+
+  .selectedTemplate h3 {
+    font-size: 1.3rem;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .stepThree {
+    padding: 1.2rem;
+  }
+
+  .templatesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+    gap: 0.8rem;
+  }
+
+  .templateCard {
+    width: 100%;
+  }
+
+  .addStaffButton {
+    left: 1.6rem;
+    bottom: 8rem;
+  }
+
+  .sectionLabel {
+    font-size: 1.3rem;
+  }
+
+  .selectedTemplate h3 {
+    font-size: 1.2rem;
+  }
+
+  .editButton {
+    font-size: 1rem;
+    padding: 0.3rem 1rem;
+  }
+}

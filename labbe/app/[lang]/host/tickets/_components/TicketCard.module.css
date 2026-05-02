@@ -1,0 +1,173 @@
+.card {
+  display: flex;
+  padding: 1.6rem;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  border-radius: 0.8rem;
+  border: 1px solid #dfdfdf;
+  background: #fff;
+}
+
+.cardContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-self: stretch;
+  background: #fff;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 2.4rem;
+}
+
+.actionButton {
+  display: flex;
+  height: 3.6rem;
+  padding: 0 1.2rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.6rem;
+  color: #2c2c2c;
+  text-align: center;
+  font-family: "Segoe UI";
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 2rem;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: background 0.2s;
+}
+
+.actionButton:hover {
+  background: #f9f4ef;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.statusBadge {
+  display: flex;
+  padding: 0.28rem 1.08rem;
+  justify-content: flex-end;
+  align-items: center;
+  border-radius: 9999px;
+}
+
+.statusBadge span {
+  text-align: right;
+  font-family: "Segoe UI";
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6rem;
+}
+
+.title {
+  color: #2c2c2c;
+  text-align: right;
+  font-size: 1.6rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2.4rem;
+  letter-spacing: 0.08px;
+}
+
+.icon {
+  display: flex;
+  width: 1.6rem;
+  height: 1.6rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.description {
+  color: #656565;
+  text-align: right;
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+}
+
+.timestamp {
+  display: flex;
+  padding-top: 0.4rem;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 0.1rem;
+  color: #656565;
+  text-align: right;
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6rem;
+}
+
+@media screen and (max-width: 768px) {
+  .cardContent {
+    flex-direction: column;
+    gap: 1.6rem;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-start;
+    order: 2;
+  }
+
+  .mainContent {
+    width: 100%;
+    order: 1;
+  }
+
+  .header {
+    flex-wrap: wrap;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .card {
+    padding: 1.2rem;
+  }
+
+  .actions {
+    gap: 1.6rem;
+  }
+
+  .actionButton {
+    font-size: 1.2rem;
+    height: 3.2rem;
+  }
+
+  .title {
+    font-size: 1.4rem;
+    line-height: 2rem;
+  }
+
+  .description {
+    font-size: 1.2rem;
+    line-height: 1.8rem;
+  }
+
+  .timestamp {
+    font-size: 1.1rem;
+  }
+}

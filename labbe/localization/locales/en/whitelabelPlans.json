@@ -1,0 +1,60 @@
+{
+  "plansPage": {
+    "title": "Subscription Plans",
+    "subtitle": "View and manage your subscription plan",
+    "currentPlan": {
+      "title": "Your Current Plan",
+      "badge": "Active",
+      "validUntil": "Valid until",
+      "unlimited": "Unlimited",
+      "eventsPerMonth": "events/month",
+      "guestsPerEvent": "guests/event"
+    },
+    "availablePlans": {
+      "title": "Available Plans",
+      "subtitle": "Compare plans and features"
+    },
+    "planCard": {
+      "popular": "Most Popular",
+      "currentPlan": "Current Plan",
+      "perMonth": "/month",
+      "perYear": "/year",
+      "billedYearly": "Billed yearly",
+      "billedMonthly": "Billed monthly",
+      "features": "Features",
+      "limits": "Limits",
+      "eventsPerMonth": "Events per month",
+      "guestsPerEvent": "Guests per event",
+      "unlimited": "Unlimited",
+      "contactSales": "Contact Sales",
+      "upgrade": "Upgrade",
+      "downgrade": "Downgrade"
+    },
+    "features": {
+      "hasInAppInvites": "Send invitations from app",
+      "hasWhatsAppInvites": "WhatsApp messaging",
+      "hasSMSInvites": "SMS messaging",
+      "hasQRCode": "QR code generation",
+      "hasQRScanning": "QR scanning for entry",
+      "hasStaffCheckIn": "Staff check-in",
+      "hasRSVPTracking": "RSVP tracking",
+      "hasAutoReminders": "Auto reminders",
+      "hasBasicTemplates": "Basic templates",
+      "hasPremiumTemplates": "Premium templates",
+      "hasCustomReports": "Custom reports",
+      "hasWhatsAppSupport": "WhatsApp support"
+    },
+    "billingToggle": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "savePercent": "Save {{percent}}%"
+    },
+    "contactModal": {
+      "title": "Contact Sales",
+      "description": "Our team will contact you to discuss your plan upgrade.",
+      "close": "Close"
+    },
+    "loading": "Loading plans...",
+    "error": "Failed to load plans. Please try again."
+  }
+}

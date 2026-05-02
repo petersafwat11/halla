@@ -1,0 +1,166 @@
+{
+  "test": "test",
+  "phone_required": "Phone number is required",
+  "phone_invalid": "Phone number must be at least 9 digits",
+  "phone_number": "Phone Number",
+  "enter_phone_number": "Enter phone number",
+  "test_sending": "Test Sending",
+  "test_sending_description": "Enter a phone number to test the sending functionality",
+  "test_message_sent": "Test message sent successfully!",
+  "test_message_failed": "Failed to send test message",
+  "sending": "Sending...",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "loading": "Loading...",
+  "uploadFile": {
+    "dragAndDrop": "Drag images here or click to select",
+    "acceptedFormats": "Accepted formats",
+    "clickToView": "Click to view",
+    "delete": "Delete",
+    "replace": "Replace",
+    "kb": "KB"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "events": "Events",
+    "settings": "Settings",
+    "freePlan": "Free Plan",
+    "freePlanDesc": "Subscribe to send unlimited invitations",
+    "upgradeNow": "Upgrade Now",
+    "logout": "Logout"
+  },
+  "adminSidebar": {
+    "dashboard": "Dashboard",
+    "moderators": "Moderators",
+    "hosts": "Hosts",
+    "vendors": "Vendors",
+    "events": "Events",
+    "payments": "Payments",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "table": {
+    "columns": {
+      "guestName": "Guest Name",
+      "mobile": "Mobile Number",
+      "email": "Email",
+      "status": "Status",
+      "responseTime": "Response Time",
+      "actions": "Actions",
+      "eventName": "Event Name",
+      "eventType": "Event Type",
+      "totalInvites": "Total Invites",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "noResponse": "No Response",
+      "maybe": "Maybe",
+      "staffName": "Staff Name",
+      "staffPhone": "Phone Number",
+      "staffEvent": "Event"
+    },
+    "status": {
+      "invited": "Invited",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "maybe": "Maybe",
+      "draft": "Draft",
+      "published": "Published",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "view": "View Details"
+    }
+  },
+  "schedule_sending": "Schedule Sending",
+  "schedule_sending_description": "Select when you would like to send the message",
+  "schedule_date": "Date",
+  "schedule_time": "Time",
+  "select_date": "Select date",
+  "schedule_message_success": "Message scheduled successfully!",
+  "schedule_message_failed": "Failed to schedule message",
+  "delete": "Delete",
+  "notifications": {
+    "title": "Notifications",
+    "empty": {
+      "title": "No notifications",
+      "message": "You're all caught up! Check back later."
+    },
+    "markAllRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "clearAllConfirm": "Are you sure you want to clear all notifications?",
+    "viewAll": "View all notifications",
+    "loading": "Loading...",
+    "loadMore": "Load more"
+  },
+  "vendorSidebar": {
+    "services": "Services",
+    "marketplace": "Marketplace",
+    "tickets": "Tickets",
+    "settings": "Settings"
+  },
+  "filters": {
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "suspended": "Suspended",
+    "draft": "Draft",
+    "completed": "Completed",
+    "open": "Open",
+    "closed": "Closed",
+    "inProgress": "In Progress",
+    "resolved": "Resolved",
+    "failed": "Failed",
+    "refunded": "Refunded",
+    "underReview": "Under Review"
+  },
+  "status": {
+    "active": "Active",
+    "pending": "Pending",
+    "approved": "Approved",
+    "suspended": "Suspended",
+    "rejected": "Rejected",
+    "underReview": "Under Review"
+  },
+  "authErrors": {
+    "CONFLICT": {
+      "email": "This email is already registered. Try logging in instead.",
+      "phone": "This phone number is already registered. Try logging in instead.",
+      "email_and_phone": "This email and phone number are both already registered. Try logging in instead.",
+      "default": "This account already exists. Try logging in instead."
+    },
+    "DUPLICATE_FIELD": {
+      "email": "This email is already registered. Try logging in instead.",
+      "phoneNumber": "This phone number is already registered. Try logging in instead.",
+      "username": "This username is already taken.",
+      "default": "This account already exists."
+    },
+    "UNAUTHORIZED": "Invalid email or password. Please check your credentials and try again.",
+    "INVALID_TOKEN": "Your session is invalid. Please log in again.",
+    "TOKEN_EXPIRED": "Your session has expired. Please log in again.",
+    "ACCOUNT_LOCKED": "Your account is temporarily locked due to too many failed attempts. Please try again later.",
+    "ACCOUNT_STATUS_ERROR": {
+      "suspended": "Your account has been suspended. Please contact support for assistance.",
+      "inactive": "Your account is inactive. Please contact support.",
+      "rejected": "Your application was not approved. Please contact support for more details.",
+      "pending": "Your account is still under review. We'll notify you once it's approved."
+    },
+    "NOT_FOUND": "No account found with these credentials.",
+    "VALIDATION_ERROR": "Please check your information and try again.",
+    "OTP_ERROR": {
+      "invalid": "The verification code is incorrect. Please try again.",
+      "expired": "The verification code has expired. Please request a new one.",
+      "max_attempts": "Too many failed attempts. Please request a new code.",
+      "cooldown": "Please wait before requesting a new code."
+    },
+    "RATE_LIMIT_EXCEEDED": "Too many requests. Please wait a moment and try again.",
+    "NETWORK": "Unable to connect to the server. Please check your internet connection.",
+    "TIMEOUT": "The request timed out. Please try again.",
+    "SERVER": "Something went wrong on our end. Please try again later.",
+    "UNKNOWN": "An unexpected error occurred. Please try again.",
+    "loginAction": "Log in here"
+  }
+}

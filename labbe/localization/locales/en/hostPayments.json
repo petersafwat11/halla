@@ -1,0 +1,36 @@
+{
+  "table": {
+    "title": "Payments List",
+    "columns": {
+      "service": "Service Type",
+      "amount": "Amount",
+      "date": "Transaction Date",
+      "status": "Transaction Status"
+    },
+    "status": {
+      "success": "Successful",
+      "pending": "Pending",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "delete": "Delete",
+      "deleteAll": "Delete All",
+      "actions": "Actions"
+    },
+    "filter": {
+      "title": "Filter",
+      "all": "All",
+      "success": "Successful",
+      "pending": "Pending",
+      "cancelled": "Cancelled"
+    },
+    "export": "Export Data",
+    "search": "Search payments...",
+    "labels": {
+      "actions": "Actions",
+      "filter": "Filter",
+      "export": "Export Data",
+      "moreOptions": "More Options"
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "header": {
+    "title": "Moderators",
+    "subtitle": "Monitor and manage platform events",
+    "dateRange": "Select time period",
+    "addModerator": "Add Moderator"
+  },
+  "dateRange": {
+    "all": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "addModerator": {
+    "title": "Add Moderator",
+    "username": "Username",
+    "usernamePlaceholder": "Enter username",
+    "email": "Email",
+    "emailPlaceholder": "Enter email",
+    "phoneNumber": "Phone Number",
+    "phoneNumberPlaceholder": "Enter phone number",
+    "jobTitle": "Job Title",
+    "jobTitlePlaceholder": "Enter job title",
+    "permissions": "Permissions",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "success": "Moderator added successfully",
+    "error": "Failed to add moderator"
+  },
+  "editModerator": {
+    "title": "Edit Moderator",
+    "update": "Update",
+    "updating": "Updating...",
+    "success": "Moderator updated successfully",
+    "error": "Failed to update moderator"
+  },
+  "deleteModerator": {
+    "success": "Moderator deleted successfully",
+    "error": "Failed to delete moderator"
+  },
+  "confirmDelete": {
+    "message": "Are you sure you want to delete this moderator?"
+  },
+  "stats": {
+    "superAdmin": "Super Admin",
+    "moderators": "Moderators",
+    "activeModerators": "Active Moderators",
+    "suspendedModerators": "Suspended Moderators"
+  },
+  "table": {
+    "title": "Moderators List",
+    "searchPlaceholder": "Search for moderator",
+    "filter": "Filter",
+    "export": "Export",
+    "columns": {
+      "username": "Username",
+      "phoneNumber": "Phone Number",
+      "email": "Email",
+      "title": "Title",
+      "status": "Status",
+      "createdAt": "Join Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "suspended": "Suspended",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "suspend": "Suspend",
+      "delete": "Delete",
+      "edit": "Edit"
+    }
+  }
+}

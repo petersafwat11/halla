@@ -1,0 +1,128 @@
+{
+  "header": {
+    "title": "Support Tickets",
+    "subtitle": "Manage and resolve support tickets",
+    "dateRange": "Date Range"
+  },
+  "stats": {
+    "totalTickets": "Total Tickets",
+    "openTickets": "Open Tickets",
+    "resolvedTickets": "Resolved Tickets",
+    "inProgressTickets": "In Progress"
+  },
+  "table": {
+    "title": "Tickets List",
+    "searchPlaceholder": "Search tickets...",
+    "filter": "Filter",
+    "export": "Export",
+    "columns": {
+      "ticketNumber": "Ticket #",
+      "ticketType": "Type",
+      "submittedBy": "Submitted By",
+      "priority": "Priority",
+      "assignedTo": "Assigned To",
+      "status": "Status",
+      "createdAt": "Created Date"
+    }
+  },
+  "status": {
+    "open": "Open",
+    "inProgress": "In Progress",
+    "resolved": "Resolved",
+    "closed": "Closed",
+    "pending": "Pending"
+  },
+  "priority": {
+    "low": "Low",
+    "normal": "Normal",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "ticketType": {
+    "technical": "Technical",
+    "payment": "Payment",
+    "event": "Event",
+    "user": "User",
+    "other": "Other",
+    "inquiry": "Inquiry",
+    "issue": "Issue",
+    "request": "Request",
+    "suggestion": "Suggestion"
+  },
+  "actions": {
+    "viewDetails": "View Details",
+    "assign": "Assign",
+    "resolve": "Resolve",
+    "reopen": "Reopen",
+    "markUrgent": "Mark as Urgent",
+    "delete": "Delete",
+    "viewResolution": "View Resolution"
+  },
+  "assign": {
+    "title": "Assign Ticket",
+    "ticketMessage": "Message",
+    "currentlyAssigned": "Currently Assigned To",
+    "selectModeratorLabel": "Select Moderator",
+    "selectPlaceholder": "-- Select Moderator --",
+    "superAdmin": "Super Admin",
+    "admin": "Admin",
+    "moderator": "Moderator",
+    "loading": "Loading moderators...",
+    "selectModerator": "Please select a moderator",
+    "success": "Ticket assigned successfully",
+    "error": "Failed to assign ticket",
+    "fetchError": "Failed to fetch moderators list",
+    "cancel": "Cancel",
+    "submit": "Assign",
+    "assigning": "Assigning..."
+  },
+  "close": {
+    "title": "Resolve Ticket",
+    "user": "User",
+    "type": "Type",
+    "status": "Status",
+    "priority": "Priority",
+    "originalMessage": "Original Message",
+    "previousResolution": "Previous Resolution",
+    "resolutionLabel": "Resolution Message",
+    "resolutionPlaceholder": "Enter resolution summary or reason for closing...",
+    "emptyMessage": "Please enter a resolution message",
+    "success": "Ticket resolved successfully",
+    "error": "Failed to resolve ticket",
+    "cancel": "Cancel",
+    "submit": "Resolve Ticket",
+    "closing": "Resolving..."
+  },
+  "viewResolution": {
+    "title": "Resolution Details",
+    "resolutionMessage": "Resolution Message",
+    "resolvedBy": "Resolved By",
+    "resolvedAt": "Resolved At",
+    "close": "Close"
+  },
+  "bulkActions": {
+    "resolve": "Resolve Selected",
+    "delete": "Delete Selected"
+  },
+  "messages": {
+    "confirmDelete": "Are you sure you want to delete this ticket?",
+    "confirmBulkDelete": "Are you sure you want to delete the selected tickets?",
+    "deleteSuccess": "Ticket deleted successfully",
+    "deleteError": "Failed to delete ticket",
+    "bulkDeleteSuccess": "Tickets deleted successfully",
+    "bulkDeleteError": "Failed to delete tickets",
+    "markUrgentSuccess": "Ticket marked as urgent",
+    "updateError": "Failed to update ticket"
+  },
+  "dateRange": {
+    "all": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  }
+}

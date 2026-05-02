@@ -1,0 +1,16 @@
+.topSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.title {
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-family: Cairo;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

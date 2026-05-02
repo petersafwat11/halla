@@ -1,0 +1,67 @@
+{
+  "continueSignup": {
+    "title": "اكمل ملفك الشخصي",
+    "description": "بعض المعلومات الأساسية لنتمكن من خدمتك بأفضل شكل ",
+    "errors": {
+      "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+      "fullNameMinLength": "الاسم كاملا يجب أن لا يقل عن حرفين",
+      "fullNameRequired": "الاسم كاملا مطلوب",
+      "emailRequired": "البريد الالكتروني مطلوب",
+      "invalidEmail": "قم بإدخال بريد إلكتروني صحيح مثال example@domain.com",
+      "passwordMinLength": "على الاقل 8احرف",
+      "passwordComplexity": "  تحتوي على حرف كبير وحرف صغير",
+      "passwordSpecialChar": "ورمز*&^%@",
+      "confirmPasswordRequired": "تأكيد كلمة المرور مطلوب",
+      "usernameMinLength": "اسم المستخدم يجب أن يكون 3 أحرف على الأقل",
+      "passwordConfirmRequired": "يرجى تأكيد كلمة المرور"
+    },
+    "personalInfo": {
+      "title": "معلومات شخصية",
+      "fullName": {
+        "label": "اسمك بالكامل",
+        "placeholder": "احمد كامل عبد ربه"
+      },
+      "email": {
+        "label": "البريد الالكتروني",
+        "placeholder": "davd@dffr.com"
+      },
+      "newPassword": {
+        "label": "كلمة مرور جديدة",
+        "placeholder": "ادخل كلمة مرور جديدة"
+      },
+      "confirmPassword": {
+        "label": "تأكيد كلمة المرور",
+        "placeholder": "أعد ادخال كلمة المرور الجديدة"
+      }
+    },
+    "serviceSelection": {
+      "title": "اختر الخدمة المقدمة",
+      "question": "ما نوع الحدث الذي تريد تنظيمه ",
+      "organizerInvitation": {
+        "title": "دعوتك عبر منصتك",
+        "description": " متعددة"
+      },
+      "onUsInvitation": {
+        "title": "دعوتك علينا",
+        "description": "فريق لبى يتولى كل شيء من تصميم وارسال ومتابعة الحضور وتذكير الضيوف"
+      },
+      "inYourHandsInvitation": {
+        "title": "دعوتك بيدك",
+        "description": "صمم وارسل دعواتك بسهولة عبر الواتساب مع كود QR خاص لكل ضيف!"
+      },
+      "features": {
+        "largeScaleCompetitivePricing": "أسعار تنافسية للتجار ذوي الحجم الكبير",
+        "customReportsAnalytics": "تقارير وتحليلات مخصصة",
+        "phoneSupportPriority": "أولوية دعم الهاتف 24/7",
+        "globalLocalSales": "البيع العالمي المحلي (50 سوقا)",
+        "designSendGuestTracking": "تصميم إرسال ومتابعة الحضور",
+        "designSendWhatsappQRCodes": "صمم وارسل دعواتك بسهولة عبر الواتساب مع كود QR خاص لكل ضيف!",
+        "additional": "20+ مزايا إضافية إضغط للمزيد"
+      }
+    },
+    "nextButton": "التالي",
+    "selectButton": "اختر الباقة"
+  },
+  "currency": "ر.س.",
+  "perMonth": "/شهريا"
+}

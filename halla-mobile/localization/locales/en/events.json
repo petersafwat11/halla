@@ -1,0 +1,117 @@
+{
+  "title": "Events",
+  "createEvent": {
+    "title": "Create New Event",
+    "eventName": "Event Name",
+    "description": "Description",
+    "date": "Date",
+    "time": "Time",
+    "location": "Location",
+    "guests": "Guests"
+  },
+  "eventDetails": {
+    "title": "Event Details",
+    "attendees": "Attendees",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "declined": "Declined"
+  },
+  "guestList": {
+    "title": "Guest List",
+    "addGuest": "Add Guest",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "status": "Status"
+  },
+  "home": {
+    "welcome": "Welcome",
+    "guest": "Guest"
+  },
+  "common": {
+    "loading": "Loading...",
+    "loadError": "Error loading data",
+    "retry": "Retry",
+    "search": "Search...",
+    "filter": "Filter",
+    "all": "All"
+  },
+  "stats": {
+    "liveEvents": "Live Events",
+    "allEvents": "All Events",
+    "endedEvents": "Ended Events",
+    "attendanceRate": "Attendance Rate"
+  },
+  "filters": {
+    "all": "All",
+    "live": "Live",
+    "ended": "Ended",
+    "draft": "Draft"
+  },
+  "subscription": {
+    "guestQuota": "Guest Quota",
+    "unlimited": "Unlimited guests",
+    "remaining": "guests remaining",
+    "limitReached": "Guest limit reached",
+    "upgradePrompt": "Upgrade your plan to create more events or add more guests",
+    "upgradePlan": "Upgrade Plan",
+    "eventLimitReached": "You have reached your event limit for this period"
+  },
+  "messaging": {
+    "sendInvitation": "Send Invitations",
+    "selectedGuests": "Selected Guests",
+    "selectChannel": "Select Delivery Method",
+    "channel": "Channel",
+    "sms": "SMS",
+    "whatsapp": "WhatsApp",
+    "smsInfo": "An SMS will be sent containing invitation details and RSVP link",
+    "whatsappInfo": "A WhatsApp message will be sent containing invitation details and RSVP link",
+    "send": "Send",
+    "sending": "Sending...",
+    "invitationsSent_one": "Successfully sent {{count}} invitation",
+    "invitationsSent_other": "Successfully sent {{count}} invitations",
+    "sendError": "Error sending invitations",
+    "noGuestsWithPhone": "No guests with phone numbers",
+    "retryFailed": "Retry Failed",
+    "retrying": "Retrying...",
+    "retrySuccess": "Failed invitations re-queued",
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "failed": "Failed",
+    "pending": "Pending"
+  },
+  "testMessage": {
+    "title": "Test Message",
+    "description": "Send a test message to verify the invitation before launch",
+    "phoneLabel": "Mobile Number",
+    "cancel": "Cancel",
+    "send": "Send",
+    "sending": "Sending...",
+    "success": "Test message sent successfully",
+    "error": "Failed to send test message",
+    "infoText": "A test version of your invitation will be sent to this number",
+    "validation": {
+      "phoneRequired": "Phone number is required",
+      "phoneFormat": "Must start with 5 and be 9 digits"
+    }
+  },
+  "scheduleSend": {
+    "title": "Schedule Send",
+    "description": "Set a date and time to send event invitations to guests",
+    "date": "Send Date",
+    "datePlaceholder": "Select date",
+    "time": "Send Time",
+    "timePlaceholder": "Select time",
+    "minDateNote": "Send date must be at least 2 days from today",
+    "cancel": "Cancel",
+    "confirm": "Confirm Schedule",
+    "scheduling": "Scheduling...",
+    "success": "Invitations scheduled successfully",
+    "error": "Failed to schedule send",
+    "validation": {
+      "dateRequired": "Date is required",
+      "timeRequired": "Time is required",
+      "minDate": "Date must be at least 2 days from today"
+    }
+  }
+}

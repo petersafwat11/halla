@@ -1,0 +1,174 @@
+{
+  "ar": {
+    "badge": "سياسة الخصوصية",
+    "title": "سياسة الخصوصية",
+    "subtitle": "منصة هلا",
+    "lastUpdated": "01 مارس 2026",
+    "effectiveDate": "01 مارس 2026",
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "البند الأول",
+        "title": "التعاريف",
+        "body": "يقصد بمؤسسة هلا الرقمية للتقنية الجهة المالكة والمشغلة لمنصة هلا والمسجلة رسمياً لدى وزارة التجارة. ويقصد بمنصة هلا المنصة الإلكترونية التي تقدم خدمات إدارة المناسبات وتصميم وإرسال الدعوات وتنظيم دخول المدعوين. ويقصد بالمستخدم أي شخص يستخدم المنصة أو أي خدمة تقدم من خلالها، سواء بصفته زائراً أو صاحب مناسبة أو داعياً أو مدعواً أو مشرف بوابة أو مصمماً. ويقصد بالبيانات الشخصية كل معلومة تتعلق بشخص طبيعي محدد أو قابل للتحديد بصورة مباشرة أو غير مباشرة، وذلك وفقاً لأحكام نظام حماية البيانات الشخصية المعمول به في المملكة العربية السعودية."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "البند الثاني",
+        "title": "نطاق التطبيق والموافقة",
+        "body": "تسري أحكام هذه السياسة على جميع البيانات الشخصية التي تقوم مؤسسة هلا بجمعها أو معالجتها أو استخدامها عبر المنصة أو عبر أي وسيلة اتصال مرتبطة بها. ويعد استخدام المستخدم للمنصة إقراراً منه بقبوله الكامل لأحكام هذه السياسة وموافقته على ما تتضمنه من تنظيمات، كما يعد استمرار استخدامه للمنصة بعد نشر أي تحديثات قبولاً صريحاً بالتعديلات التي تطرأ عليها."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "البند الثالث",
+        "title": "جمع البيانات الشخصية",
+        "body": "تقوم منصة هلا بجمع البيانات التي يقدمها المستخدم طوعاً عند التسجيل أو تنفيذ الطلبات أو استخدام الخدمات، وتشمل البيانات التي يدوّنها بنفسه مثل اسمه ورقم هاتفه وبريده الإلكتروني وبيانات ضيوفه وموقع المناسبة ومعلومات الدفع اللازمة لإتمام العمليات، مع التأكيد على أن المنصة لا تقوم بتخزين بيانات بطاقات الائتمان وإنما تُرسل مباشرة عبر مزودي خدمات الدفع المرخصين.\n\nكما تقوم المنصة تلقائياً بجمع بيانات تقنية تتعلق باستخدام الخدمة، مثل نوع الجهاز، ونظام التشغيل، والمتصفح، وعنوان بروتوكول الإنترنت، ووقت الاستخدام، وأنماط التفاعل داخل المنصة."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "البند الرابع",
+        "title": "أغراض جمع ومعالجة البيانات",
+        "body": "تتم معالجة البيانات التي يتم جمعها من المستخدمين بغرض تمكينهم من الاستفادة من خدمات المنصة، وتنفيذ الطلبات الخاصة بالمناسبات، وتقديم الدعم الفني، وتحسين جودة الخدمات، وتطوير الأنظمة التقنية، والتواصل مع المستخدم بشأن أي تحديثات أو استفسارات أو مسائل تشغيلية، وإرسال الرسائل التسويقية إلى مستخدمين سبق لهم الموافقة على تلقيها أو اشتركوا طوعاً في قوائم المراسلة. وتستند المعالجة إلى أسس نظامية معتمدة تشمل موافقة المستخدم أو تنفيذ عقد أو امتثالاً لالتزام نظامي أو حماية لمصلحة مشروعة للمؤسسة."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "البند الخامس",
+        "title": "حماية وأمن البيانات",
+        "body": "تلتزم المؤسسة بتطبيق الضوابط التقنية والإدارية الكفيلة بحماية البيانات الشخصية من الوصول غير المصرح به أو الإفصاح أو التعديل أو الفقدان أو الإتلاف، وذلك عبر استخدام أنظمة التشفير، وقنوات الاتصال المؤمنة، وإدارة صلاحيات الوصول إلى البيانات، وأنظمة المراقبة والحماية من الاختراق، إضافة إلى إخضاع الموظفين المخولين بضوابط صارمة تحكم تعاملهم مع البيانات."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "البند السادس",
+        "title": "مشاركة البيانات والإفصاح عنها",
+        "body": "لا تقوم منصة هلا ببيع البيانات الشخصية للمستخدم أو تأجيرها أو تداولها مع أي طرف ثالث لأغراض تسويقية. ومع ذلك، يجوز للمؤسسة مشاركة بعض البيانات مع أطراف تقدم خدمات تشغيلية مساندة مثل خدمات الدفع الإلكتروني، والرسائل النصية، والاستضافة السحابية، والدعم التقني، وذلك في حدود ما يقتضيه تنفيذ الخدمة فقط. كما يجوز الإفصاح عن البيانات إذا كان ذلك تنفيذاً لالتزام قانوني أو امتثالاً لأمر قضائي أو لحماية حقوق المؤسسة أو منع إساءة استخدام المنصة."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "البند السابع",
+        "title": "مدة الاحتفاظ بالبيانات",
+        "body": "تحتفظ المؤسسة بالبيانات الشخصية طوال المدة اللازمة لتحقيق الأغراض التي جُمعت من أجلها أو للمدة التي تفرضها الأنظمة واللوائح، وفي حال قيام المستخدم بإنشاء طلب دون استكماله، يتم الاحتفاظ بالبيانات لمدة ثلاثة أشهر فقط ثم حذفها بشكل نهائي ما لم يكن الاحتفاظ ضرورياً لالتزام نظامي."
+      },
+      {
+        "id": "article-8",
+        "num": "8",
+        "label": "البند الثامن",
+        "title": "حقوق المستخدم",
+        "body": "يحق للمستخدم طلب الوصول إلى بياناته الشخصية أو طلب تصحيحها أو تحديثها أو طلب حذفها أو الاعتراض على معالجتها في الحالات التي يسمح بها النظام، كما يحق له سحب موافقته على المعالجة متى كانت قائمة على الموافقة، ويتم تنفيذ الطلبات بعد التحقق من هوية مقدم الطلب وبالحدود المقررة نظاماً."
+      },
+      {
+        "id": "article-9",
+        "num": "9",
+        "label": "البند التاسع",
+        "title": "الروابط الخارجية",
+        "body": "قد تحتوي منصة هلا على روابط لمواقع أو خدمات لا تخضع لإدارة المؤسسة، ولا تتحمل المؤسسة مسؤولية سياسات الخصوصية أو محتوى تلك المواقع، ويخضع تعامل المستخدم معها للسياسات المستقلة الخاصة بها."
+      },
+      {
+        "id": "article-10",
+        "num": "10",
+        "label": "البند العاشر",
+        "title": "التعديلات على السياسة",
+        "body": "تحتفظ المؤسسة بحق تعديل هذه السياسة أو تحديثها في أي وقت، ويسري العمل بالإصدار المعدل بمجرد نشره على المنصة، ويعد استمرار استخدام المستخدم للمنصة بعد نشر التعديلات موافقة صريحة على ما ورد فيها."
+      },
+      {
+        "id": "article-11",
+        "num": "11",
+        "label": "البند الحادي عشر",
+        "title": "التواصل والاستفسارات",
+        "body": "يمكن للمستخدم التواصل مع المؤسسة بشأن أي استفسار يتعلق بالخصوصية أو بحماية البيانات من خلال وسائل الاتصال المعتمدة والمذكورة في صفحة التواصل داخل المنصة، مع العلم أن المؤسسة قد تقوم بتسجيل بعض المكالمات لضمان جودة الخدمة والامتثال التنظيمي."
+      }
+    ]
+  },
+  "en": {
+    "badge": "Privacy Policy",
+    "title": "Privacy Policy",
+    "subtitle": "Halla Platform",
+    "lastUpdated": "01 March 2026",
+    "effectiveDate": "01 March 2026",
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "Article One",
+        "title": "Definitions",
+        "body": "\"Halaa Digital Technology Establishment\" refers to the entity that owns and operates the Halaa Platform and is officially registered with the Ministry of Commerce in the Kingdom of Saudi Arabia.\n\n\"Halaa Platform\" refers to the electronic platform that provides event management services, including invitation design and delivery and guest entry organization.\n\n\"User\" refers to any person who uses the platform or any of its services, whether as a visitor, event host, inviter, invitee, gate supervisor, or designer.\n\n\"Personal Data\" refers to any information relating to an identified or identifiable natural person, directly or indirectly, in accordance with the Personal Data Protection Law applicable in the Kingdom of Saudi Arabia."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "Article Two",
+        "title": "Scope of Application and Consent",
+        "body": "This Privacy Policy applies to all personal data collected, processed, or used by Halaa through the platform or any related communication channels.\n\nBy using the platform, the user acknowledges and agrees to be bound by the terms of this Privacy Policy. Continued use of the platform following the publication of any updates shall constitute explicit acceptance of such amendments."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "Article Three",
+        "title": "Collection of Personal Data",
+        "body": "Halaa collects personal data voluntarily provided by users when registering, placing requests, or using platform services. This includes information entered directly by the user, such as name, phone number, email address, guest details, event location, and payment information necessary to complete transactions.\n\nThe platform does not store credit card information; payment data is transmitted directly to licensed payment service providers.\n\nAdditionally, the platform automatically collects technical data related to service usage, such as device type, operating system, browser type, IP address, time of access, and interaction patterns within the platform."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "Article Four",
+        "title": "Purpose of Data Collection and Processing",
+        "body": "Personal data is processed to enable users to benefit from platform services, execute event-related requests, provide technical support, improve service quality, enhance system performance, and communicate with users regarding updates, inquiries, or operational matters.\n\nMarketing communications may be sent only to users who have explicitly consented or voluntarily subscribed to mailing lists.\n\nProcessing is carried out based on lawful grounds, including user consent, contract performance, compliance with legal obligations, or the protection of Halaa's legitimate interests."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "Article Five",
+        "title": "Data Protection and Security",
+        "body": "Halaa is committed to implementing appropriate technical and administrative measures to protect personal data from unauthorized access, disclosure, alteration, loss, or destruction. These measures include encryption systems, secure communication channels, access control management, monitoring systems, and intrusion prevention tools.\n\nAuthorized employees are subject to strict policies governing their access to and handling of personal data."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "Article Six",
+        "title": "Data Sharing and Disclosure",
+        "body": "Halaa does not sell, rent, or trade users' personal data with third parties for marketing purposes.\n\nHowever, certain data may be shared with service providers that support platform operations — such as electronic payment services, SMS providers, cloud hosting, and technical support — strictly to the extent necessary to deliver the service.\n\nData may also be disclosed where required by law, court order, or to protect Halaa's rights or prevent misuse of the platform."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "Article Seven",
+        "title": "Data Retention Period",
+        "body": "Personal data is retained for as long as necessary to fulfill the purposes for which it was collected or as required by applicable laws and regulations.\n\nIf a user creates a request without completing it, the associated data will be retained for a period of three (3) months and then permanently deleted, unless retention is required by law."
+      },
+      {
+        "id": "article-8",
+        "num": "8",
+        "label": "Article Eight",
+        "title": "User Rights",
+        "body": "Users have the right to request access to their personal data, request correction or updating, request deletion, or object to processing in cases permitted by law.\n\nUsers may also withdraw consent where processing is based on consent. Requests will be processed after verification of the requester's identity and within the limits prescribed by applicable regulations."
+      },
+      {
+        "id": "article-9",
+        "num": "9",
+        "label": "Article Nine",
+        "title": "External Links",
+        "body": "The Halaa Platform may contain links to external websites or services not managed by Halaa. Halaa is not responsible for the privacy practices or content of such external sites, and user interaction with them is subject to their respective independent policies."
+      },
+      {
+        "id": "article-10",
+        "num": "10",
+        "label": "Article Ten",
+        "title": "Amendments to the Policy",
+        "body": "Halaa reserves the right to amend or update this Privacy Policy at any time. The updated version shall become effective upon publication on the platform. Continued use of the platform after such publication constitutes explicit acceptance of the revised policy."
+      },
+      {
+        "id": "article-11",
+        "num": "11",
+        "label": "Article Eleven",
+        "title": "Contact and Inquiries",
+        "body": "Users may contact Halaa regarding any privacy or data protection inquiries through the official communication channels listed on the platform's Contact Us page.\n\nPlease note that some calls may be recorded for quality assurance and regulatory compliance purposes."
+      }
+    ]
+  }
+}

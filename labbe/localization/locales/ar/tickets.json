@@ -1,0 +1,85 @@
+{
+  "pageTitle": "الشكاوى",
+  "createTicket": "انشئ شكوى",
+  "searchPlaceholder": "ابحث في الشكاوى...",
+  "loading": "جاري التحميل...",
+  "noTickets": {
+    "title": "لا توجد شكاوى سابقة",
+    "message": "إذا كنت بحاجة إلى إخبارنا بأي شيء، أرسل شكوى وسنهتم بها على الفور",
+    "action": "انشئ شكوى"
+  },
+  "popup": {
+    "createTitle": "انشئ شكوى",
+    "editTitle": "تعديل الشكوى",
+    "typeLabel": "نوع الشكوى",
+    "typePlaceholder": "اختر نوع الشكوى",
+    "messageLabel": "نص الشكوى ",
+    "messagePlaceholder": "ادخل نص الشكوى",
+    "submitCreate": "حفظ و ارسال",
+    "submitEdit": "تحديث",
+    "submitting": "جاري الإرسال...",
+    "updating": "جاري التحديث...",
+    "cancel": "الغاء"
+  },
+  "types": {
+    "technical": "مشكلة تقنية",
+    "payment": "مشكلة في الدفع",
+    "event": "مشكلة في الفعالية",
+    "user": "شكوى من مستخدم",
+    "inquiry": "استفسار",
+    "issue": "مشكلة",
+    "request": "طلب",
+    "suggestion": "اقتراح",
+    "other": "أخرى"
+  },
+  "status": {
+    "open": "مفتوحة",
+    "pending": "معلقة",
+    "in_progress": "قيد المعالجة",
+    "resolved": "تم الحل",
+    "closed": "مغلقة"
+  },
+  "priority": {
+    "low": "منخفضة",
+    "medium": "متوسطة",
+    "high": "عالية",
+    "urgent": "عاجلة"
+  },
+  "actions": {
+    "delete": "حذف",
+    "edit": "تعديل",
+    "deleteTitle": "حذف الشكوى",
+    "deleteConfirm": "هل أنت متأكد من حذف هذه الشكوى؟",
+    "confirmDelete": "حذف",
+    "cancelDelete": "إلغاء"
+  },
+  "messages": {
+    "createSuccess": "تم إرسال الشكوى بنجاح",
+    "updateSuccess": "تم تحديث الشكوى بنجاح",
+    "deleteSuccess": "تم حذف الشكوى بنجاح",
+    "fetchError": "فشل في تحميل الشكاوى",
+    "deleteError": "فشل في حذف الشكوى",
+    "saveError": "حدث خطأ أثناء حفظ الشكوى"
+  },
+  "createdAt": "تم الإنشاء:",
+  "validation": {
+    "typeRequired": "يجب اختيار نوع الشكوى",
+    "messageRequired": "يجب إدخال نص الشكوى (10 أحرف على الأقل)",
+    "messageMinLength": "الرسالة يجب أن تكون 10 أحرف على الأقل",
+    "messageMaxLength": "الرسالة يجب أن لا تتجاوز 5000 حرف",
+    "priorityInvalid": "أولوية غير صالحة",
+    "statusInvalid": "حالة غير صالحة",
+    "typeInvalid": "نوع الشكوى غير صالح"
+  },
+  "errors": {
+    "typeRequired": "نوع الشكوى مطلوب",
+    "messageMinLength": "الرسالة يجب أن تكون 10 أحرف على الأقل",
+    "messageMaxLength": "الرسالة يجب أن لا تتجاوز 5000 حرف",
+    "priorityInvalid": "أولوية غير صالحة",
+    "statusInvalid": "حالة غير صالحة",
+    "typeInvalid": "نوع الشكوى غير صالح",
+    "responseRequired": "الرد مطلوب",
+    "responseMaxLength": "الرد يجب أن لا يتجاوز 5000 حرف",
+    "boundary": "فشل في تحميل الشكاوى"
+  }
+}

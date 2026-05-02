@@ -1,0 +1,152 @@
+"use client";
+import React from "react";
+import styles from "./sidebar.module.css";
+import { useTranslation } from "react-i18next";
+import { usePathname, useRouter } from "next/navigation";
+import { authAPI } from "@/services/authService";
+import Link from "next/link";
+import useSidebarStore from "@/stores/sidebarStore";
+import useAuthStore from "@/stores/authStore";
+import PlanBox from "@/ui/commen/planBox/PlanBox";
+import { IoLogOut } from "react-icons/io5";
+import {
+  getNavItems,
+  getDashboardTypeFromPath,
+  isNavItemActive,
+  DASHBOARD_TYPES,
+} from "../navConfig";
+import Image from "next/image";
+
+/**
+ * Global Sidebar Component
+ * Dynamically renders navigation items based on dashboard type and user role
+ *
+ * @param {Object} props
+ * @param {string} props.className - Additional CSS class
+ * @param {string} props.dashboardType - Override dashboard type detection
+ */
+function Sidebar({ className, dashboardType: propDashboardType }) {
+  const { setIsOpen } = useSidebarStore();
+  const { user } = useAuthStore();
+  const { t } = useTranslation("home-events");
+  const { t: tCommon } = useTranslation("common");
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Determine dashboard type from props or pathname
+  const dashboardType = propDashboardType || getDashboardTypeFromPath(pathname);
+
+  // Get user role and permissions for role-based nav filtering
+  const userRole = user?.role || null;
+  const userPermissions = user?.permissions || [];
+
+  // Get navigation items for this dashboard type, filtered by user role and permissions
+  const navItems = getNavItems(dashboardType, userRole, userPermissions);
+
+  // Get clean path without language prefix for active state checking
+  const cleanPath = pathname
+    .split("/")
+    .slice(2, pathname.split("/").length)
+    .join("/");
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      setIsOpen(false);
+      await authAPI.logout();
+    } catch (err) {
+      console.error("Logout failed:", err);
+    } finally {
+      useAuthStore.getState().logout();
+      router.replace("/");
+    }
+  };
+
+  // Get translation based on dashboard type
+  const getTranslation = (labelKey, defaultLabel) => {
+    // Try common namespace first for admin-related keys
+    if (
+      labelKey.startsWith("adminSidebar.") ||
+      labelKey.startsWith("vendorSidebar.")
+    ) {
+      return tCommon(labelKey, defaultLabel);
+    }
+    return t(labelKey, defaultLabel);
+  };
+
+  // Check if item is active
+  const checkIsActive = (item) => {
+    if (item.exactMatch) {
+      return cleanPath === item.path.slice(1);
+    }
+    return cleanPath.startsWith(item.path.slice(1));
+  };
+
+  // Determine if we should show the plan box (only for host dashboard)
+  const showPlanBox = dashboardType === DASHBOARD_TYPES.HOST;
+
+  return (
+    <div className={`${styles.sidebarContainer} ${className || ""}`}>
+      <div className={styles.sidebarHeader}>
+                  <Image 
+ src="/logo.png" alt="Logo" width={60} height={60} />
+        
+        <img
+          className={styles.logoMobile}
+          src="/svg/events/sidebar-mobile-logo.svg"
+          alt="logo"
+        />
+        <button className={styles.closeBtn} onClick={() => setIsOpen(false)}>
+          <img src="/svg/events/close-circle.svg" alt="close" />
+        </button>
+      </div>
+
+      <div className={styles.body}>
+        <nav className={styles.menu}>
+          <ul>
+            {navItems.map((item) => {
+              const IconComponent = item.icon;
+              const isActive = checkIsActive(item);
+
+              return (
+                <li key={item.key}>
+                  <Link
+                    className={`${styles.menuLink} ${
+                      isActive ? styles.active : ""
+                    }`}
+                    href={item.path}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <IconComponent className={styles.icon} />
+                    <span>
+                      {getTranslation(item.labelKey, item.defaultLabel)}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+
+      <div className={styles.footer}>
+        {/* {showPlanBox && (
+          <PlanBox
+            title={t("sidebar.freePlan", "خطة مجانية")}
+            description={t(
+              "sidebar.freePlanDesc",
+              "اشترك لإرسال دعوات غير محدودة"
+            )}
+            buttonText={t("sidebar.upgradeNow", "ترقية الآن")}
+          />
+        )} */}
+        <button className={styles.logoutBtn} onClick={handleLogout}>
+          <IoLogOut className={styles.icon} />
+          <span>{t("sidebar.logout", "تسجيل خروج")}</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default Sidebar;

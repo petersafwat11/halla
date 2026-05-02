@@ -1,0 +1,43 @@
+{
+  "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
+  "pageTitle": "Choose Your Plan",
+  "pageSubtitle": "Select the right plan for your event",
+  "loading": "Loading...",
+  "planFamilies": { "basic": "Halaa Basic", "premium": "Halaa Premium" },
+  "planFamilyDescriptions": {
+    "basic": "You manage everything yourself — we handle the tech",
+    "premium": "Our team manages everything for you"
+  },
+  "billingTypes": { "event": "Per Event", "monthly": "Monthly" },
+  "billingTypeLabels": { "event": "/ event", "monthly": "/ month" },
+  "billingTypeDescriptions": {
+    "event": "1 event — valid 90 days",
+    "monthly": "Invite Pool — unlimited events"
+  },
+  "currency": "SAR",
+  "inviteSelector": { "label": "Select number of invites", "poolLabel": "Invite pool", "invites": "invites" },
+  "planLimits": { "invitesPerEvent": "invites/event", "invitePool": "invite pool" },
+  "features": { "title": "Included Features" },
+  "compensation": { "title": "Free Compensation Invites", "invites": "invites" },
+  "buttons": { "subscribeNow": "Subscribe Now" },
+  "addons": {
+    "title": "Add-Ons", "subtitle": "Enhance your plan with optional extras",
+    "extraInvites": { "title": "Extra Invites", "description": "Add more invites to your plan" },
+    "extraReminders": { "title": "Extra Reminders", "description": "Send additional reminder messages" },
+    "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
+    "addButton": "Add", "removeButton": "Remove", "addedBadge": "Added"
+  },
+  "infoNote": "Our team will contact you after subscription to complete payment and get started.",
+  "errors": { "loadFailed": "Failed to load plans. Please try again.", "selectPlan": "Please select a plan to continue." },
+  "toasts": {
+    "subscriptionCreated": "Subscription activated successfully!",
+    "alreadyActive": "You have an active subscription.",
+    "subscriptionFailed": "Failed to activate subscription. Please try again."
+  },
+  "summary": {
+    "title": "Order Summary", "planDetails": "Plan Details",
+    "invitePool": "Invite Pool", "validDays": "Valid for", "days": "days",
+    "compensationInvites": "compensation invites",
+    "oneEvent": "1 event", "unlimitedEvents": "Unlimited events"
+  }
+}

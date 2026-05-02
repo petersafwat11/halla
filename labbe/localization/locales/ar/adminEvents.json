@@ -1,0 +1,197 @@
+{
+  "header": {
+    "title": "المناسبات",
+    "subtitle": "راقب وأدر أحداث المنصة",
+    "dateRange": "نطاق التاريخ",
+    "createEvent": "انشئ مناسبة"
+  },
+  "stats": {
+    "totalEvents": "إجمالي المناسبات",
+    "totalActiveEvents": "مناسبات نشطة",
+    "totalEndedEvents": "مناسبات منتهية",
+    "totalSuspendedEvents": "مناسبات موقوفة"
+  },
+  "charts": {
+    "mostCreatedEvents": "الحفلات الأكثر انشاءا",
+    "guestResponseStats": "إحصائيات ردود الضيوف",
+    "confirmed": "المؤكدين",
+    "attended": "الحاضرين",
+    "declined": "المرفوضين"
+  },
+  "table": {
+    "title": "قائمة المناسبات",
+    "searchPlaceholder": "البحث في المناسبات...",
+    "filter": "التصفية",
+    "export": "تصدير",
+    "columns": {
+      "title": "عنوان المناسبة",
+      "eventMaker": "منشئ المناسبة",
+      "type": "النوع",
+      "guestList": "عدد الضيوف",
+      "datetime": "التاريخ والوقت",
+      "status": "الحالة"
+    },
+    "status": {
+      "active": "نشطة",
+      "ended": "منتهية",
+      "suspended": "موقوفة",
+      "draft": "مسودة"
+    },
+    "eventTypes": {
+      "wedding": "زفاف",
+      "birthday": "عيد ميلاد",
+      "graduation": "تخرج",
+      "corporate": "مؤسسي",
+      "family": "عائلي",
+      "other": "أخرى"
+    }
+  },
+  "dateRange": {
+    "all": "الكل",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  },
+  "createEvent": {
+    "title": "إنشاء مناسبة (إدارة)",
+    "subtitle": "اختر مضيف وأنشئ مناسبة",
+    "creatingFor": "إنشاء مناسبة لـ:",
+    "inviteButton": "دعوتك علينا",
+    "selectHost": {
+      "title": "اختر الهدف",
+      "description": "اختر لمن تريد إنشاء هذه المناسبة",
+      "createForSelf": "إنشاء لنفسي",
+      "createForHost": "إنشاء لمضيف",
+      "createForWhitelabel": "إنشاء لعلامة بيضاء",
+      "createForYourself": "إنشاء مناسبة لنفسك",
+      "unlimitedDescription": "كمسؤول منصة، لديك مناسبات وضيوف غير محدودة",
+      "unlimited": "غير محدود",
+      "searchByPhone": "البحث برقم الهاتف",
+      "selectFromList": "اختر من القائمة",
+      "phonePlaceholder": "+966 XX XXX XXXX",
+      "enterPhone": "يرجى إدخال رقم الهاتف",
+      "hostNotFound": "لم يتم العثور على المضيف",
+      "searchError": "فشل البحث",
+      "noHostsFound": "لم يتم العثور على مضيفين",
+      "noWhitelabelsFound": "لم يتم العثور على علامات بيضاء",
+      "selectedHost": "المضيف المختار:",
+      "selectedTarget": "الهدف المختار:",
+      "creatingForSelf": "إنشاء لنفسك",
+      "noSubscription": "لا يوجد اشتراك",
+      "inactiveSubscription": "غير نشط",
+      "subscriptionRequired": "الاشتراك مطلوب",
+      "eventsRemaining": "مناسبة متبقية",
+      "whitelabelAdmin": "مسؤول علامة بيضاء",
+      "whitelabelDescription": "أنشئ مناسبة باستخدام اشتراك العلامة البيضاء الخاص بك",
+      "createEventAsWhitelabel": "إنشاء مناسبة كعلامة بيضاء"
+    },
+    "steps": {
+      "eventDetails": "تفاصيل المناسبة",
+      "eventDetailsDesc": "املأ البيانات الأساسية للمناسبة",
+      "guestList": "قائمة الضيوف",
+      "guestListDesc": "أضف الضيوف والمشرفين",
+      "template": "تصميم الدعوة",
+      "templateDesc": "اختر تصميم الدعوة المناسب",
+      "messages": "تخصيص الرسالة",
+      "messagesDesc": "أضف رسالة الدعوة والردود التلقائية",
+      "summary": "مراجعة وإنشاء المناسبة",
+      "summaryDesc": "راجع جميع التفاصيل قبل الإنشاء"
+    },
+    "buttons": {
+      "proceed": "متابعة",
+      "next": "التالي",
+      "previous": "السابق",
+      "create": "إنشاء المناسبة",
+      "changeHost": "تغيير المضيف",
+      "cancel": "إلغاء",
+      "saveDraft": "حفظ كمسودة"
+    },
+    "success": {
+      "created": "تم إنشاء المناسبة بنجاح",
+      "scheduled": "تم جدولة المناسبة بنجاح"
+    },
+    "creatingForSelf": "إنشاء مناسبة لنفسك (غير محدود)",
+    "errors": {
+      "hostRequired": "يرجى اختيار مضيف",
+      "subscriptionRequired": "يجب أن يكون لدى المضيف اشتراك نشط",
+      "limitReached": "تم الوصول للحد الأقصى من المناسبات لهذا الاشتراك",
+      "guestLimitExceeded": "عدد الضيوف يتجاوز حد الاشتراك",
+      "fillRequired": "يرجى ملء جميع الحقول المطلوبة",
+      "createFailed": "فشل في إنشاء المناسبة. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "updateEvent": {
+    "title": "تعديل المناسبة",
+    "subtitle": "تعديل تفاصيل المناسبة",
+    "hostInfo": "المضيف:",
+    "inviteButton": "دعوتك علينا",
+    "loadingEvent": "جاري تحميل بيانات المناسبة...",
+    "steps": {
+      "eventDetails": "تفاصيل المناسبة",
+      "eventDetailsDesc": "تعديل تفاصيل المناسبة",
+      "guestList": "قائمة الضيوف",
+      "guestListDesc": "تعديل قائمة الضيوف",
+      "template": "تصميم الدعوة",
+      "templateDesc": "تعديل تصميم الدعوة",
+      "messages": "تخصيص الرسالة",
+      "messagesDesc": "تعديل تخصيص الرسالة"
+    },
+    "success": {
+      "updated": "تم تحديث المناسبة بنجاح",
+      "detailsUpdated": "تم تحديث تفاصيل المناسبة بنجاح",
+      "guestsUpdated": "تم تحديث قائمة الضيوف بنجاح",
+      "templateUpdated": "تم تحديث تصميم الدعوة بنجاح",
+      "messageUpdated": "تم تحديث تخصيص الرسالة بنجاح"
+    },
+    "errors": {
+      "missingId": "معرف المناسبة مفقود",
+      "loadFailed": "فشل في تحميل بيانات المناسبة",
+      "updateFailed": "فشل في تحديث المناسبة. يرجى المحاولة مرة أخرى.",
+      "fillRequired": "يرجى ملء جميع الحقول المطلوبة"
+    }
+  },
+  "singleEvent": {
+    "title": "تفاصيل المناسبة",
+    "hostInfo": "المضيف: {{hostName}}",
+    "actions": {
+      "edit": "تعديل المناسبة",
+      "delete": "حذف المناسبة",
+      "sendReminder": "إرسال تذكير",
+      "testMessage": "رسالة تجريبية",
+      "schedule": "جدولة الإرسال",
+      "viewStats": "عرض الإحصائيات",
+      "moderators": "المشرفين"
+    },
+    "stats": {
+      "totalGuests": "إجمالي الضيوف",
+      "confirmed": "مؤكد",
+      "declined": "مرفوض",
+      "noResponse": "بدون رد",
+      "maybe": "ربما",
+      "responseRate": "معدل الاستجابة"
+    },
+    "confirmDelete": {
+      "title": "حذف المناسبة؟",
+      "message": "هل أنت متأكد من حذف هذه المناسبة؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "subscription": {
+      "title": "معلومات الاشتراك",
+      "remainingGuests": "الضيوف المتبقين",
+      "compensationInvitations": "دعوات تعويضية",
+      "remainingEvents": "المناسبات المتبقية",
+      "expires": "ينتهي:",
+      "days": "يوم",
+      "used": "مستخدم",
+      "expired": "منتهي الصلاحية",
+      "unlimited": "غير محدود"
+    }
+  },
+  "loading": "جاري التحميل..."
+}

@@ -1,0 +1,219 @@
+.popup {
+  display: flex;
+  width: 100%;
+  /* max-width: 77rem; */
+  margin: 0 auto;
+  padding: 3rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  border-radius: 1.2rem;
+  background: #fff;
+}
+.textareaWrapper > * {
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  position: relative;
+}
+
+.closeButton {
+  display: flex;
+  width: 2.4rem;
+  height: 2.4rem;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.closeButton:hover {
+  opacity: 0.7;
+}
+
+.closeButton:focus {
+  outline: 2px solid #c28e5c;
+  outline-offset: 2px;
+  border-radius: 0.4rem;
+}
+
+.title {
+  color: #2c2c2c;
+  font-size: 2.4rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2.8rem;
+  margin: 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.4rem;
+  align-self: stretch;
+  width: 100%;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: flex-start;
+  align-self: stretch;
+  width: 100%;
+}
+
+.textareaWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  width: 100%;
+}
+
+.textareaWrapper :global(textarea) {
+  /* min-height: 23.2rem; */
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  align-self: stretch;
+}
+
+.submitButton {
+  display: flex;
+  width: 16.1rem;
+  padding: 1.2rem 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 1.2rem;
+  background: #f5ece4;
+  color: #cea57d;
+  text-align: center;
+  font-size: 1.6rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2.4rem;
+  letter-spacing: 0.08px;
+  transition: all 0.2s ease;
+}
+
+.submitButton:not(:disabled) {
+  background: #c28e5c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.submitButton:not(:disabled):hover {
+  background: #b07d4d;
+}
+
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.cancelButton {
+  display: flex;
+  width: 14.1rem;
+  padding: 1.2rem 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 1.2rem;
+  border: 1px solid #d6b392;
+  background: #fff;
+  color: #6b4e33;
+  text-align: center;
+  font-size: 1.6rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2.4rem;
+  letter-spacing: 0.08px;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: #f9f4ef;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .popup {
+    padding: 2.4rem;
+    gap: 2.4rem;
+  }
+
+  .title {
+    font-size: 2rem;
+    line-height: 2.4rem;
+  }
+
+  .content {
+    gap: 2rem;
+  }
+
+  .textareaWrapper :global(textarea) {
+    min-height: 18rem;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
+  .submitButton,
+  .cancelButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .popup {
+    padding: 2rem;
+    gap: 2rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+    line-height: 2.2rem;
+  }
+
+  .content {
+    gap: 1.6rem;
+  }
+
+  .textareaWrapper :global(textarea) {
+    min-height: 15rem;
+  }
+
+  .actions {
+    gap: 1rem;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .actions {
+  flex-direction: row-reverse;
+}
+
+@media (max-width: 768px) {
+  [dir="rtl"] .actions {
+    flex-direction: column-reverse;
+  }
+}

@@ -1,0 +1,82 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.required {
+  color: #dc2626;
+  margin-inline-start: 0.25rem;
+}
+
+.ratingWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.starButton {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.starButton:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.starButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.star {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+/* Size variants */
+.small .star {
+  width: 20px;
+  height: 20px;
+}
+
+.medium .star {
+  width: 32px;
+  height: 32px;
+}
+
+.large .star {
+  width: 48px;
+  height: 48px;
+}
+
+.ratingLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.error {
+  font-size: 0.875rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
+}

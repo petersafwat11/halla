@@ -1,0 +1,81 @@
+{
+  "header": {
+    "title": "المدراء",
+    "subtitle": "راقب وأدر أحداث المنصة",
+    "dateRange": "حدد مدة زمنية",
+    "addModerator": "ضيف مشرف"
+  },
+  "dateRange": {
+    "all": "الكل",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  },
+  "addModerator": {
+    "title": "إضافة مشرف",
+    "username": "اسم المشرف",
+    "usernamePlaceholder": "ادخل اسم المشرف",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "ادخل البريد الإلكتروني",
+    "phoneNumber": "رقم الهاتف",
+    "phoneNumberPlaceholder": "ادخل رقم الهاتف",
+    "jobTitle": "المسمى الوظيفي",
+    "jobTitlePlaceholder": "ادخل المسمى الوظيفي",
+    "permissions": "الصلاحيات",
+    "save": "حفظ",
+    "cancel": "الغاء",
+    "saving": "جاري الحفظ...",
+    "success": "تم إضافة المشرف بنجاح",
+    "error": "فشل في إضافة المشرف"
+  },
+  "editModerator": {
+    "title": "تعديل مشرف",
+    "update": "تحديث",
+    "updating": "جاري التحديث...",
+    "success": "تم تحديث المشرف بنجاح",
+    "error": "فشل في تحديث المشرف"
+  },
+  "deleteModerator": {
+    "success": "تم حذف المشرف بنجاح",
+    "error": "فشل في حذف المشرف"
+  },
+  "confirmDelete": {
+    "message": "هل أنت متأكد من حذف هذا المشرف؟"
+  },
+  "stats": {
+    "superAdmin": "مشرف رئيسى",
+    "moderators": "المشرفين",
+    "activeModerators": "مشرفين نشطين",
+    "suspendedModerators": "مشرفين موقوفون"
+  },
+  "table": {
+    "title": "قائمة المدراء",
+    "searchPlaceholder": "ابحث عن مدير",
+    "filter": "التصفية",
+    "export": "تصدير",
+    "columns": {
+      "username": "اسم المستخدم",
+      "phoneNumber": "رقم الهاتف",
+      "email": "البريد الإلكتروني",
+      "title": "المسمى الوظيفي",
+      "status": "الحالة",
+      "createdAt": "تاريخ الانضمام",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "active": "نشط",
+      "suspended": "موقوف",
+      "inactive": "غير نشط"
+    },
+    "actions": {
+      "suspend": "ايقاف",
+      "delete": "حذف",
+      "edit": "تعديل"
+    }
+  }
+}

@@ -1,0 +1,277 @@
+.sidebarContainer {
+  display: flex;
+  position: fixed;
+  inset-inline-start: 0;
+  top: 0;
+  height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  border-inline-end: 1px solid #f2f2f2;
+  background: #fff;
+  width: 28rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
+}
+
+.sidebarHeader {
+  display: flex;
+  height: 76px;
+  padding: 2rem 0;
+  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  margin-bottom: 1.4rem;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.logoMobile {
+  display: none;
+}
+
+.closeBtn {
+  display: none;
+}
+
+.mobileContainer {
+  display: none;
+}
+
+.desktopMode {
+  display: block;
+}
+
+.modileMode {
+  display: none;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  padding: 0 2rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.menu {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.014px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .menu ul {
+    gap: 0.5rem;
+  }
+}
+
+.menu li {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  color: #656565;
+  transition: background 0.2s;
+}
+
+.menu .menuLink {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.9rem;
+  cursor: pointer;
+  width: 100%;
+  color: #656565;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  position: relative;
+}
+
+.menu .menuLink:hover {
+  background: linear-gradient(135deg, #f9f4ef 0%, #fef8f1 100%);
+  color: #b8860b;
+  transform: translateX(-2px);
+  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.1);
+}
+
+.menu .menuLink.active {
+  background: linear-gradient(135deg, #f9f4ef 0%, #fef8f1 100%);
+  color: #b8860b;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.15);
+  border-left: 3px solid #b8860b;
+}
+
+[dir="ltr"] .menu .menuLink.active {
+  border-left: none;
+  border-right: 3px solid #b8860b;
+}
+
+.menu .menuLink:hover .icon,
+.menu .menuLink.active .icon {
+  color: #daa520;
+  transform: scale(1.1);
+}
+
+.icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  transition: all 0.3s ease;
+}
+
+.logoutBtn {
+  display: flex;
+  width: 248px;
+  padding: 16px 16px;
+  align-items: center;
+  gap: 12px;
+  transition: color 0.2s;
+  color: #c0392b;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.014px;
+}
+
+.logoutBtn:hover {
+  color: #b94a48;
+}
+
+.desktopContainer {
+  display: block;
+}
+
+.mobileContainer {
+  display: none;
+}
+
+.mobileSidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 280px;
+  max-width: 80vw;
+  height: 100%;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.mobileSidebar.active {
+  transform: translateX(0);
+}
+
+.mobileToggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 999;
+  background: #fff;
+  border: 1px solid #f2f2f2;
+  border-radius: 8px;
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.mobileToggle:hover {
+  background: #f9f9f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mobileOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 2rem 2rem;
+  margin-top: auto;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1024px) {
+  .desktopContainer {
+    display: none;
+  }
+
+  .desktopMode {
+    display: none;
+  }
+
+  .modileMode {
+    display: block;
+  }
+
+  .mobileContainer {
+    display: block !important;
+  }
+
+  .sidebarHeader {
+    padding: 2rem 2.4rem;
+    justify-content: space-between;
+  }
+
+  .sidebarContainer {
+    position: fixed;
+    height: 100vh;
+    width: 280px;
+    max-width: 80vw;
+  }
+
+  .logoMobile {
+    width: 155px;
+    height: fit-content;
+    display: none;
+  }
+
+  .logo {
+    display: none;
+  }
+
+  .closeBtn {
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+}

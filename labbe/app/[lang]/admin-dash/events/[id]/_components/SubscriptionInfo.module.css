@@ -1,0 +1,284 @@
+/* ========================================SUBSCRIPTION INFO - COMPACT FULL WIDTH
+   ======================================== */
+.container {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+/* ========================================
+   HEADER - COMPACT INLINE
+   ======================================== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.planBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.planBadge[data-status="inactive"],
+.planBadge[data-status="expired"],
+.planBadge[data-status="cancelled"] {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.planDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.expiryWrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.expiryLabel {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.expiryValue {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.expiryValue[data-status="expired"] {
+  color: #dc2626;
+}
+
+.expiryValue[data-status="warning"] {
+  color: #d97706;
+}
+
+.daysRemaining {
+  color: #9ca3af;
+  font-weight: 400;
+  margin-inline-start: 4px;
+}
+
+/* ========================================
+   STATS ROW - HORIZONTAL FULL WIDTH
+   ======================================== */
+.statsRow {
+  display: flex;
+  padding: 0;
+}
+
+.statItem {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-inline-end: 1px solid #f3f4f6;
+  transition: background 0.15s ease;
+}
+
+.statItem:last-child {
+  border-inline-end: none;
+}
+
+.statItem:hover {
+  background: #fafafa;
+}
+
+.statIcon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.statContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.statLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statValueGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.statValue {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.statTotal {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+/* ========================================
+   PROGRESS BAR - SLIM
+   ======================================== */
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: #f3f4f6;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 900px) {
+  .statsRow {
+    flex-wrap: wrap;
+  }
+
+  .statItem {
+    flex: 1 1 calc(50% - 1px);
+    min-width: 200px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .statItem:nth-child(2) {
+    border-inline-end: none;
+  }
+
+  .statItem:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    padding: 12px 16px;
+  }
+
+  .statsRow {
+    flex-direction: column;
+  }
+
+  .statItem {
+    flex: 1 1 100%;
+    border-inline-end: none;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 14px 16px;
+  }
+
+  .statItem:last-child {
+    border-bottom: none;
+  }
+
+  .statIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .statValue {
+    font-size: 16px;
+  }
+}
+
+/* ========================================
+   RTL SUPPORT
+   ======================================== */
+[dir="rtl"] .header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .headerLeft {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .expiryWrapper {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .statItem {
+  flex-direction: row-reverse;
+  border-inline-end: none;
+  border-inline-start: 1px solid #f3f4f6;
+}
+
+[dir="rtl"] .statItem:first-child {
+  border-inline-start: none;
+}
+
+[dir="rtl"] .statTop {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .planBadge {
+  flex-direction: row-reverse;
+}
+
+/* Keep numbers in correct order (LTR) even in RTL */
+[dir="rtl"] .statValueGroup {
+  direction: ltr;
+}

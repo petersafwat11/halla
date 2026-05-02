@@ -1,0 +1,329 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "events": "Events",
+    "settings": "Settings",
+    "payments": "Payments",
+    "tickets": "Tickets",
+    "plans": "plans",
+    "freePlan": "Free Plan",
+    "freePlanDesc": "Subscribe to send unlimited invitations",
+    "upgradeNow": "Upgrade Now",
+    "logout": "Logout"
+  },
+  "header": {
+    "userName": "Ahmed Gamal Eldin",
+    "userRole": "Event Management",
+    "searchPlaceholder": "Search"
+  },
+  "toolbar": {
+    "welcome": "Welcome back",
+    "welcomeSubtitle": "Here's a quick overview of your events and invitations",
+    "filter": {
+      "upcoming": "Upcoming Events",
+      "past": "Past Events"
+    },
+    "createEvent": "Create Event +"
+  },
+  "eventCard": {
+    "status": {
+      "upcoming": "Upcoming"
+    },
+    "stats": {
+      "invited": "Invited",
+      "confirmed": "Confirmed",
+      "apologies": "Apologies",
+      "noReply": "No Reply",
+      "replyStatus": "Reply Status",
+      "responseRate": "Response Rate"
+    },
+    "actions": {
+      "view": "View Event",
+      "manage": "Manage Invitations",
+      "viewStats": "View Statistics",
+      "duplicate": "Duplicate Event",
+      "testSend": "Test Send",
+      "scheduleSend": "Schedule Send"
+    }
+  },
+  "stats": {
+    "totalEvents": "Total Events",
+    "activeEvents": "Active Events",
+    "completedEvents": "Completed Events",
+    "allEvents": "All Events",
+    "avgAttendance": "Average Response",
+    "liveEvents": "Active Events",
+    "endedEvents": "Ended Events",
+    "draftEvents": "Draft Events",
+    "attendanceRate": "Attendance Rate"
+  },
+  "lastEvent": {
+    "scheduleEvent": "Schedule Event",
+    "viewStats": "View Statistics",
+    "editEvent": "Edit Event",
+    "responseStatus": "Response Status",
+    "approved": "Approved",
+    "declined": "Declined",
+    "noResponse": "No Response",
+    "remainingEvents": "Remaining Events",
+    "maxGuestsPerEvent": "Max Guests/Event",
+    "plan": "Plan",
+    "status": {
+      "published": "Published",
+      "pending": "Pending Approval",
+      "suspended": "Suspended by Admins",
+      "active": "Active"
+    },
+    "dropdown": {
+      "eventDetails": "Event Details",
+      "guestList": "Guest List",
+      "invitationDesign": "Invitation Design",
+      "invitationCustomization": "Invitation Customization"
+    },
+    "buttons": {
+      "scheduleEvent": "Schedule Event",
+      "testMessage": "Test Message",
+      "guests": "Guests"
+    },
+    "quota": {
+      "remainingGuests": "Remaining Guests",
+      "compensationMessages": "Remaining Compensation Messages"
+    }
+  },
+  "subscription": {
+    "eventLimitReached": "Event Limit Reached",
+    "eventLimitDescription": "You have used all available events in your plan. Upgrade your plan to enjoy more features and create additional events.",
+    "eventsUsage": "Events Usage",
+    "currentPlan": "Current Plan:",
+    "upgradePlan": "Upgrade Plan",
+    "backToHome": "Back to Home",
+    "upgradeFeatures": "Upgrade Benefits:",
+    "moreEventsPerMonth": "More events per month",
+    "moreGuestsPerEvent": "More guests per event",
+    "additionalFollowUp": "Additional follow-up messages",
+    "customBranding": "Custom branding options",
+    "guestQuota": "Guest Quota",
+    "unlimitedGuests": "Unlimited guests",
+    "guestsRemaining": "guests remaining",
+    "overLimitBy": "Over limit by",
+    "guests": "guests",
+    "planLite": "Lite",
+    "planPro": "Pro",
+    "planElite": "Elite",
+    "subscribeToAdd": "Please subscribe to add guests"
+  },
+  "hero": {
+    "welcome": "Welcome",
+    "readyToOrganize": "Ready to organize your first event?",
+    "createEvent": "Create Your Event",
+    "freeTrial": "You have a free trial to invite 5 people"
+  },
+  "dashboard": {
+    "welcome": "Welcome! 👋",
+    "subtitle": "Manage your events and track your progress"
+  },
+  "overview": {
+    "title": "Overview"
+  },
+  "templates": {
+    "title": "Event Templates",
+    "subtitle": "Choose the appropriate template that you think expresses the occasion",
+    "wedding": "Weddings",
+    "graduation": "Graduations",
+    "birthday": "Birthdays",
+    "diplomatic": "Diplomatic Events",
+    "corporate": "Corporate Events",
+    "religious": "Religious Events",
+    "anniversary": "Anniversaries",
+    "baby": "Baby Showers"
+  },
+  "table": {
+    "eventName": "Event Name",
+    "eventType": "Event Type",
+    "totalInvites": "Total Invites",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "noResponse": "No Response",
+    "maybe": "Maybe",
+    "status": "Status",
+    "actions": "Actions",
+    "view": "View",
+    "delete": "Delete",
+    "noEvents": "No events available",
+    "eventsList": "Events List",
+    "exportData": "Export Data",
+    "exportSuccess": "Events exported successfully",
+    "exportError": "Failed to export events",
+    "columns": {
+      "addedBy": "Added By",
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "status": "Status",
+      "respondAt": "Response Date"
+    }
+  },
+  "confirmDelete": "Are you sure you want to delete this event? This action cannot be undone.",
+  "deleteSuccess": "Event deleted successfully",
+  "errors": {
+    "noEventId": "Event ID not found",
+    "noToken": "Authentication token not found",
+    "eventNotFound": "Event not found or you don't have permission to delete it",
+    "unauthorized": "You are not authorized to perform this action",
+    "deleteError": "Failed to delete event. Please try again.",
+    "noGuestId": "Guest ID not found"
+  },
+  "events": {
+    "title": "Events",
+    "stats": {
+      "totalGuests": "Total Guests",
+      "confirmed": "Confirmed",
+      "guestAcceptance": "Guest Acceptance",
+      "declined": "Declined",
+      "responseRate": "Response Rate",
+      "noResponse": "No Response"
+    }
+  },
+  "singleEvent": {
+    "header": {
+      "eventDetails": "Event Details",
+      "ourInvitation": "Our Invitation",
+      "ourInvitationTitle": "Premium Service",
+      "ourInvitationDesc": "Let us handle all your event details",
+      "staffDetails": "Staff Details",
+      "sendReminder": "Send Reminder",
+      "addGuest": "Add Guest"
+    },
+    "stats": {
+      "attendanceTracking": "Attendance Tracking",
+      "declined": "Declined",
+      "confirmed": "Confirmed",
+      "noResponse": "No Response",
+      "maybe": "Maybe"
+    },
+    "staff": {
+      "title": "Staff",
+      "noStaff": "No Staff",
+      "addStaff": "Add Staff"
+    },
+    "guestTable": {
+      "title": "Guest List",
+      "exportData": "Export Data",
+      "more": "More Options",
+      "exportSuccess": "Guest list exported successfully",
+      "exportError": "Failed to export guest list",
+      "confirmDelete": "Are you sure you want to delete this guest?",
+      "deleteSuccess": "Guest deleted successfully",
+      "deleteError": "Failed to delete guest"
+    },
+    "addGuest": {
+      "title": "Add Guest",
+      "name": "Name",
+      "namePlaceholder": "Enter guest name",
+      "email": "Email",
+      "emailPlaceholder": "Enter email address",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter phone number",
+      "success": "Guest added successfully",
+      "error": "Failed to add guest"
+    },
+    "updateGuest": {
+      "title": "Update Guest",
+      "confirm": "Update",
+      "success": "Guest updated successfully",
+      "error": "Failed to update guest"
+    },
+    "addStaff": {
+      "title": "Add Staff",
+      "name": "Name",
+      "namePlaceholder": "Enter staff name",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter phone number",
+      "email": "Email",
+      "emailPlaceholder": "Enter email address",
+      "mainStaff": "Main Staff",
+      "success": "Staff added successfully",
+      "error": "Failed to add staff"
+    },
+    "staffCard": {
+      "title": "Staff",
+      "add": "Add Staff",
+      "mainStaff": "Main Staff",
+      "phone": "Phone",
+      "email": "Email"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "required": "This field is required"
+  },
+  "reminderPopup": {
+    "title": "Send Reminder",
+    "guestsToRemind": "Number of guests to remind",
+    "messageLabel": "Reminder Message",
+    "messagePlaceholder": "Enter your reminder message here...",
+    "success": "Reminder sent successfully",
+    "error": "Failed to send reminder"
+  },
+  "messaging": {
+    "sendInvitation": "Send Invitations",
+    "sendInvitations": "Send Invitations",
+    "selectedGuests": "Selected Guests",
+    "selectChannel": "Select Delivery Method",
+    "sms": "SMS Text Message",
+    "whatsapp": "WhatsApp",
+    "smsInfo": "An SMS will be sent containing invitation details and RSVP link",
+    "whatsappInfo": "A WhatsApp message will be sent containing invitation details and RSVP link",
+    "send": "Send",
+    "sending": "Sending...",
+    "invitationsSent": "Successfully sent {{count}} invitations",
+    "sendError": "Error sending invitations",
+    "noGuestsWithPhone": "No guests with phone numbers",
+    "retryFailed": "Retry Failed",
+    "sendTest": "Send Test",
+    "testMessageSent": "Test message sent successfully",
+    "balance": "Remaining Balance",
+    "invitationStats": "Invitation Statistics",
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "failed": "Failed",
+    "pending": "Pending"
+  },
+  "template": {
+    "statusLabel": "WhatsApp Template Status",
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected",
+      "notSubmitted": "Not Submitted"
+    },
+    "rejectionReason": "Rejection reason: ",
+    "submitForApproval": "Submit for Approval",
+    "submitting": "Submitting...",
+    "approvedMessage": "You can now send invitations via WhatsApp",
+    "submitSuccess": "Template submitted for approval. You'll be notified when approved.",
+    "submitError": "Failed to submit template"
+  },
+  "testMessage": {
+    "title": "Send Test Message",
+    "description": "Send one test message to verify the functionality and preview the final invitation appearance",
+    "phoneLabel": "Mobile Number",
+    "validation": {
+      "phoneRequired": "Phone number is required",
+      "phoneFormat": "Phone number must be 9 digits starting with 5"
+    }
+  },
+  "scheduleEvent": {
+    "dateLabel": "Date",
+    "datePlaceholder": "Select date",
+    "timeLabel": "Time",
+    "timePlaceholder": "Select time",
+    "confirm": "Confirm Schedule",
+    "validation": {
+      "dateRequired": "Date is required",
+      "timeRequired": "Time is required"
+    }
+  }
+}

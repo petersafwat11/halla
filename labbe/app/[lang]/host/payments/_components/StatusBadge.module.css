@@ -1,0 +1,15 @@
+.badge {
+  display: inline-flex;
+  padding: 0.3rem 1.2rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 9999px;
+}
+
+.badge span {
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6rem;
+  text-align: center;
+}

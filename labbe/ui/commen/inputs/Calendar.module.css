@@ -1,0 +1,208 @@
+/* Main Container */
+.rdp {
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+/* Month Container */
+.month {
+  width: 100%;
+  margin: 0;
+}
+
+.months {
+  margin: 0;
+}
+
+/* Caption (Month/Year header with navigation) */
+.caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  /* margin-bottom: 1.6rem; */
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.caption_label {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+/* Navigation - Arrows on sides */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 92%;
+  position: absolute;
+  top: 0.5rem;
+  left: 4%;
+  /* right: 0; */
+}
+
+.nav_button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: none;
+  background: #f9fafb;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.nav_button:hover:not(:disabled) {
+  background: #c28e5c;
+  color: #fff;
+}
+
+.nav_button:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.nav_button_previous {
+  order: -1;
+}
+
+.nav_button_next {
+  order: 1;
+}
+
+/* RTL Support */
+html[dir="rtl"] .nav_button_previous {
+  order: 1;
+}
+
+html[dir="rtl"] .nav_button_next {
+  order: -1;
+}
+
+/* Calendar Grid/Table */
+.table {
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Weekday Headers */
+.head_row {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 0.8rem;
+}
+
+.head_cell {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #6b7280;
+  padding: 0.8rem 0;
+  width: 3.6rem;
+}
+
+/* Week Rows */
+.row {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+
+/* Day Cell Container */
+.day {
+  width: 3.6rem;
+  height: 3.6rem;
+  padding: 0;
+  position: relative;
+}
+
+/* Day Button */
+.day_button {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  color: #374151;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+}
+
+.day_button:hover:not(.disabled) {
+  background: #f9fafb;
+}
+
+/* Selected Day - Golden */
+.day_selected {
+  position: relative;
+}
+
+.day_selected .day_button {
+  background: #c28e5c !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+/* Today's Date - Golden Border */
+.day_today:not(.day_selected) .day_button {
+  border: 2px solid #c28e5c;
+  font-weight: 600;
+}
+
+/* Outside Days (other months) */
+.day_outside .day_button {
+  color: #d1d5db;
+}
+
+/* Disabled Days */
+.day_disabled .day_button {
+  color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Hidden Days */
+.day_hidden {
+  visibility: hidden;
+}
+
+/* Range Selection Styles */
+.day_range_start .day_button,
+.day_range_end .day_button {
+  background: #c28e5c !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+/* Days in between range - Lighter golden */
+.day_range_middle {
+  background: rgba(194, 142, 92, 0.15);
+}
+
+.day_range_middle .day_button {
+  background: transparent !important;
+  color: #c28e5c !important;
+  font-weight: 500;
+}
+
+.day_range_middle:hover .day_button {
+  background: rgba(194, 142, 92, 0.25) !important;
+}

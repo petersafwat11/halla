@@ -1,0 +1,497 @@
+import { API_BASE_URL, ENDPOINTS } from "../config/api";
+
+/**
+ * Login with email and password (Vendors/Admins)
+ * @param {Object} credentials - { email, password }
+ * @returns {Promise<{token: string, user: Object}>}
+ */
+export const loginWithEmailAPI = async ({ email, password }) => {
+  try {
+    console.log("[AUTH SERVICE] Login attempt:", { email });
+    console.log("[AUTH SERVICE] API URL:", `${API_BASE_URL}/login`);
+
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGIN}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    console.log("[AUTH SERVICE] Response status:", response.status);
+
+    const data = await response.json();
+    console.log("[AUTH SERVICE] Response data:", data);
+
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+
+    console.log("[AUTH SERVICE] Login successful:", data.user?.email);
+
+    return {
+      token: data.token,
+      user: data.data?.user,
+      subscription: data.data?.subscription,
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Login error:", error.message);
+    throw error;
+  }
+};
+
+/**
+ * Vendor signup with email and password
+ * @param {Object} data - { email, password, brandName, ownerFullName, phoneNumber, serviceDescription, etc. }
+ * @returns {Promise<{token: string, user: Object}>}
+ */
+export const signupVendorAPI = async (vendorData) => {
+  try {
+    console.log("[AUTH SERVICE] Vendor signup:", vendorData instanceof FormData ? "[FormData]" : vendorData.email);
+
+    // VendorSignupScreen builds FormData directly — use it as-is.
+    // If a plain object is passed (e.g. from tests), build FormData from it.
+    let formData;
+    if (vendorData instanceof FormData) {
+      formData = vendorData;
+    } else {
+      formData = new FormData();
+      const fileFields = ['businessLogo', 'nationalIdImage', 'commercialRecordImage', 'portfolioImages'];
+      Object.entries(vendorData).forEach(([key, value]) => {
+        if (fileFields.includes(key) && value) {
+          if (Array.isArray(value)) {
+            value.forEach((file) => formData.append(key, file));
+          } else {
+            formData.append(key, value);
+          }
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+    }
+
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.SIGNUP_VENDOR}`, {
+      method: "POST",
+      body: formData,
+    });
+
+    console.log("[AUTH SERVICE] Response status:", response.status);
+
+    const data = await response.json();
+    console.log("[AUTH SERVICE] Response data:", data);
+
+    if (!response.ok) {
+      throw new Error(data.message || "Vendor signup failed");
+    }
+
+    console.log("[AUTH SERVICE] Vendor signup successful");
+
+    return {
+      token: data.token,
+      user: data.data?.user,
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Vendor signup error:", error.message);
+    throw error;
+  }
+};
+
+/**
+ * Whitelabel signup
+ * @param {Object} data - whitelabel form data
+ * @returns {Promise<{token: string, user: Object}>}
+ */
+export const signupWhitelabelAPI = async (whitelabelData) => {
+  try {
+    const { identity, loginData, systemRequirements, planSelection } = whitelabelData;
+    console.log("[AUTH SERVICE] Whitelabel signup:", loginData?.email);
+
+    const formData = new FormData();
+
+    // Core user fields — FLAT at root level (backend reads req.body.email, req.body.phoneNumber)
+    if (loginData?.email) formData.append("email", loginData.email);
+    if (loginData?.phoneNumber) formData.append("phoneNumber", loginData.phoneNumber);
+
+    // Identity fields — FLAT
+    if (identity?.arabicName) formData.append("arabicName", identity.arabicName);
+    if (identity?.englishName) {
+      formData.append("englishName", identity.englishName);
+      formData.append("platformName", identity.englishName);
+    }
+    if (identity?.companyName) formData.append("companyName", identity.companyName);
+    if (identity?.licenseNumber) formData.append("licenseNumber", identity.licenseNumber);
+    if (identity?.taxNumber) formData.append("taxNumber", identity.taxNumber);
+
+    // Address — as JSON string (backend calls _parseJsonField on it)
+    if (identity?.address) {
+      formData.append("address", JSON.stringify(identity.address));
+    }
+
+    // Requirements — as JSON string
+    const requirements = {
+      numberOfEventsMonthly: parseInt(systemRequirements?.numberOfEventsMonthly) || 0,
+      numberOfGuestsMonthly: parseInt(systemRequirements?.numberOfGuestsMonthly) || 0,
+      eventTypes: systemRequirements?.eventTypes || [],
+      eventsTypesOther: systemRequirements?.eventsTypesOther || "",
+    };
+    formData.append("requirements", JSON.stringify(requirements));
+
+    // Plan selection — as JSON string
+    formData.append("planSelection", JSON.stringify({
+      planCode: planSelection?.planCode || "pro",
+      billingCycle: planSelection?.billingCycle || "yearly",
+      needsCustomBranding: planSelection?.needsCustomBranding || false,
+    }));
+
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.SIGNUP_WHITELABEL}`, {
+      method: "POST",
+      body: formData,
+    });
+
+    console.log("[AUTH SERVICE] Response status:", response.status);
+
+    const data = await response.json();
+    console.log("[AUTH SERVICE] Response data:", data);
+
+    if (!response.ok) {
+      throw new Error(data.message || "Whitelabel signup failed");
+    }
+
+    console.log("[AUTH SERVICE] Whitelabel signup successful");
+
+    return {
+      token: data.token,
+      user: data.data?.user,
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Whitelabel signup error:", error.message);
+    throw error;
+  }
+};
+
+/**
+ * Send OTP to mobile number
+ * @param {Object} data - { mobile, type }
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export const sendOTPAPI = async ({ mobile, type = "login" }) => {
+  try {
+    console.log("[AUTH SERVICE] Sending OTP to:", mobile, "Type:", type);
+
+    const endpoint = type === "signup" ? ENDPOINTS.AUTH.OTP_SEND_SIGNUP : ENDPOINTS.AUTH.OTP_SEND_LOGIN;
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber: mobile }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to send OTP");
+    }
+
+    console.log("[AUTH SERVICE] OTP sent successfully to:", mobile);
+
+    return {
+      success: true,
+      message: data.message || "OTP sent successfully",
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Send OTP error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Verify OTP code for login
+ * @param {Object} data - { mobile, otp }
+ * @returns {Promise<{token: string, user: Object}>}
+ */
+export const verifyOTPAPI = async ({ mobile, otp }) => {
+  try {
+    console.log(
+      "[AUTH SERVICE] Verifying OTP for login:",
+      mobile,
+      "Code:",
+      otp,
+    );
+
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_VERIFY_LOGIN}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber: mobile, otp }),
+    });
+
+    console.log("[AUTH SERVICE] Response status:", response.status);
+
+    const data = await response.json();
+    console.log("[AUTH SERVICE] Response data:", data);
+
+    if (!response.ok) {
+      throw new Error(data.message || "Invalid OTP code");
+    }
+
+    console.log(
+      "[AUTH SERVICE] OTP verified successfully:",
+      data.user?.phoneNumber,
+    );
+
+    return {
+      token: data.token,
+      user: data.data?.user,
+      subscription: data.data?.subscription,
+      profileCompleted: data.data?.profileCompleted,
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Verify OTP error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Step 1: Signup with phone number only (Host)
+ * @param {Object} data - { mobile }
+ * @returns {Promise<{token: string, user: Object}>}
+ */
+export const signupWithPhoneAPI = async ({ mobile }) => {
+  try {
+    console.log("[AUTH SERVICE] Signup with phone:", mobile);
+
+    // First send OTP for signup
+    await sendOTPAPI({ mobile, type: "signup" });
+
+    console.log("[AUTH SERVICE] OTP sent for signup, waiting for verification");
+
+    return {
+      success: true,
+      message: "OTP sent successfully",
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Signup error:", error.message);
+    throw error;
+  }
+};
+
+/**
+ * Verify OTP code for signup
+ * @param {Object} data - { mobile, otp }
+ * @returns {Promise<{token: string, user: Object}>}
+ */
+export const verifySignupOTPAPI = async ({ mobile, otp }) => {
+  try {
+    console.log(
+      "[AUTH SERVICE] Verifying OTP for signup:",
+      mobile,
+      "Code:",
+      otp,
+    );
+
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_VERIFY_SIGNUP}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber: mobile, otp }),
+    });
+
+    console.log("[AUTH SERVICE] Response status:", response.status);
+
+    const data = await response.json();
+    console.log("[AUTH SERVICE] Response data:", data);
+
+    if (!response.ok) {
+      throw new Error(data.message || "Invalid OTP code");
+    }
+
+    console.log("[AUTH SERVICE] Signup OTP verified successfully");
+
+    return {
+      token: data.token,
+      user: data.data?.user,
+      subscription: data.data?.subscription,
+      profileCompleted: data.data?.profileCompleted,
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Verify signup OTP error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Step 2: Complete profile with email, username, password
+ * @param {Object} data - { username, email, password, token }
+ * @returns {Promise<{token: string, user: Object}>}
+ */
+export const completeProfileAPI = async ({
+  username,
+  email,
+  password,
+  token,
+}) => {
+  try {
+    console.log("[AUTH SERVICE] Complete profile:", { username, email });
+
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.COMPLETE_PROFILE}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        username,
+        email,
+        password,
+        passwordConfirm: password,
+      }),
+    });
+
+    console.log("[AUTH SERVICE] Response status:", response.status);
+
+    const data = await response.json();
+    console.log("[AUTH SERVICE] Response data:", data);
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to complete profile");
+    }
+
+    console.log(
+      "[AUTH SERVICE] Profile completed successfully:",
+      data.user?.email,
+    );
+
+    return {
+      token: data.token,
+      user: data.data?.user,
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Complete profile error:", error.message);
+    throw error;
+  }
+};
+
+/**
+ * Request password reset
+ * @param {Object} data - { email }
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export const forgotPasswordAPI = async ({ email }) => {
+  try {
+    console.log("[AUTH SERVICE] Forgot password request for:", email);
+
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.FORGOT_PASSWORD}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to send reset email");
+    }
+
+    console.log("[AUTH SERVICE] Password reset email sent successfully");
+
+    return {
+      success: true,
+      message: data.message || "Password reset email sent",
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Forgot password error:", error.message);
+    throw error;
+  }
+};
+
+/**
+ * Resend OTP to mobile number
+ * @param {Object} data - { mobile, type }
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export const resendOTPAPI = async ({ mobile, type = "login" }) => {
+  try {
+    console.log("[AUTH SERVICE] Resending OTP to:", mobile, "Type:", type);
+
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_RESEND}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber: mobile, type }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to resend OTP");
+    }
+
+    console.log("[AUTH SERVICE] OTP resent successfully to:", mobile);
+
+    return {
+      success: true,
+      message: data.message || "OTP resent successfully",
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Resend OTP error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Logout (optional backend call)
+ * @param {string} token - Auth token
+ * @returns {Promise<void>}
+ */
+export const logoutAPI = async (token) => {
+  try {
+    console.log("[AUTH SERVICE] Logging out");
+
+    // Optional: Call backend to invalidate token
+    if (token) {
+      await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGOUT}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    }
+
+    console.log("[AUTH SERVICE] Logged out successfully");
+  } catch (error) {
+    console.error("[AUTH SERVICE] Logout error:", error);
+    // Don't throw - we still want to clear local state
+  }
+};
+
+/**
+ * Refresh JWT token
+ * NOTE: Backend does not have a refresh-token endpoint.
+ * Token refresh is handled by re-authenticating via /auth/me.
+ * @param {string} token - Current auth token
+ * @returns {Promise<{token: string, user: Object}>}
+ */
+export const refreshTokenAPI = async (token) => {
+  try {
+    console.log("[AUTH SERVICE] Refreshing token via /auth/me");
+
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.ME}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to refresh token");
+    }
+
+    console.log("[AUTH SERVICE] Token validated successfully");
+
+    return {
+      token: data.token || token,
+      user: data.data?.user,
+    };
+  } catch (error) {
+    console.error("[AUTH SERVICE] Refresh token error:", error);
+    throw error;
+  }
+};

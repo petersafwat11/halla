@@ -1,0 +1,537 @@
+/* ========================================
+   HEADER
+======================================== */
+.wrapper {
+  width: 80rem;
+  /* height: 50rem; */
+}
+@media screen and (max-width: 900px) {
+  .wrapper {
+    width: 90vw;
+    height: 90vh;
+  }
+}
+.header {
+  padding: 2.4rem 2.4rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.6rem;
+}
+
+.header h2 {
+  color: #2c2c2c;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+  flex: 1;
+}
+
+.header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  transition: opacity 0.2s;
+}
+
+.header button:hover {
+  opacity: 0.7;
+}
+
+/* ========================================
+   MAIN CONTAINER
+======================================== */
+.container {
+  display: flex;
+  gap: 2.4rem;
+  padding: 2.4rem;
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+/* ========================================
+   FORM SECTION
+======================================== */
+.rightForm {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.formGrid > *[style*="span 2"] {
+  grid-column: span 2;
+}
+
+.fullWidth {
+  grid-column: span 2;
+}
+
+/* ========================================
+   PREVIEW SECTION (Desktop only)
+======================================== */
+.leftPreview {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .leftPreview {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    flex: 0 0 42%;
+    max-width: 42rem;
+  }
+}
+
+/* ========================================
+   TEMPLATE PREVIEW
+======================================== */
+.templatePreview {
+  position: relative;
+  width: 100%;
+  height: 50rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.invitationBackground {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.templateContent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10rem 3rem 7rem;
+}
+
+.messageTemplateText,
+.guestMessage,
+.address,
+.endMessage {
+  text-align: center;
+  word-wrap: break-word;
+  max-width: 100%;
+  line-height: 1.5;
+}
+
+.messageTemplateText {
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.brideAndGroomName {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.brideName,
+.groomName {
+  font-size: 2.3rem;
+  font-weight: 400;
+}
+
+.and {
+  font-size: 2.3rem;
+  font-weight: 400;
+}
+
+.guestMessage {
+  font-size: 1.2rem;
+}
+
+.entryDate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.monthName,
+.dayInfo,
+.yearInfo {
+  padding: 0 2rem;
+}
+
+.dayInfo {
+  border-left: 1px solid #5a4a42;
+  border-right: 1px solid #5a4a42;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.monthName {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.yearInfo {
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.entryTime {
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.address {
+  font-size: 1.2rem;
+}
+
+.endMessage {
+  font-size: 1.6rem;
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.2rem;
+  margin-top: 1.6rem;
+}
+
+.buttonContainer button {
+  flex: 1;
+  max-width: 20rem;
+}
+
+.previewButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 1.2rem;
+  background: #f5ece4;
+  color: #6b4e33;
+  border: 1px solid #d6b392;
+  border-radius: 8px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.previewButton:hover {
+  background: #ead9c8;
+}
+
+.previewButton img {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* ========================================
+   MOBILE PREVIEW POPUP
+======================================== */
+.previewPopupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 2rem;
+}
+
+.previewPopupContent {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 85%;
+  max-width: 45rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.previewPopupClose {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #f5ece4;
+  border: none;
+  border-radius: 50%;
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  transition: background 0.2s;
+}
+
+.previewPopupClose:hover {
+  background: #ead9c8;
+}
+
+.previewPopupClose img {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+/* ========================================
+   RESPONSIVE - TABLET
+======================================== */
+@media (max-width: 1024px) {
+  .container {
+    width: min(95vw, 90rem);
+    gap: 2rem;
+    padding: 2rem;
+    flex-direction: column;
+  }
+
+  .leftPreview {
+    width: 100%;
+    max-width: none;
+    flex: none;
+  }
+}
+
+/* ========================================
+   RESPONSIVE - MOBILE
+======================================== */
+@media (max-width: 900px) {
+  .container {
+    padding: 1.6rem;
+    overflow-y: auto;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+  }
+
+  .header {
+    padding: 1.6rem 1.6rem 0;
+    margin-bottom: 1.2rem;
+    flex-wrap: nowrap;
+  }
+
+  .header h2 {
+    font-size: 1.6rem;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  .rightForm {
+    gap: 1.2rem;
+    width: 100%;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .fullWidth {
+    grid-column: span 1;
+  }
+
+  .formGrid > *[style*="span 2"] {
+    grid-column: span 1;
+  }
+
+  .buttonContainer {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .buttonContainer button {
+    max-width: none;
+    flex: 1;
+  }
+
+  .previewPopupContent .templatePreview {
+    height: 45rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 1.2rem;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .header {
+    padding: 1.2rem 1.2rem 0;
+    margin-bottom: 1rem;
+  }
+
+  .header h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  .rightForm {
+    gap: 1rem;
+    padding: 0;
+  }
+
+  .formGrid {
+    gap: 1.2rem;
+  }
+
+  .buttonContainer {
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+
+  .previewPopupContent {
+    padding: 1.2rem;
+    width: 95%;
+    max-width: 40rem;
+  }
+
+  .previewPopupContent .templatePreview {
+    height: 40rem;
+  }
+
+  .previewButton {
+    font-size: 1.3rem;
+    padding: 1rem;
+  }
+
+  .templatePreview {
+    height: 40rem;
+  }
+
+  .templateContent {
+    padding: 8rem 2rem 5rem;
+  }
+
+  .messageTemplateText {
+    font-size: 1.4rem;
+  }
+
+  .brideName,
+  .groomName,
+  .and {
+    font-size: 1.8rem;
+  }
+
+  .guestMessage {
+    font-size: 1.1rem;
+  }
+
+  .monthName {
+    font-size: 1.4rem;
+  }
+
+  .dayInfo {
+    font-size: 1.6rem;
+  }
+
+  .yearInfo {
+    font-size: 1.2rem;
+  }
+
+  .entryTime,
+  .address {
+    font-size: 1.1rem;
+  }
+
+  .endMessage {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .header {
+    padding: 2rem 1.6rem 1rem;
+    margin-bottom: 1rem;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header h2 {
+    font-size: 1.4rem;
+    line-height: 1.3;
+  }
+
+  .header button img {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .rightForm {
+    gap: 1rem;
+    padding: 0 1.6rem 2rem;
+  }
+
+  .formGrid {
+    gap: 1rem;
+  }
+
+  .previewPopupOverlay {
+    padding: 1rem;
+  }
+
+  .previewPopupContent {
+    padding: 1rem;
+    width: 100%;
+    max-width: none;
+    border-radius: 12px;
+  }
+
+  .previewPopupContent .templatePreview {
+    height: 35rem;
+  }
+}

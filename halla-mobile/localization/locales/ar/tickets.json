@@ -1,0 +1,86 @@
+{
+  "title": "تذاكر الدعم",
+  "emptyState": "لا توجد تذاكر بعد",
+  "emptyStateDescription": "أنشئ تذكرة للحصول على المساعدة من فريق الدعم",
+  "createTicket": "إنشاء تذكرة",
+  "status": {
+    "open": "مفتوحة",
+    "pending": "في انتظار",
+    "in_progress": "قيد المعالجة",
+    "inProgress": "قيد المعالجة",
+    "waiting_response": "بانتظار الرد",
+    "resolved": "تم الحل",
+    "closed": "مغلقة"
+  },
+  "priority": {
+    "low": "منخفضة",
+    "medium": "متوسطة",
+    "high": "عالية",
+    "urgent": "عاجلة"
+  },
+  "types": {
+    "technical": "تقنية",
+    "payment": "دفع",
+    "event": "مناسبة",
+    "user": "مستخدم",
+    "inquiry": "استفسار",
+    "issue": "مشكلة",
+    "request": "طلب",
+    "suggestion": "اقتراح",
+    "other": "أخرى"
+  },
+  "form": {
+    "title": "إنشاء تذكرة دعم",
+    "editTitle": "تعديل التذكرة",
+    "selectType": "اختر نوع التذكرة",
+    "typeLabel": "النوع",
+    "messagePlaceholder": "اكتب وصفاً تفصيلياً للمشكلة أو السؤال...",
+    "messageLabel": "الرسالة",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "update": "تحديث",
+    "creating": "جاري الإنشاء...",
+    "updating": "جاري التحديث..."
+  },
+  "card": {
+    "created": "تم الإنشاء:",
+    "delete": "حذف",
+    "edit": "تعديل"
+  },
+  "messages": {
+    "createSuccess": "تم إنشاء التذكرة بنجاح",
+    "createError": "فشل إنشاء التذكرة",
+    "updateSuccess": "تم تحديث التذكرة بنجاح",
+    "updateError": "فشل تحديث التذكرة",
+    "deleteSuccess": "تم حذف التذكرة بنجاح",
+    "deleteError": "فشل حذف التذكرة",
+    "loadError": "فشل تحميل التذاكر",
+    "confirmDelete": "هل أنت متأكد من حذف هذه التذكرة؟"
+  },
+  "validation": {
+    "ticketTypeRequired": "الرجاء اختيار نوع التذكرة",
+    "ticketMessageMin": "يجب أن تكون الرسالة 10 أحرف على الأقل",
+    "ticketMessageMax": "يجب ألا تتجاوز الرسالة 5000 حرف"
+  },
+  "rating": {
+    "title": "تقييم الدعم",
+    "question": "ما مدى رضاك عن الحل المقدم؟",
+    "feedback": "ملاحظات (اختياري)",
+    "feedbackPlaceholder": "شارك تجربتك مع هذه التذكرة...",
+    "selectRating": "الرجاء اختيار تقييم",
+    "submit": "إرسال التقييم",
+    "submitting": "جاري الإرسال...",
+    "cancel": "إلغاء",
+    "rateButton": "تقييم",
+    "alreadyRated": "تم التقييم",
+    "success": "تم إرسال التقييم بنجاح",
+    "error": "فشل إرسال التقييم",
+    "labels": {
+      "1": "سيء جداً",
+      "2": "سيء",
+      "3": "متوسط",
+      "4": "جيد",
+      "5": "ممتاز"
+    }
+  }
+}

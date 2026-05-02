@@ -1,0 +1,867 @@
+.container,
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  background: #fff;
+  padding: 2.4rem;
+}
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1.5rem;
+}
+
+.spinner {
+  font-size: 3rem;
+  color: #c28e5c;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingContainer p {
+  font-size: 1.4rem;
+  color: #666;
+}
+
+/* Error State */
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.errorIcon {
+  font-size: 3rem;
+  color: #ef4444;
+}
+
+.errorContainer p {
+  font-size: 1.4rem;
+  color: #666;
+}
+
+.retryButton {
+  padding: 0.75rem 2rem;
+  background: #c28e5c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.retryButton:hover {
+  background: #a67a4c;
+}
+
+/* Billing Cycle Toggle */
+.billingToggleSection {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.billingToggle {
+  display: flex;
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.billingOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.billingOption.active {
+  background: #c28e5c;
+  color: white;
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.3);
+}
+
+.billingOption:hover:not(.active) {
+  background: #e8e8e8;
+}
+
+.saveBadge {
+  background: #22c55e;
+  color: white;
+  font-size: 1rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+@media screen and (max-width: 768px) {
+  .container,
+  .sections {
+    gap: 2.4rem;
+    padding: 2rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .container,
+  .sections {
+    gap: 2rem;
+    padding: 1.6rem;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2.4rem;
+  border-radius: 1.2rem;
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+@media screen and (max-width: 768px) {
+  .section {
+    padding: 2rem;
+    gap: 1.6rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .section {
+    padding: 1.6rem;
+  }
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .options {
+    gap: 1.6rem;
+  }
+}
+
+.inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media screen and (max-width: 768px) {
+  .inputs {
+    gap: 1.6rem;
+  }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media screen and (max-width: 768px) {
+  .row {
+    gap: 1.6rem;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 899px) {
+  .sections {
+    padding: 2rem 1.6rem;
+  }
+
+  .section {
+    border-radius: 1.2rem;
+    border: 1px solid #f0f0f0;
+  }
+}
+
+/* ============================================
+   PLAN SELECTION STYLES - MODERN REDESIGN
+   ============================================ */
+
+/* Plans Grid - Side by Side Comparison */
+.plansSection {
+  margin-bottom: 2rem;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Plan Card - Clean Modern Design */
+.planCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  border: 1px solid #e8e8e8;
+}
+
+.planCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.planCard.selected {
+  border: 2px solid #c28e5c;
+  box-shadow: 0 20px 60px rgba(194, 142, 92, 0.2);
+}
+
+.planCard.popular {
+  border: 1px solid #e8e8e8;
+}
+
+/* Popular Badge - Elegant */
+.popularBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #c28e5c 0%, #a67a4c 100%);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.3);
+}
+
+/* Selected Check */
+.selectedCheck {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #c28e5c 0%, #a67a4c 100%);
+  color: white;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.4);
+}
+
+/* Plan Header */
+.planHeader {
+  text-align: center;
+  padding: 2.5rem 2rem 1.5rem;
+  background: linear-gradient(180deg, #fafafa 0%, #fff 100%);
+}
+
+.planIcon {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  border-radius: 20px;
+  font-size: 2.4rem;
+}
+
+.planCard:first-child .planIcon {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #d97706;
+}
+
+.planCard:last-child .planIcon {
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  color: #7c3aed;
+}
+
+.planName {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.planDescription {
+  font-size: 1.3rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Price Section */
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  padding: 1.5rem 2rem;
+  background: #fff;
+}
+
+.priceAmount {
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #c28e5c 0%, #a67a4c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.priceDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.priceCurrency {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #9ca3af;
+}
+
+.pricePeriod {
+  font-size: 1.2rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* Plan Limits - Clean Stats */
+.planLimits {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  background: #f9fafb;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.limitItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 0.75rem;
+  text-align: center;
+  border-left: 1px solid #f0f0f0;
+}
+
+.limitItem:first-child {
+  border-left: none;
+}
+
+.limitIcon {
+  color: #c28e5c;
+  font-size: 1.6rem;
+}
+
+.limitItem span {
+  font-size: 1.2rem;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+/* Select Button */
+.selectButton {
+  width: calc(100% - 3rem);
+  margin: 1.5rem;
+  padding: 1.25rem 2rem;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f5f5f5;
+  color: #666;
+}
+
+.selectButton:hover {
+  background: linear-gradient(135deg, #c28e5c 0%, #a67a4c 100%);
+  color: white;
+  transform: scale(1.02);
+}
+
+.selectButton.selectedBtn {
+  background: linear-gradient(135deg, #c28e5c 0%, #a67a4c 100%);
+  color: white;
+  box-shadow: 0 8px 24px rgba(194, 142, 92, 0.4);
+}
+
+/* Features Section - Minimal */
+.featuresSection {
+  background: #fff;
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid #f0f0f0;
+}
+
+.featuresSectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 1.5rem;
+  text-align: center;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: #fafafa;
+  border-radius: 12px;
+  font-size: 1.25rem;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+.featureItem:hover {
+  background: #f5f0eb;
+}
+
+.featureIcon {
+  color: #c28e5c;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   CUSTOM BRANDING SECTION - PREMIUM REDESIGN
+   ============================================ */
+
+.brandingSection {
+  background: #fff;
+  border-radius: 24px;
+  padding: 0;
+  border: 1px solid #e8e8e8;
+  overflow: hidden;
+}
+
+/* Branding Header - Compact & Clean */
+.brandingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #f8f6f4 0%, #f3efe9 100%);
+  border-bottom: 1px solid #e8e8e8;
+  gap: 1rem;
+}
+
+.brandingInfo {
+  flex: 1;
+}
+
+.brandingTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 0.25rem;
+}
+
+.brandingTitleIcon {
+  color: #c28e5c;
+  font-size: 1.4rem;
+}
+
+.brandingDescription {
+  font-size: 1.15rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.brandingPriceTag {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e8e8e8;
+}
+
+.brandingPrice {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #c28e5c;
+  line-height: 1;
+}
+
+.brandingCurrency {
+  font-size: 1.1rem;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+/* Branding Toggle - Modern Segmented Control */
+.brandingToggle {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  margin: 0;
+  background: #fff;
+}
+
+.brandingOption {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  background: #fafafa;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.brandingOption:hover:not(.active) {
+  background: #f5f5f5;
+  border-color: #d0d0d0;
+}
+
+.brandingOption.active {
+  background: #c28e5c;
+  border-color: #c28e5c;
+  color: #fff;
+}
+
+.optionIcon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.brandingOption.active .optionIcon {
+  background: #fff;
+  border-color: #fff;
+  color: #c28e5c;
+}
+
+/* Branding Features - Compact List */
+.brandingFeatures {
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.brandingFeaturesTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.75rem;
+}
+
+.brandingFeaturesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.brandingFeatureItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #fafafa;
+  border-radius: 8px;
+  font-size: 1.15rem;
+  color: #374151;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.brandingFeatureItem:hover {
+  background: #f5f0eb;
+}
+
+.brandingFeatureIcon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 6px;
+  color: #c28e5c;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  border: 1px solid #f0f0f0;
+}
+
+/* Branding Note */
+.brandingNote {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #f8f6f4;
+  border-radius: 8px;
+  margin-top: 1rem;
+  border-right: 3px solid #c28e5c;
+}
+
+.brandingNoteIcon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.brandingNote p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #6b7280;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* No Branding Note */
+.noBrandingNote {
+  padding: 1rem 1.5rem 1.5rem;
+  text-align: center;
+}
+
+.noBrandingNote p {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #9ca3af;
+}
+
+/* Info Note */
+.infoNote {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: #f8f6f4;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+}
+
+.infoIcon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.infoNote p {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Price Summary - Compact */
+.priceSummary {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid #e8e8e8;
+}
+
+.summaryTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 1.2rem;
+  color: #4b5563;
+}
+
+.totalRow {
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  border-top: 1px dashed #d0d0d0;
+  font-weight: 700;
+  color: #1a1a1a;
+  font-size: 1.3rem;
+}
+
+.totalPrice {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #c28e5c;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+  .plansGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .planLimits {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .limitItem {
+    padding: 1rem 0.5rem;
+  }
+
+  .limitItem span {
+    font-size: 1.1rem;
+  }
+
+  .priceAmount {
+    font-size: 2.8rem;
+  }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .brandingHeader {
+    flex-direction: row;
+    padding: 1rem 1.25rem;
+  }
+
+  .brandingToggle {
+    flex-direction: column;
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .brandingOption {
+    padding: 0.75rem;
+    font-size: 1.1rem;
+  }
+
+  .brandingFeatures {
+    padding: 1rem;
+  }
+
+  .brandingFeatureItem {
+    padding: 0.625rem 0.875rem;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .planHeader {
+    padding: 2rem 1.5rem 1.25rem;
+  }
+
+  .planIcon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .planName {
+    font-size: 1.8rem;
+  }
+
+  .priceAmount {
+    font-size: 2.4rem;
+  }
+
+  .selectButton {
+    margin: 1.25rem;
+    padding: 1rem 1.5rem;
+    font-size: 1.35rem;
+  }
+
+  .brandingHeader {
+    padding: 1rem;
+  }
+
+  .brandingTitle {
+    font-size: 1.25rem;
+  }
+
+  .brandingDescription {
+    font-size: 1.05rem;
+  }
+
+  .brandingPrice {
+    font-size: 1.4rem;
+  }
+
+  .brandingFeatureIcon {
+    width: 24px;
+    height: 24px;
+    font-size: 1rem;
+  }
+
+  .totalPrice {
+    font-size: 1.4rem;
+  }
+}

@@ -1,0 +1,128 @@
+/* Templates Grid */
+.templatesGrid {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.4rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* Template Card */
+.templateCard {
+  width: 154px;
+  height: 187px;
+  box-shadow: 0 0.779px 2.337px rgba(0, 0, 0, 0.1),
+    0 0.779px 1.558px -0.779px rgba(0, 0, 0, 0.1);
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 4.66px;
+}
+
+.templateCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.templateCard.selected {
+  box-shadow: 0 0 0 2px #2a8c5b;
+}
+
+.templateCardInner {
+  display: flex;
+  width: 154px;
+  height: 187px;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 4.66px;
+  background: #fffaea;
+  overflow: hidden;
+  position: relative;
+}
+
+.templateImage {
+  width: 129px;
+  height: 172px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin: 8px auto;
+}
+
+/* Checkmark */
+.checkmark {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 10;
+  color: #2a8c5b;
+  font-size: 2rem;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .templatesGrid {
+    gap: 1.2rem;
+    justify-content: center;
+  }
+
+  .templateCard {
+    width: 120px;
+    height: 146px;
+  }
+
+  .templateCardInner {
+    width: 120px;
+    height: 146px;
+  }
+
+  .templateImage {
+    width: 100px;
+    height: 133px;
+  }
+  
+  .checkmark {
+    font-size: 1.6rem;
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+@media (max-width: 550px) {
+  .templatesGrid {
+    gap: 0.86rem;
+  }
+
+  .templateCard {
+    width: 70.824px;
+    height: 86px;
+  }
+
+  .templateCardInner {
+    width: 71px;
+    height: 86px;
+    border-radius: 2.143px;
+  }
+
+  .templateImage {
+    width: 59px;
+    height: 79px;
+    border-radius: 3.679px;
+    margin: 3px auto;
+  }
+  
+  .checkmark {
+    font-size: 1.2rem;
+    width: 1.6rem;
+    height: 1.6rem;
+    top: 0.4rem;
+    right: 0.4rem;
+  }
+}

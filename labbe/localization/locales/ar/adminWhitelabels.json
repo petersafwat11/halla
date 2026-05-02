@@ -1,0 +1,142 @@
+{
+  "header": {
+    "title": "الوايت ليبل",
+    "subtitle": "إدارة شركاء الوايت ليبل ومنصاتهم",
+    "dateRange": "نطاق التاريخ",
+    "notifyAll": "إشعار الكل"
+  },
+  "stats": {
+    "totalWhitelabels": "إجمالي الوايت ليبل",
+    "activeWhitelabels": "النشطين",
+    "pendingWhitelabels": "قيد المراجعة"
+  },
+  "table": {
+    "title": "قائمة الوايت ليبل",
+    "searchPlaceholder": "البحث في الوايت ليبل...",
+    "filter": "التصفية",
+    "export": "تصدير",
+    "columns": {
+      "companyName": "اسم الشركة",
+      "email": "البريد الإلكتروني",
+      "hosts": "المضيفين",
+      "vendors": "التجار",
+      "events": "المناسبات",
+      "status": "الحالة",
+      "createdAt": "تاريخ التسجيل"
+    }
+  },
+  "status": {
+    "active": "نشط",
+    "suspended": "موقوف",
+    "pending": "قيد المراجعة",
+    "inactive": "غير نشط"
+  },
+  "actions": {
+    "viewDetails": "عرض التفاصيل",
+    "suspend": "إيقاف",
+    "activate": "تنشيط",
+    "delete": "حذف",
+    "sendNotification": "إرسال إشعار",
+    "managePlan": "إدارة الاشتراك",
+    "confirmSuspend": "هل أنت متأكد من إيقاف هذا الوايت ليبل؟",
+    "suspendSuccess": "تم إيقاف الوايت ليبل بنجاح",
+    "suspendError": "فشل في إيقاف الوايت ليبل",
+    "activateSuccess": "تم تنشيط الوايت ليبل بنجاح",
+    "activateError": "فشل في تنشيط الوايت ليبل",
+    "assignPlanFirst": "يجب تعيين خطة اشتراك قبل تنشيط الوايت ليبل"
+  },
+  "details": {
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "createdAt": "تاريخ التسجيل"
+  },
+  "subscription": {
+    "title": "معلومات الاشتراك",
+    "plan": "الخطة",
+    "status": "حالة الاشتراك",
+    "active": "نشط",
+    "trial": "تجريبي",
+    "inactive": "غير نشط",
+    "teamLimit": "حد أعضاء الفريق",
+    "eventsLimit": "حد المناسبات",
+    "expiresAt": "ينتهي في",
+    "unlimited": "غير محدود",
+    "noPlan": "لا يوجد",
+    "manageTitle": "إدارة اشتراك الوايت ليبل",
+    "whitelabel": "الوايت ليبل",
+    "currentPlan": "الخطة الحالية",
+    "monthly": "شهري",
+    "yearly": "سنوي",
+    "save": "وفر 17%",
+    "cancel": "إلغاء",
+    "updating": "جاري التحديث...",
+    "updatePlan": "تحديث الاشتراك",
+    "assignPlan": "تعيين الخطة",
+    "updateSuccess": "تم تحديث الاشتراك بنجاح",
+    "updateError": "فشل في تحديث الاشتراك",
+    "noWhitelabelId": "معرف الوايت ليبل غير موجود"
+  },
+  "plans": {
+    "currency": "ر.س",
+    "month": "شهر",
+    "year": "سنة",
+    "recommended": "موصى به",
+    "pro": {
+      "events": "مناسبات غير محدودة",
+      "guests": "حتى 500 ضيف لكل مناسبة",
+      "users": "إدارة الموظفين"
+    },
+    "elite": {
+      "events": "مناسبات غير محدودة",
+      "guests": "ضيوف غير محدودين",
+      "users": "فريق غير محدود",
+      "branding": "علامة تجارية مخصصة مجانية",
+      "whatsapp": "رقم واتساب مخصص",
+      "support": "دعم فني على مدار الساعة",
+      "manager": "مدير حساب مخصص"
+    }
+  },
+  "stats": {
+    "title": "الإحصائيات",
+    "hosts": "المضيفين",
+    "events": "المناسبات",
+    "moderators": "المشرفين"
+  },
+  "hostsTable": {
+    "title": "المضيفين الأخيرين",
+    "viewAll": "عرض الكل",
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "events": "المناسبات",
+      "status": "الحالة",
+      "createdAt": "تاريخ الانضمام"
+    },
+    "noHosts": "لا يوجد مضيفين"
+  },
+  "bulkActions": {
+    "delete": "حذف المحدد"
+  },
+  "messages": {
+    "confirmDelete": "هل أنت متأكد من حذف هذا الوايت ليبل؟",
+    "confirmBulkDelete": "هل أنت متأكد من حذف الوايت ليبل المحددة؟",
+    "deleteSuccess": "تم حذف الوايت ليبل بنجاح",
+    "deleteError": "فشل في حذف الوايت ليبل",
+    "bulkDeleteSuccess": "تم حذف الوايت ليبل بنجاح",
+    "bulkDeleteError": "فشل في حذف الوايت ليبل",
+    "notificationSent": "تم إرسال الإشعار بنجاح",
+    "notificationError": "فشل في إرسال الإشعار"
+  },
+  "noData": "لا توجد بيانات",
+  "dateRange": {
+    "all": "الكل",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  }
+}

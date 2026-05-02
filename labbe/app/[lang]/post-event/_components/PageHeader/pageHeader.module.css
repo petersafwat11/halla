@@ -1,0 +1,40 @@
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.2rem 1.6rem;
+  border-radius: 1.2rem;
+  box-shadow: 0 0.1rem 0.3rem 0 rgba(0, 0, 0, 0.1), 0 0.1rem 0.2rem -0.1rem rgba(0, 0, 0, 0.1);
+  background: #fff;
+  animation: fadeInDown 0.5s ease-out;
+}
+
+.title {
+  color: var(--color-title);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 2.8rem;
+  margin: 0;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .header {
+    padding: 1.6rem 2.4rem;
+  }
+  
+  .title {
+    font-size: 2.4rem;
+    line-height: 3.2rem;
+  }
+}

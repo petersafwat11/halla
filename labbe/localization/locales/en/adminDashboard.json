@@ -1,0 +1,145 @@
+{
+  "header": {
+    "welcome": "Welcome, {{name}}! 👋",
+    "subtitle": "Here's a quick overview of your events and invitations"
+  },
+  "stats": {
+    "totalHosts": "Total Hosts",
+    "activeVendors": "Active Vendors",
+    "activeEvents": "Active Events",
+    "attendanceRate": "Attendance Rate",
+    "unsubscribed": "unsubscribed",
+    "pending": "pending",
+    "activeNow": "active now",
+    "guestConfirming": "guest confirmation rate",
+    "newThisPeriod": "new this month",
+    "totalEvents": "total",
+    "subscriptionStatus": "Subscription Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "noPlan": "No Plan",
+    "moderators": "Moderators",
+    "activeModerators": "active",
+    "totalVendors": "Total Vendors",
+    "totalEventsCard": "Total Events",
+    "activeSubscriptions": "Active Subscriptions",
+    "openTickets": "Open Tickets",
+    "resolved": "resolved",
+    "pendingApproval": "pending approval",
+    "byPlan": "by plan",
+    "resolvedThisPeriod": "resolved this period"
+  },
+  "charts": {
+    "guestResponse": "Guest Response",
+    "revenue": "Revenue",
+    "tickets": "Tickets",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "pending": "Pending",
+    "host": "Host",
+    "addons": "Addons",
+    "lite": "Lite",
+    "pro": "Pro",
+    "elite": "Elite",
+    "resolved": "Resolved",
+    "open": "Open",
+    "thisperiod": "This Period",
+    "previousperiod": "Previous Period",
+    "change": "Change",
+    "currency": "Currency"
+  },
+  "bottom": {
+    "topVendors": "Top Vendors",
+    "activitySummary": "Activity Summary",
+    "clicks": "clicks"
+  },
+  "actions": {
+    "title": "Quick Actions",
+    "createEvent": "Create Event",
+    "addModerator": "Add Moderator",
+    "createTicket": "Create Ticket"
+  },
+  "createTicket": {
+    "title": "Create Support Ticket",
+    "username": "Username",
+    "usernamePlaceholder": "Enter username",
+    "number": "Phone Number",
+    "numberPlaceholder": "5xx xxx xxx",
+    "type": "Ticket Type",
+    "message": "Message",
+    "messagePlaceholder": "Write your message here...",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating...",
+    "success": "Ticket created successfully",
+    "error": "Failed to create ticket"
+  },
+  "table": {
+    "title": "Data Table",
+    "searchPlaceholder": "Search...",
+    "filter": "Filter",
+    "export": "Export",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "open": "Open",
+      "closed": "Closed",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "suspended": "Suspended"
+    }
+  },
+  "tables": {
+    "tickets": {
+      "title": "Tickets",
+      "columns": {
+        "number": "Ticket Number",
+        "username": "Username",
+        "type": "Type",
+        "message": "Message",
+        "status": "Status",
+        "createdAt": "Created At"
+      }
+    },
+    "vendors": {
+      "title": "Pending Vendors",
+      "columns": {
+        "ownerFullName": "Owner Name",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "status": "Status"
+      }
+    },
+    "recentHosts": {
+      "title": "Recent Hosts",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "status": "Status",
+        "createdAt": "Date"
+      },
+      "status": {
+        "active": "Active",
+        "pending": "Pending",
+        "suspended": "Suspended"
+      }
+    },
+    "recentEvents": {
+      "title": "Recent Events",
+      "columns": {
+        "title": "Title",
+        "host": "Host",
+        "date": "Date",
+        "status": "Status"
+      },
+      "status": {
+        "scheduled": "Scheduled",
+        "live": "Live",
+        "completed": "Completed",
+        "draft": "Draft"
+      }
+    }
+  }
+}

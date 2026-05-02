@@ -1,0 +1,86 @@
+{
+  "title": "Support Tickets",
+  "emptyState": "No tickets yet",
+  "emptyStateDescription": "Create a ticket to get help from our support team",
+  "createTicket": "Create Ticket",
+  "status": {
+    "open": "Open",
+    "pending": "Pending",
+    "in_progress": "In Progress",
+    "inProgress": "In Progress",
+    "waiting_response": "Waiting Response",
+    "resolved": "Resolved",
+    "closed": "Closed"
+  },
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "types": {
+    "technical": "Technical",
+    "payment": "Payment",
+    "event": "Event",
+    "user": "User",
+    "inquiry": "Inquiry",
+    "issue": "Issue",
+    "request": "Request",
+    "suggestion": "Suggestion",
+    "other": "Other"
+  },
+  "form": {
+    "title": "Create Support Ticket",
+    "editTitle": "Edit Ticket",
+    "selectType": "Select Ticket Type",
+    "typeLabel": "Type",
+    "messagePlaceholder": "Describe your issue or question in detail...",
+    "messageLabel": "Message",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "creating": "Creating...",
+    "updating": "Updating..."
+  },
+  "card": {
+    "created": "Created:",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "messages": {
+    "createSuccess": "Ticket created successfully",
+    "createError": "Failed to create ticket",
+    "updateSuccess": "Ticket updated successfully",
+    "updateError": "Failed to update ticket",
+    "deleteSuccess": "Ticket deleted successfully",
+    "deleteError": "Failed to delete ticket",
+    "loadError": "Failed to load tickets",
+    "confirmDelete": "Are you sure you want to delete this ticket?"
+  },
+  "validation": {
+    "ticketTypeRequired": "Please select a ticket type",
+    "ticketMessageMin": "Message must be at least 10 characters",
+    "ticketMessageMax": "Message must not exceed 5000 characters"
+  },
+  "rating": {
+    "title": "Rate Support",
+    "question": "How satisfied were you with the resolution?",
+    "feedback": "Feedback (Optional)",
+    "feedbackPlaceholder": "Share your experience with this ticket...",
+    "selectRating": "Please select a rating",
+    "submit": "Submit Rating",
+    "submitting": "Submitting...",
+    "cancel": "Cancel",
+    "rateButton": "Rate",
+    "alreadyRated": "Rated",
+    "success": "Rating submitted successfully",
+    "error": "Failed to submit rating",
+    "labels": {
+      "1": "Very Poor",
+      "2": "Poor",
+      "3": "Average",
+      "4": "Good",
+      "5": "Excellent"
+    }
+  }
+}

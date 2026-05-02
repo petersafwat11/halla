@@ -1,0 +1,39 @@
+{
+  "validating": "Validating your access...",
+  "loading": "Loading content...",
+  "invalidToken": "This link is invalid or has expired.",
+  "accessDenied": "Access Denied",
+  "accessDeniedDesc": "Your access link is no longer valid. Please request a new link.",
+  "noContent": "No content available yet.",
+  "noContentDesc": "The host hasn't published any post-event content yet. Check back later.",
+  "thankYou": {
+    "defaultTitle": "Thank you for attending!",
+    "noMessage": "We hope you had a wonderful time!"
+  },
+  "post": {
+    "photo": "Photo",
+    "video": "Video",
+    "message": "Message",
+    "gallery": "Gallery",
+    "likes": "{{count}} Likes",
+    "comments": "{{count}} Comments",
+    "likeButton": "Like",
+    "commentButton": "Comment",
+    "viewComments": "View all comments",
+    "hideComments": "Hide comments"
+  },
+  "comment": {
+    "placeholder": "Write a comment...",
+    "send": "Send",
+    "sending": "Sending...",
+    "empty": "No comments yet. Be the first!",
+    "success": "Comment added",
+    "error": "Failed to add comment"
+  },
+  "like": {
+    "error": "Failed to update like"
+  },
+  "event": {
+    "hostLabel": "Hosted by"
+  }
+}

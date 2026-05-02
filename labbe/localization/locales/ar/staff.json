@@ -1,0 +1,23 @@
+{
+  "pageTitle": "إدارة الضيوف",
+  "eventDetails": "تفاصيل المناسبة",
+  "invitationInteraction": "التفاعل على الدعوة",
+  "waiting": "في الانتظار",
+  "maybe": "ربما",
+  "declined": "إعتذر",
+  "confirmed": "حضور",
+  "checkedIn": "حضر",
+  "guests": "المدعوين",
+  "scanQrCode": "مسح رمز QR",
+  "confirmAttendance": "تأكيد الحضور",
+  "confirm": "تأكيد",
+  "cancel": "إلغاء",
+  "guestName": "اسم الضيف",
+  "phone": "الهاتف",
+  "email": "البريد الإلكتروني",
+  "noGuests": "لا يوجد ضيوف",
+  "loading": "جاري التحميل...",
+  "error": "حدث خطأ",
+  "success": "تم بنجاح",
+  "defaultEventName": "مناسبة زفاف"
+}

@@ -1,0 +1,647 @@
+/**
+ * Global Design Tokens
+ * Generated from Figma export
+ * This file contains all design tokens including colors, typography, spacing, and more
+ */
+
+:root {
+  /* ========================================
+     COLOR TOKENS - Natural (Grays)
+     ======================================== */
+  --color-natural-50: #ffffff;
+  --color-natural-100: #fdfdfd;
+  --color-natural-150: #f7f7f7;
+  --color-natural-200: #f2f2f2;
+  --color-natural-250: #dfdfdf;
+  --color-natural-300: #cacaca;
+  --color-natural-350: #a0a0a0;
+  --color-natural-400: #767676;
+  --color-natural-450: #656565;
+  --color-natural-500: #4c4c4c;
+  --color-natural-700: #454545;
+  --color-natural-800: #3d3d3d;
+  --color-natural-900: #2c2c2c;
+
+  /* ========================================
+     COLOR TOKENS - Primary (Brand)
+     ======================================== */
+  --color-primary-50: #f9f4ef;
+  --color-primary-100: #f5ece4;
+  --color-primary-200: #e3cbb4;
+  --color-primary-300: #d6b392;
+  --color-primary-400: #cea57d;
+  --color-primary-500: #c28e5c;
+  --color-primary-600: #b18154;
+  --color-primary-700: #8a6541;
+  --color-primary-800: #6b4e33;
+  --color-primary-900: #513c27;
+
+  /* ========================================
+     COLOR TOKENS - Secondary
+     ======================================== */
+  --color-secondary-50: #eeeceb;
+  --color-secondary-100: #c9c5c1;
+  --color-secondary-200: #afa9a3;
+  --color-secondary-300: #8b827a;
+  --color-secondary-400: #756960;
+  --color-secondary-500: #524438;
+  --color-secondary-600: #4b3e33;
+  --color-secondary-700: #3a3028;
+  --color-secondary-800: #2d251f;
+  --color-secondary-900: #221d18;
+
+  /* ========================================
+     COLOR TOKENS - Accent
+     ======================================== */
+  --color-accent-50: #f6f4f2;
+  --color-accent-100: #e2dbd6;
+  --color-accent-200: #d3cac3;
+  --color-accent-300: #bfb2a7;
+  --color-accent-400: #b3a396;
+  --color-accent-500: #a08c7c;
+  --color-accent-600: #927f71;
+  --color-accent-700: #726358;
+  --color-accent-800: #584d44;
+  --color-accent-900: #433b34;
+
+  /* ========================================
+     COLOR TOKENS - Error
+     ======================================== */
+  --color-error-50: #f9ebea;
+  --color-error-100: #ebc2bd;
+  --color-error-200: #e2a49d;
+  --color-error-300: #d57a71;
+  --color-error-400: #cd6155;
+  --color-error-500: #c0392b;
+  --color-error-600: #af3427;
+  --color-error-700: #88281f;
+  --color-error-800: #6a1f18;
+  --color-error-900: #511812;
+
+  /* ========================================
+     COLOR TOKENS - Success
+     ======================================== */
+  --color-success-50: #eaf4ef;
+  --color-success-100: #bddbcc;
+  --color-success-200: #9dcab4;
+  --color-success-300: #70b291;
+  --color-success-400: #55a37c;
+  --color-success-500: #2a8c5b;
+  --color-success-600: #267f53;
+  --color-success-700: #1e6341;
+  --color-success-800: #174d32;
+  --color-success-900: #123b26;
+
+  /* ========================================
+     COLOR TOKENS - Warning
+     ======================================== */
+  --color-warning-50: #fbf3e6;
+  --color-warning-100: #f1d8b0;
+  --color-warning-200: #ebc68a;
+  --color-warning-300: #e2ab54;
+  --color-warning-400: #dc9b33;
+  --color-warning-500: #d38200;
+  --color-warning-600: #c07600;
+  --color-warning-700: #965c00;
+  --color-warning-800: #744800;
+  --color-warning-900: #593700;
+
+  /* ========================================
+     COLOR TOKENS - Black with Opacity
+     ======================================== */
+  --color-black-10: rgba(0, 0, 0, 0.1);
+  --color-black-20: rgba(0, 0, 0, 0.2);
+  --color-black-30: rgba(0, 0, 0, 0.3);
+  --color-black-40: rgba(0, 0, 0, 0.4);
+  --color-black-50: rgba(0, 0, 0, 0.5);
+  --color-black-60: rgba(0, 0, 0, 0.6);
+  --color-black-70: rgba(0, 0, 0, 0.7);
+  --color-black-80: rgba(0, 0, 0, 0.8);
+  --color-black-90: rgba(0, 0, 0, 0.9);
+  --color-black-100: #000000;
+
+  /* ========================================
+     COLOR TOKENS - White with Opacity
+     ======================================== */
+  --color-white-10: rgba(255, 255, 255, 0.1);
+  --color-white-20: rgba(255, 255, 255, 0.2);
+  --color-white-30: rgba(255, 255, 255, 0.3);
+  --color-white-40: rgba(255, 255, 255, 0.4);
+  --color-white-50: rgba(255, 255, 255, 0.5);
+  --color-white-60: rgba(255, 255, 255, 0.6);
+  --color-white-70: rgba(255, 255, 255, 0.7);
+  --color-white-80: rgba(255, 255, 255, 0.8);
+  --color-white-90: rgba(255, 255, 255, 0.9);
+  --color-white-100: #ffffff;
+
+  /* ========================================
+     BACKGROUND COLORS
+     ======================================== */
+  --bg-artboard: #fcfaf8;
+  --bg-card-1: var(--color-natural-50);
+  --bg-card-2: var(--color-natural-100);
+  --bg-card-3: var(--color-natural-150);
+  --bg-card-4: var(--color-natural-200);
+  --bg-card-5: var(--color-primary-50);
+  --bg-card-6: var(--color-primary-100);
+  --bg-card-7: var(--color-primary-200);
+  --bg-card-8: var(--color-primary-500);
+  --bg-card-9: var(--color-success-500);
+  --bg-card-10: var(--color-success-50);
+  --bg-card-11: var(--color-error-50);
+  --bg-card-12: var(--color-error-500);
+  --bg-card-13: var(--color-warning-50);
+
+  /* ========================================
+     BUTTON TOKENS - Primary
+     ======================================== */
+  --btn-primary-bg-active: var(--color-primary-500);
+  --btn-primary-bg-hover: var(--color-primary-600);
+  --btn-primary-bg-pressed: var(--color-primary-800);
+  --btn-primary-bg-disabled: var(--color-primary-100);
+  --btn-primary-border-focus: var(--color-primary-300);
+  --btn-primary-fg-active: var(--color-natural-50);
+  --btn-primary-fg-disabled: var(--color-primary-400);
+  --btn-primary-icon-active: var(--color-natural-50);
+
+  /* ========================================
+     BUTTON TOKENS - Secondary
+     ======================================== */
+  --btn-secondary-bg-active: var(--color-primary-100);
+  --btn-secondary-bg-hover: #f5ece4;
+  --btn-secondary-bg-pressed: var(--color-primary-400);
+  --btn-secondary-bg-disabled: var(--color-primary-50);
+  --btn-secondary-border-focus: var(--color-primary-400);
+  --btn-secondary-fg-active: var(--color-primary-800);
+  --btn-secondary-fg-disabled: var(--color-primary-300);
+  --btn-secondary-icon-active: var(--color-primary-800);
+
+  /* ========================================
+     BUTTON TOKENS - Outline
+     ======================================== */
+  --btn-outline-bg-active: var(--color-natural-50);
+  --btn-outline-bg-hover: var(--color-natural-100);
+  --btn-outline-bg-pressed: var(--color-natural-150);
+  --btn-outline-bg-disabled: var(--color-natural-200);
+  --btn-outline-border-active: var(--color-primary-300);
+  --btn-outline-border-focus: var(--color-primary-400);
+  --btn-outline-border-disabled: var(--color-natural-300);
+  --btn-outline-fg-active: var(--color-primary-800);
+  --btn-outline-fg-disabled: var(--color-natural-350);
+
+  /* ========================================
+     BUTTON TOKENS - Transparent
+     ======================================== */
+  --btn-transparent-bg-active: var(--color-natural-50);
+  --btn-transparent-bg-hover: var(--color-natural-100);
+  --btn-transparent-bg-pressed: var(--color-natural-150);
+  --btn-transparent-bg-disabled: var(--color-natural-200);
+  --btn-transparent-border-focus: var(--color-primary-300);
+  --btn-transparent-fg-active: var(--color-primary-800);
+  --btn-transparent-fg-disabled: var(--color-natural-350);
+
+  /* ========================================
+     BUTTON TOKENS - Destructive
+     ======================================== */
+  --btn-destructive-bg-active: var(--color-error-50);
+  --btn-destructive-bg-hover: var(--color-error-100);
+  --btn-destructive-bg-pressed: var(--color-error-100);
+  --btn-destructive-bg-disabled: var(--color-error-50);
+  --btn-destructive-border-active: var(--color-error-500);
+  --btn-destructive-border-focus: var(--color-error-500);
+  --btn-destructive-fg-active: var(--color-error-500);
+  --btn-destructive-fg-disabled: var(--color-error-200);
+
+  /* ========================================
+     FORM FIELD TOKENS
+     ======================================== */
+  --form-label: var(--color-natural-900);
+  --form-bg-active: var(--color-natural-50);
+  --form-bg-hover: var(--color-natural-100);
+  --form-bg-error: var(--color-error-50);
+  --form-bg-disabled: var(--color-natural-100);
+  --form-fg-active: var(--color-natural-400);
+  --form-fg-filled: var(--color-natural-900);
+  --form-fg-success: var(--color-success-500);
+  --form-fg-error: var(--color-error-500);
+  --form-fg-disabled: var(--color-natural-300);
+  --form-border-active: var(--color-natural-250);
+  --form-border-hover: var(--color-primary-300);
+  --form-border-focused: var(--color-primary-500);
+  --form-border-error: #c0392b;
+  --form-border-disabled: var(--color-natural-250);
+  --form-icon-active: var(--color-primary-500);
+  --form-icon-error: var(--color-error-500);
+  --form-icon-disabled: var(--color-primary-200);
+  --form-hint-default: var(--color-natural-400);
+  --form-hint-inform: var(--color-accent-500);
+  --form-label-disabled: var(--color-natural-350);
+
+  /* ========================================
+     TEXT TOKENS
+     ======================================== */
+  --text-title-white: var(--color-natural-50);
+  --text-title-black: var(--color-natural-900);
+  --text-title-brand: var(--color-primary-500);
+  --text-title-brand-2: var(--color-primary-700);
+  --text-body-paragraph: var(--color-natural-900);
+  --text-body-description: var(--color-natural-450);
+  --text-body-dimmed: var(--color-natural-350);
+  --text-body-error: var(--color-error-500);
+  --text-body-success: var(--color-success-500);
+
+  /* ========================================
+     BORDER TOKENS
+     ======================================== */
+  --border-black: var(--color-natural-900);
+  --border-brand: var(--color-primary-500);
+  --border-brand-50: var(--color-primary-50);
+  --border-brand-100: var(--color-primary-100);
+  --border-brand-200: var(--color-primary-200);
+  --border-gray-150: var(--color-natural-150);
+  --border-gray-200: var(--color-natural-200);
+  --border-gray-250: var(--color-natural-250);
+  --border-gray-300: var(--color-natural-300);
+  --border-paragraph: var(--color-natural-900);
+  --border-description: var(--color-natural-400);
+  --border-dimmed: var(--color-natural-350);
+  --border-error: var(--color-error-500);
+  --border-active: var(--color-success-500);
+  --border-warning: var(--color-warning-400);
+
+  /* ========================================
+     DIALOG TOKENS
+     ======================================== */
+  --dialog-bg-active: var(--color-natural-50);
+  --dialog-text-title-active: var(--color-natural-900);
+  --dialog-text-description: var(--color-natural-450);
+  --dialog-icon-active: var(--color-natural-500);
+
+  /* ========================================
+     CORNER RADIUS
+     ======================================== */
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-16: 16px;
+  --radius-20: 20px;
+  --radius-default: 12px;
+
+  /* ========================================
+     SPACING / PADDING
+     ======================================== */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-36: 36px;
+  --space-40: 40px;
+  --space-44: 44px;
+  --space-48: 48px;
+  --space-52: 52px;
+  --space-56: 56px;
+  --space-60: 60px;
+  --space-64: 64px;
+  --space-68: 68px;
+  --space-72: 72px;
+  --space-76: 76px;
+  --space-80: 80px;
+  --space-84: 84px;
+  --space-88: 88px;
+  --space-92: 92px;
+  --space-96: 96px;
+  --space-100: 100px;
+
+  /* ========================================
+     TYPOGRAPHY - Font Family
+     ======================================== */
+  --font-family-english:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-arabic:
+    "Cairo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* ========================================
+     TYPOGRAPHY - Font Size
+     ======================================== */
+  /* Huge */
+  --font-size-huge-xxlarge: 56px;
+  --font-size-huge-xlarge: 54px;
+  --font-size-huge-large: 48px;
+  --font-size-huge-medium: 44px;
+  --font-size-huge-small: 36px;
+
+  /* Display */
+  --font-size-display-xxlarge: 56px;
+  --font-size-display-xlarge: 54px;
+  --font-size-display-large: 48px;
+  --font-size-display-medium: 44px;
+  --font-size-display-small: 36px;
+
+  /* Headline */
+  --font-size-headline-large: 32px;
+  --font-size-headline-medium: 28px;
+  --font-size-headline-small: 24px;
+
+  /* Title */
+  --font-size-title-large: 24px;
+  --font-size-title-medium: 16px;
+  --font-size-title-small: 14px;
+
+  /* Body */
+  --font-size-body-large: 16px;
+  --font-size-body-medium: 14px;
+  --font-size-body-small: 12px;
+
+  /* Label */
+  --font-size-label-large: 14px;
+  --font-size-label-medium: 12px;
+  --font-size-label-small: 11px;
+
+  /* Caption */
+  --font-size-caption-large: 12px;
+  --font-size-caption-medium: 12px;
+  --font-size-caption-small: 10px;
+
+  /* ========================================
+     TYPOGRAPHY - Font Weight
+     ======================================== */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* ========================================
+     TYPOGRAPHY - Line Height
+     ======================================== */
+  --line-height-0: 64px;
+  --line-height-1: 52px;
+  --line-height-2: 44px;
+  --line-height-3: 40px;
+  --line-height-4: 36px;
+  --line-height-5: 32px;
+  --line-height-6: 28px;
+  --line-height-7: 24px;
+  --line-height-8: 20px;
+  --line-height-9: 16px;
+
+  /* ========================================
+     TYPOGRAPHY - Letter Spacing
+     ======================================== */
+  --letter-spacing-default: 0px;
+  --letter-spacing-large: 8px;
+
+  /* ========================================
+     ICON SIZES
+     ======================================== */
+  --icon-size-xxlarge: 40px;
+  --icon-size-xlarge: 32px;
+  --icon-size-large: 24px;
+  --icon-size-medium: 20px;
+  --icon-size-small: 16px;
+  --icon-size-xsmall: 12px;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Background utilities */
+.bg-artboard {
+  background-color: var(--bg-artboard);
+}
+.bg-card-1 {
+  background-color: var(--bg-card-1);
+}
+.bg-card-2 {
+  background-color: var(--bg-card-2);
+}
+.bg-primary {
+  background-color: var(--color-primary-500);
+}
+.bg-error {
+  background-color: var(--color-error-500);
+}
+.bg-success {
+  background-color: var(--color-success-500);
+}
+.bg-warning {
+  background-color: var(--color-warning-500);
+}
+
+/* Text color utilities */
+.text-title-white {
+  color: var(--text-title-white);
+}
+.text-title-black {
+  color: var(--text-title-black);
+}
+.text-title-brand {
+  color: var(--text-title-brand);
+}
+.text-body-paragraph {
+  color: var(--text-body-paragraph);
+}
+.text-body-description {
+  color: var(--text-body-description);
+}
+.text-body-dimmed {
+  color: var(--text-body-dimmed);
+}
+.text-error {
+  color: var(--text-body-error);
+}
+.text-success {
+  color: var(--text-body-success);
+}
+
+/* Border utilities */
+.border-brand {
+  border-color: var(--border-brand);
+}
+.border-gray {
+  border-color: var(--border-gray-250);
+}
+.border-error {
+  border-color: var(--border-error);
+}
+
+/* Border radius utilities */
+.rounded-4 {
+  border-radius: var(--radius-4);
+}
+.rounded-8 {
+  border-radius: var(--radius-8);
+}
+.rounded-12 {
+  border-radius: var(--radius-12);
+}
+.rounded-16 {
+  border-radius: var(--radius-16);
+}
+.rounded-20 {
+  border-radius: var(--radius-20);
+}
+.rounded-default {
+  border-radius: var(--radius-default);
+}
+
+/* Spacing utilities */
+.p-4 {
+  padding: var(--space-4);
+}
+.p-8 {
+  padding: var(--space-8);
+}
+.p-12 {
+  padding: var(--space-12);
+}
+.p-16 {
+  padding: var(--space-16);
+}
+.p-20 {
+  padding: var(--space-20);
+}
+.p-24 {
+  padding: var(--space-24);
+}
+
+.m-4 {
+  margin: var(--space-4);
+}
+.m-8 {
+  margin: var(--space-8);
+}
+.m-12 {
+  margin: var(--space-12);
+}
+.m-16 {
+  margin: var(--space-16);
+}
+.m-20 {
+  margin: var(--space-20);
+}
+.m-24 {
+  margin: var(--space-24);
+}
+
+/* Gap utilities */
+.gap-4 {
+  gap: var(--space-4);
+}
+.gap-8 {
+  gap: var(--space-8);
+}
+.gap-12 {
+  gap: var(--space-12);
+}
+.gap-16 {
+  gap: var(--space-16);
+}
+.gap-20 {
+  gap: var(--space-20);
+}
+.gap-24 {
+  gap: var(--space-24);
+}
+
+/* Typography utilities */
+.font-english {
+  font-family: var(--font-family-english);
+}
+.font-arabic {
+  font-family: var(--font-family-arabic);
+}
+
+.font-regular {
+  font-weight: var(--font-weight-regular);
+}
+.font-medium {
+  font-weight: var(--font-weight-medium);
+}
+.font-semibold {
+  font-weight: var(--font-weight-semibold);
+}
+
+.text-headline-large {
+  font-size: var(--font-size-headline-large);
+  line-height: var(--line-height-3);
+}
+
+.text-headline-medium {
+  font-size: var(--font-size-headline-medium);
+  line-height: var(--line-height-5);
+}
+
+.text-headline-small {
+  font-size: var(--font-size-headline-small);
+  line-height: var(--line-height-6);
+}
+
+.text-title-large {
+  font-size: var(--font-size-title-large);
+  line-height: var(--line-height-6);
+}
+
+.text-title-medium {
+  font-size: var(--font-size-title-medium);
+  line-height: var(--line-height-7);
+}
+
+.text-title-small {
+  font-size: var(--font-size-title-small);
+  line-height: var(--line-height-8);
+}
+
+.text-body-large {
+  font-size: var(--font-size-body-large);
+  line-height: var(--line-height-7);
+}
+
+.text-body-medium {
+  font-size: var(--font-size-body-medium);
+  line-height: var(--line-height-8);
+}
+
+.text-body-small {
+  font-size: var(--font-size-body-small);
+  line-height: var(--line-height-9);
+}
+
+.text-caption-large {
+  font-size: var(--font-size-caption-large);
+  line-height: var(--line-height-9);
+}
+
+.text-caption-small {
+  font-size: var(--font-size-caption-small);
+  line-height: var(--line-height-9);
+}
+
+/* Icon size utilities */
+.icon-xxlarge {
+  width: var(--icon-size-xxlarge);
+  height: var(--icon-size-xxlarge);
+}
+.icon-xlarge {
+  width: var(--icon-size-xlarge);
+  height: var(--icon-size-xlarge);
+}
+.icon-large {
+  width: var(--icon-size-large);
+  height: var(--icon-size-large);
+}
+.icon-medium {
+  width: var(--icon-size-medium);
+  height: var(--icon-size-medium);
+}
+.icon-small {
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
+}
+.icon-xsmall {
+  width: var(--icon-size-xsmall);
+  height: var(--icon-size-xsmall);
+}

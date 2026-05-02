@@ -1,0 +1,48 @@
+{
+  "pageTitle": "الباقات", "loading": "جار تحميل الباقات...",
+  "planFamilies": { "basic": "هلا بيسك", "premium": "هلا بريميوم" },
+  "planFamilyDescriptions": {
+    "basic": "تدير بنفسك — كل شيء بيدك",
+    "premium": "يديره فريقنا بالكامل"
+  },
+  "billingTypes": { "event": "مناسبة واحدة", "monthly": "اشتراك شهري" },
+  "billingTypeDescriptions": {
+    "event": "مناسبة واحدة — صالحة 90 يوم",
+    "monthly": "رصيد دعوات — مناسبات غير محدودة — 30 يوم"
+  },
+  "inviteSelector": { "label": "اختر عدد الدعوات", "poolLabel": "رصيد الدعوات", "invites": "دعوة" },
+  "currency": "ر.س",
+  "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة" },
+  "features": { "title": "المميزات المشمولة" },
+  "buttons": { "subscribeNow": "اشترك الآن" },
+  "errors": { "loadFailed": "فشل تحميل الباقات. حاول مرة أخرى.", "selectPlan": "الرجاء اختيار باقة." },
+  "summary": {
+    "title": "ملخص الطلب", "planDetails": "تفاصيل الباقة",
+    "invitePool": "رصيد الدعوات", "validDays": "صالحة لـ", "days": "يوم",
+    "oneEvent": "مناسبة واحدة", "unlimitedEvents": "مناسبات غير محدودة",
+    "compensationInvites": "دعوات تعويضية",
+    "activateButton": "تفعيل الاشتراك", "activating": "جار التفعيل...", "total": "الإجمالي",
+    "discountCode": {
+      "title": "كود الخصم",
+      "placeholder": "أدخل كود الخصم",
+      "apply": "تطبيق",
+      "applied": "تم التطبيق",
+      "success": "تم تطبيق خصم {{amount}} ر.س"
+    },
+    "paymentSummary": {
+      "title": "ملخص الدفع",
+      "planPrice": "سعر الباقة",
+      "discount": "الخصم",
+      "total": "الإجمالي"
+    },
+    "invitesLabel": "دعوة",
+    "currency": "ر.س",
+    "billingPeriod": "فترة الفوترة:",
+    "termsNotice": "بالضغط على تفعيل الاشتراك، أنت توافق على شروط الخدمة وسياسة الخصوصية",
+    "invalidCode": "كود خصم غير صالح",
+    "subscriptionSuccess": "تم تفعيل الاشتراك!",
+    "activeSubscription": "لديك اشتراك نشط بالفعل. يمكنك إنشاء مناسبة الآن.",
+    "subscriptionFailed": "فشل في تفعيل الاشتراك. يرجى المحاولة مرة أخرى."
+  },
+  "toasts": { "success": "تم تفعيل الاشتراك!", "failed": "فشل التفعيل. حاول مرة أخرى." }
+}

@@ -1,0 +1,44 @@
+.container {
+  display: flex;
+  width: 22.4rem;
+  align-items: flex-start;
+  gap: 1.6rem;
+  border-radius: 1.2rem;
+  background: #fff;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.searchWrapper {
+  display: flex;
+  padding: 0.8rem 1.6rem;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.6rem;
+  flex: 1 0 0;
+  align-self: stretch;
+}
+
+.searchInput {
+  flex: 1;
+  color: #656565;
+  text-align: right;
+  font-family: "Segoe UI";
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+.searchInput::placeholder {
+  color: #656565;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    width: 100%;
+    min-width: 15rem;
+  }
+}

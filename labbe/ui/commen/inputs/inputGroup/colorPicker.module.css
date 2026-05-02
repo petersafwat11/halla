@@ -1,0 +1,86 @@
+/* Color Selection Styles */
+.color_section {
+  display: flex;
+  flex-direction: column;
+  /* gap: 0.4rem; */
+}
+
+.color_label {
+  color: var(--color-title);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 2.4rem;
+}
+
+.color_active {
+  border: 3px solid var(--color-title);
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.check_icon {
+  filter: invert(1);
+}
+
+.colors,
+.color_inputs {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.custom_color {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+.color_picker {
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: 0.8rem;
+  border: 2px solid #e0e0e0;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.color_picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 0.6rem;
+}
+
+.color_picker::-webkit-color-swatch {
+  border: none;
+  border-radius: 0.6rem;
+}
+
+.custom_color_text {
+  color: var(--color-description);
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.color_picker_input {
+  color: var(--color-title);
+  text-align: right;
+  font-size: 1.6rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 2.4rem;
+  letter-spacing: 0.08rem;
+  display: flex;
+  height: 5.6rem;
+  padding: 1.2rem;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 1.2rem;
+  border-top: 1px solid #dfdfdf;
+  border-right: 1.5px solid #dfdfdf;
+  border-bottom: 1px solid #dfdfdf;
+  border-left: 1.5px solid #dfdfdf;
+  background: #fff;
+}

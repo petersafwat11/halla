@@ -1,0 +1,106 @@
+{
+  "header": {
+    "title": "المضيفون",
+    "subtitle": "إدارة منظمي المناسبات وأنشطتهم",
+    "dateRange": "نطاق التاريخ",
+    "addHost": "إضافة مضيف"
+  },
+  "table": {
+    "title": "قائمة المضيفين",
+    "searchPlaceholder": "البحث في المضيفين...",
+    "filter": "التصفية",
+    "export": "تصدير",
+    "columns": {
+      "username": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "phoneNumber": "رقم الهاتف",
+      "events": "عدد المناسبات",
+      "createdAt": "تاريخ الانضمام",
+      "actions": "الإجراءات"
+    },
+    "actions": {
+      "viewDetails": "عرض التفاصيل",
+      "suspendHost": "إيقاف المضيف",
+      "delete": "حذف"
+    }
+  },
+  "addHost": {
+    "title": "إضافة مضيف",
+    "username": "اسم المستخدم",
+    "email": "البريد الإلكتروني",
+    "phoneNumber": "رقم الهاتف",
+    "save": "حفظ",
+    "saving": "جاري الحفظ...",
+    "cancel": "إلغاء",
+    "success": "تم إضافة المضيف بنجاح",
+    "error": "فشل في إضافة المضيف"
+  },
+  "suspendHost": {
+    "success": "تم إيقاف المضيف بنجاح",
+    "error": "فشل في إيقاف المضيف"
+  },
+  "deleteHost": {
+    "success": "تم حذف المضيف بنجاح",
+    "error": "فشل في حذف المضيف"
+  },
+  "confirmDelete": {
+    "message": "هل أنت متأكد من حذف هذا المضيف؟"
+  },
+  "dateRange": {
+    "all": "الكل",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  },
+  "hostDetails": {
+    "title": "تفاصيل المستخدم",
+    "backToHosts": "العودة إلى المضيفين",
+    "phoneNumber": "رقم الهاتف",
+    "email": "البريد الإلكتروني",
+    "eventsCount": "عدد المناسبات",
+    "event": "مناسبة",
+    "guests": "ضيف",
+    "confirmed": "موافق",
+    "declined": "معتذر",
+    "pending": "لم يرد",
+    "attended": "حضر",
+    "active": "نشط",
+    "ended": "منتهي",
+    "suspended": "معلق",
+    "viewStats": "عرض الإحصائيات",
+    "noLocation": "غير محدد"
+  },
+  "actions": {
+    "createEvent": "إنشاء مناسبة",
+    "managePlan": "إدارة الاشتراك",
+    "activate": "تنشيط",
+    "suspend": "إيقاف",
+    "noHostId": "معرف المضيف غير موجود",
+    "confirmSuspend": "هل أنت متأكد من إيقاف هذا المضيف؟",
+    "suspendSuccess": "تم إيقاف المضيف بنجاح",
+    "suspendError": "فشل في إيقاف المضيف",
+    "activateSuccess": "تم تنشيط المضيف بنجاح",
+    "activateError": "فشل في تنشيط المضيف"
+  },
+  "status": {
+    "active": "نشط",
+    "suspended": "موقوف",
+    "inactive": "غير نشط"
+  },
+  "subscription": {
+    "title": "معلومات الاشتراك",
+    "plan": "الخطة",
+    "status": "حالة الاشتراك",
+    "active": "نشط",
+    "trial": "تجريبي",
+    "inactive": "غير نشط",
+    "eventsLimit": "حد المناسبات",
+    "guestsLimit": "حد الضيوف",
+    "expiresAt": "ينتهي في"
+  }
+}

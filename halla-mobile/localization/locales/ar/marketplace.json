@@ -1,0 +1,57 @@
+{
+  "title": "المتجر",
+  "search": {
+    "placeholder": "ابحث عن أي شيء...",
+    "filter": "تصفية"
+  },
+  "sections": {
+    "title": "الأقسام",
+    "all": "الكل",
+    "eventPlanning": "تخطيط الفعاليات",
+    "mediaProduction": "الإنتاج الإعلامي",
+    "giftsAndGiveaways": "الهدايا والتوزيعات",
+    "foodAndBeverages": "الأطعمة والمشروبات"
+  },
+  "filters": {
+    "title": "الفلاتر",
+    "section": "القسم",
+    "allSections": "جميع الأقسام",
+    "region": "المنطقة",
+    "allRegions": "جميع المناطق",
+    "city": "المدينة",
+    "allCities": "جميع المدن",
+    "districts": "الأحياء",
+    "priceRange": "نطاق السعر",
+    "minPrice": "من",
+    "maxPrice": "إلى",
+    "rating": "التقييم",
+    "allRatings": "الكل",
+    "4stars": "4+ نجوم",
+    "3stars": "3+ نجوم",
+    "2stars": "2+ نجوم",
+    "reset": "إعادة تعيين",
+    "apply": "تطبيق الفلاتر"
+  },
+  "vendor": {
+    "defaultName": "خدمة",
+    "defaultLocation": "المملكة العربية السعودية",
+    "callNow": "اتصل الآن",
+    "moreInfo": "المزيد من المعلومات",
+    "users": "مستخدم",
+    "sar": "ريال",
+    "serviceDuration": "مدة تنفيذ الخدمة",
+    "defaultDuration": "8-12 ساعة",
+    "priceRange": "نطاق السعر",
+    "defaultPriceRange": "2,500 دولار - 8,000 دولار",
+    "whatsIncluded": "ما هو مدرج",
+    "engagementSession": "جلسة تصوير الخطوبة",
+    "printRightsIncluded": "حقوق الطباعة متضمنة",
+    "dronePhotography": "خيارات التصوير الفوتوغرافي بالطائرات بدون طيار",
+    "digitalAlbum": "ألبوم صور رقمي",
+    "fullDayCoverage": "تغطية ليوم كامل",
+    "years": "سنوات",
+    "contactInfo": "معلومات الاتصال"
+  },
+  "noResults": "لا توجد نتائج",
+  "loading": "جاري التحميل..."
+}

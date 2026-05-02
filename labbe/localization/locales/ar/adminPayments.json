@@ -1,0 +1,45 @@
+{
+  "header": {
+    "title": "المدفوعات",
+    "subtitle": "راقب وأدر أحداث المنصة",
+    "dateRange": "نطاق التاريخ"
+  },
+  "stats": {
+    "currentMonthRevenue": "إيرادات الشهر الحالي",
+    "lastMonthRevenue": "إيرادات الشهر الماضي",
+    "totalTransactions": "إجمالي المعاملات"
+  },
+  "table": {
+    "title": "قائمة المعاملات",
+    "searchPlaceholder": "البحث في المعاملات...",
+    "filter": "التصفية",
+    "export": "تصدير",
+    "columns": {
+      "id": "رقم المعاملة",
+      "name": "الاسم",
+      "amount": "المبلغ",
+      "currency": "العملة",
+      "planType": "نوع الباقة",
+      "paymentMethod": "طريقة الدفع",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإنشاء"
+    },
+    "status": {
+      "successful": "نجحت",
+      "pending": "في الانتظار",
+      "failed": "فشلت",
+      "cancelled": "ملغية"
+    }
+  },
+  "dateRange": {
+    "all": "الكل",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  }
+}

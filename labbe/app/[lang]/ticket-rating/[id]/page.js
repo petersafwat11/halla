@@ -1,0 +1,237 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FaCheckCircle, FaTicketAlt, FaStar } from "react-icons/fa";
+import { useTicket, useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
+import StarRating from "@/ui/commen/inputs/starRating/StarRating";
+import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
+import { ticketRatingSchema, defaultTicketRatingValues } from "@/utils/schemas/ticketRatingSchema";
+import styles from "./page.module.css";
+
+const RATING_LABELS = ["veryPoor", "poor", "average", "good", "excellent"];
+
+const TicketRatingPage = () => {
+  const { id: ticketId } = useParams();
+  const router = useRouter();
+  const { t, i18n } = useTranslation("ticketRating");
+  const isRTL = i18n.language === "ar";
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedData, setSubmittedData] = useState(null);
+
+  // Fetch ticket data with React Query
+  const { data: ticketData, isLoading, error } = useTicket(ticketId);
+
+  // Rating submission mutation
+  const rateMutation = useTicketMutation("rateTicket");
+
+  // Initialize form with RHF
+  const methods = useForm({
+    resolver: zodResolver(ticketRatingSchema),
+    defaultValues: defaultTicketRatingValues,
+    mode: "onChange",
+  });
+
+  const { handleSubmit, reset, formState } = methods;
+  const { isSubmitting, isDirty } = formState;
+
+  // Extract ticket from response
+  const ticket = ticketData?.data?.data || ticketData?.data || ticketData;
+
+  // Initialize form with existing rating
+  useEffect(() => {
+    if (ticket?.userRating?.rating) {
+      reset({
+        rating: ticket.userRating.rating,
+        feedback: ticket.userRating.feedback || "",
+      });
+      setSubmitted(true);
+      setSubmittedData({
+        rating: ticket.userRating.rating,
+        feedback: ticket.userRating.feedback || "",
+      });
+    }
+  }, [ticket, reset]);
+
+  // Unsaved changes warning
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty && !submitted) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty, submitted]);
+
+  const onSubmit = async (data) => {
+    try {
+      await rateMutation.mutateAsync({
+        ticketId,
+        rating: data.rating,
+        feedback: data.feedback,
+      });
+      setSubmitted(true);
+      setSubmittedData(data);
+      toast.success(t("success.title"));
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+      toast.error(error?.response?.data?.message || t("errors.submitFailed"));
+    }
+  };
+
+  const getRatingLabel = (value) => {
+    if (value >= 1 && value <= 5) return t(`rating.${RATING_LABELS[value - 1]}`);
+    return "";
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <SimpleLoading message={t("loading")} />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <ErrorBoundary
+          onRetry={() => window.location.reload()}
+          fallbackMessage={t("errors.loadFailed")}
+        >
+          <div />
+        </ErrorBoundary>
+      </div>
+    );
+  }
+
+  // Not found state
+  if (!ticket) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.statusCard}>
+          <FaTicketAlt className={styles.statusIcon} />
+          <h2>{t("notFound.title")}</h2>
+          <p>{t("notFound.description")}</p>
+          <button
+            onClick={() => router.push("/")}
+            className={styles.secondaryButton}
+          >
+            {t("buttons.backToHome")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Ticket not resolved state
+  if (ticket.status !== "resolved" && ticket.status !== "closed") {
+    return (
+      <div className={styles.container}>
+        <div className={styles.statusCard}>
+          <FaTicketAlt className={styles.statusIcon} />
+          <h2>{t("inProgress.title")}</h2>
+          <p>{t("inProgress.description")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Success state
+  if (submitted) {
+    return (
+      <div className={styles.container} dir={isRTL ? "rtl" : "ltr"}>
+        <div className={styles.card}>
+          <div className={styles.successContent}>
+            <FaCheckCircle className={styles.successIcon} />
+            <h2>{t("success.title")}</h2>
+            <p>{t("success.description")}</p>
+            <div className={styles.stars}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FaStar
+                  key={star}
+                  className={`${styles.starSmall} ${star <= submittedData?.rating ? styles.starFilled : ""
+                    }`}
+                />
+              ))}
+            </div>
+            {submittedData?.feedback && (
+              <div className={styles.feedbackBox}>
+                <span className={styles.feedbackBoxLabel}>
+                  {t("feedback.yourFeedback")}
+                </span>
+                <p>{submittedData.feedback}</p>
+              </div>
+            )}
+            <button
+              onClick={() => router.push("/")}
+              className={styles.secondaryButton}
+            >
+              {t("buttons.backToHome")}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Rating form
+  return (
+    <div className={styles.container} dir={isRTL ? "rtl" : "ltr"}>
+      <div className={styles.card}>
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <header className={styles.header}>
+              <FaTicketAlt className={styles.headerIcon} />
+              <h1>{t("title")}</h1>
+              <span className={styles.ticketBadge}>
+                {t("ticketNumber")} #{String(ticketId).slice(-6)}
+              </span>
+            </header>
+
+            <section className={styles.ratingSection}>
+              <p className={styles.question}>{t("rating.question")}</p>
+              <StarRating
+                name="rating"
+                required
+                size="large"
+                showLabels
+              />
+            </section>
+
+            <section className={styles.feedbackSection}>
+              <TextArea
+                name="feedback"
+                label={t("feedback.label")}
+                placeholder={t("feedback.placeholder")}
+                rows={4}
+                maxLength={1000}
+                showCount
+              />
+            </section>
+
+            <button
+              type="submit"
+              className={styles.primaryButton}
+              disabled={isSubmitting || !formState.isValid}
+            >
+              {isSubmitting ? t("buttons.submitting") : t("buttons.submit")}
+            </button>
+          </form>
+        </FormProvider>
+      </div>
+    </div>
+  );
+};
+
+export default TicketRatingPage;

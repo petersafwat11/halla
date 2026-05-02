@@ -1,0 +1,31 @@
+.container {
+  margin-top: 2rem;
+}
+
+/* ── Code Cell ── */
+.codeCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.codeText {
+  font-weight: 700;
+  color: var(--c-s700, #3a3028);
+  letter-spacing: 0.04em;
+  font-family: monospace;
+}
+.copyBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--c-n350, #a0a0a0);
+  font-size: 1.2rem;
+  padding: 0.2rem;
+  border-radius: 0.4rem;
+  display: flex;
+  align-items: center;
+  transition: color 150ms ease;
+}
+.copyBtn:hover {
+  color: var(--c-p500, #c28e5c);
+}

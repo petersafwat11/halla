@@ -1,0 +1,37 @@
+{
+  "title": "المدفوعات",
+  "table": {
+    "title": "قائمة المدفوعات",
+    "columns": {
+      "service": "نوع الخدمة",
+      "amount": "المبلغ",
+      "date": "تاريخ العملية",
+      "status": "حاله العملية"
+    },
+    "status": {
+      "success": "ناجحة",
+      "pending": "معلقة",
+      "cancelled": "ملغية"
+    },
+    "actions": {
+      "delete": "حذف",
+      "deleteAll": "حذف الكل",
+      "actions": "الإجراءات"
+    },
+    "filter": {
+      "title": "التصفية",
+      "all": "الكل",
+      "success": "ناجحة",
+      "pending": "معلقة",
+      "cancelled": "ملغية"
+    },
+    "export": "تصدير البيانات",
+    "search": "بحث في المدفوعات...",
+    "labels": {
+      "actions": "الإجراءات",
+      "filter": "التصفية",
+      "export": "تصدير البيانات",
+      "moreOptions": "خيارات إضافية"
+    }
+  }
+}

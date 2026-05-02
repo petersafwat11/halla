@@ -1,0 +1,111 @@
+.appShowcaseSection {
+  width: 100%;
+  padding: 80px 0;
+  background: transparent;
+}
+
+.container {
+  max-width: 1520px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 95px;
+}
+
+.imageWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 25px;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.4s ease;
+}
+
+.imageWrapper:hover {
+  transform: scale(1.02);
+}
+
+.macbookImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 25px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.4s ease;
+}
+
+.macbookImage:hover {
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .appShowcaseSection {
+    padding: 60px 0;
+  }
+  
+  .container {
+    gap: 70px;
+  }
+}
+
+@media (max-width: 992px) {
+  .appShowcaseSection {
+    padding: 50px 0;
+  }
+  
+  .container {
+    padding: 0 24px;
+    gap: 50px;
+  }
+  
+  .imageWrapper {
+    border-radius: 20px;
+  }
+  
+  .macbookImage {
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .appShowcaseSection {
+    padding: 40px 0;
+  }
+  
+  .container {
+    padding: 0 20px;
+    gap: 40px;
+  }
+  
+  .imageWrapper {
+    border-radius: 15px;
+  }
+  
+  .macbookImage {
+    border-radius: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .appShowcaseSection {
+    padding: 30px 0;
+  }
+  
+  .container {
+    padding: 0 15px;
+    gap: 30px;
+  }
+  
+  .imageWrapper {
+    border-radius: 12px;
+  }
+  
+  .macbookImage {
+    border-radius: 12px;
+  }
+}

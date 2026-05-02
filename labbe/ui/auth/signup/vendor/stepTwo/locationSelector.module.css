@@ -1,0 +1,192 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  width: 100%;
+}
+
+.selectGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.label {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--text-primary, #1a1a1a);
+}
+
+.select {
+  width: 100%;
+  padding: 1.2rem 1.6rem;
+  font-size: 1.4rem;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 0.8rem;
+  background-color: var(--bg-input, #fff);
+  color: var(--text-primary, #1a1a1a);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 1.2rem center;
+  background-size: 1.6rem;
+  padding-left: 4rem;
+}
+
+[dir="ltr"] .select {
+  background-position: right 1.2rem center;
+  padding-left: 1.6rem;
+  padding-right: 4rem;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--primary-color, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select:disabled {
+  background-color: var(--bg-disabled, #f5f5f5);
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 1.2rem;
+  color: var(--error-color, #ef4444);
+}
+
+/* Multi-select dropdown wrapper */
+.multiSelectWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.multiSelectTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1.2rem 1.6rem;
+  font-size: 1.4rem;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 0.8rem;
+  background-color: var(--bg-input, #fff);
+  color: var(--text-primary, #1a1a1a);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.multiSelectTrigger:hover {
+  border-color: var(--primary-color, #6366f1);
+}
+
+.multiSelectValue {
+  flex: 1;
+}
+
+.dropdownArrow {
+  transition: transform 0.2s ease;
+  color: #666;
+}
+
+.dropdownArrowOpen {
+  transform: rotate(180deg);
+}
+
+.multiSelectDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: var(--bg-input, #fff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 0.8rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.searchInputWrapper {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.8rem 1.2rem;
+  font-size: 1.3rem;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 0.6rem;
+  background-color: var(--bg-input, #fff);
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-color, #6366f1);
+}
+
+.optionsList {
+  overflow-y: auto;
+  max-height: 250px;
+  padding: 0.4rem 0;
+}
+
+.districtOption {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 1.3rem;
+  color: #1a1a1a;
+}
+
+.districtOption:hover {
+  background-color: var(--bg-hover, #f5f5f5);
+}
+
+.districtOption input[type="checkbox"] {
+  width: 1.6rem;
+  height: 1.6rem;
+  accent-color: var(--primary-color, #6366f1);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.districtOption input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.2rem;
+  background-color: var(--bg-success-light, #ecfdf5);
+  border-radius: 0.8rem;
+  border: 1px solid var(--border-success, #a7f3d0);
+}
+
+.summaryLabel {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--text-secondary, #666);
+}
+
+.summaryValue {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--success-color, #10b981);
+}
+
+@media (max-width: 768px) {
+  .districtsContainer {
+    grid-template-columns: 1fr;
+  }
+}

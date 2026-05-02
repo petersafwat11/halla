@@ -1,0 +1,186 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 1.6rem;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  border-color: #c28e5c;
+  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.15);
+}
+
+.card.inactive {
+  opacity: 0.7;
+  background: #f9fafb;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.6rem 2rem;
+  background: linear-gradient(135deg, #faf8f5 0%, #f5f0eb 100%);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.planInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.planName {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.planCode {
+  font-size: 1.2rem;
+  color: #6b7280;
+  font-family: monospace;
+  background: #fff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.4rem;
+  width: fit-content;
+}
+
+.status {
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  border-radius: 2rem;
+}
+
+.status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.disabled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 2rem;
+  flex: 1;
+}
+
+.pricingSection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.priceItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.2rem 1.6rem;
+  background: #f9fafb;
+  border-radius: 1rem;
+  min-width: 10rem;
+  flex: 1;
+}
+
+.priceLabel {
+  font-size: 1.2rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.priceValue {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #c28e5c;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.currency {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.limitsSection {
+  display: flex;
+  gap: 2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.limitItem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.limitIcon {
+  font-size: 1.4rem;
+  color: #9ca3af;
+}
+
+.limitValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.limitLabel {
+  font-size: 1.3rem;
+  color: #6b7280;
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1.2rem 2rem;
+  background: #fff;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  color: #c28e5c;
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editButton:hover {
+  background: #faf8f5;
+  color: #a67a4d;
+}
+
+@media (max-width: 640px) {
+  .cardHeader {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .pricingSection {
+    flex-direction: column;
+  }
+
+  .priceItem {
+    min-width: auto;
+  }
+
+  .limitsSection {
+    flex-wrap: wrap;
+    gap: 1.2rem;
+  }
+}

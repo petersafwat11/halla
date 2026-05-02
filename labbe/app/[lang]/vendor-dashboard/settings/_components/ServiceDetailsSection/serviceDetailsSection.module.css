@@ -1,0 +1,721 @@
+.container {
+  background: #fff;
+  border-radius: 1.2rem;
+  padding: 2rem;
+  border: 1px solid #f3f4f6;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.6rem;
+}
+
+.title {
+  align-self: stretch;
+  color: var(--Natural-900, #2c2c2c);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 0.08px;
+}
+
+.editButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  border-radius: 50%;
+}
+
+.editButton:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  align-self: stretch;
+}
+
+.row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 32px;
+  align-self: stretch;
+}
+
+.fullWidthRow {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 32px;
+  align-self: stretch;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.fullWidthField {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.uploadField {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.activitiesField {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+}
+
+.label {
+  color: var(--Content-Text-Text-body-discription, #656565);
+  text-align: right;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.06px;
+}
+
+.value {
+  color: var(--Natural-900, #2c2c2c);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.014px;
+}
+
+.descriptionValue {
+  width: 100%;
+  color: var(--Natural-900, #2c2c2c);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.014px;
+  word-break: break-word;
+}
+
+.uploadedFile {
+  display: flex;
+  width: 276px;
+  padding: 8px 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--strokeColor-lightGrey, #e7e7e7);
+  background: var(--bgColor-light, #fff);
+}
+
+.fileInfo {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.fileText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 1;
+}
+
+.fileName {
+  align-self: stretch;
+  color: var(--textColor-default, #0b0b0b);
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 18px;
+  letter-spacing: 0;
+}
+
+.fileSize {
+  color: var(--textColor-secDefault, #6d6d6d);
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
+.activitiesContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.activitiesRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.activityTag {
+  color: var(--Natural-900, #2c2c2c);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  padding: 4px 12px;
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+@media (max-width: 1024px) {
+  .row {
+    gap: 24px;
+  }
+
+  .fullWidthRow {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .row,
+  .fullWidthRow {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .fieldGroup,
+  .uploadField,
+  .fullWidthField,
+  .activitiesField {
+    width: 100%;
+  }
+
+  .uploadedFile {
+    width: 100%;
+  }
+
+  .descriptionValue {
+    width: 100%;
+  }
+
+  .activitiesRow {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
+
+/* Location Section */
+.locationSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding-top: 16px;
+  border-top: 1px solid #e7e7e7;
+}
+
+.sectionLabel {
+  color: var(--Natural-900, #2c2c2c);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #2c2c2c;
+  cursor: pointer;
+}
+
+.select:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* Image Preview */
+.imagePreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.imagePreview:hover {
+  border-color: #6366f1;
+}
+
+.thumbnailImage {
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.viewText {
+  font-size: 11px;
+  color: #6366f1;
+}
+
+.noImage {
+  padding: 16px;
+  color: #999;
+  font-size: 12px;
+  border: 1px dashed #e7e7e7;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: #e0e0e0;
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 8px;
+}
+
+/* New styles for updated component */
+.documentsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  width: 100%;
+}
+
+.uploadContainer {
+  width: 100%;
+  min-width: 200px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #2c2c2c;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--Primary-500, #c28e5c);
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #2c2c2c;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--Primary-500, #c28e5c);
+}
+
+.locationRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+}
+
+.locationField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+}
+
+/* Multi-select dropdown */
+.multiSelectContainer {
+  position: relative;
+  width: 100%;
+}
+
+.multiSelectTrigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.multiSelectTrigger:hover {
+  border-color: var(--Primary-500, #c28e5c);
+}
+
+.arrow {
+  font-size: 10px;
+  color: #999;
+}
+
+.multiSelectDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 250px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.searchInput {
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid #e7e7e7;
+  font-size: 14px;
+  outline: none;
+}
+
+.optionsList {
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.optionItem:hover {
+  background-color: #f5f5f5;
+}
+
+.optionItem input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .documentsRow {
+    flex-direction: column;
+  }
+
+  .locationRow {
+    flex-direction: column;
+  }
+
+  .locationField {
+    width: 100%;
+  }
+}
+
+/* Edit Form Styles */
+.editFormContainer {
+  width: 60rem;
+  max-width: 100%;
+  padding: 2.4rem;
+  background: #fff;
+  border-radius: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.editFormHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.editFormTitle {
+  color: #2c2c2c;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 2.8rem;
+  margin: 0;
+}
+
+.editFormCloseButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  border-radius: 50%;
+}
+
+.editFormCloseButton:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.editFormRow {
+  display: flex;
+  gap: 1.6rem;
+  flex-wrap: wrap;
+}
+
+.editFormField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.editFormLabel {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 2rem;
+}
+
+.editFormInput,
+.editFormSelect {
+  width: 100%;
+  padding: 1.2rem 1.6rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.8rem;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  color: #2c2c2c;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.editFormInput:focus,
+.editFormSelect:focus {
+  outline: none;
+  border-color: #c28e5c;
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.1);
+}
+
+.editFormSelect:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.editFormTextarea {
+  width: 100%;
+  padding: 1.2rem 1.6rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.8rem;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  color: #2c2c2c;
+  background: #fff;
+  resize: vertical;
+  min-height: 10rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.editFormTextarea:focus {
+  outline: none;
+  border-color: #c28e5c;
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.1);
+}
+
+.editFormSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.editFormSectionLabel {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 2rem;
+}
+
+.editFormFooter {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  justify-content: flex-start;
+  margin-top: 0.8rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.editFormSubmitBtn,
+.editFormCancelBtn {
+  display: flex;
+  min-width: 12rem;
+  padding: 1.2rem 2rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 0.8rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 2rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editFormSubmitBtn {
+  background: #c28e5c;
+  color: #fff;
+}
+
+.editFormSubmitBtn:hover:not(:disabled) {
+  background: #b07d4a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.3);
+}
+
+.editFormSubmitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.editFormCancelBtn {
+  border: 1px solid #d6b392;
+  background: #fff;
+  color: #6b4e33;
+}
+
+.editFormCancelBtn:hover:not(:disabled) {
+  background: #faf5f0;
+  border-color: #c28e5c;
+}
+
+.editFormCancelBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .editFormContainer {
+    width: 100%;
+    padding: 2rem;
+  }
+
+  .editFormRow {
+    flex-direction: column;
+  }
+
+  .editFormField {
+    width: 100%;
+  }
+
+  .editFormFooter {
+    flex-direction: column-reverse;
+    gap: 1rem;
+  }
+
+  .editFormSubmitBtn,
+  .editFormCancelBtn {
+    width: 100%;
+  }
+}

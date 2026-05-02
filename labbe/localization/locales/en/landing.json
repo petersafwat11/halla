@@ -1,0 +1,283 @@
+{
+  "header": {
+    "nav": {
+      "home": "Home",
+      "features": "Features",
+      "invitations": "Invitations",
+      "pricing": "Pricing",
+      "joinNow": "Join Now",
+      "store": "Store",
+      "reviews": "Reviews"
+    },
+    "login": "Login",
+    "signup": "Sign Up"
+  },
+  "hero": {
+    "titleBlack1": "Your Smart Platform",
+    "titleBrand": " for Invitations & Event Management",
+    "titleBlack2": " Made Easy!",
+    "description": "Create your events, send personalized digital invitations via WhatsApp and SMS, and track attendance in real time — all from one platform.",
+    "appText": "Or download the app"
+  },
+  "features": {
+    "heading": "Halla Features",
+    "subheading": "Enjoy advanced digital solutions for designing invitations, tracking attendance, performance analytics, and everything you need to manage your events easier than ever.",
+    "items": [
+      { "title": "Event Creation", "description": "Set the event type, add the location, timing, and guest details with ease." },
+      { "title": "Digital Invitations", "description": "Elegant digital invitations sent automatically via WhatsApp and SMS at their scheduled time." },
+      { "title": "WhatsApp Notifications", "description": "Automated reminders and confirmations via WhatsApp to maximize attendance." },
+      { "title": "Guest Management", "description": "Track RSVPs, manage guests, and export attendance statistics with one click." },
+      { "title": "QR Check-in", "description": "Unique QR code per guest for fast, accurate check-in on the day of the event." },
+      { "title": "Staff Management", "description": "Add reception staff, assign permissions, and monitor team performance." },
+      { "title": "Analytics & Reports", "description": "Detailed reports on attendance rates, responses, and event performance." },
+      { "title": "Push Notifications", "description": "Instant alerts for every important update in your events via the app." },
+      { "title": "Compensation Credits", "description": "Receive extra credits as compensation for cancellations from your invitation count." },
+      { "title": "Service Marketplace", "description": "Browse hundreds of vendors — photography, catering, decor, etc. — and book directly." },
+      { "title": "Enterprise Solution", "description": "White-label system with full customization and multi-user management." }
+    ]
+  },
+  "invitations": {
+    "title": "Explore Our Innovative Invitation Templates",
+    "description": "Elegant, fully customizable designs for weddings, formal events, and special celebrations — all sent automatically via WhatsApp."
+  },
+  "howItWorks": {
+    "eyebrow": "How It Works",
+    "title": "Four Steps to a Perfect Event",
+    "sub": "From creation to check-in — everything in one platform.",
+    "prevBtn": "Previous",
+    "nextBtn": "Next",
+    "steps": [
+      { "n": "1", "title": "Create Your Event", "desc": "Set the event type, add the location, timing, and guest details with ease." },
+      { "n": "2", "title": "Send Invitations", "desc": "Choose the ideal invitation design and message format, then send it to your guests via WhatsApp." },
+      { "n": "3", "title": "Track Responses", "desc": "Monitor guest responses through the smart and intuitive control panel." },
+      { "n": "4", "title": "Welcome Guests", "desc": "Track attendance on event day with speed and accuracy by scanning the QR code at the entrance." }
+    ]
+  },
+  "testimonials": {
+    "eyebrow": "Testimonials",
+    "title": "What Event Organizers Say",
+    "sub": "Thousands of organizers trust Halla for their most important events.",
+    "prevBtn": "Previous",
+    "nextBtn": "Next",
+    "items": [
+      { "name": "Noura Al-Ghamdi", "role": "Wedding Planner", "text": "Halla completely changed how I work. WhatsApp invites with one click and real-time attendance tracking. 100% recommended." },
+      { "name": "Fahad Al-Otaibi", "role": "Corporate Events Manager", "text": "We used Halla for a 500-person conference. QR check-in was incredibly smooth. Saved hours of manual work." },
+      { "name": "Mona Al-Salem", "role": "Wedding Designer", "text": "The invitation templates are stunning and the system is very easy for clients. Halla is now a core part of my services." },
+      { "name": "Khalid Al-Dosari", "role": "Venue Owner", "text": "Managing multiple events simultaneously became easy. The dashboard is clear and comprehensive." },
+      { "name": "Haifa Al-Anazi", "role": "Event Organizer", "text": "Excellent support and the platform keeps improving. Best investment for my business this year." },
+      { "name": "Saad Al-Harbi", "role": "Marketing Manager", "text": "We tried several platforms and came back to Halla. The experience design is completely different from competitors." }
+    ]
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "title": "Questions Everyone Asks",
+    "sub": "Didn't find your answer? Contact us on WhatsApp.",
+    "items": [
+      { "q": "What is Halla?", "a": "Halla is a smart event management platform that lets you create events, send digital invitations via WhatsApp and SMS, and track attendance in real time — all from one place." },
+      { "q": "How do I create a new invitation?", "a": "Creating an event takes four simple steps: First, add your event details — name, venue, date, time, and drop a pin on the map. Second, add guests one by one or import your full guest list from a CSV file instantly. Third, choose an invitation image from our gallery or upload your own and add custom text. Fourth, select a WhatsApp message template, review your event summary, send yourself a test message to preview what guests will receive, then schedule the send time — we'll deliver all invitations at your chosen moment and automatically send reminders 24 hours before the event." },
+      { "q": "Are invitations sent with each guest's personal name?", "a": "Yes, every guest receives a personalized message with their name, event details, and a unique QR code that belongs exclusively to them." },
+      { "q": "Do all invitations reach their recipients?", "a": "Yes, Halla ensures delivery via WhatsApp with the ability to track delivery status for each guest. You'll be notified immediately if any message fails." },
+      { "q": "Can I add my own custom design?", "a": "Absolutely. You can upload your own designs or choose from our professional template library and customize them with your colors and text." },
+      { "q": "Can I see attendance and regret details?", "a": "Yes, your dashboard shows in real time who accepted, declined, or hasn't replied, with comprehensive exportable reports." },
+      { "q": "Can I send reminders to guests?", "a": "Yes, Halla automatically sends a WhatsApp reminder to every guest 24 hours before the event — no action needed from you." },
+      { "q": "What about guests who don't use WhatsApp?", "a": "Halla sends invitations via WhatsApp by default. If a WhatsApp message doesn't reach a guest for any reason, the system automatically falls back to SMS to ensure delivery." },
+      { "q": "Can I invite guests from outside Saudi Arabia?", "a": "Yes, Halla supports sending invitations to mobile numbers across all Gulf Cooperation Council countries — Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, and Oman." },
+      { "q": "Can I assign more than one additional host?", "a": "Yes, you can add one or more co-hosts to your event. They'll be able to send invitations and track guest RSVPs on your behalf." },
+      { "q": "How does QR check-in work?", "a": "Each guest receives a unique QR code in their invitation. On event day, your team scans the code with a phone camera and the guest's details appear instantly." },
+      { "q": "What is the compensation credit system?", "a": "Compensation credits are extra invite slots added on top of your plan's guest count. When a guest declines your invitation, you can use these credits to invite someone else in their place — keeping your event full." },
+      { "q": "Is my data safe with Halla?", "a": "Yes, we use the highest security and encryption standards to protect your data and your guests' data, in line with international best practices and data protection regulations." },
+      { "q": "Is Halla free to try?", "a": "Yes, you can create a free account and explore the platform. Paid plans start from 99 SAR for a single event. No credit card required." },
+      { "q": "Can I cancel my subscription anytime?", "a": "Yes, you can cancel anytime with no extra fees. Your subscription continues until the end of the paid period." },
+      { "q": "Do you offer enterprise plans?", "a": "Yes, we have white-label enterprise solutions with a dedicated account manager. Contact us via WhatsApp for details and a custom quote." }
+    ]
+  },
+  "pricing": {
+    "eyebrow": "Pricing",
+    "title": "Choose the Right Plan for You",
+    "sub": "For individuals and businesses — per-event or monthly subscription plans.",
+    "tabHost": "Individuals",
+    "tabHostSub": "",
+    "tabHostIcon": "",
+    "tabEnterprise": "Business",
+    "tabEnterpriseSub": "",
+    "tabEnterpriseIcon": "",
+    "basic": "Basic",
+    "premium": "Premium",
+    "perEventTab": "Per Event",
+    "monthlyTab": "Monthly",
+    "bizEventTab": "Per Event",
+    "bizQuarterlyTab": "3-Month Pool",
+    "bizAnnualTab": "Annual Pool",
+    "direct": "Halaa Direct",
+    "managed": "Halaa Managed",
+    "byClient": "By Client",
+    "byTeam": "By Halaa Team",
+    "sar": "SAR",
+    "perEvent": "/ event",
+    "pricePerEvent": "/ event",
+    "pricePerMonth": "/ month",
+    "pricePerQuarter": "/ 3 months",
+    "pricePerYear": "/ year",
+    "subscribe": "Subscribe Now",
+    "contact": "Chat on WhatsApp",
+    "selectInvites": "Select Invite Count",
+    "selectPool": "Select Pool Size",
+    "poolLabel": "Invite Pool",
+    "inviteUnit": "invites",
+    "invitesLimit": "{{count}} invites / event",
+    "unlimitedEvents": "Unlimited events",
+    "validDays30": "Valid for 30 days",
+    "validDays90": "Valid for 90 days",
+    "validDays365": "Valid for 365 days",
+    "whatsappTemplates": "{{count}} WhatsApp templates",
+    "setupFeeNote": "One-time setup fee of 1,200 SAR required",
+    "setupFeeIncluded": "Setup fee included",
+    "featuresTitle": "Included Features",
+    "compensationTitle": "Free Compensation Invites",
+    "compensationSingle": "{{count}} compensation invites (15%)",
+    "popular": "Most Popular",
+    "contactNote": "Our team will contact you to complete payment.",
+    "basicFeatures": [
+      "In-App Invitations",
+      "WhatsApp Invitations",
+      "SMS Invitations",
+      "QR Code Entry",
+      "QR Scanning",
+      "Flexible Entry Mode",
+      "Staff Check-in",
+      "Gatekeeper Assignment",
+      "RSVP Tracking",
+      "Auto Reminders",
+      "Email Notifications",
+      "Basic Invitation Templates",
+      "Compensation Invites (15%)"
+    ],
+    "premiumFeatures": [
+      "In-App Invitations",
+      "WhatsApp Invitations",
+      "SMS Invitations",
+      "QR Code Entry",
+      "QR Scanning",
+      "Flexible Entry Mode",
+      "Staff Check-in",
+      "Gatekeeper Assignment",
+      "RSVP Tracking",
+      "Auto Reminders",
+      "Email Notifications",
+      "Premium Invitation Templates",
+      "Advanced Analytics",
+      "Priority Support",
+      "Compensation Invites (15%)"
+    ],
+    "hostFeatures": [
+      "In-App Invitations",
+      "WhatsApp Invitations",
+      "SMS Invitations",
+      "QR Code Entry",
+      "QR Scanning",
+      "Flexible Entry Mode",
+      "Staff Check-in",
+      "Gatekeeper Assignment",
+      "RSVP Tracking",
+      "Auto Reminders",
+      "Email Notifications",
+      "Basic Invitation Templates",
+      "Compensation Invites (15%)"
+    ],
+    "businessFeatures": [
+      "In-App Invitations",
+      "WhatsApp Invitations",
+      "SMS Invitations",
+      "QR Code Entry",
+      "QR Scanning",
+      "Flexible Entry Mode",
+      "Staff Check-in",
+      "Gatekeeper Assignment",
+      "RSVP Tracking",
+      "Auto Reminders",
+      "Email Notifications",
+      "Premium Invitation Templates",
+      "Custom WhatsApp Number",
+      "Official Sender Number",
+      "Custom Branded Web Page",
+      "Real-time Message Tracking",
+      "Compensation Invites (15%)"
+    ]
+  },
+  "ctaBanner": {
+    "tag": "Start Your Journey",
+    "titlePrefix": "Ready to",
+    "titleHighlight": "Send Your Invitations?",
+    "sub": "Start by creating your free account and enjoy sending your first digital invitation.",
+    "cta1": "Start Free Now",
+    "cta2": "Chat on WhatsApp",
+    "features": ["Cancel anytime", "Instant WhatsApp support"]
+  },
+  "vendorCTA": {
+    "title": "Join the",
+    "titleHighlight": "Halla",
+    "titleEnd": "Marketplace Now",
+    "description": "Showcase your services and reach out to many prospect clients through our verified marketplace",
+    "feature1": "Easy Booking Management",
+    "feature2": "Grow Your Revenue",
+    "feature3": "Connect with Event Planners",
+    "stat1": "200+ Active Vendors",
+    "stat2": "98% Client Satisfaction",
+    "cta": "Register as a Vendor"
+  },
+  "vendorSearch": {
+    "title": "Find the Best Vendors",
+    "description": "Connect with our best specialized and certified stores and get premium services for your next event.",
+    "searchPlaceholder": "Search for a vendor...",
+    "searchBtn": "Search",
+    "vendorCountSuffix": "vendors",
+    "reviewsSuffix": "reviews",
+    "callBtn": "Contact Now",
+    "moreBtn": "View More",
+    "categories": [
+      { "name": "Photography & Video", "count": "45+", "icon": "📷" },
+      { "name": "Catering & Buffet", "count": "78+", "icon": "🍴" },
+      { "name": "Decor & Flowers", "count": "32+", "icon": "🌸" },
+      { "name": "Entertainment & Music", "count": "56+", "icon": "🎵" },
+      { "name": "Transport & Limo", "count": "23+", "icon": "🚗" },
+      { "name": "Fashion & Beauty", "count": "34+", "icon": "👗" }
+    ],
+    "vendors": [
+      {
+        "name": "Memories Photography Studio",
+        "location": "Riyadh, Saudi Arabia",
+        "price": "From SAR 1,500",
+        "tags": ["Wedding Photography", "Portrait Sessions", "Corporate Events"]
+      },
+      {
+        "name": "Al-Nakhlah Catering",
+        "location": "Jeddah, Saudi Arabia",
+        "price": "From SAR 3,000",
+        "tags": ["Event Buffets", "Arabic Coffee Service", "Eastern Sweets"]
+      },
+      {
+        "name": "Creative Touch Decor",
+        "location": "Dammam, Saudi Arabia",
+        "price": "From SAR 2,000",
+        "tags": ["Hall Decoration", "Floral Arrangements", "Professional Lighting"]
+      }
+    ]
+  },
+  "footer": {
+    "contactTitle": "Contact Info",
+    "helpTitle": "Important Pages",
+    "downloadTitle": "Download App",
+    "description": "Halla is a smart event management platform — create your events, send personalized digital invitations via WhatsApp, and track attendance in real time.",
+    "helpLinks": [
+      { "name": "Terms & Conditions", "href": "/terms" },
+      { "name": "Privacy Policy", "href": "/privacy" },
+      { "name": "Cancellation & Refund", "href": "/refund" }
+    ],
+    "copyright": "© 2026 Halla. All rights reserved."
+  },
+  "appDownload": {
+    "brand": "Halla — Events & Invitations",
+    "title": "Join Halla Now",
+    "description": "Your smart platform for managing invitations and events professionally.\nSend personalized WhatsApp invites, track attendance via QR, and manage your team — all from the app."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "table": {
+    "columns": {
+      "eventTitle": "اسم المناسبة",
+      "eventMaker": "منظم المناسبة",
+      "eventType": "نوع المناسبة",
+      "confirmed": "تم التأكيد",
+      "declined": "تم الرفض",
+      "noResponse": "لم يرد",
+      "dateTime": "التاريخ والوقت",
+      "status": "الحالة"
+    },
+    "filter": "التصفية",
+    "export": "تصدير",
+    "eventsList": "قائمة المناسبات",
+    "exportSuccess": "تم تصدير البيانات بنجاح",
+    "exportError": "فشل تصدير البيانات"
+  },
+  "eventTypes": {
+    "birthday": "عيد ميلاد",
+    "wedding": "زفاف",
+    "graduation": "تخرج",
+    "conference": "مؤتمر",
+    "meeting": "اجتماع",
+    "party": "حفلة",
+    "other": "أخرى"
+  },
+  "eventStatus": {
+    "published": "منشور",
+    "draft": "مسودة",
+    "ended": "منتهي",
+    "suspended": "معلق"
+  },
+  "errors": {
+    "noEventId": "معرف المناسبة غير موجود",
+    "noToken": "رمز المصادقة غير موجود",
+    "eventNotFound": "المناسبة غير موجودة أو ليس لديك صلاحية حذفها",
+    "unauthorized": "غير مصرح لك بتنفيذ هذا الإجراء",
+    "deleteError": "فشل حذف المناسبة. يرجى المحاولة مرة أخرى"
+  },
+  "confirmDelete": "هل أنت متأكد من حذف هذه المناسبة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "deleteSuccess": "تم حذف المناسبة بنجاح"
+}

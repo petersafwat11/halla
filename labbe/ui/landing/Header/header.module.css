@@ -1,0 +1,276 @@
+.header {
+  width: 100%;
+  border-bottom: 1.5px solid var(--color-primary-600);
+  background: var(--color-primary-500);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ── Desktop layout: logo | nav (centered) | lang + buttons ── */
+.container {
+  display: flex;
+  align-items: center;
+  padding: 2rem 4.8rem;
+  max-width: 1520px;
+  margin: 0 auto;
+}
+
+.logo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  z-index: 101;
+}
+
+.logoImg {
+  width: 50px;
+  height: 50px;
+}
+
+/* Nav fills the middle, centers its content */
+.nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menuItems {
+  display: flex;
+  align-items: center;
+  gap: 3.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menuItems li a {
+  color: var(--color-natural-50);
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 2.4rem;
+  letter-spacing: 0.024px;
+  text-decoration: none;
+  transition: color 0.2s, opacity 0.2s;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+.menuItems li a:hover {
+  color: var(--color-natural-50);
+  opacity: 1;
+}
+
+.menuItems li a.active {
+  color: var(--color-natural-50);
+  opacity: 1;
+  font-weight: 700;
+}
+
+/* ── Desktop right section ── */
+.buttonsSection {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+/* ── Language switcher — plain white icon+text, no box ── */
+.langSwitcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-natural-50);
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.6rem;
+  background: transparent;
+  border: none;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  text-decoration: none;
+  flex-shrink: 0;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.langSwitcher:hover {
+  opacity: 1;
+}
+
+.langSwitcher svg {
+  flex-shrink: 0;
+}
+
+/* ── Header-specific button overrides ── */
+/* Login: deeper warm brown — darker shade of the header's own family */
+.headerBtnLogin {
+  background: var(--color-primary-700) !important;
+  border: none !important;
+  color: var(--color-natural-50) !important;
+  font-size: 1.44rem !important;
+  padding: 1.08rem 1.44rem !important;
+}
+
+.headerBtnLogin:hover {
+  background: var(--color-primary-800) !important;
+}
+
+/* Signup: warm cream — lighter shade of the header's own family, invites action */
+.headerBtnSignup {
+  background: var(--color-primary-100) !important;
+  color: var(--color-primary-800) !important;
+  border: none !important;
+  font-size: 1.44rem !important;
+  padding: 1.08rem 1.44rem !important;
+}
+
+.headerBtnSignup:hover {
+  background: var(--color-natural-50) !important;
+}
+
+/* ── Hamburger ── */
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  z-index: 101;
+  flex-shrink: 0;
+}
+
+.bar {
+  display: block;
+  width: 24px;
+  height: 2.5px;
+  background: var(--color-natural-50);
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.barOpen1 { transform: translateY(7.5px) rotate(45deg); }
+.barOpen2 { opacity: 0; transform: scaleX(0); }
+.barOpen3 { transform: translateY(-7.5px) rotate(-45deg); }
+
+/* ── Mobile right (lang toggle + hamburger) — hidden on desktop ── */
+.mobileRight {
+  display: none;
+  align-items: center;
+  gap: 0.8rem;
+  flex-shrink: 0;
+}
+
+/* ── Mobile dropdown — hidden by default ── */
+.mobileMenu {
+  display: none;
+}
+
+/* ── 1200px ── */
+@media (max-width: 1200px) {
+  .container { padding: 2rem 3.2rem; }
+  .menuItems { gap: 2.6rem; }
+}
+
+/* ── 1024px ── */
+@media (max-width: 1024px) {
+  .container { padding: 2rem 2.4rem; }
+  .menuItems { gap: 1.8rem; }
+  .menuItems li a { font-size: 1.4rem; }
+}
+
+/* ── 768px — switch to hamburger ── */
+@media (max-width: 768px) {
+  .container {
+    padding: 0.8rem 2rem;
+    justify-content: space-between;
+  }
+
+  .logoImg { width: 45px; height: 45px; }
+
+  /* Hide desktop nav and buttons */
+  .nav { display: none; }
+  .buttonsSection { display: none; }
+
+  /* Show mobile right (lang + hamburger) */
+  .mobileRight { display: flex; }
+
+  /* Mobile dropdown */
+  .mobileMenu {
+    background: var(--color-primary-500);
+    border-bottom: 1.5px solid var(--color-primary-600);
+    box-shadow: 0 8px 24px var(--color-black-10);
+    padding: 1.6rem 2rem 2rem;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .mobileMenuOpen {
+    display: flex;
+  }
+
+  .mobileMenuItems {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .mobileMenuItems li {
+    border-bottom: 1px solid var(--color-primary-600);
+  }
+
+  .mobileMenuItems li:last-child {
+    border-bottom: none;
+  }
+
+  .mobileMenuItems li a {
+    display: block;
+    padding: 1.2rem 0;
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: var(--color-natural-50);
+    text-decoration: none;
+    text-align: right;
+    transition: opacity 0.2s;
+    opacity: 0.85;
+  }
+
+  .mobileMenuItems li a:hover,
+  .mobileMenuItems li a.active {
+    color: var(--color-natural-50);
+    opacity: 1;
+    font-weight: 700;
+  }
+
+  /* Buttons side by side */
+  .mobileButtons {
+    display: flex;
+    flex-direction: row;
+    gap: 1.2rem;
+    margin-top: 2rem;
+    width: 100%;
+  }
+
+  .mobileBtnLink {
+    flex: 1;
+    display: flex;
+  }
+
+  .mobileBtnLink > * {
+    flex: 1;
+  }
+}
+
+/* ── 480px ── */
+@media (max-width: 480px) {
+  .container { padding: 0.7rem 1.6rem; }
+  .mobileMenu { padding: 1.2rem 1.6rem 1.6rem; }
+}

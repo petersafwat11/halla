@@ -1,0 +1,142 @@
+.commentSectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  animation: slideInUp 0.8s ease-out 0.4s both;
+}
+
+.commentInputWrapper {
+  width: 100%;
+  border: 0.1rem solid var(--Content-Border-Border-Gray200);
+  border-radius: 0.8rem;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.commentInputWrapper:focus-within {
+  border-color: var(--color-primary);
+}
+
+.commentInput {
+  width: 100%;
+  padding: 1.2rem 1.6rem;
+  border: none;
+  outline: none;
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2rem;
+  color: var(--color-title);
+  background: transparent;
+}
+
+.commentInput::placeholder {
+  color: var(--color-description);
+}
+
+.actionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.sendButton {
+  padding: 1rem 2.4rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.22rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: -0.012rem;
+}
+
+.sendButton:hover:not(:disabled) {
+  background: #a87647;
+  transform: translateY(-0.2rem);
+  box-shadow: 0 0.4rem 0.8rem rgba(194, 142, 92, 0.3);
+}
+
+.sendButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attachmentButtons {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.attachButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  color: #5e5e5e;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 0.4rem;
+}
+
+.attachButton:hover {
+  color: var(--color-primary);
+  background: rgba(194, 142, 92, 0.1);
+  transform: scale(1.1);
+}
+
+.attachButton:active {
+  transform: scale(0.95);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .commentSectionContainer {
+    gap: 2.4rem;
+  }
+  
+  .commentInput {
+    padding: 1.4rem 2rem;
+    font-size: 1.6rem;
+    line-height: 2.2rem;
+  }
+  
+  .sendButton {
+    padding: 1.2rem 3rem;
+    font-size: 1.4rem;
+  }
+  
+  .attachmentButtons {
+    gap: 1.6rem;
+  }
+  
+  .attachButton {
+    padding: 0.8rem;
+  }
+  
+  .attachButton svg {
+    width: 2.4rem;
+    height: 2.4rem;
+  }
+}

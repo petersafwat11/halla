@@ -1,0 +1,390 @@
+/**
+ * Seed Test Users Script
+ * Creates complete test users for all user types with realistic data
+ *
+ * Users created:
+ * 1. Host - with trial subscription, complete profile
+ * 2. Vendor - accepted status, complete business data
+ * 3. WhiteLabel Admin - with business_quarterly subscription active
+ * 4. Super Admin - full access (unlimited plan)
+ * 5. Admin - platform admin (unlimited plan)
+ * 6. Moderator - support role (unlimited plan)
+ * 7. WhiteLabel Moderator - belongs to whitelabel
+ *
+ * All users have password: password123
+ *
+ * Usage: node scripts/seedTestUsers.js
+ */
+
+const mongoose = require("mongoose");
+const path = require("path");
+const dotenv = require("dotenv");
+
+dotenv.config({ path: path.join(__dirname, "..", "config.env") });
+
+const User = require("../models/UserModel");
+const Plan = require("../models/PlanModel");
+const Subscription = require("../models/SubscriptionModel");
+const { ROLES, USER_STATUS, VENDOR_STATUS, SUBSCRIPTION_STATUS } = require("../src/shared/constants");
+
+const TEST_PASSWORD = "password123";
+
+const testUsers = {
+  host: {
+    email: "test.host@labbe.sa",
+    phoneNumber: "512345678",
+    username: "TestHost",
+    name: "محمد أحمد الحربي",
+    password: TEST_PASSWORD,
+    role: ROLES.HOST,
+    status: USER_STATUS.ACTIVE,
+    emailVerified: true,
+    profile: {
+      hostData: {
+        profileCompleted: true,
+        emailVerified: true,
+        subscribedBefore: false,
+        bio: "مضيف متميز في تنظيم المناسبات العائلية والاجتماعية",
+        company: "شركة المناسبات الذهبية",
+        position: "مدير المناسبات",
+      },
+    },
+  },
+
+  vendor: {
+    email: "test.vendor@labbe.sa",
+    phoneNumber: "523456789",
+    username: "TestVendor",
+    name: "أحمد محمد السالم",
+    password: TEST_PASSWORD,
+    role: ROLES.VENDOR,
+    status: USER_STATUS.ACTIVE,
+    emailVerified: true,
+    profile: {
+      vendorData: {
+        brandName: "استوديو الإبداع للتصوير",
+        ownerFullName: "أحمد محمد السالم",
+        serviceDescription:
+          "نقدم خدمات التصوير الاحترافي للمناسبات والأفراح بأحدث المعدات وفريق متخصص.",
+        serviceCategories: {
+          mediaProduction: ["photography", "videography", "drone_coverage"],
+          eventPlanning: ["event_coordination"],
+        },
+        serviceLocation: {
+          regionId: 1,
+          regionNameAr: "منطقة الرياض",
+          regionNameEn: "Riyadh Region",
+          cityId: 1,
+          cityNameAr: "الرياض",
+          cityNameEn: "Riyadh",
+          districtIds: [],
+          districtNames: [],
+          coverageType: "city",
+        },
+        otherData: "نوفر باقات خاصة للمناسبات الكبيرة",
+        portfolioImages: [
+          "https://example.com/portfolio1.jpg",
+          "https://example.com/portfolio2.jpg",
+        ],
+        businessLogo: "https://example.com/logo.png",
+        profileFile: "https://example.com/profile.pdf",
+        pricePackages: ["https://example.com/packages.pdf"],
+        commercialRecordNumber: "1010123456",
+        nationalId: "1098765432",
+        commercialRecordImage: "https://example.com/cr.jpg",
+        nationalIdImage: "https://example.com/id.jpg",
+        socialLinks: {
+          instagram: "https://instagram.com/creative_studio_sa",
+          website: "https://creativestudio.sa",
+        },
+        rating: 4.8,
+        numberOfRatings: 127,
+        numberOfClicks: 2450,
+        vendorStatus: VENDOR_STATUS.APPROVED,
+        adminNotes: "Verified vendor with excellent service history",
+      },
+    },
+  },
+
+  whitelabelAdmin: {
+    email: "test.whitelabel@labbe.sa",
+    phoneNumber: "534567890",
+    username: "TestWhiteLabel",
+    name: "خالد عبدالله العتيبي",
+    password: TEST_PASSWORD,
+    role: ROLES.WHITELABEL_ADMIN,
+    status: USER_STATUS.ACTIVE,
+    emailVerified: true,
+    profile: {
+      whitelabelData: {
+        arabicName: "منصة الفخامة للمناسبات",
+        englishName: "Luxury Events Platform",
+        platformName: "Luxury Events",
+        companyName: "شركة الفخامة للتقنية",
+        logo: "https://example.com/whitelabel-logo.png",
+        favicon: "https://example.com/favicon.ico",
+        requirements: {
+          numberOfEventsMonthly: 15,
+          numberOfGuestsMonthly: 3000,
+          eventTypes: ["wedding", "corporate", "conference", "graduation"],
+        },
+        address: {
+          city: "الرياض",
+          neighborhood: "العليا",
+          street: "شارع الملك فهد",
+          buildingNumber: "1234",
+        },
+        licenseNumber: "7012345678",
+        taxNumber: "300123456789012",
+        planSelection: {
+          planCode: "business_quarterly",
+        },
+        applicationStatus: "approved",
+      },
+    },
+  },
+
+  superAdmin: {
+    email: "test.superadmin@labbe.sa",
+    phoneNumber: "545678901",
+    username: "TestSuperAdmin",
+    name: "عبدالرحمن محمد القحطاني",
+    password: TEST_PASSWORD,
+    role: ROLES.SUPER_ADMIN,
+    status: USER_STATUS.ACTIVE,
+    emailVerified: true,
+    profile: {
+      adminData: {
+        title: "مدير النظام الرئيسي",
+        department: "الإدارة التقنية",
+        lastLogin: new Date(),
+        loginAttempts: 0,
+        actionsCount: 0,
+      },
+    },
+  },
+
+  admin: {
+    email: "test.admin@labbe.sa",
+    phoneNumber: "556789012",
+    username: "TestAdmin",
+    name: "سعد إبراهيم الدوسري",
+    password: TEST_PASSWORD,
+    role: ROLES.ADMIN,
+    status: USER_STATUS.ACTIVE,
+    emailVerified: true,
+    profile: {
+      adminData: {
+        title: "مدير المنصة",
+        department: "إدارة العمليات",
+        lastLogin: new Date(),
+        loginAttempts: 0,
+        actionsCount: 0,
+      },
+    },
+  },
+
+  moderator: {
+    email: "test.moderator@labbe.sa",
+    phoneNumber: "567890123",
+    username: "TestModerator",
+    name: "فهد عبدالله المالكي",
+    password: TEST_PASSWORD,
+    role: ROLES.MODERATOR,
+    status: USER_STATUS.ACTIVE,
+    emailVerified: true,
+    profile: {
+      adminData: {
+        title: "مشرف الدعم الفني",
+        department: "خدمة العملاء",
+        lastLogin: new Date(),
+        loginAttempts: 0,
+        actionsCount: 0,
+      },
+    },
+  },
+
+  whitelabelModerator: {
+    email: "test.wlmoderator@labbe.sa",
+    phoneNumber: "578901234",
+    username: "TestWLModerator",
+    name: "ناصر سعود الشمري",
+    password: TEST_PASSWORD,
+    role: ROLES.WHITELABEL_MODERATOR,
+    status: USER_STATUS.ACTIVE,
+    emailVerified: true,
+    profile: {
+      adminData: {
+        title: "مشرف منصة الفخامة",
+        department: "إدارة المنصة",
+        lastLogin: new Date(),
+        loginAttempts: 0,
+        actionsCount: 0,
+      },
+    },
+  },
+};
+
+const seedTestUsers = async () => {
+  try {
+    let DB = process.env.DATABASE;
+    if (process.env.DATABASE_PASSWORD && DB.includes("<PASSWORD>")) {
+      DB = DB.replace("<PASSWORD>", process.env.DATABASE_PASSWORD);
+    }
+
+    const mongoOptions = {};
+    if (process.env.DATABASE_CERT_PATH) {
+      mongoOptions.tls = true;
+      mongoOptions.tlsCertificateKeyFile = process.env.DATABASE_CERT_PATH;
+    }
+
+    await mongoose.connect(DB, mongoOptions);
+    console.log("✅ Connected to database");
+
+    // Fetch required plans
+    const trialPlan = await Plan.findOne({ code: "trial" });
+    const businessQuarterlyPlan = await Plan.findOne({ code: "business_quarterly" });
+    const unlimitedPlan = await Plan.findOne({ code: "unlimited" });
+
+    if (!trialPlan) {
+      console.error("❌ 'trial' plan not found. Please run seedPlans.js first.");
+      process.exit(1);
+    }
+    if (!businessQuarterlyPlan) {
+      console.error("❌ 'business_quarterly' plan not found. Please run seedPlans.js first.");
+      process.exit(1);
+    }
+    if (!unlimitedPlan) {
+      console.error("❌ 'unlimited' plan not found. Please run seedPlans.js first.");
+      process.exit(1);
+    }
+
+    console.log("\n🔄 Removing existing test users...");
+    const testEmails = Object.values(testUsers).map((u) => u.email);
+    const existingUsers = await User.find({ email: { $in: testEmails } }).select("_id");
+    if (existingUsers.length > 0) {
+      await Subscription.deleteMany({ userId: { $in: existingUsers.map((u) => u._id) } });
+    }
+    await User.deleteMany({ email: { $in: testEmails } });
+    console.log("✅ Cleaned up existing test users");
+
+    const createdUsers = {};
+
+    // 1. Super Admin + unlimited subscription
+    console.log("\n📝 Creating Super Admin...");
+    createdUsers.superAdmin = await User.create(testUsers.superAdmin);
+    const superAdminSub = await Subscription.createForUser(
+      createdUsers.superAdmin._id,
+      unlimitedPlan,
+      { status: SUBSCRIPTION_STATUS.ACTIVE, pricePaid: 0, currency: "SAR" }
+    );
+    createdUsers.superAdmin.subscription = superAdminSub._id;
+    await createdUsers.superAdmin.save({ validateBeforeSave: false });
+    console.log(`   ✅ ${createdUsers.superAdmin.email} (Unlimited subscription)`);
+
+    // 2. Admin + unlimited subscription
+    console.log("📝 Creating Admin...");
+    createdUsers.admin = await User.create(testUsers.admin);
+    const adminSub = await Subscription.createForUser(
+      createdUsers.admin._id,
+      unlimitedPlan,
+      { status: SUBSCRIPTION_STATUS.ACTIVE, pricePaid: 0, currency: "SAR" }
+    );
+    createdUsers.admin.subscription = adminSub._id;
+    await createdUsers.admin.save({ validateBeforeSave: false });
+    console.log(`   ✅ ${createdUsers.admin.email} (Unlimited subscription)`);
+
+    // 3. Moderator + unlimited subscription
+    console.log("📝 Creating Moderator...");
+    createdUsers.moderator = await User.create(testUsers.moderator);
+    const moderatorSub = await Subscription.createForUser(
+      createdUsers.moderator._id,
+      unlimitedPlan,
+      { status: SUBSCRIPTION_STATUS.ACTIVE, pricePaid: 0, currency: "SAR" }
+    );
+    createdUsers.moderator.subscription = moderatorSub._id;
+    await createdUsers.moderator.save({ validateBeforeSave: false });
+    console.log(`   ✅ ${createdUsers.moderator.email} (Unlimited subscription)`);
+
+    // 4. WhiteLabel Admin + business_quarterly subscription
+    console.log("📝 Creating WhiteLabel Admin...");
+    createdUsers.whitelabelAdmin = await User.create(testUsers.whitelabelAdmin);
+    const whitelabelSub = await Subscription.createForUser(
+      createdUsers.whitelabelAdmin._id,
+      businessQuarterlyPlan,
+      {
+        status: SUBSCRIPTION_STATUS.ACTIVE,
+        pricePaid: businessQuarterlyPlan.pricing?.oneTime || 3500,
+        currency: "SAR",
+        whitelabelId: createdUsers.whitelabelAdmin._id,
+      }
+    );
+    createdUsers.whitelabelAdmin.subscription = whitelabelSub._id;
+    await createdUsers.whitelabelAdmin.save({ validateBeforeSave: false });
+    console.log(`   ✅ ${createdUsers.whitelabelAdmin.email} (Business Quarterly — invitePool: 500)`);
+
+    // 5. WhiteLabel Moderator (linked to whitelabel admin tenant)
+    console.log("📝 Creating WhiteLabel Moderator...");
+    createdUsers.whitelabelModerator = await User.create({
+      ...testUsers.whitelabelModerator,
+      whitelabelId: createdUsers.whitelabelAdmin._id,
+    });
+    console.log(`   ✅ ${createdUsers.whitelabelModerator.email}`);
+
+    // 6. Host + trial subscription
+    console.log("📝 Creating Host...");
+    createdUsers.host = await User.create(testUsers.host);
+    const hostSub = await Subscription.createForUser(
+      createdUsers.host._id,
+      trialPlan,
+      { status: SUBSCRIPTION_STATUS.TRIAL, pricePaid: 0, currency: "SAR" }
+    );
+    createdUsers.host.subscription = hostSub._id;
+    await createdUsers.host.save({ validateBeforeSave: false });
+    console.log(`   ✅ ${createdUsers.host.email} (Trial — 1 event, 5 invites)`);
+
+    // 7. Vendor (no subscription needed)
+    console.log("📝 Creating Vendor...");
+    createdUsers.vendor = await User.create(testUsers.vendor);
+    console.log(`   ✅ ${createdUsers.vendor.email}`);
+
+    console.log("\n" + "=".repeat(70));
+    console.log("🎉 TEST USERS CREATED SUCCESSFULLY!");
+    console.log("=".repeat(70));
+    console.log("\nAll users have password: password123\n");
+    console.log("📋 User Summary:");
+    console.log("-".repeat(70));
+    console.log("  ROLE                  | EMAIL                          | PHONE");
+    console.log("-".repeat(70));
+
+    const userOrder = [
+      { key: "superAdmin",          label: "Super Admin" },
+      { key: "admin",               label: "Admin" },
+      { key: "moderator",           label: "Moderator" },
+      { key: "whitelabelAdmin",     label: "WhiteLabel Admin" },
+      { key: "whitelabelModerator", label: "WhiteLabel Moderator" },
+      { key: "host",                label: "Host" },
+      { key: "vendor",              label: "Vendor" },
+    ];
+
+    userOrder.forEach(({ key, label }) => {
+      const user = createdUsers[key];
+      console.log(`  ${label.padEnd(21)} | ${user.email.padEnd(30)} | ${user.phoneNumber}`);
+    });
+
+    console.log("-".repeat(70));
+    console.log("\n📌 Subscription Notes:");
+    console.log("   - Super Admin / Admin / Moderator: Unlimited (no expiry)");
+    console.log("   - WhiteLabel Admin: Business Quarterly (invitePool: 500 + 75 compensation, 90 days)");
+    console.log("   - Host: Trial (1 event, 5 invites, 90 days)");
+    console.log("   - Vendor: No subscription");
+    console.log("=".repeat(70));
+
+    process.exit(0);
+  } catch (error) {
+    console.error("❌ Error seeding test users:", error);
+    process.exit(1);
+  }
+};
+
+seedTestUsers();

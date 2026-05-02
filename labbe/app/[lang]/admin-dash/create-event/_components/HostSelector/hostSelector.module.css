@@ -1,0 +1,631 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem 0 0 0;
+  background: transparent;
+  width: 100%;
+  max-width: 100%;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 1rem 0 0.5rem 0;
+  background: transparent;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.title {
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Content Area */
+.contentArea {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 1.2rem;
+  border: 1px solid #e5e5e5;
+  min-height: 400px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Mode Toggle */
+.modeToggle {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: #f9f9f9;
+  border-radius: 1rem;
+  border: 1px solid #e5e5e5;
+}
+
+.modeButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1.2rem 1.6rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.8rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #767676;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.modeButton svg {
+  font-size: 1.6rem;
+}
+
+.modeButton:hover {
+  color: #1a1a1a;
+  background: rgba(194, 142, 92, 0.05);
+}
+
+.modeButton.active {
+  background: #fff;
+  color: #c28e5c;
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.15);
+  font-weight: 600;
+}
+
+/* Search Section */
+.searchSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.searchInputWrapper {
+  display: flex;
+  gap: 1rem;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 1.4rem 1.8rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 1rem;
+  font-size: 1.5rem;
+  direction: ltr;
+  text-align: left;
+  transition: all 0.25s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #c28e5c;
+  box-shadow: 0 0 0 4px rgba(194, 142, 92, 0.1);
+}
+
+.searchInput::placeholder {
+  color: #a3a3a3;
+}
+
+.searchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.4rem;
+  height: 5.4rem;
+  background: #c28e5c;
+  color: #fff;
+  border: none;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 1.8rem;
+}
+
+.searchButton:hover {
+  background: #b07d4b;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.3);
+}
+
+.searchButton:disabled {
+  background: #e5e5e5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.searchResult {
+  margin-top: 1rem;
+}
+
+.searchError {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.2rem 1.6rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.8rem;
+  color: #dc2626;
+  font-size: 1.4rem;
+}
+
+/* List Section */
+.listSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.hostsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  max-height: 38rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.hostsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hostsList::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.hostsList::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 3px;
+}
+
+.hostsList::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
+
+/* Host Card */
+.hostCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  padding: 1.2rem;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hostCard:hover {
+  border-color: #c28e5c;
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.1);
+}
+
+.hostCard.selected {
+  border-color: #c28e5c;
+  background: #faf8f5;
+}
+
+.hostCard.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hostCard.disabled:hover {
+  border-color: #e5e5e5;
+  box-shadow: none;
+}
+
+.hostAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: #f9f4ef;
+  border-radius: 50%;
+  color: #c28e5c;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.hostInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.hostName {
+  color: #1a1a1a;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.hostPhone {
+  color: #767676;
+  font-size: 1.3rem;
+  direction: ltr;
+  text-align: left;
+}
+
+.hostEmail {
+  color: #a3a3a3;
+  font-size: 1.2rem;
+}
+
+.hostSubscription {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.subscriptionBadge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 1.6rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.subscriptionBadge.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.subscriptionBadge.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.subscriptionBadge.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.warningText {
+  color: #dc2626;
+  font-size: 1.1rem;
+}
+
+.selectedIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  background: #c28e5c;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 1.2rem;
+}
+
+/* Loading & Empty States */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+  padding: 4rem;
+  color: #767676;
+  font-size: 1.5rem;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+  padding: 4rem;
+  background: #fafafa;
+  border-radius: 1rem;
+  border: 2px dashed #e5e5e5;
+}
+
+.emptyIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6rem;
+  height: 6rem;
+  background: #f5f5f5;
+  border-radius: 50%;
+  color: #d4d4d4;
+  font-size: 2.8rem;
+}
+
+.emptyText {
+  margin: 0;
+  color: #767676;
+  font-size: 1.6rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid #f2f2f2;
+  border-top-color: #c28e5c;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Target Type Toggle (for platform admins) */
+.targetTypeToggle {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  background: #f9f9f9;
+  border-radius: 1rem;
+  border: 1px solid #e5e5e5;
+  margin-bottom: 0;
+}
+
+.targetTypeButton {
+  flex: 1;
+  min-width: fit-content;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem 1.4rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.8rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #767676;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.targetTypeButton svg {
+  font-size: 1.5rem;
+  transition: color 0.2s ease;
+}
+
+.targetTypeButton span {
+  line-height: 1;
+}
+
+.targetTypeButton:hover {
+  color: #1a1a1a;
+  background: rgba(194, 142, 92, 0.05);
+}
+
+.targetTypeButton:hover svg {
+  color: #c28e5c;
+}
+
+.targetTypeButton.active {
+  background: #fff;
+  color: #c28e5c;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.15);
+}
+
+.targetTypeButton.active svg {
+  color: #c28e5c;
+}
+
+/* Self Creation Option */
+.selfOption {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 1.6rem;
+  width: 100%;
+}
+
+.selfCard {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 2rem;
+  background: #f9f4ef;
+  border: 2px solid #c28e5c;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selfCard:hover {
+  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.15);
+  border-color: #b07d4b;
+}
+
+.selfCardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  background: #fff;
+  border-radius: 0.8rem;
+  color: #c28e5c;
+  font-size: 2.4rem;
+  flex-shrink: 0;
+}
+
+.selfCardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.selfCardTitle {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.selfCardDescription {
+  margin: 0;
+  color: #767676;
+  font-size: 1.4rem;
+  line-height: 1.5;
+}
+
+.unlimitedBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: #c28e5c;
+  color: #fff;
+  border-radius: 2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badgeIcon {
+  font-size: 1.4rem;
+}
+
+/* Host Role Badge */
+.hostRole {
+  color: #6366f1;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-top: 0.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 0 0 0;
+  }
+
+  .header {
+    padding: 0;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .contentArea {
+    padding: 1.5rem;
+    min-height: 350px;
+  }
+
+  .targetTypeToggle {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .targetTypeButton {
+    flex: none;
+    width: 100%;
+    justify-content: flex-start;
+    padding: 1.1rem 1.2rem;
+    font-size: 1.3rem;
+  }
+
+  .targetTypeButton svg {
+    font-size: 1.5rem;
+  }
+
+  .modeToggle {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .modeButton {
+    justify-content: flex-start;
+    padding: 1rem 1.2rem;
+    font-size: 1.35rem;
+  }
+
+  .selfCard {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.8rem;
+    gap: 1.2rem;
+  }
+
+  .selfCardIcon {
+    width: 5rem;
+    height: 5rem;
+    font-size: 2.2rem;
+  }
+
+  .selfCardContent {
+    text-align: center;
+  }
+
+  .selfCardTitle {
+    font-size: 1.5rem;
+  }
+
+  .selfCardDescription {
+    font-size: 1.3rem;
+  }
+
+  .unlimitedBadge {
+    align-self: center;
+  }
+
+  .hostCard {
+    flex-wrap: wrap;
+    padding: 1rem;
+  }
+
+  .hostSubscription {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #f2f2f2;
+  }
+
+  .hostsList {
+    max-height: 30rem;
+  }
+
+  .searchInput {
+    padding: 1.2rem 1.4rem;
+    font-size: 1.4rem;
+  }
+
+  .searchButton {
+    width: 4.8rem;
+    height: 4.8rem;
+    font-size: 1.6rem;
+  }
+}

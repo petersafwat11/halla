@@ -1,0 +1,342 @@
+.stepTwo {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  position: relative;
+  padding: 0 2.4rem;
+  overflow: visible;
+}
+
+/* Manual Add Section */
+.addManualSection {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--Natural-250, #dfdfdf);
+  background: #fff;
+  overflow: visible;
+}
+
+.tableContainer {
+  overflow: visible;
+}
+
+.sectionTitle {
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: 0.024px;
+  margin: 0;
+  text-align: right;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.toggleContainer {
+  position: absolute;
+  top: 2rem;
+  right: 73rem;
+  z-index: 1;
+}
+@media (max-width: 1150px) {
+  .toggleContainer {
+    right: auto;
+    left: 3rem;
+  }
+}
+/* Responsive Design - Mobile below 600px */
+@media (max-width: 600px) {
+  .stepTwo {
+    gap: 16px;
+  }
+
+  .addManualSection {
+    padding: 16px 12px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .actionButtons {
+    gap: 12px;
+  }
+  .toggleContainer {
+    left: 5rem;
+  }
+}
+
+/* Very small mobile devices */
+@media (max-width: 390px) {
+  .addManualSection {
+    padding: 12px 8px;
+  }
+
+  .sectionTitle {
+    font-size: 14px;
+  }
+}
+
+/* Limit Reached Banner */
+.limitReachedBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffebee 100%);
+  border: 1px solid #ffcc80;
+  border-radius: 12px;
+}
+
+.limitReachedIcon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.limitReachedContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.limitReachedText {
+  color: #e65100;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.upgradeLink {
+  background: none;
+  border: none;
+  color: #c28e5c;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  align-self: flex-start;
+}
+
+.upgradeLink:hover {
+  color: #a67844;
+}
+
+/* Disabled Section */
+.addManualSection.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.addManualSection.disabled .formGrid {
+  pointer-events: none;
+}
+
+/* Import Limit Popup */
+.importLimitPopup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 400px;
+}
+
+.popupIcon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.popupTitle {
+  color: #2c2c2c;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0;
+}
+
+.popupDescription {
+  color: #656565;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  margin: 0;
+}
+
+.popupHint {
+  color: #c28e5c;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  margin: 0;
+}
+
+.popupActions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.popupActions button {
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  .limitReachedBanner {
+    padding: 12px;
+  }
+
+  .limitReachedText {
+    font-size: 13px;
+  }
+
+  .importLimitPopup {
+    padding: 24px 16px;
+  }
+
+  .popupTitle {
+    font-size: 18px;
+  }
+
+  .popupActions {
+    flex-direction: column;
+  }
+}
+
+/* Staff Management Section */
+.staffSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--Natural-250, #dfdfdf);
+  background: #fff;
+}
+
+.staffHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.staffInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.staffTitle {
+  color: #2c2c2c;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.staffBadge {
+  background: #8b5cf6;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.staffDescription {
+  color: #656565;
+  font-size: 13px;
+  line-height: 20px;
+  margin: 0;
+}
+
+.staffButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.staffButton:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.staffButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.staffList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f2f2f2;
+}
+
+.staffChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #f3f0ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #5b21b6;
+}
+
+.staffChipName {
+  font-weight: 500;
+}
+
+.staffChipPhone {
+  color: #7c3aed;
+  direction: ltr;
+}
+
+@media (max-width: 600px) {
+  .staffHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .staffButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .staffSection {
+    padding: 16px;
+  }
+}

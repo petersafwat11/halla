@@ -1,0 +1,463 @@
+.container {
+  padding: 2.4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  margin-bottom: 3.2rem;
+}
+
+.title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #2c2c2c;
+  margin-bottom: 0.8rem;
+}
+
+.subtitle {
+  font-size: 1.6rem;
+  color: #656565;
+}
+
+/* Section Titles */
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin-bottom: 0.8rem;
+}
+
+.sectionSubtitle {
+  font-size: 1.4rem;
+  color: #656565;
+  margin-bottom: 2.4rem;
+}
+
+/* Current Plan Section */
+.currentPlanSection {
+  margin-bottom: 3.2rem;
+}
+
+.currentPlanCard {
+  background: linear-gradient(135deg, #6b5b3d 0%, #8b7355 100%);
+  border-radius: 16px;
+  padding: 2.4rem;
+  color: white;
+}
+
+.currentPlanHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+}
+
+.planInfo {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.planIcon {
+  font-size: 2.4rem;
+  color: #ffd700;
+}
+
+.planName {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.activeBadge {
+  background: rgba(76, 175, 80, 0.3);
+  padding: 0.4rem 1.2rem;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #a5d6a7;
+}
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+.pricePeriod {
+  font-size: 1.4rem;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.currentPlanDetails {
+  display: flex;
+  gap: 3.2rem;
+  flex-wrap: wrap;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.2rem 1.6rem;
+  border-radius: 12px;
+}
+
+.detailIcon {
+  font-size: 1.6rem;
+  opacity: 0.8;
+}
+
+.detailLabel {
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.detailValue {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-inline-start: auto;
+}
+
+/* No Subscription Card */
+.noSubscriptionCard {
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  border: 2px dashed #ccc;
+  border-radius: 16px;
+  padding: 4rem 2.4rem;
+  text-align: center;
+}
+
+.noSubIcon {
+  font-size: 4rem;
+  color: var(--color-primary, #6b5b3d);
+  margin-bottom: 1.6rem;
+}
+
+.noSubTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c2c2c;
+  margin-bottom: 0.8rem;
+}
+
+.noSubText {
+  font-size: 1.4rem;
+  color: #656565;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Billing Toggle */
+.billingToggle {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 3.2rem;
+  background: #f5f5f5;
+  padding: 0.6rem;
+  border-radius: 12px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 2rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #656565;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleBtn.active {
+  background: white;
+  color: #2c2c2c;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.saveBadge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 0.2rem 0.8rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Plans Section */
+.plansSection {
+  margin-bottom: 3.2rem;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.4rem;
+}
+
+/* Plan Card */
+.planCard {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 2.4rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.planCard:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.planCard.popularPlan {
+  border-color: var(--color-primary, #6b5b3d);
+  border-width: 2px;
+}
+
+.planCard.currentPlanHighlight {
+  background: #faf8f5;
+  border-color: var(--color-primary, #6b5b3d);
+}
+
+.popularBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary, #6b5b3d);
+  color: white;
+  padding: 0.4rem 1.6rem;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.planCardHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-top: 0.8rem;
+}
+
+.planCardName {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c2c2c;
+  margin-bottom: 0.8rem;
+}
+
+.planCardDescription {
+  font-size: 1.4rem;
+  color: #656565;
+}
+
+.planCardPrice {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.6rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+}
+
+.priceAmount {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: var(--color-primary, #6b5b3d);
+}
+
+.planCardLimits {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+  padding: 1.6rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+}
+
+.limitItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.4rem;
+  color: #2c2c2c;
+}
+
+.limitIcon {
+  font-size: 1.6rem;
+  color: var(--color-primary, #6b5b3d);
+  opacity: 0.8;
+}
+
+.planCardFeatures {
+  margin-bottom: 2rem;
+}
+
+.featuresTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin-bottom: 1.2rem;
+}
+
+.featuresList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.3rem;
+  color: #656565;
+}
+
+.featureIcon {
+  font-size: 1.4rem;
+  color: #4caf50;
+  flex-shrink: 0;
+}
+
+.planCardBtn {
+  width: 100%;
+  padding: 1.4rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.6rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--color-primary, #6b5b3d);
+  color: white;
+}
+
+.planCardBtn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.planCardBtn.currentBtn {
+  background: #e0e0e0;
+  color: #656565;
+  cursor: default;
+}
+
+.planCardBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1.6rem;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--color-primary, #6b5b3d);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading p {
+  font-size: 1.6rem;
+  color: #656565;
+}
+
+/* Error State */
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.error p {
+  font-size: 1.6rem;
+  color: #c53030;
+  background: #fff5f5;
+  padding: 1.6rem 2.4rem;
+  border-radius: 12px;
+  border: 1px solid #feb2b2;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.6rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .currentPlanHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .currentPlanDetails {
+    flex-direction: column;
+    gap: 1.6rem;
+  }
+
+  .billingToggle {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .toggleBtn {
+    flex: 1;
+    justify-content: center;
+    padding: 0.8rem 1.2rem;
+    font-size: 1.3rem;
+  }
+
+  .plansGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .planCardPrice {
+    padding: 1.2rem;
+  }
+
+  .priceAmount {
+    font-size: 2.4rem;
+  }
+}

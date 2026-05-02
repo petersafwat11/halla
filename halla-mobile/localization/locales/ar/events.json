@@ -1,0 +1,117 @@
+{
+  "title": "المناسبات",
+  "createEvent": {
+    "title": "إنشاء مناسبة جديدة",
+    "eventName": "اسم المناسبة",
+    "description": "الوصف",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "location": "الموقع",
+    "guests": "الضيوف"
+  },
+  "eventDetails": {
+    "title": "تفاصيل المناسبة",
+    "attendees": "الحضور",
+    "confirmed": "مؤكد",
+    "pending": "في الانتظار",
+    "declined": "رفض"
+  },
+  "guestList": {
+    "title": "قائمة الضيوف",
+    "addGuest": "إضافة ضيف",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "status": "الحالة"
+  },
+  "home": {
+    "welcome": "مرحبا",
+    "guest": "ضيف"
+  },
+  "common": {
+    "loading": "جار التحميل...",
+    "loadError": "خطأ في تحميل البيانات",
+    "retry": "إعادة المحاولة",
+    "search": "ابحث...",
+    "filter": "تصفية",
+    "all": "الكل"
+  },
+  "stats": {
+    "liveEvents": "مناسبات مباشرة",
+    "allEvents": "جميع المناسبات",
+    "endedEvents": "مناسبات منتهية",
+    "attendanceRate": "نسبة الحضور"
+  },
+  "filters": {
+    "all": "الكل",
+    "live": "مباشرة",
+    "ended": "منتهية",
+    "draft": "مسودة"
+  },
+  "subscription": {
+    "guestQuota": "حصة الضيوف",
+    "unlimited": "ضيوف غير محدودين",
+    "remaining": "ضيف متبقي",
+    "limitReached": "تم الوصول للحد الأقصى من الضيوف",
+    "upgradePrompt": "قم بترقية باقتك لإنشاء مزيد من المناسبات أو إضافة المزيد من الضيوف",
+    "upgradePlan": "ترقية الباقة",
+    "eventLimitReached": "لقد وصلت إلى الحد الأقصى من المناسبات لهذه الفترة"
+  },
+  "messaging": {
+    "sendInvitation": "إرسال الدعوات",
+    "selectedGuests": "الضيوف المحددون",
+    "selectChannel": "اختر طريقة الإرسال",
+    "channel": "القناة",
+    "sms": "SMS",
+    "whatsapp": "واتساب",
+    "smsInfo": "سيتم إرسال رسالة نصية تحتوي على تفاصيل الدعوة ورابط الرد",
+    "whatsappInfo": "سيتم إرسال رسالة واتساب تحتوي على تفاصيل الدعوة ورابط الرد",
+    "send": "إرسال",
+    "sending": "جاري الإرسال...",
+    "invitationsSent_one": "تم إرسال {{count}} دعوة بنجاح",
+    "invitationsSent_other": "تم إرسال {{count}} دعوة بنجاح",
+    "sendError": "خطأ في إرسال الدعوات",
+    "noGuestsWithPhone": "لا يوجد ضيوف برقم هاتف",
+    "retryFailed": "إعادة المحاولة",
+    "retrying": "جاري إعادة المحاولة...",
+    "retrySuccess": "تمت إعادة قائمة انتظار الدعوات الفاشلة",
+    "sent": "مُرسَلة",
+    "delivered": "مُستلَمة",
+    "failed": "فاشلة",
+    "pending": "في الانتظار"
+  },
+  "testMessage": {
+    "title": "رسالة تجريبية",
+    "description": "أرسل رسالة تجريبية للتحقق من محتوى الدعوة قبل الإطلاق",
+    "phoneLabel": "رقم الجوال",
+    "cancel": "إلغاء",
+    "send": "إرسال",
+    "sending": "جاري الإرسال...",
+    "success": "تم إرسال الرسالة التجريبية بنجاح",
+    "error": "فشل في إرسال الرسالة التجريبية",
+    "infoText": "سيتم إرسال نسخة تجريبية من دعوتك إلى هذا الرقم",
+    "validation": {
+      "phoneRequired": "رقم الجوال مطلوب",
+      "phoneFormat": "يجب أن يبدأ بـ 5 ويتكون من 9 أرقام"
+    }
+  },
+  "scheduleSend": {
+    "title": "جدولة الإرسال",
+    "description": "حدد موعد إرسال دعوات المناسبة للضيوف",
+    "date": "تاريخ الإرسال",
+    "datePlaceholder": "اختر التاريخ",
+    "time": "وقت الإرسال",
+    "timePlaceholder": "اختر الوقت",
+    "minDateNote": "يجب أن يكون موعد الإرسال بعد يومين على الأقل من تاريخ اليوم",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد الجدولة",
+    "scheduling": "جاري الجدولة...",
+    "success": "تمت جدولة الدعوات بنجاح",
+    "error": "فشل في جدولة الإرسال",
+    "validation": {
+      "dateRequired": "التاريخ مطلوب",
+      "timeRequired": "الوقت مطلوب",
+      "minDate": "يجب أن يكون التاريخ بعد يومين على الأقل من اليوم"
+    }
+  }
+}

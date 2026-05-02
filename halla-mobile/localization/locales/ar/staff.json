@@ -1,0 +1,63 @@
+{
+  "login": {
+    "title": "بوابة فريق العمل",
+    "subtitle": "أدخل بياناتك للوصول إلى قائمة ضيوف المناسبة",
+    "phonePlaceholder": "رقم الجوال (مثال: 5xxxxxxxx)",
+    "phoneLabel": "رقم الجوال",
+    "eventIdLabel": "معرف المناسبة",
+    "eventIdPlaceholder": "أدخل معرف المناسبة",
+    "verifyButton": "تحقق من الصلاحية",
+    "verifying": "جاري التحقق...",
+    "errors": {
+      "phoneRequired": "رقم الجوال مطلوب",
+      "eventIdRequired": "معرف المناسبة مطلوب",
+      "invalidCredentials": "لا توجد صلاحية وصول لهذا الرقم والمناسبة",
+      "verificationFailed": "فشل التحقق. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "portal": {
+    "guests": "المدعوين",
+    "searchPlaceholder": "ابحث بالاسم أو الجوال...",
+    "noGuests": "لا يوجد ضيوف",
+    "noGuestsSearch": "لا توجد نتائج لبحثك",
+    "loadingGuests": "جاري تحميل قائمة الضيوف...",
+    "checkIn": "تسجيل حضور",
+    "alreadyCheckedIn": "تم التسجيل مسبقاً",
+    "logout": "تسجيل الخروج",
+    "refresh": "تحديث"
+  },
+  "stats": {
+    "title": "إحصائيات المناسبة",
+    "pending": "في الانتظار",
+    "confirmed": "حضور",
+    "declined": "اعتذر",
+    "checkedIn": "تم التسجيل",
+    "total": "الإجمالي"
+  },
+  "checkIn": {
+    "confirmTitle": "تأكيد تسجيل الحضور",
+    "confirmMessage": "تسجيل حضور {{name}}؟",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء",
+    "success": "تم تسجيل الحضور بنجاح",
+    "alreadyDone": "تم تسجيل حضور {{name}} مسبقاً",
+    "failed": "فشل تسجيل الحضور",
+    "qrTitle": "تسجيل بالرمز",
+    "qrLabel": "رمز QR",
+    "qrPlaceholder": "أدخل أو امسح رمز QR",
+    "qrButton": "تسجيل برمز QR",
+    "scanQR": "مسح رمز QR"
+  },
+  "status": {
+    "invited": "مدعو",
+    "confirmed": "حضور",
+    "declined": "اعتذر",
+    "maybe": "ربما",
+    "checked_in": "تم التسجيل",
+    "no_show": "لم يحضر"
+  },
+  "errors": {
+    "loadFailed": "فشل تحميل قائمة الضيوف",
+    "checkInFailed": "فشل تسجيل الحضور. يرجى المحاولة مرة أخرى."
+  }
+}

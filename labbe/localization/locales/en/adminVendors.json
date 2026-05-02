@@ -1,0 +1,84 @@
+{
+  "header": {
+    "title": "Vendors",
+    "subtitle": "Review requests and manage vendors",
+    "dateRange": "Date Range"
+  },
+  "stats": {
+    "totalVendors": "Total Vendors",
+    "activeVendors": "Active Vendors",
+    "pendingVendors": "Pending Vendors",
+    "suspendedVendors": "Suspended Vendors"
+  },
+  "table": {
+    "title": "Vendors List",
+    "searchPlaceholder": "Search vendors...",
+    "filter": "Filter",
+    "export": "Export",
+    "columns": {
+      "username": "Vendor Name",
+      "phoneNumber": "Phone Number",
+      "email": "Email",
+      "serviceType": "Service Type",
+      "rating": "Rating",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "pending": "Pending",
+      "active": "Active",
+      "suspended": "Suspended",
+      "rejected": "Rejected"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "approve": "Approve",
+      "suspend": "Suspend",
+      "delete": "Delete",
+      "giveRating": "Give Rating"
+    },
+    "serviceTypes": {
+      "mediaProduction": "Media Production",
+      "foodAndBeverages": "Food & Beverages",
+      "photography": "Photography",
+      "decoration": "Decoration",
+      "music": "Music",
+      "entertainment": "Entertainment"
+    }
+  },
+  "dateRange": {
+    "all": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "giveRating": {
+    "title": "Give Rating",
+    "ratingLabel": "Rating",
+    "submitButton": "Give Rating",
+    "cancel": "Cancel",
+    "submitting": "Submitting...",
+    "success": "Rating given successfully",
+    "error": "Failed to give rating"
+  },
+  "approveVendor": {
+    "success": "Vendor approved successfully",
+    "error": "Failed to approve vendor"
+  },
+  "suspendVendor": {
+    "success": "Vendor suspended successfully",
+    "error": "Failed to suspend vendor"
+  },
+  "deleteVendor": {
+    "success": "Vendor deleted successfully",
+    "error": "Failed to delete vendor"
+  },
+  "confirmDelete": {
+    "message": "Are you sure you want to delete this vendor?"
+  }
+}

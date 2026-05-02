@@ -1,0 +1,260 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  width: 100%;
+  max-width: 500px;
+  height: 100%;
+  max-height: 100vh;
+  background: #111827;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .modal {
+    height: auto;
+    max-height: 90vh;
+    border-radius: 16px;
+    margin: 20px;
+  }
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #1f2937;
+  border-bottom: 1px solid #374151;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  font-family: "Cairo", sans-serif;
+}
+
+.closeButton,
+.flipButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #374151;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.closeButton:hover,
+.flipButton:hover {
+  background: #4b5563;
+}
+
+/* Camera Container */
+.cameraContainer {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  min-height: 300px;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.canvas {
+  display: none;
+}
+
+/* Error State */
+.errorState {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.errorIcon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.errorState p {
+  font-size: 16px;
+  margin-bottom: 20px;
+  font-family: "Cairo", sans-serif;
+}
+
+.retryButton {
+  padding: 12px 32px;
+  background: #8b5cf6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: "Cairo", sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retryButton:hover {
+  background: #7c3aed;
+}
+
+/* Scan Overlay */
+.scanOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.scanFrame {
+  width: 250px;
+  height: 250px;
+  position: relative;
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  border-radius: 16px;
+}
+
+/* Corner markers */
+.corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-color: #8b5cf6;
+  border-style: solid;
+  border-width: 0;
+}
+
+.topLeft {
+  top: -2px;
+  left: -2px;
+  border-top-width: 4px;
+  border-left-width: 4px;
+  border-top-left-radius: 16px;
+}
+
+.topRight {
+  top: -2px;
+  right: -2px;
+  border-top-width: 4px;
+  border-right-width: 4px;
+  border-top-right-radius: 16px;
+}
+
+.bottomLeft {
+  bottom: -2px;
+  left: -2px;
+  border-bottom-width: 4px;
+  border-left-width: 4px;
+  border-bottom-left-radius: 16px;
+}
+
+.bottomRight {
+  bottom: -2px;
+  right: -2px;
+  border-bottom-width: 4px;
+  border-right-width: 4px;
+  border-bottom-right-radius: 16px;
+}
+
+/* Scanning line animation */
+.scanLine {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #8b5cf6,
+    #8b5cf6,
+    transparent
+  );
+  animation: scan 2s ease-in-out infinite;
+  box-shadow: 0 0 10px #8b5cf6;
+}
+
+@keyframes scan {
+  0% {
+    top: 10px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: calc(100% - 12px);
+    opacity: 0;
+  }
+}
+
+/* Instructions */
+.instructions {
+  padding: 20px;
+  background: #1f2937;
+  text-align: center;
+  border-top: 1px solid #374151;
+}
+
+.instructions p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 14px;
+  font-family: "Cairo", sans-serif;
+}
+
+/* Dark background for areas outside scan frame */
+.scanOverlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 125px,
+    rgba(0, 0, 0, 0.6) 126px
+  );
+}

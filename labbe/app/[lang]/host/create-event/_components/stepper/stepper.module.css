@@ -1,0 +1,184 @@
+/* Desktop Stepper */
+.stepper_desktop {
+  display: flex;
+  width: 100%;
+  /* padding: 1rem; */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stepper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  border-radius: 0.6rem;
+  position: relative;
+  width: 100%;
+}
+
+.step_wrapper {
+  display: flex;
+  width: 15rem;
+  /* padding: 1.6rem 2.4rem; */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+}
+
+.step_number {
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  position: relative;
+}
+
+.step_number_active {
+  border: 0.5px solid var(--Content-Text-Text-title-brand, #c28e5c);
+}
+
+.step_number_inactive {
+  background: var(--Button-Secondary-bg-active, #f5ece4);
+}
+
+.dot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.5rem;
+  background: var(--Content-bg-Card-bg-8, #c28e5c);
+  display: none;
+}
+
+.step_number_active .dot {
+  display: block;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1.6rem;
+}
+
+.step_label {
+  color: var(--Content-Text-Text-body-discription, #656565);
+  text-align: center;
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 2rem;
+  letter-spacing: 0.035px;
+}
+
+.step_label_active {
+  color: var(--Content-Text-Text-title-brand, #c28e5c);
+}
+
+.step_label_inactive {
+  color: var(--Content-Text-Text-body-discription, #656565);
+}
+
+.connector {
+  width: 12rem;
+  height: 0.3rem;
+  position: relative;
+  top: 2.6rem;
+  border-radius: 0.2rem;
+  background: var(--Button-Secondary-bg-active, #f5ece4);
+}
+
+/* Mobile Stepper */
+.stepper_mobile {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .stepper_desktop {
+    display: none;
+  }
+
+  .stepper_mobile {
+    display: flex;
+    /* padding: 0 2.4rem; */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .stepper_mobile_container {
+    display: flex;
+    width: 100%;
+    padding: 1.2rem;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 2.4rem;
+    border-radius: 0.6rem;
+    background: var(--Content-bg-Card-bg-1, #fff);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+      0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .stepper_mobile_header {
+    display: flex;
+    padding: 0.8rem 1.6rem;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    border-radius: 1.2rem;
+    background: var(--Content-bg-Card-bg-5, #f9f4ef);
+  }
+
+  .arrow_icon {
+    display: flex;
+    width: 2.4rem;
+    height: 2.4rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mobile_step_info {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1.6rem;
+  }
+
+  .mobile_step_label {
+    color: var(--Content-Text-Text-title-brand, #c28e5c);
+    text-align: center;
+    font-size: 1.4rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 2rem;
+    letter-spacing: 0.014px;
+  }
+
+  .mobile_step_badge {
+    display: flex;
+    width: 4rem;
+    height: 4rem;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    border-radius: 2rem;
+    border: 2px solid var(--Content-Text-Text-title-brand, #c28e5c);
+    color: var(--Content-Text-Text-title-brand, #c28e5c);
+    text-align: center;
+    font-size: 1.6rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 2.4rem;
+    letter-spacing: 0.08px;
+  }
+}

@@ -1,0 +1,290 @@
+.cardWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  animation: fadeInScale 0.7s ease-out 0.2s both;
+}
+
+.cardContainer {
+  position: relative;
+  width: 34.2rem;
+  height: 47.9rem;
+  border-radius: 0.958rem;
+  box-shadow: 0 0.08rem 0.24rem 0 rgba(0, 0, 0, 0.1), 0 0.08rem 0.16rem -0.08rem rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.backgroundPaper,
+.borderFrame,
+.floralTopLeft,
+.floralBottomRight {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.floralTopLeft {
+  animation: floatTopLeft 6s ease-in-out infinite;
+}
+
+.floralBottomRight {
+  animation: floatBottomRight 6s ease-in-out infinite;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem;
+  height: 100%;
+}
+
+.quranVerse {
+  color: #5a4a42;
+  text-align: center;
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.28rem;
+  font-weight: 400;
+  line-height: 1.8rem;
+  margin-top: 5rem;
+  padding: 0 1.5rem;
+  animation: fadeIn 1s ease-out 0.5s both;
+}
+
+.coupleNames {
+  display: flex;
+  align-items: center;
+  gap: 1.12rem;
+  margin-top: 6.5rem;
+  font-family: 'Great Vibes', cursive;
+  animation: slideInUp 0.8s ease-out 0.6s both;
+}
+
+.brideName {
+  color: #5a4a42;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.and {
+  color: #5a4a42;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.groomName {
+  color: #5a4a42;
+  font-size: 2.35rem;
+  font-weight: 400;
+}
+
+.waitingText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.24rem;
+  margin-top: 3rem;
+  color: #5a4a42;
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 0.958rem;
+  font-weight: 400;
+  text-align: center;
+  animation: fadeIn 1s ease-out 0.7s both;
+}
+
+.dateTimeSection {
+  display: flex;
+  align-items: center;
+  gap: 1.68rem;
+  margin-top: 2rem;
+  animation: slideInUp 0.8s ease-out 0.8s both;
+}
+
+.year,
+.month {
+  color: #5a4a42;
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.44rem;
+  font-weight: 400;
+}
+
+.divider {
+  width: 0.1rem;
+  height: 2.2rem;
+  background: #231f20;
+}
+
+.mainDate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dayName {
+  color: #5a4a42;
+  font-family: Georgia, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.96rem;
+  font-weight: 400;
+}
+
+.day {
+  color: #5a4a42;
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 3.2rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.timeText {
+  color: #5a4a42;
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 0.962rem;
+  font-weight: 400;
+  margin-top: 2.5rem;
+  text-align: center;
+  animation: fadeIn 1s ease-out 0.9s both;
+}
+
+.locationSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.72rem;
+  margin-top: 1.5rem;
+  animation: fadeIn 1s ease-out 1s both;
+}
+
+.villaNumber {
+  color: #5a4a42;
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 0.962rem;
+  font-weight: 400;
+}
+
+.address {
+  color: #5a4a42;
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 0.575rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+.attendanceText {
+  color: #5a4a42;
+  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.32rem;
+  font-weight: 400;
+  margin-top: auto;
+  margin-bottom: 2rem;
+  text-align: center;
+  animation: fadeIn 1s ease-out 1.1s both;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatTopLeft {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(0.5rem, 0.5rem);
+  }
+}
+
+@keyframes floatBottomRight {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-0.5rem, -0.5rem);
+  }
+}
+
+@media (min-width: 768px) {
+  .cardContainer {
+    width: 40rem;
+    height: 56rem;
+  }
+  
+  .content {
+    padding: 4rem 2rem;
+  }
+  
+  .quranVerse {
+    font-size: 1.5rem;
+    line-height: 2.2rem;
+    margin-top: 6rem;
+  }
+  
+  .coupleNames {
+    margin-top: 8rem;
+  }
+  
+  .brideName,
+  .and {
+    font-size: 2.4rem;
+  }
+  
+  .groomName {
+    font-size: 2.8rem;
+  }
+  
+  .dateTimeSection {
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+  
+  .year,
+  .month {
+    font-size: 1.6rem;
+  }
+  
+  .dayName {
+    font-size: 2.2rem;
+  }
+  
+  .day {
+    font-size: 3.6rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cardContainer {
+    width: 45rem;
+    height: 63rem;
+  }
+  
+  .content {
+    padding: 5rem 2.5rem;
+  }
+  
+  .quranVerse {
+    font-size: 1.7rem;
+    line-height: 2.5rem;
+  }
+}

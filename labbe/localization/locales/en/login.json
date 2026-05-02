@@ -1,0 +1,78 @@
+{
+  "loginForm": {
+    "greeting": {
+      "title": "Welcome to Labbe",
+      "subtitle": "Login to your account and start your journey with us in organizing invitations in a modern and unique way."
+    },
+    "emailLogin": {
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your email"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Enter your password"
+      },
+      "forgotPassword": "Forgot Password",
+      "rememberMe": "Remember Me",
+      "loginWithOTP": "Login with temporary password"
+    },
+    "otpLogin": {
+      "phoneNumber": "Phone Number",
+      "verification": "Verification",
+      "editPhone": "Edit phone number",
+      "loginWithEmail": "Login with email",
+      "verificationTitle": "Phone Number Verification",
+      "verificationDescription": "We have sent a 6-digit code to your mobile number ",
+      "verificationDescriptionEnd": ". Please enter it below",
+      "resendCode": "Resend code? ({{seconds}} seconds)"
+    },
+    "buttons": {
+      "login": "Login",
+      "verify": "Verify"
+    },
+    "formBottom": {
+      "orContinueWith": "Or continue using",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create account"
+    },
+    "initialForm": {
+      "title": "Service Selection",
+      "description": "What type of event do you want to organize?",
+      "service": {
+        "label": "Choose the service",
+        "placeholder": "Select service type",
+        "options": {
+          "whiteLabel": "Your invitation through your platform",
+          "hosted": "We handle your invitation",
+          "selfService": "Handle it yourself"
+        },
+        "descriptions": {
+          "whiteLabel": "Professional solution: Custom dashboard and multiple features.",
+          "hosted": "Labbe team handles everything from design to sending and tracking attendance.",
+          "selfService": "Design and send your invitation easily via WhatsApp with a unique QR code for each guest!"
+        },
+        "errors": {
+          "serviceRequired": "Please select a service type"
+        }
+      }
+    },
+    "whiteLabel": {
+      "placeholder": "Enter Name",
+      "errors": {
+        "nameMinLength": "Name must be at least 2 characters",
+        "nameMaxLength": "Name must be less than 50 characters"
+      }
+    },
+    "errors": {
+      "emailRequired": "Email is required",
+      "invalidEmail": "Invalid email address",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordComplexity": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      "invalidPassword": "Password is incorrect, check it and try again.",
+      "phoneNumberInvalid": "Phone number is incorrect, please check and try again",
+      "otpInvalid": "Invalid verification code",
+      "otpIncomplete": "Please enter complete verification code"
+    }
+  }
+}

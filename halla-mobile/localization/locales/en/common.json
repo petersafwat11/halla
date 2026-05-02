@@ -1,0 +1,58 @@
+{
+  "success": "successful",
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "retry": "Retry",
+    "refresh": "Refresh"
+  },
+  "messages": {
+    "loading": "Loading...",
+    "noData": "No data available",
+    "error": "Something went wrong",
+    "success": "Operation completed successfully",
+    "networkError": "Network connection error",
+    "tryAgain": "Please try again"
+  },
+  "navigation": {
+    "home": "Home",
+    "events": "Events",
+    "marketplace": "Marketplace",
+    "plans": "Plans",
+    "tickets": "Tickets",
+    "profile": "Profile",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "hosts": "Hosts",
+    "more": "More"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "clearAllConfirm": "Are you sure you want to clear all notifications?",
+    "loadMore": "Load more",
+    "loading": "Loading...",
+    "empty": {
+      "title": "No notifications",
+      "message": "You're all caught up! Check back later."
+    },
+    "delete": "Delete",
+    "justNow": "Just now"
+  },
+  "fonts": {
+    "cairo": { "displayName": "Cairo" },
+    "inter": { "displayName": "Inter" },
+    "lato": { "displayName": "Lato" },
+    "amiri": { "displayName": "Amiri" },
+    "ibm_plex_arabic": { "displayName": "IBM Plex Sans Arabic" },
+    "noto_sans_arabic": { "displayName": "Noto Sans Arabic" }
+  }
+}

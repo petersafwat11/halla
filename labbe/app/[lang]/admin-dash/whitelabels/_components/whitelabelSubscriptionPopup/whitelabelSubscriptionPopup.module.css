@@ -1,0 +1,310 @@
+/* ============================================
+   WHITELABEL SUBSCRIPTION POPUP - Professional Design
+   Theme: Golden Brown (#c28e5c)
+   ============================================ */
+
+.container {
+  width: 100%;
+  max-width: 750px;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #f9f4ef 0%, #f5f0eb 100%);
+  border-bottom: 1px solid rgba(194, 142, 92, 0.15);
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #2c2c2c;
+  margin: 0;
+}
+
+.closeButton {
+  background: white;
+  border: none;
+  cursor: pointer;
+  padding: 0.6rem;
+  border-radius: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.closeButton:hover {
+  background: #fff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.whitelabelInfo {
+  padding: 1.25rem 2rem;
+  background: #fcfaf8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  border-bottom: 1px solid rgba(194, 142, 92, 0.1);
+}
+
+.whitelabelInfo p {
+  margin: 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.currentPlanBadge {
+  display: inline-block;
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.billingToggle {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem 2rem;
+  background: #fcfaf8;
+}
+
+.billingOption {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 2rem;
+  border: 2px solid #e8e0d8;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.billingOption:hover {
+  border-color: #c28e5c;
+  background: #fdf8f4;
+}
+
+.activeBilling {
+  border-color: #c28e5c;
+  background: linear-gradient(135deg, #fdf8f4 0%, #f9f4ef 100%);
+  color: #c28e5c;
+  box-shadow: 0 4px 15px rgba(194, 142, 92, 0.2);
+}
+
+.saveBadge {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+@media (max-width: 600px) {
+  .plansGrid {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+}
+
+.planCard {
+  position: relative;
+  border: 2px solid #f0ebe5;
+  border-radius: 16px;
+  padding: 1.75rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+  overflow: hidden;
+}
+
+.planCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #c28e5c 0%, #d4a574 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.planCard:hover {
+  border-color: #c28e5c;
+  box-shadow: 0 8px 24px rgba(194, 142, 92, 0.15);
+  transform: translateY(-2px);
+}
+
+.planCard:hover::before {
+  opacity: 1;
+}
+
+.selectedPlan {
+  border-color: #c28e5c;
+  box-shadow: 0 8px 30px rgba(194, 142, 92, 0.2);
+}
+
+.selectedPlan::before {
+  opacity: 1;
+}
+
+.popularPlan {
+  border-color: #f59e0b;
+}
+
+.popularPlan::before {
+  background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+  opacity: 1;
+}
+
+.popularBadge {
+  position: absolute;
+  top: -1px;
+  right: 50%;
+  transform: translateX(50%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 0.4rem 1.25rem;
+  border-radius: 0 0 12px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.planHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f0ebe5;
+}
+
+.planName {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 0.75rem 0;
+}
+
+.planPrice {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.priceValue {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #2c2c2c;
+}
+
+.priceCurrency {
+  font-size: 1rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.planFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.4;
+}
+
+.selectedIndicator {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(194, 142, 92, 0.15);
+  background: linear-gradient(135deg, #f9f4ef 0%, #fcfaf8 100%);
+}
+
+.cancelButton {
+  padding: 0.9rem 1.75rem;
+  border: 2px solid #e8e0d8;
+  border-radius: 12px;
+  background: white;
+  color: #666;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: #f9f4ef;
+  border-color: #c28e5c;
+  color: #c28e5c;
+}
+
+.submitButton {
+  padding: 0.9rem 2.5rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #c28e5c 0%, #a67844 100%);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(194, 142, 92, 0.35);
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(194, 142, 92, 0.45);
+}
+
+.submitButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}

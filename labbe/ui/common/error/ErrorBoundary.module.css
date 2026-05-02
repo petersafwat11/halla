@@ -1,0 +1,64 @@
+.container {
+  padding: 2rem;
+  text-align: center;
+  background: #fef2f2;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+.icon {
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #991b1b;
+  margin-bottom: 0.75rem;
+}
+
+.message {
+  color: #7f1d1d;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.details {
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.details summary {
+  cursor: pointer;
+  color: #dc2626;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.errorText {
+  background: #fee2e2;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #991b1b;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.retryButton {
+  padding: 0.75rem 2rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retryButton:hover {
+  background: #b91c1c;
+}

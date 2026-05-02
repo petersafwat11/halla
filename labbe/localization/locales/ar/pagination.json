@@ -1,0 +1,17 @@
+{
+  "showing": "عرض",
+  "of": "من",
+  "items": "عنصر",
+  "perPage": "لكل صفحة",
+  "page": "صفحة",
+  "previous": "السابق",
+  "next": "التالي",
+  "firstPage": "الصفحة الأولى",
+  "lastPage": "الصفحة الأخيرة",
+  "previousPage": "الصفحة السابقة",
+  "nextPage": "الصفحة التالية",
+  "goToPage": "انتقل إلى صفحة",
+  "noResults": "لا توجد نتائج",
+  "loadingMore": "جاري التحميل...",
+  "showingResults": "عرض {{start}} - {{end}} من {{total}} نتيجة"
+}

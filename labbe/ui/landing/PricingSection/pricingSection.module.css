@@ -1,0 +1,130 @@
+/* ── Section ── */
+.prRoot { padding: 5rem 2rem; background: var(--color-primary-50); }
+.prInner { max-width: 1200px; margin: 0 auto; }
+
+/* ── Header ── */
+.prHdr { text-align: center; margin-bottom: 5.6rem; }
+.prEyebrow {
+  display: inline-block; font-size: 1.3rem; font-weight: 700; color: var(--color-primary-500);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 1.2rem;
+  padding: .4rem 1.4rem; background: color-mix(in srgb, var(--color-primary-500) 10%, transparent); border-radius: 9999px;
+}
+.prTitle { font-size: clamp(2.8rem, 3vw, 4rem); font-weight: 700; color: var(--color-secondary-700); margin: 0 0 1.6rem; letter-spacing: -.02em; font-family: "Cairo", sans-serif; }
+.prSub { font-size: 1.7rem; color: var(--color-secondary-300); max-width: 520px; margin: 0 auto; line-height: 1.7; font-family: "Cairo", sans-serif; }
+
+/* ── Selector card ── */
+.prSelector { max-width: 480px; margin: 0 auto 4rem; background: var(--color-natural-50); border-radius: 2rem; border: 1.5px solid color-mix(in srgb, var(--color-primary-500) 14%, transparent); box-shadow: 0 6px 36px color-mix(in srgb, var(--color-secondary-600) 9%, transparent), 0 1px 6px color-mix(in srgb, var(--color-secondary-600) 5%, transparent); overflow: hidden; }
+.prSegWrap { padding: 1.2rem 1.2rem .9rem; }
+.prSegTrack { display: flex; background: var(--color-primary-100); border-radius: 9999px; padding: .35rem; box-shadow: inset 0 1.5px 5px color-mix(in srgb, var(--color-secondary-600) 13%, transparent); }
+.prSegBtn { flex: 1; display: flex; align-items: center; justify-content: center; gap: .8rem; padding: .9rem 1.4rem; border: none; background: transparent; border-radius: 9999px; cursor: pointer; transition: all 260ms cubic-bezier(.4, 0, .2, 1); }
+.prSegIcon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+.prSegBody { display: flex; flex-direction: column; align-items: flex-start; gap: .05rem; }
+.prSegLabel { font-size: 1.35rem; font-weight: 700; color: var(--color-accent-500); font-family: "Cairo", sans-serif; transition: color 260ms ease; line-height: 1.25; }
+.prSegSub { font-size: .95rem; color: var(--color-accent-300); font-family: "Cairo", sans-serif; transition: color 260ms ease; line-height: 1.2; }
+.prSegBtn.active { background: var(--color-natural-50); box-shadow: 0 2px 14px color-mix(in srgb, var(--color-secondary-600) 14%, transparent), 0 1px 4px color-mix(in srgb, var(--color-secondary-600) 7%, transparent); }
+.prSegBtn.active .prSegLabel { color: var(--color-secondary-700); }
+.prSegBtn.active .prSegSub { color: var(--color-primary-500); }
+.prSegBtn:hover:not(.active) .prSegLabel { color: var(--color-secondary-400); }
+
+.prSep { height: 1px; background: var(--color-primary-100); margin: 0 1.2rem; }
+
+/* ── Second row: plan-type or billing ── */
+.prBillRow { padding: .85rem 1.2rem 1.1rem; }
+.prBillTrack { display: flex; border: 1.5px solid color-mix(in srgb, var(--color-primary-500) 40%, transparent); border-radius: 1rem; overflow: hidden; width: 100%; }
+.prBillBtn { flex: 1; display: flex; align-items: center; justify-content: center; gap: .65rem; padding: .85rem 1.2rem; border: none; background: var(--color-natural-50); cursor: pointer; font-size: 1.35rem; font-weight: 600; color: var(--color-accent-500); font-family: "Cairo", sans-serif; transition: all 220ms ease; white-space: nowrap; }
+.prBillBtn + .prBillBtn { border-inline-start: 1.5px solid color-mix(in srgb, var(--color-primary-500) 40%, transparent); }
+.prBillBtn.active { background: var(--color-primary-500); color: var(--color-natural-50); }
+.prBillBtn:hover:not(.active) { background: var(--color-primary-100); color: var(--color-secondary-400); }
+.prSaveBadge { display: inline-flex; align-items: center; font-size: .88rem; font-weight: 700; padding: .18rem .6rem; border-radius: .4rem; font-family: "Cairo", sans-serif; background: color-mix(in srgb, var(--color-success-600) 12%, transparent); color: var(--color-success-600); transition: all 220ms ease; }
+.prBillBtn.active .prSaveBadge { background: var(--color-white-20); color: var(--color-natural-50); }
+
+/* ── Host single card ── */
+.prHostCard { max-width: 600px; margin: 0 auto; background: var(--color-natural-50); border-radius: 1.5rem; padding: 2.4rem; border: 2px solid var(--color-primary-200); box-shadow: 0 4px 24px color-mix(in srgb, var(--color-secondary-600) 10%, transparent); display: flex; flex-direction: column; gap: 2rem; }
+
+/* ── Guest selector ── */
+.prGuestLabel { font-size: 1.3rem; font-weight: 700; color: var(--color-secondary-600); font-family: "Cairo", sans-serif; margin-bottom: 1rem; text-align: center; }
+.prGuestTrack { display: flex; gap: 1rem; flex-wrap: wrap; }
+.prGuestBtn { flex: 1; min-width: 90px; display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: 1rem .8rem; border: 2px solid var(--color-primary-200); border-radius: 1rem; background: var(--color-natural-50); cursor: pointer; transition: all 220ms ease; font-family: "Cairo", sans-serif; }
+.prGuestBtn.active { border-color: var(--color-primary-500); background: var(--color-primary-100); }
+.prGuestNum { font-size: 2rem; font-weight: 800; color: var(--color-primary-500); line-height: 1; }
+.prGuestUnit { font-size: 1.1rem; font-weight: 500; color: var(--color-accent-500); }
+.prGuestBtn.active .prGuestNum { color: var(--color-primary-700); }
+.prGuestBtn.active .prGuestUnit { color: var(--color-primary-700); }
+.prGuestBtn:hover:not(.active) { border-color: var(--color-primary-300); background: var(--color-primary-50); }
+
+/* ── Host card price ── */
+.prHostPrice { display: flex; align-items: baseline; gap: .5rem; justify-content: center; }
+.prHostPriceNum { font-size: 4.8rem; font-weight: 800; color: var(--color-secondary-700); line-height: 1; font-family: "Cairo", sans-serif; }
+.prHostPriceCur { font-size: 1.8rem; font-weight: 600; color: var(--color-secondary-700); font-family: "Cairo", sans-serif; }
+.prHostPricePer { font-size: 1.4rem; color: var(--color-accent-300); font-family: "Cairo", sans-serif; }
+
+/* ── Monthly sub-billing (inside host card) ── */
+.prHostBilling { display: flex; gap: 0; border: 1.5px solid color-mix(in srgb, var(--color-primary-500) 35%, transparent); border-radius: .8rem; overflow: hidden; align-self: center; }
+.prHostBillBtn { padding: .7rem 2rem; border: none; background: var(--color-natural-50); font-size: 1.25rem; font-weight: 600; color: var(--color-accent-500); font-family: "Cairo", sans-serif; cursor: pointer; transition: all 200ms ease; white-space: nowrap; display: flex; align-items: center; gap: .5rem; }
+.prHostBillBtn + .prHostBillBtn { border-inline-start: 1.5px solid color-mix(in srgb, var(--color-primary-500) 35%, transparent); }
+.prHostBillBtn.active { background: var(--color-primary-500); color: var(--color-natural-50); }
+.prHostBillBtn:hover:not(.active) { background: var(--color-primary-100); color: var(--color-secondary-400); }
+
+/* ── Monthly limits ── */
+.prLimits { display: flex; gap: 1rem; flex-wrap: wrap; padding: 1rem 1.2rem; background: var(--color-primary-50); border-radius: 1rem; }
+.prLimit { display: flex; align-items: center; gap: .5rem; font-size: 1.25rem; color: var(--color-secondary-600); font-weight: 500; font-family: "Cairo", sans-serif; }
+.prLimitIc { color: var(--color-primary-500); font-size: 1.1rem; }
+
+/* ── Features ── */
+.prFeatSection { flex: 1; }
+.prFeatTitle { font-size: 1.3rem; font-weight: 700; color: var(--color-secondary-700); margin: 0 0 .8rem; font-family: "Cairo", sans-serif; text-align: center; }
+.prFeatGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem; justify-content: center; }
+.prFeatItem { display: flex; align-items: center; justify-content: center; gap: .5rem; font-size: 1.15rem; color: var(--color-secondary-600); padding: .5rem .75rem; background: var(--color-primary-50); border-radius: .5rem; font-family: "Cairo", sans-serif; }
+.prFeatCheck { color: var(--color-success-600); font-size: 1rem; flex-shrink: 0; font-weight: 700; }
+
+/* ── Compensation + CTA footer ── */
+.prCardFooter { display: flex; flex-direction: column; gap: 1.5rem; }
+.prComp { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--color-primary-50); border-radius: 1rem; border: 1px solid var(--color-primary-200); }
+.prCompIcon { font-size: 1.8rem; }
+.prCompLabel { font-size: 1.2rem; font-weight: 600; color: var(--color-secondary-600); display: block; font-family: "Cairo", sans-serif; }
+.prCompVal { font-size: 1.3rem; font-weight: 700; color: var(--color-primary-500); display: block; font-family: "Cairo", sans-serif; }
+
+/* ── CTA button ── */
+.prBtn { width: 100%; padding: 1.25rem; border: none; border-radius: 1rem; background: var(--color-primary-500); color: var(--color-natural-50); font-size: 1.5rem; font-weight: 700; font-family: "Cairo", sans-serif; cursor: pointer; transition: all 250ms ease; text-decoration: none; display: block; text-align: center; }
+.prBtn:hover { background: var(--color-primary-700); transform: translateY(-2px); }
+.prBtnDark { background: var(--color-secondary-700); box-shadow: 0 4px 16px var(--color-black-20); }
+.prBtnDark:hover { background: var(--color-secondary-800); }
+
+/* ── Enterprise 2-col grid ── */
+.prGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; max-width: 860px; margin: 0 auto; }
+.prCard { background: var(--color-natural-50); border-radius: 1.5rem; padding: 2rem; border: 2px solid var(--color-primary-200); box-shadow: 0 2px 16px color-mix(in srgb, var(--color-secondary-600) 8%, transparent); display: flex; flex-direction: column; gap: 1.5rem; position: relative; transition: all 250ms ease; }
+.prCard:hover { box-shadow: 0 8px 32px color-mix(in srgb, var(--color-secondary-600) 12%, transparent); transform: translateY(-4px); }
+.prCard.popular { border-color: var(--color-primary-500); box-shadow: 0 4px 24px color-mix(in srgb, var(--color-primary-500) 18%, transparent); }
+.prPopularBadge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--color-primary-300); color: var(--color-natural-50); font-size: 1.2rem; font-weight: 700; padding: .4rem 1.4rem; border-radius: 9999px; white-space: nowrap; font-family: "Cairo", sans-serif; }
+.prCardTop { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 1.5rem; border-bottom: 1px solid var(--color-primary-100); }
+.prCardName { font-size: 2rem; font-weight: 700; color: var(--color-secondary-700); margin: 0 0 .4rem; font-family: "Cairo", sans-serif; }
+.prCardDesc { font-size: 1.3rem; color: var(--color-secondary-300); margin: 0; max-width: 180px; font-family: "Cairo", sans-serif; }
+.prPrice { text-align: right; }
+.prPriceRow { display: flex; align-items: baseline; gap: .3rem; justify-content: flex-end; }
+.prPriceNum { font-size: 3rem; font-weight: 800; color: var(--color-secondary-700); line-height: 1; font-family: "Cairo", sans-serif; }
+.prPriceCur { font-size: 1.4rem; font-weight: 600; color: var(--color-secondary-700); font-family: "Cairo", sans-serif; }
+.prPricePer { font-size: 1.2rem; color: var(--color-accent-300); text-align: right; font-family: "Cairo", sans-serif; }
+
+/* ── Managed note ── */
+.prManaged { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-top: 2.4rem; padding: 1.4rem 2rem; background: var(--color-natural-50); border-radius: 1.2rem; border: 1.5px solid var(--color-primary-200); max-width: 860px; margin-left: auto; margin-right: auto; }
+.prManagedTextWrap { display: flex; flex-direction: column; gap: .4rem; }
+.prManagedTitle { font-size: 1.5rem; font-weight: 700; color: var(--color-secondary-700); font-family: "Cairo", sans-serif; }
+.prManagedDesc { font-size: 1.3rem; color: var(--color-secondary-500); font-weight: 400; font-family: "Cairo", sans-serif; }
+.prManagedBtn { flex-shrink: 0; display: flex; align-items: center; gap: .6rem; padding: .8rem 1.6rem; background: #25d366; color: #fff; border: none; border-radius: .8rem; font-size: 1.3rem; font-weight: 600; font-family: "Cairo", sans-serif; cursor: pointer; text-decoration: none; white-space: nowrap; transition: background 250ms ease; }
+.prManagedBtn:hover { background: #1ebe5d; }
+
+/* ── Responsive ── */
+@media (max-width: 860px) { .prGrid { grid-template-columns: 1fr; max-width: 480px; } }
+@media (max-width: 640px) {
+  .prRoot { padding: 3rem 1.6rem; }
+  .prSelector { max-width: 100%; }
+  .prSegBtn { padding: .8rem 1rem; gap: .6rem; }
+  .prSegLabel { font-size: 1.25rem; }
+  .prSegSub { display: none; }
+  .prFeatGrid { grid-template-columns: 1fr; }
+  .prGuestTrack { gap: .6rem; }
+  .prGuestBtn { min-width: 70px; padding: .8rem .6rem; }
+  .prGuestNum { font-size: 1.6rem; }
+  .prManaged { flex-direction: column; text-align: center; margin-top: 2rem; }
+  .prHostPriceNum { font-size: 3.6rem; }
+}

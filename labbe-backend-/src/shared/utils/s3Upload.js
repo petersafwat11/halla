@@ -1,0 +1,581 @@
+/**
+ * S3 Upload Utility for New Backend
+ * Centralized AWS S3 file upload service with multer-s3 integration
+ * @module shared/utils/s3Upload
+ */
+
+const {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+} = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
+const path = require("path");
+const crypto = require("crypto");
+const fs = require("fs");
+
+// Check if S3 is configured
+const isS3Configured = () => {
+  return !!(
+    process.env.AWS_ACCESS_KEY_ID &&
+    process.env.AWS_SECRET_ACCESS_KEY &&
+    process.env.AWS_REGION &&
+    process.env.AWS_S3_BUCKET
+  );
+};
+
+// Initialize S3 client (only if configured)
+let s3Client = null;
+if (isS3Configured()) {
+  s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  });
+}
+
+/**
+ * Generate unique filename with original extension
+ * @param {Object} file - Multer file object
+ * @returns {string} Unique filename
+ */
+const generateFilename = (file) => {
+  const uniqueSuffix = `${Date.now()}-${crypto.randomBytes(8).toString("hex")}`;
+  const extension = path.extname(file.originalname).toLowerCase();
+  const baseName = path
+    .basename(file.originalname, extension)
+    .replace(/[^a-zA-Z0-9]/g, "-")
+    .substring(0, 50);
+  return `${baseName}-${uniqueSuffix}${extension}`;
+};
+
+/**
+ * Get S3 folder path based on field name and request context
+ * @param {string} fieldname - Form field name
+ * @param {Object} req - Express request object
+ * @returns {string} S3 folder path
+ */
+const getFolderForField = (fieldname, req) => {
+  const userId = req.user?.id || req.user?._id || "temp";
+  const eventId = req.params?.eventId || req.params?.id || "new";
+  const vendorId = req.user?.role === "vendor" ? userId : "temp";
+
+  const mappings = {
+    // Event templates
+    templateImage: `events/templates/${eventId}`,
+
+    // Vendor files
+    businessLogo: `vendors/logos/${vendorId}`,
+    logo: `whitelabels/logos/${userId}`,
+    portfolioImages: `vendors/portfolios/${vendorId}`,
+    pricePackages: `vendors/packages/${vendorId}`,
+    commercialRecordImage: `vendors/documents/${vendorId}`,
+    nationalIdImage: `vendors/documents/${vendorId}`,
+    cv: `vendors/documents/${vendorId}`,
+    profileFile: `vendors/documents/${vendorId}`,
+    image: `vendors/services/${vendorId}`,
+
+    // User files
+    avatar: `users/avatars/${userId}`,
+
+    // Post-event content
+    photos: `events/post-event/${eventId}/photos`,
+    video: `events/post-event/${eventId}/videos`,
+    images: `events/post-event/${eventId}/comments`,
+  };
+
+  return mappings[fieldname] || "temp";
+};
+
+/**
+ * Create local disk storage (fallback)
+ * @param {string} baseDir - Base upload directory
+ * @returns {Object} Multer disk storage
+ */
+const createLocalStorage = (baseDir) => {
+  const uploadsDir = path.join(baseDir, "public/uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  return multer.diskStorage({
+    destination: (req, file, cb) => {
+      let uploadPath = uploadsDir;
+
+      const folderMap = {
+        logo: "logos",
+        businessLogo: "logos",
+        portfolioImages: "portfolios",
+        pricePackages: "packages",
+        commercialRecordImage: "documents",
+        nationalIdImage: "documents",
+        cv: "documents",
+        profileFile: "documents",
+        templateImage: "templates",
+        avatar: "avatars",
+        image: "services",
+        photos: "post-event",
+        video: "post-event",
+        images: "post-event",
+      };
+
+      const folder = folderMap[file.fieldname] || "general";
+      uploadPath = path.join(uploadsDir, folder);
+
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      cb(null, generateFilename(file));
+    },
+  });
+};
+
+/**
+ * Create multer-S3 storage configuration
+ * @returns {Object} Multer storage configuration
+ */
+const createS3Storage = () => {
+  if (!isS3Configured() || !s3Client) {
+    console.warn("S3 not configured, falling back to local storage");
+    return createLocalStorage(path.join(__dirname, "../../.."));
+  }
+
+  return multerS3({
+    s3: s3Client,
+    bucket: process.env.AWS_S3_BUCKET,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: (req, file, cb) => {
+      cb(null, {
+        fieldName: file.fieldname,
+        originalName: file.originalname,
+        uploadedBy: req.user?.id || "anonymous",
+        uploadedAt: new Date().toISOString(),
+      });
+    },
+    key: (req, file, cb) => {
+      const folder = getFolderForField(file.fieldname, req);
+      const filename = generateFilename(file);
+      cb(null, `${folder}/${filename}`);
+    },
+  });
+};
+
+/**
+ * Upload a single file to S3 programmatically
+ * @param {Buffer|Stream} fileBuffer - File content
+ * @param {string} folder - S3 folder path
+ * @param {string} filename - Original filename
+ * @param {string} contentType - File MIME type
+ * @returns {Promise<Object>} Upload result with URL and key
+ */
+const uploadToS3 = async (fileBuffer, folder, filename, contentType) => {
+  if (!isS3Configured() || !s3Client) {
+    throw new Error("S3 is not configured");
+  }
+
+  const key = `${folder}/${generateFilename({ originalname: filename })}`;
+
+  const command = new PutObjectCommand({
+    Bucket: process.env.AWS_S3_BUCKET,
+    Key: key,
+    Body: fileBuffer,
+    ContentType: contentType,
+  });
+
+  await s3Client.send(command);
+
+  const url = `${process.env.AWS_S3_BASE_URL}/${key}`;
+
+  return {
+    key,
+    url,
+    bucket: process.env.AWS_S3_BUCKET,
+  };
+};
+
+/**
+ * Upload multiple files to S3
+ * @param {Array} files - Array of file objects with buffer, folder, filename, contentType
+ * @returns {Promise<Array>} Array of upload results
+ */
+const uploadMultipleToS3 = async (files) => {
+  if (!isS3Configured() || !s3Client) {
+    throw new Error("S3 is not configured");
+  }
+
+  const uploadPromises = files.map((file) =>
+    uploadToS3(file.buffer, file.folder, file.filename, file.contentType)
+  );
+
+  return Promise.all(uploadPromises);
+};
+
+/**
+ * Delete a file from S3
+ * @param {string} key - S3 object key
+ * @returns {Promise<boolean>} Success status
+ */
+const deleteFromS3 = async (key) => {
+  if (!isS3Configured() || !s3Client) {
+    console.warn("S3 not configured, cannot delete file");
+    return false;
+  }
+
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: key,
+    });
+
+    await s3Client.send(command);
+    return true;
+  } catch (error) {
+    console.error("Error deleting from S3:", error);
+    return false;
+  }
+};
+
+/**
+ * Delete file by URL (extracts key from URL)
+ * @param {string} url - Full S3 URL
+ * @returns {Promise<boolean>} Success status
+ */
+const deleteFromS3ByUrl = async (url) => {
+  if (!url || !process.env.AWS_S3_BASE_URL) {
+    return false;
+  }
+
+  if (!url.includes(process.env.AWS_S3_BUCKET)) {
+    return false;
+  }
+
+  try {
+    const baseUrl = process.env.AWS_S3_BASE_URL;
+    const key = url.replace(`${baseUrl}/`, "");
+    return await deleteFromS3(key);
+  } catch (error) {
+    console.error("Error extracting key from URL:", error);
+    return false;
+  }
+};
+
+/**
+ * Get a signed URL for temporary access to a private file
+ * @param {string} key - S3 object key
+ * @param {number} expiresIn - URL expiration time in seconds (default: 3600)
+ * @returns {Promise<string>} Signed URL
+ */
+const getSignedUrlForKey = async (key, expiresIn = 3600) => {
+  if (!isS3Configured() || !s3Client) {
+    throw new Error("S3 is not configured");
+  }
+
+  const command = new GetObjectCommand({
+    Bucket: process.env.AWS_S3_BUCKET,
+    Key: key,
+  });
+
+  return getSignedUrl(s3Client, command, { expiresIn });
+};
+
+/**
+ * Get the full S3 URL for a file
+ * @param {string} key - S3 object key
+ * @returns {string} Full S3 URL
+ */
+const getS3Url = (key) => {
+  if (!key) return null;
+  return `${process.env.AWS_S3_BASE_URL}/${key}`;
+};
+
+/**
+ * Extract S3 key from full URL
+ * @param {string} url - Full S3 URL
+ * @returns {string|null} S3 key or null
+ */
+const getKeyFromUrl = (url) => {
+  if (!url || !process.env.AWS_S3_BASE_URL) return null;
+  if (!url.startsWith(process.env.AWS_S3_BASE_URL)) return null;
+  return url.replace(`${process.env.AWS_S3_BASE_URL}/`, "");
+};
+
+/**
+ * Check if a URL is an S3 URL
+ * @param {string} url - URL to check
+ * @returns {boolean} True if S3 URL
+ */
+const isS3Url = (url) => {
+  if (!url || !process.env.AWS_S3_BASE_URL) return false;
+  return url.startsWith(process.env.AWS_S3_BASE_URL);
+};
+
+/**
+ * Get file URL from multer file object (works for both S3 and local)
+ * @param {Object} file - Multer file object
+ * @returns {string|null} File URL
+ */
+const getFileUrl = (file) => {
+  if (!file) return null;
+
+  // S3 upload (multer-s3)
+  if (file.location) {
+    return file.location;
+  }
+
+  // S3 key present
+  if (file.key) {
+    return getS3Url(file.key);
+  }
+
+  // Local file path (fallback)
+  if (file.path) {
+    const publicIndex = file.path.indexOf("public");
+    if (publicIndex !== -1) {
+      return file.path.substring(publicIndex + 6);
+    }
+    return file.filename;
+  }
+
+  return null;
+};
+
+/**
+ * Process uploaded files and return URLs
+ * @param {Object} files - Multer files object
+ * @returns {Object} Processed files with URLs
+ */
+const processUploadedFiles = (files) => {
+  const processed = {};
+
+  if (!files) return processed;
+
+  Object.keys(files).forEach((fieldName) => {
+    if (files[fieldName] && files[fieldName].length > 0) {
+      const multipleFields = [
+        "portfolioImages",
+        "pricePackages",
+        "photos",
+        "images",
+      ];
+      if (multipleFields.includes(fieldName)) {
+        processed[fieldName] = files[fieldName].map((file) => getFileUrl(file));
+      } else {
+        processed[fieldName] = getFileUrl(files[fieldName][0]);
+      }
+    }
+  });
+
+  return processed;
+};
+
+/**
+ * Delete file (works for both S3 and local)
+ * @param {string} filePathOrUrl - File path or S3 URL
+ * @param {string} baseDir - Base directory for local files
+ * @returns {Promise<boolean>} Success status
+ */
+const deleteFile = async (filePathOrUrl, baseDir = path.join(__dirname, "../../..")) => {
+  if (!filePathOrUrl) return false;
+
+  // Check if it's an S3 URL
+  if (isS3Url(filePathOrUrl)) {
+    return await deleteFromS3ByUrl(filePathOrUrl);
+  }
+
+  // Local file deletion
+  try {
+    const fullPath = path.join(baseDir, "public", filePathOrUrl);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+      return true;
+    }
+  } catch (error) {
+    console.error("Error deleting file:", error);
+  }
+  return false;
+};
+
+// File filters
+const imageFilter = (req, file, cb) => {
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+  ];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error("Only image files are allowed (jpeg, jpg, png, gif, webp)"),
+      false
+    );
+  }
+};
+
+const mediaFilter = (req, file, cb) => {
+  if (
+    file.mimetype.startsWith("image/") ||
+    file.mimetype.startsWith("video/")
+  ) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image and video files are allowed"), false);
+  }
+};
+
+const documentFilter = (req, file, cb) => {
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only images and documents are allowed"), false);
+  }
+};
+
+const generalFilter = (req, file, cb) => {
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("File type not allowed. Only images, PDFs, and documents are accepted."), false);
+  }
+};
+
+// Create S3 storage instance
+const s3Storage = createS3Storage();
+
+// Pre-configured multer instances
+const uploadImage = multer({
+  storage: s3Storage,
+  fileFilter: imageFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
+
+const uploadMedia = multer({
+  storage: s3Storage,
+  fileFilter: mediaFilter,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for videos
+});
+
+const uploadDocument = multer({
+  storage: s3Storage,
+  fileFilter: documentFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
+
+const uploadGeneral = multer({
+  storage: s3Storage,
+  fileFilter: generalFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
+
+// Pre-configured upload middlewares
+const uploadVendorFiles = uploadGeneral.fields([
+  { name: "portfolioImages", maxCount: 10 },
+  { name: "businessLogo", maxCount: 1 },
+  { name: "pricePackages", maxCount: 5 },
+  { name: "commercialRecordImage", maxCount: 1 },
+  { name: "nationalIdImage", maxCount: 1 },
+  { name: "cv", maxCount: 1 },
+  { name: "profileFile", maxCount: 1 },
+]);
+
+const uploadUserProfile = uploadImage.fields([
+  { name: "businessLogo", maxCount: 1 },
+  { name: "avatar", maxCount: 1 },
+  { name: "nationalIdImage", maxCount: 1 },
+  { name: "commercialRecordImage", maxCount: 1 },
+  { name: "portfolioImages", maxCount: 10 },
+  { name: "pricePackages", maxCount: 10 },
+]);
+
+const uploadPostEventMedia = uploadMedia.fields([
+  { name: "photos", maxCount: 20 },
+  { name: "video", maxCount: 1 },
+  { name: "images", maxCount: 10 },
+]);
+
+module.exports = {
+  // S3 client and config
+  s3Client,
+  isS3Configured,
+
+  // Direct S3 operations
+  uploadToS3,
+  uploadMultipleToS3,
+  deleteFromS3,
+  deleteFromS3ByUrl,
+  getSignedUrlForKey,
+  getS3Url,
+  getKeyFromUrl,
+  isS3Url,
+
+  // Multer storage
+  s3Storage,
+  createS3Storage,
+  createLocalStorage,
+
+  // File utilities
+  generateFilename,
+  getFolderForField,
+  getFileUrl,
+  processUploadedFiles,
+  deleteFile,
+
+  // File filters
+  imageFilter,
+  mediaFilter,
+  documentFilter,
+  generalFilter,
+
+  // Pre-configured multer instances
+  uploadImage,
+  uploadMedia,
+  uploadDocument,
+  uploadGeneral,
+
+  // Pre-configured upload middlewares
+  uploadVendorFiles,
+  uploadUserProfile,
+  uploadPostEventMedia,
+  uploadLogo: uploadImage.single("logo"),
+  uploadTemplateImage: uploadImage.single("templateImage"),
+  uploadServiceImage: uploadImage.single("image"),
+  uploadAvatar: uploadImage.single("avatar"),
+  uploadMultipleImages: uploadImage.array("images", 10),
+  uploadPortfolio: uploadImage.array("portfolioImages", 20),
+};

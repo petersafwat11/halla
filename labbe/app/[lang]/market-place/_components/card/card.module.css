@@ -1,0 +1,166 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /* max-width: 290px; */
+  border-radius: 9.405px;
+  box-shadow: 0 0.784px 2.351px 0 rgba(0, 0, 0, 0.1),
+    0 0.784px 1.568px -0.784px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 219px;
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ratingBadge {
+  position: absolute;
+  top: 9.406px;
+  left: 8.622px;
+  display: flex;
+  align-items: center;
+  gap: 3.135px;
+  padding: 6.27px;
+  border-radius: 6.27px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(17.243px);
+}
+
+.ratingValue {
+  color: #fff;
+  font-family: "Segoe UI", -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 15.676px;
+}
+
+.reviewsCount {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 15.676px;
+  letter-spacing: 0.011px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12.541px;
+}
+
+.title {
+  color: #2c2c2c;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21.946px;
+  margin: 0;
+}
+
+.locationContainer {
+  display: flex;
+  align-items: center;
+  gap: 6.27px;
+  justify-content: flex-end;
+}
+
+.location {
+  color: #2c2c2c;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.06px;
+}
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.tag {
+  display: inline-flex;
+  padding: 3.135px 6.27px;
+  border-radius: 7837.054px;
+  background: #f2f1ed;
+  color: #2c2c2c;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 6.27px;
+  border-top: 0.784px solid #f2f2f2;
+}
+
+.price {
+  color: #c28e5c;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0.014px;
+}
+
+.callButton {
+  display: flex;
+  height: 32px;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-radius: 4px;
+  background: #c28e5c;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 12.541px;
+  letter-spacing: 0.047px;
+  transition: background 0.2s ease;
+}
+
+.callButton:hover {
+  background: #a67749;
+}
+
+.callButton:active {
+  background: #8a6541;
+}
+
+@media (max-width: 600px) {
+  .card {
+    max-width: 100%;
+  }
+
+  .imageContainer {
+    height: 180px;
+  }
+}

@@ -1,0 +1,105 @@
+/* Managed Service Card */
+.managedServiceCard {
+  background: linear-gradient(145deg, var(--color-primary-50) 0%, var(--color-primary-100) 100%);
+  border-radius: var(--radius-20);
+  padding: 1.5rem;
+  border: 2px solid var(--color-primary-200);
+  box-shadow: 0 8px 32px rgba(194, 142, 92, 0.12);
+}
+
+.managedHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.managedIcon {
+  font-size: 2.5rem;
+  color: var(--color-primary-500);
+  flex-shrink: 0;
+}
+
+.managedTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: var(--color-secondary-500);
+  font-family: var(--font-ar);
+}
+
+.managedDescription {
+  font-size: 1.2rem;
+  color: var(--color-accent-500);
+  margin: 0;
+  font-family: var(--font-ar);
+}
+
+.managedBadge {
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+  color: var(--color-natural-50);
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-8);
+  margin-left: auto;
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.35);
+  flex-shrink: 0;
+  font-family: var(--font-ar);
+}
+
+.managedFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--color-natural-50);
+  border-radius: var(--radius-12);
+  border: 1px solid var(--color-primary-200);
+}
+
+.managedFeatureItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  color: var(--color-secondary-500);
+  font-family: var(--font-ar);
+}
+
+.managedFeatureIcon {
+  color: var(--color-primary-500);
+  font-size: 1rem;
+}
+
+/* WhatsApp — brand color kept intentionally */
+.whatsappButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: none;
+  border-radius: var(--radius-12);
+  background: #25d366;
+  color: var(--color-natural-50);
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: var(--font-ar);
+  cursor: pointer;
+  transition: all 250ms ease;
+}
+
+.whatsappButton:hover {
+  background: #128c7e;
+  transform: translateY(-2px);
+}
+
+.whatsappIcon { font-size: 1.6rem; }
+
+@media (max-width: 768px) {
+  .managedHeader { flex-wrap: wrap; }
+  .managedBadge { margin-left: 0; margin-top: 0.5rem; }
+}

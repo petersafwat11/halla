@@ -1,0 +1,145 @@
+{
+  "header": {
+    "welcome": "مرحباً بك، {{name}}! 👋",
+    "subtitle": "إليك نظرة سريعة على فعالياتك ودعواتك"
+  },
+  "stats": {
+    "totalHosts": "إجمالي المضيفين",
+    "activeVendors": "المزودون النشطون",
+    "activeEvents": "المناسبات النشطة",
+    "attendanceRate": "معدل الحضور",
+    "unsubscribed": "غير مشتركين",
+    "pending": "في الانتظار",
+    "activeNow": "نشط الآن",
+    "guestConfirming": "معدل تأكيد الضيوف",
+    "newThisPeriod": "جديد هذا الشهر",
+    "totalEvents": "إجمالي",
+    "subscriptionStatus": "حالة الاشتراك",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "noPlan": "لا يوجد خطة",
+    "moderators": "المشرفين",
+    "activeModerators": "نشط",
+    "totalVendors": "إجمالي المزودين",
+    "totalEventsCard": "إجمالي المناسبات",
+    "activeSubscriptions": "الاشتراكات النشطة",
+    "openTickets": "الشكاوى المفتوحة",
+    "resolved": "محلولة",
+    "pendingApproval": "قيد الموافقة",
+    "byPlan": "حسب الخطة",
+    "resolvedThisPeriod": "محلولة هذه الفترة"
+  },
+  "charts": {
+    "guestResponse": "استجابة الضيوف",
+    "revenue": "الإيرادات",
+    "tickets": "الشكاوى",
+    "confirmed": "موافق",
+    "declined": "معتذر",
+    "pending": "لم يرد",
+    "host": "المضيف",
+    "addons": "الإضافات",
+    "lite": "لايت",
+    "pro": "برو",
+    "elite": "إليت",
+    "resolved": "محلولة",
+    "open": "مفتوحة",
+    "thisperiod": "هذه الفترة",
+    "previousperiod": "الفترة السابقة",
+    "change": "التغيير",
+    "currency": "العملة"
+  },
+  "bottom": {
+    "topVendors": "التجار الأكثر تميزاً",
+    "activitySummary": "موجز النشاط",
+    "clicks": "نقرات"
+  },
+  "actions": {
+    "title": "الإجراءات السريعة",
+    "createEvent": "إنشاء مناسبة",
+    "addModerator": "إضافة مشرف",
+    "createTicket": "إنشاء شكوى"
+  },
+  "createTicket": {
+    "title": "إنشاء شكوى دعم",
+    "username": "اسم المستخدم",
+    "usernamePlaceholder": "ادخل اسم المستخدم",
+    "number": "رقم الهاتف",
+    "numberPlaceholder": "5xx xxx xxx",
+    "type": "نوع الشكوى",
+    "message": "الرسالة",
+    "messagePlaceholder": "اكتب رسالتك هنا...",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "creating": "جاري الإنشاء...",
+    "success": "تم إنشاء الشكوى بنجاح",
+    "error": "فشل في إنشاء الشكوى"
+  },
+  "table": {
+    "title": "جدول البيانات",
+    "searchPlaceholder": "بحث...",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "في الانتظار",
+      "resolved": "محلول",
+      "open": "مفتوح",
+      "closed": "مغلق",
+      "approved": "موافق عليه",
+      "rejected": "مرفوض",
+      "suspended": "معلق"
+    }
+  },
+  "tables": {
+    "tickets": {
+      "title": "الشكاوى",
+      "columns": {
+        "number": "رقم الشكوى",
+        "username": "اسم المستخدم",
+        "type": "النوع",
+        "message": "الرسالة",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإنشاء"
+      }
+    },
+    "vendors": {
+      "title": "المزودون المعلقون",
+      "columns": {
+        "ownerFullName": "اسم المالك",
+        "email": "البريد الإلكتروني",
+        "phoneNumber": "رقم الهاتف",
+        "status": "الحالة"
+      }
+    },
+    "recentHosts": {
+      "title": "العملاء الجدد",
+      "columns": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "status": "الحالة",
+        "createdAt": "التاريخ"
+      },
+      "status": {
+        "active": "نشط",
+        "pending": "قيد الانتظار",
+        "suspended": "موقوف"
+      }
+    },
+    "recentEvents": {
+      "title": "المناسبات الأخيرة",
+      "columns": {
+        "title": "العنوان",
+        "host": "المضيف",
+        "date": "التاريخ",
+        "status": "الحالة"
+      },
+      "status": {
+        "scheduled": "مجدول",
+        "live": "مباشر",
+        "completed": "منتهي",
+        "draft": "مسودة"
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "header": {
+    "title": "Payments",
+    "subtitle": "Monitor and manage platform events",
+    "dateRange": "Date Range"
+  },
+  "stats": {
+    "currentMonthRevenue": "Current Month Revenue",
+    "lastMonthRevenue": "Last Month Revenue",
+    "totalTransactions": "Total Transactions"
+  },
+  "table": {
+    "title": "Transactions List",
+    "searchPlaceholder": "Search transactions...",
+    "filter": "Filter",
+    "export": "Export",
+    "columns": {
+      "id": "Transaction ID",
+      "name": "Name",
+      "amount": "Amount",
+      "currency": "Currency",
+      "planType": "Plan Type",
+      "paymentMethod": "Payment Method",
+      "status": "Status",
+      "createdAt": "Created Date"
+    },
+    "status": {
+      "successful": "Successful",
+      "pending": "Pending",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "dateRange": {
+    "all": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  }
+}

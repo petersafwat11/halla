@@ -1,0 +1,48 @@
+{
+  "pageTitle": "Plans", "loading": "Loading plans...",
+  "planFamilies": { "basic": "Halaa Basic", "premium": "Halaa Premium" },
+  "planFamilyDescriptions": {
+    "basic": "Self-managed — you handle everything",
+    "premium": "Fully managed by our team"
+  },
+  "billingTypes": { "event": "Per Event", "monthly": "Monthly Pool" },
+  "billingTypeDescriptions": {
+    "event": "1 event — valid 90 days",
+    "monthly": "Invite Pool — unlimited events — 30 days"
+  },
+  "inviteSelector": { "label": "Select invites", "poolLabel": "Invite pool", "invites": "invites" },
+  "currency": "SAR",
+  "compensation": { "title": "Free Compensation Invites", "invites": "invites" },
+  "features": { "title": "Included Features" },
+  "buttons": { "subscribeNow": "Subscribe Now" },
+  "errors": { "loadFailed": "Failed to load plans. Please try again.", "selectPlan": "Please select a plan." },
+  "summary": {
+    "title": "Order Summary", "planDetails": "Plan Details",
+    "invitePool": "Invite Pool", "validDays": "Valid for", "days": "days",
+    "oneEvent": "1 event", "unlimitedEvents": "Unlimited events",
+    "compensationInvites": "compensation invites",
+    "activateButton": "Activate Subscription", "activating": "Activating...", "total": "Total",
+    "discountCode": {
+      "title": "Discount Code",
+      "placeholder": "Enter discount code",
+      "apply": "Apply",
+      "applied": "Applied",
+      "success": "Discount of {{amount}} SAR applied"
+    },
+    "paymentSummary": {
+      "title": "Payment Summary",
+      "planPrice": "Plan Price",
+      "discount": "Discount",
+      "total": "Total"
+    },
+    "invitesLabel": "invites",
+    "currency": "SAR",
+    "billingPeriod": "Billing Period:",
+    "termsNotice": "By clicking Activate Subscription, you agree to our Terms of Service and Privacy Policy",
+    "invalidCode": "Invalid discount code",
+    "subscriptionSuccess": "Subscription activated!",
+    "activeSubscription": "You already have an active subscription. You can create an event now.",
+    "subscriptionFailed": "Failed to activate subscription. Please try again."
+  },
+  "toasts": { "success": "Subscription activated!", "failed": "Failed to activate. Please try again." }
+}

@@ -1,0 +1,43 @@
+{
+  "table": {
+    "columns": {
+      "eventTitle": "Event Name",
+      "eventMaker": "Event Organizer",
+      "eventType": "Event Type",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "noResponse": "No Response",
+      "dateTime": "Date & Time",
+      "status": "Status"
+    },
+    "filter": "Filter",
+    "export": "Export",
+    "eventsList": "Events List",
+    "exportSuccess": "Data exported successfully",
+    "exportError": "Failed to export data"
+  },
+  "eventTypes": {
+    "birthday": "Birthday",
+    "wedding": "Wedding",
+    "graduation": "Graduation",
+    "conference": "Conference",
+    "meeting": "Meeting",
+    "party": "Party",
+    "other": "Other"
+  },
+  "eventStatus": {
+    "published": "Published",
+    "draft": "Draft",
+    "ended": "Ended",
+    "suspended": "Suspended"
+  },
+  "errors": {
+    "noEventId": "Event ID not found",
+    "noToken": "Authentication token not found",
+    "eventNotFound": "Event not found or you don't have permission to delete it",
+    "unauthorized": "You are not authorized to perform this action",
+    "deleteError": "Failed to delete event. Please try again."
+  },
+  "confirmDelete": "Are you sure you want to delete this event? This action cannot be undone.",
+  "deleteSuccess": "Event deleted successfully"
+}

@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "Halla",
+    "slug": "halla",
+    "version": "1.0.0",
+    "scheme": "halla",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "android": {
+      "package": "com.halla.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.halla.app",
+      "supportsTablet": true
+    },
+    "plugins": [
+      "expo-localization",
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to help you select event locations."
+        }
+      ],
+      "expo-splash-screen"
+    ],
+    "newArchEnabled": true,
+    "sdkVersion": "54.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "d5570c5a-d11b-4716-81d6-108939d72b22"
+      }
+    },
+    "owner": "petersafwat"
+  }
+}

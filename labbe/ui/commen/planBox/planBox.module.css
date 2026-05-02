@@ -1,0 +1,77 @@
+.planBox {
+  background: var(--bg-artboard);
+  border: 1px solid var(--color-primary-500);
+  border-radius: 8px;
+  padding: 1.3rem;
+  width: 215px;
+  max-width: 100%;
+  min-height: 116px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.planBox:hover {
+  border-color: var(--color-primary-600);
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.15);
+}
+
+@media (max-width: 1023px) {
+  .planBox {
+    width: 100%;
+  }
+}
+
+.planHeader {
+  display: flex;
+  padding: 3px 8px;
+  align-items: center;
+  gap: 8px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-primary-500);
+  color: var(--color-primary-600);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06px;
+}
+
+.planDesc {
+  color: var(--color-primary-500);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.upgradeBtn {
+  display: flex;
+  width: 100%;
+  max-width: 189px;
+  padding: 10px 0px;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.2s;
+  border-radius: 6px;
+  background: var(--color-primary-500);
+  color: var(--color-natural-100);
+  font-family: Inter;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.upgradeBtn:hover {
+  background: var(--color-primary-400);
+}
+
+@media (max-width: 1023px) {
+  .upgradeBtn {
+    max-width: 100%;
+  }
+}

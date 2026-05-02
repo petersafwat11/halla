@@ -1,0 +1,259 @@
+.templatesContainer {
+  padding: 0 4rem;
+  margin-bottom: 2.4rem;
+}
+
+.templatesCard {
+  display: flex;
+  padding: 2.4rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 3.9rem;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+  align-self: stretch;
+}
+
+.title {
+  color: #2c2c2c;
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 3.2rem;
+  margin: 0;
+}
+
+.subtitle {
+  color: #656565;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+  margin: 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  /* align-items: flex-end; */
+  gap: 1.6rem;
+  width: 100%;
+}
+
+.tabs {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 2rem;
+  border-bottom: 1px solid #dfdfdf;
+  padding-bottom: 0.4rem;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #c28e5c transparent;
+}
+
+.tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+  background: #c28e5c;
+  border-radius: 2px;
+}
+
+.tabs::-webkit-scrollbar-thumb:hover {
+  background: #b07d4a;
+}
+
+.tab {
+  background: none;
+  border: none;
+  color: #656565;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+  letter-spacing: 0.056px;
+  cursor: pointer;
+  padding: 0.8rem 0;
+  position: relative;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: #c28e5c;
+}
+
+.tab.active {
+  color: #c28e5c;
+  font-weight: 700;
+  line-height: 2rem;
+  letter-spacing: 0.035px;
+}
+
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -0.6rem;
+  inset-inline-start: 0;
+  width: 100%;
+  height: 2px;
+  background: #c28e5c;
+}
+
+.templatesGrid {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.4rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.templateCard {
+  width: 154px;
+  height: 187px;
+  box-shadow: 0 0.779px 2.337px rgba(0, 0, 0, 0.1),
+    0 0.779px 1.558px -0.779px rgba(0, 0, 0, 0.1);
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.templateCard:hover {
+  transform: translateY(-4px);
+}
+
+.templateCardInner {
+  display: flex;
+  width: 154px;
+  height: 187px;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 4.66px;
+  background: #fffaea;
+  overflow: hidden;
+}
+
+.templateImage {
+  width: 129px;
+  height: 172px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin: 8px auto;
+}
+
+.pagination {
+  display: flex;
+  padding: 0.8rem;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  transition: background 0.2s, width 0.2s;
+  cursor: pointer;
+}
+
+.activeDot {
+  width: 8px;
+  background: #c28e5c;
+}
+
+@media (max-width: 768px) {
+  .templatesContainer {
+    padding: 0 2.4rem;
+  }
+
+  .templatesCard {
+    padding: 1.6rem;
+    gap: 2rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+    line-height: 2.4rem;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+  }
+
+  .templatesGrid {
+    gap: 1.2rem;
+    justify-content: center;
+  }
+
+  .templateCard {
+    width: 120px;
+    height: 146px;
+  }
+
+  .templateCardInner {
+    width: 120px;
+    height: 146px;
+  }
+
+  .templateImage {
+    width: 100px;
+    height: 133px;
+  }
+}
+
+@media (max-width: 550px) {
+  .templatesContainer {
+    padding: 0 1.6rem;
+  }
+
+  .templatesCard {
+    padding: 1.6rem;
+  }
+
+  .title {
+    font-size: 1.4rem;
+    line-height: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+  }
+
+  .templatesGrid {
+    gap: 0.86rem;
+  }
+
+  .templateCard {
+    width: 70.824px;
+    height: 86px;
+  }
+
+  .templateCardInner {
+    width: 71px;
+    height: 86px;
+    border-radius: 2.143px;
+  }
+
+  .templateImage {
+    width: 59px;
+    height: 79px;
+    border-radius: 3.679px;
+    margin: 3px auto;
+  }
+}

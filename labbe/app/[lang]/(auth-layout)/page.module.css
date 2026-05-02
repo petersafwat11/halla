@@ -1,0 +1,81 @@
+.container {
+  width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Custom scrollbar styling for the whole page */
+.container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+  background: #5a4a2a;
+}
+
+/* Firefox scrollbar styling */
+.container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) #f1f1f1;
+}
+
+.left {
+  width: 55%;
+  height: 100%;
+}
+.right {
+  width: 45%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar for right panel */
+.right::-webkit-scrollbar {
+  width: 6px;
+}
+
+.right::-webkit-scrollbar-track {
+  background: #f9f9f9;
+}
+
+.right::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 3px;
+}
+
+.right::-webkit-scrollbar-thumb:hover {
+  background: #5a4a2a;
+}
+@media screen and (max-width: 1024px) {
+  .container {
+    height: 100vh;
+    max-height: 100vh;
+  }
+  
+  .left,
+  .right {
+    width: 100%;
+  }
+  .left {
+    display: none;
+  }
+  
+  .right {
+    overflow-y: auto;
+  }
+}

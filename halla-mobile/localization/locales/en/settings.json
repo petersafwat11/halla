@@ -1,0 +1,72 @@
+{
+  "title": "Settings",
+  "tabs": {
+    "account": "Account Settings",
+    "notifications": "Notifications",
+    "about": "About Us",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "logout": "Logout"
+  },
+  "account": {
+    "personalInfo": "Personal Information",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "sendCode": "Send Code",
+    "sending": "Sending...",
+    "verifyCode": "Verify Code",
+    "verifying": "Verifying...",
+    "changePassword": "Change Password",
+    "changePasswordDescription": "Update your password to keep your account secure",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter current password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "updateSuccess": "Account updated successfully",
+    "updateError": "Failed to update account",
+    "verificationCodeSent": "Verification code sent to your email",
+    "verificationCodeError": "Failed to send verification code",
+    "invalidVerificationCode": "Invalid verification code",
+    "emailVerified": "Email verified successfully",
+    "verificationError": "Failed to verify email"
+  },
+  "notifications": {
+    "appNotifications": "App Notifications",
+    "appNotificationsDescription": "Never miss any notification with instant in-app alerts enabled",
+    "emailNotifications": "Email Notifications",
+    "emailNotificationsDescription": "Get email updates about what's happening while you're offline",
+    "smsNotifications": "SMS Notifications",
+    "smsNotificationsDescription": "Receive important alerts via text message",
+    "eventUpdates": "Event Updates",
+    "eventReminders": "Event Reminders",
+    "guestResponses": "Guest Responses",
+    "guestCheckIns": "Guest Check-ins",
+    "subscriptionAlerts": "Subscription Alerts",
+    "systemUpdates": "System Updates",
+    "invitationReports": "Invitation Reports",
+    "guestConfirmations": "Guest Confirmations",
+    "importantUpdates": "Important Updates",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "updateSuccess": "Notification preferences updated successfully",
+    "updateError": "Failed to update notification preferences"
+  },
+  "language": {
+    "title": "Language",
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "privacy": {
+    "title": "Privacy",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
+  }
+}

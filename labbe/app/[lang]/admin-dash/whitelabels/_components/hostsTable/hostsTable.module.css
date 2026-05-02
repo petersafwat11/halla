@@ -1,0 +1,113 @@
+.container {
+  background: #fff;
+  border-radius: 1.2rem;
+  padding: 2rem;
+  border: 1px solid #e0e0e0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.6rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.icon {
+  color: #3498db;
+  font-size: 2rem;
+}
+
+.title {
+  font-family: "Cairo", sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2c2c2c;
+  margin: 0;
+}
+
+.count {
+  font-family: "Cairo", sans-serif;
+  font-size: 1.4rem;
+  color: #666;
+}
+
+.emptyState {
+  padding: 3rem;
+  text-align: center;
+}
+
+.emptyState p {
+  font-family: "Cairo", sans-serif;
+  font-size: 1.4rem;
+  color: #666;
+  margin: 0;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 1.2rem;
+  text-align: right;
+  font-family: "Cairo", sans-serif;
+  font-size: 1.4rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.table th {
+  background: #f9f9f9;
+  font-weight: 600;
+  color: #333;
+}
+
+.table td {
+  color: #666;
+}
+
+.table tr:hover {
+  background: #fafafa;
+}
+
+.statusBadge {
+  display: inline-flex;
+  padding: 0.3rem 1rem;
+  border-radius: 9999px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.viewButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.6rem;
+  background: #fff;
+  cursor: pointer;
+  font-family: "Cairo", sans-serif;
+  font-size: 1.3rem;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.viewButton:hover {
+  background: #f5f5f5;
+  border-color: #c28e5c;
+  color: #c28e5c;
+}

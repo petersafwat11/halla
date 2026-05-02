@@ -1,0 +1,43 @@
+{
+  "currentPlan": { "title": "الباقة الحالية", "events": "مناسبات", "invites": "دعوات", "daysRemaining": "أيام متبقية" },
+  "pageTitle": "اختر باقتك",
+  "pageSubtitle": "اختر الباقة المناسبة لمناسبتك",
+  "loading": "جار التحميل...",
+  "planFamilies": { "basic": "هلا بيسك", "premium": "هلا بريميوم" },
+  "planFamilyDescriptions": {
+    "basic": "تدير كل شيء بنفسك — نحن نتولى الجانب التقني",
+    "premium": "فريقنا يدير كل شيء عنك"
+  },
+  "billingTypes": { "event": "مناسبة واحدة", "monthly": "اشتراك شهري" },
+  "billingTypeLabels": { "event": "/ مناسبة", "monthly": "/ شهر" },
+  "billingTypeDescriptions": {
+    "event": "مناسبة واحدة — صالحة لـ 90 يوم",
+    "monthly": "رصيد دعوات — مناسبات غير محدودة"
+  },
+  "currency": "ر.س",
+  "inviteSelector": { "label": "اختر عدد الدعوات", "poolLabel": "رصيد الدعوات", "invites": "دعوة" },
+  "planLimits": { "invitesPerEvent": "دعوة/مناسبة", "invitePool": "رصيد الدعوات" },
+  "features": { "title": "المميزات المشمولة" },
+  "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة" },
+  "buttons": { "subscribeNow": "اشترك الآن" },
+  "addons": {
+    "title": "الإضافات", "subtitle": "حسّن باقتك بميزات إضافية اختيارية",
+    "extraInvites": { "title": "دعوات إضافية", "description": "أضف دعوات أكثر إلى باقتك" },
+    "extraReminders": { "title": "تذكيرات إضافية", "description": "أرسل رسائل تذكير إضافية" },
+    "designTemplate": { "title": "قالب تصميم", "description": "تصميم دعوة احترافي من فريقنا" },
+    "addButton": "إضافة", "removeButton": "إزالة", "addedBadge": "مُضاف"
+  },
+  "infoNote": "سيتواصل معك فريقنا بعد الاشتراك لإتمام الدفع والبدء.",
+  "errors": { "loadFailed": "فشل تحميل الباقات. حاول مرة أخرى.", "selectPlan": "الرجاء اختيار باقة للمتابعة." },
+  "toasts": {
+    "subscriptionCreated": "تم تفعيل الاشتراك بنجاح!",
+    "alreadyActive": "لديك اشتراك نشط بالفعل.",
+    "subscriptionFailed": "فشل تفعيل الاشتراك. حاول مرة أخرى."
+  },
+  "summary": {
+    "title": "ملخص الطلب", "planDetails": "تفاصيل الباقة",
+    "invitePool": "رصيد الدعوات", "validDays": "صالحة لـ", "days": "يوم",
+    "compensationInvites": "دعوات تعويضية",
+    "oneEvent": "مناسبة واحدة", "unlimitedEvents": "مناسبات غير محدودة"
+  }
+}

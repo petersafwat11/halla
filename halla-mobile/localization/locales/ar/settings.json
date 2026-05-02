@@ -1,0 +1,72 @@
+{
+  "title": "الإعدادات",
+  "tabs": {
+    "account": "إعدادات الحساب",
+    "notifications": "الإشعارات",
+    "about": "نبذة عنا",
+    "privacy": "سياسة الخصوصية",
+    "terms": "الشروط والأحكام",
+    "logout": "تسجيل الخروج"
+  },
+  "account": {
+    "personalInfo": "المعلومات الشخصية",
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "أدخل اسمك الكامل",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "sendCode": "إرسال الرمز",
+    "sending": "جاري الإرسال...",
+    "verifyCode": "تحقق من الرمز",
+    "verifying": "جاري التحقق...",
+    "changePassword": "تغيير كلمة المرور",
+    "changePasswordDescription": "قم بتحديث كلمة المرور للحفاظ على أمان حسابك",
+    "currentPassword": "كلمة المرور الحالية",
+    "currentPasswordPlaceholder": "أدخل كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "confirmPasswordPlaceholder": "أكد كلمة المرور الجديدة",
+    "cancel": "إلغاء",
+    "saveChanges": "حفظ التعديلات",
+    "saving": "جاري الحفظ...",
+    "updateSuccess": "تم تحديث الحساب بنجاح",
+    "updateError": "فشل تحديث الحساب",
+    "verificationCodeSent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني",
+    "verificationCodeError": "فشل إرسال رمز التحقق",
+    "invalidVerificationCode": "رمز التحقق غير صحيح",
+    "emailVerified": "تم التحقق من البريد الإلكتروني بنجاح",
+    "verificationError": "فشل التحقق من البريد الإلكتروني"
+  },
+  "notifications": {
+    "appNotifications": "الإشعارات المرسلة على التطبيق",
+    "appNotificationsDescription": "لا تفوت أي إشعار مع تمكين خيار الإشعارات الفورية داخل التطبيق",
+    "emailNotifications": "الإشعارات المرسلة على البريد الإلكتروني",
+    "emailNotificationsDescription": "احصل على رسائل بريد إلكتروني لمعرفة ما يحدث أثناء عدم الاتصال",
+    "smsNotifications": "إشعارات الرسائل النصية",
+    "smsNotificationsDescription": "استقبل التنبيهات المهمة عبر الرسائل النصية",
+    "eventUpdates": "تحديثات الفعاليات",
+    "eventReminders": "تذكيرات الفعاليات",
+    "guestResponses": "ردود الضيوف",
+    "guestCheckIns": "تسجيل دخول الضيوف",
+    "subscriptionAlerts": "تنبيهات الاشتراك",
+    "systemUpdates": "تحديثات النظام",
+    "invitationReports": "تقارير الدعوات",
+    "guestConfirmations": "تأكيدات الضيوف",
+    "importantUpdates": "تحديثات مهمة",
+    "cancel": "إلغاء",
+    "saveChanges": "حفظ التعديلات",
+    "saving": "جاري الحفظ...",
+    "updateSuccess": "تم تحديث إعدادات الإشعارات بنجاح",
+    "updateError": "فشل تحديث إعدادات الإشعارات"
+  },
+  "language": {
+    "title": "اللغة",
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "privacy": {
+    "title": "الخصوصية",
+    "privacyPolicy": "سياسة الخصوصية",
+    "termsOfService": "شروط الخدمة"
+  }
+}

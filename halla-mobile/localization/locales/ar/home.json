@@ -1,0 +1,27 @@
+{
+  "welcome": "مرحباً",
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "stats": {
+      "totalEvents": "إجمالي المناسبات",
+      "upcomingEvents": "المناسبات القادمة",
+      "completedEvents": "المناسبات المكتملة",
+      "all": "الكل",
+      "activeEvents": "النشطة",
+      "endedEvents": "المنتهية",
+      "draftEvents": "المسودات"
+    },
+    "submitTemplate": {
+      "successTitle": "تم",
+      "successMessage": "تم إرسال القالب للموافقة",
+      "errorTitle": "خطأ",
+      "errorMessage": "فشل في إرسال القالب"
+    }
+  },
+  "quickActions": {
+    "title": "الإجراءات السريعة",
+    "createEvent": "إنشاء مناسبة",
+    "viewEvents": "عرض جميع المناسبات",
+    "manageGuests": "إدارة الضيوف"
+  }
+}

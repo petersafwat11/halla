@@ -1,0 +1,95 @@
+{
+  "pageTitle": "الخدمات",
+  "pageSubtitle": "إليك نظرة سريعة على فعالياتك ودعواتك",
+  "buttons": {
+    "addService": "إضافة خدمة",
+    "complaints": "الشكاوى",
+    "promoteProfile": "ترويج الصفحة",
+    "available": "متاحة",
+    "unavailable": "غير متاحة",
+    "delete": "حذف"
+  },
+  "search": {
+    "placeholder": "ابحث عن خدمة"
+  },
+  "stats": {
+    "totalRating": "التقييم الكلي",
+    "inactiveServices": "الخدمات غير النشطة",
+    "activeServices": "الخدمات النشطة",
+    "totalServices": "إجمالي الخدمات",
+    "increase": "زيادة",
+    "decrease": "انخفاض"
+  },
+  "service": {
+    "defaultTitle": "خدمة",
+    "price": "ريال"
+  },
+  "errors": {
+    "loadFailed": "فشل في تحميل الخدمات",
+    "boundary": "فشل في تحميل لوحة التحكم"
+  },
+  "confirmDelete": "هل أنت متأكد من حذف هذه الخدمة؟",
+  "noSearchResults": "لا توجد خدمات تطابق البحث",
+  "noServices": "لا توجد خدمات متاحة",
+  "filters": {
+    "allServices": "كل الخدمات"
+  },
+  "addServicePopup": {
+    "title": "إضافة خدمة جديدة",
+    "editTitle": "تعديل الخدمة",
+    "imageUpload": {
+      "label": "صورة الخدمة",
+      "placeholder": "ارفع صورة"
+    },
+    "serviceType": {
+      "label": "نوع الخدمة",
+      "placeholder": "اختر نوع الخدمة"
+    },
+    "serviceName": {
+      "label": "اسم الخدمة",
+      "placeholder": "ادخل اسم الخدمة"
+    },
+    "description": {
+      "label": "وصف الخدمة",
+      "placeholder": "ادخل وصف الخدمة"
+    },
+    "price": {
+      "label": "سعر الخدمة",
+      "placeholder": "ادخل سعر الخدمة"
+    },
+    "category": {
+      "label": "اختر التصنيف",
+      "placeholder": "اختر من التصنيفات أدناه"
+    },
+    "serviceTypes": {
+      "eventPlanning": "تخطيط الفعاليات",
+      "mediaProduction": "الإنتاج الإعلامي",
+      "giftsAndGiveaways": "الهدايا والتوزيعات",
+      "foodAndBeverages": "الأطعمة والمشروبات",
+      "beautyAndFashion": "التجميل والأزياء",
+      "logisticsAndDelivery": "اللوجستيات والتوصيل",
+      "corporateServices": "خدمات الشركات",
+      "supportServices": "خدمات الدعم",
+      "technicalServices": "الخدمات التقنية",
+      "soundLightingEntertainment": "الصوت والإضاءة والترفيه",
+      "hallsAndVenues": "القاعات والأماكن"
+    },
+    "tags": {
+      "weddings": "افراح",
+      "graduation": "تخرج",
+      "birthdays": "أعياد ميلاد",
+      "corporate": "فعاليات شركات",
+      "engagement": "خطوبة",
+      "babyShower": "استقبال مولود"
+    },
+    "submit": "إنشاء",
+    "update": "تحديث",
+    "cancel": "إلغاء",
+    "submitting": "جاري الإنشاء...",
+    "updating": "جاري التحديث...",
+    "success": "تم إضافة الخدمة بنجاح",
+    "updateSuccess": "تم تحديث الخدمة بنجاح",
+    "error": "فشل في إضافة الخدمة",
+    "updateError": "فشل في تحديث الخدمة"
+  }
+}

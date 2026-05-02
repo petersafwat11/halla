@@ -1,0 +1,104 @@
+.container {
+  width: 100%;
+  background: #f9f4ef;
+  min-height: 100vh;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  padding: 0;
+}
+
+.header {
+  display: flex;
+  padding: 24px 40px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.title {
+  color: #2c2c2c;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0;
+  text-align: right;
+  width: 100%;
+}
+
+.productList {
+  display: flex;
+  padding: 40px 40px 72px 40px;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+  direction: rtl;
+}
+
+.filtersAndGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 24px;
+  width: 100%;
+  justify-items: center;
+}
+
+.sidebar {
+  position: sticky;
+  top: 24px;
+  align-self: flex-start;
+}
+
+@media (max-width: 1400px) {
+  .servicesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  .productList {
+    flex-direction: column-reverse;
+    padding: 24px 20px 48px 20px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .servicesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .servicesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+.loading,
+.noResults {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  font-size: 16px;
+  color: #666;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+}

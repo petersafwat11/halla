@@ -1,0 +1,57 @@
+{
+  "title": "Marketplace",
+  "search": {
+    "placeholder": "Search for anything...",
+    "filter": "Filter"
+  },
+  "sections": {
+    "title": "Sections",
+    "all": "All",
+    "eventPlanning": "Event Planning",
+    "mediaProduction": "Media Production",
+    "giftsAndGiveaways": "Gifts & Giveaways",
+    "foodAndBeverages": "Food & Beverages"
+  },
+  "filters": {
+    "title": "Filters",
+    "section": "Section",
+    "allSections": "All Sections",
+    "region": "Region",
+    "allRegions": "All Regions",
+    "city": "City",
+    "allCities": "All Cities",
+    "districts": "Districts",
+    "priceRange": "Price Range",
+    "minPrice": "From",
+    "maxPrice": "To",
+    "rating": "Rating",
+    "allRatings": "All",
+    "4stars": "4+ stars",
+    "3stars": "3+ stars",
+    "2stars": "2+ stars",
+    "reset": "Reset",
+    "apply": "Apply Filters"
+  },
+  "vendor": {
+    "defaultName": "Service",
+    "defaultLocation": "Saudi Arabia",
+    "callNow": "Call Now",
+    "moreInfo": "More Info",
+    "users": "users",
+    "sar": "SAR",
+    "serviceDuration": "Service Duration",
+    "defaultDuration": "8-12 hours",
+    "priceRange": "Price Range",
+    "defaultPriceRange": "$2,500 - $8,000",
+    "whatsIncluded": "What's Included",
+    "engagementSession": "Engagement photo session",
+    "printRightsIncluded": "Print rights included",
+    "dronePhotography": "Drone photography options",
+    "digitalAlbum": "Digital photo album",
+    "fullDayCoverage": "Full day coverage",
+    "years": "years",
+    "contactInfo": "Contact Information"
+  },
+  "noResults": "No results found",
+  "loading": "Loading..."
+}

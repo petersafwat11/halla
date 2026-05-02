@@ -1,0 +1,750 @@
+/**
+ * Auth Routes
+ * Route definitions for authentication module
+ * @module modules/auth/auth.routes
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: User authentication and authorization endpoints
+ */
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+
+const express = require("express");
+const router = express.Router();
+
+// Controller
+const authController = require("./auth.controller");
+
+// Shared middleware (using existing during migration)
+const { protect } = require("../../shared/middleware/auth");
+const {
+  validateEmail,
+  validatePhone,
+  validatePassword,
+  validateStringLength,
+  validate,
+} = require("../../shared/middleware/validation");
+const {
+  loginSchema,
+  hostSignupSchema,
+  otpVerifySchema,
+} = require("./auth.validation");
+const {
+  authLimiter,
+  otpLimiter,
+  otpHourlyLimiter,
+  passwordResetLimiter,
+} = require("../../shared/middleware/rateLimiter");
+
+// File upload (using shared utils)
+const { uploadLogo, uploadVendorFiles } = require("../../shared/utils/fileUpload");
+
+const { AppError } = require("../../shared/errors");
+const catchAsync = require("../../shared/utils/catchAsync");
+const User = require("../../../models/UserModel");
+
+/**
+ * Check for duplicate email/phone during signup
+ */
+const checkDuplicates = catchAsync(async (req, res, next) => {
+  const { email, phoneNumber, mobile } = req.body;
+  const mobileToCheck = (mobile || phoneNumber || "").replace(/[^\d+]/g, "");
+  const normalizedEmail = email?.toLowerCase().trim();
+  const whitelabelId = req.user?.whitelabelId;
+
+  if (normalizedEmail) {
+    const query = { email: normalizedEmail };
+    if (whitelabelId) query.whitelabelId = whitelabelId;
+    const existing = await User.findOne(query).select("email").lean();
+    if (existing) return next(new AppError("This email address is already registered. Please use a different email or try logging in.", 409));
+  }
+
+  if (mobileToCheck) {
+    const query = { mobile: mobileToCheck };
+    if (whitelabelId) query.whitelabelId = whitelabelId;
+    const existing = await User.findOne(query).select("mobile").lean();
+    if (existing) return next(new AppError("This mobile number is already registered. Please use a different number or try logging in.", 409));
+  }
+
+  next();
+});
+
+const validateOTP = (req, res, next) => {
+  const { otp, code } = req.body;
+  const otpValue = otp || code;
+  if (!otpValue || !/^\d{4,6}$/.test(otpValue)) {
+    return next(new AppError("OTP must be 4-6 digits", 400));
+  }
+  next();
+};
+
+// ============================================
+// PUBLIC ROUTES
+// ============================================
+
+// Host Signup
+/**
+ * @swagger
+ * /auth/signup/host:
+ *   post:
+ *     summary: Register a new host account
+ *     description: Create a new host user account with email, password, and phone number
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SignupHostRequest'
+ *     responses:
+ *       201:
+ *         description: Host registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 token:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       409:
+ *         $ref: '#/components/responses/Conflict'
+ */
+router.post(
+  "/signup/host",
+  validate(hostSignupSchema),
+  checkDuplicates,
+  authController.hostSignup
+);
+
+// Vendor Signup
+/**
+ * @swagger
+ * /auth/signup/vendor:
+ *   post:
+ *     summary: Register a new vendor account
+ *     description: Create a new vendor account with business details and documents
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/SignupVendorRequest'
+ *     responses:
+ *       201:
+ *         description: Vendor registered successfully (pending approval)
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       409:
+ *         $ref: '#/components/responses/Conflict'
+ */
+router.post(
+  "/signup/vendor",
+  uploadVendorFiles,
+  validateEmail("email", { required: true }),
+  validatePhone("phoneNumber", { required: true }),
+  validatePassword("password", { required: true }),
+  validateStringLength("brandName", { required: true, min: 2, max: 100 }),
+  validateStringLength("ownerFullName", { required: true, min: 2, max: 100 }),
+  checkDuplicates,
+  authController.vendorSignup
+);
+
+// WhiteLabel Signup
+/**
+ * @swagger
+ * /auth/signup/whitelabel:
+ *   post:
+ *     summary: Register a new whitelabel account
+ *     description: Create a new whitelabel partner account
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneNumber:
+ *                 type: string
+ *               englishName:
+ *                 type: string
+ *               arabicName:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Whitelabel application submitted (pending approval)
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ */
+router.post(
+  "/signup/whitelabel",
+  uploadLogo,
+  validateEmail("email"),
+  validatePhone("phoneNumber"),
+  validatePassword("password"),
+  validateStringLength("englishName", { min: 2, max: 100 }),
+  validateStringLength("arabicName", { min: 2, max: 100 }),
+  checkDuplicates,
+  authController.whitelabelSignup
+);
+
+// ============================================
+// LOGIN ROUTES
+// ============================================
+
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticate user with email and password
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       401:
+ *         description: Invalid credentials
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post("/login", authLimiter, validate(loginSchema), authController.login);
+
+// ============================================
+// OTP ROUTES
+// ============================================
+
+/**
+ * @swagger
+ * /auth/otp/send-signup:
+ *   post:
+ *     summary: Send OTP for signup verification
+ *     description: Send SMS OTP to phone number for signup verification
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OTPRequest'
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post(
+  "/otp/send-signup",
+  otpLimiter,
+  otpHourlyLimiter,
+  validatePhone("phoneNumber"),
+  checkDuplicates,
+  authController.sendSignupOTP
+);
+
+/**
+ * @swagger
+ * /auth/otp/verify-signup:
+ *   post:
+ *     summary: Verify signup OTP
+ *     description: Verify OTP code for signup
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OTPVerifyRequest'
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post("/otp/verify-signup", authLimiter, validate(otpVerifySchema), authController.verifySignupOTP);
+
+/**
+ * @swagger
+ * /auth/otp/send-login:
+ *   post:
+ *     summary: Send OTP for login
+ *     description: Send SMS OTP to phone number for login
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OTPRequest'
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post(
+  "/otp/send-login",
+  otpLimiter,
+  otpHourlyLimiter,
+  validatePhone("phoneNumber"),
+  authController.sendLoginOTP
+);
+
+/**
+ * @swagger
+ * /auth/otp/verify-login:
+ *   post:
+ *     summary: Verify login OTP
+ *     description: Verify OTP code and login user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OTPVerifyRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post("/otp/verify-login", authLimiter, validate(otpVerifySchema), authController.verifyLoginOTP);
+
+/**
+ * @swagger
+ * /auth/otp/resend:
+ *   post:
+ *     summary: Resend OTP
+ *     description: Resend OTP code to phone number
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OTPRequest'
+ *     responses:
+ *       200:
+ *         description: OTP resent successfully
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post(
+  "/otp/resend",
+  otpLimiter,
+  otpHourlyLimiter,
+  validatePhone("phoneNumber"),
+  authController.resendOTP
+);
+
+// ============================================
+// PASSWORD ROUTES
+// ============================================
+
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Request password reset
+ *     description: Send password reset email to user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Password reset email sent
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post(
+  "/forgot-password",
+  passwordResetLimiter,
+  validateEmail("email"),
+  authController.forgotPassword
+);
+
+/**
+ * @swagger
+ * /auth/reset-password/{token}:
+ *   patch:
+ *     summary: Reset password
+ *     description: Reset password using token from email
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Password reset token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password]
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.patch(
+  "/reset-password/:token",
+  authLimiter,
+  authController.resetPassword
+);
+
+// ============================================
+// PASSWORD SETUP (Whitelabel - Post Approval)
+// ============================================
+
+/**
+ * @swagger
+ * /auth/validate-setup-token/{token}:
+ *   get:
+ *     summary: Validate setup token
+ *     description: Validate password setup token for whitelabel accounts
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ */
+router.get("/validate-setup-token/:token", authController.validateSetupToken);
+
+/**
+ * @swagger
+ * /auth/setup-password:
+ *   post:
+ *     summary: Setup password
+ *     description: Set initial password for whitelabel accounts
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, password]
+ *             properties:
+ *               token:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *     responses:
+ *       200:
+ *         description: Password setup successful
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post("/setup-password", authLimiter, authController.setupPassword);
+
+/**
+ * @swagger
+ * /auth/resend-setup-email:
+ *   post:
+ *     summary: Resend setup email
+ *     description: Resend password setup email for whitelabel accounts
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Setup email resent
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post(
+  "/resend-setup-email",
+  passwordResetLimiter,
+  validateEmail("email"),
+  authController.resendSetupEmail
+);
+
+// ============================================
+// LOGOUT
+// ============================================
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     description: Logout current user and invalidate token
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ */
+router.post("/logout", protect, authController.logout);
+
+// ============================================
+// PROTECTED ROUTES
+// ============================================
+
+router.use(protect);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get current user
+ *     description: Get current logged in user profile
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.get("/me", authController.getMe);
+
+/**
+ * @swagger
+ * /auth/update-password:
+ *   patch:
+ *     summary: Update password
+ *     description: Update current user's password
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 format: password
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.patch(
+  "/update-password",
+  authLimiter,
+  validatePassword("newPassword"),
+  authController.updatePassword
+);
+
+/**
+ * @swagger
+ * /auth/update-me:
+ *   patch:
+ *     summary: Update profile
+ *     description: Update current user's profile information
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *               phoneNumber:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.patch("/update-me", authController.updateMe);
+
+/**
+ * @swagger
+ * /auth/complete-profile:
+ *   patch:
+ *     summary: Complete host profile
+ *     description: Complete host profile setup after registration
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/HostProfile'
+ *     responses:
+ *       200:
+ *         description: Profile completed successfully
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.patch("/complete-profile", authController.completeHostProfile);
+
+/**
+ * @swagger
+ * /auth/send-verification-code:
+ *   post:
+ *     summary: Send email verification code
+ *     description: Send verification code to user's email
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Verification code sent
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.post(
+  "/send-verification-code",
+  authController.sendEmailVerificationCode
+);
+
+/**
+ * @swagger
+ * /auth/verify-email:
+ *   post:
+ *     summary: Verify email
+ *     description: Verify email address with verification code
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [code]
+ *             properties:
+ *               code:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.post("/verify-email", authController.verifyEmail);
+
+module.exports = router;

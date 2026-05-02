@@ -1,0 +1,77 @@
+.actionButtonsContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.92rem;
+  width: 100%;
+  padding: 0.9rem 0;
+  animation: fadeIn 0.8s ease-out 0.3s both;
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #767676;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.iconButton:hover {
+  color: var(--color-primary);
+  transform: scale(1.1);
+}
+
+.iconButton:active {
+  transform: scale(0.95);
+}
+
+.iconButton.liked {
+  color: #e74c3c;
+  animation: heartBeat 0.5s ease;
+}
+
+@keyframes heartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.3);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .actionButtonsContainer {
+    gap: 1.2rem;
+  }
+  
+  .iconButton {
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  .iconButton svg {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+}

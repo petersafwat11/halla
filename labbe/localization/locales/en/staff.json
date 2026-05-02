@@ -1,0 +1,23 @@
+{
+  "pageTitle": "Guest Management",
+  "eventDetails": "Event Details",
+  "invitationInteraction": "Invitation Interaction",
+  "waiting": "Waiting",
+  "maybe": "Maybe",
+  "declined": "Declined",
+  "confirmed": "Confirmed",
+  "checkedIn": "Checked In",
+  "guests": "Guests",
+  "scanQrCode": "Scan QR Code",
+  "confirmAttendance": "Confirm Attendance",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "guestName": "Guest Name",
+  "phone": "Phone",
+  "email": "Email",
+  "noGuests": "No guests",
+  "loading": "Loading...",
+  "error": "An error occurred",
+  "success": "Success",
+  "defaultEventName": "Wedding Event"
+}

@@ -1,0 +1,119 @@
+/* EditPlanPopup — token colors */
+.container {
+  display: flex;
+  width: 100%;
+  max-width: 70rem;
+  max-height: 90vh;
+  flex-direction: column;
+  gap: 2rem;
+  border-radius: var(--r-2xl, 1.5rem);
+  background: var(--c-n50, #ffffff);
+  padding: 2.4rem;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 1.6rem;
+  border-bottom: 1.5px solid var(--c-n250, #dfdfdf);
+}
+
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.headerTitle {
+  color: var(--c-s900, #221d18);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 2.8rem;
+  margin: 0;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.planCode {
+  background: var(--c-n150, #f7f7f7);
+  color: var(--c-n400, #767676);
+  padding: 0.4rem 1rem;
+  border-radius: var(--r-md, 0.5rem);
+  font-size: 1.2rem;
+  font-weight: 500;
+  font-family: monospace;
+  border: 1px solid var(--c-n250, #dfdfdf);
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.8rem;
+  border-radius: var(--r-md, 0.5rem);
+  transition: background-color var(--t-fast, 150ms ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover { background-color: var(--c-n200, #f2f2f2); }
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  width: 100%;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 2rem;
+  background: var(--c-n150, #f7f7f7);
+  border-radius: var(--r-xl, 1.25rem);
+  border: 1px solid var(--c-n250, #dfdfdf);
+}
+
+.sectionTitle {
+  color: var(--c-s500, #524438);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--c-n250, #dfdfdf);
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.row {
+  display: flex;
+  gap: 1.6rem;
+  width: 100%;
+}
+
+.row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.2rem;
+  width: 100%;
+  padding-top: 1.6rem;
+  border-top: 1.5px solid var(--c-n250, #dfdfdf);
+}
+
+.footer > * { min-width: 14rem; }
+
+@media (max-width: 768px) {
+  .container { padding: 1.6rem; max-height: 95vh; }
+  .row { flex-direction: column; }
+  .footer { flex-direction: column-reverse; }
+  .footer > * { width: 100%; }
+}
