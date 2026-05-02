@@ -532,7 +532,7 @@ userSchema.methods.createPasswordResetToken = function () {
     .update(resetToken)
     .digest("hex");
 
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+  this.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour (FLOW-06-F01)
 
   return resetToken;
 };
@@ -600,7 +600,7 @@ userSchema.methods.isLocked = function () {
  */
 userSchema.methods.incLoginAttempts = async function () {
   const MAX_LOGIN_ATTEMPTS = 5;
-  const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
+  const LOCK_TIME = 30 * 60 * 1000; // 30 minutes (FLOW-01-F07 / FLOW-05-F01)
 
   // If we have a previous lock that has expired, reset
   if (this.lockUntil && this.lockUntil < Date.now()) {

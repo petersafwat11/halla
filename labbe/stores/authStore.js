@@ -27,6 +27,12 @@ export const USER_STATUS = {
 // ============================================
 // AUTH STORE - STATE ONLY
 // All API logic moved to hooks/auth/useAuthMutation.js
+//
+// Phase 1a: tokens live in HttpOnly cookies (`access_token`, `refresh_token`).
+// JS never reads them. The legacy `token` field is preserved on the in-memory
+// state for components that still display the JWT during a session, but it is
+// **not persisted**: a page reload no longer leaves a copy behind in
+// localStorage. `partialize` below pins the persisted slice.
 // ============================================
 
 const useAuthStore = create(
@@ -34,7 +40,7 @@ const useAuthStore = create(
     (set, get) => ({
       // ============ STATE ============
       user: null,
-      token: null,
+      token: null, // not persisted (cookie-only) — see partialize
       subscription: null,
       isAuthenticated: false,
       isLoading: false,

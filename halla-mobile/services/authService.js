@@ -29,6 +29,7 @@ export const loginWithEmailAPI = async ({ email, password }) => {
 
     return {
       token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
     };
@@ -86,6 +87,7 @@ export const signupVendorAPI = async (vendorData) => {
 
     return {
       token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -159,6 +161,7 @@ export const signupWhitelabelAPI = async (whitelabelData) => {
 
     return {
       token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -237,6 +240,7 @@ export const verifyOTPAPI = async ({ mobile, otp }) => {
 
     return {
       token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
       profileCompleted: data.data?.profileCompleted,
@@ -304,6 +308,7 @@ export const verifySignupOTPAPI = async ({ mobile, otp }) => {
 
     return {
       token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
       profileCompleted: data.data?.profileCompleted,
@@ -358,6 +363,7 @@ export const completeProfileAPI = async ({
 
     return {
       token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -433,65 +439,86 @@ export const resendOTPAPI = async ({ mobile, type = "login" }) => {
 };
 
 /**
- * Logout (optional backend call)
- * @param {string} token - Auth token
+ * Logout — revoke the current refresh token on the backend.
+ *
+ * Phase 1a: best-effort. Local state must be cleared regardless of network
+ * outcome, so this never throws.
+ *
+ * @param {Object} params
+ * @param {string} [params.accessToken]
+ * @param {string} [params.refreshToken]
  * @returns {Promise<void>}
  */
-export const logoutAPI = async (token) => {
+export const logoutAPI = async ({ accessToken, refreshToken } = {}) => {
   try {
-    console.log("[AUTH SERVICE] Logging out");
-
-    // Optional: Call backend to invalidate token
-    if (token) {
-      await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGOUT}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    }
-
-    console.log("[AUTH SERVICE] Logged out successfully");
+    if (!refreshToken && !accessToken) return;
+    await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGOUT}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
   } catch (error) {
     console.error("[AUTH SERVICE] Logout error:", error);
-    // Don't throw - we still want to clear local state
+    // Don't throw — local state must clear regardless.
   }
 };
 
 /**
- * Refresh JWT token
- * NOTE: Backend does not have a refresh-token endpoint.
- * Token refresh is handled by re-authenticating via /auth/me.
- * @param {string} token - Current auth token
- * @returns {Promise<{token: string, user: Object}>}
+ * Rotate access + refresh tokens.
+ *
+ * Phase 1a (FLOW-01-F02): mobile sends the refresh token in the request body
+ * because there is no cookie jar on React Native. The response carries a
+ * fresh access token (mobile keeps it in-memory) and a fresh refresh token
+ * (mobile writes it to expo-secure-store).
+ *
+ * @param {string} refreshToken - Current refresh token
+ * @returns {Promise<{accessToken: string, refreshToken: string, user: Object}>}
  */
-export const refreshTokenAPI = async (token) => {
-  try {
-    console.log("[AUTH SERVICE] Refreshing token via /auth/me");
-
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.ME}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to refresh token");
-    }
-
-    console.log("[AUTH SERVICE] Token validated successfully");
-
-    return {
-      token: data.token || token,
-      user: data.data?.user,
-    };
-  } catch (error) {
-    console.error("[AUTH SERVICE] Refresh token error:", error);
-    throw error;
+export const refreshTokenAPI = async (refreshToken) => {
+  if (!refreshToken) {
+    throw new Error("No refresh token available");
   }
+
+  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.REFRESH}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to refresh token");
+  }
+
+  return {
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
+    user: data.data?.user,
+  };
+};
+
+/**
+ * Reset password with a token from the forgot-password email.
+ * Phase 1a (FLOW-06-F03).
+ */
+export const resetPasswordAPI = async ({ token, password, passwordConfirm }) => {
+  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.RESET_PASSWORD(token)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password, passwordConfirm }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Password reset failed");
+  }
+
+  return {
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
+    user: data.data?.user,
+  };
 };

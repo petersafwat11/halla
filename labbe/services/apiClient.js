@@ -6,7 +6,7 @@
 import Cookies from "js-cookie";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
 
 /**
  * User-friendly error messages (EN/AR)
@@ -133,14 +133,27 @@ export class APIError extends Error {
 
 /**
  * API Client singleton
+ *
+ * Phase 1a (FLOW-01-F01..F05): authentication tokens live in HttpOnly cookies
+ * (`access_token`, `refresh_token`). The client sets `credentials: "include"`
+ * on every request so the browser ships them automatically; we never read or
+ * write the tokens from JS. On a 401 the client transparently calls
+ * `/auth/refresh` once. If the refresh succeeds the original request is
+ * retried; if it fails the user is redirected to the login screen.
  */
 class APIClient {
   constructor() {
     this.baseURL = API_BASE_URL;
+    // Coalesce concurrent refresh attempts so a burst of 401s only triggers
+    // one rotation (refresh tokens are single-use; parallel hits cause replay
+    // detection on the backend and force-logout the user).
+    this._refreshPromise = null;
   }
 
   /**
-   * Get auth token from cookies
+   * Legacy: kept for backward-compatible callers that still want a Bearer
+   * token. The cookie-based flow is preferred — this only returns a value if
+   * a `token` cookie was set explicitly (e.g. by tests or server-side code).
    */
   getToken() {
     if (typeof window !== "undefined") {
@@ -150,42 +163,102 @@ class APIClient {
   }
 
   /**
-   * Make API request
-   * @param {string} endpoint - API endpoint (e.g., "/auth/login")
-   * @param {Object} options - Fetch options
-   * @param {string} options.method - HTTP method
-   * @param {Object|FormData} options.body - Request body
-   * @param {Object} options.headers - Additional headers
-   * @param {string} options.token - Override auth token
-   * @returns {Promise<any>} - Response data
+   * Trigger a single in-flight refresh and reuse it for concurrent callers.
+   * Resolves to true on success, false on failure.
    */
-  async request(endpoint, options = {}) {
+  async _refreshOnce() {
+    if (this._refreshPromise) return this._refreshPromise;
+
+    this._refreshPromise = (async () => {
+      try {
+        const res = await fetch(`${this.baseURL}/auth/refresh`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        });
+        return res.ok;
+      } catch (e) {
+        return false;
+      } finally {
+        // Clear after a microtask so concurrent callers see the same result
+        Promise.resolve().then(() => {
+          this._refreshPromise = null;
+        });
+      }
+    })();
+
+    return this._refreshPromise;
+  }
+
+  /**
+   * Redirect to login on terminal auth failure. Best-effort; safe to skip
+   * during SSR.
+   */
+  _redirectToLogin() {
+    if (typeof window === "undefined") return;
+    const lang = getCurrentLang();
+    // Avoid bouncing if we're already on the login page
+    if (window.location.pathname.endsWith("/login")) return;
+    window.location.assign(`/${lang}/login`);
+  }
+
+  /**
+   * Internal request helper used by `request` (so we can re-call it after a
+   * silent refresh). The original behaviour — friendly errors, FormData
+   * handling, blob/JSON detection — is preserved.
+   */
+  async _doRequest(endpoint, options) {
     const token = options.token || this.getToken();
     const isFormData = options.body instanceof FormData;
 
-    // Build headers
     const headers = {
       ...(!isFormData && { "Content-Type": "application/json" }),
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     };
 
-    // Build request options
     const fetchOptions = {
       method: options.method || "GET",
       headers,
       credentials: "include",
     };
 
-    // Add body if present
     if (options.body) {
       fetchOptions.body = isFormData
         ? options.body
         : JSON.stringify(options.body);
     }
 
+    return fetch(`${this.baseURL}${endpoint}`, fetchOptions);
+  }
+
+  /**
+   * Make API request with transparent 401 → refresh → retry.
+   * @param {string} endpoint - API endpoint (e.g., "/auth/login")
+   * @param {Object} options - Fetch options
+   * @returns {Promise<any>} - Response data
+   */
+  async request(endpoint, options = {}) {
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, fetchOptions);
+      let response = await this._doRequest(endpoint, options);
+
+      // Silent-refresh: skip refresh attempts on the auth routes themselves
+      // to avoid infinite loops (a 401 from /auth/refresh means the refresh
+      // cookie itself is invalid).
+      const skipRefresh =
+        options.skipAuthRefresh === true ||
+        endpoint.startsWith("/auth/refresh") ||
+        endpoint.startsWith("/auth/login") ||
+        endpoint.startsWith("/auth/logout");
+
+      if (response.status === 401 && !skipRefresh) {
+        const refreshed = await this._refreshOnce();
+        if (refreshed) {
+          response = await this._doRequest(endpoint, options);
+        } else {
+          this._redirectToLogin();
+        }
+      }
 
       // Handle error responses
       if (!response.ok) {

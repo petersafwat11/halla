@@ -6,7 +6,7 @@
 import { cookieUtils } from "@/utils/cookieUtils";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
 
 /**
  * Custom API Error class for better error handling

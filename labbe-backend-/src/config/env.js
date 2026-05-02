@@ -27,10 +27,14 @@ const envSchema = Joi.object({
   DATABASE_PASSWORD: Joi.string().allow('').default(''),
   DATABASE_CERT_PATH: Joi.string().allow('').default('').description('Path to X.509 certificate .pem file for MongoDB Atlas'),
 
-  // JWT Authentication
+  // JWT Authentication — short-lived access token + rotating refresh token (Phase 1a)
+  // Access token defaults: 15 minutes (FLOW-01-F01).
+  // Refresh tokens are stored server-side in `refreshtokens` collection with a TTL index;
+  // their lifetime is REFRESH_TOKEN_EXPIRES_DAYS days.
   JWT_SECRET: Joi.string().min(32).required().description('JWT signing secret'),
-  JWT_EXPIRES_IN: Joi.string().default('90d'),
-  JWT_COOKIE_EXPIRES_IN: Joi.number().default(90),
+  JWT_EXPIRES_IN: Joi.string().default('15m').description('Access token TTL (jsonwebtoken format)'),
+  ACCESS_TOKEN_COOKIE_MAX_AGE_MS: Joi.number().default(15 * 60 * 1000).description('access_token cookie maxAge in ms'),
+  REFRESH_TOKEN_EXPIRES_DAYS: Joi.number().default(30).description('Refresh token lifetime in days'),
 
   // Email (Nodemailer)
   EMAIL_HOST: Joi.string().allow(''),

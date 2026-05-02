@@ -28,6 +28,7 @@ const {
 const User = require('../../../models/UserModel');
 const Subscription = require('../../../models/SubscriptionModel');
 const Plan = require('../../../models/PlanModel');
+const RefreshToken = require('../../../models/RefreshTokenModel');
 
 // Import existing services
 const otpService = require('./otp.service');
@@ -37,18 +38,143 @@ const { normalizePhoneNumber } = require('../../shared/utils/phone');
 
 class AuthService {
   /**
-   * Sign JWT token
+   * Sign a short-lived access token (FLOW-01-F01).
    * @param {string} id - User ID
    * @param {string} [role] - User role
-   * @returns {string} JWT token
+   * @returns {string} JWT
    */
-  signToken(id, role = null) {
+  signAccessToken(id, role = null) {
     const payload = { id };
     if (role) payload.role = role;
 
     return jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
+      expiresIn: config.jwt.accessExpiresIn,
     });
+  }
+
+  /**
+   * Hash a refresh token for at-rest storage. We never persist the raw token.
+   * @param {string} raw
+   * @returns {string} sha256 hex digest
+   * @private
+   */
+  _hashRefresh(raw) {
+    return crypto.createHash('sha256').update(raw).digest('hex');
+  }
+
+  /**
+   * Issue a fresh access + refresh token pair, persisting the refresh hash.
+   *
+   * @param {Object} user           - User document (must have _id and role)
+   * @param {Object} [context]      - Optional request context for audit
+   * @param {string} [context.ip]
+   * @param {string} [context.userAgent]
+   * @returns {Promise<{ accessToken: string, refreshToken: string, refreshTokenId: string, expiresAt: Date }>}
+   */
+  async issueTokenPair(user, context = {}) {
+    const accessToken = this.signAccessToken(user._id, user.role);
+    const rawRefresh = crypto.randomBytes(48).toString('hex');
+    const expiresAt = new Date(
+      Date.now() + config.jwt.refreshExpiresDays * 24 * 60 * 60 * 1000
+    );
+    const stored = await RefreshToken.create({
+      userId: user._id,
+      tokenHash: this._hashRefresh(rawRefresh),
+      expiresAt,
+      userAgent: context.userAgent || '',
+      ip: context.ip || '',
+    });
+
+    return {
+      accessToken,
+      refreshToken: rawRefresh,
+      refreshTokenId: stored._id,
+      expiresAt,
+    };
+  }
+
+  /**
+   * Rotate a refresh token (FLOW-01-F02 + FLOW-01-F05).
+   * - Validates the incoming raw refresh token against the stored hash.
+   * - On success, marks the old token revoked and issues a new pair.
+   * - On a replay (already-revoked token presented again) revokes every
+   *   refresh token belonging to the user — replay = forced logout.
+   *
+   * @param {string} rawRefresh
+   * @param {Object} [context] - { ip, userAgent }
+   * @returns {Promise<{ user: Object, accessToken: string, refreshToken: string }>}
+   */
+  async rotateRefreshToken(rawRefresh, context = {}) {
+    if (!rawRefresh) {
+      throw new UnauthorizedError('Missing refresh token');
+    }
+
+    const tokenHash = this._hashRefresh(rawRefresh);
+    const existing = await RefreshToken.findOne({ tokenHash });
+
+    if (!existing) {
+      throw new UnauthorizedError('Invalid refresh token');
+    }
+
+    if (existing.revokedAt) {
+      // Replay: the same refresh token is presented twice. Treat as compromise
+      // and log the user out everywhere.
+      await this.revokeAllForUser(existing.userId);
+      throw new UnauthorizedError('Refresh token reuse detected — all sessions revoked');
+    }
+
+    if (existing.expiresAt.getTime() <= Date.now()) {
+      throw new UnauthorizedError('Refresh token expired');
+    }
+
+    const user = await User.findById(existing.userId);
+    if (!user) {
+      await this.revokeAllForUser(existing.userId);
+      throw new UnauthorizedError('User no longer exists');
+    }
+
+    // Block status checks (kept consistent with login)
+    this._validateUserStatus(user);
+
+    const fresh = await this.issueTokenPair(user, context);
+
+    existing.revokedAt = new Date();
+    existing.replacedBy = fresh.refreshTokenId;
+    await existing.save();
+
+    return {
+      user,
+      accessToken: fresh.accessToken,
+      refreshToken: fresh.refreshToken,
+      expiresAt: fresh.expiresAt,
+    };
+  }
+
+  /**
+   * Revoke a single refresh token (called from /auth/logout).
+   * Idempotent — no error if the token is already gone.
+   * @param {string} rawRefresh
+   */
+  async revokeRefreshToken(rawRefresh) {
+    if (!rawRefresh) return;
+    const tokenHash = this._hashRefresh(rawRefresh);
+    await RefreshToken.updateOne(
+      { tokenHash, revokedAt: null },
+      { $set: { revokedAt: new Date() } }
+    );
+  }
+
+  /**
+   * Revoke every refresh token for a user (FLOW-05-F02 / FLOW-06-F03).
+   * Used by password reset, password update, and replay detection.
+   * @param {string} userId
+   */
+  async revokeAllForUser(userId) {
+    if (!userId) return;
+    await RefreshToken.updateMany(
+      { userId, revokedAt: null },
+      { $set: { revokedAt: new Date() } }
+    );
   }
 
   /**
@@ -100,9 +226,10 @@ class AuthService {
    * @param {string} [credentials.email]
    * @param {string} [credentials.phoneNumber]
    * @param {string} credentials.password
-   * @returns {Promise<{user: Object, token: string, subscription: Object|null}>}
+   * @param {Object} [context]   - { ip, userAgent } passed to the refresh-token row
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, subscription: Object|null}>}
    */
-  async login(credentials) {
+  async login(credentials, context = {}) {
     const { email, phoneNumber, password } = credentials;
 
     if ((!email && !phoneNumber) || !password) {
@@ -147,13 +274,14 @@ class AuthService {
     // Check user status
     this._validateUserStatus(user);
 
-    // Generate token and get subscription
-    const token = this.signToken(user._id, user.role);
+    // Issue token pair and get subscription
+    const tokens = await this.issueTokenPair(user, context);
     const subscription = await this.getUserSubscription(user._id);
 
     return {
       user: this.sanitizeUser(user),
-      token,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       subscription,
     };
   }
@@ -230,9 +358,10 @@ class AuthService {
   /**
    * Host signup
    * @param {Object} userData
-   * @returns {Promise<{user: Object, token: string, subscription: Object}>}
+   * @param {Object} [context] - { ip, userAgent }
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, subscription: Object}>}
    */
-  async signupHost(userData) {
+  async signupHost(userData, context = {}) {
     const { email, phoneNumber, password, username, name } = userData;
 
     if (!phoneNumber) {
@@ -287,12 +416,13 @@ class AuthService {
       data: { entityType: 'user', entityId: host._id },
     }).catch(console.error);
 
-    const token = this.signToken(host._id, host.role);
+    const tokens = await this.issueTokenPair(host, context);
     await subscription.populate('planId');
 
     return {
       user: this.sanitizeUser(host),
-      token,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       subscription: subscription.getSummary ? subscription.getSummary() : subscription,
     };
   }
@@ -509,9 +639,10 @@ class AuthService {
    * Verify OTP and complete signup
    * @param {string} phoneNumber
    * @param {string} otp
-   * @returns {Promise<{user: Object, token: string, subscription: Object, isNewUser: boolean}>}
+   * @param {Object} [context] - { ip, userAgent }
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, subscription: Object, isNewUser: boolean}>}
    */
-  async verifySignupOTP(phoneNumber, otp) {
+  async verifySignupOTP(phoneNumber, otp, context = {}) {
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
     const verifyResult = await otpService.verifyOTP(normalizedPhone, otp);
@@ -568,11 +699,12 @@ class AuthService {
       data: { entityType: 'user', entityId: user._id },
     }).catch(console.error);
 
-    const token = this.signToken(user._id, user.role);
+    const tokens = await this.issueTokenPair(user, context);
 
     return {
       user: this.sanitizeUser(user),
-      token,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       subscription: subscription.getSummary ? subscription.getSummary() : subscription,
       isNewUser: true,
       profileCompleted: false,
@@ -583,9 +715,10 @@ class AuthService {
    * Verify OTP and login
    * @param {string} phoneNumber
    * @param {string} otp
-   * @returns {Promise<{user: Object, token: string, subscription: Object|null}>}
+   * @param {Object} [context] - { ip, userAgent }
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, subscription: Object|null}>}
    */
-  async verifyLoginOTP(phoneNumber, otp) {
+  async verifyLoginOTP(phoneNumber, otp, context = {}) {
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
     const verifyResult = await otpService.verifyOTP(normalizedPhone, otp);
@@ -604,7 +737,7 @@ class AuthService {
 
     this._validateUserStatus(user);
 
-    const token = this.signToken(user._id, user.role);
+    const tokens = await this.issueTokenPair(user, context);
     const profileCompleted = user.profile?.hostData?.profileCompleted ?? true;
     const subscriptionInfo = user.subscription?.getSummary
       ? user.subscription.getSummary()
@@ -612,7 +745,8 @@ class AuthService {
 
     return {
       user: this.sanitizeUser(user),
-      token,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       subscription: subscriptionInfo,
       isNewUser: false,
       profileCompleted,
@@ -681,7 +815,7 @@ class AuthService {
       {
         userName: user.name || user.username || 'User',
         resetUrl: resetURL,
-        expiresIn: '10 minutes',
+        expiresIn: '1 hour', // FLOW-06-F01
       },
       lang
     );
@@ -690,13 +824,15 @@ class AuthService {
   }
 
   /**
-   * Reset password with token
+   * Reset password with token.
+   * Closes FLOW-06-F02 (clear lockout) + FLOW-06-F03 (revoke refresh tokens).
    * @param {string} token
    * @param {string} password
    * @param {string} passwordConfirm
-   * @returns {Promise<{user: Object, token: string}>}
+   * @param {Object} [context] - { ip, userAgent }
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string}>}
    */
-  async resetPassword(token, password, passwordConfirm) {
+  async resetPassword(token, password, passwordConfirm, context = {}) {
     if (password !== passwordConfirm) {
       throw new ValidationError('Passwords do not match');
     }
@@ -720,25 +856,32 @@ class AuthService {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     user.passwordChangedAt = Date.now() - 1000;
+    // FLOW-06-F02: a successful password reset proves identity, so unlock the account.
+    user.loginAttempts = 0;
+    user.lockUntil = undefined;
     await user.save();
 
-    const jwtToken = this.signToken(user._id, user.role);
+    // FLOW-06-F03 / FLOW-05-F02: invalidate every existing session before issuing a new pair.
+    await this.revokeAllForUser(user._id);
+    const tokens = await this.issueTokenPair(user, context);
 
     return {
       user: this.sanitizeUser(user),
-      token: jwtToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 
   /**
-   * Update password (logged in user)
+   * Update password (logged in user). Revokes all existing refresh tokens.
    * @param {string} userId
    * @param {string} currentPassword
    * @param {string} newPassword
    * @param {string} passwordConfirm
-   * @returns {Promise<{user: Object, token: string}>}
+   * @param {Object} [context] - { ip, userAgent }
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string}>}
    */
-  async updatePassword(userId, currentPassword, newPassword, passwordConfirm) {
+  async updatePassword(userId, currentPassword, newPassword, passwordConfirm, context = {}) {
     if (newPassword !== passwordConfirm) {
       throw new ValidationError('Passwords do not match');
     }
@@ -761,11 +904,14 @@ class AuthService {
     user.passwordChangedAt = Date.now() - 1000;
     await user.save();
 
-    const token = this.signToken(user._id, user.role);
+    // FLOW-05-F02: a password change must invalidate all other sessions immediately.
+    await this.revokeAllForUser(user._id);
+    const tokens = await this.issueTokenPair(user, context);
 
     return {
       user: this.sanitizeUser(user),
-      token,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 

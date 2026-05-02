@@ -1,6 +1,15 @@
 /**
  * Authentication Middleware
- * Handles JWT verification and user attachment to request
+ *
+ * Phase 1a (FLOW-01-F01..F07): the legacy 90-day single-cookie JWT model is
+ * gone. Access tokens are short-lived (15 min) and live in the `access_token`
+ * cookie on web (HttpOnly, Path=/) or in the `Authorization: Bearer …` header
+ * on mobile. Refresh tokens never reach `protect`; they only flow through
+ * `POST /auth/refresh`.
+ *
+ * The legacy `signToken` / `createSendToken` exports were removed. All token
+ * issuance goes through `authService.issueTokenPair` so there is one source
+ * of truth for TTLs and cookie shapes.
  */
 
 const {
@@ -19,25 +28,37 @@ const {
 const { USER_STATUS } = require("../constants/status");
 const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
+const config = require("../../config");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../errors/AppError");
 
-// Import models - will use unified User model
-// For backward compatibility, we'll check multiple models during migration
 const User = require("../../../models/UserModel");
 
+const ACCESS_COOKIE = "access_token";
+
 /**
- * Protect routes - Verify JWT and attach user to request
+ * Read the access token from header or cookie.
+ *
+ * Order:
+ *   1. `Authorization: Bearer <token>` (preferred for mobile)
+ *   2. `access_token` cookie (web)
+ *   3. legacy `jwt` cookie (Phase 0 sessions only — accepted for one deploy
+ *      cycle so existing dev cookies don't 401 immediately; remove in 1c).
+ */
+const extractAccessToken = (req) => {
+  if (req.headers.authorization?.startsWith("Bearer")) {
+    return req.headers.authorization.split(" ")[1];
+  }
+  if (req.cookies?.[ACCESS_COOKIE]) return req.cookies[ACCESS_COOKIE];
+  if (req.cookies?.jwt) return req.cookies.jwt;
+  return null;
+};
+
+/**
+ * Protect routes - Verify access token and attach user to request
  */
 exports.protect = catchAsync(async (req, res, next) => {
-  // 1. Get token from header or cookies
-  let token;
-
-  if (req.headers.authorization?.startsWith("Bearer")) {
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies?.jwt) {
-    token = req.cookies.jwt;
-  }
+  const token = extractAccessToken(req);
 
   if (!token) {
     return next(new AppError("Please log in to access this resource", 401));
@@ -46,7 +67,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 2. Verify token
   let decoded;
   try {
-    decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    decoded = await promisify(jwt.verify)(token, config.jwt.secret);
   } catch (err) {
     if (err.name === "JsonWebTokenError") {
       return next(new AppError("Invalid token. Please log in again", 401));
@@ -124,13 +145,7 @@ exports.protect = catchAsync(async (req, res, next) => {
  * Useful for public routes that behave differently for logged-in users
  */
 exports.optionalAuth = catchAsync(async (req, res, next) => {
-  let token;
-
-  if (req.headers.authorization?.startsWith("Bearer")) {
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies?.jwt) {
-    token = req.cookies.jwt;
-  }
+  const token = extractAccessToken(req);
 
   if (!token) {
     req.isAuthenticated = false;
@@ -138,17 +153,23 @@ exports.optionalAuth = catchAsync(async (req, res, next) => {
   }
 
   try {
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    const decoded = await promisify(jwt.verify)(token, config.jwt.secret);
     const user = await User.findById(decoded.id).populate("subscription");
 
     if (user && user.status === USER_STATUS.ACTIVE) {
+      // Honour password-change revocation on optional-auth routes too
+      // (closes the FLOW-01-F04 / Flow-01 note about silent bypass).
+      if (user.changedPasswordAfter && user.changedPasswordAfter(decoded.iat)) {
+        req.isAuthenticated = false;
+        return next();
+      }
+
       req.user = user;
       req.isAuthenticated = true;
       req.userId = user._id;
       req.userRole = user.role;
       req.whitelabelId = user.whitelabelId || null;
 
-      // Extract tenant context
       const tenant = await extractTenantContext(req, user);
       req.tenant = tenant;
       req.isWhitelabel = tenant.isWhitelabel;
@@ -163,86 +184,8 @@ exports.optionalAuth = catchAsync(async (req, res, next) => {
 });
 
 /**
- * Generate JWT token
- * @param {string} id - User ID
- * @param {string} role - User role
- * @returns {string} JWT token
- */
-exports.signToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "90d",
-  });
-};
-
-/**
- * Create and send JWT token response
- * @param {Object} user - User document
- * @param {number} statusCode - HTTP status code
- * @param {Object} res - Express response object
- * @param {Object} additionalData - Additional data to include in response
- */
-exports.createSendToken = (user, statusCode, res, additionalData = {}) => {
-  const token = exports.signToken(user._id, user.role);
-
-  // Cookie options
-  const cookieOptions = {
-    expires: new Date(
-      Date.now() +
-      (process.env.JWT_COOKIE_EXPIRES_IN || 90) * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  };
-
-  res.cookie("jwt", token, cookieOptions);
-
-  // Use toPublicJSON if available for consistent response structure
-  // This ensures permissions and whitelabelId are properly included
-  const userResponse = user.toPublicJSON
-    ? user.toPublicJSON()
-    : (() => {
-      const obj = user.toObject ? user.toObject() : { ...user };
-      delete obj.password;
-      delete obj.passwordResetToken;
-      delete obj.passwordResetExpires;
-      delete obj.emailVerificationCode;
-      delete obj.emailVerificationExpires;
-      delete obj.__v;
-      return obj;
-    })();
-
-  res.status(statusCode).json({
-    status: "success",
-    token,
-    data: {
-      user: userResponse,
-      ...additionalData,
-    },
-  });
-};
-
-/**
- * Logout - Clear JWT cookie
- */
-exports.logout = (req, res) => {
-  res.cookie("jwt", "loggedout", {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-  });
-
-  res.status(200).json({
-    status: "success",
-    message: "Logged out successfully",
-  });
-};
-
-/**
  * Extract tenant context from request
  * Supports subdomain and custom domain detection
- * @param {Object} req - Express request object
- * @param {Object} user - User document
- * @returns {Promise<Object>} Tenant context
  */
 async function extractTenantContext(req, user) {
   const tenant = {
@@ -253,12 +196,10 @@ async function extractTenantContext(req, user) {
     config: null,
   };
 
-  // Check if user belongs to a whitelabel
   if (user.whitelabelId) {
     tenant.id = user.whitelabelId._id || user.whitelabelId;
     tenant.isWhitelabel = true;
 
-    // If whitelabelId is populated, extract domain info
     if (user.whitelabelId.domain) {
       tenant.domain = user.whitelabelId.domain.customDomain || null;
       tenant.subdomain = user.whitelabelId.domain.subdomain || null;
@@ -266,10 +207,8 @@ async function extractTenantContext(req, user) {
     }
   }
 
-  // Extract from request hostname (subdomain or custom domain)
   const hostname = req.hostname || req.get("host")?.split(":")[0];
   if (hostname) {
-    // Check for subdomain pattern: {subdomain}.halaa.sa
     const subdomainMatch = hostname.match(/^([^.]+)\.halaa\.sa$/);
     if (
       subdomainMatch &&
@@ -279,7 +218,6 @@ async function extractTenantContext(req, user) {
       tenant.subdomain = subdomainMatch[1];
       tenant.isWhitelabel = true;
 
-      // Validate subdomain against database if not already set
       if (!tenant.id) {
         const WhiteLabel = require("../../../models/UserModel");
         const whitelabel = await WhiteLabel.findOne({
@@ -293,16 +231,13 @@ async function extractTenantContext(req, user) {
           tenant.config = whitelabel;
         }
       }
-    }
-    // Check for custom domain
-    else if (
+    } else if (
       !hostname.includes("halaa.sa") &&
       !hostname.includes("localhost")
     ) {
       tenant.domain = hostname;
       tenant.isWhitelabel = true;
 
-      // Validate custom domain against database if not already set
       if (!tenant.id) {
         const WhiteLabel = require("../../../models/UserModel");
         const whitelabel = await WhiteLabel.findOne({
@@ -323,15 +258,13 @@ async function extractTenantContext(req, user) {
 }
 
 /**
- * Middleware to validate tenant context
- * Ensures user belongs to the correct tenant
+ * Validate tenant context — ensures user belongs to the correct tenant
  */
 exports.validateTenant = catchAsync(async (req, res, next) => {
   if (!req.tenant || !req.tenant.isWhitelabel) {
     return next();
   }
 
-  // If tenant is detected from domain but user doesn't belong to it
   if (
     req.tenant.id &&
     req.whitelabelId &&

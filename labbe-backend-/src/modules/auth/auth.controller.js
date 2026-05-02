@@ -1,6 +1,19 @@
 /**
  * Auth Controller
- * HTTP request handling only - delegates to auth.service
+ * HTTP request handling only - delegates to auth.service.
+ *
+ * Phase 1a (FLOW-01-F01..F07, FLOW-05-F02, FLOW-06-F03):
+ * Authentication now uses two cookies on web and a body-delivered refresh
+ * token on mobile.
+ *
+ *   - access_token  : HttpOnly + SameSite=Strict cookie, path=/, 15-min TTL
+ *   - refresh_token : HttpOnly + SameSite=Strict cookie, path=/api/v2/auth/refresh,
+ *                     30-day TTL — only sent to the refresh endpoint
+ *
+ * Mobile clients pass the refresh token in the request body. The cookie path
+ * restriction means non-refresh routes never see the refresh token even on
+ * web, eliminating CSRF surface for the long-lived credential.
+ *
  * @module modules/auth/auth.controller
  */
 
@@ -8,44 +21,80 @@ const crypto = require("crypto");
 const catchAsync = require("../../shared/utils/catchAsync");
 const {
   sendSuccess,
-  sendCreated,
 } = require("../../shared/utils/responseHelper");
 const { ValidationError } = require("../../shared/errors");
 const authService = require("./auth.service");
 const config = require("../../config");
 const User = require("../../../models/UserModel");
 
+const ACCESS_COOKIE = "access_token";
+const REFRESH_COOKIE = "refresh_token";
+
 /**
- * Set JWT cookie on response
- * @param {Object} res - Express response
- * @param {string} token - JWT token
+ * Build base cookie options for the access token (path=/).
  */
-const setTokenCookie = (res, token) => {
-  res.cookie("jwt", token, {
-    expires: new Date(
-      Date.now() + config.jwt.cookieExpiresIn * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-    secure: config.isProd,
-    sameSite: "strict",
-  });
+const accessCookieOptions = () => ({
+  httpOnly: true,
+  secure: config.isProd,
+  sameSite: "strict",
+  path: "/",
+  maxAge: config.jwt.accessCookieMaxAgeMs,
+});
+
+/**
+ * Build base cookie options for the refresh token (path-restricted).
+ */
+const refreshCookieOptions = () => ({
+  httpOnly: true,
+  secure: config.isProd,
+  sameSite: "strict",
+  path: config.jwt.refreshCookiePath,
+  maxAge: config.jwt.refreshExpiresDays * 24 * 60 * 60 * 1000,
+});
+
+/**
+ * Set both cookies on the response.
+ * @param {Object} res
+ * @param {{ accessToken: string, refreshToken: string }} pair
+ */
+const setAuthCookies = (res, pair) => {
+  if (!pair) return;
+  if (pair.accessToken) res.cookie(ACCESS_COOKIE, pair.accessToken, accessCookieOptions());
+  if (pair.refreshToken) res.cookie(REFRESH_COOKIE, pair.refreshToken, refreshCookieOptions());
 };
 
-// ============================================
-// LOGIN
-// ============================================
+/**
+ * Clear both auth cookies (path-aware).
+ */
+const clearAuthCookies = (res) => {
+  res.clearCookie(ACCESS_COOKIE, { path: "/" });
+  res.clearCookie(REFRESH_COOKIE, { path: config.jwt.refreshCookiePath });
+};
 
 /**
- * Helper to send auth response in legacy format (for backward compatibility)
+ * Read context (ip, userAgent) from the request for refresh-token auditing.
  */
-const sendAuthResponse = (res, user, token, additionalData = {}, statusCode = 200, message = null) => {
+const requestContext = (req) => ({
+  ip: req.ip,
+  userAgent: req.get("user-agent") || "",
+});
+
+/**
+ * Send the standard auth response.
+ * Backwards-compatible shape: token/refreshToken at root, user nested under data.
+ */
+const sendAuthResponse = (
+  res,
+  { user, accessToken, refreshToken, additionalData = {}, statusCode = 200, message = null }
+) => {
   const response = {
-    status: 'success',
-    token, // Token at root level for legacy backend compatibility
+    status: "success",
+    token: accessToken, // top-level for legacy compatibility (mobile reads `data.token`)
+    refreshToken, // mobile clients keep this in expo-secure-store
     data: {
       user,
-      ...additionalData
-    }
+      ...additionalData,
+    },
   };
 
   if (message) response.message = message;
@@ -62,25 +111,56 @@ const sendAuthResponse = (res, user, token, additionalData = {}, statusCode = 20
  * POST /api/v2/auth/login
  */
 exports.login = catchAsync(async (req, res) => {
-  const { user, token, subscription } = await authService.login(req.body);
+  const result = await authService.login(req.body, requestContext(req));
 
-  setTokenCookie(res, token);
+  setAuthCookies(res, result);
 
-  sendAuthResponse(res, user, token, { subscription }, 200, "Login successful");
+  sendAuthResponse(res, {
+    user: result.user,
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+    additionalData: { subscription: result.subscription },
+    statusCode: 200,
+    message: "Login successful",
+  });
 });
 
 /**
- * Logout
+ * Logout — revoke refresh token and clear cookies.
  * POST /api/v2/auth/logout
  */
-exports.logout = (req, res) => {
-  res.cookie("jwt", "loggedout", {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-  });
-
+exports.logout = catchAsync(async (req, res) => {
+  const refreshToken = req.cookies?.[REFRESH_COOKIE] || req.body?.refreshToken;
+  if (refreshToken) {
+    await authService.revokeRefreshToken(refreshToken);
+  }
+  clearAuthCookies(res);
   sendSuccess(res, null, "Logged out successfully");
-};
+});
+
+/**
+ * Refresh access + refresh tokens.
+ * POST /api/v2/auth/refresh
+ *
+ * Web reads the refresh token from the path-restricted cookie. Mobile sends it
+ * in the JSON body. Either way, the response is a brand-new pair and the old
+ * refresh row is marked revoked. Re-using a revoked refresh triggers a chain
+ * revocation in the service (replay = forced logout).
+ */
+exports.refresh = catchAsync(async (req, res) => {
+  const refreshToken = req.cookies?.[REFRESH_COOKIE] || req.body?.refreshToken;
+  const result = await authService.rotateRefreshToken(refreshToken, requestContext(req));
+
+  setAuthCookies(res, result);
+
+  sendAuthResponse(res, {
+    user: authService.sanitizeUser(result.user),
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+    statusCode: 200,
+    message: "Token refreshed",
+  });
+});
 
 // ============================================
 // SIGNUP
@@ -91,35 +171,52 @@ exports.logout = (req, res) => {
  * POST /api/v2/auth/signup/host
  */
 exports.hostSignup = catchAsync(async (req, res) => {
-  const { user, token, subscription } = await authService.signupHost(req.body);
+  const result = await authService.signupHost(req.body, requestContext(req));
 
-  setTokenCookie(res, token);
+  setAuthCookies(res, result);
 
-  sendAuthResponse(res, user, token, { subscription }, 201, "Account created successfully");
+  sendAuthResponse(res, {
+    user: result.user,
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+    additionalData: { subscription: result.subscription },
+    statusCode: 201,
+    message: "Account created successfully",
+  });
 });
 
 /**
- * Vendor signup
+ * Vendor signup — pending approval, no token issued.
  * POST /api/v2/auth/signup/vendor
  */
 exports.vendorSignup = catchAsync(async (req, res) => {
-  const { user, token, pendingApproval } = await authService.signupVendor(req.body, req.files);
+  const result = await authService.signupVendor(req.body, req.files);
 
-  if (token) setTokenCookie(res, token);
-
-  sendAuthResponse(res, user, token, { pendingApproval }, 201, "Vendor application submitted successfully");
+  sendAuthResponse(res, {
+    user: result.user,
+    accessToken: null,
+    refreshToken: null,
+    additionalData: { pendingApproval: result.pendingApproval },
+    statusCode: 201,
+    message: "Vendor application submitted successfully",
+  });
 });
 
 /**
- * Whitelabel signup
+ * Whitelabel signup — pending approval, no token issued.
  * POST /api/v2/auth/signup/whitelabel
  */
 exports.whitelabelSignup = catchAsync(async (req, res) => {
-  const { user, token, pendingApproval } = await authService.signupWhitelabel(req.body);
+  const result = await authService.signupWhitelabel(req.body);
 
-  if (token) setTokenCookie(res, token);
-
-  sendAuthResponse(res, user, token, { pendingApproval }, 201, "Whitelabel application submitted successfully");
+  sendAuthResponse(res, {
+    user: result.user,
+    accessToken: null,
+    refreshToken: null,
+    additionalData: { pendingApproval: result.pendingApproval },
+    statusCode: 201,
+    message: "Whitelabel application submitted successfully",
+  });
 });
 
 // ============================================
@@ -132,7 +229,6 @@ exports.whitelabelSignup = catchAsync(async (req, res) => {
  */
 exports.sendSignupOTP = catchAsync(async (req, res) => {
   const result = await authService.sendSignupOTP(req.body.phoneNumber);
-
   sendSuccess(res, result, "OTP sent successfully");
 });
 
@@ -142,7 +238,6 @@ exports.sendSignupOTP = catchAsync(async (req, res) => {
  */
 exports.sendLoginOTP = catchAsync(async (req, res) => {
   const result = await authService.sendLoginOTP(req.body.phoneNumber);
-
   sendSuccess(res, result, "OTP sent successfully");
 });
 
@@ -152,18 +247,22 @@ exports.sendLoginOTP = catchAsync(async (req, res) => {
  */
 exports.verifySignupOTP = catchAsync(async (req, res) => {
   const { phoneNumber, otp } = req.body;
-  const result = await authService.verifySignupOTP(phoneNumber, otp);
+  const result = await authService.verifySignupOTP(phoneNumber, otp, requestContext(req));
 
-  setTokenCookie(res, result.token);
+  setAuthCookies(res, result);
 
-  sendAuthResponse(res, result.user, result.token,
-    {
+  sendAuthResponse(res, {
+    user: result.user,
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+    additionalData: {
       subscription: result.subscription,
       isNewUser: result.isNewUser,
-      profileCompleted: result.profileCompleted
+      profileCompleted: result.profileCompleted,
     },
-    201, "Account created successfully"
-  );
+    statusCode: 201,
+    message: "Account created successfully",
+  });
 });
 
 /**
@@ -172,18 +271,22 @@ exports.verifySignupOTP = catchAsync(async (req, res) => {
  */
 exports.verifyLoginOTP = catchAsync(async (req, res) => {
   const { phoneNumber, otp } = req.body;
-  const result = await authService.verifyLoginOTP(phoneNumber, otp);
+  const result = await authService.verifyLoginOTP(phoneNumber, otp, requestContext(req));
 
-  setTokenCookie(res, result.token);
+  setAuthCookies(res, result);
 
-  sendAuthResponse(res, result.user, result.token,
-    {
+  sendAuthResponse(res, {
+    user: result.user,
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+    additionalData: {
       subscription: result.subscription,
       isNewUser: result.isNewUser,
-      profileCompleted: result.profileCompleted
+      profileCompleted: result.profileCompleted,
     },
-    200, "Login successful"
-  );
+    statusCode: 200,
+    message: "Login successful",
+  });
 });
 
 /**
@@ -193,7 +296,6 @@ exports.verifyLoginOTP = catchAsync(async (req, res) => {
 exports.resendOTP = catchAsync(async (req, res) => {
   const { phoneNumber, type } = req.body;
   const result = await authService.resendOTP(phoneNumber, type);
-
   sendSuccess(res, result, "OTP resent successfully");
 });
 
@@ -207,12 +309,12 @@ exports.resendOTP = catchAsync(async (req, res) => {
  */
 exports.forgotPassword = catchAsync(async (req, res) => {
   const result = await authService.forgotPassword(req.body.email);
-
   sendSuccess(res, null, result.message);
 });
 
 /**
- * Reset password with token
+ * Reset password with token. Re-issues a fresh token pair and revokes
+ * any previous refresh tokens for the user.
  * PATCH /api/v2/auth/reset-password/:token
  */
 exports.resetPassword = catchAsync(async (req, res) => {
@@ -222,20 +324,23 @@ exports.resetPassword = catchAsync(async (req, res) => {
   const result = await authService.resetPassword(
     token,
     password,
-    passwordConfirm
+    passwordConfirm,
+    requestContext(req)
   );
 
-  setTokenCookie(res, result.token);
+  setAuthCookies(res, result);
 
-  sendSuccess(
-    res,
-    { user: result.user, token: result.token },
-    "Password reset successful"
-  );
+  sendAuthResponse(res, {
+    user: result.user,
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+    statusCode: 200,
+    message: "Password reset successful",
+  });
 });
 
 /**
- * Update password (logged in user)
+ * Update password (logged in user). Revokes all existing refresh tokens.
  * PATCH /api/v2/auth/update-password
  */
 exports.updatePassword = catchAsync(async (req, res) => {
@@ -245,16 +350,19 @@ exports.updatePassword = catchAsync(async (req, res) => {
     req.user._id,
     currentPassword,
     newPassword,
-    passwordConfirm
+    passwordConfirm,
+    requestContext(req)
   );
 
-  setTokenCookie(res, result.token);
+  setAuthCookies(res, result);
 
-  sendSuccess(
-    res,
-    { user: result.user, token: result.token },
-    "Password updated successfully"
-  );
+  sendAuthResponse(res, {
+    user: result.user,
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+    statusCode: 200,
+    message: "Password updated successfully",
+  });
 });
 
 // ============================================
@@ -267,7 +375,6 @@ exports.updatePassword = catchAsync(async (req, res) => {
  */
 exports.getMe = catchAsync(async (req, res) => {
   const result = await authService.getMe(req.user._id);
-
   sendSuccess(res, result);
 });
 
@@ -276,7 +383,6 @@ exports.getMe = catchAsync(async (req, res) => {
  * PATCH /api/v2/auth/update-me
  */
 exports.updateMe = catchAsync(async (req, res) => {
-  // Extract allowed fields
   const allowedFields = ["username", "email", "avatar", "phoneNumber"];
   const updateData = {};
 
@@ -290,7 +396,6 @@ exports.updateMe = catchAsync(async (req, res) => {
     updateData.avatar = req.file.path || req.file.filename;
   }
 
-  // Import User model directly for simple update
   const user = await User.findByIdAndUpdate(req.user._id, updateData, {
     new: true,
     runValidators: true,
@@ -306,14 +411,23 @@ exports.updateMe = catchAsync(async (req, res) => {
 /**
  * Complete host profile
  * PATCH /api/v2/auth/complete-profile
+ *
+ * Phase 1a: re-issues a fresh token pair so the new (potentially elevated)
+ * profile state takes effect immediately.
  */
 exports.completeHostProfile = catchAsync(async (req, res) => {
   const user = await authService.completeHostProfile(req.user._id, req.body);
+  const tokens = await authService.issueTokenPair(user, requestContext(req));
 
-  const token = authService.signToken(user._id, user.role);
-  setTokenCookie(res, token);
+  setAuthCookies(res, tokens);
 
-  sendSuccess(res, { user, token }, "Profile completed successfully");
+  sendAuthResponse(res, {
+    user,
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    statusCode: 200,
+    message: "Profile completed successfully",
+  });
 });
 
 // ============================================
@@ -338,7 +452,6 @@ exports.sendEmailVerificationCode = catchAsync(async (req, res) => {
   const code = user.createEmailVerificationCode();
   await user.save({ validateBeforeSave: false });
 
-  // Send the verification code via email
   const emailModule = require("../../infrastructure/email");
   await emailModule({
     email: user.email,
@@ -406,6 +519,8 @@ exports.validateSetupToken = catchAsync(async (req, res) => {
 /**
  * Setup password (first time for whitelabel)
  * POST /api/v2/auth/setup-password
+ *
+ * Phase 1a: returns a full token pair through the new cookie + body shape.
  */
 exports.setupPassword = catchAsync(async (req, res) => {
   const { token, password, passwordConfirm } = req.body;
@@ -436,17 +551,16 @@ exports.setupPassword = catchAsync(async (req, res) => {
 
   await user.save();
 
-  const jwtToken = authService.signToken(user._id, user.role);
-  setTokenCookie(res, jwtToken);
+  const tokens = await authService.issueTokenPair(user, requestContext(req));
+  setAuthCookies(res, tokens);
 
-  sendSuccess(
-    res,
-    {
-      user: user.toPublicJSON ? user.toPublicJSON() : user,
-      token: jwtToken,
-    },
-    "Password set successfully"
-  );
+  sendAuthResponse(res, {
+    user: user.toPublicJSON ? user.toPublicJSON() : user,
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    statusCode: 200,
+    message: "Password set successfully",
+  });
 });
 
 /**
