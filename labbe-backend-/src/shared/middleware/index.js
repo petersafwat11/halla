@@ -10,12 +10,10 @@ const whitelabel = require("./whitelabel");
 const validation = require("./validation");
 
 module.exports = {
-  // Authentication
+  // Authentication (Phase 1a — token issuance moved to authService.issueTokenPair)
   protect: auth.protect,
   optionalAuth: auth.optionalAuth,
-  signToken: auth.signToken,
-  createSendToken: auth.createSendToken,
-  logout: auth.logout,
+  validateTenant: auth.validateTenant,
 
   // RBAC
   restrictTo: rbac.restrictTo,

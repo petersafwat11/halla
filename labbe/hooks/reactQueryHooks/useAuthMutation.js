@@ -126,11 +126,15 @@ export const useAuthMutation = (action) => {
           data: { password, passwordConfirm },
         }),
       onSuccess: (response) => {
-        const { token: newToken, data: userData } = response;
-        setAuthCookies(newToken, userData.role, true);
-        setAuth(userData, newToken, null);
+        // Backend returns { status, token, refreshToken, data: { user } } —
+        // we used to read response.data and treat it as the user, which left
+        // role undefined and stored the wrapper object as the user.
+        const newToken = response.token;
+        const user = response.data?.user;
+        setAuthCookies(newToken, user?.role, true);
+        setAuth(user, newToken, null);
         useAuthStore.getState().clearResetState();
-        return { user: userData };
+        return { user };
       },
     },
 

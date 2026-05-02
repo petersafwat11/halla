@@ -45,8 +45,9 @@ const WhatsappPreview = ({
         return URL.createObjectURL(templateImage);
       }
       if (typeof templateImage === "string" && templateImage.startsWith("uploads/")) {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-        return `${apiUrl.replace("/api", "")}/${templateImage}`;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
+        const baseUrl = apiUrl.replace("/api/v2", "").replace("/api", "");
+        return `${baseUrl}/${templateImage}`;
       }
       if (
         typeof templateImage === "string" &&

@@ -2,7 +2,7 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { ActivityIndicator, View, StyleSheet, Text } from "react-native";
 import { useAuthStore } from "../stores/authStore";
 import AdminNavigator from "./AdminNavigator";
 import { useTranslation } from "../localization";
@@ -321,9 +321,16 @@ export default function AppNavigator() {
     case "whitelabel_moderator":
       return <AdminStack />;
     default:
-      // Default to host if role is not set
-      console.warn("User role not set, defaulting to host");
-      return <HostStack />;
+      // FLOW-05-F03: never silently route to HostStack. An unmapped role is
+      // a real bug — surface it instead of pretending the user is a host.
+      console.error("Unsupported account role:", role);
+      return (
+        <View style={styles.loadingContainer}>
+          <Text style={{ color: colors.error?.[500] || "#dc2626", textAlign: "center", padding: 24 }}>
+            Unsupported account type — please contact support.
+          </Text>
+        </View>
+      );
   }
 }
 

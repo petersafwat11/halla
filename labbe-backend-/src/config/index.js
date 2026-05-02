@@ -40,8 +40,10 @@ const config = {
 
   jwt: {
     secret: env.JWT_SECRET,
-    expiresIn: env.JWT_EXPIRES_IN,
-    cookieExpiresIn: env.JWT_COOKIE_EXPIRES_IN,
+    accessExpiresIn: env.JWT_EXPIRES_IN,            // jsonwebtoken format, e.g. '15m'
+    accessCookieMaxAgeMs: env.ACCESS_TOKEN_COOKIE_MAX_AGE_MS,
+    refreshExpiresDays: env.REFRESH_TOKEN_EXPIRES_DAYS,
+    refreshCookiePath: '/api/v2/auth/refresh',
   },
 
   email: {

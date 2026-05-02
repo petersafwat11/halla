@@ -250,6 +250,21 @@ router.post(
  */
 router.post("/login", authLimiter, validate(loginSchema), authController.login);
 
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Rotate access + refresh tokens
+ *     description: Read refresh token from HttpOnly cookie (web) or `refreshToken` body field (mobile). Always rotates.
+ *     tags: [Authentication]
+ *     responses:
+ *       200:
+ *         description: Tokens rotated
+ *       401:
+ *         description: Refresh token invalid, revoked, or replayed
+ */
+router.post("/refresh", authController.refresh);
+
 // ============================================
 // OTP ROUTES
 // ============================================
@@ -571,7 +586,10 @@ router.post(
  *       200:
  *         description: Logout successful
  */
-router.post("/logout", protect, authController.logout);
+// Logout is intentionally public: clearing cookies + revoking the
+// presented refresh token must work even when the access token has
+// already expired.
+router.post("/logout", authController.logout);
 
 // ============================================
 // PROTECTED ROUTES

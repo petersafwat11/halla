@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   loginWithEmailAPI,
   sendOTPAPI,
@@ -12,93 +11,125 @@ import {
   logoutAPI,
   refreshTokenAPI,
 } from "../services/authService";
+import {
+  saveRefreshToken,
+  loadRefreshToken,
+  clearRefreshToken,
+  saveUserShadow,
+  loadUserShadow,
+  clearUserShadow,
+} from "../services/secureStorage";
 
-const AUTH_STORAGE_KEY = "@auth_state";
+/**
+ * Phase 1a auth store (mobile).
+ *
+ * - Refresh token: expo-secure-store (FLOW-01-F03).
+ * - Access token: in-memory only (`token` field below). Never written to
+ *   AsyncStorage.
+ * - User shadow: a thin copy of the last known user object is mirrored to
+ *   secure storage so cold-launch UX shows "Welcome back" without waiting on
+ *   the network round-trip. The shadow is always reconciled by `/auth/me`
+ *   before any privileged action.
+ * - Role: derived strictly from the server response. The previous
+ *   `user.role || "vendor"` / `|| "host"` fallbacks (FLOW-05-F02) are gone —
+ *   a missing role surfaces as an authentication error.
+ */
 
-// Initial state
 const initialState = {
   user: null,
   token: null,
-  role: null, // 'host' | 'vendor' | 'super_admin' | 'admin' | 'moderator' | 'whitelabel_admin' | 'whitelabel_moderator'
+  refreshToken: null,
+  role: null,
   // 'checking' | 'loading' | 'authenticated' | 'unauthenticated'
-  // 'checking' is used only while restoring session on app start
   status: "checking",
   error: null,
-  // Temporary storage for multi-step flows
   tempMobile: null,
+};
+
+const requireRole = (user) => {
+  const role = user?.role;
+  if (!role) {
+    throw new Error("Server response is missing user.role");
+  }
+  return role;
 };
 
 export const useAuthStore = create((set, get) => ({
   ...initialState,
 
   /**
-   * Restore session from AsyncStorage on app start
+   * Cold-launch session restore.
+   *
+   * Reads the refresh token from secure storage, asks the backend to rotate
+   * it (which also returns the latest `user` snapshot). On any failure we
+   * land in `unauthenticated` — there is no fallback to a stale local copy,
+   * by design: if the server says we're out, we're out.
    */
   restoreSession: async () => {
     try {
-      const storedAuth = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      if (storedAuth) {
-        const { user, token, role } = JSON.parse(storedAuth);
-        set({
-          user,
-          token,
-          role,
-          status: "authenticated",
-          error: null,
-        });
-        console.log("Session restored:", user, "Role:", role);
-      } else {
+      const refreshToken = await loadRefreshToken();
+      if (!refreshToken) {
         set({ status: "unauthenticated" });
+        return;
       }
-    } catch (error) {
-      console.error("Failed to restore session:", error);
-      set({ status: "unauthenticated", error: error.message });
-    }
-  },
 
-  /**
-   * Persist auth state to AsyncStorage
-   */
-  persistAuth: async (user, token, role) => {
-    try {
-      await AsyncStorage.setItem(
-        AUTH_STORAGE_KEY,
-        JSON.stringify({ user, token, role }),
-      );
-    } catch (error) {
-      console.error("Failed to persist auth:", error);
-    }
-  },
+      const fresh = await refreshTokenAPI(refreshToken);
+      const role = requireRole(fresh.user);
 
-  /**
-   * Login with email and password (Vendors/Admins)
-   */
-  loginWithEmail: async ({ email, password }) => {
-    set({ status: "loading", error: null });
-    try {
-      const { token, user } = await loginWithEmailAPI({ email, password });
-      const role = user.role || "vendor"; // Default to vendor if not specified
-      await get().persistAuth(user, token, role);
+      // Persist the rotated refresh token immediately.
+      await saveRefreshToken(fresh.refreshToken);
+      await saveUserShadow(fresh.user);
+
       set({
-        user,
-        token,
+        user: fresh.user,
+        token: fresh.accessToken,
+        refreshToken: fresh.refreshToken,
         role,
         status: "authenticated",
         error: null,
       });
-      return { success: true };
     } catch (error) {
+      console.error("[AUTH] restoreSession failed:", error?.message);
+      await clearRefreshToken();
+      await clearUserShadow();
       set({
+        ...initialState,
         status: "unauthenticated",
-        error: error.message || "Login failed",
+        error: error?.message || null,
       });
-      return { success: false, error: error.message };
     }
   },
 
   /**
-   * Send OTP to mobile number (for host login)
+   * Persist the post-login token pair.
+   * Refresh → secure storage. Access → memory only.
    */
+  _persistAuth: async ({ user, accessToken, refreshToken, role }) => {
+    if (refreshToken) await saveRefreshToken(refreshToken);
+    if (user) await saveUserShadow(user);
+    set({
+      user,
+      token: accessToken,
+      refreshToken,
+      role,
+      status: "authenticated",
+      error: null,
+    });
+  },
+
+  loginWithEmail: async ({ email, password }) => {
+    set({ status: "loading", error: null });
+    try {
+      const { token, refreshToken, user } = await loginWithEmailAPI({ email, password });
+      const role = requireRole(user);
+      await get()._persistAuth({ user, accessToken: token, refreshToken, role });
+      return { success: true };
+    } catch (error) {
+      set({ status: "unauthenticated", error: error.message || "Login failed" });
+      return { success: false, error: error.message };
+    }
+  },
+
   sendOTP: async ({ mobile, type = "login" }) => {
     set({ status: "loading", error: null, tempMobile: mobile });
     try {
@@ -106,169 +137,119 @@ export const useAuthStore = create((set, get) => ({
       set({ status: "unauthenticated", error: null });
       return { success: true };
     } catch (error) {
-      set({
-        status: "unauthenticated",
-        error: error.message || "Failed to send OTP",
-      });
+      set({ status: "unauthenticated", error: error.message || "Failed to send OTP" });
       return { success: false, error: error.message };
     }
   },
 
-  /**
-   * Verify OTP and login (Host)
-   */
   verifyOTP: async ({ otp }) => {
     const { tempMobile } = get();
-    if (!tempMobile) {
-      return { success: false, error: "Mobile number not found" };
-    }
+    if (!tempMobile) return { success: false, error: "Mobile number not found" };
 
     set({ status: "loading", error: null });
     try {
-      const { token, user } = await verifyOTPAPI({ mobile: tempMobile, otp });
-      const role = user.role || "host"; // Default to host for OTP login
-      await get().persistAuth(user, token, role);
-      set({
-        user,
-        token,
-        role,
-        status: "authenticated",
-        error: null,
-        tempMobile: null,
-      });
+      const { token, refreshToken, user } = await verifyOTPAPI({ mobile: tempMobile, otp });
+      const role = requireRole(user);
+      await get()._persistAuth({ user, accessToken: token, refreshToken, role });
+      set({ tempMobile: null });
       return { success: true };
     } catch (error) {
-      set({
-        status: "unauthenticated",
-        error: error.message || "Invalid OTP",
-      });
+      set({ status: "unauthenticated", error: error.message || "Invalid OTP" });
       return { success: false, error: error.message };
     }
   },
 
-  /**
-   * Step 1: Signup with phone number only (Host)
-   */
   signupWithPhone: async ({ mobile }) => {
-    console.log("[AUTH STORE] Sending OTP for signup");
     set({ status: "loading", error: null, tempMobile: mobile });
     try {
       await signupWithPhoneAPI({ mobile });
-      console.log("[AUTH STORE] OTP sent for signup");
-      set({
-        status: "unauthenticated",
-        error: null,
-      });
+      set({ status: "unauthenticated", error: null });
       return { success: true };
     } catch (error) {
-      console.log("[AUTH STORE] Signup failed:", error.message);
-      set({
-        status: "unauthenticated",
-        error: error.message || "Signup failed",
-        tempMobile: null,
-      });
+      set({ status: "unauthenticated", error: error.message || "Signup failed", tempMobile: null });
       return { success: false, error: error.message };
     }
   },
 
-  /**
-   * Step 2: Verify OTP for signup (Host)
-   */
   verifySignupOTP: async ({ otp }) => {
     const { tempMobile } = get();
-    if (!tempMobile) {
-      return { success: false, error: "Mobile number not found" };
-    }
+    if (!tempMobile) return { success: false, error: "Mobile number not found" };
 
     set({ status: "loading", error: null });
     try {
-      const { token, user } = await verifySignupOTPAPI({
+      const { token, refreshToken, user } = await verifySignupOTPAPI({
         mobile: tempMobile,
         otp,
       });
-      // Store token temporarily for completing profile
+      // Profile is not yet complete — we hold the pair in memory but do NOT
+      // persist the refresh token until the host actually completes their
+      // profile (or, for mobile parity, until the backend issues final
+      // tokens via /auth/complete-profile).
       set({
         token,
+        refreshToken,
         user,
         status: "unauthenticated",
         error: null,
       });
       return { success: true };
     } catch (error) {
-      set({
-        status: "unauthenticated",
-        error: error.message || "Invalid OTP",
-      });
+      set({ status: "unauthenticated", error: error.message || "Invalid OTP" });
       return { success: false, error: error.message };
     }
   },
 
-  /**
-   * Step 3: Complete profile with email, fullName, password (Host)
-   */
   completeProfile: async ({ fullName, email, password }) => {
     const { token } = get();
-    if (!token) {
-      return { success: false, error: "No signup token found" };
-    }
+    if (!token) return { success: false, error: "No signup token found" };
 
     set({ status: "loading", error: null });
     try {
-      const { token: newToken, user } = await completeProfileAPI({
+      const result = await completeProfileAPI({
         username: fullName,
         email,
         password,
         token,
       });
-      const role = user.role || "host";
-      await get().persistAuth(user, newToken, role);
-      set({
-        user,
-        token: newToken,
+      const role = requireRole(result.user);
+      await get()._persistAuth({
+        user: result.user,
+        accessToken: result.token,
+        refreshToken: result.refreshToken,
         role,
-        status: "authenticated",
-        error: null,
-        tempMobile: null,
       });
+      set({ tempMobile: null });
       return { success: true };
     } catch (error) {
-      set({
-        status: "unauthenticated",
-        error: error.message || "Failed to complete profile",
-      });
+      set({ status: "unauthenticated", error: error.message || "Failed to complete profile" });
       return { success: false, error: error.message };
     }
   },
 
-  /**
-   * Vendor signup with email and password
-   */
   signupVendor: async (vendorData) => {
     set({ status: "loading", error: null });
     try {
-      const { token, user } = await signupVendorAPI(vendorData);
-      const role = user.role || "vendor";
-      await get().persistAuth(user, token, role);
-      set({
-        user,
-        token,
-        role,
-        status: "authenticated",
-        error: null,
-      });
+      const { token, refreshToken, user } = await signupVendorAPI(vendorData);
+      // Vendors are pending approval until an admin acts; backend returns
+      // null tokens. If a token does come back (admin auto-approve) persist;
+      // otherwise the vendor stays unauthenticated.
+      if (token && refreshToken) {
+        const role = requireRole(user);
+        await get()._persistAuth({ user, accessToken: token, refreshToken, role });
+      } else {
+        set({
+          user,
+          status: "unauthenticated",
+          error: null,
+        });
+      }
       return { success: true };
     } catch (error) {
-      set({
-        status: "unauthenticated",
-        error: error.message || "Vendor signup failed",
-      });
+      set({ status: "unauthenticated", error: error.message || "Vendor signup failed" });
       return { success: false, error: error.message };
     }
   },
 
-  /**
-   * Request password reset
-   */
   forgotPassword: async ({ email }) => {
     set({ status: "loading", error: null });
     try {
@@ -285,85 +266,74 @@ export const useAuthStore = create((set, get) => ({
   },
 
   /**
-   * Refresh token
+   * Rotate tokens explicitly. Used by the API layer on 401 retry.
+   * Returns the new access token (or null on failure).
    */
-  refreshToken: async () => {
-    const { token } = get();
-    if (!token) {
-      return { success: false, error: "No token found" };
-    }
-
+  refreshTokens: async () => {
     try {
-      const { token: newToken, user } = await refreshTokenAPI(token);
-      const role = user.role || get().role;
-      await get().persistAuth(user, newToken, role);
+      const stored = get().refreshToken || (await loadRefreshToken());
+      if (!stored) {
+        await get().logout();
+        return null;
+      }
+      const fresh = await refreshTokenAPI(stored);
+      const role = requireRole(fresh.user);
+      await saveRefreshToken(fresh.refreshToken);
+      await saveUserShadow(fresh.user);
       set({
-        user,
-        token: newToken,
+        user: fresh.user,
+        token: fresh.accessToken,
+        refreshToken: fresh.refreshToken,
         role,
-        error: null,
+        status: "authenticated",
       });
-      return { success: true };
+      return fresh.accessToken;
     } catch (error) {
-      console.error("Token refresh failed:", error);
-      // Token refresh failed, logout user
+      console.error("[AUTH] refreshTokens failed:", error?.message);
       await get().logout();
-      return { success: false, error: error.message };
+      return null;
     }
   },
 
-  /**
-   * Logout user
-   */
   logout: async () => {
-    const { token } = get();
+    const { token, refreshToken } = get();
     try {
-      await logoutAPI(token);
-      await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
-      set({
-        ...initialState,
-        status: "unauthenticated",
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-      // Still clear local state even if API call fails
-      await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
-      set({
-        ...initialState,
-        status: "unauthenticated",
-      });
+      await logoutAPI({ accessToken: token, refreshToken });
+    } catch (e) {
+      // already swallowed in service; defensive.
     }
+    await clearRefreshToken();
+    await clearUserShadow();
+    set({
+      ...initialState,
+      status: "unauthenticated",
+    });
   },
 
-  /**
-   * Update user data in store and persist
-   */
   setUser: async (updatedUser) => {
-    const { token, role } = get();
     set({ user: updatedUser });
-    await get().persistAuth(updatedUser, token, role);
+    if (updatedUser) await saveUserShadow(updatedUser);
   },
 
-  /**
-   * Clear error
-   */
   clearError: () => set({ error: null }),
 
-  /**
-   * Get temp mobile (for multi-step flows)
-   */
   getTempMobile: () => get().tempMobile,
 
   /**
-   * Role-based getters
+   * Role-based getters. Returns `false` (not undefined) when role is unset.
    */
   isHost: () => get().role === "host",
   isVendor: () => get().role === "vendor",
-  isAdmin: () =>
-    ["super_admin", "admin", "moderator"].includes(get().role),
-  isWhitelabel: () =>
-    ["whitelabel_admin", "whitelabel_moderator"].includes(get().role),
+  isAdmin: () => ["super_admin", "admin", "moderator"].includes(get().role),
+  isWhitelabel: () => ["whitelabel_admin", "whitelabel_moderator"].includes(get().role),
   isAdminDashboardRole: () =>
-    ["super_admin", "admin", "moderator", "whitelabel_admin", "whitelabel_moderator"].includes(get().role),
+    ["super_admin", "admin", "moderator", "whitelabel_admin", "whitelabel_moderator"].includes(
+      get().role,
+    ),
   getRole: () => get().role,
 }));
+
+// Optional helper for legacy code paths that previewed the cached user before
+// `restoreSession` resolved. Kept exported so tests can read it without
+// importing the secure-storage module directly.
+export const _peekUserShadow = loadUserShadow;

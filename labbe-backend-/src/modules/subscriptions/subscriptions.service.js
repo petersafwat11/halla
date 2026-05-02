@@ -25,6 +25,7 @@ const User = require('../../../models/UserModel');
 const BusinessSetupFee = require('../../../models/BusinessSetupFeeModel');
 const { isPerEventPlan, isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
 const notificationService = require('../notifications/notifications.service');
+const paymentProvider = require('../../infrastructure/paymentProvider');
 
 class SubscriptionsService {
   // ============================================
@@ -321,6 +322,31 @@ class SubscriptionsService {
     }
 
     // Concurrent subscriptions are allowed — do NOT cancel existing
+
+    // Phase 1b consumer wiring (FLOW-09 / FLOW-10 foundation): every
+    // subscription now goes through the payment provider before we save.
+    // In stub mode (no MOYASAR_API_KEY) this returns synthetic success so
+    // dev/CI flows are unaffected. Once real keys land the same call
+    // becomes a real charge and a failure response blocks the save.
+    const planPrice = plan?.pricing?.amount ?? plan?.pricing?.monthly ?? 0;
+    if (planPrice > 0) {
+      const charge = await paymentProvider.charge({
+        amount: planPrice,
+        currency: plan?.pricing?.currency || 'SAR',
+        customer: { id: userId },
+        metadata: {
+          planCode: plan.code,
+          discountCode,
+          description: `Subscription to ${plan.code}`,
+        },
+        idempotencyKey: `subscribe:${userId}:${plan.code}`,
+      });
+      if (!charge.success) {
+        throw new ValidationError(
+          charge.error || 'Payment failed; subscription not activated'
+        );
+      }
+    }
 
     // Create new subscription
     const subscription = await Subscription.createForUser(userId, plan, {
