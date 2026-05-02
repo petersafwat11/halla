@@ -321,7 +321,21 @@ class SubscriptionsService {
       if (!setupFee) throw new Error('Business setup fee must be paid before subscribing to business event plans');
     }
 
-    // Concurrent subscriptions are allowed — do NOT cancel existing
+    // FLOW-12-F01 / FLOW-09-F02: a host can never have two active
+    // subscriptions. Direct subscribe() now matches changePlan() — any
+    // existing active sub is cancelled before the new one is created.
+    // This eliminates the "validateLimits picks the wrong subscription"
+    // class of bug at the root.
+    const existingActive = await Subscription.find({
+      userId,
+      status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
+    });
+    for (const existing of existingActive) {
+      existing.status = SUBSCRIPTION_STATUS.CANCELLED;
+      existing.cancelledAt = new Date();
+      existing.cancelReason = `Auto-cancelled on new subscribe to ${planCode}`;
+      await existing.save();
+    }
 
     // Phase 2 (FLOW-09-F01 / trial guard): Plan schema stores price in
     // `pricing.oneTime`. Free / trial plans must skip the payment provider —
