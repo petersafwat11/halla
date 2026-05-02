@@ -17,12 +17,62 @@ const router = express.Router();
 const plansController = require('./plans.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { restrictTo } = require('../../shared/middleware/rbac');
+const { auditLog } = require('../../shared/middleware/auditLog');
 const { ROLES } = require('../../shared/constants');
 const { validateObjectId } = require('../../shared/middleware/validation');
 
 // Admin plan routes (protected)
-router.get('/admin/all', protect, restrictTo(ROLES.SUPER_ADMIN), plansController.getAllPlansAdmin);
-router.patch('/admin/:code', protect, restrictTo(ROLES.SUPER_ADMIN), plansController.updatePlanByCode);
+router.get(
+  '/admin/all',
+  protect,
+  restrictTo(ROLES.SUPER_ADMIN),
+  plansController.getAllPlansAdmin
+);
+
+// FLOW-08-F01: create
+router.post(
+  '/admin',
+  protect,
+  restrictTo(ROLES.SUPER_ADMIN),
+  auditLog({
+    action: 'plan.created',
+    targetType: 'system',
+    targetIdFrom: (req, res) => res.locals?.planAudit?.after?.id,
+    changesFrom: (req, res) => ({
+      after: res.locals?.planAudit?.after || { code: req.body?.code },
+    }),
+    metadataFrom: (req) => ({ code: req.body?.code }),
+  }),
+  plansController.createPlan
+);
+
+// FLOW-08-F01: soft-delete
+router.delete(
+  '/admin/:code',
+  protect,
+  restrictTo(ROLES.SUPER_ADMIN),
+  auditLog({
+    action: 'plan.deactivated',
+    targetType: 'system',
+    changesFrom: (req, res) => res.locals?.planAudit || {},
+    metadataFrom: (req) => ({ code: req.params?.code }),
+  }),
+  plansController.deletePlan
+);
+
+// FLOW-08-F02 + FLOW-08-F03: validated update with before/after audit
+router.patch(
+  '/admin/:code',
+  protect,
+  restrictTo(ROLES.SUPER_ADMIN),
+  auditLog({
+    action: 'plan.updated',
+    targetType: 'system',
+    changesFrom: (req, res) => res.locals?.planAudit || {},
+    metadataFrom: (req) => ({ code: req.params?.code }),
+  }),
+  plansController.updatePlanByCode
+);
 
 // All routes below are public
 

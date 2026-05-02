@@ -4,10 +4,11 @@
  * @module modules/plans/plans.service
  */
 
-const { NotFoundError } = require('../../shared/errors');
+const { NotFoundError, ValidationError, ConflictError } = require('../../shared/errors');
 const { isPoolPlan, buildFeaturesArray, BUSINESS_SETUP_FEE } = require('../../shared/constants/plans');
 
 const Plan = require('../../../models/PlanModel');
+const Subscription = require('../../../models/SubscriptionModel');
 
 class PlansService {
   /**
@@ -118,13 +119,91 @@ class PlansService {
   }
 
   /**
+   * Create a new plan (FLOW-08-F01).
+   * SUPER_ADMIN-only at the route layer. Hard-rejects duplicate `code`
+   * because the schema's unique index would otherwise raise a less-clear
+   * E11000 error.
+   *
+   * @param {Object} data
+   * @returns {Promise<{ plan, before: null }>} `before: null` shape mirrors
+   *          updatePlanByCode so the audit middleware can read it uniformly.
+   */
+  async createPlan(data) {
+    if (!data?.code) throw new ValidationError('Plan code is required');
+    if (!data?.planType) throw new ValidationError('planType is required');
+    if (!data?.nameAr || !data?.nameEn) {
+      throw new ValidationError('nameAr and nameEn are required');
+    }
+    if (!data?.pricing || data.pricing.oneTime == null) {
+      throw new ValidationError('pricing.oneTime is required');
+    }
+    if (!data?.limits) throw new ValidationError('limits are required');
+    if (!data?.features) throw new ValidationError('features are required');
+
+    const duplicate = await Plan.findOne({ code: data.code });
+    if (duplicate) {
+      throw new ConflictError(`Plan code "${data.code}" already exists`);
+    }
+
+    const plan = await Plan.create({
+      ...data,
+      isActive: data.isActive !== false,
+      isPublic: data.isPublic !== false,
+    });
+
+    return { plan: this._formatPlan(plan) };
+  }
+
+  /**
+   * Soft-delete a plan (FLOW-08-F01). Hard delete is intentionally
+   * blocked to preserve historical subscriptions.
+   * Returns 409 (ConflictError) when active subscribers exist.
+   *
+   * @param {string} code
+   * @returns {Promise<{ plan, activeSubscribers }>}
+   */
+  async deletePlanByCode(code) {
+    const plan = await Plan.findOne({ code });
+    if (!plan) throw new NotFoundError('Plan');
+
+    const activeSubscribers = await Subscription.countDocuments({
+      planId: plan._id,
+      status: { $in: ['active', 'trial'] },
+    });
+
+    if (activeSubscribers > 0) {
+      const err = new ConflictError(
+        `Cannot deactivate plan: ${activeSubscribers} active subscriber(s) on this plan`,
+        'planId'
+      );
+      err.details = { activeSubscribers, planCode: code };
+      throw err;
+    }
+
+    plan.isActive = false;
+    await plan.save();
+
+    return { plan: this._formatPlan(plan), activeSubscribers };
+  }
+
+  /**
    * Update plan by code (admin)
+   *
+   * FLOW-08-F02 / FLOW-08-F03: rejects destructive limit reductions
+   * when active subscribers would breach the new ceiling, and returns
+   * before/after snapshots so the route-level audit middleware can
+   * record the diff (FLOW-08-F03).
+   *
+   * @param {string} code
+   * @param {Object} updateData
+   * @returns {Promise<{ plan, before, after }>}
    */
   async updatePlanByCode(code, updateData) {
     // Whitelist allowed update fields
     const allowedFields = [
       'nameAr', 'nameEn', 'descriptionAr', 'descriptionEn',
-      'isActive', 'pricing', 'limits', 'features', 'tier',
+      'isActive', 'isPublic', 'pricing', 'limits', 'features', 'tier',
+      'sortOrder', 'isPopular',
     ];
     const safeUpdate = {};
     for (const field of allowedFields) {
@@ -133,9 +212,98 @@ class PlansService {
       }
     }
 
-    const plan = await Plan.findOneAndUpdate({ code }, safeUpdate, { new: true, runValidators: true });
-    if (!plan) throw new NotFoundError('Plan');
-    return { plan: this._formatPlan(plan) };
+    const existing = await Plan.findOne({ code });
+    if (!existing) throw new NotFoundError('Plan');
+
+    // FLOW-08-F02: block destructive limit reductions when at least one
+    // active subscriber would exceed the new ceiling.
+    if (safeUpdate.limits) {
+      await this._guardLimitReductions(existing, safeUpdate.limits);
+    }
+
+    const before = {
+      pricing: existing.pricing?.toObject ? existing.pricing.toObject() : existing.pricing,
+      limits: existing.limits?.toObject ? existing.limits.toObject() : existing.limits,
+      features: existing.features?.toObject ? existing.features.toObject() : existing.features,
+      isActive: existing.isActive,
+      isPublic: existing.isPublic,
+      nameAr: existing.nameAr,
+      nameEn: existing.nameEn,
+    };
+
+    const plan = await Plan.findOneAndUpdate({ code }, safeUpdate, {
+      new: true,
+      runValidators: true,
+    });
+
+    const after = {
+      pricing: plan.pricing?.toObject ? plan.pricing.toObject() : plan.pricing,
+      limits: plan.limits?.toObject ? plan.limits.toObject() : plan.limits,
+      features: plan.features?.toObject ? plan.features.toObject() : plan.features,
+      isActive: plan.isActive,
+      isPublic: plan.isPublic,
+      nameAr: plan.nameAr,
+      nameEn: plan.nameEn,
+    };
+
+    return { plan: this._formatPlan(plan), before, after };
+  }
+
+  /**
+   * Internal: reject limit reductions that would orphan existing
+   * subscribers above the new ceiling.
+   * @private
+   */
+  async _guardLimitReductions(existingPlan, newLimits) {
+    const oldLimits = existingPlan.limits || {};
+    const reduces = (key) =>
+      newLimits[key] !== undefined
+      && newLimits[key] !== null
+      && newLimits[key] !== -1
+      && oldLimits[key] !== null
+      && oldLimits[key] !== -1
+      && newLimits[key] < oldLimits[key];
+
+    const reducedKeys = ['maxEvents', 'maxInvitesPerEvent', 'invitePool']
+      .filter(reduces);
+
+    if (reducedKeys.length === 0) return;
+
+    const activeSubscribers = await Subscription.find({
+      planId: existingPlan._id,
+      status: { $in: ['active', 'trial'] },
+    }).select('_id userId usage invitePool invitesConsumed compensationPool');
+
+    if (activeSubscribers.length === 0) return;
+
+    const affected = [];
+    for (const sub of activeSubscribers) {
+      for (const key of reducedKeys) {
+        const newLimit = newLimits[key];
+        if (key === 'maxEvents') {
+          const used = sub.usage?.eventsCreated || 0;
+          if (used > newLimit) affected.push({ id: sub._id, key, used, newLimit });
+        } else if (key === 'invitePool') {
+          // Pool plans: if new pool ceiling is below already-consumed
+          // invites, the subscriber is orphaned.
+          const consumed = sub.invitesConsumed || 0;
+          if (consumed > newLimit) affected.push({ id: sub._id, key, used: consumed, newLimit });
+        } else if (key === 'maxInvitesPerEvent') {
+          // Per-event plans: snap-shotted at event creation. We cannot
+          // know reliably here whether a live event uses the old
+          // ceiling. Require explicit force flag in the future; for now
+          // block conservatively when any subscriber is active.
+          affected.push({ id: sub._id, key, used: oldLimits[key], newLimit });
+        }
+      }
+    }
+
+    if (affected.length > 0) {
+      throw new ValidationError(
+        `Limit reduction blocked: ${affected.length} active subscriber(s) would breach the new ceiling`,
+        [{ affectedCount: affected.length, reducedKeys, sample: affected.slice(0, 5) }]
+      );
+    }
   }
 
   /**
