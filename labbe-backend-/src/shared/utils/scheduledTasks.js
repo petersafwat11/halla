@@ -180,8 +180,16 @@ async function runEventLaunch(event, workerId) {
 
   // Re-read inside the lock in case another worker ran first.
   const fresh = await Event.findById(eventId);
-  if (!fresh || fresh.status === "live" || fresh.status === "completed") {
-    await eventLock.release(eventId);
+  // Bail on any terminal state — defense in depth against a race between
+  // the cron filter (which excludes these) and our re-read.
+  if (
+    !fresh ||
+    fresh.status === "live" ||
+    fresh.status === "completed" ||
+    fresh.status === "failed" ||
+    fresh.status === "cancelled"
+  ) {
+    await _safeReleaseLock(eventId);
     return { launched: false, reason: "stale" };
   }
 
@@ -227,7 +235,9 @@ async function runEventLaunch(event, workerId) {
     // by the retry-failed flow downstream). Flip to live now.
     fresh.status = "live";
     fresh.launchedAt = new Date();
-    fresh.failureReason = undefined;
+    // Clear via `null`. Mongoose treats `undefined` as "leave field as-is"
+    // on subdocuments / cast paths, so we explicitly null these out.
+    fresh.failureReason = null;
     await fresh.save();
 
     await logAudit({
@@ -250,8 +260,12 @@ async function runEventLaunch(event, workerId) {
   } catch (err) {
     console.error(`[Cron] Event ${eventId} launch threw:`, err);
     try {
+      // Only overwrite `failureReason` if the inner save didn't already set
+      // a more specific one — `$set` here would otherwise clobber e.g. the
+      // detailed `sendBulk` error string with the generic exception
+      // message.
       await Event.updateOne(
-        { _id: eventId },
+        { _id: eventId, $or: [{ failureReason: null }, { failureReason: { $exists: false } }] },
         { $set: { failureReason: err.message || "exception" } }
       );
       await logAudit({
@@ -268,7 +282,17 @@ async function runEventLaunch(event, workerId) {
     }
     return { launched: false, reason: err.message || "exception" };
   } finally {
+    // The lock release MUST NOT throw out of `finally` — that would mask
+    // the original error from the try/catch. _safeReleaseLock swallows.
+    await _safeReleaseLock(eventId);
+  }
+}
+
+async function _safeReleaseLock(eventId) {
+  try {
     await eventLock.release(eventId);
+  } catch (err) {
+    console.error(`[Cron] eventLock.release(${eventId}) failed:`, err.message);
   }
 }
 
@@ -727,11 +751,23 @@ const LAUNCH_BACKOFF_MS = [
   12 * 60 * 60 * 1000,  // 12 h
 ];
 
+/**
+ * `attemptCount` is the number of attempts that have *already finished*.
+ * After attempt 1 fails (attemptCount === 1) we want the wait BEFORE
+ * attempt 2, which is `LAUNCH_BACKOFF_MS[0]` (5 min). So the index is
+ * `attempt - 1`, clamped to the array bounds.
+ *
+ *   attempt 1 finished → wait LAUNCH_BACKOFF_MS[0] = 5 min  → attempt 2
+ *   attempt 2 finished → wait LAUNCH_BACKOFF_MS[1] = 30 min → attempt 3
+ *   attempt 3 finished → wait LAUNCH_BACKOFF_MS[2] = 2 h    → attempt 4
+ *   attempt 4 finished → wait LAUNCH_BACKOFF_MS[3] = 6 h    → attempt 5
+ */
 const _isRetryDue = (event, now) => {
   const last = event.lastAttemptAt ? new Date(event.lastAttemptAt).getTime() : 0;
   const attempt = event.attemptCount || 0;
+  if (attempt <= 0) return false;
   if (attempt >= MAX_LAUNCH_ATTEMPTS) return false;
-  const backoffIdx = Math.min(attempt, LAUNCH_BACKOFF_MS.length - 1);
+  const backoffIdx = Math.min(attempt - 1, LAUNCH_BACKOFF_MS.length - 1);
   const wait = LAUNCH_BACKOFF_MS[backoffIdx];
   return now.getTime() - last >= wait;
 };

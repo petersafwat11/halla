@@ -16,7 +16,6 @@ const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
-const { withIdempotency } = require('../../shared/utils/idempotency');
 
 class StaffService {
   /**
@@ -153,13 +152,12 @@ class StaffService {
   /**
    * Check in guest via QR code.
    *
-   * Phase 3e.2 (FLOW-20-F03 / decision D6): wrapped in `withIdempotency`
-   * with key `checkin:<eventId>:<guestId>`. First scan caches the
-   * success response (with `alreadyCheckedIn: false`). Subsequent scans
-   * within the 24h TTL return the cached response — but the wrapper
-   * post-processes to flip `alreadyCheckedIn: true` based on whether
-   * the underlying guest doc was already checked in. The scanner UI
-   * uses `alreadyCheckedIn` + `checkedInAt` to render the right state.
+   * Phase 3e.2 (FLOW-20-F03 / decision D6): the actual idempotency
+   * primitive is the atomic compare-and-swap inside
+   * `_performIdempotentCheckIn` — see that helper for the rationale.
+   * The scanner UI reads `alreadyCheckedIn` + `checkedInAt` from the
+   * response to render either "Checked in" or "Already checked in at
+   * HH:MM".
    */
   async checkInByQR(eventId, qrCode, staffUser) {
     const guest = await Guest.findOne({ event: eventId, qrcode: qrCode });
@@ -240,21 +238,28 @@ class StaffService {
   }
 
   /**
-   * Revoke a staff access token (Phase 3e.1 / FLOW-20-F01 / decision D5).
+   * Revoke a staff member's access tokens (Phase 3e.1 / FLOW-20-F01 / D5).
    *
-   * RBAC: only the event host or whitelabel-admin (when the event belongs
-   * to their whitelabel) — admin / super_admin allowed via `restrictTo`
-   * at the route layer. Re-revoking an already-revoked token is
-   * idempotent (returns 200 with the same final state).
+   * The path parameter `:staffId` is the **staff member sub-document _id**
+   * (from `event.staffList[i]._id`) — that's what the host UI exposes.
+   * We look up the staff member in the event, then revoke every active
+   * `StaffAccessToken` for that event+phone. Multiple tokens can exist
+   * if the host re-issued (e.g. after expiry); the host's intent is
+   * "this staff member can no longer access the portal", which means
+   * all tokens.
    *
-   * The staff "ID" parameter is the StaffAccessToken document's _id.
+   * RBAC: event host or whitelabel-admin (admin / super_admin allowed
+   * via `restrictTo` at the router head).
+   *
+   * Idempotent at the action level: if no active tokens remain (already
+   * revoked or never issued), returns 200 with `revoked: false,
+   * affected: 0` — same final state.
    *
    * @param {string} eventId
-   * @param {string} staffTokenId
+   * @param {string} staffMemberId — staff sub-document _id from event.staffList
    * @param {Object} actor — req.user
-   * @returns {Promise<Object>}
    */
-  async revokeStaffToken(eventId, staffTokenId, actor) {
+  async revokeStaffToken(eventId, staffMemberId, actor) {
     const event = await Event.findById(eventId);
     if (!event) throw new NotFoundError('Event');
 
@@ -273,39 +278,47 @@ class StaffService {
       throw new ForbiddenError('Not authorized to revoke this staff token');
     }
 
-    const token = await StaffAccessToken.findOne({ _id: staffTokenId, event: eventId });
-    if (!token) throw new NotFoundError('StaffAccessToken');
+    const staffMember = (event.staffList || []).find(
+      (s) => s._id?.toString() === staffMemberId
+    );
+    if (!staffMember) throw new NotFoundError('Staff member');
 
-    const wasAlreadyRevoked = token.isRevoked;
-    if (!wasAlreadyRevoked) {
-      token.isRevoked = true;
-      token.revokedAt = new Date();
-      token.revokedBy = actor?._id || null;
-      await token.save();
-    }
+    // Revoke every active token for this staff phone on this event.
+    const result = await StaffAccessToken.updateMany(
+      { event: eventId, phone: staffMember.phone, isRevoked: false },
+      {
+        $set: {
+          isRevoked: true,
+          revokedAt: new Date(),
+          revokedBy: actor?._id || null,
+        },
+      }
+    );
+
+    const affected = result?.modifiedCount || 0;
 
     await logAudit({
       action: 'staff_access_token.revoke',
       actor,
       targetType: 'staff_access_token',
-      targetId: token._id,
+      targetId: staffMember._id,
       whitelabelId: event.whitelabelId || null,
-      changes: {
-        before: { isRevoked: wasAlreadyRevoked },
-        after: { isRevoked: true },
-      },
       metadata: {
         eventId,
-        staffPhone: token.phone,
-        staffName: token.staffName,
-        wasAlreadyRevoked,
+        staffMemberId,
+        staffPhone: staffMember.phone,
+        staffName: staffMember.name,
+        affected,
       },
     });
 
     return {
-      revoked: true,
-      revokedAt: token.revokedAt,
-      wasAlreadyRevoked,
+      revoked: affected > 0,
+      affected,
+      // True when the staff member already had no active tokens — same
+      // final state as a fresh revoke. Useful for the UI to render
+      // "already revoked" vs "just revoked".
+      wasAlreadyRevoked: affected === 0,
     };
   }
 
@@ -316,76 +329,60 @@ class StaffService {
   /**
    * Idempotent check-in core (Phase 3e.2 / FLOW-20-F03 / D6).
    *
-   * Uses `withIdempotency` keyed by `checkin:<eventId>:<guestId>`. The
-   * cached body keeps the original `checkedInAt`, so a second scan
-   * within 24h returns the same timestamp and `alreadyCheckedIn: true`
-   * — exactly what the scanner UI needs to render
-   * "Already checked in at HH:MM".
+   * The DB row IS the idempotency cache here. We use an atomic
+   * `findOneAndUpdate` with `status: { $ne: 'checked_in' }` as the guard
+   * — at most one concurrent caller's update lands; everyone else falls
+   * through to "already checked in" with the original `checkedInAt`.
+   *
+   * Why DB-level instead of the HTTP idempotency cache: the spec wants
+   * the scanner UI to see `alreadyCheckedIn: true` on replay (so it can
+   * render "checked in at HH:MM"). The HTTP cache would return the
+   * first call's body verbatim — `alreadyCheckedIn: false` — on every
+   * replay, defeating the UX. Compare-and-swap on the guest doc gives
+   * us correct first-vs-replay semantics naturally and is also safe
+   * against concurrent scans of the same QR.
    */
-  async _performIdempotentCheckIn(eventId, guest, staffUser) {
-    const key = `checkin:${eventId}:${guest._id}`;
+  async _performIdempotentCheckIn(eventId, guest, _staffUser) {
+    const now = new Date();
 
-    const result = await withIdempotency(
-      key,
-      async () => {
-        // Re-read guest inside the cache miss to pick up any concurrent
-        // status update.
-        const fresh = await Guest.findById(guest._id);
-        if (!fresh) throw new NotFoundError('Guest');
-
-        if (fresh.status === 'checked_in') {
-          return {
-            guest: this._formatGuest(fresh),
-            alreadyCheckedIn: true,
-            checkedInAt: fresh.checkIn?.checkedInAt || null,
-            message: 'Guest was already checked in',
-          };
-        }
-
-        fresh.status = 'checked_in';
-        fresh.checkIn = {
-          checkedIn: true,
-          checkedInAt: new Date(),
-        };
-        await fresh.save();
-
-        this._notifyHostCheckIn(eventId, fresh).catch(console.error);
-
-        return {
-          guest: this._formatGuest(fresh),
-          alreadyCheckedIn: false,
-          checkedInAt: fresh.checkIn.checkedInAt,
-          message: 'Guest checked in successfully',
-        };
+    const updated = await Guest.findOneAndUpdate(
+      {
+        _id: guest._id,
+        event: eventId,
+        status: { $ne: 'checked_in' },
       },
-      { scope: 'staff.checkin' }
+      {
+        $set: {
+          status: 'checked_in',
+          'checkIn.checkedIn': true,
+          'checkIn.checkedInAt': now,
+        },
+      },
+      { new: true }
     );
 
-    // Cached replays return the original payload with
-    // `alreadyCheckedIn: false` because the *first* call did the actual
-    // check-in. We post-process to flip the flag for replays so the UI
-    // shows the right state.
-    if (result && result.alreadyCheckedIn === false) {
-      // Determine if this is a replay by checking whether the guest
-      // already shows checked_in (it always should be, since this is
-      // post-cache-write — but this also makes the second response
-      // honest).
-      try {
-        const reread = await Guest.findById(guest._id).select('status checkIn');
-        if (reread?.status === 'checked_in' && reread.checkIn?.checkedInAt) {
-          // Detect replay: the cached checkedInAt is older than ~5 sec.
-          const cachedAt = new Date(result.checkedInAt || 0).getTime();
-          const persistedAt = new Date(reread.checkIn.checkedInAt).getTime();
-          if (cachedAt && Math.abs(persistedAt - cachedAt) > 5000) {
-            return { ...result, alreadyCheckedIn: true };
-          }
-        }
-      } catch (_) {
-        /* swallow — return the cached body */
-      }
+    if (updated) {
+      // First successful check-in (CAS won).
+      this._notifyHostCheckIn(eventId, updated).catch(console.error);
+      return {
+        guest: this._formatGuest(updated),
+        alreadyCheckedIn: false,
+        checkedInAt: updated.checkIn?.checkedInAt || now,
+        message: 'Guest checked in successfully',
+      };
     }
 
-    return result;
+    // CAS lost — guest was already checked in (possibly by a concurrent
+    // scan). Fetch the persisted record to return the original
+    // `checkedInAt` so the UI renders "checked in at HH:MM".
+    const existing = await Guest.findOne({ _id: guest._id, event: eventId });
+    if (!existing) throw new NotFoundError('Guest');
+    return {
+      guest: this._formatGuest(existing),
+      alreadyCheckedIn: true,
+      checkedInAt: existing.checkIn?.checkedInAt || null,
+      message: 'Guest was already checked in',
+    };
   }
 
   _generateSessionToken(payload) {

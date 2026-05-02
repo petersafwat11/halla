@@ -81,7 +81,7 @@ Branch: `claude/implement-phase-3-plans-ZWa40` (same branch as 3abc, separate co
 - **FLOW-18-F03** — Guest QR rotation endpoint `POST /events/:eventId/guests/:guestId/rotate-qr`; revoked tokens return 410 Gone with `reason: 'qr_rotated'`.
 - **FLOW-19-F02** — RSVP submit idempotency middleware on `POST /guests/:id/rsvp` with derived key shape `rsvp_<sha256(eventId:guestId:choice)>`.
 - **FLOW-20-F01** — Staff token revocation endpoint `POST /events/:eventId/staff/:staffId/revoke` (RBAC: host / wl-admin / admin / super_admin); idempotent at action level.
-- **FLOW-20-F03** — Check-in idempotency via `_performIdempotentCheckIn` (`checkin:<eventId>:<guestId>`, 24h TTL); `alreadyCheckedIn` flag in cached body.
+- **FLOW-20-F03** — Check-in idempotency via atomic CAS in `_performIdempotentCheckIn` (Guest doc `status` field is the primitive — `findOneAndUpdate({ status: { $ne: 'checked_in' } })` ensures at most one caller's update lands; replays return `alreadyCheckedIn: true` with the original `checkedInAt`). Chose this over the HTTP idempotency cache because the cache returns the first-call body verbatim — wrong for the "already checked in" UX.
 - **FLOW-21-F03** — `GuestAccessToken` expiry + manual-revoke endpoint `POST /events/:eventId/guests/:guestId/revoke-access`; 410 Gone for `qr_expired` / `qr_revoked`. Backfill script `scripts/backfill-guest-access-token-expiry.js` ships **NOT YET RUN**.
 
 Drive-by improvements (no FLOW ID — recorded for traceability):

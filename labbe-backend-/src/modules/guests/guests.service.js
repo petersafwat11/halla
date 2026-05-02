@@ -393,6 +393,11 @@ class GuestsService {
       throw new ForbiddenError('Not authorized to revoke this QR');
     }
 
+    // Verify guest exists in the event so we don't silently no-op on a
+    // typo'd guestId.
+    const guest = await Guest.findOne({ _id: guestId, event: eventId });
+    if (!guest) throw new NotFoundError('Guest');
+
     const result = await GuestAccessToken.updateMany(
       {
         guest: guestId,
@@ -410,18 +415,26 @@ class GuestsService {
       }
     );
 
+    const affected = result?.modifiedCount || 0;
+
     await logAudit({
       action: 'guest_access_token.revoke',
       actor,
       targetType: 'guest_access_token',
       targetId: guestId,
       whitelabelId: event.whitelabelId || null,
-      metadata: { eventId, guestId, affected: result?.modifiedCount || 0 },
+      metadata: { eventId, guestId, affected },
     });
 
     return {
-      revoked: true,
-      affected: result?.modifiedCount || 0,
+      // `revoked: true` only when at least one token transitioned. If
+      // the staff member already had no active tokens, the response is
+      // still 200 (idempotent action) but `revoked: false` +
+      // `wasAlreadyRevoked: true` so the UI can render the right
+      // message.
+      revoked: affected > 0,
+      affected,
+      wasAlreadyRevoked: affected === 0,
     };
   }
 

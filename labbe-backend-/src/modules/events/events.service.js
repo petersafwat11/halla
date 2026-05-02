@@ -470,18 +470,27 @@ class EventsService {
     }
 
     if (event.status !== "failed" && event.status !== "scheduled") {
-      const err = new ValidationError(
-        `Cannot retry an event in status '${event.status}'`
+      // 409 — conflict with the resource's current state. We don't have a
+      // ConflictError class, so build an AppError directly with the right
+      // status code (the global error handler reads statusCode, not the
+      // string status field).
+      const AppError = require("../../shared/errors/AppError");
+      throw new AppError(
+        `Cannot retry an event in status '${event.status}'`,
+        409,
+        "EVENT_NOT_RETRYABLE"
       );
-      err.status = 409;
-      throw err;
     }
 
     event.attemptCount = 0;
-    event.failureReason = undefined;
-    event.failedAt = undefined;
+    // Mongoose treats `undefined` as a no-op on assignment; use `null` to
+    // explicitly clear the persisted value. (Worth using $unset if we
+    // ever need true "field absent" semantics — for our queries `null`
+    // suffices.)
+    event.failureReason = null;
+    event.failedAt = null;
     event.status = "scheduled";
-    event.lastAttemptAt = undefined;
+    event.lastAttemptAt = null;
     await event.save();
 
     // Reuse the same launch helper as the cron — same lock, same audit.
@@ -1389,12 +1398,18 @@ class EventsService {
   // ============================================
 
   /**
-   * Format event for response
-   * @private
+   * Format event for response.
+   *
+   * Phase 3c: surface the launch-lifecycle fields (`attemptCount`,
+   * `failureReason`, `failedAt`, `launchedAt`) so the failure-banner UI
+   * has them in list-view and detail-view payloads. Without these, the
+   * mobile EventDetails screen (which receives the event as a prop from
+   * the list) renders an empty banner on `failed` events.
    */
   _formatEvent(event) {
     return {
       id: event._id,
+      _id: event._id,
       title: event.eventDetails?.title,
       eventType: event.eventDetails?.type,
       date: event.eventDetails?.date,
@@ -1404,6 +1419,14 @@ class EventsService {
       guestCount: event.guestList?.length || 0,
       confirmedCount:
         event.guestList?.filter((g) => g.status === "confirmed").length || 0,
+      // Launch lifecycle (Phase 3a/3c)
+      attemptCount: event.attemptCount || 0,
+      failureReason: event.failureReason || null,
+      failedAt: event.failedAt || null,
+      launchedAt: event.launchedAt || null,
+      // Multi-tenant context (3c failure-banner RBAC needs this)
+      whitelabelId: event.whitelabelId || null,
+      host: event.host || null,
       createdAt: event.createdAt,
     };
   }

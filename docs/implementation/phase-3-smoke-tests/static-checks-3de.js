@@ -116,11 +116,17 @@ check("3e.1 — AuditLog targetType enum extended with `staff_access_token`", ()
   return m.includes('"staff_access_token"') || "targetType enum not extended";
 });
 
-check("3e.2 — staff service uses withIdempotency for check-in (key: checkin:<eventId>:<guestId>)", () => {
+check("3e.2 — staff check-in uses atomic CAS for idempotency + alreadyCheckedIn flag", () => {
   const svc = read("labbe-backend-/src/modules/staff/staff.service.js");
-  if (!svc.includes("withIdempotency")) return "withIdempotency not imported/used";
-  if (!svc.includes("checkin:${eventId}:${guest._id}")) return "key shape missing";
-  if (!svc.includes("alreadyCheckedIn")) return "alreadyCheckedIn flag missing in cached body";
+  // The DB row's status field is the idempotency primitive — atomic
+  // findOneAndUpdate guarded on `status !== 'checked_in'`. The HTTP-cache
+  // approach was scrapped because it can't return `alreadyCheckedIn:
+  // true` on replay (see _performIdempotentCheckIn docstring).
+  if (!svc.includes("findOneAndUpdate")) return "atomic findOneAndUpdate missing";
+  if (!svc.includes("status: { $ne: 'checked_in' }"))
+    return "CAS guard missing — replay safety not enforced";
+  if (!svc.includes("alreadyCheckedIn: false") || !svc.includes("alreadyCheckedIn: true"))
+    return "first vs replay path not distinguished";
   return true;
 });
 

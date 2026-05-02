@@ -207,9 +207,15 @@ class PostEventService {
       // error, not a "the resource is gone" error.
       const goneReasons = ['qr_rotated', 'qr_revoked', 'qr_expired'];
       if (goneReasons.includes(validation.reason)) {
-        const err = new Error(validation.message || validation.reason);
-        err.status = 410;
-        err.statusCode = 410;
+        const AppError = require('../../shared/errors/AppError');
+        const err = new AppError(
+          validation.message || validation.reason,
+          410,
+          validation.reason.toUpperCase()
+        );
+        // The controller-level catch maps this to a structured 410 body;
+        // even if it doesn't, the global handler returns 410 because
+        // AppError sets `statusCode` and `isOperational`.
         err.body = { reason: validation.reason, message: validation.message };
         throw err;
       }

@@ -16,6 +16,11 @@ const router = express.Router();
 
 // Controller
 const eventsController = require("./events.controller");
+// Cross-module controller — staff revoke endpoint lives under
+// `/events/:eventId/staff/:staffId/revoke` for URL-shape consistency with
+// the rest of the event-staff routes, but the handler itself ships with
+// the staff module.
+const staffController = require("../staff/staff.controller");
 
 // Middleware (using existing during migration)
 const { protect } = require("../../shared/middleware/auth");
@@ -856,7 +861,7 @@ router.post(
   validateObjectId("eventId"),
   validateObjectId("staffId"),
   idempotency({ scope: "staff.revoke" }),
-  require("../staff/staff.controller").revokeStaffToken
+  staffController.revokeStaffToken
 );
 
 // ============================================

@@ -189,6 +189,12 @@ exports.webhook = catchAsync(async (req, res) => {
   const { object, entry } = req.body;
 
   // Handle WhatsApp Business API webhook
+  //
+  // We never want a per-message error to break the whole webhook — Meta
+  // would retry the entire payload, including messages we already
+  // processed. Each inner block is therefore wrapped in its own
+  // try/catch and we always send 200 at the end. Idempotency provides
+  // the dedup safety net for retries Meta sends anyway.
   if (object === 'whatsapp_business_account' && entry) {
     for (const e of entry) {
       const changes = e.changes || [];
@@ -202,22 +208,30 @@ exports.webhook = catchAsync(async (req, res) => {
         // one that triggers a host notification, so the dedup wraps it.
         const statuses = change.value?.statuses || [];
         for (const status of statuses) {
-          if (status.status === 'no_capability' || status.status === 'failed') {
-            await Guest.findOneAndUpdate(
-              { 'invitation.messageId': status.id },
-              {
-                $set: {
-                  'invitation.effectiveChannel': 'sms',
-                  'invitation.smsFallback': true,
-                  'invitation.status': 'sent',
-                },
-              }
-            );
-          } else {
-            await messagingService.updateDeliveryStatus(
-              status.id,
-              status.status,
-              new Date(parseInt(status.timestamp) * 1000)
+          try {
+            if (status.status === 'no_capability' || status.status === 'failed') {
+              await Guest.findOneAndUpdate(
+                { 'invitation.messageId': status.id },
+                {
+                  $set: {
+                    'invitation.effectiveChannel': 'sms',
+                    'invitation.smsFallback': true,
+                    'invitation.status': 'sent',
+                  },
+                }
+              );
+            } else {
+              const tsMs = parseInt(status.timestamp, 10) * 1000;
+              await messagingService.updateDeliveryStatus(
+                status.id,
+                status.status,
+                Number.isFinite(tsMs) ? new Date(tsMs) : new Date()
+              );
+            }
+          } catch (statusErr) {
+            console.error(
+              `[webhook] status-update for ${status?.id} failed:`,
+              statusErr.message
             );
           }
         }
@@ -225,37 +239,54 @@ exports.webhook = catchAsync(async (req, res) => {
         // Handle button responses (RSVP). Each button-response triggers a
         // host notification inside `handleButtonResponse`. We dedup on
         // the Taqnyat `messageId` if present, else a 30-second-bucket
-        // hash of phone+button (per D3) so a Meta retry within 30s
-        // doesn't double-notify the host.
+        // key seeded by phone+button+message-timestamp (per D3) so a Meta
+        // retry within 30s doesn't double-notify the host.
+        //
+        // Using the payload's `message.timestamp` (Meta-supplied,
+        // unix-seconds) instead of `Date.now()` makes the bucket
+        // deterministic: two webhook copies of the same event always
+        // hash to the same 30s window even if they arrive seconds
+        // apart on different cron ticks.
         const messages = change.value?.messages || [];
         for (const message of messages) {
           if (message.type === 'button' && message.button) {
-            const messageId = message.id;
-            const dedupKey = messageId
-              ? `webhook_button:${messageId}`
-              : `webhook_button:${crypto
-                  .createHash('sha256')
-                  .update(`${message.from}:${message.button.text}:${Math.floor(Date.now() / 30000)}`)
-                  .digest('hex')
-                  .slice(0, 32)}`;
+            try {
+              const messageId = message.id;
+              const tsSec = parseInt(message.timestamp, 10);
+              const bucketSeed = Number.isFinite(tsSec)
+                ? Math.floor(tsSec / 30)
+                : Math.floor(Date.now() / 30000);
+              const dedupKey = messageId
+                ? `webhook_button:${messageId}`
+                : `webhook_button:${crypto
+                    .createHash('sha256')
+                    .update(`${message.from}:${message.button.text}:${bucketSeed}`)
+                    .digest('hex')
+                    .slice(0, 32)}`;
 
-            await withIdempotency(
-              dedupKey,
-              () =>
-                messagingService.handleButtonResponse({
-                  phoneNumber: message.from,
-                  buttonText: message.button.text,
-                  messageId,
-                }),
-              { scope: 'webhook_dedup' }
-            );
+              await withIdempotency(
+                dedupKey,
+                () =>
+                  messagingService.handleButtonResponse({
+                    phoneNumber: message.from,
+                    buttonText: message.button.text,
+                    messageId,
+                  }),
+                { scope: 'webhook_dedup' }
+              );
+            } catch (buttonErr) {
+              console.error(
+                `[webhook] button-response handler for ${message?.id} failed:`,
+                buttonErr.message
+              );
+            }
           }
         }
       }
     }
   }
 
-  // Always return 200 OK to acknowledge webhook
+  // Always return 200 OK to acknowledge webhook (per Meta contract).
   res.status(200).send('OK');
 });
 

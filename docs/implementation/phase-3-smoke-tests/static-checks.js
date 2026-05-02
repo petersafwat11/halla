@@ -116,12 +116,16 @@ check("3b.1 — scheduleGuestReminders uses runBatched (no 100ms serial loop)", 
 
 check("3b.2 — sendBulk wraps each per-guest send in withIdempotency with attempt-keyed namespace", () => {
   const msg = read("labbe-backend-/src/modules/messaging/messaging.service.js");
-  return (
-    msg.includes("withIdempotency") &&
-    msg.includes("${scope}:${eventId}:${guestId}:${attemptCount}")
-      ? true
-      : "idempotency wiring or key shape missing in sendBulk"
-  );
+  // The key shape uses `${scope}:${eventId}:${guestId}:${fingerprint}`,
+  // where the fingerprint is `lastAttemptAt.getTime()` (or a caller-
+  // supplied `attemptId`) so different attempts don't collide on cached
+  // failures. retryFailed must pass its own attemptId to bust the cache.
+  if (!msg.includes("withIdempotency")) return "withIdempotency not used in sendBulk";
+  if (!msg.includes("${scope}:${eventId}:${guestId}:${fingerprint}"))
+    return "idempotency key shape missing fingerprint";
+  if (!msg.includes("attemptId: `retry_failed:"))
+    return "retryFailed doesn't pass a fresh attemptId — would dedup against cached failures";
+  return true;
 });
 
 check("3b.3 — post-event sendBulkAccessEmails uses runBatched + idempotency", () => {

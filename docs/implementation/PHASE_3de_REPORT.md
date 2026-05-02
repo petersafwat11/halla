@@ -13,7 +13,7 @@
 | 3d.3 webhook dedup | done — `messageId` preferred, 30s bucket fallback | `messaging.controller.js` |
 | 3d.4 stats polling cadence | done — 30s live / 5min completed / off otherwise; web + mobile | `useSingleEventStats.js` (web), `hooks/queries/useEvents.js` (mobile), `EventStats.jsx`, `EventsScreen.js` |
 | 3e.1 staff token revoke | done — endpoint + service + audit + idempotent re-revoke | `events.routes.js`, `staff.controller.js`, `staff.service.js`, `AuditLogModel.js` (enum extended) |
-| 3e.2 check-in idempotency | done — `_performIdempotentCheckIn` + `alreadyCheckedIn` + `checkedInAt` in cached body | `staff.service.js` |
+| 3e.2 check-in idempotency | done — atomic CAS via `findOneAndUpdate` with `status !== 'checked_in'` guard. The DB row IS the cache; second scan deterministically reports `alreadyCheckedIn: true` with the original `checkedInAt`. | `staff.service.js` |
 | 3e.3 guest QR rotation | done — endpoint, service, structured `qr_rotated` reason → 410 Gone | `guests.routes.js`, `guests.service.js`, `GuestAccessTokenModel.js`, `post-event.controller.js` |
 | 3e.4 GAT expiry + manual revoke + backfill | done — manual revoke endpoint, `qr_revoked` 410 path, idempotent backfill script (NOT RUN) | `guests.routes.js`, `guests.service.js`, `scripts/backfill-guest-access-token-expiry.js` |
 | Smoke tests | done — `static-checks-3de.js` 16/16 PASS, `static-checks.js` regression 19/19 PASS, Phase 1+2 regression PASS | `phase-3-smoke-tests/` |

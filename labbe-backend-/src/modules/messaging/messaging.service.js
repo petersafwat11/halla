@@ -217,10 +217,14 @@ class MessagingService {
    * will need a higher rate cap negotiated with Taqnyat.
    *
    * Phase 3b.2 (FLOW-14-F04 / FLOW-17-F02): each per-guest send runs
-   * inside `withIdempotency(...)`. The key shape includes `attemptCount`
-   * (read from the Event doc by the cron caller) so a *new* retry attempt
-   * cuts a fresh cache key, while a *replayed* attempt (same attempt #)
-   * deduplicates against the cache.
+   * inside `withIdempotency(...)`. The key shape uses
+   * `lastAttemptAt.getTime()` as the attempt fingerprint — every
+   * `runEventLaunch` invocation stamps a fresh `lastAttemptAt` before
+   * calling sendBulk, so distinct attempts (cron tick #1, cron retry,
+   * manual retry after reset) never collide on the same key. Within
+   * an attempt (e.g. two near-simultaneous sendBulk calls under the
+   * lock — shouldn't happen, but defense in depth) the keys match and
+   * the second call hits the cache.
    *
    * @param {Object} params
    * @param {string[]} params.guestIds
@@ -230,9 +234,20 @@ class MessagingService {
    * @param {string} [params.scope='event_launch']  - one of
    *        'event_launch' | 'reminder' | 'manual_resend' — controls the
    *        idempotency-key namespace.
+   * @param {string|number} [params.attemptId] - optional override for the
+   *        attempt fingerprint. Used by callers like `retryFailed` that
+   *        run outside the runEventLaunch lifecycle and need their own
+   *        per-call namespace.
    * @returns {Promise<Object>}
    */
-  async sendBulk({ guestIds, eventId, channel = 'sms', userId, scope = 'event_launch' }) {
+  async sendBulk({
+    guestIds,
+    eventId,
+    channel = 'sms',
+    userId,
+    scope = 'event_launch',
+    attemptId,
+  }) {
     const event = await Event.findById(eventId);
 
     if (!event) {
@@ -255,11 +270,24 @@ class MessagingService {
       'messagingStatus.preferredChannel': channel,
     });
 
-    const attemptCount = event.attemptCount || 0;
+    // Attempt fingerprint priority:
+    //   1. explicit `attemptId` from caller (retryFailed)
+    //   2. event.lastAttemptAt.getTime() set by runEventLaunch
+    //   3. event.attemptCount (legacy fallback)
+    //
+    // The fingerprint must change between different launch attempts so
+    // a cached failure from attempt N doesn't poison attempt N+1.
+    const fingerprint =
+      attemptId !== undefined && attemptId !== null
+        ? attemptId
+        : event.lastAttemptAt
+        ? new Date(event.lastAttemptAt).getTime()
+        : event.attemptCount || 0;
+
     const batched = await runBatched(
       guestIds,
       async (guestId) => {
-        const key = `${scope}:${eventId}:${guestId}:${attemptCount}`;
+        const key = `${scope}:${eventId}:${guestId}:${fingerprint}`;
         return withIdempotency(
           key,
           () => this.sendToGuest({ guestId, eventId, channel }),
@@ -341,6 +369,12 @@ class MessagingService {
       guestIds: failedGuests.map(g => g._id.toString()),
       eventId,
       channel,
+      // retryFailed runs outside the runEventLaunch lifecycle, so the
+      // event's `lastAttemptAt` may still point at the original cron
+      // attempt that produced the cached failures. Pass a fresh
+      // fingerprint to bust the cache and actually re-send.
+      attemptId: `retry_failed:${Date.now()}`,
+      scope: 'manual_resend',
     });
   }
 
