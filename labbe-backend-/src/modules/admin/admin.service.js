@@ -853,19 +853,29 @@ class AdminService {
       }
     }
 
-    // Determine the correct role based on who is creating:
-    // - Whitelabel users can create: whitelabel_moderator, whitelabel_admin
-    // - Platform admin/super_admin can create: moderator, admin
+    // TENANT-F01: every admin / moderator / whitelabel-admin / whitelabel-moderator
+    // must be tenant-scoped via a non-null whitelabelId. SUPER_ADMIN is the only
+    // role allowed to be cross-tenant; we never create it from this endpoint.
+    if (!whitelabelId) {
+      throw new ValidationError(
+        'whitelabelId is required when creating an admin or moderator user'
+      );
+    }
+
+    // Determine the correct role. Both branches require a whitelabelId.
+    // - Whitelabel-creator path (called by WHITELABEL_ADMIN): whitelabel-only roles.
+    // - Platform-creator path (called by SUPER_ADMIN): platform-admin roles, but
+    //   still tenant-bound via the supplied whitelabelId.
     const WHITELABEL_ALLOWED = [ROLES.WHITELABEL_MODERATOR, ROLES.WHITELABEL_ADMIN];
     const PLATFORM_ALLOWED = [ROLES.MODERATOR, ROLES.ADMIN];
 
     let moderatorRole;
-    if (whitelabelId !== undefined && whitelabelId !== null) {
-      // Whitelabel user — only allow whitelabel roles
-      moderatorRole = WHITELABEL_ALLOWED.includes(requestedRole) ? requestedRole : ROLES.WHITELABEL_MODERATOR;
+    if (WHITELABEL_ALLOWED.includes(requestedRole)) {
+      moderatorRole = requestedRole;
+    } else if (PLATFORM_ALLOWED.includes(requestedRole)) {
+      moderatorRole = requestedRole;
     } else {
-      // Platform admin or super admin — only allow platform roles
-      moderatorRole = PLATFORM_ALLOWED.includes(requestedRole) ? requestedRole : ROLES.MODERATOR;
+      moderatorRole = ROLES.MODERATOR;
     }
 
     const moderator = await User.create({
@@ -876,7 +886,7 @@ class AdminService {
       password,
       role: moderatorRole,
       status: USER_STATUS.ACTIVE,
-      whitelabelId: (whitelabelId !== undefined ? whitelabelId : null),
+      whitelabelId,
       ...(Array.isArray(permissions) && permissions.length > 0 ? { permissions } : {}),
     });
 

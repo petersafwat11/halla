@@ -163,6 +163,9 @@ exports.createModerator = catchAsync(async (req, res) => {
   const context = {
     userRole: req.user.role,
     whitelabelId: req.currentWhitelabelId || req.user.whitelabelId,
+    // TENANT-F01: super admins must explicitly target a tenant when
+    // creating an admin/moderator. Other roles inherit their own scope.
+    targetWhitelabelId: req.body.whitelabelId,
     createdBy: req.user._id,
   };
 

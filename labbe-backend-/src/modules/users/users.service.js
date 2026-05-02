@@ -526,7 +526,7 @@ class UsersService {
   async createModerator(userData, context = {}) {
     const { email, phoneNumber, password, username, name, role, pageAccess } =
       userData;
-    const { userRole, whitelabelId } = context;
+    const { userRole, whitelabelId, targetWhitelabelId } = context;
 
     // Validate role assignment
     let targetRole = role || ROLES.MODERATOR;
@@ -534,6 +534,28 @@ class UsersService {
       targetRole = ROLES.WHITELABEL_MODERATOR;
     } else if (userRole === ROLES.ADMIN && role === ROLES.ADMIN) {
       throw new ForbiddenError("Only super admin can create admins");
+    }
+
+    // TENANT-F01: every admin/moderator must be bound to a tenant.
+    // - WHITELABEL_ADMIN inherits its own whitelabelId.
+    // - SUPER_ADMIN must explicitly pass targetWhitelabelId on the request.
+    // - Platform ADMIN, after the TENANT-F01 fix, is itself tenant-scoped, so
+    //   uses its own whitelabelId.
+    let assignedWhitelabelId;
+    if (userRole === ROLES.WHITELABEL_ADMIN) {
+      assignedWhitelabelId = whitelabelId;
+    } else if (userRole === ROLES.SUPER_ADMIN) {
+      assignedWhitelabelId = targetWhitelabelId;
+    } else if (userRole === ROLES.ADMIN) {
+      assignedWhitelabelId = whitelabelId;
+    }
+
+    if (!assignedWhitelabelId) {
+      throw new ValidationError(
+        userRole === ROLES.SUPER_ADMIN
+          ? "whitelabelId is required when a super admin creates a moderator"
+          : "Creator has no whitelabel scope; cannot create moderator"
+      );
     }
 
     // Check duplicates
@@ -556,7 +578,7 @@ class UsersService {
       name,
       role: targetRole,
       status: USER_STATUS.ACTIVE,
-      whitelabelId: userRole === ROLES.WHITELABEL_ADMIN ? whitelabelId : null,
+      whitelabelId: assignedWhitelabelId,
       pageAccess: pageAccess || {},
     });
 
