@@ -38,6 +38,20 @@ exports.subscribe = catchAsync(async (req, res) => {
 });
 
 /**
+ * Admin-assign subscription to a user (FLOW-09-F04)
+ * POST /api/v2/subscriptions/admin/assign
+ */
+exports.adminAssignSubscription = catchAsync(async (req, res) => {
+  const { userId, planCode, notes } = req.body;
+  const subscription = await subscriptionsService.assignSubscription(
+    req.user._id,
+    { userId, planCode, notes }
+  );
+
+  sendCreated(res, subscription, 'Subscription assigned successfully');
+});
+
+/**
  * Change subscription plan
  * POST /api/v2/subscriptions/change-plan
  */

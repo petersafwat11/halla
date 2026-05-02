@@ -436,6 +436,77 @@ class SubscriptionsService {
   }
 
   /**
+   * Admin-assign a plan to a user. Skips payment (admin-assigned plans
+   * are free or billed externally). Auto-cancels any existing active
+   * subscription for the target user. Designed to be called from a
+   * SUPER_ADMIN-only route with audit + idempotency middleware wired in.
+   *
+   * @param {string} adminUserId   - the acting admin
+   * @param {Object} input         - { userId, planCode, notes }
+   * @returns {Promise<Object>}
+   */
+  async assignSubscription(adminUserId, input) {
+    const { userId, planCode, notes } = input || {};
+    if (!userId) throw new ValidationError('userId is required');
+    if (!planCode) throw new ValidationError('planCode is required');
+
+    const targetUser = await User.findById(userId);
+    if (!targetUser) throw new NotFoundError('User');
+
+    const plan = await Plan.getOrCreateByCode(planCode);
+    if (!plan) throw new ValidationError('Invalid plan code');
+
+    // FLOW-12-F01 / FLOW-09-F02: enforce single-active invariant.
+    const existingActive = await Subscription.find({
+      userId,
+      status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
+    });
+    for (const existing of existingActive) {
+      existing.status = SUBSCRIPTION_STATUS.CANCELLED;
+      existing.cancelledAt = new Date();
+      existing.cancelReason = `Auto-cancelled on admin-assign to ${planCode}`;
+      await existing.save();
+    }
+
+    const subscription = await Subscription.createForUser(userId, plan, {
+      pricePaid: 0,
+      currency: plan?.currency || 'SAR',
+      status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
+      whitelabelId: targetUser.whitelabelId || null,
+      createdBy: { user: adminUserId, role: ROLES.SUPER_ADMIN, onBehalfOf: true },
+    });
+
+    if (planCode === 'trial') {
+      const TRIAL_DURATION_DAYS = 14;
+      subscription.expiresAt = new Date(
+        (subscription.activatedAt || subscription.createdAt).getTime()
+          + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000
+      );
+    }
+
+    if (notes) subscription.notes = notes;
+    subscription.metadata = {
+      ...(subscription.metadata || {}),
+      assignedBy: adminUserId,
+      assignedAt: new Date().toISOString(),
+    };
+    await subscription.save();
+
+    await User.findByIdAndUpdate(userId, { subscription: subscription._id });
+
+    notificationService.sendToUser(userId, {
+      type: 'subscription_activated',
+      title: 'Subscription Activated',
+      titleAr: 'تم تفعيل الاشتراك',
+      message: `An administrator activated your ${planCode} subscription.`,
+      messageAr: `قام أحد المسؤولين بتفعيل اشتراك ${planCode} الخاص بك.`,
+      data: { entityType: 'subscription', entityId: subscription._id, metadata: { planCode } },
+    }).catch(console.error);
+
+    return subscription.getSummary ? subscription.getSummary() : subscription;
+  }
+
+  /**
    * Change subscription plan (upgrade or downgrade)
    * @param {string} userId
    * @param {string} newPlanCode
