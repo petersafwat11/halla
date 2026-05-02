@@ -370,17 +370,36 @@ class SubscriptionsService {
     const subscription = await Subscription.createForUser(userId, plan, {
       pricePaid: isFreePlan ? 0 : planPrice,
       currency: plan?.currency || 'SAR',
+      status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
       createdBy: {
         user: userId,
         onBehalfOf: false,
       },
     });
 
+    // FLOW-09-F02: trial duration is **14 days** regardless of the
+    // plan's configured durationDays. createForUser reads
+    // plan.limits.durationDays (currently 90 for the trial plan, used
+    // for event-creation lifecycle math); we override expiresAt here so
+    // the daily expiry cron transitions the trial subscription to
+    // `expired` after two weeks. Documented in PHASE_2_PLAN.md.
+    if (planCode === 'trial') {
+      const TRIAL_DURATION_DAYS = 14;
+      const trialExpiresAt = new Date(
+        (subscription.activatedAt || subscription.createdAt).getTime()
+          + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000
+      );
+      subscription.expiresAt = trialExpiresAt;
+    }
+
     if (paymentTransactionId) {
       subscription.metadata = {
         ...(subscription.metadata || {}),
         paymentTransactionId,
       };
+    }
+
+    if (planCode === 'trial' || paymentTransactionId) {
       await subscription.save();
     }
 
