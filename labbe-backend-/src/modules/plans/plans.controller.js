@@ -80,7 +80,11 @@ exports.getAllPlansAdmin = catchAsync(async (req, res) => {
  */
 exports.updatePlanByCode = catchAsync(async (req, res) => {
   const result = await plansService.updatePlanByCode(req.params.code, req.body);
-  res.locals.planAudit = { before: result.before, after: result.after };
+  res.locals.planAudit = {
+    planId: result.plan?.id,
+    before: result.before,
+    after: result.after,
+  };
   sendSuccess(res, { plan: result.plan });
 });
 
@@ -90,7 +94,11 @@ exports.updatePlanByCode = catchAsync(async (req, res) => {
  */
 exports.createPlan = catchAsync(async (req, res) => {
   const result = await plansService.createPlan(req.body);
-  res.locals.planAudit = { before: null, after: result.plan };
+  res.locals.planAudit = {
+    planId: result.plan?.id,
+    before: null,
+    after: result.plan,
+  };
   sendCreated(res, result, 'Plan created successfully');
 });
 
@@ -100,6 +108,10 @@ exports.createPlan = catchAsync(async (req, res) => {
  */
 exports.deletePlan = catchAsync(async (req, res) => {
   const result = await plansService.deletePlanByCode(req.params.code);
-  res.locals.planAudit = { before: { isActive: true }, after: { isActive: false } };
+  res.locals.planAudit = {
+    planId: result.plan?.id,
+    before: { isActive: true },
+    after: { isActive: false },
+  };
   sendSuccess(res, result, 'Plan deactivated successfully');
 });

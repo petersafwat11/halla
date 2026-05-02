@@ -37,11 +37,14 @@ router.post(
   auditLog({
     action: 'plan.created',
     targetType: 'system',
-    targetIdFrom: (req, res) => res.locals?.planAudit?.after?.id,
+    targetIdFrom: (req, res) => res.locals?.planAudit?.planId,
     changesFrom: (req, res) => ({
       after: res.locals?.planAudit?.after || { code: req.body?.code },
     }),
-    metadataFrom: (req) => ({ code: req.body?.code }),
+    metadataFrom: (req, res) => ({
+      code: req.body?.code,
+      planId: res.locals?.planAudit?.planId,
+    }),
   }),
   plansController.createPlan
 );
@@ -54,8 +57,15 @@ router.delete(
   auditLog({
     action: 'plan.deactivated',
     targetType: 'system',
-    changesFrom: (req, res) => res.locals?.planAudit || {},
-    metadataFrom: (req) => ({ code: req.params?.code }),
+    targetIdFrom: (req, res) => res.locals?.planAudit?.planId,
+    changesFrom: (req, res) => ({
+      before: res.locals?.planAudit?.before,
+      after: res.locals?.planAudit?.after,
+    }),
+    metadataFrom: (req, res) => ({
+      code: req.params?.code,
+      planId: res.locals?.planAudit?.planId,
+    }),
   }),
   plansController.deletePlan
 );
@@ -68,8 +78,15 @@ router.patch(
   auditLog({
     action: 'plan.updated',
     targetType: 'system',
-    changesFrom: (req, res) => res.locals?.planAudit || {},
-    metadataFrom: (req) => ({ code: req.params?.code }),
+    targetIdFrom: (req, res) => res.locals?.planAudit?.planId,
+    changesFrom: (req, res) => ({
+      before: res.locals?.planAudit?.before,
+      after: res.locals?.planAudit?.after,
+    }),
+    metadataFrom: (req, res) => ({
+      code: req.params?.code,
+      planId: res.locals?.planAudit?.planId,
+    }),
   }),
   plansController.updatePlanByCode
 );

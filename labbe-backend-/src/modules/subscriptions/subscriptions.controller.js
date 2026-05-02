@@ -32,7 +32,12 @@ exports.getMySubscription = catchAsync(async (req, res) => {
  */
 exports.subscribe = catchAsync(async (req, res) => {
   const { planCode, discountCode } = req.body;
-  const subscription = await subscriptionsService.subscribe(req.user._id, { planCode, discountCode });
+  const idempotencyKey = req.get('idempotency-key') || undefined;
+  const subscription = await subscriptionsService.subscribe(req.user._id, {
+    planCode,
+    discountCode,
+    idempotencyKey,
+  });
 
   sendCreated(res, subscription, 'Subscription created successfully');
 });

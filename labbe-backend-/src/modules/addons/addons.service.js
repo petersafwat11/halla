@@ -56,7 +56,7 @@ class AddonsService {
     }
 
     const price = this._computePrice(addonType, { quantity, templateType });
-    const scope = this._resolveScope(addonType, data?.scope);
+    const scope = this._resolveScope(addonType, data?.scope, { eventId });
 
     // Event-scoped addons must specify the target event; we additionally
     // verify host ownership so a host can't bump someone else's event.
@@ -73,15 +73,22 @@ class AddonsService {
       }
     }
 
-    // FLOW-10-F03: idempotency. The route-level middleware short-circuits
-    // duplicate identical bodies. The service layer also passes the key
-    // through to paymentProvider.charge so the charge itself is exactly
-    // once. If the route-level middleware did not run (e.g., service is
-    // called directly from a worker), we still get end-to-end safety.
+    // FLOW-10-F03: idempotency is layered. The route-level middleware
+    // short-circuits when an `Idempotency-Key` header is present and the
+    // body matches a cached request. We pass that same caller-supplied
+    // key down to paymentProvider.charge so the outbound charge is also
+    // exactly-once.
+    //
+    // We deliberately do NOT derive a fallback key here. If the client
+    // omits the header, paymentProvider runs without idempotency — that
+    // gives at-least-once charge semantics on a double-tap. A derived
+    // key (e.g. userId+addonType+quantity) would dedup the *charge* on
+    // a repeat call but NOT dedup the surrounding service work, which
+    // would create a second Addon record + quota update against a
+    // single charge: the worst possible outcome (double-credit /
+    // single-charge). The client is expected to send Idempotency-Key.
     const idempotencyKey =
-      options.idempotencyKey
-      || data?.idempotencyKey
-      || `addon:${userId}:${addonType}:${quantity || 1}:${templateType || ''}:${eventId || ''}`;
+      options.idempotencyKey || data?.idempotencyKey || null;
 
     // FLOW-10-F01: skip payment for free addons (matches the 3.1 trial
     // guard pattern). Today no addon tier is free, but we keep the guard
@@ -89,7 +96,7 @@ class AddonsService {
     // provider.
     let paymentTransactionId = null;
     if (price > 0) {
-      const charge = await paymentProvider.charge({
+      const chargeParams = {
         amount: price,
         currency: 'SAR',
         customer: { id: userId },
@@ -102,8 +109,9 @@ class AddonsService {
           eventId: eventId || null,
           description: `Addon purchase ${addonType}`,
         },
-        idempotencyKey,
-      });
+      };
+      if (idempotencyKey) chargeParams.idempotencyKey = idempotencyKey;
+      const charge = await paymentProvider.charge(chargeParams);
       if (!charge.success) {
         throw new ValidationError(
           charge.error || 'Payment failed; addon not activated'
@@ -127,6 +135,21 @@ class AddonsService {
       if (activeSub) resolvedSubscriptionId = activeSub._id;
     }
 
+    // Guard: extra_invites with pool/org scope must have a target
+    // subscription. Without one, the charge would go through but
+    // _applyQuota would silently no-op — the host would pay and get
+    // no quota benefit. Reject upfront so the host isn't billed.
+    if (
+      addonType === ADDON_TYPES.EXTRA_INVITES
+      && (scope === 'pool' || scope === 'org')
+      && !resolvedSubscriptionId
+    ) {
+      throw new ValidationError(
+        'Cannot purchase pool/org addon: no active subscription. '
+        + 'Subscribe to a plan first or pass scope: "event" with an eventId.'
+      );
+    }
+
     const addon = await Addon.create({
       userId,
       addonType,
@@ -140,7 +163,7 @@ class AddonsService {
       scope,
       metadata: {
         paymentTransactionId,
-        idempotencyKey,
+        idempotencyKey: idempotencyKey || null,
         activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
       },
     });
@@ -203,18 +226,9 @@ class AddonsService {
 
     await this._applyQuota(addon, {});
 
-    await logAudit({
-      action: 'addon.activated_by_admin',
-      actor: { _id: adminUserId, role: 'super_admin' },
-      targetType: 'system',
-      targetId: addon._id,
-      metadata: {
-        addonId: addon._id,
-        addonType: addon.addonType,
-        scope: addon.scope,
-        notes: notes || null,
-      },
-    });
+    // Audit log is emitted by the route-level auditLog middleware
+    // (addons.routes.js — admin/:id/activate). Adding a service-level
+    // logAudit here would duplicate the row.
 
     return addon;
   }
@@ -247,13 +261,18 @@ class AddonsService {
     return 0;
   }
 
-  _resolveScope(addonType, requestedScope) {
+  _resolveScope(addonType, requestedScope, { eventId } = {}) {
     if (requestedScope) {
       if (!['event', 'pool', 'org'].includes(requestedScope)) {
         throw new ValidationError(`Invalid scope: ${requestedScope}`);
       }
       return requestedScope;
     }
+    // If the caller supplied an eventId without an explicit scope, treat
+    // that as event-scoped — otherwise the addon's quantity would land
+    // on a pool counter that per-event plans never read, silently
+    // wasting the addon for per-event-plan hosts.
+    if (eventId) return 'event';
     return DEFAULT_SCOPE_BY_TYPE[addonType] || 'org';
   }
 

@@ -110,6 +110,7 @@ None.
 - **Single working-tree branch.** Per the harness, both Phase 1 and Phase 2 share the user-supplied branch convention. Commits are tagged `[PHASE-2-A|B|C]` so they remain reviewable as separate logical units.
 - **Pre-existing dead config:** `scheduledTasks.js` had silently-dead references to `BILLING_CYCLES.ONCE` and `endDate` since the constants reorg. Both removed in 3.3. The first run of the now-functional `scheduleSubscriptionStatusUpdate` cron will retroactively expire any subscription with `expiresAt < now`. This is the intended behaviour but worth flagging to ops.
 - **No live DB available.** Same as Phase 1; smoke testing is contract-static + curl runbooks. Runbook is immediately executable against a live backend.
+- **Idempotency-Key is opt-in (header-driven), not derived.** Both `subscribe()` and `purchaseAddon()` only pass an `idempotencyKey` to `paymentProvider.charge` when the client sent one via the `Idempotency-Key` header. A derived fallback (e.g. `subscribe:${userId}:${planCode}`) was considered and **rejected** during the post-implementation review: it would have made `paymentProvider.charge` replay a cached charge response on a second legitimate request within the 24h IdempotencyKey TTL while the surrounding service still created a second Subscription/Addon document — a double-credit / single-charge bug. Clients without `Idempotency-Key` get at-least-once charge semantics on a double-tap, which matches Stripe's standard advice. Documented inline in both services.
 
 ## Stop gate
 

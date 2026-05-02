@@ -344,9 +344,16 @@ class SubscriptionsService {
     const planPrice = plan?.pricing?.oneTime ?? 0;
     const isFreePlan = planCode === 'trial' || planPrice <= 0;
 
+    // Idempotency only when the caller supplied a key. A derived
+    // fallback (e.g. `subscribe:${userId}:${plan.code}`) would let
+    // paymentProvider replay a cached charge response on a second
+    // legitimate subscribe-to-the-same-plan within 24h, while the
+    // service still creates a second Subscription document — i.e. a
+    // double-credit / single-charge bug. Clients pass Idempotency-Key
+    // via the route middleware to opt in to exactly-once.
     let paymentTransactionId = null;
     if (!isFreePlan) {
-      const charge = await paymentProvider.charge({
+      const chargeParams = {
         amount: planPrice,
         currency: plan?.currency || 'SAR',
         customer: { id: userId },
@@ -355,9 +362,11 @@ class SubscriptionsService {
           discountCode,
           description: `Subscription to ${plan.code}`,
         },
-        idempotencyKey:
-          subscriptionData?.idempotencyKey || `subscribe:${userId}:${plan.code}`,
-      });
+      };
+      if (subscriptionData?.idempotencyKey) {
+        chargeParams.idempotencyKey = subscriptionData.idempotencyKey;
+      }
+      const charge = await paymentProvider.charge(chargeParams);
       if (!charge.success) {
         throw new ValidationError(
           charge.error || 'Payment failed; subscription not activated'
