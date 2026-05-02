@@ -17,6 +17,7 @@ const {
   generateWeeklyReportPDF,
 } = require("./pdfGenerator");
 const { ROLES, BILLING_CYCLES } = require("../constants");
+const { parseEventTime, isDue } = require("./timezone");
 
 // ============================================
 // HELPER FUNCTIONS
@@ -91,36 +92,38 @@ const getExpiringSubscriptions = async (daysAhead = 7) => {
 // ============================================
 
 /**
- * Check for scheduled event launches - runs every minute
+ * Check for scheduled event launches - runs every minute.
+ *
+ * Phase 1b (PIPELINE-F05): the previous implementation compared
+ * `now.getHours()/getMinutes()` (server local time) against the host's
+ * scheduled wall-clock string. That broke whenever the server timezone
+ * wasn't Asia/Riyadh — UTC servers would fire 3 hours late, etc. We now
+ * fetch the day's scheduled events and use `timezone.isDue` to compare in
+ * real UTC, deriving the Riyadh wall-clock from the host's chosen
+ * `scheduledTime`.
  */
 const scheduleEventLaunch = () => {
   cron.schedule("* * * * *", async () => {
     try {
       const now = new Date();
 
-      // Format current time as HH:mm with leading zeros
-      const hours = now.getHours().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-      const currentTime = `${hours}:${minutes}`;
+      // 24-hour window around `now` so we pick up events whose UTC date
+      // straddles the Riyadh-local day boundary.
+      const startOfDay = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const endOfDay = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-      const startOfDay = new Date(now);
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(now);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      // Find scheduled events due now
-      const eventsToLaunch = await Event.find({
+      // Find candidate events for the day; the timezone-aware due check
+      // runs in JS so we don't try to compute Riyadh-local minute matches
+      // in MongoDB.
+      const candidates = await Event.find({
         status: "scheduled",
-        "launchSettings.scheduledDate": {
-          $gte: startOfDay,
-          $lte: endOfDay,
-        },
-        "launchSettings.scheduledTime": currentTime,
+        "launchSettings.scheduledDate": { $gte: startOfDay, $lte: endOfDay },
       });
 
+      const eventsToLaunch = candidates.filter((evt) => isDue(evt, now, 60));
+
       if (eventsToLaunch.length > 0) {
-        console.log(`[Cron] Found ${eventsToLaunch.length} events to launch at ${currentTime}`);
+        console.log(`[Cron] Found ${eventsToLaunch.length} events to launch at ${now.toISOString()}`);
       }
 
       for (const event of eventsToLaunch) {

@@ -22,15 +22,42 @@ Single source of truth for every audit finding's implementation status.
 
 ---
 
+## Closed in Phase 1a (auth redesign)
+
+Commit: `[PHASE-1a]` on branch `claude/implement-phase-1-1b-PO0KU`.
+
+- **FLOW-01-F01** — JWT TTL flipped from 90d to 15m + 30d rotating refresh.
+- **FLOW-01-F02** — `POST /auth/refresh` exists, rotates, revokes the old token.
+- **FLOW-01-F03** — Mobile refresh token in `expo-secure-store`; access token in memory only.
+- **FLOW-01-F05** — Server-side revocation via `RefreshTokenModel`; replay = chain revoke.
+- **FLOW-01-F06** — Legacy `signToken` / `createSendToken` removed; one source of truth.
+- **FLOW-01-F07** — `LOCK_TIME` is now 30 minutes.
+- **FLOW-05-F01** — Same constant + `resetPassword` clears `lockUntil` and `loginAttempts`.
+- **FLOW-05-F02** — Mobile `requireRole(user)` hard-fails if server omits role.
+- **FLOW-05-F03** — Mobile navigator surfaces error for unsupported roles.
+- **FLOW-06-F01** — Reset-link TTL 1 hour; email body updated.
+- **FLOW-06-F02** — `resetPassword` clears lock + revokes all refresh tokens.
+- **FLOW-06-F03** — `resetPasswordAPI` + `RESET_PASSWORD` endpoint added on mobile (deep-link UI is Phase 4).
+
+---
+
+## Closed / progressed in Phase 1b (utilities)
+
+Commit: `[PHASE-1b]` on branch `claude/implement-phase-1-1b-PO0KU`.
+
+- **PIPELINE-F05** — Launch cron uses UTC math via `timezone.isDue`.
+- **FLOW-25-F05** — S3 utility fails closed; no silent local-disk fallback.
+
+Foundations laid (full wiring continues in Phases 2–5):
+- Idempotency utility (model + middleware + helper) wired into `POST /addons/purchase`.
+- Audit log middleware wired into `PATCH /admin/vendors/:id/status`.
+- Payment scaffold (Moyasar real + stub factory) wired into `subscriptions.service.subscribe`.
+
+---
+
 ## Open
 
-- FLOW-01-F01 — not started
-- FLOW-01-F02 — not started
-- FLOW-01-F03 — not started
-- FLOW-01-F04 — not started
-- FLOW-01-F05 — not started
-- FLOW-01-F06 — not started
-- FLOW-01-F07 — not started
+- FLOW-01-F04 — not started (Phase 1c)
 - FLOW-02-F01 — not started
 - FLOW-02-F02 — not started
 - FLOW-02-F03 — not started
@@ -42,12 +69,6 @@ Single source of truth for every audit finding's implementation status.
 - FLOW-04-F02 — not started
 - FLOW-04-F03 — not started
 - FLOW-04-F04 — not started
-- FLOW-05-F01 — not started
-- FLOW-05-F02 — not started
-- FLOW-05-F03 — not started
-- FLOW-06-F01 — not started
-- FLOW-06-F02 — not started
-- FLOW-06-F03 — not started
 - FLOW-06-F04 — not started
 - FLOW-07-F01 — not started
 - FLOW-07-F02 — not started
@@ -122,7 +143,6 @@ Single source of truth for every audit finding's implementation status.
 - FLOW-25-F02 — not started
 - FLOW-25-F03 — not started
 - FLOW-25-F04 — not started
-- FLOW-25-F05 — not started
 - FLOW-26-F01 — not started
 - FLOW-26-F02 — not started
 - FLOW-26-F03 — not started
@@ -139,7 +159,6 @@ Single source of truth for every audit finding's implementation status.
 - PIPELINE-F01 — not started
 - PIPELINE-F03 — not started
 - PIPELINE-F04 — not started
-- PIPELINE-F05 — not started
 - RBAC-F01 — not started
 - RBAC-F03 — not started
 - RBAC-F04 — not started

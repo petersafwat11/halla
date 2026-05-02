@@ -18,6 +18,7 @@ const { restrictTo, requirePageAccess } = require('../../shared/middleware/rbac'
 const { ADMIN_PAGES } = require('../../shared/constants');
 const { validateObjectId } = require('../../shared/middleware/validation');
 const { filterByWhitelabel, injectWhitelabel } = require('../../shared/middleware/whitelabel');
+const { auditLog } = require('../../shared/middleware/auditLog');
 
 // All admin routes require authentication
 router.use(protect);
@@ -454,6 +455,15 @@ router.patch('/vendors/:id/status',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  // Phase 1b consumer: vendor approve/reject is the canonical sensitive
+  // admin write. The middleware records actor, target, and the requested
+  // status into AuditLogModel after a 2xx response.
+  auditLog({
+    action: 'vendor.status_change',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    changesFrom: (req) => ({ after: { status: req.body?.status } }),
+  }),
   adminController.updateVendorStatus
 );
 

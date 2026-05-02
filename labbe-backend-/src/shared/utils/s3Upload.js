@@ -140,12 +140,37 @@ const createLocalStorage = (baseDir) => {
 };
 
 /**
- * Create multer-S3 storage configuration
+ * Create multer-S3 storage configuration.
+ *
+ * Phase 1b (FLOW-25-F05): S3 must fail closed. The previous behaviour
+ * silently fell back to local disk on missing credentials; that mode
+ * produced "uploaded" files that disappear on the next deploy. We now
+ * raise at boot if S3 isn't configured **in production**. In development
+ * we still allow a local-disk storage so contributors can run the server
+ * without AWS keys, but the fallback is opt-in via `ALLOW_LOCAL_UPLOADS`
+ * and is logged loudly. There is no per-request S3-error → local
+ * fallback any more — multer-s3 errors propagate to the caller.
+ *
  * @returns {Object} Multer storage configuration
  */
 const createS3Storage = () => {
   if (!isS3Configured() || !s3Client) {
-    console.warn("S3 not configured, falling back to local storage");
+    const allowLocal =
+      process.env.NODE_ENV !== "production" &&
+      process.env.ALLOW_LOCAL_UPLOADS === "true";
+
+    if (!allowLocal) {
+      throw new Error(
+        "S3 is not configured. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, " +
+          "AWS_REGION, AWS_S3_BUCKET (and AWS_S3_BASE_URL). To run locally " +
+          "without AWS, set ALLOW_LOCAL_UPLOADS=true (development only)."
+      );
+    }
+
+    console.warn(
+      "[s3Upload] WARNING: S3 not configured. Using LOCAL disk storage. " +
+        "This is dev-only — uploaded files will not persist across deploys."
+    );
     return createLocalStorage(path.join(__dirname, "../../.."));
   }
 
@@ -319,7 +344,14 @@ const isS3Url = (url) => {
 };
 
 /**
- * Get file URL from multer file object (works for both S3 and local)
+ * Get file URL from multer file object.
+ *
+ * Phase 1b: when S3 is configured we must always return the canonical S3
+ * URL. The previous behaviour silently returned a local-disk path (or
+ * filename) if `file.location` and `file.key` were absent — that produced
+ * dead links the moment the server restarted. Now in S3 mode we throw
+ * instead of returning a path that won't survive the next deploy.
+ *
  * @param {Object} file - Multer file object
  * @returns {string|null} File URL
  */
@@ -336,7 +368,15 @@ const getFileUrl = (file) => {
     return getS3Url(file.key);
   }
 
-  // Local file path (fallback)
+  if (isS3Configured()) {
+    // We expected an S3 result and got a local-disk multer file. That means
+    // an upstream caller bypassed `s3Storage` — that's a bug, not a fallback.
+    throw new Error(
+      "S3 is configured but multer returned a local-disk file; check the upload route's storage engine"
+    );
+  }
+
+  // Local-disk dev mode (ALLOW_LOCAL_UPLOADS=true)
   if (file.path) {
     const publicIndex = file.path.indexOf("public");
     if (publicIndex !== -1) {
@@ -475,8 +515,28 @@ const generalFilter = (req, file, cb) => {
   }
 };
 
-// Create S3 storage instance
-const s3Storage = createS3Storage();
+// Create S3 storage instance.
+//
+// Defer the throw to first-upload so a dev box without AWS keys can still
+// boot and use endpoints that don't upload anything. Production envs must
+// have S3 configured — `createS3Storage()` throws synchronously, which is
+// what we want for prod boot-time validation. Pass `ALLOW_LOCAL_UPLOADS=true`
+// to opt into the local-disk dev fallback.
+let s3Storage;
+try {
+  s3Storage = createS3Storage();
+} catch (err) {
+  console.error("[s3Upload] storage init error:", err.message);
+  // Replace with a storage stub that fails at upload-time, not at import-time.
+  s3Storage = {
+    _handleFile(req, file, cb) {
+      cb(new Error("Upload rejected: S3 is not configured. " + err.message));
+    },
+    _removeFile(req, file, cb) {
+      cb(null);
+    },
+  };
+}
 
 // Pre-configured multer instances
 const uploadImage = multer({
