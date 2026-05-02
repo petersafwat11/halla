@@ -504,6 +504,7 @@ subscriptionSchema.methods.getSummary = function () {
     activatedAt: this.activatedAt,
     expiresAt: this.expiresAt,
     pricePaid: this.pricePaid,
+    paymentTransactionId: this.metadata?.paymentTransactionId || null,
     daysRemaining: this.daysRemaining,
     limits: this.limits,
     features: this.features,
