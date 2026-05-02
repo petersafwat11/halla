@@ -19,11 +19,12 @@ exports.filterByWhitelabel = catchAsync(async (req, res, next) => {
   const userRole = req.user.role;
   const userWhitelabelId = req.user.whitelabelId;
 
-  // Super admin sees platform-level data only (whitelabelId: null),
-  // same as regular admin/moderator. Whitelabel tenant data is owned
-  // exclusively by their respective whitelabel admins.
-  // Whitelabel management (the /admin/whitelabels routes) intentionally
-  // does NOT use filterByWhitelabel, so super admin retains full control there.
+  // Super admin sees platform-level data only (whitelabelId: null) on routes
+  // that pass through this middleware. Cross-tenant administration is
+  // performed via /admin/whitelabels (and a small set of super-admin-only
+  // routes) which intentionally do NOT mount filterByWhitelabel, so super
+  // admin retains full control there. After TENANT-F01, regular ADMIN and
+  // MODERATOR no longer share this branch — they are tenant-scoped below.
   if (userRole === ROLES.SUPER_ADMIN) {
     req.whitelabelFilter = { whitelabelId: null };
     return next();
@@ -45,9 +46,23 @@ exports.filterByWhitelabel = catchAsync(async (req, res, next) => {
     return next();
   }
 
-  // Regular admins see main platform data only (null whitelabelId)
+  // Platform ADMIN and MODERATOR are scoped to their assigned whitelabel,
+  // identical to WHITELABEL_ADMIN/WHITELABEL_MODERATOR. Cross-tenant access
+  // is reserved for SUPER_ADMIN. A missing whitelabelId is a configuration
+  // error and must fail closed, not silently downgrade to a null filter
+  // (which previously matched every platform-level document — TENANT-F01).
   if ([ROLES.ADMIN, ROLES.MODERATOR].includes(userRole)) {
-    req.whitelabelFilter = { whitelabelId: null };
+    if (!userWhitelabelId) {
+      return next(
+        new AppError(
+          "Admin tenant configuration error. Contact a super admin to assign a whitelabel.",
+          500
+        )
+      );
+    }
+
+    req.whitelabelFilter = { whitelabelId: userWhitelabelId };
+    req.currentWhitelabelId = userWhitelabelId;
     return next();
   }
 

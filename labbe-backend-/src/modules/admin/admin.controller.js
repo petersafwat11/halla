@@ -10,6 +10,7 @@ const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess } = require('../../shared/utils/responseHelper');
 const { ValidationError } = require('../../shared/errors');
 const { generateExcel } = require('../../shared/utils/excelExport');
+const { ROLES } = require('../../shared/constants/roles');
 
 /**
  * Extract whitelabel ID from middleware's req.whitelabelFilter.
@@ -232,11 +233,28 @@ exports.getModerators = catchAsync(async (req, res) => {
 });
 
 exports.createModerator = catchAsync(async (req, res) => {
-  const { email, phoneNumber, name, username, password, permissions, role } = req.body;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
+  const { email, phoneNumber, name, username, password, permissions, role, whitelabelId: bodyWhitelabelId } = req.body;
+  const filterWhitelabelId = getWhitelabelIdFromFilter(req);
 
   if (!email || !phoneNumber || !name || !password) {
     throw new ValidationError('Email, phone number, name, and password are required');
+  }
+
+  // TENANT-F01: every moderator/admin user must be tenant-bound.
+  // Non-super-admin creators inherit the whitelabel from their own scope
+  // (the middleware filter); they cannot target a different tenant.
+  // Super admins must explicitly pass the target whitelabelId in the body.
+  let whitelabelId;
+  if (req.user.role === ROLES.SUPER_ADMIN) {
+    whitelabelId = bodyWhitelabelId;
+    if (!whitelabelId) {
+      throw new ValidationError('whitelabelId is required when a super admin creates an admin or moderator');
+    }
+  } else {
+    whitelabelId = filterWhitelabelId;
+    if (!whitelabelId) {
+      throw new ValidationError('Creator has no whitelabel scope; cannot create moderator');
+    }
   }
 
   const moderator = await adminService.createModerator({
