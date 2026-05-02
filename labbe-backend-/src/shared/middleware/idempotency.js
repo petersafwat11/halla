@@ -1,24 +1,37 @@
 /**
  * Idempotency middleware.
  *
- * Reads the `Idempotency-Key` header on POST/PUT/PATCH requests. If the key
- * has already produced a response in the last 24h (and the request body
- * hashes to the same value), the cached response is replayed and the
- * handler does not run. If the key is reused with a different body we
- * return 409 — the caller is mixing requests under one key.
+ * Reads the `Idempotency-Key` header on POST/PUT/PATCH requests. On the
+ * first call we insert a `pending` row keyed on `{ userId, scope, key }`
+ * (race-safe via upsert). When the handler resolves with a 2xx we update
+ * the row to `completed` and cache `{ status, body }`. If the handler
+ * throws or returns non-2xx, we delete the row so the next attempt can
+ * retry cleanly.
+ *
+ * Concurrent duplicates with the same `requestHash` poll the row until it
+ * transitions to `completed` (replay) or times out (409 + Retry-After).
+ * Mismatched `requestHash` always returns 409.
+ *
+ * Cache contract: only `{ status, body }` is stored. Replay loses
+ * `Set-Cookie` and `Location` headers — accepted per design (M-2).
  *
  * Usage:
- *   router.post("/purchase", protect, idempotency({ scope: "addons.purchase" }), addonsController.purchaseAddon);
- *
- * The middleware caches successful responses (2xx). Errors are NOT cached —
- * the next retry runs through the handler again. This matches the standard
- * Stripe-style semantics.
+ *   router.post(
+ *     "/purchase",
+ *     protect,
+ *     idempotency({ scope: "addons.purchase" }),
+ *     addonsController.purchaseAddon
+ *   );
  */
 
 const IdempotencyKey = require("../../../models/IdempotencyKeyModel");
 const { _sha256 } = require("../utils/idempotency");
 
 const HEADER = "idempotency-key";
+const POLL_INTERVAL_MS = 200;
+const POLL_TIMEOUT_MS = 10_000;
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const idempotency = ({ scope = "", required = false } = {}) => {
   return async function idempotencyMiddleware(req, res, next) {
@@ -37,41 +50,127 @@ const idempotency = ({ scope = "", required = false } = {}) => {
     }
 
     const requestHash = _sha256(req.body || {});
+    const userId = req.user?._id || null;
+    const filter = { userId, scope, key };
 
-    const existing = await IdempotencyKey.findOne({ key });
-    if (existing) {
-      if (existing.requestHash && existing.requestHash !== requestHash) {
-        return res
-          .status(409)
-          .json({ status: "error", message: "Idempotency-Key reused with a different body" });
+    // Race-safe reservation: upsert a pending row. If we lose the race the
+    // upsert returns the existing document; if we win, we get null in
+    // `value` and `updatedExisting === false`.
+    let reservation;
+    try {
+      reservation = await IdempotencyKey.findOneAndUpdate(
+        filter,
+        {
+          $setOnInsert: {
+            userId,
+            scope,
+            key,
+            requestHash,
+            status: "pending",
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true, new: false, setDefaultsOnInsert: true, rawResult: true }
+      );
+    } catch (err) {
+      // Duplicate-key races against the unique index can leak through —
+      // surface as the same code path as "existing row found".
+      if (err.code === 11000) {
+        reservation = {
+          lastErrorObject: { updatedExisting: true },
+          value: await IdempotencyKey.findOne(filter),
+        };
+      } else {
+        return next(err);
       }
-      return res.status(existing.response.status).json(existing.response.body);
     }
 
-    // Capture the response payload to cache after the handler resolves.
-    const originalJson = res.json.bind(res);
-    res.json = (body) => {
-      // Only cache successful responses; failures must be safely retryable.
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        IdempotencyKey.create({
-          key,
-          scope,
-          requestHash,
-          response: { status: res.statusCode, body },
-          userId: req.user?._id || null,
-        }).catch((err) => {
-          if (err.code !== 11000) {
-            // duplicate-key from a parallel request is fine; otherwise log.
-            // Don't fail the response — caching is best-effort.
-            // eslint-disable-next-line no-console
-            console.error("[idempotency] cache write failed:", err.message);
-          }
+    const updatedExisting = reservation?.lastErrorObject?.updatedExisting === true;
+    const existing = reservation?.value || null;
+
+    if (updatedExisting && existing) {
+      // Mismatched body always 409.
+      if (existing.requestHash && existing.requestHash !== requestHash) {
+        return res.status(409).json({
+          status: "error",
+          message: "Idempotency-Key reused with a different body",
         });
+      }
+
+      if (existing.status === "completed" && existing.response) {
+        return res.status(existing.response.status).json(existing.response.body);
+      }
+
+      if (existing.status === "failed") {
+        // Sweep stale failure and retry the request from scratch.
+        await IdempotencyKey.deleteOne({ _id: existing._id, status: "failed" }).catch(
+          () => {}
+        );
+        return idempotencyMiddleware(req, res, next);
+      }
+
+      // status === 'pending' — poll for completion.
+      const deadline = Date.now() + POLL_TIMEOUT_MS;
+      while (Date.now() < deadline) {
+        await sleep(POLL_INTERVAL_MS);
+        const refreshed = await IdempotencyKey.findOne(filter);
+        if (!refreshed) break; // peer failed and deleted; retry.
+        if (refreshed.status === "completed" && refreshed.response) {
+          return res.status(refreshed.response.status).json(refreshed.response.body);
+        }
+        if (refreshed.status === "failed") {
+          await IdempotencyKey.deleteOne({ _id: refreshed._id, status: "failed" }).catch(
+            () => {}
+          );
+          return idempotencyMiddleware(req, res, next);
+        }
+      }
+      res.set("Retry-After", "1");
+      return res.status(409).json({
+        status: "error",
+        message: "A duplicate request with this Idempotency-Key is still being processed",
+      });
+    }
+
+    // We inserted the pending row; we own this key. Capture the response
+    // payload to update the row after the handler resolves.
+    const originalJson = res.json.bind(res);
+    let responded = false;
+
+    res.json = (body) => {
+      responded = true;
+      const status = res.statusCode;
+      if (status >= 200 && status < 300) {
+        IdempotencyKey.updateOne(filter, {
+          $set: {
+            status: "completed",
+            response: { status, body },
+            completedAt: new Date(),
+          },
+        }).catch((err) => {
+          // eslint-disable-next-line no-console
+          console.error("[idempotency] cache write failed:", err.message);
+        });
+      } else {
+        // Non-2xx → drop the pending row so the next attempt can retry.
+        IdempotencyKey.deleteOne(filter).catch(() => {});
       }
       return originalJson(body);
     };
 
-    next();
+    // Surface handler errors so we can clean up the pending row.
+    res.on("close", () => {
+      if (!responded) {
+        IdempotencyKey.deleteOne(filter).catch(() => {});
+      }
+    });
+
+    try {
+      return next();
+    } catch (err) {
+      await IdempotencyKey.deleteOne(filter).catch(() => {});
+      throw err;
+    }
   };
 };
 

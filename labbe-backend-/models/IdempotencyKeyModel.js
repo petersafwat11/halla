@@ -7,31 +7,67 @@
  * handler again, guaranteeing at-most-once semantics for external side
  * effects (charge, SMS send, RSVP submission).
  *
- * - `key`         : caller-provided string (required to be unique per route).
- * - `requestHash` : sha256 of the canonical request body. If the same key is
- *                   reused with a different body we treat it as a conflict.
- * - `response`    : { status, body } cached for replay.
- * - `createdAt`   : TTL index — 24h. External calls that haven't repeated in
- *                   24 hours are no longer expected to replay; if they do
- *                   the handler runs fresh.
+ * Uniqueness contract (post-H-5 fix):
+ *   The combination `{ userId, scope, key }` is unique — NOT `key` alone.
+ *   Two different users may legitimately submit the same client-supplied
+ *   Idempotency-Key value; partitioning by userId+scope prevents
+ *   cross-user replay/leakage and 409 false positives. `userId` may be
+ *   null for unauthenticated flows; in that case the partitioning is by
+ *   `{ scope, key }` (with `userId` literally null).
+ *
+ * Status state machine (post-H-6 fix):
+ *   - `pending`   : a row was inserted up-front by the first caller; the
+ *                    handler is still running. Concurrent callers with the
+ *                    same `requestHash` poll until the row transitions.
+ *   - `completed` : handler returned 2xx; `response` is populated and
+ *                    duplicate callers replay it.
+ *   - `failed`    : handler threw; this row should be deleted promptly so
+ *                    the next attempt can retry. Its presence is a
+ *                    transient artifact, not a permanent decision.
+ *
+ * - `key`         : caller-provided string.
+ * - `scope`       : route / call-site label (`addons.purchase`,
+ *                    `payment.charge`, etc.). Required for partitioning.
+ * - `requestHash` : sha256 of the canonical request body. If the same key
+ *                    is reused with a different body we treat it as a
+ *                    conflict.
+ * - `response`    : { status, body } cached for replay. Only populated
+ *                    after `completed`. Note: only `{ status, body }` is
+ *                    stored — replay loses Set-Cookie / Location headers.
+ * - `createdAt`   : TTL index — 24h. External calls that haven't repeated
+ *                    in 24 hours are no longer expected to replay; if they
+ *                    do the handler runs fresh.
  */
 
 const mongoose = require("mongoose");
 
 const idempotencyKeySchema = new mongoose.Schema(
   {
-    key: { type: String, required: true, unique: true, index: true },
-    scope: { type: String, default: "" }, // e.g. route name; useful for debugging only
+    key: { type: String, required: true },
+    scope: { type: String, default: "" }, // e.g. route name; partitioning + debugging
     requestHash: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["pending", "completed", "failed"],
+      default: "pending",
+      index: true,
+    },
     response: {
-      status: { type: Number, required: true },
+      status: { type: Number },
       body: { type: mongoose.Schema.Types.Mixed },
     },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
     createdAt: { type: Date, default: Date.now },
+    completedAt: { type: Date, default: null },
   },
   { timestamps: false }
 );
+
+// Compound unique index — partition the keyspace per-user-per-scope.
+// See H-5 in PRODUCTION_READINESS_REVIEW.md; the migration script
+// `scripts/migrate-idempotency-key-index.js` drops the legacy `key_1`
+// global-unique index and creates this one.
+idempotencyKeySchema.index({ userId: 1, scope: 1, key: 1 }, { unique: true });
 
 idempotencyKeySchema.index({ createdAt: 1 }, { expireAfterSeconds: 24 * 60 * 60 });
 

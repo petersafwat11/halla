@@ -56,8 +56,34 @@ const featuresSchema = new mongoose.Schema(
 // ============================================
 // PRICING SCHEMA
 // ============================================
+//
+// AMOUNT UNIT CONTRACT (post-B-2):
+//   `oneTime` is a non-negative INTEGER in MINOR UNITS of the plan's
+//   `currency` (halalas for SAR, cents for USD/EUR/AED, fils for KWD/BHD,
+//   etc.). E.g. "29.99 SAR" is stored as `2999`. This matches the
+//   `paymentProvider.charge` contract — the value flows straight through
+//   to the PSP with no `* 100` conversion. Major-unit values (decimals or
+//   pre-multiplied "29.99") are rejected by the validator below.
+//
+// Why: previously the unit was undocumented; the Moyasar provider did
+// `amount * 100`, so a record stored as halalas would have been charged
+// 100×. Both the model and the provider now enforce minor-unit integers.
 const pricingSchema = new mongoose.Schema(
-  { oneTime: { type: Number, default: 0 } },
+  {
+    oneTime: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: (v) =>
+          v === null ||
+          v === undefined ||
+          (typeof v === "number" && Number.isFinite(v) && Number.isInteger(v) && v >= 0),
+        message:
+          "pricing.oneTime must be a non-negative integer in minor units (halalas/cents). " +
+          "Decimals like 29.99 are rejected — store as 2999 instead.",
+      },
+    },
+  },
   { _id: false }
 );
 
