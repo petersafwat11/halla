@@ -395,6 +395,19 @@ exports.notifyStaff = catchAsync(async (req, res) => {
 });
 
 // ============================================
+// LAUNCH RETRY (3c.1)
+// ============================================
+
+/**
+ * Manual launch retry — host, whitelabel-admin, admin, super_admin only.
+ * POST /api/v2/events/:id/retry-launch
+ */
+exports.retryLaunch = catchAsync(async (req, res) => {
+  const result = await eventsService.retryEventLaunch(req.params.id, req.user);
+  res.status(200).json({ status: "success", data: result });
+});
+
+// ============================================
 // ADMIN ENDPOINTS
 // ============================================
 

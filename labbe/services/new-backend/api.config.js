@@ -97,6 +97,9 @@ export const API_PATHS = {
     getAllEvents: '/events/admin/all',
     adminUpdateEventStatus: (id) => `/events/admin/${id}/status`,
     adminDeleteEvent: (id) => `/events/admin/${id}`,
+
+    // Phase 3c.1 — manual launch retry
+    retryLaunch: (id) => `/events/${id}/retry-launch`,
   },
 
   // ============================================

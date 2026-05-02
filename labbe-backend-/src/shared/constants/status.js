@@ -27,6 +27,12 @@ const VENDOR_STATUS = {
 
 /**
  * Event status
+ *
+ * `failed` (PIPELINE-F04 / FLOW-15-F01): set by the launch-retry cron
+ * after `maxAttempts` retries OR when the 24h pre-launch retry window
+ * expires without a successful bulk send. The host (or admin) can flip
+ * the event back to `scheduled` via the manual-retry endpoint, which
+ * resets `attemptCount` to 0.
  */
 const EVENT_STATUS = {
   DRAFT: 'draft',
@@ -37,6 +43,7 @@ const EVENT_STATUS = {
   CANCELLED: 'cancelled',
   COMPLETED: 'completed',
   ARCHIVED: 'archived',
+  FAILED: 'failed',
 };
 
 /**

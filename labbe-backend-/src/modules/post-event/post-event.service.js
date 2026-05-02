@@ -15,6 +15,8 @@ const PostEventContent = require('../../../models/PostEventContentModel');
 
 const notificationService = require('../notifications/notifications.service');
 const taqnyat = require('../../infrastructure/taqnyat');
+const { runBatched } = require('../../shared/utils/runBatched');
+const { withIdempotency } = require('../../shared/utils/idempotency');
 
 class PostEventService {
   /**
@@ -198,7 +200,21 @@ class PostEventService {
     if (!token) throw new ValidationError('Access token is required');
 
     const validation = await GuestAccessToken.validateToken(token, {});
-    if (!validation.valid) throw new ForbiddenError(validation.reason || 'Invalid token');
+    if (!validation.valid) {
+      // Phase 3e.3 / 3e.4 (D7 / D8): rotated / revoked / expired tokens
+      // surface as a 410 Gone with the reason in the body. Plain
+      // unknown-token (lookup miss) stays 403 since it's a credential
+      // error, not a "the resource is gone" error.
+      const goneReasons = ['qr_rotated', 'qr_revoked', 'qr_expired'];
+      if (goneReasons.includes(validation.reason)) {
+        const err = new Error(validation.message || validation.reason);
+        err.status = 410;
+        err.statusCode = 410;
+        err.body = { reason: validation.reason, message: validation.message };
+        throw err;
+      }
+      throw new ForbiddenError(validation.message || validation.reason || 'Invalid token');
+    }
 
     const { guest, event } = validation;
 
@@ -358,19 +374,31 @@ class PostEventService {
 
     const frontendUrl = config.frontend?.url || process.env.FRONTEND_URL;
     const SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp';
-    const sent = [];
-    const failed = [];
 
-    for (const t of reachable) {
-      try {
-        const link = `${frontendUrl}/ar/post-event?token=${t.token}`;
-        const msg = `شكراً لحضورك! يمكنك مشاهدة صور ومقاطع المناسبة من هنا:\n${link}`;
-        await taqnyat.sendSMS(t.guest.phone, msg, { sender: SENDER });
-        sent.push({ guestId: t.guest._id, guestName: t.guest.name, phone: t.guest.phone });
-      } catch (err) {
-        failed.push({ guestId: t.guest._id, phone: t.guest.phone, error: err.message });
-      }
-    }
+    // Phase 3b.3 (FLOW-21-F01): same runBatched + idempotency contract as
+    // launch / reminder sends. Two clicks of "send post-event link" within
+    // the cache TTL deduplicate against the per-guest key, so guests don't
+    // get the same SMS twice.
+    const batched = await runBatched(
+      reachable,
+      (t) => {
+        const key = `post_event_access:${eventId}:${t.guest._id}`;
+        return withIdempotency(key, async () => {
+          const link = `${frontendUrl}/ar/post-event?token=${t.token}`;
+          const msg = `شكراً لحضورك! يمكنك مشاهدة صور ومقاطع المناسبة من هنا:\n${link}`;
+          await taqnyat.sendSMS(t.guest.phone, msg, { sender: SENDER });
+          return { ok: true };
+        }, { scope: 'post_event_access', userId });
+      },
+      { concurrency: 5, ratePerSecond: 10 }
+    );
+
+    const sent = batched.results
+      .filter(r => r.ok)
+      .map(r => ({ guestId: r.item.guest._id, guestName: r.item.guest.name, phone: r.item.guest.phone }));
+    const failed = batched.results
+      .filter(r => !r.ok)
+      .map(r => ({ guestId: r.item.guest._id, phone: r.item.guest.phone, error: r.error }));
 
     return {
       sent,
@@ -393,21 +421,30 @@ class PostEventService {
 
     const guests = (event.guestList || []).filter(g => g.phone);
 
-    for (const guest of guests) {
-      try {
-        const tokenDoc = await GuestAccessToken.createForGuest(guest._id, event._id, 'post_event', 30);
-        const link = `${frontendUrl}/ar/post-event?token=${tokenDoc.token}`;
-        const message =
-          `${guest.name}، شكراً لحضورك! 🌹\n` +
-          `يمكنك مشاهدة صور ومقاطع المناسبة من هنا:\n${link}`;
-
-        await taqnyat.sendSMS(guest.phone, message, { sender: SENDER });
-      } catch (err) {
+    // Phase 3b.3 (FLOW-21-F01): runBatched + idempotency. Publishing the
+    // same post-event content twice (e.g. host clicks "Publish" again
+    // after a network blip) doesn't double-SMS guests within the cache
+    // window.
+    await runBatched(
+      guests,
+      (guest) => withIdempotency(
+        `post_event_publish:${event._id}:${guest._id}`,
+        async () => {
+          const tokenDoc = await GuestAccessToken.createForGuest(guest._id, event._id, 'post_event', 30);
+          const link = `${frontendUrl}/ar/post-event?token=${tokenDoc.token}`;
+          const message =
+            `${guest.name}، شكراً لحضورك! 🌹\n` +
+            `يمكنك مشاهدة صور ومقاطع المناسبة من هنا:\n${link}`;
+          await taqnyat.sendSMS(guest.phone, message, { sender: SENDER });
+          return { ok: true };
+        },
+        { scope: 'post_event_publish' }
+      ).catch((err) => {
         console.error(`[PostEvent] Failed to notify guest ${guest._id}:`, err.message);
-      }
-      // Small delay to stay within rate limits
-      await new Promise(r => setTimeout(r, 100));
-    }
+        return { ok: false };
+      }),
+      { concurrency: 5, ratePerSecond: 10 }
+    );
 
     // Notify the host
     try {

@@ -8,7 +8,20 @@ import {
   TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import EventFailureBanner from "./EventFailureBanner";
+import { useAuthStore } from "../../stores/authStore";
+import { retryLaunch } from "../../services/eventsService2";
+
 const EventDetails = ({ event, onStatsPress, onBack }) => {
+  const { user, token } = useAuthStore();
+
+  const handleRetry = async (eventId) => {
+    if (!token || !eventId) {
+      throw new Error("Missing token or event id");
+    }
+    return retryLaunch(eventId, token);
+  };
+
 
   // Format backend data - handle both flat format (from getMyEvents/_formatEvent)
   // and nested format (from getEventById with eventDetails object)
@@ -74,6 +87,9 @@ const EventDetails = ({ event, onStatsPress, onBack }) => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
+        {/* Phase 3c.5 — failure / retrying banner */}
+        <EventFailureBanner event={event} currentUser={user} onRetry={handleRetry} />
+
         {/* Event Image */}
         <View style={styles.imageWrapper}>
           <View style={styles.imageContainer}>

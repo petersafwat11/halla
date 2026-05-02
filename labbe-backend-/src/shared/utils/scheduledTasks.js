@@ -12,6 +12,8 @@ const notificationService = require("./notificationService");
 const emailService = require("./emailService");
 const messagingService = require("../../modules/messaging/messaging.service");
 const taqnyat = require("../../infrastructure/taqnyat");
+const { runBatched } = require("./runBatched");
+const { withIdempotency } = require("./idempotency");
 const {
   generateDailyReportPDF,
   generateWeeklyReportPDF,
@@ -19,6 +21,7 @@ const {
 const { ROLES } = require("../constants");
 const { parseEventTime, isDue, nowUtc } = require("./timezone");
 const { logAudit } = require("./auditLog");
+const eventLock = require("./eventLock");
 
 // ============================================
 // HELPER FUNCTIONS
@@ -106,6 +109,16 @@ const getExpiringSubscriptions = async (daysAhead = 7) => {
  * fetch the day's scheduled events and use `timezone.isDue` to compare in
  * real UTC, deriving the Riyadh wall-clock from the host's chosen
  * `scheduledTime`.
+ *
+ * Phase 3a:
+ *   - PIPELINE-F01 / FLOW-14-F01: send-then-mark-live ordering.
+ *     `sendBulk` runs first; only on success do we flip the event to
+ *     `live`. On failure the status stays `scheduled` (the retry cron
+ *     handles re-attempts; after exhaustion it transitions to `failed`).
+ *   - 3a.3 send lock: acquired via `eventLock.acquire` before any send,
+ *     released in `finally`. Prevents a dual-tick race from double-firing.
+ *   - 3a.5: the Taqnyat native-scheduling skip branch is removed. Every
+ *     event launches via this cron regardless of channel.
  */
 const scheduleEventLaunch = () => {
   cron.schedule("* * * * *", async () => {
@@ -132,50 +145,132 @@ const scheduleEventLaunch = () => {
       }
 
       for (const event of eventsToLaunch) {
-        console.log(`[Cron] Launching event: ${event._id} (${event.eventDetails?.title})`);
-
-        // Get guest IDs
-        // guestList contains ObjectIds
-        const guestIds = event.guestList ? event.guestList.map(id => id.toString()) : [];
-
-        if (!guestIds || guestIds.length === 0) {
-          // Don't launch with zero guests — keep current status
-          console.warn(`[Cron] Event ${event._id} has no guests, skipping launch`);
-          continue;
-        }
-
-        // Update event status to LIVE immediately to prevent re-processing
-        // This prevents race conditions if sending invitations takes > 1 minute
-        event.status = "live";
-        await event.save();
-        console.log(`[Cron] Event ${event._id} status updated to 'live'`);
-
-        if (guestIds.length > 0) {
-          try {
-            const channel = event.messagingStatus?.preferredChannel || "sms";
-            const canUseWhatsApp = !!(event.invitationSettings?.selectedTemplate?.name);
-            const finalChannel = channel === "whatsapp" && canUseWhatsApp ? "whatsapp" : "sms";
-
-            if (finalChannel === "sms" && event.launchSettings?.taqnyatDeleteId) {
-              // SMS was already scheduled natively via Taqnyat's scheduledDatetime field.
-              // Firing sendBulk here would send a duplicate SMS to every guest.
-              // Taqnyat is handling delivery — no action needed.
-              console.log(`[Cron] Event ${event._id} SMS managed by Taqnyat (deleteId: ${event.launchSettings.taqnyatDeleteId}), skipping duplicate send`);
-            } else {
-              await messagingService.sendBulk({ guestIds, eventId: event._id.toString(), channel: finalChannel });
-              console.log(`[Cron] Invitations sent for event ${event._id} via ${finalChannel}`);
-            }
-          } catch (invitationError) {
-            console.error(`[Cron] Failed to send invitations for event ${event._id}:`, invitationError);
-            // Status remains 'live' but logged failure. Manual retry might be needed.
-          }
-        }
+        await runEventLaunch(event, "cron-launch");
       }
     } catch (error) {
       console.error("[Cron] Scheduled event launch failed:", error);
     }
   });
 };
+
+/**
+ * Run one event's launch sequence end-to-end (lock → sendBulk → flip status).
+ *
+ * Shared by `scheduleEventLaunch` (cron tick), `scheduleEventRetry` (retry
+ * cron), and the manual-retry endpoint. The caller-supplied `workerId`
+ * shows up on the lock document and in audit logs to trace which path
+ * fired the launch.
+ *
+ * Returns `{ launched: true | false, reason?: string }`.
+ */
+async function runEventLaunch(event, workerId) {
+  const eventId = event._id.toString();
+  const guestIds = event.guestList ? event.guestList.map((id) => id.toString()) : [];
+
+  if (guestIds.length === 0) {
+    console.warn(`[Cron] Event ${eventId} has no guests, skipping launch`);
+    return { launched: false, reason: "no_guests" };
+  }
+
+  const lock = await eventLock.acquire(eventId, workerId);
+  if (!lock.acquired) {
+    console.log(`[Cron] Event ${eventId} is already locked by another worker — skipping`);
+    return { launched: false, reason: "locked" };
+  }
+
+  // Re-read inside the lock in case another worker ran first.
+  const fresh = await Event.findById(eventId);
+  if (!fresh || fresh.status === "live" || fresh.status === "completed") {
+    await eventLock.release(eventId);
+    return { launched: false, reason: "stale" };
+  }
+
+  console.log(`[Cron] Launching event: ${eventId} (${fresh.eventDetails?.title}) attempt ${(fresh.attemptCount || 0) + 1}`);
+
+  try {
+    fresh.attemptCount = (fresh.attemptCount || 0) + 1;
+    fresh.lastAttemptAt = new Date();
+    await fresh.save();
+
+    const channel = fresh.messagingStatus?.preferredChannel || "sms";
+    const canUseWhatsApp = !!fresh.invitationSettings?.selectedTemplate?.name;
+    const finalChannel = channel === "whatsapp" && canUseWhatsApp ? "whatsapp" : "sms";
+
+    const sendResult = await messagingService.sendBulk({
+      guestIds,
+      eventId,
+      channel: finalChannel,
+    });
+
+    if (!sendResult || sendResult.success === false) {
+      const errMsg = sendResult?.error || sendResult?.message || "send_failed";
+      fresh.failureReason = errMsg;
+      await fresh.save();
+      await logAudit({
+        action: "event.launch_failed",
+        actor: { _id: null, role: "system" },
+        targetType: "event",
+        targetId: fresh._id,
+        whitelabelId: fresh.whitelabelId || null,
+        metadata: {
+          attemptCount: fresh.attemptCount,
+          reason: errMsg,
+          workerId,
+        },
+        status: "failure",
+      });
+      console.warn(`[Cron] Event ${eventId} send returned failure (attempt ${fresh.attemptCount}): ${errMsg}`);
+      return { launched: false, reason: errMsg };
+    }
+
+    // Send succeeded (possibly with partial per-guest failures handled
+    // by the retry-failed flow downstream). Flip to live now.
+    fresh.status = "live";
+    fresh.launchedAt = new Date();
+    fresh.failureReason = undefined;
+    await fresh.save();
+
+    await logAudit({
+      action: "event.launched",
+      actor: { _id: null, role: "system" },
+      targetType: "event",
+      targetId: fresh._id,
+      whitelabelId: fresh.whitelabelId || null,
+      changes: { after: { status: "live", launchedAt: fresh.launchedAt } },
+      metadata: {
+        sentTo: sendResult.successful ?? guestIds.length,
+        failedSends: sendResult.failed ?? 0,
+        attemptCount: fresh.attemptCount,
+        workerId,
+      },
+    });
+
+    console.log(`[Cron] Event ${eventId} launched (sent ${sendResult.successful || 0}/${guestIds.length})`);
+    return { launched: true };
+  } catch (err) {
+    console.error(`[Cron] Event ${eventId} launch threw:`, err);
+    try {
+      await Event.updateOne(
+        { _id: eventId },
+        { $set: { failureReason: err.message || "exception" } }
+      );
+      await logAudit({
+        action: "event.launch_failed",
+        actor: { _id: null, role: "system" },
+        targetType: "event",
+        targetId: event._id,
+        whitelabelId: event.whitelabelId || null,
+        metadata: { reason: err.message, workerId },
+        status: "failure",
+      });
+    } catch (_) {
+      /* swallow audit failures */
+    }
+    return { launched: false, reason: err.message || "exception" };
+  } finally {
+    await eventLock.release(eventId);
+  }
+}
 
 /**
  * Daily event reminders - runs at 8:00 AM
@@ -450,61 +545,73 @@ const scheduleGuestReminders = () => {
           "invitation.sent": true,
         });
 
-        for (const guest of guests) {
-          let msg;
-
+        // Phase 3b.1: replace serial 100ms loop with runBatched
+        // (concurrency 5, 10/sec). Same idempotency contract as the
+        // launch send so a duplicated reminder cron tick within the same
+        // 30-min window is a no-op.
+        const buildMessage = (guest) => {
           if (guest.status === "confirmed") {
-            // Warm confirmation reminder for guests who already said they'll attend
-            msg =
+            return (
               `صديقي العزيز ${guest.name}،\n` +
               `نُذكِّركَ بفرحتنا التي لا تكتمل إلا بحضورك 🌹\n` +
               `غداً — ${dateAr} — ننتظرك بلهفة في ${location}.\n` +
-              `نتمنى أن تصلنا بأحسن حال!`;
-          } else if (guest.status === "declined") {
-            // Soft re-invite for guests who declined
-            msg =
+              `نتمنى أن تصلنا بأحسن حال!`
+            );
+          }
+          if (guest.status === "declined") {
+            return (
               `أخي الكريم ${guest.name}،\n` +
               `قلوبنا معكم وإن تعذّر عليك الحضور.\n` +
               `ما زال الباب مفتوحاً، ويسعدنا كثيراً لو تشرّفتنا بحضورك في ${dateAr} 💛\n` +
-              `نرجو لك السعادة دائماً.`;
-          } else {
-            // Friendly nudge for 'maybe' and guests who never responded
-            const rsvpLink = `${process.env.FRONTEND_URL || "https://halaa.sa"}/rsvp/${event._id}/${guest._id}`;
-            msg =
-              `عزيزنا ${guest.name}،\n` +
-              `اقترب موعد مناسبتنا — ${dateAr} — ونتمنى من القلب أن نرى اسمك بين الحضور.\n` +
-              `هل بإمكانك تأكيد حضورك؟ 🤍\n${rsvpLink}`;
-          }
-
-          // Template name per segment — must be pre-approved by Meta via submitTemplateForApproval.
-          // If the WA template is not yet approved the send will fail and SMS fallback fires.
-          const waTemplateName =
-            guest.status === "confirmed" ? "halaa_reminder_confirmed" :
-            guest.status === "declined"  ? "halaa_reminder_declined"  :
-                                           "halaa_reminder_nudge";
-
-          let delivered = false;
-          try {
-            const waResult = await taqnyat.sendWhatsAppTemplate(
-              guest.phone,
-              waTemplateName,
-              "ar",
-              [{ type: "body", parameters: [{ type: "text", text: msg }] }]
+              `نرجو لك السعادة دائماً.`
             );
-            if (waResult.success) delivered = true;
-          } catch (_waErr) { /* fall through to SMS */ }
-
-          if (!delivered) {
-            try {
-              await taqnyat.sendSMS(guest.phone, msg, { sender: process.env.TAQNYAT_SENDER_NAME || "HalaaApp" });
-            } catch (smsErr) {
-              console.error(`[Cron] Reminder failed for guest ${guest._id}:`, smsErr.message);
-            }
           }
+          const rsvpLink = `${process.env.FRONTEND_URL || "https://halaa.sa"}/rsvp/${event._id}/${guest._id}`;
+          return (
+            `عزيزنا ${guest.name}،\n` +
+            `اقترب موعد مناسبتنا — ${dateAr} — ونتمنى من القلب أن نرى اسمك بين الحضور.\n` +
+            `هل بإمكانك تأكيد حضورك؟ 🤍\n${rsvpLink}`
+          );
+        };
 
-          // Small delay to stay within Taqnyat rate limits
-          await new Promise((r) => setTimeout(r, 100));
-        }
+        await runBatched(
+          guests,
+          (guest) => {
+            const reminderType = guest.status === "confirmed"
+              ? "confirmed"
+              : guest.status === "declined" ? "declined" : "nudge";
+            const key = `reminder:${event._id}:${guest._id}:${reminderType}:24h`;
+            return withIdempotency(key, async () => {
+              const msg = buildMessage(guest);
+              const waTemplateName =
+                reminderType === "confirmed" ? "halaa_reminder_confirmed"
+                : reminderType === "declined" ? "halaa_reminder_declined"
+                : "halaa_reminder_nudge";
+
+              let delivered = false;
+              try {
+                const waResult = await taqnyat.sendWhatsAppTemplate(
+                  guest.phone,
+                  waTemplateName,
+                  "ar",
+                  [{ type: "body", parameters: [{ type: "text", text: msg }] }]
+                );
+                if (waResult.success) delivered = true;
+              } catch (_waErr) { /* fall through to SMS */ }
+
+              if (!delivered) {
+                try {
+                  await taqnyat.sendSMS(guest.phone, msg, { sender: process.env.TAQNYAT_SENDER_NAME || "HalaaApp" });
+                  delivered = true;
+                } catch (smsErr) {
+                  console.error(`[Cron] Reminder failed for guest ${guest._id}:`, smsErr.message);
+                }
+              }
+              return { delivered };
+            }, { scope: "guest_reminder" });
+          },
+          { concurrency: 5, ratePerSecond: 10 }
+        );
 
         // Mark reminder as sent for this event to prevent re-processing
         await Event.findByIdAndUpdate(event._id, {
@@ -589,6 +696,144 @@ const scheduleSubscriptionStatusUpdate = () => {
   });
 };
 
+/**
+ * Launch retry cron — runs every 5 minutes (Phase 3c.1, FLOW-15-F02).
+ *
+ * For events that are still `scheduled` after their launch tick failed
+ * (or never matched the 60s isDue window), this cron re-attempts the
+ * bulk send within a 24h pre-launch retry window.
+ *
+ * Backoff (PHASE_3abc_PLAN.md, decision D5):
+ *   attempt 1 → already happened in scheduleEventLaunch
+ *   attempt 2 → 5 min after lastAttemptAt
+ *   attempt 3 → 30 min
+ *   attempt 4 → 2 h
+ *   attempt 5 → 6 h
+ *   attempt 6 → 12 h
+ * After `MAX_ATTEMPTS = 5` retries (so attemptCount === 5), or if now is
+ * more than `RETRY_WINDOW_MS = 24h` past the scheduled launch time, the
+ * event flips to `failed` and notifications fire (FLOW-15-F05).
+ *
+ * Manual retry resets `attemptCount = 0` and pushes the event back to
+ * `scheduled`; the next minute-tick of `scheduleEventLaunch` picks it up.
+ */
+const MAX_LAUNCH_ATTEMPTS = 5;
+const LAUNCH_RETRY_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
+const LAUNCH_BACKOFF_MS = [
+  5 * 60 * 1000,        // 5 min
+  30 * 60 * 1000,       // 30 min
+  2 * 60 * 60 * 1000,   // 2 h
+  6 * 60 * 60 * 1000,   // 6 h
+  12 * 60 * 60 * 1000,  // 12 h
+];
+
+const _isRetryDue = (event, now) => {
+  const last = event.lastAttemptAt ? new Date(event.lastAttemptAt).getTime() : 0;
+  const attempt = event.attemptCount || 0;
+  if (attempt >= MAX_LAUNCH_ATTEMPTS) return false;
+  const backoffIdx = Math.min(attempt, LAUNCH_BACKOFF_MS.length - 1);
+  const wait = LAUNCH_BACKOFF_MS[backoffIdx];
+  return now.getTime() - last >= wait;
+};
+
+const _markFailedAndNotify = async (event, reason) => {
+  event.status = "failed";
+  event.failedAt = new Date();
+  event.failureReason = reason || event.failureReason || "max_attempts_exceeded";
+  await event.save();
+
+  const eventTitle = event.eventDetails?.title || "Untitled";
+  const eventId = event._id;
+
+  await logAudit({
+    action: "event.launch_failed_terminal",
+    actor: { _id: null, role: "system" },
+    targetType: "event",
+    targetId: eventId,
+    whitelabelId: event.whitelabelId || null,
+    changes: { after: { status: "failed", failedAt: event.failedAt } },
+    metadata: {
+      attemptCount: event.attemptCount,
+      reason: event.failureReason,
+    },
+    status: "failure",
+  });
+
+  // Idempotent notification dispatch — even if this terminal-fail handler
+  // somehow fires twice, the host/admin/super-admin only see one.
+  const notifyKey = `event_failed_notify:${eventId}`;
+  await require("./idempotency").withIdempotency(notifyKey, async () => {
+    if (event.host) {
+      await notificationService.sendToUser(
+        event.host,
+        {
+          type: "event_launch_failed",
+          title: "Event launch failed",
+          titleAr: "تعذّر إطلاق مناسبتك",
+          message: `Your event "${eventTitle}" couldn't be launched after ${event.attemptCount} attempts. We're sorry.`,
+          messageAr: `لم نتمكن من إطلاق مناسبتك "${eventTitle}" بعد ${event.attemptCount} محاولات. نعتذر عن ذلك.`,
+          actionUrl: `${process.env.FRONTEND_URL || "https://halaa.sa"}/ar/host/events/${eventId}`,
+          data: { entityType: "event", entityId: eventId, metadata: { reason: event.failureReason } },
+          priority: "high",
+        },
+        true /* sendEmail */
+      ).catch((err) => console.error("[retry-cron] notify host failed:", err.message));
+    }
+
+    await notificationService.sendToAdmins({
+      type: "event_launch_failed",
+      title: "Event launch failed",
+      titleAr: "فشل إطلاق مناسبة",
+      message: `Event "${eventTitle}" failed to launch (host ${event.host}).`,
+      messageAr: `فشل إطلاق مناسبة "${eventTitle}".`,
+      data: { entityType: "event", entityId: eventId },
+    }).catch((err) => console.error("[retry-cron] notify admins failed:", err.message));
+
+    return { notified: true };
+  }, { scope: "event_launch_failed_notify" });
+};
+
+const scheduleEventRetry = () => {
+  cron.schedule("*/5 * * * *", async () => {
+    try {
+      const now = new Date();
+
+      const candidates = await Event.find({
+        status: "scheduled",
+        attemptCount: { $gt: 0 },
+        "launchSettings.scheduledDate": {
+          $gte: new Date(now.getTime() - 48 * 60 * 60 * 1000),
+          $lte: new Date(now.getTime() + 48 * 60 * 60 * 1000),
+        },
+      });
+
+      for (const event of candidates) {
+        const scheduledUtc = parseEventTime(event);
+        if (!scheduledUtc) continue;
+
+        // Beyond the 24h grace window? Terminal fail.
+        if (now.getTime() > scheduledUtc.getTime() + LAUNCH_RETRY_WINDOW_MS) {
+          await _markFailedAndNotify(event, "retry_window_expired");
+          continue;
+        }
+
+        // Hit max attempts? Terminal fail.
+        if ((event.attemptCount || 0) >= MAX_LAUNCH_ATTEMPTS) {
+          await _markFailedAndNotify(event, "max_attempts_exceeded");
+          continue;
+        }
+
+        if (!_isRetryDue(event, now)) continue;
+
+        console.log(`[Cron] Retry attempt ${(event.attemptCount || 0) + 1}/${MAX_LAUNCH_ATTEMPTS} for event ${event._id}`);
+        await runEventLaunch(event, "cron-retry");
+      }
+    } catch (error) {
+      console.error("[Cron] Event retry failed:", error);
+    }
+  });
+};
+
 // ============================================
 // INITIALIZATION
 // ============================================
@@ -602,6 +847,7 @@ const initScheduledTasks = () => {
   scheduleSubscriptionExpiryCheck();
   scheduleSubscriptionStatusUpdate();
   scheduleEventLaunch();
+  scheduleEventRetry();
   scheduleTemplateStatusPolling();
   scheduleEventCompletion();
   scheduleGuestReminders();
@@ -613,6 +859,7 @@ const initScheduledTasks = () => {
   console.log("  - Subscription expiry check: Daily at 6:00 AM");
   console.log("  - Subscription status update: Daily at 1:00 AM");
   console.log("  - Event launches (WhatsApp bulk send): Every minute");
+  console.log("  - Event launch retry: Every 5 minutes");
   console.log("  - Template status polling: Every 30 minutes");
   console.log("  - Event completion (live → completed): Every hour");
   console.log("  - 24h guest reminder SMS: Every 30 minutes");
@@ -625,6 +872,10 @@ module.exports = {
   getTodayEvents,
   getExpiringSubscriptions,
   scheduleEventLaunch,
+  scheduleEventRetry,
   scheduleEventCompletion,
   scheduleGuestReminders,
+  runEventLaunch,
+  MAX_LAUNCH_ATTEMPTS,
+  LAUNCH_RETRY_WINDOW_MS,
 };
