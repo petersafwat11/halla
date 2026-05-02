@@ -2,12 +2,14 @@
 
 ## Status
 
-- TENANT-F01 / RBAC-F02 (filterByWhitelabel cross-tenant): **committed** in `dc20aef` (`[TENANT-F01] scope ADMIN and MODERATOR to assigned whitelabel`).
-- PIPELINE-F02 / FLOW-18-F01 (HMAC fail-open): **committed** — see commit SHA recorded in `PHASE_0_REPORT.md` after the second commit lands.
+- TENANT-F01 / RBAC-F02 (filterByWhitelabel cross-tenant): **closed** in `dc20aef`.
+- PIPELINE-F02 / FLOW-18-F01 (HMAC fail-open): **closed** in `31a69bc`.
+
+Both commits land on `claude/implement-phase-0-HOIto`. Stop-gate output is in this session's terminal; full hand-off context is in `PHASE_0_REPORT.md`.
 
 ## Last update
 
-`<filled in below as work progresses>`
+Phase 0 complete. Both findings closed; report written; ledger created.
 
 ## Log
 
