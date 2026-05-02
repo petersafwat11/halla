@@ -321,40 +321,96 @@ class SubscriptionsService {
       if (!setupFee) throw new Error('Business setup fee must be paid before subscribing to business event plans');
     }
 
-    // Concurrent subscriptions are allowed — do NOT cancel existing
+    // FLOW-12-F01 / FLOW-09-F02: a host can never have two active
+    // subscriptions. Direct subscribe() now matches changePlan() — any
+    // existing active sub is cancelled before the new one is created.
+    // This eliminates the "validateLimits picks the wrong subscription"
+    // class of bug at the root.
+    const existingActive = await Subscription.find({
+      userId,
+      status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
+    });
+    for (const existing of existingActive) {
+      existing.status = SUBSCRIPTION_STATUS.CANCELLED;
+      existing.cancelledAt = new Date();
+      existing.cancelReason = `Auto-cancelled on new subscribe to ${planCode}`;
+      await existing.save();
+    }
 
-    // Phase 1b consumer wiring (FLOW-09 / FLOW-10 foundation): every
-    // subscription now goes through the payment provider before we save.
-    // In stub mode (no MOYASAR_API_KEY) this returns synthetic success so
-    // dev/CI flows are unaffected. Once real keys land the same call
-    // becomes a real charge and a failure response blocks the save.
-    const planPrice = plan?.pricing?.amount ?? plan?.pricing?.monthly ?? 0;
-    if (planPrice > 0) {
-      const charge = await paymentProvider.charge({
+    // Phase 2 (FLOW-09-F01 / trial guard): Plan schema stores price in
+    // `pricing.oneTime`. Free / trial plans must skip the payment provider —
+    // the stub returns synthetic success today, but real Moyasar rejects
+    // zero-amount charges.
+    const planPrice = plan?.pricing?.oneTime ?? 0;
+    const isFreePlan = planCode === 'trial' || planPrice <= 0;
+
+    // Idempotency only when the caller supplied a key. A derived
+    // fallback (e.g. `subscribe:${userId}:${plan.code}`) would let
+    // paymentProvider replay a cached charge response on a second
+    // legitimate subscribe-to-the-same-plan within 24h, while the
+    // service still creates a second Subscription document — i.e. a
+    // double-credit / single-charge bug. Clients pass Idempotency-Key
+    // via the route middleware to opt in to exactly-once.
+    let paymentTransactionId = null;
+    if (!isFreePlan) {
+      const chargeParams = {
         amount: planPrice,
-        currency: plan?.pricing?.currency || 'SAR',
+        currency: plan?.currency || 'SAR',
         customer: { id: userId },
         metadata: {
           planCode: plan.code,
           discountCode,
           description: `Subscription to ${plan.code}`,
         },
-        idempotencyKey: `subscribe:${userId}:${plan.code}`,
-      });
+      };
+      if (subscriptionData?.idempotencyKey) {
+        chargeParams.idempotencyKey = subscriptionData.idempotencyKey;
+      }
+      const charge = await paymentProvider.charge(chargeParams);
       if (!charge.success) {
         throw new ValidationError(
           charge.error || 'Payment failed; subscription not activated'
         );
       }
+      paymentTransactionId = charge.transactionId || null;
     }
 
     // Create new subscription
     const subscription = await Subscription.createForUser(userId, plan, {
+      pricePaid: isFreePlan ? 0 : planPrice,
+      currency: plan?.currency || 'SAR',
+      status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
       createdBy: {
         user: userId,
         onBehalfOf: false,
       },
     });
+
+    // FLOW-09-F02: trial duration is **14 days** regardless of the
+    // plan's configured durationDays. createForUser reads
+    // plan.limits.durationDays (currently 90 for the trial plan, used
+    // for event-creation lifecycle math); we override expiresAt here so
+    // the daily expiry cron transitions the trial subscription to
+    // `expired` after two weeks. Documented in PHASE_2_PLAN.md.
+    if (planCode === 'trial') {
+      const TRIAL_DURATION_DAYS = 14;
+      const trialExpiresAt = new Date(
+        (subscription.activatedAt || subscription.createdAt).getTime()
+          + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000
+      );
+      subscription.expiresAt = trialExpiresAt;
+    }
+
+    if (paymentTransactionId) {
+      subscription.metadata = {
+        ...(subscription.metadata || {}),
+        paymentTransactionId,
+      };
+    }
+
+    if (planCode === 'trial' || paymentTransactionId) {
+      await subscription.save();
+    }
 
     // Apply discount if code was provided
     if (discountCode) {
@@ -382,6 +438,77 @@ class SubscriptionsService {
       titleAr: 'تم تفعيل الاشتراك',
       message: `Your ${planCode} subscription has been activated successfully.`,
       messageAr: `تم تفعيل اشتراكك في باقة ${planCode} بنجاح.`,
+      data: { entityType: 'subscription', entityId: subscription._id, metadata: { planCode } },
+    }).catch(console.error);
+
+    return subscription.getSummary ? subscription.getSummary() : subscription;
+  }
+
+  /**
+   * Admin-assign a plan to a user. Skips payment (admin-assigned plans
+   * are free or billed externally). Auto-cancels any existing active
+   * subscription for the target user. Designed to be called from a
+   * SUPER_ADMIN-only route with audit + idempotency middleware wired in.
+   *
+   * @param {string} adminUserId   - the acting admin
+   * @param {Object} input         - { userId, planCode, notes }
+   * @returns {Promise<Object>}
+   */
+  async assignSubscription(adminUserId, input) {
+    const { userId, planCode, notes } = input || {};
+    if (!userId) throw new ValidationError('userId is required');
+    if (!planCode) throw new ValidationError('planCode is required');
+
+    const targetUser = await User.findById(userId);
+    if (!targetUser) throw new NotFoundError('User');
+
+    const plan = await Plan.getOrCreateByCode(planCode);
+    if (!plan) throw new ValidationError('Invalid plan code');
+
+    // FLOW-12-F01 / FLOW-09-F02: enforce single-active invariant.
+    const existingActive = await Subscription.find({
+      userId,
+      status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
+    });
+    for (const existing of existingActive) {
+      existing.status = SUBSCRIPTION_STATUS.CANCELLED;
+      existing.cancelledAt = new Date();
+      existing.cancelReason = `Auto-cancelled on admin-assign to ${planCode}`;
+      await existing.save();
+    }
+
+    const subscription = await Subscription.createForUser(userId, plan, {
+      pricePaid: 0,
+      currency: plan?.currency || 'SAR',
+      status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
+      whitelabelId: targetUser.whitelabelId || null,
+      createdBy: { user: adminUserId, role: ROLES.SUPER_ADMIN, onBehalfOf: true },
+    });
+
+    if (planCode === 'trial') {
+      const TRIAL_DURATION_DAYS = 14;
+      subscription.expiresAt = new Date(
+        (subscription.activatedAt || subscription.createdAt).getTime()
+          + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000
+      );
+    }
+
+    if (notes) subscription.notes = notes;
+    subscription.metadata = {
+      ...(subscription.metadata || {}),
+      assignedBy: adminUserId,
+      assignedAt: new Date().toISOString(),
+    };
+    await subscription.save();
+
+    await User.findByIdAndUpdate(userId, { subscription: subscription._id });
+
+    notificationService.sendToUser(userId, {
+      type: 'subscription_activated',
+      title: 'Subscription Activated',
+      titleAr: 'تم تفعيل الاشتراك',
+      message: `An administrator activated your ${planCode} subscription.`,
+      messageAr: `قام أحد المسؤولين بتفعيل اشتراك ${planCode} الخاص بك.`,
       data: { entityType: 'subscription', entityId: subscription._id, metadata: { planCode } },
     }).catch(console.error);
 

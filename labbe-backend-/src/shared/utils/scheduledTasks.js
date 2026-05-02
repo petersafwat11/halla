@@ -16,8 +16,9 @@ const {
   generateDailyReportPDF,
   generateWeeklyReportPDF,
 } = require("./pdfGenerator");
-const { ROLES, BILLING_CYCLES } = require("../constants");
-const { parseEventTime, isDue } = require("./timezone");
+const { ROLES } = require("../constants");
+const { parseEventTime, isDue, nowUtc } = require("./timezone");
+const { logAudit } = require("./auditLog");
 
 // ============================================
 // HELPER FUNCTIONS
@@ -81,9 +82,13 @@ const getExpiringSubscriptions = async (daysAhead = 7) => {
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + daysAhead);
 
+  // FLOW-09-F03: Subscription schema field is `expiresAt`, not `endDate`.
+  // The previous query never matched anything, so neither the warning
+  // notifications nor the auto-expire transitions ran. Switching to the
+  // correct field re-activates the cron.
   return Subscription.find({
     status: { $in: ["active", "trial"] },
-    endDate: { $gte: now, $lte: futureDate },
+    expiresAt: { $gte: now, $lte: futureDate },
   }).populate("userId", "email username phoneNumber");
 };
 
@@ -325,7 +330,7 @@ const scheduleSubscriptionExpiryCheck = () => {
         if (!subscription.userId) continue;
 
         const daysLeft = Math.ceil(
-          (new Date(subscription.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+          (new Date(subscription.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)
         );
 
         // Only notify at specific intervals (7 days, 3 days, 1 day)
@@ -342,7 +347,7 @@ const scheduleSubscriptionExpiryCheck = () => {
             data: {
               subscriptionId: subscription._id,
               daysLeft,
-              expiryDate: subscription.endDate,
+              expiryDate: subscription.expiresAt,
             },
           }
         );
@@ -356,7 +361,7 @@ const scheduleSubscriptionExpiryCheck = () => {
                 userName: subscription.userId.username || "User",
                 planName: subscription.planId?.name || "Your Plan",
                 daysLeft,
-                expiryDate: subscription.endDate,
+                expiryDate: subscription.expiresAt,
               },
               "ar"
             );
@@ -531,23 +536,53 @@ const scheduleTemplateStatusPolling = () => {
 };
 
 /**
- * Subscription status auto-update - runs daily at 1:00 AM
- * Marks expired subscriptions as "expired" (Bug 11)
+ * Subscription status auto-update — runs daily at 1:00 AM (FLOW-09-F03).
+ *
+ * Phase 2: the previous implementation queried the non-existent `endDate`
+ * field and the non-existent `BILLING_CYCLES.ONCE` constant, so it has
+ * been a no-op since the constants reorg. We now query `expiresAt` (the
+ * real field) and emit a `subscription.expired` audit row per
+ * transitioned record so admins can trace the lifecycle event.
  */
 const scheduleSubscriptionStatusUpdate = () => {
   cron.schedule("0 1 * * *", async () => {
     try {
-      const result = await Subscription.updateMany(
-        {
-          status: { $in: ["active", "trial"] },
-          endDate: { $lt: new Date() },
-          billingCycle: { $ne: BILLING_CYCLES.ONCE },
-        },
+      const now = new Date(nowUtc());
+      const expired = await Subscription.find({
+        status: { $in: ["active", "trial"] },
+        expiresAt: { $ne: null, $lt: now },
+      }).select("_id userId planId status expiresAt whitelabelId");
+
+      if (expired.length === 0) {
+        return;
+      }
+
+      const ids = expired.map((s) => s._id);
+      await Subscription.updateMany(
+        { _id: { $in: ids } },
         { $set: { status: "expired" } }
       );
-      if (result.modifiedCount > 0) {
-        console.log(`[Cron] Marked ${result.modifiedCount} subscriptions as expired`);
+
+      for (const sub of expired) {
+        await logAudit({
+          action: "subscription.expired",
+          actor: { _id: null, role: "system" },
+          targetType: "subscription",
+          targetId: sub._id,
+          whitelabelId: sub.whitelabelId || null,
+          changes: {
+            before: { status: sub.status },
+            after: { status: "expired" },
+          },
+          metadata: {
+            userId: sub.userId,
+            planId: sub.planId,
+            expiredAt: now.toISOString(),
+          },
+        });
       }
+
+      console.log(`[Cron] Marked ${expired.length} subscriptions as expired`);
     } catch (e) {
       console.error("[Cron] Subscription status update failed:", e);
     }

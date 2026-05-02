@@ -504,6 +504,7 @@ subscriptionSchema.methods.getSummary = function () {
     activatedAt: this.activatedAt,
     expiresAt: this.expiresAt,
     pricePaid: this.pricePaid,
+    paymentTransactionId: this.metadata?.paymentTransactionId || null,
     daysRemaining: this.daysRemaining,
     limits: this.limits,
     features: this.features,
@@ -527,11 +528,16 @@ subscriptionSchema.methods.getSummary = function () {
  * @returns {Promise<Subscription[]>}
  */
 subscriptionSchema.statics.findActiveForUser = async function (userId) {
+  // FLOW-12-F01 / FLOW-09-F02: sort newest-first so callers that grab
+  // [0] always see the most recently created active subscription. The
+  // primary fix is `subscribe()` auto-cancelling old subs (matches
+  // changePlan), but we keep this as defence-in-depth in case a stray
+  // historical record slips through.
   return this.find({
     userId,
     status: { $in: ['active', 'trial'] },
     $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
-  }).populate('planId').sort({ createdAt: 1 });
+  }).populate('planId').sort({ createdAt: -1 });
 };
 
 /**

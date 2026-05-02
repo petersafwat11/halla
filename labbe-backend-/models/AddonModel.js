@@ -17,7 +17,10 @@ const addonSchema = new mongoose.Schema(
     currency: { type: String, default: 'SAR' },
     status: {
       type: String,
-      enum: ['pending', 'active', 'fulfilled', 'cancelled'],
+      // FLOW-10-F01: `pending_provisioning` covers business-customization
+      // and any future addon type that requires manual operator
+      // approval after payment. Admin endpoint flips it to `active`.
+      enum: ['pending', 'pending_provisioning', 'active', 'fulfilled', 'cancelled'],
       default: 'pending',
     },
     scope: { type: String, enum: ['event', 'pool', 'org'], default: 'event' },

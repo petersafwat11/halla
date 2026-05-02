@@ -19,6 +19,10 @@ const subscriptionsController = require('./subscriptions.controller');
 
 // Middleware (using existing during migration)
 const { protect } = require('../../shared/middleware/auth');
+const { restrictTo } = require('../../shared/middleware/rbac');
+const { idempotency } = require('../../shared/middleware/idempotency');
+const { auditLog } = require('../../shared/middleware/auditLog');
+const { ROLES } = require('../../shared/constants');
 
 // All routes require authentication
 router.use(protect);
@@ -79,7 +83,56 @@ router.get('/my-subscription', subscriptionsController.getMySubscription);
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.post('/subscribe', subscriptionsController.subscribe);
+router.post(
+  '/subscribe',
+  idempotency({ scope: 'subscriptions.subscribe' }),
+  subscriptionsController.subscribe
+);
+
+/**
+ * @swagger
+ * /subscriptions/admin/assign:
+ *   post:
+ *     summary: Admin-assign subscription to user (SUPER_ADMIN)
+ *     description: Assigns a subscription plan to a target user without
+ *       triggering payment. Audit-logged. Idempotency-Key supported.
+ *     tags: [Subscriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [userId, planCode]
+ *             properties:
+ *               userId: { type: string }
+ *               planCode: { type: string }
+ *               notes: { type: string }
+ *     responses:
+ *       201:
+ *         description: Subscription assigned successfully
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Forbidden — SUPER_ADMIN only
+ */
+router.post(
+  '/admin/assign',
+  restrictTo(ROLES.SUPER_ADMIN),
+  idempotency({ scope: 'subscriptions.admin_assign' }),
+  auditLog({
+    action: 'subscription.assigned_by_admin',
+    targetType: 'subscription',
+    targetIdFrom: (req) => req.body?.userId,
+    changesFrom: (req) => ({
+      after: { userId: req.body?.userId, planCode: req.body?.planCode },
+    }),
+    metadataFrom: (req) => ({ notes: req.body?.notes }),
+  }),
+  subscriptionsController.adminAssignSubscription
+);
 
 /**
  * @swagger
@@ -106,7 +159,11 @@ router.post('/subscribe', subscriptionsController.subscribe);
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.post('/change-plan', subscriptionsController.changePlan);
+router.post(
+  '/change-plan',
+  idempotency({ scope: 'subscriptions.change_plan' }),
+  subscriptionsController.changePlan
+);
 
 /**
  * @swagger

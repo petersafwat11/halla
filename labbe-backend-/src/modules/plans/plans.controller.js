@@ -5,7 +5,7 @@
  */
 
 const catchAsync = require('../../shared/utils/catchAsync');
-const { sendSuccess } = require('../../shared/utils/responseHelper');
+const { sendSuccess, sendCreated } = require('../../shared/utils/responseHelper');
 const plansService = require('./plans.service');
 
 /**
@@ -74,8 +74,44 @@ exports.getAllPlansAdmin = catchAsync(async (req, res) => {
 /**
  * Update plan by code (admin)
  * PATCH /api/v2/plans/admin/:code
+ *
+ * Stashes before/after on res.locals so the audit middleware (mounted
+ * after the body has been processed) can pull the diff.
  */
 exports.updatePlanByCode = catchAsync(async (req, res) => {
   const result = await plansService.updatePlanByCode(req.params.code, req.body);
-  sendSuccess(res, result);
+  res.locals.planAudit = {
+    planId: result.plan?.id,
+    before: result.before,
+    after: result.after,
+  };
+  sendSuccess(res, { plan: result.plan });
+});
+
+/**
+ * Create plan (admin)
+ * POST /api/v2/plans/admin
+ */
+exports.createPlan = catchAsync(async (req, res) => {
+  const result = await plansService.createPlan(req.body);
+  res.locals.planAudit = {
+    planId: result.plan?.id,
+    before: null,
+    after: result.plan,
+  };
+  sendCreated(res, result, 'Plan created successfully');
+});
+
+/**
+ * Soft-delete plan (admin)
+ * DELETE /api/v2/plans/admin/:code
+ */
+exports.deletePlan = catchAsync(async (req, res) => {
+  const result = await plansService.deletePlanByCode(req.params.code);
+  res.locals.planAudit = {
+    planId: result.plan?.id,
+    before: { isActive: true },
+    after: { isActive: false },
+  };
+  sendSuccess(res, result, 'Plan deactivated successfully');
 });

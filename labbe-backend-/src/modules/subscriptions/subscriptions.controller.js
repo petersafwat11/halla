@@ -32,9 +32,28 @@ exports.getMySubscription = catchAsync(async (req, res) => {
  */
 exports.subscribe = catchAsync(async (req, res) => {
   const { planCode, discountCode } = req.body;
-  const subscription = await subscriptionsService.subscribe(req.user._id, { planCode, discountCode });
+  const idempotencyKey = req.get('idempotency-key') || undefined;
+  const subscription = await subscriptionsService.subscribe(req.user._id, {
+    planCode,
+    discountCode,
+    idempotencyKey,
+  });
 
   sendCreated(res, subscription, 'Subscription created successfully');
+});
+
+/**
+ * Admin-assign subscription to a user (FLOW-09-F04)
+ * POST /api/v2/subscriptions/admin/assign
+ */
+exports.adminAssignSubscription = catchAsync(async (req, res) => {
+  const { userId, planCode, notes } = req.body;
+  const subscription = await subscriptionsService.assignSubscription(
+    req.user._id,
+    { userId, planCode, notes }
+  );
+
+  sendCreated(res, subscription, 'Subscription assigned successfully');
 });
 
 /**
