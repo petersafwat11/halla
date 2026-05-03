@@ -33,15 +33,25 @@ const REFRESH_COOKIE = "refresh_token";
 /**
  * Build base cookie options for the access token (path=/).
  *
- * M-12 decision: SameSite=Lax. Web is deployed to Vercel and the API is on a
- * different host (Railway / api subdomain), so the auth cookie has to travel
- * cross-site for top-level navigations. `Strict` would make the cookie
- * invisible the moment the browser navigates from the web origin to the API
- * origin. `None` would force us to layer a CSRF token on every state-changing
- * route. `Lax` is the pragmatic middle: cookies ride along on top-level GETs
- * (so SSR auth works) and same-site fetches, but cross-site form POSTs from
- * a malicious origin are still blocked by the browser. CSRF risk is therefore
- * limited to top-level GET-by-link, which never mutates state in this API.
+ * M-12 decision: SameSite=Lax (production same-VPS deployment).
+ *
+ * Production: web (Next.js) and backend (Express) live on the SAME VPS
+ * behind a single nginx reverse proxy on one hostname. Same-origin means
+ * cookies travel automatically; CORS is not strictly required for the
+ * web↔API path. We still pick Lax (not Strict) because:
+ *   1. React Native app calls the API from a non-web origin (mobile uses
+ *      the Authorization Bearer header from the auth store, not cookies,
+ *      so this is belt-and-braces).
+ *   2. Dev workflow runs web on :3000 and API on :3001 — different ports
+ *      are different origins, so Lax keeps cookies flowing in dev.
+ * `None` would force a CSRF token on every state-changing route. `Strict`
+ * would break dev. Lax keeps top-level GETs (so Next.js SSR can read the
+ * cookie on first paint) and same-site fetches while blocking cross-site
+ * form POSTs from a malicious origin. CSRF risk is therefore limited to
+ * top-level GET-by-link, which never mutates state in this API.
+ *
+ * `Secure: true` only in production (HTTPS). `HttpOnly: true` ensures the
+ * JS layer cannot read the token — paired with B-1 (removed JS mirror).
  */
 const accessCookieOptions = () => ({
   httpOnly: true,

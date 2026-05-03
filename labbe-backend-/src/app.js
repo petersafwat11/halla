@@ -57,18 +57,33 @@ const createApp = () => {
 
   // CORS configuration
   //
-  // M-12: this allowlist must stay in sync with the auth cookie's SameSite
-  // setting (`auth.controller.js` → `accessCookieOptions`). We use
-  // `SameSite=Lax` + `credentials: true`, which means:
-  //   - The browser will send the auth cookie on top-level navigations from
-  //     any origin (safe for the API because all state-changing routes are
-  //     POST/PATCH/DELETE, which Lax does NOT auto-include cross-site).
-  //   - The browser will send the auth cookie on XHR/fetch only when the
-  //     calling origin is in this allowlist AND the request includes
-  //     `credentials: 'include'`.
-  // If we ever need a third-party origin to call the API with cookies we
-  // must switch to `SameSite=None; Secure` and add a CSRF double-submit
-  // token; do NOT bypass that decision by widening this list silently.
+  // M-12 (re-evaluated after deployment topology decision):
+  //
+  // PRODUCTION: web frontend (Next.js) and backend (Express) are deployed
+  // to the SAME VPS — typically behind a single nginx reverse proxy on
+  // the same hostname (e.g. nginx routes `/` to Next.js and `/api` to
+  // Express). Same-origin → cookies travel automatically; CORS is
+  // technically not needed for the production app at all.
+  //
+  // We still keep CORS configured because:
+  //   - the React Native app calls the API from a different origin
+  //     (literally no origin header in many cases)
+  //   - dev workflows run web on :3000 and API on :3001
+  //   - admin tools / staging previews may legitimately need it
+  //
+  // Cookie attributes (set in auth.controller.js):
+  //   `SameSite=Lax`  — allows top-level GETs to carry the cookie (so
+  //                     Next.js SSR can read it on initial page load) but
+  //                     blocks cross-site form POSTs. CSRF risk is
+  //                     therefore limited to top-level GETs, none of
+  //                     which mutate state in this API.
+  //   `Secure: true`  — only set in production (over HTTPS).
+  //   `HttpOnly: true`— JS cannot read the access/refresh tokens.
+  //
+  // We do NOT use SameSite=Strict because the dev mobile workflow
+  // (`exp://10.0.2.2:8081`) hits the API directly with credentials and
+  // Strict would drop the cookie on every request from those origins.
+  // Lax + this allowlist is the right compromise.
   const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5173',

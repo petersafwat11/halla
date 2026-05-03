@@ -45,7 +45,9 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
 
   // H-15: whitelabel tenant picker for SUPER_ADMIN. Other roles never see
   // the picker (the backend auto-inherits whitelabelId for WL admins).
-  const whitelabelsQuery = useAdminWhitelabels({});
+  // Gate the request on `isSuperAdmin` so non-super-admins don't hit
+  // /admin/whitelabels and trigger 401/403 log noise.
+  const whitelabelsQuery = useAdminWhitelabels({}, { enabled: isSuperAdmin });
   const whitelabelOptions = (
     whitelabelsQuery.data?.data ||
     whitelabelsQuery.data ||

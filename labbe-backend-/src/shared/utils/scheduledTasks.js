@@ -194,9 +194,39 @@ async function runEventLaunch(event, workerId) {
     // Every guest has already received an invitation. Treat this as a
     // successful launch (e.g. all attempts succeeded incrementally). Flip
     // straight to `live` without dispatching.
-    console.log(
-      `[Cron] Event ${eventId} has no undelivered guests — finalising as launched`
-    );
+    //
+    // HIGH-5 review: if attemptCount is 0, this means we're being asked
+    // to launch an event whose guests ALREADY all show invitation.sent
+    // — without any cron attempt having fired. That can only happen if
+    // an admin / seed / support tool flipped the flag manually. Audit
+    // it loudly so ops can investigate (rather than silently flipping
+    // status to `live`).
+    const att = event.attemptCount || 0;
+    if (att === 0) {
+      console.warn(
+        `[Cron] SUSPICIOUS: event ${eventId} has all guests marked invitation.sent` +
+          ` but attemptCount=0 — launching anyway. Investigate seed/admin overrides.`
+      );
+      try {
+        await logAudit({
+          action: "event.launched_no_dispatch",
+          actor: { _id: null, role: "system" },
+          targetType: "event",
+          targetId: event._id,
+          whitelabelId: event.whitelabelId || null,
+          metadata: {
+            reason: "all_guests_already_marked_sent",
+            attemptCount: att,
+            workerId,
+          },
+          status: "anomaly",
+        });
+      } catch (_) { /* swallow audit failure */ }
+    } else {
+      console.log(
+        `[Cron] Event ${eventId} has no undelivered guests — finalising as launched`
+      );
+    }
     const lockEarly = await eventLock.acquire(eventId, workerId);
     if (!lockEarly.acquired) {
       return { launched: false, reason: "locked" };
@@ -217,7 +247,7 @@ async function runEventLaunch(event, workerId) {
       }
       return { launched: true, reason: "all_already_delivered" };
     } finally {
-      await _safeReleaseLock(eventId);
+      await _safeReleaseLock(eventId, workerId);
     }
   }
 
@@ -247,7 +277,7 @@ async function runEventLaunch(event, workerId) {
     fresh.status === "failed" ||
     fresh.status === "cancelled"
   ) {
-    await _safeReleaseLock(eventId);
+    await _safeReleaseLock(eventId, workerId);
     return { launched: false, reason: "stale" };
   }
 
@@ -343,13 +373,20 @@ async function runEventLaunch(event, workerId) {
     // The lock release MUST NOT throw out of `finally` — that would mask
     // the original error from the try/catch. _safeReleaseLock swallows.
     try { beat?.stop?.(); } catch (_) { /* heartbeat may be unset on early-out */ }
-    await _safeReleaseLock(eventId);
+    await _safeReleaseLock(eventId, workerId);
   }
 }
 
-async function _safeReleaseLock(eventId) {
+/**
+ * Safely release the lock for `eventId`. Pass `workerId` so the release
+ * is scoped to the lock WE acquired — without it a stale lock taken
+ * over by another worker could be cleared out from under them. Errors
+ * are swallowed so a release-time failure doesn't mask the original
+ * error inside the caller's `finally`.
+ */
+async function _safeReleaseLock(eventId, workerId) {
   try {
-    await eventLock.release(eventId);
+    await eventLock.release(eventId, workerId);
   } catch (err) {
     console.error(`[Cron] eventLock.release(${eventId}) failed:`, err.message);
   }

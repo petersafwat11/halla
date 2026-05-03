@@ -10,19 +10,26 @@
  * lives in a follow-up ticket once Peter has live keys.
  *
  * ───────────────────────────────────────────────────────────────────────
- * AMOUNT UNIT CONTRACT (post-B-2 fix)
+ * AMOUNT UNIT CONTRACT (B-2)
  * ───────────────────────────────────────────────────────────────────────
- * `amount` MUST be a positive integer expressed in MINOR UNITS of the
- * `currency` (halalas for SAR, cents for USD/EUR/AED, fils for KWD/BHD,
- * etc.). The provider passes it straight through to Moyasar — there is
- * NO `* 100` conversion here. Callers that have a major-unit value
- * (e.g. `2999.00 SAR`) MUST convert before calling: `Math.round(sar * 100)`.
+ * The Halla project stores prices in **SAR major units** (Saudi Riyals).
+ * `pricing.oneTime` on PlanModel and `price` on Addon are SAR — for
+ * example `29` means `29.00 SAR`, and `99.99` means `99.99 SAR`.
  *
- * Why: previously this file did `Math.round(amount * 100)`, but the unit
- * of the input `amount` was never documented. If a caller already stored
- * `2999` meaning halalas, the customer was charged 100×. The provider is
- * now strict: non-integer or non-positive amounts throw `ValidationError`
- * before we hit the network.
+ * Moyasar's API expects amounts in **halalas** (1 SAR = 100 halalas), as
+ * a positive integer. We do the SAR → halalas conversion HERE so callers
+ * never have to think about minor units. Same contract applies to the
+ * stub provider — both validate the SAR input the same way.
+ *
+ *   caller  →  amount: 29.99 (SAR)
+ *   moyasar →  amount_minor: 2999 (halalas, sent to Moyasar)
+ *
+ * Validation rules on the SAR input:
+ *   - finite number
+ *   - >= 0 (we reject 0 only for free plans at the caller level — the
+ *     provider rejects 0 because Moyasar does too)
+ *   - at most 2 decimal places (SAR/halalas precision; 0.001 SAR is not
+ *     a real amount)
  *
  * RESPONSE SHAPE (post-M-3 fix)
  * The success response intentionally OMITS Moyasar's full `raw` payload.
@@ -38,22 +45,36 @@ const { ValidationError } = require("../../shared/errors/errorTypes");
 
 const MOYASAR_BASE = process.env.MOYASAR_BASE_URL || "https://api.moyasar.com/v1";
 
-const assertMinorUnits = (amount) => {
-  if (typeof amount !== "number" || !Number.isFinite(amount)) {
+/**
+ * Validate a SAR major-unit amount and convert to halalas (minor units).
+ *
+ * Returns the integer halalas value Moyasar expects. Throws
+ * `ValidationError` on bad input — caller surfaces a generic
+ * "Payment failed" to the user, but the validator message is logged
+ * server-side for ops triage (see H-11).
+ */
+const sarToHalalas = (sarAmount) => {
+  if (typeof sarAmount !== "number" || !Number.isFinite(sarAmount)) {
     throw new ValidationError(
-      "paymentProvider.charge: amount must be a finite number (minor units, integer)"
+      "paymentProvider.charge: amount must be a finite SAR number"
     );
   }
-  if (!Number.isInteger(amount)) {
+  if (sarAmount <= 0) {
     throw new ValidationError(
-      "paymentProvider.charge: amount must be an integer in minor units (halalas/cents) — no decimals"
+      "paymentProvider.charge: amount must be > 0 SAR (free plans must skip the charge step)"
     );
   }
-  if (amount <= 0) {
+  // Reject more than 2 decimal places. 29.999 SAR is not a real price; if
+  // it arrives, something rounded badly upstream and we want to surface
+  // it instead of silently truncating.
+  const rounded = Math.round(sarAmount * 100);
+  const reconstructed = rounded / 100;
+  if (Math.abs(reconstructed - sarAmount) > 1e-9) {
     throw new ValidationError(
-      "paymentProvider.charge: amount must be a positive integer in minor units"
+      "paymentProvider.charge: amount has more than 2 decimal places (SAR has 2-decimal precision)"
     );
   }
+  return rounded;
 };
 
 const moyasarProvider = {
@@ -63,12 +84,17 @@ const moyasarProvider = {
    * Charge a customer.
    *
    * @param {Object}   params
-   * @param {number}   params.amount         REQUIRED. Positive integer in
-   *                                          minor units of `currency`
-   *                                          (halalas for SAR, cents for
-   *                                          USD/EUR, etc.). NOT major
-   *                                          units — `29.99` is invalid.
+   * @param {number}   params.amount         REQUIRED. SAR major units —
+   *                                          e.g. `29` (= 29.00 SAR) or
+   *                                          `99.99` (= 99.99 SAR). The
+   *                                          provider converts to halalas
+   *                                          internally.
    * @param {string}   [params.currency]     ISO-4217 code. Default "SAR".
+   *                                          Non-SAR currencies will work
+   *                                          with Moyasar but Halla's
+   *                                          pricing stores SAR; cross-
+   *                                          currency conversion is out
+   *                                          of scope for this provider.
    * @param {Object}   [params.customer]
    * @param {Object}   [params.metadata]
    * @param {string}   [params.idempotencyKey]
@@ -77,7 +103,8 @@ const moyasarProvider = {
    *   providerStatus?:string, provider:string, error?:string}>}
    */
   async charge({ amount, currency = "SAR", customer, metadata, idempotencyKey }) {
-    assertMinorUnits(amount);
+    // Validate SAR input + convert to halalas. Throws on bad input.
+    const halalas = sarToHalalas(amount);
 
     if (!process.env.MOYASAR_API_KEY) {
       return { success: false, error: "MOYASAR_API_KEY missing", provider: "moyasar" };
@@ -87,7 +114,7 @@ const moyasarProvider = {
       const response = await axios.post(
         `${MOYASAR_BASE}/payments`,
         {
-          amount, // already minor units — pass-through, no `* 100`
+          amount: halalas, // halalas (Moyasar's required unit)
           currency,
           description: metadata?.description || "Halla subscription/addon",
           metadata: metadata || {},
@@ -110,6 +137,8 @@ const moyasarProvider = {
         console.log("[moyasar] charge raw response:", {
           id: payment.id,
           status: providerStatus,
+          amountHalalas: halalas,
+          amountSar: amount,
         });
       }
 
@@ -133,6 +162,9 @@ const moyasarProvider = {
   async refund(/* params */) {
     return { success: false, provider: "moyasar", error: "Refund flow not yet implemented" };
   },
+
+  // Exposed for the stub + tests so both providers share validation.
+  _sarToHalalas: sarToHalalas,
 };
 
 module.exports = moyasarProvider;

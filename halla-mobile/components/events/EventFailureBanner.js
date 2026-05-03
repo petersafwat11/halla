@@ -21,6 +21,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WhatsAppContactButton from '../shared/WhatsAppContactButton';
+// L-8: shared status constant prevents typo-drift with backend.
+import { EVENT_STATUS } from '../../utils/constants/eventStatus';
 
 const MAX_VISIBLE_ATTEMPTS = 5;
 
@@ -54,7 +56,7 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
 
   // Tick the countdown every second while we're in the retrying state.
   useEffect(() => {
-    if (!event || event.status !== 'scheduled') return undefined;
+    if (!event || event.status !== EVENT_STATUS.SCHEDULED) return undefined;
     const handle = setInterval(() => setTick((n) => n + 1), 1000);
     return () => clearInterval(handle);
   }, [event?.status, event?.lastAttemptAt]);
@@ -69,7 +71,7 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
     ? new Date(event.lastAttemptAt).getTime()
     : null;
 
-  if (status === 'scheduled' && attemptCount > 0 && !event?.launchedAt) {
+  if (status === EVENT_STATUS.SCHEDULED && attemptCount > 0 && !event?.launchedAt) {
     // M-20: countdown to next attempt — derived the same way as the web
     // banner, with English fallback when lang === 'en'.
     const backoff =
@@ -97,7 +99,7 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
     );
   }
 
-  if (status !== 'failed') return null;
+  if (status !== EVENT_STATUS.FAILED) return null;
 
   const userRole = currentUser?.role;
   const userId = currentUser?._id || currentUser?.id;

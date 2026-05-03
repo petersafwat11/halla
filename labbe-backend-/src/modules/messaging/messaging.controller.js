@@ -259,6 +259,17 @@ exports.webhook = catchAsync(async (req, res) => {
         // deterministic: two webhook copies of the same event always
         // hash to the same 30s window even if they arrive seconds
         // apart on different cron ticks.
+        //
+        // L-10: the dedup key intentionally does NOT include `eventId`.
+        // We don't know the eventId until `handleButtonResponse` resolves
+        // the phone → Guest → Event chain, and gating the lookup on the
+        // dedup means we can't include the result IN the key. Practical
+        // risk of cross-event collision is essentially zero — Meta's
+        // `messageId` is globally unique, and the bucket fallback
+        // includes phone (which uniquely identifies the guest in the
+        // fast majority of cases). If we ever see a real collision we
+        // can move the dedup INSIDE handleButtonResponse, after the
+        // Guest lookup, and key on `${eventId}:${guestId}:${buttonText}`.
         const messages = change.value?.messages || [];
         for (const message of messages) {
           if (message.type === 'button' && message.button) {

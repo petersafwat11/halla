@@ -17,10 +17,13 @@
 import React, { useEffect, useState } from "react";
 import { useRetryLaunch } from "@/hooks/events";
 import { useTranslation } from "react-i18next";
+import { EVENT_STATUS } from "@/utils/constants/eventStatus";
 import WhatsAppContactButton from "@/ui/commen/whatsappButton/WhatsAppContactButton";
 import styles from "./eventFailureBanner.module.css";
 
-const FAILED_STATUS = "failed";
+// L-8: prefer the shared constant over a literal so a backend rename
+// surfaces as an import error.
+const FAILED_STATUS = EVENT_STATUS.FAILED;
 const MAX_VISIBLE_ATTEMPTS = 5;
 
 // M-20: countdown to next retry attempt. Mirror of LAUNCH_BACKOFF_MS in
@@ -65,7 +68,7 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
 
   // Tick every second so the countdown re-renders. Cleared on unmount.
   useEffect(() => {
-    if (!event || event.status !== "scheduled") return undefined;
+    if (!event || event.status !== EVENT_STATUS.SCHEDULED) return undefined;
     const handle = setInterval(() => setTick((n) => n + 1), 1000);
     return () => clearInterval(handle);
   }, [event?.status, event?.lastAttemptAt]);
@@ -81,7 +84,7 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
     : null;
 
   // Retrying-state banner: scheduled + at least one attempt already burned.
-  if (status === "scheduled" && attemptCount > 0 && !event?.launchedAt) {
+  if (status === EVENT_STATUS.SCHEDULED && attemptCount > 0 && !event?.launchedAt) {
     // M-20: compute time until the next attempt is eligible. The retry
     // cron uses the (attemptCount-1)-indexed backoff (since attempt 1 is
     // already done). Tick value is read so React re-renders.

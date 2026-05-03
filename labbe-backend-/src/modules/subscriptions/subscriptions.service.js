@@ -25,6 +25,7 @@ const User = require('../../../models/UserModel');
 const BusinessSetupFee = require('../../../models/BusinessSetupFeeModel');
 const { isPerEventPlan, isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
 const notificationService = require('../notifications/notifications.service');
+const { logAudit } = require('../../shared/utils/auditLog');
 const paymentProvider = require('../../infrastructure/paymentProvider');
 
 class SubscriptionsService {
@@ -411,41 +412,78 @@ class SubscriptionsService {
       }
     }
 
-    // Create new subscription
-    const subscription = await Subscription.createForUser(userId, plan, {
-      pricePaid: isFreePlan ? 0 : planPrice,
-      currency: plan?.currency || 'SAR',
-      status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
-      createdBy: {
-        user: userId,
-        onBehalfOf: false,
-      },
-    });
+    // Create new subscription.
+    //
+    // HIGH-6 review: if anything from this point through subscription.save()
+    // throws AFTER a successful charge, we have a money-taken-no-benefit
+    // case symmetric to addons.purchase (B-4). Wrap and emit the same
+    // pending-refund signal so on-call can reconcile.
+    let subscription;
+    try {
+      subscription = await Subscription.createForUser(userId, plan, {
+        pricePaid: isFreePlan ? 0 : planPrice,
+        currency: plan?.currency || 'SAR',
+        status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
+        createdBy: {
+          user: userId,
+          onBehalfOf: false,
+        },
+      });
 
-    // FLOW-09-F02: trial duration is **14 days** regardless of the
-    // plan's configured durationDays. createForUser reads
-    // plan.limits.durationDays (currently 90 for the trial plan, used
-    // for event-creation lifecycle math); we override expiresAt here so
-    // the daily expiry cron transitions the trial subscription to
-    // `expired` after two weeks. Documented in PHASE_2_PLAN.md.
-    if (planCode === 'trial') {
-      const TRIAL_DURATION_DAYS = 14;
-      const trialExpiresAt = new Date(
-        (subscription.activatedAt || subscription.createdAt).getTime()
-          + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000
-      );
-      subscription.expiresAt = trialExpiresAt;
-    }
+      // FLOW-09-F02: trial duration is **14 days** regardless of the
+      // plan's configured durationDays. createForUser reads
+      // plan.limits.durationDays (currently 90 for the trial plan, used
+      // for event-creation lifecycle math); we override expiresAt here so
+      // the daily expiry cron transitions the trial subscription to
+      // `expired` after two weeks. Documented in PHASE_2_PLAN.md.
+      if (planCode === 'trial') {
+        const TRIAL_DURATION_DAYS = 14;
+        const trialExpiresAt = new Date(
+          (subscription.activatedAt || subscription.createdAt).getTime()
+            + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000
+        );
+        subscription.expiresAt = trialExpiresAt;
+      }
 
-    if (paymentTransactionId) {
-      subscription.metadata = {
-        ...(subscription.metadata || {}),
-        paymentTransactionId,
-      };
-    }
+      if (paymentTransactionId) {
+        subscription.metadata = {
+          ...(subscription.metadata || {}),
+          paymentTransactionId,
+        };
+      }
 
-    if (planCode === 'trial' || paymentTransactionId) {
-      await subscription.save();
+      if (planCode === 'trial' || paymentTransactionId) {
+        await subscription.save();
+      }
+    } catch (createErr) {
+      // HIGH-6: payment succeeded but the subscription record didn't
+      // land. Record a pending-refund audit row + admin alert; surface
+      // a clear "money taken" error.
+      if (paymentTransactionId) {
+        try {
+          await this._recordPendingRefund({
+            userId,
+            amount: planPrice,
+            currency: plan?.currency || 'SAR',
+            paymentTransactionId,
+            reason: 'subscribe_create_failed',
+            detail: createErr?.message,
+            planCode: plan?.code,
+          });
+        } catch (refundLogErr) {
+          // eslint-disable-next-line no-console
+          console.error(
+            '[subscribe] _recordPendingRefund logAudit failed:',
+            refundLogErr?.message
+          );
+        }
+        throw new ValidationError(
+          'Payment was processed but the subscription could not be activated. '
+            + 'Our team has been notified — please contact support with your transaction reference.'
+        );
+      }
+      // No charge → just rethrow.
+      throw createErr;
     }
 
     // Apply discount if code was provided
@@ -502,15 +540,43 @@ class SubscriptionsService {
     if (!plan) throw new ValidationError('Invalid plan code');
 
     // FLOW-12-F01 / FLOW-09-F02: enforce single-active invariant.
+    //
+    // MED-8 review: emit a per-cancellation audit row so the admin's
+    // override leaves a forensic trail (who, what was active before,
+    // why). The route-level audit middleware records the assign; this
+    // covers the cancellations that the assign implies.
     const existingActive = await Subscription.find({
       userId,
       status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
     });
     for (const existing of existingActive) {
+      const before = { status: existing.status, planId: existing.planId };
       existing.status = SUBSCRIPTION_STATUS.CANCELLED;
       existing.cancelledAt = new Date();
       existing.cancelReason = `Auto-cancelled on admin-assign to ${planCode}`;
       await existing.save();
+      try {
+        await logAudit({
+          action: 'subscription.auto_cancelled',
+          actor: { _id: adminUserId, role: ROLES.SUPER_ADMIN },
+          targetType: 'subscription',
+          targetId: existing._id,
+          whitelabelId: existing.whitelabelId || null,
+          changes: { before, after: { status: SUBSCRIPTION_STATUS.CANCELLED } },
+          metadata: {
+            userId,
+            triggeredBy: 'admin_assign',
+            newPlanCode: planCode,
+          },
+        });
+      } catch (auditErr) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[assignSubscription] audit failed for cancelled sub %s: %s',
+          existing._id,
+          auditErr?.message
+        );
+      }
     }
 
     const subscription = await Subscription.createForUser(userId, plan, {
@@ -795,6 +861,75 @@ class SubscriptionsService {
       isPopular: plan.isPopular,
       sortOrder: plan.sortOrder,
     };
+  }
+
+  /**
+   * HIGH-6 review: subscription parallel of `addons.service._recordPendingRefund`.
+   *
+   * Called when a charge succeeded but the subsequent
+   * `Subscription.createForUser` / `save()` failed. Records a structured
+   * audit row + admin notification so on-call can reconcile (refund or
+   * manual create) without losing the trail.
+   *
+   * Idempotent at the audit-row level: re-runs of the same failure
+   * surface a fresh row, but the dedup happens via `paymentTransactionId`
+   * downstream.
+   */
+  async _recordPendingRefund({
+    userId,
+    amount,
+    currency,
+    paymentTransactionId,
+    reason,
+    detail,
+    planCode,
+  }) {
+    // eslint-disable-next-line no-console
+    console.error(
+      '[subscribe] PENDING REFUND %s userId=%s amount=%s tx=%s detail=%s',
+      reason,
+      userId,
+      amount,
+      paymentTransactionId || 'n/a',
+      detail || 'n/a'
+    );
+    await logAudit({
+      action: 'subscription.pending_refund',
+      actor: { _id: userId, role: 'host' },
+      targetType: 'system',
+      targetId: paymentTransactionId || userId,
+      metadata: {
+        reason,
+        amount,
+        currency,
+        paymentTransactionId,
+        planCode,
+        detail,
+      },
+      status: 'failure',
+    });
+    try {
+      await notificationService.sendToAdmins({
+        type: 'subscription_pending_refund',
+        title: 'Subscription purchase requires refund',
+        titleAr: 'اشتراك يحتاج إلى استرداد',
+        message:
+          `Charge succeeded but the subscription record could not be created. `
+          + `Tx ${paymentTransactionId || 'n/a'} userId ${userId} plan ${planCode || 'n/a'}.`,
+        data: {
+          entityType: 'subscription',
+          entityId: paymentTransactionId || userId,
+          metadata: { reason, amount, currency, paymentTransactionId, planCode },
+        },
+        priority: 'high',
+      });
+    } catch (notifyErr) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[subscribe] _recordPendingRefund admin notify failed:',
+        notifyErr?.message
+      );
+    }
   }
 }
 

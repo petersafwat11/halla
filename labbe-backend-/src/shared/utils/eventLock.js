@@ -96,16 +96,37 @@ async function acquire(eventId, workerId, opts = {}) {
  * @param {string} eventId
  * @returns {Promise<void>}
  */
-async function release(eventId) {
-  await Event.updateOne(
-    { _id: eventId },
-    {
-      $set: {
-        "launchLock.lockedAt": null,
-        "launchLock.lockedBy": null,
-      },
-    }
-  );
+/**
+ * Release the lock. Idempotent — safe to call multiple times.
+ *
+ * H-3 review: previously the filter was `{ _id: eventId }` with no
+ * holder check. If a stale lock had already been re-acquired by another
+ * worker (because our heartbeat stalled past the TTL), the original
+ * worker calling `release()` here would clear THE OTHER worker's lock
+ * out from under them, opening a window where a third tick can acquire
+ * and double-fire. We now scope the clear by `lockedBy` so we only
+ * release a lock we still own.
+ *
+ * If `workerId` is undefined (legacy callers / safety net), we fall
+ * back to the unscoped clear with a warning. Mark every active call
+ * site to pass it.
+ */
+async function release(eventId, workerId) {
+  const filter = { _id: eventId };
+  if (workerId) {
+    filter["launchLock.lockedBy"] = workerId;
+  } else {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[eventLock] release(${eventId}) called without workerId — clearing unscoped`
+    );
+  }
+  await Event.updateOne(filter, {
+    $set: {
+      "launchLock.lockedAt": null,
+      "launchLock.lockedBy": null,
+    },
+  });
 }
 
 /**

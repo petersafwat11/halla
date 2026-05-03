@@ -14,14 +14,31 @@ const redactTokens = (data) => {
 };
 
 /**
+ * L-3: dev-only logger. The auth-service log stream has historically
+ * included PII (email, phone) so support engineers could trace flows.
+ * In production builds (`__DEV__ === false`) we mute these to avoid
+ * leaking PII into release-build crash reporters or device logs. Errors
+ * still log so we don't lose visibility on real failures.
+ *
+ * Use `dlog(...)` for chatty info; keep `console.error(...)` for
+ * exceptions because release builds need those.
+ */
+const dlog = (...args) => {
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    // eslint-disable-next-line no-console
+    console.log(...args);
+  }
+};
+
+/**
  * Login with email and password (Vendors/Admins)
  * @param {Object} credentials - { email, password }
  * @returns {Promise<{token: string, user: Object}>}
  */
 export const loginWithEmailAPI = async ({ email, password }) => {
   try {
-    console.log("[AUTH SERVICE] Login attempt:", { email });
-    console.log("[AUTH SERVICE] API URL:", `${API_BASE_URL}/login`);
+    dlog("[AUTH SERVICE] Login attempt:", { email });
+    dlog("[AUTH SERVICE] API URL:", `${API_BASE_URL}/login`);
 
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGIN}`, {
       method: "POST",
@@ -29,16 +46,16 @@ export const loginWithEmailAPI = async ({ email, password }) => {
       body: JSON.stringify({ email, password }),
     });
 
-    console.log("[AUTH SERVICE] Response status:", response.status);
+    dlog("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
+    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Login failed");
     }
 
-    console.log("[AUTH SERVICE] Login successful:", data.user?.email);
+    dlog("[AUTH SERVICE] Login successful:", data.user?.email);
 
     return {
       token: data.token,
@@ -59,7 +76,7 @@ export const loginWithEmailAPI = async ({ email, password }) => {
  */
 export const signupVendorAPI = async (vendorData) => {
   try {
-    console.log("[AUTH SERVICE] Vendor signup:", vendorData instanceof FormData ? "[FormData]" : vendorData.email);
+    dlog("[AUTH SERVICE] Vendor signup:", vendorData instanceof FormData ? "[FormData]" : vendorData.email);
 
     // VendorSignupScreen builds FormData directly — use it as-is.
     // If a plain object is passed (e.g. from tests), build FormData from it.
@@ -87,16 +104,16 @@ export const signupVendorAPI = async (vendorData) => {
       body: formData,
     });
 
-    console.log("[AUTH SERVICE] Response status:", response.status);
+    dlog("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
+    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Vendor signup failed");
     }
 
-    console.log("[AUTH SERVICE] Vendor signup successful");
+    dlog("[AUTH SERVICE] Vendor signup successful");
 
     return {
       token: data.token,
@@ -117,7 +134,7 @@ export const signupVendorAPI = async (vendorData) => {
 export const signupWhitelabelAPI = async (whitelabelData) => {
   try {
     const { identity, loginData, systemRequirements, planSelection } = whitelabelData;
-    console.log("[AUTH SERVICE] Whitelabel signup:", loginData?.email);
+    dlog("[AUTH SERVICE] Whitelabel signup:", loginData?.email);
 
     const formData = new FormData();
 
@@ -161,16 +178,16 @@ export const signupWhitelabelAPI = async (whitelabelData) => {
       body: formData,
     });
 
-    console.log("[AUTH SERVICE] Response status:", response.status);
+    dlog("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
+    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Whitelabel signup failed");
     }
 
-    console.log("[AUTH SERVICE] Whitelabel signup successful");
+    dlog("[AUTH SERVICE] Whitelabel signup successful");
 
     return {
       token: data.token,
@@ -190,7 +207,7 @@ export const signupWhitelabelAPI = async (whitelabelData) => {
  */
 export const sendOTPAPI = async ({ mobile, type = "login" }) => {
   try {
-    console.log("[AUTH SERVICE] Sending OTP to:", mobile, "Type:", type);
+    dlog("[AUTH SERVICE] Sending OTP to:", mobile, "Type:", type);
 
     const endpoint = type === "signup" ? ENDPOINTS.AUTH.OTP_SEND_SIGNUP : ENDPOINTS.AUTH.OTP_SEND_LOGIN;
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -205,7 +222,7 @@ export const sendOTPAPI = async ({ mobile, type = "login" }) => {
       throw new Error(data.message || "Failed to send OTP");
     }
 
-    console.log("[AUTH SERVICE] OTP sent successfully to:", mobile);
+    dlog("[AUTH SERVICE] OTP sent successfully to:", mobile);
 
     return {
       success: true,
@@ -237,10 +254,10 @@ export const verifyOTPAPI = async ({ mobile, otp }) => {
       body: JSON.stringify({ phoneNumber: mobile, otp }),
     });
 
-    console.log("[AUTH SERVICE] Response status:", response.status);
+    dlog("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
+    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Invalid OTP code");
@@ -271,12 +288,12 @@ export const verifyOTPAPI = async ({ mobile, otp }) => {
  */
 export const signupWithPhoneAPI = async ({ mobile }) => {
   try {
-    console.log("[AUTH SERVICE] Signup with phone:", mobile);
+    dlog("[AUTH SERVICE] Signup with phone:", mobile);
 
     // First send OTP for signup
     await sendOTPAPI({ mobile, type: "signup" });
 
-    console.log("[AUTH SERVICE] OTP sent for signup, waiting for verification");
+    dlog("[AUTH SERVICE] OTP sent for signup, waiting for verification");
 
     return {
       success: true,
@@ -308,16 +325,16 @@ export const verifySignupOTPAPI = async ({ mobile, otp }) => {
       body: JSON.stringify({ phoneNumber: mobile, otp }),
     });
 
-    console.log("[AUTH SERVICE] Response status:", response.status);
+    dlog("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
+    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Invalid OTP code");
     }
 
-    console.log("[AUTH SERVICE] Signup OTP verified successfully");
+    dlog("[AUTH SERVICE] Signup OTP verified successfully");
 
     return {
       token: data.token,
@@ -344,7 +361,7 @@ export const completeProfileAPI = async ({
   token,
 }) => {
   try {
-    console.log("[AUTH SERVICE] Complete profile:", { username, email });
+    dlog("[AUTH SERVICE] Complete profile:", { username, email });
 
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.COMPLETE_PROFILE}`, {
       method: "PATCH",
@@ -360,10 +377,10 @@ export const completeProfileAPI = async ({
       }),
     });
 
-    console.log("[AUTH SERVICE] Response status:", response.status);
+    dlog("[AUTH SERVICE] Response status:", response.status);
 
     const data = await response.json();
-    console.log("[AUTH SERVICE] Response data:", redactTokens(data));
+    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
 
     if (!response.ok) {
       throw new Error(data.message || "Failed to complete profile");
@@ -392,7 +409,7 @@ export const completeProfileAPI = async ({
  */
 export const forgotPasswordAPI = async ({ email }) => {
   try {
-    console.log("[AUTH SERVICE] Forgot password request for:", email);
+    dlog("[AUTH SERVICE] Forgot password request for:", email);
 
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.FORGOT_PASSWORD}`, {
       method: "POST",
@@ -406,7 +423,7 @@ export const forgotPasswordAPI = async ({ email }) => {
       throw new Error(data.message || "Failed to send reset email");
     }
 
-    console.log("[AUTH SERVICE] Password reset email sent successfully");
+    dlog("[AUTH SERVICE] Password reset email sent successfully");
 
     return {
       success: true,
@@ -425,7 +442,7 @@ export const forgotPasswordAPI = async ({ email }) => {
  */
 export const resendOTPAPI = async ({ mobile, type = "login" }) => {
   try {
-    console.log("[AUTH SERVICE] Resending OTP to:", mobile, "Type:", type);
+    dlog("[AUTH SERVICE] Resending OTP to:", mobile, "Type:", type);
 
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_RESEND}`, {
       method: "POST",
@@ -439,7 +456,7 @@ export const resendOTPAPI = async ({ mobile, type = "login" }) => {
       throw new Error(data.message || "Failed to resend OTP");
     }
 
-    console.log("[AUTH SERVICE] OTP resent successfully to:", mobile);
+    dlog("[AUTH SERVICE] OTP resent successfully to:", mobile);
 
     return {
       success: true,

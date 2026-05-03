@@ -13,9 +13,9 @@
  * with the Phase 1b idempotency utility — the same key that guards the
  * HTTP route also guards the outbound charge.
  *
- * AMOUNT UNIT: see `moyasar.js`. `amount` MUST be a positive integer in
- * MINOR UNITS (halalas for SAR, cents for USD, etc.). The provider
- * implementations validate this before any network call.
+ * AMOUNT UNIT (B-2): see `moyasar.js`. `amount` is a SAR major-unit
+ * number (e.g. 29 = 29.00 SAR, 99.99 = 99.99 SAR). The provider
+ * converts to halalas internally — callers MUST pass SAR.
  *
  * REQUEST HASH (post-M-1 fix):
  * The idempotency layer requires a `requestHash` so that a key reused
@@ -52,7 +52,8 @@ const computeChargeRequestHash = (params) => {
  * Charge a customer.
  *
  * @param {Object} params
- * @param {number} params.amount         REQUIRED. Positive integer minor units.
+ * @param {number} params.amount         REQUIRED. SAR major units —
+ *                                        e.g. 29 (= 29.00 SAR) or 99.99.
  * @param {string} [params.currency]     ISO-4217. Default "SAR".
  * @param {Object} [params.customer]
  * @param {Object} [params.metadata]
