@@ -4,6 +4,14 @@
 **Cut from:** `9971df1` (post-Phase-4c merge into main via PR #9).
 **Tracking source:** `PHASE_4D_PLAN.md`.
 
+**Final commit chain:**
+- `43fdf10` `[PHASE-4D-W0-ATOMIC]`
+- `666d4b6` `[PHASE-4D-W0-SCHEMAS]`
+- `72bb331` `[PHASE-4D-W1-MOBILE-UPDATE]`
+- `454da63` `[PHASE-4D-W1-MOBILE-CREATE-VERIFY]`
+- `feed084` `[PHASE-4D-W1-WEB-ATOMIC]`
+- `1fdcdeb` `[PHASE-4D]` static checks 28/28 + atomic-step2 compensation simulation 7/7
+
 ---
 
 ## Wave 0 — Backend + workspace foundations
