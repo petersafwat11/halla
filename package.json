@@ -1,0 +1,15 @@
+{
+  "name": "halla-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Halla monorepo root — npm workspaces wire packages/* + sub-projects.",
+  "workspaces": [
+    "packages/*",
+    "labbe",
+    "halla-mobile",
+    "labbe-backend-"
+  ],
+  "scripts": {
+    "schema-drift": "bash scripts/check-schema-drift.sh"
+  }
+}
