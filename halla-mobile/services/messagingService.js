@@ -1,36 +1,33 @@
-import { API_BASE_URL } from "../config/api";
+import { apiFetch } from "./apiClient";
 
 const INVITATIONS_BASE = "/messaging";
 
 /**
- * Make authenticated API request
- * @param {string} endpoint - API endpoint
- * @param {string} token - Auth token from useAuthStore
- * @param {Object} options - Fetch options
- * @returns {Promise<Object>}
+ * M-13: routes messaging calls through `apiFetch` so 401-on-expired-token
+ * auto-refreshes. Token arg ignored — apiFetch reads in-memory token.
  */
-const authenticatedFetch = async (endpoint, token, options = {}) => {
-  if (!token) {
-    throw new Error("No authentication token found");
+const authenticatedFetch = async (endpoint, _legacyToken, options = {}) => {
+  const path = `${INVITATIONS_BASE}${endpoint}`;
+  const fetchOpts = {
+    method: options.method || "GET",
+    headers: options.headers || {},
+  };
+  if (options.body !== undefined && options.body !== null) {
+    if (typeof options.body === "string") {
+      try {
+        fetchOpts.body = JSON.parse(options.body);
+      } catch (_) {
+        fetchOpts.body = options.body;
+      }
+    } else {
+      fetchOpts.body = options.body;
+    }
   }
-
-  const url = `${API_BASE_URL}${INVITATIONS_BASE}${endpoint}`;
-
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-
-  const data = await response.json();
-
+  const response = await apiFetch(path, fetchOpts);
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.message || "API request failed");
   }
-
   return data;
 };
 
