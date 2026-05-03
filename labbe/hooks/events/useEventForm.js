@@ -352,15 +352,20 @@ export const useEventForm = (options = {}) => {
             successMessage: t("success.event_details_updated"),
           };
         case 2:
+          // Phase 4d W1-WEB-ATOMIC — single payload for the new
+          // PATCH /events/:id/step2 atomic endpoint. Server accepts
+          // either `supervisorsList` (web naming, what we send) or
+          // `staffList` (mobile naming) per D4d-2; we pin to
+          // `supervisorsList` here for self-documentation.
           return {
-            type: "guestList",
+            type: "step2",
             data: {
               guestList: (formData.guestList || []).map((guest) => ({
                 name: guest.name,
                 phone: guest.mobile || guest.phone || "",
                 email: guest.email || "",
               })),
-              staffList: (formData.staffList || []).map((s) => ({
+              supervisorsList: (formData.staffList || []).map((s) => ({
                 name: s.name,
                 phone: s.mobile || s.phone || "",
               })),

@@ -235,6 +235,45 @@ exports.updateStaffList = catchAsync(async (req, res) => {
 });
 
 /**
+ * Phase 4d W0-ATOMIC — atomically update guest list + staff list
+ * PATCH /api/v2/events/:id/step2
+ *
+ * Accepts both `supervisorsList` (web naming) and `staffList` (mobile
+ * naming) per D4d-2; normalises to a single `staffList` payload before
+ * handing off to the service. Both keys may appear together — `staffList`
+ * wins (mobile-first stays canonical) and `supervisorsList` is only used
+ * when `staffList` is absent.
+ *
+ * Both `guestList` AND a staff key (either `staffList` or
+ * `supervisorsList`) are REQUIRED. The previous behaviour silently
+ * defaulted missing keys to `[]`, which let a partial request empty
+ * the existing list. The atomic endpoint is "replace both" — callers
+ * that only want to edit one side must use the legacy `/guest-list` or
+ * `/staff-list` compat endpoints (kept for one release cycle).
+ */
+exports.updateEventStep2 = catchAsync(async (req, res) => {
+  const guestList = req.body.guestList;
+  const staffList = req.body.staffList ?? req.body.supervisorsList;
+
+  if (!Array.isArray(guestList) || !Array.isArray(staffList)) {
+    const { ValidationError } = require("../../shared/errors");
+    if (!Array.isArray(guestList)) {
+      throw new ValidationError("guestList is required and must be an array");
+    }
+    throw new ValidationError(
+      "staffList (or supervisorsList) is required and must be an array"
+    );
+  }
+
+  const result = await eventsService.updateEventStep2(
+    req.params.id,
+    { guestList, staffList },
+    req.user
+  );
+  sendSuccess(res, result, "Step 2 updated");
+});
+
+/**
  * Update invitation settings
  * PATCH /api/v2/events/:id/invitation-settings
  */

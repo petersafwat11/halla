@@ -75,6 +75,9 @@ export const ENDPOINTS = {
     UPDATE_DETAILS: (id) => `/events/${id}/event-details`,
     UPDATE_GUEST_LIST: (id) => `/events/${id}/guest-list`,
     UPDATE_STAFF_LIST: (id) => `/events/${id}/staff-list`,
+    // Phase 4d W0-ATOMIC — single endpoint that updates guests + staff
+    // in one transaction. Old endpoints stay as compat for one cycle.
+    UPDATE_STEP2: (id) => `/events/${id}/step2`,
     UPDATE_INVITATION: (id) => `/events/${id}/invitation-settings`,
     UPDATE_LAUNCH: (id) => `/events/${id}/launch-settings`,
     TEST_MESSAGE: (id) => `/events/${id}/test-message`,

@@ -248,7 +248,45 @@ Hand-offs to Phase 4d:
 - `useEventActionGate` mobile + web both accept canonical
   `taqnyatTemplate.templateRef`.
 
+---
+
+## Closed in Phase 4d (mobile update flow + create-event correctness + shared schemas)
+
+Phase 4d was scoped to deliverables outside the original 131 audit
+findings: a unified mobile update wizard, a `@halla/shared-schemas`
+workspace package, an atomic guest+staff update endpoint, and the web
+wizard switch-over to the new endpoint. None of the audit FLOW-IDs
+close as a direct result of this phase; tracked by sub-track instead.
+
+| Sub-track | Commit | Deliverable |
+|-----------|--------|-------------|
+| W0-ATOMIC | `43fdf10` | `PATCH /events/:id/step2` atomic endpoint with MongoDB transaction + standalone-topology compensation rollback. Reuses the Phase 4b W0-RBAC `GUEST_LIST_BELOW_CONFIRMED` capacity guard. Accepts both `supervisorsList` (web naming) and `staffList` (mobile naming). |
+| W0-SCHEMAS | `666d4b6` | `@halla/shared-schemas` npm-workspaces package; root `package.json` declares workspaces; web + mobile schema files become re-export shims; new `updateEventSchema` for the unified wizard; `scripts/check-schema-drift.sh`. |
+| W1-MOBILE-UPDATE | `72bb331` | Unified mobile update wizard at `screens/update-event/` covering host / admin / super-admin / whitelabel-admin / whitelabel-moderator with inline role gate + D10 lockout. Six new mutations (`useUpdateEventStep2` + 5 narrowed wrappers around `updateInvitationSettings`). |
+| W1-MOBILE-CREATE-VERIFY | `454da63` | Manual verification doc landed; legacy `templateBrideName`-style flat-key unpack dropped from the relocated screen's `mapApiToFormValues`. |
+| W1-WEB-ATOMIC | `feed084` | Web update wizard step 2 dispatches a single `PATCH /events/:id/step2` instead of `Promise.all([updateGuestList, updateStaffList])`. New `useUpdateEventStep2` hook + `buildStepPayload` step 2 returns merged payload. |
+
+Smoke checks: `28 / 28` PASS via
+`docs/implementation/phase-4d-smoke-tests/static-checks-4d.js`. The
+in-process compensation simulation `atomic-step2-failure.js` returns
+`7 / 7`. Full report in `PHASE_4D_REPORT.md`.
+
 Hand-offs to Phase 5:
+- Removal of compat aliases `PATCH /events/:id/guest-list` +
+  `PATCH /events/:id/staff-list` after one release cycle.
+- Removal of legacy host + admin re-export shim files
+  (`halla-mobile/screens/host/UpdateEventScreen.js`,
+  `halla-mobile/screens/admin-dashboard/UpdateEventScreen.js`).
+- CI integration for `scripts/check-schema-drift.sh`.
+- Migration of remaining schemas (auth, subscription, addon, plan,
+  ticket, vendor, whitelabel) into `@halla/shared-schemas`.
+- Backend Zod adoption on the renamed endpoints (D4d-6).
+- MongoDB topology verification — confirm production is a replica set
+  so transactions are the active code path.
+
+---
+
+## Hand-offs to Phase 5 (carried over from Phase 4c)
 - Removal of legacy `Event.invitationSettings` after one release
   cycle.
 - Production migration `migrate-event-shape.js --apply`.

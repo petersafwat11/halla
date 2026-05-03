@@ -20,8 +20,7 @@ import {
 } from "@/hooks/events";
 import {
   useUpdateEventDetails,
-  useUpdateGuestList,
-  useUpdateStaffList,
+  useUpdateEventStep2,
   useUpdateInvitationSettings,
   useUpdateLaunchSettings,
 } from "@/hooks/events/mutations/useEventMutation";
@@ -78,8 +77,10 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   const subscriptionInfo = subscriptionData?.data;
 
   const updateEventDetails = useUpdateEventDetails();
-  const updateGuestList = useUpdateGuestList();
-  const updateStaffList = useUpdateStaffList();
+  // Phase 4d W1-WEB-ATOMIC: step 2 now dispatches a single PATCH to
+  // /events/:id/step2 instead of parallel guest-list + staff-list
+  // mutations.
+  const updateEventStep2 = useUpdateEventStep2();
   const updateInvitationSettings = useUpdateInvitationSettings();
   const updateLaunchSettings = useUpdateLaunchSettings();
 
@@ -120,17 +121,11 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
     try {
       if (payload.type === "eventDetails") {
         await updateEventDetails.mutateAsync({ eventId, data: payload.data });
-      } else if (payload.type === "guestList") {
-        await Promise.all([
-          updateGuestList.mutateAsync({
-            eventId,
-            data: { guestList: payload.data.guestList },
-          }),
-          updateStaffList.mutateAsync({
-            eventId,
-            data: { staffList: payload.data.staffList },
-          }),
-        ]);
+      } else if (payload.type === "step2") {
+        // Single atomic dispatch — server runs guest + staff updates in
+        // one Mongo transaction (or compensation rollback on a
+        // standalone topology) per Phase 4d W0-ATOMIC.
+        await updateEventStep2.mutateAsync({ eventId, data: payload.data });
       } else if (payload.type === "invitationSettings") {
         await updateInvitationSettings.mutateAsync({
           eventId,
@@ -155,8 +150,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
     currentStep,
     buildStepPayload,
     updateEventDetails,
-    updateGuestList,
-    updateStaffList,
+    updateEventStep2,
     updateInvitationSettings,
     updateLaunchSettings,
     t,

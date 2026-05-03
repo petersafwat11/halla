@@ -69,6 +69,10 @@ export const API_PATHS = {
     updateEventDetails: (id) => `/events/${id}/event-details`,
     updateGuestList: (id) => `/events/${id}/guest-list`,
     updateStaffList: (id) => `/events/${id}/staff-list`,
+    // Phase 4d W0-ATOMIC: single transactional endpoint that updates
+    // guests + staff atomically. Old endpoints stay as compat for one
+    // release cycle.
+    updateEventStep2: (id) => `/events/${id}/step2`,
     updateInvitationSettings: (id) => `/events/${id}/invitation-settings`,
     updateLaunchSettings: (id) => `/events/${id}/launch-settings`,
 

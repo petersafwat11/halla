@@ -1304,6 +1304,305 @@ class EventsService {
   }
 
   /**
+   * Phase 4d W0-ATOMIC — atomically replace guest list + staff list.
+   *
+   * Wraps the same business rules as `updateGuestList` + `updateStaffList`
+   * inside a Mongo transaction so a capacity-guard rejection on either
+   * side leaves both fields at their pre-call values. On a standalone
+   * Mongo topology (no replica set) `session.startTransaction()` throws
+   * `MongoServerError: Transaction numbers are only allowed on a replica
+   * set member or mongos`; we catch that, fall back to ordered writes,
+   * and rollback the guest changes by hand if the staff write fails
+   * (D4d-3).
+   *
+   * Reuses the Phase 4b W0-RBAC `GUEST_LIST_BELOW_CONFIRMED` capacity
+   * guard so the floor check (no shrink below confirmed/checked-in
+   * guests) fires before any writes land.
+   *
+   * @param {string} eventId
+   * @param {{ guestList: Array, staffList: Array }} payload
+   * @param {Object} userContext - req.user
+   * @returns {Promise<{ event: Object, addedCount: number }>}
+   */
+  async updateEventStep2(eventId, payload, userContext) {
+    const guestList = Array.isArray(payload?.guestList) ? payload.guestList : [];
+    const staffList = Array.isArray(payload?.staffList) ? payload.staffList : [];
+
+    const userId =
+      typeof userContext === 'object' && userContext !== null
+        ? userContext._id?.toString?.() || userContext._id
+        : userContext;
+
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext))
+      .populate('guestList', 'name email phone status');
+    if (!event) throw new NotFoundError("Event");
+
+    if (['completed', 'cancelled'].includes(event.status)) {
+      throw new ValidationError('Cannot modify a completed or cancelled event');
+    }
+
+    // Plan ceiling — net total must fit under the per-event guest limit.
+    const newCount = guestList.length;
+    const limit = event.guestLimit;
+    if (limit && limit !== -1 && newCount > limit) {
+      throw new PackageLimitError("guests", limit,
+        `Guest list exceeds the limit of ${limit}.`);
+    }
+
+    // Floor — never drop below confirmed/checked-in count.
+    const confirmedCount = (event.guestList || []).filter((g) =>
+      ['confirmed', 'checked_in'].includes(g.status)
+    ).length;
+    if (confirmedCount > 0 && newCount < confirmedCount) {
+      throw new AppError(
+        `Cannot reduce guest list below ${confirmedCount} confirmed guests.`,
+        400,
+        'GUEST_LIST_BELOW_CONFIRMED'
+      );
+    }
+
+    // Pre-image — kept for the compensation path and for the response
+    // shape on either branch.
+    const preImageGuestIds = (event.guestList || []).map((g) => g._id);
+    const preImageStaffList = (event.staffList || []).map((s) => ({
+      name: s.name,
+      phone: s.phone,
+    }));
+
+    // Reusable helpers: compute the diff between the existing guests and
+    // the incoming list. Defined once so both the transaction branch and
+    // the compensation branch see identical behaviour.
+    const existingGuests = event.guestList || [];
+    const existingByPhone = new Map(
+      existingGuests.map((g) => [normalizePhoneNumber(g.phone), g])
+    );
+    const keptGuestIds = [];
+    const toCreate = [];
+    const toUpdate = [];
+    const incomingPhones = new Set();
+
+    for (const incoming of guestList) {
+      const normPhone = normalizePhoneNumber(incoming.phone);
+      incomingPhones.add(normPhone);
+      const existing = existingByPhone.get(normPhone);
+      if (existing) {
+        if (existing.name !== incoming.name || (incoming.email && existing.email !== incoming.email)) {
+          toUpdate.push({
+            _id: existing._id,
+            name: incoming.name,
+            ...(incoming.email && { email: incoming.email }),
+          });
+        }
+        keptGuestIds.push(existing._id);
+      } else {
+        toCreate.push({
+          name: incoming.name,
+          phone: incoming.phone,
+          email: incoming.email || '',
+          event: eventId,
+          status: 'invited',
+          addedBy: userId,
+        });
+      }
+    }
+    const toDeleteIds = existingGuests
+      .filter((g) => !incomingPhones.has(normalizePhoneNumber(g.phone)))
+      .map((g) => g._id);
+
+    const normalisedStaff = staffList.map((s) => ({
+      name: s.name,
+      phone: s.phone,
+    }));
+
+    let session = null;
+    let useTransactions = true;
+    try {
+      session = await require('mongoose').startSession();
+      session.startTransaction();
+    } catch (err) {
+      // Standalone topology — no transactions. Fall back to compensation.
+      useTransactions = false;
+      try { if (session) await session.endSession(); } catch (_) { /* ignore */ }
+      session = null;
+    }
+
+    let addedCount = 0;
+
+    try {
+      if (useTransactions) {
+        // Happy path — replica-set / sharded cluster.
+        if (toDeleteIds.length > 0) {
+          await Guest.deleteMany({ _id: { $in: toDeleteIds } }, { session });
+        }
+        for (const u of toUpdate) {
+          await Guest.findByIdAndUpdate(
+            u._id,
+            { name: u.name, ...(u.email !== undefined && { email: u.email }) },
+            { session }
+          );
+        }
+        const newGuestIds = [];
+        if (toCreate.length > 0) {
+          // Guest pre-save hook (QR generation) needs `Guest.create`; insertMany skips hooks.
+          const created = await Guest.create(toCreate, { session, ordered: true });
+          for (const g of created) newGuestIds.push(g._id);
+        }
+        addedCount = newGuestIds.length;
+
+        event.guestList = [...keptGuestIds, ...newGuestIds];
+        event.staffList = normalisedStaff;
+        await event.save({ session });
+
+        if (event.subscriptionId && newGuestIds.length > 0) {
+          await Subscription.findByIdAndUpdate(
+            event.subscriptionId,
+            {
+              $inc: {
+                "usage.guestsUsed": newGuestIds.length,
+                "usage.totalGuests": newGuestIds.length,
+              },
+            },
+            { session }
+          );
+        }
+
+        await session.commitTransaction();
+      } else {
+        // Standalone / no-transaction path. Order matters and the delete
+        // is DEFERRED until the staff save succeeds — this preserves
+        // each existing guest document's `qrcode`, `rsvp`, `checkIn`,
+        // and any other fields not loaded into the populated event
+        // (only name/email/phone/status are populated above). If we
+        // deleted-then-restored on rollback we'd regenerate the QR via
+        // GuestModel's pre-save hook, which would invalidate any
+        // invitation links already shared.
+        //
+        // Sequence:
+        //   1. Update kept guests in place. Stash pre-image so we can
+        //      restore the name/email on rollback (best-effort).
+        //   2. Create the brand-new guests.
+        //   3. Save the event with guestList = [kept, new] — the
+        //      to-delete docs still exist in the Guest collection but
+        //      are no longer referenced by the event.
+        //   4. Save the event again with the new staffList. On failure
+        //      we restore the event guestList + staffList to pre-image
+        //      and delete the freshly-created guests; the to-delete
+        //      docs are untouched.
+        //   5. After step 4 commits, deleteMany the to-delete guests.
+        //      If the process crashes between 4 and 5, an orphan Guest
+        //      doc is left referenced by no event; the periodic guest-
+        //      orphan GC sweep handles that.
+
+        const guestById = new Map(
+          existingGuests.map((g) => [g._id.toString(), g])
+        );
+        const updatePreImages = new Map();
+        for (const u of toUpdate) {
+          const existing = guestById.get(u._id.toString());
+          if (existing) {
+            updatePreImages.set(existing._id.toString(), {
+              name: existing.name,
+              email: existing.email,
+            });
+          }
+          await Guest.findByIdAndUpdate(
+            u._id,
+            { name: u.name, ...(u.email !== undefined && { email: u.email }) }
+          );
+        }
+
+        const newGuestIds = [];
+        if (toCreate.length > 0) {
+          const created = await Guest.create(toCreate);
+          for (const g of created) newGuestIds.push(g._id);
+        }
+        addedCount = newGuestIds.length;
+
+        // Step 3: event.guestList = [kept, new] (excludes toDeleteIds)
+        event.guestList = [...keptGuestIds, ...newGuestIds];
+        await event.save();
+
+        // Step 4: event.staffList = newStaff. Roll back on failure.
+        try {
+          event.staffList = normalisedStaff;
+          await event.save();
+        } catch (staffErr) {
+          try {
+            // Re-load to dodge any version-mismatch from the failed save.
+            const restoreEvent = await Event.findById(eventId);
+            if (restoreEvent) {
+              restoreEvent.guestList = preImageGuestIds;
+              restoreEvent.staffList = preImageStaffList;
+              await restoreEvent.save();
+            }
+            // Drop the freshly-created guests (they were never confirmed
+            // by the host since the save failed).
+            if (newGuestIds.length > 0) {
+              await Guest.deleteMany({ _id: { $in: newGuestIds } });
+            }
+            // Restore name/email on the in-place updates (best-effort —
+            // this isn't atomic with the rest of the rollback, but the
+            // host can recover by re-saving step 2).
+            for (const [guestId, pre] of updatePreImages.entries()) {
+              try {
+                await Guest.findByIdAndUpdate(guestId, {
+                  name: pre.name,
+                  ...(pre.email !== undefined && { email: pre.email }),
+                });
+              } catch (_) { /* ignore best-effort restore failure */ }
+            }
+            // NOTE: we never deleted the to-delete guests, so there's
+            // nothing to recreate. This is the whole point of the
+            // deferred-delete sequencing.
+          } catch (rollbackErr) {
+            console.error('[updateEventStep2] compensation rollback failed:', rollbackErr);
+          }
+          throw staffErr;
+        }
+
+        // Step 5: now safe to delete the removed guests.
+        if (toDeleteIds.length > 0) {
+          try {
+            await Guest.deleteMany({ _id: { $in: toDeleteIds } });
+          } catch (deleteErr) {
+            // Non-fatal — orphan docs will be picked up by the next
+            // guest-orphan GC sweep.
+            console.error('[updateEventStep2] post-commit guest delete failed:', deleteErr);
+          }
+        }
+
+        if (event.subscriptionId && newGuestIds.length > 0) {
+          try {
+            await Subscription.findByIdAndUpdate(event.subscriptionId, {
+              $inc: {
+                "usage.guestsUsed": newGuestIds.length,
+                "usage.totalGuests": newGuestIds.length,
+              },
+            });
+          } catch (e) {
+            console.error("[updateEventStep2] Failed to track guest addition:", e);
+          }
+        }
+      }
+    } catch (err) {
+      if (useTransactions && session) {
+        try { await session.abortTransaction(); } catch (_) { /* ignore */ }
+      }
+      throw err;
+    } finally {
+      if (session) {
+        try { await session.endSession(); } catch (_) { /* ignore */ }
+      }
+    }
+
+    const updated = await Event.findById(eventId).populate(
+      "guestList",
+      "name email phone status"
+    );
+    return { event: updated, addedCount };
+  }
+
+  /**
    * Update invitation settings
    * @param {string} eventId
    * @param {Object} settings

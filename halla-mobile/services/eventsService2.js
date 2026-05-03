@@ -201,6 +201,32 @@ export const updateGuestList = async (
 };
 
 /**
+ * Phase 4d W0-ATOMIC — atomic guest+staff update.
+ *
+ * Calls the new `PATCH /events/:id/step2` endpoint so the wizard's step
+ * 2 save dispatches a single request instead of the legacy
+ * `Promise.all([updateGuestList, updateStaffList])`. The backend
+ * normalises both `supervisorsList` (web) and `staffList` (mobile) at
+ * the controller boundary; this client always sends `staffList`.
+ *
+ * @param {string} eventId
+ * @param {{ guestList: Array, staffList: Array }} payload
+ * @param {string} _token - kept for the legacy fetch signature; apiFetch
+ *                         resolves the in-memory access token itself.
+ * @returns {Promise<Object>}
+ */
+export const updateEventStep2 = async (eventId, payload, _token) => {
+  const data = await authenticatedFetch(`/${eventId}/step2`, _token, {
+    method: "PATCH",
+    body: JSON.stringify({
+      guestList: Array.isArray(payload?.guestList) ? payload.guestList : [],
+      staffList: Array.isArray(payload?.staffList) ? payload.staffList : [],
+    }),
+  });
+  return data?.data?.event || data?.data || data;
+};
+
+/**
  * Replace the entire staff list for an event
  * @param {string} eventId - Event ID
  * @param {Array} staffList - Array of {name, phone}

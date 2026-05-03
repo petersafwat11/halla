@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@halla/shared-schemas": "*",
     "@expo-google-fonts/cairo": "^0.4.1",
     "@expo/vector-icons": "^15.0.3",
     "@hookform/resolvers": "^5.2.1",

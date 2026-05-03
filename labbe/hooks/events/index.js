@@ -16,6 +16,10 @@ export {
     useCreateEvent,
     useUpdateEventDetails,
     useUpdateGuestList,
+    useUpdateStaffList,
+    // Phase 4d W1-WEB-ATOMIC: atomic guest+staff update for the
+    // unified update wizard's step 2.
+    useUpdateEventStep2,
     useUpdateInvitationSettings,
     useUpdateLaunchSettings,
 } from "./mutations/useEventMutation";

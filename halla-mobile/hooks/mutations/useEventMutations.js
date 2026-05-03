@@ -223,6 +223,179 @@ export function useRetryFailed() {
 }
 
 /**
+ * Phase 4d W1-MOBILE-UPDATE — atomic guest+staff update for the
+ * unified update wizard's step 2.
+ *
+ * Hits the new `PATCH /events/:id/step2` endpoint (Phase 4d W0-ATOMIC)
+ * so a capacity-guard rejection on either side leaves both fields at
+ * their pre-call values. Falls back to compensation on standalone Mongo
+ * topologies — the controller handles that, the client just sees a 200
+ * or a thrown AppError.
+ */
+export function useUpdateEventStep2() {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+
+  return useMutation({
+    mutationFn: async ({ eventId, guestList, staffList }) => {
+      return await eventsService2.updateEventStep2(
+        eventId,
+        { guestList, staffList },
+        token
+      );
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', 'single-stats', variables.eventId] });
+      // Mirror the web mutation's `["guests", "events", eventId]`
+      // invalidation so any guest-list query under that key refetches.
+      queryClient.invalidateQueries({ queryKey: ['guests', 'events', variables.eventId] });
+    },
+  });
+}
+
+/**
+ * Phase 4d W1-MOBILE-UPDATE — invitation settings update wrapper.
+ *
+ * Wraps `eventsService2.updateInvitationSettings` (multipart) so the
+ * unified update wizard step 3+4+5 can dispatch through React Query for
+ * cache invalidation parity with the rest of the wizard.
+ */
+export function useUpdateInvitationSettings() {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+
+  return useMutation({
+    mutationFn: async ({ eventId, settings }) => {
+      return await eventsService2.updateInvitationSettings(eventId, settings, token);
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', 'single-stats', variables.eventId] });
+    },
+  });
+}
+
+/**
+ * Phase 4d W1-MOBILE-UPDATE — launch settings update wrapper.
+ */
+export function useUpdateLaunchSettings() {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+
+  return useMutation({
+    mutationFn: async ({ eventId, launchSettings }) => {
+      return await eventsService2.updateLaunchSettings(eventId, launchSettings, token);
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', 'single-stats', variables.eventId] });
+    },
+  });
+}
+
+/**
+ * Phase 4d W1-MOBILE-UPDATE — visual-template update wrapper.
+ *
+ * Backend has no dedicated `/visual-template` endpoint; the canonical
+ * shape is persisted via `updateInvitationSettings` (multipart). This
+ * hook narrows the payload to the visual-template-only fields so the
+ * dynamic `StepThree` form can save independently of the messaging
+ * step.
+ */
+export function useUpdateVisualTemplate() {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+
+  return useMutation({
+    mutationFn: async ({ eventId, visualTemplate, fieldValues, templateImage }) => {
+      const settings = {};
+      if (visualTemplate !== undefined) settings.visualTemplate = visualTemplate;
+      if (fieldValues !== undefined) settings.fieldValues = fieldValues;
+      // Backend canonical-key alias: `visualTemplateRef` writes through
+      // to `event.visualTemplate.templateRef` per the 4c W0-RENAME
+      // dual-write contract.
+      if (visualTemplate?.templateRef || visualTemplate?._id || visualTemplate?.id) {
+        settings.visualTemplateRef =
+          visualTemplate.templateRef || visualTemplate._id || visualTemplate.id;
+      }
+      if (templateImage !== undefined) settings.templateImage = templateImage;
+      return await eventsService2.updateInvitationSettings(eventId, settings, token);
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', 'single-stats', variables.eventId] });
+    },
+  });
+}
+
+/**
+ * Phase 4d W1-MOBILE-UPDATE — Taqnyat-template selection update.
+ *
+ * Same backing endpoint as visual-template; this narrowed payload
+ * isolates the Taqnyat picker step's save action.
+ */
+export function useUpdateTaqnyatTemplate() {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+
+  return useMutation({
+    mutationFn: async ({ eventId, taqnyatTemplate, selectedTemplate }) => {
+      const ref =
+        taqnyatTemplate?.templateRef ||
+        taqnyatTemplate?._id ||
+        taqnyatTemplate?.id ||
+        selectedTemplate?._id ||
+        selectedTemplate?.id;
+      const settings = {};
+      if (selectedTemplate !== undefined) settings.selectedTemplate = selectedTemplate;
+      if (ref) settings.taqnyatTemplateRef = ref;
+      return await eventsService2.updateInvitationSettings(eventId, settings, token);
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', 'single-stats', variables.eventId] });
+    },
+  });
+}
+
+/**
+ * Phase 4d W1-MOBILE-UPDATE — messaging + auto-replies + host note
+ * update wrapper for the unified wizard's StepFive.
+ *
+ * Dual-writes legacy `attendanceAutoReply` / `absenceAutoReply` /
+ * `expectedAttendanceAutoReply` / `note` alongside canonical
+ * `guestReplies.*` / `invitationMessage` / `hostNote` so the read paths
+ * resolve under either shape until Phase 5 drops the legacy field.
+ */
+export function useUpdateMessagingContent() {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+
+  return useMutation({
+    mutationFn: async ({ eventId, invitationMessage, guestReplies, hostNote }) => {
+      const settings = {};
+      if (invitationMessage !== undefined) settings.invitationMessage = invitationMessage;
+      if (hostNote !== undefined) {
+        settings.hostNote = hostNote;
+        settings.note = hostNote;
+      }
+      if (guestReplies && typeof guestReplies === "object") {
+        settings.guestReplies = guestReplies;
+        if (guestReplies.onAttend !== undefined) settings.attendanceAutoReply = guestReplies.onAttend;
+        if (guestReplies.onAbsent !== undefined) settings.absenceAutoReply = guestReplies.onAbsent;
+        if (guestReplies.onExpected !== undefined) settings.expectedAttendanceAutoReply = guestReplies.onExpected;
+      }
+      return await eventsService2.updateInvitationSettings(eventId, settings, token);
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['events', 'single-stats', variables.eventId] });
+    },
+  });
+}
+
+/**
  * Hook to send a reminder to pending guests
  * Calls POST /messaging/send-reminder
  */

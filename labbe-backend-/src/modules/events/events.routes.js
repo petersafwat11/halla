@@ -424,6 +424,65 @@ router.patch(
 
 /**
  * @swagger
+ * /events/{id}/step2:
+ *   patch:
+ *     summary: Atomically update guest list + staff list (Phase 4d W0-ATOMIC)
+ *     description: |
+ *       Updates `guestList` and `staffList` in a single transaction so a
+ *       capacity-guard rejection on either side leaves both fields at
+ *       their pre-call values. On standalone Mongo topologies (no replica
+ *       set) the controller falls back to ordered writes with
+ *       compensation rollback (D4d-3).
+ *
+ *       Accepts both `supervisorsList` (web naming) and `staffList`
+ *       (mobile naming) for the staff payload — normalized at the
+ *       controller boundary (D4d-2).
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/IdParam'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               guestList:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Guest'
+ *               supervisorsList:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *               staffList:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *     responses:
+ *       200:
+ *         description: Step 2 updated successfully
+ *       400:
+ *         description: Capacity-guard rejection — pre-image preserved
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Guest limit exceeded
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+router.patch(
+  "/:id/step2",
+  validateObjectId("id"),
+  requireSubscription,
+  checkGuestLimit((req) => req.body.guestList?.length || 0),
+  eventsController.updateEventStep2
+);
+
+/**
+ * @swagger
  * /events/{id}/invitation-settings:
  *   patch:
  *     summary: Update invitation settings
