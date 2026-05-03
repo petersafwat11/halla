@@ -293,12 +293,25 @@ export const useEventMutation = (action) => {
     },
 
     // Manual launch retry (Phase 3c.1) — for failed events.
+    //
+    // M-19: send a per-click Idempotency-Key so a fast double-click is
+    // deduped at the middleware layer instead of relying solely on the
+    // server-side eventLock. The middleware caches the response for the
+    // first call and replays it for the second; this is correct for
+    // retry-launch because the operation is naturally idempotent (the
+    // event lock + state machine ensure no double-send).
     retryLaunch: {
-      mutationFn: ({ eventId }) =>
-        apiRequest({
+      mutationFn: ({ eventId }) => {
+        const idempotencyKey =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? `retry-${eventId}-${crypto.randomUUID()}`
+            : `retry-${eventId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        return apiRequest({
           method: "POST",
           path: API_PATHS.events.retryLaunch(eventId),
-        }),
+          headers: { "Idempotency-Key": idempotencyKey },
+        });
+      },
       onSuccess: (_, { eventId }) => {
         queryClient.invalidateQueries({ queryKey: ["events", eventId] });
         queryClient.invalidateQueries({ queryKey: ["events"] });

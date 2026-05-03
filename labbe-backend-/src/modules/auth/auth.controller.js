@@ -32,22 +32,43 @@ const REFRESH_COOKIE = "refresh_token";
 
 /**
  * Build base cookie options for the access token (path=/).
+ *
+ * M-12 decision: SameSite=Lax (production same-VPS deployment).
+ *
+ * Production: web (Next.js) and backend (Express) live on the SAME VPS
+ * behind a single nginx reverse proxy on one hostname. Same-origin means
+ * cookies travel automatically; CORS is not strictly required for the
+ * web↔API path. We still pick Lax (not Strict) because:
+ *   1. React Native app calls the API from a non-web origin (mobile uses
+ *      the Authorization Bearer header from the auth store, not cookies,
+ *      so this is belt-and-braces).
+ *   2. Dev workflow runs web on :3000 and API on :3001 — different ports
+ *      are different origins, so Lax keeps cookies flowing in dev.
+ * `None` would force a CSRF token on every state-changing route. `Strict`
+ * would break dev. Lax keeps top-level GETs (so Next.js SSR can read the
+ * cookie on first paint) and same-site fetches while blocking cross-site
+ * form POSTs from a malicious origin. CSRF risk is therefore limited to
+ * top-level GET-by-link, which never mutates state in this API.
+ *
+ * `Secure: true` only in production (HTTPS). `HttpOnly: true` ensures the
+ * JS layer cannot read the token — paired with B-1 (removed JS mirror).
  */
 const accessCookieOptions = () => ({
   httpOnly: true,
   secure: config.isProd,
-  sameSite: "strict",
+  sameSite: "lax",
   path: "/",
   maxAge: config.jwt.accessCookieMaxAgeMs,
 });
 
 /**
  * Build base cookie options for the refresh token (path-restricted).
+ * See accessCookieOptions for SameSite rationale.
  */
 const refreshCookieOptions = () => ({
   httpOnly: true,
   secure: config.isProd,
-  sameSite: "strict",
+  sameSite: "lax",
   path: config.jwt.refreshCookiePath,
   maxAge: config.jwt.refreshExpiresDays * 24 * 60 * 60 * 1000,
 });
@@ -550,6 +571,14 @@ exports.setupPassword = catchAsync(async (req, res) => {
   user.passwordChangedAt = Date.now() - 1000;
 
   await user.save();
+
+  // M-15 fix: a setupPassword call is effectively a credentials handover for
+  // a whitelabel admin (the temp password issued by the platform is replaced
+  // with one the user controls). Any refresh tokens that may have been
+  // issued under the temp credential must be invalidated now, before we
+  // mint a fresh pair, so that a stolen interim session cannot survive the
+  // setup ceremony.
+  await authService.revokeAllForUser(user._id);
 
   const tokens = await authService.issueTokenPair(user, requestContext(req));
   setAuthCookies(res, tokens);

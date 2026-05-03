@@ -806,6 +806,66 @@ export const plansAPI = {
       throw new Error("Updates array is required");
     return apiClient.patch("/plans/admin/bulk-update", { updates }, { token });
   },
+
+  // H-14: Phase 2 admin plan endpoints — were defined backend-only and
+  // unreachable from the dashboard. Wire them up so SUPER_ADMIN can
+  // create/delete plans without curl.
+  createPlan: async (data, token = null) => {
+    if (!data) throw new Error("Plan payload is required");
+    return apiClient.post("/plans/admin", data, { token });
+  },
+
+  deletePlan: async (code, token = null) => {
+    if (!code) throw new Error("Plan code is required");
+    return apiClient.delete(`/plans/admin/${code}`, { token });
+  },
+};
+
+/**
+ * H-14: Phase 2 subscription admin endpoints. SUPER_ADMIN can assign a
+ * subscription to a host directly (e.g. comp / migration). Audit log
+ * is wired server-side.
+ */
+export const subscriptionAdminAPI = {
+  assign: async (data, token = null) => {
+    if (!data?.userId || !data?.planCode)
+      throw new Error("userId and planCode are required");
+    return apiClient.post("/subscriptions/admin/assign", data, { token });
+  },
+};
+
+/**
+ * H-14: Phase 2 addon endpoints — purchase + admin activate. The host
+ * UI calls `purchase` from the AddonsSection on /host/plans; admin
+ * activate is for the manual provisioning step on
+ * BUSINESS_CUSTOMIZATION addons.
+ */
+export const addonsAPI = {
+  purchase: async (data, token = null, idempotencyKey = null) => {
+    return apiClient.post("/addons/purchase", data, {
+      token,
+      headers: idempotencyKey
+        ? { "Idempotency-Key": idempotencyKey }
+        : undefined,
+    });
+  },
+
+  adminActivate: async (addonId, data, token = null, idempotencyKey = null) => {
+    if (!addonId) throw new Error("addonId is required");
+    return apiClient.post(`/addons/admin/${addonId}/activate`, data, {
+      token,
+      headers: idempotencyKey
+        ? { "Idempotency-Key": idempotencyKey }
+        : undefined,
+    });
+  },
+
+  listMine: async (token = null, params = {}) => {
+    const qs = Object.keys(params).length
+      ? `?${new URLSearchParams(params).toString()}`
+      : "";
+    return apiClient.get(`/addons${qs}`, { token });
+  },
 };
 
 /**

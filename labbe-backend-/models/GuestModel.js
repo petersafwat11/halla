@@ -88,10 +88,32 @@ const guestSchema = new mongoose.Schema(
       checkedInAt: {
         type: Date,
       },
-      //   checkedInBy: {
-      //     type: mongoose.Schema.Types.ObjectId,
-      //     ref: "Host",
-      //   },
+      // H-21: record who performed the check-in. Could be a Host (event
+      // owner self-checkin), a Staff token (no User ref — `checkedInByStaff`
+      // captures the StaffAccessToken `_id` and staff name in that case),
+      // or an admin. The User ref handles the first and third; staff is
+      // captured separately because the staff scanner authenticates with a
+      // StaffAccessToken, not a User.
+      checkedInBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      checkedInByStaff: {
+        token: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "StaffAccessToken",
+          default: null,
+        },
+        name: {
+          type: String,
+          default: null,
+        },
+        phone: {
+          type: String,
+          default: null,
+        },
+      },
     },
 
     // Invitation Information
@@ -258,14 +280,12 @@ guestSchema.statics.getEventStats = async function (eventId) {
   return result;
 };
 
-// Instance method to check in guest
-guestSchema.methods.performCheckIn = function (checkedInBy) {
-  this.checkIn.checkedIn = true;
-  this.checkIn.checkedInAt = new Date();
-  // this.checkIn.checkedInBy = checkedInBy;
-  this.status = "attended";
-  return this.save();
-};
+// M-25: removed dead `performCheckIn` instance method. It set
+// `status = 'attended'` which is NOT a value in GUEST_STATUS — any caller
+// would have thrown on save. Check-in now goes exclusively through
+// `staffService._performIdempotentCheckIn` which uses the atomic CAS on
+// `status` and records the actor in `checkIn.checkedInBy` /
+// `checkIn.checkedInByStaff` (H-21).
 
 // Instance method to send invitation
 guestSchema.methods.sendInvitation = function (method = "email") {

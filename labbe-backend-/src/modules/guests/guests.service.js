@@ -14,6 +14,7 @@ const Guest = require('../../../models/GuestModel');
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const { generateExcel } = require('../../shared/utils/excelExport');
+const { formatRiyadh } = require('../../shared/utils/timezone'); // M-5
 const GuestAccessToken = require('../../../models/GuestAccessTokenModel');
 const { logAudit } = require('../../shared/utils/auditLog');
 
@@ -276,10 +277,10 @@ class GuestsService {
       Email: guest.email || '',
       Status: guest.status || 'invited',
       'Response Date': guest.rsvp?.respondedAt
-        ? new Date(guest.rsvp.respondedAt).toLocaleString()
+        ? formatRiyadh(guest.rsvp.respondedAt) // M-5
         : '',
       'Check-in Time': guest.checkIn?.time
-        ? new Date(guest.checkIn.time).toLocaleString()
+        ? formatRiyadh(guest.checkIn.time) // M-5
         : '',
       'Invitation Sent': guest.invitation?.sent ? 'Yes' : 'No',
       'Added By': guest.addedBy?.username || guest.addedBy?.email || 'Unknown',
@@ -353,19 +354,48 @@ class GuestsService {
       expiresAt,
     });
 
+    const qrUrl = GuestAccessToken.getTokenLink(fresh.token, 'post_event', 'ar');
+
+    // H-18: rotation MUST deliver the new QR to the guest. The whole point of
+    // rotation is the "lost phone" scenario — without this dispatch, the
+    // guest sees only "QR rotated, you have a newer one" with no way to find
+    // it. Send via Taqnyat SMS (matches the post-event link delivery
+    // pattern in post-event.service.js). Best-effort: a delivery failure is
+    // surfaced to the host in the response but doesn't roll back the
+    // rotation (the host can manually re-send the link they receive).
+    let delivery = { attempted: false };
+    if (guest.phone) {
+      delivery = { attempted: true, channel: 'sms' };
+      try {
+        const taqnyat = require('../../infrastructure/taqnyat.js');
+        const SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp';
+        const message =
+          `${guest.name || ''}، تم إصدار رابط جديد لمحتوى المناسبة. الرابط القديم لم يعد صالحاً.\n${qrUrl}`;
+        const sendResult = await taqnyat.sendSMS(guest.phone, message, { sender: SENDER });
+        delivery.success = !!sendResult?.success;
+        if (!delivery.success) delivery.error = sendResult?.error || 'send_failed';
+      } catch (err) {
+        delivery.success = false;
+        delivery.error = err?.message || 'send_threw';
+      }
+    } else {
+      delivery.error = 'no_phone';
+    }
+
     await logAudit({
       action: 'guest_access_token.rotate',
       actor,
       targetType: 'guest_access_token',
       targetId: fresh._id,
       whitelabelId: event.whitelabelId || null,
-      metadata: { eventId, guestId, expiresAt },
+      metadata: { eventId, guestId, expiresAt, delivery },
     });
 
     return {
       token: fresh.token,
-      qrUrl: GuestAccessToken.getTokenLink(fresh.token, 'post_event', 'ar'),
+      qrUrl,
       expiresAt: fresh.expiresAt,
+      delivery,
     };
   }
 

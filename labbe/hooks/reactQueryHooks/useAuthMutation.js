@@ -9,20 +9,30 @@ import useAuthStore from "@/stores/authStore";
 // ============================================
 // COOKIE HELPERS
 // ============================================
+//
+// B-1 fix: the access token is now exclusively delivered via the backend's
+// HttpOnly `access_token` cookie (set by /auth/login, /auth/refresh, etc.).
+// The previous JS-readable `token` cookie defeated the entire HttpOnly
+// design — XSS could read it and forge `Authorization: Bearer …` against
+// the API. We no longer write or read it from the JS layer.
+//
+// `userType` and `profileCompleted` remain JS-readable for client-side
+// routing convenience (e.g. middleware deciding host-vs-vendor first paint).
+// DO NOT use these as a trust signal — they are user-modifiable. The server
+// is authoritative; every protected route re-derives role from the JWT.
 
-const setAuthCookies = (token, userRole, profileCompleted = true) => {
-  Cookies.set("token", token, {
-    expires: 7,
-    secure: true,
-    sameSite: "strict",
-  });
-  Cookies.set("userType", userRole || "host", { expires: 7 });
+const setAuthRoutingCookies = (userRole, profileCompleted = true) => {
+  // userType / profileCompleted: client-side routing hints only. Server is
+  // authoritative — never trust these for authorization decisions.
+  Cookies.set("userType", userRole || "host", { expires: 7, sameSite: "lax" });
   Cookies.set("profileCompleted", profileCompleted ? "true" : "false", {
     expires: 7,
+    sameSite: "lax",
   });
 };
 
 const clearAuthCookies = () => {
+  // Clear legacy JS token cookie if any old session left it behind.
   Cookies.remove("token");
   Cookies.remove("userType");
   Cookies.remove("profileCompleted");
@@ -56,11 +66,9 @@ export const useAuthMutation = (action) => {
         const user = data?.user;
         const subscription = data?.subscription;
         const profileCompleted = user?.roleData?.profileCompleted ?? true;
-        console.log("user", user);
-        console.log("subscription", subscription);
-        console.log("profileCompleted", profileCompleted);
-        console.log("token", token);
-        setAuthCookies(token, user?.role, profileCompleted);
+        // The HttpOnly access_token / refresh_token cookies are set by the
+        // backend response — we do NOT mirror them into a JS cookie.
+        setAuthRoutingCookies(user?.role, profileCompleted);
         setAuth(user, token, subscription);
 
         return { user, profileCompleted };
@@ -95,7 +103,7 @@ export const useAuthMutation = (action) => {
         const subscription = data?.subscription;
         const profileCompleted = data?.profileCompleted ?? true;
 
-        setAuthCookies(token, user?.role, profileCompleted);
+        setAuthRoutingCookies(user?.role, profileCompleted);
         setAuth(user, token, subscription);
         clearOTPState();
 
@@ -131,7 +139,7 @@ export const useAuthMutation = (action) => {
         // role undefined and stored the wrapper object as the user.
         const newToken = response.token;
         const user = response.data?.user;
-        setAuthCookies(newToken, user?.role, true);
+        setAuthRoutingCookies(user?.role, true);
         setAuth(user, newToken, null);
         useAuthStore.getState().clearResetState();
         return { user };
@@ -166,7 +174,7 @@ export const useAuthMutation = (action) => {
         const subscription = data?.subscription;
         const profileCompleted = data?.profileCompleted ?? true;
 
-        setAuthCookies(token, user?.role, profileCompleted);
+        setAuthRoutingCookies(user?.role, profileCompleted);
         setAuth(user, token, subscription);
         clearOTPState();
 
@@ -214,7 +222,8 @@ export const useAuthMutation = (action) => {
         }),
       onSuccess: (response) => {
         const user = response.data?.user;
-        Cookies.set("profileCompleted", "true", { expires: 7 });
+        // routing hint only (server is authoritative)
+        Cookies.set("profileCompleted", "true", { expires: 7, sameSite: "lax" });
         useAuthStore.getState().updateUser(user);
         return { user };
       },

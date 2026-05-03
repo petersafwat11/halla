@@ -56,6 +56,34 @@ const createApp = () => {
   );
 
   // CORS configuration
+  //
+  // M-12 (re-evaluated after deployment topology decision):
+  //
+  // PRODUCTION: web frontend (Next.js) and backend (Express) are deployed
+  // to the SAME VPS — typically behind a single nginx reverse proxy on
+  // the same hostname (e.g. nginx routes `/` to Next.js and `/api` to
+  // Express). Same-origin → cookies travel automatically; CORS is
+  // technically not needed for the production app at all.
+  //
+  // We still keep CORS configured because:
+  //   - the React Native app calls the API from a different origin
+  //     (literally no origin header in many cases)
+  //   - dev workflows run web on :3000 and API on :3001
+  //   - admin tools / staging previews may legitimately need it
+  //
+  // Cookie attributes (set in auth.controller.js):
+  //   `SameSite=Lax`  — allows top-level GETs to carry the cookie (so
+  //                     Next.js SSR can read it on initial page load) but
+  //                     blocks cross-site form POSTs. CSRF risk is
+  //                     therefore limited to top-level GETs, none of
+  //                     which mutate state in this API.
+  //   `Secure: true`  — only set in production (over HTTPS).
+  //   `HttpOnly: true`— JS cannot read the access/refresh tokens.
+  //
+  // We do NOT use SameSite=Strict because the dev mobile workflow
+  // (`exp://10.0.2.2:8081`) hits the API directly with credentials and
+  // Strict would drop the cookie on every request from those origins.
+  // Lax + this allowlist is the right compromise.
   const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5173',
@@ -89,7 +117,24 @@ const createApp = () => {
   // BODY PARSING
   // ============================================
 
-  app.use(express.json({ limit: "10kb" }));
+  // H-19: WhatsApp webhook signature is computed by Meta over the *raw*
+  // request bytes. Once `express.json()` re-serialises the parsed body,
+  // key ordering and whitespace diverge from what Meta signed and HMAC
+  // verification false-negatives on legit traffic. We capture the raw
+  // payload into `req.rawBody` for the webhook route only — `verify` runs
+  // before JSON parsing finishes, so the buffer is the actual on-the-wire
+  // bytes.
+  const captureRawForWebhook = (req, _res, buf) => {
+    if (req.originalUrl && req.originalUrl.includes("/messaging/webhook")) {
+      req.rawBody = buf;
+    }
+  };
+  app.use(
+    express.json({
+      limit: "10kb",
+      verify: captureRawForWebhook,
+    })
+  );
   app.use(express.urlencoded({ extended: true, limit: "10kb" }));
   app.use(cookieParser());
 

@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaCheck } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { addonsAPI } from "@/services/adminDashboard";
 import styles from "./AddonsSection.module.css";
 
 const EXTRA_INVITES_TIERS = [
@@ -28,13 +30,14 @@ const DESIGN_TEMPLATE_TIERS = [
   { type: "3d",            nameAr: "تصميم ثلاثي الأبعاد (3D)",         nameEn: "3D design",          price: 500 },
 ];
 
-const AddonsSection = ({ onAddonsChange }) => {
+const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
   const { t, i18n } = useTranslation("plans");
   const isAr = i18n.language === "ar";
 
   const [extraInvites, setExtraInvites] = useState(null);
   const [extraReminders, setExtraReminders] = useState(null);
   const [designTemplate, setDesignTemplate] = useState(null);
+  const [purchasing, setPurchasing] = useState(false);
 
   const notify = (inv, rem, des) => {
     const total = (inv?.price || 0) + (rem?.price || 0) + (des?.price || 0);
@@ -48,6 +51,102 @@ const AddonsSection = ({ onAddonsChange }) => {
   const setInv = (tier) => { setExtraInvites(tier); notify(tier, extraReminders, designTemplate); };
   const setRem = (tier) => { setExtraReminders(tier); notify(extraInvites, tier, designTemplate); };
   const setDes = (tier) => { setDesignTemplate(tier); notify(extraInvites, extraReminders, tier); };
+
+  // H-14 (BLOCKER fix): Phase 2 added a backend addons.purchase endpoint
+  // and the wiring helper `addonsAPI.purchase` lives in
+  // `services/adminDashboard.js`. Previously this component just bubbled
+  // selections up via `onAddonsChange` and the host had no UI path to
+  // actually pay — the endpoint was reachable only via curl. Now the
+  // host can buy each selected addon directly from this section.
+  //
+  // We send each selection as its own purchase call (instead of a batch
+  // endpoint) for two reasons:
+  //   1. Idempotency keys are per-purchase — collapsing them into one
+  //      request would lose per-item dedup.
+  //   2. A failed `extra_invites` charge shouldn't roll back a successful
+  //      `design_template` charge — the addon-level payment provider
+  //      already handles partial-failure/refund (B-4).
+  //
+  // The Idempotency-Key is derived per-click+per-item; double-clicks
+  // within the 24h cache window dedupe at the middleware layer.
+  const purchaseSelected = async () => {
+    const selections = [];
+    if (extraInvites) {
+      selections.push({
+        addonType: "extra_invites",
+        quantity: extraInvites.quantity,
+        scope,
+        eventId: scope === "event" ? eventId : undefined,
+      });
+    }
+    if (extraReminders) {
+      selections.push({
+        addonType: "extra_reminders",
+        quantity: extraReminders.quantity,
+        scope: "org",
+      });
+    }
+    if (designTemplate) {
+      selections.push({
+        addonType: "design_template",
+        templateType: designTemplate.type,
+        quantity: 1,
+        scope: "org",
+      });
+    }
+    if (selections.length === 0) {
+      toast.info(t("addons.purchase.noneSelected", "اختر إضافة أولاً"));
+      return;
+    }
+
+    setPurchasing(true);
+    const errors = [];
+    const succeeded = [];
+    for (const sel of selections) {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? `addon-${sel.addonType}-${crypto.randomUUID()}`
+          : `addon-${sel.addonType}-${Date.now()}-${Math.random()
+              .toString(36)
+              .slice(2)}`;
+      try {
+        await addonsAPI.purchase(sel, null, idempotencyKey);
+        succeeded.push(sel.addonType);
+      } catch (err) {
+        errors.push({
+          addonType: sel.addonType,
+          message:
+            err?.response?.data?.message ||
+            err?.message ||
+            t("addons.purchase.error", "فشل شراء الإضافة"),
+        });
+      }
+    }
+    setPurchasing(false);
+
+    if (succeeded.length > 0) {
+      toast.success(
+        t("addons.purchase.success", {
+          defaultValue: "تم شراء {{count}} إضافة",
+          count: succeeded.length,
+        })
+      );
+      // Reset selections so the host doesn't accidentally re-buy.
+      setExtraInvites(null);
+      setExtraReminders(null);
+      setDesignTemplate(null);
+      notify(null, null, null);
+    }
+    for (const e of errors) {
+      toast.error(`${e.addonType}: ${e.message}`);
+    }
+  };
+
+  const hasSelection = !!(extraInvites || extraReminders || designTemplate);
+  const totalPrice =
+    (extraInvites?.price || 0) +
+    (extraReminders?.price || 0) +
+    (designTemplate?.price || 0);
 
   return (
     <div className={styles.addonsSection}>
@@ -93,6 +192,25 @@ const AddonsSection = ({ onAddonsChange }) => {
           ))}
         </div>
       </div>
+
+      {/* Purchase summary + CTA — H-14 wiring. */}
+      {hasSelection ? (
+        <div className={styles.purchaseRow}>
+          <div className={styles.purchaseTotal}>
+            {t("addons.purchase.total", "الإجمالي")}: {totalPrice} {isAr ? "ر.س" : "SAR"}
+          </div>
+          <button
+            type="button"
+            className={styles.purchaseBtn}
+            onClick={purchaseSelected}
+            disabled={purchasing}
+          >
+            {purchasing
+              ? t("addons.purchase.processing", "جارٍ المعالجة...")
+              : t("addons.purchase.cta", "شراء الإضافات المحددة")}
+          </button>
+        </div>
+      ) : null}
 
       {/* Design Template */}
       <div className={styles.addonCard}>

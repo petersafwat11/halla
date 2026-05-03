@@ -19,7 +19,25 @@
 
 const Event = require("../../../models/EventModel");
 
-const STALE_AFTER_MS = 10 * 60 * 1000; // 10 minutes
+const STALE_AFTER_MS = 10 * 60 * 1000; // 10 minutes — default
+const HEARTBEAT_INTERVAL_MS = 60 * 1000; // 1 minute
+// Headroom over the worst-case sendBulk wall clock so a transient pause
+// (DB hiccup, GC pause) doesn't immediately make the lock stale.
+const TTL_BUFFER_MS = 2 * 60 * 1000;
+
+/**
+ * H-17: estimate how long a `sendBulk` for `guestCount` invitees will take
+ * given the rate cap (10 sends/sec × concurrency 5). Used by the cron path
+ * to derive a safe TTL — at 6000 guests sendBulk runs ~10min, a 10min lock
+ * with no heartbeat would expire the moment the second cron tick fires.
+ *
+ * Returns a value in ms, never less than the legacy 10-minute floor.
+ */
+function estimateLockTtl(guestCount, ratePerSecond = 10) {
+  if (!guestCount || guestCount <= 0) return STALE_AFTER_MS;
+  const wallMs = Math.ceil(guestCount / ratePerSecond) * 1000 + TTL_BUFFER_MS;
+  return Math.max(STALE_AFTER_MS, wallMs);
+}
 
 /**
  * Try to acquire the launch lock for `eventId`.
@@ -31,11 +49,14 @@ const STALE_AFTER_MS = 10 * 60 * 1000; // 10 minutes
  *
  * @param {string} eventId
  * @param {string} workerId — opaque caller identifier; useful in logs.
- * @returns {Promise<{ acquired: true, event: Object } | { acquired: false }>}
+ * @param {Object} [opts]
+ * @param {number} [opts.ttlMs=STALE_AFTER_MS] - per-call stale window.
+ * @returns {Promise<{ acquired: true, event: Object, ttlMs: number } | { acquired: false }>}
  */
-async function acquire(eventId, workerId) {
+async function acquire(eventId, workerId, opts = {}) {
   const now = new Date();
-  const staleCutoff = new Date(now.getTime() - STALE_AFTER_MS);
+  const ttlMs = opts.ttlMs && opts.ttlMs > 0 ? opts.ttlMs : STALE_AFTER_MS;
+  const staleCutoff = new Date(now.getTime() - ttlMs);
 
   try {
     const event = await Event.findOneAndUpdate(
@@ -57,7 +78,7 @@ async function acquire(eventId, workerId) {
     );
 
     if (!event) return { acquired: false };
-    return { acquired: true, event };
+    return { acquired: true, event, ttlMs };
   } catch (err) {
     // Treat any DB error as "could not acquire" so the caller falls back
     // to its skip path. We never want a transient lookup failure to
@@ -75,20 +96,78 @@ async function acquire(eventId, workerId) {
  * @param {string} eventId
  * @returns {Promise<void>}
  */
-async function release(eventId) {
-  await Event.updateOne(
-    { _id: eventId },
-    {
-      $set: {
-        "launchLock.lockedAt": null,
-        "launchLock.lockedBy": null,
-      },
+/**
+ * Release the lock. Idempotent — safe to call multiple times.
+ *
+ * H-3 review: previously the filter was `{ _id: eventId }` with no
+ * holder check. If a stale lock had already been re-acquired by another
+ * worker (because our heartbeat stalled past the TTL), the original
+ * worker calling `release()` here would clear THE OTHER worker's lock
+ * out from under them, opening a window where a third tick can acquire
+ * and double-fire. We now scope the clear by `lockedBy` so we only
+ * release a lock we still own.
+ *
+ * If `workerId` is undefined (legacy callers / safety net), we fall
+ * back to the unscoped clear with a warning. Mark every active call
+ * site to pass it.
+ */
+async function release(eventId, workerId) {
+  const filter = { _id: eventId };
+  if (workerId) {
+    filter["launchLock.lockedBy"] = workerId;
+  } else {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[eventLock] release(${eventId}) called without workerId — clearing unscoped`
+    );
+  }
+  await Event.updateOne(filter, {
+    $set: {
+      "launchLock.lockedAt": null,
+      "launchLock.lockedBy": null,
+    },
+  });
+}
+
+/**
+ * H-17: heartbeat helper. Refreshes the lock's `lockedAt` timestamp so a
+ * long-running `sendBulk` doesn't trip the stale window and let a second
+ * worker double-fire. Returns a `stop()` function the caller MUST invoke
+ * before releasing the lock (typically inside `finally`).
+ *
+ * @param {string} eventId
+ * @param {string} workerId
+ * @param {number} [intervalMs=HEARTBEAT_INTERVAL_MS]
+ * @returns {{ stop: () => void }}
+ */
+function heartbeat(eventId, workerId, intervalMs = HEARTBEAT_INTERVAL_MS) {
+  let stopped = false;
+  const tick = async () => {
+    if (stopped) return;
+    try {
+      await Event.updateOne(
+        { _id: eventId, "launchLock.lockedBy": workerId || "unknown" },
+        { $set: { "launchLock.lockedAt": new Date() } }
+      );
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn(`[eventLock] heartbeat(${eventId}) failed:`, err.message);
     }
-  );
+  };
+  const handle = setInterval(tick, intervalMs);
+  return {
+    stop: () => {
+      stopped = true;
+      clearInterval(handle);
+    },
+  };
 }
 
 module.exports = {
   acquire,
   release,
+  heartbeat,
+  estimateLockTtl,
   STALE_AFTER_MS,
+  HEARTBEAT_INTERVAL_MS,
 };

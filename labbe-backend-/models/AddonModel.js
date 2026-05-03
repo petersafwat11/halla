@@ -20,7 +20,18 @@ const addonSchema = new mongoose.Schema(
       // FLOW-10-F01: `pending_provisioning` covers business-customization
       // and any future addon type that requires manual operator
       // approval after payment. Admin endpoint flips it to `active`.
-      enum: ['pending', 'pending_provisioning', 'active', 'fulfilled', 'cancelled'],
+      //
+      // B-4: `failed_quota` records the case where the charge succeeded
+      // but the downstream quota application threw. Admin reconciliation
+      // pairs this row with the corresponding pending-refund audit entry.
+      enum: [
+        'pending',
+        'pending_provisioning',
+        'active',
+        'fulfilled',
+        'cancelled',
+        'failed_quota',
+      ],
       default: 'pending',
     },
     scope: { type: String, enum: ['event', 'pool', 'org'], default: 'event' },

@@ -5,6 +5,7 @@
  */
 
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const config = require('../../config');
 const { NotFoundError, ForbiddenError, ValidationError } = require('../../shared/errors');
 
@@ -29,7 +30,27 @@ class StaffService {
       const validation = await StaffAccessToken.validateToken(token);
 
       if (!validation.valid) {
-        throw new ForbiddenError(validation.reason || 'Invalid access token');
+        // H-20: revoked / expired tokens surface as 410 Gone with the
+        // structured reason in the body so the scanner can render distinct
+        // UX. Lookup miss (`staff_invalid`) stays 403 — it's a credential
+        // error, not a "the access is gone" condition.
+        const goneReasons = ['staff_revoked', 'staff_expired'];
+        if (goneReasons.includes(validation.reason)) {
+          const AppError = require('../../shared/errors/AppError');
+          const err = new AppError(
+            validation.message || validation.reason,
+            410,
+            validation.reason.toUpperCase()
+          );
+          err.body = {
+            reason: validation.reason,
+            message: validation.message,
+            ...(validation.expiresAt ? { expiresAt: validation.expiresAt } : {}),
+            ...(validation.revokedAt ? { revokedAt: validation.revokedAt } : {}),
+          };
+          throw err;
+        }
+        throw new ForbiddenError(validation.message || validation.reason || 'Invalid access token');
       }
 
       const event = validation.event;
@@ -132,15 +153,11 @@ class StaffService {
       Guest.countDocuments(query),
     ]);
 
-    // Calculate stats
-    const allGuests = await Guest.find({ event: eventId }).select('status');
-    const stats = {
-      total: allGuests.length,
-      confirmed: allGuests.filter((g) => g.status === 'confirmed').length,
-      checkedIn: allGuests.filter((g) => g.status === 'checked_in').length,
-      declined: allGuests.filter((g) => g.status === 'declined').length,
-      pending: allGuests.filter((g) => ['invited', 'maybe'].includes(g.status)).length,
-    };
+    // H-22: stats via aggregation. Previously we loaded every guest doc
+    // into memory and counted in JS — at 10K guests × 30s polling that's
+    // 200MB+/min into the working set and a non-trivial CPU cost. The
+    // aggregation runs entirely in the index / on the server.
+    const stats = await this._computeGuestStats(eventId);
 
     return {
       data: guests,
@@ -223,17 +240,52 @@ class StaffService {
       throw new NotFoundError('Event');
     }
 
-    const guests = await Guest.find({ event: eventId }).select('status checkIn');
+    // H-22: aggregation instead of full collection load + JS reduce.
+    // `_computeGuestStats` returns the {total,confirmed,checkedIn,...}
+    // bucket. We additionally need `lastCheckIn` which is a single doc
+    // lookup sorted by `checkIn.checkedInAt`.
+    const [stats, lastCheckedIn] = await Promise.all([
+      this._computeGuestStats(eventId),
+      Guest.findOne({
+        event: eventId,
+        'checkIn.checkedInAt': { $exists: true, $ne: null },
+      })
+        .sort({ 'checkIn.checkedInAt': -1 })
+        .select('checkIn.checkedInAt')
+        .lean(),
+    ]);
 
     return {
-      total: guests.length,
-      confirmed: guests.filter((g) => g.status === 'confirmed').length,
-      checkedIn: guests.filter((g) => g.status === 'checked_in').length,
-      declined: guests.filter((g) => g.status === 'declined').length,
-      pending: guests.filter((g) => ['invited', 'maybe'].includes(g.status)).length,
-      lastCheckIn: guests
-        .filter((g) => g.checkIn?.checkedInAt)
-        .sort((a, b) => new Date(b.checkIn.checkedInAt) - new Date(a.checkIn.checkedInAt))[0]?.checkIn?.checkedInAt || null,
+      ...stats,
+      lastCheckIn: lastCheckedIn?.checkIn?.checkedInAt || null,
+    };
+  }
+
+  /**
+   * Compute guest count breakdown via Mongo aggregation.
+   *
+   * H-22: previously the staff stats endpoints loaded every guest into
+   * memory and counted via `Array#filter`. Aggregating in the database is
+   * O(index-scan) and never builds the full result set in Node.
+   *
+   * @param {string|ObjectId} eventId
+   * @returns {Promise<{total:number, confirmed:number, checkedIn:number, declined:number, pending:number}>}
+   */
+  async _computeGuestStats(eventId) {
+    const buckets = await Guest.aggregate([
+      { $match: { event: new mongoose.Types.ObjectId(String(eventId)) } },
+      { $group: { _id: '$status', n: { $sum: 1 } } },
+    ]);
+    const counts = buckets.reduce((acc, b) => {
+      acc[b._id || 'unknown'] = b.n;
+      return acc;
+    }, {});
+    return {
+      total: Object.values(counts).reduce((s, n) => s + n, 0),
+      confirmed: counts.confirmed || 0,
+      checkedIn: counts.checked_in || 0,
+      declined: counts.declined || 0,
+      pending: (counts.invited || 0) + (counts.maybe || 0),
     };
   }
 
@@ -342,8 +394,25 @@ class StaffService {
    * us correct first-vs-replay semantics naturally and is also safe
    * against concurrent scans of the same QR.
    */
-  async _performIdempotentCheckIn(eventId, guest, _staffUser) {
+  async _performIdempotentCheckIn(eventId, guest, staffUser) {
     const now = new Date();
+
+    // H-21: capture WHO performed the check-in. `staffUser` may be:
+    //   - a User document (host self-check-in / admin)
+    //   - a session payload from the staff scanner (no `_id`, has
+    //     `phone`, `staffName`, optional `staffTokenId`)
+    // Build the audit fields accordingly so a re-scan can tell staff B who
+    // originally checked the guest in.
+    const checkedInByUserId =
+      staffUser && staffUser._id ? staffUser._id : null;
+    const checkedInByStaff =
+      staffUser && !staffUser._id && (staffUser.phone || staffUser.staffName)
+        ? {
+            token: staffUser.staffTokenId || null,
+            name: staffUser.staffName || null,
+            phone: staffUser.phone || null,
+          }
+        : { token: null, name: null, phone: null };
 
     const updated = await Guest.findOneAndUpdate(
       {
@@ -356,6 +425,8 @@ class StaffService {
           status: 'checked_in',
           'checkIn.checkedIn': true,
           'checkIn.checkedInAt': now,
+          'checkIn.checkedInBy': checkedInByUserId,
+          'checkIn.checkedInByStaff': checkedInByStaff,
         },
       },
       { new: true }
@@ -364,6 +435,28 @@ class StaffService {
     if (updated) {
       // First successful check-in (CAS won).
       this._notifyHostCheckIn(eventId, updated).catch(console.error);
+      // M-10 / Phase 5 hand-off groundwork: emit an audit-log entry so
+      // there's a forensic trail of every check-in.
+      try {
+        const { logAudit } = require('../../shared/utils/auditLog');
+        await logAudit({
+          action: 'guest.check_in',
+          actor: staffUser && staffUser._id ? staffUser : null,
+          targetType: 'guest',
+          targetId: updated._id,
+          metadata: {
+            eventId,
+            checkedInAt: now,
+            performedByStaff:
+              staffUser && !staffUser._id
+                ? { name: staffUser.staffName, phone: staffUser.phone }
+                : null,
+          },
+        });
+      } catch (auditErr) {
+        // eslint-disable-next-line no-console
+        console.warn('[staff.checkIn] audit log failed:', auditErr?.message);
+      }
       return {
         guest: this._formatGuest(updated),
         alreadyCheckedIn: false,
@@ -374,13 +467,20 @@ class StaffService {
 
     // CAS lost — guest was already checked in (possibly by a concurrent
     // scan). Fetch the persisted record to return the original
-    // `checkedInAt` so the UI renders "checked in at HH:MM".
-    const existing = await Guest.findOne({ _id: guest._id, event: eventId });
+    // `checkedInAt` AND the original actor so the scanner UI can render
+    // "checked in at HH:MM by <staffName>".
+    const existing = await Guest.findOne({ _id: guest._id, event: eventId })
+      .populate('checkIn.checkedInBy', 'name email');
     if (!existing) throw new NotFoundError('Guest');
+    const originalActor =
+      existing.checkIn?.checkedInBy?.name ||
+      existing.checkIn?.checkedInByStaff?.name ||
+      null;
     return {
       guest: this._formatGuest(existing),
       alreadyCheckedIn: true,
       checkedInAt: existing.checkIn?.checkedInAt || null,
+      checkedInBy: originalActor,
       message: 'Guest was already checked in',
     };
   }

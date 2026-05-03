@@ -12,6 +12,9 @@ const {
   ForbiddenError,
   PackageLimitError,
 } = require("../../shared/errors");
+// M-5: every export/notification helper uses formatRiyadh so we don't
+// re-render UTC server-locale dates as the previous local day.
+const { formatRiyadh } = require("../../shared/utils/timezone");
 
 // Import existing models during migration
 const Event = require("../../../models/EventModel");
@@ -424,10 +427,49 @@ class EventsService {
         try {
           await Subscription.releaseInvites(capacitySub._id, guestCount);
         } catch (releaseErr) {
+          // M-22: when the compensating release ALSO fails, the pool stays
+          // debited for an event that was never created. Without
+          // reconciliation hooks, that capacity is silently lost. We now:
+          //   1. log loudly with both errors so on-call gets paged
+          //   2. emit a `subscription.invite_pool_reconcile_pending` audit
+          //      row that an admin reconciliation script can pick up
+          //   3. notify admins out-of-band so the host doesn't lose
+          //      capacity quietly
+          // eslint-disable-next-line no-console
           console.error(
             `[events.createEvent] FAILED to release ${guestCount} invites on subscription ${capacitySub._id} after Event.save error:`,
             releaseErr.message
           );
+          try {
+            const { logAudit } = require("../../shared/utils/auditLog");
+            await logAudit({
+              action: "subscription.invite_pool_reconcile_pending",
+              actor: { _id: userId, role: userRole || "host" },
+              targetType: "subscription",
+              targetId: capacitySub._id,
+              metadata: {
+                guestCount,
+                originalError: err?.message,
+                releaseError: releaseErr?.message,
+              },
+              status: "failure",
+            });
+          } catch (_) { /* swallow audit failure */ }
+          try {
+            const notificationService = require("../notifications/notifications.service");
+            await notificationService.sendToAdmins({
+              type: "invite_pool_reconcile_pending",
+              title: "Invite pool reconciliation needed",
+              titleAr: "حاجة إلى مطابقة رصيد الدعوات",
+              message: `Subscription ${capacitySub._id} has ${guestCount} orphaned invites after a failed event creation.`,
+              data: {
+                entityType: "subscription",
+                entityId: capacitySub._id,
+                metadata: { guestCount },
+              },
+              priority: "high",
+            });
+          } catch (_) { /* swallow notify failure */ }
         }
       }
       throw err;
@@ -865,14 +907,16 @@ class EventsService {
     const data = events.map((e) => ({
       Title: e.eventDetails?.title || "",
       Type: e.eventDetails?.type || "",
+      // M-5: render in Asia/Riyadh wall-clock so admins on a UTC server
+      // don't see Riyadh-evening events on the previous calendar day.
       Date: e.eventDetails?.date
-        ? new Date(e.eventDetails.date).toLocaleDateString()
+        ? formatRiyadh(e.eventDetails.date, { style: "date" })
         : "",
       Status: e.status,
       "Total Guests": e.guestList?.length || 0,
       Confirmed:
         e.guestList?.filter((g) => g.status === "confirmed").length || 0,
-      Created: new Date(e.createdAt).toLocaleDateString(),
+      Created: formatRiyadh(e.createdAt, { style: "date" }),
     }));
 
     return generateExcel(data, "events");
@@ -901,10 +945,10 @@ class EventsService {
       Email: g.email || "",
       Status: g.status || "invited",
       "Response Date": g.rsvp?.respondedAt
-        ? new Date(g.rsvp.respondedAt).toLocaleString()
+        ? formatRiyadh(g.rsvp.respondedAt) // M-5
         : "",
       "Check-in Time": g.checkIn?.time
-        ? new Date(g.checkIn.time).toLocaleString()
+        ? formatRiyadh(g.checkIn.time) // M-5
         : "",
       "Invitation Sent": g.invitation?.sent ? "Yes" : "No",
     }));
@@ -1343,12 +1387,9 @@ class EventsService {
 
     const frontendUrl = config.frontend.url;
     const eventTitle = event.eventDetails?.title || "Untitled";
+    // M-5: Asia/Riyadh wall-clock with explicit timeZone option.
     const eventDate = event.eventDetails?.date
-      ? new Date(event.eventDetails.date).toLocaleDateString("ar-SA", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
+      ? formatRiyadh(event.eventDetails.date, { style: "date", locale: "ar-SA" })
       : "";
     const eventLocation =
       event.eventDetails?.location?.address ||

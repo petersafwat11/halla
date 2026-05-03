@@ -13,17 +13,17 @@ const { withIdempotency } = require('../../shared/utils/idempotency');
 
 /**
  * Verify the Meta/WhatsApp HMAC signature on the incoming webhook payload.
- * PIPELINE-F02 / FLOW-18-F01: this MUST fail closed. The previous code
- * silently accepted requests when WHATSAPP_APP_SECRET was unset or the
- * x-hub-signature-256 header was missing. WHATSAPP_APP_SECRET is now a
- * required env var (see src/config/env.js), so the only ways verification
- * can fail at runtime are a missing or invalid header — both must be
- * rejected with 401.
  *
- * NOTE: This verifies over JSON.stringify(req.body), which matches the prior
- * behavior. A more robust implementation reads the raw request bytes (since
- * key ordering / whitespace are not guaranteed to match what Meta signed).
- * Capturing raw body is out of scope for Phase 0 and tracked for Phase 3d.
+ * PIPELINE-F02 / FLOW-18-F01: fail closed when WHATSAPP_APP_SECRET is unset
+ * or x-hub-signature-256 is missing/invalid.
+ *
+ * H-19: HMAC is computed over the *raw* request bytes, not over
+ * `JSON.stringify(req.body)`. The previous behaviour false-negatived
+ * against legitimate Meta payloads when the JSON re-serialisation reordered
+ * keys or normalised whitespace. `req.rawBody` is captured by the
+ * `express.json({ verify })` hook in app.js for the webhook route. If for
+ * any reason rawBody is absent (defense in depth — should not happen in
+ * production), we fall back to JSON.stringify and log a warning.
  */
 const verifyWebhookSignature = (req) => {
   const signature = req.headers['x-hub-signature-256'];
@@ -37,11 +37,23 @@ const verifyWebhookSignature = (req) => {
     return { ok: false, reason: 'misconfigured_secret' };
   }
 
+  let payload;
+  if (req.rawBody && Buffer.isBuffer(req.rawBody)) {
+    payload = req.rawBody;
+  } else {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[messaging.webhook] rawBody missing — falling back to JSON.stringify. '
+        + 'Verify express.json({ verify }) is wired in app.js.'
+    );
+    payload = Buffer.from(JSON.stringify(req.body || {}));
+  }
+
   const expected =
     'sha256=' +
     crypto
       .createHmac('sha256', secret)
-      .update(JSON.stringify(req.body))
+      .update(payload)
       .digest('hex');
 
   const sigBuf = Buffer.from(signature);
@@ -247,6 +259,17 @@ exports.webhook = catchAsync(async (req, res) => {
         // deterministic: two webhook copies of the same event always
         // hash to the same 30s window even if they arrive seconds
         // apart on different cron ticks.
+        //
+        // L-10: the dedup key intentionally does NOT include `eventId`.
+        // We don't know the eventId until `handleButtonResponse` resolves
+        // the phone → Guest → Event chain, and gating the lookup on the
+        // dedup means we can't include the result IN the key. Practical
+        // risk of cross-event collision is essentially zero — Meta's
+        // `messageId` is globally unique, and the bucket fallback
+        // includes phone (which uniquely identifies the guest in the
+        // fast majority of cases). If we ever see a real collision we
+        // can move the dedup INSIDE handleButtonResponse, after the
+        // Guest lookup, and key on `${eventId}:${guestId}:${buttonText}`.
         const messages = change.value?.messages || [];
         for (const message of messages) {
           if (message.type === 'button' && message.button) {

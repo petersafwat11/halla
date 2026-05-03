@@ -24,19 +24,40 @@ const { idempotency } = require('../../shared/middleware/idempotency');
  * RSVP idempotency-key derivation (Phase 3d.2 / FLOW-19-F02 / decision D2).
  *
  * If the client doesn't send `Idempotency-Key`, derive one server-side
- * from `${eventId}:${guestId}:${rsvpChoice}`. This means:
+ * from `${eventId}:${guestId}:${rsvpChoice}` (Phase 3de decision D2). The
+ * eventId is sourced via the `Guest` doc's `event` field — the route
+ * doesn't expose eventId in the URL, so we'd need to look it up before
+ * deriving the key. To avoid that DB hit on every RSVP we lean on the
+ * fact that `guestId` is globally unique and ties to exactly one event,
+ * making `${guestId}:${choice}` functionally equivalent. The
+ * invitationCode is added so the same guest with multiple invitations
+ * (rare; typically pre-Phase-3 legacy data) doesn't collide.
+ *
  *   - A double-tap on the same answer is deduplicated (same key).
  *   - A guest changing answers ('confirmed' → 'declined') is a fresh
  *     request (different key, new write, new host notification).
+ *
+ * L-11: D2 doc spelled out `${eventId}:${guestId}:${choice}`. The code
+ * uses `${guestId}:${choice}:${code}` because:
+ *   1. Guest is globally unique → guestId already implies eventId.
+ *   2. Adding `eventId` would require a DB lookup before key derivation
+ *      (the route only has guestId), which we want to avoid for the
+ *      idempotency middleware path.
+ *   3. `code` (invitationCode) covers the edge case of one guest
+ *      record having multiple invitations across events — extremely
+ *      rare but cheap to disambiguate.
+ * Both forms are functionally equivalent for collision; the code's
+ * choice is the cheaper one. D2 doc to be updated.
  */
 function deriveRsvpIdempotencyKey(req, _res, next) {
   if (!req.get('idempotency-key')) {
     const guestId = req.params.id;
     const choice = req.body?.response || '';
     const code = req.body?.invitationCode || '';
-    // The invitationCode is part of the canonical input (the same guest
-    // could in theory have multiple invitations across events).
     const seed = `${guestId}:${choice}:${code}`;
+    // 32 hex chars (128 bits) is plenty of collision resistance for an
+    // idempotency key; truncating shortens the IdempotencyKey.key index
+    // entry without weakening dedup. The model accepts up to 256 chars.
     const derived = crypto.createHash('sha256').update(seed).digest('hex').slice(0, 32);
     req.headers['idempotency-key'] = `rsvp_${derived}`;
   }

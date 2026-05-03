@@ -577,12 +577,29 @@ userSchema.methods.createEmailVerificationCode = function () {
  * @returns {boolean}
  */
 userSchema.methods.verifyEmailCode = function (code) {
-  const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
+  // M-14 fix: hashed-code comparison must be constant-time. The previous
+  // `===` short-circuits on first byte mismatch and leaks per-byte timing
+  // information that, combined with the 6-digit numeric input space, can be
+  // exploited to recover a verification code over many attempts. Use
+  // `crypto.timingSafeEqual` over equal-length buffers.
+  if (
+    !code ||
+    !this.emailVerificationCode ||
+    !this.emailVerificationExpires ||
+    this.emailVerificationExpires <= Date.now()
+  ) {
+    return false;
+  }
 
-  return (
-    this.emailVerificationCode === hashedCode &&
-    this.emailVerificationExpires > Date.now()
-  );
+  const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
+  const a = Buffer.from(hashedCode, "hex");
+  const b = Buffer.from(this.emailVerificationCode, "hex");
+
+  // Defensive — if for any reason the stored value is not a hex digest of
+  // the same length, bail out rather than throw from timingSafeEqual.
+  if (a.length === 0 || a.length !== b.length) return false;
+
+  return crypto.timingSafeEqual(a, b);
 };
 
 /**

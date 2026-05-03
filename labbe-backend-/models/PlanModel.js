@@ -56,8 +56,35 @@ const featuresSchema = new mongoose.Schema(
 // ============================================
 // PRICING SCHEMA
 // ============================================
+//
+// AMOUNT UNIT CONTRACT (B-2):
+//   `oneTime` is a non-negative number in **SAR major units** (Saudi
+//   Riyals). E.g. `29` = 29.00 SAR, `99.99` = 99.99 SAR. SAR has 2-decimal
+//   precision (halalas), so values with more than 2 decimal places are
+//   rejected — those would imply an upstream rounding bug.
+//
+// Conversion to halalas (Moyasar's required unit) is done inside the
+// payment provider via `_sarToHalalas`. Callers MUST pass SAR — never
+// pre-multiply.
 const pricingSchema = new mongoose.Schema(
-  { oneTime: { type: Number, default: 0 } },
+  {
+    oneTime: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: (v) => {
+          if (v === null || v === undefined) return true;
+          if (typeof v !== "number" || !Number.isFinite(v) || v < 0) return false;
+          // 2-decimal precision check: 29.99 OK, 29.999 not OK.
+          const rounded = Math.round(v * 100) / 100;
+          return Math.abs(rounded - v) < 1e-9;
+        },
+        message:
+          "pricing.oneTime must be a non-negative number in SAR with at most 2 decimal places. " +
+          "E.g. 29 (= 29.00 SAR) or 99.99 (= 99.99 SAR).",
+      },
+    },
+  },
   { _id: false }
 );
 

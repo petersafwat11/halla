@@ -42,15 +42,20 @@ const ACCESS_COOKIE = "access_token";
  * Order:
  *   1. `Authorization: Bearer <token>` (preferred for mobile)
  *   2. `access_token` cookie (web)
- *   3. legacy `jwt` cookie (Phase 0 sessions only — accepted for one deploy
- *      cycle so existing dev cookies don't 401 immediately; remove in 1c).
+ *
+ * M-11 fix: the legacy `jwt` cookie fallback was removed. Phase 0/1a
+ * deployments have rolled long enough that any session minted under the old
+ * cookie name would have aged out (90-day TTL was the legacy max; we are
+ * past that horizon). Continuing to honour the legacy name is a recognized
+ * downgrade attack surface — if an attacker can plant a `jwt=` cookie via
+ * any subdomain or compromised dependency, the server would accept it as
+ * authoritative. Refusing it is the only safe behaviour.
  */
 const extractAccessToken = (req) => {
   if (req.headers.authorization?.startsWith("Bearer")) {
     return req.headers.authorization.split(" ")[1];
   }
   if (req.cookies?.[ACCESS_COOKIE]) return req.cookies[ACCESS_COOKIE];
-  if (req.cookies?.jwt) return req.cookies.jwt;
   return null;
 };
 

@@ -109,22 +109,65 @@ staffAccessTokenSchema.statics.createForStaff = async function (
   });
 };
 
-// Static method to validate token
+// Static method to validate token.
+//
+// H-20: structured reason codes mirror GuestAccessToken.validateToken so the
+// scanner / staff frontend can render distinct UX (revoked → "your access
+// was revoked", expired → "your shift access expired", invalid → "this code
+// is not recognised"). Previously every failure returned the same opaque
+// "Token invalid or expired" string, which made support triage impossible.
 staffAccessTokenSchema.statics.validateToken = async function (token) {
-  const tokenDoc = await this.findOne({
-    token,
-    isRevoked: false,
-    expiresAt: { $gt: new Date() },
-  }).populate("event", "eventDetails host status");
-
-  if (!tokenDoc) {
-    return { valid: false, reason: "Token invalid or expired" };
+  if (!token || typeof token !== "string") {
+    return {
+      valid: false,
+      reason: "staff_invalid",
+      message: "Token is missing or malformed",
+    };
   }
 
-  // Update usage stats
+  const tokenDoc = await this.findOne({ token }).populate(
+    "event",
+    "eventDetails host status whitelabelId"
+  );
+
+  if (!tokenDoc) {
+    return {
+      valid: false,
+      reason: "staff_invalid",
+      message: "Token not recognised",
+    };
+  }
+
+  if (tokenDoc.isRevoked) {
+    return {
+      valid: false,
+      reason: "staff_revoked",
+      message: "Staff access has been revoked",
+      revokedAt: tokenDoc.revokedAt || null,
+    };
+  }
+
+  if (tokenDoc.expiresAt && tokenDoc.expiresAt.getTime() <= Date.now()) {
+    return {
+      valid: false,
+      reason: "staff_expired",
+      message: "Staff access has expired",
+      expiresAt: tokenDoc.expiresAt,
+    };
+  }
+
+  // Update usage stats. Save errors are non-fatal — log + proceed.
   tokenDoc.lastUsedAt = new Date();
   tokenDoc.useCount += 1;
-  await tokenDoc.save();
+  try {
+    await tokenDoc.save();
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[StaffAccessToken] usage-stat save failed:",
+      err?.message || err
+    );
+  }
 
   return {
     valid: true,

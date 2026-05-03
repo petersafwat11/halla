@@ -619,6 +619,102 @@ const eventCompletedEmail = (data, lang = "ar") => {
   return { subject, html };
 };
 
+/**
+ * Event launch failed email (B-6 / FLOW-15-F05).
+ *
+ * Sent to the host when a scheduled launch exhausts every retry attempt
+ * and falls into terminal `failed` state. Plain, calm tone — the host
+ * is already stressed, this is an apology + next-step CTA.
+ *
+ * @param {Object} data - { hostName, eventTitle, attemptCount, reason, eventUrl, supportEmail }
+ * @param {string} lang - Language (ar/en)
+ * @returns {Object} { subject, html }
+ */
+const eventLaunchFailedEmail = (data, lang = "ar") => {
+  const isAr = lang === "ar";
+
+  const subject = isAr
+    ? `تعذّر إطلاق فعاليتك "${data.eventTitle}"`
+    : `We couldn't launch your event "${data.eventTitle}"`;
+
+  const apology = isAr
+    ? `نعتذر بشدة. حاولنا إرسال دعوات فعاليتك "${data.eventTitle}" ${data.attemptCount} مرات ولم ننجح.`
+    : `We're sorry. We tried to send invitations for your event "${data.eventTitle}" ${data.attemptCount} times and could not complete the launch.`;
+
+  const next = isAr
+    ? "يمكنك إعادة المحاولة يدوياً من لوحة الفعالية، أو التواصل مع فريق الدعم وسنساعدك فوراً."
+    : "You can retry manually from the event dashboard, or contact our support team and we'll help right away.";
+
+  const content = `
+    ${getGreeting(data.hostName, lang)}
+    <p>${apology}</p>
+    ${getHighlightBox(
+      data.reason
+        ? `${isAr ? "السبب التقني:" : "Technical reason:"} <code>${data.reason}</code>`
+        : isAr
+        ? "نقوم حالياً بمراجعة تفاصيل الإرسال."
+        : "Our team is reviewing the delivery details.",
+      "warning"
+    )}
+    <p>${next}</p>
+    ${data.eventUrl ? getButton(isAr ? "عرض الفعالية" : "Open Event", data.eventUrl) : ""}
+    <p style="color: ${COLORS.text.secondary}; font-size: 13px; text-align: center;">
+      ${
+        data.supportEmail
+          ? isAr
+            ? `للمساعدة العاجلة: <a href="mailto:${data.supportEmail}">${data.supportEmail}</a>`
+            : `Need help? <a href="mailto:${data.supportEmail}">${data.supportEmail}</a>`
+          : ""
+      }
+    </p>
+  `;
+
+  const html = getBaseLayout(content, {
+    lang,
+    headerTitle: isAr ? "تعذّر إطلاق الفعالية" : "Event Launch Failed",
+    headerSubtitle: data.eventTitle,
+    headerBgColor: COLORS.error || COLORS.primary,
+    preheader: isAr
+      ? `تعذّر إطلاق "${data.eventTitle}" بعد ${data.attemptCount} محاولات`
+      : `"${data.eventTitle}" did not launch after ${data.attemptCount} attempts`,
+  });
+
+  return { subject, html };
+};
+
+/**
+ * Generic notification email — used by `notifications.service.sendToUser`
+ * when no dedicated template exists for the notification `type`.
+ *
+ * Previously the service called `email.send.notification(...)` but no such
+ * method existed, so a TypeError was caught silently by the call-site's
+ * `.catch` and no email was sent (B-6). Adding the helper here closes
+ * that gap; type-specific templates (e.g. eventLaunchFailedEmail) take
+ * precedence in the service.
+ *
+ * @param {Object} data - { title, message, actionUrl }
+ * @param {string} lang
+ */
+const genericNotificationEmail = (data, lang = "ar") => {
+  const isAr = lang === "ar";
+  const title = data.title || (isAr ? "إشعار من لبّه" : "Halla notification");
+  const message = data.message || "";
+  const subject = title;
+
+  const content = `
+    <p>${message}</p>
+    ${data.actionUrl ? getButton(isAr ? "فتح" : "Open", data.actionUrl) : ""}
+  `;
+
+  const html = getBaseLayout(content, {
+    lang,
+    headerTitle: title,
+    preheader: message.slice(0, 120),
+  });
+
+  return { subject, html };
+};
+
 // ============================================
 // EXPORTS
 // ============================================
@@ -633,4 +729,6 @@ module.exports = {
   invitationsSentEmail,
   eventScheduledEmail,
   eventCompletedEmail,
+  eventLaunchFailedEmail,
+  genericNotificationEmail,
 };

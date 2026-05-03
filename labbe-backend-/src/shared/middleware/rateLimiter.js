@@ -178,6 +178,29 @@ const passwordResetLimiter = createLimiter({
 });
 
 /**
+ * Refresh Token Rate Limiter (H-2)
+ * 60 requests per minute per IP. /auth/refresh is called by every authenticated
+ * tab/device on access-token expiry, so a strict per-user limit would break
+ * legitimate concurrent web tabs + mobile. 60/min/IP is generous enough for
+ * mobile + ~5 web tabs but cuts off brute-force enumeration of refresh tokens.
+ *
+ * Note: keyed by IP (not user) because successful refresh requests don't have
+ * an authenticated user attached — the refresh token is the credential.
+ */
+const refreshLimiter = createLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60,
+  message: {
+    en: "Too many refresh attempts. Please try again shortly",
+    ar: "عدد كبير من محاولات تجديد الجلسة. يرجى المحاولة بعد قليل",
+  },
+  keyGenerator: (req) => req.ip,
+  // Refresh path is never authenticated by `protect` (the access token is
+  // typically expired) so we cannot rely on the role-based skip above.
+  skip: (req) => req.path.startsWith('/health'),
+});
+
+/**
  * Webhook Rate Limiter
  * 30 requests per minute
  */
@@ -238,6 +261,7 @@ const bulkOperationLimiter = createLimiter({
 module.exports = {
   apiLimiter,
   authLimiter,
+  refreshLimiter,
   otpLimiter,
   otpHourlyLimiter,
   passwordResetLimiter,

@@ -134,15 +134,26 @@ export function useAdminPayments(params = {}) {
   });
 }
 
-export function useAdminWhitelabels(params = {}) {
+/**
+ * @param {Object} [params] - server filter params
+ * @param {Object} [opts]
+ * @param {boolean} [opts.enabled=true] - mirror of react-query's `enabled`
+ *   so callers (e.g. AddModeratorModal H-15) can gate the request on
+ *   role. Without this, every non-super-admin opening a screen that
+ *   imports the hook fires `GET /admin/whitelabels` and the backend
+ *   responds 403/401 — log noise and a request the user is not
+ *   authorised to make.
+ */
+export function useAdminWhitelabels(params = {}, opts = {}) {
   const token = useAuthStore((state) => state.token);
+  const callerEnabled = opts.enabled !== false; // default true for back-compat
   return useQuery({
     queryKey: ['admin', 'whitelabels', params],
     queryFn: async () => {
       const response = await adminDashboardService.whitelabels.getAll(token, params);
       return response.data;
     },
-    enabled: !!token,
+    enabled: !!token && callerEnabled,
     staleTime: 2 * 60 * 1000,
   });
 }

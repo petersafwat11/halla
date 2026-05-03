@@ -1,34 +1,40 @@
-import { API_BASE_URL, ENDPOINTS } from "../config/api";
+import { ENDPOINTS } from "../config/api";
+import { apiFetch } from "./apiClient";
 
 /**
- * Make authenticated API request
- * @param {string} endpoint - API endpoint
- * @param {string} token - Auth token from useAuthStore
- * @param {Object} options - Fetch options
- * @returns {Promise<Object>}
+ * M-13: route notification calls through the centralized `apiFetch`
+ * wrapper so a 401 from an expired access token automatically triggers
+ * `useAuthStore.refreshTokens()` and the request is retried with the
+ * fresh token. The signature stays compatible with the rest of the
+ * service file — `token` arg is now ignored because `apiFetch` reads
+ * the in-memory access token directly.
+ *
+ * @param {string} endpoint - relative path under NOTIFICATIONS.BASE
+ * @param {string} [_legacyToken] - ignored; kept for caller compatibility
+ * @param {Object} [options] - fetch options (method/body/headers)
  */
-const authenticatedFetch = async (endpoint, token, options = {}) => {
-  if (!token) {
-    throw new Error("No authentication token found");
+const authenticatedFetch = async (endpoint, _legacyToken, options = {}) => {
+  const path = `${ENDPOINTS.NOTIFICATIONS.BASE}${endpoint}`;
+  const fetchOpts = {
+    method: options.method || "GET",
+    headers: options.headers || {},
+  };
+  if (options.body !== undefined && options.body !== null) {
+    if (typeof options.body === "string") {
+      try {
+        fetchOpts.body = JSON.parse(options.body);
+      } catch (_) {
+        fetchOpts.body = options.body;
+      }
+    } else {
+      fetchOpts.body = options.body;
+    }
   }
-
-  const url = `${API_BASE_URL}${ENDPOINTS.NOTIFICATIONS.BASE}${endpoint}`;
-
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-
-  const data = await response.json();
-
+  const response = await apiFetch(path, fetchOpts);
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.message || "API request failed");
   }
-
   return data;
 };
 

@@ -11,6 +11,7 @@ const {
 const { ValidationError, NotFoundError } = require('../../shared/errors');
 const paymentProvider = require('../../infrastructure/paymentProvider');
 const { logAudit } = require('../../shared/utils/auditLog');
+const notificationService = require('../notifications/notifications.service');
 
 /**
  * Default scope per addon type. Used when the request body does not
@@ -100,6 +101,7 @@ class AddonsService {
         amount: price,
         currency: 'SAR',
         customer: { id: userId },
+        userId, // H-5 — scope idempotency cache row by user
         metadata: {
           addonType,
           quantity: quantity || 1,
@@ -110,12 +112,20 @@ class AddonsService {
           description: `Addon purchase ${addonType}`,
         },
       };
-      if (idempotencyKey) chargeParams.idempotencyKey = idempotencyKey;
+      // Derived key when client did not supply one — guards against
+      // double-tap double-charge even without explicit Idempotency-Key.
+      chargeParams.idempotencyKey =
+        idempotencyKey
+          || `addon:${userId}:${addonType}:${scope}:${eventId || 'pool'}:${price}`;
       const charge = await paymentProvider.charge(chargeParams);
       if (!charge.success) {
-        throw new ValidationError(
-          charge.error || 'Payment failed; addon not activated'
+        // H-11: don't leak provider error string to client.
+        // eslint-disable-next-line no-console
+        console.error(
+          '[addons.purchase] payment provider error:',
+          charge.error || charge.providerStatus || 'unknown'
         );
+        throw new ValidationError('Payment failed; addon not activated');
       }
       paymentTransactionId = charge.transactionId || null;
     }
@@ -150,29 +160,88 @@ class AddonsService {
       );
     }
 
-    const addon = await Addon.create({
-      userId,
-      addonType,
-      quantity: quantity || 1,
-      templateType: templateType || null,
-      price,
-      currency: 'SAR',
-      subscriptionId: resolvedSubscriptionId,
-      eventId: eventId || null,
-      status: initialStatus,
-      scope,
-      metadata: {
+    // B-4: addon record creation + quota update happen AFTER a successful
+    // charge. If either throws, the customer has been charged but receives
+    // no addon — money taken with no benefit. We can't currently issue a
+    // real refund (Moyasar refund flow not implemented), so on failure we:
+    //   1. log a structured error so ops gets paged
+    //   2. write a `pending_refund` audit row that the reconciliation job
+    //      can pick up
+    //   3. surface a clear "money taken, contact support" error to the
+    //      caller so the host knows not to retry blindly
+    let addon;
+    try {
+      addon = await Addon.create({
+        userId,
+        addonType,
+        quantity: quantity || 1,
+        templateType: templateType || null,
+        price,
+        currency: 'SAR',
+        subscriptionId: resolvedSubscriptionId,
+        eventId: eventId || null,
+        status: initialStatus,
+        scope,
+        metadata: {
+          paymentTransactionId,
+          idempotencyKey: idempotencyKey || null,
+          activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
+        },
+      });
+    } catch (createErr) {
+      await this._recordPendingRefund({
+        userId,
+        amount: price,
+        currency: 'SAR',
         paymentTransactionId,
-        idempotencyKey: idempotencyKey || null,
-        activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
-      },
-    });
+        reason: 'addon_create_failed',
+        detail: createErr?.message,
+        addonType,
+        scope,
+        eventId,
+      });
+      throw new ValidationError(
+        'Payment was processed but the addon could not be activated. '
+        + 'Our team has been notified — please contact support with your transaction reference.'
+      );
+    }
 
     // FLOW-10-F02: branch on scope and apply the quota update only when
     // the addon is fully active. Business customization waits for admin
     // approval.
     if (initialStatus === 'active') {
-      await this._applyQuota(addon, { targetEvent });
+      try {
+        await this._applyQuota(addon, { targetEvent });
+      } catch (quotaErr) {
+        // Compensating action: roll the addon row back to a `failed_quota`
+        // state and emit the same pending-refund audit entry. Without
+        // this, the addon shows as `active` in the DB but the quota was
+        // never applied — admin reconciliation cannot tell what happened.
+        try {
+          addon.status = 'failed_quota';
+          addon.metadata = {
+            ...(addon.metadata || {}),
+            quotaError: quotaErr?.message || 'unknown',
+          };
+          await addon.save();
+        } catch (_) { /* swallow — we'll still record the pending refund */ }
+        await this._recordPendingRefund({
+          userId,
+          amount: price,
+          currency: 'SAR',
+          paymentTransactionId,
+          reason: 'addon_quota_failed',
+          detail: quotaErr?.message,
+          addonType,
+          scope,
+          eventId,
+          addonId: addon._id,
+        });
+        throw new ValidationError(
+          'Payment was processed but the addon credit could not be applied. '
+          + 'Our team has been notified — please contact support.'
+        );
+      }
     }
 
     await logAudit({
@@ -274,6 +343,83 @@ class AddonsService {
     // wasting the addon for per-event-plan hosts.
     if (eventId) return 'event';
     return DEFAULT_SCOPE_BY_TYPE[addonType] || 'org';
+  }
+
+  /**
+   * B-4: record a "money taken, no benefit" event so on-call can reconcile.
+   * Today this is an audit-log entry. Once the Moyasar refund flow is
+   * implemented this method should attempt the refund inline and only
+   * surface to ops if that also fails.
+   *
+   * Idempotent on (paymentTransactionId, reason) — replays of the same
+   * failure case do not generate a second pending-refund row, so re-tries
+   * by an automated reconciliation job are safe.
+   */
+  async _recordPendingRefund({
+    userId,
+    amount,
+    currency,
+    paymentTransactionId,
+    reason,
+    detail,
+    addonType,
+    scope,
+    eventId,
+    addonId,
+  }) {
+    try {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[addons.purchase] PENDING REFUND %s userId=%s amount=%s tx=%s detail=%s',
+        reason,
+        userId,
+        amount,
+        paymentTransactionId || 'n/a',
+        detail || 'n/a'
+      );
+      await logAudit({
+        action: 'addon.pending_refund',
+        actor: { _id: userId, role: 'host' },
+        targetType: 'system',
+        targetId: addonId || paymentTransactionId || userId,
+        metadata: {
+          reason,
+          amount,
+          currency,
+          paymentTransactionId,
+          addonType,
+          scope,
+          eventId,
+          detail,
+        },
+        status: 'failure',
+      });
+      // Best-effort admin notification — failure here does NOT cascade.
+      try {
+        await notificationService.sendToAdmins({
+          type: 'addon_pending_refund',
+          title: 'Addon purchase requires refund',
+          titleAr: 'مشتريات إضافة تحتاج إلى استرداد',
+          message: `Charge succeeded but addon could not be activated. Tx ${paymentTransactionId || 'n/a'} userId ${userId}.`,
+          data: {
+            entityType: 'addon',
+            entityId: addonId || null,
+            metadata: { reason, amount, currency, paymentTransactionId },
+          },
+          priority: 'high',
+        });
+      } catch (notifyErr) {
+        // eslint-disable-next-line no-console
+        console.warn('[addons.purchase] admin notify failed:', notifyErr?.message);
+      }
+    } catch (auditErr) {
+      // The audit failure is logged but doesn't override the original
+      // ValidationError — losing the audit row would be terrible, but
+      // throwing here would replace the user-visible error with a
+      // generic 500.
+      // eslint-disable-next-line no-console
+      console.error('[addons.purchase] _recordPendingRefund logAudit failed:', auditErr?.message);
+    }
   }
 
   /**

@@ -63,19 +63,18 @@ const _refreshOnce = async () => {
   return _refreshPromise;
 };
 
-// Request interceptor for auth token and timing
+// Request interceptor for timing + request id.
+//
+// B-1 fix: this interceptor used to read a JS-readable `token` cookie and
+// attach it as `Authorization: Bearer …`. That mirror cookie defeated the
+// HttpOnly cookie design (XSS could exfiltrate it). Authentication on web
+// is now exclusively the HttpOnly `access_token` cookie which the browser
+// attaches automatically because of `withCredentials: true` above. The JS
+// layer never sees the access token.
 axiosInstance.interceptors.request.use(
   (config) => {
     // Add request timestamp for timing
     config.metadata = { startTime: Date.now() };
-
-    // Only access Cookies on client side
-    if (typeof window !== 'undefined') {
-      const token = Cookies.get('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
 
     // Add request ID for tracking
     config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -131,7 +130,9 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(cfg);
       }
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        Cookies.remove('token');
+        // The HttpOnly access/refresh cookies are cleared server-side by
+        // /auth/logout; here we only clear the JS-readable routing hints.
+        Cookies.remove('token'); // legacy cookie cleanup (B-1)
         Cookies.remove('userType');
         Cookies.remove('profileCompleted');
         setTimeout(() => {
@@ -289,17 +290,13 @@ export const useApiMutation = (options = {}) => {
  */
 export const downloadExportFile = async ({ path, filename, params = {} }) => {
   try {
-    const token = typeof window !== "undefined"
-      ? document.cookie.match(/token=([^;]+)/)?.[1]
-      : null;
-
+    // B-1: HttpOnly access_token cookie travels automatically via
+    // `credentials: "include"`. We no longer read a JS token cookie.
     const url = `${API_BASE_URL}${path}`;
 
     const response = await fetch(url, {
       method: "GET",
-      headers: {
-        ...(token && { "Authorization": `Bearer ${token}` }),
-      },
+      credentials: "include",
     });
 
     if (!response.ok) {

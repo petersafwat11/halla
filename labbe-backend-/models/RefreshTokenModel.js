@@ -48,6 +48,12 @@ const refreshTokenSchema = new mongoose.Schema(
 
 refreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
+// L-4: compound index to make user-scoped active-token lookups O(log n).
+// `revokeAllForUser` and the replay-detection follow-up both filter by
+// `{ userId, revokedAt: null }`; without this index they fall back to a
+// userId-only scan that walks revoked rows too.
+refreshTokenSchema.index({ userId: 1, revokedAt: 1 });
+
 refreshTokenSchema.methods.isActive = function () {
   return !this.revokedAt && this.expiresAt.getTime() > Date.now();
 };

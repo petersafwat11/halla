@@ -165,18 +165,106 @@ const scheduleEventLaunch = () => {
  */
 async function runEventLaunch(event, workerId) {
   const eventId = event._id.toString();
-  const guestIds = event.guestList ? event.guestList.map((id) => id.toString()) : [];
+  const allGuestIds = event.guestList ? event.guestList.map((id) => id.toString()) : [];
 
-  if (guestIds.length === 0) {
+  if (allGuestIds.length === 0) {
     console.warn(`[Cron] Event ${eventId} has no guests, skipping launch`);
     return { launched: false, reason: "no_guests" };
   }
 
-  const lock = await eventLock.acquire(eventId, workerId);
+  // B-5: filter out guests whose invitation has already been delivered.
+  // Previously every retry called sendBulk over the FULL guestList. The
+  // per-attempt idempotency fingerprint (`event.lastAttemptAt.getTime()`)
+  // changes on each attempt, so the idempotency cache does NOT deduplicate
+  // across attempts — a successfully-delivered guest would receive a fresh
+  // SMS on every retry, up to 5 duplicates after the maximum attempt count.
+  // The atomic delivered-state lives in `Guest.invitation.sent`; only
+  // guests where that flag is not true (failed / never sent) need a new
+  // dispatch.
+  const Guest = require("../../../models/GuestModel");
+  const undelivered = await Guest.find({
+    _id: { $in: allGuestIds },
+    "invitation.sent": { $ne: true },
+  })
+    .select("_id")
+    .lean();
+  const guestIds = undelivered.map((g) => g._id.toString());
+
+  if (guestIds.length === 0) {
+    // Every guest has already received an invitation. Treat this as a
+    // successful launch (e.g. all attempts succeeded incrementally). Flip
+    // straight to `live` without dispatching.
+    //
+    // HIGH-5 review: if attemptCount is 0, this means we're being asked
+    // to launch an event whose guests ALREADY all show invitation.sent
+    // — without any cron attempt having fired. That can only happen if
+    // an admin / seed / support tool flipped the flag manually. Audit
+    // it loudly so ops can investigate (rather than silently flipping
+    // status to `live`).
+    const att = event.attemptCount || 0;
+    if (att === 0) {
+      console.warn(
+        `[Cron] SUSPICIOUS: event ${eventId} has all guests marked invitation.sent` +
+          ` but attemptCount=0 — launching anyway. Investigate seed/admin overrides.`
+      );
+      try {
+        await logAudit({
+          action: "event.launched_no_dispatch",
+          actor: { _id: null, role: "system" },
+          targetType: "event",
+          targetId: event._id,
+          whitelabelId: event.whitelabelId || null,
+          metadata: {
+            reason: "all_guests_already_marked_sent",
+            attemptCount: att,
+            workerId,
+          },
+          status: "anomaly",
+        });
+      } catch (_) { /* swallow audit failure */ }
+    } else {
+      console.log(
+        `[Cron] Event ${eventId} has no undelivered guests — finalising as launched`
+      );
+    }
+    const lockEarly = await eventLock.acquire(eventId, workerId);
+    if (!lockEarly.acquired) {
+      return { launched: false, reason: "locked" };
+    }
+    try {
+      const ev = await Event.findById(eventId);
+      if (
+        ev &&
+        ev.status !== "live" &&
+        ev.status !== "completed" &&
+        ev.status !== "failed" &&
+        ev.status !== "cancelled"
+      ) {
+        ev.status = "live";
+        ev.launchedAt = new Date();
+        ev.failureReason = null;
+        await ev.save();
+      }
+      return { launched: true, reason: "all_already_delivered" };
+    } finally {
+      await _safeReleaseLock(eventId, workerId);
+    }
+  }
+
+  // H-17: dynamically size the lock TTL based on the worst-case sendBulk
+  // duration for this guestlist. With ratePerSecond=10 the previous fixed
+  // 10-min TTL was too small for >6000 guests; a second cron tick would
+  // reacquire the stale lock mid-send and double-fire the entire batch.
+  const dynamicTtl = eventLock.estimateLockTtl(guestIds.length);
+  const lock = await eventLock.acquire(eventId, workerId, { ttlMs: dynamicTtl });
   if (!lock.acquired) {
     console.log(`[Cron] Event ${eventId} is already locked by another worker — skipping`);
     return { launched: false, reason: "locked" };
   }
+
+  // H-17: heartbeat refreshes lockedAt every minute so even if our TTL
+  // estimate was wrong the lock stays alive while we're actively running.
+  const beat = eventLock.heartbeat(eventId, workerId);
 
   // Re-read inside the lock in case another worker ran first.
   const fresh = await Event.findById(eventId);
@@ -189,7 +277,7 @@ async function runEventLaunch(event, workerId) {
     fresh.status === "failed" ||
     fresh.status === "cancelled"
   ) {
-    await _safeReleaseLock(eventId);
+    await _safeReleaseLock(eventId, workerId);
     return { launched: false, reason: "stale" };
   }
 
@@ -284,13 +372,21 @@ async function runEventLaunch(event, workerId) {
   } finally {
     // The lock release MUST NOT throw out of `finally` — that would mask
     // the original error from the try/catch. _safeReleaseLock swallows.
-    await _safeReleaseLock(eventId);
+    try { beat?.stop?.(); } catch (_) { /* heartbeat may be unset on early-out */ }
+    await _safeReleaseLock(eventId, workerId);
   }
 }
 
-async function _safeReleaseLock(eventId) {
+/**
+ * Safely release the lock for `eventId`. Pass `workerId` so the release
+ * is scoped to the lock WE acquired — without it a stale lock taken
+ * over by another worker could be cleared out from under them. Errors
+ * are swallowed so a release-time failure doesn't mask the original
+ * error inside the caller's `finally`.
+ */
+async function _safeReleaseLock(eventId, workerId) {
   try {
-    await eventLock.release(eventId);
+    await eventLock.release(eventId, workerId);
   } catch (err) {
     console.error(`[Cron] eventLock.release(${eventId}) failed:`, err.message);
   }
@@ -527,15 +623,15 @@ const scheduleEventCompletion = () => {
 };
 
 /**
- * Helper: format a Date for Arabic reminders
+ * Helper: format a Date for Arabic reminders.
+ *
+ * M-5: explicit Asia/Riyadh time zone — without it, a UTC server formats
+ * Riyadh-evening events as the previous calendar day in the reminder SMS.
  */
+const { formatRiyadh } = require("./timezone");
 const _formatDateAr = (date) => {
   if (!date) return "";
-  return new Date(date).toLocaleDateString("ar-SA", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  return formatRiyadh(date, { style: "date", locale: "ar-SA" });
 };
 
 /**
@@ -674,9 +770,17 @@ const scheduleTemplateStatusPolling = () => {
  * been a no-op since the constants reorg. We now query `expiresAt` (the
  * real field) and emit a `subscription.expired` audit row per
  * transitioned record so admins can trace the lifecycle event.
+ *
+ * M-17: wrapped in `cronLease.withLease` so multi-instance deploys
+ * don't fire the cron N times on the same minute and produce duplicate
+ * audit + notification rows.
  */
+const cronLease = require("./cronLease");
 const scheduleSubscriptionStatusUpdate = () => {
   cron.schedule("0 1 * * *", async () => {
+    const result = await cronLease.withLease(
+      "subscription_status_update",
+      async () => {
     try {
       const now = new Date(nowUtc());
       const expired = await Subscription.find({
@@ -711,11 +815,56 @@ const scheduleSubscriptionStatusUpdate = () => {
             expiredAt: now.toISOString(),
           },
         });
+
+        // H-12: notify the user when their subscription transitions to
+        // expired. Previously hosts were silently downgraded, with no
+        // in-app or email signal — they would only realise when they
+        // tried to create an event and hit the quota wall. We send an
+        // in-app notification + a renewal email (best-effort, gated on
+        // `_shouldSendEmail`).
+        if (sub.userId) {
+          try {
+            await notificationService.sendToUser(
+              sub.userId,
+              {
+                type: "subscription_expired",
+                title: "Your subscription has expired",
+                titleAr: "انتهت صلاحية اشتراكك",
+                message:
+                  "Your plan has expired. Renew to keep creating events without interruption.",
+                messageAr:
+                  "انتهت صلاحية باقتك. جدّد الاشتراك للاستمرار في إنشاء الفعاليات.",
+                actionUrl: `${process.env.FRONTEND_URL || "https://halaa.sa"}/ar/host/plans`,
+                data: {
+                  entityType: "subscription",
+                  entityId: sub._id,
+                  metadata: { planId: sub.planId },
+                },
+                priority: "high",
+              },
+              true /* sendEmail — uses generic notification template */
+            );
+          } catch (notifyErr) {
+            // Non-fatal — the cron must keep running for the next sub.
+            // eslint-disable-next-line no-console
+            console.warn(
+              "[Cron] subscription expiry notify failed for user %s: %s",
+              sub.userId,
+              notifyErr?.message
+            );
+          }
+        }
       }
 
       console.log(`[Cron] Marked ${expired.length} subscriptions as expired`);
     } catch (e) {
       console.error("[Cron] Subscription status update failed:", e);
+    }
+      },
+      { ttlMs: 10 * 60 * 1000 } // 10 minutes — comfortably > expected runtime
+    );
+    if (!result.ran) {
+      console.log("[Cron] subscription_status_update — skipped (lease held by another node)");
     }
   });
 };
@@ -743,12 +892,20 @@ const scheduleSubscriptionStatusUpdate = () => {
  */
 const MAX_LAUNCH_ATTEMPTS = 5;
 const LAUNCH_RETRY_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
+// L-7: backoff array length must be MAX_LAUNCH_ATTEMPTS - 1 (the gaps
+// between attempts). The previous 5-entry array left the 5th value
+// (`12h`) unreachable — `_isRetryDue` returns false once attempt >=
+// MAX_LAUNCH_ATTEMPTS so index 4 is never consulted. We trim to four
+// entries to make the contract explicit and prevent doc/code drift.
+//   attempt 1 → wait LAUNCH_BACKOFF_MS[0] = 5 min  → attempt 2
+//   attempt 2 → wait LAUNCH_BACKOFF_MS[1] = 30 min → attempt 3
+//   attempt 3 → wait LAUNCH_BACKOFF_MS[2] = 2 h    → attempt 4
+//   attempt 4 → wait LAUNCH_BACKOFF_MS[3] = 6 h    → attempt 5 (terminal)
 const LAUNCH_BACKOFF_MS = [
   5 * 60 * 1000,        // 5 min
   30 * 60 * 1000,       // 30 min
   2 * 60 * 60 * 1000,   // 2 h
   6 * 60 * 60 * 1000,   // 6 h
-  12 * 60 * 60 * 1000,  // 12 h
 ];
 
 /**
@@ -797,9 +954,18 @@ const _markFailedAndNotify = async (event, reason) => {
 
   // Idempotent notification dispatch — even if this terminal-fail handler
   // somehow fires twice, the host/admin/super-admin only see one.
+  //
+  // B-6: previously this relied on `notificationService.sendToUser(..., true)`
+  // to dispatch the email, which silently swallowed a TypeError because
+  // `email.send.notification` didn't exist. We now (a) call the dedicated
+  // `email.send.eventLaunchFailed` template directly, AND (b) keep the
+  // sendToUser call so the in-app notification still lands. Either path
+  // failing logs but does not throw.
   const notifyKey = `event_failed_notify:${eventId}`;
   await require("./idempotency").withIdempotency(notifyKey, async () => {
     if (event.host) {
+      // (a) in-app notification (sendEmail=false because we send the
+      //     dedicated template explicitly below).
       await notificationService.sendToUser(
         event.host,
         {
@@ -812,8 +978,36 @@ const _markFailedAndNotify = async (event, reason) => {
           data: { entityType: "event", entityId: eventId, metadata: { reason: event.failureReason } },
           priority: "high",
         },
-        true /* sendEmail */
+        false
       ).catch((err) => console.error("[retry-cron] notify host failed:", err.message));
+
+      // (b) email — best-effort. Failure logs but doesn't throw because
+      //     the in-app notification already landed and the cron must
+      //     stay alive for the next event.
+      try {
+        const User = require("../../../models/UserModel");
+        const host = await User.findById(event.host).select("email name preferredLanguage");
+        if (host?.email) {
+          const emailModule = require("../../infrastructure/email");
+          await emailModule.send.eventLaunchFailed(
+            host.email,
+            {
+              hostName: host.name || "",
+              eventTitle,
+              attemptCount: event.attemptCount,
+              reason: event.failureReason,
+              eventUrl: `${process.env.FRONTEND_URL || "https://halaa.sa"}/ar/host/events/${eventId}`,
+              supportEmail: process.env.SUPPORT_EMAIL || null,
+            },
+            host.preferredLanguage === "en" ? "en" : "ar"
+          );
+        }
+      } catch (emailErr) {
+        console.error(
+          "[retry-cron] launch-failed email send failed:",
+          emailErr?.message
+        );
+      }
     }
 
     await notificationService.sendToAdmins({

@@ -147,9 +147,38 @@ const useAuthStore = create(
       },
 
       /**
-       * Logout - Clear all auth state
+       * Logout - revoke server-side refresh token and clear local state.
+       *
+       * H-3 fix: previously this only cleared in-memory state, which left
+       * the refresh token live on the backend until its 30-day TTL — a
+       * stolen cookie could keep refreshing access tokens long after the
+       * user thought they were logged out. We now call /auth/logout
+       * first (best-effort, non-throwing) so the backend revokes the
+       * refresh row and clears the HttpOnly cookies, THEN clear local
+       * state regardless of network outcome.
+       *
+       * Note on import shape: this method is also wired through the
+       * `useAuthMutation('logout')` mutation in `useAuthMutation.js` for
+       * call-sites that prefer React Query semantics. Both paths must
+       * remain safe to call independently.
        */
-      logout: () => {
+      logout: async () => {
+        if (typeof window !== "undefined") {
+          try {
+            // Lazy-load to avoid a circular import between the store and
+            // the API client (which already imports the store indirectly).
+            const { apiRequest } = await import("@/services/new-backend/apiClient");
+            const { API_PATHS } = await import("@/services/new-backend/api.config");
+            await apiRequest({ method: "POST", path: API_PATHS.auth.logout });
+          } catch (err) {
+            // Network/other failure: still clear local state. Server-side
+            // revocation will eventually catch up on next /auth/refresh
+            // (replay detection) or on TTL expiry.
+            // eslint-disable-next-line no-console
+            console.warn("[authStore.logout] backend revoke failed:", err?.message);
+          }
+        }
+
         set({
           user: null,
           token: null,

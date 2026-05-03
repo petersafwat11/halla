@@ -533,11 +533,17 @@ subscriptionSchema.statics.findActiveForUser = async function (userId) {
   // primary fix is `subscribe()` auto-cancelling old subs (matches
   // changePlan), but we keep this as defence-in-depth in case a stray
   // historical record slips through.
+  // M-16: sort with `_id` as tiebreaker. With identical createdAt timestamps
+  // (sub-millisecond inserts during a test seed or a concurrent burst),
+  // single-key createdAt sort is non-deterministic. ObjectId's monotonic
+  // counter makes _id a stable secondary key.
   return this.find({
     userId,
     status: { $in: ['active', 'trial'] },
     $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
-  }).populate('planId').sort({ createdAt: -1 });
+  })
+    .populate('planId')
+    .sort({ createdAt: -1, _id: -1 });
 };
 
 /**

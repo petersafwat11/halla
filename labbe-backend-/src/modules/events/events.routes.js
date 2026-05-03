@@ -890,9 +890,21 @@ router.post(
  *       409:
  *         description: Event not in a retryable state
  */
+// L-9: route-level RBAC matches the service-level check inside
+// events.service.retryLaunch (host / wl-admin tied to the event /
+// admin / super_admin). Previously the route inherited the broader
+// router-level allow-list which let MODERATOR / WHITELABEL_MODERATOR
+// reach the controller and get a 403 from the service. Tightening the
+// route returns 401/403 earlier and clarifies the audit log story.
 router.post(
   "/:id/retry-launch",
   validateObjectId("id"),
+  restrictTo(
+    ROLES.HOST,
+    ROLES.WHITELABEL_ADMIN,
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
   idempotency({ scope: "events.retry_launch" }),
   eventsController.retryLaunch
 );

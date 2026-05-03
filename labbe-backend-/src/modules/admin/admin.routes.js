@@ -462,6 +462,15 @@ router.patch('/vendors/:id/status',
     action: 'vendor.status_change',
     targetType: 'user',
     targetIdFrom: (req) => req.params.id,
+    // H-9: capture the prior `status` BEFORE the controller mutates the
+    // vendor doc so the audit row records both before and after.
+    captureBefore: async (req) => {
+      const User = require('../../../models/UserModel');
+      const prior = await User.findById(req.params.id)
+        .select('status')
+        .lean();
+      return prior?.status || null;
+    },
     changesFrom: (req) => ({ after: { status: req.body?.status } }),
   }),
   adminController.updateVendorStatus

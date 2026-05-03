@@ -11,14 +11,17 @@ const BASE_URL = "https://labbe-backend-production.up.railway.app/api";
 /**
  * Helper function to make API requests
  */
-const apiRequest = async (endpoint, method = "GET", token, data = null) => {
+const apiRequest = async (endpoint, method = "GET", token, data = null, extraHeaders = null) => {
   try {
     const isFormData = data instanceof FormData;
+    const baseHeaders = isFormData
+      ? { Authorization: `Bearer ${token}` }
+      : { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     const config = {
       method,
-      headers: isFormData
-        ? { Authorization: `Bearer ${token}` }
-        : { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      // H-14: callers can pass extra headers (e.g. Idempotency-Key for
+      // addon purchase) without losing the auth/content-type defaults.
+      headers: extraHeaders ? { ...baseHeaders, ...extraHeaders } : baseHeaders,
     };
 
     if (data && (method === "POST" || method === "PUT" || method === "PATCH")) {
@@ -260,6 +263,38 @@ export const plans = {
   getEnterprisePlans: async (token) => apiRequest("/plans/enterprise", "GET", token),
   getAllForAdmin: async (token) => apiRequest("/plans/admin/all", "GET", token),
   updatePlan: async (token, code, data) => apiRequest(`/plans/admin/${code}`, "PATCH", token, data),
+  // H-14: Phase 2 admin endpoints — were defined backend-only.
+  createPlan: async (token, data) => apiRequest("/plans/admin", "POST", token, data),
+  deletePlan: async (token, code) => apiRequest(`/plans/admin/${code}`, "DELETE", token),
+};
+
+// ─── Subscriptions (admin) ────────────────────────────────────────────────────
+// H-14: SUPER_ADMIN can assign a subscription to a host directly. Audit
+// log is wired server-side.
+export const subscriptionsAdmin = {
+  assign: async (token, data) =>
+    apiRequest("/subscriptions/admin/assign", "POST", token, data),
+};
+
+// ─── Addons ───────────────────────────────────────────────────────────────────
+// H-14: addon purchase (host) and admin activation (manual provisioning
+// for BUSINESS_CUSTOMIZATION). Both opt-in to the idempotency
+// middleware via Idempotency-Key when supplied.
+export const addons = {
+  purchase: async (token, data, idempotencyKey = null) => {
+    const headers = idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined;
+    return apiRequest("/addons/purchase", "POST", token, data, headers);
+  },
+  adminActivate: async (token, addonId, data = {}, idempotencyKey = null) => {
+    const headers = idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined;
+    return apiRequest(`/addons/admin/${addonId}/activate`, "POST", token, data, headers);
+  },
+  listMine: async (token, params = {}) => {
+    const qs = Object.keys(params).length
+      ? `?${new URLSearchParams(params).toString()}`
+      : "";
+    return apiRequest(`/addons${qs}`, "GET", token);
+  },
 };
 
 // ─── Whitelabels ──────────────────────────────────────────────────────────────
