@@ -81,6 +81,13 @@ const config = {
     path: env.UPLOAD_PATH,
     maxFileSize: env.MAX_FILE_SIZE,
   },
+
+  events: {
+    // Phase 4b W0-RBAC (D4b-3): backend lower bound on the schedule
+    // picker. Reject schedules whose absolute UTC instant is less than
+    // `now + scheduleMinLeadHours` away, with code SCHEDULE_TOO_SOON.
+    scheduleMinLeadHours: env.SCHEDULE_MIN_LEAD_HOURS,
+  },
 };
 
 module.exports = config;

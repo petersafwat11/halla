@@ -12,6 +12,8 @@ const config = require('../../config');
 const notificationService = require('../../shared/utils/notificationService');
 const { runBatched } = require('../../shared/utils/runBatched');
 const { withIdempotency } = require('../../shared/utils/idempotency');
+const { parseEventTime } = require('../../shared/utils/timezone');
+const AppError = require('../../shared/errors/AppError');
 
 class MessagingService {
   constructor() {
@@ -473,6 +475,42 @@ class MessagingService {
     const guests = await Guest.find({ event: eventId, phone: { $exists: true, $ne: null } });
     if (guests.length === 0) {
       return { success: false, error: 'NO_GUESTS', message: 'No guests with phone numbers to send to' };
+    }
+
+    // Phase 4b W0-RBAC (D4b-3): backend lower bound on the schedule
+    // picker. Reject any schedule whose absolute UTC instant is less
+    // than `now + SCHEDULE_MIN_LEAD_HOURS` away. The previous flow only
+    // enforced the floor in the client picker, so a crafted POST could
+    // queue an event for "in 5 minutes" and bypass the host/admin
+    // expectation that hosts have at least 48h to prepare.
+    //
+    // We reuse `parseEventTime` so the wall-clock interpretation matches
+    // the cron's `isDue` check exactly (Asia/Riyadh, UTC+3, no DST).
+    const minLeadHours = config?.events?.scheduleMinLeadHours ?? 48;
+    const minLeadMs = minLeadHours * 60 * 60 * 1000;
+    const scheduledInstant = parseEventTime(
+      {
+        launchSettings: {
+          scheduledDate: new Date(scheduledDate),
+          scheduledTime,
+        },
+      },
+      'Asia/Riyadh'
+    );
+    if (!scheduledInstant) {
+      throw new AppError(
+        'Invalid scheduledDate or scheduledTime format',
+        400,
+        'SCHEDULE_INVALID'
+      );
+    }
+    const leadMs = scheduledInstant.getTime() - Date.now();
+    if (leadMs < minLeadMs) {
+      throw new AppError(
+        `Schedule must be at least ${minLeadHours} hours from now.`,
+        400,
+        'SCHEDULE_TOO_SOON'
+      );
     }
 
     await Event.findByIdAndUpdate(eventId, {

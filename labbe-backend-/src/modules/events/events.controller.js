@@ -63,13 +63,16 @@ exports.getSubscriptionInfo = catchAsync(async (req, res) => {
 /**
  * Get single event stats
  * GET /api/v2/events/stats/:id
+ *
+ * Phase 4b W0-RBAC: scope is resolved inside the service via the full
+ * user context (role + whitelabelId), so admin / moderator / whitelabel
+ * tier roles see events under their tenant scope without needing a
+ * separate admin route.
  */
 exports.getSingleEventStats = catchAsync(async (req, res) => {
-  const isAdmin = ['super_admin', 'admin', 'moderator'].includes(req.user.role);
   const stats = await eventsService.getSingleEventStats(
     req.params.id,
-    req.user._id,
-    isAdmin
+    req.user
   );
   sendSuccess(res, stats);
 });
@@ -121,9 +124,12 @@ exports.exportEventGuestsAsExcel = catchAsync(async (req, res) => {
 /**
  * Get event by ID
  * GET /api/v2/events/:id
+ *
+ * Phase 4b W0-RBAC: scope resolved inside the service via the full
+ * user context. See `eventsService._buildScopedEventQuery`.
  */
 exports.getEventById = catchAsync(async (req, res) => {
-  const result = await eventsService.getEventById(req.params.id, req.user._id);
+  const result = await eventsService.getEventById(req.params.id, req.user);
   sendSuccess(res, result);
 });
 
