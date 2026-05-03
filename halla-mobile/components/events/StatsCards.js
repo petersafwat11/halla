@@ -1,7 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { formatCount } from "../../utils/locale";
+import { useLanguage } from "../../localization";
+
 const StatsCards = ({ stats }) => {
+  const { currentLanguage } = useLanguage();
   const cards = [
     {
       label: "حضور",
@@ -54,7 +58,7 @@ const StatsCards = ({ stats }) => {
               styles.value,
               { color: card.textColor }]}
           >
-            {card.value}
+            {formatCount(card.value, currentLanguage)}
           </Text>
         </View>
       ))}
