@@ -6,10 +6,15 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Svg, Path } from "react-native-svg";
 import EventListItem from "./EventListItem";
+import { exportEvents } from "../../services/eventsService2";
+import { saveBlobAndShare } from "../../utils/download";
+import { useAuthStore } from "../../stores/authStore";
 
 // Same SVG icons as home StatsCards
 const PeopleIcon = ({ color }) => (
@@ -70,6 +75,31 @@ const EventList = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all"); // all, live, ended, draft
+  const [exporting, setExporting] = useState(false);
+  const token = useAuthStore((state) => state.token);
+
+  // Phase 4 W3-ADMIN — host export of all events to XLSX. The blob is
+  // saved to cache and the native share sheet is opened so the user
+  // can pipe it to Files / Mail / Drive.
+  const handleExport = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const result = await exportEvents(token);
+      if (!result?.blob) {
+        throw new Error("Empty export response");
+      }
+      const share = await saveBlobAndShare(result.blob, result.filename || "events.xlsx", {
+        dialogTitle: "تصدير المناسبات",
+      });
+      if (!share.success) Alert.alert("تصدير", share.message);
+    } catch (error) {
+      console.error("[EventList] export failed:", error);
+      Alert.alert("تصدير", error.message || "تعذر تصدير المناسبات");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Filter and search events
   const filteredEvents = useMemo(() => {
@@ -145,21 +175,35 @@ const EventList = ({
         </View>
       </View>
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={16} color="#9CA3AF" />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="ابحث عن مناسبة..."
-          placeholderTextColor="#9CA3AF"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery("")}>
-            <Ionicons name="close-circle" size={16} color="#9CA3AF" />
-          </TouchableOpacity>
-        )}
+      {/* Search Bar + Export */}
+      <View style={styles.searchRow}>
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={16} color="#9CA3AF" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="ابحث عن مناسبة..."
+            placeholderTextColor="#9CA3AF"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery("")}>
+              <Ionicons name="close-circle" size={16} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={handleExport}
+          disabled={exporting}
+          activeOpacity={0.85}
+        >
+          {exporting ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <Ionicons name="download-outline" size={18} color="#FFF" />
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* Filter Tabs */}
@@ -279,18 +323,32 @@ const styles = StyleSheet.create({
     letterSpacing: 0.06,
     textAlign: "center",
   },
+  searchRow: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+    marginHorizontal: 16,
+  },
   searchContainer: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFF",
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 38,
-    marginBottom: 12,
-    marginHorizontal: 16,
     borderWidth: 1,
     borderColor: "#E8E8E8",
     gap: 8,
+  },
+  exportButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    backgroundColor: "#C28E5C",
+    alignItems: "center",
+    justifyContent: "center",
   },
   searchInput: {
     flex: 1,

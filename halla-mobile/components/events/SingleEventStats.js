@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../stores/authStore";
@@ -19,7 +20,9 @@ import {
   revokeStaffAccess,
   rotateGuestQr,
   revokeGuestAccess,
+  exportEventGuests,
 } from "../../services/eventsService2";
+import { saveBlobAndShare } from "../../utils/download";
 import StatsCards from "./StatsCards";
 import TabsSearchAndFilters from "./TabsSearchAndFilters";
 import GuestListItem from "./GuestListItem";
@@ -235,6 +238,28 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
     }
   };
 
+  // Phase 4 W3-ADMIN — export this event's guest list to XLSX.
+  const [exporting, setExporting] = useState(false);
+  const handleExportGuests = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const result = await exportEventGuests(event._id || event.id, token);
+      if (!result?.blob) throw new Error("Empty export response");
+      const share = await saveBlobAndShare(
+        result.blob,
+        result.filename || `event-${event._id || event.id}-guests.xlsx`,
+        { dialogTitle: "تصدير قائمة الضيوف" }
+      );
+      if (!share.success) Alert.alert("تصدير", share.message);
+    } catch (error) {
+      console.error("[SingleEventStats] export failed:", error);
+      Alert.alert("تصدير", error.message || "تعذر تصدير قائمة الضيوف");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   // Apply search filtering
   const filteredGuests = guests.filter((g) => {
     if (!searchQuery.trim()) return true;
@@ -330,6 +355,23 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
           )}
         </ScrollView>
       </View>
+
+      {/* Phase 4 W3-ADMIN — guests-tab export button (XLSX). Appears
+          only on the guests tab to keep the staff tab uncluttered. */}
+      {activeTab === "guests" && (
+        <TouchableOpacity
+          style={styles.exportFab}
+          onPress={handleExportGuests}
+          disabled={exporting}
+          activeOpacity={0.7}
+        >
+          {exporting ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <Ionicons name="download-outline" size={22} color="#FFF" />
+          )}
+        </TouchableOpacity>
+      )}
 
       {/* Floating Add Button */}
       <TouchableOpacity
@@ -469,6 +511,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#C28E5C",
     justifyContent: "center",
     alignItems: "center"
+  },
+  exportFab: {
+    position: "absolute",
+    right: 24,
+    bottom: 170,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#6B4E33",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
   },
   emptyState: {
     alignItems: "center",
