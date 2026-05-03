@@ -32,6 +32,14 @@ Set `localStorage.STATS_POLL_INTERVAL_MS = "5000"` (web) to override the
 `EXPO_PUBLIC_STATS_POLL_INTERVAL_MS` env var; if set, it overrides the
 status-keyed values for both `live` and `completed`.
 
+### Phase 4 follow-through (W1-STATS)
+
+`EventsScreen.js` now passes `eventStatus` via the **options-object**
+shape (`useSingleEventStats(id, { eventStatus })`) so the cadence is
+driven through the explicit hook contract. The legacy positional shim
+remains for back-compat. `SingleEventStats` itself receives `stats` as
+a prop — it's a pure render component, the polling lives upstream.
+
 ## GuestAccessToken expiry migration (3e.4 / D8)
 
 Script: `labbe-backend-/scripts/backfill-guest-access-token-expiry.js`.
