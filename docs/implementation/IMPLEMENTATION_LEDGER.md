@@ -146,6 +146,78 @@ Drive-by fixes (no audit-FLOW IDs):
 
 ---
 
+## Closed in Phase 4b (tier consistency + UX gates)
+
+Branch: `claude/implement-phase-4b-MgwjZ`. See `PHASE_4B_REPORT.md`.
+
+Inventory-surfaced findings closed (no audit-FLOW IDs — tracked under
+the inventory references the master plan's §9 quick-reference table
+calls out):
+
+- **Inventory 01 §5.1 / §7 gap 4** — Stats RBAC for whitelabel tier
+  closed in PHASE_4B (`62b0cab` W0-RBAC). `_buildScopedEventQuery`
+  resolves single-event scope per role (host / SUPER_ADMIN / ADMIN /
+  MODERATOR / WHITELABEL_ADMIN / WHITELABEL_MODERATOR); tenant-scoped
+  roles without a whitelabelId fail closed.
+- **Inventory 03 §gap-2 / Bug #6** — Capacity-floor guard closed in
+  PHASE_4B (`62b0cab` W0-RBAC). `updateGuestList` rejects newCount
+  below confirmed-RSVP count with `GUEST_LIST_BELOW_CONFIRMED` (HTTP
+  400).
+- **Inventory 03 §gap-3** — Launch settings dispatch wired in the
+  unified update wizard via `useUpdateLaunchSettings` (`019cc9b`
+  W1-UPD). No payload emitter today per D7 (schedule stays
+  post-creation).
+- **Inventory 04 §gap-1** — Schedule pipeline gates (min-date) closed
+  in PHASE_4B (`62b0cab` W0-RBAC). `messaging.scheduleBulkSend`
+  rejects schedules below `SCHEDULE_MIN_LEAD_HOURS` (default 48h,
+  env-overridable) with `SCHEDULE_TOO_SOON`.
+- **Inventory 04 §gap-2 / §gap-5** — Failure UI closed in PHASE_4B
+  (`0ff55db` W1-GATE-FAIL on web + `8b324f1` W2-POLL-FAIL on mobile).
+  `useEventActionGate` hook centralises gate state; new
+  `PartialFailureBanner` (web + mobile) renders for live / completed
+  events with `messagingStatus.failedCount > 0`.
+- **Inventory 06 §5 GAP 5 / 07 Task 1** — Whitelabel setup-password
+  email + page closed in PHASE_4B (`239d6c3` W0-EMAIL +
+  `0840896` W1-WL-EMAIL). Backend mints the token + sends the
+  existing `whitelabelApproval` template behind a
+  `dispatchSetupEmail` flag; FE Approve dialog drives it; new web
+  `/setup-password/[token]` page consumes the link.
+- **Inventory 08 (NEW Wave −1)** — `Event.invitationSettings` rename
+  mapping doc landed (`dfb2579` INV08).
+  `docs/inventory/phase-4-extension/08-event-shape-rename-mapping.md`
+  with all 5 tasks + §7 open questions awaiting Peter's lock before
+  4c kicks off.
+
+Hand-offs closed in Phase 4b (no audit-FLOW IDs — Phase 4 final report
+carry-forwards):
+
+- **Web `/setup-password/[token]` page** — closed in PHASE_4B
+  (`0840896` W1-WL-EMAIL). The Phase 4 final report flagged the
+  email's link landing on a 404; the route + form ship now.
+- **`GET /events/:eventId/staff-tokens` endpoint + mobile UI** —
+  closed in PHASE_4B (`448ffa5` W0-STAFF + `da10e05` W2-STAFF). The
+  Phase 4 final report noted the endpoint was redundant for the
+  revoke flow but Peter still asked for an explicit "active staff
+  tokens" list view.
+
+Drive-by improvements (no audit-FLOW IDs — recorded for traceability):
+
+- Per-step PATCH service methods (`updateEventDetails`,
+  `updateGuestList`, `updateStaffList`, `updateInvitationSettings`,
+  `updateLaunchSettings`, `sendTestMessage`) accept a full user
+  context and resolve scope via `_buildScopedEventQuery`. Required
+  for the unified update wizard (W1-UNIFY) to work for admin /
+  whitelabel-admin / whitelabel-moderator without 404'ing.
+- Admin update-event 392-line duplicate
+  (`labbe/app/[lang]/admin-dash/update-event/_components/UpdateEventContent.jsx`)
+  deleted. Single source of truth lives at
+  `app/[lang]/host/update-event/_components/UpdateEventWizard.jsx`.
+- AuditLog `targetType: 'whitelabel'` row written on
+  `whitelabel.status_update` per the Phase 4b plan standing-rule
+  reminder (already in the enum; no schema change).
+
+---
+
 ## Open
 
 - FLOW-01-F04 — not started (Phase 1c)

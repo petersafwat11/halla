@@ -229,6 +229,45 @@ export const useAuthMutation = (action) => {
       },
     },
 
+    // ============================================
+    // PASSWORD SETUP (Whitelabel approval flow)
+    // Phase 4b W1-WL-EMAIL: `validateSetupToken` confirms the link from
+    // the approval email is still valid before showing the form;
+    // `setupPassword` actually sets the password and (server-side) mints
+    // a fresh access + refresh pair. Both endpoints existed on the
+    // backend (auth.routes.js) but were never wired in the FE mutation
+    // hook — the setup-password page itself was missing entirely.
+    // ============================================
+
+    validateSetupToken: {
+      mutationFn: (token) =>
+        apiRequest({
+          method: "GET",
+          path: API_PATHS.auth.validateSetupToken(token),
+        }),
+    },
+
+    setupPassword: {
+      mutationFn: ({ token, password, passwordConfirm }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.auth.setupPassword,
+          data: { token, password, passwordConfirm },
+        }),
+      onSuccess: (response) => {
+        // Backend returns the standard auth shape ({ token, refreshToken,
+        // data: { user } }) and sets HttpOnly cookies on the response.
+        const newToken = response.token;
+        const user = response.data?.user;
+        const subscription = response.data?.subscription || null;
+        if (user) {
+          setAuthRoutingCookies(user.role, true);
+          setAuth(user, newToken, subscription);
+        }
+        return { user };
+      },
+    },
+
     // Logout
     logout: {
       mutationFn: () =>

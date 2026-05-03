@@ -6,11 +6,13 @@
 
 const config = require("../../config");
 const { EVENT_STATUS, SUPERVISOR_STATUS } = require("../../shared/constants");
+const { ROLES } = require("../../shared/constants/roles");
 const {
   NotFoundError,
   ValidationError,
   ForbiddenError,
   PackageLimitError,
+  AppError,
 } = require("../../shared/errors");
 // M-5: every export/notification helper uses formatRiyadh so we don't
 // re-render UTC server-locale dates as the previous local day.
@@ -160,13 +162,83 @@ class EventsService {
   }
 
   /**
-   * Get event by ID
+   * Build a scoped Mongo query for a single event lookup.
+   *
+   * Phase 4b W0-RBAC: previously the host-facing endpoints filtered on
+   * `{ host: userId }` only, so a whitelabel admin/moderator viewing the
+   * same event got 404 instead of being scoped by their tenant. Roles:
+   *
+   *   - HOST                          → own event only
+   *   - SUPER_ADMIN                   → any event
+   *   - ADMIN, MODERATOR              → events whose `whitelabelId` matches
+   *                                      the caller's `whitelabelId`
+   *                                      (TENANT-F01 already scopes admin
+   *                                      filters this way; we mirror the
+   *                                      single-doc query for consistency).
+   *   - WHITELABEL_ADMIN,
+   *     WHITELABEL_MODERATOR          → same tenant scope
+   *
+   * Tenant-scoped roles MUST have a `whitelabelId`; otherwise we throw
+   * 403 (fail closed). Mirrors the `filterByWhitelabel` middleware.
+   *
    * @param {string} eventId
-   * @param {string} userId
+   * @param {Object} userContext - req.user shape: { _id, role, whitelabelId }
+   * @returns {Object} Mongo query
+   * @private
+   */
+  _buildScopedEventQuery(eventId, userContext) {
+    const role = userContext?.role;
+    const userId = userContext?._id?.toString?.() || userContext?._id;
+    const whitelabelId = userContext?.whitelabelId
+      ? userContext.whitelabelId.toString?.() || userContext.whitelabelId
+      : null;
+
+    // Defense in depth: callers always come through `protect` so this
+    // should never fire, but if both role + id are absent we'd otherwise
+    // fall into the host branch with `host: undefined` — Mongoose
+    // coerces that to `host: null` which technically matches orphaned
+    // documents. Fail closed instead of relying on the schema's `host:
+    // required` invariant.
+    if (!role && !userId) {
+      throw new ForbiddenError("Authentication context is required");
+    }
+
+    if (role === ROLES.SUPER_ADMIN) {
+      return { _id: eventId };
+    }
+
+    const tenantScoped = [
+      ROLES.ADMIN,
+      ROLES.MODERATOR,
+      ROLES.WHITELABEL_ADMIN,
+      ROLES.WHITELABEL_MODERATOR,
+    ];
+    if (tenantScoped.includes(role)) {
+      if (!whitelabelId) {
+        throw new ForbiddenError(
+          "Tenant configuration error. Contact a super admin to assign a whitelabel."
+        );
+      }
+      return { _id: eventId, whitelabelId };
+    }
+
+    // Default: host (or any other authenticated role) sees only their own.
+    return { _id: eventId, host: userId };
+  }
+
+  /**
+   * Get event by ID.
+   *
+   * Phase 4b W0-RBAC: accepts the full user context so admins / whitelabel
+   * tier roles can read events under their scope, not just the event host.
+   *
+   * @param {string} eventId
+   * @param {Object} userContext - req.user
    * @returns {Promise<Object>}
    */
-  async getEventById(eventId, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId })
+  async getEventById(eventId, userContext) {
+    const query = this._buildScopedEventQuery(eventId, userContext);
+    const event = await Event.findOne(query)
       .populate("guestList", "name email phone status")
       .populate("host", "username email phoneNumber");
 
@@ -864,13 +936,17 @@ class EventsService {
   }
 
   /**
-   * Get single event stats
+   * Get single event stats.
+   *
+   * Phase 4b W0-RBAC: tenant-scoped via `_buildScopedEventQuery` so
+   * whitelabel-admin/moderator can poll stats for their own events.
+   *
    * @param {string} eventId
-   * @param {string} userId
+   * @param {Object} userContext - req.user
    * @returns {Promise<Object>}
    */
-  async getSingleEventStats(eventId, userId, isAdmin = false) {
-    const query = isAdmin ? { _id: eventId } : { _id: eventId, host: userId };
+  async getSingleEventStats(eventId, userContext) {
+    const query = this._buildScopedEventQuery(eventId, userContext);
     const event = await Event.findOne(query);
     if (!event) throw new NotFoundError("Event");
 
@@ -981,14 +1057,20 @@ class EventsService {
   // ============================================
 
   /**
-   * Update event details
+   * Update event details.
+   *
+   * Phase 4b W1-UNIFY: accepts the full user context so the unified
+   * update wizard works for admin / whitelabel-admin / whitelabel-moderator,
+   * not only the host. Scope resolution mirrors `getEventById` via
+   * `_buildScopedEventQuery`.
+   *
    * @param {string} eventId
    * @param {Object} details
-   * @param {string} userId
+   * @param {Object} userContext - req.user
    * @returns {Promise<Object>}
    */
-  async updateEventDetails(eventId, details, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateEventDetails(eventId, details, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     // Don't allow modifications to completed or cancelled events
@@ -1009,8 +1091,16 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async updateGuestList(eventId, guestList, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId })
+  async updateGuestList(eventId, guestList, userContext) {
+    // userId is used downstream as `addedBy` on net-new guests; pull it
+    // out of the context whether we got the legacy ObjectId or the full
+    // req.user shape.
+    const userId =
+      typeof userContext === 'object' && userContext !== null
+        ? userContext._id?.toString?.() || userContext._id
+        : userContext;
+
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext))
       .populate('guestList', 'name email phone status');
     if (!event) throw new NotFoundError("Event");
 
@@ -1020,6 +1110,26 @@ class EventsService {
     if (limit && limit !== -1 && newCount > limit) {
       throw new PackageLimitError("guests", limit,
         `Guest list exceeds the limit of ${limit}.`);
+    }
+
+    // Phase 4b W0-RBAC (inventory 03 §5 gap 2 / Bug #6): the guest-list
+    // editor can drop a guest the host has already removed in the UI, but
+    // it must not let the new total fall below the count of guests who
+    // already confirmed (or already checked in). Doing so would silently
+    // delete confirmed RSVPs and leave the host with a smaller list than
+    // the number of attendees they're expecting.
+    //
+    // The middleware guard `checkGuestLimit` only protects against
+    // exceeding the plan ceiling; this guards the floor.
+    const confirmedCount = (event.guestList || []).filter((g) =>
+      ['confirmed', 'checked_in'].includes(g.status)
+    ).length;
+    if (confirmedCount > 0 && newCount < confirmedCount) {
+      throw new AppError(
+        `Cannot reduce guest list below ${confirmedCount} confirmed guests.`,
+        400,
+        'GUEST_LIST_BELOW_CONFIRMED'
+      );
     }
 
     // Build map of existing guests by normalized phone for O(1) lookup
@@ -1097,8 +1207,8 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async updateStaffList(eventId, staffList, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateStaffList(eventId, staffList, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     // Don't allow modifications to completed or cancelled events
@@ -1122,8 +1232,8 @@ class EventsService {
    * @param {Object} [file]
    * @returns {Promise<Object>}
    */
-  async updateInvitationSettings(eventId, settings, userId, file) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateInvitationSettings(eventId, settings, userContext, file) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     // Don't allow modifications to completed or cancelled events
@@ -1150,8 +1260,8 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async updateLaunchSettings(eventId, settings, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateLaunchSettings(eventId, settings, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     // Don't allow modifications to completed or cancelled events
@@ -1172,8 +1282,8 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async sendTestMessage(eventId, messageData, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async sendTestMessage(eventId, messageData, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     const messagingService = require('../messaging/messaging.service');

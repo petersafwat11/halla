@@ -9,6 +9,7 @@ import ScheduleSendingPopup from "@/ui/host/popups/scheduleSendingPopup/Schedule
 import { useEventMutation } from "@/hooks/reactQueryHooks/useEvents";
 import { toast } from "react-toastify";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
+import { useEventActionGate } from "@/hooks/events/useEventActionGate";
 import styles from "./EventActionsHeader.module.css";
 
 export default function EventActionsHeader({ event, isAdmin = false }) {
@@ -25,11 +26,13 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
   // Resolve the event ID robustly — Mongoose virtual `id` OR raw `_id`
   const effectiveEventId = event?.id?.toString() || event?._id?.toString();
 
-  const hasTemplate = !!(event?.invitationSettings?.selectedTemplate?.name);
-  const canSendTest = hasTemplate && !testMessageSent;
-  const canSchedule = hasTemplate && testMessageSent;
-  const hasStaff = (event?.staffList?.length || event?.staffCount || 0) > 0;
-  const isCompleted = event?.status === 'completed';
+  // Phase 4b W1-GATE-FAIL: gate logic centralised in `useEventActionGate`
+  // so the header, the dashboard widget, and the mobile companions all
+  // resolve action visibility identically. (Manual-retry RBAC stays in
+  // `EventFailureBanner`; here we only need the test/schedule/staff
+  // gates so the existing `event` prop is enough.)
+  const { canSendTest, canSchedule, hasStaff, isCompleted } =
+    useEventActionGate({ event, testMessageSent });
 
   const dropdownItems = [
     { label: t("lastEvent.dropdown.eventDetails"), step: 1 },

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import useEventActionGate from "../../hooks/useEventActionGate";
 
 const dropdownItems = [
   { label: "تفاصيل المناسبة", step: 1 },
@@ -28,12 +29,15 @@ const LastEvent = ({
   const guestCount = event.guestCount || 0;
   const testMessageSent = event.testMessageSent || false;
 
-  // Match web: template check via invitationSettings
-  const hasTemplate = !!(event.invitationSettings?.selectedTemplate?.name);
-  const canSendTest = hasTemplate && !testMessageSent;
-  const canSchedule = hasTemplate && testMessageSent;
-  const isCompleted = event.status === "completed";
-  const hasSupervisors = (event.staffCount || event.staffList?.length || 0) > 0;
+  // Phase 4b W2-POLL-FAIL: gate logic moved to `useEventActionGate` so
+  // the dashboard widget, the SingleEvent header, and the web mirror
+  // resolve actions identically.
+  const {
+    canSendTest,
+    canSchedule,
+    isCompleted,
+    hasStaff: hasSupervisors,
+  } = useEventActionGate({ event, testMessageSent });
 
   // Format date and time
   const formatDateTime = () => {

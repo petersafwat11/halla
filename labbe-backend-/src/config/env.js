@@ -69,6 +69,11 @@ const envSchema = Joi.object({
   UPLOAD_PATH: Joi.string().default('./public/uploads'),
   MAX_FILE_SIZE: Joi.number().default(5 * 1024 * 1024), // 5MB
 
+  // Phase 4b W0-RBAC (D4b-3): minimum lead time for messaging.scheduleBulkSend.
+  // Default 48h. Backend rejects schedules below this with SCHEDULE_TOO_SOON
+  // so callers can't bypass the client-side picker minimum.
+  SCHEDULE_MIN_LEAD_HOURS: Joi.number().min(0).default(48),
+
 }).unknown(true); // Allow unknown keys for flexibility
 
 const { error, value: envVars } = envSchema.validate(process.env, {

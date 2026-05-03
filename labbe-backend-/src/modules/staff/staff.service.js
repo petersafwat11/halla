@@ -290,6 +290,64 @@ class StaffService {
   }
 
   /**
+   * List staff access tokens for an event (Phase 4b W0-STAFF).
+   *
+   * The Phase 4 mobile staff revoke flow walked `event.staffList` and
+   * passed the staff member sub-doc _id directly into the existing
+   * revoke endpoint, which works but doesn't surface the actual token
+   * lifecycle (active / revoked / expired). Peter asked for an explicit
+   * "active staff tokens" list so the UI can render token status next
+   * to the staff name.
+   *
+   * RBAC mirrors revokeStaffToken: event host, owning whitelabel admin,
+   * platform admin, super_admin.
+   *
+   * @param {string} eventId
+   * @param {Object} actor — req.user
+   * @returns {Promise<{tokens: Array}>}
+   */
+  async listStaffTokens(eventId, actor) {
+    const event = await Event.findById(eventId);
+    if (!event) throw new NotFoundError('Event');
+
+    const actorId = actor?._id?.toString?.() || actor?._id;
+    const role = actor?.role;
+
+    const isHost = event.host?.toString() === actorId;
+    const isAdmin = ['admin', 'super_admin'].includes(role);
+    const isWhitelabelAdmin =
+      role === 'whitelabel_admin' &&
+      event.whitelabelId &&
+      actor?.whitelabelId &&
+      event.whitelabelId.toString() === actor.whitelabelId.toString();
+
+    if (!isHost && !isAdmin && !isWhitelabelAdmin) {
+      throw new ForbiddenError('Not authorized to view staff tokens for this event');
+    }
+
+    const tokens = await StaffAccessToken.find({ event: eventId })
+      .select('phone staffName isRevoked revokedAt revokedBy expiresAt lastUsedAt useCount createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return {
+      tokens: tokens.map((t) => ({
+        _id: t._id,
+        phone: t.phone,
+        staffName: t.staffName,
+        isRevoked: !!t.isRevoked,
+        revokedAt: t.revokedAt || null,
+        revokedBy: t.revokedBy || null,
+        expiresAt: t.expiresAt || null,
+        isExpired: t.expiresAt ? t.expiresAt.getTime() <= Date.now() : false,
+        lastUsedAt: t.lastUsedAt || null,
+        useCount: t.useCount || 0,
+        createdAt: t.createdAt,
+      })),
+    };
+  }
+
+  /**
    * Revoke a staff member's access tokens (Phase 3e.1 / FLOW-20-F01 / D5).
    *
    * The path parameter `:staffId` is the **staff member sub-document _id**

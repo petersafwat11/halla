@@ -839,6 +839,29 @@ export const updateGuest = async (eventId, guestId, guestData, token) => {
 // ==================== STAFF / GUEST ACCESS TOKEN APIs ====================
 
 /**
+ * Phase 4b W2-STAFF — list active + revoked staff access tokens for an
+ * event. Backend: GET /events/:eventId/staff-tokens (added in W0-STAFF
+ * this phase). Returns `{ tokens: [...] }` where each row carries
+ * `_id, phone, staffName, isRevoked, isExpired, lastUsedAt, useCount,
+ * expiresAt, revokedAt, revokedBy, createdAt`.
+ *
+ * Phase 4 mobile shipped a revoke flow that walked `event.staffList`
+ * and passed the staff sub-doc _id directly into the existing revoke
+ * endpoint — that still works (the backend resolves to all tokens for
+ * that staff phone), but doesn't surface token lifecycle (active vs
+ * revoked). Peter asked for an explicit list view; this endpoint
+ * powers it. Mobile UI consumer: `SingleEventStats.js` staff tab.
+ *
+ * @param {string} eventId
+ * @returns {Promise<{tokens: Array}>}
+ */
+export const listStaffTokens = async (eventId) => {
+  if (!eventId) throw new Error("eventId is required");
+  const data = await authenticatedFetch(`/${eventId}/staff-tokens`);
+  return data?.data || data;
+};
+
+/**
  * Phase 4 W2-STAFF — revoke a staff member's access token.
  *
  * Backend: POST /events/:eventId/staff/:staffId/revoke (Phase 3e.1).

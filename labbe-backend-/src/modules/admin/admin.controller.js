@@ -338,12 +338,26 @@ exports.getWhitelabelById = catchAsync(async (req, res) => {
 
 exports.updateWhitelabelStatus = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, dispatchSetupEmail } = req.body;
 
   if (!status) throw new ValidationError('Status is required');
 
-  const whitelabel = await adminService.updateWhitelabelStatus(id, status);
-  sendSuccess(res, { whitelabel }, 'Whitelabel status updated successfully');
+  // Phase 4b W0-EMAIL: when admin clicks Approve and confirms in the
+  // ApproveWhitelabelDialog, the FE sends `dispatchSetupEmail: true` so
+  // the service mints a fresh setup-password token and emails the link.
+  const result = await adminService.updateWhitelabelStatus(id, status, {
+    dispatchSetupEmail: !!dispatchSetupEmail,
+    actor: req.user,
+  });
+
+  // Preserve the previous response shape (`{ whitelabel }`) so existing
+  // FE consumers don't break; surface `emailDispatch` as a sibling.
+  const { emailDispatch, ...whitelabel } = result;
+  sendSuccess(
+    res,
+    { whitelabel, emailDispatch },
+    'Whitelabel status updated successfully'
+  );
 });
 
 exports.updateWhitelabelSubscription = catchAsync(async (req, res) => {

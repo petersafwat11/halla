@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import {
   rotateGuestQr,
   revokeGuestAccess,
   exportEventGuests,
+  listStaffTokens,
 } from "../../services/eventsService2";
 import { saveBlobAndShare } from "../../utils/download";
 import StatsCards from "./StatsCards";
@@ -58,6 +59,41 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
   const [guestActions, setGuestActions] = useState({});
   const [staffActions, setStaffActions] = useState({});
 
+  // Phase 4b W2-STAFF — authoritative staff-token state from the new
+  // GET /events/:eventId/staff-tokens endpoint. Indexed by normalized
+  // phone (the staff sub-doc _id is the natural key on the FE, but the
+  // token list groups by phone since multiple tokens can exist per
+  // staff member). We refetch after a revoke succeeds so the badge
+  // flips from optimistic to authoritative.
+  const [staffTokensByPhone, setStaffTokensByPhone] = useState({});
+
+  const refreshStaffTokens = useCallback(async () => {
+    if (!event?._id && !event?.id) return;
+    try {
+      const resp = await listStaffTokens(event._id || event.id);
+      const tokens = resp?.tokens || [];
+      const byPhone = {};
+      for (const t of tokens) {
+        const phoneKey = (t.phone || "").trim();
+        // Newest token wins (the endpoint sorts by createdAt desc).
+        if (!byPhone[phoneKey]) {
+          byPhone[phoneKey] = t;
+        }
+      }
+      setStaffTokensByPhone(byPhone);
+    } catch (e) {
+      // Non-fatal — falls back to event.staffList revoke status.
+      // eslint-disable-next-line no-console
+      console.warn("[SingleEventStats] listStaffTokens failed:", e?.message);
+    }
+  }, [event?._id, event?.id]);
+
+  useEffect(() => {
+    if (activeTab === "staff") {
+      refreshStaffTokens();
+    }
+  }, [activeTab, refreshStaffTokens]);
+
   // Format guests from backend data
   const guests = (stats?.guests || []).map((guest) => {
     const id = guest.guestId || guest._id || guest.id;
@@ -75,15 +111,23 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
     };
   });
 
-  // Format staff from backend data
+  // Format staff from backend data, enriched with authoritative token
+  // state from `listStaffTokens` when available (W2-STAFF). The optimistic
+  // local flag still wins when no token row exists yet (e.g. during the
+  // revoke round-trip).
   const staff = (stats?.staff || []).map((s) => {
     const id = s._id || s.id || String(Math.random());
     const local = staffActions[id] || {};
+    const phoneKey = (s.phone || "").trim();
+    const tokenRow = staffTokensByPhone[phoneKey];
     return {
       id,
       name: s.name || "مشرف",
       phone: s.phone || "",
-      isRevoked: !!(s.isRevoked || local.revoked),
+      isRevoked: !!(tokenRow?.isRevoked || s.isRevoked || local.revoked),
+      isExpired: !!tokenRow?.isExpired,
+      lastUsedAt: tokenRow?.lastUsedAt || null,
+      useCount: tokenRow?.useCount || 0,
     };
   });
 
@@ -227,6 +271,9 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
       } else {
         Alert.alert("نجاح", "تم إلغاء صلاحية وصول المشرف.");
       }
+      // W2-STAFF: refresh authoritative token state so the badge moves
+      // from "optimistic" to "confirmed by server".
+      refreshStaffTokens();
       if (onRefresh) onRefresh();
     } catch (error) {
       console.error("Error revoking moderator:", error);
