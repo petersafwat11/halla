@@ -5,7 +5,8 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { I18nManager, Alert, NativeModules, Platform } from "react-native";
+import { I18nManager, Alert, Platform } from "react-native";
+import Constants from "expo-constants";
 import { I18nextProvider } from "react-i18next";
 import i18n, { i18nConfig } from "../config/i18nConfig";
 import { languageStorage } from "../../utils/languageStorage";
@@ -19,13 +20,17 @@ const LANGUAGE_STORAGE_KEY = "@app_language";
  * there and triggers a benign warning). In a dev client / standalone
  * build, calling `I18nManager.forceRTL(true)` flips the layout for
  * Arabic. The change requires app reload to take effect on iOS.
+ *
+ * Reviewed for SDK 54: `Constants.appOwnership === "expo"` is the
+ * official Expo Constants API; `Constants.executionEnvironment` is its
+ * newer cousin. We check both for safety.
  */
 const _isExpoGo = () => {
   try {
-    return (
-      typeof NativeModules !== "undefined" &&
-      NativeModules?.NativeUnimoduleProxy?.modulesConstants?.ExponentConstants?.appOwnership === "expo"
-    );
+    if (Constants?.appOwnership === "expo") return true;
+    // executionEnvironment values: "bare" | "standalone" | "storeClient"
+    if (Constants?.executionEnvironment === "storeClient") return true;
+    return false;
   } catch (_) {
     return false;
   }

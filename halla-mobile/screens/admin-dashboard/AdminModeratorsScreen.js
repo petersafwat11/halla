@@ -2,7 +2,8 @@ import React, { useState, useMemo } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  useAdminModerators,
+  useAdminModeratorsInfinite,
+  useDebouncedValue,
   useUpdateModeratorStatus,
   useDeleteModerator,
 } from "../../hooks";
@@ -26,7 +27,24 @@ const AdminModeratorsScreen = ({ navigation }) => {
   const canEdit   = canEditPage(role, PAGES.MODERATORS);
   const canDelete = canDeleteOnPage(role, PAGES.MODERATORS);
 
-  const { data, isLoading, error, refetch } = useAdminModerators({ page: 1, limit: 50 });
+  // Phase 4 review fix — server-driven filters via the infinite hook.
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const filters = useMemo(
+    () => ({ search: debouncedSearch, status: activeFilter }),
+    [debouncedSearch, activeFilter]
+  );
+
+  const {
+    items: moderators,
+    isLoading,
+    error,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useAdminModeratorsInfinite(filters);
 
   const updateStatus = useUpdateModeratorStatus();
   const deleteMod   = useDeleteModerator();
@@ -35,14 +53,6 @@ const AdminModeratorsScreen = ({ navigation }) => {
   const [selectedModerator, setSelectedModerator] = useState(null);
   const [pendingStatusId,   setPendingStatusId]   = useState(null);
   const [pendingDeleteId,   setPendingDeleteId]   = useState(null);
-
-  const moderators = useMemo(() => {
-    const d = data?.data;
-    if (Array.isArray(d?.moderators)) return d.moderators;
-    if (Array.isArray(d)) return d;
-    if (Array.isArray(data?.moderators)) return data.moderators;
-    return [];
-  }, [data]);
 
   if (error) toast.error(t("common.error"));
 
@@ -118,6 +128,13 @@ const AdminModeratorsScreen = ({ navigation }) => {
           moderators={moderators}
           loading={isLoading}
           onRefresh={refetch}
+          hasMore={hasNextPage}
+          onLoadMore={fetchNextPage}
+          loadingMore={isFetchingNextPage}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          activeFilter={activeFilter}
+          onActiveFilterChange={setActiveFilter}
           onModeratorPress={handleModeratorPress}
           onToggleStatus={handleToggleStatus}
           onDelete={handleDelete}

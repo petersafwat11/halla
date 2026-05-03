@@ -26,12 +26,29 @@ Updated continuously as each sub-track lands.
 - [x] W3-WL — `SetupPasswordScreen` + `setupPasswordAPI` + navigator entry + `halla://setup-password/:token` deep link.
 - [x] W3-ADMIN — `utils/download.js` (saveBlobAndShare via expo-file-system + expo-sharing). Export buttons on host `EventList` (all events) and `SingleEventStats` (per-event guests). Admin tier exports already worked via `Linking.openURL`. Ticket assign UI was already shipped (`AssignTicketModal`).
 
-## Smoke / regression
+## Smoke / regression (post-review)
 
-- [x] Phase 4 specs (`static-checks-4.js`) — **13 / 13 PASS**.
-- [x] Phase 3 regression (`static-checks.js` + `static-checks-3de.js`) — 19 + 16 PASS (after updating one assertion to accept the new options-object signature for `useSingleEventStats`).
+- [x] Phase 4 specs (`static-checks-4.js`) — **24 / 24 PASS** (13 originals + 11 review-fix assertions).
+- [x] Phase 3 regression (`static-checks.js` + `static-checks-3de.js`) — 19 + 16 PASS.
 - [x] Phase 2 regression — 13 / 13 PASS.
 - [x] Phase 1 regression — `utilities-static-checks.js` 5 / 5 PASS, `auth-static-checks.js` 13 / 13 PASS, `timezone-unit.js` 16 / 16 PASS.
+
+## Post-merge review fixes
+
+- Server-side filtering on all 7 admin list screens via a `filters`
+  argument on the infinite hooks; debounced search via new
+  `useDebouncedValue` hook.
+- `_normalizePage` handles both `sendSuccess` and `sendPaginated`
+  envelope shapes + `pagination.pages` key.
+- `apiClient.apiFetch` refreshes when initial token is missing.
+- `LanguageProvider` Expo-Go check via `expo-constants`.
+- `SetupPasswordScreen` fully bilingual.
+- `download.saveBlobAndShare` user-cancel + 50 MB size guard.
+- `SingleEventStats` FAB stack + optimistic badge flags.
+- `GuestListItem` rotated / revoked badges.
+- `EventSummary` defensive Date copy.
+- `AdminModeratorsScreen` migrated to the infinite hook.
+- Filter-chip counts removed across admin lists (misleading under pagination).
 
 ## Manual verification handoff
 

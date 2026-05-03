@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAdminPaymentsInfinite, useAdminPaymentSummary } from "../../hooks";
+import { useAdminPaymentsInfinite, useAdminPaymentSummary, useDebouncedValue } from "../../hooks";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import { useAuthStore } from "../../stores/authStore";
@@ -23,6 +23,17 @@ const AdminPaymentsScreen = () => {
 
   const token = useAuthStore((state) => state.token);
 
+  // Phase 4 review fix — debounce the search box so each keystroke
+  // doesn't refetch from the backend. Status filter is keyed too.
+  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const paymentsFilters = useMemo(
+    () => ({
+      search: debouncedSearch,
+      status: filter,
+    }),
+    [debouncedSearch, filter]
+  );
+
   // Phase 4 W3-PAGE: infinite scroll for admin payments. Filter status
   // is applied server-side; the hook re-keys on filter change.
   const {
@@ -33,7 +44,7 @@ const AdminPaymentsScreen = () => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useAdminPaymentsInfinite({ status: filter !== "all" ? filter : undefined });
+  } = useAdminPaymentsInfinite(paymentsFilters);
 
   // Stats card relies on the summary endpoint (the list response no
   // longer carries aggregate stats once we paginate).
@@ -56,15 +67,15 @@ const AdminPaymentsScreen = () => {
     );
   }, [payments, searchQuery]);
 
-  const filterOptions = useMemo(() => {
-    const getCount = (id) =>
-      id === "all" ? payments.length : payments.filter((p) => p.status === id).length;
-    return FILTER_IDS.map((id) => ({
-      id,
-      label: id === "all" ? t("payments.filters.all") : t(`payments.filters.${id}`),
-      count: getCount(id),
-    }));
-  }, [payments, t]);
+  // Phase 4 review: counts dropped (misleading under pagination).
+  const filterOptions = useMemo(
+    () =>
+      FILTER_IDS.map((id) => ({
+        id,
+        label: id === "all" ? t("payments.filters.all") : t(`payments.filters.${id}`),
+      })),
+    [t]
+  );
 
   const handleExport = async () => {
     try {

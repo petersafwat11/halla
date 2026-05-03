@@ -7,7 +7,7 @@
  *      an email containing a link `${frontend.url}/setup-password/<token>`.
  *   2. On mobile, the email link can deep-link via the `halla://`
  *      scheme to `halla://setup-password/<token>` (configured via
- *      `expo-linking` — see AppNavigator.js).
+ *      React Navigation `linking` in App.js).
  *   3. This screen accepts the token via route param (or via the deep
  *      link's path), the user picks a password, and we POST it to
  *      `/auth/setup-password`. On success we authenticate the new
@@ -16,6 +16,8 @@
  * The screen also accepts a manual paste path: if a user installs the
  * app fresh and the email link can't auto-open it, they can paste the
  * token into the input field.
+ *
+ * Phase 4 review fix: bilingual via translations (`auth.setupPassword.*`).
  */
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -68,7 +70,11 @@ const SetupPasswordScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialToken]);
 
-  const tokenLooksValid = token.trim().length >= 16;
+  // Phase 4 review fix — `.trim()` the token at validation time so a
+  // copy-paste that accidentally captured surrounding whitespace doesn't
+  // fail the (length-only) sanity check.
+  const trimmedToken = token.trim();
+  const tokenLooksValid = trimmedToken.length >= 16;
   const passwordValid = password.length >= MIN_PASSWORD_LENGTH;
   const matches = password === passwordConfirm;
   const canSubmit = useMemo(
@@ -81,7 +87,7 @@ const SetupPasswordScreen = () => {
     setSubmitting(true);
     try {
       const result = await setupPasswordAPI({
-        token: token.trim(),
+        token: trimmedToken,
         password,
         passwordConfirm,
       });
@@ -95,14 +101,13 @@ const SetupPasswordScreen = () => {
         refreshToken: result.refreshToken,
         role,
       });
-      toast.success("تم إعداد كلمة المرور وتسجيل الدخول.");
+      toast.success(t("setupPassword.successToast"));
       // The root navigator will react to the new authenticated state.
     } catch (error) {
       console.error("[SetupPasswordScreen] setup failed:", error);
       Alert.alert(
-        "تعذر إعداد كلمة المرور",
-        error?.message ||
-          "تأكد من أن الرابط لم تنته صلاحيته (24 ساعة) أو حاول مجدداً."
+        t("setupPassword.failureTitle"),
+        error?.message || t("setupPassword.failureFallback")
       );
     } finally {
       setSubmitting(false);
@@ -111,7 +116,11 @@ const SetupPasswordScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <TopBar title="إعداد كلمة المرور" showBack onBack={() => navigation.goBack()} />
+      <TopBar
+        title={t("setupPassword.title")}
+        showBack
+        onBack={() => navigation.goBack()}
+      />
       <KeyboardAvoidingView
         style={styles.kbContainer}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -124,20 +133,18 @@ const SetupPasswordScreen = () => {
           <View style={styles.heroIconWrap}>
             <Ionicons name="lock-closed-outline" size={40} color="#C28E5C" />
           </View>
-          <Text style={styles.title}>إعداد كلمة مرور حسابك</Text>
-          <Text style={styles.subtitle}>
-            رابط الإعداد صالح لمدة 24 ساعة من وقت الإرسال.
-          </Text>
+          <Text style={styles.title}>{t("setupPassword.heading")}</Text>
+          <Text style={styles.subtitle}>{t("setupPassword.subtitle")}</Text>
 
           {/* Token field — pre-filled from deep link, editable for manual paste. */}
           <View style={styles.fieldWrap}>
-            <Text style={styles.fieldLabel}>رمز الإعداد</Text>
+            <Text style={styles.fieldLabel}>{t("setupPassword.tokenLabel")}</Text>
             <View style={styles.inputWrap}>
               <TextInput
                 style={styles.input}
                 value={token}
                 onChangeText={setToken}
-                placeholder="الصق رمز الإعداد هنا إذا لم يفتح الرابط تلقائياً"
+                placeholder={t("setupPassword.tokenPlaceholder")}
                 placeholderTextColor="#9CA3AF"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -147,13 +154,15 @@ const SetupPasswordScreen = () => {
           </View>
 
           <View style={styles.fieldWrap}>
-            <Text style={styles.fieldLabel}>كلمة المرور الجديدة</Text>
+            <Text style={styles.fieldLabel}>
+              {t("setupPassword.passwordLabel")}
+            </Text>
             <View style={styles.inputWrap}>
               <TextInput
                 style={styles.input}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="على الأقل 8 أحرف"
+                placeholder={t("setupPassword.passwordPlaceholder")}
                 placeholderTextColor="#9CA3AF"
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
@@ -174,13 +183,15 @@ const SetupPasswordScreen = () => {
           </View>
 
           <View style={styles.fieldWrap}>
-            <Text style={styles.fieldLabel}>تأكيد كلمة المرور</Text>
+            <Text style={styles.fieldLabel}>
+              {t("setupPassword.passwordConfirmLabel")}
+            </Text>
             <View style={styles.inputWrap}>
               <TextInput
                 style={styles.input}
                 value={passwordConfirm}
                 onChangeText={setPasswordConfirm}
-                placeholder="أعد إدخال كلمة المرور"
+                placeholder={t("setupPassword.passwordConfirmPlaceholder")}
                 placeholderTextColor="#9CA3AF"
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
@@ -189,7 +200,9 @@ const SetupPasswordScreen = () => {
               />
             </View>
             {!matches && passwordConfirm.length > 0 ? (
-              <Text style={styles.errorText}>كلمتا المرور غير متطابقتين</Text>
+              <Text style={styles.errorText}>
+                {t("setupPassword.mismatchError")}
+              </Text>
             ) : null}
           </View>
 
@@ -204,14 +217,14 @@ const SetupPasswordScreen = () => {
             ) : (
               <>
                 <Ionicons name="checkmark-circle-outline" size={18} color="#FFF" />
-                <Text style={styles.submitBtnText}>تأكيد كلمة المرور</Text>
+                <Text style={styles.submitBtnText}>
+                  {t("setupPassword.submit")}
+                </Text>
               </>
             )}
           </TouchableOpacity>
 
-          <Text style={styles.footnote}>
-            بعد التأكيد سيتم تسجيل دخولك تلقائياً وإعادتك إلى الصفحة الرئيسية.
-          </Text>
+          <Text style={styles.footnote}>{t("setupPassword.footnote")}</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

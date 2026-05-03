@@ -239,6 +239,93 @@ check("W3-ADMIN: download helper + export buttons wired", () => {
   expect(ses.includes("handleExportGuests"), "SingleEventStats missing handleExportGuests");
 });
 
+// ─── REVIEW FIX: server-side filters + refetch ───────────────────────────────
+check("REVIEW: useAdminInfinite hooks accept filters + dedup keys via _normalizeFilters", () => {
+  const inf = read("halla-mobile/hooks/queries/useAdminInfinite.js");
+  expect(inf.includes("_normalizeFilters"), "filter normalization helper missing");
+  expect(/cleanFilters/.test(inf), "filters not normalized before query key");
+  expect(inf.includes("export function useAdminHostsInfinite(filters"), "hosts hook signature missing filters");
+});
+
+check("REVIEW: _normalizePage handles both sendSuccess and sendPaginated shapes + `pages`", () => {
+  const inf = read("halla-mobile/hooks/queries/useAdminInfinite.js");
+  expect(inf.includes("inner?.pagination || outer?.pagination"), "pagination not pulled from inner+outer");
+  expect(/pagination\.pages/.test(inf), "pagination.pages key not honored");
+  expect(/pagination\.totalPages/.test(inf), "pagination.totalPages key not honored");
+});
+
+check("REVIEW: admin screens lift filter state + drive infinite hook", () => {
+  const screens = [
+    "halla-mobile/screens/admin-dashboard/AdminHostsScreen.js",
+    "halla-mobile/screens/admin-dashboard/AdminVendorsScreen.js",
+    "halla-mobile/screens/admin-dashboard/AdminEventsScreen.js",
+    "halla-mobile/screens/admin-dashboard/AdminTicketsScreen.js",
+    "halla-mobile/screens/admin-dashboard/AdminWhitelabelsScreen.js",
+    "halla-mobile/screens/admin-dashboard/AdminPaymentsScreen.js",
+    "halla-mobile/screens/admin-dashboard/AdminModeratorsScreen.js",
+  ];
+  for (const f of screens) {
+    const src = read(f);
+    expect(src.includes("useDebouncedValue"), `${f} not using debounced search`);
+    expect(/Infinite\([^)]*[fF]ilters\)|Infinite\(\s*\{/.test(src),
+      `${f} not passing filters object to the infinite hook`);
+  }
+});
+
+check("REVIEW: useDebouncedValue exists + exported through hooks index", () => {
+  expect(exists("halla-mobile/hooks/useDebouncedValue.js"), "useDebouncedValue missing");
+  const idx = read("halla-mobile/hooks/index.js");
+  expect(idx.includes("useDebouncedValue"), "useDebouncedValue not re-exported from hooks index");
+});
+
+check("REVIEW: apiClient handles missing initial access token via refresh-first", () => {
+  const src = read("halla-mobile/services/apiClient.js");
+  expect(/!initialToken && !skipAuth/.test(src),
+    "apiClient does not refresh when access token is missing");
+});
+
+check("REVIEW: LanguageProvider uses expo-constants for Expo Go detection", () => {
+  const src = read("halla-mobile/localization/providers/LanguageProvider.js");
+  expect(/import\s+Constants\s+from\s+["']expo-constants["']/.test(src),
+    "Constants from expo-constants not imported");
+  expect(src.includes("appOwnership"), "appOwnership check missing");
+});
+
+check("REVIEW: SetupPasswordScreen pulls strings from auth.setupPassword translations", () => {
+  const src = read("halla-mobile/screens/SetupPasswordScreen.js");
+  expect(src.includes('t("setupPassword.heading")'), "setupPassword.heading not translated");
+  expect(src.includes('t("setupPassword.submit")'), "setupPassword.submit not translated");
+  const ar = read("halla-mobile/localization/locales/ar/auth.json");
+  const en = read("halla-mobile/localization/locales/en/auth.json");
+  expect(ar.includes('"setupPassword"'), "AR translations missing setupPassword");
+  expect(en.includes('"setupPassword"'), "EN translations missing setupPassword");
+});
+
+check("REVIEW: download helper guards user-cancel + size limit", () => {
+  const src = read("halla-mobile/utils/download.js");
+  expect(src.includes("MAX_EXPORT_SIZE_BYTES"), "size guard missing");
+  expect(src.includes("canceled: true"), "user-cancel branch missing");
+});
+
+check("REVIEW: SingleEventStats stacks FABs in a column to avoid overlap", () => {
+  const src = read("halla-mobile/components/events/SingleEventStats.js");
+  expect(src.includes("fabColumn"), "fabColumn style missing");
+  expect(src.includes("guestActions"), "optimistic guestActions state missing");
+  expect(src.includes("staffActions"), "optimistic staffActions state missing");
+});
+
+check("REVIEW: EventSummary creates a fresh Date copy via getTime()", () => {
+  const src = read("halla-mobile/components/createEvent/EventSummary.js");
+  expect(src.includes("scheduleDate.getTime()") || /sourceMs/.test(src),
+    "EventSummary date handling not defensive");
+});
+
+check("REVIEW: GuestListItem renders qrRotated / accessRevoked badges", () => {
+  const src = read("halla-mobile/components/events/GuestListItem.js");
+  expect(src.includes("qrRotated"), "qrRotated badge missing");
+  expect(src.includes("accessRevoked"), "accessRevoked badge missing");
+});
+
 // ─── Run + report ─────────────────────────────────────────────────────────────
 let pass = 0;
 let fail = 0;

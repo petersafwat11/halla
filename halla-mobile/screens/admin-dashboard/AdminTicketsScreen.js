@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import {
   useAdminTicketsInfinite,
+  useDebouncedValue,
   useResolveTicket,
   useReopenTicket,
   useAssignTicket,
@@ -42,6 +43,13 @@ const AdminTicketsScreen = () => {
   const role  = useAuthStore((state) => state.user?.role);
   const canDelete = canDeleteOnPage(role, PAGES.TICKETS);
 
+  // Phase 4 review fix — server-side filters via the infinite hook.
+  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const ticketsFilters = useMemo(
+    () => ({ search: debouncedSearch, status: activeFilter }),
+    [debouncedSearch, activeFilter]
+  );
+
   // Phase 4 W3-PAGE: infinite scroll for admin tickets.
   const {
     items: rawTickets,
@@ -51,7 +59,7 @@ const AdminTicketsScreen = () => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useAdminTicketsInfinite();
+  } = useAdminTicketsInfinite(ticketsFilters);
   const reopenTicket   = useReopenTicket();
   const bulkDelete     = useBulkDeleteTickets();
   const bulkResolve    = useBulkResolveTickets();
@@ -76,15 +84,18 @@ const AdminTicketsScreen = () => {
     [rawTickets],
   );
 
-  const filterOptions = useMemo(() => {
-    const getCount = (id) =>
-      id === "all" ? tickets.length : tickets.filter((tk) => tk.status === id).length;
-    return STATUS_FILTER_IDS.map((id) => ({
-      id,
-      label: id === "all" ? t("tickets.filters.all") : t(`tickets.filters.${id === "in_progress" ? "inProgress" : id}`),
-      count: getCount(id),
-    }));
-  }, [tickets, t]);
+  // Phase 4 review: counts dropped (misleading under pagination).
+  const filterOptions = useMemo(
+    () =>
+      STATUS_FILTER_IDS.map((id) => ({
+        id,
+        label:
+          id === "all"
+            ? t("tickets.filters.all")
+            : t(`tickets.filters.${id === "in_progress" ? "inProgress" : id}`),
+      })),
+    [t]
+  );
 
   const filtered = useMemo(() => {
     let result = tickets;

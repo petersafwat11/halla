@@ -19,8 +19,66 @@
 | 3 | W3-WL — SetupPasswordScreen + halla:// deep link | `dd8395b` | done |
 | 3 | W3-ADMIN — host event/guest export buttons + saveBlobAndShare | `203c7d8` | done |
 | smoke | 13/13 phase-4 checks + 3de regression accepts options-object | `af60981` | done |
+| review | post-merge audit + production-readiness fixes (see §"Review fixes") | (this commit) | done |
 
-Total commits: 11.
+Total commits: 12.
+
+## Review fixes (post-merge audit)
+
+After the initial 11-commit Phase 4 landed, an end-to-end audit surfaced
+three production-readiness issues that this commit closes:
+
+1. **HIGH — Server-side filtering on admin lists.** `useAdminInfinite`
+   hooks now accept a `filters` object that the React Query key
+   incorporates, so changing `status` / `search` resets pagination to
+   page 1 and refetches. Each of the seven admin screens
+   (`AdminHostsScreen`, `AdminVendorsScreen`, `AdminEventsScreen`,
+   `AdminTicketsScreen`, `AdminWhitelabelsScreen`, `AdminPaymentsScreen`,
+   `AdminModeratorsScreen`) lifts its filter state and passes it
+   through. Search is debounced 350 ms via the new `hooks/useDebouncedValue.js`
+   so each keystroke doesn't refetch. The four `*List` components
+   accept controlled `searchQuery`/`activeFilter` props with
+   uncontrolled fallbacks for back-compat.
+2. **HIGH — `_normalizePage` envelope handling.** Now reads pagination
+   from BOTH the inner `data.data.pagination` (`sendSuccess` shape) and
+   the outer `data.pagination` (`sendPaginated` shape). Honors
+   `pagination.pages` (the actual key the backend uses, not
+   `totalPages` which my first cut incorrectly assumed). Items still
+   resolve from the collection key OR a top-level array.
+3. **MEDIUM — `apiClient` null initial token.** Before issuing a
+   request that would 401 because the access token is missing, `apiFetch`
+   triggers the refresh-token path first. Saves a wasted round-trip
+   and surfaces a real error if no refresh token exists either. Same
+   `_refreshOnce` dedup guards against concurrent calls.
+
+Polish landed in the same commit:
+
+- `LanguageProvider._isExpoGo` switched to `Constants.appOwnership`
+  (expo-constants) — the canonical SDK 54 API, no more brittle native-
+  module chain.
+- `SetupPasswordScreen` is fully bilingual via the new
+  `auth.setupPassword.*` translation block (`ar` + `en`).
+- `download.saveBlobAndShare` recognises iOS share-sheet cancel as a
+  non-error path (returns `{ canceled: true }`) and rejects blobs
+  larger than 50 MB before attempting base64 encoding (Hermes OOM
+  guard). Consumers (`EventList`, `SingleEventStats`) no longer alert
+  on user-cancel.
+- `SingleEventStats` stacks the export FAB above the add FAB in a
+  shared `fabColumn` so they don't overlap on small screens. Also
+  added optimistic `guestActions` / `staffActions` flags so the
+  revoked / rotated / access-revoked badges flip immediately on
+  success and roll back on failure.
+- `GuestListItem` renders `qrRotated` / `accessRevoked` badges for
+  parity with `ModeratorListItem`'s `revoked` badge.
+- `EventSummary.renderScheduleText` always copies the form `Date` via
+  `getTime()` before mutating, eliminating the (theoretical) chance
+  that `setHours` leaks back into the form's value.
+- Filter-chip counts removed from all admin list filterOptions —
+  with server-side pagination, the loaded-pages count is misleading.
+  The chips show labels only.
+
+`AdminModeratorsScreen` was migrated to the infinite hook in the same
+pass (it was the one screen the initial Wave 3 missed).
 
 ## Findings closed
 

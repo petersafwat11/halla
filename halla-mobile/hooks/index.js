@@ -8,6 +8,7 @@ export * from './queries/useVendor';
 export * from './queries/useUser';
 export * from './queries/useAdmin';
 export * from './queries/useAdminInfinite';
+export { useDebouncedValue } from './useDebouncedValue';
 
 // Mutation Hooks
 export * from './mutations/useEventMutations';

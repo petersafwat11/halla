@@ -87,6 +87,15 @@ const GuestListItem = ({ guest, onEdit, onDelete, onRotateQr, onRevokeAccess }) 
         <View style={styles.guestInfo}>
           <View style={styles.nameRow}>
             <Text style={styles.name}>{guest.name || "ضيف"}</Text>
+            {guest?.accessRevoked ? (
+              <View style={[styles.guestBadge, styles.guestBadgeMuted]}>
+                <Text style={styles.guestBadgeText}>صلاحية مُلغاة</Text>
+              </View>
+            ) : guest?.qrRotated ? (
+              <View style={[styles.guestBadge, styles.guestBadgeHighlight]}>
+                <Text style={styles.guestBadgeText}>QR محدّث</Text>
+              </View>
+            ) : null}
           </View>
 
           <View style={styles.contactRow}>
@@ -271,6 +280,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_500Medium",
     lineHeight: 16,
+  },
+  guestBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 9999,
+  },
+  guestBadgeMuted: {
+    backgroundColor: "#F0F0F0",
+  },
+  guestBadgeHighlight: {
+    backgroundColor: "#F5ECE4",
+  },
+  guestBadgeText: {
+    fontSize: 10,
+    fontFamily: "Cairo_500Medium",
+    color: "#9CA3AF",
   },
 });
 

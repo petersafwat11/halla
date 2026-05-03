@@ -26,10 +26,20 @@ const AdminEventList = ({
   hasMore = false,
   onLoadMore,
   loadingMore = false,
+  // Phase 4 review fix — controlled filter props from the screen so
+  // server-side filtering re-keys the infinite query on change.
+  searchQuery: searchQueryProp,
+  onSearchQueryChange,
+  activeFilter: activeFilterProp,
+  onActiveFilterChange,
 }) => {
   const { t } = useTranslation("admin");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQueryLocal, setSearchQueryLocal] = useState("");
+  const [activeFilterLocal, setActiveFilterLocal] = useState("all");
+  const searchQuery = searchQueryProp ?? searchQueryLocal;
+  const activeFilter = activeFilterProp ?? activeFilterLocal;
+  const setSearchQuery = onSearchQueryChange ?? setSearchQueryLocal;
+  const setActiveFilter = onActiveFilterChange ?? setActiveFilterLocal;
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -41,15 +51,15 @@ const AdminEventList = ({
   const bulkSuspend = useBulkSuspendEvents();
   const toast = useToast();
 
-  const filterOptions = useMemo(() => {
-    const getCount = (id) =>
-      id === "all" ? events.length : events.filter((e) => e.status === id).length;
-    return EVENT_FILTER_IDS.map((id) => ({
-      id,
-      label: id === "all" ? t("events.filters.all") : t(`events.filters.${id}`),
-      count: getCount(id),
-    }));
-  }, [events, t]);
+  // Phase 4 review: counts dropped (misleading under pagination).
+  const filterOptions = useMemo(
+    () =>
+      EVENT_FILTER_IDS.map((id) => ({
+        id,
+        label: id === "all" ? t("events.filters.all") : t(`events.filters.${id}`),
+      })),
+    [t]
+  );
 
   const filtered = useMemo(() => {
     let result = events;

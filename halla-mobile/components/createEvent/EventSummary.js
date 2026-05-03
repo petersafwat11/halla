@@ -156,18 +156,26 @@ const EventSummary = () => {
   // Phase 4 W1-FLOW-11-F01: render the "Scheduled launch" row text. Use
   // a host-timezone-aware Intl format so non-Saudi-timezone hosts see
   // their own clock.
+  //
+  // Defensive on form data: `scheduleDate` may be a Date instance OR an
+  // ISO string. We always create a fresh Date copy via `getTime()` so
+  // the local mutation (`setHours`) never leaks back into the form's
+  // value.
   const renderScheduleText = () => {
     if (sendSchedule === "now" || !scheduleDate) {
       return currentLanguage === "ar"
         ? "ينطلق فور التأكيد"
         : "Launches immediately on submit";
     }
-    const dt = scheduleDate instanceof Date ? new Date(scheduleDate) : new Date(scheduleDate);
-    if (Number.isNaN(dt.getTime())) {
+    const sourceMs = scheduleDate instanceof Date
+      ? scheduleDate.getTime()
+      : new Date(scheduleDate).getTime();
+    if (Number.isNaN(sourceMs)) {
       return currentLanguage === "ar"
         ? "ينطلق فور التأكيد"
         : "Launches immediately on submit";
     }
+    const dt = new Date(sourceMs);
     // Combine date with the H:MM:AM time string if provided
     const timeMatch = /^(\d{1,2}):(\d{2}):(AM|PM)$/i.exec(scheduleTime);
     if (timeMatch) {

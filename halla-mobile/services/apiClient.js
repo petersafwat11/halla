@@ -146,7 +146,19 @@ export const apiFetch = async (path, options = {}) => {
     ...(signal ? { signal } : {}),
   });
 
-  const initialToken = useAuthStore.getState().token;
+  let initialToken = useAuthStore.getState().token;
+
+  // Phase 4 review fix — if the access token is missing on a non-public
+  // request, try to refresh BEFORE issuing a guaranteed-401 request.
+  // Without this, every authenticated call after a session restoration
+  // gap would burn an extra round-trip waiting for the 401 → refresh
+  // path to kick in. We only refresh if a refresh token is present
+  // (`refreshTokens()` returns null otherwise, in which case the call
+  // proceeds unauthenticated and the backend will reject it cleanly).
+  if (!initialToken && !skipAuth && !path.startsWith("/auth/refresh")) {
+    const refreshed = await _refreshOnce();
+    if (refreshed) initialToken = refreshed;
+  }
 
   const firstAttempt = _makeTimeoutController(timeoutMs, externalSignal);
   let response;

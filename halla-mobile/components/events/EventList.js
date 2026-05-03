@@ -92,7 +92,11 @@ const EventList = ({
       const share = await saveBlobAndShare(result.blob, result.filename || "events.xlsx", {
         dialogTitle: "تصدير المناسبات",
       });
-      if (!share.success) Alert.alert("تصدير", share.message);
+      // Surface only real failures; user-cancel and the no-message
+      // success path stay silent.
+      if (!share.success && share.message) {
+        Alert.alert("تصدير", share.message);
+      }
     } catch (error) {
       console.error("[EventList] export failed:", error);
       Alert.alert("تصدير", error.message || "تعذر تصدير المناسبات");

@@ -24,10 +24,22 @@ const HostList = ({
   hasMore = false,
   onLoadMore,
   loadingMore = false,
+  // Phase 4 review fix — when these are passed, the screen owns the
+  // filter state and we forward changes upward so the infinite hook
+  // can re-key. When omitted, we fall back to local UI state for
+  // backwards compatibility.
+  searchQuery: searchQueryProp,
+  onSearchQueryChange,
+  activeFilter: activeFilterProp,
+  onActiveFilterChange,
 }) => {
   const { t } = useTranslation("admin");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQueryLocal, setSearchQueryLocal] = useState("");
+  const [activeFilterLocal, setActiveFilterLocal] = useState("all");
+  const searchQuery = searchQueryProp ?? searchQueryLocal;
+  const activeFilter = activeFilterProp ?? activeFilterLocal;
+  const setSearchQuery = onSearchQueryChange ?? setSearchQueryLocal;
+  const setActiveFilter = onActiveFilterChange ?? setActiveFilterLocal;
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -37,12 +49,16 @@ const HostList = ({
   const bulkDelete = useBulkDeleteHosts();
   const toast = useToast();
 
+  // Phase 4 review: counts come from the loaded pages only, which is
+  // misleading once we paginate server-side. Drop the count badge so
+  // chips show the label only — re-add when the backend exposes
+  // `statusCounts` (hosts already does, vendors/etc don't yet).
   const filterOptions = useMemo(() => [
-    { id: "all",       label: t("hosts.filters.all"),       count: hosts.length },
-    { id: "active",    label: t("hosts.filters.active"),    count: hosts.filter((h) => h.status === "active").length },
-    { id: "suspended", label: t("hosts.filters.suspended"), count: hosts.filter((h) => h.status === "suspended").length },
-    { id: "pending",   label: t("hosts.filters.pending"),   count: hosts.filter((h) => h.status === "pending").length },
-  ], [hosts, t]);
+    { id: "all",       label: t("hosts.filters.all") },
+    { id: "active",    label: t("hosts.filters.active") },
+    { id: "suspended", label: t("hosts.filters.suspended") },
+    { id: "pending",   label: t("hosts.filters.pending") },
+  ], [t]);
 
   const filteredHosts = useMemo(() => {
     let result = hosts;

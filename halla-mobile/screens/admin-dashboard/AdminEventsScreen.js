@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { useAdminEventsInfinite } from "../../hooks";
+import { useAdminEventsInfinite, useDebouncedValue } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";
@@ -18,6 +18,15 @@ const AdminEventsScreen = () => {
   const role = useAuthStore((state) => state.user?.role);
   const canEdit = canEditPage(role, PAGES.EVENTS);
 
+  // Phase 4 review fix — controlled filters at screen level.
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const filters = useMemo(
+    () => ({ search: debouncedSearch, status: activeFilter }),
+    [debouncedSearch, activeFilter]
+  );
+
   // Phase 4 W3-PAGE: infinite scroll for admin events.
   const {
     items: events,
@@ -27,7 +36,7 @@ const AdminEventsScreen = () => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useAdminEventsInfinite();
+  } = useAdminEventsInfinite(filters);
 
   if (error) toast.error(t("common.error"));
 
@@ -42,6 +51,10 @@ const AdminEventsScreen = () => {
           hasMore={hasNextPage}
           onLoadMore={fetchNextPage}
           loadingMore={isFetchingNextPage}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          activeFilter={activeFilter}
+          onActiveFilterChange={setActiveFilter}
           onEventPress={(ev) => navigation.navigate("EventDetails", { eventId: ev.id || ev._id })}
           onEdit={(ev) => navigation.navigate("UpdateEvent", { eventId: ev.id || ev._id })}
           onAdd={canEdit ? () => navigation.navigate("CreateEvent") : undefined}
