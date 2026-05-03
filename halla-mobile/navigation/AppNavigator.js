@@ -24,7 +24,10 @@ import TicketsScreen from "../screens/TicketsScreen";
 import Marketplace from "../screens/Marketplace";
 import EventsScreen from "../screens/EventsScreen";
 import CreateEventScreen from "../screens/CreateEventScreen";
-import HostUpdateEventScreen from "../screens/host/UpdateEventScreen";
+// Phase 4d W1-MOBILE-UPDATE: single unified update wizard for every
+// role. The legacy `screens/host/UpdateEventScreen.js` is now a thin
+// re-export shim for any other import paths still in flight.
+import UpdateEventScreen from "../screens/update-event/UpdateEventScreen";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import VendorServicesScreen from "../screens/VendorServicesScreen";
 
@@ -252,7 +255,7 @@ function HostStack() {
     >
       <Stack.Screen name="MainTabs" component={HostTabNavigator} />
       <Stack.Screen name="CreateEventScreen" component={CreateEventScreen} />
-      <Stack.Screen name="UpdateEventScreen" component={HostUpdateEventScreen} />
+      <Stack.Screen name="UpdateEventScreen" component={UpdateEventScreen} />
       <Stack.Screen name="PlansSummary" component={PlansSummaryScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
