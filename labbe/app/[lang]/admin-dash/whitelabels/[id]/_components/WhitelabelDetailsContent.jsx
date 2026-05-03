@@ -133,11 +133,19 @@ export default function WhitelabelDetailsContent({ whitelabelId }) {
       });
       const emailDispatch = resp?.data?.emailDispatch || resp?.emailDispatch;
       const emailSent = !!emailDispatch?.sent;
+      const noEmailOnFile = emailDispatch?.error === "NO_EMAIL_ON_FILE";
       if (dispatchSetupEmail && emailSent) {
         toast.success(
           t(
             "approveWhitelabelDialog.successWithEmail",
             "تم تنشيط الحساب وإرسال رابط إعداد كلمة المرور بالبريد"
+          )
+        );
+      } else if (dispatchSetupEmail && noEmailOnFile) {
+        toast.warning(
+          t(
+            "approveWhitelabelDialog.successNoEmailOnFile",
+            "تم تنشيط الحساب لكن لا يوجد بريد إلكتروني مسجل. يرجى تحديث بيانات الحساب."
           )
         );
       } else if (dispatchSetupEmail && emailDispatch?.attempted && !emailSent) {

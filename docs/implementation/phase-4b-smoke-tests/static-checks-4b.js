@@ -79,6 +79,11 @@ check("W0-RBAC: events.service _buildScopedEventQuery present", () => {
   expect(src.includes("ROLES.WHITELABEL_ADMIN"), "WHITELABEL_ADMIN scope branch missing");
   expect(/getEventById\s*\(eventId,\s*userContext\)/.test(src), "getEventById signature not migrated");
   expect(/getSingleEventStats\s*\(eventId,\s*userContext\)/.test(src), "getSingleEventStats signature not migrated");
+  // Defense-in-depth: empty userContext fails closed (covers the
+  // "Mongoose coerces undefined to null and matches orphaned host"
+  // edge case).
+  expect(/Authentication context is required/.test(src),
+    "missing fail-closed guard for empty userContext");
 });
 
 check("W0-RBAC: capacity floor guard with GUEST_LIST_BELOW_CONFIRMED", () => {
@@ -144,6 +149,27 @@ check("W0-EMAIL: admin.controller forwards dispatchSetupEmail + req.user", () =>
   const src = read("labbe-backend-/src/modules/admin/admin.controller.js");
   expect(src.includes("dispatchSetupEmail"), "controller did not forward flag");
   expect(/actor:\s*req\.user/.test(src), "actor not forwarded");
+});
+
+check("W0-EMAIL: hardening — null email guard + correct dashboard URL + idempotent notify", () => {
+  const src = read("labbe-backend-/src/modules/admin/admin.service.js");
+  // null email guard surfaces NO_EMAIL_ON_FILE rather than blasting the sender
+  expect(src.includes("NO_EMAIL_ON_FILE"), "null-email guard missing");
+  // dashboardUrl must point at /admin-dash (the actual admin tree),
+  // never at the non-existent /whitelabel/dashboard route.
+  expect(/dashboardUrl\s*=\s*`\$\{frontendUrl\}\/ar\/admin-dash`/.test(src),
+    "dashboardUrl not pointed at /admin-dash");
+  expect(!/\/whitelabel\/dashboard/.test(src),
+    "stale /whitelabel/dashboard URL still present");
+  // status-change in-app notification suppressed when previousStatus === status
+  expect(/if \(previousStatus !== status\)/.test(src),
+    "duplicate-notification guard missing");
+});
+
+check("W0-EMAIL hardening: WhitelabelDetailsContent surfaces NO_EMAIL_ON_FILE", () => {
+  const src = read("labbe/app/[lang]/admin-dash/whitelabels/[id]/_components/WhitelabelDetailsContent.jsx");
+  expect(src.includes("NO_EMAIL_ON_FILE"), "no-email branch missing");
+  expect(src.includes("successNoEmailOnFile"), "translation key not used");
 });
 
 // ─── W1-UNIFY ─────────────────────────────────────────────────────────────────
@@ -258,6 +284,20 @@ check("W1-WL-EMAIL: ApproveWhitelabelDialog exists + wired into WL details", () 
   const details = read("labbe/app/[lang]/admin-dash/whitelabels/[id]/_components/WhitelabelDetailsContent.jsx");
   expect(details.includes("ApproveWhitelabelDialog"), "dialog not imported");
   expect(details.includes("dispatchSetupEmail"), "flag not forwarded");
+});
+
+check("W1-WL-EMAIL hardening: Approve confirm button reflects email-dispatch checkbox", () => {
+  const src = read("labbe/ui/admin/whitelabels/ApproveWhitelabelDialog.jsx");
+  expect(src.includes("confirmNoEmail"), "confirmNoEmail i18n branch missing");
+});
+
+check("W1-WL-EMAIL hardening: SetupPassword reads user from auth store after mutation", () => {
+  const src = read("labbe/ui/auth/setup-password/SetupPassword.js");
+  expect(src.includes("useAuthStore"), "auth store import missing");
+  expect(/useAuthStore\.getState\(\)\.user/.test(src),
+    "user lookup via store missing");
+  expect(!/resp\?\.data\?\.data\?\.user/.test(src),
+    "fragile triple-data fallback chain still present");
 });
 
 check("W1-WL-EMAIL: useAdminWhitelabelMutation forwards dispatchSetupEmail", () => {

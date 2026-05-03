@@ -1169,11 +1169,11 @@ class AdminService {
    * Re-approval (admin clicks Approve again on an already-active row)
    * regenerates the token so the prior link is invalidated.
    *
-   * Token + status are saved in two ordered writes (no Mongo transaction
-   * — `User` is single-collection and the failure mode is "no email
-   * went out", which the audit row will capture). If the email send
-   * itself fails we log it loudly and write a `failure` audit entry but
-   * keep the new status / token so an admin can re-trigger from the UI.
+   * Token + status are persisted in a single `whitelabel.save()`. If the
+   * email send itself fails we log it loudly and write a `partial` audit
+   * row but keep the new status / token so an admin can re-trigger from
+   * the UI. Email failures must not roll back the status flip — the
+   * platform is still approved either way.
    *
    * @param {string} whitelabelId
    * @param {string} status - one of USER_STATUS values
@@ -1199,31 +1199,60 @@ class AdminService {
     whitelabel.status = status;
 
     let setupToken = null;
+    let emailSkipReason = null;
     if (dispatchSetupEmail && status === USER_STATUS.ACTIVE) {
-      // Mint a fresh token. createPasswordSetupToken() hashes onto the
-      // user document and returns the plain token; we save below.
-      setupToken = whitelabel.createPasswordSetupToken();
+      // Defense in depth: never blast `email.send.whitelabelApproval(null,
+      // …)` — nodemailer would throw / silently send to a null address.
+      // Surface a clean partial-success state instead so the admin can
+      // back-fill the email manually.
+      if (!whitelabel.email) {
+        emailSkipReason = 'NO_EMAIL_ON_FILE';
+      } else {
+        // Mint a fresh token. createPasswordSetupToken() hashes onto the
+        // user document and returns the plain token; we save below.
+        setupToken = whitelabel.createPasswordSetupToken();
+      }
     }
 
     // Single save persists status change + (optional) setup token hash.
     await whitelabel.save({ validateBeforeSave: false });
 
-    // Notify whitelabel of status change (non-blocking, in-app).
-    notificationService.sendToUser(whitelabel._id, {
-      type: 'account_status_change',
-      title: 'Account Status Updated',
-      titleAr: 'تم تحديث حالة الحساب',
-      message: `Your platform account status has been updated to ${status}.`,
-      messageAr: `تم تحديث حالة حساب منصتك إلى ${status}.`,
-      data: { entityType: 'user', entityId: whitelabel._id, metadata: { status } },
-    }).catch(console.error);
+    // Notify whitelabel of status change (non-blocking, in-app). Skip
+    // when the status didn't actually move — re-approval already
+    // triggers an email + token regeneration, the in-app duplicate
+    // would just be noise.
+    if (previousStatus !== status) {
+      notificationService.sendToUser(whitelabel._id, {
+        type: 'account_status_change',
+        title: 'Account Status Updated',
+        titleAr: 'تم تحديث حالة الحساب',
+        message: `Your platform account status has been updated to ${status}.`,
+        messageAr: `تم تحديث حالة حساب منصتك إلى ${status}.`,
+        data: { entityType: 'user', entityId: whitelabel._id, metadata: { status } },
+      }).catch(console.error);
+    }
 
     let emailDispatch = { sent: false, attempted: false };
-    if (setupToken) {
+    if (emailSkipReason) {
+      emailDispatch.attempted = true;
+      emailDispatch.error = emailSkipReason;
+    } else if (setupToken) {
       emailDispatch.attempted = true;
       try {
         const frontendUrl = config?.frontend?.url || '';
+        // Setup-password route lives at /[lang]/setup-password/[token]
+        // (Phase 4b W1-WL-EMAIL). Arabic-first matches the existing email
+        // copy; the FE redirects users to the correct dashboard after
+        // setup based on their role.
         const setupPasswordUrl = `${frontendUrl}/ar/setup-password/${setupToken}`;
+        // Whitelabel admins navigate the platform admin tree at /admin-dash;
+        // there is no dedicated /whitelabel route space (verified in
+        // services/serverAuth.js ROLE_PAGE_ACCESS). The dashboardUrl is
+        // only rendered in the email when no setupPasswordUrl is present
+        // (mutually exclusive in the template), but we point it at the
+        // right destination anyway so a future template change can't
+        // 404.
+        const dashboardUrl = `${frontendUrl}/ar/admin-dash`;
         await email.send.whitelabelApproval(
           whitelabel.email,
           {
@@ -1231,7 +1260,7 @@ class AdminService {
               whitelabel.platformName || whitelabel.username || whitelabel.email,
             email: whitelabel.email,
             setupPasswordUrl,
-            dashboardUrl: `${frontendUrl}/ar/whitelabel/dashboard`,
+            dashboardUrl,
           },
           'ar'
         );

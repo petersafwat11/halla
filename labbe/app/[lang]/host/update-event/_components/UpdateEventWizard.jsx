@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { FormProvider } from "react-hook-form";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../../create-event/page.module.css";
 import Header from "../../create-event/_components/header/Header";
 import StepTitleAndDesc from "../../create-event/_components/stepTitleAndDesc/StepTitleAndDesc";
@@ -45,7 +45,6 @@ import { handleError } from "@/services/errorHandlingService";
 const UpdateEventWizard = ({ returnPath = "host" }) => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const pathname = usePathname();
 
   const eventId = searchParams.get("id");
   const currentStep = parseInt(searchParams.get("step"), 10) || 1;

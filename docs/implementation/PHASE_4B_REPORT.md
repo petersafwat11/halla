@@ -22,8 +22,9 @@ This file is the hand-off when 4b ships. Section §3 enumerates the 4c entry poi
 | W1-IMG-PATH | `getMediaUrl` helper added; audit found no scattered URL bugs | `e3a7c15` |
 | W2-POLL-FAIL | Mobile `useEventActionGate` + `PartialFailureBanner`; `EventActionsHeader` / `LastEvent` consume the hook; `EventDetails` mounts the banner | `8b324f1` |
 | W2-STAFF | Mobile `listStaffTokens` service; `SingleEventStats` enriches staff rows with authoritative token state | `da10e05` |
+| HARDENING | Production-readiness pass: null-email guard + correct `dashboardUrl` + idempotent notification suppression in `updateWhitelabelStatus`; SetupPassword reads role from auth store; Approve dialog button text reflects email-dispatch checkbox; `_buildScopedEventQuery` fail-closed on empty userContext; unused `pathname` import removed from wizard. | (this commit) |
 
-Smoke tests green: `phase-4b-smoke-tests/static-checks-4b.js` 27/27 PASS. Phase 4 / 3abc / 3de / 2 / 1 regressions all PASS.
+Smoke tests green: `phase-4b-smoke-tests/static-checks-4b.js` 31/31 PASS (incl. 4 hardening checks). Phase 4 / 3abc / 3de / 2 / 1 regressions all PASS (104 total).
 
 ---
 

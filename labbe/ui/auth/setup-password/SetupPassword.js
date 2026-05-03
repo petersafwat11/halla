@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import useAuthStore from "@/stores/authStore";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -93,12 +94,17 @@ export default function SetupPassword({ token }) {
       return;
     }
     try {
-      const resp = await setupPassword.mutateAsync({
+      await setupPassword.mutateAsync({
         token,
         password,
         passwordConfirm,
       });
-      const user = resp?.data?.data?.user || resp?.data?.user || resp?.user;
+      // The mutation's onSuccess pulled the user out of the response
+      // shape (`{ token, refreshToken, data: { user, subscription } }`)
+      // and committed it to the auth store. Read the canonical user
+      // from the store rather than re-deriving from the raw response —
+      // shape drift only shows up in one place that way.
+      const user = useAuthStore.getState().user;
       toast.success(
         t("success.password_set", isRtl
           ? "تم إعداد كلمة المرور بنجاح"
@@ -106,7 +112,9 @@ export default function SetupPassword({ token }) {
       );
       // Route into the appropriate dashboard. The post-approval whitelabel
       // admin currently shares the /admin-dash space (ROLE_PAGE_ACCESS in
-      // serverAuth.js); 4b doesn't fan out a /whitelabel root.
+      // serverAuth.js); 4b doesn't fan out a /whitelabel root. Hosts go
+      // to /host. Anything else (admin / super_admin / etc) lands on
+      // /admin-dash too.
       const target = user?.role === "host" ? "host" : "admin-dash";
       router.replace(`/${lang}/${target}`);
     } catch (err) {

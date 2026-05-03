@@ -56,9 +56,11 @@
     "dispatchEmailHint": "When enabled, a fresh setup token is generated and the email is sent immediately. Any previous link is invalidated.",
     "cancel": "Cancel",
     "confirm": "Approve & send",
+    "confirmNoEmail": "Approve",
     "submitting": "Approving...",
     "successWithEmail": "Account activated and password setup link sent",
-    "successEmailFailed": "Account activated but the email failed to send. Please try again."
+    "successEmailFailed": "Account activated but the email failed to send. Please try again.",
+    "successNoEmailOnFile": "Account activated but there is no email on file. Please update the account details."
   },
   "details": {
     "email": "Email",

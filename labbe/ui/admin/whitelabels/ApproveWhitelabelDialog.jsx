@@ -162,7 +162,9 @@ export default function ApproveWhitelabelDialog({
           >
             {isPending
               ? t("approveWhitelabelDialog.submitting", "جارٍ الموافقة...")
-              : t("approveWhitelabelDialog.confirm", "موافقة وإرسال")}
+              : dispatchSetupEmail
+                ? t("approveWhitelabelDialog.confirm", "موافقة وإرسال")
+                : t("approveWhitelabelDialog.confirmNoEmail", "موافقة")}
           </button>
         </div>
       </div>

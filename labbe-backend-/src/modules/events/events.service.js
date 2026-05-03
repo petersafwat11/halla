@@ -193,6 +193,16 @@ class EventsService {
       ? userContext.whitelabelId.toString?.() || userContext.whitelabelId
       : null;
 
+    // Defense in depth: callers always come through `protect` so this
+    // should never fire, but if both role + id are absent we'd otherwise
+    // fall into the host branch with `host: undefined` — Mongoose
+    // coerces that to `host: null` which technically matches orphaned
+    // documents. Fail closed instead of relying on the schema's `host:
+    // required` invariant.
+    if (!role && !userId) {
+      throw new ForbiddenError("Authentication context is required");
+    }
+
     if (role === ROLES.SUPER_ADMIN) {
       return { _id: eventId };
     }
