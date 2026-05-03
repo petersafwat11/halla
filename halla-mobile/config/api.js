@@ -197,10 +197,16 @@ export const ENDPOINTS = {
     TEMPLATE_STATUS: (eventId) => `/messaging/template/status/${eventId}`,
   },
 
-  // Templates endpoints
+  // Templates endpoints — Phase 4c W2-MOBILE-WIZARD wires these to
+  // the new backend cache. Categories now live at /template-categories.
   TEMPLATES: {
     LIST: "/templates",
-    CATEGORIES: "/templates/categories",
+    CATEGORIES: "/template-categories",
+  },
+
+  // Phase 4c W2-MOBILE-WIZARD — Taqnyat-template cache for the picker.
+  TAQNYAT_TEMPLATES: {
+    LIST: "/taqnyat-templates",
   },
 
   // Fonts endpoints

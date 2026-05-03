@@ -1,0 +1,133 @@
+/**
+ * migrate-event-shape — Phase 4c W0-RENAME
+ *
+ * One-shot migration that copies legacy `Event.invitationSettings.*`
+ * fields onto the new canonical sub-objects per PHASE_4C_PLAN §2
+ * W0-RENAME (and Inventory 08 §Task 4):
+ *
+ *   invitationSettings.visualTemplate.id   → visualTemplate.templateRef
+ *   invitationSettings.visualTemplate.src  → visualTemplate.bakedImagePath
+ *   invitationSettings.visualTemplate.data → visualTemplate.fieldValues
+ *   invitationSettings.templateImage       → visualTemplate.bakedImagePath
+ *                                            (when no `.src` was set)
+ *   invitationSettings.selectedTemplate.id → taqnyatTemplate.templateRef
+ *   invitationSettings.attendanceAutoReply → guestReplies.onAttend
+ *   invitationSettings.absenceAutoReply    → guestReplies.onAbsent
+ *   invitationSettings.expectedAttendanceAutoReply
+ *                                          → guestReplies.onExpected
+ *   invitationSettings.note                → hostNote
+ *
+ * `invitationMessage` is currently never persisted on the legacy
+ * shape (Inventory 08 Task 3 #4) — left untouched.
+ *
+ * The legacy `invitationSettings` field is preserved (per D4c-2
+ * dual-write window) — Phase 5 drops it after one release cycle.
+ *
+ * Usage:
+ *   node scripts/migrate-event-shape.js --dry-run    # report only
+ *   node scripts/migrate-event-shape.js --apply      # actually write
+ *   node scripts/migrate-event-shape.js --apply --verbose
+ */
+
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
+
+const mongoose = require("mongoose");
+const Event = require("../models/EventModel");
+
+const APPLY = process.argv.includes("--apply");
+const DRY = process.argv.includes("--dry-run") || !APPLY;
+const VERBOSE = process.argv.includes("--verbose");
+
+function projectLegacyToCanonical(doc) {
+  const inv = doc.invitationSettings || {};
+  const updates = {};
+
+  // visualTemplate
+  const visual = {
+    templateRef: doc.visualTemplate?.templateRef ?? inv.visualTemplate?.id ?? null,
+    fieldValues: doc.visualTemplate?.fieldValues ?? inv.visualTemplate?.data ?? {},
+    bakedImagePath:
+      doc.visualTemplate?.bakedImagePath ??
+      inv.visualTemplate?.src ??
+      inv.templateImage ??
+      null,
+  };
+  if (visual.templateRef || visual.bakedImagePath || (visual.fieldValues && Object.keys(visual.fieldValues).length)) {
+    updates.visualTemplate = visual;
+  }
+
+  // taqnyatTemplate
+  const taqnyat = {
+    templateRef: doc.taqnyatTemplate?.templateRef ?? inv.selectedTemplate?.id ?? null,
+  };
+  if (taqnyat.templateRef) updates.taqnyatTemplate = taqnyat;
+
+  // guestReplies
+  const replies = {
+    onAttend: doc.guestReplies?.onAttend ?? inv.attendanceAutoReply ?? null,
+    onAbsent: doc.guestReplies?.onAbsent ?? inv.absenceAutoReply ?? null,
+    onExpected: doc.guestReplies?.onExpected ?? inv.expectedAttendanceAutoReply ?? null,
+  };
+  if (replies.onAttend || replies.onAbsent || replies.onExpected) {
+    updates.guestReplies = replies;
+  }
+
+  // top-level hostNote
+  if (!doc.hostNote && inv.note) updates.hostNote = inv.note;
+
+  return updates;
+}
+
+async function main() {
+  if (!process.env.MONGO_URI) {
+    console.error("[migrate] MONGO_URI is required");
+    process.exit(1);
+  }
+  console.log(`[migrate] Connecting to ${process.env.MONGO_URI.replace(/\/\/[^@]+@/, "//***@")}`);
+  await mongoose.connect(process.env.MONGO_URI);
+
+  const total = await Event.countDocuments({});
+  console.log(`[migrate] ${total} event documents in scope`);
+
+  const cursor = Event.find({}).cursor();
+  let migrated = 0;
+  let unchanged = 0;
+  let errors = 0;
+
+  for await (const doc of cursor) {
+    try {
+      const updates = projectLegacyToCanonical(doc);
+      if (!Object.keys(updates).length) {
+        unchanged += 1;
+        continue;
+      }
+
+      if (VERBOSE) {
+        console.log(`[migrate] event ${doc._id}: keys=${Object.keys(updates).join(",")}`);
+      }
+
+      if (APPLY) {
+        await Event.updateOne({ _id: doc._id }, { $set: updates });
+      }
+      migrated += 1;
+    } catch (err) {
+      errors += 1;
+      console.error(`[migrate] event ${doc._id} FAILED:`, err.message);
+    }
+  }
+
+  console.log("[migrate] ────────────────────");
+  console.log(`[migrate] mode:        ${APPLY ? "APPLY" : "DRY-RUN"}`);
+  console.log(`[migrate] migrated:    ${migrated}`);
+  console.log(`[migrate] unchanged:   ${unchanged}`);
+  console.log(`[migrate] errors:      ${errors}`);
+  console.log(`[migrate] total:       ${total}`);
+
+  await mongoose.disconnect();
+}
+
+main().catch((err) => {
+  console.error("[migrate] FAILED:", err);
+  process.exit(1);
+});

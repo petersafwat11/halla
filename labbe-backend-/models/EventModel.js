@@ -129,12 +129,66 @@ const visualTemplateDataSchema = new mongoose.Schema(
 );
 
 // Visual template sub-schema — the card design chosen and customized in Step 3
+//
+// Phase 4c W0-RENAME: this schema is the legacy shape kept on
+// `Event.invitationSettings.visualTemplate` for compat. Going forward,
+// `Event.visualTemplate` (top-level, see canonicalVisualTemplateSchema
+// below) is the canonical write target. Reads prefer the canonical
+// shape and fall back to this one for events created before the
+// migration.
 const visualTemplateSchema = new mongoose.Schema(
   {
     id: Number,
     name: String,
     src: String,
     data: visualTemplateDataSchema,
+  },
+  { _id: false }
+);
+
+// Phase 4c W0-RENAME — canonical visual template shape per
+// PHASE_4C_PLAN.md §2 W0-RENAME. The host's StepThree submission
+// resolves to:
+//   - templateRef:     ObjectId reference to TemplateModel
+//   - fieldValues:     map of { [fieldKey]: value } — host's per-field
+//                      input, validated server-side via templateDataValidator
+//   - bakedImagePath:  S3 key/URL for the canvas-baked WhatsApp header.
+//                      Web bakes via html2canvas; mobile via
+//                      react-native-view-shot.
+const canonicalVisualTemplateSchema = new mongoose.Schema(
+  {
+    templateRef: { type: mongoose.Schema.Types.ObjectId, ref: "Template" },
+    fieldValues: { type: mongoose.Schema.Types.Mixed, default: {} },
+    bakedImagePath: String,
+  },
+  { _id: false }
+);
+
+// Phase 4c W0-RENAME — Taqnyat-side template selection (the
+// pre-approved WhatsApp template name to send). Refs the new
+// TaqnyatTemplate cache.
+const canonicalTaqnyatTemplateSchema = new mongoose.Schema(
+  {
+    templateRef: { type: mongoose.Schema.Types.ObjectId, ref: "TaqnyatTemplate" },
+  },
+  { _id: false }
+);
+
+// Phase 4c W0-RENAME — auto-replies under a single sub-doc, with
+// canonical names matching the WhatsApp button → status mapping in
+// `messaging.service.handleButtonResponse`:
+//   onAttend  ⇄ confirmed (سأحضر)
+//   onAbsent  ⇄ declined  (سأعتذر)
+//   onExpected⇄ maybe     (ربما)  — kept the legacy name for the field
+//                                    even though the button is "ربما"
+//                                    (Inventory 08 §Task 4 #12 rename
+//                                    deferred — will land alongside the
+//                                    legacy-shape removal in Phase 5).
+const guestRepliesSchema = new mongoose.Schema(
+  {
+    onAttend: String,
+    onAbsent: String,
+    onExpected: String,
   },
   { _id: false }
 );
@@ -240,8 +294,19 @@ const eventSchema = new mongoose.Schema(
     // Staff List (event-specific, not a separate model)
     staffList: [staffSchema],
 
-    // Invitation Settings
+    // Invitation Settings — LEGACY shape, kept for one release cycle
+    // per D4c-2 dual-write window. Phase 5 removes after every event
+    // doc has been migrated by `scripts/migrate-event-shape.js`.
     invitationSettings: invitationSettingsSchema,
+
+    // Phase 4c W0-RENAME canonical shape — preferred read path; legacy
+    // `invitationSettings.*` is the fallback during the dual-write
+    // window. Writers populate BOTH.
+    visualTemplate: canonicalVisualTemplateSchema,
+    taqnyatTemplate: canonicalTaqnyatTemplateSchema,
+    guestReplies: guestRepliesSchema,
+    invitationMessage: String, // top-level — the host-supplied invitation body
+    hostNote: String,          // top-level — host note shown in EventDetails
 
     // Launch Settings
     launchSettings: launchSettingsSchema,

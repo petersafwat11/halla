@@ -656,14 +656,38 @@ export const createUpdateEventsHelpers = {
       },
       guestList: transformedGuestList,
       staffList: transformedStaffList,
+      // Phase 4c W0-RENAME — read canonical fields first, fall back
+      // to legacy `invitationSettings.*` during the dual-write window.
       selectedTemplate: event.invitationSettings?.selectedTemplate || null,
-      templateImage: event.invitationSettings?.templateImage || "",
-      invitationMessage: event.invitationSettings?.invitationMessage || "",
-      attendanceAutoReply: event.invitationSettings?.attendanceAutoReply || "",
-      absenceAutoReply: event.invitationSettings?.absenceAutoReply || "",
+      taqnyatTemplate: event.taqnyatTemplate || null,
+      visualTemplate: event.visualTemplate || event.invitationSettings?.visualTemplate || null,
+      templateImage:
+        event.visualTemplate?.bakedImagePath ||
+        event.invitationSettings?.templateImage ||
+        "",
+      invitationMessage:
+        event.invitationMessage ||
+        event.invitationSettings?.invitationMessage ||
+        "",
+      attendanceAutoReply:
+        event.guestReplies?.onAttend ||
+        event.invitationSettings?.attendanceAutoReply ||
+        "",
+      absenceAutoReply:
+        event.guestReplies?.onAbsent ||
+        event.invitationSettings?.absenceAutoReply ||
+        "",
       expectedAttendanceAutoReply:
-        event.invitationSettings?.expectedAttendanceAutoReply || "",
-      note: event.invitationSettings?.note || "",
+        event.guestReplies?.onExpected ||
+        event.invitationSettings?.expectedAttendanceAutoReply ||
+        "",
+      guestReplies: event.guestReplies || {
+        onAttend: event.invitationSettings?.attendanceAutoReply || "",
+        onAbsent: event.invitationSettings?.absenceAutoReply || "",
+        onExpected: event.invitationSettings?.expectedAttendanceAutoReply || "",
+      },
+      note: event.hostNote || event.invitationSettings?.note || "",
+      hostNote: event.hostNote || event.invitationSettings?.note || "",
       sendSchedule: event.launchSettings?.sendSchedule || "now",
       scheduleDate: event.launchSettings?.scheduledDate || "",
       scheduleTime: event.launchSettings?.scheduledTime || "",

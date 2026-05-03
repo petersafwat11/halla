@@ -64,14 +64,48 @@ export const mapEventToFormValues = (event) => ({
   address: event.eventDetails?.location || DEFAULT_ADDRESS,
   guestList: transformGuestList(event.guestList),
   staffList: transformStaffList(event.staffList),
-  templateImage: event.invitationSettings?.templateImage || "",
-  visualTemplate: event.invitationSettings?.visualTemplate || null,
+  // Phase 4c W1-WIZARD-RENAME — read from canonical fields first (new
+  // backend reads), fall back to legacy `invitationSettings.*` for
+  // pre-migration events during the dual-write window.
+  templateImage:
+    event.visualTemplate?.bakedImagePath ||
+    event.invitationSettings?.templateImage ||
+    "",
+  visualTemplate:
+    event.visualTemplate?.templateRef
+      ? {
+          ...(event.invitationSettings?.visualTemplate || {}),
+          templateRef: event.visualTemplate.templateRef,
+          fieldValues: event.visualTemplate.fieldValues,
+          bakedImagePath: event.visualTemplate.bakedImagePath,
+          // legacy mirrors so existing consumers still work
+          id: event.visualTemplate.templateRef,
+          data: event.visualTemplate.fieldValues,
+          src: event.visualTemplate.bakedImagePath,
+        }
+      : event.invitationSettings?.visualTemplate || null,
   selectedTemplate: event.invitationSettings?.selectedTemplate || null,
-  attendanceAutoReply: event.invitationSettings?.attendanceAutoReply || "",
-  absenceAutoReply: event.invitationSettings?.absenceAutoReply || "",
+  taqnyatTemplate: event.taqnyatTemplate || null,
+  attendanceAutoReply:
+    event.guestReplies?.onAttend ||
+    event.invitationSettings?.attendanceAutoReply ||
+    "",
+  absenceAutoReply:
+    event.guestReplies?.onAbsent ||
+    event.invitationSettings?.absenceAutoReply ||
+    "",
   expectedAttendanceAutoReply:
-    event.invitationSettings?.expectedAttendanceAutoReply || "",
-  note: event.invitationSettings?.note || "",
+    event.guestReplies?.onExpected ||
+    event.invitationSettings?.expectedAttendanceAutoReply ||
+    "",
+  guestReplies: event.guestReplies || {
+    onAttend: event.invitationSettings?.attendanceAutoReply || "",
+    onAbsent: event.invitationSettings?.absenceAutoReply || "",
+    onExpected: event.invitationSettings?.expectedAttendanceAutoReply || "",
+  },
+  invitationMessage: event.invitationMessage || "",
+  hostNote: event.hostNote || event.invitationSettings?.note || "",
+  note: event.invitationSettings?.note || event.hostNote || "",
   sendSchedule: "now",
   scheduleDate: "",
   scheduleTime: "",
@@ -95,6 +129,9 @@ export const buildEventPayload = (data) => ({
     name: s.name,
     phone: s.mobile || s.phone,
   })),
+  // Phase 4c W1-WIZARD-RENAME — DUAL-WRITE both shapes:
+  // legacy `invitationSettings.*` for existing consumers + canonical
+  // top-level fields per W0-RENAME for new reads.
   invitationSettings: {
     // selectedTemplate.name is the Taqnyat templateName used when sending
     selectedTemplate: data.selectedTemplate
@@ -108,12 +145,35 @@ export const buildEventPayload = (data) => ({
       : undefined,
     // visualTemplate stores the Step 3 card design data
     visualTemplate: data.visualTemplate || undefined,
-    attendanceAutoReply: data.attendanceAutoReply,
-    absenceAutoReply: data.absenceAutoReply,
-    expectedAttendanceAutoReply: data.expectedAttendanceAutoReply,
+    attendanceAutoReply:
+      data.guestReplies?.onAttend || data.attendanceAutoReply,
+    absenceAutoReply:
+      data.guestReplies?.onAbsent || data.absenceAutoReply,
+    expectedAttendanceAutoReply:
+      data.guestReplies?.onExpected || data.expectedAttendanceAutoReply,
     templateImage: data.templateImage,
-    note: data.note,
+    note: data.hostNote || data.note,
   },
+  // Canonical top-level keys per Phase 4c W0-RENAME — backend dual-write
+  // accepts these alongside `invitationSettings.*`.
+  taqnyatTemplateRef:
+    data.taqnyatTemplate?.templateRef ||
+    data.taqnyatTemplateRef ||
+    data.selectedTemplate?._id ||
+    data.selectedTemplate?.id,
+  fieldValues:
+    data.visualTemplate?.fieldValues || data.visualTemplate?.data,
+  visualTemplateRef:
+    data.visualTemplate?.templateRef ||
+    data.visualTemplate?._id ||
+    data.visualTemplate?.id,
+  guestReplies: data.guestReplies || {
+    onAttend: data.attendanceAutoReply,
+    onAbsent: data.absenceAutoReply,
+    onExpected: data.expectedAttendanceAutoReply,
+  },
+  invitationMessage: data.invitationMessage,
+  hostNote: data.hostNote || data.note,
   launchSettings: {
     sendSchedule: data.sendSchedule || "now",
     scheduledDate: data.scheduleDate,
@@ -157,7 +217,10 @@ export const useEventForm = (options = {}) => {
     }
   }, [initialData, mode, reset]);
 
-  // Step validation
+  // Step validation — Phase 4c W1-WIZARD-RENAME locked the 6-step
+  // structure (D4c-1):
+  //   1 details / 2 guest+staff / 3 visual template / 4 Taqnyat
+  //   picker / 5 messaging+replies+note / 6 summary
   const validateStep = useCallback(
     (step) => {
       switch (step) {
@@ -171,10 +234,29 @@ export const useEventForm = (options = {}) => {
         case 2:
           return formData.guestList && formData.guestList.length > 0;
         case 3:
-          return !!(formData.templateImage) || !!(formData.visualTemplate?.id);
+          // Visual template: either a backend template was picked
+          // (visualTemplate.templateRef / .id) OR the legacy
+          // hardcoded template image is set.
+          return (
+            !!formData.templateImage ||
+            !!formData.visualTemplate?.templateRef ||
+            !!formData.visualTemplate?.id ||
+            !!formData.visualTemplate?._id
+          );
         case 4:
-          return !!(formData.selectedTemplate?.name);
+          // Taqnyat template picker: legacy `selectedTemplate.name`
+          // or canonical `taqnyatTemplate.templateRef`.
+          return (
+            !!formData.selectedTemplate?.name ||
+            !!formData.taqnyatTemplate?.templateRef ||
+            !!formData.taqnyatTemplateRef
+          );
         case 5:
+          // Messaging + replies + note. The default replies are seeded
+          // by StepFive on mount, so this is satisfied as soon as the
+          // host sees the step.
+          return true;
+        case 6:
           return formData.confirmReviewed === true;
         default:
           return false;
@@ -297,6 +379,8 @@ export const useEventForm = (options = {}) => {
             successMessage: t("success.invitation_settings_updated"),
           };
         case 4:
+          // Phase 4c W1-WIZARD-RENAME — Step 4 is the Taqnyat picker
+          // only. Auto-replies + note moved to Step 5.
           return {
             type: "invitationSettings",
             data: {
@@ -306,10 +390,34 @@ export const useEventForm = (options = {}) => {
                     hasImageHeader: formData.selectedTemplate.hasImageHeader ?? false,
                   }
                 : formData.selectedTemplate,
-              attendanceAutoReply: formData.attendanceAutoReply,
-              absenceAutoReply: formData.absenceAutoReply,
-              expectedAttendanceAutoReply: formData.expectedAttendanceAutoReply,
-              note: formData.note,
+              // Canonical key — backend dual-write reads either.
+              taqnyatTemplateRef:
+                formData.taqnyatTemplate?.templateRef ||
+                formData.taqnyatTemplateRef ||
+                formData.selectedTemplate?._id ||
+                formData.selectedTemplate?.id,
+            },
+            successMessage: t("success.template_selected"),
+          };
+        case 5:
+          // Phase 4c W1-WIZARD-RENAME — Step 5 carries messaging +
+          // replies + note. Dual-writes legacy `attendanceAutoReply` /
+          // `absenceAutoReply` / `expectedAttendanceAutoReply` / `note`
+          // alongside canonical `guestReplies.*` / `invitationMessage` /
+          // `hostNote`.
+          return {
+            type: "invitationSettings",
+            data: {
+              attendanceAutoReply:
+                formData.guestReplies?.onAttend || formData.attendanceAutoReply,
+              absenceAutoReply:
+                formData.guestReplies?.onAbsent || formData.absenceAutoReply,
+              expectedAttendanceAutoReply:
+                formData.guestReplies?.onExpected || formData.expectedAttendanceAutoReply,
+              note: formData.hostNote || formData.note,
+              guestReplies: formData.guestReplies,
+              invitationMessage: formData.invitationMessage,
+              hostNote: formData.hostNote || formData.note,
             },
             successMessage: t("success.message_customization_updated"),
           };

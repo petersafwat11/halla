@@ -1470,12 +1470,77 @@ class AdminService {
       throw new NotFoundError('Event');
     }
 
-    const allowedFields = ['eventDetails', 'invitationSettings', 'staffList'];
+    // Phase 4c W0-RENAME — admin update event accepts both legacy
+    // `invitationSettings.*` AND canonical top-level keys per the
+    // dual-write window. Top-level fields are passed through verbatim
+    // so the backend reads on either shape resolve correctly.
+    const allowedFields = [
+      'eventDetails',
+      'invitationSettings',
+      'staffList',
+      // canonical Phase 4c keys (W0-RENAME)
+      'visualTemplate',
+      'taqnyatTemplate',
+      'guestReplies',
+      'invitationMessage',
+      'hostNote',
+    ];
     allowedFields.forEach((field) => {
-      if (updateData[field]) {
-        event[field] = { ...event[field]?.toObject?.() || event[field] || {}, ...updateData[field] };
+      if (updateData[field] !== undefined) {
+        if (field === 'invitationSettings' || field === 'visualTemplate' ||
+            field === 'taqnyatTemplate' || field === 'guestReplies') {
+          // Sub-doc merge so partial updates don't blow away unrelated keys.
+          event[field] = {
+            ...((event[field]?.toObject?.() || event[field]) || {}),
+            ...updateData[field],
+          };
+        } else {
+          event[field] = updateData[field];
+        }
       }
     });
+
+    // Cross-shape sync: if admin sent legacy keys, project them into
+    // canonical fields too. If admin sent canonical keys, project them
+    // back. Mirrors `events.service.updateInvitationSettings` so the
+    // two writers behave identically.
+    const inv = event.invitationSettings || {};
+    if (updateData.invitationSettings) {
+      const legacy = updateData.invitationSettings;
+      if (legacy.visualTemplate) {
+        event.visualTemplate = {
+          ...((event.visualTemplate?.toObject?.() || event.visualTemplate) || {}),
+          templateRef: legacy.visualTemplate.id || event.visualTemplate?.templateRef,
+          fieldValues: legacy.visualTemplate.data || event.visualTemplate?.fieldValues,
+          bakedImagePath:
+            legacy.visualTemplate.src ||
+            legacy.templateImage ||
+            event.visualTemplate?.bakedImagePath,
+        };
+      }
+      if (legacy.selectedTemplate?.id) {
+        event.taqnyatTemplate = {
+          ...((event.taqnyatTemplate?.toObject?.() || event.taqnyatTemplate) || {}),
+          templateRef: legacy.selectedTemplate.id,
+        };
+      }
+      const replies = event.guestReplies?.toObject?.() || event.guestReplies || {};
+      if (legacy.attendanceAutoReply !== undefined) replies.onAttend = legacy.attendanceAutoReply;
+      if (legacy.absenceAutoReply !== undefined) replies.onAbsent = legacy.absenceAutoReply;
+      if (legacy.expectedAttendanceAutoReply !== undefined) replies.onExpected = legacy.expectedAttendanceAutoReply;
+      event.guestReplies = replies;
+      if (legacy.note !== undefined && !updateData.hostNote) event.hostNote = legacy.note;
+    }
+    if (updateData.guestReplies) {
+      const merged = { ...inv };
+      if (updateData.guestReplies.onAttend !== undefined) merged.attendanceAutoReply = updateData.guestReplies.onAttend;
+      if (updateData.guestReplies.onAbsent !== undefined) merged.absenceAutoReply = updateData.guestReplies.onAbsent;
+      if (updateData.guestReplies.onExpected !== undefined) merged.expectedAttendanceAutoReply = updateData.guestReplies.onExpected;
+      event.invitationSettings = merged;
+    }
+    if (updateData.hostNote !== undefined) {
+      event.invitationSettings = { ...(event.invitationSettings || {}), note: updateData.hostNote };
+    }
 
     // Handle guest list update
     if (updateData.guestList) {
@@ -1499,11 +1564,17 @@ class AdminService {
       }
     }
 
-    // Handle file upload
+    // Handle file upload — Phase 4c W0-RENAME dual-write to both
+    // legacy `invitationSettings.templateImage` AND canonical
+    // `visualTemplate.bakedImagePath`.
     if (context.file) {
       const templateImagePath = `/uploads/templates/${context.file.filename}`;
       event.invitationSettings = event.invitationSettings || {};
       event.invitationSettings.templateImage = templateImagePath;
+      event.visualTemplate = {
+        ...((event.visualTemplate?.toObject?.() || event.visualTemplate) || {}),
+        bakedImagePath: templateImagePath,
+      };
     }
 
     await event.save();

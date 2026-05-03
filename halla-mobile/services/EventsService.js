@@ -294,15 +294,34 @@ export const validateStepData = (stepNumber, formData) => {
       return !!(formData.guestList && formData.guestList.length > 0);
 
     case 3:
-      // Visual invitation card (Step 3 = visualTemplate, not selectedTemplate which is Step 4)
-      return !!(formData.visualTemplate || formData.templateImage);
+      // Visual invitation card (Step 3 = visualTemplate). Phase 4c
+      // accepts either the canonical templateRef or the legacy id.
+      return !!(
+        formData.visualTemplate?.templateRef ||
+        formData.visualTemplate?._id ||
+        formData.visualTemplate?.id ||
+        formData.templateImage
+      );
 
     case 4:
-      // Taqnyat WhatsApp template must be selected (matches web validation)
-      return !!(formData.selectedTemplate?.name);
+      // Phase 4c W2-MOBILE-WIZARD — Taqnyat picker. Accept either the
+      // legacy `selectedTemplate.name` or the canonical
+      // `taqnyatTemplate.templateRef`.
+      return !!(
+        formData.selectedTemplate?.name ||
+        formData.taqnyatTemplate?.templateRef ||
+        formData.taqnyatTemplateRef
+      );
 
     case 5:
-      // Final review step — all data must be valid AND user must confirm they've reviewed
+      // Phase 4c W2-MOBILE-WIZARD — messaging + replies + note. The
+      // defaults are seeded by StepFive on mount, so this is satisfied
+      // as soon as the host sees the step.
+      return true;
+
+    case 6:
+      // Final review step — all data must be valid AND user must
+      // confirm they've reviewed.
       return !!(
         formData.eventType &&
         formData.eventName &&
@@ -311,8 +330,12 @@ export const validateStepData = (stepNumber, formData) => {
         formData.address?.address &&
         formData.guestList &&
         formData.guestList.length > 0 &&
-        formData.visualTemplate &&
-        formData.selectedTemplate?.name &&
+        (formData.visualTemplate?.templateRef ||
+          formData.visualTemplate?._id ||
+          formData.visualTemplate?.id ||
+          formData.visualTemplate) &&
+        (formData.selectedTemplate?.name ||
+          formData.taqnyatTemplate?.templateRef) &&
         formData.confirmReviewed
       );
 
@@ -349,20 +372,45 @@ export const transformFormDataToPayload = (formData) => {
       name: moderator.name,
       phone: moderator.phone || moderator.mobile,
     })),
+    // Phase 4c W2-MOBILE-WIZARD + W2-MOBILE-RENAME — DUAL-WRITE both
+    // legacy `invitationSettings.*` (existing consumers) AND canonical
+    // top-level keys per W0-RENAME so backend reads from either shape.
     invitationSettings: {
       selectedTemplate: formData.selectedTemplate,
       visualTemplate: formData.visualTemplate
         ? {
             ...formData.visualTemplate,
-            data: formData.visualTemplate?.data || {},
+            data: formData.visualTemplate?.fieldValues || formData.visualTemplate?.data || {},
           }
         : null,
-      attendanceAutoReply: formData.attendanceAutoReply,
-      absenceAutoReply: formData.absenceAutoReply,
-      expectedAttendanceAutoReply: formData.expectedAttendanceAutoReply,
+      attendanceAutoReply:
+        formData.guestReplies?.onAttend || formData.attendanceAutoReply,
+      absenceAutoReply:
+        formData.guestReplies?.onAbsent || formData.absenceAutoReply,
+      expectedAttendanceAutoReply:
+        formData.guestReplies?.onExpected || formData.expectedAttendanceAutoReply,
       templateImage: formData.templateImage,
-      note: formData.note,
+      note: formData.hostNote || formData.note,
     },
+    // Phase 4c W0-RENAME canonical keys (backend prefers these on read)
+    taqnyatTemplateRef:
+      formData.taqnyatTemplate?.templateRef ||
+      formData.taqnyatTemplateRef ||
+      formData.selectedTemplate?._id ||
+      formData.selectedTemplate?.id,
+    visualTemplateRef:
+      formData.visualTemplate?.templateRef ||
+      formData.visualTemplate?._id ||
+      formData.visualTemplate?.id,
+    fieldValues:
+      formData.visualTemplate?.fieldValues || formData.visualTemplate?.data,
+    guestReplies: formData.guestReplies || {
+      onAttend: formData.attendanceAutoReply,
+      onAbsent: formData.absenceAutoReply,
+      onExpected: formData.expectedAttendanceAutoReply,
+    },
+    invitationMessage: formData.invitationMessage,
+    hostNote: formData.hostNote || formData.note,
     launchSettings: {
       sendSchedule: formData.sendSchedule || "now",
       scheduledDate: formData.scheduleDate,
@@ -456,12 +504,19 @@ export const getDefaultFormValues = () => ({
   visualTemplate: null,     // { _id, name, fields, data: {...} }
   templateImage: null,
 
-  // Step 4 - Taqnyat WhatsApp Template + Auto-Replies
-  selectedTemplate: null,   // { id, name, bodyText } from Taqnyat
-  invitationMessage: "",    // populated from selectedTemplate.bodyText, used for preview
+  // Step 4 - Taqnyat WhatsApp Template (Phase 4c W2-MOBILE-WIZARD —
+  // auto-replies moved to Step 5)
+  selectedTemplate: null,   // legacy { id, name, bodyText } shape
+  taqnyatTemplate: null,    // canonical { templateRef } shape (W0-RENAME)
+  taqnyatTemplateRef: null, // top-level alias for backend dual-write
+
+  // Step 5 - Messaging + auto-replies + host note (Phase 4c)
+  invitationMessage: "",
   attendanceAutoReply: "",
   absenceAutoReply: "",
   expectedAttendanceAutoReply: "",
+  guestReplies: { onAttend: "", onAbsent: "", onExpected: "" },
+  hostNote: "",
   note: "",
 
   // Launch Settings

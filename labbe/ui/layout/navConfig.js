@@ -18,6 +18,9 @@ import {
   IoStatsChart,
   IoPricetag,
   IoGift,
+  IoImagesOutline,
+  IoPricetagsOutline,
+  IoChatbubblesOutline,
 } from "react-icons/io5";
 
 /**
@@ -219,6 +222,29 @@ export const adminNavItems = [
     labelKey: "adminSidebar.settings",
     defaultLabel: "الإعدادات",
   },
+  // Phase 4c W1-VISUAL — visual templates editor + categories
+  {
+    key: "templates",
+    path: "/admin-dash/templates",
+    icon: IoImagesOutline,
+    labelKey: "adminSidebar.templates",
+    defaultLabel: "قوالب الدعوات",
+  },
+  {
+    key: "template_categories",
+    path: "/admin-dash/templates/categories",
+    icon: IoPricetagsOutline,
+    labelKey: "adminSidebar.templateCategories",
+    defaultLabel: "فئات القوالب",
+  },
+  // Phase 4c W1-TAQNYAT-ADMIN — Taqnyat-template assignments
+  {
+    key: "taqnyat_templates",
+    path: "/admin-dash/taqnyat-templates",
+    icon: IoChatbubblesOutline,
+    labelKey: "adminSidebar.taqnyatTemplates",
+    defaultLabel: "قوالب واتساب",
+  },
 ];
 
 /**
@@ -348,6 +374,10 @@ const ROLE_NAV_ACCESS = {
     "manage-plans",
     "discounts",
     "settings",
+    // Phase 4c W1-VISUAL + W1-TAQNYAT-ADMIN
+    "templates",
+    "template_categories",
+    "taqnyat_templates",
   ],
   [USER_ROLES.ADMIN]: [
     "dashboard",
@@ -360,6 +390,10 @@ const ROLE_NAV_ACCESS = {
     "plans",
     "discounts",
     "settings",
+    // Phase 4c W1-VISUAL + W1-TAQNYAT-ADMIN
+    "templates",
+    "template_categories",
+    "taqnyat_templates",
   ],
   [USER_ROLES.MODERATOR]: [
     "dashboard",
@@ -370,6 +404,9 @@ const ROLE_NAV_ACCESS = {
     "payments", // VIEW access
     "discounts", // FULL access
     "settings",
+    // Phase 4c W1-VISUAL — moderator gets EDIT on templates, VIEW on categories
+    "templates",
+    "template_categories",
   ],
   [USER_ROLES.WHITELABEL_ADMIN]: [
     "dashboard",
@@ -409,6 +446,9 @@ export const ROLE_PAGE_ACCESS = {
     "manage-plans": ACCESS_LEVELS.FULL,
     discounts: ACCESS_LEVELS.FULL,
     settings: ACCESS_LEVELS.FULL,
+    templates: ACCESS_LEVELS.FULL,
+    template_categories: ACCESS_LEVELS.FULL,
+    taqnyat_templates: ACCESS_LEVELS.FULL,
   },
   [USER_ROLES.ADMIN]: {
     dashboard: ACCESS_LEVELS.FULL,
@@ -423,6 +463,9 @@ export const ROLE_PAGE_ACCESS = {
     "manage-plans": ACCESS_LEVELS.NONE,
     discounts: ACCESS_LEVELS.FULL,
     settings: ACCESS_LEVELS.FULL,
+    templates: ACCESS_LEVELS.FULL,
+    template_categories: ACCESS_LEVELS.FULL,
+    taqnyat_templates: ACCESS_LEVELS.FULL,
   },
   [USER_ROLES.MODERATOR]: {
     dashboard: ACCESS_LEVELS.VIEW,
@@ -437,6 +480,9 @@ export const ROLE_PAGE_ACCESS = {
     "manage-plans": ACCESS_LEVELS.NONE,
     discounts: ACCESS_LEVELS.FULL,
     settings: ACCESS_LEVELS.VIEW,
+    templates: ACCESS_LEVELS.EDIT,
+    template_categories: ACCESS_LEVELS.VIEW,
+    taqnyat_templates: ACCESS_LEVELS.NONE,
   },
   [USER_ROLES.WHITELABEL_ADMIN]: {
     dashboard: ACCESS_LEVELS.FULL,

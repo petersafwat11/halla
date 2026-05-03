@@ -32,18 +32,105 @@ class MessagingService {
 
   /**
    * Build body params for Taqnyat template variables.
-   * Variable order: {{1}} guest_name, {{2}} event_name, {{3}} event_date,
-   *                 {{4}} event_time, {{5}} event_location
+   *
+   * Phase 4c W0-DYNAMIC: this resolver now reads from the per-template
+   * `varMapping[]` curated by admins on the TaqnyatTemplate cache. Each
+   * mapping entry says "placeholder {{N}} → sourceKey foo.bar" and the
+   * resolver walks the dotted-path against the event/guest data plus a
+   * canonical synthetic context.
+   *
+   * Legacy fallback (audit-corrected from prompt's "4-param" to **5
+   * params** to match the historic shape — see `messaging.service.js:37`
+   * pre-rename + PHASE_4C_PLAN §0 row 10):
+   *   {{1}} guest_name, {{2}} event_name, {{3}} event_date,
+   *   {{4}} event_time, {{5}} event_location
+   *
+   * The fallback fires when:
+   *   - `event.taqnyatTemplate.templateRef` is empty (pre-migration
+   *     events whose Taqnyat selection is still on the legacy
+   *     `invitationSettings.selectedTemplate`), OR
+   *   - the cached TaqnyatTemplate has no `varMapping[]` entries
+   *     (admin hasn't curated yet).
+   *
+   * Both branches preserve the 5-param shape to prevent silently sending
+   * fewer params to a Taqnyat template that expects five — Meta returns
+   * "Invalid or missing parameter" (code 100) on undercount.
+   *
    * @private
    */
-  _getEventBodyParams(event, guestName) {
-    return [
+  _getEventBodyParams(event, guestName, taqnyatTemplate = null) {
+    const fallback = () => [
       guestName || 'ضيفنا الكريم',
       event.eventDetails?.title || 'مناسبة',
       this._formatDate(event.eventDetails?.date),
       event.eventDetails?.time || '',
       event.eventDetails?.location?.address || 'يُحدد لاحقاً',
     ];
+
+    if (!taqnyatTemplate || !Array.isArray(taqnyatTemplate.varMapping) || taqnyatTemplate.varMapping.length === 0) {
+      return fallback();
+    }
+
+    // Build the resolution context. dotted-path keys resolve against
+    // this object so admins can map {{N}} → "guest.name" / "host.name"
+    // / "eventDetails.title" / "hostNote" etc.
+    const ctx = {
+      guest: { name: guestName || 'ضيفنا الكريم' },
+      eventDetails: {
+        ...(event.eventDetails || {}),
+        dateFormatted: this._formatDate(event.eventDetails?.date),
+      },
+      host: event.host && typeof event.host === 'object'
+        ? { name: event.host.name || event.host.username || '' }
+        : {},
+      hostNote: event.hostNote || event.invitationSettings?.note || '',
+      invitationMessage: event.invitationMessage || '',
+    };
+
+    // Sort mappings by placeholder so {{1}}, {{2}}, … come out in order.
+    const ordered = [...taqnyatTemplate.varMapping].sort((a, b) => {
+      const ai = parseInt(String(a.placeholder).replace(/\D/g, ''), 10) || 0;
+      const bi = parseInt(String(b.placeholder).replace(/\D/g, ''), 10) || 0;
+      return ai - bi;
+    });
+
+    return ordered.map((m) => {
+      const value = m.sourceKey
+        .split('.')
+        .reduce((acc, k) => (acc == null ? acc : acc[k]), ctx);
+      const resolved = value === undefined || value === null || value === '' ? m.fallback : value;
+      return resolved == null ? '' : String(resolved);
+    });
+  }
+
+  /**
+   * Look up the cached TaqnyatTemplate for an event. Prefers the new
+   * `event.taqnyatTemplate.templateRef` ObjectId; falls back to a
+   * `templateName` match against the legacy
+   * `event.invitationSettings.selectedTemplate.name` when no ref is set.
+   *
+   * Returns `null` for events with neither — caller falls back to the
+   * 5-param shape and the templateName from the legacy field.
+   *
+   * @private
+   */
+  async _resolveTaqnyatTemplate(event) {
+    try {
+      const TaqnyatTemplate = require('../../../models/TaqnyatTemplateModel');
+
+      const ref = event.taqnyatTemplate?.templateRef;
+      if (ref) {
+        const doc = await TaqnyatTemplate.findById(ref).lean();
+        if (doc) return doc;
+      }
+      const legacyName = event.invitationSettings?.selectedTemplate?.name;
+      if (legacyName) {
+        return TaqnyatTemplate.findOne({ templateName: legacyName }).lean();
+      }
+    } catch (err) {
+      console.warn('[messaging] _resolveTaqnyatTemplate failed:', err.message);
+    }
+    return null;
   }
 
   /**
@@ -70,7 +157,10 @@ class MessagingService {
     const hasImageHeader = event.invitationSettings?.selectedTemplate?.hasImageHeader === true;
     if (!hasImageHeader) return null;
 
-    const imagePath = event.invitationSettings?.templateImage;
+    // Phase 4c W0-DYNAMIC: prefer canonical visualTemplate.bakedImagePath,
+    // fall back to legacy invitationSettings.templateImage.
+    const imagePath = event.visualTemplate?.bakedImagePath
+      || event.invitationSettings?.templateImage;
     if (!imagePath) return null;
     // S3 URLs are already public
     if (imagePath.startsWith('http')) return imagePath;
@@ -95,8 +185,12 @@ class MessagingService {
 
     const rsvpLink = `${config.frontend?.url || 'https://halaa.sa'}/rsvp/test`;
 
-    // Template name comes from the pre-approved Taqnyat template the host selected
-    const templateName = event.invitationSettings?.selectedTemplate?.name;
+    // Phase 4c W0-DYNAMIC: prefer the cached TaqnyatTemplate
+    // (curated category + per-{{N}} var mapping). Falls back to the
+    // legacy `selectedTemplate.name` when no ref / cache hit.
+    const cached = await this._resolveTaqnyatTemplate(event);
+    const templateName = cached?.templateName
+      || event.invitationSettings?.selectedTemplate?.name;
 
     let result;
     if (channel === 'whatsapp') {
@@ -105,7 +199,7 @@ class MessagingService {
       }
 
       const imageUrl = this._getEventImageUrl(event);
-      const bodyParams = this._getEventBodyParams(event, 'ضيف تجريبي');
+      const bodyParams = this._getEventBodyParams(event, 'ضيف تجريبي', cached);
 
       result = imageUrl
         ? await taqnyat.sendWhatsAppTemplateWithImage(phoneNumber, templateName, 'ar', imageUrl, bodyParams)
@@ -155,8 +249,12 @@ class MessagingService {
 
     const rsvpLink = `${config.frontend?.url || 'https://halaa.sa'}/rsvp/${eventId}/${guestId}`;
 
-    // Use the pre-approved Taqnyat template name stored at event creation
-    const templateName = event.invitationSettings?.selectedTemplate?.name;
+    // Phase 4c W0-DYNAMIC: prefer the cached TaqnyatTemplate so the
+    // body params resolve via admin-curated `varMapping[]` instead of
+    // the hardcoded 5-param fallback.
+    const cached = await this._resolveTaqnyatTemplate(event);
+    const templateName = cached?.templateName
+      || event.invitationSettings?.selectedTemplate?.name;
 
     let result;
     if (channel === 'whatsapp') {
@@ -165,7 +263,7 @@ class MessagingService {
       }
 
       const imageUrl = this._getEventImageUrl(event);
-      const bodyParams = this._getEventBodyParams(event, guest.name);
+      const bodyParams = this._getEventBodyParams(event, guest.name, cached);
 
       // SMS fallback — sent automatically by Taqnyat if recipient has no WhatsApp
       const smsFallback = {
@@ -763,11 +861,14 @@ class MessagingService {
       console.error('[Messaging] Failed to notify host of RSVP:', notifErr);
     }
 
-    // Get auto-reply message
+    // Get auto-reply message — Phase 4c W0-DYNAMIC: prefer canonical
+    // `guestReplies.{onAttend,onAbsent,onExpected}`, fall back to legacy
+    // `invitationSettings.{attendance,absence,expectedAttendance}AutoReply`
+    // during the dual-write window.
     const autoReplyMap = {
-      'confirmed': event.invitationSettings?.attendanceAutoReply || 'شكراً لتأكيد حضورك! نتطلع لرؤيتك.',
-      'declined': event.invitationSettings?.absenceAutoReply || 'شكراً لإعلامنا. نتمنى لك يوماً سعيداً.',
-      'maybe': event.invitationSettings?.expectedAttendanceAutoReply || 'شكراً. نأمل أن نراك بيننا!',
+      'confirmed': event.guestReplies?.onAttend || event.invitationSettings?.attendanceAutoReply || 'شكراً لتأكيد حضورك! نتطلع لرؤيتك.',
+      'declined': event.guestReplies?.onAbsent || event.invitationSettings?.absenceAutoReply || 'شكراً لإعلامنا. نتمنى لك يوماً سعيداً.',
+      'maybe': event.guestReplies?.onExpected || event.invitationSettings?.expectedAttendanceAutoReply || 'شكراً. نأمل أن نراك بيننا!',
     };
 
     const replyMessage = autoReplyMap[rsvpStatus];

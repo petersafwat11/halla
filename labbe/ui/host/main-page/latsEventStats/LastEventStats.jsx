@@ -33,7 +33,11 @@ function LastEventStats() {
     data.testMessageSent || false
   );
 
-  const hasTemplate = !!(data.invitationSettings?.selectedTemplate?.name);
+  // Phase 4c W0-RENAME — accept canonical taqnyatTemplate.templateRef
+  // alongside the legacy selectedTemplate.name during dual-write.
+  const hasTemplate =
+    !!data.taqnyatTemplate?.templateRef ||
+    !!data.invitationSettings?.selectedTemplate?.name;
   const canSendTest = hasTemplate && !testMessageSent;
   const canSchedule = hasTemplate && testMessageSent;
   const isCompleted = data.status === 'completed';

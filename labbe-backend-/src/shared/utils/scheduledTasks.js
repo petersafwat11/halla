@@ -289,7 +289,14 @@ async function runEventLaunch(event, workerId) {
     await fresh.save();
 
     const channel = fresh.messagingStatus?.preferredChannel || "sms";
-    const canUseWhatsApp = !!fresh.invitationSettings?.selectedTemplate?.name;
+    // Phase 4c W0-RENAME — accept both canonical
+    // `taqnyatTemplate.templateRef` (new wizard) and legacy
+    // `invitationSettings.selectedTemplate.name` (pre-migration). The
+    // launch cron must NOT skip WhatsApp on canonical-only events that
+    // would otherwise have a Taqnyat template available.
+    const canUseWhatsApp =
+      !!fresh.taqnyatTemplate?.templateRef ||
+      !!fresh.invitationSettings?.selectedTemplate?.name;
     const finalChannel = channel === "whatsapp" && canUseWhatsApp ? "whatsapp" : "sms";
 
     const sendResult = await messagingService.sendBulk({
@@ -1082,6 +1089,14 @@ const initScheduledTasks = () => {
   scheduleEventCompletion();
   scheduleGuestReminders();
 
+  // Phase 4c W0-MODEL: daily Taqnyat-template upstream sync.
+  try {
+    const { scheduleTaqnyatTemplateSync } = require("../../jobs/syncTaqnyatTemplates");
+    scheduleTaqnyatTemplateSync();
+  } catch (err) {
+    console.error("[Cron] Failed to register taqnyat-template sync:", err.message);
+  }
+
   console.log("[Cron] Scheduled tasks initialized:");
   console.log("  - Event reminders (host): Daily at 8:00 AM");
   console.log("  - Daily admin report: Daily at 9:00 AM");
@@ -1093,6 +1108,7 @@ const initScheduledTasks = () => {
   console.log("  - Template status polling: Every 30 minutes");
   console.log("  - Event completion (live → completed): Every hour");
   console.log("  - 24h guest reminder SMS: Every 30 minutes");
+  console.log("  - Taqnyat-template upstream sync: Daily at 3:30 AM");
 };
 
 module.exports = {

@@ -1,0 +1,95 @@
+.stepFive {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 8px 0;
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c2c2c;
+}
+
+.repliesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.repliesHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.repliesHint {
+  font-size: 13px;
+  color: #666;
+}
+
+.tabsWrapper {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tabBtn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+
+.tabBtnActive {
+  border-color: #c28e5c;
+  background: #fff7eb;
+  color: #5a4a42;
+  font-weight: 600;
+}
+
+.replyTextarea {
+  resize: vertical;
+}
+
+.optionalField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.labelWithOptional {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.optionalText {
+  font-size: 12px;
+  color: #999;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c2c2c;
+}

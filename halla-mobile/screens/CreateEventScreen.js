@@ -23,6 +23,7 @@ import StepOne from "../components/createEvent/StepOne";
 import StepTwo from "../components/createEvent/StepTwo";
 import StepThree from "../components/createEvent/StepThree";
 import StepFour from "../components/createEvent/StepFour";
+import StepFive from "../components/createEvent/StepFive";
 import EventSummary from "../components/createEvent/EventSummary";
 import StepHeader from "../components/createEvent/StepHeader";
 import PrevAndNextBtns from "../components/createEvent/PrevAndNextBtns";
@@ -79,10 +80,11 @@ const CreateEventScreen = () => {
       return;
     }
 
-    if (currentStep < 5) {
+    // Phase 4c W2-MOBILE-WIZARD: locked 6-step structure (D4c-1).
+    if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Final submission on step 5
+      // Final submission on step 6
       handleSubmit(onSubmit)();
     }
   }, [currentStep, isStepValid, handleSubmit]);
@@ -195,8 +197,13 @@ const CreateEventScreen = () => {
       case 3:
         return <StepThree />;
       case 4:
+        // Phase 4c W2-MOBILE-WIZARD — Taqnyat picker only (auto-replies
+        // moved to Step 5 per the locked 6-step structure D4c-1).
         return <StepFour onPreview={() => setShowPreview(true)} />;
       case 5:
+        // Phase 4c W2-MOBILE-WIZARD — messaging + replies + note.
+        return <StepFive />;
+      case 6:
         return <EventSummary />;
       default:
         return null;
@@ -226,10 +233,15 @@ const CreateEventScreen = () => {
         };
       case 4:
         return {
-          title: "تصميم الدعوة",
-          description: "قم بتخصيص القالب ودعوتك بشكل سهل",
+          title: "قالب الواتساب",
+          description: "اختر قالب الرسالة المعتمد من Meta",
         };
       case 5:
+        return {
+          title: "نص الرسالة والردود",
+          description: "اكتب نص الدعوة والردود التلقائية",
+        };
+      case 6:
         return {
           title: "مراجعة واطلاق المناسبة",
           description: "راجع كل التفاصيل بتركيز",
@@ -332,7 +344,7 @@ const CreateEventScreen = () => {
           {/* Step Header */}
           <StepHeader
             currentStep={currentStep}
-            totalSteps={5}
+            totalSteps={6}
             title={stepInfo.title}
             description={stepInfo.description}
           />
@@ -346,7 +358,7 @@ const CreateEventScreen = () => {
             onPrevious={onPrevious}
             showPrevious={currentStep > 1}
             isNextDisabled={!isStepValid || createEventMutation.isPending}
-            nextButtonText={currentStep === 5 ? "حفظ" : "التالي"}
+            nextButtonText={currentStep === 6 ? "حفظ" : "التالي"}
             isLoading={createEventMutation.isPending}
           />
         </ScrollView>

@@ -272,6 +272,38 @@ export const API_PATHS = {
   },
 
   // ============================================
+  // PHASE 4C — TEMPLATES (Visual + Taqnyat) + FONTS
+  // ============================================
+  templates: {
+    // Host-facing
+    list: '/templates',
+    getById: (id) => `/templates/${id}`,
+    categories: '/template-categories',
+    fonts: '/fonts',
+    // Admin
+    adminList: '/admin/templates',
+    adminGetById: (id) => `/admin/templates/${id}`,
+    adminCreate: '/admin/templates',
+    adminUpdate: (id) => `/admin/templates/${id}`,
+    adminDelete: (id) => `/admin/templates/${id}`,
+    adminDuplicate: (id) => `/admin/templates/${id}/duplicate`,
+    adminUploadUrl: '/admin/templates/upload-url',
+    // Categories admin
+    adminCategories: '/admin/template-categories',
+    adminCreateCategory: '/admin/template-categories',
+    adminUpdateCategory: (id) => `/admin/template-categories/${id}`,
+    adminDeleteCategory: (id) => `/admin/template-categories/${id}`,
+  },
+  taqnyatTemplates: {
+    // Host-facing list (replaces direct passthrough)
+    list: '/taqnyat-templates',
+    // Admin
+    adminList: '/admin/taqnyat-templates',
+    adminSync: '/admin/taqnyat-templates/sync',
+    adminAssign: (id) => `/admin/taqnyat-templates/${id}`,
+  },
+
+  // ============================================
   // PLANS MODULE
   // ============================================
   plans: {

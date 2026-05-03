@@ -36,6 +36,11 @@ const { routes: messagingRoutes } = require("./modules/messaging");
 const { routes: adminRoutes } = require("./modules/admin");
 const { discountsRoutes } = require("./modules/discounts");
 const addonsRoutes = require("./modules/addons/addons.routes");
+// Phase 4c W0-MODEL: Taqnyat-template cache + sync + admin assignment
+// (public list + admin sub-router under /admin/taqnyat-templates).
+const taqnyatTemplatesModule = require("./modules/taqnyat-templates");
+// Phase 4c W0-VISUAL-BACKEND: visual templates + categories + fonts.
+const templatesModule = require("./modules/templates");
 
 /**
  * Create Express application
@@ -218,6 +223,16 @@ const createApp = () => {
     app.use(`${prefix}/admin`, adminRoutes);
     app.use(`${prefix}/discounts`, discountsRoutes);
     app.use(`${prefix}/addons`, addonsRoutes);
+    // Phase 4c: visual templates + categories + Taqnyat templates.
+    // Admin sub-routers are mounted under /admin/<resource> alongside
+    // the public host-facing routers under /<resource>.
+    app.use(`${prefix}/templates`, templatesModule.routes);
+    app.use(`${prefix}/admin/templates`, templatesModule.adminRoutes);
+    app.use(`${prefix}/template-categories`, templatesModule.categoriesRoutes);
+    app.use(`${prefix}/admin/template-categories`, templatesModule.adminCategoriesRoutes);
+    app.use(`${prefix}/taqnyat-templates`, taqnyatTemplatesModule.routes);
+    app.use(`${prefix}/admin/taqnyat-templates`, taqnyatTemplatesModule.adminRoutes);
+    app.use(`${prefix}/fonts`, templatesModule.fontsRoutes);
   };
 
   mountRoutes('/api/v2');

@@ -218,6 +218,49 @@ Drive-by improvements (no audit-FLOW IDs — recorded for traceability):
 
 ---
 
+## Closed in Phase 4c (template-system unification)
+
+Phase 4c was scoped to deliverables outside the original 131 audit
+findings: template models, dual-write rename, dynamic Taqnyat var
+mapping, admin templates editor, 6-step wizard. None of the audit
+FLOW-IDs close as a direct result of this phase; the phase is tracked
+by sub-track instead.
+
+| Sub-track | Commit | Deliverable |
+|-----------|--------|-------------|
+| W0-MODEL | `28b562c` | TaqnyatTemplateModel + sync service/routes + daily 03:30 cron |
+| W0-VISUAL-BACKEND | `401945b` | TemplateModel + TemplateCategoryModel + admin CRUD + presigned-POST + sharp + orphan GC + AuditLog enum extension |
+| W0-RENAME | `ae2b97f` | EventModel canonical sub-objects (visualTemplate, taqnyatTemplate, guestReplies, invitationMessage, hostNote) + dual-write services + migration script |
+| W0-DYNAMIC | `b2e9107` | Dynamic `_getEventBodyParams` resolver + 5-param legacy fallback + canonical reply chain |
+| W1-VISUAL | `947d292` | Admin templates editor + sidebar + dynamic StepThree + dynamic TemplateForm + useUnsavedChanges hook |
+| W1-TAQNYAT-ADMIN | `d4158d4` | Admin Taqnyat-templates page + Sync + Assign dialog |
+| W1-WIZARD-RENAME | `773a2fc` | Locked 6-step wizard + StepFour rebuilt as Taqnyat picker + StepFive (NEW) |
+| W2-MOBILE-WIZARD | `e855b93` | Mobile 6-step wizard + Taqnyat picker + canvasBake util + dead-dep removal |
+| W2-MOBILE-RENAME | `beb03dd` | Mobile invitationSettings consumers read canonical first |
+
+Smoke checks: `48 / 48` PASS via
+`docs/implementation/phase-4c-smoke-tests/static-checks-4c.js`.
+Full report in `PHASE_4C_REPORT.md`.
+
+Hand-offs to Phase 4d:
+- Schemas (`buildDynamicTemplateSchema`, `buildDefaultValues`) ready
+  for the `@halla/shared-schemas` package migration.
+- `useEventActionGate` mobile + web both accept canonical
+  `taqnyatTemplate.templateRef`.
+
+Hand-offs to Phase 5:
+- Removal of legacy `Event.invitationSettings` after one release
+  cycle.
+- Production migration `migrate-event-shape.js --apply`.
+- Production `seedInitialTemplates.js` after admin sign-off.
+- Daily cron registration for `gcOrphanTemplateImages.js`.
+- CloudFront provisioning + ClamAV virus-scan Lambda for template
+  images.
+- Adoption of `react-rnd` drag-resize wrapping in the editor.
+- `InputGroup` / `TextArea` extension per v4.1 [PATCH 4–7].
+
+---
+
 ## Open
 
 - FLOW-01-F04 — not started (Phase 1c)

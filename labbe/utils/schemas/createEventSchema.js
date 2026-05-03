@@ -261,4 +261,107 @@ export const templateFormSchema = (t) =>
       .default("#5a4a42"),
   });
 
+// ─── Phase 4c W1-VISUAL ────────────────────────────────────────────────
+//
+// Dynamic Zod schema factory for the visual TemplateForm. Mirrors the
+// mobile equivalent in `halla-mobile/utils/schemas/createEventSchema.js`
+// per v4.1 §B-18 [PATCH 2]. FONT_IDS comes from `labbe/config/fonts.js`,
+// hydrated from `GET /api/v2/fonts` (cached for the session).
+
+import { FONT_IDS } from "@/config/fonts";
+
+const colorRegex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+export const buildDynamicTemplateSchema = (fields, t) => {
+  const shape = {};
+  for (const field of fields || []) {
+    let schema;
+    switch (field.type) {
+      case "text":
+      case "textarea": {
+        let s = z.string();
+        if (field.minLength) s = s.min(field.minLength, t ? t("templates.fields.validation.minLength", { min: field.minLength }) : `Min ${field.minLength}`);
+        if (field.maxLength) s = s.max(field.maxLength, t ? t("templates.fields.validation.maxLength", { max: field.maxLength }) : `Max ${field.maxLength}`);
+        schema = field.required ? s.min(1, t ? t("templates.fields.validation.required") : "Required") : s.optional();
+        break;
+      }
+      case "email": {
+        let s = z.string().email(t ? t("templates.fields.validation.invalidEmail") : "Invalid email");
+        if (field.minLength) s = s.min(field.minLength);
+        if (field.maxLength) s = s.max(field.maxLength);
+        schema = field.required ? s.min(1, t ? t("templates.fields.validation.required") : "Required") : s.optional();
+        break;
+      }
+      case "password": {
+        let s = z.string();
+        if (field.minLength) s = s.min(field.minLength);
+        if (field.maxLength) s = s.max(field.maxLength);
+        schema = field.required ? s.min(1, t ? t("templates.fields.validation.required") : "Required") : s.optional();
+        break;
+      }
+      case "date":
+        schema = field.required
+          ? z.date({ required_error: t ? t("templates.fields.validation.required") : "Required" })
+          : z.date().nullable().optional();
+        break;
+      case "time":
+        // Web TimePicker emits "HH:MM:AM" string per existing convention.
+        schema = field.required
+          ? z.string().regex(/^\d{1,2}:\d{2}:(AM|PM)$/, t ? t("templates.fields.validation.required") : "Required")
+          : z.string().optional();
+        break;
+      case "color":
+        schema = field.required
+          ? z.string().regex(colorRegex, t ? t("templates.fields.validation.invalidColor") : "Invalid color")
+          : z.string().regex(colorRegex).optional();
+        break;
+      case "font":
+        schema = z.enum(FONT_IDS, { errorMap: () => ({ message: t ? t("templates.fields.validation.required") : "Required" }) });
+        if (!field.required) schema = schema.optional();
+        break;
+      case "number": {
+        let s = z.coerce.number({ invalid_type_error: t ? t("templates.fields.validation.invalidNumber") : "Invalid number" });
+        if (field.min !== undefined) s = s.min(field.min);
+        if (field.max !== undefined) s = s.max(field.max);
+        schema = field.required ? s : z.preprocess((v) => (v === "" ? undefined : v), s.optional());
+        break;
+      }
+      default:
+        schema = z.any();
+    }
+    shape[field.key] = schema;
+  }
+  return z.object(shape);
+};
+
+export const buildDefaultValues = (template, parentEventDate, parentEventTime) => {
+  if (!template?.fields) return {};
+  return template.fields.reduce((acc, field) => {
+    const saved = template?.fieldValues?.[field.key] ?? template?.data?.[field.key];
+    let defaultVal;
+    switch (field.type) {
+      case "date":
+        defaultVal = saved ? new Date(saved) : (parentEventDate ? new Date(parentEventDate) : null);
+        break;
+      case "time":
+        defaultVal = saved ?? parentEventTime ?? "12:00:AM";
+        break;
+      case "font":
+        defaultVal = saved ?? field.defaultValue ?? "cairo";
+        break;
+      case "color":
+        defaultVal = saved ?? field.defaultValue ?? "#c28e5c";
+        break;
+      case "number":
+        defaultVal = saved ?? field.defaultValue ?? "";
+        break;
+      // text, textarea, email, password — empty string default
+      default:
+        defaultVal = saved ?? field.defaultValue ?? "";
+    }
+    acc[field.key] = defaultVal;
+    return acc;
+  }, {});
+};
+
 export default createEventSchema;

@@ -300,7 +300,7 @@ class DashboardService {
       Subscription.findOne({ userId, status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } }).populate('planId'),
       // Get the last created event with full details
       Event.findOne({ host: userId })
-        .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings invitationSettings testMessageSent')
+        .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings invitationSettings testMessageSent visualTemplate taqnyatTemplate guestReplies hostNote invitationMessage')
         .sort({ createdAt: -1 })
         .populate('guestList'),
     ]);
@@ -349,10 +349,19 @@ class DashboardService {
         },
         testMessageSent: lastEvent.testMessageSent || false,
         launchSettings: lastEvent.launchSettings || null,
+        // Phase 4c W0-RENAME — emit BOTH legacy `invitationSettings`
+        // shape (for older clients) AND the canonical top-level keys
+        // (for new readers). Resolves templateImage from the canonical
+        // `visualTemplate.bakedImagePath` first, falls back to legacy.
         invitationSettings: {
           selectedTemplate: lastEvent.invitationSettings?.selectedTemplate || null,
-          templateImage: lastEvent.invitationSettings?.templateImage || null,
+          templateImage:
+            lastEvent.visualTemplate?.bakedImagePath ||
+            lastEvent.invitationSettings?.templateImage ||
+            null,
         },
+        visualTemplate: lastEvent.visualTemplate || null,
+        taqnyatTemplate: lastEvent.taqnyatTemplate || null,
       };
     }
 
