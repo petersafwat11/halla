@@ -19,16 +19,43 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 import { useCreateModerator, useUpdateModerator } from "../../../hooks";
+import { useAdminWhitelabels } from "../../../hooks/queries/useAdmin";
+import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// H-15: roles that REQUIRE a whitelabelId server-side. Mirror of the web
+// AddModeratorPopup constant.
+const ROLES_THAT_NEED_TENANT = new Set([
+  "admin",
+  "moderator",
+  "whitelabel_admin",
+  "whitelabel_moderator",
+]);
 
 const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
   const { t } = useTranslation("admin");
   const toast = useToast();
   const createModerator = useCreateModerator();
   const updateModerator = useUpdateModerator();
+  const currentUser = useAuthStore((s) => s.user);
+  const isSuperAdmin = currentUser?.role === "super_admin";
+
+  // H-15: whitelabel tenant picker for SUPER_ADMIN. Other roles never see
+  // the picker (the backend auto-inherits whitelabelId for WL admins).
+  const whitelabelsQuery = useAdminWhitelabels({});
+  const whitelabelOptions = (
+    whitelabelsQuery.data?.data ||
+    whitelabelsQuery.data ||
+    []
+  )
+    .filter((w) => w && (w._id || w.id))
+    .map((w) => ({
+      id: w._id || w.id,
+      label: w.name || w.brandName || w.email || (w._id || w.id),
+    }));
 
   const ROLE_OPTIONS = [
     { id: "moderator", label: t("moderators.roles.moderator"),  description: t("moderators.add.moderatorDesc") },
@@ -44,8 +71,12 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
     password: "",
     phoneNumber: "",
     role: "moderator",
+    whitelabelId: "",
   });
   const [errors, setErrors] = useState({});
+
+  const showWhitelabelPicker =
+    isSuperAdmin && !isEdit && ROLES_THAT_NEED_TENANT.has(formData.role);
 
   useEffect(() => {
     if (visible) {
@@ -58,7 +89,14 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
           role:        moderator.role || "moderator",
         });
       } else {
-        setFormData({ name: "", email: "", password: "", phoneNumber: "", role: "moderator" });
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          phoneNumber: "",
+          role: "moderator",
+          whitelabelId: "",
+        });
       }
       setErrors({});
     }
@@ -85,6 +123,14 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
     if (!isEdit && !formData.phoneNumber.trim()) {
       e.phoneNumber = t("moderators.add.phoneRequired") + " " + t("common.required", "is required");
     }
+    // H-15: SUPER_ADMIN must select a tenant for ADMIN/MODERATOR/WL_*
+    // creations.
+    if (showWhitelabelPicker && !formData.whitelabelId) {
+      e.whitelabelId = t(
+        "moderators.add.whitelabelRequired",
+        "اختر العلامة البيضاء"
+      );
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -99,6 +145,12 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
         role:        formData.role,
       };
       if (!isEdit) payload.password = formData.password;
+      // H-15: only attach whitelabelId when picker was shown (SUPER_ADMIN
+      // creating a tenant-scoped role). WHITELABEL_ADMIN inheritance is
+      // handled server-side from req.user.whitelabelId.
+      if (showWhitelabelPicker && formData.whitelabelId) {
+        payload.whitelabelId = formData.whitelabelId;
+      }
 
       if (isEdit) {
         await updateModerator.mutateAsync({
@@ -253,6 +305,72 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                 <Text style={styles.errorText}>{errors.phoneNumber}</Text>
               ) : null}
             </View>
+
+            {showWhitelabelPicker ? (
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("moderators.add.whitelabel", "العلامة البيضاء")} *
+                </Text>
+                {whitelabelsQuery.isLoading ? (
+                  <Text style={styles.roleDesc}>
+                    {t("common.loading", "جارٍ التحميل...")}
+                  </Text>
+                ) : (
+                  <View style={styles.roleList}>
+                    {whitelabelOptions.length === 0 ? (
+                      <Text style={styles.roleDesc}>
+                        {t(
+                          "moderators.add.noWhitelabels",
+                          "لا توجد علامات بيضاء متاحة"
+                        )}
+                      </Text>
+                    ) : (
+                      whitelabelOptions.map((opt) => {
+                        const selected = formData.whitelabelId === opt.id;
+                        return (
+                          <TouchableOpacity
+                            key={opt.id}
+                            style={[
+                              styles.roleOption,
+                              selected && styles.roleOptionSelected,
+                            ]}
+                            onPress={() => updateField("whitelabelId", opt.id)}
+                            disabled={saving}
+                          >
+                            <View style={styles.roleInfo}>
+                              <Text
+                                style={[
+                                  styles.roleName,
+                                  selected && styles.roleNameSelected,
+                                ]}
+                              >
+                                {opt.label}
+                              </Text>
+                            </View>
+                            {selected ? (
+                              <Ionicons
+                                name="checkmark-circle"
+                                size={22}
+                                color={colors.primary[500]}
+                              />
+                            ) : (
+                              <Ionicons
+                                name="ellipse-outline"
+                                size={22}
+                                color={colors.natural[300]}
+                              />
+                            )}
+                          </TouchableOpacity>
+                        );
+                      })
+                    )}
+                  </View>
+                )}
+                {errors.whitelabelId ? (
+                  <Text style={styles.errorText}>{errors.whitelabelId}</Text>
+                ) : null}
+              </View>
+            ) : null}
 
             <View style={styles.field}>
               <Text style={styles.label}>{t("moderators.add.role")} *</Text>
