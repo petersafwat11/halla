@@ -282,31 +282,21 @@ const seedTestUsers = async () => {
     await createdUsers.superAdmin.save({ validateBeforeSave: false });
     console.log(`   ✅ ${createdUsers.superAdmin.email} (Unlimited subscription)`);
 
-    // 2. Admin + unlimited subscription
-    console.log("📝 Creating Admin...");
-    createdUsers.admin = await User.create(testUsers.admin);
-    const adminSub = await Subscription.createForUser(
-      createdUsers.admin._id,
-      unlimitedPlan,
-      { status: SUBSCRIPTION_STATUS.ACTIVE, pricePaid: 0, currency: "SAR" }
-    );
-    createdUsers.admin.subscription = adminSub._id;
-    await createdUsers.admin.save({ validateBeforeSave: false });
-    console.log(`   ✅ ${createdUsers.admin.email} (Unlimited subscription)`);
+    // H-23: Phase 0 made `whitelabelId` REQUIRED on ADMIN / MODERATOR /
+    // WHITELABEL_ADMIN / WHITELABEL_MODERATOR rows. The previous seed
+    // order created admin/moderator BEFORE whitelabelAdmin, with no
+    // tenant attached — every fresh dev DB therefore booted with broken
+    // admins (`Admin tenant configuration error` 500 on every admin
+    // endpoint, `audit-admin-whitelabel.js` flagging both as orphans).
+    //
+    // Fix: create the whitelabel-admin tenant first, then scope the
+    // platform admin + moderator to that tenant. Real production has a
+    // dedicated "platform" tenant doc; for the dev seeder, reusing the
+    // whitelabelAdmin's _id as a tenant root is enough — SUPER_ADMIN is
+    // still the only cross-tenant role.
 
-    // 3. Moderator + unlimited subscription
-    console.log("📝 Creating Moderator...");
-    createdUsers.moderator = await User.create(testUsers.moderator);
-    const moderatorSub = await Subscription.createForUser(
-      createdUsers.moderator._id,
-      unlimitedPlan,
-      { status: SUBSCRIPTION_STATUS.ACTIVE, pricePaid: 0, currency: "SAR" }
-    );
-    createdUsers.moderator.subscription = moderatorSub._id;
-    await createdUsers.moderator.save({ validateBeforeSave: false });
-    console.log(`   ✅ ${createdUsers.moderator.email} (Unlimited subscription)`);
-
-    // 4. WhiteLabel Admin + business_quarterly subscription
+    // 2. WhiteLabel Admin + business_quarterly subscription (created first
+    //    so subsequent admin/moderator rows can attach to its tenant).
     console.log("📝 Creating WhiteLabel Admin...");
     createdUsers.whitelabelAdmin = await User.create(testUsers.whitelabelAdmin);
     const whitelabelSub = await Subscription.createForUser(
@@ -322,6 +312,36 @@ const seedTestUsers = async () => {
     createdUsers.whitelabelAdmin.subscription = whitelabelSub._id;
     await createdUsers.whitelabelAdmin.save({ validateBeforeSave: false });
     console.log(`   ✅ ${createdUsers.whitelabelAdmin.email} (Business Quarterly — invitePool: 500)`);
+
+    // 3. Admin + unlimited subscription, scoped to the whitelabelAdmin tenant.
+    console.log("📝 Creating Admin...");
+    createdUsers.admin = await User.create({
+      ...testUsers.admin,
+      whitelabelId: createdUsers.whitelabelAdmin._id,
+    });
+    const adminSub = await Subscription.createForUser(
+      createdUsers.admin._id,
+      unlimitedPlan,
+      { status: SUBSCRIPTION_STATUS.ACTIVE, pricePaid: 0, currency: "SAR" }
+    );
+    createdUsers.admin.subscription = adminSub._id;
+    await createdUsers.admin.save({ validateBeforeSave: false });
+    console.log(`   ✅ ${createdUsers.admin.email} (Unlimited subscription, whitelabel-scoped)`);
+
+    // 4. Moderator + unlimited subscription, scoped to the same tenant.
+    console.log("📝 Creating Moderator...");
+    createdUsers.moderator = await User.create({
+      ...testUsers.moderator,
+      whitelabelId: createdUsers.whitelabelAdmin._id,
+    });
+    const moderatorSub = await Subscription.createForUser(
+      createdUsers.moderator._id,
+      unlimitedPlan,
+      { status: SUBSCRIPTION_STATUS.ACTIVE, pricePaid: 0, currency: "SAR" }
+    );
+    createdUsers.moderator.subscription = moderatorSub._id;
+    await createdUsers.moderator.save({ validateBeforeSave: false });
+    console.log(`   ✅ ${createdUsers.moderator.email} (Unlimited subscription, whitelabel-scoped)`);
 
     // 5. WhiteLabel Moderator (linked to whitelabel admin tenant)
     console.log("📝 Creating WhiteLabel Moderator...");

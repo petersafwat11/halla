@@ -102,7 +102,24 @@ const createApp = () => {
   // BODY PARSING
   // ============================================
 
-  app.use(express.json({ limit: "10kb" }));
+  // H-19: WhatsApp webhook signature is computed by Meta over the *raw*
+  // request bytes. Once `express.json()` re-serialises the parsed body,
+  // key ordering and whitespace diverge from what Meta signed and HMAC
+  // verification false-negatives on legit traffic. We capture the raw
+  // payload into `req.rawBody` for the webhook route only — `verify` runs
+  // before JSON parsing finishes, so the buffer is the actual on-the-wire
+  // bytes.
+  const captureRawForWebhook = (req, _res, buf) => {
+    if (req.originalUrl && req.originalUrl.includes("/messaging/webhook")) {
+      req.rawBody = buf;
+    }
+  };
+  app.use(
+    express.json({
+      limit: "10kb",
+      verify: captureRawForWebhook,
+    })
+  );
   app.use(express.urlencoded({ extended: true, limit: "10kb" }));
   app.use(cookieParser());
 

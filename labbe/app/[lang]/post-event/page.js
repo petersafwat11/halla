@@ -24,6 +24,42 @@ const PostEventPage = () => {
   const [content, setContent] = useState(null);
   const [contentLoading, setContentLoading] = useState(false);
 
+  // H-16: render distinct messages per structured `qr_*` reason returned by
+  // GuestAccessToken.validateToken. Previously the page collapsed every
+  // failure into a single "رابط غير صالح أو منتهي الصلاحية" string,
+  // wasting the structured reason the backend ships in the 410 body.
+  // Reasons:
+  //   - qr_rotated  → guest scanned a rotated link; ask them to use the
+  //                   newest message they received
+  //   - qr_revoked  → host revoked their access; ask them to contact host
+  //   - qr_expired  → access window ended; explain politely
+  //   - qr_invalid  → unknown token (typo / phishing) → generic invalid
+  const reasonToMessage = (reason, fallback) => {
+    switch (reason) {
+      case "qr_rotated":
+        return t(
+          "errors.qrRotated",
+          "هذا الرابط لم يعد فعّالاً لأن المضيف أصدر رابطاً جديداً. يرجى استخدام أحدث رسالة وصلت إليك."
+        );
+      case "qr_revoked":
+        return t(
+          "errors.qrRevoked",
+          "تم إلغاء صلاحيتك للوصول إلى محتوى المناسبة. يرجى التواصل مع المضيف."
+        );
+      case "qr_expired":
+        return t(
+          "errors.qrExpired",
+          "انتهت فترة صلاحية الرابط. لم يعد محتوى المناسبة متاحاً عبر هذا الرابط."
+        );
+      case "qr_invalid":
+      default:
+        return (
+          fallback ||
+          t("errors.invalidToken", "رابط غير صالح أو منتهي الصلاحية.")
+        );
+    }
+  };
+
   // Validate token on mount
   useEffect(() => {
     const validateAccess = async () => {
@@ -38,8 +74,12 @@ const PostEventPage = () => {
             setEventInfo(response.data.event);
             setEventId(response.data.event._id);
           } else {
+            // The success path returns valid:false rarely — the 410 errors
+            // (rotated/revoked/expired) are surfaced via the catch below
+            // because axios treats 4xx as throws. This branch handles a
+            // 200-with-valid:false response shape, if any.
             setAuthError(
-              t("errors.invalidToken", "رابط غير صالح أو منتهي الصلاحية.")
+              reasonToMessage(response.data?.reason || "qr_invalid")
             );
           }
         } else if (postEventService.isAuthenticated()) {
@@ -57,9 +97,22 @@ const PostEventPage = () => {
         }
       } catch (error) {
         console.error("Token validation error:", error);
-        setAuthError(
-          error.message || t("errors.validationFailed", "فشل التحقق من الرابط.")
-        );
+        // Backend returns 410 Gone with `{ reason, message }` for rotated/
+        // revoked/expired tokens. Read the structured reason instead of
+        // the generic axios error message.
+        const reason =
+          error?.response?.data?.reason ||
+          error?.response?.data?.body?.reason ||
+          null;
+        if (reason) {
+          setAuthError(reasonToMessage(reason));
+        } else {
+          setAuthError(
+            error?.response?.data?.message ||
+              error.message ||
+              t("errors.validationFailed", "فشل التحقق من الرابط.")
+          );
+        }
       } finally {
         setIsLoading(false);
       }

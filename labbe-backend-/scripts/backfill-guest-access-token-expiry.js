@@ -55,6 +55,27 @@ async function main() {
       `Will set expiresAt = createdAt + ${DAYS} days.`
   );
 
+  // M-23: warn the operator about TTL-driven deletion side-effects.
+  // When `expiresAt` is set in the past (i.e. createdAt + DAYS < now), the
+  // TTL background sweeper will delete the row within ~60 seconds. For a
+  // 90-day backfill on tokens older than 90 days, those rows ARE expired
+  // by definition and should be cleaned — but the operator should know
+  // this is happening rather than be surprised when the collection size
+  // drops post-run.
+  const cutoff = new Date(Date.now() - DAYS * 24 * 60 * 60 * 1000);
+  const willBeTtlSwept = await GuestAccessToken.countDocuments({
+    ...filter,
+    createdAt: { $lt: cutoff },
+  });
+  if (willBeTtlSwept > 0) {
+    console.log(
+      `[backfill] WARNING: ${willBeTtlSwept} of ${count} row(s) will be ` +
+        `IMMEDIATELY deleted by the TTL sweep after backfill (their ` +
+        `createdAt + ${DAYS} days has already passed). These tokens were ` +
+        `de-facto expired anyway; this just makes the deletion explicit.`
+    );
+  }
+
   if (!APPLY) {
     console.log("[backfill] DRY RUN — no writes performed. Re-run with --apply to commit.");
     await mongoose.disconnect();
@@ -67,20 +88,56 @@ async function main() {
     process.exit(0);
   }
 
-  // Loop in chunks to keep the working set small. We can't do this in a
-  // single update because each row needs `createdAt + DAYS` (different
-  // per-row).
+  // M-23: bulk-write in batches of 500. Each row needs an individual
+  // expiresAt (createdAt + DAYS), so we can't issue a single updateMany;
+  // bulkWrite gives us O(roundtrip / 500) instead of O(roundtrip) per
+  // row. At 100K rows this drops a multi-hour run to ~minutes.
+  // We also throttle between batches so the backfill doesn't compete
+  // with hot-path reads for IOPS.
+  const BATCH_SIZE = 500;
+  const THROTTLE_MS = parseInt(
+    args.find((a) => a.startsWith("--throttle="))?.split("=")[1] || "200",
+    10
+  );
+
   const cursor = GuestAccessToken.find(filter).cursor();
   let touched = 0;
+  let batch = [];
+
+  const flushBatch = async () => {
+    if (!batch.length) return;
+    const ops = batch;
+    batch = [];
+    await GuestAccessToken.bulkWrite(ops, { ordered: false });
+  };
+
   for await (const doc of cursor) {
     const baseMs = doc.createdAt ? doc.createdAt.getTime() : Date.now();
     const expiresAt = new Date(baseMs + DAYS * 24 * 60 * 60 * 1000);
-    await GuestAccessToken.updateOne({ _id: doc._id }, { $set: { expiresAt } });
-    touched++;
-    if (touched % 100 === 0) console.log(`[backfill] ${touched}/${count} processed`);
+    batch.push({
+      updateOne: {
+        filter: { _id: doc._id },
+        update: { $set: { expiresAt } },
+      },
+    });
+    if (batch.length >= BATCH_SIZE) {
+      await flushBatch();
+      touched += BATCH_SIZE;
+      console.log(`[backfill] ${touched}/${count} processed`);
+      if (THROTTLE_MS > 0) await new Promise((r) => setTimeout(r, THROTTLE_MS));
+    }
+  }
+  if (batch.length) {
+    const tail = batch.length;
+    await flushBatch();
+    touched += tail;
   }
 
   console.log(`[backfill] DONE. Touched ${touched}/${count} row(s).`);
+  console.log(
+    "[backfill] NOTE: run during a maintenance window. The TTL sweeper " +
+      "will reclaim already-expired rows within ~60 seconds."
+  );
   await mongoose.disconnect();
   process.exit(0);
 }
