@@ -2,12 +2,14 @@
 import React from "react";
 import styles from "./stepper.module.css";
 
+// Phase 4c W1-WIZARD-RENAME — locked 6-step structure (D4c-1).
 const steps = [
   { id: 1, label: "تفاصيل المناسبة" },
-  { id: 2, label: "قائمة الضيوف" },
+  { id: 2, label: "الضيوف وفريق العمل" },
   { id: 3, label: "تصميم الدعوة" },
-  { id: 4, label: "تخصيص الرسالة" },
-  { id: 5, label: "مراجعة واطلاق" },
+  { id: 4, label: "قالب الواتساب" },
+  { id: 5, label: "نص الرسالة والردود" },
+  { id: 6, label: "مراجعة وإطلاق" },
 ];
 
 const Stepper = ({ currentStep = 1 }) => {
