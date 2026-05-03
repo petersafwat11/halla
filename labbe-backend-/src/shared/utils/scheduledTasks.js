@@ -1082,6 +1082,14 @@ const initScheduledTasks = () => {
   scheduleEventCompletion();
   scheduleGuestReminders();
 
+  // Phase 4c W0-MODEL: daily Taqnyat-template upstream sync.
+  try {
+    const { scheduleTaqnyatTemplateSync } = require("../../jobs/syncTaqnyatTemplates");
+    scheduleTaqnyatTemplateSync();
+  } catch (err) {
+    console.error("[Cron] Failed to register taqnyat-template sync:", err.message);
+  }
+
   console.log("[Cron] Scheduled tasks initialized:");
   console.log("  - Event reminders (host): Daily at 8:00 AM");
   console.log("  - Daily admin report: Daily at 9:00 AM");
@@ -1093,6 +1101,7 @@ const initScheduledTasks = () => {
   console.log("  - Template status polling: Every 30 minutes");
   console.log("  - Event completion (live → completed): Every hour");
   console.log("  - 24h guest reminder SMS: Every 30 minutes");
+  console.log("  - Taqnyat-template upstream sync: Daily at 3:30 AM");
 };
 
 module.exports = {
