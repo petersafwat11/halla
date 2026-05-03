@@ -6,6 +6,7 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
+import { fetchWithTimeout } from "./apiClient";
 
 const STAFF_TOKEN_KEY = "staffSessionToken";
 
@@ -42,13 +43,20 @@ export const clearStaffToken = async () => {
 // ============================================================
 
 /**
- * Authenticated fetch using the staff session JWT (not the user's Bearer token).
+ * Authenticated fetch using the staff session JWT (not the user's
+ * Bearer token).
+ *
+ * Phase 4 W0-AUTH: routes through `fetchWithTimeout` so staff requests
+ * inherit the 30 s default timeout. Does NOT use `apiFetch` because the
+ * staff session token must NOT trigger the user-token refresh path on
+ * 401 — a 401 here means the staff session expired and the operator
+ * needs to re-verify.
  */
 const staffFetch = async (path, options = {}) => {
   const token = await getStaffToken();
   const url = `${API_BASE_URL}${path}`;
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -57,7 +65,7 @@ const staffFetch = async (path, options = {}) => {
     },
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw new Error(data.message || `Request failed (${response.status})`);
@@ -80,12 +88,12 @@ const staffFetch = async (path, options = {}) => {
 export const verifyByPhone = async (phone, eventId) => {
   const url = `${API_BASE_URL}${ENDPOINTS.STAFF.VERIFY}?phone=${encodeURIComponent(phone)}&eventId=${encodeURIComponent(eventId)}`;
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw new Error(data.message || "Verification failed");
@@ -105,12 +113,12 @@ export const verifyByPhone = async (phone, eventId) => {
 export const verifyByToken = async (token) => {
   const url = `${API_BASE_URL}${ENDPOINTS.STAFF.VERIFY}?token=${encodeURIComponent(token)}`;
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw new Error(data.message || "Verification failed");

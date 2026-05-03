@@ -15,6 +15,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import * as Location from "expo-location";
+import { fetchWithTimeout } from "../../services/apiClient";
 
 const DEFAULT_LOCATION = {
   address: "",
@@ -47,7 +48,7 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
     }
     setIsSearching(true);
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
         { headers: { "User-Agent": "HallaMobileApp/1.0", Accept: "application/json" } }
       );

@@ -1,16 +1,31 @@
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "../config/api";
+import { useAuthStore } from "../stores/authStore";
+import { DEFAULT_TIMEOUT_MS } from "./apiClient";
 
 const API_URL = API_BASE_URL;
 
+/**
+ * Phase 4 W0-AUTH:
+ *   - Pull the access token from `useAuthStore` instead of AsyncStorage.
+ *     The Phase 1a redesign keeps the access token in memory; the legacy
+ *     AsyncStorage key (`authToken`) is no longer written to.
+ *   - Add a 30 s default timeout so vendor calls don't spin forever on
+ *     a flaky link.
+ *
+ * Vendor endpoints don't need the auto-refresh-on-401 behavior the
+ * `apiFetch` wrapper provides because vendor flows are not deeply
+ * authenticated — the legacy axios shape is preserved for back-compat
+ * with the existing screens.
+ */
 const apiClient = axios.create({
   baseURL: API_URL,
+  timeout: DEFAULT_TIMEOUT_MS,
 });
 
 apiClient.interceptors.request.use(
-  async (config) => {
-    const token = await AsyncStorage.getItem("authToken");
+  (config) => {
+    const token = useAuthStore.getState().token;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -22,9 +37,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
 // Vendor Service

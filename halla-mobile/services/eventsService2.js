@@ -231,8 +231,6 @@ export const updateInvitationSettings = async (
   try {
     console.log("[EVENTS SERVICE] Updating invitation settings:", eventId);
 
-    const url = `${API_BASE_URL}${ENDPOINTS.EVENTS.BASE}/${eventId}/invitation-settings`;
-
     // Build FormData (backend expects multipart/form-data for file uploads)
     // Controller passes req.body fields directly (no JSON.parse), so append each field individually
     const formData = new FormData();
@@ -253,16 +251,16 @@ export const updateInvitationSettings = async (
       });
     }
 
-    const response = await fetch(url, {
+    // Phase 4 W0-AUTH: route through apiFetch so the multipart upload
+    // also gets the auth header + 60s timeout. apiFetch detects FormData
+    // and skips JSON serialization (Content-Type set by fetch boundary).
+    const response = await apiFetch(`${ENDPOINTS.EVENTS.BASE}/${eventId}/invitation-settings`, {
       method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // Do NOT set Content-Type — let fetch set multipart boundary
-      },
       body: formData,
+      timeoutMs: 60 * 1000,
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       throw new Error(data.message || "Failed to update invitation settings");
@@ -619,21 +617,20 @@ export const bulkDeleteEvents = async (eventIds, token) => {
  * @param {string} token - Auth token
  * @returns {Promise<Object>}
  */
-export const exportEvents = async (token) => {
+export const exportEvents = async (_legacyToken) => {
   try {
     console.log("[EVENTS SERVICE] Exporting events...");
 
-    const url = `${API_BASE_URL}${ENDPOINTS.EVENTS.BASE}/export/events`;
-
-    const response = await fetch(url, {
+    // Phase 4 W0-AUTH: route through apiFetch so the export gets the
+    // refreshed access token automatically. Allow up to 60 s — XLSX
+    // generation can be slow when the host has many events.
+    const response = await apiFetch(`${ENDPOINTS.EVENTS.BASE}/export/events`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      timeoutMs: 60 * 1000,
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || "Failed to export events");
     }
 
@@ -659,7 +656,7 @@ export const exportEvents = async (token) => {
  * @param {string} token - Auth token
  * @returns {Promise<Object>}
  */
-export const exportEventGuests = async (eventId, token) => {
+export const exportEventGuests = async (eventId, _legacyToken) => {
   try {
     console.log("[EVENTS SERVICE] Exporting guests for event:", eventId);
 
@@ -667,17 +664,15 @@ export const exportEventGuests = async (eventId, token) => {
       throw new Error("Event ID is required");
     }
 
-    const url = `${API_BASE_URL}${ENDPOINTS.EVENTS.BASE}/export/${eventId}/guests`;
-
-    const response = await fetch(url, {
+    // Phase 4 W0-AUTH: route through apiFetch so the export gets the
+    // refreshed access token automatically.
+    const response = await apiFetch(`${ENDPOINTS.EVENTS.BASE}/export/${eventId}/guests`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      timeoutMs: 60 * 1000,
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || "Failed to export guests");
     }
 

@@ -1,15 +1,17 @@
-import { API_BASE_URL, ENDPOINTS } from "../config/api";
+/**
+ * Template service.
+ *
+ * Phase 4 W0-AUTH: routed through `apiFetch` for the 30 s timeout +
+ * auth-refresh interceptor. Token argument retained for caller
+ * compatibility but ignored.
+ */
 
-const request = async (url, token, options = {}) => {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-  const data = await response.json();
+import { ENDPOINTS } from "../config/api";
+import { apiFetch } from "./apiClient";
+
+const request = async (path, _legacyToken, options = {}) => {
+  const response = await apiFetch(path, options);
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.message || "Request failed");
   return data;
 };
@@ -20,9 +22,8 @@ const buildQuery = (params = {}) => {
 };
 
 export const templateService = {
-  getCategories: (token) =>
-    request(`${API_BASE_URL}${ENDPOINTS.TEMPLATES.CATEGORIES}`, token),
+  getCategories: (token) => request(ENDPOINTS.TEMPLATES.CATEGORIES, token),
 
   getTemplates: (params = {}, token) =>
-    request(`${API_BASE_URL}${ENDPOINTS.TEMPLATES.LIST}${buildQuery(params)}`, token),
+    request(`${ENDPOINTS.TEMPLATES.LIST}${buildQuery(params)}`, token),
 };

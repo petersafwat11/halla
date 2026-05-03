@@ -23,6 +23,7 @@ import { useAuthStore } from "./stores/authStore";
 import AppNavigator from "./navigation/AppNavigator";
 import LanguageSelector from "./components/languagePrefrence/LanguageSelector";
 import { API_BASE_URL } from "./config/api";
+import { fetchWithTimeout } from "./services/apiClient";
 
 // ------------------------------------------------- //
 //          PUSH NOTIFICATION SETUP                  //
@@ -61,7 +62,7 @@ const registerForPushNotifications = async (authToken) => {
     const pushToken = tokenData.data;
 
     if (authToken && pushToken) {
-      await fetch(`${API_BASE_URL}/auth/update-push-token`, {
+      await fetchWithTimeout(`${API_BASE_URL}/auth/update-push-token`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

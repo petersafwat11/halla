@@ -2,7 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/authStore';
 import eventsService2 from '../../services/eventsService2';
 import { sendTestInvitation, sendBulkInvitations, retryFailedInvitations, sendReminder } from '../../services/messagingService';
-import { API_BASE_URL, ENDPOINTS } from '../../config/api';
+import { ENDPOINTS } from '../../config/api';
+import { apiFetch } from '../../services/apiClient';
 
 /**
  * Hook to create a new event
@@ -10,19 +11,17 @@ import { API_BASE_URL, ENDPOINTS } from '../../config/api';
  */
 export function useCreateEvent() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation({
     mutationFn: async (formData) => {
-      const response = await fetch(`${API_BASE_URL}${ENDPOINTS.EVENTS.CREATE}`, {
+      // Phase 4 W0-AUTH: route through apiFetch (multipart, 60 s timeout).
+      const response = await apiFetch(ENDPOINTS.EVENTS.CREATE, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: formData,
+        timeoutMs: 60 * 1000,
       });
 
-      const responseData = await response.json();
+      const responseData = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         throw new Error(responseData.message || "Failed to create event");
@@ -83,19 +82,14 @@ export function useDeleteEvent() {
  */
 export function useSubmitTemplate() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation({
     mutationFn: async (eventId) => {
-      const response = await fetch(`${API_BASE_URL}${ENDPOINTS.MESSAGING.TEMPLATE_SUBMIT}`, {
+      const response = await apiFetch(ENDPOINTS.MESSAGING.TEMPLATE_SUBMIT, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ eventId }),
+        body: { eventId },
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Failed to submit template");
       return data;
     },
@@ -113,18 +107,13 @@ export function useSubmitTemplate() {
  */
 export function useNotifyStaff() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation({
     mutationFn: async ({ eventId }) => {
-      const response = await fetch(`${API_BASE_URL}${ENDPOINTS.EVENTS.NOTIFY_STAFF(eventId)}`, {
+      const response = await apiFetch(ENDPOINTS.EVENTS.NOTIFY_STAFF(eventId), {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Failed to notify staff");
       return data;
     },
@@ -176,19 +165,14 @@ export function useSendTestMessage() {
  */
 export function useScheduleSend() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation({
     mutationFn: async ({ eventId, scheduledDate, scheduledTime, channel }) => {
-      const response = await fetch(`${API_BASE_URL}${ENDPOINTS.MESSAGING.SCHEDULE}`, {
+      const response = await apiFetch(ENDPOINTS.MESSAGING.SCHEDULE, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ eventId, scheduledDate, scheduledTime, channel }),
+        body: { eventId, scheduledDate, scheduledTime, channel },
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Failed to schedule message");
       return data;
     },

@@ -1,10 +1,20 @@
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import { DEFAULT_TIMEOUT_MS } from "./apiClient";
 
 /**
  * Marketplace Service
- * Handles all marketplace and vendor-related API calls
+ * Handles all marketplace and vendor-related API calls.
+ *
+ * Phase 4 W0-AUTH: dedicated axios instance with the same 30 s default
+ * timeout as `apiFetch`. Marketplace calls are largely public reads so
+ * we don't add auth-refresh — but bounded latency is still important.
  */
+
+const marketplaceAxios = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: DEFAULT_TIMEOUT_MS,
+});
 
 class MarketplaceService {
   constructor() {
@@ -18,7 +28,7 @@ class MarketplaceService {
    */
   async getServiceTypes(lang = "ar") {
     try {
-      const response = await axios.get(
+      const response = await marketplaceAxios.get(
         `${this.baseURL}/vendors/categories`,
         {
           params: { lang },
@@ -65,7 +75,7 @@ class MarketplaceService {
       if (params.page) queryParams.append("page", params.page);
       if (params.limit) queryParams.append("limit", params.limit);
 
-      const response = await axios.get(
+      const response = await marketplaceAxios.get(
         `${this.baseURL}/services/public?${queryParams.toString()}`,
       );
       return response.data;
@@ -82,7 +92,7 @@ class MarketplaceService {
    */
   async getVendorDetails(vendorId) {
     try {
-      const response = await axios.get(
+      const response = await marketplaceAxios.get(
         `${this.baseURL}/vendors/${vendorId}`,
       );
       return response.data;
@@ -98,7 +108,7 @@ class MarketplaceService {
    */
   async getRegions() {
     try {
-      const response = await axios.get(`${this.baseURL}/locations/regions`);
+      const response = await marketplaceAxios.get(`${this.baseURL}/locations/regions`);
       return response.data;
     } catch (error) {
       console.error("Error fetching regions:", error);
@@ -113,7 +123,7 @@ class MarketplaceService {
    */
   async getCities(regionId) {
     try {
-      const response = await axios.get(
+      const response = await marketplaceAxios.get(
         `${this.baseURL}/locations/cities/${regionId}`,
       );
       return response.data;
@@ -130,7 +140,7 @@ class MarketplaceService {
    */
   async getDistricts(cityId) {
     try {
-      const response = await axios.get(
+      const response = await marketplaceAxios.get(
         `${this.baseURL}/locations/districts/${cityId}`,
       );
       return response.data;
