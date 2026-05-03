@@ -96,6 +96,26 @@ export const useEventMutation = (action) => {
       },
     },
 
+    // Phase 4d W1-WEB-ATOMIC — atomic guest+staff update.
+    //
+    // Replaces the parallel `Promise.all([updateGuestList, updateStaffList])`
+    // dispatch with a single PATCH so a capacity-guard rejection on
+    // either side leaves both fields at their pre-call values. Server
+    // accepts either `supervisorsList` (web naming, what we send) or
+    // `staffList` (mobile naming) per D4d-2.
+    updateEventStep2: {
+      mutationFn: ({ eventId, data }) =>
+        apiRequest({
+          method: "PATCH",
+          path: API_PATHS.events.updateEventStep2(eventId),
+          data,
+        }),
+      onSuccess: (_, { eventId }) => {
+        queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+        queryClient.invalidateQueries({ queryKey: ["guests", "events", eventId] });
+      },
+    },
+
     // Update Invitation Settings — backend expects multipart/form-data (multer middleware)
     // Controller passes req.body fields directly (no JSON.parse), so append each field individually
     updateInvitationSettings: {
@@ -372,6 +392,12 @@ export const useUpdateGuestList = () => useEventMutation("updateGuestList");
  * Hook for updating invitation settings
  */
 export const useUpdateStaffList = () => useEventMutation("updateStaffList");
+
+/**
+ * Phase 4d W1-WEB-ATOMIC — single mutation hook for the unified update
+ * wizard's step 2 atomic dispatch.
+ */
+export const useUpdateEventStep2 = () => useEventMutation("updateEventStep2");
 
 export const useUpdateInvitationSettings = () => useEventMutation("updateInvitationSettings");
 
