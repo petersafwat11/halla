@@ -61,6 +61,11 @@ const auditLogSchema = new mongoose.Schema(
         "staff_access_token",
         "guest_access_token",
         "rsvp",
+        // Phase 4c: visual templates + categories + Taqnyat-template
+        // assignments. lowercase per existing convention.
+        "template",
+        "template_category",
+        "taqnyat_template",
       ],
       index: true,
     },
