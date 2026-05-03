@@ -11,6 +11,9 @@
 - `454da63` `[PHASE-4D-W1-MOBILE-CREATE-VERIFY]`
 - `feed084` `[PHASE-4D-W1-WEB-ATOMIC]`
 - `1fdcdeb` `[PHASE-4D]` static checks 28/28 + atomic-step2 compensation simulation 7/7
+- `a1261b4` `[PHASE-4D]` report + progress finalisation + ledger update
+- `2d4a19b` `[PHASE-4D-HARDENING]` preserve guest QR data on standalone-Mongo rollback (deferred-delete sequencing) + barrel export
+- `b279b69` `[PHASE-4D-HARDENING]` close 4 review findings — controller no-destructive-default, schemas zod v3+v4 cross-compat, mobile i18n, mutation invalidation parity
 
 ---
 

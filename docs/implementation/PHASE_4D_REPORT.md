@@ -1,11 +1,12 @@
 # Phase 4d — Report
 
-**Status.** All five sub-tracks landed on `claude/implement-phase-4d-xC9tN`.
-Static smoke tests `28 / 28` PASS plus the in-process compensation
-simulation `7 / 7` PASS. Phase 4c / 4b / 4 / 3abc / 3de / 2 / 1
-regression suites all green: `56/56`, `31/31`, `24/24`, `19/19`,
-`16/16`, `13/13`, `13+16+5`. Schema-drift check (`scripts/check-schema-drift.sh`)
-exits 0. Manual verification recorded in `PHASE_4D_MANUAL_VERIFICATION.md`.
+**Status.** All five sub-tracks plus two production-hardening passes
+landed on `claude/implement-phase-4d-xC9tN`. Static smoke tests
+`33 / 33` PASS plus the in-process compensation simulation `11 / 11`
+PASS. Phase 4c / 4b / 4 / 3abc / 3de / 2 / 1 regression suites all
+green: `56/56`, `31/31`, `24/24`, `19/19`, `16/16`, `13/13`, `13+16+5`.
+Schema-drift check (`scripts/check-schema-drift.sh`) exits 0. Manual
+verification recorded in `PHASE_4D_MANUAL_VERIFICATION.md`.
 
 **Branch.** `claude/implement-phase-4d-xC9tN`.
 
@@ -21,6 +22,8 @@ exits 0. Manual verification recorded in `PHASE_4D_MANUAL_VERIFICATION.md`.
 | W1-MOBILE-CREATE-VERIFY | `454da63` | docs/implementation/PHASE_4D_MANUAL_VERIFICATION.md | — |
 | W1-WEB-ATOMIC | `feed084` | — | labbe/services/new-backend/api.config.js, labbe/hooks/events/mutations/useEventMutation.js, labbe/hooks/events/useEventForm.js, labbe/app/[lang]/host/update-event/_components/UpdateEventWizard.jsx |
 | Smoke tests | `1fdcdeb` | docs/implementation/phase-4d-smoke-tests/{static-checks-4d.js,atomic-step2-failure.js} | docs/implementation/phase-4c-smoke-tests/static-checks-4c.js (relocation tracking) |
+| Hardening (QR-preservation) | `2d4a19b` | — | labbe-backend-/src/modules/events/events.service.js (deferred-delete sequencing on standalone Mongo), docs/implementation/phase-4d-smoke-tests/{static-checks-4d.js,atomic-step2-failure.js}, labbe/hooks/events/index.js (barrel export) |
+| Hardening (review pass) | `b279b69` | — | labbe-backend-/src/modules/events/events.controller.js (no destructive default), packages/shared-schemas/src/createEventSchema.js (zod v3+v4 cross-compat), halla-mobile/screens/update-event/{UpdateEventScreen,StepTwo}.js (i18n wired), halla-mobile/hooks/mutations/useEventMutations.js (guests-events invalidation parity), halla-mobile/localization/locales/{ar,en}/admin.json (events.update.* keys), docs/implementation/phase-4d-smoke-tests/static-checks-4d.js |
 
 ---
 
@@ -230,8 +233,66 @@ signed off, ping Peter for review and the merge to `main`.
 
 ## 6. Translation snapshot
 
-No new locale keys land in 4d. The unified update screen reuses the
-Arabic copy from the old host update screen (`STEP_TITLES`,
-`STEP_DESCRIPTIONS` arrays inlined for now); when Phase 5 unifies
-admin + whitelabel copy keys these can move to the standard locale
-files.
+The unified update screen now routes every copy string through
+`useTranslation("admin")`. New keys added under `events.update.*` in
+both `halla-mobile/localization/locales/ar/admin.json` and
+`halla-mobile/localization/locales/en/admin.json`:
+
+- `noEventId`, `notAllowed`, `updateSuccess`, `updateFailed`
+- `stepLockedAlertTitle`, `stepLockedAlertBody`
+- `liveAddOnly`, `liveLocked`
+- `cancelTitle`, `cancelBody`, `cancelKeep`, `cancelDiscard`
+- `preview`, `successOk`
+- `steps.{1..5}.{title,description}` — step headers for the five-step
+  wizard
+
+The pre-existing `events.update.{title,saveStep,saveAll,loadError}`
+keys are reused. No web-side locale changes needed (web wizard already
+localises through `createEvent.json`).
+
+---
+
+## 7. Production-readiness hardening passes
+
+Two passes after the initial implementation closed concerns surfaced by
+internal review:
+
+**Pass 1 (`2d4a19b`) — guest QR preservation on standalone-Mongo
+rollback.** The standalone-fallback branch of `updateEventStep2`
+originally deleted to-remove guests BEFORE the staff save committed,
+then re-created them with the same `_id` on rollback. The Guest
+pre-save hook regenerates `qrcode` (unique-indexed, embedded in
+invitation links), so any URLs already shared with the host's guests
+would silently break. The hardened sequence defers the delete until
+after the staff save commits; on rollback the to-delete docs are
+untouched, preserving `qrcode` / `rsvp` / `checkIn` verbatim.
+
+**Pass 2 (`b279b69`) — four review findings:**
+
+1. **Controller no-destructive-default.** `req.body.guestList` /
+   `staffList` are now REQUIRED arrays; missing or wrong type → 400
+   ValidationError. Previously a partial request silently emptied the
+   existing list.
+2. **Shared schemas cross-compatible with zod v3 + v4.** Mobile pins
+   zod ^4.0.14 and web pins ^3.25.56. The shared package now uses
+   chained `.refine` instead of v3-only `required_error` /
+   `invalid_type_error` / `errorMap` constructor options.
+3. **Mobile wizard i18n** wired via `useTranslation("admin")` against
+   the new `events.update.*` keys (see §6).
+4. **Mobile useUpdateEventStep2** now invalidates
+   `["guests", "events", eventId]` to match the web mutation's cache
+   invalidation contract.
+
+Findings explicitly NOT addressed (rationale):
+
+- **AuditLog wiring on `/step2`** — the legacy `/guest-list` and
+  `/staff-list` endpoints don't emit AuditLog entries either; adding
+  it here would diverge. Phase 5 audit-log activation handles all
+  event mutations uniformly.
+- **ESM/CJS interop concerns** — work in Next.js + Metro per existing
+  patterns elsewhere in the repo; the workspace package ships CJS
+  with named exports + a `default` alias for ESM consumers.
+- **Schema-drift script depth** — coarse grep is intentional. AST-
+  level inspection is a Phase 5 hand-off.
+- **`mapApiToFormValues` hardcoded Riyadh fallback** — pre-existing
+  pattern, unchanged by 4d.
