@@ -10,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import EventFailureBanner from "./EventFailureBanner";
+import PartialFailureBanner from "../home/PartialFailureBanner";
 import { useAuthStore } from "../../stores/authStore";
 import { retryLaunch } from "../../services/eventsService2";
 
@@ -100,6 +101,12 @@ const EventDetails = ({ event, onStatsPress, onBack }) => {
       >
         {/* Phase 3c.5 — failure / retrying banner */}
         <EventFailureBanner event={event} currentUser={user} onRetry={handleRetry} />
+
+        {/* Phase 4b W2-POLL-FAIL (D9) — partial-failure banner.
+            Renders when the event is live (or completed) AND at least
+            one invitation failed to send. EventFailureBanner above
+            handles the full-launch failure case; this fills the gap. */}
+        <PartialFailureBanner event={event} currentUser={user} />
 
         {/* Event Image */}
         <View style={styles.imageWrapper}>

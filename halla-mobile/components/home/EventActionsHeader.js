@@ -7,6 +7,7 @@ import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
 import { useSubmitTemplate, useNotifyStaff } from "../../hooks/mutations/useEventMutations";
 import { useToast } from "../../contexts/ToastContext";
+import useEventActionGate from "../../hooks/useEventActionGate";
 
 const EventActionsHeader = ({ event, isAdmin = false }) => {
   const navigation = useNavigation();
@@ -19,13 +20,17 @@ const EventActionsHeader = ({ event, isAdmin = false }) => {
   const submitTemplateMutation = useSubmitTemplate();
   const notifyStaffMutation = useNotifyStaff();
 
+  // Phase 4b W2-POLL-FAIL: gate logic now lives in `useEventActionGate`
+  // (mobile companion of the web hook). Mobile previously branched on
+  // `event.whatsappTemplateStatus?.status` for canSendTest / canSchedule
+  // — the new hook uses the same `invitationSettings.selectedTemplate`
+  // shape that the web header / dashboard widget read, keeping all
+  // surfaces in lock-step. The Submit-for-approval branch is mobile-only
+  // and stays inlined.
   const templateStatus = event?.whatsappTemplateStatus?.status || 'not_submitted';
-  const isTemplateApproved = templateStatus === 'approved';
-  const canSendTest = isTemplateApproved && !testMessageSent;
-  const canSchedule = isTemplateApproved && testMessageSent;
   const canSubmitTemplate = templateStatus === 'not_submitted' || templateStatus === 'rejected';
-  const hasSupervisors = (event?.staffList?.length || event?.staffCount || 0) > 0;
-  const isCompleted = event?.status === 'completed';
+  const { canSendTest, canSchedule, hasStaff: hasSupervisors, isCompleted } =
+    useEventActionGate({ event, testMessageSent });
 
   const handleManagePress = () => {
     const screen = isAdmin ? "AdminUpdateEvent" : "UpdateEvent";
