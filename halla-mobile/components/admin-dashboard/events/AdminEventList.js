@@ -15,7 +15,18 @@ import AdminEventListItem from "./AdminEventListItem";
 
 const EVENT_FILTER_IDS = ["all", "scheduled", "live", "draft", "completed", "cancelled", "suspended"];
 
-const AdminEventList = ({ events, loading, onRefresh, onEventPress, onAdd, addLabel }) => {
+const AdminEventList = ({
+  events,
+  loading,
+  onRefresh,
+  onEventPress,
+  onEdit,
+  onAdd,
+  addLabel,
+  hasMore = false,
+  onLoadMore,
+  loadingMore = false,
+}) => {
   const { t } = useTranslation("admin");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
@@ -178,6 +189,9 @@ const AdminEventList = ({ events, loading, onRefresh, onEventPress, onAdd, addLa
         }}
         loading={loading}
         onRefresh={onRefresh}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+        loadingMore={loadingMore}
         emptyIcon="calendar-outline"
         emptyTitle={t("events.empty.title")}
         emptyMessage={

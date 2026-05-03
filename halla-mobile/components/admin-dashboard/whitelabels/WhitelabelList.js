@@ -21,6 +21,9 @@ const WhitelabelList = ({
   onRefresh,
   onWhitelabelPress,
   onManageSub,
+  hasMore = false,
+  onLoadMore,
+  loadingMore = false,
 }) => {
   const { t } = useTranslation("admin");
   const [search, setSearch] = useState("");
@@ -185,6 +188,9 @@ const WhitelabelList = ({
         }}
         loading={loading}
         onRefresh={onRefresh}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+        loadingMore={loadingMore}
         emptyIcon="business-outline"
         emptyTitle={t("whitelabels.empty.title")}
         emptyMessage={

@@ -7,6 +7,7 @@ export * from './queries/useMarketplace';
 export * from './queries/useVendor';
 export * from './queries/useUser';
 export * from './queries/useAdmin';
+export * from './queries/useAdminInfinite';
 
 // Mutation Hooks
 export * from './mutations/useEventMutations';

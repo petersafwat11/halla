@@ -21,6 +21,9 @@ const HostList = ({
   onRefresh,
   onAdd,
   addLabel,
+  hasMore = false,
+  onLoadMore,
+  loadingMore = false,
 }) => {
   const { t } = useTranslation("admin");
   const [searchQuery, setSearchQuery] = useState("");
@@ -149,6 +152,9 @@ const HostList = ({
         }}
         loading={loading}
         onRefresh={onRefresh}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+        loadingMore={loadingMore}
         emptyIcon="people-outline"
         emptyTitle={t("hosts.empty.title")}
         emptyMessage={

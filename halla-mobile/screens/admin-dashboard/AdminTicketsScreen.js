@@ -3,7 +3,7 @@ import { View, Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import {
-  useAdminTickets,
+  useAdminTicketsInfinite,
   useResolveTicket,
   useReopenTicket,
   useAssignTicket,
@@ -42,20 +42,21 @@ const AdminTicketsScreen = () => {
   const role  = useAuthStore((state) => state.user?.role);
   const canDelete = canDeleteOnPage(role, PAGES.TICKETS);
 
-  const { data, isLoading, error, refetch } = useAdminTickets({ page: 1, limit: 50 });
+  // Phase 4 W3-PAGE: infinite scroll for admin tickets.
+  const {
+    items: rawTickets,
+    isLoading,
+    error,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useAdminTicketsInfinite();
   const reopenTicket   = useReopenTicket();
   const bulkDelete     = useBulkDeleteTickets();
   const bulkResolve    = useBulkResolveTickets();
 
   if (error) toast.error(t("common.error"));
-
-  const rawTickets = useMemo(() => {
-    const d = data?.data;
-    if (Array.isArray(d)) return d;
-    if (Array.isArray(d?.data)) return d.data;
-    if (Array.isArray(d?.tickets)) return d.tickets;
-    return [];
-  }, [data]);
 
   const tickets = useMemo(() =>
     rawTickets.map((tk) => ({
@@ -252,6 +253,9 @@ const AdminTicketsScreen = () => {
           )}
           loading={isLoading}
           onRefresh={refetch}
+          hasMore={hasNextPage}
+          onLoadMore={fetchNextPage}
+          loadingMore={isFetchingNextPage}
           emptyIcon="chatbubbles-outline"
           emptyTitle={t("tickets.empty.title")}
           emptyMessage={

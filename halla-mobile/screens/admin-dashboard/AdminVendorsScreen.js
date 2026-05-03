@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAdminVendors, useGiveVendorRating } from "../../hooks";
+import { useAdminVendorsInfinite, useGiveVendorRating } from "../../hooks";
 import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";
 import TopBar from "../../components/plans/TopBar";
@@ -11,12 +11,18 @@ import { backgrounds } from "../../styles/tokens";
 const AdminVendorsScreen = ({ navigation }) => {
   const toast  = useToast();
   const { t }  = useTranslation("admin");
-  const { data, isLoading, refetch } = useAdminVendors({ page: 1, limit: 50 });
+  // Phase 4 W3-PAGE: infinite scroll across vendors.
+  const {
+    items: vendors,
+    isLoading,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useAdminVendorsInfinite();
   const ratingMutation = useGiveVendorRating();
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
-
-  const vendors = data?.data?.vendors || data?.data?.data || [];
 
   const handleVendorPress = (vendor) => {
     navigation.navigate("VendorDetails", { vendorId: vendor._id || vendor.id });
@@ -52,6 +58,9 @@ const AdminVendorsScreen = ({ navigation }) => {
           onRefresh={refetch}
           onVendorPress={handleVendorPress}
           onRate={handleRate}
+          hasMore={hasNextPage}
+          onLoadMore={fetchNextPage}
+          loadingMore={isFetchingNextPage}
         />
         <RatingModal
           visible={ratingModalVisible}

@@ -21,6 +21,9 @@ const VendorList = ({
   onRate,
   loading = false,
   onRefresh,
+  hasMore = false,
+  onLoadMore,
+  loadingMore = false,
 }) => {
   const { t } = useTranslation("admin");
   const [searchQuery, setSearchQuery] = useState("");
@@ -231,6 +234,9 @@ const VendorList = ({
         }}
         loading={loading}
         onRefresh={onRefresh}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+        loadingMore={loadingMore}
         emptyIcon="storefront-outline"
         emptyTitle={t("vendors.empty.title")}
         emptyMessage={

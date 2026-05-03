@@ -3,7 +3,14 @@ import { useTranslation } from "../../../localization";
 import AdminFlatList from "../common/AdminFlatList";
 import PaymentListItem from "./PaymentListItem";
 
-const PaymentList = ({ payments, loading, onRefresh }) => {
+const PaymentList = ({
+  payments,
+  loading,
+  onRefresh,
+  hasMore = false,
+  onLoadMore,
+  loadingMore = false,
+}) => {
   const { t } = useTranslation("admin");
 
   return (
@@ -13,6 +20,9 @@ const PaymentList = ({ payments, loading, onRefresh }) => {
       renderItem={({ item }) => <PaymentListItem payment={item} />}
       loading={loading}
       onRefresh={onRefresh}
+      hasMore={hasMore}
+      onLoadMore={onLoadMore}
+      loadingMore={loadingMore}
       emptyIcon="card-outline"
       emptyTitle={t("payments.empty.title")}
       emptyMessage={t("payments.empty.message")}

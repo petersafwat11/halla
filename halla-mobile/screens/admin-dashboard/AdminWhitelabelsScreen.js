@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAdminWhitelabels } from "../../hooks";
+import { useAdminWhitelabelsInfinite } from "../../hooks";
 import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";
 import TopBar from "../../components/plans/TopBar";
@@ -11,15 +11,21 @@ import { backgrounds } from "../../styles/tokens";
 const AdminWhitelabelsScreen = ({ navigation }) => {
   const toast = useToast();
   const { t } = useTranslation("admin");
-  const { data, isLoading, error, refetch } = useAdminWhitelabels({ page: 1, limit: 20 });
+  // Phase 4 W3-PAGE: infinite scroll for admin whitelabels.
+  const {
+    items: whitelabels,
+    isLoading,
+    error,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useAdminWhitelabelsInfinite();
 
   const [subModalVisible, setSubModalVisible] = useState(false);
   const [selectedWhitelabel, setSelectedWhitelabel] = useState(null);
 
   if (error) toast.error(t("common.error"));
-
-  const whitelabels =
-    data?.data?.whitelabels || data?.data?.data || data?.whitelabels || [];
 
   const handleManageSub = (whitelabel) => {
     setSelectedWhitelabel(whitelabel);
@@ -39,6 +45,9 @@ const AdminWhitelabelsScreen = ({ navigation }) => {
           whitelabels={whitelabels}
           loading={isLoading}
           onRefresh={refetch}
+          hasMore={hasNextPage}
+          onLoadMore={fetchNextPage}
+          loadingMore={isFetchingNextPage}
           onWhitelabelPress={(w) =>
             navigation.navigate("WhitelabelDetails", { whitelabelId: w._id || w.id })
           }

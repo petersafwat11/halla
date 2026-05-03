@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAdminHosts } from "../../hooks";
+import { useAdminHostsInfinite } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
@@ -14,7 +14,16 @@ const AdminHostsScreen = ({ navigation }) => {
   const { t } = useTranslation("admin");
   const toast = useToast();
   const role = useAuthStore((state) => state.user?.role);
-  const { data, isLoading, error, refetch } = useAdminHosts({ page: 1, limit: 20 });
+  // Phase 4 W3-PAGE: infinite-scroll across hosts.
+  const {
+    items: hosts,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+    error,
+  } = useAdminHostsInfinite();
 
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [subModalVisible, setSubModalVisible] = useState(false);
@@ -32,9 +41,12 @@ const AdminHostsScreen = ({ navigation }) => {
       <View style={styles.container}>
         <TopBar title={t("hosts.title")} showBack={true} />
         <HostList
-          hosts={data?.data?.hosts || []}
+          hosts={hosts}
           loading={isLoading}
           onRefresh={refetch}
+          hasMore={hasNextPage}
+          onLoadMore={fetchNextPage}
+          loadingMore={isFetchingNextPage}
           onHostPress={(host) => navigation.navigate("HostDetails", { hostId: host.id || host._id })}
           onManageSubscription={handleManageSubscription}
           onAdd={canEditPage(role, PAGES.HOSTS) ? () => setAddModalVisible(true) : undefined}

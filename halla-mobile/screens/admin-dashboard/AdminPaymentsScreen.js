@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAdminPayments } from "../../hooks";
+import { useAdminPaymentsInfinite, useAdminPaymentSummary } from "../../hooks";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import { useAuthStore } from "../../stores/authStore";
@@ -23,23 +23,27 @@ const AdminPaymentsScreen = () => {
 
   const token = useAuthStore((state) => state.token);
 
-  const { data, isLoading, error, refetch } = useAdminPayments({
-    page: 1,
-    limit: 50,
+  // Phase 4 W3-PAGE: infinite scroll for admin payments. Filter status
+  // is applied server-side; the hook re-keys on filter change.
+  const {
+    items: payments,
+    isLoading,
+    error,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useAdminPaymentsInfinite({ status: filter !== "all" ? filter : undefined });
+
+  // Stats card relies on the summary endpoint (the list response no
+  // longer carries aggregate stats once we paginate).
+  const { data: summary } = useAdminPaymentSummary({
     status: filter !== "all" ? filter : undefined,
   });
 
   if (error) toast.error(t("common.error"));
 
-  const payments = useMemo(() => {
-    const d = data;
-    if (Array.isArray(d?.payments)) return d.payments;
-    if (Array.isArray(d?.data?.payments)) return d.data.payments;
-    if (Array.isArray(d?.data)) return d.data;
-    return [];
-  }, [data]);
-
-  const stats = data?.stats || data?.data?.stats;
+  const stats = summary?.stats || summary?.data?.stats || summary;
 
   const filteredPayments = useMemo(() => {
     if (!searchQuery.trim()) return payments;
@@ -99,6 +103,9 @@ const AdminPaymentsScreen = () => {
           payments={filteredPayments}
           loading={isLoading}
           onRefresh={refetch}
+          hasMore={hasNextPage}
+          onLoadMore={fetchNextPage}
+          loadingMore={isFetchingNextPage}
         />
       </View>
     </SafeAreaView>
