@@ -1,35 +1,43 @@
 /**
  * Admin Dashboard Service
- * Provides API integration for admin dashboard functionality
- * Base URL: https://labbe-backend-production.up.railway.app/api
+ * Provides API integration for admin dashboard functionality.
+ *
+ * Phase 4 W0-AUTH: routed through `apiFetch` so admin requests inherit
+ * the centralized 401-refresh + 30 s timeout. Token args are accepted
+ * but ignored — `apiFetch` reads the in-memory access token directly.
+ *
+ * The admin endpoints live at both `/api/admin/*` and `/api/v2/admin/*`
+ * (dual mount in backend `app.js`). `apiFetch` uses `/api/v2` so paths
+ * here remain unchanged.
  */
 
 import { Linking } from "react-native";
+import { API_BASE_URL } from "../config/api";
+import { apiFetch } from "./apiClient";
 
-const BASE_URL = "https://labbe-backend-production.up.railway.app/api";
+const BASE_URL = API_BASE_URL; // exported for openExportUrl below
 
 /**
- * Helper function to make API requests
+ * Helper function to make API requests through `apiFetch`.
+ * Preserves the legacy `{ success, data, error }` envelope so callers
+ * don't need to change.
  */
-const apiRequest = async (endpoint, method = "GET", token, data = null, extraHeaders = null) => {
+const apiRequest = async (endpoint, method = "GET", _legacyToken, data = null, extraHeaders = null) => {
   try {
-    const isFormData = data instanceof FormData;
-    const baseHeaders = isFormData
-      ? { Authorization: `Bearer ${token}` }
-      : { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
-    const config = {
+    const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+    const init = {
       method,
-      // H-14: callers can pass extra headers (e.g. Idempotency-Key for
-      // addon purchase) without losing the auth/content-type defaults.
-      headers: extraHeaders ? { ...baseHeaders, ...extraHeaders } : baseHeaders,
+      headers: extraHeaders || undefined,
     };
-
     if (data && (method === "POST" || method === "PUT" || method === "PATCH")) {
-      config.body = isFormData ? data : JSON.stringify(data);
+      init.body = data;
+    }
+    if (isFormData) {
+      init.timeoutMs = 60 * 1000;
     }
 
-    const response = await fetch(`${BASE_URL}${endpoint}`, config);
-    const responseData = await response.json();
+    const response = await apiFetch(endpoint, init);
+    const responseData = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       return {

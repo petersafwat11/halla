@@ -21,10 +21,23 @@ const VendorList = ({
   onRate,
   loading = false,
   onRefresh,
+  hasMore = false,
+  onLoadMore,
+  loadingMore = false,
+  // Phase 4 review fix — controlled filter props from the screen so
+  // server-side filtering re-keys the infinite query on change.
+  searchQuery: searchQueryProp,
+  onSearchQueryChange,
+  activeFilter: activeFilterProp,
+  onActiveFilterChange,
 }) => {
   const { t } = useTranslation("admin");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQueryLocal, setSearchQueryLocal] = useState("");
+  const [activeFilterLocal, setActiveFilterLocal] = useState("all");
+  const searchQuery = searchQueryProp ?? searchQueryLocal;
+  const activeFilter = activeFilterProp ?? activeFilterLocal;
+  const setSearchQuery = onSearchQueryChange ?? setSearchQueryLocal;
+  const setActiveFilter = onActiveFilterChange ?? setActiveFilterLocal;
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -48,18 +61,16 @@ const VendorList = ({
     return map[id] || id;
   };
 
-  const filterOptions = useMemo(() => {
-    // Backend returns vendorStatus (approved/rejected/pending/suspended) — not status (active/inactive)
-    const getCount = (id) =>
-      id === "all"
-        ? vendors.length
-        : vendors.filter((v) => (v.vendorStatus || v.status) === id).length;
-    return FILTER_IDS.map((id) => ({
-      id,
-      label: getFilterLabel(id),
-      count: getCount(id),
-    }));
-  }, [vendors, t]);
+  // Phase 4 review: counts dropped (misleading under pagination).
+  const filterOptions = useMemo(
+    () =>
+      FILTER_IDS.map((id) => ({
+        id,
+        label: getFilterLabel(id),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t]
+  );
 
   const filteredVendors = useMemo(() => {
     let result = vendors;
@@ -231,6 +242,9 @@ const VendorList = ({
         }}
         loading={loading}
         onRefresh={onRefresh}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+        loadingMore={loadingMore}
         emptyIcon="storefront-outline"
         emptyTitle={t("vendors.empty.title")}
         emptyMessage={

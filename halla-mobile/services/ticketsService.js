@@ -1,51 +1,30 @@
-import { API_BASE_URL, ENDPOINTS } from "../config/api";
-
 /**
- * Get all tickets for the authenticated user
- * @param {string} token - Auth token
- * @param {Object} filters - Optional filter parameters
- * @returns {Promise<{status: string, data: Array}>}
+ * Tickets service.
+ *
+ * Phase 4 W0-AUTH: routed through `apiFetch` so token attach + 401
+ * refresh + 30 s timeout are inherited. Token argument is accepted but
+ * ignored.
  */
-export const getTicketsAPI = async (token, filters = {}) => {
+
+import { ENDPOINTS } from "../config/api";
+import { apiFetch } from "./apiClient";
+
+const _request = async (path, init, errorMessage) => {
+  const response = await apiFetch(path, init);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.message || errorMessage);
+  return data;
+};
+
+export const getTicketsAPI = async (_legacyToken, filters = {}) => {
   const queryString = new URLSearchParams(filters).toString();
-  const url = `${API_BASE_URL}${ENDPOINTS.TICKETS.BASE}${queryString ? `?${queryString}` : ''}`;
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to get tickets");
-  }
-
-  return data;
+  const path = `${ENDPOINTS.TICKETS.BASE}${queryString ? `?${queryString}` : ""}`;
+  return _request(path, { method: "GET" }, "Failed to get tickets");
 };
 
-/**
- * Get a single ticket by ID
- * @param {string} ticketId - Ticket ID
- * @param {string} token - Auth token
- * @returns {Promise<{status: string, data: Object}>}
- */
-export const getTicketAPI = async (ticketId, token) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.TICKETS.BASE}/${ticketId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to get ticket");
-  }
-
-  return data;
-};
+export const getTicketAPI = async (ticketId, _legacyToken) =>
+  _request(
+    `${ENDPOINTS.TICKETS.BASE}/${ticketId}`,
+    { method: "GET" },
+    "Failed to get ticket"
+  );

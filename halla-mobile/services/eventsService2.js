@@ -231,8 +231,6 @@ export const updateInvitationSettings = async (
   try {
     console.log("[EVENTS SERVICE] Updating invitation settings:", eventId);
 
-    const url = `${API_BASE_URL}${ENDPOINTS.EVENTS.BASE}/${eventId}/invitation-settings`;
-
     // Build FormData (backend expects multipart/form-data for file uploads)
     // Controller passes req.body fields directly (no JSON.parse), so append each field individually
     const formData = new FormData();
@@ -253,16 +251,16 @@ export const updateInvitationSettings = async (
       });
     }
 
-    const response = await fetch(url, {
+    // Phase 4 W0-AUTH: route through apiFetch so the multipart upload
+    // also gets the auth header + 60s timeout. apiFetch detects FormData
+    // and skips JSON serialization (Content-Type set by fetch boundary).
+    const response = await apiFetch(`${ENDPOINTS.EVENTS.BASE}/${eventId}/invitation-settings`, {
       method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // Do NOT set Content-Type — let fetch set multipart boundary
-      },
       body: formData,
+      timeoutMs: 60 * 1000,
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       throw new Error(data.message || "Failed to update invitation settings");
@@ -619,21 +617,20 @@ export const bulkDeleteEvents = async (eventIds, token) => {
  * @param {string} token - Auth token
  * @returns {Promise<Object>}
  */
-export const exportEvents = async (token) => {
+export const exportEvents = async (_legacyToken) => {
   try {
     console.log("[EVENTS SERVICE] Exporting events...");
 
-    const url = `${API_BASE_URL}${ENDPOINTS.EVENTS.BASE}/export/events`;
-
-    const response = await fetch(url, {
+    // Phase 4 W0-AUTH: route through apiFetch so the export gets the
+    // refreshed access token automatically. Allow up to 60 s — XLSX
+    // generation can be slow when the host has many events.
+    const response = await apiFetch(`${ENDPOINTS.EVENTS.BASE}/export/events`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      timeoutMs: 60 * 1000,
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || "Failed to export events");
     }
 
@@ -659,7 +656,7 @@ export const exportEvents = async (token) => {
  * @param {string} token - Auth token
  * @returns {Promise<Object>}
  */
-export const exportEventGuests = async (eventId, token) => {
+export const exportEventGuests = async (eventId, _legacyToken) => {
   try {
     console.log("[EVENTS SERVICE] Exporting guests for event:", eventId);
 
@@ -667,17 +664,15 @@ export const exportEventGuests = async (eventId, token) => {
       throw new Error("Event ID is required");
     }
 
-    const url = `${API_BASE_URL}${ENDPOINTS.EVENTS.BASE}/export/${eventId}/guests`;
-
-    const response = await fetch(url, {
+    // Phase 4 W0-AUTH: route through apiFetch so the export gets the
+    // refreshed access token automatically.
+    const response = await apiFetch(`${ENDPOINTS.EVENTS.BASE}/export/${eventId}/guests`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      timeoutMs: 60 * 1000,
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || "Failed to export guests");
     }
 
@@ -839,4 +834,82 @@ export const updateGuest = async (eventId, guestId, guestData, token) => {
     console.error("[EVENTS SERVICE] Error updating guest:", error.message);
     throw error;
   }
+};
+
+// ==================== STAFF / GUEST ACCESS TOKEN APIs ====================
+
+/**
+ * Phase 4 W2-STAFF — revoke a staff member's access token.
+ *
+ * Backend: POST /events/:eventId/staff/:staffId/revoke (Phase 3e.1).
+ * `staffId` is the staff sub-document _id from `event.staffList[i]._id`,
+ * NOT the StaffAccessToken doc id — the backend resolves the token from
+ * the staff phone. Idempotent: re-revoking returns 200 with
+ * `wasAlreadyRevoked: true`.
+ *
+ * @param {string} eventId
+ * @param {string} staffId - staff sub-document _id
+ * @param {string} [token] - legacy; ignored (apiFetch reads from store)
+ */
+export const revokeStaffAccess = async (eventId, staffId, token) => {
+  if (!eventId || !staffId) throw new Error("eventId and staffId are required");
+  // Per-click idempotency key — same shape as retryLaunch.
+  const idempotencyKey = `staff-revoke-${eventId}-${staffId}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+  const data = await authenticatedFetch(
+    `/${eventId}/staff/${staffId}/revoke`,
+    token,
+    { method: "POST", headers: { "Idempotency-Key": idempotencyKey } }
+  );
+  return data?.data || data;
+};
+
+/**
+ * Phase 4 W2-QR — rotate a guest's QR code.
+ *
+ * Backend: POST /events/:eventId/guests/:guestId/rotate-qr (Phase 3e.3).
+ * Returns the new `qrUrl` and `expiresAt`. Old QR scans return 410 with
+ * `reason: 'qr_rotated'`.
+ */
+export const rotateGuestQr = async (eventId, guestId, token) => {
+  if (!eventId || !guestId) throw new Error("eventId and guestId are required");
+  const idempotencyKey = `qr-rotate-${eventId}-${guestId}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+  // Note: this endpoint lives under the `/guests/...` mount, NOT under
+  // `/events/...`. We can't use authenticatedFetch (which prepends the
+  // EVENTS base) — go direct via apiFetch.
+  const response = await apiFetch(
+    `/guests/events/${eventId}/guests/${guestId}/rotate-qr`,
+    { method: "POST", headers: { "Idempotency-Key": idempotencyKey } }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to rotate QR");
+  }
+  return data?.data || data;
+};
+
+/**
+ * Phase 4 W2-GAT — manually revoke a guest's post-event access token.
+ *
+ * Backend: POST /events/:eventId/guests/:guestId/revoke-access
+ * (Phase 3e.4). Distinct from QR rotate: this revokes post-event content
+ * access (photos, comments) without minting a new token.
+ */
+export const revokeGuestAccess = async (eventId, guestId, token) => {
+  if (!eventId || !guestId) throw new Error("eventId and guestId are required");
+  const idempotencyKey = `gat-revoke-${eventId}-${guestId}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+  const response = await apiFetch(
+    `/guests/events/${eventId}/guests/${guestId}/revoke-access`,
+    { method: "POST", headers: { "Idempotency-Key": idempotencyKey } }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to revoke guest access");
+  }
+  return data?.data || data;
 };

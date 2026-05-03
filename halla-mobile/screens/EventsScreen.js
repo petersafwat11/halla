@@ -24,11 +24,16 @@ const EventsScreen = ({ navigation }) => {
   // Backend _formatEvent returns "id", raw MongoDB docs use "_id" — handle both
   const selectedEventId = selectedEvent?._id || selectedEvent?.id;
 
+  // Phase 4 W1-STATS: pass `eventStatus` via the options object so the
+  // hook's status-keyed polling (Phase 3de.4) drives the correct cadence
+  // (30 s live / 5 min completed / off otherwise). The legacy positional
+  // call still works via the back-compat shim, but the explicit shape
+  // matches the web hook and makes the intent obvious.
   const {
     data: eventStats,
     isLoading: statsLoading,
     error: statsError
-  } = useSingleEventStats(selectedEventId, selectedEvent?.status);
+  } = useSingleEventStats(selectedEventId, { eventStatus: selectedEvent?.status });
 
   const handleEventPress = (event) => {
     // EventDetails uses data from getEventStats (already loaded)

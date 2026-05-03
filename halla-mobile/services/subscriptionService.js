@@ -1,37 +1,26 @@
 /**
  * Subscription Service
- * Handles all subscription-related API calls
+ *
+ * Phase 4 W0-AUTH: routed through `apiFetch`. Token args are accepted
+ * but ignored — the wrapper reads the in-memory access token directly
+ * and handles 401 → refresh.
  */
 
-import { API_BASE_URL, ENDPOINTS } from "../config/api";
+import { ENDPOINTS } from "../config/api";
+import { apiFetch } from "./apiClient";
 
 class SubscriptionService {
-  constructor() {
-    this.baseURL = API_BASE_URL;
-  }
-
-  /**
-   * Make authenticated request
-   * @param {string} endpoint - API endpoint
-   * @param {Object} options - Fetch options
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>}
-   */
-  async request(endpoint, options = {}, token) {
-    const url = `${this.baseURL}${endpoint}`;
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    };
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
+  async request(endpoint, options = {}, _legacyToken) {
+    const response = await apiFetch(endpoint, {
+      method: options.method || "GET",
+      body: options.body
+        ? typeof options.body === "string"
+          ? JSON.parse(options.body)
+          : options.body
+        : undefined,
+      headers: options.headers,
     });
-
-    const data = await response.json();
-
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       const error = new Error(data.message || "Request failed");
       error.status = response.status;
@@ -39,154 +28,53 @@ class SubscriptionService {
       error.field = data.field;
       throw error;
     }
-
     return data;
   }
 
-  /**
-   * Get current user's active subscription
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} Subscription data
-   */
   async getMySubscription(token) {
-    try {
-      return await this.request(
-        ENDPOINTS.SUBSCRIPTIONS.MY_SUBSCRIPTION,
-        { method: "GET" },
-        token,
-      );
-    } catch (error) {
-      console.error(
-        "[SUBSCRIPTION SERVICE] Error fetching subscription:",
-        error,
-      );
-      throw error;
-    }
+    return this.request(
+      ENDPOINTS.SUBSCRIPTIONS.MY_SUBSCRIPTION,
+      { method: "GET" },
+      token
+    );
   }
 
-  /**
-   * Create a new subscription
-   * @param {Object} params - Subscription details
-   * @param {string} params.planCode - Plan code (e.g., 'basic_event_50')
-   * @param {string} [params.discountCode] - Optional discount code
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} Created subscription
-   */
   async subscribe({ planCode, discountCode }, token) {
-    try {
-      const payload = { planCode };
-      if (discountCode) payload.discountCode = discountCode;
-
-      return await this.request(
-        ENDPOINTS.SUBSCRIPTIONS.SUBSCRIBE,
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-        },
-        token,
-      );
-    } catch (error) {
-      console.error(
-        "[SUBSCRIPTION SERVICE] Error creating subscription:",
-        error,
-      );
-      throw error;
-    }
+    const payload = { planCode };
+    if (discountCode) payload.discountCode = discountCode;
+    return this.request(
+      ENDPOINTS.SUBSCRIPTIONS.SUBSCRIBE,
+      { method: "POST", body: payload },
+      token
+    );
   }
 
-  /**
-   * Upgrade to a new plan
-   * @param {Object} upgradeData - Upgrade details
-   * @param {string} upgradeData.planCode - New plan code
-   * @param {string} upgradeData.billingCycle - New billing cycle
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} Updated subscription
-   */
   async upgrade(upgradeData, token) {
-    try {
-      return await this.request(
-        ENDPOINTS.SUBSCRIPTIONS.CHANGE_PLAN,
-        {
-          method: "POST",
-          body: JSON.stringify(upgradeData),
-        },
-        token,
-      );
-    } catch (error) {
-      console.error(
-        "[SUBSCRIPTION SERVICE] Error upgrading subscription:",
-        error,
-      );
-      throw error;
-    }
+    return this.request(
+      ENDPOINTS.SUBSCRIPTIONS.CHANGE_PLAN,
+      { method: "POST", body: upgradeData },
+      token
+    );
   }
 
-  /**
-   * Cancel subscription
-   * @param {Object} cancelData - Cancellation details
-   * @param {string} cancelData.reason - Cancellation reason
-   * @param {boolean} cancelData.immediate - Cancel immediately or at period end
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} Cancelled subscription
-   */
   async cancel(cancelData, token) {
-    try {
-      return await this.request(
-        ENDPOINTS.SUBSCRIPTIONS.CANCEL,
-        {
-          method: "POST",
-          body: JSON.stringify(cancelData),
-        },
-        token,
-      );
-    } catch (error) {
-      console.error(
-        "[SUBSCRIPTION SERVICE] Error cancelling subscription:",
-        error,
-      );
-      throw error;
-    }
+    return this.request(
+      ENDPOINTS.SUBSCRIPTIONS.CANCEL,
+      { method: "POST", body: cancelData },
+      token
+    );
   }
 
-  /**
-   * Validate limits before action
-   * @param {string} action - 'event', 'guest', or 'moderator'
-   * @param {number} count - Count to validate
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} Validation result
-   */
   async validateLimits(action, count, token) {
-    try {
-      return await this.request(
-        ENDPOINTS.SUBSCRIPTIONS.VALIDATE_LIMITS,
-        {
-          method: "POST",
-          body: JSON.stringify({ action, count }),
-        },
-        token,
-      );
-    } catch (error) {
-      console.error("[SUBSCRIPTION SERVICE] Error validating limits:", error);
-      throw error;
-    }
+    return this.request(
+      ENDPOINTS.SUBSCRIPTIONS.VALIDATE_LIMITS,
+      { method: "POST", body: { action, count } },
+      token
+    );
   }
 
-  /**
-   * Get subscription limits
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} Limits data
-   */
   async getLimits(token) {
-    try {
-      return await this.request(
-        ENDPOINTS.SUBSCRIPTIONS.LIMITS,
-        { method: "GET" },
-        token,
-      );
-    } catch (error) {
-      console.error("[SUBSCRIPTION SERVICE] Error fetching limits:", error);
-      throw error;
-    }
+    return this.request(ENDPOINTS.SUBSCRIPTIONS.LIMITS, { method: "GET" }, token);
   }
 }
 

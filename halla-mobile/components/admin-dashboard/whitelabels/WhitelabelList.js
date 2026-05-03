@@ -21,10 +21,25 @@ const WhitelabelList = ({
   onRefresh,
   onWhitelabelPress,
   onManageSub,
+  hasMore = false,
+  onLoadMore,
+  loadingMore = false,
+  // Phase 4 review fix — controlled filter props from the screen so
+  // server-side filtering re-keys the infinite query on change. The
+  // existing prop name in this list is `search` (not `searchQuery`),
+  // matching the existing `setSearch`.
+  search: searchProp,
+  onSearchChange,
+  activeFilter: activeFilterProp,
+  onActiveFilterChange,
 }) => {
   const { t } = useTranslation("admin");
-  const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchLocal, setSearchLocal] = useState("");
+  const [activeFilterLocal, setActiveFilterLocal] = useState("all");
+  const search = searchProp ?? searchLocal;
+  const activeFilter = activeFilterProp ?? activeFilterLocal;
+  const setSearch = onSearchChange ?? setSearchLocal;
+  const setActiveFilter = onActiveFilterChange ?? setActiveFilterLocal;
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -36,15 +51,16 @@ const WhitelabelList = ({
   const bulkSuspend = useBulkSuspendWhitelabels();
   const toast = useToast();
 
-  const filterOptions = useMemo(() => {
-    const getCount = (id) =>
-      id === "all" ? whitelabels.length : whitelabels.filter((w) => w.status === id).length;
-    return FILTER_IDS.map((id) => ({
-      id,
-      label: id === "all" ? t("whitelabels.filters.all") : t(`whitelabels.status.${id}`),
-      count: getCount(id),
-    }));
-  }, [whitelabels, t]);
+  // Phase 4 review: counts dropped — they were misleading once we
+  // paginate server-side and only loaded pages contributed.
+  const filterOptions = useMemo(
+    () =>
+      FILTER_IDS.map((id) => ({
+        id,
+        label: id === "all" ? t("whitelabels.filters.all") : t(`whitelabels.status.${id}`),
+      })),
+    [t]
+  );
 
   const filtered = useMemo(() => {
     let list = whitelabels;
@@ -185,6 +201,9 @@ const WhitelabelList = ({
         }}
         loading={loading}
         onRefresh={onRefresh}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+        loadingMore={loadingMore}
         emptyIcon="business-outline"
         emptyTitle={t("whitelabels.empty.title")}
         emptyMessage={

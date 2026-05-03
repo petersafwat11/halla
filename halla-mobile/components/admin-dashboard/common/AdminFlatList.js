@@ -12,18 +12,23 @@ import { colors, spacing, textStyles, backgrounds } from "../../../styles/tokens
 
 /**
  * AdminFlatList - Unified FlatList for admin pages.
- * Handles loading spinner (first load), pull-to-refresh, and empty state.
+ * Handles loading spinner (first load), pull-to-refresh, empty state,
+ * and (Phase 4 W3-PAGE) infinite-scroll pagination via `onEndReached`.
  *
  * @param {Array}     data                  - Items to render
  * @param {Function}  renderItem            - Render function for each item
  * @param {Function}  keyExtractor          - Key extractor function
- * @param {boolean}   loading               - Loading state
+ * @param {boolean}   loading               - Loading state (first page)
  * @param {Function}  onRefresh             - Pull-to-refresh handler
  * @param {string}    emptyIcon             - Ionicons icon name for empty state
  * @param {string}    emptyTitle            - Title text for empty state
  * @param {string}    emptyMessage          - Message text for empty state
  * @param {Object}    contentContainerStyle - Extra style for list content
  * @param {any}       extraData             - Pass any extra state that renderItem depends on
+ * @param {boolean}   hasMore               - Whether more pages exist
+ * @param {Function}  onLoadMore            - Called when end reached (when hasMore)
+ * @param {boolean}   loadingMore           - Whether the next page is loading
+ * @param {number}    [endReachedThreshold] - FlatList onEndReachedThreshold (default 0.5)
  */
 const AdminFlatList = ({
   data,
@@ -36,6 +41,10 @@ const AdminFlatList = ({
   emptyMessage,
   contentContainerStyle,
   extraData,
+  hasMore = false,
+  onLoadMore,
+  loadingMore = false,
+  endReachedThreshold = 0.5,
 }) => {
   if (loading && (!data || data.length === 0)) {
     return (
@@ -44,6 +53,13 @@ const AdminFlatList = ({
       </View>
     );
   }
+
+  // Guard against onEndReached firing repeatedly while a page is in
+  // flight: only invoke `onLoadMore` when not already loading.
+  const handleEndReached = () => {
+    if (!hasMore || loadingMore) return;
+    if (typeof onLoadMore === "function") onLoadMore();
+  };
 
   return (
     <FlatList
@@ -64,6 +80,15 @@ const AdminFlatList = ({
       }
       contentContainerStyle={[styles.listContent, contentContainerStyle]}
       showsVerticalScrollIndicator={false}
+      onEndReached={handleEndReached}
+      onEndReachedThreshold={endReachedThreshold}
+      ListFooterComponent={
+        loadingMore ? (
+          <View style={styles.footerWrap}>
+            <ActivityIndicator size="small" color={colors.primary[500]} />
+          </View>
+        ) : null
+      }
       ListEmptyComponent={
         <View style={styles.emptyWrap}>
           <Ionicons name={emptyIcon} size={48} color={colors.natural[300]} />
@@ -105,6 +130,10 @@ const styles = StyleSheet.create({
     ...textStyles.bodySmall,
     color: colors.natural[400],
     textAlign: "center",
+  },
+  footerWrap: {
+    paddingVertical: spacing[16],
+    alignItems: "center",
   },
 });
 

@@ -1,9 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
+import { fetchWithTimeout } from "../services/apiClient";
 
+/**
+ * Phase 4 W0-AUTH: routed through `fetchWithTimeout` so locations
+ * lookups time out at 30 s instead of hanging on a flaky link. No auth
+ * needed (public endpoints), so we don't go through `apiFetch`.
+ */
 const fetchJSON = async (url) => {
-  const response = await fetch(url);
-  const data = await response.json();
+  const response = await fetchWithTimeout(url);
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.message || "Request failed");
   return data;
 };

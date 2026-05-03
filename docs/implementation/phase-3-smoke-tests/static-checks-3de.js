@@ -81,10 +81,16 @@ check("3d.4 — host EventStats wires eventStatus to the stats hook", () => {
 });
 
 check("3d.4 — mobile EventsScreen passes selectedEvent.status to useSingleEventStats", () => {
+  // Phase 4 W1-STATS migrated EventsScreen to the options-object shape
+  // (`{ eventStatus: ... }`). The legacy positional shim still works,
+  // so accept either form here.
   const screen = read("halla-mobile/screens/EventsScreen.js");
+  const positional = screen.includes(
+    "useSingleEventStats(selectedEventId, selectedEvent?.status)"
+  );
+  const optionsObject = /useSingleEventStats\(\s*selectedEventId,\s*\{\s*eventStatus/.test(screen);
   return (
-    screen.includes("useSingleEventStats(selectedEventId, selectedEvent?.status)") ||
-    "EventsScreen not passing status"
+    positional || optionsObject || "EventsScreen not passing status"
   );
 });
 

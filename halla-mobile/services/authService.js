@@ -1,4 +1,5 @@
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
+import { fetchWithTimeout } from "./apiClient";
 
 /**
  * Strip token + refreshToken before logging an auth response. Keeping the
@@ -40,7 +41,7 @@ export const loginWithEmailAPI = async ({ email, password }) => {
     dlog("[AUTH SERVICE] Login attempt:", { email });
     dlog("[AUTH SERVICE] API URL:", `${API_BASE_URL}/login`);
 
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGIN}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGIN}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -99,7 +100,7 @@ export const signupVendorAPI = async (vendorData) => {
       });
     }
 
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.SIGNUP_VENDOR}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.SIGNUP_VENDOR}`, {
       method: "POST",
       body: formData,
     });
@@ -173,7 +174,7 @@ export const signupWhitelabelAPI = async (whitelabelData) => {
       needsCustomBranding: planSelection?.needsCustomBranding || false,
     }));
 
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.SIGNUP_WHITELABEL}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.SIGNUP_WHITELABEL}`, {
       method: "POST",
       body: formData,
     });
@@ -210,7 +211,7 @@ export const sendOTPAPI = async ({ mobile, type = "login" }) => {
     dlog("[AUTH SERVICE] Sending OTP to:", mobile, "Type:", type);
 
     const endpoint = type === "signup" ? ENDPOINTS.AUTH.OTP_SEND_SIGNUP : ENDPOINTS.AUTH.OTP_SEND_LOGIN;
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phoneNumber: mobile }),
@@ -248,7 +249,7 @@ export const verifyOTPAPI = async ({ mobile, otp }) => {
       otp,
     );
 
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_VERIFY_LOGIN}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_VERIFY_LOGIN}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phoneNumber: mobile, otp }),
@@ -319,7 +320,7 @@ export const verifySignupOTPAPI = async ({ mobile, otp }) => {
       otp,
     );
 
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_VERIFY_SIGNUP}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_VERIFY_SIGNUP}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phoneNumber: mobile, otp }),
@@ -363,7 +364,7 @@ export const completeProfileAPI = async ({
   try {
     dlog("[AUTH SERVICE] Complete profile:", { username, email });
 
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.COMPLETE_PROFILE}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.COMPLETE_PROFILE}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -411,7 +412,7 @@ export const forgotPasswordAPI = async ({ email }) => {
   try {
     dlog("[AUTH SERVICE] Forgot password request for:", email);
 
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.FORGOT_PASSWORD}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.FORGOT_PASSWORD}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
@@ -444,7 +445,7 @@ export const resendOTPAPI = async ({ mobile, type = "login" }) => {
   try {
     dlog("[AUTH SERVICE] Resending OTP to:", mobile, "Type:", type);
 
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_RESEND}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_RESEND}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phoneNumber: mobile, type }),
@@ -482,7 +483,7 @@ export const resendOTPAPI = async ({ mobile, type = "login" }) => {
 export const logoutAPI = async ({ accessToken, refreshToken } = {}) => {
   try {
     if (!refreshToken && !accessToken) return;
-    await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGOUT}`, {
+    await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGOUT}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -512,7 +513,7 @@ export const refreshTokenAPI = async (refreshToken) => {
     throw new Error("No refresh token available");
   }
 
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.REFRESH}`, {
+  const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.REFRESH}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refreshToken }),
@@ -535,7 +536,7 @@ export const refreshTokenAPI = async (refreshToken) => {
  * Phase 1a (FLOW-06-F03).
  */
 export const resetPasswordAPI = async ({ token, password, passwordConfirm }) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.RESET_PASSWORD(token)}`, {
+  const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.RESET_PASSWORD(token)}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password, passwordConfirm }),
@@ -544,6 +545,36 @@ export const resetPasswordAPI = async ({ token, password, passwordConfirm }) => 
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.message || "Password reset failed");
+  }
+
+  return {
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
+    user: data.data?.user,
+  };
+};
+
+/**
+ * Phase 4 W3-WL — set the initial password for a whitelabel admin (or
+ * any user holding a one-time setup token) after they tap the email
+ * link. Backend: POST /auth/setup-password.
+ *
+ * Returns the same token-pair shape as login so the auth store can
+ * authenticate the user immediately.
+ */
+export const setupPasswordAPI = async ({ token, password, passwordConfirm }) => {
+  if (!token || !password) {
+    throw new Error("Token and password are required");
+  }
+  const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.SETUP_PASSWORD}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, password, passwordConfirm }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Password setup failed");
   }
 
   return {

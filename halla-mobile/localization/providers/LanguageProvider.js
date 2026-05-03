@@ -5,7 +5,8 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { I18nManager, Alert } from "react-native";
+import { I18nManager, Alert, Platform } from "react-native";
+import Constants from "expo-constants";
 import { I18nextProvider } from "react-i18next";
 import i18n, { i18nConfig } from "../config/i18nConfig";
 import { languageStorage } from "../../utils/languageStorage";
@@ -13,6 +14,55 @@ import { languageStorage } from "../../utils/languageStorage";
 const LanguageContext = createContext({});
 
 const LANGUAGE_STORAGE_KEY = "@app_language";
+
+/**
+ * Phase 4 W0-RTL: detect whether we're in Expo Go (forceRTL is a no-op
+ * there and triggers a benign warning). In a dev client / standalone
+ * build, calling `I18nManager.forceRTL(true)` flips the layout for
+ * Arabic. The change requires app reload to take effect on iOS.
+ *
+ * Reviewed for SDK 54: `Constants.appOwnership === "expo"` is the
+ * official Expo Constants API; `Constants.executionEnvironment` is its
+ * newer cousin. We check both for safety.
+ */
+const _isExpoGo = () => {
+  try {
+    if (Constants?.appOwnership === "expo") return true;
+    // executionEnvironment values: "bare" | "standalone" | "storeClient"
+    if (Constants?.executionEnvironment === "storeClient") return true;
+    return false;
+  } catch (_) {
+    return false;
+  }
+};
+
+/**
+ * Apply RTL layout to match the chosen locale. Safe to call repeatedly:
+ *   - if `I18nManager.isRTL` already matches, this is a no-op.
+ *   - if it doesn't, we flip + request a reload (handled by the
+ *     LanguageProvider via the alert).
+ *
+ * Returns `true` when a reload is needed, `false` otherwise.
+ */
+const applyRTLForLocale = (locale) => {
+  const wantRTL = i18nConfig.isRTL(locale);
+  try {
+    I18nManager.allowRTL(wantRTL);
+  } catch (_) {
+    /* no-op on web */
+  }
+  if (I18nManager.isRTL === wantRTL) return false;
+  if (_isExpoGo()) {
+    // Expo Go ignores forceRTL — layout direction stays flexDirection-based.
+    return false;
+  }
+  try {
+    I18nManager.forceRTL(wantRTL);
+  } catch (_) {
+    /* unsupported on the current platform */
+  }
+  return Platform.OS === "ios" || Platform.OS === "android";
+};
 
 export const LanguageProvider = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState(
@@ -60,9 +110,13 @@ export const LanguageProvider = ({ children }) => {
       }
       console.log("[LanguageProvider] Selected language:", selectedLang);
 
-      // Note: We don't use I18nManager in Expo Go as it doesn't work properly
-      // Instead, we control RTL purely through our context and flexDirection styles
+      // Phase 4 W0-RTL: opportunistically call I18nManager.forceRTL so
+      // dev-client / production builds get native RTL layout. Expo Go
+      // ignores it (the `_isExpoGo` guard avoids the warning). The
+      // flexDirection-based RTL fallback in the context still applies
+      // as a safety net.
       const shouldBeRTL = i18nConfig.isRTL(selectedLang);
+      applyRTLForLocale(selectedLang);
       console.log(
         "[LanguageProvider] Language initialized:",
         selectedLang,
@@ -90,17 +144,21 @@ export const LanguageProvider = ({ children }) => {
         setHasSelectedLanguage(true);
 
         const shouldBeRTL = i18nConfig.isRTL(languageCode);
+        const reloadNeeded = applyRTLForLocale(languageCode);
         console.log(
           "[LanguageProvider] Language changed to:",
           languageCode,
           "| RTL:",
-          shouldBeRTL
+          shouldBeRTL,
+          "| reloadNeeded:",
+          reloadNeeded
         );
 
-        // Alert user that language will apply immediately
         Alert.alert(
           "Language Changed",
-          "The app language has been changed successfully.",
+          reloadNeeded
+            ? "The app language has been changed. Please relaunch the app for the layout direction to fully apply."
+            : "The app language has been changed successfully.",
           [{ text: "OK" }]
         );
       }

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAdminHosts } from "../../hooks";
+import { useAdminHostsInfinite, useDebouncedValue } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
@@ -14,7 +14,31 @@ const AdminHostsScreen = ({ navigation }) => {
   const { t } = useTranslation("admin");
   const toast = useToast();
   const role = useAuthStore((state) => state.user?.role);
-  const { data, isLoading, error, refetch } = useAdminHosts({ page: 1, limit: 20 });
+
+  // Phase 4 review fix — lift filter state to the screen so the infinite
+  // hook re-keys (and refetches from page 1) on change. Search is
+  // debounced 350ms to avoid spamming the backend on every keystroke.
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const filters = useMemo(
+    () => ({
+      search: debouncedSearch,
+      status: activeFilter,
+    }),
+    [debouncedSearch, activeFilter]
+  );
+
+  // Phase 4 W3-PAGE: infinite-scroll across hosts.
+  const {
+    items: hosts,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+    error,
+  } = useAdminHostsInfinite(filters);
 
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [subModalVisible, setSubModalVisible] = useState(false);
@@ -32,9 +56,16 @@ const AdminHostsScreen = ({ navigation }) => {
       <View style={styles.container}>
         <TopBar title={t("hosts.title")} showBack={true} />
         <HostList
-          hosts={data?.data?.hosts || []}
+          hosts={hosts}
           loading={isLoading}
           onRefresh={refetch}
+          hasMore={hasNextPage}
+          onLoadMore={fetchNextPage}
+          loadingMore={isFetchingNextPage}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          activeFilter={activeFilter}
+          onActiveFilterChange={setActiveFilter}
           onHostPress={(host) => navigation.navigate("HostDetails", { hostId: host.id || host._id })}
           onManageSubscription={handleManageSubscription}
           onAdd={canEditPage(role, PAGES.HOSTS) ? () => setAddModalVisible(true) : undefined}

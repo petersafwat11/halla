@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import Svg, { Path } from "react-native-svg";
+import { useLanguage } from "../../localization";
+import { formatCount, formatDateTime, localizeDigits } from "../../utils/locale";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -89,6 +91,7 @@ const LocationIcon = () => (
 const EventSummary = () => {
   const { watch, setValue } = useFormContext();
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { currentLanguage } = useLanguage();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -111,6 +114,25 @@ const EventSummary = () => {
   const selectedTemplate = formData.selectedTemplate || null;
   const confirmReviewed = formData.confirmReviewed || false;
 
+  // Phase 4 W1-FLOW-11-F01: surface the scheduled-launch decision so the
+  // host can confirm before submit. `sendSchedule` is "now" | "later"
+  // (per createEventSchema). When "later", `scheduleDate` is a Date
+  // (from DatePicker) and `scheduleTime` is the canonical "H:MM:AM"
+  // string (from TimePicker via dateToTimeString).
+  const sendSchedule = formData.sendSchedule || "now";
+  const scheduleDate = formData.scheduleDate || null;
+  const scheduleTime = formData.scheduleTime || "";
+
+  // Phase 4 W1-WIZ5: surface visualTemplate.data so the host can verify
+  // template-input values (bride name, intro text, etc.) before submit.
+  // visualTemplate is { _id, name, fields[], data: {...} } populated by
+  // StepThree's "Confirm template" action.
+  const visualTemplate = formData.visualTemplate || null;
+  const visualTemplateData = visualTemplate?.data || {};
+  const visualTemplateFields = Array.isArray(visualTemplate?.fields)
+    ? visualTemplate.fields
+    : [];
+
   // Invitation message: prefer WhatsApp template body, fallback to invitation message
   const invitationText =
     selectedTemplate?.bodyText || formData.invitationMessage || "";
@@ -122,7 +144,57 @@ const EventSummary = () => {
       "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
       "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
     ];
-    return `${d.getDate()} ${arabicMonths[d.getMonth()]}${eventTime ? " , " + eventTime : ""}`;
+    const day = currentLanguage === "ar"
+      ? localizeDigits(d.getDate(), "ar")
+      : d.getDate();
+    const time = eventTime
+      ? `, ${currentLanguage === "ar" ? localizeDigits(eventTime, "ar") : eventTime}`
+      : "";
+    return `${day} ${arabicMonths[d.getMonth()]}${time}`;
+  };
+
+  // Phase 4 W1-FLOW-11-F01: render the "Scheduled launch" row text. Use
+  // a host-timezone-aware Intl format so non-Saudi-timezone hosts see
+  // their own clock.
+  //
+  // Defensive on form data: `scheduleDate` may be a Date instance OR an
+  // ISO string. We always create a fresh Date copy via `getTime()` so
+  // the local mutation (`setHours`) never leaks back into the form's
+  // value.
+  const renderScheduleText = () => {
+    if (sendSchedule === "now" || !scheduleDate) {
+      return currentLanguage === "ar"
+        ? "ينطلق فور التأكيد"
+        : "Launches immediately on submit";
+    }
+    const sourceMs = scheduleDate instanceof Date
+      ? scheduleDate.getTime()
+      : new Date(scheduleDate).getTime();
+    if (Number.isNaN(sourceMs)) {
+      return currentLanguage === "ar"
+        ? "ينطلق فور التأكيد"
+        : "Launches immediately on submit";
+    }
+    const dt = new Date(sourceMs);
+    // Combine date with the H:MM:AM time string if provided
+    const timeMatch = /^(\d{1,2}):(\d{2}):(AM|PM)$/i.exec(scheduleTime);
+    if (timeMatch) {
+      let hour = parseInt(timeMatch[1], 10);
+      const min = parseInt(timeMatch[2], 10);
+      const period = timeMatch[3].toUpperCase();
+      if (period === "PM" && hour !== 12) hour += 12;
+      if (period === "AM" && hour === 12) hour = 0;
+      dt.setHours(hour, min, 0, 0);
+    }
+    const formatted = formatDateTime(dt, currentLanguage, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
+    return formatted;
   };
 
   const getEventTypeLabel = () => {
@@ -136,6 +208,27 @@ const EventSummary = () => {
     };
     return types[eventType] || "مناسبة";
   };
+
+  // Resolve a template field's display value. Empty/null → "—".
+  const resolveFieldValue = (field) => {
+    const raw = visualTemplateData[field.key];
+    if (raw == null || raw === "") return "—";
+    if (raw instanceof Date) return formatDateTime(raw, currentLanguage);
+    if (typeof raw === "string") {
+      // Color hex codes stay as-is so the host recognises them.
+      if (field.type === "color" && /^#[0-9a-f]{3,8}$/i.test(raw)) return raw;
+      return currentLanguage === "ar" ? localizeDigits(raw, "ar") : raw;
+    }
+    if (typeof raw === "number") {
+      return formatCount(raw, currentLanguage);
+    }
+    return String(raw);
+  };
+
+  const fieldLabel = (field) =>
+    currentLanguage === "ar"
+      ? field.labelAr || field.labelEn || field.key
+      : field.labelEn || field.labelAr || field.key;
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -157,7 +250,9 @@ const EventSummary = () => {
               </View>
               <View style={styles.metricContent}>
                 <Text style={styles.metricLabel}>الضيوف</Text>
-                <Text style={styles.metricValue}>{guestCount}</Text>
+                <Text style={styles.metricValue}>
+                  {formatCount(guestCount, currentLanguage)}
+                </Text>
               </View>
             </View>
 
@@ -168,7 +263,9 @@ const EventSummary = () => {
               </View>
               <View style={styles.metricContent}>
                 <Text style={styles.metricLabel}>المشرفين</Text>
-                <Text style={styles.metricValue}>{moderatorCount}</Text>
+                <Text style={styles.metricValue}>
+                  {formatCount(moderatorCount, currentLanguage)}
+                </Text>
               </View>
             </View>
 
@@ -269,6 +366,48 @@ const EventSummary = () => {
             <Text style={styles.detailsText}>{description}</Text>
           </View>
         )}
+
+        {/* Phase 4 W1-WIZ5: Template details — visible only when host has
+            confirmed a visual template with custom fields. */}
+        {visualTemplateFields.length > 0 && (
+          <View style={styles.detailsCard}>
+            <Text style={styles.detailsTitle}>
+              {currentLanguage === "ar" ? "تفاصيل القالب" : "Template details"}
+            </Text>
+            {visualTemplateFields.map((field) => (
+              <View key={field.key} style={styles.templateRow}>
+                <Text style={styles.templateRowLabel}>{fieldLabel(field)}</Text>
+                <Text
+                  style={[
+                    styles.templateRowValue,
+                    field.type === "color" && /^#[0-9a-f]{3,8}$/i.test(visualTemplateData[field.key])
+                      ? { color: visualTemplateData[field.key] }
+                      : null,
+                  ]}
+                  numberOfLines={2}
+                >
+                  {resolveFieldValue(field)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Phase 4 W1-FLOW-11-F01: Scheduled launch row.
+            Always rendered so the host can confirm the launch decision —
+            "Launches immediately" when sendSchedule === "now", or the
+            host-timezone formatted date+time when "later". */}
+        <View style={styles.scheduleCard}>
+          <View style={styles.scheduleHeader}>
+            <View style={styles.scheduleIcon}>
+              <CalendarIcon />
+            </View>
+            <Text style={styles.scheduleTitle}>
+              {currentLanguage === "ar" ? "موعد الإرسال" : "Scheduled launch"}
+            </Text>
+          </View>
+          <Text style={styles.scheduleValue}>{renderScheduleText()}</Text>
+        </View>
 
         {/* Confirm checkbox */}
         <TouchableOpacity
@@ -482,6 +621,66 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#2C2C2C",
+    lineHeight: 20,
+  },
+
+  // ── Template details (W1-WIZ5) ────────────────────────────────────────────
+  templateRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F5ECE4",
+    gap: 12,
+  },
+  templateRowLabel: {
+    fontSize: 12,
+    fontFamily: "Cairo_500Medium",
+    color: "#656565",
+  },
+  templateRowValue: {
+    fontSize: 12,
+    fontFamily: "Cairo_700Bold",
+    color: "#2C2C2C",
+    textAlign: "right",
+    flexShrink: 1,
+  },
+
+  // ── Scheduled launch (W1-FLOW-11-F01) ─────────────────────────────────────
+  scheduleCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#F5ECE4",
+    padding: 16,
+    marginBottom: 16,
+    gap: 8,
+  },
+  scheduleHeader: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 8,
+  },
+  scheduleIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#C28E5C",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scheduleTitle: {
+    fontSize: 14,
+    fontFamily: "Cairo_700Bold",
+    color: "#2C2C2C",
+  },
+  scheduleValue: {
+    fontSize: 13,
+    fontFamily: "Cairo_500Medium",
+    color: "#2C2C2C",
+    textAlign: "right",
     lineHeight: 20,
   },
 

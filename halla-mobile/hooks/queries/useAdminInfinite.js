@@ -1,0 +1,224 @@
+/**
+ * Phase 4 W3-PAGE — infinite-query variants of the admin list hooks.
+ *
+ * Each hook wraps `useInfiniteQuery` so the screens can switch from a
+ * "fetch first 20 then stop" pattern to FlatList `onEndReached`-driven
+ * pagination. Page size is 20 across the board (master plan D5).
+ *
+ * Each hook returns a flattened helper API:
+ *
+ *   const { items, isLoading, isFetchingNextPage, hasNextPage,
+ *           fetchNextPage, refetch, error } = useAdminHostsInfinite();
+ *
+ * **Filter handling (Phase 4 review fix).** Each hook accepts a
+ * `filters` object that's serialized into the query string; React
+ * Query keys on `filters` so changing the filter automatically resets
+ * pagination to page 1 and refetches. Without this, screens that
+ * filter client-side miss matching rows on later pages.
+ *
+ * Backend response shapes (both supported by `_normalizePage`):
+ *   - `sendSuccess(res, { hosts, pagination })` →
+ *     `{ data: { data: { hosts, pagination } } }` after the apiRequest
+ *     wrap (used by the `/admin/*` endpoints).
+ *   - `sendPaginated(res, array, pagination)` →
+ *     `{ data: { data: array, pagination } }` after the apiRequest
+ *     wrap (used by `/events/admin/all`, `/tickets`).
+ *
+ * `pagination.hasMore` is the canonical "is there a next page" flag.
+ * When absent we fall back through `pagination.pages` /
+ * `pagination.totalPages` / `pagination.total` / a "did the page return
+ * exactly `limit` rows?" heuristic.
+ */
+
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useAuthStore } from "../../stores/authStore";
+import adminDashboardService from "../../services/adminDashboardService";
+
+const DEFAULT_PAGE_SIZE = 20;
+
+/**
+ * Internal helper: collapse the nested envelope shapes admin endpoints
+ * return into a normalized `{ items, hasMore }` per page.
+ */
+const _normalizePage = (response, collectionKey, limit) => {
+  const inner = response?.data?.data ?? response?.data ?? {};
+  const outer = response?.data ?? {};
+
+  // Items: collection key (object envelope), or `data` array, or the
+  // inner itself if it's already an array.
+  let items = [];
+  if (Array.isArray(inner)) {
+    items = inner;
+  } else if (Array.isArray(inner?.[collectionKey])) {
+    items = inner[collectionKey];
+  } else if (Array.isArray(inner?.data)) {
+    items = inner.data;
+  }
+
+  // Pagination: prefer the nested envelope's pagination, fall back to
+  // the outer envelope (sendPaginated puts it as a sibling of `data`).
+  const pagination = inner?.pagination || outer?.pagination || null;
+
+  let hasMore = false;
+  if (pagination) {
+    if (typeof pagination.hasMore === "boolean") {
+      hasMore = pagination.hasMore;
+    } else if (typeof pagination.totalPages === "number" && typeof pagination.page === "number") {
+      hasMore = pagination.page < pagination.totalPages;
+    } else if (typeof pagination.pages === "number" && typeof pagination.page === "number") {
+      // Backend uses `pages` (Math.ceil(total / limit)) on most admin endpoints.
+      hasMore = pagination.page < pagination.pages;
+    } else if (typeof pagination.total === "number" && typeof pagination.page === "number") {
+      const pageLimit = pagination.limit || limit;
+      hasMore = pagination.page * pageLimit < pagination.total;
+    } else {
+      hasMore = items.length >= limit;
+    }
+  } else {
+    hasMore = items.length >= limit;
+  }
+  return { items, hasMore };
+};
+
+const _flattenPages = (data) => {
+  if (!data?.pages) return [];
+  return data.pages.flatMap((p) => p?.items || []);
+};
+
+const _buildInfinite = ({
+  queryKey,
+  fetchPage,
+  collectionKey,
+  limit = DEFAULT_PAGE_SIZE,
+  enabled = true,
+  staleTime = 2 * 60 * 1000,
+}) => {
+  const query = useInfiniteQuery({
+    queryKey,
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await fetchPage({ page: pageParam, limit });
+      const normalized = _normalizePage(response, collectionKey, limit);
+      return { ...normalized, page: pageParam };
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage?.hasMore ? lastPage.page + 1 : undefined,
+    initialPageParam: 1,
+    enabled,
+    staleTime,
+  });
+
+  return {
+    items: _flattenPages(query.data),
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    isFetchingNextPage: query.isFetchingNextPage,
+    hasNextPage: query.hasNextPage,
+    fetchNextPage: query.fetchNextPage,
+    refetch: query.refetch,
+    error: query.error,
+  };
+};
+
+/**
+ * Drop empty / "all" / undefined values from a filters object so the
+ * query key stays stable. Without this, `{ status: undefined }` and
+ * `{}` would key separately.
+ */
+const _normalizeFilters = (filters = {}) => {
+  const out = {};
+  for (const [key, value] of Object.entries(filters)) {
+    if (value === undefined || value === null || value === "" || value === "all") continue;
+    out[key] = value;
+  }
+  return out;
+};
+
+/**
+ * @param {Object} [filters] - Server-side filter params merged into the
+ *   query string (search/status/from/to/etc.). Empty / `all` /
+ *   `undefined` values are stripped so the React Query key stays stable.
+ */
+export function useAdminHostsInfinite(filters = {}) {
+  const token = useAuthStore((state) => state.token);
+  const cleanFilters = _normalizeFilters(filters);
+  return _buildInfinite({
+    queryKey: ["admin", "hosts", "infinite", cleanFilters],
+    fetchPage: ({ page, limit }) =>
+      adminDashboardService.hosts.getAll(token, { ...cleanFilters, page, limit }),
+    collectionKey: "hosts",
+    enabled: !!token,
+  });
+}
+
+export function useAdminVendorsInfinite(filters = {}) {
+  const token = useAuthStore((state) => state.token);
+  const cleanFilters = _normalizeFilters(filters);
+  return _buildInfinite({
+    queryKey: ["admin", "vendors", "infinite", cleanFilters],
+    fetchPage: ({ page, limit }) =>
+      adminDashboardService.vendors.getAll(token, { ...cleanFilters, page, limit }),
+    collectionKey: "vendors",
+    enabled: !!token,
+  });
+}
+
+export function useAdminEventsInfinite(filters = {}) {
+  const token = useAuthStore((state) => state.token);
+  const cleanFilters = _normalizeFilters(filters);
+  return _buildInfinite({
+    queryKey: ["admin", "events", "infinite", cleanFilters],
+    fetchPage: ({ page, limit }) =>
+      adminDashboardService.events.getAll(token, { ...cleanFilters, page, limit }),
+    collectionKey: "events",
+    enabled: !!token,
+  });
+}
+
+export function useAdminTicketsInfinite(filters = {}) {
+  const token = useAuthStore((state) => state.token);
+  const cleanFilters = _normalizeFilters(filters);
+  return _buildInfinite({
+    queryKey: ["admin", "tickets", "infinite", cleanFilters],
+    fetchPage: ({ page, limit }) =>
+      adminDashboardService.tickets.getAll(token, { ...cleanFilters, page, limit }),
+    collectionKey: "tickets",
+    enabled: !!token,
+  });
+}
+
+export function useAdminWhitelabelsInfinite(filters = {}, opts = {}) {
+  const token = useAuthStore((state) => state.token);
+  const callerEnabled = opts.enabled !== false;
+  const cleanFilters = _normalizeFilters(filters);
+  return _buildInfinite({
+    queryKey: ["admin", "whitelabels", "infinite", cleanFilters],
+    fetchPage: ({ page, limit }) =>
+      adminDashboardService.whitelabels.getAll(token, { ...cleanFilters, page, limit }),
+    collectionKey: "whitelabels",
+    enabled: !!token && callerEnabled,
+  });
+}
+
+export function useAdminPaymentsInfinite(filters = {}) {
+  const token = useAuthStore((state) => state.token);
+  const cleanFilters = _normalizeFilters(filters);
+  return _buildInfinite({
+    queryKey: ["admin", "payments", "infinite", cleanFilters],
+    fetchPage: ({ page, limit }) =>
+      adminDashboardService.payments.getAll(token, { ...cleanFilters, page, limit }),
+    collectionKey: "payments",
+    enabled: !!token,
+  });
+}
+
+export function useAdminModeratorsInfinite(filters = {}) {
+  const token = useAuthStore((state) => state.token);
+  const cleanFilters = _normalizeFilters(filters);
+  return _buildInfinite({
+    queryKey: ["admin", "moderators", "infinite", cleanFilters],
+    fetchPage: ({ page, limit }) =>
+      adminDashboardService.moderators.getAll(token, { ...cleanFilters, page, limit }),
+    collectionKey: "moderators",
+    enabled: !!token,
+  });
+}

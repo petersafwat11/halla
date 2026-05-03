@@ -23,6 +23,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../utils/adminPermissions";
 import TopBar from "../../components/plans/TopBar";
+import { apiFetch } from "../../services/apiClient";
 import { SectionCard, InfoRow } from "../../components/admin-dashboard/hosts/HostSectionCard";
 import StatusBadge from "../../components/admin-dashboard/common/StatusBadge";
 import { WhitelabelSubscriptionModal } from "../../components/admin-dashboard/whitelabels";
@@ -392,17 +393,16 @@ const WhitelabelDetailsScreen = () => {
   const planSelection = whitelabel?.planSelection || resp?.data?.planSelection || {};
 
   // ── Fetch features ────────────────────────────────────────────────────────────
+  // Phase 4 W0-AUTH: routed through apiFetch so 401 → refresh kicks in
+  // and the request is retried with a fresh access token.
   useEffect(() => {
     if (!whitelabelId || !token) return;
     const fetchFeatures = async () => {
       setFeaturesLoading(true);
       try {
-        const res = await fetch(
-          `${API_BASE}/admin/whitelabels/${whitelabelId}/features`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await apiFetch(`/admin/whitelabels/${whitelabelId}/features`);
         if (res.ok) {
-          const json = await res.json();
+          const json = await res.json().catch(() => ({}));
           setFeatures(json.data?.features || []);
         }
       } catch {
@@ -416,17 +416,10 @@ const WhitelabelDetailsScreen = () => {
 
   const handleFeatureToggle = async (featureName, enabled) => {
     try {
-      const res = await fetch(
-        `${API_BASE}/admin/whitelabels/${whitelabelId}/features`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ feature: featureName, enabled }),
-        }
-      );
+      const res = await apiFetch(`/admin/whitelabels/${whitelabelId}/features`, {
+        method: "PATCH",
+        body: { feature: featureName, enabled },
+      });
       if (res.ok) {
         setFeatures((prev) =>
           prev.map((f) => (f.name === featureName ? { ...f, enabled } : f))

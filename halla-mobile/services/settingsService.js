@@ -1,226 +1,114 @@
-import { API_BASE_URL, ENDPOINTS } from "../config/api";
-
 /**
- * Get user profile
- * @param {string} token - Auth token
- * @returns {Promise<{status: string, user: Object}>}
+ * Settings service.
+ *
+ * Phase 4 W0-AUTH: routed through `apiFetch` so the centralized
+ * interceptor handles `Authorization` attachment, 401 → refresh, and the
+ * 30 s default timeout. Legacy callers that still pass a `token`
+ * argument continue to work — the argument is ignored because the
+ * wrapper reads the in-memory access token directly.
  */
-export const getProfileAPI = async (token) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.USERS.PROFILE}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
 
-  const data = await response.json();
+import { ENDPOINTS } from "../config/api";
+import { apiFetch } from "./apiClient";
+
+const _request = async (path, init = {}, errorMessage) => {
+  const response = await apiFetch(path, init);
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.message || "Failed to get profile");
+    throw new Error(data.message || errorMessage);
   }
   return data;
 };
 
 /**
- * Update user profile
- * @param {Object} data - Profile data to update
- * @param {string} token - Auth token
- * @returns {Promise<{status: string, user: Object}>}
+ * Get user profile.
+ * @param {string} [_legacyToken] - ignored; kept for caller compatibility
  */
-export const updateProfileAPI = async (data, token) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.USERS.UPDATE_PROFILE}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
-
-  const responseData = await response.json();
-  if (!response.ok) {
-    throw new Error(responseData.message || "Failed to update profile");
-  }
-  return responseData;
-};
+export const getProfileAPI = async (_legacyToken) =>
+  _request(ENDPOINTS.USERS.PROFILE, { method: "GET" }, "Failed to get profile");
 
 /**
- * Upload profile image
- * @param {Object} imageFile - Image file object
- * @param {string} token - Auth token
- * @returns {Promise<{status: string, user: Object}>}
+ * Update user profile.
  */
-export const uploadProfileImageAPI = async (imageFile, token) => {
+export const updateProfileAPI = async (data, _legacyToken) =>
+  _request(
+    ENDPOINTS.USERS.UPDATE_PROFILE,
+    { method: "PATCH", body: data },
+    "Failed to update profile"
+  );
+
+/**
+ * Upload profile image (multipart). Goes through `apiFetch` so we still
+ * inherit the timeout — note the wrapper does not retry FormData on 401.
+ */
+export const uploadProfileImageAPI = async (imageFile, _legacyToken) => {
   const formData = new FormData();
   formData.append("avatar", imageFile);
-
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.USERS.UPDATE_PROFILE}`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: formData,
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to upload profile image");
-  }
-  return data;
+  return _request(
+    ENDPOINTS.USERS.UPDATE_PROFILE,
+    { method: "PATCH", body: formData, timeoutMs: 60 * 1000 },
+    "Failed to upload profile image"
+  );
 };
 
 /**
- * Change password
- * @param {Object} passwordData - { oldPassword, newPassword } or (oldPassword, newPassword)
- * @param {string} token - Auth token
- * @returns {Promise<{status: string, message: string}>}
+ * Change password.
  */
 export const changePasswordAPI = async (passwordData, token) => {
-  // Support both object and positional args
-  let currentPassword, newPassword;
-  if (typeof passwordData === 'object') {
+  let currentPassword;
+  let newPassword;
+  if (typeof passwordData === "object") {
     currentPassword = passwordData.oldPassword || passwordData.currentPassword;
     newPassword = passwordData.newPassword;
   } else {
     currentPassword = passwordData;
     newPassword = token;
-    token = arguments[2];
   }
 
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.UPDATE_PASSWORD}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+  return _request(
+    ENDPOINTS.AUTH.UPDATE_PASSWORD,
+    {
+      method: "PATCH",
+      body: { currentPassword, newPassword, passwordConfirm: newPassword },
     },
-    body: JSON.stringify({
-      currentPassword,
-      newPassword,
-      passwordConfirm: newPassword,
-    }),
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to change password");
-  }
-  return data;
+    "Failed to change password"
+  );
 };
 
-/**
- * Delete user account
- * @param {string} token - Auth token
- */
-export const deleteAccountAPI = async (token) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.USERS.PROFILE}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const deleteAccountAPI = async (_legacyToken) =>
+  _request(ENDPOINTS.USERS.PROFILE, { method: "DELETE" }, "Failed to delete account");
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to delete account");
-  }
-  return data;
-};
+export const updateAccountAPI = async (data, _legacyToken) =>
+  _request(
+    ENDPOINTS.USERS.UPDATE_PROFILE,
+    { method: "PATCH", body: data },
+    "Failed to update account"
+  );
 
-/**
- * Update host account data (uses users/profile endpoint)
- */
-export const updateAccountAPI = async (data, token) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.USERS.UPDATE_PROFILE}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
+export const getNotificationPreferencesAPI = async (_legacyToken) =>
+  _request(
+    ENDPOINTS.USERS.NOTIFICATION_SETTINGS,
+    { method: "GET" },
+    "Failed to get notification preferences"
+  );
 
-  const responseData = await response.json();
-  if (!response.ok) {
-    throw new Error(responseData.message || "Failed to update account");
-  }
-  return responseData;
-};
+export const updateNotificationPreferencesAPI = async (data, _legacyToken) =>
+  _request(
+    ENDPOINTS.USERS.NOTIFICATION_SETTINGS,
+    { method: "PATCH", body: data },
+    "Failed to update notification preferences"
+  );
 
-/**
- * Get notification preferences
- */
-export const getNotificationPreferencesAPI = async (token) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.USERS.NOTIFICATION_SETTINGS}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const sendEmailVerificationCodeAPI = async (_legacyToken) =>
+  _request(
+    ENDPOINTS.AUTH.SEND_VERIFICATION_CODE,
+    { method: "POST" },
+    "Failed to send verification code"
+  );
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to get notification preferences");
-  }
-  return data;
-};
-
-/**
- * Update notification preferences
- */
-export const updateNotificationPreferencesAPI = async (data, token) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.USERS.NOTIFICATION_SETTINGS}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
-
-  const responseData = await response.json();
-  if (!response.ok) {
-    throw new Error(responseData.message || "Failed to update notification preferences");
-  }
-  return responseData;
-};
-
-/**
- * Send email verification code
- */
-export const sendEmailVerificationCodeAPI = async (token) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.SEND_VERIFICATION_CODE}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to send verification code");
-  }
-  return data;
-};
-
-/**
- * Verify email with code
- */
-export const verifyEmailAPI = async (code, token) => {
-  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.VERIFY_EMAIL}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ code }),
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to verify email");
-  }
-  return data;
-};
+export const verifyEmailAPI = async (code, _legacyToken) =>
+  _request(
+    ENDPOINTS.AUTH.VERIFY_EMAIL,
+    { method: "POST", body: { code } },
+    "Failed to verify email"
+  );

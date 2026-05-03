@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../stores/authStore";
@@ -15,8 +16,13 @@ import {
   deleteGuest,
   addStaff,
   updateStaff,
-  deleteStaff
+  deleteStaff,
+  revokeStaffAccess,
+  rotateGuestQr,
+  revokeGuestAccess,
+  exportEventGuests,
 } from "../../services/eventsService2";
+import { saveBlobAndShare } from "../../utils/download";
 import StatsCards from "./StatsCards";
 import TabsSearchAndFilters from "./TabsSearchAndFilters";
 import GuestListItem from "./GuestListItem";
@@ -45,23 +51,41 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
     });
   };
 
+  // Phase 4 review fix — track optimistic flags for QR rotation /
+  // access revocation so the list shows the badge immediately, before
+  // the next stats poll comes back. The flag also disables the action
+  // until the next refresh confirms backend state.
+  const [guestActions, setGuestActions] = useState({});
+  const [staffActions, setStaffActions] = useState({});
+
   // Format guests from backend data
-  const guests = (stats?.guests || []).map((guest) => ({
-    id: guest.guestId || guest._id || guest.id,
-    name: guest.name || "ضيف",
-    phone: guest.phone || "",
-    email: guest.email || "",
-    status: guest.status || "invited",
-    responseDate: formatResponseDate(guest.respondAt || guest.respondedAt),
-    addedBy: guest.addedBy || ""
-  }));
+  const guests = (stats?.guests || []).map((guest) => {
+    const id = guest.guestId || guest._id || guest.id;
+    const local = guestActions[id] || {};
+    return {
+      id,
+      name: guest.name || "ضيف",
+      phone: guest.phone || "",
+      email: guest.email || "",
+      status: guest.status || "invited",
+      responseDate: formatResponseDate(guest.respondAt || guest.respondedAt),
+      addedBy: guest.addedBy || "",
+      qrRotated: !!(guest.qrRotated || local.qrRotated),
+      accessRevoked: !!(guest.accessRevoked || local.accessRevoked),
+    };
+  });
 
   // Format staff from backend data
-  const staff = (stats?.staff || []).map((s) => ({
-    id: s._id || s.id || String(Math.random()),
-    name: s.name || "مشرف",
-    phone: s.phone || ""
-  }));
+  const staff = (stats?.staff || []).map((s) => {
+    const id = s._id || s.id || String(Math.random());
+    const local = staffActions[id] || {};
+    return {
+      id,
+      name: s.name || "مشرف",
+      phone: s.phone || "",
+      isRevoked: !!(s.isRevoked || local.revoked),
+    };
+  });
 
   // Use stats from backend
   const guestStats = {
@@ -181,6 +205,122 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
     }
   };
 
+  // Phase 4 W2-STAFF — revoke a moderator's StaffAccessToken via the
+  // Phase 3e.1 endpoint. The backend resolves the actual token from the
+  // staff member's phone on the event roster.
+  //
+  // Optimistic flag: flip `revoked: true` locally so the badge shows
+  // immediately. If the call fails we clear the flag.
+  const handleModeratorRevoke = async (moderator) => {
+    setStaffActions((prev) => ({
+      ...prev,
+      [moderator.id]: { ...prev[moderator.id], revoked: true },
+    }));
+    try {
+      const result = await revokeStaffAccess(
+        event._id || event.id,
+        moderator.id,
+        token
+      );
+      if (result?.wasAlreadyRevoked) {
+        Alert.alert("المشرف", "تم إلغاء صلاحية هذا المشرف بالفعل.");
+      } else {
+        Alert.alert("نجاح", "تم إلغاء صلاحية وصول المشرف.");
+      }
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error("Error revoking moderator:", error);
+      // Roll back optimistic flag.
+      setStaffActions((prev) => {
+        const next = { ...prev };
+        const slot = { ...(next[moderator.id] || {}) };
+        delete slot.revoked;
+        if (Object.keys(slot).length === 0) delete next[moderator.id];
+        else next[moderator.id] = slot;
+        return next;
+      });
+      Alert.alert("خطأ", error.message || "حدث خطأ أثناء إلغاء الصلاحية");
+    }
+  };
+
+  // Phase 4 W2-QR — rotate a guest's QR.
+  const handleGuestRotateQr = async (guest) => {
+    setGuestActions((prev) => ({
+      ...prev,
+      [guest.id]: { ...prev[guest.id], qrRotated: true },
+    }));
+    try {
+      const result = await rotateGuestQr(event._id || event.id, guest.id, token);
+      Alert.alert(
+        "نجاح",
+        result?.qrUrl
+          ? "تم إنشاء رمز QR جديد. سيُرسل إلى الضيف عبر القناة المعتادة."
+          : "تم تحديث رمز الدخول."
+      );
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error("Error rotating QR:", error);
+      setGuestActions((prev) => {
+        const next = { ...prev };
+        const slot = { ...(next[guest.id] || {}) };
+        delete slot.qrRotated;
+        if (Object.keys(slot).length === 0) delete next[guest.id];
+        else next[guest.id] = slot;
+        return next;
+      });
+      Alert.alert("خطأ", error.message || "تعذر تحديث رمز QR");
+    }
+  };
+
+  // Phase 4 W2-GAT — revoke a guest's post-event access.
+  const handleGuestRevokeAccess = async (guest) => {
+    setGuestActions((prev) => ({
+      ...prev,
+      [guest.id]: { ...prev[guest.id], accessRevoked: true },
+    }));
+    try {
+      await revokeGuestAccess(event._id || event.id, guest.id, token);
+      Alert.alert("نجاح", "تم إلغاء صلاحية الضيف لمحتوى ما بعد المناسبة.");
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error("Error revoking guest access:", error);
+      setGuestActions((prev) => {
+        const next = { ...prev };
+        const slot = { ...(next[guest.id] || {}) };
+        delete slot.accessRevoked;
+        if (Object.keys(slot).length === 0) delete next[guest.id];
+        else next[guest.id] = slot;
+        return next;
+      });
+      Alert.alert("خطأ", error.message || "تعذر إلغاء الصلاحية");
+    }
+  };
+
+  // Phase 4 W3-ADMIN — export this event's guest list to XLSX.
+  const [exporting, setExporting] = useState(false);
+  const handleExportGuests = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const result = await exportEventGuests(event._id || event.id, token);
+      if (!result?.blob) throw new Error("Empty export response");
+      const share = await saveBlobAndShare(
+        result.blob,
+        result.filename || `event-${event._id || event.id}-guests.xlsx`,
+        { dialogTitle: "تصدير قائمة الضيوف" }
+      );
+      // Surface only real failures; user-cancel stays silent.
+      if (!share.success && share.message) {
+        Alert.alert("تصدير", share.message);
+      }
+    } catch (error) {
+      console.error("[SingleEventStats] export failed:", error);
+      Alert.alert("تصدير", error.message || "تعذر تصدير قائمة الضيوف");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   // Apply search filtering
   const filteredGuests = guests.filter((g) => {
     if (!searchQuery.trim()) return true;
@@ -260,12 +400,15 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
                   ? {
                       guest: item,
                       onEdit: handleGuestEdit,
-                      onDelete: handleGuestDelete
+                      onDelete: handleGuestDelete,
+                      onRotateQr: handleGuestRotateQr,
+                      onRevokeAccess: handleGuestRevokeAccess,
                     }
                   : {
                       moderator: item,
                       onEdit: handleModeratorEdit,
-                      onDelete: handleModeratorDelete
+                      onDelete: handleModeratorDelete,
+                      onRevoke: handleModeratorRevoke,
                     })}
                 index={index}
               />
@@ -274,16 +417,34 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
         </ScrollView>
       </View>
 
-      {/* Floating Add Button */}
-      <TouchableOpacity
-        style={styles.floatingButton}
-        activeOpacity={0.7}
-        onPress={handleAddPress}
-      >
-        <View style={styles.floatingButtonInner}>
-          <Ionicons name="person-add-outline" size={30} color="#FFF" />
-        </View>
-      </TouchableOpacity>
+      {/* Phase 4 W3-ADMIN — guests-tab export button (XLSX). Stacked
+          above the add FAB so they don't overlap on small screens.
+          Both FABs are anchored to the same right-edge column. */}
+      <View style={styles.fabColumn} pointerEvents="box-none">
+        {activeTab === "guests" && (
+          <TouchableOpacity
+            style={styles.exportFab}
+            onPress={handleExportGuests}
+            disabled={exporting}
+            activeOpacity={0.7}
+          >
+            {exporting ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Ionicons name="download-outline" size={22} color="#FFF" />
+            )}
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          style={styles.floatingButton}
+          activeOpacity={0.7}
+          onPress={handleAddPress}
+        >
+          <View style={styles.floatingButtonInner}>
+            <Ionicons name="person-add-outline" size={30} color="#FFF" />
+          </View>
+        </TouchableOpacity>
+      </View>
 
       {/* Add Guest/Moderator Popup */}
       <AddGuestOrModeratorPopup
@@ -395,23 +556,40 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 12
   },
-  floatingButton: {
+  fabColumn: {
     position: "absolute",
     right: 24,
     bottom: 100,
+    alignItems: "center",
+    gap: 12,
+  },
+  floatingButton: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 8
+    elevation: 8,
   },
   floatingButtonInner: {
     width: 60,
     height: 60,
-    borderRadius: 105,
+    borderRadius: 30,
     backgroundColor: "#C28E5C",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+  },
+  exportFab: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#6B4E33",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
   },
   emptyState: {
     alignItems: "center",

@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { useAdminEvents } from "../../hooks";
+import { useAdminEventsInfinite, useDebouncedValue } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";
@@ -18,17 +18,27 @@ const AdminEventsScreen = () => {
   const role = useAuthStore((state) => state.user?.role);
   const canEdit = canEditPage(role, PAGES.EVENTS);
 
-  const { data, isLoading, error, refetch } = useAdminEvents({ page: 1, limit: 50 });
+  // Phase 4 review fix — controlled filters at screen level.
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const filters = useMemo(
+    () => ({ search: debouncedSearch, status: activeFilter }),
+    [debouncedSearch, activeFilter]
+  );
+
+  // Phase 4 W3-PAGE: infinite scroll for admin events.
+  const {
+    items: events,
+    isLoading,
+    error,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useAdminEventsInfinite(filters);
 
   if (error) toast.error(t("common.error"));
-
-  const events = useMemo(() => {
-    const d = data?.data;
-    if (Array.isArray(d)) return d;
-    if (Array.isArray(d?.events)) return d.events;
-    if (Array.isArray(d?.data)) return d.data;
-    return [];
-  }, [data]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -38,6 +48,13 @@ const AdminEventsScreen = () => {
           events={events}
           loading={isLoading}
           onRefresh={refetch}
+          hasMore={hasNextPage}
+          onLoadMore={fetchNextPage}
+          loadingMore={isFetchingNextPage}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          activeFilter={activeFilter}
+          onActiveFilterChange={setActiveFilter}
           onEventPress={(ev) => navigation.navigate("EventDetails", { eventId: ev.id || ev._id })}
           onEdit={(ev) => navigation.navigate("UpdateEvent", { eventId: ev.id || ev._id })}
           onAdd={canEdit ? () => navigation.navigate("CreateEvent") : undefined}
