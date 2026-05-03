@@ -15,7 +15,10 @@ import {
   deleteGuest,
   addStaff,
   updateStaff,
-  deleteStaff
+  deleteStaff,
+  revokeStaffAccess,
+  rotateGuestQr,
+  revokeGuestAccess,
 } from "../../services/eventsService2";
 import StatsCards from "./StatsCards";
 import TabsSearchAndFilters from "./TabsSearchAndFilters";
@@ -181,6 +184,57 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
     }
   };
 
+  // Phase 4 W2-STAFF — revoke a moderator's StaffAccessToken via the
+  // Phase 3e.1 endpoint. The backend resolves the actual token from the
+  // staff member's phone on the event roster.
+  const handleModeratorRevoke = async (moderator) => {
+    try {
+      const result = await revokeStaffAccess(
+        event._id || event.id,
+        moderator.id,
+        token
+      );
+      if (result?.wasAlreadyRevoked) {
+        Alert.alert("المشرف", "تم إلغاء صلاحية هذا المشرف بالفعل.");
+      } else {
+        Alert.alert("نجاح", "تم إلغاء صلاحية وصول المشرف.");
+      }
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error("Error revoking moderator:", error);
+      Alert.alert("خطأ", error.message || "حدث خطأ أثناء إلغاء الصلاحية");
+    }
+  };
+
+  // Phase 4 W2-QR — rotate a guest's QR.
+  const handleGuestRotateQr = async (guest) => {
+    try {
+      const result = await rotateGuestQr(event._id || event.id, guest.id, token);
+      Alert.alert(
+        "نجاح",
+        result?.qrUrl
+          ? "تم إنشاء رمز QR جديد. سيُرسل إلى الضيف عبر القناة المعتادة."
+          : "تم تحديث رمز الدخول."
+      );
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error("Error rotating QR:", error);
+      Alert.alert("خطأ", error.message || "تعذر تحديث رمز QR");
+    }
+  };
+
+  // Phase 4 W2-GAT — revoke a guest's post-event access.
+  const handleGuestRevokeAccess = async (guest) => {
+    try {
+      await revokeGuestAccess(event._id || event.id, guest.id, token);
+      Alert.alert("نجاح", "تم إلغاء صلاحية الضيف لمحتوى ما بعد المناسبة.");
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error("Error revoking guest access:", error);
+      Alert.alert("خطأ", error.message || "تعذر إلغاء الصلاحية");
+    }
+  };
+
   // Apply search filtering
   const filteredGuests = guests.filter((g) => {
     if (!searchQuery.trim()) return true;
@@ -260,12 +314,15 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
                   ? {
                       guest: item,
                       onEdit: handleGuestEdit,
-                      onDelete: handleGuestDelete
+                      onDelete: handleGuestDelete,
+                      onRotateQr: handleGuestRotateQr,
+                      onRevokeAccess: handleGuestRevokeAccess,
                     }
                   : {
                       moderator: item,
                       onEdit: handleModeratorEdit,
-                      onDelete: handleModeratorDelete
+                      onDelete: handleModeratorDelete,
+                      onRevoke: handleModeratorRevoke,
                     })}
                 index={index}
               />

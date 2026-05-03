@@ -835,3 +835,81 @@ export const updateGuest = async (eventId, guestId, guestData, token) => {
     throw error;
   }
 };
+
+// ==================== STAFF / GUEST ACCESS TOKEN APIs ====================
+
+/**
+ * Phase 4 W2-STAFF — revoke a staff member's access token.
+ *
+ * Backend: POST /events/:eventId/staff/:staffId/revoke (Phase 3e.1).
+ * `staffId` is the staff sub-document _id from `event.staffList[i]._id`,
+ * NOT the StaffAccessToken doc id — the backend resolves the token from
+ * the staff phone. Idempotent: re-revoking returns 200 with
+ * `wasAlreadyRevoked: true`.
+ *
+ * @param {string} eventId
+ * @param {string} staffId - staff sub-document _id
+ * @param {string} [token] - legacy; ignored (apiFetch reads from store)
+ */
+export const revokeStaffAccess = async (eventId, staffId, token) => {
+  if (!eventId || !staffId) throw new Error("eventId and staffId are required");
+  // Per-click idempotency key — same shape as retryLaunch.
+  const idempotencyKey = `staff-revoke-${eventId}-${staffId}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+  const data = await authenticatedFetch(
+    `/${eventId}/staff/${staffId}/revoke`,
+    token,
+    { method: "POST", headers: { "Idempotency-Key": idempotencyKey } }
+  );
+  return data?.data || data;
+};
+
+/**
+ * Phase 4 W2-QR — rotate a guest's QR code.
+ *
+ * Backend: POST /events/:eventId/guests/:guestId/rotate-qr (Phase 3e.3).
+ * Returns the new `qrUrl` and `expiresAt`. Old QR scans return 410 with
+ * `reason: 'qr_rotated'`.
+ */
+export const rotateGuestQr = async (eventId, guestId, token) => {
+  if (!eventId || !guestId) throw new Error("eventId and guestId are required");
+  const idempotencyKey = `qr-rotate-${eventId}-${guestId}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+  // Note: this endpoint lives under the `/guests/...` mount, NOT under
+  // `/events/...`. We can't use authenticatedFetch (which prepends the
+  // EVENTS base) — go direct via apiFetch.
+  const response = await apiFetch(
+    `/guests/events/${eventId}/guests/${guestId}/rotate-qr`,
+    { method: "POST", headers: { "Idempotency-Key": idempotencyKey } }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to rotate QR");
+  }
+  return data?.data || data;
+};
+
+/**
+ * Phase 4 W2-GAT — manually revoke a guest's post-event access token.
+ *
+ * Backend: POST /events/:eventId/guests/:guestId/revoke-access
+ * (Phase 3e.4). Distinct from QR rotate: this revokes post-event content
+ * access (photos, comments) without minting a new token.
+ */
+export const revokeGuestAccess = async (eventId, guestId, token) => {
+  if (!eventId || !guestId) throw new Error("eventId and guestId are required");
+  const idempotencyKey = `gat-revoke-${eventId}-${guestId}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+  const response = await apiFetch(
+    `/guests/events/${eventId}/guests/${guestId}/revoke-access`,
+    { method: "POST", headers: { "Idempotency-Key": idempotencyKey } }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to revoke guest access");
+  }
+  return data?.data || data;
+};
