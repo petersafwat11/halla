@@ -13,6 +13,9 @@ const { NotFoundError, ValidationError, ConflictError } = require('../../shared/
 const { ROLES, WHITELABEL_ROLES, USER_STATUS, EVENT_STATUS, SUBSCRIPTION_STATUS, VENDOR_STATUS } = require('../../shared/constants');
 const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
+const config = require('../../config');
+const email = require('../../../email');
+const { logAudit } = require('../../shared/utils/auditLog');
 
 class AdminService {
   /**
@@ -1154,20 +1157,58 @@ class AdminService {
   }
 
   /**
-   * Update whitelabel status
+   * Update whitelabel status.
+   *
+   * Phase 4b W0-EMAIL (D5): the Approve action on the admin dashboard now
+   * fires this with `{ status: 'active', dispatchSetupEmail: true }`. When
+   * BOTH conditions hold (status is `active` AND the caller asks for an
+   * email), we mint a fresh password setup token and send the existing
+   * `whitelabelApproval` email template — which has a `setupPasswordUrl`
+   * slot that's been waiting for an admin-side dispatch since Phase 4.
+   *
+   * Re-approval (admin clicks Approve again on an already-active row)
+   * regenerates the token so the prior link is invalidated.
+   *
+   * Token + status are saved in two ordered writes (no Mongo transaction
+   * — `User` is single-collection and the failure mode is "no email
+   * went out", which the audit row will capture). If the email send
+   * itself fails we log it loudly and write a `failure` audit entry but
+   * keep the new status / token so an admin can re-trigger from the UI.
+   *
+   * @param {string} whitelabelId
+   * @param {string} status - one of USER_STATUS values
+   * @param {Object} [opts]
+   * @param {boolean} [opts.dispatchSetupEmail=false] — when true and
+   *        status is 'active', mint a setup token and send the email.
+   * @param {Object} [opts.actor] — req.user (for audit log)
+   * @returns {Promise<Object>}
    */
-  async updateWhitelabelStatus(whitelabelId, status) {
-    const whitelabel = await User.findOneAndUpdate(
-      { _id: whitelabelId, role: ROLES.WHITELABEL_ADMIN },
-      { status },
-      { new: true, runValidators: true }
-    );
+  async updateWhitelabelStatus(whitelabelId, status, opts = {}) {
+    const { dispatchSetupEmail = false, actor = null } = opts;
+
+    const whitelabel = await User.findOne({
+      _id: whitelabelId,
+      role: ROLES.WHITELABEL_ADMIN,
+    });
 
     if (!whitelabel) {
       throw new NotFoundError('Whitelabel');
     }
 
-    // Notify whitelabel of status change (non-blocking)
+    const previousStatus = whitelabel.status;
+    whitelabel.status = status;
+
+    let setupToken = null;
+    if (dispatchSetupEmail && status === USER_STATUS.ACTIVE) {
+      // Mint a fresh token. createPasswordSetupToken() hashes onto the
+      // user document and returns the plain token; we save below.
+      setupToken = whitelabel.createPasswordSetupToken();
+    }
+
+    // Single save persists status change + (optional) setup token hash.
+    await whitelabel.save({ validateBeforeSave: false });
+
+    // Notify whitelabel of status change (non-blocking, in-app).
     notificationService.sendToUser(whitelabel._id, {
       type: 'account_status_change',
       title: 'Account Status Updated',
@@ -1177,7 +1218,59 @@ class AdminService {
       data: { entityType: 'user', entityId: whitelabel._id, metadata: { status } },
     }).catch(console.error);
 
-    return this._formatUserResponse(whitelabel);
+    let emailDispatch = { sent: false, attempted: false };
+    if (setupToken) {
+      emailDispatch.attempted = true;
+      try {
+        const frontendUrl = config?.frontend?.url || '';
+        const setupPasswordUrl = `${frontendUrl}/ar/setup-password/${setupToken}`;
+        await email.send.whitelabelApproval(
+          whitelabel.email,
+          {
+            platformName:
+              whitelabel.platformName || whitelabel.username || whitelabel.email,
+            email: whitelabel.email,
+            setupPasswordUrl,
+            dashboardUrl: `${frontendUrl}/ar/whitelabel/dashboard`,
+          },
+          'ar'
+        );
+        emailDispatch.sent = true;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(
+          `[admin.updateWhitelabelStatus] email send failed for whitelabel ${whitelabelId}:`,
+          err?.message || err
+        );
+        emailDispatch.error = err?.message || String(err);
+      }
+    }
+
+    // Audit log the status update + email dispatch outcome.
+    try {
+      await logAudit({
+        action: 'whitelabel.status_update',
+        actor,
+        targetType: 'whitelabel',
+        targetId: whitelabel._id,
+        whitelabelId: whitelabel._id,
+        metadata: {
+          previousStatus,
+          newStatus: status,
+          dispatchSetupEmail,
+          emailDispatch,
+        },
+        status: emailDispatch.attempted && !emailDispatch.sent ? 'partial' : 'success',
+      });
+    } catch (auditErr) {
+      // eslint-disable-next-line no-console
+      console.warn('[admin.updateWhitelabelStatus] audit log failed:', auditErr?.message);
+    }
+
+    return {
+      ...this._formatUserResponse(whitelabel),
+      emailDispatch,
+    };
   }
 
   /**
