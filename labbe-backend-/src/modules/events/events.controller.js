@@ -194,12 +194,16 @@ exports.bulkDeleteEvents = catchAsync(async (req, res) => {
 /**
  * Update event details
  * PATCH /api/v2/events/:id/event-details
+ *
+ * Phase 4b W1-UNIFY: scope resolved from req.user inside the service so
+ * the unified update wizard works for admin / whitelabel-admin /
+ * whitelabel-moderator on the SAME endpoint as the host.
  */
 exports.updateEventDetails = catchAsync(async (req, res) => {
   const result = await eventsService.updateEventDetails(
     req.params.id,
     req.body,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Event details updated");
 });
@@ -212,7 +216,7 @@ exports.updateGuestList = catchAsync(async (req, res) => {
   const result = await eventsService.updateGuestList(
     req.params.id,
     req.body.guestList,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Guest list updated");
 });
@@ -225,7 +229,7 @@ exports.updateStaffList = catchAsync(async (req, res) => {
   const result = await eventsService.updateStaffList(
     req.params.id,
     req.body.staffList,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Staff list updated");
 });
@@ -250,7 +254,7 @@ exports.updateInvitationSettings = catchAsync(async (req, res) => {
   const result = await eventsService.updateInvitationSettings(
     req.params.id,
     settings,
-    req.user._id,
+    req.user,
     req.file
   );
   sendSuccess(res, result, "Invitation settings updated");
@@ -264,7 +268,7 @@ exports.updateLaunchSettings = catchAsync(async (req, res) => {
   const result = await eventsService.updateLaunchSettings(
     req.params.id,
     req.body,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Launch settings updated");
 });
@@ -277,7 +281,7 @@ exports.sendTestMessage = catchAsync(async (req, res) => {
   const result = await eventsService.sendTestMessage(
     req.params.id,
     req.body,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Test message sent");
 });

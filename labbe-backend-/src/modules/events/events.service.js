@@ -1047,14 +1047,20 @@ class EventsService {
   // ============================================
 
   /**
-   * Update event details
+   * Update event details.
+   *
+   * Phase 4b W1-UNIFY: accepts the full user context so the unified
+   * update wizard works for admin / whitelabel-admin / whitelabel-moderator,
+   * not only the host. Scope resolution mirrors `getEventById` via
+   * `_buildScopedEventQuery`.
+   *
    * @param {string} eventId
    * @param {Object} details
-   * @param {string} userId
+   * @param {Object} userContext - req.user
    * @returns {Promise<Object>}
    */
-  async updateEventDetails(eventId, details, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateEventDetails(eventId, details, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     // Don't allow modifications to completed or cancelled events
@@ -1075,8 +1081,16 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async updateGuestList(eventId, guestList, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId })
+  async updateGuestList(eventId, guestList, userContext) {
+    // userId is used downstream as `addedBy` on net-new guests; pull it
+    // out of the context whether we got the legacy ObjectId or the full
+    // req.user shape.
+    const userId =
+      typeof userContext === 'object' && userContext !== null
+        ? userContext._id?.toString?.() || userContext._id
+        : userContext;
+
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext))
       .populate('guestList', 'name email phone status');
     if (!event) throw new NotFoundError("Event");
 
@@ -1183,8 +1197,8 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async updateStaffList(eventId, staffList, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateStaffList(eventId, staffList, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     // Don't allow modifications to completed or cancelled events
@@ -1208,8 +1222,8 @@ class EventsService {
    * @param {Object} [file]
    * @returns {Promise<Object>}
    */
-  async updateInvitationSettings(eventId, settings, userId, file) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateInvitationSettings(eventId, settings, userContext, file) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     // Don't allow modifications to completed or cancelled events
@@ -1236,8 +1250,8 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async updateLaunchSettings(eventId, settings, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateLaunchSettings(eventId, settings, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     // Don't allow modifications to completed or cancelled events
@@ -1258,8 +1272,8 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async sendTestMessage(eventId, messageData, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async sendTestMessage(eventId, messageData, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
     const messagingService = require('../messaging/messaging.service');

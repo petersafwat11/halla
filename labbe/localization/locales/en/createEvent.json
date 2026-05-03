@@ -239,8 +239,12 @@
     "event_details_updated": "Event details updated successfully",
     "guest_list_updated": "Guest and staff list updated successfully",
     "invitation_settings_updated": "Invitation settings updated successfully",
-    "message_customization_updated": "Message customization updated successfully"
+    "message_customization_updated": "Message customization updated successfully",
+    "launch_settings_updated": "Launch settings updated successfully"
   },
+  "live_event_locked_notice": "This event is live. Editing is locked except for adding guests.",
+  "live_event_step2_notice": "This event is live. You can add new guests, but existing entries are locked.",
+  "update_locked_live_event": "This section is locked while the event is live.",
   "event_type_label": "Event Type",
   "event_type_placeholder": "Select event type",
   "event_name_label": "Event Name",

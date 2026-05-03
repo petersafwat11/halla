@@ -234,8 +234,12 @@
     "event_details_updated": "تم تحديث تفاصيل المناسبة بنجاح",
     "guest_list_updated": "تم تحديث قائمة الضيوف والمشرفين بنجاح",
     "invitation_settings_updated": "تم تحديث إعدادات الدعوة بنجاح",
-    "message_customization_updated": "تم تحديث تخصيص الرسالة بنجاح"
+    "message_customization_updated": "تم تحديث تخصيص الرسالة بنجاح",
+    "launch_settings_updated": "تم تحديث إعدادات الإطلاق بنجاح"
   },
+  "live_event_locked_notice": "هذه المناسبة مباشرة الآن. التعديل مغلق باستثناء إضافة الضيوف.",
+  "live_event_step2_notice": "هذه المناسبة مباشرة الآن. يمكنك إضافة ضيوف جدد، أما المداخل الحالية فمغلقة.",
+  "update_locked_live_event": "هذا القسم مغلق أثناء بث المناسبة.",
   "event_type_label": "نوع المناسبة",
   "event_type_placeholder": "اختر نوع المناسبة",
   "event_name_label": "اسم المناسبة",
