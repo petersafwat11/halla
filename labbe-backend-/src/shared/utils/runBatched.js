@@ -29,7 +29,7 @@
  */
 async function runBatched(items, worker, opts = {}) {
   const concurrency = Math.max(1, opts.concurrency || 5);
-  const ratePerSecond = Math.max(1, opts.ratePerSecond || 10);
+  const initialRate = Math.max(1, opts.ratePerSecond || 10);
 
   const results = new Array(items.length);
   let cursor = 0;
@@ -37,12 +37,62 @@ async function runBatched(items, worker, opts = {}) {
   let failed = 0;
   const startTimes = []; // sliding window of recent start timestamps (ms)
 
+  // M-21: 429 backoff. The fixed prefix throttle does NOT decay when the
+  // upstream (Taqnyat) signals it's overloaded — once we start hitting
+  // 429s, the failures cascade because we keep firing at the static cap.
+  // We adapt the rate downward when 429s appear and recover after a
+  // successful streak.
+  let currentRate = initialRate;
+  let cooldownUntil = 0; // ms epoch — pause new starts until this time
+  const RATE_FLOOR = 2;
+  const RATE_RECOVER_AFTER = 50; // successful sends with no 429 → ramp up
+  let successStreak = 0;
+
+  function recordRateLimitHit(retryAfterSeconds) {
+    // Halve the rate (floor 2 / sec) and impose a cooldown.
+    currentRate = Math.max(RATE_FLOOR, Math.floor(currentRate / 2));
+    const cool = (retryAfterSeconds && retryAfterSeconds > 0
+      ? retryAfterSeconds
+      : 5) * 1000;
+    cooldownUntil = Date.now() + cool;
+    successStreak = 0;
+  }
+
+  function recordSuccess() {
+    successStreak += 1;
+    if (successStreak >= RATE_RECOVER_AFTER && currentRate < initialRate) {
+      currentRate = Math.min(initialRate, currentRate + 1);
+      successStreak = 0;
+    }
+  }
+
+  function isRateLimitError(err) {
+    if (!err) return { yes: false };
+    const status = err.status || err.statusCode || err.response?.status;
+    if (status === 429) {
+      const ra =
+        err.response?.headers?.["retry-after"] ||
+        err.response?.headers?.get?.("retry-after");
+      const retryAfter = ra ? parseInt(String(ra), 10) : null;
+      return { yes: true, retryAfter: Number.isFinite(retryAfter) ? retryAfter : null };
+    }
+    const msg = (err.message || "").toLowerCase();
+    if (msg.includes("rate limit") || msg.includes("too many requests")) {
+      return { yes: true, retryAfter: null };
+    }
+    return { yes: false };
+  }
+
   async function awaitRateSlot() {
     while (true) {
       const now = Date.now();
+      if (cooldownUntil && now < cooldownUntil) {
+        await new Promise((r) => setTimeout(r, cooldownUntil - now));
+        continue;
+      }
       // Drop entries older than 1s.
       while (startTimes.length && now - startTimes[0] >= 1000) startTimes.shift();
-      if (startTimes.length < ratePerSecond) {
+      if (startTimes.length < currentRate) {
         startTimes.push(now);
         return;
       }
@@ -62,7 +112,33 @@ async function runBatched(items, worker, opts = {}) {
         const value = await worker(item, myIndex);
         results[myIndex] = { index: myIndex, item, ok: true, value };
         successful++;
+        recordSuccess();
       } catch (err) {
+        const rl = isRateLimitError(err);
+        if (rl.yes) {
+          recordRateLimitHit(rl.retryAfter);
+          // Re-enqueue this item: drop it back into the pool by lowering
+          // cursor below myIndex isn't safe with concurrent lanes, so we
+          // retry inline with the new (lower) rate. Single retry to bound
+          // total work. Subsequent 429 → record as failure.
+          try {
+            await awaitRateSlot();
+            const retryValue = await worker(item, myIndex);
+            results[myIndex] = { index: myIndex, item, ok: true, value: retryValue };
+            successful++;
+            recordSuccess();
+            continue;
+          } catch (retryErr) {
+            results[myIndex] = {
+              index: myIndex,
+              item,
+              ok: false,
+              error: retryErr && retryErr.message ? retryErr.message : String(retryErr),
+            };
+            failed++;
+            continue;
+          }
+        }
         results[myIndex] = {
           index: myIndex,
           item,

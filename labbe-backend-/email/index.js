@@ -163,6 +163,34 @@ const send = {
     return sender.sendEmail(to, subject, html);
   },
 
+  /**
+   * Send event-launch-failed email (B-6 / FLOW-15-F05).
+   * @param {string} to
+   * @param {Object} data - { hostName, eventTitle, attemptCount, reason, eventUrl, supportEmail }
+   * @param {string} lang
+   */
+  eventLaunchFailed: async (to, data, lang = "ar") => {
+    const { subject, html } = templates.events.eventLaunchFailedEmail(data, lang);
+    return sender.sendEmail(to, subject, html);
+  },
+
+  /**
+   * Generic notification email — fallback for notification types that have
+   * no dedicated template. The notifications service calls this whenever
+   * `sendToUser(..., true)` runs and no type-specific helper matches.
+   *
+   * Previously the service called `send.notification` but the method did
+   * not exist, so all notification emails silently failed. (B-6 root cause.)
+   *
+   * @param {string} to
+   * @param {Object} data - { title, message, actionUrl }
+   * @param {string} lang
+   */
+  notification: async (to, data, lang = "ar") => {
+    const { subject, html } = templates.events.genericNotificationEmail(data, lang);
+    return sender.sendEmail(to, subject, html);
+  },
+
   // ==========================================
   // SUBSCRIPTION EMAILS
   // ==========================================

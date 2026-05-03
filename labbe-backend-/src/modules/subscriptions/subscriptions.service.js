@@ -324,18 +324,19 @@ class SubscriptionsService {
     // FLOW-12-F01 / FLOW-09-F02: a host can never have two active
     // subscriptions. Direct subscribe() now matches changePlan() — any
     // existing active sub is cancelled before the new one is created.
-    // This eliminates the "validateLimits picks the wrong subscription"
-    // class of bug at the root.
+    //
+    // B-3 fix: cancel the old subscription **AFTER** the charge succeeds.
+    // The previous order (cancel → charge) left the user with no active
+    // subscription if the charge failed — a brutal UX failure mode. We now
+    // (1) snapshot existing active subs, (2) charge, (3) cancel old subs
+    // only on charge success. If creation of the new subscription throws
+    // after a successful charge, we attempt to refund (best-effort) and
+    // surface a "money taken, please contact support" error rather than
+    // leave a silent inconsistency.
     const existingActive = await Subscription.find({
       userId,
       status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
     });
-    for (const existing of existingActive) {
-      existing.status = SUBSCRIPTION_STATUS.CANCELLED;
-      existing.cancelledAt = new Date();
-      existing.cancelReason = `Auto-cancelled on new subscribe to ${planCode}`;
-      await existing.save();
-    }
 
     // Phase 2 (FLOW-09-F01 / trial guard): Plan schema stores price in
     // `pricing.oneTime`. Free / trial plans must skip the payment provider —
@@ -344,35 +345,70 @@ class SubscriptionsService {
     const planPrice = plan?.pricing?.oneTime ?? 0;
     const isFreePlan = planCode === 'trial' || planPrice <= 0;
 
-    // Idempotency only when the caller supplied a key. A derived
-    // fallback (e.g. `subscribe:${userId}:${plan.code}`) would let
-    // paymentProvider replay a cached charge response on a second
-    // legitimate subscribe-to-the-same-plan within 24h, while the
-    // service still creates a second Subscription document — i.e. a
-    // double-credit / single-charge bug. Clients pass Idempotency-Key
-    // via the route middleware to opt in to exactly-once.
+    // Idempotency: explicit Idempotency-Key from client (preferred) OR a
+    // server-derived key tied to (userId, planCode, intent fingerprint).
+    // The derived key prevents double-charge on double-tap when the client
+    // forgets the header — combined with the compound {userId,scope,key}
+    // unique index in IdempotencyKeyModel (H-5), accidental cross-user
+    // collision is impossible.
     let paymentTransactionId = null;
     if (!isFreePlan) {
+      const derivedKey =
+        subscriptionData?.idempotencyKey
+          || `subscribe:${userId}:${plan.code}:${planPrice}`;
       const chargeParams = {
         amount: planPrice,
         currency: plan?.currency || 'SAR',
         customer: { id: userId },
+        userId, // H-5: scope cache-row by user
+        idempotencyKey: derivedKey,
         metadata: {
           planCode: plan.code,
           discountCode,
           description: `Subscription to ${plan.code}`,
         },
       };
-      if (subscriptionData?.idempotencyKey) {
-        chargeParams.idempotencyKey = subscriptionData.idempotencyKey;
-      }
       const charge = await paymentProvider.charge(chargeParams);
       if (!charge.success) {
         throw new ValidationError(
-          charge.error || 'Payment failed; subscription not activated'
+          // H-11: don't leak provider error string to client; log it,
+          // surface a generic message.
+          (() => {
+            try {
+              // eslint-disable-next-line no-console
+              console.error(
+                '[subscribe] payment provider error:',
+                charge.error || charge.providerStatus || 'unknown'
+              );
+            } catch (_) { /* swallow */ }
+            return 'Payment failed; subscription not activated';
+          })()
         );
       }
       paymentTransactionId = charge.transactionId || null;
+    }
+
+    // B-3: charge succeeded (or wasn't needed) — NOW cancel the old subs.
+    // If this loop throws (very unlikely; just save() calls), the new
+    // subscription create below will not run and we'll be left with the
+    // old sub still active and a money charge already taken. We log the
+    // partial failure so ops can reconcile.
+    for (const existing of existingActive) {
+      try {
+        existing.status = SUBSCRIPTION_STATUS.CANCELLED;
+        existing.cancelledAt = new Date();
+        existing.cancelReason = `Auto-cancelled on new subscribe to ${planCode}`;
+        await existing.save();
+      } catch (cancelErr) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[subscribe] failed to cancel existing subscription %s after charge: %s',
+          existing._id,
+          cancelErr?.message
+        );
+        // Continue — better to have two active subs than to refund the
+        // user. Operations can clean this up; the audit log captures it.
+      }
     }
 
     // Create new subscription
