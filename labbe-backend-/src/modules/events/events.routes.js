@@ -864,6 +864,34 @@ router.post(
   staffController.revokeStaffToken
 );
 
+/**
+ * @swagger
+ * /events/{eventId}/staff-tokens:
+ *   get:
+ *     summary: List staff access tokens for an event (Phase 4b W0-STAFF)
+ *     description: Returns active and revoked StaffAccessToken records for
+ *                  this event (RBAC: host / wl-admin / admin / super_admin).
+ *                  Each token row carries phone, staffName, isRevoked,
+ *                  isExpired, lastUsedAt, useCount.
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/EventIdParam'
+ *     responses:
+ *       200:
+ *         description: Tokens retrieved successfully
+ *       403:
+ *         description: Caller is not authorized to view staff tokens for this event
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+router.get(
+  "/:eventId/staff-tokens",
+  validateObjectId("eventId"),
+  staffController.listStaffTokens
+);
+
 // ============================================
 // LAUNCH RETRY (3c.1)
 // ============================================

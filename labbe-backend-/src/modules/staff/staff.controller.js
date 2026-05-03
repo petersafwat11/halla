@@ -114,3 +114,13 @@ exports.revokeStaffToken = catchAsync(async (req, res) => {
   const result = await staffService.revokeStaffToken(eventId, staffId, req.user);
   sendSuccess(res, result, 'Staff token revoked');
 });
+
+/**
+ * List staff access tokens for an event (Phase 4b W0-STAFF).
+ * GET /api/v2/events/:eventId/staff-tokens
+ */
+exports.listStaffTokens = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const result = await staffService.listStaffTokens(eventId, req.user);
+  sendSuccess(res, result);
+});
