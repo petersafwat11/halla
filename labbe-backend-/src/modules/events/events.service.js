@@ -27,6 +27,11 @@ const { isPoolPlan, isPerEventPlan } = require('../../shared/constants/plans');
 // File upload helper
 const { getFileUrl } = require('../../shared/utils/fileUpload');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
+// Phase 4c W0-VISUAL-BACKEND — server-side validator for the host's
+// per-template field values (per v4.1 §A-12). Lazily-required at the
+// call site to keep boot-time cycles minimal.
+const Template = require('../../../models/TemplateModel');
+const { validateTemplateData } = require('./templateDataValidator');
 
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
@@ -61,6 +66,33 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<string[]>}
    */
+  /**
+   * Phase 4c W0-VISUAL-BACKEND — validate the host-supplied template
+   * field values against the picked Template's `fields[]` definitions.
+   *
+   * Resolves `templateRef` (canonical) to the live Template doc, then
+   * delegates to `validateTemplateData`. Throws AppError(400) with
+   * `validationErrors[]` if the host's input fails — caller surfaces
+   * to the wizard so the host fixes their entry before the save lands.
+   *
+   * Skips silently when:
+   *   - no fieldValues / templateRef (legacy events / pre-Step-3 saves)
+   *   - the referenced Template was soft-deleted (defense in depth —
+   *     we don't want a deleted template to block updates to the rest
+   *     of the event; legacy snapshot remains authoritative)
+   *
+   * @param {string|ObjectId} templateRef
+   * @param {Object} fieldValues
+   * @returns {Promise<void>}
+   * @private
+   */
+  async _validateVisualTemplateFieldValues(templateRef, fieldValues) {
+    if (!templateRef || !fieldValues || typeof fieldValues !== 'object') return;
+    const tpl = await Template.findById(templateRef).lean();
+    if (!tpl || tpl.deletedAt) return;
+    validateTemplateData(tpl, fieldValues);
+  }
+
   async createGuestsFromList(guestData, eventId, userId) {
     if (!guestData.length) return [];
 
@@ -496,6 +528,16 @@ class EventsService {
           // Per-event plans: use the plan's maxInvitesPerEvent directly (no addon or compensation added here)
           eventData.guestLimit = plan?.limits?.maxInvitesPerEvent ?? null;
         }
+      }
+
+      // Phase 4c W0-VISUAL-BACKEND — validate host-supplied
+      // fieldValues against Template.fields[] BEFORE persisting (per
+      // v4.1 §A-12). Throws 400 with validationErrors[] on mismatch.
+      if (eventData.visualTemplate?.templateRef) {
+        await this._validateVisualTemplateFieldValues(
+          eventData.visualTemplate.templateRef,
+          eventData.visualTemplate.fieldValues || {}
+        );
       }
 
       // Create event
@@ -1368,6 +1410,15 @@ class EventsService {
     if (settings.hostNote !== undefined) {
       event.hostNote = settings.hostNote;
       legacyMerge.note = settings.hostNote;
+    }
+
+    // Phase 4c W0-VISUAL-BACKEND — validate fieldValues against
+    // Template.fields[] BEFORE the save commits (per v4.1 §A-12).
+    if (canonicalVisual.templateRef && canonicalVisual.fieldValues) {
+      await this._validateVisualTemplateFieldValues(
+        canonicalVisual.templateRef,
+        canonicalVisual.fieldValues
+      );
     }
 
     event.invitationSettings = legacyMerge;

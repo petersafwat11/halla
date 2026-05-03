@@ -14,11 +14,13 @@
 | W1-WIZARD-RENAME | done | `773a2fc` | 6-step wizard + StepFour rebuilt as Taqnyat picker + StepFive (NEW) |
 | W2-MOBILE-WIZARD | done | `e855b93` | Mobile 6-step wizard + Taqnyat picker + canvasBake util + dead-dep removal |
 | W2-MOBILE-RENAME | done | `beb03dd` | Mobile invitationSettings consumers read canonical first |
+| HARDENING | done | (next) | templateDataValidator wired + admin dual-write + Button danger/small + LastEventStats / useEventActionGate (web) / scheduledTasks / dashboard.service / createAndUpdateEvents canonical-first |
 
 ## Smoke tests
 
 - `docs/implementation/phase-4c-smoke-tests/static-checks-4c.js` —
-  **48/48 PASS** at the close of W2-MOBILE-RENAME.
+  **56/56 PASS** at the close of the hardening pass (48 sub-track
+  checks + 8 hardening checks).
 - Phase 4b regression: 31/31 PASS.
 - Phase 4 regression: 24/24 PASS.
 - Phase 3 regressions (3abc + 3de): 19/19 + 16/16 PASS.

@@ -438,6 +438,62 @@ check("W2-MOBILE-RENAME: useEventActionGate hasTemplate accepts canonical templa
   expect(/event\.invitationSettings\?\.selectedTemplate\?\.name/.test(src), "legacy fallback missing");
 });
 
+// ─── Hardening pass (production-readiness) ───────────────────────────────────
+check("HARDENING: templateDataValidator wired into events.service create + update", () => {
+  const src = read("labbe-backend-/src/modules/events/events.service.js");
+  expect(/_validateVisualTemplateFieldValues/.test(src), "validator helper missing");
+  expect(/validateTemplateData/.test(src), "validateTemplateData import missing");
+  // Both write paths invoke it (exactly two call-sites: createEvent + updateInvitationSettings)
+  const calls = (src.match(/this\._validateVisualTemplateFieldValues/g) || []).length;
+  expect(calls >= 2, `expected ≥2 validator call-sites, got ${calls}`);
+});
+
+check("HARDENING: admin.service.adminUpdateEvent dual-writes canonical fields", () => {
+  const src = read("labbe-backend-/src/modules/admin/admin.service.js");
+  expect(/'visualTemplate'/.test(src) && /'taqnyatTemplate'/.test(src) && /'guestReplies'/.test(src) && /'invitationMessage'/.test(src) && /'hostNote'/.test(src), "canonical keys missing from allowedFields");
+  expect(/event\.visualTemplate\s*=\s*\{[\s\S]*?bakedImagePath/.test(src), "templateImage → bakedImagePath dual-write missing");
+});
+
+check("HARDENING: Button supports variant=danger + size=small", () => {
+  const jsx = read("labbe/ui/commen/button/Button.jsx");
+  const css = read("labbe/ui/commen/button/button.module.css");
+  expect(/safeVariant/.test(jsx), "variant safety guard missing");
+  expect(/size === "small"/.test(jsx), "size prop missing");
+  expect(/\.danger\s*\{/.test(css), ".danger CSS missing");
+  expect(/\.small\s*\{/.test(css), ".small CSS missing");
+});
+
+check("HARDENING: web useEventActionGate hasTemplate accepts canonical templateRef", () => {
+  const src = read("labbe/hooks/events/useEventActionGate.js");
+  expect(/event\.taqnyatTemplate\?\.templateRef/.test(src), "canonical templateRef branch missing");
+  expect(/event\.invitationSettings\?\.selectedTemplate\?\.name/.test(src), "legacy fallback missing");
+});
+
+check("HARDENING: LastEventStats hasTemplate accepts canonical templateRef", () => {
+  const src = read("labbe/ui/host/main-page/latsEventStats/LastEventStats.jsx");
+  expect(/data\.taqnyatTemplate\?\.templateRef/.test(src), "canonical templateRef branch missing");
+});
+
+check("HARDENING: dashboard.service.lastEvent emits canonical + legacy templateImage chain", () => {
+  const src = read("labbe-backend-/src/modules/dashboard/dashboard.service.js");
+  expect(/visualTemplate taqnyatTemplate guestReplies hostNote invitationMessage/.test(src), "canonical fields not in select()");
+  expect(/lastEvent\.visualTemplate\?\.bakedImagePath\s*\|\|\s*lastEvent\.invitationSettings\?\.templateImage/.test(src), "templateImage fallback chain missing");
+  expect(/visualTemplate:\s*lastEvent\.visualTemplate/.test(src), "visualTemplate top-level emit missing");
+});
+
+check("HARDENING: scheduledTasks canUseWhatsApp accepts canonical templateRef", () => {
+  const src = read("labbe-backend-/src/shared/utils/scheduledTasks.js");
+  expect(/fresh\.taqnyatTemplate\?\.templateRef/.test(src), "canonical branch missing");
+  expect(/fresh\.invitationSettings\?\.selectedTemplate\?\.name/.test(src), "legacy fallback missing");
+});
+
+check("HARDENING: createAndUpdateEvents read normalizer prefers canonical", () => {
+  const src = read("labbe/services/createAndUpdateEvents.js");
+  expect(/event\.visualTemplate\?\.bakedImagePath/.test(src), "bakedImagePath read missing");
+  expect(/event\.guestReplies\?\.onAttend/.test(src), "guestReplies.onAttend read missing");
+  expect(/event\.hostNote/.test(src), "hostNote read missing");
+});
+
 // ─── Run / report ────────────────────────────────────────────────────────────
 const ok = checks.filter((c) => c.ok).length;
 const total = checks.length;

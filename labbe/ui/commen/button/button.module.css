@@ -98,6 +98,34 @@
   border-color: var(--btn-outline-border-disabled);
 }
 
+/* Phase 4c W1-VISUAL — admin templates pages use Button with
+ * variant="danger" + size="small". Tokens are scoped to the new
+ * variant; nothing about the primary/secondary palette changes. */
+.danger {
+  background: #d33;
+  color: #fff;
+  border: 1px solid #d33;
+}
+.danger:hover:not(:disabled) {
+  background: #b22;
+  border-color: #b22;
+}
+.danger:active:not(:disabled) {
+  background: #911;
+  border-color: #911;
+}
+.danger:disabled {
+  background: #f1c0c0;
+  color: #fff;
+  border-color: #f1c0c0;
+  cursor: not-allowed;
+}
+
+.small {
+  font-size: 1.2rem;
+  padding: 0.5rem 0.9rem;
+}
+
 @media (max-width: 768px) {
   .button {
     font-size: 1.4rem;

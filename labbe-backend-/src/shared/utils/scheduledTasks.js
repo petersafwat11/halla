@@ -289,7 +289,14 @@ async function runEventLaunch(event, workerId) {
     await fresh.save();
 
     const channel = fresh.messagingStatus?.preferredChannel || "sms";
-    const canUseWhatsApp = !!fresh.invitationSettings?.selectedTemplate?.name;
+    // Phase 4c W0-RENAME — accept both canonical
+    // `taqnyatTemplate.templateRef` (new wizard) and legacy
+    // `invitationSettings.selectedTemplate.name` (pre-migration). The
+    // launch cron must NOT skip WhatsApp on canonical-only events that
+    // would otherwise have a Taqnyat template available.
+    const canUseWhatsApp =
+      !!fresh.taqnyatTemplate?.templateRef ||
+      !!fresh.invitationSettings?.selectedTemplate?.name;
     const finalChannel = channel === "whatsapp" && canUseWhatsApp ? "whatsapp" : "sms";
 
     const sendResult = await messagingService.sendBulk({

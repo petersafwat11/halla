@@ -250,3 +250,43 @@ node docs/implementation/phase-1-smoke-tests/utilities-static-checks.js # 5/5
 When the manual checklist in `PHASE_4C_MANUAL_VERIFICATION.md` is
 signed off and the staging migration completes cleanly, ping Peter for
 review and the merge to `main`.
+
+---
+
+## 9. Hardening pass (production-readiness)
+
+A post-Wave-2 review surfaced eight gaps where the canonical/legacy
+dual-write contract was not yet end-to-end consistent. All were closed
+in the hardening commit; all eight new smoke checks PASS.
+
+| Gap | File | Fix |
+|-----|------|-----|
+| `templateDataValidator` shipped but never invoked. | `events.service.js` | Lazy-import `Template` model + new `_validateVisualTemplateFieldValues()` helper. Called from `createEvent` (after canonical projection) and from `updateInvitationSettings` (before save). Throws 400 with `validationErrors[]` per v4.1 §A-12. Skips silently when the referenced Template is soft-deleted. |
+| `admin.service.adminUpdateEvent` only wrote legacy `invitationSettings`. | `admin.service.js` | `allowedFields` extended with `visualTemplate`, `taqnyatTemplate`, `guestReplies`, `invitationMessage`, `hostNote`. Cross-shape projection mirrors the events.service writer so admin updates land in both shapes. The multer file path now also writes `visualTemplate.bakedImagePath`. |
+| `Button` component had no `danger` variant or `size` prop — admin templates pages used both. | `Button.jsx` + `button.module.css` | Variant guard maps unknown variants → `primary`; `size="small"` maps to a new `.small` rule; new `.danger` palette. Existing primary/secondary palette unchanged. |
+| Web `useEventActionGate` `hasTemplate` only checked legacy `selectedTemplate.name`. | `hooks/events/useEventActionGate.js` | Accepts canonical `taqnyatTemplate.templateRef` first. |
+| Web `LastEventStats` `hasTemplate` had the same bug. | `ui/host/main-page/latsEventStats/LastEventStats.jsx` | Same fix — canonical first, legacy fallback. |
+| `dashboard.service` returned `lastEvent.invitationSettings.templateImage` only — would be `null` on canonical-only events. | `dashboard.service.js` | `select()` extended to project canonical fields; emit chain prefers `lastEvent.visualTemplate.bakedImagePath`. Top-level `visualTemplate` + `taqnyatTemplate` also surfaced for new readers. |
+| Launch cron `canUseWhatsApp` gated on legacy only — would fall back to SMS on canonical-only events. | `scheduledTasks.js` | Accepts `fresh.taqnyatTemplate.templateRef` OR legacy. |
+| Web read-side normalizer in `createAndUpdateEvents.js` was legacy-only. | `services/createAndUpdateEvents.js` | Read chain: canonical first (`event.visualTemplate.bakedImagePath`, `event.guestReplies.*`, `event.hostNote`, `event.invitationMessage`) → legacy. Form value shape preserved so consumers don't re-render. |
+
+**Smoke checks added (see `static-checks-4c.js`):**
+1. `HARDENING: templateDataValidator wired into events.service create + update`
+2. `HARDENING: admin.service.adminUpdateEvent dual-writes canonical fields`
+3. `HARDENING: Button supports variant=danger + size=small`
+4. `HARDENING: web useEventActionGate hasTemplate accepts canonical templateRef`
+5. `HARDENING: LastEventStats hasTemplate accepts canonical templateRef`
+6. `HARDENING: dashboard.service.lastEvent emits canonical + legacy templateImage chain`
+7. `HARDENING: scheduledTasks canUseWhatsApp accepts canonical templateRef`
+8. `HARDENING: createAndUpdateEvents read normalizer prefers canonical`
+
+**Final regression status:**
+- Phase 4c: 56 / 56 PASS
+- Phase 4b: 31 / 31 PASS
+- Phase 4: 24 / 24 PASS
+- Phase 3abc: 19 / 19 PASS
+- Phase 3de: 16 / 16 PASS
+- Phase 2: 13 / 13 PASS
+- Phase 1 (auth + timezone + utilities): 13 + 16 + 5 PASS
+
+No prior-phase regression introduced by the hardening pass.
