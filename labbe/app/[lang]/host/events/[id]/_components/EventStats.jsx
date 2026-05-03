@@ -3,6 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import CardLayout from "@/ui/commen/card/CardLayout";
 import { useSingleEventStats, useEvent } from "@/hooks/reactQueryHooks/useEvents";
+import PartialFailureBanner from "./PartialFailureBanner";
 import styles from "../singleEvent.module.css";
 
 export default function EventStats({ eventId }) {
@@ -53,6 +54,11 @@ export default function EventStats({ eventId }) {
 
   return (
     <div className={styles.statsRow}>
+      {/* Phase 4b W1-GATE-FAIL (D9): partial-failure banner sits above
+          the stats card so the host sees "X of N invitations failed"
+          right next to the live attendance numbers. Renders nothing
+          when failedCount is 0 or the event hasn't gone live yet. */}
+      <PartialFailureBanner eventId={eventId} />
       <CardLayout className={styles.overview}>
         <div className={styles.sectionTitle}>
           {t("singleEvent.stats.attendanceTracking")}
