@@ -239,9 +239,16 @@ exports.updateStaffList = catchAsync(async (req, res) => {
  * PATCH /api/v2/events/:id/invitation-settings
  */
 exports.updateInvitationSettings = catchAsync(async (req, res) => {
-  // Multer delivers FormData text fields as strings — parse any JSON-encoded values
+  // Multer delivers FormData text fields as strings — parse any JSON-encoded
+  // values for both the legacy keys (selectedTemplate / visualTemplate) AND
+  // the Phase 4c canonical keys (fieldValues, guestReplies).
   const settings = { ...req.body };
-  for (const key of ["selectedTemplate", "visualTemplate"]) {
+  for (const key of [
+    "selectedTemplate",
+    "visualTemplate",
+    "fieldValues",
+    "guestReplies",
+  ]) {
     if (typeof settings[key] === "string") {
       try {
         settings[key] = JSON.parse(settings[key]);

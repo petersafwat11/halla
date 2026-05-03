@@ -421,6 +421,11 @@ class EventsService {
       }
 
       // Handle file upload — resolves correctly for both S3 (file.location) and local (file.path/filename)
+      //
+      // Phase 4c W0-RENAME: dual-write the baked header image into both
+      // the legacy `invitationSettings.templateImage` AND the canonical
+      // `visualTemplate.bakedImagePath` so reads from either shape
+      // resolve correctly during the dual-write window.
       if (file) {
         const templateImagePath = getFileUrl(file);
         if (templateImagePath) {
@@ -429,7 +434,39 @@ class EventsService {
           } else {
             eventData.invitationSettings = { templateImage: templateImagePath };
           }
+          eventData.visualTemplate = {
+            ...(eventData.visualTemplate || {}),
+            bakedImagePath: templateImagePath,
+          };
         }
+      }
+
+      // Phase 4c W0-RENAME: project legacy keys submitted by older
+      // clients into the canonical fields, and vice versa.
+      if (eventData.invitationSettings) {
+        const inv = eventData.invitationSettings;
+        if (inv.visualTemplate) {
+          eventData.visualTemplate = {
+            templateRef: inv.visualTemplate.id ?? eventData.visualTemplate?.templateRef,
+            fieldValues: inv.visualTemplate.data ?? eventData.visualTemplate?.fieldValues ?? {},
+            bakedImagePath:
+              inv.visualTemplate.src ??
+              eventData.visualTemplate?.bakedImagePath ??
+              inv.templateImage ??
+              null,
+          };
+        }
+        if (inv.selectedTemplate) {
+          eventData.taqnyatTemplate = {
+            templateRef: inv.selectedTemplate.id ?? eventData.taqnyatTemplate?.templateRef,
+          };
+        }
+        eventData.guestReplies = {
+          onAttend: inv.attendanceAutoReply ?? eventData.guestReplies?.onAttend,
+          onAbsent: inv.absenceAutoReply ?? eventData.guestReplies?.onAbsent,
+          onExpected: inv.expectedAttendanceAutoReply ?? eventData.guestReplies?.onExpected,
+        };
+        if (inv.note !== undefined) eventData.hostNote = inv.note;
       }
 
       // Set host and tracking info
@@ -1246,7 +1283,97 @@ class EventsService {
       if (templateImagePath) settings.templateImage = templateImagePath;
     }
 
-    event.invitationSettings = { ...event.invitationSettings, ...settings };
+    // Phase 4c W0-RENAME — DUAL WRITE.
+    //
+    // The wizard may submit either the legacy `invitationSettings.*`
+    // shape (older clients) or the canonical top-level shape (new
+    // clients), or a mix during the dual-write window. We accept both
+    // and write both so reads from either shape resolve correctly until
+    // the legacy field is dropped in Phase 5.
+    //
+    // Canonical → legacy projections (read-back compatibility):
+    //   visualTemplate.templateRef     → invitationSettings.visualTemplate.id
+    //   visualTemplate.bakedImagePath  → invitationSettings.templateImage
+    //   visualTemplate.fieldValues     → invitationSettings.visualTemplate.data
+    //   taqnyatTemplate.templateRef    → invitationSettings.selectedTemplate (resolved)
+    //   guestReplies.onAttend          → invitationSettings.attendanceAutoReply
+    //   guestReplies.onAbsent          → invitationSettings.absenceAutoReply
+    //   guestReplies.onExpected        → invitationSettings.expectedAttendanceAutoReply
+    //   hostNote                       → invitationSettings.note
+    //
+    // Legacy → canonical projections work in reverse during the same write.
+    const legacyMerge = { ...(event.invitationSettings?.toObject?.() || event.invitationSettings || {}) };
+    const canonicalVisual = { ...(event.visualTemplate?.toObject?.() || event.visualTemplate || {}) };
+    const canonicalTaqnyat = { ...(event.taqnyatTemplate?.toObject?.() || event.taqnyatTemplate || {}) };
+    const canonicalReplies = { ...(event.guestReplies?.toObject?.() || event.guestReplies || {}) };
+
+    // Apply incoming legacy keys — back-fill the canonical side too.
+    if (settings.visualTemplate !== undefined) {
+      legacyMerge.visualTemplate = settings.visualTemplate;
+      if (settings.visualTemplate?.id) canonicalVisual.templateRef = settings.visualTemplate.id;
+      if (settings.visualTemplate?.src) canonicalVisual.bakedImagePath = settings.visualTemplate.src;
+      if (settings.visualTemplate?.data) canonicalVisual.fieldValues = settings.visualTemplate.data;
+    }
+    if (settings.selectedTemplate !== undefined) {
+      legacyMerge.selectedTemplate = settings.selectedTemplate;
+      if (settings.selectedTemplate?.id) canonicalTaqnyat.templateRef = settings.selectedTemplate.id;
+    }
+    if (settings.templateImage !== undefined) {
+      legacyMerge.templateImage = settings.templateImage;
+      canonicalVisual.bakedImagePath = settings.templateImage;
+    }
+    if (settings.attendanceAutoReply !== undefined) {
+      legacyMerge.attendanceAutoReply = settings.attendanceAutoReply;
+      canonicalReplies.onAttend = settings.attendanceAutoReply;
+    }
+    if (settings.absenceAutoReply !== undefined) {
+      legacyMerge.absenceAutoReply = settings.absenceAutoReply;
+      canonicalReplies.onAbsent = settings.absenceAutoReply;
+    }
+    if (settings.expectedAttendanceAutoReply !== undefined) {
+      legacyMerge.expectedAttendanceAutoReply = settings.expectedAttendanceAutoReply;
+      canonicalReplies.onExpected = settings.expectedAttendanceAutoReply;
+    }
+    if (settings.note !== undefined) {
+      legacyMerge.note = settings.note;
+      event.hostNote = settings.note;
+    }
+
+    // Apply incoming canonical keys — back-fill the legacy side too.
+    if (settings.visualTemplateRef !== undefined || settings.fieldValues !== undefined || settings.bakedImagePath !== undefined) {
+      if (settings.visualTemplateRef !== undefined) canonicalVisual.templateRef = settings.visualTemplateRef;
+      if (settings.fieldValues !== undefined) canonicalVisual.fieldValues = settings.fieldValues;
+      if (settings.bakedImagePath !== undefined) canonicalVisual.bakedImagePath = settings.bakedImagePath;
+      legacyMerge.visualTemplate = {
+        ...(legacyMerge.visualTemplate || {}),
+        id: canonicalVisual.templateRef,
+        src: canonicalVisual.bakedImagePath,
+        data: canonicalVisual.fieldValues,
+      };
+      if (canonicalVisual.bakedImagePath) legacyMerge.templateImage = canonicalVisual.bakedImagePath;
+    }
+    if (settings.taqnyatTemplateRef !== undefined) {
+      canonicalTaqnyat.templateRef = settings.taqnyatTemplateRef;
+      legacyMerge.selectedTemplate = { ...(legacyMerge.selectedTemplate || {}), id: settings.taqnyatTemplateRef };
+    }
+    if (settings.guestReplies && typeof settings.guestReplies === "object") {
+      Object.assign(canonicalReplies, settings.guestReplies);
+      if (settings.guestReplies.onAttend !== undefined) legacyMerge.attendanceAutoReply = settings.guestReplies.onAttend;
+      if (settings.guestReplies.onAbsent !== undefined) legacyMerge.absenceAutoReply = settings.guestReplies.onAbsent;
+      if (settings.guestReplies.onExpected !== undefined) legacyMerge.expectedAttendanceAutoReply = settings.guestReplies.onExpected;
+    }
+    if (settings.invitationMessage !== undefined) {
+      event.invitationMessage = settings.invitationMessage;
+    }
+    if (settings.hostNote !== undefined) {
+      event.hostNote = settings.hostNote;
+      legacyMerge.note = settings.hostNote;
+    }
+
+    event.invitationSettings = legacyMerge;
+    event.visualTemplate = canonicalVisual;
+    event.taqnyatTemplate = canonicalTaqnyat;
+    event.guestReplies = canonicalReplies;
 
     await event.save();
 
