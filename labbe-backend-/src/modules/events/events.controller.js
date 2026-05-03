@@ -235,6 +235,32 @@ exports.updateStaffList = catchAsync(async (req, res) => {
 });
 
 /**
+ * Phase 4d W0-ATOMIC — atomically update guest list + staff list
+ * PATCH /api/v2/events/:id/step2
+ *
+ * Accepts both `supervisorsList` (web naming) and `staffList` (mobile
+ * naming) per D4d-2; normalises to a single `staffList` payload before
+ * handing off to the service. Both keys may appear together — `staffList`
+ * wins (mobile-first stays canonical) and `supervisorsList` is only used
+ * when `staffList` is absent.
+ */
+exports.updateEventStep2 = catchAsync(async (req, res) => {
+  const guestList = Array.isArray(req.body.guestList) ? req.body.guestList : [];
+  const staffList = Array.isArray(req.body.staffList)
+    ? req.body.staffList
+    : Array.isArray(req.body.supervisorsList)
+      ? req.body.supervisorsList
+      : [];
+
+  const result = await eventsService.updateEventStep2(
+    req.params.id,
+    { guestList, staffList },
+    req.user
+  );
+  sendSuccess(res, result, "Step 2 updated");
+});
+
+/**
  * Update invitation settings
  * PATCH /api/v2/events/:id/invitation-settings
  */

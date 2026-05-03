@@ -1304,6 +1304,273 @@ class EventsService {
   }
 
   /**
+   * Phase 4d W0-ATOMIC — atomically replace guest list + staff list.
+   *
+   * Wraps the same business rules as `updateGuestList` + `updateStaffList`
+   * inside a Mongo transaction so a capacity-guard rejection on either
+   * side leaves both fields at their pre-call values. On a standalone
+   * Mongo topology (no replica set) `session.startTransaction()` throws
+   * `MongoServerError: Transaction numbers are only allowed on a replica
+   * set member or mongos`; we catch that, fall back to ordered writes,
+   * and rollback the guest changes by hand if the staff write fails
+   * (D4d-3).
+   *
+   * Reuses the Phase 4b W0-RBAC `GUEST_LIST_BELOW_CONFIRMED` capacity
+   * guard so the floor check (no shrink below confirmed/checked-in
+   * guests) fires before any writes land.
+   *
+   * @param {string} eventId
+   * @param {{ guestList: Array, staffList: Array }} payload
+   * @param {Object} userContext - req.user
+   * @returns {Promise<{ event: Object, addedCount: number }>}
+   */
+  async updateEventStep2(eventId, payload, userContext) {
+    const guestList = Array.isArray(payload?.guestList) ? payload.guestList : [];
+    const staffList = Array.isArray(payload?.staffList) ? payload.staffList : [];
+
+    const userId =
+      typeof userContext === 'object' && userContext !== null
+        ? userContext._id?.toString?.() || userContext._id
+        : userContext;
+
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext))
+      .populate('guestList', 'name email phone status');
+    if (!event) throw new NotFoundError("Event");
+
+    if (['completed', 'cancelled'].includes(event.status)) {
+      throw new ValidationError('Cannot modify a completed or cancelled event');
+    }
+
+    // Plan ceiling — net total must fit under the per-event guest limit.
+    const newCount = guestList.length;
+    const limit = event.guestLimit;
+    if (limit && limit !== -1 && newCount > limit) {
+      throw new PackageLimitError("guests", limit,
+        `Guest list exceeds the limit of ${limit}.`);
+    }
+
+    // Floor — never drop below confirmed/checked-in count.
+    const confirmedCount = (event.guestList || []).filter((g) =>
+      ['confirmed', 'checked_in'].includes(g.status)
+    ).length;
+    if (confirmedCount > 0 && newCount < confirmedCount) {
+      throw new AppError(
+        `Cannot reduce guest list below ${confirmedCount} confirmed guests.`,
+        400,
+        'GUEST_LIST_BELOW_CONFIRMED'
+      );
+    }
+
+    // Pre-image — kept for the compensation path and for the response
+    // shape on either branch.
+    const preImageGuestIds = (event.guestList || []).map((g) => g._id);
+    const preImageStaffList = (event.staffList || []).map((s) => ({
+      name: s.name,
+      phone: s.phone,
+    }));
+
+    // Reusable helpers: compute the diff between the existing guests and
+    // the incoming list. Defined once so both the transaction branch and
+    // the compensation branch see identical behaviour.
+    const existingGuests = event.guestList || [];
+    const existingByPhone = new Map(
+      existingGuests.map((g) => [normalizePhoneNumber(g.phone), g])
+    );
+    const keptGuestIds = [];
+    const toCreate = [];
+    const toUpdate = [];
+    const incomingPhones = new Set();
+
+    for (const incoming of guestList) {
+      const normPhone = normalizePhoneNumber(incoming.phone);
+      incomingPhones.add(normPhone);
+      const existing = existingByPhone.get(normPhone);
+      if (existing) {
+        if (existing.name !== incoming.name || (incoming.email && existing.email !== incoming.email)) {
+          toUpdate.push({
+            _id: existing._id,
+            name: incoming.name,
+            ...(incoming.email && { email: incoming.email }),
+          });
+        }
+        keptGuestIds.push(existing._id);
+      } else {
+        toCreate.push({
+          name: incoming.name,
+          phone: incoming.phone,
+          email: incoming.email || '',
+          event: eventId,
+          status: 'invited',
+          addedBy: userId,
+        });
+      }
+    }
+    const toDeleteIds = existingGuests
+      .filter((g) => !incomingPhones.has(normalizePhoneNumber(g.phone)))
+      .map((g) => g._id);
+
+    const normalisedStaff = staffList.map((s) => ({
+      name: s.name,
+      phone: s.phone,
+    }));
+
+    let session = null;
+    let useTransactions = true;
+    try {
+      session = await require('mongoose').startSession();
+      session.startTransaction();
+    } catch (err) {
+      // Standalone topology — no transactions. Fall back to compensation.
+      useTransactions = false;
+      try { if (session) await session.endSession(); } catch (_) { /* ignore */ }
+      session = null;
+    }
+
+    let addedCount = 0;
+
+    try {
+      if (useTransactions) {
+        // Happy path — replica-set / sharded cluster.
+        if (toDeleteIds.length > 0) {
+          await Guest.deleteMany({ _id: { $in: toDeleteIds } }, { session });
+        }
+        for (const u of toUpdate) {
+          await Guest.findByIdAndUpdate(
+            u._id,
+            { name: u.name, ...(u.email !== undefined && { email: u.email }) },
+            { session }
+          );
+        }
+        const newGuestIds = [];
+        if (toCreate.length > 0) {
+          // Guest pre-save hook (QR generation) needs `Guest.create`; insertMany skips hooks.
+          const created = await Guest.create(toCreate, { session, ordered: true });
+          for (const g of created) newGuestIds.push(g._id);
+        }
+        addedCount = newGuestIds.length;
+
+        event.guestList = [...keptGuestIds, ...newGuestIds];
+        event.staffList = normalisedStaff;
+        await event.save({ session });
+
+        if (event.subscriptionId && newGuestIds.length > 0) {
+          await Subscription.findByIdAndUpdate(
+            event.subscriptionId,
+            {
+              $inc: {
+                "usage.guestsUsed": newGuestIds.length,
+                "usage.totalGuests": newGuestIds.length,
+              },
+            },
+            { session }
+          );
+        }
+
+        await session.commitTransaction();
+      } else {
+        // Standalone / no-transaction path. Order matters: write guests
+        // first, then staff. If staff fails, restore the guest pre-image.
+        if (toDeleteIds.length > 0) {
+          await Guest.deleteMany({ _id: { $in: toDeleteIds } });
+        }
+        for (const u of toUpdate) {
+          await Guest.findByIdAndUpdate(
+            u._id,
+            { name: u.name, ...(u.email !== undefined && { email: u.email }) }
+          );
+        }
+        const newGuestIds = [];
+        const createdDocs = [];
+        if (toCreate.length > 0) {
+          const created = await Guest.create(toCreate);
+          for (const g of created) {
+            newGuestIds.push(g._id);
+            createdDocs.push(g);
+          }
+        }
+        addedCount = newGuestIds.length;
+
+        const guestIdsBeforeStaff = [...keptGuestIds, ...newGuestIds];
+        event.guestList = guestIdsBeforeStaff;
+        await event.save();
+
+        try {
+          event.staffList = normalisedStaff;
+          await event.save();
+        } catch (staffErr) {
+          // Compensation: revert the guest list to its pre-image and
+          // delete the freshly-created guest docs.
+          try {
+            // Re-load to dodge any version-mismatch from the failed save.
+            const restoreEvent = await Event.findById(eventId);
+            if (restoreEvent) {
+              restoreEvent.guestList = preImageGuestIds;
+              restoreEvent.staffList = preImageStaffList;
+              await restoreEvent.save();
+            }
+            if (newGuestIds.length > 0) {
+              await Guest.deleteMany({ _id: { $in: newGuestIds } });
+            }
+            // Restore deleted guests if we removed any. Without a
+            // session-level rollback, deleted Guest documents are gone;
+            // attempting to recreate them here is best-effort using the
+            // pre-image data we still have.
+            if (toDeleteIds.length > 0) {
+              const preImageDeleted = existingGuests.filter((g) =>
+                toDeleteIds.some((id) => id.toString() === g._id.toString())
+              );
+              if (preImageDeleted.length > 0) {
+                await Guest.create(
+                  preImageDeleted.map((g) => ({
+                    _id: g._id,
+                    name: g.name,
+                    phone: g.phone,
+                    email: g.email || '',
+                    event: eventId,
+                    status: g.status || 'invited',
+                    addedBy: userId,
+                  }))
+                );
+              }
+            }
+          } catch (rollbackErr) {
+            console.error('[updateEventStep2] compensation rollback failed:', rollbackErr);
+          }
+          throw staffErr;
+        }
+
+        if (event.subscriptionId && newGuestIds.length > 0) {
+          try {
+            await Subscription.findByIdAndUpdate(event.subscriptionId, {
+              $inc: {
+                "usage.guestsUsed": newGuestIds.length,
+                "usage.totalGuests": newGuestIds.length,
+              },
+            });
+          } catch (e) {
+            console.error("[updateEventStep2] Failed to track guest addition:", e);
+          }
+        }
+      }
+    } catch (err) {
+      if (useTransactions && session) {
+        try { await session.abortTransaction(); } catch (_) { /* ignore */ }
+      }
+      throw err;
+    } finally {
+      if (session) {
+        try { await session.endSession(); } catch (_) { /* ignore */ }
+      }
+    }
+
+    const updated = await Event.findById(eventId).populate(
+      "guestList",
+      "name email phone status"
+    );
+    return { event: updated, addedCount };
+  }
+
+  /**
    * Update invitation settings
    * @param {string} eventId
    * @param {Object} settings
