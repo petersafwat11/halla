@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import WhitelabelSubscriptionPopup from "../../_components/WhitelabelSubscriptionPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import ApproveWhitelabelDialog from "@/ui/admin/whitelabels/ApproveWhitelabelDialog";
 import {
   FiMail, FiPhone, FiCalendar, FiClock,
   FiShield, FiUsers, FiCreditCard, FiAlertCircle, FiExternalLink,
@@ -60,6 +61,8 @@ export default function WhitelabelDetailsContent({ whitelabelId }) {
   const { data, isLoading, error } = useAdminWhitelabel(whitelabelId);
   const updateStatus = useAdminWhitelabelMutation("updateStatus");
   const [subOpen, setSubOpen] = useState(false);
+  // Phase 4b W1-WL-EMAIL: explicit Approve dialog (D5).
+  const [approveOpen, setApproveOpen] = useState(false);
 
   if (isLoading) return <SimpleLoading />;
 
@@ -78,11 +81,26 @@ export default function WhitelabelDetailsContent({ whitelabelId }) {
   const plan  = planMeta(sub?.planType);
   const wlSt  = wlStatusMeta(wl?.status);
   const subSt = subStatusMeta(sub?.status);
-  const isSuspended = wl?.status === "suspended" || wl?.status === "pending";
+  const isPending = wl?.status === "pending";
+  const isSuspended = wl?.status === "suspended" || isPending;
   const displayName = wl?.profile?.whitelabelData?.arabicName || wl?.username || "—";
   const englishName = wl?.profile?.whitelabelData?.englishName;
 
   const handleToggleStatus = async () => {
+    // Phase 4b W1-WL-EMAIL: Approve flows through the new dialog so the
+    // admin can confirm AND choose whether to dispatch the
+    // setup-password email atomically. Suspend stays on the old confirm
+    // path because there's no email side effect.
+    if (isPending) {
+      if (!sub) {
+        toast.warning(t("actions.assignPlanFirst", "يجب تعيين خطة اشتراك قبل تنشيط الوايت ليبل"));
+        setSubOpen(true);
+        return;
+      }
+      setApproveOpen(true);
+      return;
+    }
+
     if (isSuspended && !sub) {
       toast.warning(t("actions.assignPlanFirst", "يجب تعيين خطة اشتراك قبل تنشيط الوايت ليبل"));
       setSubOpen(true);
@@ -103,6 +121,45 @@ export default function WhitelabelDetailsContent({ whitelabelId }) {
       toast.error(isSuspended
         ? t("actions.activateError", "فشل في تنشيط الوايت ليبل")
         : t("actions.suspendError",  "فشل في إيقاف الوايت ليبل"));
+    }
+  };
+
+  const handleConfirmApprove = async ({ dispatchSetupEmail }) => {
+    try {
+      const resp = await updateStatus.mutateAsync({
+        whitelabelId: wl?.id || wl?._id,
+        status: "active",
+        dispatchSetupEmail,
+      });
+      const emailDispatch = resp?.data?.emailDispatch || resp?.emailDispatch;
+      const emailSent = !!emailDispatch?.sent;
+      if (dispatchSetupEmail && emailSent) {
+        toast.success(
+          t(
+            "approveWhitelabelDialog.successWithEmail",
+            "تم تنشيط الحساب وإرسال رابط إعداد كلمة المرور بالبريد"
+          )
+        );
+      } else if (dispatchSetupEmail && emailDispatch?.attempted && !emailSent) {
+        toast.warning(
+          t(
+            "approveWhitelabelDialog.successEmailFailed",
+            "تم تنشيط الحساب لكن تعذر إرسال البريد. يرجى إعادة المحاولة."
+          )
+        );
+      } else {
+        toast.success(
+          t("actions.activateSuccess", "تم تنشيط الوايت ليبل بنجاح")
+        );
+      }
+      setApproveOpen(false);
+      router.refresh();
+    } catch (err) {
+      toast.error(
+        err?.parsedError?.message ||
+          err?.message ||
+          t("actions.activateError", "فشل في تنشيط الوايت ليبل")
+      );
     }
   };
 
@@ -137,7 +194,11 @@ export default function WhitelabelDetailsContent({ whitelabelId }) {
               onClick={handleToggleStatus}
               disabled={updateStatus.isPending}
             >
-              {isSuspended ? "تنشيط الحساب" : "إيقاف الحساب"}
+              {isPending
+                ? t("actions.approve", "الموافقة على الحساب")
+                : isSuspended
+                  ? "تنشيط الحساب"
+                  : "إيقاف الحساب"}
             </button>
           </div>
         </div>
@@ -288,6 +349,15 @@ export default function WhitelabelDetailsContent({ whitelabelId }) {
           onSuccess={() => { setSubOpen(false); router.refresh(); }}
         />
       </PopupLayout>
+
+      {/* ── Approve Dialog (Phase 4b W1-WL-EMAIL / D5) ── */}
+      <ApproveWhitelabelDialog
+        isOpen={approveOpen}
+        onClose={() => setApproveOpen(false)}
+        onConfirm={handleConfirmApprove}
+        isPending={updateStatus.isPending}
+        whitelabel={wl}
+      />
     </>
   );
 }

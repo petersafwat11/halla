@@ -469,11 +469,19 @@ export const useAdminWhitelabelMutation = (action) => {
 
   const mutations = {
     updateStatus: {
-      mutationFn: ({ whitelabelId, status }) =>
+      // Phase 4b W1-WL-EMAIL: callers can pass `dispatchSetupEmail: true`
+      // alongside `status: 'active'` so the backend mints a fresh
+      // password-setup token and emails the link in the same request
+      // (D5 — atomic confirm-popup approval). Existing callers that
+      // omit the flag keep the previous status-only behavior.
+      mutationFn: ({ whitelabelId, status, dispatchSetupEmail }) =>
         apiRequest({
           method: "PATCH",
           path: API_PATHS.admin.whitelabels.updateStatus(whitelabelId),
-          data: { status },
+          data: {
+            status,
+            ...(dispatchSetupEmail !== undefined && { dispatchSetupEmail }),
+          },
         }),
       onSuccess: (_, { whitelabelId }) => {
         queryClient.invalidateQueries({ queryKey: ["admin", "whitelabels"] });
