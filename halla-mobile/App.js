@@ -24,6 +24,7 @@ import AppNavigator from "./navigation/AppNavigator";
 import LanguageSelector from "./components/languagePrefrence/LanguageSelector";
 import { API_BASE_URL } from "./config/api";
 import { fetchWithTimeout } from "./services/apiClient";
+import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 // ------------------------------------------------- //
 //          PUSH NOTIFICATION SETUP                  //
@@ -175,15 +176,17 @@ export default function App() {
   if (!ready) return <View style={{ flex: 1 }} />;
 
   return (
-    <SafeAreaProvider>
-      <QueryProvider>
-        <LanguageProvider>
-          <ToastProvider>
-            <AppRoot />
-          </ToastProvider>
-        </LanguageProvider>
-      </QueryProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <QueryProvider>
+          <LanguageProvider>
+            <ToastProvider>
+              <AppRoot />
+            </ToastProvider>
+          </LanguageProvider>
+        </QueryProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
