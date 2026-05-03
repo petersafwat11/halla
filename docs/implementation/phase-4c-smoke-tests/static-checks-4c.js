@@ -420,7 +420,12 @@ check("W2-MOBILE-WIZARD: api.config registers TAQNYAT_TEMPLATES.LIST", () => {
 
 // ─── W2-MOBILE-RENAME ───────────────────────────────────────────────────────
 check("W2-MOBILE-RENAME: UpdateEventScreen reads canonical first", () => {
-  const src = read("halla-mobile/screens/host/UpdateEventScreen.js");
+  // Phase 4d W1-MOBILE-UPDATE relocated this screen to
+  // halla-mobile/screens/update-event/UpdateEventScreen.js (the
+  // host/admin paths are now thin re-export shims). The canonical-
+  // first read contract still holds — assert against the new location
+  // so this regression check tracks the relocation.
+  const src = read("halla-mobile/screens/update-event/UpdateEventScreen.js");
   expect(/canonicalVisual/.test(src), "canonical visual var missing");
   expect(/canonicalTaqnyat/.test(src), "canonical taqnyat var missing");
   expect(/canonicalReplies\.onAttend/.test(src), "canonical reply read missing");
