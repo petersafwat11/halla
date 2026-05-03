@@ -348,7 +348,11 @@ class AdminService {
       throw new NotFoundError('Plan');
     }
 
-    const subscription = await Subscription.findOne({ userId: hostId });
+    // H-10: previous code used `findOne({ userId })` with no status filter
+    // and no sort — would return cancelled subs at random. Use the
+    // canonical helper for the active-or-trial sub.
+    const activeSubs = await Subscription.findActiveForUser(hostId);
+    const subscription = activeSubs[0] || null;
 
     // Validate and use fallback billing cycle
     const finalBillingCycle = billingCycle || (plan.planType === 'single_event' ? 'once' : 'monthly');
@@ -1194,7 +1198,9 @@ class AdminService {
       throw new NotFoundError('Plan');
     }
 
-    const subscription = await Subscription.findOne({ userId: whitelabelId });
+    // H-10: was findOne({userId}) with no filter/sort. Use canonical helper.
+    const activeWlSubs = await Subscription.findActiveForUser(whitelabelId);
+    const subscription = activeWlSubs[0] || null;
 
     if (!subscription) {
       const newSub = await Subscription.create({
@@ -1462,9 +1468,12 @@ class AdminService {
     const user = await User.findById(userId).select('role name').lean();
     if (!user) throw new NotFoundError('User');
 
-    const subscription = await Subscription.findOne({ userId })
-      .populate('planId', 'name code features price')
-      .lean();
+    // H-10: was findOne({userId}) — would surface cancelled subs at random.
+    // Use the canonical helper, then re-populate the fields the lean read
+    // expects (findActiveForUser populates 'planId' fully; we filter to
+    // the projection here to keep the wire response slim).
+    const activeSubs = await Subscription.findActiveForUser(userId);
+    const subscription = activeSubs[0] || null;
 
     if (!subscription) {
       return { subscription: null };

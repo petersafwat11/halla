@@ -14,6 +14,7 @@ const Guest = require('../../../models/GuestModel');
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const { generateExcel } = require('../../shared/utils/excelExport');
+const { formatRiyadh } = require('../../shared/utils/timezone'); // M-5
 const GuestAccessToken = require('../../../models/GuestAccessTokenModel');
 const { logAudit } = require('../../shared/utils/auditLog');
 
@@ -276,10 +277,10 @@ class GuestsService {
       Email: guest.email || '',
       Status: guest.status || 'invited',
       'Response Date': guest.rsvp?.respondedAt
-        ? new Date(guest.rsvp.respondedAt).toLocaleString()
+        ? formatRiyadh(guest.rsvp.respondedAt) // M-5
         : '',
       'Check-in Time': guest.checkIn?.time
-        ? new Date(guest.checkIn.time).toLocaleString()
+        ? formatRiyadh(guest.checkIn.time) // M-5
         : '',
       'Invitation Sent': guest.invitation?.sent ? 'Yes' : 'No',
       'Added By': guest.addedBy?.username || guest.addedBy?.email || 'Unknown',

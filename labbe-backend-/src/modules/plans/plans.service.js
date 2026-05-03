@@ -289,11 +289,44 @@ class PlansService {
           const consumed = sub.invitesConsumed || 0;
           if (consumed > newLimit) affected.push({ id: sub._id, key, used: consumed, newLimit });
         } else if (key === 'maxInvitesPerEvent') {
-          // Per-event plans: snap-shotted at event creation. We cannot
-          // know reliably here whether a live event uses the old
-          // ceiling. Require explicit force flag in the future; for now
-          // block conservatively when any subscriber is active.
-          affected.push({ id: sub._id, key, used: oldLimits[key], newLimit });
+          // M-18: previously this branch blocked unconditionally for
+          // every active subscriber, so admins could never reduce
+          // per-event ceilings even when no live event would breach the
+          // new value. The actual breach check is whether any of the
+          // subscriber's live/scheduled events has a guestLimit greater
+          // than the new ceiling. Look it up directly.
+          //
+          // We only check live + scheduled events — completed/cancelled
+          // events keep their snapshotted limit and don't matter.
+          try {
+            // Lazy require to avoid circular import (plans → events).
+            const Event = require('../../../models/EventModel');
+            const breaching = await Event.find({
+              host: sub.userId,
+              status: { $in: ['live', 'scheduled'] },
+              guestLimit: { $gt: newLimit },
+            })
+              .select('_id guestLimit')
+              .limit(1);
+            if (breaching && breaching.length > 0) {
+              affected.push({
+                id: sub._id,
+                key,
+                used: breaching[0].guestLimit,
+                newLimit,
+                eventId: breaching[0]._id,
+              });
+            }
+          } catch (eventErr) {
+            // If the lookup fails, fall back to the conservative block
+            // rather than silently allowing a destructive reduction.
+            // eslint-disable-next-line no-console
+            console.warn(
+              "[plans.update] event-breach lookup failed; falling back to conservative block:",
+              eventErr?.message
+            );
+            affected.push({ id: sub._id, key, used: oldLimits[key], newLimit });
+          }
         }
       }
     }

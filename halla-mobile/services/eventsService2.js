@@ -290,8 +290,14 @@ export const updateInvitationSettings = async (
  */
 export const retryLaunch = async (eventId, token) => {
   try {
+    // M-19: per-click idempotency key — protects against double-tap on
+    // mobile UI when the spinner doesn't quite catch the second press.
+    const idempotencyKey = `retry-${eventId}-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 10)}`;
     const data = await authenticatedFetch(`/${eventId}/retry-launch`, token, {
       method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
     });
     return data?.data || data;
   } catch (error) {

@@ -223,13 +223,13 @@ class AuthService {
    * @returns {Promise<Object|null>} Subscription summary
    */
   async getUserSubscription(userId) {
-    const subscription = await Subscription.findOne({
-      userId,
-      status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] }
-    }).populate('planId');
-
+    // H-10: route through `findActiveForUser` for deterministic ordering and
+    // expiry filtering. The previous direct findOne() had no sort and no
+    // expiry filter, so a stale active row (status flip pending) could win
+    // over the most recent one.
+    const subscriptions = await Subscription.findActiveForUser(userId);
+    const subscription = subscriptions[0] || null;
     if (!subscription) return null;
-
     return subscription.getSummary ? subscription.getSummary() : subscription;
   }
 

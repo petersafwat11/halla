@@ -421,9 +421,12 @@ exports.createEventForHost = catchAsync(async (req, res) => {
 
   if (!targetUserId) throw new ValidationError('Target user is required');
 
-  // Get subscription for target user
+  // Get subscription for target user.
+  // H-10: was findOne with no filter/sort — would return whichever sub
+  // happened to come back first. Use canonical helper.
   const Subscription = require('../../../models/SubscriptionModel');
-  const subscription = await Subscription.findOne({ userId: targetUserId });
+  const activeSubs = await Subscription.findActiveForUser(targetUserId);
+  const subscription = activeSubs[0] || null;
 
   const context = {
     userId: targetUserId,

@@ -523,11 +523,15 @@ class MessagingService {
    * @private
    */
   _formatDate(date, lang = 'ar') {
+    // M-5: explicit Asia/Riyadh time zone via the shared helper. The
+    // previous toLocaleDateString relied on the host's TZ, so a UTC
+    // server formatted Riyadh-evening events as the prior calendar day.
     if (!date) return '';
-    return new Date(date).toLocaleDateString(
-      lang === 'ar' ? 'ar-SA' : 'en-US',
-      { year: 'numeric', month: 'long', day: 'numeric' }
-    );
+    const { formatRiyadh } = require('../../shared/utils/timezone');
+    return formatRiyadh(date, {
+      style: 'date',
+      locale: lang === 'ar' ? 'ar-SA' : 'en-US',
+    });
   }
 
   /**

@@ -586,15 +586,15 @@ const scheduleEventCompletion = () => {
 };
 
 /**
- * Helper: format a Date for Arabic reminders
+ * Helper: format a Date for Arabic reminders.
+ *
+ * M-5: explicit Asia/Riyadh time zone — without it, a UTC server formats
+ * Riyadh-evening events as the previous calendar day in the reminder SMS.
  */
+const { formatRiyadh } = require("./timezone");
 const _formatDateAr = (date) => {
   if (!date) return "";
-  return new Date(date).toLocaleDateString("ar-SA", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  return formatRiyadh(date, { style: "date", locale: "ar-SA" });
 };
 
 /**
@@ -733,9 +733,17 @@ const scheduleTemplateStatusPolling = () => {
  * been a no-op since the constants reorg. We now query `expiresAt` (the
  * real field) and emit a `subscription.expired` audit row per
  * transitioned record so admins can trace the lifecycle event.
+ *
+ * M-17: wrapped in `cronLease.withLease` so multi-instance deploys
+ * don't fire the cron N times on the same minute and produce duplicate
+ * audit + notification rows.
  */
+const cronLease = require("./cronLease");
 const scheduleSubscriptionStatusUpdate = () => {
   cron.schedule("0 1 * * *", async () => {
+    const result = await cronLease.withLease(
+      "subscription_status_update",
+      async () => {
     try {
       const now = new Date(nowUtc());
       const expired = await Subscription.find({
@@ -815,6 +823,12 @@ const scheduleSubscriptionStatusUpdate = () => {
     } catch (e) {
       console.error("[Cron] Subscription status update failed:", e);
     }
+      },
+      { ttlMs: 10 * 60 * 1000 } // 10 minutes — comfortably > expected runtime
+    );
+    if (!result.ran) {
+      console.log("[Cron] subscription_status_update — skipped (lease held by another node)");
+    }
   });
 };
 
@@ -841,12 +855,20 @@ const scheduleSubscriptionStatusUpdate = () => {
  */
 const MAX_LAUNCH_ATTEMPTS = 5;
 const LAUNCH_RETRY_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
+// L-7: backoff array length must be MAX_LAUNCH_ATTEMPTS - 1 (the gaps
+// between attempts). The previous 5-entry array left the 5th value
+// (`12h`) unreachable — `_isRetryDue` returns false once attempt >=
+// MAX_LAUNCH_ATTEMPTS so index 4 is never consulted. We trim to four
+// entries to make the contract explicit and prevent doc/code drift.
+//   attempt 1 → wait LAUNCH_BACKOFF_MS[0] = 5 min  → attempt 2
+//   attempt 2 → wait LAUNCH_BACKOFF_MS[1] = 30 min → attempt 3
+//   attempt 3 → wait LAUNCH_BACKOFF_MS[2] = 2 h    → attempt 4
+//   attempt 4 → wait LAUNCH_BACKOFF_MS[3] = 6 h    → attempt 5 (terminal)
 const LAUNCH_BACKOFF_MS = [
   5 * 60 * 1000,        // 5 min
   30 * 60 * 1000,       // 30 min
   2 * 60 * 60 * 1000,   // 2 h
   6 * 60 * 60 * 1000,   // 6 h
-  12 * 60 * 60 * 1000,  // 12 h
 ];
 
 /**
