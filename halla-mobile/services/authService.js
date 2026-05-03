@@ -553,3 +553,33 @@ export const resetPasswordAPI = async ({ token, password, passwordConfirm }) => 
     user: data.data?.user,
   };
 };
+
+/**
+ * Phase 4 W3-WL — set the initial password for a whitelabel admin (or
+ * any user holding a one-time setup token) after they tap the email
+ * link. Backend: POST /auth/setup-password.
+ *
+ * Returns the same token-pair shape as login so the auth store can
+ * authenticate the user immediately.
+ */
+export const setupPasswordAPI = async ({ token, password, passwordConfirm }) => {
+  if (!token || !password) {
+    throw new Error("Token and password are required");
+  }
+  const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.SETUP_PASSWORD}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, password, passwordConfirm }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Password setup failed");
+  }
+
+  return {
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
+    user: data.data?.user,
+  };
+};

@@ -133,8 +133,29 @@ function AppContent() {
     );
   }
 
+  // Phase 4 W3-WL — deep-link config for the whitelabel setup-password
+  // flow. The email link uses the existing `halla://` scheme (already
+  // declared in app.json) and follows the same path shape as the web
+  // route (`/setup-password/<token>`). When the user taps the link,
+  // React Navigation routes them straight to SetupPassword with the
+  // token in the route params.
+  //
+  // Universal-link variants for the production domain land in a follow
+  // up (requires apple-app-site-association + assetlinks.json hosting).
+  const linking = useMemo(
+    () => ({
+      prefixes: ["halla://"],
+      config: {
+        screens: {
+          SetupPassword: "setup-password/:token",
+        },
+      },
+    }),
+    []
+  );
+
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <AppNavigator />
       <StatusBar style="auto" />
     </NavigationContainer>

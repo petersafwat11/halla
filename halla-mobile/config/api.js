@@ -32,6 +32,8 @@ export const ENDPOINTS = {
     SEND_VERIFICATION_CODE: "/auth/send-verification-code",
     VERIFY_EMAIL: "/auth/verify-email",
     UPDATE_PUSH_TOKEN: "/auth/update-push-token",
+    SETUP_PASSWORD: "/auth/setup-password",
+    RESEND_SETUP_EMAIL: "/auth/resend-setup-email",
   },
 
   // Dashboard endpoints

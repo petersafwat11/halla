@@ -35,6 +35,7 @@ import WhitelabelSignupScreen from "../screens/WhitelabelSignupScreen";
 import PostEventScreen from "../screens/PostEventScreen";
 import StaffPortalScreen from "../screens/StaffPortalScreen";
 import HostPostEventScreen from "../screens/HostPostEventScreen";
+import SetupPasswordScreen from "../screens/SetupPasswordScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -235,6 +236,8 @@ function AuthStack() {
       <Stack.Screen name="WhitelabelSignup" component={WhitelabelSignupScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
       <Stack.Screen name="StaffPortal" component={StaffPortalScreen} />
+      {/* Phase 4 W3-WL — also reachable via halla://setup-password/<token> */}
+      <Stack.Screen name="SetupPassword" component={SetupPasswordScreen} />
     </Stack.Navigator>
   );
 }
