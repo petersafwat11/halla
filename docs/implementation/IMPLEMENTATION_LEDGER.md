@@ -91,6 +91,61 @@ Drive-by improvements (no FLOW ID — recorded for traceability):
 
 ---
 
+## Closed in Phase 4 (mobile parity + admin gaps)
+
+Branch: `claude/implement-phase-4-3lGwb`. See `PHASE_4_REPORT.md`.
+
+- **FLOW-11-F01** — closed in PHASE_4 (commit `9ba4717`)
+  - Mobile EventSummary surfaces `scheduleDate` / `scheduleTime` per D3
+    + "Launches immediately on submit" fallback. Timezone-aware via
+    `utils/locale.js#formatDateTime`.
+- **FLOW-23-F03** — closed in PHASE_4 (verified existing)
+  - Mobile ticket assignment UI was already shipped in
+    `components/admin-dashboard/tickets/AssignTicketModal.js`. Phase 4
+    re-confirmed via the smoke-check audit.
+- **FLOW-23-F04 / FLOW-28-F01..F04** — closed in PHASE_4 (commit `203c7d8`)
+  - Host event list + per-event guest exports use a new
+    `utils/download.js#saveBlopAndShare` helper (expo-file-system +
+    expo-sharing). Admin tier exports keep using `Linking.openURL`
+    (already worked); the saveBlobAndShare parity is a Phase 5
+    follow-up.
+
+Hand-offs from Phase 3de that closed in Phase 4 (no audit-FLOW IDs):
+
+- Mobile staff-token revocation UI — closed in PHASE_4 (W2-STAFF / `e14fb44`).
+- Mobile guest QR rotation UI — closed in PHASE_4 (W2-QR / `e14fb44`).
+- Mobile manual GuestAccessToken revocation UI — closed in PHASE_4 (W2-GAT / `e14fb44`).
+- Mobile stats polling consumer (Phase 3d.4 hand-off) — confirmed in PHASE_4 (W1-STATS / `2f2c52b`).
+
+Master-plan items that closed in Phase 4 (no audit-FLOW IDs):
+
+- Mobile centralized auth-token interceptor + 30 s request timeout —
+  W0-AUTH / `4a13925`. Finishes the Phase 1a migration started under M-13.
+- Mobile error boundary at app root — W0-ERR / `3fc7d51`.
+- Mobile RTL via `I18nManager.forceRTL(true)` (gated outside Expo Go) —
+  W0-RTL / `4f5b3e5`.
+- Mobile Arabic numerals via `utils/locale.js#formatCount` and
+  friends — W0-RTL / `4f5b3e5`.
+- Mobile pagination via `useInfiniteQuery` + `AdminFlatList` infinite
+  scroll on hosts / vendors / events / tickets / whitelabels / payments —
+  W3-PAGE / `599e006`.
+- Whitelabel post-approval setup-password mobile screen +
+  `halla://setup-password/:token` deep link — W3-WL / `dd8395b`.
+
+Drive-by fixes (no audit-FLOW IDs):
+
+- `vendorService` AsyncStorage stale auth-token key replaced with
+  `useAuthStore.getState().token`.
+- `marketplaceService` dedicated 30 s axios instance.
+- `MapPicker`, `App.js` push-token, `useLocations`, `useEventMutations`,
+  `useTicketMutations`, `WhitelabelDetailsScreen` admin features endpoint
+  all routed through `apiFetch` / `fetchWithTimeout` for the 30 s
+  timeout + auth refresh.
+- `PaymentList` aggregate stats now from `/admin/payments/summary` (the
+  paginated list response no longer carries totals).
+
+---
+
 ## Open
 
 - FLOW-01-F04 — not started (Phase 1c)
@@ -118,7 +173,7 @@ Drive-by improvements (no FLOW ID — recorded for traceability):
 - FLOW-10-F01 — not started
 - FLOW-10-F02 — not started
 - FLOW-10-F03 — not started
-- FLOW-11-F01 — not started
+- FLOW-11-F01 — closed in PHASE_4 (commit `9ba4717`)
 - FLOW-11-F02 — not started
 - FLOW-11-F03 — not started
 - FLOW-11-F04 — not started
@@ -168,8 +223,8 @@ Drive-by improvements (no FLOW ID — recorded for traceability):
 - FLOW-22-F03 — not started
 - FLOW-23-F01 — not started
 - FLOW-23-F02 — not started
-- FLOW-23-F03 — not started
-- FLOW-23-F04 — not started
+- FLOW-23-F03 — closed in PHASE_4 (verified existing `AssignTicketModal`)
+- FLOW-23-F04 — closed in PHASE_4 (commit `203c7d8`)
 - FLOW-24-F01 — not started
 - FLOW-24-F02 — not started
 - FLOW-24-F03 — not started
@@ -188,10 +243,10 @@ Drive-by improvements (no FLOW ID — recorded for traceability):
 - FLOW-27-F02 — not started
 - FLOW-27-F03 — not started
 - FLOW-27-F04 — not started
-- FLOW-28-F01 — not started
-- FLOW-28-F02 — not started
-- FLOW-28-F03 — not started
-- FLOW-28-F04 — not started
+- FLOW-28-F01 — closed in PHASE_4 (commit `203c7d8`)
+- FLOW-28-F02 — closed in PHASE_4 (commit `203c7d8`)
+- FLOW-28-F03 — closed in PHASE_4 (commit `203c7d8`)
+- FLOW-28-F04 — closed in PHASE_4 (commit `203c7d8`)
 - PIPELINE-F01 — closed in PHASE_3a (commit pending)
 - PIPELINE-F03 — closed in PHASE_3a (commit pending)
 - PIPELINE-F04 — closed in PHASE_3a (commit pending)
