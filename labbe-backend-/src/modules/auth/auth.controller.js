@@ -32,22 +32,33 @@ const REFRESH_COOKIE = "refresh_token";
 
 /**
  * Build base cookie options for the access token (path=/).
+ *
+ * M-12 decision: SameSite=Lax. Web is deployed to Vercel and the API is on a
+ * different host (Railway / api subdomain), so the auth cookie has to travel
+ * cross-site for top-level navigations. `Strict` would make the cookie
+ * invisible the moment the browser navigates from the web origin to the API
+ * origin. `None` would force us to layer a CSRF token on every state-changing
+ * route. `Lax` is the pragmatic middle: cookies ride along on top-level GETs
+ * (so SSR auth works) and same-site fetches, but cross-site form POSTs from
+ * a malicious origin are still blocked by the browser. CSRF risk is therefore
+ * limited to top-level GET-by-link, which never mutates state in this API.
  */
 const accessCookieOptions = () => ({
   httpOnly: true,
   secure: config.isProd,
-  sameSite: "strict",
+  sameSite: "lax",
   path: "/",
   maxAge: config.jwt.accessCookieMaxAgeMs,
 });
 
 /**
  * Build base cookie options for the refresh token (path-restricted).
+ * See accessCookieOptions for SameSite rationale.
  */
 const refreshCookieOptions = () => ({
   httpOnly: true,
   secure: config.isProd,
-  sameSite: "strict",
+  sameSite: "lax",
   path: config.jwt.refreshCookiePath,
   maxAge: config.jwt.refreshExpiresDays * 24 * 60 * 60 * 1000,
 });
@@ -550,6 +561,14 @@ exports.setupPassword = catchAsync(async (req, res) => {
   user.passwordChangedAt = Date.now() - 1000;
 
   await user.save();
+
+  // M-15 fix: a setupPassword call is effectively a credentials handover for
+  // a whitelabel admin (the temp password issued by the platform is replaced
+  // with one the user controls). Any refresh tokens that may have been
+  // issued under the temp credential must be invalidated now, before we
+  // mint a fresh pair, so that a stolen interim session cannot survive the
+  // setup ceremony.
+  await authService.revokeAllForUser(user._id);
 
   const tokens = await authService.issueTokenPair(user, requestContext(req));
   setAuthCookies(res, tokens);

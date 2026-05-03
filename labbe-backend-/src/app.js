@@ -56,6 +56,19 @@ const createApp = () => {
   );
 
   // CORS configuration
+  //
+  // M-12: this allowlist must stay in sync with the auth cookie's SameSite
+  // setting (`auth.controller.js` → `accessCookieOptions`). We use
+  // `SameSite=Lax` + `credentials: true`, which means:
+  //   - The browser will send the auth cookie on top-level navigations from
+  //     any origin (safe for the API because all state-changing routes are
+  //     POST/PATCH/DELETE, which Lax does NOT auto-include cross-site).
+  //   - The browser will send the auth cookie on XHR/fetch only when the
+  //     calling origin is in this allowlist AND the request includes
+  //     `credentials: 'include'`.
+  // If we ever need a third-party origin to call the API with cookies we
+  // must switch to `SameSite=None; Secure` and add a CSRF double-submit
+  // token; do NOT bypass that decision by widening this list silently.
   const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5173',

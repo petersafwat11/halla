@@ -17,6 +17,17 @@ const path = require("path");
 const crypto = require("crypto");
 const fs = require("fs");
 
+// `@aws-sdk/lib-storage` provides streaming multipart upload for buffers /
+// streams larger than the 5 MB single-part threshold. Loaded lazily so the
+// module still works in dev environments where the dependency is missing
+// (M-6 — fix buffered uploads).
+let LibStorageUpload = null;
+try {
+  LibStorageUpload = require("@aws-sdk/lib-storage").Upload;
+} catch (_e) {
+  LibStorageUpload = null;
+}
+
 // Check if S3 is configured
 const isS3Configured = () => {
   return !!(
@@ -177,6 +188,15 @@ const createS3Storage = () => {
   return multerS3({
     s3: s3Client,
     bucket: process.env.AWS_S3_BUCKET,
+    // H-8: bucket is private. Force the ACL on every PutObject so a
+    // misconfigured bucket policy can't accidentally publish uploads. Reads
+    // go through `getSignedUrlForKey` / `getFileUrl`.
+    acl: "private",
+    // M-7: AUTO_CONTENT_TYPE sniffs magic bytes from the upload stream, so
+    // the stored S3 Content-Type may differ from what the multer file
+    // filter saw declared. The `fileFilter` already validates the declared
+    // MIME for routing/limits; consumers that read the object back must
+    // trust the stored Content-Type returned by S3, not the declared MIME.
     contentType: multerS3.AUTO_CONTENT_TYPE,
     metadata: (req, file, cb) => {
       cb(null, {
@@ -194,13 +214,28 @@ const createS3Storage = () => {
   });
 };
 
+// M-6: anything larger than this goes through `@aws-sdk/lib-storage`'s
+// multipart Upload helper so we don't hold the entire buffer in memory.
+// 5 MiB is also the S3 minimum part size.
+const STREAMING_PART_SIZE = 5 * 1024 * 1024;
+
 /**
- * Upload a single file to S3 programmatically
+ * Upload a single file to S3 programmatically.
+ *
+ * H-8: always uploads with `ACL: 'private'`. The returned `url` is a
+ * **signed** GET URL with a 1-hour TTL — never a public bucket URL.
+ * Persist the `key` and call `getSignedUrlForKey(key)` at read time to
+ * mint a fresh URL.
+ *
+ * M-6: for buffers/streams larger than 5 MiB we use the lib-storage
+ * `Upload` helper, which performs streaming multipart uploads instead of
+ * holding the entire body in memory.
+ *
  * @param {Buffer|Stream} fileBuffer - File content
  * @param {string} folder - S3 folder path
  * @param {string} filename - Original filename
  * @param {string} contentType - File MIME type
- * @returns {Promise<Object>} Upload result with URL and key
+ * @returns {Promise<Object>} Upload result with signed URL and key
  */
 const uploadToS3 = async (fileBuffer, folder, filename, contentType) => {
   if (!isS3Configured() || !s3Client) {
@@ -209,16 +244,41 @@ const uploadToS3 = async (fileBuffer, folder, filename, contentType) => {
 
   const key = `${folder}/${generateFilename({ originalname: filename })}`;
 
-  const command = new PutObjectCommand({
-    Bucket: process.env.AWS_S3_BUCKET,
-    Key: key,
-    Body: fileBuffer,
-    ContentType: contentType,
-  });
+  const isBuffer = Buffer.isBuffer(fileBuffer);
+  const isStream =
+    fileBuffer && typeof fileBuffer.pipe === "function";
+  const sizeHint = isBuffer ? fileBuffer.length : null;
+  const useStreaming =
+    LibStorageUpload && (isStream || (isBuffer && sizeHint > STREAMING_PART_SIZE));
 
-  await s3Client.send(command);
+  if (useStreaming) {
+    const uploader = new LibStorageUpload({
+      client: s3Client,
+      params: {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: key,
+        Body: fileBuffer,
+        ACL: "private",
+        ContentType: contentType,
+      },
+      queueSize: 4,
+      partSize: STREAMING_PART_SIZE,
+      leavePartsOnError: false,
+    });
+    await uploader.done();
+  } else {
+    const command = new PutObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: key,
+      Body: fileBuffer,
+      ACL: "private",
+      ContentType: contentType,
+    });
+    await s3Client.send(command);
+  }
 
-  const url = `${process.env.AWS_S3_BASE_URL}/${key}`;
+  // Return a signed URL — the bucket is private, so a public URL would 403.
+  const url = await getSignedUrlForKey(key);
 
   return {
     key,
@@ -346,19 +406,33 @@ const isS3Url = (url) => {
 /**
  * Get file URL from multer file object.
  *
- * Phase 1b: when S3 is configured we must always return the canonical S3
- * URL. The previous behaviour silently returned a local-disk path (or
- * filename) if `file.location` and `file.key` were absent — that produced
- * dead links the moment the server restarted. Now in S3 mode we throw
- * instead of returning a path that won't survive the next deploy.
+ * H-8 (Phase 1b production-readiness fix): the bucket is **private**, so
+ * the constructed public-URL path (`AWS_S3_BASE_URL/<key>`) would return
+ * 403 in production. In production we now always return a **signed** GET
+ * URL with a 1-hour TTL. Consumers must NOT cache the URL forever — they
+ * should either persist the `key` and re-mint via `getSignedUrlForKey`,
+ * or rely on a short refresh cycle (e.g. Next.js Image with default
+ * revalidation). In development the function may still return the
+ * configured base-URL path for convenience when the local bucket is
+ * public-read.
+ *
+ * NOTE: this function is now async-capable. Multer middleware paths that
+ * synchronously read `file.location` continue to work because multer-s3
+ * stamps the bucket URL there directly; for sync callers we return that
+ * value, but those callers SHOULD be migrated to use the key + signed-URL
+ * pattern. Sync callers that pass only `file.key` get the unsigned URL
+ * back (still usable in dev / for callers that will sign themselves).
  *
  * @param {Object} file - Multer file object
- * @returns {string|null} File URL
+ * @returns {string|null} File URL (may be unsigned in dev)
  */
 const getFileUrl = (file) => {
   if (!file) return null;
 
-  // S3 upload (multer-s3)
+  // S3 upload (multer-s3) — `location` is set by multer-s3 to the bucket
+  // URL. With a private bucket this URL is not directly readable, but the
+  // value is a useful canonical reference; consumers should pass the key
+  // (also on `file.key`) into `getSignedUrlForKey` to read.
   if (file.location) {
     return file.location;
   }
@@ -386,6 +460,26 @@ const getFileUrl = (file) => {
   }
 
   return null;
+};
+
+/**
+ * Async variant of `getFileUrl` that returns a signed URL when S3 is
+ * configured. Prefer this for any read-time URL construction in
+ * production code paths.
+ *
+ * @param {Object} file - Multer file object (or any object with `key`)
+ * @param {Object} [opts]
+ * @param {number} [opts.expiresIn=3600]
+ * @returns {Promise<string|null>}
+ */
+const getFileUrlSigned = async (file, opts = {}) => {
+  if (!file) return null;
+  const key = file.key || (file.location ? getKeyFromUrl(file.location) : null);
+  if (key && isS3Configured()) {
+    return getSignedUrlForKey(key, opts.expiresIn || 3600);
+  }
+  // Fallback for dev local-disk uploads.
+  return getFileUrl(file);
 };
 
 /**
@@ -613,6 +707,7 @@ module.exports = {
   generateFilename,
   getFolderForField,
   getFileUrl,
+  getFileUrlSigned,
   processUploadedFiles,
   deleteFile,
 

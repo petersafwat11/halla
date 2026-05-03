@@ -181,16 +181,25 @@ export const useAuthStore = create((set, get) => ({
         mobile: tempMobile,
         otp,
       });
-      // Profile is not yet complete — we hold the pair in memory but do NOT
-      // persist the refresh token until the host actually completes their
-      // profile (or, for mobile parity, until the backend issues final
-      // tokens via /auth/complete-profile).
-      set({
-        token,
-        refreshToken,
+      // H-4 fix: persist the refresh token to secure-store IMMEDIATELY.
+      //
+      // The previous "hold in memory until completeProfile" approach
+      // orphaned the server-side refresh row whenever the user backgrounded
+      // the app between OTP verification and profile completion: the
+      // backend already issued a 30-day refresh token, but mobile threw
+      // away its only copy on cold-launch.
+      //
+      // The user is now in an "authenticated but profile-incomplete"
+      // state. Downstream guards (`requireRole`, profile-completion gate)
+      // are responsible for routing such users back to the
+      // complete-profile screen — we do NOT use the absence of a stored
+      // refresh token as that signal anymore.
+      const role = requireRole(user);
+      await get()._persistAuth({
         user,
-        status: "unauthenticated",
-        error: null,
+        accessToken: token,
+        refreshToken,
+        role,
       });
       return { success: true };
     } catch (error) {

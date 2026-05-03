@@ -81,8 +81,55 @@ const parseEventTime = (eventDoc, tz = DEFAULT_TZ) => {
     return new Date(naiveUtc - RIYADH_OFFSET_MINUTES * 60 * 1000);
   }
 
-  // Fallback: treat as UTC. Future enhancement plugs in date-fns-tz here.
-  return new Date(Date.UTC(year, month, day, hh, mm, 0, 0));
+  // M-4: previously this fell back to a naive UTC interpretation, which
+  // silently lied to the caller for any non-Riyadh tz arg (returned the
+  // wrong absolute instant by up to ±14 hours). Fail loudly instead so
+  // callers either pass `Asia/Riyadh` explicitly or wire in `date-fns-tz`.
+  throw new Error(
+    `Unsupported timezone: ${tz}. Supported: Asia/Riyadh`
+  );
+};
+
+/**
+ * Format a Date in Asia/Riyadh wall-clock using `Intl.DateTimeFormat`.
+ *
+ * M-5: replaces ad-hoc `toLocaleString()` / `toLocaleDateString()` calls in
+ * exports and notifications. Without an explicit `timeZone` option,
+ * `toLocaleString()` follows the host TZ, so a server running in UTC
+ * formats Riyadh-evening events as the previous day.
+ *
+ * @param {Date|string|number} date
+ * @param {Object} [opts]
+ * @param {string} [opts.locale='ar-SA']
+ * @param {('date'|'datetime'|'time')} [opts.style='datetime']
+ * @param {Intl.DateTimeFormatOptions} [opts.options] - extra Intl options
+ * @returns {string}
+ */
+const formatRiyadh = (date, opts = {}) => {
+  if (date == null) return "";
+  const d = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+
+  const { locale = "ar-SA", style = "datetime", options = {} } = opts;
+
+  const base =
+    style === "date"
+      ? { year: "numeric", month: "long", day: "numeric" }
+      : style === "time"
+        ? { hour: "2-digit", minute: "2-digit" }
+        : {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          };
+
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: DEFAULT_TZ,
+    ...base,
+    ...options,
+  }).format(d);
 };
 
 /**
@@ -99,7 +146,15 @@ const parseEventTime = (eventDoc, tz = DEFAULT_TZ) => {
  * @returns {boolean}
  */
 const isDue = (eventDoc, now = new Date(), windowSeconds = 60) => {
-  const scheduled = parseEventTime(eventDoc);
+  // M-4: `parseEventTime` is now strict about unsupported timezones. Always
+  // pass DEFAULT_TZ so the cron path can never throw on an unexpected tz
+  // arg surfaced from event metadata.
+  let scheduled;
+  try {
+    scheduled = parseEventTime(eventDoc, DEFAULT_TZ);
+  } catch (_e) {
+    scheduled = null;
+  }
   if (!scheduled) return false;
   const diffSec = (now.getTime() - scheduled.getTime()) / 1000;
   return diffSec >= 0 && diffSec < windowSeconds;
@@ -112,4 +167,5 @@ module.exports = {
   fromRiyadhWallClock,
   parseEventTime,
   isDue,
+  formatRiyadh,
 };

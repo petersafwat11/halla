@@ -110,26 +110,41 @@ class AuthService {
     }
 
     const tokenHash = this._hashRefresh(rawRefresh);
-    const existing = await RefreshToken.findOne({ tokenHash });
 
-    if (!existing) {
+    // H-1 fix: rotation must be atomic. The previous find→check→issue→save
+    // sequence let two parallel /auth/refresh calls both pass the
+    // `revokedAt == null` check, both issue new pairs, and only one would
+    // win the save — without triggering replay detection. Use a single
+    // findOneAndUpdate that atomically claims (and revokes) the row only
+    // if it is still active. A null result means somebody already claimed
+    // it → REPLAY, and we revoke everything for the user.
+    const claimed = await RefreshToken.findOneAndUpdate(
+      { tokenHash, revokedAt: null },
+      { $set: { revokedAt: new Date() } },
+      { new: false } // we want the pre-update doc so we can read userId/expiresAt
+    );
+
+    if (!claimed) {
+      // Either the token never existed, or it was already revoked. To
+      // distinguish replay from "never existed" we do a follow-up read.
+      // Either way the safe response is 401; if the row exists with
+      // revokedAt set, that is a replay and we revoke the user's family.
+      const replayed = await RefreshToken.findOne({ tokenHash });
+      if (replayed) {
+        await this.revokeAllForUser(replayed.userId);
+        throw new UnauthorizedError('Refresh token reuse detected — all sessions revoked');
+      }
       throw new UnauthorizedError('Invalid refresh token');
     }
 
-    if (existing.revokedAt) {
-      // Replay: the same refresh token is presented twice. Treat as compromise
-      // and log the user out everywhere.
-      await this.revokeAllForUser(existing.userId);
-      throw new UnauthorizedError('Refresh token reuse detected — all sessions revoked');
-    }
-
-    if (existing.expiresAt.getTime() <= Date.now()) {
+    if (claimed.expiresAt.getTime() <= Date.now()) {
+      // We already revoked it above. Nothing else to do.
       throw new UnauthorizedError('Refresh token expired');
     }
 
-    const user = await User.findById(existing.userId);
+    const user = await User.findById(claimed.userId);
     if (!user) {
-      await this.revokeAllForUser(existing.userId);
+      await this.revokeAllForUser(claimed.userId);
       throw new UnauthorizedError('User no longer exists');
     }
 
@@ -138,9 +153,11 @@ class AuthService {
 
     const fresh = await this.issueTokenPair(user, context);
 
-    existing.revokedAt = new Date();
-    existing.replacedBy = fresh.refreshTokenId;
-    await existing.save();
+    // Backfill the audit pointer on the now-revoked old row.
+    await RefreshToken.updateOne(
+      { _id: claimed._id },
+      { $set: { replacedBy: fresh.refreshTokenId } }
+    );
 
     return {
       user,

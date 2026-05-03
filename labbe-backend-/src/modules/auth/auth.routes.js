@@ -43,6 +43,7 @@ const {
 } = require("./auth.validation");
 const {
   authLimiter,
+  refreshLimiter,
   otpLimiter,
   otpHourlyLimiter,
   passwordResetLimiter,
@@ -263,7 +264,9 @@ router.post("/login", authLimiter, validate(loginSchema), authController.login);
  *       401:
  *         description: Refresh token invalid, revoked, or replayed
  */
-router.post("/refresh", authController.refresh);
+// H-2 fix: rate-limit /auth/refresh. 60 req/min per IP — generous enough for
+// mobile + multiple web tabs but blocks refresh-token brute force.
+router.post("/refresh", refreshLimiter, authController.refresh);
 
 // ============================================
 // OTP ROUTES
