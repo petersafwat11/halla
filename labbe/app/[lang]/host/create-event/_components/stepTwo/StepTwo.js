@@ -14,7 +14,14 @@ import GuestQuotaCounter from "@/ui/host/subscription/GuestQuotaCounter";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import Button from "@/ui/commen/button/Button";
 
-const StepTwo = ({ subscription }) => {
+/**
+ * Phase 4b W1-UPD (D10): when an event is `live`, the update wizard
+ * passes `allowAddOnly={true}` so that Step 2 stays interactive for
+ * adding new guests but the existing rows (and bulk actions) become
+ * read-only. Outside step 2 the entire form is disabled by the
+ * wizard's outer fieldset; here we just gate the per-row actions.
+ */
+const StepTwo = ({ subscription, allowAddOnly = false }) => {
   const { watch, setValue } = useFormContext();
   const fileInputRef = useRef(null);
   const router = useRouter();
@@ -393,29 +400,40 @@ const StepTwo = ({ subscription }) => {
             title={t("guest_list_title")}
             headers={[t("name"), t("mobile")]}
             data={guestList}
-            actions={[
-              {
-                icon: <FiEdit2 size={18} />,
-                text: t("edit"),
-                onClick: (row) => handleEditClick(row.id),
-              },
-              {
-                icon: <FiTrash2 size={18} />,
-                text: t("delete"),
-                onClick: (row) => handleRemove(row.id),
-              },
-            ]}
-            bulkActions={[
-              {
-                icon: <FiTrash2 size={16} />,
-                text: t("delete_selected"),
-                onClick: (selectedIds) => handleBulkDelete(selectedIds),
-              },
-            ]}
+            // Phase 4b W1-UPD (D10): on live events, existing rows become
+            // read-only — host can still add new guests via the form
+            // above, but cannot edit or delete rows that already exist.
+            actions={
+              allowAddOnly
+                ? []
+                : [
+                    {
+                      icon: <FiEdit2 size={18} />,
+                      text: t("edit"),
+                      onClick: (row) => handleEditClick(row.id),
+                    },
+                    {
+                      icon: <FiTrash2 size={18} />,
+                      text: t("delete"),
+                      onClick: (row) => handleRemove(row.id),
+                    },
+                  ]
+            }
+            bulkActions={
+              allowAddOnly
+                ? []
+                : [
+                    {
+                      icon: <FiTrash2 size={16} />,
+                      text: t("delete_selected"),
+                      onClick: (selectedIds) => handleBulkDelete(selectedIds),
+                    },
+                  ]
+            }
             showSearch={true}
             showFilter={false}
             showExport={false}
-            showCheckboxes={true}
+            showCheckboxes={!allowAddOnly}
           />
         </div>
       )}
