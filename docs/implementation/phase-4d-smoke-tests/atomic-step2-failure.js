@@ -5,23 +5,25 @@
  * Run from repo root:
  *   node docs/implementation/phase-4d-smoke-tests/atomic-step2-failure.js
  *
- * This is an in-process simulation, not a live integration test. It
- * builds an in-memory model of the standalone-Mongo branch in
- * `events.service.updateEventStep2` and asserts that:
- *   1. A successful guest save followed by a successful staff save
- *      leaves both lists at their new values (happy path).
- *   2. A successful guest save followed by a thrown staff save triggers
- *      the compensation branch — guest list reverts to its pre-image
- *      and freshly-created guest docs are deleted.
- *   3. The thrown error propagates to the caller (no swallowing).
+ * In-process simulation that mirrors the standalone (no-replica-set)
+ * branch of `events.service.updateEventStep2`. Asserts that:
  *
- * The real service relies on Mongoose models, which we don't boot here.
- * Instead the test mirrors the control-flow shape using stub objects
- * that record their own state.
+ *   1. Happy path: kept + new guests land, staff list replaces.
+ *      `addedCount` == count of brand-new guests.
+ *   2. Compensation: when the staff save throws AFTER the guest save
+ *      committed, the rollback restores the pre-image. Specifically:
+ *        a. event.guestList is back to pre-image.
+ *        b. event.staffList is back to pre-image.
+ *        c. Freshly-created guest docs are deleted.
+ *        d. Guests slated for removal are STILL in the Guest store —
+ *           the deferred-delete sequencing (Phase 4d hardening) means
+ *           we never deleted them in the first place, so their `qrcode`
+ *           and `rsvp` and `checkIn` fields are preserved verbatim.
+ *        e. The thrown error propagates to the caller.
+ *
+ * The simulation does NOT boot Mongoose; it stubs the model methods
+ * with a Map-backed store.
  */
-
-const path = require("path");
-const fs = require("fs");
 
 let pass = 0;
 let fail = 0;
@@ -39,16 +41,16 @@ function eq(label, actual, expected) {
   }
 }
 
-/**
- * Build a fresh stub for each scenario.
- */
 function buildScenario({ failStaff }) {
+  // Each existing guest carries a `qrcode` field that the production
+  // pre-save hook would regenerate on re-create. The test asserts the
+  // qrcode is preserved verbatim through the rollback.
   const event = {
     _id: "EVT-1",
     status: "scheduled",
     guestList: [
-      { _id: "G-1", name: "Alice", phone: "+966500000001", status: "confirmed" },
-      { _id: "G-2", name: "Bob", phone: "+966500000002", status: "invited" },
+      { _id: "G-1", name: "Alice", phone: "+966500000001", status: "confirmed", qrcode: "guest_G-1_111", email: "a@x.com" },
+      { _id: "G-2", name: "Bob", phone: "+966500000002", status: "invited", qrcode: "guest_G-2_222", email: "b@x.com" },
     ],
     staffList: [
       { name: "Sam", phone: "+966500000099" },
@@ -75,7 +77,10 @@ function buildScenario({ failStaff }) {
       const list = Array.isArray(docs) ? docs : [docs];
       const created = list.map((d) => {
         const id = d._id || `G-${nextId++}`;
-        const doc = { ...d, _id: id };
+        // Mirror the production pre-save hook: set qrcode if missing
+        // and the doc is new.
+        const qrcode = d.qrcode || `guest_${id}_${Date.now()}`;
+        const doc = { ...d, _id: id, qrcode };
         guestStore.set(id, doc);
         return doc;
       });
@@ -87,8 +92,8 @@ function buildScenario({ failStaff }) {
 }
 
 /**
- * Mirror the standalone-fallback branch of updateEventStep2, scoped
- * down to the data ops. The point is to assert the rollback shape.
+ * Mirror the standalone branch of `updateEventStep2` (post-hardening
+ * deferred-delete sequencing).
  */
 async function runFallback(scenario, payload) {
   const { event, Guest, failStaff } = scenario;
@@ -96,47 +101,64 @@ async function runFallback(scenario, payload) {
   const incomingPhones = new Set(payload.guestList.map((g) => g.phone));
   const preImageGuestIds = event.guestList.map((g) => g._id);
   const preImageStaffList = event.staffList.map((s) => ({ ...s }));
-  const preImageGuestDocs = event.guestList.map((g) => ({ ...g }));
 
+  const guestById = new Map(event.guestList.map((g) => [g._id, g]));
   const keptIds = [];
+  const toUpdate = [];
   const toCreate = [];
   for (const incoming of payload.guestList) {
     const existing = event.guestList.find((g) => g.phone === incoming.phone);
-    if (existing) keptIds.push(existing._id);
-    else toCreate.push({ name: incoming.name, phone: incoming.phone, email: incoming.email || "" });
+    if (existing) {
+      if (existing.name !== incoming.name) {
+        toUpdate.push({ _id: existing._id, name: incoming.name });
+      }
+      keptIds.push(existing._id);
+    } else {
+      toCreate.push({ name: incoming.name, phone: incoming.phone, email: incoming.email || "" });
+    }
   }
   const toDeleteIds = event.guestList.filter((g) => !incomingPhones.has(g.phone)).map((g) => g._id);
-  if (toDeleteIds.length > 0) await Guest.deleteMany({ _id: { $in: toDeleteIds } });
+
+  // Step 1: in-place updates with pre-image stash
+  const updatePreImages = new Map();
+  for (const u of toUpdate) {
+    const existing = guestById.get(u._id);
+    if (existing) updatePreImages.set(u._id, { name: existing.name, email: existing.email });
+    await Guest.findByIdAndUpdate(u._id, { name: u.name });
+  }
+
+  // Step 2: create new guests
   const newGuestIds = [];
   if (toCreate.length > 0) {
     const created = await Guest.create(toCreate);
     for (const g of created) newGuestIds.push(g._id);
   }
 
+  // Step 3: save event with [kept, new] (toDelete still in store, just not referenced)
   event.guestList = [...keptIds, ...newGuestIds].map((id) => scenario.guestStore.get(id));
   await event.save();
 
+  // Step 4: save event with new staffList; rollback on failure
   if (failStaff) event._failNextSave = true;
-
   try {
     event.staffList = payload.staffList.map((s) => ({ name: s.name, phone: s.phone }));
     await event.save();
   } catch (staffErr) {
-    // Compensation: revert guest list pre-image, delete fresh guests,
-    // restore deleted guests if any. Mirrors events.service path.
-    const restoreGuestList = preImageGuestDocs.map((g) => ({ ...g }));
-    for (const id of newGuestIds) scenario.guestStore.delete(id);
-    if (toDeleteIds.length > 0) {
-      await Guest.create(
-        preImageGuestDocs
-          .filter((g) => toDeleteIds.includes(g._id))
-          .map((g) => ({ ...g }))
-      );
-    }
-    event.guestList = restoreGuestList;
+    // Restore event guest+staff to pre-image
+    event.guestList = preImageGuestIds.map((id) => scenario.guestStore.get(id));
     event.staffList = preImageStaffList;
+    // Delete freshly-created guests
+    if (newGuestIds.length > 0) await Guest.deleteMany({ _id: { $in: newGuestIds } });
+    // Restore name on in-place updates (best-effort)
+    for (const [id, pre] of updatePreImages.entries()) {
+      await Guest.findByIdAndUpdate(id, { name: pre.name });
+    }
+    // toDeleteIds were never deleted in the first place — nothing to restore.
     throw staffErr;
   }
+
+  // Step 5: post-commit delete of toDeleteIds
+  if (toDeleteIds.length > 0) await Guest.deleteMany({ _id: { $in: toDeleteIds } });
 
   return { event, addedCount: newGuestIds.length };
 }
@@ -162,16 +184,17 @@ async function runFallback(scenario, payload) {
     eq("happy path: guest count after save", out.event.guestList.length, 3);
     eq("happy path: staff count after save", out.event.staffList.length, 2);
     eq("happy path: addedCount tracks new rows", out.addedCount, 1);
+    // Bob was renamed in place — qrcode preserved (no regeneration).
+    eq("happy path: in-place update preserves qrcode", sc.guestStore.get("G-2").qrcode, "guest_G-2_222");
   }
 
-  // Scenario 2 — staff save throws → compensation rollback.
+  // Scenario 2 — staff save throws → compensation rollback (deferred-delete).
   {
     const sc = buildScenario({ failStaff: true });
     const payload = {
       guestList: [
-        { name: "Alice", phone: "+966500000001" },
-        // Bob is dropped here, Carol is added — the failure path must
-        // restore both.
+        // Drop Bob (G-2), keep Alice, add Carol.
+        { name: "Alice (new name)", phone: "+966500000001" },
         { name: "Carol", phone: "+966500000003" },
       ],
       staffList: [
@@ -186,18 +209,24 @@ async function runFallback(scenario, payload) {
     }
     eq("compensation: error propagates", threw && threw.message, "forced staff save failure");
     eq(
-      "compensation: guest list restored to pre-image",
+      "compensation: event guest list restored to pre-image",
       sc.event.guestList.map((g) => g.phone).sort(),
       ["+966500000001", "+966500000002"]
     );
     eq(
-      "compensation: staff list restored to pre-image",
+      "compensation: event staff list restored to pre-image",
       sc.event.staffList.map((s) => s.phone).sort(),
       ["+966500000099"]
     );
-    // Guest store should also reflect the rollback — no orphan Carol.
+    // Critical assertion — the dropped guest (G-2) was never deleted in
+    // the first place, so its qrcode is still the original.
+    eq("compensation: dropped guest's qrcode preserved verbatim", sc.guestStore.get("G-2").qrcode, "guest_G-2_222");
+    eq("compensation: dropped guest's email preserved verbatim", sc.guestStore.get("G-2").email, "b@x.com");
+    // Alice's name was reverted on rollback.
+    eq("compensation: in-place update reverted on rollback", sc.guestStore.get("G-1").name, "Alice");
+    // No orphan Carol in the store.
     const phones = Array.from(sc.guestStore.values()).map((g) => g.phone).sort();
-    eq("compensation: store has no orphan guests", phones, ["+966500000001", "+966500000002"]);
+    eq("compensation: no orphan freshly-created guests", phones, ["+966500000001", "+966500000002"]);
   }
 
   console.log(`\nResult: ${pass} pass / ${fail} fail\n`);

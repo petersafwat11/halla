@@ -1468,38 +1468,65 @@ class EventsService {
 
         await session.commitTransaction();
       } else {
-        // Standalone / no-transaction path. Order matters: write guests
-        // first, then staff. If staff fails, restore the guest pre-image.
-        if (toDeleteIds.length > 0) {
-          await Guest.deleteMany({ _id: { $in: toDeleteIds } });
-        }
+        // Standalone / no-transaction path. Order matters and the delete
+        // is DEFERRED until the staff save succeeds — this preserves
+        // each existing guest document's `qrcode`, `rsvp`, `checkIn`,
+        // and any other fields not loaded into the populated event
+        // (only name/email/phone/status are populated above). If we
+        // deleted-then-restored on rollback we'd regenerate the QR via
+        // GuestModel's pre-save hook, which would invalidate any
+        // invitation links already shared.
+        //
+        // Sequence:
+        //   1. Update kept guests in place. Stash pre-image so we can
+        //      restore the name/email on rollback (best-effort).
+        //   2. Create the brand-new guests.
+        //   3. Save the event with guestList = [kept, new] — the
+        //      to-delete docs still exist in the Guest collection but
+        //      are no longer referenced by the event.
+        //   4. Save the event again with the new staffList. On failure
+        //      we restore the event guestList + staffList to pre-image
+        //      and delete the freshly-created guests; the to-delete
+        //      docs are untouched.
+        //   5. After step 4 commits, deleteMany the to-delete guests.
+        //      If the process crashes between 4 and 5, an orphan Guest
+        //      doc is left referenced by no event; the periodic guest-
+        //      orphan GC sweep handles that.
+
+        const guestById = new Map(
+          existingGuests.map((g) => [g._id.toString(), g])
+        );
+        const updatePreImages = new Map();
         for (const u of toUpdate) {
+          const existing = guestById.get(u._id.toString());
+          if (existing) {
+            updatePreImages.set(existing._id.toString(), {
+              name: existing.name,
+              email: existing.email,
+            });
+          }
           await Guest.findByIdAndUpdate(
             u._id,
             { name: u.name, ...(u.email !== undefined && { email: u.email }) }
           );
         }
+
         const newGuestIds = [];
-        const createdDocs = [];
         if (toCreate.length > 0) {
           const created = await Guest.create(toCreate);
-          for (const g of created) {
-            newGuestIds.push(g._id);
-            createdDocs.push(g);
-          }
+          for (const g of created) newGuestIds.push(g._id);
         }
         addedCount = newGuestIds.length;
 
-        const guestIdsBeforeStaff = [...keptGuestIds, ...newGuestIds];
-        event.guestList = guestIdsBeforeStaff;
+        // Step 3: event.guestList = [kept, new] (excludes toDeleteIds)
+        event.guestList = [...keptGuestIds, ...newGuestIds];
         await event.save();
 
+        // Step 4: event.staffList = newStaff. Roll back on failure.
         try {
           event.staffList = normalisedStaff;
           await event.save();
         } catch (staffErr) {
-          // Compensation: revert the guest list to its pre-image and
-          // delete the freshly-created guest docs.
           try {
             // Re-load to dodge any version-mismatch from the failed save.
             const restoreEvent = await Event.findById(eventId);
@@ -1508,35 +1535,40 @@ class EventsService {
               restoreEvent.staffList = preImageStaffList;
               await restoreEvent.save();
             }
+            // Drop the freshly-created guests (they were never confirmed
+            // by the host since the save failed).
             if (newGuestIds.length > 0) {
               await Guest.deleteMany({ _id: { $in: newGuestIds } });
             }
-            // Restore deleted guests if we removed any. Without a
-            // session-level rollback, deleted Guest documents are gone;
-            // attempting to recreate them here is best-effort using the
-            // pre-image data we still have.
-            if (toDeleteIds.length > 0) {
-              const preImageDeleted = existingGuests.filter((g) =>
-                toDeleteIds.some((id) => id.toString() === g._id.toString())
-              );
-              if (preImageDeleted.length > 0) {
-                await Guest.create(
-                  preImageDeleted.map((g) => ({
-                    _id: g._id,
-                    name: g.name,
-                    phone: g.phone,
-                    email: g.email || '',
-                    event: eventId,
-                    status: g.status || 'invited',
-                    addedBy: userId,
-                  }))
-                );
-              }
+            // Restore name/email on the in-place updates (best-effort —
+            // this isn't atomic with the rest of the rollback, but the
+            // host can recover by re-saving step 2).
+            for (const [guestId, pre] of updatePreImages.entries()) {
+              try {
+                await Guest.findByIdAndUpdate(guestId, {
+                  name: pre.name,
+                  ...(pre.email !== undefined && { email: pre.email }),
+                });
+              } catch (_) { /* ignore best-effort restore failure */ }
             }
+            // NOTE: we never deleted the to-delete guests, so there's
+            // nothing to recreate. This is the whole point of the
+            // deferred-delete sequencing.
           } catch (rollbackErr) {
             console.error('[updateEventStep2] compensation rollback failed:', rollbackErr);
           }
           throw staffErr;
+        }
+
+        // Step 5: now safe to delete the removed guests.
+        if (toDeleteIds.length > 0) {
+          try {
+            await Guest.deleteMany({ _id: { $in: toDeleteIds } });
+          } catch (deleteErr) {
+            // Non-fatal — orphan docs will be picked up by the next
+            // guest-orphan GC sweep.
+            console.error('[updateEventStep2] post-commit guest delete failed:', deleteErr);
+          }
         }
 
         if (event.subscriptionId && newGuestIds.length > 0) {

@@ -73,9 +73,12 @@ check("W0-ATOMIC: service has transaction + compensation fallback + capacity gua
   expect(/GUEST_LIST_BELOW_CONFIRMED/.test(src), "capacity guard reuse missing");
   expect(/preImageGuestIds/.test(src), "compensation pre-image variable missing");
   expect(/preImageStaffList/.test(src), "compensation staff pre-image variable missing");
-  // The compensation branch should restore the pre-image when the
-  // staff save fails AFTER the guest save committed.
   expect(/restoreEvent\.guestList\s*=\s*preImageGuestIds/.test(src), "compensation rollback missing");
+  // Deferred-delete sequencing — the standalone branch must NOT delete
+  // the to-delete guests until after the staff save commits, so the
+  // QR/RSVP/check-in fields are preserved on rollback.
+  expect(/Step 5: now safe to delete the removed guests/.test(src), "deferred-delete step 5 marker missing");
+  expect(/updatePreImages/.test(src), "in-place update pre-image stash missing");
 });
 
 // ─── W0-SCHEMAS ─────────────────────────────────────────────────────────────
