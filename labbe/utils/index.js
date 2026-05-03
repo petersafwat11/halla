@@ -1,3 +1,46 @@
+/**
+ * Phase 4b W1-IMG-PATH — single source of truth for resolving event /
+ * template image URLs to a fully-qualified link the browser can render.
+ *
+ * Today `event.invitationSettings.templateImage` holds either:
+ *   - a fully-qualified S3 / CloudFront URL (`https://…`),
+ *   - a relative path served by the legacy local-disk uploader
+ *     (`/uploads/…`),
+ *   - a host-uploaded `File` instance still being held in memory pre-save,
+ *   - or empty / undefined.
+ *
+ * Consumers (host event header, dashboard widget, mobile last-event card)
+ * each ad-hoc-handled this and drifted. Funnel them through this helper
+ * so the next rename (4c W0-RENAME → `templateSettings.headerImageUrl`)
+ * is a one-liner.
+ *
+ * @param {string|File|null|undefined} pathOrUrl
+ * @param {string} [fallback] — returned when the input is empty
+ * @returns {string} a renderable URL or the fallback
+ */
+export function getMediaUrl(pathOrUrl, fallback = "") {
+  if (!pathOrUrl) return fallback;
+  if (typeof pathOrUrl !== "string") {
+    // File / Blob — UI consumers usually call `URL.createObjectURL` for
+    // those; we don't synthesise one here to avoid leaking the object URL
+    // (which the caller would have to revoke). Returning the fallback
+    // keeps the UI safe; the caller can detect File via instanceof and
+    // build the preview locally.
+    return fallback;
+  }
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+  if (pathOrUrl.startsWith("/")) {
+    // Relative to the backend public root. The backend exposes
+    // BACKEND_URL in the public assets path; consumers that need an
+    // absolute URL should join with `process.env.NEXT_PUBLIC_BACKEND_URL`
+    // here. For now we return the relative path as-is — Next.js
+    // `<Image src="/uploads/...">` works with it under the existing
+    // setup.
+    return pathOrUrl;
+  }
+  return pathOrUrl;
+}
+
 export function validateStep({ schema, fields, watch, setError }) {
   const formValues = watch();
   let valuesToValidate;
