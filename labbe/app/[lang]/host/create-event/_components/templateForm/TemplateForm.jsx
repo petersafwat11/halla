@@ -13,13 +13,20 @@ import Button from "@/ui/commen/button/Button";
 import { useTranslation } from "react-i18next";
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { templateFormSchema } from "@/utils/schemas/createEventSchema";
+import {
+  templateFormSchema,
+  buildDynamicTemplateSchema,
+  buildDefaultValues,
+} from "@/utils/schemas/createEventSchema";
 import {
   formatDateWithSpans,
   formatTimeWithSpans,
   htmlToImageConvert,
 } from "@/utils/index";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useFonts } from "@/hooks/queries/useTemplates";
+import TemplatePreviewCanvas from "@/components/shared/TemplatePreviewCanvas";
+import { renderField } from "./renderField";
 
 const fontOptions = [
   { value: "inter", label: "Inter" },
@@ -28,6 +35,146 @@ const fontOptions = [
 ];
 
 function TemplateForm({ isOpen, onClose, locale, setEventValues, template }) {
+  // Phase 4c W1-VISUAL: when the template carries `fields[]` (a
+  // backend-served Template doc), use the dynamic renderField path.
+  // Otherwise fall back to the legacy hardcoded form for the SVG
+  // demo templates.
+  if (template?.fields && template.fields.length > 0) {
+    return (
+      <DynamicTemplateForm
+        isOpen={isOpen}
+        onClose={onClose}
+        locale={locale}
+        setEventValues={setEventValues}
+        template={template}
+      />
+    );
+  }
+  return (
+    <LegacyTemplateForm
+      isOpen={isOpen}
+      onClose={onClose}
+      locale={locale}
+      setEventValues={setEventValues}
+      template={template}
+    />
+  );
+}
+
+// ── Phase 4c dynamic path ─────────────────────────────────────────────────
+function DynamicTemplateForm({ isOpen, onClose, locale, setEventValues, template }) {
+  const { t } = useTranslation("createEvent");
+  const isLg = useMediaQuery("(min-width: 1024px)");
+  const previewRef = useRef(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const parentFormContext = useFormContext();
+  const parentEventDate = parentFormContext?.watch("eventDate");
+  const parentEventTime = parentFormContext?.watch("eventTime");
+
+  const { data: fontsData } = useFonts();
+  const fonts = fontsData?.data?.fonts || fontsData?.fonts || [];
+  const dynamicFontOptions = fonts.length
+    ? fonts.map((f) => ({ value: f.id, label: f.id }))
+    : fontOptions;
+
+  const methods = useForm({
+    resolver: zodResolver(buildDynamicTemplateSchema(template.fields, t)),
+    defaultValues: buildDefaultValues(template, parentEventDate, parentEventTime),
+  });
+
+  const { handleSubmit, watch } = methods;
+  const formData = watch();
+
+  // Find a primary color value if the template has a color-typed field
+  const primaryColorField = template.fields.find((f) => f.type === "color");
+  const fontField = template.fields.find((f) => f.type === "font");
+  const primaryColor = primaryColorField ? formData[primaryColorField.key] : "#5a4a42";
+  const fontFamilyId = fontField ? formData[fontField.key] : null;
+  const fontFamilyOverride =
+    fonts.find((f) => f.id === fontFamilyId)?.webFamily || fontFamilyId;
+
+  const onSubmit = async (data) => {
+    // Save field values into the parent form first
+    setEventValues("selectedTemplate", {
+      ...template,
+      fieldValues: data,
+      data, // legacy mirror
+    });
+
+    // Bake the canvas into a PNG file
+    setIsGenerating(true);
+    try {
+      if (!previewRef.current) throw new Error("Preview ref not ready");
+      const baked = await htmlToImageConvert(previewRef, "template-image", {
+        autoDownload: false,
+        returnBlob: true,
+      });
+      if (!baked?.file) throw new Error("Failed to bake template image");
+      setEventValues("templateImage", baked.file);
+      setEventValues("invitationSettings.templateImage", baked.file);
+      onClose();
+    } catch (err) {
+      console.error("Image bake failed:", err);
+      alert(err.message || "Failed to generate template image");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div className={styles.wrapper}>
+      <PopupLayout isOpen={isOpen} onClose={onClose} size="full">
+        <div className={styles.header}>
+          <h2>{t("edit_design_template")}</h2>
+          <button style={{ cursor: "pointer" }} onClick={onClose}>
+            <img src="/svg/events/close-circle.svg" alt="close" />
+          </button>
+        </div>
+        <CardLayout className={styles.container}>
+          <FormProvider {...methods}>
+            <form className={styles.rightForm} onSubmit={handleSubmit(onSubmit)}>
+              <div className={styles.formGrid}>
+                {template.fields.map((f) => (
+                  <div key={f.key} className={f.type === "textarea" ? styles.fullWidth : ""}>
+                    {renderField(f, locale, dynamicFontOptions)}
+                  </div>
+                ))}
+              </div>
+              <div className={styles.buttonContainer}>
+                <Button
+                  variant="secondary"
+                  onClick={onClose}
+                  title={t("cancel")}
+                  type="button"
+                  disabled={isGenerating}
+                />
+                <Button
+                  variant="primary"
+                  title={isGenerating ? t("saving", "جاري الحفظ...") : t("save")}
+                  type="submit"
+                  disabled={isGenerating}
+                />
+              </div>
+            </form>
+            <div className={styles.leftPreview}>
+              <TemplatePreviewCanvas
+                ref={previewRef}
+                template={template}
+                data={formData}
+                primaryColor={primaryColor}
+                fontFamilyOverride={fontFamilyOverride}
+              />
+            </div>
+          </FormProvider>
+        </CardLayout>
+      </PopupLayout>
+    </div>
+  );
+}
+
+// ── Legacy hardcoded form (kept for old SVG demo templates) ───────────────
+function LegacyTemplateForm({ isOpen, onClose, locale, setEventValues, template }) {
   const ImageOfTemplate = useRef(null);
   const { t } = useTranslation("createEvent");
   const isLg = useMediaQuery("(min-width: 1024px)");
