@@ -47,7 +47,29 @@ const mapApiToFormValues = (eventData) => {
     name: m.name || "",
     phone: m.phone || m.mobile || "",
   }));
+  // Phase 4c W2-MOBILE-RENAME — read canonical fields first, fall back
+  // to legacy `invitationSettings.*` during the dual-write window.
   const inv = eventData.invitationSettings || {};
+  const canonicalVisual = eventData.visualTemplate || {};
+  const canonicalTaqnyat = eventData.taqnyatTemplate || {};
+  const canonicalReplies = eventData.guestReplies || {};
+
+  // Visual template — prefer canonical templateRef + fieldValues, fall
+  // back to legacy invitationSettings.visualTemplate.{id,data,src}.
+  const visualTemplate = canonicalVisual?.templateRef
+    ? {
+        ...(inv.visualTemplate || {}),
+        templateRef: canonicalVisual.templateRef,
+        fieldValues: canonicalVisual.fieldValues,
+        bakedImagePath: canonicalVisual.bakedImagePath,
+        // legacy mirrors so existing UI still resolves
+        id: canonicalVisual.templateRef,
+        _id: canonicalVisual.templateRef,
+        data: canonicalVisual.fieldValues || inv.visualTemplate?.data,
+        src: canonicalVisual.bakedImagePath || inv.visualTemplate?.src,
+      }
+    : inv.visualTemplate || null;
+  const visualData = visualTemplate?.data || visualTemplate?.fieldValues || {};
 
   return {
     ...EventsService.getDefaultFormValues(),
@@ -65,21 +87,33 @@ const mapApiToFormValues = (eventData) => {
     description: details.description || "",
     guestList,
     staffList,
-    visualTemplate: inv.visualTemplate || null,
+    visualTemplate,
     selectedTemplate: inv.selectedTemplate || null,
-    invitationMessage: inv.selectedTemplate?.bodyText || inv.invitationMessage || "",
-    attendanceAutoReply: inv.attendanceAutoReply || "",
-    absenceAutoReply: inv.absenceAutoReply || "",
-    expectedAttendanceAutoReply: inv.expectedAttendanceAutoReply || "",
-    note: inv.note || "",
-    // Unpack visualTemplate.data back to flat customization fields (matches web's TemplateForm structure)
-    templateIntroduction: inv.visualTemplate?.data?.messageText || "",
-    templateBrideName: inv.visualTemplate?.data?.brideName || "",
-    templateGroomName: inv.visualTemplate?.data?.groomName || "",
-    templateGuestMessage: inv.visualTemplate?.data?.guestMessage || "",
-    templateClosingMessage: inv.visualTemplate?.data?.endMessage || "",
-    templateFont: inv.visualTemplate?.data?.fontType || "Cairo",
-    templatePrimaryColor: inv.visualTemplate?.data?.primaryColor || "#C0392B",
+    taqnyatTemplate: canonicalTaqnyat?.templateRef ? canonicalTaqnyat : null,
+    invitationMessage:
+      eventData.invitationMessage || inv.selectedTemplate?.bodyText || "",
+    // Auto-replies — canonical guestReplies.* preferred over legacy.
+    attendanceAutoReply: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
+    absenceAutoReply: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
+    expectedAttendanceAutoReply:
+      canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
+    guestReplies: {
+      onAttend: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
+      onAbsent: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
+      onExpected: canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
+    },
+    hostNote: eventData.hostNote || inv.note || "",
+    note: inv.note || eventData.hostNote || "",
+    // Unpack visualTemplate.data (or fieldValues) back to flat
+    // customization fields (matches web's TemplateForm structure for
+    // legacy hardcoded templates).
+    templateIntroduction: visualData.messageText || "",
+    templateBrideName: visualData.brideName || "",
+    templateGroomName: visualData.groomName || "",
+    templateGuestMessage: visualData.guestMessage || "",
+    templateClosingMessage: visualData.endMessage || "",
+    templateFont: visualData.fontType || "Cairo",
+    templatePrimaryColor: visualData.primaryColor || "#C0392B",
   };
 };
 const STEP_TITLES = [

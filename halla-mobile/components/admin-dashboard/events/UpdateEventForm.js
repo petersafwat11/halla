@@ -43,7 +43,10 @@ const mapApiToFormValues = (eventData) => {
     name: m.name || "",
     phone: m.phone || m.mobile || "",
   }));
+  // Phase 4c W2-MOBILE-RENAME — read canonical fields first, fall back
+  // to legacy `invitationSettings.*` during the dual-write window.
   const inv = eventData.invitationSettings || {};
+  const canonicalReplies = eventData.guestReplies || {};
 
   return {
     ...EventsService.getDefaultFormValues(),
@@ -62,11 +65,20 @@ const mapApiToFormValues = (eventData) => {
     guestList,
     staffList,
     selectedTemplate: inv.selectedTemplate || null,
-    invitationMessage: inv.invitationMessage || "",
-    attendanceAutoReply: inv.attendanceAutoReply || "",
-    absenceAutoReply: inv.absenceAutoReply || "",
-    expectedAttendanceAutoReply: inv.expectedAttendanceAutoReply || "",
-    note: inv.note || "",
+    taqnyatTemplate: eventData.taqnyatTemplate || null,
+    visualTemplate: eventData.visualTemplate || inv.visualTemplate || null,
+    invitationMessage: eventData.invitationMessage || inv.invitationMessage || "",
+    attendanceAutoReply: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
+    absenceAutoReply: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
+    expectedAttendanceAutoReply:
+      canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
+    guestReplies: {
+      onAttend: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
+      onAbsent: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
+      onExpected: canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
+    },
+    hostNote: eventData.hostNote || inv.note || "",
+    note: inv.note || eventData.hostNote || "",
     templateBrideName: inv.templateBrideName || "",
     templateGroomName: inv.templateGroomName || "",
   };

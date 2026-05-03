@@ -45,7 +45,14 @@ export function useEventActionGate({
     }
 
     const status = event.status;
-    const hasTemplate = !!event.invitationSettings?.selectedTemplate?.name;
+    // Phase 4c W2-MOBILE-RENAME — accept either canonical
+    // `taqnyatTemplate.templateRef` or legacy
+    // `invitationSettings.selectedTemplate.name` during the dual-write
+    // window. The action gate fires as soon as the host has picked a
+    // template, regardless of which shape the doc is stored under.
+    const hasTemplate =
+      !!event.taqnyatTemplate?.templateRef ||
+      !!event.invitationSettings?.selectedTemplate?.name;
     const hasStaff =
       (event.staffList?.length || event.staffCount || 0) > 0;
 
