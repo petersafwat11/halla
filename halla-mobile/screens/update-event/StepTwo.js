@@ -15,25 +15,26 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import CreateStepTwo from "../../components/createEvent/StepTwo";
+import { useTranslation } from "../../localization";
 
-const StepTwo = ({ guestList, staffList, subscription, allowAddOnly = false }) => (
-  <View style={styles.container}>
-    {allowAddOnly && (
-      <View style={styles.banner} accessibilityRole="alert">
-        <Text style={styles.bannerText}>
-          المناسبة قيد التشغيل: يمكنك إضافة ضيوف فقط — تعديل أو حذف الضيوف
-          الحاليين معطل.
-        </Text>
-      </View>
-    )}
-    <CreateStepTwo
-      guestList={guestList}
-      staffList={staffList}
-      subscription={subscription}
-      allowAddOnly={allowAddOnly}
-    />
-  </View>
-);
+const StepTwo = ({ guestList, staffList, subscription, allowAddOnly = false }) => {
+  const { t } = useTranslation("admin");
+  return (
+    <View style={styles.container}>
+      {allowAddOnly && (
+        <View style={styles.banner} accessibilityRole="alert">
+          <Text style={styles.bannerText}>{t("events.update.liveAddOnly")}</Text>
+        </View>
+      )}
+      <CreateStepTwo
+        guestList={guestList}
+        staffList={staffList}
+        subscription={subscription}
+        allowAddOnly={allowAddOnly}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

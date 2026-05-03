@@ -243,14 +243,27 @@ exports.updateStaffList = catchAsync(async (req, res) => {
  * handing off to the service. Both keys may appear together — `staffList`
  * wins (mobile-first stays canonical) and `supervisorsList` is only used
  * when `staffList` is absent.
+ *
+ * Both `guestList` AND a staff key (either `staffList` or
+ * `supervisorsList`) are REQUIRED. The previous behaviour silently
+ * defaulted missing keys to `[]`, which let a partial request empty
+ * the existing list. The atomic endpoint is "replace both" — callers
+ * that only want to edit one side must use the legacy `/guest-list` or
+ * `/staff-list` compat endpoints (kept for one release cycle).
  */
 exports.updateEventStep2 = catchAsync(async (req, res) => {
-  const guestList = Array.isArray(req.body.guestList) ? req.body.guestList : [];
-  const staffList = Array.isArray(req.body.staffList)
-    ? req.body.staffList
-    : Array.isArray(req.body.supervisorsList)
-      ? req.body.supervisorsList
-      : [];
+  const guestList = req.body.guestList;
+  const staffList = req.body.staffList ?? req.body.supervisorsList;
+
+  if (!Array.isArray(guestList) || !Array.isArray(staffList)) {
+    const { ValidationError } = require("../../shared/errors");
+    if (!Array.isArray(guestList)) {
+      throw new ValidationError("guestList is required and must be an array");
+    }
+    throw new ValidationError(
+      "staffList (or supervisorsList) is required and must be an array"
+    );
+  }
 
   const result = await eventsService.updateEventStep2(
     req.params.id,

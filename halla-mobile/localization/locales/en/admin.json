@@ -381,7 +381,28 @@
       "title": "Update Event",
       "saveStep": "Save & Next",
       "saveAll": "Save Changes",
-      "loadError": "Failed to load event data"
+      "loadError": "Failed to load event data",
+      "noEventId": "No event selected",
+      "notAllowed": "You don't have permission to edit this event",
+      "updateSuccess": "Event updated successfully",
+      "updateFailed": "Failed to update event",
+      "stepLockedAlertTitle": "Not available",
+      "stepLockedAlertBody": "This step cannot be edited on a live event",
+      "liveAddOnly": "This event is live: you can only add new guests.",
+      "liveLocked": "This event is live: editing this step is disabled.",
+      "cancelTitle": "Discard changes?",
+      "cancelBody": "Unsaved changes will be lost. Discard?",
+      "cancelKeep": "Keep editing",
+      "cancelDiscard": "Discard",
+      "preview": "Preview",
+      "successOk": "OK",
+      "steps": {
+        "1": { "title": "Event Details", "description": "Enter the event details" },
+        "2": { "title": "Guests & Supervisors", "description": "Add the guest list and supervisors" },
+        "3": { "title": "Invitation Design", "description": "Customize the invitation template" },
+        "4": { "title": "WhatsApp Template", "description": "Choose a Meta-approved WhatsApp template" },
+        "5": { "title": "Message & Replies", "description": "Write the invitation copy and auto-replies" }
+      }
     }
   },
   "tickets": {

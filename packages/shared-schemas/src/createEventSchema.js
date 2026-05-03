@@ -119,8 +119,13 @@ const createEventSchema = (t) =>
         "conference",
         "other",
       ]),
-      date: z.date({
-        required_error: t ? t("date_required") : "Date is required",
+      // NOTE: zod v3 supports `z.date({ required_error })`; zod v4 swaps
+      // that for an `error` callback. Using the bare constructor + a
+      // chained `.refine` keeps the shared schema cross-compatible with
+      // both consumer versions (web ^3.25, mobile ^4.0). Same approach
+      // for every constructor option below.
+      date: z.date().refine((d) => d instanceof Date && !isNaN(d), {
+        message: t ? t("date_required") : "Date is required",
       }),
       time: z.string().min(1, t ? t("time_required") : "Time is required"),
       location: locationSchema,
@@ -253,13 +258,11 @@ const templateFormSchema = (t) =>
         1,
         t ? t("validation.end_message_required") : "End message is required"
       ),
-    fontType: z
-      .enum(["inter", "cairo", "lato"], {
-        required_error: t
-          ? t("validation.font_type_required")
-          : "Font type is required",
-      })
-      .default("cairo"),
+    // `z.enum([...], { required_error })` is a v3-only constructor
+    // option (v4 swaps for an `error` callback). Drop the option to
+    // stay cross-compatible; the form layer still surfaces the
+    // localised "required" message via the resolver.
+    fontType: z.enum(["inter", "cairo", "lato"]).default("cairo"),
     primaryColor: z
       .string()
       .min(
@@ -344,23 +347,30 @@ const buildDynamicTemplateSchema = (fields, t, options = {}) => {
         break;
       }
       case "date":
-        schema = field.required
-          ? z.date({
-              required_error: t
-                ? t("templates.fields.validation.required")
-                : "Required",
-            })
-          : z.date().nullable().optional();
+        // Cross-compat: drop the `required_error` constructor option
+        // (v3-only). Use a chained `.refine` so v4 also surfaces the
+        // localised message.
+        if (field.required) {
+          schema = z
+            .date()
+            .refine((d) => d instanceof Date && !isNaN(d), {
+              message: t ? t("templates.fields.validation.required") : "Required",
+            });
+        } else {
+          schema = z.date().nullable().optional();
+        }
         break;
       case "time":
         if (timeAsDate) {
-          schema = field.required
-            ? z.date({
-                required_error: t
-                  ? t("templates.fields.validation.required")
-                  : "Required",
-              })
-            : z.date().nullable().optional();
+          if (field.required) {
+            schema = z
+              .date()
+              .refine((d) => d instanceof Date && !isNaN(d), {
+                message: t ? t("templates.fields.validation.required") : "Required",
+              });
+          } else {
+            schema = z.date().nullable().optional();
+          }
         } else {
           schema = field.required
             ? z
@@ -383,19 +393,15 @@ const buildDynamicTemplateSchema = (fields, t, options = {}) => {
           : z.string().regex(colorRegex).optional();
         break;
       case "font":
-        schema = z.enum(fontIds, {
-          errorMap: () => ({
-            message: t ? t("templates.fields.validation.required") : "Required",
-          }),
-        });
+        // Cross-compat: drop the v3-only `errorMap` constructor option.
+        // The default zod error message ("invalid enum value") is shown
+        // until the consumer overrides it via the form layer.
+        schema = z.enum(fontIds);
         if (!field.required) schema = schema.optional();
         break;
       case "number": {
-        let s = z.coerce.number({
-          invalid_type_error: t
-            ? t("templates.fields.validation.invalidNumber")
-            : "Invalid number",
-        });
+        // Cross-compat: drop the v3-only `invalid_type_error` option.
+        let s = z.coerce.number();
         if (field.min !== undefined) s = s.min(field.min);
         if (field.max !== undefined) s = s.max(field.max);
         schema = field.required

@@ -63,6 +63,16 @@ check("W0-ATOMIC: controller normalises supervisorsList + staffList", () => {
   expect(/req\.body\.staffList/.test(src), "staffList branch missing");
 });
 
+check("W0-ATOMIC: controller rejects missing keys (no destructive default)", () => {
+  const src = read("labbe-backend-/src/modules/events/events.controller.js");
+  // The previous version silently defaulted missing keys to []. The
+  // hardened version requires both keys to be arrays and throws
+  // ValidationError otherwise, so a partial request can never empty
+  // the existing list by mistake.
+  expect(/guestList is required and must be an array/.test(src), "guestList required-validation missing");
+  expect(/staffList \(or supervisorsList\) is required and must be an array/.test(src), "staffList required-validation missing");
+});
+
 check("W0-ATOMIC: service has transaction + compensation fallback + capacity guard", () => {
   const src = read("labbe-backend-/src/modules/events/events.service.js");
   expect(/async updateEventStep2\(/.test(src), "updateEventStep2 method missing");
@@ -107,6 +117,25 @@ check("W0-SCHEMAS: shared createEventSchema accepts options.fontIds + timeAsDate
   expect(/options\.fontIds/.test(src), "fontIds option not consumed");
   expect(/options\.timeAsDate/.test(src), "timeAsDate option not consumed");
   expect(/buildDefaultValues\s*=\s*\(template,\s*parentEventDate,\s*parentEventTime,\s*options\s*=\s*\{\}\)/.test(src), "buildDefaultValues signature missing");
+});
+
+check("W0-SCHEMAS: shared createEventSchema is cross-compatible with zod v3 + v4", () => {
+  // Mobile pins zod ^4.0.14 and web pins ^3.25.56. Constructor options
+  // like `required_error` / `errorMap` / `invalid_type_error` are v3-
+  // only (v4 swaps for an `error` callback), so the shared package
+  // must avoid them entirely.
+  const create = read("packages/shared-schemas/src/createEventSchema.js");
+  const update = read("packages/shared-schemas/src/updateEventSchema.js");
+  for (const [name, src] of [["createEventSchema", create], ["updateEventSchema", update]]) {
+    // Strip JS comments so the cross-compat note (which mentions these
+    // names) doesn't trip the gate.
+    const stripped = src
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    if (/required_error\s*:/.test(stripped)) throw new Error(`${name} still uses required_error`);
+    if (/invalid_type_error\s*:/.test(stripped)) throw new Error(`${name} still uses invalid_type_error`);
+    if (/errorMap\s*:/.test(stripped)) throw new Error(`${name} still uses errorMap`);
+  }
 });
 
 check("W0-SCHEMAS: shared updateEventSchema accepts both supervisorsList and staffList", () => {
@@ -244,6 +273,45 @@ check("W1-MOBILE-CREATE-VERIFY: manual verification doc present", () => {
   const src = read("docs/implementation/PHASE_4D_MANUAL_VERIFICATION.md");
   expect(/canonical round-trip/i.test(src), "round-trip section missing");
   expect(/W0-ATOMIC/.test(src), "W0-ATOMIC section missing");
+});
+
+check("W1-MOBILE-UPDATE: i18n keys present in both ar + en admin.json", () => {
+  const en = JSON.parse(read("halla-mobile/localization/locales/en/admin.json"));
+  const ar = JSON.parse(read("halla-mobile/localization/locales/ar/admin.json"));
+  const required = [
+    "noEventId", "notAllowed", "updateSuccess", "updateFailed",
+    "stepLockedAlertTitle", "stepLockedAlertBody", "liveAddOnly", "liveLocked",
+    "cancelTitle", "cancelBody", "cancelKeep", "cancelDiscard",
+    "preview", "successOk",
+  ];
+  for (const k of required) {
+    if (!en.events?.update?.[k]) throw new Error(`en admin.json missing events.update.${k}`);
+    if (!ar.events?.update?.[k]) throw new Error(`ar admin.json missing events.update.${k}`);
+  }
+  for (const step of ["1", "2", "3", "4", "5"]) {
+    if (!en.events?.update?.steps?.[step]?.title) throw new Error(`en admin.json missing events.update.steps.${step}.title`);
+    if (!ar.events?.update?.steps?.[step]?.title) throw new Error(`ar admin.json missing events.update.steps.${step}.title`);
+  }
+});
+
+check("W1-MOBILE-UPDATE: unified screen routes copy through useTranslation", () => {
+  const src = read("halla-mobile/screens/update-event/UpdateEventScreen.js");
+  expect(/useTranslation\(/.test(src), "useTranslation hook not imported");
+  expect(/t\("events\.update\.title"\)/.test(src), "title key not used");
+  expect(/t\("events\.update\.notAllowed"\)/.test(src), "notAllowed key not used");
+  expect(/t\(`events\.update\.steps\.\$\{currentStep\}\.title`\)/.test(src), "step title key not used");
+  // No leftover hardcoded Arabic strings (post-i18n hardening).
+  expect(!/"تعديل المناسبة"/.test(src), "leftover hardcoded Arabic title");
+  expect(!/"معاينة"/.test(src), "leftover hardcoded preview button");
+});
+
+check("W1-MOBILE-UPDATE: mobile mutation invalidates guests query like web", () => {
+  // Parity with the web `useUpdateEventStep2` mutation, which
+  // invalidates the `["guests", "events", eventId]` query key. Mobile
+  // missed this until the hardening pass — adding it makes guest-list
+  // queries refetch after step 2 saves.
+  const src = read("halla-mobile/hooks/mutations/useEventMutations.js");
+  expect(/queryKey:\s*\['guests',\s*'events',\s*variables\.eventId\]/.test(src), "guests-events invalidation missing");
 });
 
 // ─── W1-WEB-ATOMIC ──────────────────────────────────────────────────────────

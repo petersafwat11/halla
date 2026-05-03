@@ -247,6 +247,9 @@ export function useUpdateEventStep2() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['events', 'single-stats', variables.eventId] });
+      // Mirror the web mutation's `["guests", "events", eventId]`
+      // invalidation so any guest-list query under that key refetches.
+      queryClient.invalidateQueries({ queryKey: ['guests', 'events', variables.eventId] });
     },
   });
 }

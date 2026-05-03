@@ -39,6 +39,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { useAuthStore } from "../../stores/authStore";
 import { useSubscription } from "../../hooks";
+import { useTranslation } from "../../localization";
 import {
   useUpdateEvent,
   useUpdateEventStep2,
@@ -62,22 +63,6 @@ import StepFour from "./StepFour";
 import StepFive from "./StepFive";
 
 const TOTAL_STEPS = 5;
-
-const STEP_TITLES = [
-  "تفاصيل المناسبة",
-  "قائمة الضيوف والمشرفين",
-  "تصميم الدعوة",
-  "قالب الواتساب",
-  "نص الرسالة والردود",
-];
-
-const STEP_DESCRIPTIONS = [
-  "ادخل تفاصيل المناسبة بشكل صحيح",
-  "أضف قائمة الضيوف والمشرفين",
-  "قم بتخصيص قالب الدعوة",
-  "اختر قالب الواتساب المعتمد من Meta",
-  "اكتب نص الدعوة والردود التلقائية",
-];
 
 /**
  * Maps the event API response onto the form-state shape that the
@@ -193,6 +178,8 @@ const UpdateEventScreen = () => {
   const route = useRoute();
   const queryClient = useQueryClient();
 
+  const { t } = useTranslation("admin");
+
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
 
@@ -229,7 +216,7 @@ const UpdateEventScreen = () => {
   useEffect(() => {
     if (!eventId) {
       setLoadingEvent(false);
-      setLoadError("لم يتم تحديد المناسبة");
+      setLoadError(t("events.update.noEventId"));
       return;
     }
     let cancelled = false;
@@ -240,10 +227,10 @@ const UpdateEventScreen = () => {
         if (cancelled) return;
         const payload = res?.data?.event || res?.data || res;
         if (payload) setEventData(payload);
-        else setLoadError("فشل تحميل بيانات المناسبة");
+        else setLoadError(t("events.update.loadError"));
       } catch (err) {
         if (!cancelled) {
-          setLoadError(err?.message || "فشل تحميل بيانات المناسبة");
+          setLoadError(err?.message || t("events.update.loadError"));
         }
       } finally {
         if (!cancelled) setLoadingEvent(false);
@@ -252,7 +239,7 @@ const UpdateEventScreen = () => {
     return () => {
       cancelled = true;
     };
-  }, [eventId, token]);
+  }, [eventId, token, t]);
 
   useEffect(() => {
     if (eventData) reset(mapApiToFormValues(eventData));
@@ -359,12 +346,12 @@ const UpdateEventScreen = () => {
         if (currentStep < TOTAL_STEPS) {
           setCurrentStep((s) => s + 1);
         } else {
-          Alert.alert("نجح", "تم تحديث المناسبة بنجاح", [
-            { text: "حسناً", onPress: () => navigation.goBack() },
+          Alert.alert("✓", t("events.update.updateSuccess"), [
+            { text: t("events.update.successOk"), onPress: () => navigation.goBack() },
           ]);
         }
       } catch (error) {
-        Alert.alert("خطأ", error?.message || "فشل في تحديث المناسبة");
+        Alert.alert("✗", error?.message || t("events.update.updateFailed"));
       } finally {
         setIsSaving(false);
       }
@@ -374,6 +361,7 @@ const UpdateEventScreen = () => {
       eventId,
       navigation,
       queryClient,
+      t,
       updateEventDetails,
       updateStep2,
       updateVisualTemplate,
@@ -384,11 +372,14 @@ const UpdateEventScreen = () => {
 
   const onNext = useCallback(() => {
     if (lockoutActive) {
-      Alert.alert("غير متاح", "لا يمكن تعديل هذه الخطوة على مناسبة قيد التشغيل");
+      Alert.alert(
+        t("events.update.stepLockedAlertTitle"),
+        t("events.update.stepLockedAlertBody")
+      );
       return;
     }
     handleSubmit(saveStep)();
-  }, [handleSubmit, saveStep, lockoutActive]);
+  }, [handleSubmit, saveStep, lockoutActive, t]);
 
   const onPrevious = useCallback(() => {
     if (currentStep > 1) setCurrentStep((s) => s - 1);
@@ -396,18 +387,18 @@ const UpdateEventScreen = () => {
 
   const handleClose = useCallback(() => {
     Alert.alert(
-      "إلغاء التعديل",
-      "هل أنت متأكد من إلغاء التعديل؟ سيتم فقدان التغييرات غير المحفوظة.",
+      t("events.update.cancelTitle"),
+      t("events.update.cancelBody"),
       [
-        { text: "استمرار", style: "cancel" },
+        { text: t("events.update.cancelKeep"), style: "cancel" },
         {
-          text: "إلغاء",
+          text: t("events.update.cancelDiscard"),
           style: "destructive",
           onPress: () => navigation.goBack(),
         },
       ]
     );
-  }, [navigation]);
+  }, [navigation, t]);
 
   const topBarLeftContent = (
     <TouchableOpacity
@@ -422,7 +413,7 @@ const UpdateEventScreen = () => {
   if (loadingEvent) {
     return (
       <SafeAreaView style={styles.container}>
-        <TopBar title="تعديل المناسبة" leftContent={topBarLeftContent} />
+        <TopBar title={t("events.update.title")} leftContent={topBarLeftContent} />
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#C28E5C" />
         </View>
@@ -432,7 +423,7 @@ const UpdateEventScreen = () => {
   if (loadError) {
     return (
       <SafeAreaView style={styles.container}>
-        <TopBar title="تعديل المناسبة" leftContent={topBarLeftContent} />
+        <TopBar title={t("events.update.title")} leftContent={topBarLeftContent} />
         <View style={styles.center}>
           <Text style={styles.errorText}>{loadError}</Text>
         </View>
@@ -442,10 +433,10 @@ const UpdateEventScreen = () => {
   if (!allowed) {
     return (
       <SafeAreaView style={styles.container}>
-        <TopBar title="تعديل المناسبة" leftContent={topBarLeftContent} />
+        <TopBar title={t("events.update.title")} leftContent={topBarLeftContent} />
         <View style={styles.center}>
           <Text style={styles.errorText}>
-            ليست لديك الصلاحية لتعديل هذه المناسبة
+            {t("events.update.notAllowed")}
           </Text>
         </View>
       </SafeAreaView>
@@ -493,7 +484,7 @@ const UpdateEventScreen = () => {
   return (
     <FormProvider {...methods}>
       <SafeAreaView style={styles.container}>
-        <TopBar title="تعديل المناسبة" leftContent={topBarLeftContent} />
+        <TopBar title={t("events.update.title")} leftContent={topBarLeftContent} />
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -503,16 +494,16 @@ const UpdateEventScreen = () => {
             <View style={styles.lockoutBanner} accessibilityRole="alert">
               <Text style={styles.lockoutText}>
                 {currentStep === 2
-                  ? "المناسبة قيد التشغيل: يمكنك إضافة ضيوف فقط."
-                  : "المناسبة قيد التشغيل: تعديل هذه الخطوة معطل."}
+                  ? t("events.update.liveAddOnly")
+                  : t("events.update.liveLocked")}
               </Text>
             </View>
           )}
           <StepHeader
             currentStep={currentStep}
             totalSteps={TOTAL_STEPS}
-            title={STEP_TITLES[currentStep - 1] || ""}
-            description={STEP_DESCRIPTIONS[currentStep - 1] || ""}
+            title={t(`events.update.steps.${currentStep}.title`)}
+            description={t(`events.update.steps.${currentStep}.description`)}
           />
           <View style={styles.contentContainer}>{renderStepContent()}</View>
           <PrevAndNextBtns
@@ -521,7 +512,9 @@ const UpdateEventScreen = () => {
             showPrevious={currentStep > 1}
             isNextDisabled={isSaving || lockoutActive}
             nextButtonText={
-              currentStep === TOTAL_STEPS ? "حفظ التغييرات" : "حفظ والتالي"
+              currentStep === TOTAL_STEPS
+                ? t("events.update.saveAll")
+                : t("events.update.saveStep")
             }
             isLoading={isSaving}
           />
@@ -534,7 +527,7 @@ const UpdateEventScreen = () => {
             activeOpacity={0.8}
           >
             <Ionicons name="eye-outline" size={24} color="#FFF" />
-            <Text style={styles.floatingPreviewText}>معاينة</Text>
+            <Text style={styles.floatingPreviewText}>{t("events.update.preview")}</Text>
           </TouchableOpacity>
         )}
 
