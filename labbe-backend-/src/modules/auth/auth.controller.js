@@ -463,6 +463,21 @@ exports.completeHostProfile = catchAsync(async (req, res) => {
 });
 
 // ============================================
+// EMAIL VERIFICATION LINK (FLOW-02-F01)
+// ============================================
+
+/**
+ * Redeem an email verification link sent at host signup.
+ * GET /api/v2/auth/verify-email-link?token=<raw>
+ * Public endpoint — no JWT required.
+ */
+exports.verifyEmailLink = catchAsync(async (req, res) => {
+  const { token } = req.query;
+  const result = await authService.verifyEmailLink(token);
+  sendSuccess(res, null, result.message);
+});
+
+// ============================================
 // EMAIL VERIFICATION
 // ============================================
 

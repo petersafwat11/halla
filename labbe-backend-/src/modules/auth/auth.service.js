@@ -441,6 +441,30 @@ class AuthService {
       data: { entityType: 'user', entityId: host._id },
     }).catch(console.error);
 
+    // FLOW-02-F01: send email verification link (non-blocking, only if email present)
+    if (host.email) {
+      const lang = context.lang || 'ar';
+      otpService.createEmailVerificationToken(host.email, host._id)
+        .then((rawToken) => {
+          const verificationUrl = `${config.frontend.url}/${lang}/verify-email?token=${rawToken}`;
+          return emailModule.send.emailVerification(host.email, {
+            name: host.name || host.username,
+            verificationUrl,
+            expiresIn: '24 hours',
+          }, lang);
+        })
+        .catch(console.error);
+    }
+
+    // FLOW-02-F03: send welcome email (non-blocking, only if email present)
+    if (host.email) {
+      emailModule.send.welcome(host.email, {
+        name: host.name || host.username,
+        email: host.email,
+        role: ROLES.HOST,
+      }, context.lang || 'ar').catch(console.error);
+    }
+
     const tokens = await this.issueTokenPair(host, context);
     await subscription.populate('planId');
 
@@ -615,6 +639,47 @@ class AuthService {
       token: null,
       pendingApproval: true,
     };
+  }
+
+  // ============================================
+  // EMAIL VERIFICATION LINK (FLOW-02-F01)
+  // ============================================
+
+  /**
+   * Redeem a link-based email verification token sent at host signup.
+   * Public endpoint — no JWT required.
+   * @param {string} rawToken - Token from the verification link query param
+   * @returns {Promise<{message: string}>}
+   */
+  async verifyEmailLink(rawToken) {
+    if (!rawToken) {
+      throw new ValidationError('Verification token is required');
+    }
+
+    const result = await otpService.redeemEmailVerificationToken(rawToken);
+    if (!result.success) {
+      throw new ValidationError(result.error);
+    }
+
+    const user = await User.findById(result.userId);
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+
+    user.emailVerified = true;
+    if (user.profile?.hostData) {
+      user.profile.hostData.emailVerified = true;
+    }
+    await user.save({ validateBeforeSave: false });
+
+    logAudit({
+      action: 'user.email_verified',
+      actor: { _id: user._id, role: user.role },
+      targetType: 'user',
+      targetId: user._id,
+    }).catch(() => {});
+
+    return { message: 'Email verified successfully' };
   }
 
   // ============================================
