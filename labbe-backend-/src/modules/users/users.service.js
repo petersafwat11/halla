@@ -28,6 +28,7 @@ const Plan = require("../../../models/PlanModel");
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
 const { logAudit } = require('../../shared/utils/auditLog');
+const { processUploadedFiles } = require('../../shared/utils/s3Upload');
 
 class UsersService {
   // ============================================
@@ -701,12 +702,13 @@ class UsersService {
       }
     });
 
-    // Handle file uploads
-    if (files.avatar?.[0]) {
-      user.avatar = `/uploads/users/${files.avatar[0].filename}`;
+    // FLOW-07-F02: resolve S3 URLs via processUploadedFiles instead of local disk paths
+    const uploadedUrls = processUploadedFiles(files);
+    if (uploadedUrls.avatar) {
+      user.avatar = uploadedUrls.avatar;
     }
-    if (files.businessLogo?.[0] && user.profile?.vendorData) {
-      user.profile.vendorData.businessLogo = `/uploads/vendors/${files.businessLogo[0].filename}`;
+    if (uploadedUrls.businessLogo && user.profile?.vendorData) {
+      user.profile.vendorData.businessLogo = uploadedUrls.businessLogo;
     }
 
     const phoneChanged = updateData.phoneNumber !== undefined && updateData.phoneNumber !== user.phoneNumber;
@@ -830,40 +832,43 @@ class UsersService {
     if (!user.profile) user.profile = {};
     user.profile[section] = { ...user.profile[section], ...data };
 
+    // FLOW-07-F02: resolve S3 URLs via processUploadedFiles instead of local disk paths
+    const uploadedUrls = processUploadedFiles(files);
+
     // Handle section-specific file uploads
     if (section === "documents") {
-      if (files.nationalIdImage?.[0]) {
+      if (uploadedUrls.nationalIdImage) {
         user.profile.documents = user.profile.documents || {};
-        user.profile.documents.nationalIdImage = `/uploads/documents/${files.nationalIdImage[0].filename}`;
+        user.profile.documents.nationalIdImage = uploadedUrls.nationalIdImage;
       }
-      if (files.commercialRecordImage?.[0]) {
+      if (uploadedUrls.commercialRecordImage) {
         user.profile.documents = user.profile.documents || {};
-        user.profile.documents.commercialRecordImage = `/uploads/documents/${files.commercialRecordImage[0].filename}`;
+        user.profile.documents.commercialRecordImage = uploadedUrls.commercialRecordImage;
       }
     }
 
     // Handle vendor-specific file uploads
     if (section === "vendorData") {
       const vd = user.profile.vendorData = user.profile.vendorData || {};
-      if (files.businessLogo?.[0]) {
-        vd.businessLogo = `/uploads/logos/${files.businessLogo[0].filename}`;
+      if (uploadedUrls.businessLogo) {
+        vd.businessLogo = uploadedUrls.businessLogo;
       }
-      if (files.nationalIdImage?.[0]) {
-        vd.nationalIdImage = `/uploads/documents/${files.nationalIdImage[0].filename}`;
+      if (uploadedUrls.nationalIdImage) {
+        vd.nationalIdImage = uploadedUrls.nationalIdImage;
       }
-      if (files.commercialRecordImage?.[0]) {
-        vd.commercialRecordImage = `/uploads/documents/${files.commercialRecordImage[0].filename}`;
+      if (uploadedUrls.commercialRecordImage) {
+        vd.commercialRecordImage = uploadedUrls.commercialRecordImage;
       }
-      if (files.portfolioImages?.length) {
+      if (uploadedUrls.portfolioImages?.length) {
         vd.portfolioImages = [
           ...(vd.portfolioImages || []),
-          ...files.portfolioImages.map(f => `/uploads/portfolios/${f.filename}`),
+          ...uploadedUrls.portfolioImages,
         ];
       }
-      if (files.pricePackages?.length) {
+      if (uploadedUrls.pricePackages?.length) {
         vd.pricePackages = [
           ...(vd.pricePackages || []),
-          ...files.pricePackages.map(f => `/uploads/packages/${f.filename}`),
+          ...uploadedUrls.pricePackages,
         ];
       }
 
