@@ -52,7 +52,8 @@ const sendOTP = async (phoneNumber, lang = 'ar') => {
 
 const verifyOTP = async (phoneNumber, otp) => {
   const normalizedPhone = normalizePhoneNumber(phoneNumber);
-  const stored = await OTP.findOne({ phoneNumber: normalizedPhone });
+  // FLOW-02-F02: exclude already-used records to prevent replay attacks
+  const stored = await OTP.findOne({ phoneNumber: normalizedPhone, used: { $ne: true } });
 
   if (!stored) {
     return { success: false, error: 'No OTP found. Please request a new code.' };
@@ -78,7 +79,9 @@ const verifyOTP = async (phoneNumber, otp) => {
     return { success: false, error: 'Invalid OTP code.' };
   }
 
-  await OTP.deleteOne({ _id: stored._id });
+  // FLOW-02-F02: soft-invalidate instead of hard-delete so the record
+  // survives for audit purposes but cannot be replayed.
+  await OTP.updateOne({ _id: stored._id }, { $set: { used: true } });
   return { success: true };
 };
 
