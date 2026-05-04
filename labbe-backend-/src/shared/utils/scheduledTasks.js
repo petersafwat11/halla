@@ -8,6 +8,7 @@ const User = require("../../../models/UserModel");
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
+const Notification = require("../../../models/NotificationModel");
 const notificationService = require("./notificationService");
 const emailService = require("./emailService");
 const messagingService = require("../../modules/messaging/messaging.service");
@@ -1075,6 +1076,91 @@ const scheduleEventRetry = () => {
 // INITIALIZATION
 // ============================================
 
+/**
+ * FLOW-27-F02: Deliver scheduled notifications that have passed their scheduledFor time.
+ *
+ * Runs every 5 minutes. Finds notifications where:
+ *   isScheduled === true  (i.e. status "pending" in spec terms)
+ *   scheduledFor <= now   (spec calls this field "scheduledAt")
+ *
+ * Uses runBatched for bulk delivery (concurrency 10, 50/sec — purely
+ * in-process Mongo writes, no external rate cap applies).
+ *
+ * Status lifecycle:
+ *   pending  (isScheduled=true, deliveryStatus.app.sent=false)
+ *     → delivered  (isScheduled=false, deliveryStatus.app.sent=true/sentAt=now)
+ *     → failed     (isScheduled=false, deliveryStatus.app.error=<message>)
+ *
+ * Audit: emits notification.broadcast for admin-triggered batches (any batch
+ * dispatched by this cron is treated as a system-level broadcast).
+ */
+const scheduleNotificationDelivery = () => {
+  cron.schedule("*/5 * * * *", async () => {
+    try {
+      const now = new Date();
+      const due = await Notification.find({
+        isScheduled: true,
+        scheduledFor: { $lte: now },
+      }).lean();
+
+      if (due.length === 0) return;
+
+      console.log(`[Cron] scheduleNotificationDelivery: ${due.length} due notification(s)`);
+
+      const batchResult = await runBatched(
+        due,
+        async (notification) => {
+          try {
+            await Notification.findByIdAndUpdate(notification._id, {
+              $set: {
+                isScheduled: false,
+                "deliveryStatus.app.sent": true,
+                "deliveryStatus.app.sentAt": new Date(),
+              },
+            });
+            return { delivered: true };
+          } catch (err) {
+            // Mark as failed so it does not re-process on the next tick.
+            await Notification.findByIdAndUpdate(notification._id, {
+              $set: {
+                isScheduled: false,
+                "deliveryStatus.app.sent": false,
+                "deliveryStatus.app.error": err.message || "delivery_failed",
+              },
+            }).catch(() => {});
+            throw err;
+          }
+        },
+        { concurrency: 10, ratePerSecond: 50 }
+      );
+
+      console.log(
+        `[Cron] scheduleNotificationDelivery: delivered=${batchResult.successful} failed=${batchResult.failed}`
+      );
+
+      // Audit: log a notification.broadcast row for this system-triggered batch.
+      if (batchResult.total > 0) {
+        logAudit({
+          action: "notification.broadcast",
+          actor: { _id: null, role: "system" },
+          targetType: "notification",
+          metadata: {
+            trigger: "scheduled_delivery_cron",
+            recipientCount: batchResult.total,
+            delivered: batchResult.successful,
+            failed: batchResult.failed,
+            runAt: now.toISOString(),
+          },
+        }).catch((err) =>
+          console.error("[Cron] scheduleNotificationDelivery audit failed:", err.message)
+        );
+      }
+    } catch (err) {
+      console.error("[Cron] scheduleNotificationDelivery error:", err.message);
+    }
+  });
+};
+
 const initScheduledTasks = () => {
   console.log("[Cron] Initializing scheduled tasks...");
 
@@ -1088,6 +1174,7 @@ const initScheduledTasks = () => {
   scheduleTemplateStatusPolling();
   scheduleEventCompletion();
   scheduleGuestReminders();
+  scheduleNotificationDelivery();
 
   // Phase 4c W0-MODEL: daily Taqnyat-template upstream sync.
   try {
@@ -1109,6 +1196,7 @@ const initScheduledTasks = () => {
   console.log("  - Event completion (live → completed): Every hour");
   console.log("  - 24h guest reminder SMS: Every 30 minutes");
   console.log("  - Taqnyat-template upstream sync: Daily at 3:30 AM");
+  console.log("  - Scheduled notification delivery: Every 5 minutes");
 };
 
 module.exports = {
