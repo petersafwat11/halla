@@ -14,19 +14,20 @@ the touch-list. No batching.
 
 ## Track A — Foundation
 
-- [ ] Fix `redactSensitive` missing export in auditLog.js
-- [ ] Add `plan` and `addon` to AuditLogModel targetType enum
-- [ ] Remove dual `/api` mount (FLOW-01-F05)
+- [x] Fix `redactSensitive` missing export in auditLog.js — commit 12425c9
+- [x] Add `plan` and `addon` to AuditLogModel targetType enum — commit 12425c9
+- [x] Remove dual `/api` mount (FLOW-01-F05) — commit 12425c9
 
 ## Track B — Audit Log Wiring
 
-- [ ] auth.service.js — login events
-- [ ] events.service.js — event CRUD events
-- [ ] events.routes.js — export audit
-- [ ] tickets.service.js — ticket status / reply
-- [ ] post-event.service.js — content publish / revoke
-- [ ] users.service.js — phone update
-- [ ] notifications.routes.js — admin broadcast
+- [x] auth.service.js — login.locked + password.changed/reset — commit 29cd203
+- [x] auth.controller.js — logout audit — commit 29cd203
+- [x] events.service.js — event.created/updated/deleted (already wired pre-session)
+- [x] guests.controller.js — event.exported audit — commit 739dbd5
+- [x] tickets.service.js — ticket.reply_added / ticket.status_updated (already wired pre-session)
+- [x] post-event.service.js — fix targetType + add content_revoked — commit 6270e64
+- [x] users.service.js — phone update (omit plaintext phone) — commit 8089e42
+- [x] notifications.controller.js — notification.broadcast — commit fcb2412
 
 ## Track C — Auth / Profile
 
