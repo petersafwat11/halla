@@ -189,13 +189,24 @@ async function processImage(s3Key) {
   });
 
   const { PutObjectCommand } = require("@aws-sdk/client-s3");
+  // Hardening (post-review C-R3): the original presigned-POST upload
+  // does NOT set an ACL — it inherits the bucket's default policy. The
+  // thumbnail must match, otherwise host StepThree would 403 on every
+  // thumbnail when the bucket relies on a public-read prefix policy
+  // (or BucketOwnerEnforced, which rejects per-object ACLs entirely).
+  // CloudFront provisioning is the proper Phase-5 fix; until then the
+  // bucket policy is the source of truth.
+  //
+  // Cache-Control is set so CloudFront / browsers cache aggressively
+  // — the S3 key already includes a Date.now() suffix so changes
+  // produce a new URL (implicit cache-bust).
   await client.send(
     new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET,
       Key: thumbnailKey,
       Body: thumbBuffer,
       ContentType: "image/webp",
-      ACL: "private",
+      CacheControl: "public, max-age=31536000, immutable",
     })
   );
 
@@ -284,7 +295,22 @@ async function updateTemplate(id, payload, actor) {
   const doc = await Template.findById(id);
   if (!doc || doc.deletedAt) throw new NotFoundError("Template");
 
-  const { s3Key, ...rest } = payload;
+  const { s3Key, expectedVersion, ...rest } = payload;
+
+  // Polish (post-review) — optimistic locking via version stamp. The
+  // editor sends the `expectedVersion` it loaded; if another admin
+  // saved in the meantime, the stamp won't match and we 409 instead
+  // of silently overwriting their changes. Back-compat: if the
+  // request omits `expectedVersion` (older clients), we skip the
+  // check — same behaviour as before this hardening landed.
+  if (expectedVersion !== undefined && (doc.version || 0) !== expectedVersion) {
+    throw new AppError(
+      "Template was modified by another editor. Reload and re-apply your changes.",
+      409,
+      "TEMPLATE_VERSION_CONFLICT"
+    );
+  }
+
   let newProcessed = null;
   let oldImageKey = null;
   let oldThumbKey = null;

@@ -30,12 +30,20 @@ export function getMediaUrl(pathOrUrl, fallback = "") {
   }
   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
   if (pathOrUrl.startsWith("/")) {
-    // Relative to the backend public root. The backend exposes
-    // BACKEND_URL in the public assets path; consumers that need an
-    // absolute URL should join with `process.env.NEXT_PUBLIC_BACKEND_URL`
-    // here. For now we return the relative path as-is — Next.js
-    // `<Image src="/uploads/...">` works with it under the existing
-    // setup.
+    // B-R3 hardening (post-review) — backend-relative paths
+    // (`/uploads/...`, `/static/...`) only render via Next.js `<Image>`
+    // when FE and backend share an origin. In production they are
+    // typically separate origins (FE on Vercel, backend on its own
+    // host), so a bare `/uploads/foo.jpg` 404s. Prepend the backend
+    // origin when one is configured.
+    //
+    // `NEXT_PUBLIC_BACKEND_URL` is the canonical client-visible env;
+    // we trim a trailing slash defensively before joining so we never
+    // emit a `//` anywhere in the resulting URL.
+    const backendOrigin = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
+    if (backendOrigin) {
+      return `${backendOrigin}${pathOrUrl}`;
+    }
     return pathOrUrl;
   }
   return pathOrUrl;

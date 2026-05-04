@@ -506,7 +506,12 @@ router.patch(
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  */
-router.get("/validate-setup-token/:token", authController.validateSetupToken);
+// B-R2 hardening (post-review) — defense-in-depth rate limit. Setup
+// tokens are sha256(32 random bytes) and computationally infeasible to
+// enumerate, but every other auth endpoint runs through `authLimiter`
+// and this is the only outlier. Rate limit prevents stuffing-style
+// probes from generating server load.
+router.get("/validate-setup-token/:token", authLimiter, authController.validateSetupToken);
 
 /**
  * @swagger

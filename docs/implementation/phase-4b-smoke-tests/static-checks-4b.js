@@ -185,7 +185,12 @@ check("W1-UNIFY: host UpdateEventWizard exists with returnPath prop", () => {
   expect(exists(p), "wizard component missing");
   const src = read(p);
   expect(/returnPath/.test(src), "returnPath prop not declared");
-  expect(src.includes("useUpdateLaunchSettings"), "launchSettings dispatch not wired");
+  // Post-review polish — the dead `useUpdateLaunchSettings` import +
+  // unreachable `payload.type === "launchSettings"` branch were
+  // removed (per D7, schedule is still post-creation only via the
+  // EventActionsHeader Schedule button; `buildStepPayload` never
+  // emits a launchSettings type). Re-introduce the assertion when a
+  // launchSettings emitter is added.
   expect(src.includes("isEventLive"), "live-event branch not present");
 });
 
@@ -341,6 +346,30 @@ check("W2-STAFF: mobile listStaffTokens service + consumer wiring", () => {
   expect(stats.includes("listStaffTokens"), "consumer not wired");
   expect(stats.includes("staffTokensByPhone"), "tokens-by-phone state not added");
   expect(stats.includes("refreshStaffTokens"), "refresh callback not added");
+});
+
+// ─── Post-review hardening (B-R1, B-R2, B-R3) ────────────────────────────────
+check("HARDENING B-R1: re-approval password-reset trapdoor closed", () => {
+  const src = read("labbe-backend-/src/modules/admin/admin.service.js");
+  expect(src.includes("PASSWORD_ALREADY_SET"),
+    "skip-reason not surfaced for already-set password");
+  expect(src.includes("passwordChangedAt && !whitelabel.passwordSetupToken"),
+    "guard predicate missing");
+  const fe = read("labbe/app/[lang]/admin-dash/whitelabels/[id]/_components/WhitelabelDetailsContent.jsx");
+  expect(fe.includes("PASSWORD_ALREADY_SET"),
+    "FE does not surface PASSWORD_ALREADY_SET toast");
+});
+
+check("HARDENING B-R2: validate-setup-token GET has authLimiter", () => {
+  const src = read("labbe-backend-/src/modules/auth/auth.routes.js");
+  expect(/router\.get\(\s*"\/validate-setup-token\/:token",\s*authLimiter/.test(src),
+    "authLimiter not applied to validate-setup-token GET");
+});
+
+check("HARDENING B-R3: getMediaUrl prepends NEXT_PUBLIC_BACKEND_URL", () => {
+  const src = read("labbe/utils/index.js");
+  expect(src.includes("NEXT_PUBLIC_BACKEND_URL"),
+    "backend origin env not used");
 });
 
 // ─── Run + report ─────────────────────────────────────────────────────────────

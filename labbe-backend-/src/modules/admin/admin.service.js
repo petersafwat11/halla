@@ -16,6 +16,12 @@ const notificationService = require('../notifications/notifications.service');
 const config = require('../../config');
 const email = require('../../../email');
 const { logAudit } = require('../../shared/utils/auditLog');
+// Phase 4c hardening — resolves legacy template ids to canonical
+// ObjectId refs so dual-write doesn't CastError.
+const {
+  resolveTaqnyatTemplateRef,
+  resolveVisualTemplateRef,
+} = require('../events/templateRefResolver');
 
 class AdminService {
   /**
@@ -1207,6 +1213,18 @@ class AdminService {
       // back-fill the email manually.
       if (!whitelabel.email) {
         emailSkipReason = 'NO_EMAIL_ON_FILE';
+      } else if (
+        // B-R1 hardening (post-review) — close the re-approval password
+        // reset trapdoor. Once the WL has completed setup
+        // (`passwordChangedAt` set + no pending setup token), an admin
+        // re-clicking Approve must NOT mint a new token + email. The
+        // explicit password-reset flow (forgot-password / admin reset)
+        // is the right tool for that case. Without this gate, any admin
+        // could effectively force-reset any WL admin's password by
+        // re-toggling Approve.
+        whitelabel.passwordChangedAt && !whitelabel.passwordSetupToken
+      ) {
+        emailSkipReason = 'PASSWORD_ALREADY_SET';
       } else {
         // Mint a fresh token. createPasswordSetupToken() hashes onto the
         // user document and returns the plain token; we save below.
@@ -1508,21 +1526,28 @@ class AdminService {
     if (updateData.invitationSettings) {
       const legacy = updateData.invitationSettings;
       if (legacy.visualTemplate) {
-        event.visualTemplate = {
+        const resolvedVisualRef = resolveVisualTemplateRef(
+          legacy.visualTemplate.id || event.visualTemplate?.templateRef
+        );
+        const visualMerged = {
           ...((event.visualTemplate?.toObject?.() || event.visualTemplate) || {}),
-          templateRef: legacy.visualTemplate.id || event.visualTemplate?.templateRef,
           fieldValues: legacy.visualTemplate.data || event.visualTemplate?.fieldValues,
           bakedImagePath:
             legacy.visualTemplate.src ||
             legacy.templateImage ||
             event.visualTemplate?.bakedImagePath,
         };
+        if (resolvedVisualRef) visualMerged.templateRef = resolvedVisualRef;
+        event.visualTemplate = visualMerged;
       }
       if (legacy.selectedTemplate?.id) {
-        event.taqnyatTemplate = {
-          ...((event.taqnyatTemplate?.toObject?.() || event.taqnyatTemplate) || {}),
-          templateRef: legacy.selectedTemplate.id,
-        };
+        const resolvedTaqnyatRef = await resolveTaqnyatTemplateRef(legacy.selectedTemplate.id);
+        if (resolvedTaqnyatRef) {
+          event.taqnyatTemplate = {
+            ...((event.taqnyatTemplate?.toObject?.() || event.taqnyatTemplate) || {}),
+            templateRef: resolvedTaqnyatRef,
+          };
+        }
       }
       const replies = event.guestReplies?.toObject?.() || event.guestReplies || {};
       if (legacy.attendanceAutoReply !== undefined) replies.onAttend = legacy.attendanceAutoReply;

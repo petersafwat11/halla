@@ -22,7 +22,6 @@ import {
   useUpdateEventDetails,
   useUpdateEventStep2,
   useUpdateInvitationSettings,
-  useUpdateLaunchSettings,
 } from "@/hooks/events/mutations/useEventMutation";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -82,7 +81,6 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   // mutations.
   const updateEventStep2 = useUpdateEventStep2();
   const updateInvitationSettings = useUpdateInvitationSettings();
-  const updateLaunchSettings = useUpdateLaunchSettings();
 
   const eventRaw = eventData?.data?.event || eventData?.event || null;
   // Phase 4b W1-UPD (D10): when an event is `live`, every section except
@@ -131,13 +129,13 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
           eventId,
           data: payload.data,
         });
-      } else if (payload.type === "launchSettings") {
-        // Phase 4b W1-UPD: step 4 dispatches launch settings save.
-        await updateLaunchSettings.mutateAsync({
-          eventId,
-          data: payload.data,
-        });
       }
+      // NOTE (post-review polish): the Phase 4b plan deviation noted that
+      // `useEventForm.buildStepPayload` does not currently emit a
+      // `launchSettings` type — schedule still flows through the
+      // EventActionsHeader Schedule button per D7. The dead branch +
+      // its hook were removed to avoid drift; re-introduce both when
+      // a launchSettings emitter is added.
       toastUtils.success(payload.successMessage);
     } catch (error) {
       handleError(error, t, { fallbackMessage: "errors.update_failed" });
@@ -152,7 +150,6 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
     updateEventDetails,
     updateEventStep2,
     updateInvitationSettings,
-    updateLaunchSettings,
     t,
   ]);
 

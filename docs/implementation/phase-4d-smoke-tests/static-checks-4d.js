@@ -340,6 +340,64 @@ check("W1-WEB-ATOMIC: UpdateEventWizard step 2 dispatches single mutation", () =
   expect(!/Promise\.all\(\[\s*updateGuestList\.mutateAsync/.test(src), "legacy parallel dispatch still present");
 });
 
+// ─── Post-review hardening (D-R2, D-R3, D-R4 + polish) ───────────────────────
+check("HARDENING D-R2: Metro extends watchFolders + nodeModulesPaths for workspace", () => {
+  const src = read("halla-mobile/metro.config.js");
+  expect(/watchFolders/.test(src), "watchFolders extension missing");
+  expect(/nodeModulesPaths/.test(src), "nodeModulesPaths extension missing");
+  expect(src.includes("path.resolve(__dirname,") && src.includes('".."'),
+    "repo root not added to watchFolders");
+});
+
+check("HARDENING D-R3: removed staff trigger StaffAccessToken revocation", () => {
+  const src = read("labbe-backend-/src/modules/events/events.service.js");
+  expect(src.includes("_revokeRemovedStaffTokens"),
+    "_revokeRemovedStaffTokens helper missing");
+  // Helper invoked from updateStaffList AND from both branches of updateEventStep2.
+  const callCount = (src.match(/_revokeRemovedStaffTokens\(/g) || []).length;
+  expect(callCount >= 3,
+    `_revokeRemovedStaffTokens should be called 3+ times (updateStaffList + 2 step2 branches), found ${callCount}`);
+});
+
+check("HARDENING D-R4: rollback handler covers steps 1-3 (in-place, create, first-save)", () => {
+  const src = read("labbe-backend-/src/modules/events/events.service.js");
+  expect(src.includes("runCompensation"), "runCompensation handler not introduced");
+  expect(/runCompensation\(['"]inplace-update['"]\)/.test(src),
+    "in-place-update failure path not wired to runCompensation");
+  expect(/runCompensation\(['"]guest-create['"]\)/.test(src),
+    "guest-create failure path not wired to runCompensation");
+  expect(/runCompensation\(['"]first-event-save['"]\)/.test(src),
+    "first-event-save failure path not wired to runCompensation");
+  expect(/runCompensation\(['"]staff-save['"]\)/.test(src),
+    "staff-save failure path not wired to runCompensation");
+});
+
+check("HARDENING POLISH: capacity-guard literal extracted to shared constants", () => {
+  const constsPath = "labbe-backend-/src/shared/constants/events.js";
+  expect(exists(constsPath), "shared events constants file missing");
+  const consts = read(constsPath);
+  expect(consts.includes("GUEST_LIST_BELOW_CONFIRMED"), "constant not exported");
+  expect(consts.includes("SCHEDULE_TOO_SOON"), "schedule constant not exported");
+
+  const ev = read("labbe-backend-/src/modules/events/events.service.js");
+  expect(ev.includes("require('../../shared/constants/events')"),
+    "events.service does not import shared events constants");
+  expect(!/'GUEST_LIST_BELOW_CONFIRMED'/.test(ev),
+    "events.service still has the GUEST_LIST_BELOW_CONFIRMED literal — should reference the constant");
+
+  const msg = read("labbe-backend-/src/modules/messaging/messaging.service.js");
+  expect(msg.includes("require('../../shared/constants/events')"),
+    "messaging.service does not import shared events constants");
+});
+
+check("HARDENING POLISH: EventFailureBanner consumes useEventActionGate.canManualRetry", () => {
+  const src = read("labbe/app/[lang]/host/events/[id]/_components/EventFailureBanner.jsx");
+  expect(src.includes("useEventActionGate"),
+    "EventFailureBanner does not import useEventActionGate");
+  expect(/canManualRetry:\s*canRetry/.test(src),
+    "canManualRetry not used as canRetry");
+});
+
 // ─── Run / report ────────────────────────────────────────────────────────────
 const ok = checks.filter((c) => c.ok).length;
 const total = checks.length;
