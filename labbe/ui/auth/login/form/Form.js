@@ -15,14 +15,12 @@ import PhoneSection from "./PhoneForm";
 import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
 import useAuthStore, { USER_ROLES } from "@/stores/authStore";
 import useLanguageChange from "@/hooks/UseLanguageChange";
-import { useRouter } from "next/navigation";
 import { getAuthErrorMessage } from "@/services/errorHandlingService";
 
 const Form = () => {
   const { t } = useTranslation("login");
   const { t: tCommon } = useTranslation("common");
   const { currentLocale } = useLanguageChange();
-  const router = useRouter();
 
   // Auth mutations
   const {
@@ -101,26 +99,33 @@ const Form = () => {
   }, [loginType, reset]);
   const formValues = watch();
 
-  // Navigate based on user role
+  // Navigate based on user role.
+  // Full navigation (window.location.href) is intentional: soft router.push
+  // does not reliably carry HttpOnly cookies set by the backend origin
+  // (different port in dev, or separate domain in prod before same-VPS deploy).
+  // A hard redirect guarantees the browser sends all stored cookies with the
+  // request so the middleware sees access_token and lets the user through.
   const navigateByRole = (role) => {
+    let path;
     switch (role) {
       case USER_ROLES.SUPER_ADMIN:
       case USER_ROLES.ADMIN:
       case USER_ROLES.MODERATOR:
-        router.push(`/${currentLocale}/admin-dash`);
+        path = `/${currentLocale}/admin-dash`;
         break;
       case USER_ROLES.WHITELABEL_ADMIN:
       case USER_ROLES.WHITELABEL_MODERATOR:
-        router.push(`/${currentLocale}/whitelabel-dash`);
+        path = `/${currentLocale}/admin-dash`;
         break;
       case USER_ROLES.VENDOR:
-        router.push(`/${currentLocale}/vendor-dashboard`);
+        path = `/${currentLocale}/vendor-dashboard`;
         break;
       case USER_ROLES.HOST:
       default:
-        router.push(`/${currentLocale}/host`);
+        path = `/${currentLocale}/host`;
         break;
     }
+    window.location.href = path;
   };
 
   const toggleLoginMethod = () => {
@@ -141,7 +146,7 @@ const Form = () => {
         email: formData.email,
         password: formData.password,
       });
-      navigateByRole(result.user?.role);
+      navigateByRole(result.data?.user?.role);
     } catch (error) {
       // Error is handled by mutation and displayed via error state
     }
@@ -174,11 +179,12 @@ const Form = () => {
       });
 
       // Check if profile is complete (for admin-created accounts)
-      if (!result.profileCompleted) {
-        router.push(`/${currentLocale}/signup/continue-signup`);
+      const profileCompleted = result.data?.profileCompleted ?? true;
+      if (!profileCompleted) {
+        window.location.href = `/${currentLocale}/signup/continue-signup`;
         return;
       }
-      navigateByRole(result.user?.role);
+      navigateByRole(result.data?.user?.role);
     } catch (error) {
       // Error is handled by mutation
     }

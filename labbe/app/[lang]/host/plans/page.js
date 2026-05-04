@@ -1,11 +1,11 @@
-import { cookies } from "next/headers";
+﻿import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import PlansPage from "./PlansPage";
 
 export default async function PlansPageServer({ params }) {
   const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = cookieStore.get("access_token")?.value;
   const queryClient = createServerQueryClient();
 
   if (token) {

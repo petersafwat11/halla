@@ -183,7 +183,7 @@ export async function getUserRole() {
  */
 export async function getToken() {
   const cookieStore = await cookies();
-  return cookieStore.get("token")?.value || null;
+  return cookieStore.get("access_token")?.value || null;
 }
 
 /**

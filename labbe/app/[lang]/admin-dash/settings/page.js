@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { cookies } from "next/headers";
 import { requirePageAccess } from "@/services/serverAuth";
 import { settingsService } from "@/services/settings";
@@ -9,7 +9,7 @@ const AdminSettingsPage = async ({ params }) => {
   await requirePageAccess("settings", lang);
 
   const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = cookieStore.get("access_token")?.value;
 
   let user = null;
   let notifications = null;

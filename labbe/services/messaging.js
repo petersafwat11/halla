@@ -60,9 +60,9 @@ const messagingService = {
    * @param {string} lang - Language code
    */
   async sendTestInvitation(phoneNumber, eventId, channel = "sms") {
-    const response = await apiClient.post("/messaging/test", {
+    // FLOW-16-F01: migrated to canonical events endpoint
+    const response = await apiClient.patch(`/events/${eventId}/test-message`, {
       phoneNumber,
-      eventId,
       channel,
     });
     return response.data;

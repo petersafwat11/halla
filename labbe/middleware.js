@@ -101,7 +101,13 @@ const isRouteMatch = (routePath, routes) => {
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get("token")?.value;
+  // `userType` is a JS-readable routing hint set by js-cookie on this origin
+  // after every successful login. We use it (not access_token) as the session
+  // signal because access_token is an HttpOnly cookie set by the backend on a
+  // different port in dev (:8000) — Chrome stores cross-origin CORS cookies
+  // keyed to the response origin, so the middleware at :3000 never sees it.
+  // Security is not affected: the backend verifies the JWT on every API call;
+  // the middleware only drives UI routing, not data access control.
   const userType = request.cookies.get("userType")?.value;
 
   // Skip middleware for static assets and API routes
@@ -156,7 +162,7 @@ export async function middleware(request) {
   // AUTHENTICATION LOGIC
   // ============================================
 
-  if (token && userType) {
+  if (userType) {
     // User is logged in
 
     // Check if user profile is complete (from cookie set during login)

@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+﻿import { cookies } from "next/headers";
 import { requirePageAccess } from "@/services/serverAuth";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
@@ -10,7 +10,7 @@ export default async function AdminEventDetailsPage({ params }) {
   await requirePageAccess("events", lang);
 
   const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = cookieStore.get("access_token")?.value;
   const queryClient = createServerQueryClient();
 
   if (token) {
