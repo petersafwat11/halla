@@ -69,6 +69,10 @@ const { uploadServiceImage } = require('../../shared/utils/s3Upload');
 // Public routes
 router.get('/public', servicesController.getPublicServices);
 
+// FLOW-25-F04: Authenticated routes (any logged-in user — host contacts vendor)
+router.post('/:id/inquire', protect, validateObjectId('id'), servicesController.recordInquiry);
+router.post('/:id/book', protect, validateObjectId('id'), servicesController.recordBooking);
+
 // Protected routes (vendor only)
 router.use(protect);
 router.use(restrictTo(ROLES.VENDOR));

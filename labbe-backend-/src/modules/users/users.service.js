@@ -17,6 +17,7 @@ const {
   ValidationError,
   ForbiddenError,
 } = require("../../shared/errors");
+const AppError = require("../../shared/errors/AppError");
 
 // Import existing models during migration
 const User = require("../../../models/UserModel");
@@ -438,9 +439,10 @@ class UsersService {
         [VENDOR_STATUS.REJECTED]: [],
       };
       if (!(ALLOWED[from] || []).includes(vendorStatus)) {
-        throw new ValidationError(
-          JSON.stringify({ error: 'INVALID_TRANSITION', from, to: vendorStatus })
-        );
+        // FLOW-03-F04: 422 with structured body matching the spec contract
+        const transitionErr = new AppError('INVALID_TRANSITION', 422, 'INVALID_TRANSITION');
+        transitionErr.errors = [{ error: 'INVALID_TRANSITION', from, to: vendorStatus }];
+        throw transitionErr;
       }
 
       updateData["profile.vendorData.vendorStatus"] = vendorStatus;
