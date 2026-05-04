@@ -88,24 +88,24 @@ the touch-list. No batching.
 
 ## Track F — Notifications
 
-- [ ] FLOW-27-F01 — Notification idempotency
-- [ ] FLOW-27-F02 — Scheduled delivery cron
-- [ ] FLOW-27-F03 (Low) — NotificationPreferencesModel cleanup
-- [ ] FLOW-27-F04 (Low) — Email delivery writeback
+- [x] FLOW-27-F01 — Notification idempotency — commit d6cc712
+- [x] FLOW-27-F02 — Scheduled delivery cron (every 5 min, runBatched) — commit fcc2a8e
+- [x] FLOW-27-F03 (Low) — NotificationPreferencesModel cleanup — commit 71712ff
+- [x] FLOW-27-F04 (Low) — Email delivery writeback — commit 61a1955
 
 ## Track G — Tickets / RBAC / Tenant
 
-- [ ] FLOW-23-F01 — Ticket state machine
-- [ ] FLOW-23-F02 — addReply route
-- [ ] RBAC-F01 — requirePageAccess consistency
-- [ ] TENANT-F02 — Tickets tenant filter
-- [ ] TENANT-F03 — Admin broadcast tenant filter
+- [ ] FLOW-23-F01 — Ticket state machine (agent running)
+- [ ] FLOW-23-F02 — addReply route (agent running)
+- [ ] RBAC-F01 — requirePageAccess consistency (agent running)
+- [ ] TENANT-F02 — Tickets tenant filter (agent running)
+- [ ] TENANT-F03 — Admin broadcast tenant filter (agent running)
 
 ## Track H — Exports + Phase 4d Hand-offs
 
-- [ ] FLOW-28-F04 — exportWhitelabels tenant filter
-- [ ] Phase-4d-1 — Remove compat aliases guest-list/staff-list
-- [ ] Phase-4d-2 — Remove legacy mobile shim files
+- [x] FLOW-28-F04 — exportWhitelabels tenant filter — commit 645f164
+- [x] Phase-4d-1 — Remove compat aliases (already removed in prior phase)
+- [x] Phase-4d-2 — Remove legacy mobile shim files — commit e926a5d
 
 ## Smoke Tests
 
