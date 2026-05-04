@@ -5,9 +5,10 @@
  */
 
 const Service = require('../../../models/ServiceModel');
+const User = require('../../../models/UserModel');
 const mongoose = require('mongoose');
 const { NotFoundError, ForbiddenError } = require('../../shared/errors');
-const { SERVICE_STATUS } = require('../../shared/constants');
+const { SERVICE_STATUS, VENDOR_STATUS } = require('../../shared/constants');
 const { getFileUrl } = require('../../shared/utils/s3Upload');
 const locationsService = require('../locations/locations.service');
 
@@ -22,7 +23,18 @@ class ServicesService {
     const { page = 1, limit = 20 } = options;
     const skip = (page - 1) * limit;
 
-    let query = { status: SERVICE_STATUS.ACTIVE, isPublic: { $ne: false } };
+    // FLOW-26-F02 + FLOW-24-F04: filter to approved vendors with completed profiles only
+    const approvedVendorIds = await User.distinct('_id', {
+      role: 'vendor',
+      'profile.vendorData.vendorStatus': VENDOR_STATUS.APPROVED,
+      'profile.vendorData.profileCompleted': true,
+    });
+
+    let query = {
+      status: SERVICE_STATUS.ACTIVE,
+      isPublic: true,
+      vendorId: { $in: approvedVendorIds },
+    };
 
     if (filters.category) query.type = filters.category;
     if (filters.vendorId) query.vendorId = filters.vendorId;
@@ -46,7 +58,8 @@ class ServicesService {
     }
     if (filters.minRating) query.rating = { $gte: parseFloat(filters.minRating) };
 
-    const vendorPopulateFields = 'name avatar email mobile phoneNumber profile.vendorData.brandName profile.vendorData.businessLogo profile.vendorData.socialLinks profile.vendorData.serviceDescription';
+    // FLOW-26-F01: include vendor rating in marketplace populate
+    const vendorPopulateFields = 'name avatar email mobile phoneNumber profile.vendorData.brandName profile.vendorData.businessLogo profile.vendorData.socialLinks profile.vendorData.serviceDescription profile.vendorData.rating profile.vendorData.numberOfRatings';
 
     const [services, total] = await Promise.all([
       Service.find(query)
@@ -123,18 +136,64 @@ class ServicesService {
    * @param {string} [vendorId]
    * @returns {Promise<Object>}
    */
-  async getServiceById(serviceId, vendorId = null) {
+  async getServiceById(serviceId, vendorId = null, trackView = false) {
     const query = { _id: serviceId };
     if (vendorId) query.vendorId = vendorId;
 
     const service = await Service.findOne(query)
-      .populate('vendorId', 'name avatar email mobile phoneNumber profile.vendorData.brandName profile.vendorData.businessLogo profile.vendorData.socialLinks profile.vendorData.serviceDescription');
+      .populate('vendorId', 'name avatar email mobile phoneNumber profile.vendorData.brandName profile.vendorData.businessLogo profile.vendorData.socialLinks profile.vendorData.serviceDescription profile.vendorData.rating profile.vendorData.numberOfRatings');
 
     if (!service) {
       throw new NotFoundError('Service');
     }
 
+    // FLOW-26-F05: increment numberOfClicks on public vendor profile view
+    if (trackView) {
+      Service.findByIdAndUpdate(serviceId, { $inc: { viewCount: 1 } }).exec();
+      if (service.vendorId?._id) {
+        User.findByIdAndUpdate(service.vendorId._id, {
+          $inc: { 'profile.vendorData.numberOfClicks': 1 },
+        }).exec();
+      }
+    }
+
     return { service: this._formatService(service) };
+  }
+
+  /**
+   * Record an inquiry on a service (FLOW-25-F04)
+   * Increments both the Service-level counter and the vendor User-level counter.
+   */
+  async recordInquiry(serviceId) {
+    const service = await Service.findByIdAndUpdate(
+      serviceId,
+      { $inc: { inquiryCount: 1 } },
+      { new: true, select: 'vendorId' }
+    );
+    if (service?.vendorId) {
+      User.findByIdAndUpdate(
+        service.vendorId,
+        { $inc: { 'profile.vendorData.inquiryCount': 1 } }
+      ).exec();
+    }
+  }
+
+  /**
+   * Record a booking on a service (FLOW-25-F04)
+   * Increments both the Service-level counter and the vendor User-level counter.
+   */
+  async recordBooking(serviceId) {
+    const service = await Service.findByIdAndUpdate(
+      serviceId,
+      { $inc: { bookingCount: 1 } },
+      { new: true, select: 'vendorId' }
+    );
+    if (service?.vendorId) {
+      User.findByIdAndUpdate(
+        service.vendorId,
+        { $inc: { 'profile.vendorData.bookingCount': 1 } }
+      ).exec();
+    }
   }
 
   /**
@@ -145,11 +204,12 @@ class ServicesService {
    * @returns {Promise<Object>}
    */
   async createService(vendorId, data, file = null) {
+    // FLOW-25-F01: new services default to isPublic:false; vendor must publish explicitly.
     const serviceData = {
       ...data,
       vendorId,
       status: 'active',
-      isPublic: true,
+      isPublic: false,
     };
 
     // Auto-resolve location names if only IDs were provided
@@ -260,6 +320,8 @@ class ServicesService {
             email: service.vendorId.email || null,
             phone: service.vendorId.mobile || service.vendorId.phoneNumber || null,
             website: service.vendorId.profile?.vendorData?.socialLinks?.website || null,
+            rating: service.vendorId.profile?.vendorData?.rating || null,
+            numberOfRatings: service.vendorId.profile?.vendorData?.numberOfRatings || 0,
           }
         : null,
       createdAt: service.createdAt,
