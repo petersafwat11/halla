@@ -128,13 +128,13 @@ const guestSchema = new mongoose.Schema(
       // Attempted channel (what we tried to send via)
       method: {
         type: String,
-        enum: ["email", "sms", "whatsapp"],
+        enum: ["sms", "whatsapp"],
       },
       // Actual delivery channel — may differ from method when WhatsApp falls back to SMS.
       // Updated to 'sms' by the webhook when Taqnyat reports no_capability for the WA leg.
       effectiveChannel: {
         type: String,
-        enum: ["email", "sms", "whatsapp"],
+        enum: ["sms", "whatsapp"],
       },
       // True when WhatsApp was attempted but SMS was used as fallback
       smsFallback: {
@@ -175,7 +175,12 @@ const guestSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      // FLOW-15-F06: true when Taqnyat returned 429 — guest is transient, not permanently failed
+      rateLimited: { type: Boolean, default: false },
     },
+    // FLOW-13-F02: soft-delete tombstone — set instead of deleteMany on guest removal
+    deleted: { type: Boolean, default: false },
+    deletedAt: { type: Date },
   },
   {
     timestamps: true,

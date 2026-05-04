@@ -427,6 +427,8 @@ const eventSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // FLOW-16-F03: last test message timestamp for per-event throttle
+    lastTestAt: { type: Date },
 
 
     // Messaging Status (for bulk sending tracking)

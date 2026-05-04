@@ -60,35 +60,7 @@ router.post('/webhook', messagingController.webhook);
 // Protected routes
 router.use(protect);
 
-// Test message (requires subscription)
-/**
- * @swagger
- * /messaging/test:
- *   post:
- *     summary: Send test message
- *     description: Send a test message to verify messaging setup
- *     tags: [Messaging]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [phoneNumber, message]
- *             properties:
- *               phoneNumber:
- *                 type: string
- *               message:
- *                 type: string
- *     responses:
- *       200:
- *         description: Test message sent
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.post('/test', requireSubscription, messagingController.sendTestMessage);
+// FLOW-16-F01: POST /messaging/test removed — canonical endpoint is PATCH /events/:id/test-message
 
 // Approved templates list (for event creation step 4 dropdown)
 router.get('/templates/approved', messagingController.getApprovedTemplates);
