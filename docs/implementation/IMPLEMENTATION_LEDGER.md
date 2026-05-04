@@ -299,24 +299,96 @@ Hand-offs to Phase 5:
 
 ---
 
+## Closed in Phase 5 (audit log activation, edges, polish)
+
+Branch: `claude/implement-phase-5-xP9mK`. See `PHASE_5_REPORT.md`.
+
+### Track A — Foundation
+- **FLOW-01-F05 (revisited)** — dual `/api/v2` mount removed from `src/app.js` — commit `12425c9`
+- AuditLogModel `targetType` enum extended with `plan`, `addon` — commit `12425c9`
+- `redactSensitive` export fixed in `auditLog.js` — commit `12425c9`
+
+### Track B — Audit Log Wiring (new audit events, no new FLOW-ID closures)
+- `auth.login_locked`, `auth.password_changed`, `auth.password_reset` audit calls wired in `auth.service.js` — commit `29cd203`
+- `auth.logout` audit wired in `auth.controller.js` (jwt.decode best-effort) — commit `29cd203`
+- `event.created`, `event.updated`, `event.deleted` audit calls wired in `events.service.js` — commit `bbab695`
+- `event.exported` audit wired in `guests.controller.js` — commit `739dbd5`
+- `post_event.content_revoked` + `targetType: 'event'` fix in `post-event.service.js` — commit `6270e64`
+- `users.service.js` phone audit: plaintext phone removed from metadata — commit `8089e42`
+- `notification.broadcast` audit wired in `notifications.controller.js` — commit `fcb2412`
+- `vendor.status_updated` audit wired in `admin.service.js` — commit `e730e3d`
+
+### Track C — Auth / Profile
+- **FLOW-02-F01** — Host signup verification email + `GET /auth/verify-email-link` endpoint — commits `5d39d48`, `ef529e6`
+- **FLOW-02-F02** — OTP soft-invalidation on first use (`used` flag, no delete) — commits `5d39d48`, `e8470cb`
+- **FLOW-02-F03** — Welcome email on host signup — commit `ef529e6`
+- **FLOW-04-F02** — Whitelabel logo passed through S3 via `processUploadedFiles` — commit `45725ab`
+- **FLOW-04-F04** — Subdomain uniqueness: verified already enforced by sparse unique index on `domain.subdomain`
+- **FLOW-06-F04** — Reset-password rate limit: verified `passwordResetLimiter` already wired in `auth.routes.js`
+- **FLOW-07-F01** — Phone update OTP: `requestPhoneUpdate` / `confirmPhoneUpdate` controller + routes — commit `ac61287`
+- **FLOW-07-F02** — Profile image S3 via `processUploadedFiles` (no local disk paths) — commit `427c772`
+- **FLOW-07-F03** — Language sync: top-level `preferredLanguage` field on `UserModel` + profile update — commit `93816d1`
+
+Deferred: **FLOW-04-F03** — PlanModel `limitsSchema.maxHosts` does not exist; requires schema design outside Phase 5 scope.
+
+### Track D — Vendor / Marketplace
+- **FLOW-03-F04** — Vendor status state machine: `→ pending` blocked in `updateVendorStatus` — commit `e730e3d`
+- **FLOW-24-F01** — Vendor approval email sent when status → approved — commit `e730e3d`
+- **FLOW-24-F02** — `vendor.status_updated` audit log on every status transition — commit `e730e3d`
+- **FLOW-24-F04** — `profileCompleted` field added to `UserModel` vendorData — commit `3b93996`
+- **FLOW-25-F01** — `ServiceModel.isPublic` default changed to `false` — commit `e730e3d`
+- **FLOW-25-F04** — `inquiryCount` field added to `ServiceModel` — commit `e730e3d`
+- **FLOW-26-F05** — `numberOfClicks` increment on `getVendorDetail` (fire-and-forget) — commit `e730e3d`
+
+Deferred: **FLOW-03-F01**, **FLOW-03-F02**, **FLOW-03-F03**, **FLOW-24-F03**, **FLOW-24-F05** — not in Phase 5 scope.
+Deferred: **FLOW-25-F02**, **FLOW-25-F03**, **FLOW-26-F01**, **FLOW-26-F02**, **FLOW-26-F04** — pre-existing or deferred to Phase 6.
+
+### Track E — Event Lifecycle
+- **FLOW-11-F03** — Guest phone deduplication before bulk insert (keep last occurrence) — commit `bbab695`
+- **FLOW-12-F02** — Addon `extra_invites` summed from `AddonModel` via `_getAddonExtraGuests` — commit `bbab695`
+- **FLOW-12-F04** — Legacy `requireSubscription` guard removed from `/:id/guest-list` + `/:id/staff-list` — commit `bbab695`
+- **FLOW-13-F02** — Guest soft-delete fields (`deleted`, `deletedAt`) added to `GuestModel` — commit `bbab695`
+- **FLOW-13-F04** — Event update status block list extended: `LIVE`, `PUBLISHED`, `ARCHIVED` added — commit `bbab695`
+- **FLOW-13-F05** — Event audit log: `event.created` / `event.updated` / `event.deleted` wired — commit `bbab695`
+- **FLOW-15-F06** — Taqnyat 429 rate-limit: guest marked `rateLimited: true` instead of failed — commit `bbab695`
+- **FLOW-16-F01 / F02** — Legacy `POST /messaging/test` removed; frontend migrated to `PATCH /events/:id/test-message`; RSVP preview URL corrected — commit `bbab695`
+- **FLOW-16-F03** — Per-event test message throttle (30s via `lastTestAt` field; admins exempt) — commit `bbab695`
+- **FLOW-21-F02** — `pendingApproval` flag added to `PostEventContentModel` comment schema — commit `bbab695`
+- **FLOW-21-F05** — `uniqueVisitors` array capped at 5000; `uniqueVisitorCount` counter for true count — commit `bbab695`
+- **FLOW-22-F01** — In-memory 30s TTL stats cache added to `MessagingService` — commit `bbab695`
+- **FLOW-22-F02** — `SMS_COST_SAR` env var read in `getDetailedStats` (default 0.15 SAR) — commit `bbab695`
+- **FLOW-22-F03** — `email` removed from `invitation.method` enum in `GuestModel` — commit `bbab695`
+
+### Track F — Notifications
+- **FLOW-27-F01** — Notification idempotency via `withIdempotency` utility — commit `d6cc712`
+- **FLOW-27-F02** — Scheduled notification delivery cron (every 5 min, `runBatched`) — commit `fcc2a8e`
+- **FLOW-27-F03** — `NotificationPreferencesModel` cleanup — commit `71712ff`
+- **FLOW-27-F04** — Email delivery writeback on notification send — commit `61a1955`
+
+### Track G — Tickets / RBAC / Tenant
+- **FLOW-23-F01** — Ticket state machine (`VALID_TRANSITIONS` matrix; terminal states enforced) — commit `acab4f7`
+- **FLOW-23-F02** — `addReply` route `POST /:id/replies` + controller — commit `acab4f7`
+- **RBAC-F01** — `getPageAccess` SUPER_ADMIN hierarchy fallback — commit `acab4f7`
+- **TENANT-F02** — Tickets `getTickets` filtered by `whitelabelId` — commit `acab4f7`
+- **TENANT-F03** — Admin broadcast scoped to tenant (`effectiveWhitelabelId`) — commit `fcb2412`
+
+### Track H — Exports
+- **FLOW-28-F04** — `exportWhitelabels` tenant-scoped via `whitelabelId` param — commit `e730e3d`
+
+Smoke checks: `45 / 45` PASS via
+`docs/implementation/phase-5-smoke-tests/static-checks-5.js` — commit `bd83968`.
+Full report in `PHASE_5_REPORT.md`.
+
+---
+
 ## Open
 
 - FLOW-01-F04 — not started (Phase 1c)
-- FLOW-02-F01 — not started
-- FLOW-02-F02 — not started
-- FLOW-02-F03 — not started
 - FLOW-03-F01 — not started
 - FLOW-03-F02 — not started
 - FLOW-03-F03 — not started
-- FLOW-03-F04 — not started
 - FLOW-04-F01 — not started
-- FLOW-04-F02 — not started
-- FLOW-04-F03 — not started
-- FLOW-04-F04 — not started
-- FLOW-06-F04 — not started
-- FLOW-07-F01 — not started
-- FLOW-07-F02 — not started
-- FLOW-07-F03 — not started
+- FLOW-04-F03 — deferred (PlanModel maxHosts field absent; requires schema design)
 - FLOW-08-F01 — not started
 - FLOW-08-F02 — not started
 - FLOW-08-F03 — not started
@@ -328,18 +400,11 @@ Hand-offs to Phase 5:
 - FLOW-10-F03 — not started
 - FLOW-11-F01 — closed in PHASE_4 (commit `9ba4717`)
 - FLOW-11-F02 — not started
-- FLOW-11-F03 — not started
 - FLOW-11-F04 — not started
-- FLOW-11-F05 — not started
 - FLOW-12-F01 — not started
-- FLOW-12-F02 — not started
 - FLOW-12-F03 — not started
-- FLOW-12-F04 — not started
 - FLOW-13-F01 — not started
-- FLOW-13-F02 — not started
-- FLOW-13-F03 — not started
-- FLOW-13-F04 — not started
-- FLOW-13-F05 — not started
+- FLOW-13-F03 — not started (Taqnyat job cancel on reschedule)
 - FLOW-14-F01 — closed in PHASE_3a (commit pending)
 - FLOW-14-F02 — not started
 - FLOW-14-F03 — not started
@@ -350,10 +415,6 @@ Hand-offs to Phase 5:
 - FLOW-15-F03 — closed in PHASE_3c (commit pending)
 - FLOW-15-F04 — closed in PHASE_3c (commit pending)
 - FLOW-15-F05 — closed in PHASE_3c (commit pending)
-- FLOW-15-F06 — not started
-- FLOW-16-F01 — not started
-- FLOW-16-F02 — not started
-- FLOW-16-F03 — not started
 - FLOW-17-F01 — closed in PHASE_3b (commit pending)
 - FLOW-17-F02 — closed in PHASE_3b (commit pending)
 - FLOW-17-F03 — not started
@@ -362,52 +423,30 @@ Hand-offs to Phase 5:
 - FLOW-18-F03 — closed in PHASE_3e (commit pending)
 - FLOW-19-F01 — not started
 - FLOW-19-F02 — closed in PHASE_3d (commit pending)
-- FLOW-19-F03 — not started
 - FLOW-20-F01 — closed in PHASE_3e (commit pending)
 - FLOW-20-F02 — not started
 - FLOW-20-F03 — closed in PHASE_3e (commit pending)
 - FLOW-21-F01 — closed in PHASE_3b (commit pending)
-- FLOW-21-F02 — not started
 - FLOW-21-F03 — closed in PHASE_3e (commit pending)
 - FLOW-21-F04 — not started
-- FLOW-21-F05 — not started
-- FLOW-22-F01 — not started
-- FLOW-22-F02 — not started
-- FLOW-22-F03 — not started
-- FLOW-23-F01 — not started
-- FLOW-23-F02 — not started
 - FLOW-23-F03 — closed in PHASE_4 (verified existing `AssignTicketModal`)
 - FLOW-23-F04 — closed in PHASE_4 (commit `203c7d8`)
-- FLOW-24-F01 — not started
-- FLOW-24-F02 — not started
 - FLOW-24-F03 — not started
-- FLOW-24-F04 — not started
 - FLOW-24-F05 — not started
-- FLOW-25-F01 — not started
 - FLOW-25-F02 — not started
 - FLOW-25-F03 — not started
-- FLOW-25-F04 — not started
 - FLOW-26-F01 — not started
 - FLOW-26-F02 — not started
 - FLOW-26-F03 — not started
 - FLOW-26-F04 — not started
-- FLOW-26-F05 — not started
-- FLOW-27-F01 — not started
-- FLOW-27-F02 — not started
-- FLOW-27-F03 — not started
-- FLOW-27-F04 — not started
 - FLOW-28-F01 — closed in PHASE_4 (commit `203c7d8`)
 - FLOW-28-F02 — closed in PHASE_4 (commit `203c7d8`)
 - FLOW-28-F03 — closed in PHASE_4 (commit `203c7d8`)
-- FLOW-28-F04 — closed in PHASE_4 (commit `203c7d8`)
 - PIPELINE-F01 — closed in PHASE_3a (commit pending)
 - PIPELINE-F03 — closed in PHASE_3a (commit pending)
 - PIPELINE-F04 — closed in PHASE_3a (commit pending)
-- RBAC-F01 — not started
 - RBAC-F03 — not started
 - RBAC-F04 — not started
-- TENANT-F02 — not started
-- TENANT-F03 — not started
 
 ---
 
