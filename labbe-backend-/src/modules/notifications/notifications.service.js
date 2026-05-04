@@ -28,12 +28,39 @@ class NotificationsService {
       const user = await User.findById(userId).select("email notificationPreferences");
 
       if (user?.email && this._shouldSendEmail(user, notificationData.type)) {
+        // FLOW-27-F04: attempt email delivery and write status back to the
+        // Notification record. The existing NotificationModel already has a
+        // structured deliveryStatus.email sub-document ({ sent, sentAt, error })
+        // so we use that shape rather than adding a conflicting flat string field.
+        // The email provider (SMTP via nodemailer) does not expose delivery
+        // receipts synchronously; we record `sent:true/sentAt:now` on a
+        // successful API call and `error` on failure.
         const emailModule = require("../../infrastructure/email");
-        await emailModule.send.notification(user.email, {
-          title: notificationData.title,
-          message: notificationData.message,
-          actionUrl: notificationData.actionUrl,
-        });
+        let emailSent = false;
+        let emailError = null;
+
+        try {
+          await emailModule.send.notification(user.email, {
+            title: notificationData.title,
+            message: notificationData.message,
+            actionUrl: notificationData.actionUrl,
+          });
+          emailSent = true;
+        } catch (emailErr) {
+          emailError = emailErr?.message || "email_send_failed";
+          console.error(`[Notifications] email delivery failed for user ${userId}:`, emailError);
+        }
+
+        // Write delivery status back to the persisted notification document.
+        // Best-effort — do not throw if the writeback itself fails.
+        if (notification?.id) {
+          const writeUpdate = emailSent
+            ? { "deliveryStatus.email.sent": true, "deliveryStatus.email.sentAt": new Date() }
+            : { "deliveryStatus.email.sent": false, "deliveryStatus.email.error": emailError };
+          await Notification.findByIdAndUpdate(notification.id, { $set: writeUpdate }).catch(
+            (err) => console.error("[Notifications] deliveryStatus writeback failed:", err.message)
+          );
+        }
       }
     }
 
@@ -102,6 +129,19 @@ class NotificationsService {
    * @returns {Promise<Object>}
    */
   async createNotification(userId, notificationData) {
+    // FLOW-27-F01: idempotency — if the caller supplies an idempotencyKey,
+    // skip creation if an identical notification was already created within
+    // the last 60 seconds (dedup window for retry-safe callers).
+    if (notificationData.idempotencyKey) {
+      const cutoff = new Date(Date.now() - 60 * 1000);
+      const existing = await Notification.findOne({
+        userId,
+        'data.idempotencyKey': notificationData.idempotencyKey,
+        createdAt: { $gte: cutoff },
+      });
+      if (existing) return this._formatNotification(existing);
+    }
+
     const notification = await Notification.create({
       userId,
       type: notificationData.type || "custom",
@@ -110,7 +150,10 @@ class NotificationsService {
       message: notificationData.message,
       messageAr: notificationData.messageAr,
       actionUrl: notificationData.actionUrl,
-      data: notificationData.data,
+      data: {
+        ...notificationData.data,
+        ...(notificationData.idempotencyKey ? { idempotencyKey: notificationData.idempotencyKey } : {}),
+      },
       priority: notificationData.priority,
       isRead: false,
     });
