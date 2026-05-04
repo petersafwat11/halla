@@ -250,3 +250,17 @@ exports.updateNotificationPreferences = catchAsync(async (req, res) => {
   );
   sendSuccess(res, result, "Notification preferences updated");
 });
+
+// FLOW-07-F01: Request phone update (sends OTP to new phone)
+exports.requestPhoneUpdate = catchAsync(async (req, res) => {
+  const { newPhone } = req.body;
+  const result = await usersService.requestPhoneUpdate(req.user._id, newPhone);
+  sendSuccess(res, result, "OTP sent to new phone number");
+});
+
+// FLOW-07-F01: Confirm phone update with OTP
+exports.confirmPhoneUpdate = catchAsync(async (req, res) => {
+  const { newPhone, otp } = req.body;
+  const result = await usersService.confirmPhoneUpdate(req.user._id, newPhone, otp);
+  sendSuccess(res, result, "Phone number updated successfully");
+});
