@@ -63,4 +63,37 @@ async function logAudit(params = {}) {
   });
 }
 
-module.exports = { logAudit };
+const SENSITIVE_KEYS = new Set([
+  "password",
+  "passwordConfirm",
+  "currentPassword",
+  "token",
+  "accessToken",
+  "refreshToken",
+  "resetToken",
+  "secret",
+  "apiKey",
+  "privateKey",
+  "cvv",
+  "cardNumber",
+  "otp",
+  "pin",
+]);
+
+/**
+ * Recursively redact sensitive fields from an object before audit-logging.
+ * Replaces the value with "[REDACTED]". Safe to call with null/undefined.
+ */
+function redactSensitive(obj) {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(redactSensitive);
+  if (typeof obj !== "object") return obj;
+
+  const out = {};
+  for (const [key, val] of Object.entries(obj)) {
+    out[key] = SENSITIVE_KEYS.has(key) ? "[REDACTED]" : redactSensitive(val);
+  }
+  return out;
+}
+
+module.exports = { logAudit, redactSensitive };

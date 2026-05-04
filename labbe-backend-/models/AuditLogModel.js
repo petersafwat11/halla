@@ -66,6 +66,10 @@ const auditLogSchema = new mongoose.Schema(
         "template",
         "template_category",
         "taqnyat_template",
+        // Phase 5: Phase 2 hand-off — plan + addon rows were using
+        // targetType:"system"; now have their own enum values.
+        "plan",
+        "addon",
       ],
       index: true,
     },

@@ -203,7 +203,8 @@ const createApp = () => {
   // API ROUTES (New Modular Structure)
   // ============================================
 
-  // Mount new modular routes under /api/v2 AND /api (for backward compatibility)
+  // Mount routes under /api/v2 only. Legacy /api prefix removed in Phase 5
+  // (FLOW-01-F05): web and mobile were migrated to /api/v2 in Phase 1a.
   const mountRoutes = (prefix) => {
     app.use(`${prefix}/auth`, authRoutes);
     app.use(`${prefix}/users`, usersRoutes);
@@ -236,8 +237,6 @@ const createApp = () => {
   };
 
   mountRoutes('/api/v2');
-  mountRoutes('/api');
-  // Routes are now mounted via mountRoutes helper
 
 
   // ============================================
