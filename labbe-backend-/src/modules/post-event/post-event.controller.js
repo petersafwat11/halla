@@ -101,6 +101,18 @@ exports.publishContent = catchAsync(async (req, res) => {
 });
 
 /**
+ * Unpublish post-event content (revoke access)
+ * PATCH /api/v2/post-event/:eventId/unpublish
+ */
+exports.unpublishContent = catchAsync(async (req, res) => {
+  const result = await postEventService.unpublishContent(
+    req.params.eventId,
+    req.user._id
+  );
+  sendSuccess(res, result, "Content unpublished successfully");
+});
+
+/**
  * Get published content for guest (legacy route)
  * GET /api/v2/post-event/:eventId/guest/:guestCode
  */
@@ -202,15 +214,15 @@ exports.generateBulkTokens = catchAsync(async (req, res) => {
 });
 
 /**
- * Send post-event access emails to guests
- * POST /api/v2/post-event/:eventId/send-emails
+ * Send post-event access links to guests via WhatsApp/SMS (FLOW-21-F04: renamed from sendBulkAccessEmails)
+ * POST /api/v2/post-event/:eventId/send-access-links
  */
-exports.sendBulkAccessEmails = catchAsync(async (req, res) => {
+exports.sendBulkAccessLinks = catchAsync(async (req, res) => {
   const { guestIds, filter } = req.body;
-  const result = await postEventService.sendBulkAccessEmails(
+  const result = await postEventService.sendBulkAccessLinks(
     req.params.eventId,
     req.user._id,
     { guestIds, filter }
   );
-  sendSuccess(res, result, "Emails sent");
+  sendSuccess(res, result, "Access links sent");
 });
