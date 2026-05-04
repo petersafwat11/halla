@@ -16,6 +16,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRetryLaunch } from "@/hooks/events";
+import useEventActionGate from "@/hooks/events/useEventActionGate";
 import { useTranslation } from "react-i18next";
 import { EVENT_STATUS } from "@/utils/constants/eventStatus";
 import WhatsAppContactButton from "@/ui/commen/whatsappButton/WhatsAppContactButton";
@@ -120,21 +121,15 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
 
   if (status !== FAILED_STATUS) return null;
 
-  // Permission for the retry button (server enforces too).
-  const userRole = currentUser?.role;
-  const userId = currentUser?._id || currentUser?.id;
-  const userWhitelabelId = currentUser?.whitelabelId;
-  const eventWhitelabelId = event?.whitelabelId;
-  const eventHostId = event?.host?._id || event?.host;
-
-  const canRetry =
-    eventHostId?.toString?.() === userId?.toString?.() ||
-    userRole === "admin" ||
-    userRole === "super_admin" ||
-    (userRole === "whitelabel_admin" &&
-      eventWhitelabelId &&
-      userWhitelabelId &&
-      eventWhitelabelId.toString() === userWhitelabelId.toString());
+  // Post-review polish — single source of truth for retry-button RBAC.
+  // `useEventActionGate.canManualRetry` mirrors the backend
+  // restrictTo on `/events/:id/retry-launch`. The server enforces the
+  // same check; the UI gate just keeps the button out of the way for
+  // unauthorized users.
+  const { canManualRetry: canRetry } = useEventActionGate({
+    event,
+    user: currentUser,
+  });
 
   const handleRetry = async () => {
     setRetryError(null);

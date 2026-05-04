@@ -1,0 +1,19 @@
+{
+  "failureBanner": {
+    "retrying": {
+      "title": "Retrying your event launch..."
+    },
+    "failed": {
+      "title": "Event launch failed"
+    }
+  },
+  "partialFailureBanner": {
+    "live": {
+      "title": "Partial invitation delivery"
+    },
+    "completed": {
+      "title": "Partial delivery after the event"
+    },
+    "message": "{{failed}} of {{total}} invitations failed to send. {{sent}} delivered successfully."
+  }
+}

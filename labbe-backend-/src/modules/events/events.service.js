@@ -32,6 +32,16 @@ const { normalizePhoneNumber } = require('../../shared/utils/phone');
 // call site to keep boot-time cycles minimal.
 const Template = require('../../../models/TemplateModel');
 const { validateTemplateData } = require('./templateDataValidator');
+// Phase 4c hardening — resolves legacy `inv.selectedTemplate.id` (Meta
+// taqnyatId string) and `inv.visualTemplate.id` (legacy Number) into
+// canonical ObjectId refs without throwing CastError on dual-write.
+const {
+  resolveTaqnyatTemplateRef,
+  resolveVisualTemplateRef,
+} = require('./templateRefResolver');
+// Post-review polish — extracted error codes shared between
+// updateGuestList and updateEventStep2 so they can't drift.
+const { GUEST_LIST_BELOW_CONFIRMED } = require('../../shared/constants/events');
 
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
@@ -475,11 +485,19 @@ class EventsService {
 
       // Phase 4c W0-RENAME: project legacy keys submitted by older
       // clients into the canonical fields, and vice versa.
+      //
+      // Hardening (post-review): legacy ids are not ObjectIds — Number
+      // for visualTemplate, Meta taqnyatId for selectedTemplate.
+      // `templateRefResolver` resolves them safely; missing/unresolvable
+      // ids leave the canonical ref empty (read paths fall back to legacy).
       if (eventData.invitationSettings) {
         const inv = eventData.invitationSettings;
         if (inv.visualTemplate) {
+          const resolvedVisualRef = resolveVisualTemplateRef(
+            inv.visualTemplate.id ?? eventData.visualTemplate?.templateRef
+          );
           eventData.visualTemplate = {
-            templateRef: inv.visualTemplate.id ?? eventData.visualTemplate?.templateRef,
+            ...(resolvedVisualRef ? { templateRef: resolvedVisualRef } : {}),
             fieldValues: inv.visualTemplate.data ?? eventData.visualTemplate?.fieldValues ?? {},
             bakedImagePath:
               inv.visualTemplate.src ??
@@ -489,9 +507,12 @@ class EventsService {
           };
         }
         if (inv.selectedTemplate) {
-          eventData.taqnyatTemplate = {
-            templateRef: inv.selectedTemplate.id ?? eventData.taqnyatTemplate?.templateRef,
-          };
+          const resolvedTaqnyatRef = await resolveTaqnyatTemplateRef(
+            inv.selectedTemplate.id ?? eventData.taqnyatTemplate?.templateRef
+          );
+          if (resolvedTaqnyatRef) {
+            eventData.taqnyatTemplate = { templateRef: resolvedTaqnyatRef };
+          }
         }
         eventData.guestReplies = {
           onAttend: inv.attendanceAutoReply ?? eventData.guestReplies?.onAttend,
@@ -1207,7 +1228,7 @@ class EventsService {
       throw new AppError(
         `Cannot reduce guest list below ${confirmedCount} confirmed guests.`,
         400,
-        'GUEST_LIST_BELOW_CONFIRMED'
+        GUEST_LIST_BELOW_CONFIRMED
       );
     }
 
@@ -1295,12 +1316,72 @@ class EventsService {
       throw new ValidationError('Cannot modify a completed or cancelled event');
     }
 
+    const preImagePhones = (event.staffList || []).map((s) => s.phone);
     event.staffList = (staffList || []).map((s) => ({
       name: s.name,
       phone: s.phone,
     }));
     await event.save();
+
+    // D-R3 hardening (post-review) — revoke StaffAccessToken records
+    // for any phone removed from the list. Without this, removed
+    // staff retain a working portal link until the token's TTL
+    // expires (default 48h). Best-effort + non-blocking.
+    await this._revokeRemovedStaffTokens(eventId, preImagePhones, event.staffList);
+
     return { event };
+  }
+
+  /**
+   * D-R3 hardening — invalidate StaffAccessToken records for staff
+   * removed from an event's staffList.
+   *
+   * Phone strings on `staffList` and on the token records are stored
+   * in raw form (the entry the host typed). We normalise both sides
+   * by stripping spaces / dashes / parentheses (matches
+   * `staff.service` cleanPhone) so a phone like "+966 55 123 4567"
+   * still matches "+966551234567" when revoking.
+   *
+   * @private
+   */
+  async _revokeRemovedStaffTokens(eventId, preImagePhones, newStaffList) {
+    try {
+      const cleanPhone = (p) => (typeof p === 'string' ? p.replace(/[\s\-\(\)]/g, '') : '');
+      const newPhones = new Set(
+        (newStaffList || []).map((s) => cleanPhone(s?.phone)).filter(Boolean)
+      );
+      const removedPhones = (preImagePhones || [])
+        .map(cleanPhone)
+        .filter((p) => p && !newPhones.has(p));
+      if (removedPhones.length === 0) return;
+
+      // Query the active tokens for this event and filter in-memory by
+      // the cleaned phone — done in JS rather than via a complex regex
+      // $in so phone-format drift between record and list (raw vs
+      // formatted) doesn't leak access. The active-token set per event
+      // is small (one per staff member, plus historical revoked ones),
+      // so this is fine.
+      const activeTokens = await StaffAccessToken.find({
+        event: eventId,
+        isRevoked: false,
+      })
+        .select('_id phone')
+        .lean();
+
+      const tokenIdsToRevoke = activeTokens
+        .filter((t) => removedPhones.includes(cleanPhone(t.phone)))
+        .map((t) => t._id);
+      if (tokenIdsToRevoke.length === 0) return;
+
+      await StaffAccessToken.updateMany(
+        { _id: { $in: tokenIdsToRevoke } },
+        { $set: { isRevoked: true, revokedAt: new Date() } }
+      );
+    } catch (err) {
+      // Non-fatal — the staffList update already committed. Log so an
+      // operator can re-revoke manually if needed.
+      console.error('[events.service] _revokeRemovedStaffTokens failed:', err?.message);
+    }
   }
 
   /**
@@ -1357,7 +1438,7 @@ class EventsService {
       throw new AppError(
         `Cannot reduce guest list below ${confirmedCount} confirmed guests.`,
         400,
-        'GUEST_LIST_BELOW_CONFIRMED'
+        GUEST_LIST_BELOW_CONFIRMED
       );
     }
 
@@ -1467,6 +1548,12 @@ class EventsService {
         }
 
         await session.commitTransaction();
+
+        // D-R3 hardening — revoke tokens for removed staff. Done AFTER
+        // the transaction commits because StaffAccessToken writes are
+        // outside the event-doc transaction scope and we don't want a
+        // commit blocked on a side-effect collection.
+        await this._revokeRemovedStaffTokens(eventId, preImageStaffList.map((s) => s.phone), normalisedStaff);
       } else {
         // Standalone / no-transaction path. Order matters and the delete
         // is DEFERRED until the staff save succeeds — this preserves
@@ -1497,66 +1584,108 @@ class EventsService {
           existingGuests.map((g) => [g._id.toString(), g])
         );
         const updatePreImages = new Map();
-        for (const u of toUpdate) {
-          const existing = guestById.get(u._id.toString());
-          if (existing) {
-            updatePreImages.set(existing._id.toString(), {
-              name: existing.name,
-              email: existing.email,
-            });
-          }
-          await Guest.findByIdAndUpdate(
-            u._id,
-            { name: u.name, ...(u.email !== undefined && { email: u.email }) }
-          );
-        }
-
         const newGuestIds = [];
-        if (toCreate.length > 0) {
-          const created = await Guest.create(toCreate);
-          for (const g of created) newGuestIds.push(g._id);
-        }
-        addedCount = newGuestIds.length;
 
-        // Step 3: event.guestList = [kept, new] (excludes toDeleteIds)
-        event.guestList = [...keptGuestIds, ...newGuestIds];
-        await event.save();
-
-        // Step 4: event.staffList = newStaff. Roll back on failure.
-        try {
-          event.staffList = normalisedStaff;
-          await event.save();
-        } catch (staffErr) {
+        // D-R4 hardening (post-review) — unified rollback handler.
+        // Pass 1 of the original hardening protected only the staff-save
+        // failure window. The in-place updates (step 1) and the
+        // first event.save() (step 3) ALSO had no rollback — a throw
+        // anywhere in steps 1-3 left the DB with orphan guests and
+        // mutated names, with no compensation. This handler restores
+        // every step that had committed by the time the throw happened.
+        const runCompensation = async (failedAt) => {
           try {
-            // Re-load to dodge any version-mismatch from the failed save.
-            const restoreEvent = await Event.findById(eventId);
-            if (restoreEvent) {
-              restoreEvent.guestList = preImageGuestIds;
-              restoreEvent.staffList = preImageStaffList;
-              await restoreEvent.save();
-            }
-            // Drop the freshly-created guests (they were never confirmed
-            // by the host since the save failed).
+            // Always: drop the freshly-created guests (whatever step we
+            // failed at, anything in newGuestIds is unwanted).
             if (newGuestIds.length > 0) {
-              await Guest.deleteMany({ _id: { $in: newGuestIds } });
+              try {
+                await Guest.deleteMany({ _id: { $in: newGuestIds } });
+              } catch (_) { /* best-effort */ }
             }
-            // Restore name/email on the in-place updates (best-effort —
-            // this isn't atomic with the rest of the rollback, but the
-            // host can recover by re-saving step 2).
+
+            // Always: restore the in-place updates (best-effort — they
+            // commit one-at-a-time, so partial restoration is possible).
             for (const [guestId, pre] of updatePreImages.entries()) {
               try {
                 await Guest.findByIdAndUpdate(guestId, {
                   name: pre.name,
                   ...(pre.email !== undefined && { email: pre.email }),
                 });
-              } catch (_) { /* ignore best-effort restore failure */ }
+              } catch (_) { /* best-effort */ }
             }
-            // NOTE: we never deleted the to-delete guests, so there's
-            // nothing to recreate. This is the whole point of the
-            // deferred-delete sequencing.
+
+            // Only when we'd advanced past step 3 (event.save with
+            // new guestList): restore the event doc. If we failed AT
+            // step 3, the event save threw and the document is still
+            // pre-image in the DB — no restore needed.
+            if (failedAt === 'staff-save') {
+              const restoreEvent = await Event.findById(eventId);
+              if (restoreEvent) {
+                restoreEvent.guestList = preImageGuestIds;
+                restoreEvent.staffList = preImageStaffList;
+                await restoreEvent.save();
+              }
+            }
+            // NOTE: we never delete the to-delete guests in compensation
+            // paths — that's the whole point of the deferred-delete
+            // sequencing (preserves QR codes / RSVP / checkIn).
           } catch (rollbackErr) {
-            console.error('[updateEventStep2] compensation rollback failed:', rollbackErr);
+            console.error(
+              `[updateEventStep2] compensation rollback (failedAt=${failedAt}) failed:`,
+              rollbackErr?.message
+            );
           }
+        };
+
+        // Step 1: in-place updates (with pre-image stash).
+        try {
+          for (const u of toUpdate) {
+            const existing = guestById.get(u._id.toString());
+            if (existing) {
+              updatePreImages.set(existing._id.toString(), {
+                name: existing.name,
+                email: existing.email,
+              });
+            }
+            await Guest.findByIdAndUpdate(
+              u._id,
+              { name: u.name, ...(u.email !== undefined && { email: u.email }) }
+            );
+          }
+        } catch (updateErr) {
+          await runCompensation('inplace-update');
+          throw updateErr;
+        }
+
+        // Step 2: create the brand-new guests.
+        try {
+          if (toCreate.length > 0) {
+            const created = await Guest.create(toCreate);
+            for (const g of created) newGuestIds.push(g._id);
+          }
+        } catch (createErr) {
+          await runCompensation('guest-create');
+          throw createErr;
+        }
+        addedCount = newGuestIds.length;
+
+        // Step 3: event.guestList = [kept, new] (excludes toDeleteIds).
+        try {
+          event.guestList = [...keptGuestIds, ...newGuestIds];
+          await event.save();
+        } catch (firstSaveErr) {
+          await runCompensation('first-event-save');
+          throw firstSaveErr;
+        }
+
+        // Step 4: event.staffList = newStaff. Roll back on failure
+        // through the same handler (which now knows to restore the
+        // event doc since step 3 committed).
+        try {
+          event.staffList = normalisedStaff;
+          await event.save();
+        } catch (staffErr) {
+          await runCompensation('staff-save');
           throw staffErr;
         }
 
@@ -1570,6 +1699,10 @@ class EventsService {
             console.error('[updateEventStep2] post-commit guest delete failed:', deleteErr);
           }
         }
+
+        // D-R3 hardening — revoke tokens for removed staff. Reaches
+        // here only after step 4 (staff save) committed.
+        await this._revokeRemovedStaffTokens(eventId, preImageStaffList.map((s) => s.phone), normalisedStaff);
 
         if (event.subscriptionId && newGuestIds.length > 0) {
           try {
@@ -1649,15 +1782,24 @@ class EventsService {
     const canonicalReplies = { ...(event.guestReplies?.toObject?.() || event.guestReplies || {}) };
 
     // Apply incoming legacy keys — back-fill the canonical side too.
+    //
+    // Hardening: legacy ids are not ObjectIds. Resolve them via
+    // `templateRefResolver` so the canonical write doesn't CastError.
     if (settings.visualTemplate !== undefined) {
       legacyMerge.visualTemplate = settings.visualTemplate;
-      if (settings.visualTemplate?.id) canonicalVisual.templateRef = settings.visualTemplate.id;
+      if (settings.visualTemplate?.id) {
+        const resolvedVisualRef = resolveVisualTemplateRef(settings.visualTemplate.id);
+        if (resolvedVisualRef) canonicalVisual.templateRef = resolvedVisualRef;
+      }
       if (settings.visualTemplate?.src) canonicalVisual.bakedImagePath = settings.visualTemplate.src;
       if (settings.visualTemplate?.data) canonicalVisual.fieldValues = settings.visualTemplate.data;
     }
     if (settings.selectedTemplate !== undefined) {
       legacyMerge.selectedTemplate = settings.selectedTemplate;
-      if (settings.selectedTemplate?.id) canonicalTaqnyat.templateRef = settings.selectedTemplate.id;
+      if (settings.selectedTemplate?.id) {
+        const resolvedTaqnyatRef = await resolveTaqnyatTemplateRef(settings.selectedTemplate.id);
+        if (resolvedTaqnyatRef) canonicalTaqnyat.templateRef = resolvedTaqnyatRef;
+      }
     }
     if (settings.templateImage !== undefined) {
       legacyMerge.templateImage = settings.templateImage;
@@ -1681,8 +1823,12 @@ class EventsService {
     }
 
     // Apply incoming canonical keys — back-fill the legacy side too.
+    // Defensively resolve in case a client sends a non-ObjectId value.
     if (settings.visualTemplateRef !== undefined || settings.fieldValues !== undefined || settings.bakedImagePath !== undefined) {
-      if (settings.visualTemplateRef !== undefined) canonicalVisual.templateRef = settings.visualTemplateRef;
+      if (settings.visualTemplateRef !== undefined) {
+        const resolvedVisualRef = resolveVisualTemplateRef(settings.visualTemplateRef);
+        if (resolvedVisualRef) canonicalVisual.templateRef = resolvedVisualRef;
+      }
       if (settings.fieldValues !== undefined) canonicalVisual.fieldValues = settings.fieldValues;
       if (settings.bakedImagePath !== undefined) canonicalVisual.bakedImagePath = settings.bakedImagePath;
       legacyMerge.visualTemplate = {
@@ -1694,8 +1840,11 @@ class EventsService {
       if (canonicalVisual.bakedImagePath) legacyMerge.templateImage = canonicalVisual.bakedImagePath;
     }
     if (settings.taqnyatTemplateRef !== undefined) {
-      canonicalTaqnyat.templateRef = settings.taqnyatTemplateRef;
-      legacyMerge.selectedTemplate = { ...(legacyMerge.selectedTemplate || {}), id: settings.taqnyatTemplateRef };
+      const resolvedTaqnyatRef = await resolveTaqnyatTemplateRef(settings.taqnyatTemplateRef);
+      if (resolvedTaqnyatRef) {
+        canonicalTaqnyat.templateRef = resolvedTaqnyatRef;
+        legacyMerge.selectedTemplate = { ...(legacyMerge.selectedTemplate || {}), id: settings.taqnyatTemplateRef };
+      }
     }
     if (settings.guestReplies && typeof settings.guestReplies === "object") {
       Object.assign(canonicalReplies, settings.guestReplies);

@@ -499,6 +499,81 @@ check("HARDENING: createAndUpdateEvents read normalizer prefers canonical", () =
   expect(/event\.hostNote/.test(src), "hostNote read missing");
 });
 
+// ─── Post-review hardening (C-R1, C-R2, C-R3, C-R4 + polish) ─────────────────
+check("HARDENING C-R1: templateRefResolver resolves legacy ids without CastError", () => {
+  const helperPath = "labbe-backend-/src/modules/events/templateRefResolver.js";
+  expect(exists(helperPath), "templateRefResolver missing");
+  const helper = read(helperPath);
+  expect(/resolveTaqnyatTemplateRef/.test(helper), "resolveTaqnyatTemplateRef not exported");
+  expect(/resolveVisualTemplateRef/.test(helper), "resolveVisualTemplateRef not exported");
+  expect(/\/\^\[a-fA-F0-9\]\{24\}\$\//.test(helper), "ObjectId guard regex missing");
+
+  const ev = read("labbe-backend-/src/modules/events/events.service.js");
+  expect(ev.includes("resolveTaqnyatTemplateRef") && ev.includes("resolveVisualTemplateRef"),
+    "events.service does not import the resolver");
+  expect(/resolveTaqnyatTemplateRef\(/.test(ev), "resolveTaqnyatTemplateRef not invoked");
+  expect(/resolveVisualTemplateRef\(/.test(ev), "resolveVisualTemplateRef not invoked");
+
+  const adm = read("labbe-backend-/src/modules/admin/admin.service.js");
+  expect(adm.includes("resolveTaqnyatTemplateRef") && adm.includes("resolveVisualTemplateRef"),
+    "admin.service does not import the resolver");
+
+  const mig = read("labbe-backend-/scripts/migrate-event-shape.js");
+  expect(mig.includes("templateRefResolver"), "migration script does not use resolver");
+  expect(/await projectLegacyToCanonical\(/.test(mig), "migration loop not awaiting async projection");
+});
+
+check("HARDENING C-R2: mobile bakeCanvas wired into StepThree confirm", () => {
+  expect(exists("halla-mobile/components/shared/TemplatePreviewCanvas.js"),
+    "TemplatePreviewCanvas (mobile) missing");
+  const step = read("halla-mobile/components/createEvent/StepThree.js");
+  expect(/from\s*"\.\.\/\.\.\/utils\/canvasBake"/.test(step),
+    "bakeCanvas not imported in StepThree");
+  expect(/await\s+bakeCanvas\(canvasRef/.test(step), "bakeCanvas not invoked on confirm");
+  expect(step.includes("TemplatePreviewCanvas"), "TemplatePreviewCanvas not rendered");
+});
+
+check("HARDENING C-R3: thumbnail upload drops ACL:private", () => {
+  const src = read("labbe-backend-/src/modules/templates/templates.service.js");
+  expect(!/ACL:\s*"private"/.test(src),
+    "thumbnail PutObjectCommand still sets ACL: private");
+  expect(/CacheControl:\s*"public, max-age=31536000, immutable"/.test(src),
+    "CacheControl header missing on thumbnail upload");
+});
+
+check("HARDENING C-R4: seedInitialTemplates script + INITIAL_TEMPLATE_NAMES exist", () => {
+  expect(exists("labbe-backend-/scripts/seedInitialTemplates.js"), "seed script missing");
+  expect(exists("labbe-backend-/src/shared/constants/initialTemplateNames.js"),
+    "INITIAL_TEMPLATE_NAMES constant missing");
+  const seed = read("labbe-backend-/scripts/seedInitialTemplates.js");
+  expect(seed.includes("INITIAL_TEMPLATE_NAMES"), "constant not consumed by seed");
+  expect(seed.includes("--dry-run"), "dry-run mode missing");
+  expect(/active:\s*false/.test(seed),
+    "seeded templates should be inactive until admin replaces image");
+});
+
+check("HARDENING POLISH: optimistic locking on Template edit", () => {
+  const src = read("labbe-backend-/src/modules/templates/templates.service.js");
+  expect(src.includes("TEMPLATE_VERSION_CONFLICT"), "version-conflict error code missing");
+  expect(/expectedVersion/.test(src), "expectedVersion check absent");
+});
+
+check("HARDENING POLISH: Stepper labels are i18n-driven", () => {
+  const src = read("labbe/app/[lang]/host/create-event/_components/stepper/Stepper.js");
+  expect(src.includes("useTranslation"), "Stepper not using useTranslation");
+  expect(src.includes("step1_title") && src.includes("step6_title"),
+    "Stepper not consuming step{N}_title keys");
+});
+
+check("HARDENING POLISH: events.json translation namespace exists in both ar + en", () => {
+  expect(exists("labbe/localization/locales/ar/events.json"), "ar events.json missing");
+  expect(exists("labbe/localization/locales/en/events.json"), "en events.json missing");
+  const ar = JSON.parse(read("labbe/localization/locales/ar/events.json"));
+  expect(ar?.partialFailureBanner?.message, "partialFailureBanner.message missing in ar");
+  const en = JSON.parse(read("labbe/localization/locales/en/events.json"));
+  expect(en?.partialFailureBanner?.message, "partialFailureBanner.message missing in en");
+});
+
 // ─── Run / report ────────────────────────────────────────────────────────────
 const ok = checks.filter((c) => c.ok).length;
 const total = checks.length;

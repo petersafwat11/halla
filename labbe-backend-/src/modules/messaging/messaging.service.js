@@ -14,6 +14,8 @@ const { runBatched } = require('../../shared/utils/runBatched');
 const { withIdempotency } = require('../../shared/utils/idempotency');
 const { parseEventTime } = require('../../shared/utils/timezone');
 const AppError = require('../../shared/errors/AppError');
+// Post-review polish — extracted error codes shared with events.service.
+const { SCHEDULE_TOO_SOON, SCHEDULE_INVALID } = require('../../shared/constants/events');
 
 class MessagingService {
   constructor() {
@@ -599,7 +601,7 @@ class MessagingService {
       throw new AppError(
         'Invalid scheduledDate or scheduledTime format',
         400,
-        'SCHEDULE_INVALID'
+        SCHEDULE_INVALID
       );
     }
     const leadMs = scheduledInstant.getTime() - Date.now();
@@ -607,7 +609,7 @@ class MessagingService {
       throw new AppError(
         `Schedule must be at least ${minLeadHours} hours from now.`,
         400,
-        'SCHEDULE_TOO_SOON'
+        SCHEDULE_TOO_SOON
       );
     }
 

@@ -34,18 +34,33 @@ require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 
 const mongoose = require("mongoose");
 const Event = require("../models/EventModel");
+// Phase 4c hardening — resolves legacy ids to canonical ObjectIds.
+// Legacy `selectedTemplate.id` was a Meta taqnyatId string; legacy
+// `visualTemplate.id` was a Number from the old hardcoded demo array.
+// Without this resolver, `Event.updateOne` would throw CastError on
+// any document that still carries those legacy values.
+const {
+  resolveTaqnyatTemplateRef,
+  resolveVisualTemplateRef,
+} = require("../src/modules/events/templateRefResolver");
 
 const APPLY = process.argv.includes("--apply");
 const DRY = process.argv.includes("--dry-run") || !APPLY;
 const VERBOSE = process.argv.includes("--verbose");
 
-function projectLegacyToCanonical(doc) {
+async function projectLegacyToCanonical(doc) {
   const inv = doc.invitationSettings || {};
   const updates = {};
 
-  // visualTemplate
+  // visualTemplate — only carry forward a ref if it's already a valid
+  // ObjectId. The legacy Number id has no canonical equivalent (it
+  // pointed into the deprecated hardcoded demo template array). Reads
+  // fall back to the legacy 5-param shape via messaging.service when
+  // templateRef is absent.
+  const resolvedVisualRef =
+    resolveVisualTemplateRef(doc.visualTemplate?.templateRef) ||
+    resolveVisualTemplateRef(inv.visualTemplate?.id);
   const visual = {
-    templateRef: doc.visualTemplate?.templateRef ?? inv.visualTemplate?.id ?? null,
     fieldValues: doc.visualTemplate?.fieldValues ?? inv.visualTemplate?.data ?? {},
     bakedImagePath:
       doc.visualTemplate?.bakedImagePath ??
@@ -53,15 +68,24 @@ function projectLegacyToCanonical(doc) {
       inv.templateImage ??
       null,
   };
-  if (visual.templateRef || visual.bakedImagePath || (visual.fieldValues && Object.keys(visual.fieldValues).length)) {
+  if (resolvedVisualRef) visual.templateRef = resolvedVisualRef;
+  if (
+    resolvedVisualRef ||
+    visual.bakedImagePath ||
+    (visual.fieldValues && Object.keys(visual.fieldValues).length)
+  ) {
     updates.visualTemplate = visual;
   }
 
-  // taqnyatTemplate
-  const taqnyat = {
-    templateRef: doc.taqnyatTemplate?.templateRef ?? inv.selectedTemplate?.id ?? null,
-  };
-  if (taqnyat.templateRef) updates.taqnyatTemplate = taqnyat;
+  // taqnyatTemplate — resolve via TaqnyatTemplate cache lookup.
+  // Already-resolved canonical ObjectId on the doc takes precedence;
+  // otherwise look up the legacy Meta taqnyatId.
+  const resolvedTaqnyatRef =
+    (doc.taqnyatTemplate?.templateRef &&
+      (await resolveTaqnyatTemplateRef(doc.taqnyatTemplate.templateRef))) ||
+    (inv.selectedTemplate?.id &&
+      (await resolveTaqnyatTemplateRef(inv.selectedTemplate.id)));
+  if (resolvedTaqnyatRef) updates.taqnyatTemplate = { templateRef: resolvedTaqnyatRef };
 
   // guestReplies
   const replies = {
@@ -97,7 +121,7 @@ async function main() {
 
   for await (const doc of cursor) {
     try {
-      const updates = projectLegacyToCanonical(doc);
+      const updates = await projectLegacyToCanonical(doc);
       if (!Object.keys(updates).length) {
         unchanged += 1;
         continue;

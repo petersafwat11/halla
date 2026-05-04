@@ -21,6 +21,11 @@ import PreviewInvitation from "./PreviewInvitation";
 import { useTranslation } from "../../localization";
 import { buildDynamicTemplateSchema, buildDefaultValues } from "../../utils/schemas/createEventSchema";
 import { dateToTimeString } from "../../utils/timeFormat";
+// Phase 4c hardening (post-review) — bake the visual canvas on confirm
+// so the WhatsApp header carries the user-overlaid image (web bakes via
+// html2canvas; mobile bakes via react-native-view-shot).
+import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
+import { bakeCanvas } from "../../utils/canvasBake";
 
 const INPUT_MODE_TO_KEYBOARD = {
   text: "default",
@@ -151,8 +156,10 @@ function renderField(field, locale, t) {
 const StepThree = () => {
   const { setValue: parentSetValue, watch: parentWatch } = useFormContext();
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const canvasRef = useRef(null);
   const [showPreview, setShowPreview] = useState(false);
   const [templateConfirmed, setTemplateConfirmed] = useState(false);
+  const [bakeError, setBakeError] = useState(null);
   const { t, currentLanguage } = useTranslation("admin");
   const locale = currentLanguage;
 
@@ -185,7 +192,7 @@ const StepThree = () => {
     setTemplateConfirmed(false);
   }, [parentSetValue]);
 
-  const handleConfirmTemplate = innerMethods.handleSubmit((data) => {
+  const handleConfirmTemplate = innerMethods.handleSubmit(async (data) => {
     const converted = { ...data };
     if (selectedTemplate?.fields) {
       for (const field of selectedTemplate.fields) {
@@ -197,7 +204,28 @@ const StepThree = () => {
     parentSetValue("visualTemplate", {
       ...selectedTemplate,
       data: converted,
+      fieldValues: converted,
     }, { shouldValidate: true });
+
+    // Phase 4c hardening — bake the canvas with the user-overlaid data
+    // so the WhatsApp header carries the customised image. On any
+    // capture failure, fall back to the stock template thumbnail so
+    // submit is never blocked by an environment without view-shot.
+    setBakeError(null);
+    try {
+      const baked = await bakeCanvas(canvasRef, {
+        width: selectedTemplate?.naturalWidth,
+        height: selectedTemplate?.naturalHeight,
+      });
+      if (baked?.file?.uri) {
+        parentSetValue("templateImage", baked.file, { shouldValidate: true });
+      }
+    } catch (err) {
+      console.warn("[StepThree] bakeCanvas failed — falling back to stock template:", err?.message);
+      setBakeError(err?.message || "BAKE_FAILED");
+      const fallback = selectedTemplate?.imageUrl || selectedTemplate?.thumbnailUrl;
+      if (fallback) parentSetValue("templateImage", fallback, { shouldValidate: true });
+    }
     setTemplateConfirmed(true);
   });
 
@@ -211,6 +239,19 @@ const StepThree = () => {
             selectedTemplateId={selectedTemplate?._id || selectedTemplate?.id}
           />
         </View>
+
+        {/* Live preview canvas — also the bake source for the WhatsApp
+            header image. Watches the inner form so overlays update as
+            the host types. */}
+        {selectedTemplate && (
+          <View style={styles.canvasWrapper} collapsable={false} ref={canvasRef}>
+            <TemplatePreviewCanvas
+              template={selectedTemplate}
+              data={hasFields ? innerMethods.watch() : selectedTemplate?.data}
+              primaryColor={hasFields ? innerMethods.watch("primaryColor") : selectedTemplate?.data?.primaryColor}
+            />
+          </View>
+        )}
 
         {/* Dynamic Template Fields */}
         {selectedTemplate && hasFields && (
@@ -246,6 +287,15 @@ const StepThree = () => {
               {templateConfirmed && (
                 <View style={styles.confirmedBadge}>
                   <Text style={styles.confirmedText}>✓ {t("templates.stepThree.confirmed") || "تم تأكيد القالب"}</Text>
+                </View>
+              )}
+
+              {bakeError && (
+                <View style={styles.bakeWarningBadge}>
+                  <Text style={styles.bakeWarningText}>
+                    {t("templates.stepThree.bakeFallback") ||
+                      "تعذّر إنشاء معاينة مخصّصة — سيُستخدم القالب الأصلي."}
+                  </Text>
                 </View>
               )}
             </View>
@@ -336,6 +386,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Cairo_500Medium",
     color: "#2E7D32",
+  },
+  canvasWrapper: {
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  bakeWarningBadge: {
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: "#FFF8E1",
+    borderWidth: 1,
+    borderColor: "#FFE082",
+    alignItems: "center",
+  },
+  bakeWarningText: {
+    fontSize: 13,
+    fontFamily: "Cairo_400Regular",
+    color: "#8D6E00",
+    textAlign: "center",
   },
 });
 

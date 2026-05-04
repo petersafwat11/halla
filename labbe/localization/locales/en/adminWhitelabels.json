@@ -60,7 +60,8 @@
     "submitting": "Approving...",
     "successWithEmail": "Account activated and password setup link sent",
     "successEmailFailed": "Account activated but the email failed to send. Please try again.",
-    "successNoEmailOnFile": "Account activated but there is no email on file. Please update the account details."
+    "successNoEmailOnFile": "Account activated but there is no email on file. Please update the account details.",
+    "successPasswordAlreadySet": "Account activated. Password is already set — use the password-reset action instead of Approve."
   },
   "details": {
     "email": "Email",

@@ -69,7 +69,12 @@ export default function PartialFailureBanner({ eventId }) {
     >
       <div className={styles.title}>{t(titleKey, titleFb)}</div>
       <div className={styles.message}>
-        {t("partialFailureBanner.message", messageFb)}
+        {t("partialFailureBanner.message", {
+          defaultValue: messageFb,
+          failed: failedCount,
+          total,
+          sent,
+        })}
       </div>
     </div>
   );

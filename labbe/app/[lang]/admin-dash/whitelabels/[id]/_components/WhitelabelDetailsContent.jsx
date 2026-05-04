@@ -134,11 +134,23 @@ export default function WhitelabelDetailsContent({ whitelabelId }) {
       const emailDispatch = resp?.data?.emailDispatch || resp?.emailDispatch;
       const emailSent = !!emailDispatch?.sent;
       const noEmailOnFile = emailDispatch?.error === "NO_EMAIL_ON_FILE";
+      // B-R1 hardening — the backend declines to mint a new setup token
+      // once the WL has completed setup, to close the re-approval
+      // password-reset trapdoor. Surface a warning so the admin knows
+      // to use the explicit password-reset flow instead.
+      const passwordAlreadySet = emailDispatch?.error === "PASSWORD_ALREADY_SET";
       if (dispatchSetupEmail && emailSent) {
         toast.success(
           t(
             "approveWhitelabelDialog.successWithEmail",
             "تم تنشيط الحساب وإرسال رابط إعداد كلمة المرور بالبريد"
+          )
+        );
+      } else if (dispatchSetupEmail && passwordAlreadySet) {
+        toast.warning(
+          t(
+            "approveWhitelabelDialog.successPasswordAlreadySet",
+            "تم تنشيط الحساب. كلمة المرور مُعَدَّة بالفعل — استخدم خيار إعادة تعيين كلمة المرور بدلاً من الموافقة."
           )
         );
       } else if (dispatchSetupEmail && noEmailOnFile) {

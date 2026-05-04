@@ -1,0 +1,19 @@
+{
+  "failureBanner": {
+    "retrying": {
+      "title": "نُعيد محاولة إطلاق مناسبتك..."
+    },
+    "failed": {
+      "title": "تعذّر إطلاق المناسبة"
+    }
+  },
+  "partialFailureBanner": {
+    "live": {
+      "title": "إرسال جزئي للدعوات"
+    },
+    "completed": {
+      "title": "إرسال جزئي بعد المناسبة"
+    },
+    "message": "لم يتم إرسال {{failed}} من أصل {{total}} دعوة. {{sent}} وصلت بنجاح."
+  }
+}
