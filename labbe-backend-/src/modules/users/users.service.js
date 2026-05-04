@@ -864,6 +864,19 @@ class UsersService {
           ...files.pricePackages.map(f => `/uploads/packages/${f.filename}`),
         ];
       }
+
+      // FLOW-24-F04: auto-set profileCompleted when all required vendor fields are present
+      const vdCurrent = user.profile.vendorData;
+      const hasName = !!(vdCurrent.brandName?.trim());
+      const hasCategory = !!(
+        vdCurrent.serviceCategories &&
+        Object.values(vdCurrent.serviceCategories).some(
+          (arr) => Array.isArray(arr) && arr.length > 0
+        )
+      );
+      const hasDescription = !!(vdCurrent.serviceDescription?.trim());
+      const hasPortfolio = !!(vdCurrent.portfolioImages?.length > 0);
+      vdCurrent.profileCompleted = hasName && hasCategory && hasDescription && hasPortfolio;
     }
 
     await user.save({ validateBeforeSave: false });
