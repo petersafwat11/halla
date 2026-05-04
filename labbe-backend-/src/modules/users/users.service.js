@@ -26,6 +26,7 @@ const Plan = require("../../../models/PlanModel");
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
+const { logAudit } = require('../../shared/utils/auditLog');
 
 class UsersService {
   // ============================================
@@ -409,7 +410,7 @@ class UsersService {
    * @param {Object} [whitelabelFilter]
    * @returns {Promise<Object>}
    */
-  async updateVendorStatus(id, statusData, whitelabelFilter = null) {
+  async updateVendorStatus(id, statusData, whitelabelFilter = null, actorId = null) {
     const { status, vendorStatus, rejectionReason } = statusData;
     const updateData = {};
 
@@ -418,6 +419,11 @@ class UsersService {
     }
 
     if (vendorStatus && Object.values(VENDOR_STATUS).includes(vendorStatus)) {
+      // FLOW-03-F04: state machine guard — PENDING is set at signup only
+      if (vendorStatus === VENDOR_STATUS.PENDING) {
+        throw new ValidationError('Cannot manually set vendor status to pending');
+      }
+
       updateData["profile.vendorData.vendorStatus"] = vendorStatus;
 
       if (vendorStatus === VENDOR_STATUS.APPROVED) {
@@ -427,8 +433,13 @@ class UsersService {
         if (rejectionReason) {
           updateData["profile.vendorData.rejectionReason"] = rejectionReason;
         }
+        updateData["profile.vendorData.rejectedAt"] = new Date();
       }
     }
+
+    const existing = await User.findOne({ _id: id, role: ROLES.VENDOR, ...whitelabelFilter })
+      .select('profile.vendorData.vendorStatus email name').lean();
+    if (!existing) throw new NotFoundError("Vendor");
 
     const vendor = await User.findOneAndUpdate(
       { _id: id, role: ROLES.VENDOR, ...whitelabelFilter },
@@ -439,6 +450,19 @@ class UsersService {
     if (!vendor) {
       throw new NotFoundError("Vendor");
     }
+
+    // FLOW-24-F02: audit trail on vendor status transitions
+    logAudit({
+      action: 'vendor.status_updated',
+      actor: { _id: actorId },
+      targetType: 'user',
+      targetId: id,
+      metadata: {
+        previousVendorStatus: existing.profile?.vendorData?.vendorStatus,
+        newVendorStatus: vendorStatus,
+        rejectionReason,
+      },
+    }).catch(() => {});
 
     // Send notifications
     this._notifyVendorStatusChange(vendor, vendorStatus, rejectionReason).catch(
@@ -619,6 +643,11 @@ class UsersService {
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError("User");
 
+    // FLOW-07-F01: phone number changes require OTP — reject direct phone update here
+    if (updateData.phoneNumber !== undefined && updateData.phoneNumber !== user.phoneNumber) {
+      throw new ValidationError('Phone number updates require OTP verification. Use the phone update endpoint.');
+    }
+
     const allowedFields = [
       "username",
       "name",
@@ -659,7 +688,66 @@ class UsersService {
       user.profile.vendorData.businessLogo = `/uploads/vendors/${files.businessLogo[0].filename}`;
     }
 
+    const phoneChanged = updateData.phoneNumber !== undefined && updateData.phoneNumber !== user.phoneNumber;
     await user.save({ validateBeforeSave: false });
+
+    // Track-B / FLOW-07-F01: audit phone number changes — do not log plaintext phone
+    if (phoneChanged) {
+      logAudit({
+        action: 'user.phone_updated',
+        actor: { _id: userId, role: user.role },
+        targetType: 'user',
+        targetId: userId,
+      }).catch(() => {});
+    }
+
+    return { user: user.toPublicJSON ? user.toPublicJSON() : user };
+  }
+
+  /**
+   * Request phone number update — sends OTP to the new number (FLOW-07-F01)
+   */
+  async requestPhoneUpdate(userId, newPhone) {
+    const { sendOTP } = require('../auth/otp.service');
+    const { normalizePhoneNumber } = require('../../shared/utils/phone');
+    const normalized = normalizePhoneNumber(newPhone);
+    if (!normalized) throw new ValidationError('Invalid phone number format');
+
+    const existing = await User.findOne({ phoneNumber: normalized, _id: { $ne: userId } });
+    if (existing) throw new ConflictError('Phone number already in use');
+
+    const result = await sendOTP(normalized);
+    if (!result.success) throw new ValidationError('Failed to send OTP: ' + result.error);
+    return { sent: true };
+  }
+
+  /**
+   * Confirm phone number update with OTP (FLOW-07-F01)
+   */
+  async confirmPhoneUpdate(userId, newPhone, otp) {
+    const { verifyOTP } = require('../auth/otp.service');
+    const { normalizePhoneNumber } = require('../../shared/utils/phone');
+    const normalized = normalizePhoneNumber(newPhone);
+    if (!normalized) throw new ValidationError('Invalid phone number format');
+
+    const result = await verifyOTP(normalized, otp);
+    if (!result.success) throw new ValidationError(result.error || 'Invalid OTP');
+
+    const user = await User.findById(userId);
+    if (!user) throw new NotFoundError('User');
+
+    const oldPhone = user.phoneNumber;
+    user.phoneNumber = normalized;
+    await user.save({ validateBeforeSave: false });
+
+    // Do not log plaintext phone numbers in audit metadata
+    logAudit({
+      action: 'user.phone_updated',
+      actor: { _id: userId, role: user.role },
+      targetType: 'user',
+      targetId: userId,
+    }).catch(() => {});
+
     return { user: user.toPublicJSON ? user.toPublicJSON() : user };
   }
 
