@@ -340,4 +340,12 @@ router.get(
   ticketsController.getTicketForRating
 );
 
+// FLOW-23-F02: Add reply to ticket
+router.post(
+  "/:id/replies",
+  validateObjectId("id"),
+  ticketsController.addReply
+);
+
 module.exports = router;
+
