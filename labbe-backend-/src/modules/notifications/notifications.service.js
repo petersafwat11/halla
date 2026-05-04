@@ -6,6 +6,7 @@
 
 const { NotFoundError } = require("../../shared/errors");
 const { USER_STATUS } = require("../../shared/constants");
+const { withIdempotency, sha256 } = require("../../shared/utils/idempotency");
 
 // Import existing models during migration
 const Notification = require("../../../models/NotificationModel");
@@ -124,41 +125,50 @@ class NotificationsService {
 
   /**
    * Create notification for a user
+   *
+   * FLOW-27-F01: idempotency guard via withIdempotency utility.
+   * Key: `notification:<userId>:<type>:<targetId>` (targetId = data.entityId).
+   * TTL is managed by the IdempotencyKeyModel (24h default).
+   * Prevents duplicate notifications from double-firing cron ticks or retries.
+   *
    * @param {string} userId - User ID
    * @param {Object} notificationData - Notification data
    * @returns {Promise<Object>}
    */
   async createNotification(userId, notificationData) {
-    // FLOW-27-F01: idempotency — if the caller supplies an idempotencyKey,
-    // skip creation if an identical notification was already created within
-    // the last 60 seconds (dedup window for retry-safe callers).
-    if (notificationData.idempotencyKey) {
-      const cutoff = new Date(Date.now() - 60 * 1000);
-      const existing = await Notification.findOne({
-        userId,
-        'data.idempotencyKey': notificationData.idempotencyKey,
-        createdAt: { $gte: cutoff },
-      });
-      if (existing) return this._formatNotification(existing);
-    }
+    const type = notificationData.type || "custom";
+    const targetId = notificationData.data?.entityId || "none";
+    const idempotencyKey = `notification:${userId}:${type}:${targetId}`;
 
-    const notification = await Notification.create({
-      userId,
-      type: notificationData.type || "custom",
-      title: notificationData.title,
-      titleAr: notificationData.titleAr,
-      message: notificationData.message,
-      messageAr: notificationData.messageAr,
-      actionUrl: notificationData.actionUrl,
-      data: {
-        ...notificationData.data,
-        ...(notificationData.idempotencyKey ? { idempotencyKey: notificationData.idempotencyKey } : {}),
+    // Build a stable request hash from the notification payload so that a
+    // retry with the same intent matches (same result returned) but a genuinely
+    // different notification payload (e.g. two distinct event_reminder types
+    // for different events) is treated as a new record.
+    const requestHash = sha256({ userId: String(userId), type, targetId });
+
+    return withIdempotency(
+      idempotencyKey,
+      async () => {
+        const notification = await Notification.create({
+          userId,
+          type,
+          title: notificationData.title,
+          titleAr: notificationData.titleAr,
+          message: notificationData.message,
+          messageAr: notificationData.messageAr,
+          actionUrl: notificationData.actionUrl,
+          data: notificationData.data || {},
+          priority: notificationData.priority,
+          isRead: false,
+        });
+        return this._formatNotification(notification);
       },
-      priority: notificationData.priority,
-      isRead: false,
-    });
-
-    return this._formatNotification(notification);
+      {
+        scope: "notification.create",
+        requestHash,
+        userId: String(userId),
+      }
+    );
   }
 
   /**
