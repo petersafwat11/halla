@@ -103,6 +103,7 @@ const vendorDataSchema = new mongoose.Schema(
       tiktok: String,
       twitter: String,
       website: String,
+      whatsapp: String,
     },
 
     // Performance metrics
@@ -120,6 +121,18 @@ const vendorDataSchema = new mongoose.Schema(
     // Admin notes
     adminNotes: String,
     rejectionReason: String,
+
+    // FLOW-24-F02: profile-completion flag (auto-set when required vendor fields are present)
+    profileCompleted: { type: Boolean, default: false },
+
+    // FLOW-24-F02: status-change audit timestamps and actor
+    approvedAt: { type: Date, default: null },
+    rejectedAt: { type: Date, default: null },
+    rejectedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+
+    // FLOW-25-F04: vendor-level engagement counters
+    inquiryCount: { type: Number, default: 0 },
+    bookingCount: { type: Number, default: 0 },
   },
   { _id: false }
 );
@@ -318,6 +331,12 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+    // FLOW-04-F04: whitelabel subdomain / custom domain config
+    domain: {
+      subdomain: { type: String, lowercase: true, trim: true, default: null },
+      customDomain: { type: String, lowercase: true, trim: true, default: null },
+    },
+
     // ============ SUBSCRIPTION ============
     subscription: {
       type: mongoose.Schema.Types.ObjectId,
@@ -369,6 +388,9 @@ userSchema.index({ "profile.vendorData.vendorStatus": 1 });
 userSchema.index({ email: 1, role: 1 });
 userSchema.index({ mobile: 1, role: 1 });
 userSchema.index({ phoneNumber: 1, role: 1 }); // Legacy support
+
+// FLOW-04-F04: unique sparse index for whitelabel subdomain
+userSchema.index({ "domain.subdomain": 1 }, { unique: true, sparse: true });
 
 // Unique compound indexes for better duplicate detection
 userSchema.index(
@@ -549,7 +571,7 @@ userSchema.methods.createPasswordSetupToken = function () {
     .update(setupToken)
     .digest("hex");
 
-  this.passwordSetupExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  this.passwordSetupExpires = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days (FLOW-04-F02)
 
   return setupToken;
 };
