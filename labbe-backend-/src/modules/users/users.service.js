@@ -676,6 +676,8 @@ class UsersService {
       "email",
       "phoneNumber",
       "profile",
+      // FLOW-07-F03: allow updating language preference; mobile reads from server
+      "preferredLanguage",
     ];
     allowedFields.forEach((field) => {
       if (updateData[field] !== undefined) {

@@ -352,6 +352,15 @@ const userSchema = new mongoose.Schema(
       guestData: guestDataSchema,
     },
 
+    // ============ PREFERENCES ============
+    // FLOW-07-F03: top-level language preference; returned on profile fetch
+    // so mobile clients can sync from server rather than storing locally only.
+    preferredLanguage: {
+      type: String,
+      enum: ['ar', 'en'],
+      default: 'ar',
+    },
+
     // ============ METADATA ============
     lastLoginAt: Date,
     lastActivityAt: Date,
