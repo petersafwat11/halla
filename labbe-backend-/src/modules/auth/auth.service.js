@@ -35,7 +35,7 @@ const otpService = require('./otp.service');
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
-const { processUploadedFiles } = require('../../shared/utils/s3Upload');
+const { processUploadedFiles, getFileUrl } = require('../../shared/utils/s3Upload');
 const { logAudit } = require('../../shared/utils/auditLog');
 
 class AuthService {
@@ -575,9 +575,10 @@ class AuthService {
   /**
    * Whitelabel signup
    * @param {Object} userData
+   * @param {Object} [logoFile] - Uploaded logo file from multer.single (req.file)
    * @returns {Promise<{user: Object, token: string}>}
    */
-  async signupWhitelabel(userData) {
+  async signupWhitelabel(userData, logoFile = null) {
     const { email, phoneNumber, englishName, arabicName, planSelection } = userData;
 
     if (!phoneNumber && !email) {
@@ -590,6 +591,9 @@ class AuthService {
     const address = this._parseJsonField(userData.address);
     const parsedPlanSelection = this._parseJsonField(planSelection);
 
+    // FLOW-04-F02: resolve logo URL from S3-uploaded file if provided
+    const logoUrl = logoFile ? getFileUrl(logoFile) : null;
+
     const whitelabelData = {
       englishName,
       arabicName,
@@ -599,6 +603,7 @@ class AuthService {
       address,
       licenseNumber: userData.licenseNumber || '',
       taxNumber: userData.taxNumber || '',
+      ...(logoUrl && { logo: logoUrl }),
       planSelection: {
         planCode: parsedPlanSelection?.planCode || 'business_quarterly',
         billingCycle: parsedPlanSelection?.billingCycle || 'yearly',

@@ -239,7 +239,8 @@ exports.vendorSignup = catchAsync(async (req, res) => {
  * POST /api/v2/auth/signup/whitelabel
  */
 exports.whitelabelSignup = catchAsync(async (req, res) => {
-  const result = await authService.signupWhitelabel(req.body);
+  // FLOW-04-F02: pass the uploaded logo file (req.file from multer.single)
+  const result = await authService.signupWhitelabel(req.body, req.file);
 
   sendAuthResponse(res, {
     user: result.user,
