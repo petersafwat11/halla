@@ -418,28 +418,47 @@ class UsersService {
       updateData.status = status;
     }
 
+    // FLOW-03-F04: fetch current vendor status BEFORE applying changes so we
+    // can enforce the full state machine allowlist.
+    const existing = await User.findOne({ _id: id, role: ROLES.VENDOR, ...whitelabelFilter })
+      .select('profile.vendorData.vendorStatus email name').lean();
+    if (!existing) throw new NotFoundError("Vendor");
+
     if (vendorStatus && Object.values(VENDOR_STATUS).includes(vendorStatus)) {
-      // FLOW-03-F04: state machine guard — PENDING is set at signup only
-      if (vendorStatus === VENDOR_STATUS.PENDING) {
-        throw new ValidationError('Cannot manually set vendor status to pending');
+      // FLOW-03-F04: full state machine — only these transitions are legal:
+      //   pending → approved | rejected
+      //   approved → suspended
+      //   suspended → approved
+      // All other transitions (including → pending) are rejected with 422.
+      const from = existing.profile?.vendorData?.vendorStatus || VENDOR_STATUS.PENDING;
+      const ALLOWED = {
+        [VENDOR_STATUS.PENDING]: [VENDOR_STATUS.APPROVED, VENDOR_STATUS.REJECTED],
+        [VENDOR_STATUS.APPROVED]: [VENDOR_STATUS.SUSPENDED],
+        [VENDOR_STATUS.SUSPENDED]: [VENDOR_STATUS.APPROVED],
+        [VENDOR_STATUS.REJECTED]: [],
+      };
+      if (!(ALLOWED[from] || []).includes(vendorStatus)) {
+        throw new ValidationError(
+          JSON.stringify({ error: 'INVALID_TRANSITION', from, to: vendorStatus })
+        );
       }
 
       updateData["profile.vendorData.vendorStatus"] = vendorStatus;
 
       if (vendorStatus === VENDOR_STATUS.APPROVED) {
         updateData.status = USER_STATUS.ACTIVE;
+        updateData["profile.vendorData.approvedAt"] = new Date();
       } else if (vendorStatus === VENDOR_STATUS.REJECTED) {
         updateData.status = USER_STATUS.REJECTED;
         if (rejectionReason) {
           updateData["profile.vendorData.rejectionReason"] = rejectionReason;
         }
         updateData["profile.vendorData.rejectedAt"] = new Date();
+        if (actorId) {
+          updateData["profile.vendorData.rejectedBy"] = actorId;
+        }
       }
     }
-
-    const existing = await User.findOne({ _id: id, role: ROLES.VENDOR, ...whitelabelFilter })
-      .select('profile.vendorData.vendorStatus email name').lean();
-    if (!existing) throw new NotFoundError("Vendor");
 
     const vendor = await User.findOneAndUpdate(
       { _id: id, role: ROLES.VENDOR, ...whitelabelFilter },
