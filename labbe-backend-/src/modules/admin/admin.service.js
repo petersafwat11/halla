@@ -617,7 +617,7 @@ class AdminService {
   /**
    * Update vendor status (approve/reject/suspend)
    */
-  async updateVendorStatus(vendorId, vendorStatus, whitelabelId) {
+  async updateVendorStatus(vendorId, vendorStatus, whitelabelId, actorId = null) {
     const query = { _id: vendorId, role: ROLES.VENDOR };
     if (whitelabelId !== undefined) {
       query.whitelabelId = whitelabelId;
@@ -627,6 +627,13 @@ class AdminService {
     if (!vendor) {
       throw new NotFoundError('Vendor');
     }
+
+    // FLOW-03-F04: state machine guard — PENDING is set at signup only
+    if (vendorStatus === VENDOR_STATUS.PENDING) {
+      throw new ValidationError('Cannot manually set vendor status to pending');
+    }
+
+    const previousVendorStatus = vendor.profile?.vendorData?.vendorStatus;
 
     vendor.profile = vendor.profile || {};
     vendor.profile.vendorData = vendor.profile.vendorData || {};
@@ -643,6 +650,15 @@ class AdminService {
     }
 
     await vendor.save();
+
+    // FLOW-24-F02: audit trail on vendor status transition
+    logAudit({
+      action: 'vendor.status_updated',
+      actor: { _id: actorId },
+      targetType: 'user',
+      targetId: vendorId,
+      metadata: { previousVendorStatus, newVendorStatus: vendorStatus },
+    }).catch(() => {});
 
     // Notify vendor of approval status change (non-blocking)
     const isApproved = vendorStatus === VENDOR_STATUS.APPROVED;
@@ -661,6 +677,17 @@ class AdminService {
         data: { entityType: 'user', entityId: vendor._id, metadata: { vendorStatus } },
         priority: 'high',
       }).catch(console.error);
+
+      // FLOW-24-F01: send approval email so vendor is notified even without push notifications
+      if (isApproved && vendor.email) {
+        const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
+        email.send.vendorApproval(vendor.email, {
+          vendorName: vendor.profile?.vendorData?.brandName || vendor.name,
+          ownerName: vendor.profile?.vendorData?.ownerFullName || vendor.name,
+          status: vendorStatus,
+          dashboardUrl: `${frontendUrl}/ar/vendor-dashboard`,
+        }).catch((err) => console.error('[admin.updateVendorStatus] approval email failed:', err.message));
+      }
     } else if (vendorStatus === VENDOR_STATUS.SUSPENDED) {
       notificationService.sendToUser(vendor._id, {
         type: 'account_status_change',
@@ -2068,8 +2095,9 @@ class AdminService {
     }));
   }
 
-  async exportWhitelabels({ search, status, from, to } = {}) {
+  async exportWhitelabels(whitelabelId, { search, status, from, to } = {}) {
     let query = { role: ROLES.WHITELABEL_ADMIN };
+    if (whitelabelId !== undefined) query.whitelabelId = whitelabelId;
     if (search) {
       const searchQuery = this._buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
       query = { ...query, ...searchQuery };

@@ -135,6 +135,11 @@ class VendorsService {
       throw new NotFoundError('Vendor');
     }
 
+    // FLOW-26-F05: increment click counter (fire-and-forget)
+    User.findByIdAndUpdate(vendorId, {
+      $inc: { 'profile.vendorData.numberOfClicks': 1 },
+    }).exec();
+
     return { vendor: this._formatVendor(vendor) };
   }
 

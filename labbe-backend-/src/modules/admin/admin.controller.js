@@ -168,7 +168,7 @@ exports.updateVendorStatus = catchAsync(async (req, res) => {
 
   if (!status) throw new ValidationError('Status is required');
 
-  const vendor = await adminService.updateVendorStatus(id, status, whitelabelId);
+  const vendor = await adminService.updateVendorStatus(id, status, whitelabelId, req.user?._id);
   sendSuccess(res, { vendor }, 'Vendor status updated successfully');
 });
 
@@ -606,7 +606,8 @@ exports.exportEvents = catchAsync(async (req, res) => {
 
 exports.exportWhitelabels = catchAsync(async (req, res) => {
   const { search, status, from, to } = req.query;
-  const data = await adminService.exportWhitelabels({ search, status, from, to });
+  const whitelabelId = getWhitelabelIdFromFilter(req);
+  const data = await adminService.exportWhitelabels(whitelabelId, { search, status, from, to });
   const buffer = generateExcel(data, 'whitelabels');
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', 'attachment; filename=whitelabels.xlsx');
