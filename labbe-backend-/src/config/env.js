@@ -74,6 +74,11 @@ const envSchema = Joi.object({
   // so callers can't bypass the client-side picker minimum.
   SCHEDULE_MIN_LEAD_HOURS: Joi.number().min(0).default(48),
 
+  // FLOW-28-F02: maximum number of rows allowed in a single export.
+  // Default 10,000. Exports exceeding this limit return 422 with instructions
+  // to narrow filters.
+  EXPORT_MAX_ROWS: Joi.number().min(100).default(10_000),
+
 }).unknown(true); // Allow unknown keys for flexibility
 
 const { error, value: envVars } = envSchema.validate(process.env, {

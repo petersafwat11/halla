@@ -97,6 +97,7 @@ const limitsSchema = new mongoose.Schema(
     maxInvitesPerEvent: { type: Number, default: null },
     invitePool: { type: Number, default: null },
     durationDays: { type: Number, default: 90 },
+    maxHosts: { type: Number, default: null }, // FLOW-04-F03: null = no limit
   },
   { _id: false }
 );

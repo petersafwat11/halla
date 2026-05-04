@@ -88,6 +88,9 @@ const config = {
     // `now + scheduleMinLeadHours` away, with code SCHEDULE_TOO_SOON.
     scheduleMinLeadHours: env.SCHEDULE_MIN_LEAD_HOURS,
   },
+
+  // FLOW-28-F02: maximum rows per export
+  EXPORT_MAX_ROWS: env.EXPORT_MAX_ROWS,
 };
 
 module.exports = config;

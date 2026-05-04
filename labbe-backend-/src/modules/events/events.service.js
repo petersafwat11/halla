@@ -16,7 +16,7 @@ const {
 } = require("../../shared/errors");
 // M-5: every export/notification helper uses formatRiyadh so we don't
 // re-render UTC server-locale dates as the previous local day.
-const { formatRiyadh } = require("../../shared/utils/timezone");
+const { formatRiyadh, parseEventTime } = require("../../shared/utils/timezone");
 
 // Import existing models during migration
 const Event = require("../../../models/EventModel");
@@ -41,7 +41,7 @@ const {
 } = require('./templateRefResolver');
 // Post-review polish — extracted error codes shared between
 // updateGuestList and updateEventStep2 so they can't drift.
-const { GUEST_LIST_BELOW_CONFIRMED } = require('../../shared/constants/events');
+const { GUEST_LIST_BELOW_CONFIRMED, EVENT_EDIT_LOCKED } = require('../../shared/constants/events');
 
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
@@ -1110,7 +1110,12 @@ class EventsService {
    * @returns {Promise<Buffer>}
    */
   async exportEventsAsExcel(userId) {
-    const { generateExcel } = require("../../shared/utils/excelExport");
+    const { generateExcel, guardExportMaxRows } = require("../../shared/utils/excelExport");
+
+    // FLOW-28-F02: enforce export row cap
+    const count = await Event.countDocuments({ host: userId });
+    guardExportMaxRows(count, 'events');
+
     const events = await Event.find({ host: userId }).populate(
       "guestList",
       "status"
@@ -1141,7 +1146,7 @@ class EventsService {
    * @returns {Promise<Buffer>}
    */
   async exportEventGuestsAsExcel(eventId, userId) {
-    const { generateExcel } = require("../../shared/utils/excelExport");
+    const { generateExcel, guardExportMaxRows } = require("../../shared/utils/excelExport");
     const event = await Event.findOne({ _id: eventId, host: userId })
       .populate({
         path: 'guestList',
@@ -1150,6 +1155,10 @@ class EventsService {
       });
 
     if (!event) throw new NotFoundError("Event");
+
+    // FLOW-28-F02: enforce export row cap
+    const guestCount = event.guestList?.length || 0;
+    guardExportMaxRows(guestCount, 'guests');
 
     const data = (event.guestList || []).map((g) => ({
       Name: g.name || "",
@@ -1215,20 +1224,8 @@ class EventsService {
       throw new ValidationError(`Cannot modify event details when status is '${event.status}'`);
     }
 
-    // FLOW-13-F01: 24h pre-launch edit lock — block date/time/location changes within 24h of launch
-    const LOCK_FIELDS = ['date', 'time', 'location'];
-    const changingLockedField = LOCK_FIELDS.some(f => details[f] !== undefined);
-    if (changingLockedField && event.status === EVENT_STATUS.SCHEDULED) {
-      const launchDate = event.launchSettings?.scheduledDate || event.eventDetails?.date;
-      if (launchDate) {
-        const hoursUntilLaunch = (new Date(launchDate) - Date.now()) / (1000 * 60 * 60);
-        if (hoursUntilLaunch > 0 && hoursUntilLaunch < 24) {
-          throw new ValidationError(
-            'Event date, time, and location cannot be changed within 24 hours of the scheduled launch.'
-          );
-        }
-      }
-    }
+    // FLOW-13-F01: 24h pre-launch edit lock
+    this._checkEditLock(event, details);
 
     event.eventDetails = { ...event.eventDetails, ...details };
     await event.save();
@@ -1965,6 +1962,12 @@ class EventsService {
       throw new ValidationError('Cannot modify a completed or cancelled event');
     }
 
+    // FLOW-13-F01: 24h pre-launch edit lock — block scheduledDate/time changes
+    this._checkEditLock(event, {
+      date: settings.scheduledDate,
+      time: settings.scheduledTime,
+    });
+
     event.launchSettings = { ...event.launchSettings, ...settings };
     await event.save();
 
@@ -2228,6 +2231,10 @@ class EventsService {
         results.push({ name: staffMember.name, phone: staffMember.phone, status: "sent" });
       } catch (error) {
         failed++;
+        // FLOW-20-F02: track staff SMS failures for host dashboard visibility
+        event.messagingStatus = event.messagingStatus || {};
+        event.messagingStatus.staffFailedCount = (event.messagingStatus.staffFailedCount || 0) + 1;
+        await event.save().catch(() => {});
         results.push({
           name: staffMember.name,
           phone: staffMember.phone,
@@ -2243,6 +2250,50 @@ class EventsService {
   // ============================================
   // PRIVATE HELPERS
   // ============================================
+
+  /**
+   * FLOW-13-F01: 24h pre-launch edit lock.
+   *
+   * Rejects changes to date/time/location when the event is `scheduled`
+   * and launch is within 24 hours. Cosmetic fields (title, notes) are
+   * always allowed.
+   *
+   * Uses `parseEventTime` for timezone-safe comparison (Asia/Riyadh
+   * wall-clock → UTC instant).
+   *
+   * @param {Object} event - Event document
+   * @param {Object} [changes] - proposed changes (to detect locked-field writes)
+   * @throws {AppError} 422 EVENT_EDIT_LOCKED if locked
+   */
+  _checkEditLock(event, changes = {}) {
+    if (event.status !== EVENT_STATUS.SCHEDULED) return;
+
+    const LOCK_FIELDS = ['date', 'time', 'location'];
+    const changingLockedField = LOCK_FIELDS.some(f => changes[f] !== undefined);
+    if (!changingLockedField) return;
+
+    const launchDate = event.launchSettings?.scheduledDate || event.eventDetails?.date;
+    if (!launchDate) return;
+
+    const scheduledUTC = parseEventTime(event);
+    if (!scheduledUTC) return;
+
+    const now = new Date();
+    const hoursUntilLaunch = (scheduledUTC.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+    if (hoursUntilLaunch > 0 && hoursUntilLaunch < 24) {
+      const err = new AppError(
+        'Event date, time, and location cannot be changed within 24 hours of the scheduled launch.',
+        422,
+        EVENT_EDIT_LOCKED
+      );
+      err.details = {
+        hoursUntilLaunch: Math.round(hoursUntilLaunch * 10) / 10,
+        scheduledAt: scheduledUTC.toISOString(),
+      };
+      throw err;
+    }
+  }
 
   /**
    * Format event for response.
@@ -2271,6 +2322,12 @@ class EventsService {
       failureReason: event.failureReason || null,
       failedAt: event.failedAt || null,
       launchedAt: event.launchedAt || null,
+      // Messaging status (Phase 4b + FLOW-20-F02)
+      messagingStatus: event.messagingStatus ? {
+        sentCount: event.messagingStatus.sentCount || 0,
+        failedCount: event.messagingStatus.failedCount || 0,
+        staffFailedCount: event.messagingStatus.staffFailedCount || 0,
+      } : null,
       // Multi-tenant context (3c failure-banner RBAC needs this)
       whitelabelId: event.whitelabelId || null,
       host: event.host || null,

@@ -200,6 +200,33 @@ class UsersService {
       );
     }
 
+    // FLOW-04-F03: enforce maxHosts limit when creating under a whitelabel
+    if (whitelabelId) {
+      const whitelabelAdmin = await User.findById(whitelabelId).lean();
+      if (whitelabelAdmin?.subscription) {
+        const sub = await Subscription.findById(whitelabelAdmin.subscription).populate('planId');
+        if (sub?.planId?.limits?.maxHosts != null) {
+          const maxHosts = sub.planId.limits.maxHosts;
+          if (maxHosts > 0) {
+            const currentHostCount = await User.countDocuments({
+              role: ROLES.HOST,
+              whitelabelId,
+            });
+            if (currentHostCount >= maxHosts) {
+              const { HOST_LIMIT_EXCEEDED } = require('../../shared/constants/events');
+              const err = new AppError(
+                `Cannot create host: whitelabel has reached its plan limit of ${maxHosts} host(s).`,
+                422,
+                HOST_LIMIT_EXCEEDED
+              );
+              err.details = { currentHostCount, maxHosts, whitelabelId };
+              throw err;
+            }
+          }
+        }
+      }
+    }
+
     const host = await User.create({
       email: email?.toLowerCase(),
       phoneNumber,

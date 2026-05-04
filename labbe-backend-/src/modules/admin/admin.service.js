@@ -10,12 +10,14 @@ const Subscription = require('../../../models/SubscriptionModel');
 const Plan = require('../../../models/PlanModel');
 const Guest = require('../../../models/GuestModel');
 const { NotFoundError, ValidationError, ConflictError } = require('../../shared/errors');
+const AppError = require('../../shared/errors/AppError');
 const { ROLES, WHITELABEL_ROLES, USER_STATUS, EVENT_STATUS, SUBSCRIPTION_STATUS, VENDOR_STATUS } = require('../../shared/constants');
 const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const config = require('../../config');
 const email = require('../../../email');
 const { logAudit } = require('../../shared/utils/auditLog');
+const { guardExportMaxRows } = require('../../shared/utils/excelExport');
 // Phase 4c hardening — resolves legacy template ids to canonical
 // ObjectId refs so dual-write doesn't CastError.
 const {
@@ -258,6 +260,33 @@ class AdminService {
       }
       if (existingUser.phoneNumber === phoneNumber) {
         throw new ConflictError('Phone number already exists', 'phoneNumber');
+      }
+    }
+
+    // FLOW-04-F03: enforce maxHosts limit when creating under a whitelabel
+    if (whitelabelId) {
+      const whitelabelAdmin = await User.findById(whitelabelId).lean();
+      if (whitelabelAdmin?.subscription) {
+        const sub = await Subscription.findById(whitelabelAdmin.subscription).populate('planId');
+        if (sub?.planId?.limits?.maxHosts != null) {
+          const maxHosts = sub.planId.limits.maxHosts;
+          if (maxHosts > 0) {
+            const currentHostCount = await User.countDocuments({
+              role: ROLES.HOST,
+              whitelabelId,
+            });
+            if (currentHostCount >= maxHosts) {
+              const { HOST_LIMIT_EXCEEDED } = require('../../shared/constants/events');
+              const err = new AppError(
+                `Cannot create host: whitelabel has reached its plan limit of ${maxHosts} host(s).`,
+                422,
+                HOST_LIMIT_EXCEEDED
+              );
+              err.details = { currentHostCount, maxHosts, whitelabelId };
+              throw err;
+            }
+          }
+        }
       }
     }
 
@@ -2079,6 +2108,10 @@ class AdminService {
     const dateRange = this._buildDateRangeQuery(from, to);
     if (Object.keys(dateRange).length > 0) query.createdAt = dateRange;
 
+    // FLOW-28-F02: enforce export row cap
+    const count = await Event.countDocuments(query);
+    guardExportMaxRows(count, 'events');
+
     const events = await Event.find(query)
       .select('eventDetails status guestList host createdAt')
       .populate({ path: 'host', select: 'name username' })
@@ -2105,6 +2138,10 @@ class AdminService {
     if (status) query.status = status;
     const dateRange = this._buildDateRangeQuery(from, to);
     if (Object.keys(dateRange).length > 0) query.createdAt = dateRange;
+
+    // FLOW-28-F02: enforce export row cap
+    const count = await User.countDocuments(query);
+    guardExportMaxRows(count, 'whitelabels');
 
     const whitelabels = await User.find(query)
       .select('username name email phoneNumber status createdAt')

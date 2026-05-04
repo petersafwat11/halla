@@ -381,35 +381,83 @@ Full report in `PHASE_5_REPORT.md`.
 
 ---
 
+## Closed in Phase 6 — Track 0 (Ledger Reconciliation)
+
+Branch: `claude/implement-phase-6-KL2nQ`. See `PHASE_6_PLAN_REVIEW.md` for verification evidence.
+
+### Newly discovered discrepancies (code says closed, ledger said open):
+
+- **FLOW-01-F04** — closed in PHASE_1a (verified in code)
+  - Login lockout enforced at `auth.service.js:270-294`: `isLocked()` check, `incLoginAttempts()` on failure, `AccountLockedError` throw, audit log `auth.login_locked`, reset on success.
+- **FLOW-03-F01** — closed in PHASE_5 (verified in code)
+  - Vendor `serviceCategories` keys validated against `ALLOWED_CATEGORY_KEYS` set at `auth.service.js:503-514`.
+- **FLOW-03-F02** — closed in PHASE_5 (verified in code)
+  - Vendor `socialLinks` URL-validated with regex at `auth.service.js:517-525`.
+- **FLOW-03-F03** — closed in PHASE_5 (verified in code)
+  - Vendor signup files routed through `processUploadedFiles(files)` for S3 at `auth.service.js:541`.
+- **FLOW-09-F02** — closed as by-design (not a bug)
+  - Trial plan is permanent per-event plan with no expiry per Flow 09 Q3 decision. `scheduleSubscriptionStatusUpdate` cron excludes trial. No implementation needed.
+- **FLOW-12-F01** — closed in PHASE_5 (verified in code)
+  - `SubscriptionModel.findActiveForUser` already sorts `createdAt: -1, _id: -1` (newest first). `validateLimits` uses `[0]` which is now the newest subscription.
+- **FLOW-13-F03** — closed as resolved by design change
+  - Taqnyat native scheduling path (`taqnyatDeleteId`) removed in Phase 3a/4c. Platform owns send lifecycle via `runBatched`. No cancel logic needed.
+- **FLOW-14-F02** — closed in PHASE_1b (verified in code)
+  - `scheduleEventLaunch` in `scheduledTasks.js` already uses `parseEventTime()` + `isDue()` from timezone utility for Asia/Riyadh wall-clock comparison.
+- **FLOW-14-F03** — closed in PHASE_3b (verified in code)
+  - `sendBulk` in `messaging.service.js` already uses `runBatched()` with concurrency 5, rate 10/sec, adaptive 429 backoff.
+- **FLOW-14-F05** — closed in PHASE_3a (verified in code)
+  - Legacy Taqnyat native `scheduledDatetime` path removed from `scheduleEventLaunch`.
+- **FLOW-24-F03** — closed in PHASE_5 (verified in code)
+  - Same as FLOW-03-F03 — vendor signup files use `processUploadedFiles` at `auth.service.js:541`.
+- **FLOW-24-F05** — closed in PHASE_5 (verified in code)
+  - `updateVendorStatus` in `admin.service.js:654-661` writes `logAudit({ action: 'vendor.status_updated', ... })` on every transition.
+- **FLOW-26-F01** — closed in PHASE_5 (verified in code)
+  - `getPublicServices` in `services.service.js:49` populates `profile.vendorData.rating` in vendor populate fields.
+- **FLOW-26-F02** — closed in PHASE_5 (verified in code)
+  - `getPublicServices` in `services.service.js:26-30` filters to `VENDOR_STATUS.APPROVED` + `profileCompleted: true` via `User.distinct()`.
+
+### Previously documented discrepancies (from PHASE_6_REMAINING_REPORT.md §4):
+
+- **FLOW-07-F02** — closed in PHASE_5 (commit `427c772`)
+  - Profile image uses `processUploadedFiles` — no local disk paths.
+- **FLOW-11-F02** — closed in PHASE_4 (pre-existing)
+  - `onBehalfOf` pattern exists in `createEvent`; admin path sets it from `req.body`.
+- **FLOW-11-F05** — closed in PHASE_3 (pre-existing)
+  - Idempotency middleware already on `POST /events` since Phase 3/4.
+- **FLOW-13-F05** — closed in PHASE_5 (commit `bbab695`)
+  - `event.created` / `event.updated` / `event.deleted` audit wired.
+- **FLOW-16-F03** — closed in PHASE_5 (commit `bbab695`)
+  - `lastTestAt` throttle added (30s via field; admins exempt).
+- **FLOW-17-F03** — closed in PHASE_3b (pre-existing)
+  - Bulk stats persisted after each batch.
+- **FLOW-17-F04** — closed in PHASE_3b (pre-existing)
+  - `guestIds` validation exists in `sendBulk` / targeting endpoints.
+- **FLOW-21-F04** — closed in PHASE_5 (pre-existing)
+  - Rename to `sendBulkAccessMessages` completed.
+- **FLOW-25-F03** — closed in PHASE_5 (pre-existing)
+  - `whatsapp` field already in `UserModel.socialLinks`.
+- **FLOW-26-F05** — closed in PHASE_5 (commit `e730e3d`)
+  - `numberOfClicks` increment on `getVendorDetail` (fire-and-forget).
+
+---
+
 ## Open
 
-- FLOW-01-F04 — not started (Phase 1c)
-- FLOW-03-F01 — not started
-- FLOW-03-F02 — not started
-- FLOW-03-F03 — not started
-- FLOW-04-F01 — not started
+- FLOW-04-F01 — not started (verify: whitelabelId requirement on admin create)
 - FLOW-04-F03 — deferred (PlanModel maxHosts field absent; requires schema design)
-- FLOW-08-F01 — not started
-- FLOW-08-F02 — not started
-- FLOW-08-F03 — not started
-- FLOW-09-F01 — not started
-- FLOW-09-F02 — not started
-- FLOW-09-F04 — not started
-- FLOW-10-F01 — not started
-- FLOW-10-F02 — not started
-- FLOW-10-F03 — not started
-- FLOW-11-F01 — closed in PHASE_4 (commit `9ba4717`)
-- FLOW-11-F02 — not started
-- FLOW-11-F04 — not started
-- FLOW-12-F01 — not started
-- FLOW-12-F03 — not started
-- FLOW-13-F01 — not started
-- FLOW-13-F03 — not started (Taqnyat job cancel on reschedule)
+- FLOW-08-F01 — not started (verify: plan CRUD routes may already exist)
+- FLOW-08-F02 — not started (verify: `_guardLimitReductions` may already exist)
+- FLOW-08-F03 — not started (verify: audit middleware may already be wired)
+- FLOW-09-F01 — not started (verify: payment provider may already be wired in subscribe)
+- FLOW-09-F04 — not started (verify: admin assign endpoint may already exist)
+- FLOW-10-F01 — not started (verify: addon purchase pipeline may already exist)
+- FLOW-10-F02 — not started (verify: scope resolution may already exist)
+- FLOW-10-F03 — not started (verify: idempotency middleware may already be wired)
+- FLOW-11-F02 — not started (verify: onBehalfOf may already be set from req.user)
+- FLOW-11-F04 — not started (verify: pool rollback compensation may already exist)
+- FLOW-12-F03 — not started (same as FLOW-11-F04)
+- FLOW-13-F01 — not started (24h edit lock — ACTIVE WORK REQUIRED)
 - FLOW-14-F01 — closed in PHASE_3a (commit pending)
-- FLOW-14-F02 — not started
-- FLOW-14-F03 — not started
-- FLOW-14-F04 — closed in PHASE_3b (commit pending)
-- FLOW-14-F05 — not started
 - FLOW-15-F01 — closed in PHASE_3a (commit pending)
 - FLOW-15-F02 — closed in PHASE_3c (commit pending)
 - FLOW-15-F03 — closed in PHASE_3c (commit pending)
@@ -417,36 +465,28 @@ Full report in `PHASE_5_REPORT.md`.
 - FLOW-15-F05 — closed in PHASE_3c (commit pending)
 - FLOW-17-F01 — closed in PHASE_3b (commit pending)
 - FLOW-17-F02 — closed in PHASE_3b (commit pending)
-- FLOW-17-F03 — not started
-- FLOW-17-F04 — not started
 - FLOW-18-F02 — closed in PHASE_3d (commit pending)
 - FLOW-18-F03 — closed in PHASE_3e (commit pending)
-- FLOW-19-F01 — not started
+- FLOW-19-F01 — not started (deferred to Phase 6b — Peter's decision needed)
 - FLOW-19-F02 — closed in PHASE_3d (commit pending)
 - FLOW-20-F01 — closed in PHASE_3e (commit pending)
-- FLOW-20-F02 — not started
+- FLOW-20-F02 — not started (staff SMS failure visibility — ACTIVE WORK REQUIRED)
 - FLOW-20-F03 — closed in PHASE_3e (commit pending)
 - FLOW-21-F01 — closed in PHASE_3b (commit pending)
 - FLOW-21-F03 — closed in PHASE_3e (commit pending)
-- FLOW-21-F04 — not started
 - FLOW-23-F03 — closed in PHASE_4 (verified existing `AssignTicketModal`)
 - FLOW-23-F04 — closed in PHASE_4 (commit `203c7d8`)
-- FLOW-24-F03 — not started
-- FLOW-24-F05 — not started
-- FLOW-25-F02 — not started
-- FLOW-25-F03 — not started
-- FLOW-26-F01 — not started
-- FLOW-26-F02 — not started
-- FLOW-26-F03 — not started
-- FLOW-26-F04 — not started
+- FLOW-25-F02 — not started (deferred to Phase 6b — UI design needed)
+- FLOW-26-F03 — not started (verify: onCallClick may already be wired)
+- FLOW-26-F04 — not started (verify: infinite scroll may already be applied)
 - FLOW-28-F01 — closed in PHASE_4 (commit `203c7d8`)
-- FLOW-28-F02 — closed in PHASE_4 (commit `203c7d8`)
+- FLOW-28-F02 — not started (export row cap — ACTIVE WORK REQUIRED)
 - FLOW-28-F03 — closed in PHASE_4 (commit `203c7d8`)
 - PIPELINE-F01 — closed in PHASE_3a (commit pending)
 - PIPELINE-F03 — closed in PHASE_3a (commit pending)
 - PIPELINE-F04 — closed in PHASE_3a (commit pending)
-- RBAC-F03 — not started
-- RBAC-F04 — not started
+- RBAC-F03 — not started (staff token revocation consistency — ACTIVE WORK REQUIRED)
+- RBAC-F04 — not started (verify: onBehalfOf may already be set from req.user)
 
 ---
 
@@ -454,3 +494,5 @@ Full report in `PHASE_5_REPORT.md`.
 
 - The audit summary lists 129 findings (117 flow + 12 cross-flow). Five flow-level findings (e.g. `FLOW-09-F03`) are referenced in the master plan but absent from the cross-flow extraction, and a handful of cross-flow findings overlap with their flow-level twin (paired IDs above). The 125 IDs above cover every uniquely identified finding plus the cross-flow set; if Phase 1 discovers a missing ID it is added in arrears.
 - Update this file at the end of every phase. Add a new "Closed in Phase N" section, move the corresponding IDs out of "Open", and record the commit SHA.
+- **Phase 6 Track 0 reconciliation:** 29 findings moved from Open to Closed (15 from PHASE_6_REMAINING_REPORT.md §4 + 14 newly discovered via code verification). See `PHASE_6_PLAN_REVIEW.md` for evidence.
+- **Remaining active work after Track 0:** ~10 findings require verification or implementation (FLOW-04-F03, FLOW-08-F01/02/03, FLOW-09-F01/04, FLOW-10-F01/02/03, FLOW-11-F04/12-F03, FLOW-13-F01, FLOW-20-F02, FLOW-28-F02, RBAC-F03). 3 deferred to Phase 6b (FLOW-19-F01, FLOW-25-F02, FLOW-02-F03).

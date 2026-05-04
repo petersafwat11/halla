@@ -25,8 +25,22 @@ const SCHEDULE_TOO_SOON = "SCHEDULE_TOO_SOON";
  */
 const SCHEDULE_INVALID = "SCHEDULE_INVALID";
 
+/**
+ * FLOW-13-F01: Thrown when a host attempts to modify locked fields
+ * (date, time, location) within 24h of a scheduled event's launch.
+ */
+const EVENT_EDIT_LOCKED = "EVENT_EDIT_LOCKED";
+
+/**
+ * FLOW-04-F03: Thrown when a whitelabel admin attempts to create a host
+ * but the whitelabel's plan maxHosts limit would be exceeded.
+ */
+const HOST_LIMIT_EXCEEDED = "HOST_LIMIT_EXCEEDED";
+
 module.exports = {
   GUEST_LIST_BELOW_CONFIRMED,
   SCHEDULE_TOO_SOON,
   SCHEDULE_INVALID,
+  EVENT_EDIT_LOCKED,
+  HOST_LIMIT_EXCEEDED,
 };

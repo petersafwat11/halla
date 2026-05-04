@@ -13,7 +13,7 @@ const Guest = require('../../../models/GuestModel');
 
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
-const { generateExcel } = require('../../shared/utils/excelExport');
+const { generateExcel, guardExportMaxRows } = require('../../shared/utils/excelExport');
 const { formatRiyadh } = require('../../shared/utils/timezone'); // M-5
 const GuestAccessToken = require('../../../models/GuestAccessTokenModel');
 const { logAudit } = require('../../shared/utils/auditLog');
@@ -270,6 +270,10 @@ class GuestsService {
     if (!event) {
       throw new NotFoundError('Event');
     }
+
+    // FLOW-28-F02: enforce export row cap
+    const guestCount = event.guestList?.length || 0;
+    guardExportMaxRows(guestCount, 'guests');
 
     const guestsForExport = (event.guestList || []).map((guest) => ({
       Name: guest.name || '',

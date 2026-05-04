@@ -260,6 +260,11 @@ const messagingStatusSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // FLOW-20-F02: Staff SMS send failures (separate from guest failures)
+    staffFailedCount: {
+      type: Number,
+      default: 0,
+    },
     // Messages pending
     pendingCount: {
       type: Number,
