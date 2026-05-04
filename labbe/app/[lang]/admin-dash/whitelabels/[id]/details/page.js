@@ -1,11 +1,11 @@
-import React from "react";
+﻿import React from "react";
 import { cookies } from "next/headers";
 import { whitelabelAPI } from "@/services/adminDashboard";
 import WhitelabelDetailsWrapper from "./_components/WhitelabelDetailsWrapper";
 
 const WhitelabelDetailsPage = async ({ params }) => {
   const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = cookieStore.get("access_token")?.value;
   const { id } = await params;
 
   let whitelabelData = null;

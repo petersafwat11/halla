@@ -22,6 +22,7 @@ const User = require("../../../models/UserModel");
 
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
+const { logAudit } = require('../../shared/utils/auditLog');
 
 // Ticket source constants
 const TICKET_SOURCE = {
@@ -31,6 +32,15 @@ const TICKET_SOURCE = {
   VENDOR: "vendor",
   GUEST: "guest",
   OTHER: "other",
+};
+
+// FLOW-23-F01: valid status transitions matrix
+const VALID_TRANSITIONS = {
+  [TICKET_STATUS.OPEN]: [TICKET_STATUS.IN_PROGRESS, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
+  [TICKET_STATUS.IN_PROGRESS]: [TICKET_STATUS.WAITING_RESPONSE, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
+  [TICKET_STATUS.WAITING_RESPONSE]: [TICKET_STATUS.IN_PROGRESS, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
+  [TICKET_STATUS.RESOLVED]: [TICKET_STATUS.CLOSED, TICKET_STATUS.IN_PROGRESS],
+  [TICKET_STATUS.CLOSED]: [],
 };
 
 class TicketsService {
@@ -90,7 +100,7 @@ class TicketsService {
    * @param {Object} options
    * @returns {Promise<{data: Array, pagination: Object}>}
    */
-  async getTickets(userId, isAdmin, filters = {}, options = {}) {
+  async getTickets(userId, isAdmin, filters = {}, options = {}, requestingUser = null) {
     const { status, priority, source, search } = filters;
     const { page = 1, limit = 20 } = options;
     const skip = (page - 1) * limit;
@@ -99,6 +109,12 @@ class TicketsService {
 
     if (!isAdmin) {
       query.user = userId;
+    }
+
+    // TENANT-F02: whitelabel admin/moderator sees only their tenant's tickets
+    if (isAdmin && requestingUser?.whitelabelId &&
+        [ROLES.WHITELABEL_ADMIN, ROLES.WHITELABEL_MODERATOR].includes(requestingUser.role)) {
+      query.whitelabelId = requestingUser.whitelabelId;
     }
 
     if (status) query.status = status;
@@ -212,6 +228,9 @@ class TicketsService {
 
     await ticket.save();
 
+    // Audit: reply added
+    logAudit({ action: 'ticket.reply_added', actor: { _id: user._id, role: user.role }, targetType: 'ticket', targetId: ticket._id, metadata: { isStaff: isAdmin, newStatus: ticket.status } }).catch(() => {});
+
     // Notify other party
     if (isAdmin) {
       this._notifyUserTicketReply(ticket, message).catch(console.error);
@@ -232,6 +251,17 @@ class TicketsService {
   async updateTicketStatus(ticketId, status, resolution = null, resolvedById = null) {
     if (!Object.values(TICKET_STATUS).includes(status)) {
       throw new ValidationError("Invalid status");
+    }
+
+    // FLOW-23-F01: enforce state machine — fetch current status first
+    const existing = await Ticket.findById(ticketId).select("status");
+    if (existing) {
+      const allowed = VALID_TRANSITIONS[existing.status] || [];
+      if (!allowed.includes(status)) {
+        throw new ValidationError(
+          `Cannot transition ticket from '${existing.status}' to '${status}'`
+        );
+      }
     }
 
     const updateData = { status };
@@ -257,6 +287,9 @@ class TicketsService {
     if (!ticket) {
       throw new NotFoundError("Ticket");
     }
+
+    // Audit: ticket status changed
+    logAudit({ action: 'ticket.status_updated', actor: { _id: resolvedById }, targetType: 'ticket', targetId: ticket._id, metadata: { previousStatus: existing?.status, newStatus: status, resolution } }).catch(() => {});
 
     // Notify user of status change
     this._notifyTicketStatusChange(ticket, status).catch(console.error);

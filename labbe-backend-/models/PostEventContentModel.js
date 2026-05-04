@@ -34,6 +34,8 @@ const commentSchema = new mongoose.Schema(
       ref: "User",
     },
     hiddenAt: Date,
+    // FLOW-21-F02: set to true when requireApproval is enabled — hides until host approves
+    pendingApproval: { type: Boolean, default: false },
   },
   {
     _id: true,
@@ -182,6 +184,8 @@ const postEventContentSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      // FLOW-21-F05: authoritative count (unbounded); array capped at 5000 for lookup only
+      uniqueVisitorCount: { type: Number, default: 0 },
       uniqueVisitors: [
         {
           type: mongoose.Schema.Types.ObjectId,
@@ -252,12 +256,19 @@ postEventContentSchema.statics.getForGuest = async function (eventId, guestId) {
 
   if (!content) return null;
 
-  // Track visitor
+  // Track visitor — FLOW-21-F05: cap uniqueVisitors array at 5000; use uniqueVisitorCount for true count
+  const UNIQUE_VISITOR_CAP = 5000;
+  await this.updateOne({ _id: content._id }, { $inc: { "stats.totalViews": 1 } });
+  // Only push to array if under cap and not already present
   await this.updateOne(
-    { _id: content._id },
     {
-      $inc: { "stats.totalViews": 1 },
+      _id: content._id,
+      "stats.uniqueVisitors": { $ne: guestId },
+      [`stats.uniqueVisitors.${UNIQUE_VISITOR_CAP - 1}`]: { $exists: false },
+    },
+    {
       $addToSet: { "stats.uniqueVisitors": guestId },
+      $inc: { "stats.uniqueVisitorCount": 1 },
     }
   );
 

@@ -36,7 +36,8 @@ exports.getTickets = catchAsync(async (req, res) => {
     req.user._id,
     isAdminRole(req.user.role),
     filters,
-    options
+    options,
+    req.user
   );
 
   sendPaginated(res, result.data, result.pagination);
@@ -150,4 +151,20 @@ exports.exportTickets = catchAsync(async (req, res) => {
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=tickets.xlsx");
   res.send(buffer);
+});
+
+/**
+ * Add reply to ticket (FLOW-23-F02)
+ * POST /api/v2/tickets/:id/replies
+ */
+exports.addReply = catchAsync(async (req, res) => {
+  const { message } = req.body;
+  const isAdmin = isAdminRole(req.user.role);
+  const result = await ticketsService.addReply(
+    req.params.id,
+    message,
+    req.user,
+    isAdmin
+  );
+  sendCreated(res, result, "Reply added");
 });

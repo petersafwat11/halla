@@ -20,6 +20,13 @@ const { SCHEDULE_TOO_SOON, SCHEDULE_INVALID } = require('../../shared/constants/
 class MessagingService {
   constructor() {
     this.TAQNYAT_SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp-AD';
+    // FLOW-22-F01 / FLOW-19-F03: simple in-memory TTL cache for stats (30s)
+    this._statsCache = new Map(); // eventId → { data, expiresAt }
+  }
+
+  /** Invalidate the stats cache for an event (called on RSVP/check-in writes) */
+  invalidateStatsCache(eventId) {
+    this._statsCache.delete(String(eventId));
   }
 
   /** @private */
@@ -178,14 +185,28 @@ class MessagingService {
    * @param {string} params.channel - 'sms' or 'whatsapp'
    * @returns {Promise<Object>}
    */
-  async sendTestMessage({ eventId, phoneNumber, channel = 'sms' }) {
+  async sendTestMessage({ eventId, phoneNumber, channel = 'sms', isAdmin = false }) {
     const event = await Event.findById(eventId).populate('host', 'name username');
 
     if (!event) {
       return { success: false, error: 'EVENT_NOT_FOUND', message: 'Event not found' };
     }
 
-    const rsvpLink = `${config.frontend?.url || 'https://halaa.sa'}/rsvp/test`;
+    // FLOW-16-F03: per-event throttle — reject if last test was < 30s ago (admins exempt)
+    if (!isAdmin && event.lastTestAt) {
+      const elapsed = Date.now() - new Date(event.lastTestAt).getTime();
+      if (elapsed < 30000) {
+        return {
+          success: false,
+          error: 'RATE_LIMITED',
+          message: `Please wait ${Math.ceil((30000 - elapsed) / 1000)}s before sending another test message.`,
+        };
+      }
+    }
+
+    // FLOW-16-F02: use the event's actual RSVP preview path; suppress the dead /rsvp/test link
+    const frontendUrl = config.frontend?.url || 'https://halaa.sa';
+    const rsvpLink = `${frontendUrl}/rsvp/preview?event=${eventId}`;
 
     // Phase 4c W0-DYNAMIC: prefer the cached TaqnyatTemplate
     // (curated category + per-{{N}} var mapping). Falls back to the
@@ -212,12 +233,10 @@ class MessagingService {
       result = await this._sendSMS(phoneNumber, this._buildSmsBody(event, 'ضيف تجريبي', rsvpLink));
     }
 
-    if (result.success) {
-      await Event.findByIdAndUpdate(eventId, {
-        testMessageSent: true,
-        'messagingStatus.preferredChannel': channel,
-      });
-    }
+    await Event.findByIdAndUpdate(eventId, {
+      lastTestAt: new Date(), // FLOW-16-F03: throttle timestamp (always update, success or fail)
+      ...(result.success && { testMessageSent: true, 'messagingStatus.preferredChannel': channel }),
+    });
 
     return result;
   }
@@ -286,6 +305,18 @@ class MessagingService {
       result = await this._sendSMS(guest.phone, this._buildSmsBody(event, guest.name, rsvpLink));
     }
 
+    // FLOW-15-F06: detect rate-limit (429) and treat as transient — do NOT mark as failed
+    // or increment failedAttempts, so the guest remains eligible for the next retry window.
+    const isRateLimited = !result.success && (result.statusCode === 429 || result.error === 'RATE_LIMITED');
+    if (isRateLimited) {
+      await Guest.findByIdAndUpdate(guestId, {
+        'invitation.rateLimited': true,
+        'invitation.lastAttemptAt': new Date(),
+        'invitation.lastError': result.error || 'RATE_LIMITED',
+      });
+      return { ...result, rateLimited: true };
+    }
+
     // Update guest invitation record.
     // effectiveChannel starts equal to the attempted channel.
     // When the Taqnyat webhook fires 'no_capability', the controller updates effectiveChannel → 'sms'.
@@ -294,6 +325,7 @@ class MessagingService {
       'invitation.method': channel,
       'invitation.effectiveChannel': channel,
       'invitation.status': result.success ? 'sent' : 'failed',
+      'invitation.lastAttemptAt': new Date(),
     };
 
     if (result.success) {
@@ -361,14 +393,23 @@ class MessagingService {
       return { success: false, error: 'FORBIDDEN', message: 'Not authorized for this event' };
     }
 
+    // FLOW-17-F04: validate all guestIds belong to this event before sending
+    const validGuests = await Guest.find({ _id: { $in: guestIds }, event: eventId }).select('_id').lean();
+    const validGuestIdSet = new Set(validGuests.map(g => g._id.toString()));
+    const filteredGuestIds = guestIds.filter(id => validGuestIdSet.has(id.toString()));
+    if (filteredGuestIds.length < guestIds.length) {
+      console.warn(`[sendBulk] ${guestIds.length - filteredGuestIds.length} guest IDs do not belong to event ${eventId} — skipping`);
+    }
+    const effectiveGuestIds = filteredGuestIds;
+
     // Update event messaging status
     await Event.findByIdAndUpdate(eventId, {
       'messagingStatus.bulkSendStarted': true,
       'messagingStatus.bulkSendStartedAt': new Date(),
-      'messagingStatus.totalMessages': guestIds.length,
+      'messagingStatus.totalMessages': effectiveGuestIds.length,
       'messagingStatus.sentCount': 0,
       'messagingStatus.failedCount': 0,
-      'messagingStatus.pendingCount': guestIds.length,
+      'messagingStatus.pendingCount': effectiveGuestIds.length,
       'messagingStatus.preferredChannel': channel,
     });
 
@@ -387,14 +428,20 @@ class MessagingService {
         : event.attemptCount || 0;
 
     const batched = await runBatched(
-      guestIds,
+      effectiveGuestIds,
       async (guestId) => {
         const key = `${scope}:${eventId}:${guestId}:${fingerprint}`;
-        return withIdempotency(
+        const result = await withIdempotency(
           key,
           () => this.sendToGuest({ guestId, eventId, channel }),
           { scope, userId }
         );
+        // FLOW-17-F03: persist stats incrementally so a crash mid-loop doesn't lose progress
+        const inc = result?.success
+          ? { 'messagingStatus.sentCount': 1, 'messagingStatus.pendingCount': -1 }
+          : { 'messagingStatus.failedCount': 1, 'messagingStatus.pendingCount': -1 };
+        Event.findByIdAndUpdate(eventId, { $inc: inc }).exec().catch(() => {});
+        return result;
       },
       { concurrency: 5, ratePerSecond: 10 }
     );
@@ -406,10 +453,11 @@ class MessagingService {
       ...(r.ok ? r.value : { success: false, error: r.error }),
     }));
 
+    // Final authoritative write at completion (overrides incremental counts with exact totals)
     await Event.findByIdAndUpdate(eventId, {
       'messagingStatus.sentCount': successful,
       'messagingStatus.failedCount': failed,
-      'messagingStatus.pendingCount': guestIds.length - successful - failed,
+      'messagingStatus.pendingCount': effectiveGuestIds.length - successful - failed,
       'messagingStatus.bulkSendCompletedAt': new Date(),
     });
 
@@ -422,7 +470,7 @@ class MessagingService {
 
     return {
       success: overallSuccess,
-      total: guestIds.length,
+      total: effectiveGuestIds.length,
       successful,
       failed,
       details,
@@ -929,9 +977,17 @@ class MessagingService {
   /**
    * Get detailed invitation statistics for an event
    * @param {string} eventId - Event ID
+   * @param {boolean} [bypassCache=false]
    * @returns {Promise<Object>}
    */
-  async getDetailedStats(eventId) {
+  async getDetailedStats(eventId, bypassCache = false) {
+    // FLOW-22-F01: 30-second in-memory cache
+    const cacheKey = String(eventId);
+    if (!bypassCache) {
+      const cached = this._statsCache.get(cacheKey);
+      if (cached && cached.expiresAt > Date.now()) return cached.data;
+    }
+
     const event = await Event.findById(eventId);
 
     if (!event) {
@@ -1010,11 +1066,14 @@ class MessagingService {
       ? (responded / invitationsSent * 100).toFixed(2)
       : 0;
 
-    // Estimate cost (0.15 SAR per SMS)
+    // FLOW-22-F02: cost per SMS/WhatsApp from env var, not hardcoded
+    const SMS_COST = parseFloat(process.env.SMS_COST_SAR || '0.15');
+    const WA_COST = parseFloat(process.env.WHATSAPP_COST_SAR || '0');
     const smsSent = methodBreakdown.sms || 0;
-    const estimatedCost = (smsSent * 0.15).toFixed(2);
+    const waSent = methodBreakdown.whatsapp || 0;
+    const estimatedCost = (smsSent * SMS_COST + waSent * WA_COST).toFixed(2);
 
-    return {
+    const result = {
       success: true,
       stats: {
         total: totals.total,
@@ -1032,6 +1091,9 @@ class MessagingService {
         },
       },
     };
+    // Store in cache (30s TTL)
+    this._statsCache.set(cacheKey, { data: result, expiresAt: Date.now() + 30000 });
+    return result;
   }
 }
 

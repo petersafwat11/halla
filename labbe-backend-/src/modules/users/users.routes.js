@@ -88,6 +88,10 @@ router.get("/profile", usersController.getMyProfile);
  */
 router.patch("/profile", uploadUserProfile, usersController.updateMyProfile);
 
+// FLOW-07-F01: Phone number update via OTP (2-step)
+router.post("/phone/request-update", usersController.requestPhoneUpdate);
+router.patch("/phone", usersController.confirmPhoneUpdate);
+
 /**
  * @swagger
  * /users/password:

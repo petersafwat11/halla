@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import styles from "./page.module.css";
 import CardsWrapper from "./_components/cardsWrapper/CardsWrapper";
 import { cookies } from "next/headers";
@@ -13,7 +13,7 @@ import { API_PATHS } from "@/services/new-backend/api.config";
 
 const page = async () => {
   const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = cookieStore.get("access_token")?.value;
   const queryClient = createServerQueryClient();
 
   if (token) {

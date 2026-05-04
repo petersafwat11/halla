@@ -599,6 +599,10 @@ router.post(
 // already expired.
 router.post("/logout", authController.logout);
 
+// FLOW-02-F01: redeem the email verification link sent at host signup.
+// Must be public (no access token when clicking the link from email).
+router.get("/verify-email-link", authLimiter, authController.verifyEmailLink);
+
 // ============================================
 // PROTECTED ROUTES
 // ============================================

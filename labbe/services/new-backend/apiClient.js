@@ -23,7 +23,12 @@ import { parseError, ErrorTypes } from '@/services/errorHandlingService';
 // AXIOS INSTANCE CONFIGURATION
 // ============================================
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
+// Server components call the backend directly; browser calls go through the
+// Next.js proxy (rewrites) so cookies land on the correct origin (:3000).
+const isServer = typeof window === "undefined";
+const API_BASE_URL = isServer
+  ? process.env.INTERNAL_API_URL || "http://localhost:8000/api/v2"
+  : process.env.NEXT_PUBLIC_API_URL || "/api/v2";
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -206,12 +211,9 @@ export const apiRequest = async ({
   }
 
   try {
-    console.log(`[API Request] ${method} ${path}`, { isServer });
     const response = await axiosInstance(requestConfig);
-    console.log(`[API Response] ${method} ${path} - Success:`, response.data);
     return response.data;
   } catch (error) {
-    console.error(`[API Error] ${method} ${path}:`, error.message, error.response?.status);
     throw error;
   }
 };

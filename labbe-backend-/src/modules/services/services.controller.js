@@ -48,7 +48,9 @@ exports.getMyStats = catchAsync(async (req, res) => {
  * GET /api/v2/services/:id
  */
 exports.getService = catchAsync(async (req, res) => {
-  const result = await servicesService.getServiceById(req.params.id, req.user._id);
+  const isVendorOwner = req.user?.role === 'vendor';
+  const ownerId = isVendorOwner ? req.user._id : null;
+  const result = await servicesService.getServiceById(req.params.id, ownerId, !isVendorOwner);
   sendSuccess(res, result);
 });
 
@@ -91,4 +93,22 @@ exports.toggleServiceStatus = catchAsync(async (req, res) => {
 exports.deleteService = catchAsync(async (req, res) => {
   await servicesService.deleteService(req.params.id, req.user._id);
   sendDeleted(res, 'Service deleted');
+});
+
+/**
+ * Record an inquiry on a service (FLOW-25-F04)
+ * POST /api/v2/services/:id/inquire
+ */
+exports.recordInquiry = catchAsync(async (req, res) => {
+  await servicesService.recordInquiry(req.params.id);
+  sendSuccess(res, null, 'Inquiry recorded');
+});
+
+/**
+ * Record a booking on a service (FLOW-25-F04)
+ * POST /api/v2/services/:id/book
+ */
+exports.recordBooking = catchAsync(async (req, res) => {
+  await servicesService.recordBooking(req.params.id);
+  sendSuccess(res, null, 'Booking recorded');
 });

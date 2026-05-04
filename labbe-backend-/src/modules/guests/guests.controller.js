@@ -7,6 +7,7 @@
 const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess, sendCreated, sendPaginated, sendDeleted } = require('../../shared/utils/responseHelper');
 const guestsService = require('./guests.service');
+const { logAudit } = require('../../shared/utils/auditLog');
 
 // ============================================
 // GUEST PORTAL (Public)
@@ -125,6 +126,14 @@ exports.exportGuests = catchAsync(async (req, res) => {
     req.params.eventId,
     req.user._id
   );
+
+  logAudit({
+    action: 'event.exported',
+    actor: { _id: req.user._id, role: req.user.role },
+    targetType: 'event',
+    targetId: req.params.eventId,
+    metadata: { format: 'xlsx' },
+  }).catch(() => {});
 
   res.setHeader(
     'Content-Type',

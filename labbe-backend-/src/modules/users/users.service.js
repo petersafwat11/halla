@@ -17,6 +17,7 @@ const {
   ValidationError,
   ForbiddenError,
 } = require("../../shared/errors");
+const AppError = require("../../shared/errors/AppError");
 
 // Import existing models during migration
 const User = require("../../../models/UserModel");
@@ -26,6 +27,8 @@ const Plan = require("../../../models/PlanModel");
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
+const { logAudit } = require('../../shared/utils/auditLog');
+const { processUploadedFiles } = require('../../shared/utils/s3Upload');
 
 class UsersService {
   // ============================================
@@ -409,7 +412,7 @@ class UsersService {
    * @param {Object} [whitelabelFilter]
    * @returns {Promise<Object>}
    */
-  async updateVendorStatus(id, statusData, whitelabelFilter = null) {
+  async updateVendorStatus(id, statusData, whitelabelFilter = null, actorId = null) {
     const { status, vendorStatus, rejectionReason } = statusData;
     const updateData = {};
 
@@ -417,15 +420,45 @@ class UsersService {
       updateData.status = status;
     }
 
+    // FLOW-03-F04: fetch current vendor status BEFORE applying changes so we
+    // can enforce the full state machine allowlist.
+    const existing = await User.findOne({ _id: id, role: ROLES.VENDOR, ...whitelabelFilter })
+      .select('profile.vendorData.vendorStatus email name').lean();
+    if (!existing) throw new NotFoundError("Vendor");
+
     if (vendorStatus && Object.values(VENDOR_STATUS).includes(vendorStatus)) {
+      // FLOW-03-F04: full state machine — only these transitions are legal:
+      //   pending → approved | rejected
+      //   approved → suspended
+      //   suspended → approved
+      // All other transitions (including → pending) are rejected with 422.
+      const from = existing.profile?.vendorData?.vendorStatus || VENDOR_STATUS.PENDING;
+      const ALLOWED = {
+        [VENDOR_STATUS.PENDING]: [VENDOR_STATUS.APPROVED, VENDOR_STATUS.REJECTED],
+        [VENDOR_STATUS.APPROVED]: [VENDOR_STATUS.SUSPENDED],
+        [VENDOR_STATUS.SUSPENDED]: [VENDOR_STATUS.APPROVED],
+        [VENDOR_STATUS.REJECTED]: [],
+      };
+      if (!(ALLOWED[from] || []).includes(vendorStatus)) {
+        // FLOW-03-F04: 422 with structured body matching the spec contract
+        const transitionErr = new AppError('INVALID_TRANSITION', 422, 'INVALID_TRANSITION');
+        transitionErr.errors = [{ error: 'INVALID_TRANSITION', from, to: vendorStatus }];
+        throw transitionErr;
+      }
+
       updateData["profile.vendorData.vendorStatus"] = vendorStatus;
 
       if (vendorStatus === VENDOR_STATUS.APPROVED) {
         updateData.status = USER_STATUS.ACTIVE;
+        updateData["profile.vendorData.approvedAt"] = new Date();
       } else if (vendorStatus === VENDOR_STATUS.REJECTED) {
         updateData.status = USER_STATUS.REJECTED;
         if (rejectionReason) {
           updateData["profile.vendorData.rejectionReason"] = rejectionReason;
+        }
+        updateData["profile.vendorData.rejectedAt"] = new Date();
+        if (actorId) {
+          updateData["profile.vendorData.rejectedBy"] = actorId;
         }
       }
     }
@@ -439,6 +472,19 @@ class UsersService {
     if (!vendor) {
       throw new NotFoundError("Vendor");
     }
+
+    // FLOW-24-F02: audit trail on vendor status transitions
+    logAudit({
+      action: 'vendor.status_updated',
+      actor: { _id: actorId },
+      targetType: 'user',
+      targetId: id,
+      metadata: {
+        previousVendorStatus: existing.profile?.vendorData?.vendorStatus,
+        newVendorStatus: vendorStatus,
+        rejectionReason,
+      },
+    }).catch(() => {});
 
     // Send notifications
     this._notifyVendorStatusChange(vendor, vendorStatus, rejectionReason).catch(
@@ -619,12 +665,19 @@ class UsersService {
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError("User");
 
+    // FLOW-07-F01: phone number changes require OTP — reject direct phone update here
+    if (updateData.phoneNumber !== undefined && updateData.phoneNumber !== user.phoneNumber) {
+      throw new ValidationError('Phone number updates require OTP verification. Use the phone update endpoint.');
+    }
+
     const allowedFields = [
       "username",
       "name",
       "email",
       "phoneNumber",
       "profile",
+      // FLOW-07-F03: allow updating language preference; mobile reads from server
+      "preferredLanguage",
     ];
     allowedFields.forEach((field) => {
       if (updateData[field] !== undefined) {
@@ -651,15 +704,75 @@ class UsersService {
       }
     });
 
-    // Handle file uploads
-    if (files.avatar?.[0]) {
-      user.avatar = `/uploads/users/${files.avatar[0].filename}`;
+    // FLOW-07-F02: resolve S3 URLs via processUploadedFiles instead of local disk paths
+    const uploadedUrls = processUploadedFiles(files);
+    if (uploadedUrls.avatar) {
+      user.avatar = uploadedUrls.avatar;
     }
-    if (files.businessLogo?.[0] && user.profile?.vendorData) {
-      user.profile.vendorData.businessLogo = `/uploads/vendors/${files.businessLogo[0].filename}`;
+    if (uploadedUrls.businessLogo && user.profile?.vendorData) {
+      user.profile.vendorData.businessLogo = uploadedUrls.businessLogo;
     }
 
+    const phoneChanged = updateData.phoneNumber !== undefined && updateData.phoneNumber !== user.phoneNumber;
     await user.save({ validateBeforeSave: false });
+
+    // Track-B / FLOW-07-F01: audit phone number changes — do not log plaintext phone
+    if (phoneChanged) {
+      logAudit({
+        action: 'user.phone_updated',
+        actor: { _id: userId, role: user.role },
+        targetType: 'user',
+        targetId: userId,
+      }).catch(() => {});
+    }
+
+    return { user: user.toPublicJSON ? user.toPublicJSON() : user };
+  }
+
+  /**
+   * Request phone number update — sends OTP to the new number (FLOW-07-F01)
+   */
+  async requestPhoneUpdate(userId, newPhone) {
+    const { sendOTP } = require('../auth/otp.service');
+    const { normalizePhoneNumber } = require('../../shared/utils/phone');
+    const normalized = normalizePhoneNumber(newPhone);
+    if (!normalized) throw new ValidationError('Invalid phone number format');
+
+    const existing = await User.findOne({ phoneNumber: normalized, _id: { $ne: userId } });
+    if (existing) throw new ConflictError('Phone number already in use');
+
+    const result = await sendOTP(normalized);
+    if (!result.success) throw new ValidationError('Failed to send OTP: ' + result.error);
+    return { sent: true };
+  }
+
+  /**
+   * Confirm phone number update with OTP (FLOW-07-F01)
+   */
+  async confirmPhoneUpdate(userId, newPhone, otp) {
+    const { verifyOTP } = require('../auth/otp.service');
+    const { normalizePhoneNumber } = require('../../shared/utils/phone');
+    const normalized = normalizePhoneNumber(newPhone);
+    if (!normalized) throw new ValidationError('Invalid phone number format');
+
+    const result = await verifyOTP(normalized, otp);
+    if (!result.success) throw new ValidationError(result.error || 'Invalid OTP');
+
+    const user = await User.findById(userId);
+    if (!user) throw new NotFoundError('User');
+
+    const oldPhone = user.phoneNumber;
+    user.phoneNumber = normalized;
+    await user.save({ validateBeforeSave: false });
+
+    // Do not log plaintext phone numbers in audit metadata
+    logAudit({
+      action: 'user.phone_updated',
+      actor: { _id: userId, role: user.role },
+      targetType: 'user',
+      targetId: userId,
+    }).catch(() => {});
+
     return { user: user.toPublicJSON ? user.toPublicJSON() : user };
   }
 
@@ -721,42 +834,58 @@ class UsersService {
     if (!user.profile) user.profile = {};
     user.profile[section] = { ...user.profile[section], ...data };
 
+    // FLOW-07-F02: resolve S3 URLs via processUploadedFiles instead of local disk paths
+    const uploadedUrls = processUploadedFiles(files);
+
     // Handle section-specific file uploads
     if (section === "documents") {
-      if (files.nationalIdImage?.[0]) {
+      if (uploadedUrls.nationalIdImage) {
         user.profile.documents = user.profile.documents || {};
-        user.profile.documents.nationalIdImage = `/uploads/documents/${files.nationalIdImage[0].filename}`;
+        user.profile.documents.nationalIdImage = uploadedUrls.nationalIdImage;
       }
-      if (files.commercialRecordImage?.[0]) {
+      if (uploadedUrls.commercialRecordImage) {
         user.profile.documents = user.profile.documents || {};
-        user.profile.documents.commercialRecordImage = `/uploads/documents/${files.commercialRecordImage[0].filename}`;
+        user.profile.documents.commercialRecordImage = uploadedUrls.commercialRecordImage;
       }
     }
 
     // Handle vendor-specific file uploads
     if (section === "vendorData") {
       const vd = user.profile.vendorData = user.profile.vendorData || {};
-      if (files.businessLogo?.[0]) {
-        vd.businessLogo = `/uploads/logos/${files.businessLogo[0].filename}`;
+      if (uploadedUrls.businessLogo) {
+        vd.businessLogo = uploadedUrls.businessLogo;
       }
-      if (files.nationalIdImage?.[0]) {
-        vd.nationalIdImage = `/uploads/documents/${files.nationalIdImage[0].filename}`;
+      if (uploadedUrls.nationalIdImage) {
+        vd.nationalIdImage = uploadedUrls.nationalIdImage;
       }
-      if (files.commercialRecordImage?.[0]) {
-        vd.commercialRecordImage = `/uploads/documents/${files.commercialRecordImage[0].filename}`;
+      if (uploadedUrls.commercialRecordImage) {
+        vd.commercialRecordImage = uploadedUrls.commercialRecordImage;
       }
-      if (files.portfolioImages?.length) {
+      if (uploadedUrls.portfolioImages?.length) {
         vd.portfolioImages = [
           ...(vd.portfolioImages || []),
-          ...files.portfolioImages.map(f => `/uploads/portfolios/${f.filename}`),
+          ...uploadedUrls.portfolioImages,
         ];
       }
-      if (files.pricePackages?.length) {
+      if (uploadedUrls.pricePackages?.length) {
         vd.pricePackages = [
           ...(vd.pricePackages || []),
-          ...files.pricePackages.map(f => `/uploads/packages/${f.filename}`),
+          ...uploadedUrls.pricePackages,
         ];
       }
+
+      // FLOW-24-F04: auto-set profileCompleted when all required vendor fields are present
+      const vdCurrent = user.profile.vendorData;
+      const hasName = !!(vdCurrent.brandName?.trim());
+      const hasCategory = !!(
+        vdCurrent.serviceCategories &&
+        Object.values(vdCurrent.serviceCategories).some(
+          (arr) => Array.isArray(arr) && arr.length > 0
+        )
+      );
+      const hasDescription = !!(vdCurrent.serviceDescription?.trim());
+      const hasPortfolio = !!(vdCurrent.portfolioImages?.length > 0);
+      vdCurrent.profileCompleted = hasName && hasCategory && hasDescription && hasPortfolio;
     }
 
     await user.save({ validateBeforeSave: false });

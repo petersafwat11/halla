@@ -27,6 +27,8 @@ const { isPerEventPlan, isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../s
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const paymentProvider = require('../../infrastructure/paymentProvider');
+const Addon = require('../../../models/AddonModel');
+const { ADDON_TYPES } = require('../../shared/constants/addons');
 
 class SubscriptionsService {
   // ============================================
@@ -64,7 +66,9 @@ class SubscriptionsService {
       dynamicEventCount = await this.countEventsInBillingPeriod(userId, subscription);
     }
 
-    const limits = this._getPackageLimits(subscription, dynamicEventCount);
+    // FLOW-12-F02: read active extra_invites addons from Addon collection
+    const addonExtraGuests = await this._getAddonExtraGuests(subscription._id);
+    const limits = this._getPackageLimits(subscription, dynamicEventCount, addonExtraGuests);
 
     // Check event limit
     if (limits.maxEventsPerMonth !== -1 && limits.eventsRemaining <= 0) {
@@ -108,12 +112,28 @@ class SubscriptionsService {
   }
 
   /**
+   * Sum active extra_invites addons for a subscription (FLOW-12-F02)
+   * @param {ObjectId} subscriptionId
+   * @returns {Promise<number>}
+   * @private
+   */
+  async _getAddonExtraGuests(subscriptionId) {
+    if (!subscriptionId) return 0;
+    const result = await Addon.aggregate([
+      { $match: { subscriptionId, addonType: ADDON_TYPES.EXTRA_INVITES, status: 'active' } },
+      { $group: { _id: null, total: { $sum: '$quantity' } } },
+    ]);
+    return result[0]?.total || 0;
+  }
+
+  /**
    * Get package limits for a subscription
    * @param {Object} subscription
    * @param {number|null} dynamicEventCount - If provided, use this instead of usage counters
+   * @param {number} addonExtraGuests - Pre-fetched active addon quantity (FLOW-12-F02)
    * @private
    */
-  _getPackageLimits(subscription, dynamicEventCount = null) {
+  _getPackageLimits(subscription, dynamicEventCount = null, addonExtraGuests = 0) {
     if (!subscription) {
       return {
         maxEventsPerMonth: 0,
@@ -153,7 +173,7 @@ class SubscriptionsService {
     // Fallback (legacy / unknown plan types)
     const maxEvents = subscription.limits?.maxEventsPerMonth || 0;
     const maxGuests = subscription.limits?.maxInvitesPerEvent ?? subscription.limits?.maxGuestsPerEvent ?? 0;
-    const addOnGuests = subscription.addOns?.extraGuests || 0;
+    const addOnGuests = addonExtraGuests; // FLOW-12-F02: read from Addon collection, not embedded (always-zero) field
     const totalGuestLimit = maxGuests === -1 ? -1 : maxGuests + addOnGuests;
 
     const eventsUsed = dynamicEventCount !== null
@@ -774,7 +794,8 @@ class SubscriptionsService {
   async getPackageLimits(userId) {
     const subscriptions = await Subscription.findActiveForUser(userId);
     const subscription = subscriptions[0] || null;
-    return this._getPackageLimits(subscription);
+    const addonExtraGuests = subscription ? await this._getAddonExtraGuests(subscription._id) : 0;
+    return this._getPackageLimits(subscription, null, addonExtraGuests);
   }
 
   /**

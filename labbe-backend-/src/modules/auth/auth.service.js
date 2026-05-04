@@ -35,6 +35,8 @@ const otpService = require('./otp.service');
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
+const { processUploadedFiles, getFileUrl } = require('../../shared/utils/s3Upload');
+const { logAudit } = require('../../shared/utils/auditLog');
 
 class AuthService {
   /**
@@ -267,6 +269,7 @@ class AuthService {
     // Check if account is locked
     if (user.isLocked && user.isLocked()) {
       const remainingMinutes = Math.ceil((user.lockUntil - Date.now()) / 60000);
+      logAudit({ action: 'auth.login_locked', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip, lockUntil: user.lockUntil }, status: 'failure' }).catch(() => {});
       throw new AccountLockedError(remainingMinutes);
     }
 
@@ -277,6 +280,8 @@ class AuthService {
       if (user.incLoginAttempts) {
         await user.incLoginAttempts();
       }
+      // Audit: login failure
+      logAudit({ action: 'auth.login_failed', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip, reason: 'invalid_password' }, status: 'failure' }).catch(() => {});
       throw new UnauthorizedError('Invalid credentials');
     }
 
@@ -290,6 +295,9 @@ class AuthService {
 
     // Check user status
     this._validateUserStatus(user);
+
+    // Audit: login success
+    logAudit({ action: 'auth.login', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip, userAgent: context.userAgent } }).catch(() => {});
 
     // Issue token pair and get subscription
     const tokens = await this.issueTokenPair(user, context);
@@ -433,6 +441,30 @@ class AuthService {
       data: { entityType: 'user', entityId: host._id },
     }).catch(console.error);
 
+    // FLOW-02-F01: send email verification link (non-blocking, only if email present)
+    if (host.email) {
+      const lang = context.lang || 'ar';
+      otpService.createEmailVerificationToken(host.email, host._id)
+        .then((rawToken) => {
+          const verificationUrl = `${config.frontend.url}/${lang}/verify-email?token=${rawToken}`;
+          return emailModule.send.emailVerification(host.email, {
+            name: host.name || host.username,
+            verificationUrl,
+            expiresIn: '24 hours',
+          }, lang);
+        })
+        .catch(console.error);
+    }
+
+    // FLOW-02-F03: send welcome email (non-blocking, only if email present)
+    if (host.email) {
+      emailModule.send.welcome(host.email, {
+        name: host.name || host.username,
+        email: host.email,
+        role: ROLES.HOST,
+      }, context.lang || 'ar').catch(console.error);
+    }
+
     const tokens = await this.issueTokenPair(host, context);
     await subscription.populate('planId');
 
@@ -468,6 +500,30 @@ class AuthService {
     const serviceLocation = this._parseJsonField(userData.serviceLocation);
     const socialLinks = this._parseJsonField(userData.socialLinks);
 
+    // FLOW-03-F01: validate serviceCategories keys against allowed enum
+    const ALLOWED_CATEGORY_KEYS = new Set([
+      'eventPlanning', 'mediaProduction', 'giftsAndGiveaways', 'foodAndBeverages',
+      'beautyAndFashion', 'logisticsAndDelivery', 'corporateServices', 'supportServices',
+      'technicalServices', 'soundLightingEntertainment', 'hallsAndVenues',
+    ]);
+    if (serviceCategories && typeof serviceCategories === 'object') {
+      const invalidKeys = Object.keys(serviceCategories).filter(k => !ALLOWED_CATEGORY_KEYS.has(k));
+      if (invalidKeys.length > 0) {
+        throw new ValidationError(`Invalid service category keys: ${invalidKeys.join(', ')}`);
+      }
+    }
+
+    // FLOW-03-F02: validate social links as URLs
+    if (socialLinks && typeof socialLinks === 'object') {
+      const URL_FIELDS = ['instagram', 'facebook', 'tiktok', 'twitter', 'website', 'whatsapp'];
+      const urlRegex = /^https?:\/\/.+/i;
+      for (const field of URL_FIELDS) {
+        if (socialLinks[field] && !urlRegex.test(socialLinks[field])) {
+          throw new ValidationError(`Invalid URL for social link: ${field}`);
+        }
+      }
+    }
+
     const vendorData = {
       brandName,
       ownerFullName,
@@ -481,19 +537,12 @@ class AuthService {
       commercialRecordNumber: userData.commercialRecordNumber || '',
     };
 
-    // Handle file uploads
-    if (files.businessLogo?.[0]) {
-      vendorData.businessLogo = `/uploads/logos/${files.businessLogo[0].filename}`;
-    }
-    if (files.nationalIdImage?.[0]) {
-      vendorData.nationalIdImage = `/uploads/documents/${files.nationalIdImage[0].filename}`;
-    }
-    if (files.commercialRecordImage?.[0]) {
-      vendorData.commercialRecordImage = `/uploads/documents/${files.commercialRecordImage[0].filename}`;
-    }
-    if (files.portfolioImages?.length) {
-      vendorData.portfolioImages = files.portfolioImages.map(f => `/uploads/portfolios/${f.filename}`);
-    }
+    // Handle file uploads via S3 utility (FLOW-03-F03 / FLOW-24-F03)
+    const uploadedPaths = processUploadedFiles(files);
+    if (uploadedPaths.businessLogo) vendorData.businessLogo = uploadedPaths.businessLogo;
+    if (uploadedPaths.nationalIdImage) vendorData.nationalIdImage = uploadedPaths.nationalIdImage;
+    if (uploadedPaths.commercialRecordImage) vendorData.commercialRecordImage = uploadedPaths.commercialRecordImage;
+    if (uploadedPaths.portfolioImages) vendorData.portfolioImages = uploadedPaths.portfolioImages;
 
     const vendor = await User.create({
       email: email.toLowerCase(),
@@ -526,9 +575,10 @@ class AuthService {
   /**
    * Whitelabel signup
    * @param {Object} userData
+   * @param {Object} [logoFile] - Uploaded logo file from multer.single (req.file)
    * @returns {Promise<{user: Object, token: string}>}
    */
-  async signupWhitelabel(userData) {
+  async signupWhitelabel(userData, logoFile = null) {
     const { email, phoneNumber, englishName, arabicName, planSelection } = userData;
 
     if (!phoneNumber && !email) {
@@ -541,6 +591,9 @@ class AuthService {
     const address = this._parseJsonField(userData.address);
     const parsedPlanSelection = this._parseJsonField(planSelection);
 
+    // FLOW-04-F02: resolve logo URL from S3-uploaded file if provided
+    const logoUrl = logoFile ? getFileUrl(logoFile) : null;
+
     const whitelabelData = {
       englishName,
       arabicName,
@@ -550,6 +603,7 @@ class AuthService {
       address,
       licenseNumber: userData.licenseNumber || '',
       taxNumber: userData.taxNumber || '',
+      ...(logoUrl && { logo: logoUrl }),
       planSelection: {
         planCode: parsedPlanSelection?.planCode || 'business_quarterly',
         billingCycle: parsedPlanSelection?.billingCycle || 'yearly',
@@ -590,6 +644,47 @@ class AuthService {
       token: null,
       pendingApproval: true,
     };
+  }
+
+  // ============================================
+  // EMAIL VERIFICATION LINK (FLOW-02-F01)
+  // ============================================
+
+  /**
+   * Redeem a link-based email verification token sent at host signup.
+   * Public endpoint — no JWT required.
+   * @param {string} rawToken - Token from the verification link query param
+   * @returns {Promise<{message: string}>}
+   */
+  async verifyEmailLink(rawToken) {
+    if (!rawToken) {
+      throw new ValidationError('Verification token is required');
+    }
+
+    const result = await otpService.redeemEmailVerificationToken(rawToken);
+    if (!result.success) {
+      throw new ValidationError(result.error);
+    }
+
+    const user = await User.findById(result.userId);
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+
+    user.emailVerified = true;
+    if (user.profile?.hostData) {
+      user.profile.hostData.emailVerified = true;
+    }
+    await user.save({ validateBeforeSave: false });
+
+    logAudit({
+      action: 'user.email_verified',
+      actor: { _id: user._id, role: user.role },
+      targetType: 'user',
+      targetId: user._id,
+    }).catch(() => {});
+
+    return { message: 'Email verified successfully' };
   }
 
   // ============================================
@@ -755,7 +850,7 @@ class AuthService {
     this._validateUserStatus(user);
 
     const tokens = await this.issueTokenPair(user, context);
-    const profileCompleted = user.profile?.hostData?.profileCompleted ?? true;
+    const profileCompleted = user.profile?.hostData?.profileCompleted ?? false; // FLOW-02-F02: missing hostData ≠ complete
     const subscriptionInfo = user.subscription?.getSummary
       ? user.subscription.getSummary()
       : user.subscription;
@@ -882,6 +977,8 @@ class AuthService {
     await this.revokeAllForUser(user._id);
     const tokens = await this.issueTokenPair(user, context);
 
+    logAudit({ action: 'auth.password_reset', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip } }).catch(() => {});
+
     return {
       user: this.sanitizeUser(user),
       accessToken: tokens.accessToken,
@@ -924,6 +1021,8 @@ class AuthService {
     // FLOW-05-F02: a password change must invalidate all other sessions immediately.
     await this.revokeAllForUser(user._id);
     const tokens = await this.issueTokenPair(user, context);
+
+    logAudit({ action: 'auth.password_changed', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip } }).catch(() => {});
 
     return {
       user: this.sanitizeUser(user),

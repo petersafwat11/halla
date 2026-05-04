@@ -431,6 +431,12 @@ router.post(
   postEventController.publishContent
 );
 
+router.patch(
+  "/:eventId/unpublish",
+  validateObjectId("eventId"),
+  postEventController.unpublishContent
+);
+
 /**
  * @swagger
  * /post-event/{eventId}/generate-tokens:
@@ -507,10 +513,11 @@ router.post(
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
+// FLOW-21-F04: renamed from send-emails — sends WhatsApp/SMS access links, not email
 router.post(
-  "/:eventId/send-emails",
+  "/:eventId/send-access-links",
   validateObjectId("eventId"),
-  postEventController.sendBulkAccessEmails
+  postEventController.sendBulkAccessLinks
 );
 
 module.exports = router;

@@ -67,7 +67,7 @@ const serviceSchema = new mongoose.Schema(
     },
     isPublic: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     // Location - where the service is available
     serviceLocation: {
@@ -117,6 +117,10 @@ const serviceSchema = new mongoose.Schema(
       default: 0,
     },
     bookingCount: {
+      type: Number,
+      default: 0,
+    },
+    inquiryCount: {
       type: Number,
       default: 0,
     },

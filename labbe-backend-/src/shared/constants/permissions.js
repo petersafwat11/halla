@@ -4,7 +4,7 @@
  * @module shared/constants/permissions
  */
 
-const { ROLES } = require('./roles');
+const { ROLES, ROLE_HIERARCHY, ADMIN_ROLES } = require('./roles');
 
 /**
  * Legacy permissions (kept for backward compatibility with models)
@@ -188,9 +188,24 @@ const getPageAccess = (user, page) => {
   if (user.pageAccess && user.pageAccess[page]) {
     return user.pageAccess[page];
   }
-  // Fall back to role defaults
+  // Direct role lookup
   const roleAccess = ROLE_PAGE_ACCESS[user.role];
-  return roleAccess ? roleAccess[page] || ACCESS_LEVELS.NONE : ACCESS_LEVELS.NONE;
+  const direct = roleAccess ? roleAccess[page] || ACCESS_LEVELS.NONE : ACCESS_LEVELS.NONE;
+  if (direct !== ACCESS_LEVELS.NONE) return direct;
+  // Hierarchy fallback (mirrors restrictTo resolution): if this admin role manages
+  // other admin roles, it inherits the best access level of those managed roles.
+  // Ensures SUPER_ADMIN is never 403'd even when a new page omits its explicit entry.
+  const levelOrder = [ACCESS_LEVELS.NONE, ACCESS_LEVELS.VIEW, ACCESS_LEVELS.EDIT, ACCESS_LEVELS.FULL];
+  const inheritedAdminRoles = (ROLE_HIERARCHY[user.role] || []).filter(r => ADMIN_ROLES.includes(r));
+  let best = ACCESS_LEVELS.NONE;
+  for (const role of inheritedAdminRoles) {
+    const inherited = (ROLE_PAGE_ACCESS[role] || {})[page] || ACCESS_LEVELS.NONE;
+    if (levelOrder.indexOf(inherited) > levelOrder.indexOf(best)) {
+      best = inherited;
+      if (best === ACCESS_LEVELS.FULL) break;
+    }
+  }
+  return best;
 };
 
 /**

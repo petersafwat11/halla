@@ -11,5 +11,13 @@
   ],
   "scripts": {
     "schema-drift": "bash scripts/check-schema-drift.sh"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.13"
+    }
+  },
+  "dependencies": {
+    "postcss": "^8.5.13"
   }
 }

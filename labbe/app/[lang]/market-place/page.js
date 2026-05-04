@@ -277,6 +277,9 @@ const MarketPlacePage = () => {
                         price: service.price ? `${service.price} ${t("currency")}` : "",
                         description: service.description || "",
                         vendorName: service.vendor?.brandName || "",
+                        onCallClick: service.vendor?.phone
+                          ? () => { window.location.href = `tel:${service.vendor.phone}`; }
+                          : undefined,
                       }}
                     />
                   ))}

@@ -46,6 +46,7 @@ const { GUEST_LIST_BELOW_CONFIRMED } = require('../../shared/constants/events');
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const SubscriptionsService = require('../subscriptions/subscriptions.service');
+const { logAudit } = require('../../shared/utils/auditLog');
 const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 const taqnyat = require('../../infrastructure/taqnyat');
 
@@ -106,7 +107,14 @@ class EventsService {
   async createGuestsFromList(guestData, eventId, userId) {
     if (!guestData.length) return [];
 
-    const docs = guestData.map(guest => ({
+    // FLOW-11-F03: deduplicate by normalized phone — keep last occurrence
+    const seen = new Map();
+    for (const guest of guestData) {
+      const key = normalizePhoneNumber(guest.phone);
+      seen.set(key, guest);
+    }
+
+    const docs = Array.from(seen.values()).map(guest => ({
       name: guest.name,
       phone: guest.phone,
       email: guest.email,
@@ -590,6 +598,15 @@ class EventsService {
         console.error
       );
 
+      // FLOW-13-F05 / Track-B: audit event creation
+      logAudit({
+        action: 'event.created',
+        actor: { _id: userId, role: userRole || 'host' },
+        targetType: 'event',
+        targetId: event._id,
+        metadata: { guestCount: guestIds.length, onBehalfOf: false },
+      }).catch(() => {});
+
       return { event: populatedEvent };
     } catch (err) {
       // Compensating return: roll back the pool debit so the user isn't
@@ -742,11 +759,12 @@ class EventsService {
       throw new NotFoundError("Event");
     }
 
-    // Don't allow updates to completed/cancelled events
+    // FLOW-13-F04: extended status block list
     if (
-      [EVENT_STATUS.COMPLETED, EVENT_STATUS.CANCELLED].includes(event.status)
+      [EVENT_STATUS.LIVE, EVENT_STATUS.PUBLISHED, EVENT_STATUS.COMPLETED,
+       EVENT_STATUS.CANCELLED, EVENT_STATUS.ARCHIVED].includes(event.status)
     ) {
-      throw new ValidationError("Cannot update completed or cancelled events");
+      throw new ValidationError(`Cannot update event when status is '${event.status}'`);
     }
 
     // Update allowed fields
@@ -763,6 +781,15 @@ class EventsService {
     });
 
     await event.save();
+
+    // FLOW-13-F05 / Track-B: audit event update
+    logAudit({
+      action: 'event.updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: event._id,
+      metadata: { updatedFields: Object.keys(updateData) },
+    }).catch(() => {});
 
     return { event };
   }
@@ -865,6 +892,15 @@ class EventsService {
     } finally {
       await session.endSession();
     }
+
+    // FLOW-13-F05 / Track-B: audit event deletion
+    logAudit({
+      action: 'event.deleted',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { title: eventTitle, deletedByAdmin: isAdmin },
+    }).catch(() => {});
   }
 
   // ============================================
@@ -1173,13 +1209,38 @@ class EventsService {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
-    // Don't allow modifications to completed or cancelled events
-    if (['completed', 'cancelled'].includes(event.status)) {
-      throw new ValidationError('Cannot modify a completed or cancelled event');
+    // FLOW-13-F04: extended status block list — live/published events are immutable
+    const BLOCKED_STATUSES = ['live', 'published', 'completed', 'cancelled', 'archived'];
+    if (BLOCKED_STATUSES.includes(event.status)) {
+      throw new ValidationError(`Cannot modify event details when status is '${event.status}'`);
+    }
+
+    // FLOW-13-F01: 24h pre-launch edit lock — block date/time/location changes within 24h of launch
+    const LOCK_FIELDS = ['date', 'time', 'location'];
+    const changingLockedField = LOCK_FIELDS.some(f => details[f] !== undefined);
+    if (changingLockedField && event.status === EVENT_STATUS.SCHEDULED) {
+      const launchDate = event.launchSettings?.scheduledDate || event.eventDetails?.date;
+      if (launchDate) {
+        const hoursUntilLaunch = (new Date(launchDate) - Date.now()) / (1000 * 60 * 60);
+        if (hoursUntilLaunch > 0 && hoursUntilLaunch < 24) {
+          throw new ValidationError(
+            'Event date, time, and location cannot be changed within 24 hours of the scheduled launch.'
+          );
+        }
+      }
     }
 
     event.eventDetails = { ...event.eventDetails, ...details };
     await event.save();
+
+    // FLOW-13-F05: audit event details update
+    logAudit({
+      action: 'event.details_updated',
+      actor: userContext,
+      targetType: 'event',
+      targetId: event._id,
+      metadata: { updatedFields: Object.keys(details) },
+    }).catch(() => {});
 
     return { event };
   }
@@ -1268,12 +1329,15 @@ class EventsService {
       }
     }
 
-    // Delete guests that were removed from the UI
+    // Soft-delete guests removed from the UI (FLOW-13-F02: tombstone, not hard delete)
     const toDeleteIds = existingGuests
       .filter(g => !incomingPhones.has(normalizePhoneNumber(g.phone)))
       .map(g => g._id);
     if (toDeleteIds.length > 0) {
-      await Guest.deleteMany({ _id: { $in: toDeleteIds } });
+      await Guest.updateMany(
+        { _id: { $in: toDeleteIds } },
+        { $set: { deleted: true, deletedAt: new Date() } }
+      );
     }
 
     // Create only truly new guests (triggers QR code pre-save hook)
@@ -1513,7 +1577,12 @@ class EventsService {
       if (useTransactions) {
         // Happy path — replica-set / sharded cluster.
         if (toDeleteIds.length > 0) {
-          await Guest.deleteMany({ _id: { $in: toDeleteIds } }, { session });
+          // FLOW-13-F02: soft-delete tombstone
+          await Guest.updateMany(
+            { _id: { $in: toDeleteIds } },
+            { $set: { deleted: true, deletedAt: new Date() } },
+            { session }
+          );
         }
         for (const u of toUpdate) {
           await Guest.findByIdAndUpdate(
@@ -1689,14 +1758,15 @@ class EventsService {
           throw staffErr;
         }
 
-        // Step 5: now safe to delete the removed guests.
+        // Step 5: soft-delete the removed guests (FLOW-13-F02: tombstone, preserves QR/RSVP/checkIn).
         if (toDeleteIds.length > 0) {
           try {
-            await Guest.deleteMany({ _id: { $in: toDeleteIds } });
+            await Guest.updateMany(
+              { _id: { $in: toDeleteIds } },
+              { $set: { deleted: true, deletedAt: new Date() } }
+            );
           } catch (deleteErr) {
-            // Non-fatal — orphan docs will be picked up by the next
-            // guest-orphan GC sweep.
-            console.error('[updateEventStep2] post-commit guest delete failed:', deleteErr);
+            console.error('[updateEventStep2] post-commit guest soft-delete failed:', deleteErr);
           }
         }
 

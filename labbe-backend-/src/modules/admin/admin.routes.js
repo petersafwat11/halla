@@ -863,6 +863,7 @@ router.get('/whitelabels',
  */
 router.get('/whitelabels/export',
   requirePageAccess(ADMIN_PAGES.WHITELABELS, 'view'),
+  filterByWhitelabel,
   adminController.exportWhitelabels
 );
 

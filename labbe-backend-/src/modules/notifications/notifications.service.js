@@ -6,6 +6,7 @@
 
 const { NotFoundError } = require("../../shared/errors");
 const { USER_STATUS } = require("../../shared/constants");
+const { withIdempotency, sha256 } = require("../../shared/utils/idempotency");
 
 // Import existing models during migration
 const Notification = require("../../../models/NotificationModel");
@@ -28,12 +29,39 @@ class NotificationsService {
       const user = await User.findById(userId).select("email notificationPreferences");
 
       if (user?.email && this._shouldSendEmail(user, notificationData.type)) {
+        // FLOW-27-F04: attempt email delivery and write status back to the
+        // Notification record. The existing NotificationModel already has a
+        // structured deliveryStatus.email sub-document ({ sent, sentAt, error })
+        // so we use that shape rather than adding a conflicting flat string field.
+        // The email provider (SMTP via nodemailer) does not expose delivery
+        // receipts synchronously; we record `sent:true/sentAt:now` on a
+        // successful API call and `error` on failure.
         const emailModule = require("../../infrastructure/email");
-        await emailModule.send.notification(user.email, {
-          title: notificationData.title,
-          message: notificationData.message,
-          actionUrl: notificationData.actionUrl,
-        });
+        let emailSent = false;
+        let emailError = null;
+
+        try {
+          await emailModule.send.notification(user.email, {
+            title: notificationData.title,
+            message: notificationData.message,
+            actionUrl: notificationData.actionUrl,
+          });
+          emailSent = true;
+        } catch (emailErr) {
+          emailError = emailErr?.message || "email_send_failed";
+          console.error(`[Notifications] email delivery failed for user ${userId}:`, emailError);
+        }
+
+        // Write delivery status back to the persisted notification document.
+        // Best-effort — do not throw if the writeback itself fails.
+        if (notification?.id) {
+          const writeUpdate = emailSent
+            ? { "deliveryStatus.email.sent": true, "deliveryStatus.email.sentAt": new Date() }
+            : { "deliveryStatus.email.sent": false, "deliveryStatus.email.error": emailError };
+          await Notification.findByIdAndUpdate(notification.id, { $set: writeUpdate }).catch(
+            (err) => console.error("[Notifications] deliveryStatus writeback failed:", err.message)
+          );
+        }
       }
     }
 
@@ -97,25 +125,50 @@ class NotificationsService {
 
   /**
    * Create notification for a user
+   *
+   * FLOW-27-F01: idempotency guard via withIdempotency utility.
+   * Key: `notification:<userId>:<type>:<targetId>` (targetId = data.entityId).
+   * TTL is managed by the IdempotencyKeyModel (24h default).
+   * Prevents duplicate notifications from double-firing cron ticks or retries.
+   *
    * @param {string} userId - User ID
    * @param {Object} notificationData - Notification data
    * @returns {Promise<Object>}
    */
   async createNotification(userId, notificationData) {
-    const notification = await Notification.create({
-      userId,
-      type: notificationData.type || "custom",
-      title: notificationData.title,
-      titleAr: notificationData.titleAr,
-      message: notificationData.message,
-      messageAr: notificationData.messageAr,
-      actionUrl: notificationData.actionUrl,
-      data: notificationData.data,
-      priority: notificationData.priority,
-      isRead: false,
-    });
+    const type = notificationData.type || "custom";
+    const targetId = notificationData.data?.entityId || "none";
+    const idempotencyKey = `notification:${userId}:${type}:${targetId}`;
 
-    return this._formatNotification(notification);
+    // Build a stable request hash from the notification payload so that a
+    // retry with the same intent matches (same result returned) but a genuinely
+    // different notification payload (e.g. two distinct event_reminder types
+    // for different events) is treated as a new record.
+    const requestHash = sha256({ userId: String(userId), type, targetId });
+
+    return withIdempotency(
+      idempotencyKey,
+      async () => {
+        const notification = await Notification.create({
+          userId,
+          type,
+          title: notificationData.title,
+          titleAr: notificationData.titleAr,
+          message: notificationData.message,
+          messageAr: notificationData.messageAr,
+          actionUrl: notificationData.actionUrl,
+          data: notificationData.data || {},
+          priority: notificationData.priority,
+          isRead: false,
+        });
+        return this._formatNotification(notification);
+      },
+      {
+        scope: "notification.create",
+        requestHash,
+        userId: String(userId),
+      }
+    );
   }
 
   /**

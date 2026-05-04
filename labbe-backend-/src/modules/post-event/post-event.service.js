@@ -17,6 +17,7 @@ const notificationService = require('../notifications/notifications.service');
 const taqnyat = require('../../infrastructure/taqnyat');
 const { runBatched } = require('../../shared/utils/runBatched');
 const { withIdempotency } = require('../../shared/utils/idempotency');
+const { logAudit } = require('../../shared/utils/auditLog');
 
 class PostEventService {
   /**
@@ -165,11 +166,45 @@ class PostEventService {
     // Generate tokens and notify guests via WhatsApp/SMS (non-blocking)
     this._generateTokensAndNotify(event, content).catch(console.error);
 
+    // Track-B: audit content publish — targetType:'event' (post_event_content not in enum)
+    logAudit({
+      action: 'post_event.published',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: event._id,
+      metadata: { contentId: content._id },
+    }).catch(() => {});
+
     return {
       published: true,
       publishedAt: content.settings.publishedAt,
       notifiedGuests: event.guestList?.length || 0,
     };
+  }
+
+  /**
+   * Unpublish (revoke) post-event content (FLOW-21 Track-B)
+   */
+  async unpublishContent(eventId, userId) {
+    const event = await Event.findOne({ _id: eventId, host: userId }).select('_id');
+    if (!event) throw new NotFoundError('Event');
+
+    const content = await PostEventContent.findOne({ event: eventId });
+    if (!content) throw new NotFoundError('Post-event content');
+    if (!content.settings?.isPublished) throw new ValidationError('Content is not published');
+
+    content.settings.isPublished = false;
+    await content.save();
+
+    logAudit({
+      action: 'post_event.content_revoked',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: event._id,
+      metadata: { contentId: content._id },
+    }).catch(() => {});
+
+    return { unpublished: true };
   }
 
   /**
@@ -267,9 +302,11 @@ class PostEventService {
 
     if (!body.text?.trim()) throw new ValidationError('Comment text is required');
 
+    // FLOW-21-F02: enforce requireApproval — hide comment until host reviews
     const commentData = {
       text: body.text.trim(),
       images: (files || []).map(f => ({ url: f.location || f.path })),
+      ...(content.settings?.requireApproval && { isHidden: true, pendingApproval: true }),
     };
 
     const comment = await content.addComment(postId, guestUser.guestId, commentData);
@@ -360,7 +397,8 @@ class PostEventService {
     };
   }
 
-  async sendBulkAccessEmails(eventId, userId, { guestIds, filter = 'attended' }) {
+  // FLOW-21-F04: renamed from sendBulkAccessEmails — sends WhatsApp/SMS, not email
+  async sendBulkAccessLinks(eventId, userId, { guestIds, filter = 'attended' }) {
     // Sends access links via WhatsApp (with SMS fallback), not email
     const event = await Event.findOne({ _id: eventId, host: userId });
     if (!event) throw new NotFoundError('Event');
