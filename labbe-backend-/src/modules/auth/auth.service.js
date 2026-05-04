@@ -35,6 +35,8 @@ const otpService = require('./otp.service');
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
+const { processUploadedFiles } = require('../../shared/utils/s3Upload');
+const { logAudit } = require('../../shared/utils/auditLog');
 
 class AuthService {
   /**
@@ -267,6 +269,7 @@ class AuthService {
     // Check if account is locked
     if (user.isLocked && user.isLocked()) {
       const remainingMinutes = Math.ceil((user.lockUntil - Date.now()) / 60000);
+      logAudit({ action: 'auth.login_locked', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip, lockUntil: user.lockUntil }, status: 'failure' }).catch(() => {});
       throw new AccountLockedError(remainingMinutes);
     }
 
@@ -277,6 +280,8 @@ class AuthService {
       if (user.incLoginAttempts) {
         await user.incLoginAttempts();
       }
+      // Audit: login failure
+      logAudit({ action: 'auth.login_failed', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip, reason: 'invalid_password' }, status: 'failure' }).catch(() => {});
       throw new UnauthorizedError('Invalid credentials');
     }
 
@@ -290,6 +295,9 @@ class AuthService {
 
     // Check user status
     this._validateUserStatus(user);
+
+    // Audit: login success
+    logAudit({ action: 'auth.login', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip, userAgent: context.userAgent } }).catch(() => {});
 
     // Issue token pair and get subscription
     const tokens = await this.issueTokenPair(user, context);
@@ -468,6 +476,30 @@ class AuthService {
     const serviceLocation = this._parseJsonField(userData.serviceLocation);
     const socialLinks = this._parseJsonField(userData.socialLinks);
 
+    // FLOW-03-F01: validate serviceCategories keys against allowed enum
+    const ALLOWED_CATEGORY_KEYS = new Set([
+      'eventPlanning', 'mediaProduction', 'giftsAndGiveaways', 'foodAndBeverages',
+      'beautyAndFashion', 'logisticsAndDelivery', 'corporateServices', 'supportServices',
+      'technicalServices', 'soundLightingEntertainment', 'hallsAndVenues',
+    ]);
+    if (serviceCategories && typeof serviceCategories === 'object') {
+      const invalidKeys = Object.keys(serviceCategories).filter(k => !ALLOWED_CATEGORY_KEYS.has(k));
+      if (invalidKeys.length > 0) {
+        throw new ValidationError(`Invalid service category keys: ${invalidKeys.join(', ')}`);
+      }
+    }
+
+    // FLOW-03-F02: validate social links as URLs
+    if (socialLinks && typeof socialLinks === 'object') {
+      const URL_FIELDS = ['instagram', 'facebook', 'tiktok', 'twitter', 'website', 'whatsapp'];
+      const urlRegex = /^https?:\/\/.+/i;
+      for (const field of URL_FIELDS) {
+        if (socialLinks[field] && !urlRegex.test(socialLinks[field])) {
+          throw new ValidationError(`Invalid URL for social link: ${field}`);
+        }
+      }
+    }
+
     const vendorData = {
       brandName,
       ownerFullName,
@@ -481,19 +513,12 @@ class AuthService {
       commercialRecordNumber: userData.commercialRecordNumber || '',
     };
 
-    // Handle file uploads
-    if (files.businessLogo?.[0]) {
-      vendorData.businessLogo = `/uploads/logos/${files.businessLogo[0].filename}`;
-    }
-    if (files.nationalIdImage?.[0]) {
-      vendorData.nationalIdImage = `/uploads/documents/${files.nationalIdImage[0].filename}`;
-    }
-    if (files.commercialRecordImage?.[0]) {
-      vendorData.commercialRecordImage = `/uploads/documents/${files.commercialRecordImage[0].filename}`;
-    }
-    if (files.portfolioImages?.length) {
-      vendorData.portfolioImages = files.portfolioImages.map(f => `/uploads/portfolios/${f.filename}`);
-    }
+    // Handle file uploads via S3 utility (FLOW-03-F03 / FLOW-24-F03)
+    const uploadedPaths = processUploadedFiles(files);
+    if (uploadedPaths.businessLogo) vendorData.businessLogo = uploadedPaths.businessLogo;
+    if (uploadedPaths.nationalIdImage) vendorData.nationalIdImage = uploadedPaths.nationalIdImage;
+    if (uploadedPaths.commercialRecordImage) vendorData.commercialRecordImage = uploadedPaths.commercialRecordImage;
+    if (uploadedPaths.portfolioImages) vendorData.portfolioImages = uploadedPaths.portfolioImages;
 
     const vendor = await User.create({
       email: email.toLowerCase(),
@@ -755,7 +780,7 @@ class AuthService {
     this._validateUserStatus(user);
 
     const tokens = await this.issueTokenPair(user, context);
-    const profileCompleted = user.profile?.hostData?.profileCompleted ?? true;
+    const profileCompleted = user.profile?.hostData?.profileCompleted ?? false; // FLOW-02-F02: missing hostData ≠ complete
     const subscriptionInfo = user.subscription?.getSummary
       ? user.subscription.getSummary()
       : user.subscription;
@@ -882,6 +907,8 @@ class AuthService {
     await this.revokeAllForUser(user._id);
     const tokens = await this.issueTokenPair(user, context);
 
+    logAudit({ action: 'auth.password_reset', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip } }).catch(() => {});
+
     return {
       user: this.sanitizeUser(user),
       accessToken: tokens.accessToken,
@@ -924,6 +951,8 @@ class AuthService {
     // FLOW-05-F02: a password change must invalidate all other sessions immediately.
     await this.revokeAllForUser(user._id);
     const tokens = await this.issueTokenPair(user, context);
+
+    logAudit({ action: 'auth.password_changed', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip } }).catch(() => {});
 
     return {
       user: this.sanitizeUser(user),

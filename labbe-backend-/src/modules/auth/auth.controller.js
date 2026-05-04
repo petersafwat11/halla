@@ -18,6 +18,7 @@
  */
 
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 const catchAsync = require("../../shared/utils/catchAsync");
 const {
   sendSuccess,
@@ -26,6 +27,7 @@ const { ValidationError } = require("../../shared/errors");
 const authService = require("./auth.service");
 const config = require("../../config");
 const User = require("../../../models/UserModel");
+const { logAudit } = require("../../shared/utils/auditLog");
 
 const ACCESS_COOKIE = "access_token";
 const REFRESH_COOKIE = "refresh_token";
@@ -156,6 +158,15 @@ exports.logout = catchAsync(async (req, res) => {
     await authService.revokeRefreshToken(refreshToken);
   }
   clearAuthCookies(res);
+
+  // Best-effort actor identification from access token cookie (decode only, no verify)
+  let actorId = null;
+  try {
+    const access = req.cookies?.[ACCESS_COOKIE];
+    if (access) actorId = jwt.decode(access)?.id;
+  } catch { /* swallow */ }
+  logAudit({ action: 'auth.logout', actor: actorId ? { _id: actorId } : null, targetType: 'user', targetId: actorId || undefined, metadata: { ip: req.ip } }).catch(() => {});
+
   sendSuccess(res, null, "Logged out successfully");
 });
 
@@ -569,6 +580,10 @@ exports.setupPassword = catchAsync(async (req, res) => {
   user.passwordSetupToken = undefined;
   user.passwordSetupExpires = undefined;
   user.passwordChangedAt = Date.now() - 1000;
+  // FLOW-04-F03: activate the whitelabel account once they set their password
+  if (user.status !== 'active') {
+    user.status = 'active';
+  }
 
   await user.save();
 
