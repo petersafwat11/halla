@@ -6,7 +6,6 @@ import CheckBoxItems from "@/ui/commen/inputs/checkboxItems/CheckBoxItems";
 import { StepTitle } from "../../../../commen/title/SectionTitle";
 import SectionTitle from "../../../../commen/title/SectionTitle";
 import { useTranslation } from "react-i18next";
-import UploadFile from "@/ui/commen/inputs/uploadFile/UploadFile";
 import LocationSelector from "./LocationSelector";
 
 const StepTwo = ({ goToPreviousStep }) => {

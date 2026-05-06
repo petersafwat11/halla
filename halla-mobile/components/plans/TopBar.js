@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { colors, spacing, typography } from "../../styles/tokens";
 
 const TopBar = ({
   title,
@@ -34,13 +35,13 @@ const TopBar = ({
         <TouchableOpacity
           style={styles.backButton}
           onPress={handleBack}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          hitSlop={{ top: spacing[8], bottom: spacing[8], left: spacing[8], right: spacing[8] }}
         >
           <Ionicons
             style={{ transform: [{ rotate: "180deg" }] }}
             name="chevron-back"
             size={24}
-            color="#F9F4EF"
+            color={colors.primary[50]}
           />
         </TouchableOpacity>
       );
@@ -55,7 +56,7 @@ const TopBar = ({
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#C28E5C" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary[500]} />
 
       <View style={styles.content}>
         <View style={styles.titleContainer}>
@@ -74,15 +75,15 @@ const TopBar = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#C28E5C",
+    backgroundColor: colors.primary[500],
     paddingTop: StatusBar.currentHeight || 0,
   },
   content: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 8,
+    paddingHorizontal: spacing[24],
+    paddingVertical: spacing[8],
     height: 57,
     width: "100%",
   },
@@ -106,25 +107,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   titleContainer: {
-    // flex: 1,
     flexDirection: "row-reverse",
     alignItems: "center",
-    gap: 10,
+    gap: spacing[10],
   },
   title: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: 16,
-    color: "#FFF",
-  },
-  reminderButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  reminderText: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: 12,
-    color: "#FFF",
+    fontSize: typography.fontSize.body.medium,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.natural[50],
   },
 });
 

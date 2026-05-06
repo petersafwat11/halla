@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import styles from "./Pagination.module.css";
 
 const Pagination = ({
@@ -10,13 +11,15 @@ const Pagination = ({
   itemsPerPage,
   onPageChange,
 }) => {
+  const { t } = useTranslation("pagination");
+
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -38,22 +41,22 @@ const Pagination = ({
         pages.push(totalPages);
       }
     }
-    
+
     return pages;
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.info}>
-        Showing {startItem} - {endItem} of {totalItems} results
+        {t("showingResults", { start: startItem, end: endItem, total: totalItems })}
       </div>
-      
+
       <div className={styles.pagination}>
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className={styles.button}
-          aria-label="Previous page"
+          aria-label={t("previousPage")}
         >
           <ChevronLeft size={20} />
         </button>
@@ -66,7 +69,7 @@ const Pagination = ({
               <button
                 onClick={() => onPageChange(page)}
                 className={`${styles.button} ${page === currentPage ? styles.active : ""}`}
-                aria-label={`Page ${page}`}
+                aria-label={`${t("goToPage")} ${page}`}
                 aria-current={page === currentPage ? "page" : undefined}
               >
                 {page}
@@ -79,7 +82,7 @@ const Pagination = ({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className={styles.button}
-          aria-label="Next page"
+          aria-label={t("nextPage")}
         >
           <ChevronRight size={20} />
         </button>

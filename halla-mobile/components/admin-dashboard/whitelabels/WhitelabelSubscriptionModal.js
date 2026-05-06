@@ -20,6 +20,7 @@ import {
 import { useUpdateWhitelabelSubscription, useAdminEnterprisePlans } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import PlanCard from "./PlanCard";
 
 const WhitelabelSubscriptionModal = ({ visible, onClose, whitelabel, onSave }) => {
   const { t, currentLanguage } = useTranslation("admin");
@@ -39,11 +40,11 @@ const WhitelabelSubscriptionModal = ({ visible, onClose, whitelabel, onSave }) =
   const planSections = useMemo(() => {
     const d = plansData?.data || plansData;
     return [
-      { key: "event",     labelEn: "Per-Event Plans",   labelAr: "باقات لكل مناسبة",   plans: d?.event     || [] },
-      { key: "quarterly", labelEn: "3-Month Pool",       labelAr: "رصيد ٣ أشهر",         plans: d?.quarterly || [] },
-      { key: "annual",    labelEn: "Annual Pool",         labelAr: "رصيد سنوي",            plans: d?.annual    || [] },
+      { key: "event",     labelEn: t("whitelabels.subscription.eventPlans"),   labelAr: t("whitelabels.subscription.eventPlansAr"),   plans: d?.event     || [] },
+      { key: "quarterly", labelEn: t("whitelabels.subscription.quarterlyPool"), labelAr: t("whitelabels.subscription.quarterlyPoolAr"), plans: d?.quarterly || [] },
+      { key: "annual",    labelEn: t("whitelabels.subscription.annualPool"),    labelAr: t("whitelabels.subscription.annualPoolAr"),    plans: d?.annual    || [] },
     ].filter((s) => s.plans.length > 0);
-  }, [plansData]);
+  }, [plansData, t]);
 
   useEffect(() => {
     if (visible && whitelabel) {
@@ -125,43 +126,14 @@ const WhitelabelSubscriptionModal = ({ visible, onClose, whitelabel, onSave }) =
                         {isArabic ? section.labelAr : section.labelEn}
                       </Text>
                       <View style={styles.plansContainer}>
-                        {section.plans.map((plan) => {
-                          const isSelected = selectedPlan === plan.code;
-                          const planLabel = plan.nameEn || plan.code;
-                          const planDesc  = plan.nameAr  || "";
-                          const inviteInfo = plan.limits?.invitePool != null
-                            ? `${plan.limits.invitePool} invites (pool)`
-                            : plan.limits?.maxInvitesPerEvent != null
-                            ? `${plan.limits.maxInvitesPerEvent} invites/event`
-                            : "";
-                          const price = plan.pricing?.oneTime || 0;
-                          return (
-                            <TouchableOpacity
-                              key={plan.code}
-                              style={[styles.planCard, isSelected && styles.planCardSelected]}
-                              onPress={() => setSelectedPlan(plan.code)}
-                              activeOpacity={0.75}
-                            >
-                              <View style={styles.planCardLeft}>
-                                <View style={[styles.planRadio, isSelected && styles.planRadioSelected]}>
-                                  {isSelected && <View style={styles.planRadioDot} />}
-                                </View>
-                                <View style={styles.planTextBlock}>
-                                  <Text style={[styles.planLabel, isSelected && styles.planLabelSelected]}>
-                                    {planLabel}
-                                  </Text>
-                                  <Text style={styles.planDesc}>
-                                    {price.toLocaleString()} SAR{inviteInfo ? `  ·  ${inviteInfo}` : ""}
-                                  </Text>
-                                  {planDesc ? <Text style={styles.planDescAr}>{planDesc}</Text> : null}
-                                </View>
-                              </View>
-                              {isSelected && (
-                                <Ionicons name="checkmark-circle" size={20} color={colors.primary[500]} />
-                              )}
-                            </TouchableOpacity>
-                          );
-                        })}
+                        {section.plans.map((plan) => (
+                          <PlanCard
+                            key={plan.code}
+                            plan={plan}
+                            isSelected={selectedPlan === plan.code}
+                            onSelect={setSelectedPlan}
+                          />
+                        ))}
                       </View>
                     </View>
                 ))}
@@ -216,7 +188,7 @@ const WhitelabelSubscriptionModal = ({ visible, onClose, whitelabel, onSave }) =
               activeOpacity={0.8}
             >
               {isPending ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={colors.white} />
               ) : (
                 <Text style={styles.saveBtnText}>{t("whitelabels.subscription.update")}</Text>
               )}
@@ -304,67 +276,6 @@ const styles = StyleSheet.create({
   },
   plansContainer: {
     gap: spacing[8],
-  },
-  planCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: spacing[12],
-    paddingHorizontal: spacing[16],
-    borderRadius: borderRadius[12],
-    borderWidth: 1.5,
-    borderColor: colors.natural[250],
-    backgroundColor: backgrounds.card[1],
-  },
-  planCardSelected: {
-    borderColor: colors.primary[500],
-    backgroundColor: `${colors.primary[500]}08`,
-  },
-  planCardLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing[12],
-    flex: 1,
-  },
-  planRadio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: colors.natural[300],
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  planRadioSelected: {
-    borderColor: colors.primary[500],
-  },
-  planRadioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.primary[500],
-  },
-  planTextBlock: {
-    flex: 1,
-  },
-  planLabel: {
-    fontSize: typography.fontSize.body.medium,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.natural[800],
-  },
-  planLabelSelected: {
-    color: colors.primary[500],
-    fontWeight: typography.fontWeight.semibold,
-  },
-  planDesc: {
-    fontSize: typography.fontSize.label.small,
-    color: colors.natural[500],
-    marginTop: 2,
-  },
-  planDescAr: {
-    fontSize: typography.fontSize.label.small,
-    color: colors.natural[400],
-    marginTop: 1,
   },
   sectionGroupLabel: {
     fontSize: typography.fontSize.label.medium,

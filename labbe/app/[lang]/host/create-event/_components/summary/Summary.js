@@ -20,7 +20,7 @@ const Summary = () => {
   const address = watch("address") || {};
   const guestList = watch("guestList") || [];
   const staffList = watch("staffList") || [];
-  const invitationMessage = watch("invitationMessage") || "";
+  const selectedTemplate = watch("selectedTemplate") || null;
   const scheduleDate = watch("scheduleDate") || "";
   const scheduleTime = watch("scheduleTime") || "";
 
@@ -53,7 +53,7 @@ const Summary = () => {
     date: formatDate(eventDate),
     eventType: formatEventType(eventType),
     eventName: eventName,
-    invitationText: invitationMessage,
+    invitationText: selectedTemplate?.bodyText || "",
     guestCount: guestList.length,
     dateTime:
       eventDate && eventTime ? `${formatDate(eventDate)} - ${eventTime}` : "",

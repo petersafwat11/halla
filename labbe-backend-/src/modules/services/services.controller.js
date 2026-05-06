@@ -59,7 +59,16 @@ exports.getService = catchAsync(async (req, res) => {
  * POST /api/v2/services
  */
 exports.createService = catchAsync(async (req, res) => {
-  const result = await servicesService.createService(req.user._id, req.body, req.file);
+  // FLOW-26-F03: parse JSON-stringified fields from multipart FormData
+  const body = { ...req.body };
+  if (typeof body.tags === 'string') {
+    try { body.tags = JSON.parse(body.tags); } catch {}
+  }
+  if (typeof body.price === 'string') {
+    body.price = parseFloat(body.price);
+  }
+
+  const result = await servicesService.createService(req.user._id, body, req.file);
   sendCreated(res, result, 'Service created successfully');
 });
 
@@ -68,10 +77,19 @@ exports.createService = catchAsync(async (req, res) => {
  * PATCH /api/v2/services/:id
  */
 exports.updateService = catchAsync(async (req, res) => {
+  // FLOW-26-F03: parse JSON-stringified fields from multipart FormData
+  const body = { ...req.body };
+  if (typeof body.tags === 'string') {
+    try { body.tags = JSON.parse(body.tags); } catch {}
+  }
+  if (typeof body.price === 'string') {
+    body.price = parseFloat(body.price);
+  }
+
   const result = await servicesService.updateService(
     req.params.id,
     req.user._id,
-    req.body,
+    body,
     req.file
   );
   sendSuccess(res, result, 'Service updated successfully');

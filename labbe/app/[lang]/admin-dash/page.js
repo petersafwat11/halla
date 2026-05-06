@@ -1,13 +1,19 @@
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
-import AdminPageHeader from "./_components/AdminPageHeader";
+import { requirePageAccess } from "@/services/serverAuth";
+import DashboardPageHeader from "./_components/DashboardPageHeader";
 import DashboardStats from "./_components/DashboardStats";
 import DashboardCharts from "./_components/DashboardCharts";
 import RecentActivity from "./_components/RecentActivity";
 import styles from "./page.module.css";
 
-export default async function AdminDashboardPage({ searchParams }) {
+export default async function AdminDashboardPage({ params, searchParams }) {
+  const resolvedParams = await params;
+  const { lang } = resolvedParams;
+
+  await requirePageAccess("dashboard", lang);
+
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
   const queryClient = createServerQueryClient();
@@ -22,25 +28,26 @@ export default async function AdminDashboardPage({ searchParams }) {
   };
 
   if (token) {
-    await prefetchServerData({
-      queryClient,
-      queryKey: ["admin", "dashboard", filters],
-      path: API_PATHS.dashboard.getAdminDashboard,
-      params: filters,
-      token,
-    });
+    try {
+      await prefetchServerData({
+        queryClient,
+        queryKey: ["admin", "dashboard", filters],
+        path: API_PATHS.dashboard.getAdminDashboard,
+        params: filters,
+        token,
+      });
+    } catch (error) {
+      console.error("Error prefetching dashboard data:", error);
+    }
   }
 
   return (
     <QueryClientServerProvider queryClient={queryClient}>
       <div className={styles.container}>
-        <AdminPageHeader
-          title="لوحة التحكم"
-          subtitle="نظرة عامة على الأداء والإحصائيات"
-        />
-        <DashboardStats />
-        <DashboardCharts />
-        <RecentActivity />
+        <DashboardPageHeader lang={lang} />
+        <DashboardStats lang={lang} />
+        <DashboardCharts lang={lang} />
+        <RecentActivity lang={lang} />
       </div>
     </QueryClientServerProvider>
   );

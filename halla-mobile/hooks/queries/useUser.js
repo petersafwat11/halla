@@ -32,7 +32,7 @@ export function useNotificationSettings() {
     queryKey: ['user', 'notification-settings'],
     queryFn: async () => {
       const response = await getNotificationPreferencesAPI(token);
-      return response.data;
+      return response.data?.preferences || response.data || response;
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,

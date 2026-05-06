@@ -13,6 +13,7 @@ import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import styles from "../singleEvent.module.css";
 import { useEvent, useEventMutation } from "@/hooks/reactQueryHooks/useEvents";
 import { useEventGuests } from "@/hooks/events/queries/useEventGuests";
+import messagingService from "@/services/messaging";
 import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
 import { useQueryClient } from "@tanstack/react-query";
 import { downloadExportFile } from "@/services/new-backend/apiClient";
@@ -29,8 +30,8 @@ export default function GuestTable({ eventId }) {
   const deleteGuestMutation = useEventMutation("deleteGuest");
   const updateGuestMutation = useEventMutation("updateGuest");
 
-  // Extract data
-  const actualEventData = eventData?.data || eventData;
+  // Extract data — backend returns { status, data: { event: { ... } } }
+  const event = eventData?.data?.event || eventData?.event;
   const guests = guestsData?.data || guestsData || [];
 
   const [showEditPopup, setShowEditPopup] = useState(false);
@@ -90,10 +91,13 @@ export default function GuestTable({ eventId }) {
 
     queryClient.setQueryData(["guests", "events", eventId], (old) => {
       if (!old) return old;
-      const oldData = old.data || old;
+      const oldGuests = old.data?.data || old.data || old;
+      const filtered = Array.isArray(oldGuests)
+        ? oldGuests.filter((g) => (g.id) !== guestId)
+        : [];
       return {
         ...old,
-        data: oldData.filter((g) => (g.id) !== guestId),
+        data: { ...(old.data || {}), data: filtered },
       };
     });
 
@@ -147,7 +151,7 @@ export default function GuestTable({ eventId }) {
 
   const handleConfirmReminder = async (message) => {
     try {
-      await messagingService.sendReminder(eventId, "sms", "ar", message);
+      await messagingService.sendReminder(eventId, "sms", message);
       toast.success(t("reminderPopup.success"));
       setShowReminderPopup(false);
     } catch (error) {

@@ -30,9 +30,7 @@ const MonthlyPlans = ({ plans, selectedPlan, onSelectPlan }) => {
               <View style={styles.headerLeft}>
                 <Text style={styles.planName}>{planName}</Text>
                 <Text style={styles.durationNote}>
-                  {isArabic
-                    ? "30 يوم — مناسبات غير محدودة"
-                    : "Valid 30 days — unlimited events"}
+                  {t("monthlyPlan.durationNote")}
                 </Text>
               </View>
               <View style={styles.priceTag}>
@@ -95,7 +93,7 @@ const MonthlyPlans = ({ plans, selectedPlan, onSelectPlan }) => {
                 <View style={styles.selectedIndicator}>
                   <Ionicons name="checkmark" size={12} color="#FFF" />
                   <Text style={styles.selectedText}>
-                    {isArabic ? "تم الاختيار" : "Selected"}
+                    {t("badges.selected")}
                   </Text>
                 </View>
               </View>

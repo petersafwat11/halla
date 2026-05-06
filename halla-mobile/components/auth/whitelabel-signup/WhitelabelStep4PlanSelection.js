@@ -13,7 +13,12 @@ const WhitelabelStep4PlanSelection = () => {
   const billingCycle = watch('planSelection.billingCycle') || 'monthly';
   const selectedPlanCode = watch('planSelection.planCode');
 
-  const plans = plansData?.data?.plans || plansData?.plans || [];
+  const raw = plansData?.data || plansData || {};
+  const plans = [
+    ...(raw.event || []),
+    ...(raw.quarterly || []),
+    ...(raw.annual || []),
+  ];
 
   return (
     <View style={styles.container}>
@@ -51,10 +56,8 @@ const WhitelabelStep4PlanSelection = () => {
         ) : (
           plans.map((plan) => {
             const isSelected = selectedPlanCode === plan.code;
-            const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
-            const priceSuffix = billingCycle === 'yearly'
-              ? t('signupForm.whiteLabel.planSelection.planCards.perYear')
-              : t('signupForm.whiteLabel.planSelection.planCards.perMonth');
+            const price = plan.pricing?.oneTime ?? plan.price;
+            const priceSuffix = t('signupForm.whiteLabel.planSelection.planCards.perEvent');
             return (
               <TouchableOpacity
                 key={plan.code}

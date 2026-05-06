@@ -11,6 +11,14 @@ import { useForm, FormProvider } from "react-hook-form";
 import { ToggleInput } from "../../commen";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
+import {
+  colors,
+  spacing,
+  borderRadius,
+  typography,
+  textStyles,
+  backgrounds,
+} from "../../../styles/tokens";
 
 const AdminNotificationSettings = ({ initialData, onUpdate }) => {
   const { t } = useTranslation("admin");
@@ -216,26 +224,24 @@ const AdminNotificationSettings = ({ initialData, onUpdate }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: backgrounds.card[1],
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: spacing[20],
+    paddingBottom: spacing[40],
   },
   section: {
-    marginBottom: 32,
+    marginBottom: spacing[32],
   },
   sectionTitle: {
-    fontSize: 18,
-    fontFamily: "Cairo_700Bold",
-    color: "#2c2c2c",
-    marginBottom: 8,
+    ...textStyles.titleMedium,
+    color: colors.natural[900],
+    marginBottom: spacing[8],
   },
   sectionDescription: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
-    color: "#666",
-    marginBottom: 16,
+    ...textStyles.bodyMedium,
+    color: colors.natural[500],
+    marginBottom: spacing[16],
     lineHeight: 20,
   },
   togglesGroup: {
@@ -244,40 +250,40 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row-reverse",
     justifyContent: "space-between",
-    marginTop: 24,
-    gap: 12,
+    marginTop: spacing[24],
+    gap: spacing[12],
   },
   cancelButton: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: spacing[8],
+    paddingHorizontal: spacing[16],
+    borderRadius: borderRadius[8],
     borderWidth: 1,
-    borderColor: "#c28e5c",
+    borderColor: colors.primary[500],
     alignItems: "center",
     maxWidth: 140,
   },
   cancelButtonText: {
-    color: "#c28e5c",
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
+    color: colors.primary[500],
+    fontSize: typography.fontSize.body.medium,
+    fontWeight: typography.fontWeight.semibold,
   },
   saveButton: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: "#c28e5c",
+    paddingVertical: spacing[8],
+    paddingHorizontal: spacing[16],
+    borderRadius: borderRadius[8],
+    backgroundColor: colors.primary[500],
     alignItems: "center",
     maxWidth: 140,
   },
   saveButtonDisabled: {
-    backgroundColor: "#e0e0e0",
+    backgroundColor: colors.natural[200],
   },
   saveButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
+    color: colors.natural[50],
+    fontSize: typography.fontSize.body.medium,
+    fontWeight: typography.fontWeight.semibold,
   },
 });
 

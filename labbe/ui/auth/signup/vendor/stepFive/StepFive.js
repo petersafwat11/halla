@@ -20,7 +20,7 @@ const StepFive = ({ goToPreviousStep }) => {
         {/* Social Media and Links Section */}
         <div className={styles.section}>
           <SectionTitle
-            title="الروابط الاجتماعية"
+            title={t("signupForm.vendor.otherLinksAndData.socialLinksTitle")}
             icon="/svg/auth/link.svg"
             height={24}
             width={24}
@@ -38,16 +38,16 @@ const StepFive = ({ goToPreviousStep }) => {
               iconPath="auth/instagram.svg"
             />
             <InputGroup
-              label="رابط فيسبوك"
+              label={t("signupForm.vendor.otherLinksAndData.facebookLink.label")}
               type="url"
-              placeholder="أدخل رابط صفحة الفيسبوك"
+              placeholder={t("signupForm.vendor.otherLinksAndData.facebookLink.placeholder")}
               name="otherLinksAndData.facebookLink"
               iconPath="auth/link.svg"
             />
             <InputGroup
-              label="رابط تيك توك"
+              label={t("signupForm.vendor.otherLinksAndData.tiktokLink.label")}
               type="url"
-              placeholder="أدخل رابط حساب تيك توك"
+              placeholder={t("signupForm.vendor.otherLinksAndData.tiktokLink.placeholder")}
               name="otherLinksAndData.tiktokLink"
               iconPath="auth/link.svg"
             />
@@ -66,7 +66,7 @@ const StepFive = ({ goToPreviousStep }) => {
         {/* File Uploads Section */}
         <div className={styles.section}>
           <SectionTitle
-            title="الملفات والمستندات"
+            title={t("signupForm.vendor.otherLinksAndData.filesAndDocumentsTitle")}
             icon="/svg/auth/document.svg"
             height={24}
             width={24}

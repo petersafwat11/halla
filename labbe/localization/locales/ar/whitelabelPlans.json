@@ -28,7 +28,9 @@
       "unlimited": "غير محدود",
       "contactSales": "تواصل مع المبيعات",
       "upgrade": "ترقية",
-      "downgrade": "تخفيض"
+      "downgrade": "تخفيض",
+      "subscribing": "جاري الاشتراك...",
+      "subscribeNow": "اشترك الآن"
     },
     "features": {
       "hasInAppInvites": "إرسال الدعوات من التطبيق",
@@ -54,6 +56,13 @@
       "description": "سيتواصل معك فريقنا لمناقشة ترقية باقتك.",
       "close": "إغلاق"
     },
+    "subscriptionStatus": "حالة الاشتراك",
+    "noSubscription": {
+      "title": "لا يوجد اشتراك نشط",
+      "text": "اختر إحدى الباقات أدناه للبدء في استخدام جميع المميزات"
+    },
+    "successMessage": "تم الاشتراك بنجاح!",
+    "failedMessage": "فشل في الاشتراك",
     "loading": "جاري تحميل الباقات...",
     "error": "فشل في تحميل الباقات. يرجى المحاولة مرة أخرى."
   }

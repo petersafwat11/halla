@@ -37,7 +37,7 @@ export const uploadPostEventPhotos = (eventId, formData, token) =>
 export const updateThankYouMessage = (eventId, message, token) =>
   request(ENDPOINTS.POST_EVENT.UPDATE_THANK_YOU(eventId), token, {
     method: "PATCH",
-    body: { message },
+    body: { text: message },
   });
 
 export const deletePostEventPhoto = (eventId, photoId, token) =>

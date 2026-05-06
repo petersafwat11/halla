@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Modal,
   ScrollView,
-  Switch,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import { useCreateDiscount, useUpdateDiscount } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
+import DiscountFormFields from "./_components/DiscountFormFields";
 import {
   colors,
   spacing,
@@ -139,7 +138,6 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.sheet}>
-          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>
               {isEdit ? t("discounts.form.editTitle") : t("discounts.form.createTitle")}
@@ -155,152 +153,9 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Code (readonly in edit) */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("discounts.form.code")}</Text>
-              <TextInput
-                style={[styles.input, isEdit && styles.inputDisabled]}
-                value={form.code}
-                onChangeText={(v) => set("code", v.toUpperCase())}
-                placeholder={t("discounts.form.codePlaceholder")}
-                placeholderTextColor={colors.natural[300]}
-                autoCapitalize="characters"
-                editable={!isEdit}
-              />
-            </View>
-
-            {/* Discount Type */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("discounts.form.discountType")}</Text>
-              <View style={styles.typeRow}>
-                {["percentage", "fixed"].map((type) => (
-                  <TouchableOpacity
-                    key={type}
-                    style={[
-                      styles.typeBtn,
-                      form.discountType === type && styles.typeBtnActive,
-                    ]}
-                    onPress={() => set("discountType", type)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[
-                        styles.typeBtnText,
-                        form.discountType === type && styles.typeBtnTextActive,
-                      ]}
-                    >
-                      {t(`discounts.form.${type}`)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* Value */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("discounts.form.value")}</Text>
-              <TextInput
-                style={styles.input}
-                value={form.value}
-                onChangeText={(v) => set("value", v)}
-                placeholder={t("discounts.form.valuePlaceholder")}
-                placeholderTextColor={colors.natural[300]}
-                keyboardType="decimal-pad"
-              />
-            </View>
-
-            {/* Max Uses */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("discounts.form.maxUses")}</Text>
-              <TextInput
-                style={styles.input}
-                value={form.maxUses}
-                onChangeText={(v) => set("maxUses", v)}
-                placeholder={t("discounts.form.maxUsesPlaceholder")}
-                placeholderTextColor={colors.natural[300]}
-                keyboardType="number-pad"
-              />
-            </View>
-
-            {/* Minimum Amount */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("discounts.form.minimumAmount")}</Text>
-              <TextInput
-                style={styles.input}
-                value={form.minimumAmount}
-                onChangeText={(v) => set("minimumAmount", v)}
-                placeholder={t("discounts.form.minimumAmountPlaceholder")}
-                placeholderTextColor={colors.natural[300]}
-                keyboardType="decimal-pad"
-              />
-            </View>
-
-            {/* Valid From */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("discounts.form.validFrom")}</Text>
-              <TextInput
-                style={styles.input}
-                value={form.validFrom}
-                onChangeText={(v) => set("validFrom", v)}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor={colors.natural[300]}
-              />
-            </View>
-
-            {/* Valid Until */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("discounts.form.validUntil")}</Text>
-              <TextInput
-                style={styles.input}
-                value={form.validUntil}
-                onChangeText={(v) => set("validUntil", v)}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor={colors.natural[300]}
-              />
-            </View>
-
-            {/* Description EN */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("discounts.form.descriptionEn")}</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={form.descriptionEn}
-                onChangeText={(v) => set("descriptionEn", v)}
-                placeholder={t("discounts.form.descriptionEnPlaceholder")}
-                placeholderTextColor={colors.natural[300]}
-                multiline
-                numberOfLines={2}
-              />
-            </View>
-
-            {/* Description AR */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("discounts.form.descriptionAr")}</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={form.descriptionAr}
-                onChangeText={(v) => set("descriptionAr", v)}
-                placeholder={t("discounts.form.descriptionArPlaceholder")}
-                placeholderTextColor={colors.natural[300]}
-                multiline
-                numberOfLines={2}
-                textAlign="right"
-              />
-            </View>
-
-            {/* Is Active Toggle */}
-            <View style={styles.toggleRow}>
-              <Text style={styles.label}>{t("discounts.form.isActive")}</Text>
-              <Switch
-                value={form.isActive}
-                onValueChange={(v) => set("isActive", v)}
-                trackColor={{ false: colors.natural[200], true: colors.primary[400] }}
-                thumbColor={form.isActive ? colors.primary[500] : colors.natural[300]}
-              />
-            </View>
+            <DiscountFormFields form={form} isEdit={isEdit} set={set} t={t} />
           </ScrollView>
 
-          {/* Footer buttons */}
           <View style={styles.footer}>
             <TouchableOpacity
               style={styles.cancelBtn}
@@ -362,65 +217,6 @@ const styles = StyleSheet.create({
   bodyContent: {
     padding: spacing[20],
     gap: spacing[4],
-  },
-  field: {
-    marginBottom: spacing[16],
-  },
-  label: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: typography.fontSize.label.large,
-    color: colors.natural[600],
-    marginBottom: spacing[6],
-  },
-  input: {
-    borderWidth: 1.5,
-    borderColor: colors.natural[200],
-    borderRadius: borderRadius[8],
-    paddingHorizontal: spacing[14],
-    paddingVertical: spacing[12],
-    fontFamily: "Cairo_400Regular",
-    fontSize: typography.fontSize.body.small,
-    color: colors.natural[900],
-    backgroundColor: "#FFF",
-  },
-  inputDisabled: {
-    backgroundColor: colors.natural[50],
-    color: colors.natural[400],
-  },
-  textArea: {
-    minHeight: 64,
-    textAlignVertical: "top",
-  },
-  typeRow: {
-    flexDirection: "row",
-    gap: spacing[10],
-  },
-  typeBtn: {
-    flex: 1,
-    paddingVertical: spacing[10],
-    borderRadius: borderRadius[8],
-    borderWidth: 1.5,
-    borderColor: colors.natural[200],
-    alignItems: "center",
-    backgroundColor: "#FFF",
-  },
-  typeBtnActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
-  },
-  typeBtnText: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: typography.fontSize.label.large,
-    color: colors.natural[600],
-  },
-  typeBtnTextActive: {
-    color: "#FFF",
-  },
-  toggleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing[16],
   },
   footer: {
     flexDirection: "row",

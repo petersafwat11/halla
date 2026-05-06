@@ -19,7 +19,7 @@ const StepOne = () => {
         <div className={styles.sections}>
           <div className={styles.section}>
             <SectionTitle
-              title="معلومات المنشأة"
+              title={t("signupForm.whiteLabel.identity.facilityInfo")}
               icon="/svg/auth/building.svg"
               height={24}
               width={24}

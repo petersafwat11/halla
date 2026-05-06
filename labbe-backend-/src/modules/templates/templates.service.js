@@ -27,6 +27,7 @@ const {
 // AWS SDK v3 — already a project dep via s3Upload.js
 const {
   S3Client,
+  PutObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
@@ -148,6 +149,36 @@ async function getUploadUrl({ filename, contentType, templateId = "new" }) {
     fields: presigned.fields,
     s3Key: key,
   };
+}
+
+/**
+ * Accept a file buffer from the backend (proxy upload) and PUT it
+ * directly to S3. Generates the same key format as getUploadUrl so
+ * processImage works unchanged after this step.
+ */
+async function handleImageUpload({ fileBuffer, filename, contentType, templateId = "new" }) {
+  if (!/^image\/(jpeg|png|webp)$/.test(contentType)) {
+    throw new ValidationError("contentType must be image/jpeg, image/png, or image/webp");
+  }
+  if (!filename || filename.length > 200) {
+    throw new ValidationError("filename is required (max 200 chars)");
+  }
+  const client = getS3();
+  if (!client) throw new AppError("S3 is not configured", 500, "S3_NOT_CONFIGURED");
+
+  const safeFilename = String(filename).replace(/[^a-zA-Z0-9._-]/g, "-");
+  const key = `templates/${templateId}/original-${Date.now()}-${safeFilename}`;
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: key,
+      Body: fileBuffer,
+      ContentType: contentType,
+    })
+  );
+
+  return { s3Key: key };
 }
 
 /**
@@ -511,6 +542,7 @@ module.exports = {
   duplicateTemplate,
   // Upload
   getUploadUrl,
+  handleImageUpload,
   processImage,
   s3KeyToUrl,
   deleteS3Key,

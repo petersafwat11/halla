@@ -77,7 +77,8 @@ const SubscriptionPopup = ({
       const token = cookieUtils.getCookie("token");
       await adminDashboardAPI.hosts.updateSubscription(
         hostId,
-        { planCode: selectedPlan },
+        selectedPlan,
+        null,
         token
       );
       toast.success(t("subscription.updateSuccess", "تم تحديث الاشتراك بنجاح"));

@@ -24,7 +24,7 @@ import {
 import { toastUtils } from "@/utils/toastUtils";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 import ErrorDisplay from "@/ui/commen/ErrorDisplay";
-import { getAuthErrorMessage } from "@/services/errorHandlingService";
+import { getAuthErrorMessage, handleError } from "@/services/errorHandlingService";
 
 const WhiteLabelForm = () => {
   const { t } = useTranslation("signup");
@@ -52,22 +52,22 @@ const WhiteLabelForm = () => {
     { id: 1, desc: t("signupForm.whiteLabel.steps.identity") },
     { id: 2, desc: t("signupForm.whiteLabel.steps.login") },
     { id: 3, desc: t("signupForm.whiteLabel.steps.requirements") },
-    { id: 4, desc: currentLocale === "ar" ? "اختيار الباقة" : "Choose Plan" },
+    { id: 4, desc: t("signupForm.whiteLabel.steps.choosePlan") },
     { id: 5, desc: t("signupForm.whiteLabel.steps.summary") },
   ];
 
   const methods = useForm({
     resolver: zodResolver(whitelabelSignupSchema(t)),
-    reValidateMode: "onSubmit",
+    reValidateMode: "onChange",
     shouldFocusError: false,
     mode: "onTouched",
+    defaultValues: {
+      identity: { address: {} },
+      loginData: {},
+      systemRequirements: { eventTypes: [] },
+      planSelection: { billingCycle: "yearly", needsCustomBranding: false },
+    },
   });
-
-  console.log(
-    "WhiteLabel Form Values & Errors:",
-    methods.watch(),
-    methods.formState.errors,
-  );
 
   // Validate current step using utility
   const validateCurrentStep = useCallback(() => {
@@ -97,51 +97,40 @@ const WhiteLabelForm = () => {
     [step, currentStepValidity, router],
   );
 
-  const handleSubmitWhiteLabel = async () => {
+  const handleSubmitWhiteLabel = useCallback(async () => {
     const formValues = methods.getValues();
-    console.log("Submitting WhiteLabel data:", formValues);
 
     // Build FormData using utility function
     const formData = buildWhitelabelFormData(formValues);
 
     try {
       await signupWhiteLabel(formData);
-      console.log("WhiteLabel signup successful");
       // Show success toast
-      toastUtils.success(
-        currentLocale === "ar"
-          ? "تم التسجيل بنجاح! سيتواصل معك فريقنا قريباً."
-          : "Registration successful! Our team will contact you shortly.",
-      );
+      toastUtils.success(t("signupForm.whiteLabel.success"));
       router.push(`/${currentLocale}/login`);
     } catch (error) {
-      console.error("WhiteLabel signup error:", error.message);
-      // Error will be displayed via ErrorDisplay component
+      handleError(error, t, { fallbackMessage: "signupForm.whiteLabel.errorMessage" });
     }
-  };
+  }, [methods, signupWhiteLabel, t, router, currentLocale]);
 
-  const handleNext = (e) => {
+  const handleNext = useCallback((e) => {
     e.preventDefault();
 
-    // If we're on step 5 (summary), submit the form
-    if (step === 5) {
+    // If on last step (summary), submit the form
+    if (step === steps.length) {
       handleSubmitWhiteLabel();
       return;
     }
 
     // Validate and navigate
-    const success = utilNextStep({
+    utilNextStep({
       currentStep: step,
-      totalSteps: steps.length, // Allow navigation to summary step
+      totalSteps: steps.length,
       setStep,
       validateStep: validateCurrentStep,
       router,
     });
-
-    if (success) {
-      setCurrentStepValidity(true);
-    }
-  };
+  }, [step, steps.length, handleSubmitWhiteLabel, validateCurrentStep, router]);
 
   const goToPreviousStep = useCallback(() => {
     utilPrevStep({
@@ -166,9 +155,6 @@ const WhiteLabelForm = () => {
         <FormHeader />
       </div>
       <div className={styles.container}>
-        {/* <div className={styles.form_header}>
-        <FormHeader />
-      </div> */}
         <FormProvider {...methods}>
           <div className={styles.stepper_desk}>
             <Stepper
@@ -249,8 +235,7 @@ const WhiteLabelForm = () => {
                         onClick={goToPreviousStep}
                         disabled={isSubmitting}
                       >
-                        {t("signupForm.initialForm.buttons.backButton") ||
-                          "رجوع"}
+                        {t("signupForm.initialForm.buttons.backButton")}
                       </button>
                     )}
                     <button
@@ -260,13 +245,12 @@ const WhiteLabelForm = () => {
                       disabled={isSubmitting}
                     >
                       {isSubmitting
-                        ? t("signupForm.submitting") || "جاري الإرسال..."
+                        ? t("signupForm.submitting")
                         : step === 5
-                          ? t("signupForm.initialForm.buttons.submitButton") ||
-                          "إنشاء الحساب"
+                          ? t("signupForm.initialForm.buttons.submitButton")
                           : t(
                             "signupForm.initialForm.buttons.continueButton",
-                          ) || "متابعة"}
+                          )}
                     </button>
                   </div>
                 </div>

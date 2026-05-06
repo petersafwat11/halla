@@ -1,9 +1,21 @@
 "use client";
 import React from "react";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import styles from "./invitationCard.module.css";
 
-const InvitationCard = ({ t }) => {
+// NOTE: The two Builder.io image URLs below were migrated to local /public assets.
+const FLORAL_TOP_URL = "/post-event/floral-top.png";
+const FLORAL_BOTTOM_URL = "/post-event/floral-bottom.png";
+
+// NOTE (Rule 3 / Rule 2): The locale keys below (quranVerse, groomName,
+// brideName, saturday, day, month, year, timeText, villaNumber, address,
+// attendanceText, waitingText, weddingCelebration) currently hold demo/
+// placeholder values in the JSON files. They should be replaced with
+// backend-driven props sourced from `eventInfo` / `content` in a follow-up
+// task once the backend response shape is confirmed.
+const InvitationCard = ({ eventInfo, content }) => {
+  const { t } = useTranslation("postEvent");
   return (
     <div className={styles.cardWrapper}>
       <div className={styles.cardContainer}>
@@ -15,18 +27,18 @@ const InvitationCard = ({ t }) => {
           <path opacity="0.23" d="M314.098 451.451V0.417969L0.417328 0.417969V451.451H314.098Z" stroke="#9A8479" strokeWidth="0.836511" strokeMiterlimit="10"/>
         </svg>
         
-        <Image 
-          src="https://api.builder.io/api/v1/image/assets/TEMP/605c64577186a2adff305356c0a690f201de5208?width=684" 
-          alt="Floral decoration" 
-          width={342} 
+        <Image
+          src={FLORAL_TOP_URL}
+          alt={t("floralDecoration", "Floral decoration")}
+          width={342}
           height={479}
           className={styles.floralTopLeft}
         />
-        
-        <Image 
-          src="https://api.builder.io/api/v1/image/assets/TEMP/0f31a04adc079878a9ff922c0b342135d4e6783c?width=683" 
-          alt="Floral decoration" 
-          width={342} 
+
+        <Image
+          src={FLORAL_BOTTOM_URL}
+          alt={t("floralDecoration", "Floral decoration")}
+          width={342}
           height={479}
           className={styles.floralBottomRight}
         />

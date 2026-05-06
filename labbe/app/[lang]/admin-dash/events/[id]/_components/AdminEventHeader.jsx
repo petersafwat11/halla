@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useRouter } from "next/navigation";
 import { IoIosArrowForward } from "react-icons/io";
@@ -11,6 +11,7 @@ import EventActionsHeader from "@/ui/host/events/EventActionsHeader";
 import { eventsAPI } from "@/services/adminDashboard";
 import { cookieUtils } from "@/utils/cookieUtils";
 import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import styles from "../singleEvent.module.css";
 
 export default function AdminEventHeader({ data }) {
@@ -24,23 +25,21 @@ export default function AdminEventHeader({ data }) {
   const isArabic = i18n.language === "ar";
   const eventTitle =
     data?.event?.title ||
-    data?.eventDetails?.title ||
     t("singleEvent.title", "Event Details");
   const hostName =
-    data?.host?.username || data?.host?.name || data?.hostName || "";
+    data?.host?.username || data?.host?.name || "";
 
   // Transform event data for EventActionsHeader
   const event = {
     id: eventId,
     title: eventTitle,
-    testMessageSent: data?.event?.testMessageSent || data?.testMessageSent || false,
-    whatsappTemplateStatus: data?.event?.whatsappTemplateStatus || data?.whatsappTemplateStatus,
-    launchSettings: data?.launchSettings || data?.event?.launchSettings,
-    staffCount: (data?.staff || data?.staffList || []).length,
+    testMessageSent: data.event.testMessageSent,
+    whatsappTemplateStatus: data.event.whatsappTemplateStatus,
+    launchSettings: data.event.launchSettings,
+    staffCount: (data.staff || []).length,
   };
 
-  // Transform staff data from API format (phone) to popup format (mobile)
-  const staffList = (data?.staff || data?.staffList || []).map(
+  const staffList = (data.staff || []).map(
     (s) => ({
       id: s._id || s.id,
       name: s.name,
@@ -50,28 +49,16 @@ export default function AdminEventHeader({ data }) {
 
   // Dropdown items for Edit
   const dropdownItems = [
-    {
-      label: isArabic ? "تفاصيل المناسبة" : "Event Details",
-      step: 1,
-    },
-    {
-      label: isArabic ? "قائمة الضيوف" : "Guest List",
-      step: 2,
-    },
-    {
-      label: isArabic ? "تصميم الدعوة" : "Invitation Design",
-      step: 3,
-    },
-    {
-      label: isArabic ? "تخصيص الرسالة" : "Invitation Customization",
-      step: 4,
-    },
+    { label: t("singleEvent.editSteps.details", "تفاصيل المناسبة"), step: 1 },
+    { label: t("singleEvent.editSteps.guestList", "قائمة الضيوف"), step: 2 },
+    { label: t("singleEvent.editSteps.design", "تصميم الدعوة"), step: 3 },
+    { label: t("singleEvent.editSteps.customization", "تخصيص الرسالة"), step: 4 },
   ];
 
-  const handleEditClick = (step) => {
+  const handleEditClick = useCallback((step) => {
     router.push(`/${lang}/admin-dash/update-event?id=${eventId}&step=${step}`);
     setShowDropdown(false);
-  };
+  }, [router, lang, eventId]);
 
   const handleDeleteEvent = async () => {
     const confirmed = window.confirm(
@@ -91,10 +78,7 @@ export default function AdminEventHeader({ data }) {
       );
       router.push(`/${lang}/admin-dash/events`);
     } catch (error) {
-      console.error("Error deleting event:", error);
-      toastUtils.error(
-        error.message || t("singleEvent.deleteError", "Failed to delete event")
-      );
+      handleError(error, t, { fallbackMessage: "singleEvent.deleteError" });
     } finally {
       setIsDeleting(false);
     }
@@ -121,7 +105,6 @@ export default function AdminEventHeader({ data }) {
       setShowStaffPopup(false);
       router.refresh();
     } catch (error) {
-      console.error("Error adding staff:", error);
       throw error;
     }
   };
@@ -141,7 +124,6 @@ export default function AdminEventHeader({ data }) {
       );
       router.refresh();
     } catch (error) {
-      console.error("Error editing staff:", error);
       throw error;
     }
   };
@@ -159,7 +141,6 @@ export default function AdminEventHeader({ data }) {
       );
       router.refresh();
     } catch (error) {
-      console.error("Error deleting staff:", error);
       throw error;
     }
   };

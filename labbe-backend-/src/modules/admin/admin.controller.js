@@ -174,12 +174,12 @@ exports.updateVendorStatus = catchAsync(async (req, res) => {
 
 exports.updateVendorRating = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { rating } = req.body;
+  const { rating, comment } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
   if (rating === undefined) throw new ValidationError('Rating is required');
 
-  const result = await adminService.updateVendorRating(id, rating, whitelabelId);
+  const result = await adminService.updateVendorRating(id, rating, comment, whitelabelId);
   sendSuccess(res, result, 'Vendor rating updated successfully');
 });
 
@@ -368,6 +368,23 @@ exports.updateWhitelabelSubscription = catchAsync(async (req, res) => {
 
   const result = await adminService.updateWhitelabelSubscription(id, { planCode, status });
   sendSuccess(res, result, result.message);
+});
+
+exports.getWhitelabelFeatures = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const features = await adminService.getWhitelabelFeatures(id);
+  sendSuccess(res, { features }, 'Whitelabel features retrieved successfully');
+});
+
+exports.updateWhitelabelFeature = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { feature, enabled } = req.body;
+
+  if (!feature) throw new ValidationError('Feature name is required');
+  if (typeof enabled !== 'boolean') throw new ValidationError('Enabled must be a boolean');
+
+  const result = await adminService.updateWhitelabelFeature(id, feature, enabled);
+  sendSuccess(res, result, 'Feature updated successfully');
 });
 
 exports.deleteWhitelabel = catchAsync(async (req, res) => {

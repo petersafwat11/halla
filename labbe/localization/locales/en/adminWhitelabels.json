@@ -8,7 +8,15 @@
   "stats": {
     "totalWhitelabels": "Total Whitelabels",
     "activeWhitelabels": "Active",
-    "pendingWhitelabels": "Pending Review"
+    "pendingWhitelabels": "Pending Review",
+    "total": "Total Whitelabels",
+    "active": "Active Whitelabels",
+    "pending": "Pending",
+    "suspended": "Suspended",
+    "allTime": "All time",
+    "activeNow": "Active now",
+    "awaitingActivation": "Awaiting activation",
+    "temporarilySuspended": "Temporarily suspended"
   },
   "table": {
     "title": "Whitelabels List",
@@ -92,7 +100,18 @@
     "assignPlan": "Assign Plan",
     "updateSuccess": "Subscription updated successfully",
     "updateError": "Failed to update subscription",
-    "noWhitelabelId": "Whitelabel ID not found"
+    "noWhitelabelId": "Whitelabel ID not found",
+    "loadingPlans": "Loading plans...",
+    "subscriptionUpdateSuccess": "Subscription updated successfully",
+    "subscriptionUpdateError": "Failed to update subscription"
+  },
+  "form": {
+    "name": "Whitelabel Name",
+    "plan": "Plan",
+    "selectPlan": "Select a plan",
+    "status": "Status",
+    "selectStatus": "Select status",
+    "loadingPlans": "Loading plans..."
   },
   "plans": {
     "currency": "SAR",
@@ -132,6 +151,19 @@
     },
     "noHosts": "No hosts found"
   },
+  "hosts": {
+    "title": "Hosts",
+    "noHosts": "No hosts registered yet",
+    "viewDetails": "View",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "status": "Status",
+      "createdAt": "Join Date",
+      "actions": "Actions"
+    }
+  },
   "bulkActions": {
     "delete": "Delete Selected"
   },
@@ -143,7 +175,13 @@
     "bulkDeleteSuccess": "Whitelabels deleted successfully",
     "bulkDeleteError": "Failed to delete whitelabels",
     "notificationSent": "Notification sent successfully",
-    "notificationError": "Failed to send notification"
+    "notificationError": "Failed to send notification",
+    "selectRows": "Please select whitelabels to delete",
+    "exportError": "Failed to export whitelabels",
+    "noSubscription": "None",
+    "phone": "Phone",
+    "domain": "Domain",
+    "subscription": "Subscription"
   },
   "noData": "No data available",
   "dateRange": {

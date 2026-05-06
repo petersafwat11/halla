@@ -68,6 +68,17 @@
   }
 }
 
+.backIcon {
+  cursor: pointer;
+  font-size: 2.4rem;
+  transform: rotate(180deg);
+  flex-shrink: 0;
+}
+
+.backIconRtl {
+  transform: rotate(0deg);
+}
+
 @media (max-width: 768px) {
   .title {
     font-size: 2rem;

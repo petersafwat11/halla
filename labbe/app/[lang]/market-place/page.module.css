@@ -102,3 +102,40 @@
   border-radius: 12px;
   width: 100%;
 }
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.emptyState h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c2c2c;
+  margin: 0;
+}
+
+.emptyState p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.resetButton {
+  margin-top: 8px;
+  padding: 10px 24px;
+  border-radius: 8px;
+  background: #c28e5c;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.resetButton:hover {
+  background: #a67749;
+}

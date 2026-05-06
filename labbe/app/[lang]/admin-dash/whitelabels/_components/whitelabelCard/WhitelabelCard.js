@@ -1,12 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import styles from "./whitelabelCard.module.css";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
-import { cookieUtils } from "@/utils/cookieUtils";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
+import { useAdminWhitelabelMutation } from "@/hooks/reactQueryHooks/useAdmin";
 import { useRouter } from "next/navigation";
-import adminDashboardAPI from "@/services/adminDashboard";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import WhitelabelSubscriptionPopup from "../whitelabelSubscriptionPopup/WhitelabelSubscriptionPopup";
 import {
@@ -19,119 +19,79 @@ import {
   FaCrown,
 } from "react-icons/fa";
 
+const STATUS_CSS_MAP = {
+  active: styles.statusActive,
+  suspended: styles.statusSuspended,
+  pending: styles.statusPending,
+  inactive: styles.statusInactive,
+};
+
 const WhitelabelCard = ({ data }) => {
   const { t } = useTranslation("adminWhitelabels");
   const router = useRouter();
   const [isSubscriptionPopupOpen, setIsSubscriptionPopupOpen] = useState(false);
+  const updateStatus = useAdminWhitelabelMutation("updateStatus");
 
   const whitelabel = data;
   const stats = data?.statistics;
   const subscription = data?.subscription;
 
-  const getStatusBadge = (status) => {
-    const statuses = {
-      active: {
-        color: "#2A8C5B",
-        bg: "#EAF4EF",
-        label: t("status.active", "نشط"),
-      },
-      suspended: {
-        color: "#C0392B",
-        bg: "#F9EBEA",
-        label: t("status.suspended", "موقوف"),
-      },
-      pending: {
-        color: "#D38200",
-        bg: "#FBF3E6",
-        label: t("status.pending", "قيد المراجعة"),
-      },
-      inactive: {
-        color: "#7F8C8D",
-        bg: "#F5F5F5",
-        label: t("status.inactive", "غير نشط"),
-      },
-    };
-    return statuses[status] || statuses.inactive;
-  };
-
-  const handleSuspend = async () => {
-    const confirmed = window.confirm(
-      t("actions.confirmSuspend", "هل أنت متأكد من إيقاف هذا الوايت ليبل؟")
-    );
+  const handleSuspend = useCallback(async () => {
+    const confirmed = window.confirm(t("actions.confirmSuspend"));
     if (!confirmed) return;
 
     try {
-      const token = cookieUtils.getCookie("token");
-      await adminDashboardAPI.whitelabel.updateStatus(
-        whitelabel.id || whitelabel._id,
-        "suspended",
-        token
-      );
-      toast.success(t("actions.suspendSuccess", "تم إيقاف الوايت ليبل بنجاح"));
+      await updateStatus.mutateAsync({
+        whitelabelId: whitelabel.id || whitelabel._id,
+        status: "suspended",
+      });
+      toastUtils.success(t("actions.suspendSuccess"));
       router.refresh();
     } catch (error) {
-      console.error("Error suspending whitelabel:", error);
-      toast.error(t("actions.suspendError", "فشل في إيقاف الوايت ليبل"));
+      handleError(error, t, { fallbackMessage: "actions.suspendError" });
     }
-  };
+  }, [whitelabel, updateStatus, t, router]);
 
-  const handleActivate = async () => {
-    // Check if subscription is assigned before activating
+  const handleActivate = useCallback(async () => {
     if (!subscription) {
-      toast.warning(
-        t(
-          "actions.assignPlanFirst",
-          "يجب تعيين خطة اشتراك قبل تنشيط الوايت ليبل"
-        )
-      );
+      toastUtils.warning(t("actions.assignPlanFirst"));
       setIsSubscriptionPopupOpen(true);
       return;
     }
 
     try {
-      const token = cookieUtils.getCookie("token");
-      await adminDashboardAPI.whitelabel.updateStatus(
-        whitelabel.id || whitelabel._id,
-        "active",
-        token
-      );
-      toast.success(t("actions.activateSuccess", "تم تنشيط الوايت ليبل بنجاح"));
+      await updateStatus.mutateAsync({
+        whitelabelId: whitelabel.id || whitelabel._id,
+        status: "active",
+      });
+      toastUtils.success(t("actions.activateSuccess"));
       router.refresh();
     } catch (error) {
-      console.error("Error activating whitelabel:", error);
-      toast.error(t("actions.activateError", "فشل في تنشيط الوايت ليبل"));
+      handleError(error, t, { fallbackMessage: "actions.activateError" });
     }
+  }, [whitelabel, subscription, updateStatus, t, router]);
+
+  const handleClosePopup = useCallback(() => setIsSubscriptionPopupOpen(false), []);
+  const handleOpenPopup = useCallback(() => setIsSubscriptionPopupOpen(true), []);
+
+  const handleSubscriptionSuccess = useCallback(() => {
+    setIsSubscriptionPopupOpen(false);
+    router.refresh();
+  }, [router]);
+
+  const statusBadgeLabel = {
+    active: t("status.active"),
+    suspended: t("status.suspended"),
+    pending: t("status.pending"),
+    inactive: t("status.inactive"),
   };
 
-  const statusBadge = getStatusBadge(whitelabel?.status);
-
-  const getPlanBadge = (planType) => {
-    const plans = {
-      trial: { color: "#7F8C8D", bg: "#F5F5F5", label: "Trial" },
-      basic_event: { color: "#3498DB", bg: "#E8F4FD", label: "Basic Event" },
-      basic_monthly: { color: "#3498DB", bg: "#E8F4FD", label: "Basic Monthly" },
-      premium_event: { color: "#9B59B6", bg: "#F5EEF8", label: "Premium Event" },
-      premium_monthly: { color: "#9B59B6", bg: "#F5EEF8", label: "Premium Monthly" },
-      business_event: { color: "#F39C12", bg: "#FEF5E7", label: "Business Event" },
-      business_quarterly: { color: "#F39C12", bg: "#FEF5E7", label: "Business Quarterly" },
-      business_annual: { color: "#F39C12", bg: "#FEF5E7", label: "Business Annual" },
-      unlimited: { color: "#2ECC71", bg: "#EAFAF1", label: "Unlimited" },
-    };
-    return (
-      plans[planType] || {
-        color: "#7F8C8D",
-        bg: "#F5F5F5",
-        label: t("subscription.noPlan", "لا يوجد"),
-      }
-    );
-  };
-
-  const planBadge = getPlanBadge(subscription?.planId?.planType);
+  const statusClass = STATUS_CSS_MAP[whitelabel?.status] || styles.statusInactive;
 
   if (!whitelabel) {
     return (
       <div className={styles.container}>
-        <p className={styles.noData}>{t("noData", "لا توجد بيانات")}</p>
+        <p className={styles.noData}>{t("noData")}</p>
       </div>
     );
   }
@@ -141,7 +101,7 @@ const WhitelabelCard = ({ data }) => {
       <div className={styles.header}>
         <div className={styles.profileSection}>
           <div className={styles.logoPlaceholder}>
-            <FaBuilding size={32} color="#C28E5C" />
+            <FaBuilding className={styles.logoIcon} />
           </div>
           <div className={styles.headerInfo}>
             <h3 className={styles.title}>
@@ -153,41 +113,38 @@ const WhitelabelCard = ({ data }) => {
                 {whitelabel.profile.whitelabelData.englishName}
               </p>
             )}
-            <span
-              className={styles.statusBadge}
-              style={{ color: statusBadge.color, background: statusBadge.bg }}
-            >
-              {statusBadge.label}
+            <span className={`${styles.statusBadge} ${statusClass}`}>
+              {statusBadgeLabel[whitelabel?.status] || t("status.inactive")}
             </span>
           </div>
         </div>
         <div className={styles.actions}>
           <button
             className={styles.actionButton}
-            onClick={() => setIsSubscriptionPopupOpen(true)}
-            title={t("actions.managePlan", "إدارة الاشتراك")}
+            onClick={handleOpenPopup}
+            title={t("actions.managePlan")}
           >
-            <FaCrown style={{ color: "#F39C12" }} />
-            <span>{t("actions.managePlan", "إدارة الاشتراك")}</span>
+            <FaCrown className={styles.iconManagePlan} />
+            <span>{t("actions.managePlan")}</span>
           </button>
           {whitelabel?.status === "suspended" ||
           whitelabel?.status === "pending" ? (
             <button
               className={styles.actionButton}
               onClick={handleActivate}
-              title={t("actions.activate", "تنشيط")}
+              title={t("actions.activate")}
             >
-              <FaUserCheck style={{ color: "#2A8C5B" }} />
-              <span>{t("actions.activate", "تنشيط")}</span>
+              <FaUserCheck className={styles.iconActivate} />
+              <span>{t("actions.activate")}</span>
             </button>
           ) : (
             <button
               className={styles.actionButton}
               onClick={handleSuspend}
-              title={t("actions.suspend", "إيقاف")}
+              title={t("actions.suspend")}
             >
-              <FaUserSlash style={{ color: "#C0392B" }} />
-              <span>{t("actions.suspend", "إيقاف")}</span>
+              <FaUserSlash className={styles.iconSuspend} />
+              <span>{t("actions.suspend")}</span>
             </button>
           )}
         </div>
@@ -196,13 +153,13 @@ const WhitelabelCard = ({ data }) => {
       <div className={styles.dataGrid}>
         <div className={styles.dataItem}>
           <span className={styles.dataLabel}>
-            {t("details.email", "البريد الإلكتروني")}:
+            {t("details.email")}:
           </span>
           <span className={styles.dataValue}>{whitelabel.email || "-"}</span>
         </div>
         <div className={styles.dataItem}>
           <span className={styles.dataLabel}>
-            {t("details.phone", "رقم الهاتف")}:
+            {t("details.phone")}:
           </span>
           <span className={styles.dataValue}>
             {whitelabel.phoneNumber || "-"}
@@ -210,11 +167,11 @@ const WhitelabelCard = ({ data }) => {
         </div>
         <div className={styles.dataItem}>
           <span className={styles.dataLabel}>
-            {t("details.createdAt", "تاريخ التسجيل")}:
+            {t("details.createdAt")}:
           </span>
           <span className={styles.dataValue}>
             {whitelabel.createdAt
-              ? new Date(whitelabel.createdAt).toLocaleDateString("ar-EG")
+              ? new Date(whitelabel.createdAt).toLocaleDateString()
               : "-"}
           </span>
         </div>
@@ -223,63 +180,58 @@ const WhitelabelCard = ({ data }) => {
       {/* Subscription Section */}
       <div className={styles.subscriptionSection}>
         <h4 className={styles.sectionTitle}>
-          {t("subscription.title", "معلومات الاشتراك")}
+          {t("subscription.title")}
         </h4>
         <div className={styles.subscriptionGrid}>
           <div className={styles.subscriptionItem}>
             <span className={styles.subscriptionLabel}>
-              {t("subscription.plan", "الخطة")}:
+              {t("subscription.plan")}:
             </span>
-            <span
-              className={styles.planBadge}
-              style={{ color: planBadge.color, background: planBadge.bg }}
-            >
-              {planBadge.label}
+            <span className={styles.subscriptionValue}>
+              {subscription?.planId?.planType || t("subscription.noPlan")}
             </span>
           </div>
           {subscription && (
             <>
               <div className={styles.subscriptionItem}>
                 <span className={styles.subscriptionLabel}>
-                  {t("subscription.status", "حالة الاشتراك")}:
+                  {t("subscription.status")}:
                 </span>
                 <span className={styles.subscriptionValue}>
                   {subscription?.status === "active"
-                    ? t("subscription.active", "نشط")
+                    ? t("subscription.active")
                     : subscription?.status === "trial"
-                    ? t("subscription.trial", "تجريبي")
-                    : t("subscription.inactive", "غير نشط")}
+                    ? t("subscription.trial")
+                    : t("subscription.inactive")}
                 </span>
               </div>
               <div className={styles.subscriptionItem}>
                 <span className={styles.subscriptionLabel}>
-                  {t("subscription.teamLimit", "حد أعضاء الفريق")}:
+                  {t("subscription.teamLimit")}:
                 </span>
                 <span className={styles.subscriptionValue}>
                   {subscription?.limits?.maxUsers === -1
-                    ? t("subscription.unlimited", "غير محدود")
+                    ? t("subscription.unlimited")
                     : subscription?.limits?.maxUsers || 1}
                 </span>
               </div>
               <div className={styles.subscriptionItem}>
                 <span className={styles.subscriptionLabel}>
-                  {t("subscription.eventsLimit", "حد المناسبات")}:
+                  {t("subscription.eventsLimit")}:
                 </span>
                 <span className={styles.subscriptionValue}>
                   {subscription?.limits?.maxEventsPerMonth === -1
-                    ? t("subscription.unlimited", "غير محدود")
+                    ? t("subscription.unlimited")
                     : subscription?.limits?.maxEventsPerMonth || 5}
                 </span>
               </div>
               {subscription?.expiresAt && (
                 <div className={styles.subscriptionItem}>
                   <span className={styles.subscriptionLabel}>
-                    {t("subscription.expiresAt", "ينتهي في")}:
+                    {t("subscription.expiresAt")}:
                   </span>
                   <span className={styles.subscriptionValue}>
-                    {new Date(subscription.expiresAt).toLocaleDateString(
-                      "ar-EG"
-                    )}
+                    {new Date(subscription.expiresAt).toLocaleDateString()}
                   </span>
                 </div>
               )}
@@ -291,43 +243,37 @@ const WhitelabelCard = ({ data }) => {
       {/* Stats Section */}
       <div className={styles.statsSection}>
         <h4 className={styles.sectionTitle}>
-          {t("stats.title", "الإحصائيات")}
+          {t("stats.title")}
         </h4>
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
-            <FaUsers className={styles.statIcon} style={{ color: "#3498DB" }} />
+            <FaUsers className={styles.statIconHosts} />
             <div className={styles.statInfo}>
               <span className={styles.statValue}>{stats?.hostsCount || 0}</span>
               <span className={styles.statLabel}>
-                {t("stats.hosts", "المضيفين")}
+                {t("stats.hosts")}
               </span>
             </div>
           </div>
           <div className={styles.statCard}>
-            <FaCalendar
-              className={styles.statIcon}
-              style={{ color: "#E67E22" }}
-            />
+            <FaCalendar className={styles.statIconEvents} />
             <div className={styles.statInfo}>
               <span className={styles.statValue}>
                 {stats?.eventsCount || 0}
               </span>
               <span className={styles.statLabel}>
-                {t("stats.events", "المناسبات")}
+                {t("stats.events")}
               </span>
             </div>
           </div>
           <div className={styles.statCard}>
-            <FaUserTie
-              className={styles.statIcon}
-              style={{ color: "#1ABC9C" }}
-            />
+            <FaUserTie className={styles.statIconModerators} />
             <div className={styles.statInfo}>
               <span className={styles.statValue}>
                 {stats?.moderatorsCount || 0}
               </span>
               <span className={styles.statLabel}>
-                {t("stats.moderators", "المشرفين")}
+                {t("stats.moderators")}
               </span>
             </div>
           </div>
@@ -337,16 +283,13 @@ const WhitelabelCard = ({ data }) => {
       {/* Subscription Popup */}
       <PopupLayout
         isOpen={isSubscriptionPopupOpen}
-        onClose={() => setIsSubscriptionPopupOpen(false)}
+        onClose={handleClosePopup}
       >
         <WhitelabelSubscriptionPopup
           whitelabel={whitelabel}
           currentSubscription={subscription}
-          onClose={() => setIsSubscriptionPopupOpen(false)}
-          onSuccess={() => {
-            setIsSubscriptionPopupOpen(false);
-            router.refresh();
-          }}
+          onClose={handleClosePopup}
+          onSuccess={handleSubscriptionSuccess}
         />
       </PopupLayout>
     </div>

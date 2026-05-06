@@ -982,6 +982,29 @@
       },
       "buttons": {
         "continue": "متابعة"
+      },
+      "planSelection": {
+        "title": "اختر الباقة المناسبة",
+        "description": "اختر الباقة التي تناسب احتياجات منصتك",
+        "loadingPlans": "جاري تحميل الباقات...",
+        "loadError": "فشل في تحميل الباقات. يرجى المحاولة مرة أخرى.",
+        "retry": "إعادة المحاولة",
+        "planRequired": "اختيار الباقة مطلوب",
+        "perEventPlans": "باقات لكل مناسبة",
+        "perEventDescription": "باقة واحدة لكل مناسبة · صالحة ٩٠ يوماً",
+        "threeMonthPool": "رصيد ٣ أشهر",
+        "threeMonthPoolDescription": "رصيد دعوات مشترك · مناسبات غير محدودة",
+        "annualPool": "رصيد سنوي",
+        "annualPoolDescription": "رصيد دعوات مشترك · مناسبات غير محدودة",
+        "invitesPerEvent": "دعوة / مناسبة",
+        "oneEvent": "مناسبة واحدة",
+        "invitesPool": "دعوة (رصيد)",
+        "unlimitedEvents": "مناسبات غير محدودة · ٩٠ يوماً",
+        "unlimitedEventsAnnual": "مناسبات غير محدودة · ٣٦٥ يوماً",
+        "selectPlan": "اختر هذه الباقة",
+        "selected": "✓ تم الاختيار",
+        "features": "المميزات المشتركة",
+        "compensationMessages": "رسائل تعويضية"
       }
     },
     "host": {

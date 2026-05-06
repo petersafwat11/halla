@@ -106,6 +106,29 @@ function DynamicTemplateForm({ isOpen, onClose, locale, setEventValues, template
     setIsGenerating(true);
     try {
       if (!previewRef.current) throw new Error("Preview ref not ready");
+
+      // Pre-flight: confirm the template background image loads under
+      // CORS. If the S3 bucket lacks an Access-Control-Allow-Origin
+      // header, the browser blocks the cross-origin fetch and
+      // html2canvas would silently produce a bake without the
+      // background. Surfacing this here avoids shipping a broken
+      // (text-only-on-white) image to the backend.
+      if (template?.imageUrl) {
+        await new Promise((resolve, reject) => {
+          const probe = new Image();
+          probe.crossOrigin = "anonymous";
+          probe.onload = () => resolve();
+          probe.onerror = () =>
+            reject(
+              new Error(
+                "Template background image could not be loaded under CORS. " +
+                  "The S3 bucket must allow GET requests from this origin (Access-Control-Allow-Origin)."
+              )
+            );
+          probe.src = template.imageUrl;
+        });
+      }
+
       const baked = await htmlToImageConvert(previewRef, "template-image", {
         autoDownload: false,
         returnBlob: true,

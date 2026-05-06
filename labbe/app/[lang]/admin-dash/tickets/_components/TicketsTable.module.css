@@ -1,3 +1,90 @@
 .container {
   margin-top: 2rem;
 }
+
+.statusBadge {
+  display: inline-flex;
+  padding: 0.3rem 1.2rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 9999px;
+}
+
+.statusBadge span,
+.priorityBadge span {
+  font-family: Cairo, sans-serif;
+  font-size: 1.2rem;
+}
+
+.statusOpen {
+  background: #FBF3E6;
+  color: #D38200;
+}
+
+.statusInProgress {
+  background: #E8F4FD;
+  color: #3498DB;
+}
+
+.statusResolved {
+  background: #EAF4EF;
+  color: #2A8C5B;
+}
+
+.statusClosed {
+  background: #F5F5F5;
+  color: #666666;
+}
+
+.priorityBadge {
+  display: inline-flex;
+  padding: 0.3rem 1.2rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 9999px;
+}
+
+.priorityLow {
+  background: #F5F5F5;
+  color: #666666;
+}
+
+.priorityMedium {
+  background: #FBF3E6;
+  color: #D38200;
+}
+
+.priorityHigh {
+  background: #F9EBEA;
+  color: #C0392B;
+}
+
+.clickable {
+  color: #3498DB;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.assignClickable {
+  color: #D38200;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.clickableIf {
+  cursor: pointer;
+}
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  text-align: center;
+}
+
+.errorState p {
+  font-size: 1.4rem;
+  color: #e74c3c;
+}

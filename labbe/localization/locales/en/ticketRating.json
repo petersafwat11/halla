@@ -27,7 +27,8 @@
   "buttons": {
     "submit": "Submit Rating",
     "submitting": "Submitting...",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "retry": "Retry"
   },
   "success": {
     "title": "Thank You!",

@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import styles from "./LegalPage.module.css";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
+
+/* ─── Contact constants ─── */
+const CONTACT_EMAIL = "mailto:admin@labbe.com";
+const CONTACT_WA = "https://wa.me/966500000000";
 
 /* ─── Icons ─── */
 const IconHome = () => (
@@ -15,8 +20,17 @@ const IconHome = () => (
 );
 
 const IconChevronRight = ({ isRtl }) => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-    style={{ transform: isRtl ? "scaleX(-1)" : "none", flexShrink: 0 }}>
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={isRtl ? styles.iconFlipped : styles.iconFlippable}
+  >
     <polyline points="9 18 15 12 9 6"/>
   </svg>
 );
@@ -28,8 +42,17 @@ const IconChevronDown = () => (
 );
 
 const IconArrowUpRight = ({ isRtl }) => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-    style={{ transform: isRtl ? "scaleX(-1)" : "none" }}>
+  <svg
+    width="11"
+    height="11"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={isRtl ? styles.iconFlipped : styles.iconFlippable}
+  >
     <line x1="7" y1="17" x2="17" y2="7"/>
     <polyline points="7 7 17 7 17 17"/>
   </svg>
@@ -73,40 +96,10 @@ const IconArrowUp = () => (
   </svg>
 );
 
-/* ─── i18n ─── */
-const UI = {
-  ar: {
-    backHome: "الرئيسية",
-    lastUpdated: "آخر تحديث",
-    articles: "مادة",
-    onThisPage: "في هذه الصفحة",
-    jumpTo: "الانتقال إلى",
-    legalDocs: "وثائق ذات صلة",
-    contactTitle: "هل لديك استفسار؟",
-    contactDesc: "تواصل مع فريق هلا لأي استفسار قانوني أو بخصوص سياسات المنصة.",
-    contactEmail: "راسلنا",
-    contactWA: "واتساب",
-    backToTop: "أعلى الصفحة",
-  },
-  en: {
-    backHome: "Home",
-    lastUpdated: "Last Updated",
-    articles: "Articles",
-    onThisPage: "On this page",
-    jumpTo: "Jump to section",
-    legalDocs: "Related documents",
-    contactTitle: "Have a question?",
-    contactDesc: "Reach out to the Halla team for any legal or policy inquiries.",
-    contactEmail: "Email Us",
-    contactWA: "WhatsApp",
-    backToTop: "Back to top",
-  },
-};
-
 /* ─── Main ─── */
 export default function LegalPage({ doc, lang, siblingPages = [] }) {
   const isRtl = lang === "ar";
-  const ui = UI[lang] || UI.ar;
+  const { t } = useTranslation("landing");
   const pathname = usePathname();
   const { currentLocale, handleChange } = UseLanguageChange();
 
@@ -157,7 +150,7 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const scrollToTop = useCallback(() => window.scrollTo({ top: 0, behavior: "smooth" }), []);
 
   const activeSection = doc.sections.find((s) => s.id === activeId);
 
@@ -169,7 +162,7 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
       {/* ── Reading progress bar ── */}
       <div
         className={styles.progressBar}
-        style={{ width: `${scrollProgress}%` }}
+        style={{ "--progress": `${scrollProgress}%` }}
         role="progressbar"
         aria-valuenow={Math.round(scrollProgress)}
         aria-valuemin={0}
@@ -185,7 +178,7 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
             <nav className={styles.breadcrumb} aria-label="breadcrumb">
               <Link href={`/${lang}`} className={styles.breadcrumbLink}>
                 <IconHome />
-                <span>{ui.backHome}</span>
+                <span>{t("legal.backHome")}</span>
               </Link>
               <span className={styles.breadcrumbSep} aria-hidden="true">
                 <IconChevronRight isRtl={isRtl} />
@@ -199,13 +192,13 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
                 className={currentLocale === "ar" ? styles.langActive : styles.langOption}
                 onClick={() => handleChange("ar")}
               >
-                العربية
+                {t("legal.langAr", "العربية")}
               </button>
               <button
                 className={currentLocale === "en" ? styles.langActive : styles.langOption}
                 onClick={() => handleChange("en")}
               >
-                English
+                {t("legal.langEn", "English")}
               </button>
             </div>
           </div>
@@ -230,20 +223,20 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
               <>
                 <span className={styles.metaItem}>
                   <IconCalendar />
-                  {ui.lastUpdated}: <strong>{doc.lastUpdated}</strong>
+                  {t("legal.lastUpdated")}: <strong>{doc.lastUpdated}</strong>
                 </span>
                 <span className={styles.metaDivider} aria-hidden="true">·</span>
               </>
             )}
             <span className={styles.metaItem}>
-              <strong>{doc.sections.length}</strong>&nbsp;{ui.articles}
+              <strong>{doc.sections.length}</strong>&nbsp;{t("legal.articles")}
             </span>
           </div>
 
           {/* Related pages */}
           {siblingPages.length > 0 && (
             <div className={styles.relatedRow}>
-              <span className={styles.relatedLabel}>{ui.legalDocs}:</span>
+              <span className={styles.relatedLabel}>{t("legal.legalDocs")}:</span>
               <div className={styles.relatedLinks}>
                 {siblingPages.map((p) => {
                   const isCurrent = isCurrentSibling(p.href);
@@ -255,7 +248,7 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
                       aria-current={isCurrent ? "page" : undefined}
                     >
                       <IconFileText />
-                      <span>{p.title[lang] || p.title.ar}</span>
+                      <span>{t(p.titleKey)}</span>
                       {!isCurrent && <IconArrowUpRight isRtl={isRtl} />}
                     </Link>
                   );
@@ -275,7 +268,7 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
             onClick={() => setTocOpen((v) => !v)}
             aria-expanded={tocOpen}
           >
-            <span className={styles.mobileTocBtnLabel}>{ui.jumpTo}</span>
+            <span className={styles.mobileTocBtnLabel}>{t("legal.jumpTo")}</span>
             <span className={styles.mobileTocBtnSection}>
               {activeSection
                 ? `${String(activeSection.num).padStart(2, "0")} · ${activeSection.title}`
@@ -311,7 +304,7 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
           {/* ── Sidebar ── */}
           <aside className={styles.sidebar} aria-label="Table of Contents">
             <div className={styles.sidebarSticky}>
-              <p className={styles.tocHeading}>{ui.onThisPage}</p>
+              <p className={styles.tocHeading}>{t("legal.onThisPage")}</p>
               <nav className={styles.tocNav}>
                 {doc.sections.map((s) => (
                   <a
@@ -327,7 +320,7 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
 
               {siblingPages.length > 0 && (
                 <div className={styles.sidebarDocs}>
-                  <p className={styles.sidebarDocsLabel}>{ui.legalDocs}</p>
+                  <p className={styles.sidebarDocsLabel}>{t("legal.legalDocs")}</p>
                   {siblingPages.map((p) => {
                     const isCurrent = isCurrentSibling(p.href);
                     return (
@@ -338,7 +331,7 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
                         aria-current={isCurrent ? "page" : undefined}
                       >
                         <IconFileText />
-                        <span>{p.title[lang] || p.title.ar}</span>
+                        <span>{t(p.titleKey)}</span>
                       </Link>
                     );
                   })}
@@ -379,22 +372,22 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
             <div className={styles.cta}>
               <div className={styles.ctaGlow} aria-hidden="true" />
               <div className={styles.ctaContent}>
-                <h3 className={styles.ctaTitle}>{ui.contactTitle}</h3>
-                <p className={styles.ctaDesc}>{ui.contactDesc}</p>
+                <h3 className={styles.ctaTitle}>{t("legal.contactTitle")}</h3>
+                <p className={styles.ctaDesc}>{t("legal.contactDesc")}</p>
               </div>
               <div className={styles.ctaActions}>
-                <a href="mailto:admin@labbe.com" className={`${styles.ctaBtn} ${styles.ctaBtnPrimary}`}>
+                <a href={CONTACT_EMAIL} className={`${styles.ctaBtn} ${styles.ctaBtnPrimary}`}>
                   <IconEmail />
-                  {ui.contactEmail}
+                  {t("legal.contactEmail")}
                 </a>
                 <a
-                  href="https://wa.me/966500000000"
+                  href={CONTACT_WA}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`${styles.ctaBtn} ${styles.ctaBtnGhost}`}
                 >
                   <IconWhatsApp />
-                  {ui.contactWA}
+                  {t("legal.contactWA")}
                 </a>
               </div>
             </div>
@@ -407,8 +400,8 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
       <button
         className={`${styles.backToTop} ${showBackToTop ? styles.backToTopVisible : ""}`}
         onClick={scrollToTop}
-        aria-label={ui.backToTop}
-        title={ui.backToTop}
+        aria-label={t("legal.backToTop")}
+        title={t("legal.backToTop")}
       >
         <IconArrowUp />
       </button>

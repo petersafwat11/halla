@@ -1,0 +1,48 @@
+{
+  "sections": {
+    "all": "All",
+    "title": "Categories"
+  },
+  "previousPage": "Previous Page",
+  "goToPage": "Go to page",
+  "nextPage": "Next Page",
+  "filters": {
+    "ratingAll": "All Ratings",
+    "rating4": "4 Stars & Up",
+    "rating3": "3 Stars & Up",
+    "rating2": "2 Stars & Up",
+    "title": "Filters",
+    "region": "Region",
+    "allRegions": "All Regions",
+    "city": "City",
+    "allCities": "All Cities",
+    "searchCity": "Search City",
+    "district": "District",
+    "allDistricts": "All Districts",
+    "searchDistrict": "Search District",
+    "priceRange": "Price Range",
+    "priceFrom": "From",
+    "priceTo": "To",
+    "rating": "Rating",
+    "activeFilters": "Active Filters",
+    "price": "Price"
+  },
+  "filtersPopup": {
+    "close": "Close Filters"
+  },
+  "buttons": {
+    "resetFilters": "Reset",
+    "applyFilters": "Apply"
+  },
+  "search": {
+    "placeholder": "Search..."
+  },
+  "card": {
+    "users": "Users",
+    "callNow": "Call Now"
+  },
+  "title": "Marketplace",
+  "services": {
+    "defaultName": "Service"
+  }
+}

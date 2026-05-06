@@ -10,7 +10,6 @@ import StepOne from "./_components/stepOne/StepOne";
 import StepTwo from "./_components/stepTwo/StepTwo";
 import StepThree from "./_components/stepThree/StepThree";
 import StepFour from "./_components/stepFour/StepFour";
-import StepFive from "./_components/stepFive/StepFive";
 import Summary from "./_components/summary/Summary";
 import Buttons from "./_components/buttons/Buttons";
 import WhatsappPreview from "./_components/whatsappPreview/WhatsappPreview";
@@ -51,7 +50,7 @@ const CreateEventV2 = () => {
     buildEventPayload,
     t,
     handleSubmit,
-  } = useEventForm({ mode: "create", totalSteps: 6 });
+  } = useEventForm({ mode: "create", totalSteps: 5 });
 
   // React Query hooks
   const { data: subscriptionData, isLoading: subscriptionLoading } =
@@ -90,7 +89,7 @@ const CreateEventV2 = () => {
       return;
     }
 
-    if (currentStep < 6) {
+    if (currentStep < 5) {
       goToNextStep();
     } else {
       handleSubmit(onSubmit)();
@@ -141,9 +140,6 @@ const CreateEventV2 = () => {
           </>
         );
       case 4:
-        // Phase 4c W1-WIZARD-RENAME — Step 4 is now the Taqnyat picker
-        // (filtered by the visual template's category). The old Step 4
-        // content moved to the new Step 5.
         return (
           <>
             <StepTitleAndDesc
@@ -154,24 +150,11 @@ const CreateEventV2 = () => {
           </>
         );
       case 5:
-        // Phase 4c W1-WIZARD-RENAME — new Step 5: invitation messaging
-        // + auto-replies + host note (canonical names guestReplies.*
-        // and hostNote, dual-written with the legacy keys).
         return (
           <>
             <StepTitleAndDesc
               title={t("step5_title")}
               description={t("step5_description")}
-            />
-            <StepFive />
-          </>
-        );
-      case 6:
-        return (
-          <>
-            <StepTitleAndDesc
-              title={t("step6_title")}
-              description={t("step6_description")}
             />
             <Summary />
           </>
@@ -235,7 +218,7 @@ const CreateEventV2 = () => {
                   showPrevious={currentStep > 1}
                   isLoading={createEvent.isPending}
                   currentStep={currentStep}
-                  totalSteps={6}
+                  totalSteps={5}
                 />
               </form>
             </div>
@@ -244,7 +227,7 @@ const CreateEventV2 = () => {
             {currentStep === 4 && (
               <WhatsappPreview
                 eventTitle={formData.eventName || ""}
-                invitationMessage={formData.selectedTemplate?.bodyText || ""}
+                previewBody={formData.selectedTemplate?.bodyText || ""}
                 templateImage={formData.templateImage || "/svg/events/invitation.svg"}
                 templateData={formData.visualTemplate?.data || {}}
                 locale={locale}
@@ -276,7 +259,7 @@ const CreateEventV2 = () => {
                 </button>
                 <WhatsappPreview
                   eventTitle={formData.eventName || ""}
-                  invitationMessage={formData.selectedTemplate?.bodyText || ""}
+                  previewBody={formData.selectedTemplate?.bodyText || ""}
                   templateImage={formData.templateImage || "/svg/events/invitation.svg"}
                   templateData={formData.visualTemplate?.data || {}}
                   locale={locale}

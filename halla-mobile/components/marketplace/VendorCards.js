@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import VendorCard from "./VendorCard";
 import { useTranslation } from "../../localization";
+import { colors } from "../../styles/tokens";
 
 const VendorCards = ({ vendors, onVendorCallPress, loading, refreshing, onRefresh, onEndReached, isFetchingNextPage }) => {
   const { t } = useTranslation("marketplace");
@@ -23,7 +24,7 @@ const VendorCards = ({ vendors, onVendorCallPress, loading, refreshing, onRefres
     if (loading) {
       return (
         <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color="#C28E5C" />
+          <ActivityIndicator size="large" color={colors.primary[500]} />
         </View>
       );
     }
@@ -41,7 +42,7 @@ const VendorCards = ({ vendors, onVendorCallPress, loading, refreshing, onRefres
     if (!isFetchingNextPage) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color="#C28E5C" />
+        <ActivityIndicator size="small" color={colors.primary[500]} />
       </View>
     );
   };
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontFamily: "Cairo_400Regular",
     fontSize: 16,
-    color: "#656565"
+    color: colors.natural[450]
   },
   footerLoader: {
     paddingVertical: 16,

@@ -755,22 +755,6 @@ const scheduleGuestReminders = () => {
 };
 
 /**
- * Poll Taqnyat for WhatsApp template approval status - runs every 30 minutes
- */
-const scheduleTemplateStatusPolling = () => {
-  cron.schedule("*/30 * * * *", async () => {
-    try {
-      const result = await messagingService.checkPendingTemplateStatuses();
-      if (result.updated > 0) {
-        console.log(`[Cron] Template status polling: checked ${result.checked}, updated ${result.updated}`);
-      }
-    } catch (error) {
-      console.error("[Cron] Template status polling failed:", error);
-    }
-  });
-};
-
-/**
  * Subscription status auto-update — runs daily at 1:00 AM (FLOW-09-F03).
  *
  * Phase 2: the previous implementation queried the non-existent `endDate`
@@ -1171,18 +1155,9 @@ const initScheduledTasks = () => {
   scheduleSubscriptionStatusUpdate();
   scheduleEventLaunch();
   scheduleEventRetry();
-  scheduleTemplateStatusPolling();
   scheduleEventCompletion();
   scheduleGuestReminders();
   scheduleNotificationDelivery();
-
-  // Phase 4c W0-MODEL: daily Taqnyat-template upstream sync.
-  try {
-    const { scheduleTaqnyatTemplateSync } = require("../../jobs/syncTaqnyatTemplates");
-    scheduleTaqnyatTemplateSync();
-  } catch (err) {
-    console.error("[Cron] Failed to register taqnyat-template sync:", err.message);
-  }
 
   console.log("[Cron] Scheduled tasks initialized:");
   console.log("  - Event reminders (host): Daily at 8:00 AM");
@@ -1195,7 +1170,6 @@ const initScheduledTasks = () => {
   console.log("  - Template status polling: Every 30 minutes");
   console.log("  - Event completion (live → completed): Every hour");
   console.log("  - 24h guest reminder SMS: Every 30 minutes");
-  console.log("  - Taqnyat-template upstream sync: Daily at 3:30 AM");
   console.log("  - Scheduled notification delivery: Every 5 minutes");
 };
 

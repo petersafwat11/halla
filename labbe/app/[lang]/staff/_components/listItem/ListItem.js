@@ -2,12 +2,12 @@
 import React from "react";
 import styles from "./listItem.module.css";
 
-export default function ListItem({ guest, handleGuestClick }) {
-  const { name = "احمد كمال سمير", phone = "966656555", email = "ads@outlook.com" } = guest || {};
+export default function ListItem({ guest, onGuestClick }) {
+  const { name, phone, email } = guest || {};
 
   return (
     <div className={styles.guestCard}>
-      <div onClick={() => handleGuestClick(guest)} className={styles.cardContainer}>
+      <div onClick={() => onGuestClick(guest)} className={styles.cardContainer}>
         <div className={styles.contentWrapper}>
           <div className={styles.infoColumn}>
             <div className={styles.nameContainer}>

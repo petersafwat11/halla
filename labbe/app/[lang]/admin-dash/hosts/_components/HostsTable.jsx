@@ -5,7 +5,8 @@ import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import { FiEye, FiCheckCircle, FiSlash, FiCreditCard, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import { hostsAPI } from "@/services/adminDashboard";
@@ -40,53 +41,45 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
   const updateStatus = useAdminHostMutation("updateStatus");
 
   const handleDelete = async (hostId) => {
-    if (!confirm(t("hosts.confirmDelete", "هل أنت متأكد من حذف هذا العميل؟"))) return;
+    if (!confirm(t("confirmDelete.message", "Are you sure you want to delete this host?"))) return;
     try {
       await deleteHost.mutateAsync(hostId);
-      toast.success(t("hosts.deleteSuccess", "تم حذف العميل بنجاح"));
+      toastUtils.success(t("deleteHost.success", "Host deleted successfully"));
     } catch (error) {
-      toast.error(error.message || t("hosts.deleteError", "فشل حذف العميل"));
+      handleError(error, t);
     }
   };
 
   const handleBulkDelete = async (ids) => {
     if (!ids?.length) {
-      toast.warning(t("hosts.selectRows", "الرجاء تحديد عملاء للحذف"));
+      toastUtils.warning(t("table.selectRows", "Please select hosts to delete"));
       return;
     }
-    if (!confirm(t("hosts.confirmBulkDelete", `هل أنت متأكد من حذف ${ids.length} عميل؟`))) return;
+    if (!confirm(t("confirmDelete.message", "Are you sure you want to delete these hosts?"))) return;
     try {
       await bulkDelete.mutateAsync(ids);
-      toast.success(t("hosts.bulkDeleteSuccess", "تم حذف العملاء بنجاح"));
+      toastUtils.success(t("deleteHost.success", "Hosts deleted successfully"));
     } catch (error) {
-      toast.error(error.message || t("hosts.bulkDeleteError", "فشل حذف العملاء"));
+      handleError(error, t);
     }
   };
 
   const handleStatusChange = async (hostId, newStatus) => {
     try {
       await updateStatus.mutateAsync({ hostId, status: newStatus });
-      toast.success(t("hosts.statusUpdateSuccess", "تم تحديث الحالة بنجاح"));
+      toastUtils.success(t("actions.suspendSuccess", "Status updated successfully"));
     } catch (error) {
-      toast.error(error.message || t("hosts.statusUpdateError", "فشل تحديث الحالة"));
+      handleError(error, t);
     }
   };
 
-  const handleSubscriptionClick = (host) => {
-    setSelectedHost(host);
-    setShowSubscriptionPopup(true);
-  };
+  const handleSubscriptionClick = (host) => { setSelectedHost(host); setShowSubscriptionPopup(true); };
 
   const handleExport = async () => {
     try {
-      await hostsAPI.export({
-        search: filters.search,
-        status: filters.status,
-        from: filters.from,
-        to: filters.to,
-      });
+      await hostsAPI.export({ search: filters.search, status: filters.status, from: filters.from, to: filters.to });
     } catch (error) {
-      toast.error(t("hosts.exportError", "فشل تصدير البيانات"));
+      handleError(error, t);
     }
   };
 
@@ -114,7 +107,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
         icon: <FiCreditCard size={16} />,
         text: t("hosts.subscription", "الاشتراك"),
         onClick: (r) => {
-          const host = (data?.data?.hosts || data?.data || []).find(h => (h.id || h._id) === r.id);
+          const host = (data?.hosts || []).find(h => (h.id || h._id) === r.id);
           if (host) handleSubscriptionClick({ ...r, ...host });
         },
       });
@@ -144,29 +137,22 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
   const renderCell = (key, value, row) => {
     if (key === "status") {
       const statusConfig = {
-        active: { bg: "#EAF4EF", color: "#2A8C5B", text: t("hosts.status.active", "نشط") },
-        pending: { bg: "#FBF3E6", color: "#D38200", text: t("hosts.status.pending", "قيد الانتظار") },
-        suspended: { bg: "#F9EBEA", color: "#C0392B", text: t("hosts.status.suspended", "موقوف") },
+        active: { bg: "#EAF4EF", color: "#2A8C5B", text: t("status.active", "Active") },
+        pending: { bg: "#FBF3E6", color: "#D38200", text: t("hostDetails.pending", "Pending") },
+        suspended: { bg: "#F9EBEA", color: "#C0392B", text: t("status.suspended", "Suspended") },
       };
       const config = statusConfig[value] || statusConfig.active;
       return (
         <div
-          style={{
-            display: "inline-flex",
-            padding: "0.3rem 1.2rem",
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: "9999px",
-            background: config.bg,
-            cursor: canUpdate ? "pointer" : "default",
-          }}
+          className={`${styles.statusBadge} ${canUpdate ? styles.statusBadgeClickable : styles.statusBadgeReadonly}`}
+          style={{ background: config.bg }}
           onClick={() => {
             if (!canUpdate) return;
             const newStatus = value === "active" ? "suspended" : "active";
             handleStatusChange(row.id, newStatus);
           }}
         >
-          <span style={{ color: config.color, fontFamily: "Cairo", fontSize: "1.2rem" }}>
+          <span className={styles.statusBadgeText} style={{ color: config.color }}>
             {config.text}
           </span>
         </div>
@@ -176,10 +162,10 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
     if (key === "subscription") {
       return (
         <span
-          style={{ color: canUpdate ? "#3498DB" : "inherit", cursor: canUpdate ? "pointer" : "default", textDecoration: canUpdate ? "underline" : "none" }}
+          className={canUpdate ? styles.linkCell : styles.plainCell}
           onClick={() => canUpdate && handleSubscriptionClick(row)}
         >
-          {value || t("hosts.noSubscription", "لا يوجد")}
+          {value || t("hostDetails.noLocation", "—")}
         </span>
       );
     }
@@ -191,7 +177,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
     return value;
   };
 
-  const tableData = (data?.data?.hosts || data?.data || []).map((host) => ({
+  const tableData = (data?.hosts || []).map((host) => ({
     id: host.id || host._id,
     name: host.name || host.username || "-",
     email: host.email || "-",
@@ -230,8 +216,8 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
           ]}
           pagination={{
             currentPage: parseInt(filters.page),
-            totalPages: data?.data?.pagination?.pages || data?.pagination?.totalPages || 1,
-            totalItems: data?.data?.pagination?.total || data?.pagination?.total || 0,
+            totalPages: data?.pagination?.pages || 1,
+            totalItems: data?.pagination?.total || 0,
             onPageChange: (page) => {
               const params = new URLSearchParams(searchParams);
               params.set("page", page);

@@ -206,7 +206,6 @@ const invitationSettingsSchema = new mongoose.Schema(
     expectedAttendanceAutoReply: String,
     // Header image uploaded by host (S3/local URL)
     templateImage: String,
-    note: String,
   },
   { _id: false }
 );
@@ -310,8 +309,6 @@ const eventSchema = new mongoose.Schema(
     visualTemplate: canonicalVisualTemplateSchema,
     taqnyatTemplate: canonicalTaqnyatTemplateSchema,
     guestReplies: guestRepliesSchema,
-    invitationMessage: String, // top-level — the host-supplied invitation body
-    hostNote: String,          // top-level — host note shown in EventDetails
 
     // Launch Settings
     launchSettings: launchSettingsSchema,

@@ -1,0 +1,19 @@
+.iconTotal {
+  color: #C28E5C;
+  font-size: 2.4rem;
+}
+
+.iconActive {
+  color: #2A8C5B;
+  font-size: 2.4rem;
+}
+
+.iconPending {
+  color: #D38200;
+  font-size: 2.4rem;
+}
+
+.iconSuspended {
+  color: #C0392B;
+  font-size: 2.4rem;
+}

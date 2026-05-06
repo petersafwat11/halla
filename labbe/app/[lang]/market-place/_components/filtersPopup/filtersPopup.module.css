@@ -65,6 +65,7 @@
   margin: 0;
 }
 
+.backButton,
 .closeBtn {
   background: none;
   border: none;
@@ -76,6 +77,7 @@
   transition: opacity 0.2s;
 }
 
+.backButton:hover,
 .closeBtn:hover {
   opacity: 0.7;
 }

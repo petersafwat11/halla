@@ -83,6 +83,18 @@
   animation: slideUp 0.5s ease-out forwards;
   opacity: 0;
 }
+.statCard--waiting {
+  background-color: transparent;
+}
+.statCard--checkedIn {
+  background-color: #eef2ff;
+}
+.statCard--declined {
+  background-color: #f9eaea;
+}
+.statCard--confirmed {
+  background-color: #eaf4ef;
+}
 
 .statCard:hover {
   transform: translateY(-4px);
@@ -114,6 +126,18 @@
   line-height: 1.6rem;
   text-align: center;
 }
+.label--waiting {
+  color: #374151;
+}
+.label--checkedIn {
+  color: #4338ca;
+}
+.label--declined {
+  color: #c0392b;
+}
+.label--confirmed {
+  color: #2a8c5b;
+}
 
 .value {
   font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
@@ -122,6 +146,18 @@
   font-weight: 700;
   line-height: 2.8rem;
   text-align: center;
+}
+.value--waiting {
+  color: #4b5563;
+}
+.value--checkedIn {
+  color: #4338ca;
+}
+.value--declined {
+  color: #c0392b;
+}
+.value--confirmed {
+  color: #2a8c5b;
 }
 
 @keyframes fadeIn {

@@ -1,61 +1,64 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./SubscriptionInfo.module.css";
+
+function formatNumber(num) {
+  if (num === -1 || num === "unlimited") return "∞";
+  return num?.toLocaleString() || "0";
+}
+
+function getStatusInfo(used, limit, isUnlimited) {
+  if (isUnlimited || limit === -1 || limit === "unlimited") {
+    return { color: "#10B981", bgColor: "#ECFDF5", status: "good" };
+  }
+  const percentage = limit > 0 ? (used / limit) * 100 : 0;
+  if (percentage >= 90)
+    return { color: "#EF4444", bgColor: "#FEF2F2", status: "critical" };
+  if (percentage >= 70)
+    return { color: "#F59E0B", bgColor: "#FFFBEB", status: "warning" };
+  return { color: "#10B981", bgColor: "#ECFDF5", status: "good" };
+}
+
+function getProgressPercentage(used, limit, isUnlimited) {
+  if (isUnlimited || limit === -1 || limit === "unlimited" || limit === 0)
+    return 0;
+  return Math.min((used / limit) * 100, 100);
+}
+
+function formatExpiryDate(date) {
+  if (!date) return null;
+  const expiryDate = new Date(date);
+  const now = new Date();
+  const daysRemaining = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+  return {
+    formatted: expiryDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }),
+    daysRemaining,
+    isExpiringSoon: daysRemaining <= 30 && daysRemaining > 0,
+    isExpired: daysRemaining <= 0,
+  };
+}
 
 export default function SubscriptionInfo({ subscription }) {
   const { t, i18n } = useTranslation("adminEvents");
   const currentLang = i18n.language || "ar";
 
-  if (!subscription) return null;
+  const expiryInfo = useMemo(() => formatExpiryDate(subscription?.expiresAt), [subscription?.expiresAt]);
 
-  const formatNumber = (num) => {
-    if (num === -1 || num === "unlimited") return "∞";
-    return num?.toLocaleString() || "0";
-  };
+  const planName = useMemo(() => subscription?.planName
+    ? currentLang === "ar" ? subscription.planName.ar : subscription.planName.en
+    : subscription?.planType || "N/A", [subscription?.planName, subscription?.planType, currentLang]);
 
-  const getStatusInfo = (used, limit, isUnlimited) => {
-    if (isUnlimited || limit === -1 || limit === "unlimited") {
-      return { color: "#10B981", bgColor: "#ECFDF5", status: "good" };
-    }
-    const percentage = limit > 0 ? (used / limit) * 100 : 0;
-    if (percentage >= 90)
-      return { color: "#EF4444", bgColor: "#FEF2F2", status: "critical" };
-    if (percentage >= 70)
-      return { color: "#F59E0B", bgColor: "#FFFBEB", status: "warning" };
-    return { color: "#10B981", bgColor: "#ECFDF5", status: "good" };
-  };
-
-  const getProgressPercentage = (used, limit, isUnlimited) => {
-    if (isUnlimited || limit === -1 || limit === "unlimited" || limit === 0)
-      return 0;
-    return Math.min((used / limit) * 100, 100);
-  };
-
-  // Format expiry date
-  const formatExpiryDate = (date) => {
-    if (!date) return null;
-    const expiryDate = new Date(date);
-    const now = new Date();
-    const daysRemaining = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
-    return {
-      formatted: expiryDate.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }),
-      daysRemaining,
-      isExpiringSoon: daysRemaining <= 30 && daysRemaining > 0,
-      isExpired: daysRemaining <= 0,
-    };
-  };
-
-  const expiryInfo = formatExpiryDate(subscription.expiresAt);
-
-  const stats = [
+  const stats = useMemo(() => {
+    if (!subscription) return [];
+    return [
     {
       id: "guests",
-      label: t("singleEvent.subscription.remainingGuests"),
+      label: t("singleEvent.subscription.remainingGuests", "الضيوف المتبقية"),
       value: subscription.guests?.isUnlimited
         ? "∞"
         : formatNumber(subscription.guests?.remaining || 0),
@@ -144,14 +147,9 @@ export default function SubscriptionInfo({ subscription }) {
         </svg>
       ),
     },
-  ];
+  ]; }, [subscription, t]);
 
-  // Get plan name based on current language
-  const planName = subscription.planName
-    ? currentLang === "ar"
-      ? subscription.planName.ar
-      : subscription.planName.en
-    : subscription.planType || "N/A";
+  if (!subscription) return null;
 
   return (
     <div className={styles.container}>

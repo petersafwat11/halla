@@ -13,17 +13,10 @@ function GuestQuotaCounter({ currentGuests = 0, subscription }) {
   const { currentLocale } = UseLanguageChange();
   const isArabic = i18n.language === "ar" || currentLocale === "ar";
 
-  // Handle both data structures: guests.limitPerEvent (from getSubscriptionInfo) and limits.maxGuestsPerEvent (from auth)
-  const guestLimit =
-    subscription?.guests?.limitPerEvent ||
-    subscription?.limits?.maxGuestsPerEvent ||
-    subscription?.maxGuests ||
-    0;
-  const isUnlimited =
-    subscription?.guests?.isUnlimited ||
-    subscription?.limits?.maxGuestsPerEvent === -1 ||
-    subscription?.maxGuests === -1 ||
-    false;
+  // Normalized subscription shape from backend:
+  // { guestLimit, isGuestUnlimited, invitePool, invitesRemaining }
+  const guestLimit = subscription?.guestLimit ?? 0;
+  const isUnlimited = subscription?.isGuestUnlimited ?? false;
   const hasSubscription = !!subscription;
 
   // Calculate percentage for progress bar

@@ -14,6 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useUpdatePlan } from "../../../hooks/mutations/useAdminMutations";
 import { useTranslation } from "../../../localization";
+import { useToast } from "../../../contexts/ToastContext";
 import {
   colors,
   spacing,
@@ -40,6 +41,7 @@ const InputField = ({ label, value, onChangeText, keyboardType = "default", plac
 
 const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
   const { t } = useTranslation("admin");
+  const toast = useToast();
   const updatePlan = useUpdatePlan();
 
   const [nameEn, setNameEn] = useState("");
@@ -91,8 +93,8 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
       };
       await updatePlan.mutateAsync({ code: plan.code, data: payload });
       onSave();
-    } catch {
-      // error handled by mutation
+    } catch (err) {
+      toast.error(err?.message || t("common.error"));
     }
   };
 
@@ -141,13 +143,13 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
                 label={t("plans.fields.nameEn")}
                 value={nameEn}
                 onChangeText={setNameEn}
-                placeholder="e.g. Monthly Pro"
+                placeholder={t("plans.fields.nameEn")}
               />
               <InputField
                 label={t("plans.fields.nameAr")}
                 value={nameAr}
                 onChangeText={setNameAr}
-                placeholder="e.g. شهري برو"
+                placeholder={t("plans.fields.nameAr")}
               />
 
               {/* Pricing */}

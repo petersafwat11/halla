@@ -1,52 +1,39 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAdminWhitelabelMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useEnterprisePlans } from "@/hooks/reactQueryHooks/usePlans";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { handleError } from "@/services/errorHandlingService";
+import { toastUtils } from "@/utils/toastUtils";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
 import { whitelabelSubscriptionSchema } from "@/utils/schemas/adminPopupSchemas";
-import { getEnterprisePlans } from "@/services/plansService";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./WhitelabelSubscriptionPopup.module.css";
 
 export default function WhitelabelSubscriptionPopup({ whitelabel, onClose }) {
-  const { t, i18n } = useTranslation("adminDashboard");
+  const { t, i18n } = useTranslation("adminWhitelabels");
   const isArabic = i18n.language === "ar";
   const updateSubscription = useAdminWhitelabelMutation("updateSubscription");
 
-  const [enterprisePlans, setEnterprisePlans] = useState([]);
-  const [isLoadingPlans, setIsLoadingPlans] = useState(true);
-
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const res = await getEnterprisePlans();
-        const plans = res?.data?.plans || res?.plans || [];
-        setEnterprisePlans(plans);
-      } catch {
-        // plans fetch failed — form can still be submitted if user types a code
-      } finally {
-        setIsLoadingPlans(false);
-      }
-    };
-    fetchPlans();
-  }, []);
+  const { data: plansData, isLoading: isLoadingPlans } = useEnterprisePlans();
 
   const planOptions = useMemo(() => {
-    return enterprisePlans.map((p) => ({
+    const plans = plansData?.data?.plans || plansData?.plans || [];
+    return plans.map((p) => ({
       label: isArabic ? (p.nameAr || p.nameEn || p.code) : (p.nameEn || p.code),
       value: p.code,
     }));
-  }, [enterprisePlans, isArabic]);
+  }, [plansData, isArabic]);
 
   const statusOptions = [
-    { label: t("whitelabels.status.active",    "نشط"),    value: "active" },
-    { label: t("whitelabels.status.expired",   "منتهي"),  value: "expired" },
-    { label: t("whitelabels.status.cancelled", "ملغي"),   value: "cancelled" },
+    { label: t("status.active"),    value: "active" },
+    { label: t("subscription.inactive"),   value: "expired" },
+    { label: t("status.suspended"), value: "cancelled" },
   ];
 
   const methods = useForm({
@@ -57,48 +44,44 @@ export default function WhitelabelSubscriptionPopup({ whitelabel, onClose }) {
     },
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = useCallback(async (data) => {
     try {
       await updateSubscription.mutateAsync({
         whitelabelId: whitelabel.id || whitelabel._id,
         ...data,
       });
-      toast.success(t("whitelabels.subscriptionUpdateSuccess", "تم تحديث الاشتراك بنجاح"));
+      toastUtils.success(t("subscription.subscriptionUpdateSuccess"));
       onClose();
     } catch (error) {
-      toast.error(error.message || t("whitelabels.subscriptionUpdateError", "فشل تحديث الاشتراك"));
+      handleError(error, t, { fallbackMessage: "subscription.subscriptionUpdateError" });
     }
-  };
+  }, [updateSubscription, whitelabel, t, onClose]);
 
   return (
     <PopupLayout isOpen={true} onClose={onClose}>
       <div className={styles.popup}>
         <div className={styles.header}>
-          <h2>{t("whitelabels.updateSubscription", "تحديث الاشتراك")}</h2>
+          <h2>{t("subscription.manageTitle")}</h2>
           <button className={styles.closeBtn} onClick={onClose}>×</button>
         </div>
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.form}>
             <div className={styles.formGroup}>
-              <label>{t("whitelabels.form.name", "اسم العلامة البيضاء")}</label>
+              <label>{t("form.name")}</label>
               <input
                 type="text"
                 value={whitelabel?.username || whitelabel?.name || ""}
                 disabled
-                style={{ background: "#f5f5f5" }}
+                className={styles.disabledInput}
               />
             </div>
 
             {isLoadingPlans ? (
-              <div className={styles.formGroup}>
-                <p style={{ color: "#888", fontSize: 14 }}>
-                  {isArabic ? "جاري تحميل الخطط..." : "Loading plans..."}
-                </p>
-              </div>
+              <SimpleLoading />
             ) : (
               <InputSelect
-                label={t("whitelabels.form.plan", "الخطة")}
-                placeholder={t("whitelabels.form.selectPlan", "اختر خطة")}
+                label={t("form.plan")}
+                placeholder={t("form.selectPlan")}
                 name="planCode"
                 options={planOptions}
                 required
@@ -106,8 +89,8 @@ export default function WhitelabelSubscriptionPopup({ whitelabel, onClose }) {
             )}
 
             <InputSelect
-              label={t("whitelabels.form.status", "الحالة")}
-              placeholder={t("whitelabels.form.selectStatus", "اختر الحالة")}
+              label={t("form.status")}
+              placeholder={t("form.selectStatus")}
               name="status"
               options={statusOptions}
               required
@@ -116,15 +99,15 @@ export default function WhitelabelSubscriptionPopup({ whitelabel, onClose }) {
             <div className={styles.actions}>
               <Button
                 variant="secondary"
-                title={t("common.cancel", "إلغاء")}
+                title={t("subscription.cancel")}
                 onClick={onClose}
                 disabled={updateSubscription.isPending}
               />
               <Button
                 variant="primary"
                 title={updateSubscription.isPending
-                  ? t("common.loading", "جاري التحديث...")
-                  : t("common.update", "تحديث")}
+                  ? t("subscription.updating")
+                  : t("subscription.updatePlan")}
                 type="submit"
                 disabled={updateSubscription.isPending}
               />

@@ -316,4 +316,39 @@ router.get('/plans', subscriptionsController.getAvailablePlans);
  */
 router.get('/plans/:code', subscriptionsController.getPlanByCode);
 
+// ============================================
+// PAYMENT HISTORY (Host-facing)
+// ============================================
+
+/**
+ * @swagger
+ * /subscriptions/payments:
+ *   get:
+ *     summary: Get my payment history
+ *     description: Retrieve current user's subscription payment history
+ *     tags: [Subscriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [all, completed, pending, failed]
+ *     responses:
+ *       200:
+ *         description: Payment history retrieved
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.get('/payments', subscriptionsController.getMyPayments);
+
 module.exports = router;

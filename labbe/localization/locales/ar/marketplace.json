@@ -1,0 +1,48 @@
+{
+  "sections": {
+    "all": "الكل",
+    "title": "الفئات"
+  },
+  "previousPage": "الصفحة السابقة",
+  "goToPage": "اذهب إلى الصفحة",
+  "nextPage": "الصفحة التالية",
+  "filters": {
+    "ratingAll": "جميع التقييمات",
+    "rating4": "4 نجوم فأكثر",
+    "rating3": "3 نجوم فأكثر",
+    "rating2": "2 نجوم فأكثر",
+    "title": "التصفيات",
+    "region": "المنطقة",
+    "allRegions": "جميع المناطق",
+    "city": "المدينة",
+    "allCities": "جميع المدن",
+    "searchCity": "ابحث عن المدينة",
+    "district": "الحي",
+    "allDistricts": "جميع الأحياء",
+    "searchDistrict": "ابحث عن الحي",
+    "priceRange": "نطاق السعر",
+    "priceFrom": "من",
+    "priceTo": "إلى",
+    "rating": "التقييم",
+    "activeFilters": "التصفيات النشطة",
+    "price": "السعر"
+  },
+  "filtersPopup": {
+    "close": "إغلاق التصفيات"
+  },
+  "buttons": {
+    "resetFilters": "إعادة ضبط",
+    "applyFilters": "تطبيق"
+  },
+  "search": {
+    "placeholder": "بحث..."
+  },
+  "card": {
+    "users": "مستخدمين",
+    "callNow": "اتصل الآن"
+  },
+  "title": "السوق",
+  "services": {
+    "defaultName": "خدمة"
+  }
+}

@@ -1,17 +1,17 @@
 "use client";
 import React from "react";
 import ListItem from "../listItem/ListItem";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./list.module.css";
 
-export default function List({ guests = [], t, handleGuestClick }) {
-  // Sample data if no guests provided
-  const sampleGuests = Array(6).fill({
-    name: "احمد كمال سمير",
-    phone: "966656555",
-    email: "ads@outlook.com",
-  });
-
-  const displayGuests = guests.length > 0 ? guests : sampleGuests;
+export default function List({ guests = [], t, loading, onGuestClick }) {
+  if (loading) {
+    return (
+      <div className={styles.listSection}>
+        <SimpleLoading message={t("loading")} />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.listSection}>
@@ -79,11 +79,13 @@ export default function List({ guests = [], t, handleGuestClick }) {
           </div>
 
           <div className={styles.guestsList}>
-            {displayGuests.map((guest, index) => (
-              <div key={index} style={{ animationDelay: `${index * 0.05}s` }}>
-                <ListItem guest={guest} handleGuestClick={handleGuestClick} />
-              </div>
-            ))}
+            {guests.length === 0 ? (
+              <p className={styles.emptyState}>{t("noGuests")}</p>
+            ) : (
+              guests.map((guest, index) => (
+                <ListItem key={guest._id || index} guest={guest} onGuestClick={onGuestClick} />
+              ))
+            )}
           </div>
         </div>
       </div>

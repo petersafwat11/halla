@@ -4,7 +4,8 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAdminHostMutation } from "@/hooks/reactQueryHooks/useAdmin";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import { addHostSchema } from "@/utils/schemas/adminPopupSchemas";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
@@ -23,10 +24,10 @@ export default function AddHostPopup({ onClose }) {
   const onSubmit = async (data) => {
     try {
       await createHost.mutateAsync(data);
-      toast.success(t("hosts.createSuccess", "تم إضافة العميل بنجاح"));
+      toastUtils.success(t("addHost.success", "Host added successfully"));
       onClose();
     } catch (error) {
-      toast.error(error.message || t("hosts.createError", "فشل إضافة العميل"));
+      handleError(error, t);
     }
   };
 

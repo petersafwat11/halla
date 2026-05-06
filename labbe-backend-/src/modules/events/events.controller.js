@@ -13,6 +13,7 @@ const {
 } = require("../../shared/utils/responseHelper");
 const eventsService = require("./events.service");
 const Subscription = require("../../../models/SubscriptionModel");
+const { isAdminRole } = require("../../shared/constants/roles");
 
 // ============================================
 // EVENT LIST & STATS
@@ -49,10 +50,33 @@ exports.getEventStats = catchAsync(async (req, res) => {
  * GET /api/v2/events/subscription-info
  */
 exports.getSubscriptionInfo = catchAsync(async (req, res) => {
+  // Platform admins (admin/super_admin without a whitelabelId) bypass plan gating —
+  // matches the middleware bypass in createEvent.
+  const isPlatformAdmin = isAdminRole(req.user?.role) && !req.user?.whitelabelId;
+  if (isPlatformAdmin) {
+    return sendSuccess(res, {
+      hasSubscription: true,
+      isUnlimited: true,
+      canCreateEvent: true,
+      isGuestUnlimited: true,
+      guestLimit: -1,
+      eventsRemaining: -1,
+      eventsUsed: 0,
+    });
+  }
+
+  // Resolve the subscription that gates event creation:
+  //   host / whitelabel_admin: their own user subscription
+  //   whitelabel_moderator: no own sub — fall back to the whitelabel's sub
+  let subscription = null;
   const subscriptionId = req.user.subscription?._id || req.user.subscription;
-  const subscription = subscriptionId
-    ? await Subscription.findById(subscriptionId).populate("planId")
-    : null;
+  if (subscriptionId) {
+    subscription = await Subscription.findById(subscriptionId).populate("planId");
+  }
+  if (!subscription && req.user.whitelabelId) {
+    const wlSubs = await Subscription.findActiveForUser(req.user.whitelabelId);
+    subscription = wlSubs?.[0] || null;
+  }
   const info = await eventsService.getSubscriptionInfo(
     req.user._id,
     subscription

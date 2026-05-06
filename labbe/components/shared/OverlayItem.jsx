@@ -11,6 +11,7 @@
  */
 
 import React from "react";
+import { renderIconByName } from "@/app/[lang]/admin-dash/templates/_components/IconPicker";
 
 export function OverlayItem({
   overlay,
@@ -27,8 +28,11 @@ export function OverlayItem({
   const left = (overlay.leftPct / 100) * containerWidth;
   const top = (overlay.topPct / 100) * containerHeight;
   const width = overlay.widthPct ? (overlay.widthPct / 100) * containerWidth : "auto";
-  const height = overlay.heightPct ? (overlay.heightPct / 100) * containerHeight : "auto";
-  const fontSize = overlay.fontSizeVh ? (overlay.fontSizeVh / 100) * containerHeight : 14;
+  const fontSize = overlay.fontSizeVh
+    ? (overlay.fontSizeVh / 100) * containerHeight
+    : overlay.iconSizeVh
+      ? (overlay.iconSizeVh / 100) * containerHeight
+      : 14;
 
   const color =
     overlay.colorBinding === "custom"
@@ -43,7 +47,6 @@ export function OverlayItem({
         left,
         top,
         width,
-        height,
         transform: "translate(-50%, -50%)",
         textAlign: overlay.textAlign || "center",
         fontFamily: fontFamilyOverride || overlay.fontFamily || "inherit",
@@ -56,7 +59,9 @@ export function OverlayItem({
         ...style,
       }}
     >
-      {text}
+      {overlay.type === "icon" && text
+        ? renderIconByName(text, { size: fontSize, color, strokeWidth: 1.5 })
+        : text}
     </div>
   );
 }

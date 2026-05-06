@@ -29,8 +29,15 @@ function EventLimitReached({ subscription, onUpgrade }) {
     router.push(`/${currentLocale}/host`);
   };
 
-  const eventsUsed = subscription?.events?.used || 0;
-  const eventsLimit = subscription?.events?.limit || 0;
+  // Normalized subscription shape from backend:
+  // { eventsUsed, eventsRemaining, planType, isSingleEvent, isPoolPlan }
+  const eventsUsed = subscription?.eventsUsed ?? 0;
+  const eventsRemaining = subscription?.eventsRemaining ?? 0;
+  const eventsLimit = subscription?.isSingleEvent
+    ? 1
+    : eventsRemaining === -1
+      ? -1
+      : eventsUsed + eventsRemaining;
   const planType = subscription?.planType || "lite";
 
   return (

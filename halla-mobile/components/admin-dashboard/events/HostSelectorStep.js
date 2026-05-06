@@ -86,8 +86,10 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
     const selected = isSelected(id, type);
     const subscription = item.subscription;
     const eventsRemaining = subscription?.eventsRemaining;
+    const isUnlimited = subscription?.isUnlimited || subscription?.eventsRemaining === -1;
+    const isEventsExhausted = !isUnlimited && eventsRemaining !== undefined && eventsRemaining <= 0;
     return (
-      <SectionCard key={id} style={styles.hostCard}>
+      <SectionCard key={id} style={[styles.hostCard, isEventsExhausted && styles.hostCardExhausted]}>
         <View style={styles.hostCardRow}>
           <View style={styles.hostInfo}>
             <Text style={styles.hostName}>{item.name || item.fullName || '—'}</Text>
@@ -98,17 +100,26 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
               </View>
             )}
             {eventsRemaining !== undefined && (
-              <Text style={styles.eventsRemaining}>
-                {eventsRemaining === -1
-                  ? t('events.hostSelector.unlimited')
-                  : t('events.hostSelector.eventsRemaining', { count: eventsRemaining })}
+              <Text style={[styles.eventsRemaining, isEventsExhausted && styles.eventsRemainingExhausted]}>
+                {isEventsExhausted
+                  ? t('events.hostSelector.noEventsRemaining')
+                  : eventsRemaining === -1
+                    ? t('events.hostSelector.unlimited')
+                    : t('events.hostSelector.eventsRemaining', { count: eventsRemaining })}
               </Text>
             )}
           </View>
           <ActionButton
-            label={selected ? t('events.hostSelector.selected') : t('events.hostSelector.selectHost')}
-            onPress={() => onSelect(item)}
+            label={
+              isEventsExhausted
+                ? t('events.hostSelector.noEvents')
+                : selected
+                  ? t('events.hostSelector.selected')
+                  : t('events.hostSelector.selectHost')
+            }
+            onPress={() => !isEventsExhausted && onSelect(item)}
             variant={selected ? 'secondary' : 'primary'}
+            disabled={isEventsExhausted}
           />
         </View>
       </SectionCard>
@@ -224,6 +235,8 @@ const styles = StyleSheet.create({
   badge: { backgroundColor: '#fef3e7', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start', marginTop: 4 },
   badgeText: { fontSize: 11, fontFamily: 'Cairo_600SemiBold', color: '#C28E5C' },
   eventsRemaining: { fontSize: 12, fontFamily: 'Cairo_400Regular', color: '#999', marginTop: 2 },
+  eventsRemainingExhausted: { color: '#e74c3c', fontFamily: 'Cairo_600SemiBold' },
+  hostCardExhausted: { opacity: 0.6 },
   searchRow: { flexDirection: 'row', gap: 8, marginBottom: 12, alignItems: 'center' },
   searchInput: { flex: 1, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12, fontSize: 14, fontFamily: 'Cairo_400Regular', color: '#1a1a1a', backgroundColor: '#fff' },
   searchError: { color: '#e74c3c', fontSize: 13, fontFamily: 'Cairo_400Regular', marginBottom: 8, textAlign: 'right' },

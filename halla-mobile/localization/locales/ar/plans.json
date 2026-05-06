@@ -1,27 +1,92 @@
 {
-  "pageTitle": "الباقات", "loading": "جار تحميل الباقات...",
+  "pageTitle": "باقات الأعمال",
+  "loading": "جار تحميل الباقات...",
+  "currentPlan": { "title": "الباقة الحالية", "events": "مناسبات", "invites": "دعوات", "daysRemaining": "أيام متبقية" },
+  "noActiveSubscription": { "title": "لا يوجد اشتراك نشط حالياً", "subtitle": "اختر باقة من الأسفل لتفعيل اشتراكك" },
+  "tabs": {
+    "event": "لكل مناسبة",
+    "quarterly": "رصيد ٣ أشهر",
+    "annual": "رصيد سنوي"
+  },
   "planFamilies": { "basic": "هلا بيسك", "premium": "هلا بريميوم" },
   "planFamilyDescriptions": {
     "basic": "تدير بنفسك — كل شيء بيدك",
     "premium": "يديره فريقنا بالكامل"
   },
   "billingTypes": { "event": "مناسبة واحدة", "monthly": "اشتراك شهري" },
+  "billingTypeLabels": { "event": "/ مناسبة", "monthly": "/ شهر" },
   "billingTypeDescriptions": {
     "event": "مناسبة واحدة — صالحة 90 يوم",
     "monthly": "رصيد دعوات — مناسبات غير محدودة — 30 يوم"
   },
   "inviteSelector": { "label": "اختر عدد الدعوات", "poolLabel": "رصيد الدعوات", "invites": "دعوة" },
   "currency": "ر.س",
-  "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة" },
+  "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة تعويضية (١٥٪)" },
   "features": { "title": "المميزات المشمولة" },
-  "buttons": { "subscribeNow": "اشترك الآن" },
-  "errors": { "loadFailed": "فشل تحميل الباقات. حاول مرة أخرى.", "selectPlan": "الرجاء اختيار باقة." },
+  "buttons": { "subscribeNow": "تواصل معنا", "subscribeAction": "اشترك الآن" },
+  "errors": { "loadFailed": "فشل في تحميل الباقات", "selectPlan": "الرجاء اختيار باقة.", "noPlansAvailable": "لا توجد باقات متاحة" },
+  "eventTab": {
+    "hint": "باقة واحدة لكل مناسبة — صالحة ٩٠ يوماً · رسوم إعداد ١٢٠٠ ر.س (مرة واحدة)",
+    "validity": "صالحة ٩٠ يوماً",
+    "priceSuffix": "ر.س / مناسبة",
+    "invitesSuffix": "دعوة / مناسبة"
+  },
+  "quarterlyTab": {
+    "hint": "رصيد دعوات مشترك لمناسبات غير محدودة — ٩٠ يوماً",
+    "validity": "صالحة ٩٠ يوماً",
+    "priceSuffix": "ر.س / ٣ أشهر",
+    "invitesSuffix": "دعوة (رصيد مشترك)",
+    "whatsappTemplates": "{{count}} قوالب واتساب مخصصة",
+    "setupIncluded": "رسوم الإعداد مدرجة",
+    "noPlans": "لا توجد باقة ربع سنوية"
+  },
+  "annualTab": {
+    "hint": "رصيد دعوات مشترك لمناسبات غير محدودة — ٣٦٥ يوماً",
+    "validity": "صالحة ٣٦٥ يوماً",
+    "priceSuffix": "ر.س / سنة",
+    "invitesSuffix": "دعوة (رصيد مشترك)",
+    "whatsappTemplates": "{{count}} قوالب واتساب مخصصة",
+    "setupIncluded": "رسوم الإعداد مدرجة",
+    "noPlans": "لا توجد باقة سنوية"
+  },
+  "contactNote": "سيتواصل معك فريقنا لإتمام عملية الدفع.",
+  "infoNote": "سيتواصل معك فريقنا بعد الاشتراك لإتمام الدفع والبدء.",
+  "addons": {
+    "title": "الإضافات",
+    "subtitle": "حسّن باقتك بميزات إضافية اختيارية",
+    "extraInvites": { "title": "دعوات إضافية", "description": "أضف دعوات أكثر إلى باقتك" },
+    "extraReminders": { "title": "تذكيرات إضافية", "description": "أرسل رسائل تذكير إضافية" },
+    "designTemplate": { "title": "قالب تصميم", "description": "تصميم دعوة احترافي من فريقنا" },
+    "designTypes": {
+      "ready_made": "تصميم جاهز (رجالي/نسائي)",
+      "custom_male": "تصميم رجالي مخصص",
+      "custom_themed": "تصميم حسب ثيم المناسبة",
+      "animated": "تصميم بخلفيات متحركة",
+      "3d": "تصميم ثلاثي الأبعاد (3D)"
+    },
+    "purchase": {
+      "total": "الإجمالي",
+      "cta": "شراء الإضافات المحددة",
+      "processing": "جارٍ المعالجة...",
+      "noneSelected": "اختر إضافة أولاً",
+      "success": "تم شراء الإضافات",
+      "error": "فشل شراء الإضافة"
+    }
+  },
   "summary": {
     "title": "ملخص الطلب", "planDetails": "تفاصيل الباقة",
     "invitePool": "رصيد الدعوات", "validDays": "صالحة لـ", "days": "يوم",
     "oneEvent": "مناسبة واحدة", "unlimitedEvents": "مناسبات غير محدودة",
     "compensationInvites": "دعوات تعويضية",
     "activateButton": "تفعيل الاشتراك", "activating": "جار التفعيل...", "total": "الإجمالي",
+    "enterprisePlan": "باقة مؤسسية",
+    "validFor": "صالحة لمدة",
+    "periods": {
+      "yearly": "سنة كاملة (٣٦٥ يوماً)",
+      "quarterly": "٩٠ يوماً",
+      "monthly": "٣٠ يوماً",
+      "custom": "{{days}} يوم"
+    },
     "discountCode": {
       "title": "كود الخصم",
       "placeholder": "أدخل كود الخصم",
@@ -42,7 +107,25 @@
     "invalidCode": "كود خصم غير صالح",
     "subscriptionSuccess": "تم تفعيل الاشتراك!",
     "activeSubscription": "لديك اشتراك نشط بالفعل. يمكنك إنشاء مناسبة الآن.",
-    "subscriptionFailed": "فشل في تفعيل الاشتراك. يرجى المحاولة مرة أخرى."
+    "subscriptionFailed": "فشل في تفعيل الاشتراك. يرجى المحاولة مرة أخرى.",
+    "paymentFailed": "فشل في الدفع. يرجى المحاولة مرة أخرى.",
+    "invalidPlan": "رمز الباقة غير صالح.",
+    "processing": "جاري المعالجة...",
+    "proceedButton": "متابعة للدفع"
   },
-  "toasts": { "success": "تم تفعيل الاشتراك!", "failed": "فشل التفعيل. حاول مرة أخرى." }
+  "toasts": { "success": "تم تفعيل الاشتراك!", "failed": "فشل التفعيل. حاول مرة أخرى." },
+  "features": {
+    "title": "المميزات المشمولة",
+    "sendInvites": "إرسال الدعوات عبر التطبيق",
+    "receiveInvites": "استلام الدعوات عبر واتساب أو رسائل نصية",
+    "scanEntry": "مسح الدخول ورفع الاسم والرقم",
+    "flexibleEntry": "وضع دخول مرن بدون جهاز خاص",
+    "gateKeeper": "تعيين حارس بوابة أو مدير قائمة",
+    "rsvpResponses": "استلام ردود الحضور",
+    "autoReminders": "تذكيرات تلقائية",
+    "staffManagement": "إدارة الطاقم"
+  },
+  "badges": { "selected": "تم الاختيار" },
+  "monthlyPlan": { "durationNote": "30 يوم — مناسبات غير محدودة" },
+  "summary": { "singleEvent": "مناسبة واحدة" }
 }

@@ -204,6 +204,17 @@
   line-height: 1;
 }
 
+.statBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.9rem;
+  border-radius: var(--r-full, 9999px);
+  font-family: var(--font-ar, "Cairo", sans-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
 /* ── Two Column ── */
 .twoCol {
   display: grid;

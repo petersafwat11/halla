@@ -53,8 +53,8 @@ const VendorServicesPage = () => {
 
   // Memoized services with mapping
   const services = useMemo(() => {
-    if (!servicesData?.data) return [];
-    return servicesData.data.map((service) => ({
+    if (!servicesData?.data?.services) return [];
+    return servicesData.data.services.map((service) => ({
       id: service.id,
       title: service.name,
       tags: service.tags || [],

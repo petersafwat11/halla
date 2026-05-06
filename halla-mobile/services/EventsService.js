@@ -390,7 +390,7 @@ export const transformFormDataToPayload = (formData) => {
       expectedAttendanceAutoReply:
         formData.guestReplies?.onExpected || formData.expectedAttendanceAutoReply,
       templateImage: formData.templateImage,
-      note: formData.hostNote || formData.note,
+      guestReplies: formData.guestReplies,
     },
     // Phase 4c W0-RENAME canonical keys (backend prefers these on read)
     taqnyatTemplateRef:
@@ -409,8 +409,6 @@ export const transformFormDataToPayload = (formData) => {
       onAbsent: formData.absenceAutoReply,
       onExpected: formData.expectedAttendanceAutoReply,
     },
-    invitationMessage: formData.invitationMessage,
-    hostNote: formData.hostNote || formData.note,
     launchSettings: {
       sendSchedule: formData.sendSchedule || "now",
       scheduledDate: formData.scheduleDate,
@@ -504,20 +502,14 @@ export const getDefaultFormValues = () => ({
   visualTemplate: null,     // { _id, name, fields, data: {...} }
   templateImage: null,
 
-  // Step 4 - Taqnyat WhatsApp Template (Phase 4c W2-MOBILE-WIZARD —
-  // auto-replies moved to Step 5)
-  selectedTemplate: null,   // legacy { id, name, bodyText } shape
-  taqnyatTemplate: null,    // canonical { templateRef } shape (W0-RENAME)
-  taqnyatTemplateRef: null, // top-level alias for backend dual-write
-
-  // Step 5 - Messaging + auto-replies + host note (Phase 4c)
-  invitationMessage: "",
+  // Step 4 - Taqnyat WhatsApp Template + auto-replies
+  selectedTemplate: null,
+  taqnyatTemplate: null,
+  taqnyatTemplateRef: null,
   attendanceAutoReply: "",
   absenceAutoReply: "",
   expectedAttendanceAutoReply: "",
   guestReplies: { onAttend: "", onAbsent: "", onExpected: "" },
-  hostNote: "",
-  note: "",
 
   // Launch Settings
   sendSchedule: "now",

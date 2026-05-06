@@ -24,6 +24,10 @@ export function useUnsavedChanges(isDirty, message) {
     isDirtyRef.current = isDirty;
   }, [isDirty]);
 
+  // Call this before a programmatic navigation that follows a successful save
+  // so the pushState guard doesn't fire before React flushes the reset().
+  const clearGuard = () => { isDirtyRef.current = false; };
+
   // beforeunload — full reload / tab close / external nav
   useEffect(() => {
     if (!isDirty) return undefined;
@@ -63,6 +67,8 @@ export function useUnsavedChanges(isDirty, message) {
     // Run once on mount; isDirtyRef stays current via the earlier effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  return { clearGuard };
 }
 
 export default useUnsavedChanges;

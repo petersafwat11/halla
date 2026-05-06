@@ -233,7 +233,7 @@ export const tickets = {
     apiRequest(`/tickets/${ticketId}/status`, "PATCH", token, { status: "resolved", resolution }),
 
   reopen: async (token, ticketId) =>
-    apiRequest(`/tickets/${ticketId}/status`, "PATCH", token, { status: "open" }),
+    apiRequest(`/tickets/${ticketId}/status`, "PATCH", token, { status: "in_progress" }),
 
   respond: async (token, ticketId, message) =>
     apiRequest(`/tickets/${ticketId}`, "PATCH", token, { message }),

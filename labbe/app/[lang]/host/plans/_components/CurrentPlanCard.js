@@ -1,6 +1,6 @@
 "use client";
 import { useTranslation } from "react-i18next";
-import { FaCalendarAlt, FaUsers, FaClock } from "react-icons/fa";
+import { FaCalendarAlt, FaUsers, FaClock, FaRegCalendarTimes } from "react-icons/fa";
 import styles from "./CurrentPlanCard.module.css";
 
 /**
@@ -10,7 +10,19 @@ const CurrentPlanCard = ({ subscription, usage }) => {
   const { t, i18n } = useTranslation("plans");
   const isArabic = i18n.language === "ar";
 
-  if (!subscription) return null;
+  if (!subscription) {
+    return (
+      <div className={styles.noSubCard}>
+        <div className={styles.noSubIcon}>
+          <FaRegCalendarTimes />
+        </div>
+        <div className={styles.noSubText}>
+          <span className={styles.noSubTitle}>{t("noActiveSubscription.title")}</span>
+          <span className={styles.noSubSubtitle}>{t("noActiveSubscription.subtitle")}</span>
+        </div>
+      </div>
+    );
+  }
 
   const planName = isArabic
     ? subscription.planNameAr || subscription.planName

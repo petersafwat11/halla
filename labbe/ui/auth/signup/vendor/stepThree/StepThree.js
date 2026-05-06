@@ -2,7 +2,6 @@ import React from "react";
 import styles from "./stepThree.module.css";
 import { useTranslation } from "react-i18next";
 import UploadFile from "@/ui/commen/inputs/uploadFile/UploadFile";
-import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import SectionTitle, { StepTitle } from "@/ui/commen/title/SectionTitle";
 
 const StepThree = ({ goToPreviousStep }) => {
@@ -18,7 +17,7 @@ const StepThree = ({ goToPreviousStep }) => {
       <div className={styles.sections}>
         <div className={styles.section}>
           <SectionTitle
-            title="رفع 1: 3 صور من اعمالك السابقة"
+            title={t("signupForm.vendor.samplesAndPackages.portfolioImages.label")}
             icon="/svg/auth/document-copy.svg"
             height={24}
             width={24}

@@ -48,11 +48,26 @@ adminRouter.post(
   superAdminOnly,
   controller.sync
 );
+// Submit a new template to Meta for approval. Super-admin only —
+// templates are an account-wide resource and Meta rate-limits creates.
+adminRouter.post(
+  "/",
+  superAdminOnly,
+  controller.createUpstream
+);
 adminRouter.patch(
   "/:id",
   validateObjectId("id"),
   requirePageAccess(ADMIN_PAGES.TAQNYAT_TEMPLATES, "update"),
   controller.assignMapping
+);
+// Hard-delete upstream + local cache row. Super-admin only because it
+// strips the template from every host's wizard immediately.
+adminRouter.delete(
+  "/:id",
+  validateObjectId("id"),
+  superAdminOnly,
+  controller.deleteUpstream
 );
 
 module.exports = router;

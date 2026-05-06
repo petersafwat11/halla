@@ -14,19 +14,27 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import PieChartComponent from "@/ui/admin/dashboard/charts/pieChart/PieChart";
-import { cookieUtils } from "@/utils/cookieUtils";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import useAuthStore from "@/stores/authStore";
 import styles from "./DashboardCharts.module.css";
 
 const STATUS_CONFIG = [
-  { key: "scheduled", label: "مجدول", color: "#3498DB" },
-  { key: "live", label: "مباشر", color: "#2A8C5B" },
-  { key: "completed", label: "منتهي", color: "#9B59B6" },
-  { key: "draft", label: "مسودة", color: "#D38200" },
+  { key: "scheduled", labelKey: "tables.recentEvents.status.scheduled", color: "#3498DB" },
+  { key: "live", labelKey: "tables.recentEvents.status.live", color: "#2A8C5B" },
+  { key: "completed", labelKey: "tables.recentEvents.status.completed", color: "#9B59B6" },
+  { key: "draft", labelKey: "tables.recentEvents.status.draft", color: "#D38200" },
 ];
+
+const chartColors = {
+  barFill: "#C28E5C",
+  gridStroke: "#f0f0f0",
+  bgFill: "#f0f0f0",
+};
 
 export default function DashboardCharts() {
   const { t } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
+  const { user } = useAuthStore();
 
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -36,21 +44,29 @@ export default function DashboardCharts() {
     ...(to && { to }),
   };
 
-  const { data: responseData, isLoading } = useAdminDashboard(filters);
+  const { data: responseData, isLoading, error } = useAdminDashboard(filters);
   const data = responseData?.data || responseData;
-
-  const user = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    const userData = cookieUtils.getCookie("user");
-    return userData ? JSON.parse(userData) : null;
-  }, []);
 
   const isWhitelabelRole =
     user?.role === "whitelabel_admin" || user?.role === "whitelabel_moderator";
 
-  if (isLoading) return null;
+  const chartTheme = useMemo(() => ({
+    xAxisTick: { fontSize: 11, fontFamily: "Cairo" },
+    yAxisTick: { fontSize: 11 },
+    tooltipContent: { fontFamily: "Cairo", fontSize: 12 },
+    gridStrokeDasharray: "3 3",
+  }), []);
 
-  // --- Whitelabel analytics view ---
+  if (isLoading) return <SimpleLoading />;
+
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <p>{t("errors.loadFailed", "Failed to load dashboard charts")}</p>
+      </div>
+    );
+  }
+
   if (isWhitelabelRole) {
     const analytics = data?.analytics || {};
     const monthlyEvents = analytics.monthlyEvents || [];
@@ -60,10 +76,9 @@ export default function DashboardCharts() {
 
     return (
       <div className={`${styles.chartsGrid} ${styles.whitelabelGrid}`}>
-        {/* Monthly events bar chart */}
         <div className={styles.chartBox}>
           <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>المناسبات الشهرية</h3>
+            <h3 className={styles.chartTitle}>{t("charts.whitelabel.monthlyEvents", "Monthly Events")}</h3>
             <p className={styles.chartTotal}>{monthlyTotal}</p>
           </div>
           <ResponsiveContainer width="100%" height={180}>
@@ -72,28 +87,27 @@ export default function DashboardCharts() {
               margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
             >
               <CartesianGrid
-                strokeDasharray="3 3"
+                strokeDasharray={chartTheme.gridStrokeDasharray}
                 vertical={false}
-                stroke="#f0f0f0"
+                stroke={chartColors.gridStroke}
               />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 11, fontFamily: "Cairo" }}
+                tick={chartTheme.xAxisTick}
               />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+              <YAxis tick={chartTheme.yAxisTick} allowDecimals={false} />
               <Tooltip
-                contentStyle={{ fontFamily: "Cairo", fontSize: 12 }}
-                formatter={(value) => [value, "مناسبات"]}
+                contentStyle={chartTheme.tooltipContent}
+                formatter={(value) => [value, t("charts.whitelabel.events", "Events")]}
               />
-              <Bar dataKey="count" fill="#C28E5C" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" fill={chartColors.barFill} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Events by status breakdown */}
         <div className={styles.chartBox}>
           <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>توزيع المناسبات</h3>
+            <h3 className={styles.chartTitle}>{t("charts.whitelabel.eventsByStatus", "Events by Status")}</h3>
             <p className={styles.chartTotal}>{statusTotal}</p>
           </div>
           <div className={styles.statusList}>
@@ -106,7 +120,7 @@ export default function DashboardCharts() {
                     className={styles.statusDot}
                     style={{ background: item.color }}
                   />
-                  <span className={styles.statusLabel}>{item.label}</span>
+                  <span className={styles.statusLabel}>{t(item.labelKey)}</span>
                   <div className={styles.statusBar}>
                     <div
                       className={styles.statusBarFill}
@@ -123,7 +137,6 @@ export default function DashboardCharts() {
     );
   }
 
-  // --- Platform admin view (unchanged) ---
   const chartsData = data?.charts || {};
 
   return (
@@ -132,21 +145,21 @@ export default function DashboardCharts() {
         <PieChartComponent
           data={chartsData.revenue || {}}
           type="revenue"
-          title={t("charts.revenue", "الإيرادات")}
+          title={t("charts.revenue", "Revenue")}
         />
       </div>
       <div className={styles.chartBox}>
         <PieChartComponent
           data={chartsData.tickets || {}}
           type="tickets"
-          title={t("charts.tickets", "التذاكر")}
+          title={t("charts.tickets", "Tickets")}
         />
       </div>
       <div className={styles.chartBox}>
         <PieChartComponent
           data={chartsData.subscriptionsByPlan || {}}
           type="subscriptions"
-          title={t("charts.subscriptions", "الاشتراكات حسب الباقة")}
+          title={t("charts.subscriptions", "Subscriptions")}
         />
       </div>
     </div>

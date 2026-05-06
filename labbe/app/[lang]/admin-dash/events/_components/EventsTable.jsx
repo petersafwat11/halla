@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
@@ -7,7 +8,7 @@ import { useAdminEventMutation } from "@/hooks/reactQueryHooks/useAdmin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
 import { FiEye, FiCheckCircle, FiSlash, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import { eventsAPI } from "@/services/adminDashboard";
@@ -20,16 +21,16 @@ export default function EventsTable() {
   const searchParams = useSearchParams();
   const { canCreate, canUpdate, canDelete } = usePageAccess("events");
 
-  const filters = {
+  const filters = useMemo(() => ({
     page: searchParams.get("page") || 1,
     limit: searchParams.get("limit") || 10,
     search: searchParams.get("search"),
     status: searchParams.get("status"),
     from: searchParams.get("from"),
     to: searchParams.get("to"),
-  };
+  }), [searchParams]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["events", "admin", filters],
     queryFn: () =>
       apiRequest({
@@ -48,29 +49,29 @@ export default function EventsTable() {
     if (!confirm(t("events.confirmDelete", "هل أنت متأكد من حذف هذه المناسبة؟"))) return;
     try {
       await deleteEvent.mutateAsync(eventId);
-      toast.success(t("events.deleteSuccess", "تم حذف المناسبة بنجاح"));
+      toastUtils.success(t("events.deleteSuccess", "تم حذف المناسبة بنجاح"));
     } catch (error) {
-      toast.error(error.message || t("events.deleteError", "فشل حذف المناسبة"));
+      toastUtils.error(t("events.deleteError", "فشل حذف المناسبة"));
     }
   };
 
   const handleBulkDelete = async (ids) => {
-    if (!ids?.length) { toast.warning(t("events.selectRows", "الرجاء تحديد مناسبات للحذف")); return; }
+    if (!ids?.length) { toastUtils.warning(t("events.selectRows", "الرجاء تحديد مناسبات للحذف")); return; }
     if (!confirm(t("events.confirmBulkDelete", `هل أنت متأكد من حذف ${ids.length} مناسبة؟`))) return;
     try {
       await bulkDelete.mutateAsync(ids);
-      toast.success(t("events.bulkDeleteSuccess", "تم حذف المناسبات بنجاح"));
+      toastUtils.success(t("events.bulkDeleteSuccess", "تم حذف المناسبات بنجاح"));
     } catch (error) {
-      toast.error(error.message || t("events.bulkDeleteError", "فشل حذف المناسبات"));
+      toastUtils.error(t("events.bulkDeleteError", "فشل حذف المناسبات"));
     }
   };
 
   const handleStatusChange = async (eventId, newStatus) => {
     try {
       await updateStatus.mutateAsync({ eventId, status: newStatus });
-      toast.success(t("events.statusUpdateSuccess", "تم تحديث الحالة بنجاح"));
+      toastUtils.success(t("events.statusUpdateSuccess", "تم تحديث الحالة بنجاح"));
     } catch (error) {
-      toast.error(error.message || t("events.statusUpdateError", "فشل تحديث الحالة"));
+      toastUtils.error(t("events.statusUpdateError", "فشل تحديث الحالة"));
     }
   };
 
@@ -83,7 +84,7 @@ export default function EventsTable() {
         to: filters.to,
       });
     } catch (error) {
-      toast.error(t("events.exportError", "فشل تصدير البيانات"));
+      toastUtils.error(t("events.exportError", "فشل تصدير البيانات"));
     }
   };
 
@@ -190,7 +191,14 @@ export default function EventsTable() {
     status: event.status || "draft",
   }));
 
+  const handlePageChange = useCallback((page) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", page);
+    router.push(`?${params.toString()}`);
+  }, [searchParams, router]);
+
   if (isLoading) return <SimpleLoading />;
+  if (error) return null;
 
   return (
     <div className={styles.container}>
@@ -220,13 +228,9 @@ export default function EventsTable() {
         ]}
         pagination={{
           currentPage: parseInt(filters.page),
-          totalPages: data?.pagination?.pages || data?.pagination?.totalPages || 1,
+          totalPages: data?.pagination?.pages || 1,
           totalItems: data?.pagination?.total || 0,
-          onPageChange: (page) => {
-            const params = new URLSearchParams(searchParams);
-            params.set("page", page);
-            router.push(`?${params.toString()}`);
-          },
+          onPageChange: handlePageChange,
         }}
       />
     </div>

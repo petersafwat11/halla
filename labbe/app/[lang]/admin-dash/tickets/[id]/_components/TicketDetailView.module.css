@@ -2,7 +2,6 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  direction: rtl; /* Assuming Arabic default based on context */
 }
 
 .header {
@@ -99,6 +98,45 @@
   color: white;
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+.badgeOpen {
+  background-color: #f59e0b;
+}
+
+.badgeInProgress {
+  background-color: #3b82f6;
+}
+
+.badgeResolved {
+  background-color: #10b981;
+}
+
+.badgeClosed {
+  background-color: #6b7280;
+}
+
+.badgeUrgent {
+  background-color: #ef4444;
+}
+
+.badgeHigh {
+  background-color: #f97316;
+}
+
+.badgeMedium {
+  background-color: #3b82f6;
+}
+
+.badgeLow {
+  background-color: #10b981;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
 }
 
 .sectionTitle {

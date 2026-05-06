@@ -1,11 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
 import useAuthStore from "@/stores/authStore";
-import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./SetupPassword.module.css";
 
@@ -27,29 +31,41 @@ import styles from "./SetupPassword.module.css";
  * the existing apiClient refresh wrapper applies; we never raw-fetch.
  *
  * Bilingual via the `setupPassword` namespace (lands in
- * `localization/locales/{ar,en}/setupPassword.json` — both already
- * exist for the mobile setup-password screen).
+ * `localization/locales/{ar,en}/setupPassword.json`).
  */
+
+const buildSchema = (t) =>
+  z
+    .object({
+      password: z.string().min(8, t("errors.password_too_short")),
+      passwordConfirm: z.string().min(1, t("errors.password_mismatch")),
+    })
+    .refine((data) => data.password === data.passwordConfirm, {
+      message: t("errors.password_mismatch"),
+      path: ["passwordConfirm"],
+    });
+
 export default function SetupPassword({ token }) {
   const router = useRouter();
   const params = useParams();
   const lang = params?.lang === "en" ? "en" : "ar";
   const isRtl = lang !== "en";
-  let t;
-  try {
-    ({ t } = useTranslation("setupPassword"));
-  } catch (_) {
-    t = (_k, fb) => fb;
-  }
+  const { t } = useTranslation("setupPassword");
 
   const validate = useAuthMutation("validateSetupToken");
-  const setupPassword = useAuthMutation("setupPassword");
+  const setupPasswordMutation = useAuthMutation("setupPassword");
 
   const [tokenStatus, setTokenStatus] = useState("checking"); // 'checking' | 'valid' | 'invalid'
   const [tokenInfo, setTokenInfo] = useState(null);
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [submitError, setSubmitError] = useState(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(buildSchema(t)),
+    defaultValues: { password: "", passwordConfirm: "" },
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -78,23 +94,9 @@ export default function SetupPassword({ token }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitError(null);
-    if (!password || password.length < 8) {
-      setSubmitError(t("errors.password_too_short", isRtl
-        ? "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
-        : "Password must be at least 8 characters"));
-      return;
-    }
-    if (password !== passwordConfirm) {
-      setSubmitError(t("errors.password_mismatch", isRtl
-        ? "كلمتا المرور غير متطابقتين"
-        : "Passwords do not match"));
-      return;
-    }
+  const onSubmit = async ({ password, passwordConfirm }) => {
     try {
-      await setupPassword.mutateAsync({
+      await setupPasswordMutation.mutateAsync({
         token,
         password,
         passwordConfirm,
@@ -105,11 +107,7 @@ export default function SetupPassword({ token }) {
       // from the store rather than re-deriving from the raw response —
       // shape drift only shows up in one place that way.
       const user = useAuthStore.getState().user;
-      toast.success(
-        t("success.password_set", isRtl
-          ? "تم إعداد كلمة المرور بنجاح"
-          : "Password set successfully")
-      );
+      toastUtils.success(t("success.password_set"));
       // Route into the appropriate dashboard. The post-approval whitelabel
       // admin currently shares the /admin-dash space (ROLE_PAGE_ACCESS in
       // serverAuth.js); 4b doesn't fan out a /whitelabel root. Hosts go
@@ -118,20 +116,17 @@ export default function SetupPassword({ token }) {
       const target = user?.role === "host" ? "host" : "admin-dash";
       router.replace(`/${lang}/${target}`);
     } catch (err) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        t("errors.generic", isRtl ? "حدث خطأ ما" : "Something went wrong");
-      setSubmitError(msg);
+      handleError(err, t, { showToast: false });
+      // Surface the backend message in the form so the user sees it
+      // inline rather than only in a toast (the form already shows the
+      // error div below the inputs).
     }
   };
 
   if (tokenStatus === "checking") {
     return (
       <div className={styles.wrapper} dir={isRtl ? "rtl" : "ltr"}>
-        <SimpleLoading
-          message={t("validating_token", isRtl ? "جارٍ التحقق..." : "Validating link...")}
-        />
+        <SimpleLoading message={t("validating_token")} />
       </div>
     );
   }
@@ -140,17 +135,8 @@ export default function SetupPassword({ token }) {
     return (
       <div className={styles.wrapper} dir={isRtl ? "rtl" : "ltr"}>
         <div className={styles.card}>
-          <h1 className={styles.title}>
-            {t("invalid_title", isRtl ? "الرابط غير صالح" : "Invalid link")}
-          </h1>
-          <p className={styles.body}>
-            {t(
-              "invalid_message",
-              isRtl
-                ? "هذا الرابط منتهي الصلاحية أو غير صحيح. يرجى التواصل مع المسؤول لإرسال رابط جديد."
-                : "This link has expired or is invalid. Please contact your administrator for a new link."
-            )}
-          </p>
+          <h1 className={styles.title}>{t("invalid_title")}</h1>
+          <p className={styles.body}>{t("invalid_message")}</p>
         </div>
       </div>
     );
@@ -158,60 +144,56 @@ export default function SetupPassword({ token }) {
 
   return (
     <div className={styles.wrapper} dir={isRtl ? "rtl" : "ltr"}>
-      <form className={styles.card} onSubmit={handleSubmit}>
-        <h1 className={styles.title}>
-          {t("title", isRtl ? "إعداد كلمة المرور" : "Set up your password")}
-        </h1>
+      <form className={styles.card} onSubmit={handleSubmit(onSubmit)}>
+        <h1 className={styles.title}>{t("title")}</h1>
         {tokenInfo?.email ? (
           <p className={styles.subtitle}>
-            {t("subtitle", isRtl ? "للحساب: " : "For account: ")}
+            {t("subtitle")}
             <strong>{tokenInfo.email}</strong>
           </p>
         ) : null}
 
         <label className={styles.label}>
-          {t("password_label", isRtl ? "كلمة المرور" : "Password")}
+          {t("password_label")}
           <input
             type="password"
             className={styles.input}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            {...register("password")}
             minLength={8}
-            required
             autoComplete="new-password"
             data-testid="setup-password-input"
           />
+          {errors.password ? (
+            <span className={styles.fieldError} role="alert">
+              {errors.password.message}
+            </span>
+          ) : null}
         </label>
 
         <label className={styles.label}>
-          {t("password_confirm_label", isRtl ? "تأكيد كلمة المرور" : "Confirm password")}
+          {t("password_confirm_label")}
           <input
             type="password"
             className={styles.input}
-            value={passwordConfirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
+            {...register("passwordConfirm")}
             minLength={8}
-            required
             autoComplete="new-password"
             data-testid="setup-password-confirm-input"
           />
+          {errors.passwordConfirm ? (
+            <span className={styles.fieldError} role="alert">
+              {errors.passwordConfirm.message}
+            </span>
+          ) : null}
         </label>
-
-        {submitError ? (
-          <div className={styles.error} role="alert">
-            {submitError}
-          </div>
-        ) : null}
 
         <button
           type="submit"
           className={styles.submit}
-          disabled={setupPassword.isPending || setupPassword.isLoading}
+          disabled={setupPasswordMutation.isPending}
           data-testid="setup-password-submit"
         >
-          {setupPassword.isPending || setupPassword.isLoading
-            ? t("submitting", isRtl ? "جارٍ الحفظ..." : "Saving...")
-            : t("submit", isRtl ? "حفظ كلمة المرور" : "Set password")}
+          {setupPasswordMutation.isPending ? t("submitting") : t("submit")}
         </button>
       </form>
     </div>

@@ -24,8 +24,8 @@ export default function HostStats() {
   const { data, isLoading } = useAdminHosts(filters);
 
   const statsCards = useMemo(() => {
-    const total = data?.data?.pagination?.total || 0;
-    const sc = data?.data?.statusCounts || {};
+    const total = data?.pagination?.total || 0;
+    const sc = data?.statusCounts || {};
     const active = sc.active || 0;
     const pending = sc.pending || 0;
     const suspended = sc.suspended || 0;

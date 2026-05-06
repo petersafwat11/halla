@@ -71,6 +71,17 @@ export const ticketResponseSchema = z.object({
 });
 
 // ============================================
+// TEMPLATE CATEGORY SCHEMAS
+// ============================================
+
+export const categoryFormSchema = z.object({
+  code: z.string().min(1, "الكود مطلوب"),
+  nameEn: z.string().min(1, "الاسم بالإنجليزية مطلوب"),
+  nameAr: z.string().min(1, "الاسم بالعربية مطلوب"),
+  sortOrder: z.coerce.number().min(0).default(0),
+});
+
+// ============================================
 // NOTIFICATION SCHEMAS
 // ============================================
 
@@ -80,3 +91,56 @@ export const sendNotificationSchema = z.object({
   messageAr: z.string().min(1, "الرسالة بالعربية مطلوبة"),
   messageEn: z.string().optional().or(z.literal("")),
 });
+
+// ============================================
+// TAQNYAT TEMPLATE SCHEMAS
+// ============================================
+
+export const assignTaqnyatSchema = z.object({
+  category: z.string().optional().or(z.literal("")),
+  active: z.boolean().default(true),
+  sortOrder: z.coerce.number().min(0).default(0),
+  varMapping: z.array(
+    z.object({
+      placeholder: z.string(),
+      sourceKey: z.string(),
+      fallback: z.string().optional().or(z.literal("")),
+    })
+  ).default([]),
+});
+
+// Meta requires lowercase, snake_case, ≤512 chars, starting with a letter.
+const taqnyatTemplateNameRegex = /^[a-z][a-z0-9_]{0,511}$/;
+
+export const createTaqnyatTemplateSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "اسم القالب مطلوب")
+      .regex(
+        taqnyatTemplateNameRegex,
+        "الاسم يجب أن يبدأ بحرف صغير ويحتوي فقط على أحرف إنجليزية صغيرة وأرقام و _"
+      ),
+    category: z.enum(["UTILITY", "MARKETING", "AUTHENTICATION"], {
+      errorMap: () => ({ message: "الرجاء اختيار الفئة" }),
+    }),
+    language: z.enum(["ar", "en"]).default("ar"),
+    headerText: z.string().max(60, "الحد الأقصى 60 حرفاً").optional().or(z.literal("")),
+    bodyText: z.string().min(1, "نص الرسالة مطلوب").max(1024, "الحد الأقصى 1024 حرف"),
+    footerText: z.string().max(60, "الحد الأقصى 60 حرفاً").optional().or(z.literal("")),
+    // One example value per detected `{{N}}` placeholder. Length is
+    // validated against the body in the popup component (resolver runs
+    // before placeholder count is known here).
+    bodyExamples: z.array(z.string().min(1, "مطلوب")).default([]),
+  })
+  .superRefine((data, ctx) => {
+    const placeholders = (data.bodyText.match(/\{\{\d+\}\}/g) || []);
+    const uniqueCount = new Set(placeholders).size;
+    if (uniqueCount !== data.bodyExamples.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["bodyExamples"],
+        message: `يجب توفير ${uniqueCount} مثال لكل متغير في النص`,
+      });
+    }
+  });

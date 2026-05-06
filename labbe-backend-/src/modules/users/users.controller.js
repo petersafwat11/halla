@@ -192,9 +192,15 @@ exports.getMyProfile = catchAsync(async (req, res) => {
  * PATCH /api/v2/users/profile
  */
 exports.updateMyProfile = catchAsync(async (req, res) => {
+  // FLOW-26-F03: parse JSON-stringified fields from multipart FormData
+  const body = { ...req.body };
+  if (typeof body.profile === 'string') {
+    try { body.profile = JSON.parse(body.profile); } catch {}
+  }
+
   const result = await usersService.updateMyProfile(
     req.user._id,
-    req.body,
+    body,
     req.files
   );
   sendSuccess(res, result, "Profile updated successfully");
@@ -221,10 +227,20 @@ exports.updateMyPassword = catchAsync(async (req, res) => {
  */
 exports.updateMyProfileSection = catchAsync(async (req, res) => {
   const { section } = req.params;
+
+  // FLOW-26-F03: parse JSON-stringified fields from multipart FormData
+  const body = { ...req.body };
+  const jsonFields = ['serviceCategories', 'serviceLocation', 'socialLinks', 'pricePackages', 'portfolioImages'];
+  for (const field of jsonFields) {
+    if (typeof body[field] === 'string') {
+      try { body[field] = JSON.parse(body[field]); } catch {}
+    }
+  }
+
   const result = await usersService.updateMyProfileSection(
     req.user._id,
     section,
-    req.body,
+    body,
     req.files
   );
   sendSuccess(res, result, `${section} updated successfully`);

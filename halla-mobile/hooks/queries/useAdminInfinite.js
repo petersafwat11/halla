@@ -77,7 +77,11 @@ const _normalizePage = (response, collectionKey, limit) => {
   } else {
     hasMore = items.length >= limit;
   }
-  return { items, hasMore };
+
+  // Preserve stats (e.g. payments endpoint returns stats alongside paginated list).
+  const stats = inner?.stats || outer?.stats || null;
+
+  return { items, hasMore, stats };
 };
 
 const _flattenPages = (data) => {
@@ -109,6 +113,7 @@ const _buildInfinite = ({
 
   return {
     items: _flattenPages(query.data),
+    stats: query.data?.pages?.[0]?.stats || null,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     isFetchingNextPage: query.isFetchingNextPage,

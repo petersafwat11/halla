@@ -23,7 +23,7 @@ const VendorTicketsPage = () => {
     try {
       setLoading(true);
       const response = await ticketService.getTickets();
-      setTickets(response.data?.data || response.data || []);
+      setTickets(response.data?.tickets || response.data?.data?.tickets || []);
     } catch (error) {
       console.error("Error fetching tickets:", error);
       toast.error(t("messages.fetchError") || "فشل في تحميل الشكاوى");
@@ -72,7 +72,7 @@ const VendorTicketsPage = () => {
     try {
       await ticketService.deleteTicket(ticketId);
       toast.success(t("messages.deleteSuccess") || "تم حذف الشكوى بنجاح");
-      setTickets(tickets.filter((ticket) => ticket._id !== ticketId));
+      setTickets(tickets.filter((ticket) => ticket.id !== ticketId));
     } catch (error) {
       console.error("Error deleting ticket:", error);
       toast.error(t("messages.deleteError") || "فشل في حذف الشكوى");
@@ -110,7 +110,7 @@ const VendorTicketsPage = () => {
             <div className={styles.ticketsList}>
               {filteredTickets.map((ticket) => (
                 <TicketCard
-                  key={ticket._id || ticket.id}
+                  key={ticket.id}
                   ticket={ticket}
                   onDelete={handleDeleteTicket}
                   onEdit={handleEditTicket}

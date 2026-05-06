@@ -80,5 +80,20 @@
   },
   "confirmDelete": {
     "message": "هل أنت متأكد من حذف هذا التاجر؟"
+  },
+  "messages": {
+    "selectRows": "الرجاء تحديد تجار أولاً",
+    "confirmBulkDelete": "هل أنت متأكد من حذف {{count}} تاجر؟",
+    "bulkDeleteSuccess": "تم حذف التجار بنجاح",
+    "bulkDeleteError": "فشل في حذف التجار",
+    "bulkApproveSuccess": "تم اعتماد التجار بنجاح",
+    "bulkSuspendSuccess": "تم إيقاف التجار بنجاح",
+    "exportError": "فشل في تصدير التجار",
+    "activate": "تفعيل",
+    "noRating": "لا يوجد",
+    "createdAt": "تاريخ التسجيل",
+    "bulkApprove": "اعتماد المحدد",
+    "bulkSuspend": "إيقاف المحدد",
+    "bulkDelete": "حذف المحدد"
   }
 }

@@ -7,7 +7,8 @@ import {
   useAdminWhitelabels,
 } from "@/hooks/reactQueryHooks/useAdmin";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
 import { addModeratorSchema } from "@/utils/schemas/adminPopupSchemas";
@@ -40,7 +41,7 @@ export default function AddModeratorPopup({ onClose }) {
     {},
     { enabled: isSuperAdmin }
   );
-  const whitelabelOptions = (whitelabelsQuery.data?.data || whitelabelsQuery.data || [])
+  const whitelabelOptions = (whitelabelsQuery.data?.whitelabels || [])
     .filter((w) => w && (w._id || w.id))
     .map((w) => ({
       label: w.name || w.brandName || w.email || (w._id || w.id),
@@ -89,17 +90,15 @@ export default function AddModeratorPopup({ onClose }) {
       delete payload.whitelabelId;
     }
     if (showWhitelabelPicker && !payload.whitelabelId) {
-      toast.error(
-        t("moderators.form.whitelabelIdRequired", "يجب اختيار العلامة البيضاء")
-      );
+      toastUtils.error(t("addModerator.whitelabelRequired", "Whitelabel selection required"));
       return;
     }
     try {
       await createModerator.mutateAsync(payload);
-      toast.success(t("moderators.createSuccess", "تم إضافة المشرف بنجاح"));
+      toastUtils.success(t("addModerator.success", "Moderator added successfully"));
       onClose();
     } catch (error) {
-      toast.error(error.message || t("moderators.createError", "فشل إضافة المشرف"));
+      handleError(error, t);
     }
   };
 

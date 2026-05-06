@@ -7,17 +7,9 @@ import { Svg, Path } from "react-native-svg";
  * Shows guest usage against subscription limits with progress bar
  */
 const GuestQuotaCounter = ({ currentGuests = 0, subscription }) => {
-  // Handle both data structures: guests.limitPerEvent (from getSubscriptionInfo) and limits.maxGuestsPerEvent (from auth)
-  const guestLimit =
-    subscription?.guests?.limitPerEvent ||
-    subscription?.limits?.maxGuestsPerEvent ||
-    subscription?.maxGuests ||
-    0;
-  const isUnlimited =
-    subscription?.guests?.isUnlimited ||
-    subscription?.limits?.maxGuestsPerEvent === -1 ||
-    subscription?.maxGuests === -1 ||
-    false;
+  // Backend /subscription-info shape: { guestLimit, isGuestUnlimited, ... }
+  const guestLimit = subscription?.guestLimit ?? 0;
+  const isUnlimited = subscription?.isGuestUnlimited === true;
   const hasSubscription = !!subscription;
 
   // Calculate percentage for progress bar

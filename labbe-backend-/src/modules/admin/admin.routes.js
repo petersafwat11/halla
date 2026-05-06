@@ -935,6 +935,78 @@ router.patch('/whitelabels/:id/subscription',
 
 /**
  * @swagger
+ * /admin/whitelabels/{id}/features:
+ *   get:
+ *     summary: Get whitelabel features
+ *     description: Get the feature toggles for a whitelabel.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Whitelabel features
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Whitelabel not found
+ */
+router.get('/whitelabels/:id/features',
+  requirePageAccess(ADMIN_PAGES.WHITELABELS, 'view'),
+  validateObjectId('id'),
+  adminController.getWhitelabelFeatures
+);
+
+/**
+ * @swagger
+ * /admin/whitelabels/{id}/features:
+ *   patch:
+ *     summary: Update whitelabel feature toggle
+ *     description: Toggle a feature for a whitelabel.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [feature, enabled]
+ *             properties:
+ *               feature:
+ *                 type: string
+ *               enabled:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Feature updated
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Whitelabel not found
+ */
+router.patch('/whitelabels/:id/features',
+  requirePageAccess(ADMIN_PAGES.WHITELABELS, 'update'),
+  validateObjectId('id'),
+  adminController.updateWhitelabelFeature
+);
+
+/**
+ * @swagger
  * /admin/whitelabels/{id}:
  *   delete:
  *     summary: Delete whitelabel

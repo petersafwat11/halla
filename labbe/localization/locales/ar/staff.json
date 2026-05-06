@@ -10,6 +10,7 @@
   "guests": "المدعوين",
   "scanQrCode": "مسح رمز QR",
   "confirmAttendance": "تأكيد الحضور",
+  "alreadyCheckedIn": "تم تسجيل الحضور مسبقاً",
   "confirm": "تأكيد",
   "cancel": "إلغاء",
   "guestName": "اسم الضيف",
@@ -19,5 +20,18 @@
   "loading": "جاري التحميل...",
   "error": "حدث خطأ",
   "success": "تم بنجاح",
-  "defaultEventName": "مناسبة زفاف"
+  "defaultEventName": "مناسبة زفاف",
+  "errors": {
+    "noAccessToken": "لم يتم توفير رمز الدخول",
+    "accessDenied": "تم رفض الدخول",
+    "verificationFailed": "فشل التحقق. يرجى المحاولة مرة أخرى.",
+    "checkInFailed": "فشل تسجيل الحضور. يرجى المحاولة مرة أخرى.",
+    "accessError": "خطأ في الدخول"
+  },
+  "qr": {
+    "scanTitle": "مسح رمز QR",
+    "instructions": "ضع رمز QR داخل الإطار",
+    "retry": "إعادة المحاولة",
+    "cameraError": "تعذر الدخول إلى الكاميرا"
+  }
 }

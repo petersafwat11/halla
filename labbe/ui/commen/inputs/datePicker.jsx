@@ -1,11 +1,12 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { useFormContext, useController } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { get } from 'lodash';
-import { format } from 'date-fns';
 import styles from './datePicker.module.css';
 import Image from 'next/image';
 import Calendar from './Calendar';
+import { formatTemplateDate } from '../../../utils/formatTemplateDate';
 
 // Normalize a date to midnight so time-of-day never affects day comparisons
 const toDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -20,6 +21,7 @@ const DatePicker = ({
   minDate,
   maxDate,
 }) => {
+  const { t } = useTranslation('common');
   const { control, clearErrors } = useFormContext();
   const {
     field: { onChange, value },
@@ -97,7 +99,7 @@ const DatePicker = ({
             className={styles.calendar_icon}
           />
           <span className={styles.date_picker_text}>
-            {value ? format(new Date(value), 'PPP') : placeholder}
+            {value ? formatTemplateDate(value, t) : placeholder}
           </span>
           {error && (
             <div className={styles.error_icon}>

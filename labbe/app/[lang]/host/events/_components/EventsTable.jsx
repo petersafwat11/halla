@@ -84,10 +84,13 @@ const EventsTable = () => {
 
       queryClient.setQueryData(["events", "my-events"], (old) => {
         if (!old) return old;
-        const oldData = old.data || old;
+        const oldEvents = old.data?.data || old.data || old;
+        const filtered = Array.isArray(oldEvents)
+          ? oldEvents.filter((event) => !deleteModal.selectedIds.includes(event.id))
+          : [];
         return {
           ...old,
-          data: oldData.filter((event) => !deleteModal.selectedIds.includes(event.id)),
+          data: { ...(old.data || {}), data: filtered },
         };
       });
 
@@ -109,10 +112,13 @@ const EventsTable = () => {
 
       queryClient.setQueryData(["events", "my-events"], (old) => {
         if (!old) return old;
-        const oldData = old.data || old;
+        const oldEvents = old.data?.data || old.data || old;
+        const filtered = Array.isArray(oldEvents)
+          ? oldEvents.filter((event) => event.id !== deleteModal.eventId)
+          : [];
         return {
           ...old,
-          data: oldData.filter((event) => event.id !== deleteModal.eventId),
+          data: { ...(old.data || {}), data: filtered },
         };
       });
 

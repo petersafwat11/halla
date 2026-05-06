@@ -43,18 +43,10 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
   const watchedGuestList = watch("guestList");
   const guestList = useMemo(() => watchedGuestList || [], [watchedGuestList]);
 
-  // Calculate remaining guests based on subscription
-  // Handle both data structures: guests.limitPerEvent (from getSubscriptionInfo) and limits.maxGuestsPerEvent (from auth)
-  const guestLimit =
-    subscription?.guests?.limitPerEvent ||
-    subscription?.limits?.maxGuestsPerEvent ||
-    subscription?.maxGuests ||
-    0;
-  const isUnlimited =
-    subscription?.guests?.isUnlimited ||
-    subscription?.limits?.maxGuestsPerEvent === -1 ||
-    subscription?.maxGuests === -1 ||
-    false;
+  // Calculate remaining guests based on normalized subscription
+  // Backend returns: { guestLimit, isGuestUnlimited, invitePool, invitesRemaining }
+  const guestLimit = subscription?.guestLimit ?? 0;
+  const isUnlimited = subscription?.isGuestUnlimited ?? false;
   const remainingGuests = isUnlimited
     ? Infinity
     : Math.max(0, guestLimit - guestList.length);

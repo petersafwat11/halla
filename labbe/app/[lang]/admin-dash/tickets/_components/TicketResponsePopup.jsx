@@ -6,15 +6,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { handleError } from "@/services/errorHandlingService";
+import { toastUtils } from "@/utils/toastUtils";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
 import { ticketResponseSchema } from "@/utils/schemas/adminPopupSchemas";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
-import styles from "./AssignTicketPopup.module.css";
+import styles from "./TicketResponsePopup.module.css";
 
-export default function TicketResponsePopup({ ticket, onClose, viewOnly = false }) {
-  const { t } = useTranslation("adminDashboard");
+export default function TicketResponsePopup({ ticket, onClose, viewOnly = false, onSuccess }) {
+  const { t } = useTranslation("adminTickets");
   const queryClient = useQueryClient();
 
   const updateTicket = useMutation({
@@ -34,10 +35,11 @@ export default function TicketResponsePopup({ ticket, onClose, viewOnly = false 
         ticketId: ticket.id || ticket._id,
         data: { resolution: data.response, status: "resolved" },
       });
-      toast.success(t("tickets.responseSuccess", "تم إرسال الرد بنجاح"));
+      toastUtils.success(t("close.success"));
+      if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
-      toast.error(error.message || t("tickets.responseError", "فشل إرسال الرد"));
+      handleError(error, t, { fallbackMessage: "close.error" });
     }
   };
 
@@ -47,46 +49,46 @@ export default function TicketResponsePopup({ ticket, onClose, viewOnly = false 
         <div className={styles.header}>
           <h2>
             {viewOnly
-              ? t("tickets.viewResolution", "عرض الحل")
-              : t("tickets.respondToTicket", "الرد على الشكوى")}
+              ? t("viewResolution.title")
+              : t("close.title")}
           </h2>
           <button className={styles.closeBtn} onClick={onClose}>×</button>
         </div>
 
         <div className={styles.form}>
           <div className={styles.formGroup}>
-            <label>{t("tickets.form.subject", "الموضوع")}</label>
+            <label>{t("close.type")}</label>
             <input
               type="text"
               value={ticket?.subject || ""}
               disabled
-              style={{ background: "#f5f5f5" }}
+              className={styles.disabledInput}
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label>{t("tickets.form.description", "الشكوى")}</label>
+            <label>{t("close.originalMessage")}</label>
             <textarea
               value={ticket?.message || ""}
               disabled
-              style={{ background: "#f5f5f5", minHeight: "100px" }}
+              className={`${styles.disabledInput} ${styles.disabledTextarea}`}
             />
           </div>
 
           {viewOnly ? (
             <>
               <div className={styles.formGroup}>
-                <label>{t("tickets.form.resolution", "الحل")}</label>
+                <label>{t("viewResolution.resolutionMessage")}</label>
                 <textarea
                   value={ticket?.resolution?.message || ""}
                   disabled
-                  style={{ background: "#f5f5f5", minHeight: "100px" }}
+                  className={`${styles.disabledInput} ${styles.disabledTextarea}`}
                 />
               </div>
               <div className={styles.actions}>
                 <Button
                   variant="secondary"
-                  title={t("common.close", "إغلاق")}
+                  title={t("viewResolution.close")}
                   onClick={onClose}
                 />
               </div>
@@ -95,8 +97,8 @@ export default function TicketResponsePopup({ ticket, onClose, viewOnly = false 
             <FormProvider {...methods}>
               <form onSubmit={methods.handleSubmit(onSubmit)}>
                 <TextArea
-                  label={t("tickets.form.response", "الرد")}
-                  placeholder={t("tickets.form.responsePlaceholder", "اكتب ردك هنا...")}
+                  label={t("close.resolutionLabel")}
+                  placeholder={t("close.resolutionPlaceholder")}
                   name="response"
                   required
                   rows={5}
@@ -105,13 +107,13 @@ export default function TicketResponsePopup({ ticket, onClose, viewOnly = false 
                 <div className={styles.actions}>
                   <Button
                     variant="secondary"
-                    title={t("common.cancel", "إلغاء")}
+                    title={t("close.cancel")}
                     onClick={onClose}
                     disabled={updateTicket.isPending}
                   />
                   <Button
                     variant="primary"
-                    title={updateTicket.isPending ? t("common.loading", "جاري الإرسال...") : t("common.send", "إرسال")}
+                    title={updateTicket.isPending ? t("close.closing") : t("close.submit")}
                     type="submit"
                     disabled={updateTicket.isPending}
                   />

@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import StatsCards from "@/ui/host/main-page/StatsCards";
-import { cookieUtils } from "@/utils/cookieUtils";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import useAuthStore from "@/stores/authStore";
 import {
   FaUsers,
   FaStore,
@@ -15,16 +16,35 @@ import {
   FaCalendarCheck,
   FaUserFriends,
 } from "react-icons/fa";
+import styles from "./DashboardStats.module.css";
 
-const iconMap = {
-  users: <FaUsers style={{ color: "#2A8C5B", fontSize: "2.4rem" }} />,
-  store: <FaStore style={{ color: "#C28E5C", fontSize: "2.4rem" }} />,
-  calendar: <FaCalendarAlt style={{ color: "#3498DB", fontSize: "2.4rem" }} />,
-  "calendar-check": <FaCalendarCheck style={{ color: "#2A8C5B", fontSize: "2.4rem" }} />,
-  "credit-card": <FaUserCheck style={{ color: "#9B59B6", fontSize: "2.4rem" }} />,
-  ticket: <FaTicketAlt style={{ color: "#D38200", fontSize: "2.4rem" }} />,
-  guests: <FaUserFriends style={{ color: "#9B59B6", fontSize: "2.4rem" }} />,
+const ICON_COLORS = {
+  users: "#2A8C5B",
+  store: "#C28E5C",
+  calendar: "#3498DB",
+  "calendar-check": "#2A8C5B",
+  "credit-card": "#9B59B6",
+  ticket: "#D38200",
+  guests: "#9B59B6",
 };
+
+function getIconElement(iconKey) {
+  const iconComponents = {
+    users: FaUsers,
+    store: FaStore,
+    calendar: FaCalendarAlt,
+    "calendar-check": FaCalendarCheck,
+    "credit-card": FaUserCheck,
+    ticket: FaTicketAlt,
+    guests: FaUserFriends,
+  };
+  const Icon = iconComponents[iconKey] || FaUsers;
+  return (
+    <span className={styles.statIcon} style={{ color: ICON_COLORS[iconKey] }}>
+      <Icon />
+    </span>
+  );
+}
 
 const cardTitleKeys = {
   hosts: "stats.totalHosts",
@@ -45,6 +65,7 @@ const cardSubtitleLabels = {
 export default function DashboardStats() {
   const { t } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
+  const { user } = useAuthStore();
 
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -54,14 +75,8 @@ export default function DashboardStats() {
     ...(to && { to }),
   };
 
-  const { data: responseData, isLoading } = useAdminDashboard(filters);
+  const { data: responseData, isLoading, error } = useAdminDashboard(filters);
   const data = responseData?.data || responseData;
-
-  const user = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    const userData = cookieUtils.getCookie("user");
-    return userData ? JSON.parse(userData) : null;
-  }, []);
 
   const isWhitelabelRole =
     user?.role === "whitelabel_admin" || user?.role === "whitelabel_moderator";
@@ -69,7 +84,6 @@ export default function DashboardStats() {
   const statsCards = useMemo(() => {
     const backendCards = data?.statsCards || [];
 
-    // Whitelabel users see tenant-relevant cards
     if (isWhitelabelRole) {
       const eventsCard = backendCards.find((c) => c.id === "events") || {};
       const hostsCard = backendCards.find((c) => c.id === "hosts") || {};
@@ -78,40 +92,39 @@ export default function DashboardStats() {
       return [
         {
           id: "total-events",
-          src: iconMap.calendar,
+          src: getIconElement("calendar"),
           alt: "total-events",
-          title: "إجمالي المناسبات",
+          title: t("stats.whitelabel.totalEvents", "Total Events"),
           value: eventsCard.value ?? 0,
-          subtitle: `${analytics.activeEvents ?? 0} نشط`,
+          subtitle: t("stats.whitelabel.activeEventsCount", "{{count}} active", { count: analytics.activeEvents ?? 0 }),
         },
         {
           id: "active-events",
-          src: iconMap["calendar-check"],
+          src: getIconElement("calendar-check"),
           alt: "active-events",
-          title: "المناسبات النشطة",
+          title: t("stats.whitelabel.activeEvents", "Active Events"),
           value: analytics.activeEvents ?? 0,
-          subtitle: `${analytics.eventsByStatus?.scheduled ?? 0} مجدول`,
+          subtitle: t("stats.whitelabel.scheduledCount", "{{count}} scheduled", { count: analytics.eventsByStatus?.scheduled ?? 0 }),
         },
         {
           id: "total-hosts",
-          src: iconMap.users,
+          src: getIconElement("users"),
           alt: "total-hosts",
-          title: "إجمالي العملاء",
+          title: t("stats.whitelabel.totalClients", "Total Clients"),
           value: hostsCard.value ?? 0,
           subtitle: hostsCard.subtitle || "",
         },
         {
           id: "total-guests",
-          src: iconMap.guests,
+          src: getIconElement("guests"),
           alt: "total-guests",
-          title: "إجمالي الضيوف",
+          title: t("stats.whitelabel.totalGuests", "Total Guests"),
           value: analytics.totalGuests ?? 0,
           subtitle: "",
         },
       ];
     }
 
-    // Platform admin — existing behavior
     if (backendCards.length > 0) {
       return backendCards.map((card) => {
         const titleKey = cardTitleKeys[card.id];
@@ -119,18 +132,17 @@ export default function DashboardStats() {
         const subtitleNumber = card.subtitle?.split(" ")[0] || "";
         return {
           id: card.id || card.title,
-          src: iconMap[card.icon] || iconMap.users,
+          src: getIconElement(card.icon) || getIconElement("users"),
           alt: card.id || card.title,
           title: titleKey ? t(titleKey) : card.title,
           value: card.value,
           subtitle: subtitleLabelKey
-            ? `${subtitleNumber} ${t(subtitleLabelKey)}`
+            ? t("stats.subtitleWithCount", "{{count}} {{label}}", { count: subtitleNumber, label: t(subtitleLabelKey) })
             : card.subtitle,
         };
       });
     }
 
-    // Fallback: build from individual data fields
     const hostsData = data?.users?.hosts || data?.hosts || {};
     const vendorsData = data?.users?.vendors || data?.vendors || {};
     const eventsData = data?.events || {};
@@ -139,40 +151,48 @@ export default function DashboardStats() {
     return [
       {
         id: "total-hosts",
-        src: iconMap.users,
+        src: getIconElement("users"),
         alt: "total-hosts",
-        title: t("stats.totalHosts", "إجمالي العملاء"),
+        title: t("stats.totalHosts", "Total Hosts"),
         value: hostsData?.total || hostsData?.totalHosts || 0,
-        subtitle: `${hostsData?.newThisPeriod || 0} ${t("stats.newThisPeriod", "جديد هذا الشهر")}`,
+        subtitle: t("stats.newThisPeriodCount", "{{count}} new this month", { count: hostsData?.newThisPeriod || 0 }),
       },
       {
         id: "active-vendors",
-        src: iconMap.store,
+        src: getIconElement("store"),
         alt: "active-vendors",
-        title: t("stats.activeVendors", "التجار النشطين"),
+        title: t("stats.activeVendors", "Active Vendors"),
         value: vendorsData?.total || vendorsData?.totalVendors || 0,
-        subtitle: `${vendorsData?.pending || vendorsData?.totalPending || 0} ${t("stats.pending", "قيد المراجعة")}`,
+        subtitle: t("stats.pendingCount", "{{count}} pending", { count: vendorsData?.pending || vendorsData?.totalPending || 0 }),
       },
       {
         id: "active-events",
-        src: iconMap.calendar,
+        src: getIconElement("calendar"),
         alt: "active-events",
-        title: t("stats.activeEvents", "المناسبات النشطة"),
+        title: t("stats.activeEvents", "Active Events"),
         value: eventsData?.active || eventsData?.endedPublishedEvents || 0,
-        subtitle: `${eventsData?.total || 0} ${t("stats.totalEvents", "إجمالي")}`,
+        subtitle: t("stats.totalEventsCount", "{{count}} total", { count: eventsData?.total || 0 }),
       },
       {
         id: "open-tickets",
-        src: iconMap["credit-card"],
+        src: getIconElement("credit-card"),
         alt: "open-tickets",
-        title: t("stats.openTickets", "الشكاوى المفتوحة"),
+        title: t("stats.openTickets", "Open Tickets"),
         value: ticketsData?.open || ticketsData?.allTickets || 0,
-        subtitle: `${ticketsData?.resolvedThisPeriod || ticketsData?.resolved || 0} ${t("stats.resolved", "محلولة")}`,
+        subtitle: t("stats.resolvedCount", "{{count}} resolved", { count: ticketsData?.resolvedThisPeriod || ticketsData?.resolved || 0 }),
       },
     ];
   }, [data, t, isWhitelabelRole]);
 
-  if (isLoading) return null;
+  if (isLoading) return <SimpleLoading />;
+
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <p>{t("errors.loadFailed", "Failed to load dashboard stats")}</p>
+      </div>
+    );
+  }
 
   return <StatsCards cards={statsCards} />;
 }

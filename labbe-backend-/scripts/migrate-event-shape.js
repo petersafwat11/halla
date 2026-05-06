@@ -15,10 +15,9 @@
  *   invitationSettings.absenceAutoReply    → guestReplies.onAbsent
  *   invitationSettings.expectedAttendanceAutoReply
  *                                          → guestReplies.onExpected
- *   invitationSettings.note                → hostNote
  *
- * `invitationMessage` is currently never persisted on the legacy
- * shape (Inventory 08 Task 3 #4) — left untouched.
+ * Also $unsets the deprecated fields:
+ *   invitationMessage, hostNote, invitationSettings.note
  *
  * The legacy `invitationSettings` field is preserved (per D4c-2
  * dual-write window) — Phase 5 drops it after one release cycle.
@@ -97,9 +96,6 @@ async function projectLegacyToCanonical(doc) {
     updates.guestReplies = replies;
   }
 
-  // top-level hostNote
-  if (!doc.hostNote && inv.note) updates.hostNote = inv.note;
-
   return updates;
 }
 
@@ -139,6 +135,15 @@ async function main() {
       errors += 1;
       console.error(`[migrate] event ${doc._id} FAILED:`, err.message);
     }
+  }
+
+  // Phase 5: $unset deprecated fields from all documents
+  console.log("[migrate] Removing deprecated fields (invitationMessage, hostNote, invitationSettings.note)...");
+  if (APPLY) {
+    await Event.updateMany(
+      {},
+      { $unset: { invitationMessage: "", hostNote: "", "invitationSettings.note": "" } }
+    );
   }
 
   console.log("[migrate] ────────────────────");

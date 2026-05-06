@@ -4,94 +4,22 @@ import {
   Text,
   StyleSheet,
   Image,
-  Dimensions,
   ScrollView,
   Animated,
   TouchableOpacity,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
-import Svg, { Path } from "react-native-svg";
-import { useLanguage } from "../../localization";
+import { useLanguage, useTranslation } from "../../localization";
 import { formatCount, formatDateTime, localizeDigits } from "../../utils/locale";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-// Icons
-const PeopleIcon = () => (
-  <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <Path
-      d="M11.9997 4.77325C11.9597 4.76659 11.9131 4.76659 11.8731 4.77325C10.9531 4.73992 10.2197 3.98659 10.2197 3.05325C10.2197 2.09992 10.9864 1.33325 11.9397 1.33325C12.8931 1.33325 13.6597 2.10659 13.6597 3.05325C13.6531 3.98659 12.9197 4.73992 11.9997 4.77325Z"
-      stroke="#C28E5C" strokeWidth="0.692308" strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M11.313 9.62669C12.2263 9.78003 13.233 9.62003 13.9396 9.14669C14.8796 8.52003 14.8796 7.49336 13.9396 6.86669C13.2263 6.39336 12.2063 6.23336 11.293 6.39336"
-      stroke="#C28E5C" strokeWidth="0.692308" strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M3.98031 4.77325C4.02031 4.76659 4.06698 4.76659 4.10698 4.77325C5.02698 4.73992 5.76031 3.98659 5.76031 3.05325C5.76031 2.09992 4.99365 1.33325 4.04031 1.33325C3.08698 1.33325 2.32031 2.10659 2.32031 3.05325C2.32698 3.98659 3.06031 4.73992 3.98031 4.77325Z"
-      stroke="#C28E5C" strokeWidth="0.692308" strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M4.66663 9.62669C3.75329 9.78003 2.74663 9.62003 2.03996 9.14669C1.09996 8.52003 1.09996 7.49336 2.03996 6.86669C2.75329 6.39336 3.77329 6.23336 4.68663 6.39336"
-      stroke="#C28E5C" strokeWidth="0.692308" strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M8.0007 9.75323C7.9607 9.74657 7.91404 9.74657 7.87404 9.75323C6.95404 9.7199 6.2207 8.96657 6.2207 8.03323C6.2207 7.0799 6.98737 6.31323 7.9407 6.31323C8.89403 6.31323 9.6607 7.08657 9.6607 8.03323C9.65404 8.96657 8.9207 9.72657 8.0007 9.75323Z"
-      stroke="#C28E5C" strokeWidth="0.692308" strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M6.06047 11.8532C5.12047 12.4799 5.12047 13.5066 6.06047 14.1332C7.12714 14.8466 8.8738 14.8466 9.94047 14.1332C10.8805 13.5066 10.8805 12.4799 9.94047 11.8532C8.88047 11.1466 7.12714 11.1466 6.06047 11.8532Z"
-      stroke="#C28E5C" strokeWidth="0.692308" strokeLinecap="round" strokeLinejoin="round"
-    />
-  </Svg>
-);
-
-const UserSearchIcon = () => (
-  <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <Path
-      d="M8.00033 7.99992C9.84127 7.99992 11.3337 6.50753 11.3337 4.66658C11.3337 2.82564 9.84127 1.33325 8.00033 1.33325C6.15938 1.33325 4.66699 2.82564 4.66699 4.66658C4.66699 6.50753 6.15938 7.99992 8.00033 7.99992Z"
-      stroke="#C28E5C" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M2.27344 14.6667C2.27344 12.0867 4.84012 10 8.00012 10"
-      stroke="#C28E5C" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path
-      d="M12.1333 14.2667C13.3115 14.2667 14.2667 13.3115 14.2667 12.1333C14.2667 10.9551 13.3115 10 12.1333 10C10.9551 10 10 10.9551 10 12.1333C10 13.3115 10.9551 14.2667 12.1333 14.2667Z"
-      stroke="#C28E5C" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round"
-    />
-    <Path d="M14.6667 14.6667L14 14" stroke="#C28E5C" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round" />
-  </Svg>
-);
-
-const CalendarIcon = () => (
-  <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <Path d="M5.33301 1.33325V3.33325" stroke="#C28E5C" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
-    <Path d="M10.667 1.33325V3.33325" stroke="#C28E5C" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
-    <Path
-      d="M10.6667 2.33325C12.8867 2.45325 14 3.29992 14 6.43325V10.5533C14 13.2999 13.3333 14.6733 10 14.6733H6C2.66667 14.6733 2 13.2999 2 10.5533V6.43325C2 3.29992 3.11333 2.45992 5.33333 2.33325H10.6667Z"
-      stroke="#C28E5C" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"
-    />
-  </Svg>
-);
-
-const LocationIcon = () => (
-  <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <Path
-      d="M7.99992 8.95321C9.14867 8.95321 10.0799 8.02197 10.0799 6.87321C10.0799 5.72446 9.14867 4.79321 7.99992 4.79321C6.85117 4.79321 5.91992 5.72446 5.91992 6.87321C5.91992 8.02197 6.85117 8.95321 7.99992 8.95321Z"
-      stroke="#C28E5C"
-    />
-    <Path
-      d="M2.41379 5.65992C3.72712 -0.113413 12.2805 -0.106746 13.5871 5.66659C14.3538 9.05325 12.2471 11.9199 10.4005 13.6933C9.06046 14.9866 6.94046 14.9866 5.59379 13.6933C3.75379 11.9199 1.64712 9.04659 2.41379 5.65992Z"
-      stroke="#C28E5C"
-    />
-  </Svg>
-);
+import EventMetricsGrid from "./_components/EventMetricsGrid";
+import WhatsAppInvitationPreview from "./_components/WhatsAppInvitationPreview";
+import ScheduleLaunchCard from "./_components/ScheduleLaunchCard";
 
 const EventSummary = () => {
   const { watch, setValue } = useFormContext();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const { currentLanguage } = useLanguage();
+  const { t } = useTranslation("createEvent");
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -113,115 +41,35 @@ const EventSummary = () => {
   const templateImage = formData.templateImage || null;
   const selectedTemplate = formData.selectedTemplate || null;
   const confirmReviewed = formData.confirmReviewed || false;
-
-  // Phase 4 W1-FLOW-11-F01: surface the scheduled-launch decision so the
-  // host can confirm before submit. `sendSchedule` is "now" | "later"
-  // (per createEventSchema). When "later", `scheduleDate` is a Date
-  // (from DatePicker) and `scheduleTime` is the canonical "H:MM:AM"
-  // string (from TimePicker via dateToTimeString).
   const sendSchedule = formData.sendSchedule || "now";
   const scheduleDate = formData.scheduleDate || null;
   const scheduleTime = formData.scheduleTime || "";
-
-  // Phase 4 W1-WIZ5: surface visualTemplate.data so the host can verify
-  // template-input values (bride name, intro text, etc.) before submit.
-  // visualTemplate is { _id, name, fields[], data: {...} } populated by
-  // StepThree's "Confirm template" action.
   const visualTemplate = formData.visualTemplate || null;
   const visualTemplateData = visualTemplate?.data || {};
-  const visualTemplateFields = Array.isArray(visualTemplate?.fields)
-    ? visualTemplate.fields
-    : [];
-
-  // Invitation message: prefer WhatsApp template body, fallback to invitation message
-  const invitationText =
-    selectedTemplate?.bodyText || formData.invitationMessage || "";
-
-  const formatDate = (date) => {
-    if (!date) return "—";
-    const d = new Date(date);
-    const arabicMonths = [
-      "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
-      "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
-    ];
-    const day = currentLanguage === "ar"
-      ? localizeDigits(d.getDate(), "ar")
-      : d.getDate();
-    const time = eventTime
-      ? `, ${currentLanguage === "ar" ? localizeDigits(eventTime, "ar") : eventTime}`
-      : "";
-    return `${day} ${arabicMonths[d.getMonth()]}${time}`;
-  };
-
-  // Phase 4 W1-FLOW-11-F01: render the "Scheduled launch" row text. Use
-  // a host-timezone-aware Intl format so non-Saudi-timezone hosts see
-  // their own clock.
-  //
-  // Defensive on form data: `scheduleDate` may be a Date instance OR an
-  // ISO string. We always create a fresh Date copy via `getTime()` so
-  // the local mutation (`setHours`) never leaks back into the form's
-  // value.
-  const renderScheduleText = () => {
-    if (sendSchedule === "now" || !scheduleDate) {
-      return currentLanguage === "ar"
-        ? "ينطلق فور التأكيد"
-        : "Launches immediately on submit";
-    }
-    const sourceMs = scheduleDate instanceof Date
-      ? scheduleDate.getTime()
-      : new Date(scheduleDate).getTime();
-    if (Number.isNaN(sourceMs)) {
-      return currentLanguage === "ar"
-        ? "ينطلق فور التأكيد"
-        : "Launches immediately on submit";
-    }
-    const dt = new Date(sourceMs);
-    // Combine date with the H:MM:AM time string if provided
-    const timeMatch = /^(\d{1,2}):(\d{2}):(AM|PM)$/i.exec(scheduleTime);
-    if (timeMatch) {
-      let hour = parseInt(timeMatch[1], 10);
-      const min = parseInt(timeMatch[2], 10);
-      const period = timeMatch[3].toUpperCase();
-      if (period === "PM" && hour !== 12) hour += 12;
-      if (period === "AM" && hour === 12) hour = 0;
-      dt.setHours(hour, min, 0, 0);
-    }
-    const formatted = formatDateTime(dt, currentLanguage, {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZoneName: "short",
-    });
-    return formatted;
-  };
+  const visualTemplateFields = Array.isArray(visualTemplate?.fields) ? visualTemplate.fields : [];
+  const invitationText = selectedTemplate?.bodyText || "";
 
   const getEventTypeLabel = () => {
     const types = {
-      wedding: "حفل زفاف",
-      birthday: "عيد ميلاد",
-      graduation: "تخرج",
-      meeting: "اجتماع",
-      conference: "مؤتمر",
-      other: "مناسبة",
+      wedding: t("summary.eventTypes.wedding"),
+      birthday: t("summary.eventTypes.birthday"),
+      graduation: t("summary.eventTypes.graduation"),
+      meeting: t("summary.eventTypes.meeting"),
+      conference: t("summary.eventTypes.conference"),
+      other: t("summary.eventTypes.other"),
     };
-    return types[eventType] || "مناسبة";
+    return types[eventType] || t("summary.eventTypes.other");
   };
 
-  // Resolve a template field's display value. Empty/null → "—".
   const resolveFieldValue = (field) => {
     const raw = visualTemplateData[field.key];
     if (raw == null || raw === "") return "—";
     if (raw instanceof Date) return formatDateTime(raw, currentLanguage);
     if (typeof raw === "string") {
-      // Color hex codes stay as-is so the host recognises them.
       if (field.type === "color" && /^#[0-9a-f]{3,8}$/i.test(raw)) return raw;
       return currentLanguage === "ar" ? localizeDigits(raw, "ar") : raw;
     }
-    if (typeof raw === "number") {
-      return formatCount(raw, currentLanguage);
-    }
+    if (typeof raw === "number") return formatCount(raw, currentLanguage);
     return String(raw);
   };
 
@@ -233,147 +81,38 @@ const EventSummary = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Animated.View style={{ opacity: fadeAnim }}>
-
-        {/* Event Header */}
         <View style={styles.eventHeader}>
           <Text style={styles.eventTypeLabel}>{getEventTypeLabel()}</Text>
           <Text style={styles.eventName}>{eventName}</Text>
         </View>
 
-        {/* Metrics Grid — 2×2, no collapsing */}
-        <View style={styles.metricsCard}>
-          <View style={styles.metricsGrid}>
-            {/* Guests */}
-            <View style={styles.metricItem}>
-              <View style={styles.iconContainer}>
-                <PeopleIcon />
-              </View>
-              <View style={styles.metricContent}>
-                <Text style={styles.metricLabel}>الضيوف</Text>
-                <Text style={styles.metricValue}>
-                  {formatCount(guestCount, currentLanguage)}
-                </Text>
-              </View>
-            </View>
+        <EventMetricsGrid
+          guestCount={guestCount}
+          moderatorCount={moderatorCount}
+          eventDate={eventDate}
+          eventTime={eventTime}
+          location={location}
+          t={t}
+        />
 
-            {/* Moderators */}
-            <View style={styles.metricItem}>
-              <View style={styles.iconContainer}>
-                <UserSearchIcon />
-              </View>
-              <View style={styles.metricContent}>
-                <Text style={styles.metricLabel}>المشرفين</Text>
-                <Text style={styles.metricValue}>
-                  {formatCount(moderatorCount, currentLanguage)}
-                </Text>
-              </View>
-            </View>
+        <WhatsAppInvitationPreview
+          eventName={eventName}
+          templateImage={templateImage}
+          selectedTemplate={selectedTemplate}
+          invitationText={invitationText}
+          t={t}
+        />
 
-            {/* Date/Time */}
-            <View style={styles.metricItem}>
-              <View style={styles.iconContainer}>
-                <CalendarIcon />
-              </View>
-              <View style={styles.metricContent}>
-                <Text style={styles.metricLabel}>التوقيت</Text>
-                <Text style={styles.metricValue} numberOfLines={2}>
-                  {formatDate(eventDate)}
-                </Text>
-              </View>
-            </View>
-
-            {/* Location */}
-            <View style={styles.metricItem}>
-              <View style={styles.iconContainer}>
-                <LocationIcon />
-              </View>
-              <View style={styles.metricContent}>
-                <Text style={styles.metricLabel}>العنوان</Text>
-                <Text style={styles.metricValue} numberOfLines={2}>
-                  {location || "—"}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Invitation Preview */}
-        <View style={styles.invitationSection}>
-          <Text style={styles.sectionTitle}>معاينة الدعوة</Text>
-
-          {/* WhatsApp-style bubble */}
-          <View style={styles.waBubbleWrapper}>
-            <View style={styles.waBubble}>
-              {/* Image */}
-              {templateImage ? (
-                <Image
-                  source={{ uri: templateImage }}
-                  style={styles.waImage}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View style={styles.waImagePlaceholder}>
-                  <Text style={styles.waPlaceholderEmoji}>🎉</Text>
-                  <Text style={styles.waPlaceholderText}>
-                    {selectedTemplate ? "قالب WhatsApp" : "لم يتم اختيار صورة"}
-                  </Text>
-                </View>
-              )}
-
-              {/* Message content */}
-              <View style={styles.waBody}>
-                <Text style={styles.waEventName}>{eventName}</Text>
-
-                {invitationText ? (
-                  <Text style={styles.waMessage}>{invitationText}</Text>
-                ) : (
-                  <Text style={styles.waMessageEmpty}>
-                    لم يتم اختيار قالب الرسالة بعد — يرجى اختيار قالب في الخطوة السابقة
-                  </Text>
-                )}
-
-                {selectedTemplate && (
-                  <View style={styles.waTemplateBadge}>
-                    <Text style={styles.waTemplateBadgeText}>
-                      ✓ {selectedTemplate.name}
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Action row */}
-              <View style={styles.waActions}>
-                <View style={styles.waAction}>
-                  <Text style={styles.waActionTextPrimary}>سأحضر</Text>
-                </View>
-                <View style={styles.waActionDivider} />
-                <View style={styles.waAction}>
-                  <Text style={styles.waActionText}>سأعتذر</Text>
-                </View>
-                <View style={styles.waActionDivider} />
-                <View style={styles.waAction}>
-                  <Text style={styles.waActionText}>ربما</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Event description */}
         {description && (
           <View style={styles.detailsCard}>
-            <Text style={styles.detailsTitle}>تفاصيل المناسبة</Text>
+            <Text style={styles.detailsTitle}>{t("summary.details.title")}</Text>
             <Text style={styles.detailsText}>{description}</Text>
           </View>
         )}
 
-        {/* Phase 4 W1-WIZ5: Template details — visible only when host has
-            confirmed a visual template with custom fields. */}
         {visualTemplateFields.length > 0 && (
           <View style={styles.detailsCard}>
-            <Text style={styles.detailsTitle}>
-              {currentLanguage === "ar" ? "تفاصيل القالب" : "Template details"}
-            </Text>
+            <Text style={styles.detailsTitle}>{t("summary.templateDetails.title")}</Text>
             {visualTemplateFields.map((field) => (
               <View key={field.key} style={styles.templateRow}>
                 <Text style={styles.templateRowLabel}>{fieldLabel(field)}</Text>
@@ -393,23 +132,13 @@ const EventSummary = () => {
           </View>
         )}
 
-        {/* Phase 4 W1-FLOW-11-F01: Scheduled launch row.
-            Always rendered so the host can confirm the launch decision —
-            "Launches immediately" when sendSchedule === "now", or the
-            host-timezone formatted date+time when "later". */}
-        <View style={styles.scheduleCard}>
-          <View style={styles.scheduleHeader}>
-            <View style={styles.scheduleIcon}>
-              <CalendarIcon />
-            </View>
-            <Text style={styles.scheduleTitle}>
-              {currentLanguage === "ar" ? "موعد الإرسال" : "Scheduled launch"}
-            </Text>
-          </View>
-          <Text style={styles.scheduleValue}>{renderScheduleText()}</Text>
-        </View>
+        <ScheduleLaunchCard
+          sendSchedule={sendSchedule}
+          scheduleDate={scheduleDate}
+          scheduleTime={scheduleTime}
+          t={t}
+        />
 
-        {/* Confirm checkbox */}
         <TouchableOpacity
           style={styles.confirmRow}
           onPress={() => setValue("confirmReviewed", !confirmReviewed)}
@@ -418,191 +147,18 @@ const EventSummary = () => {
           <View style={[styles.checkbox, confirmReviewed && styles.checkboxChecked]}>
             {confirmReviewed && <Text style={styles.checkmark}>✓</Text>}
           </View>
-          <Text style={styles.confirmLabel}>
-            لقد راجعت جميع التفاصيل وأؤكد صحتها
-          </Text>
+          <Text style={styles.confirmLabel}>{t("summary.confirm.label")}</Text>
         </TouchableOpacity>
-
       </Animated.View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-
-  // ── Event header ──────────────────────────────────────────────────────────
-  eventHeader: {
-    marginBottom: 16,
-  },
-  eventTypeLabel: {
-    fontSize: 13,
-    fontFamily: "Cairo_500Medium",
-    color: "#656565",
-    marginBottom: 2,
-  },
-  eventName: {
-    fontSize: 18,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-  },
-
-  // ── Metrics 2×2 grid ──────────────────────────────────────────────────────
-  metricsCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#F5ECE4",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 16,
-  },
-  metricsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  metricItem: {
-    width: "50%",
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-  },
-  iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#C28E5C",
-    justifyContent: "center",
-    alignItems: "center",
-    flexShrink: 0,
-  },
-  metricContent: {
-    flex: 1,
-  },
-  metricLabel: {
-    fontSize: 11,
-    fontFamily: "Cairo_400Regular",
-    color: "#656565",
-    marginBottom: 2,
-  },
-  metricValue: {
-    fontSize: 13,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    lineHeight: 18,
-  },
-
-  // ── Invitation preview ────────────────────────────────────────────────────
-  invitationSection: {
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    marginBottom: 10,
-  },
-  waBubbleWrapper: {
-    backgroundColor: "#E5DDD5",
-    borderRadius: 12,
-    padding: 12,
-  },
-  waBubble: {
-    backgroundColor: "#FFF",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  waImage: {
-    width: "100%",
-    height: 180,
-    backgroundColor: "#F5F5F5",
-  },
-  waImagePlaceholder: {
-    width: "100%",
-    height: 120,
-    backgroundColor: "#F9F4EF",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-  },
-  waPlaceholderEmoji: {
-    fontSize: 32,
-  },
-  waPlaceholderText: {
-    fontSize: 12,
-    fontFamily: "Cairo_500Medium",
-    color: "#C28E5C",
-  },
-  waBody: {
-    padding: 14,
-    gap: 6,
-  },
-  waEventName: {
-    fontSize: 15,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    textAlign: "right",
-    marginBottom: 4,
-  },
-  waMessage: {
-    fontSize: 13,
-    fontFamily: "Cairo_400Regular",
-    color: "#2C2C2C",
-    lineHeight: 22,
-    textAlign: "right",
-  },
-  waMessageEmpty: {
-    fontSize: 12,
-    fontFamily: "Cairo_400Regular",
-    color: "#999",
-    textAlign: "right",
-    fontStyle: "italic",
-    lineHeight: 18,
-  },
-  waTemplateBadge: {
-    marginTop: 6,
-    alignSelf: "flex-end",
-    backgroundColor: "#F5ECE4",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  waTemplateBadgeText: {
-    fontSize: 11,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#C28E5C",
-  },
-  waActions: {
-    flexDirection: "row",
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-  },
-  waAction: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  waActionDivider: {
-    width: 1,
-    backgroundColor: "#F0F0F0",
-  },
-  waActionTextPrimary: {
-    fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#C28E5C",
-  },
-  waActionText: {
-    fontSize: 13,
-    fontFamily: "Cairo_500Medium",
-    color: "#656565",
-  },
-
-  // ── Description ──────────────────────────────────────────────────────────
+  container: { flex: 1 },
+  eventHeader: { marginBottom: 16 },
+  eventTypeLabel: { fontSize: 13, fontFamily: "Cairo_500Medium", color: "#656565", marginBottom: 2 },
+  eventName: { fontSize: 18, fontFamily: "Cairo_700Bold", color: "#2C2C2C" },
   detailsCard: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -611,119 +167,16 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
   },
-  detailsTitle: {
-    fontSize: 14,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    marginBottom: 8,
-  },
-  detailsText: {
-    fontSize: 12,
-    fontFamily: "Cairo_400Regular",
-    color: "#2C2C2C",
-    lineHeight: 20,
-  },
-
-  // ── Template details (W1-WIZ5) ────────────────────────────────────────────
-  templateRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F5ECE4",
-    gap: 12,
-  },
-  templateRowLabel: {
-    fontSize: 12,
-    fontFamily: "Cairo_500Medium",
-    color: "#656565",
-  },
-  templateRowValue: {
-    fontSize: 12,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    textAlign: "right",
-    flexShrink: 1,
-  },
-
-  // ── Scheduled launch (W1-FLOW-11-F01) ─────────────────────────────────────
-  scheduleCard: {
-    backgroundColor: "#FFF",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#F5ECE4",
-    padding: 16,
-    marginBottom: 16,
-    gap: 8,
-  },
-  scheduleHeader: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    gap: 8,
-  },
-  scheduleIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#C28E5C",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scheduleTitle: {
-    fontSize: 14,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-  },
-  scheduleValue: {
-    fontSize: 13,
-    fontFamily: "Cairo_500Medium",
-    color: "#2C2C2C",
-    textAlign: "right",
-    lineHeight: 20,
-  },
-
-  // ── Confirm checkbox ──────────────────────────────────────────────────────
-  confirmRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 8,
-    padding: 16,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#F5ECE4",
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: "#C28E5C",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    flexShrink: 0,
-  },
-  checkboxChecked: {
-    backgroundColor: "#C28E5C",
-    borderColor: "#C28E5C",
-  },
-  checkmark: {
-    fontSize: 13,
-    color: "#fff",
-    fontFamily: "Cairo_700Bold",
-  },
-  confirmLabel: {
-    flex: 1,
-    fontSize: 13,
-    fontFamily: "Cairo_500Medium",
-    color: "#2C2C2C",
-    lineHeight: 20,
-    textAlign: "right",
-  },
+  detailsTitle: { fontSize: 14, fontFamily: "Cairo_700Bold", color: "#2C2C2C", marginBottom: 8 },
+  detailsText: { fontSize: 12, fontFamily: "Cairo_400Regular", color: "#2C2C2C", lineHeight: 20 },
+  templateRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#F5ECE4", gap: 12 },
+  templateRowLabel: { fontSize: 12, fontFamily: "Cairo_500Medium", color: "#656565" },
+  templateRowValue: { fontSize: 12, fontFamily: "Cairo_700Bold", color: "#2C2C2C", textAlign: "right", flexShrink: 1 },
+  confirmRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8, padding: 16, backgroundColor: "#fff", borderRadius: 12, borderWidth: 1, borderColor: "#F5ECE4" },
+  checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: "#C28E5C", justifyContent: "center", alignItems: "center", backgroundColor: "#fff", flexShrink: 0 },
+  checkboxChecked: { backgroundColor: "#C28E5C", borderColor: "#C28E5C" },
+  checkmark: { fontSize: 13, color: "#fff", fontFamily: "Cairo_700Bold" },
+  confirmLabel: { flex: 1, fontSize: 13, fontFamily: "Cairo_500Medium", color: "#2C2C2C", lineHeight: 20, textAlign: "right" },
 });
 
 export default EventSummary;

@@ -54,7 +54,7 @@ const FEATURE_ICONS = {
 };
 
 const StepFive = ({ goToPreviousStep }) => {
-  const { i18n } = useTranslation("signup");
+  const { t, i18n } = useTranslation("signup");
   const { setValue, watch } = useFormContext();
   const isArabic = i18n.language === "ar";
 
@@ -103,12 +103,12 @@ const StepFive = ({ goToPreviousStep }) => {
     return (
       <div className={styles.container}>
         <StepTitle
-          title={isArabic ? "اختر الباقة المناسبة" : "Choose Your Plan"}
+          title={t("signupForm.whiteLabel.planSelection.title")}
           onArrowClick={goToPreviousStep}
         />
         <div className={styles.loadingContainer}>
           <FaSpinner className={styles.spinner} />
-          <p>{isArabic ? "جاري تحميل الباقات..." : "Loading plans..."}</p>
+          <p>{t("signupForm.whiteLabel.planSelection.loadingPlans")}</p>
         </div>
       </div>
     );
@@ -119,18 +119,18 @@ const StepFive = ({ goToPreviousStep }) => {
     return (
       <div className={styles.container}>
         <StepTitle
-          title={isArabic ? "اختر الباقة المناسبة" : "Choose Your Plan"}
+          title={t("signupForm.whiteLabel.planSelection.title")}
           onArrowClick={goToPreviousStep}
         />
         <div className={styles.errorContainer}>
           <FaExclamationTriangle className={styles.errorIcon} />
-          <p>{error?.message || (isArabic ? "فشل في تحميل الباقات" : "Failed to load plans")}</p>
+          <p>{t("signupForm.whiteLabel.planSelection.loadError")}</p>
           <button
             type="button"
             onClick={() => window.location.reload()}
             className={styles.retryButton}
           >
-            {isArabic ? "إعادة المحاولة" : "Try Again"}
+            {t("signupForm.whiteLabel.planSelection.retry")}
           </button>
         </div>
       </div>
@@ -140,12 +140,8 @@ const StepFive = ({ goToPreviousStep }) => {
   return (
     <div className={styles.container}>
       <StepTitle
-        title={isArabic ? "اختر الباقة المناسبة" : "Choose Your Plan"}
-        description={
-          isArabic
-            ? "اختر الباقة التي تناسب احتياجات منصتك"
-            : "Select the plan that fits your platform needs"
-        }
+        title={t("signupForm.whiteLabel.planSelection.title")}
+        description={t("signupForm.whiteLabel.planSelection.description")}
         onArrowClick={goToPreviousStep}
       />
 

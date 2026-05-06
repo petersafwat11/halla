@@ -52,11 +52,27 @@
 .content {
   display: flex;
   width: 100%;
-  max-width: 800px;
+  max-width: 1080px;
   margin: 0 auto;
   flex-direction: column;
   gap: 1.5rem;
   padding: 1rem 2rem 2rem;
+}
+
+.billingToggleWrap {
+  display: flex;
+  justify-content: center;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  align-items: stretch;
+}
+
+@media (max-width: 860px) {
+  .plansGrid { grid-template-columns: 1fr; gap: 1.5rem; max-width: 520px; margin: 0 auto; width: 100%; }
 }
 
 /* Main Plan Card */

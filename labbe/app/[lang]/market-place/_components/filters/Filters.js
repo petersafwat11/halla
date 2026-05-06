@@ -1,14 +1,8 @@
 "use client";
 import React from "react";
 import { Search, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import styles from "./filters.module.css";
-
-const RATING_OPTIONS = [
-  { value: "", label: "الكل" },
-  { value: "4", label: "4+ نجوم" },
-  { value: "3", label: "3+ نجوم" },
-  { value: "2", label: "2+ نجوم" },
-];
 
 const FilterSelect = ({ label, value, onChange, options, disabled = false }) => (
   <div className={styles.filterSelectGroup}>
@@ -42,20 +36,29 @@ const Filters = ({
   onRemoveFilter,
   onOpenFiltersPopup,
 }) => {
+  const { t } = useTranslation("marketplace");
+
+  const ratingOptions = [
+    { value: "", label: t("filters.ratingAll") },
+    { value: "4", label: t("filters.rating4") },
+    { value: "3", label: t("filters.rating3") },
+    { value: "2", label: t("filters.rating2") },
+  ];
+
   return (
     <div className={styles.container}>
-      {/* Filters and Search Row - filters at start, search at end */}
+      {/* Filters and Search Row */}
       <div className={styles.filtersRow}>
         {/* Desktop Filters */}
         <div className={styles.desktopFilters}>
           {/* Region */}
           <div className={styles.filterItem}>
             <FilterSelect
-              label="المنطقة"
+              label={t("filters.region")}
               value={filters.regionId}
               onChange={(e) => updateFilter("regionId", e.target.value)}
               options={[
-                { value: "", label: "جميع المناطق" },
+                { value: "", label: t("filters.allRegions") },
                 ...(Array.isArray(regions) ? regions : []).map((region) => ({
                   value: region.region_id,
                   label: region.name_ar,
@@ -67,11 +70,11 @@ const Filters = ({
           {/* City */}
           <div className={styles.filterItem}>
             <FilterSelect
-              label="المدينة"
+              label={t("filters.city")}
               value={filters.cityId}
               onChange={(e) => updateFilter("cityId", e.target.value)}
               options={[
-                { value: "", label: "جميع المدن" },
+                { value: "", label: t("filters.allCities") },
                 ...(Array.isArray(cities) ? cities : []).map((city) => ({
                   value: city.city_id,
                   label: city.name_ar,
@@ -84,11 +87,11 @@ const Filters = ({
           {/* District */}
           <div className={styles.filterItem}>
             <FilterSelect
-              label="الحي"
+              label={t("filters.district")}
               value={filters.districtIds}
               onChange={(e) => updateFilter("districtIds", e.target.value)}
               options={[
-                { value: "", label: "جميع الأحياء" },
+                { value: "", label: t("filters.allDistricts") },
                 ...(Array.isArray(districts) ? districts : []).map((d) => ({
                   value: d.district_id,
                   label: d.name_ar,
@@ -100,12 +103,12 @@ const Filters = ({
 
           {/* Price Range */}
           <div className={styles.filterItem}>
-            <label className={styles.filterLabel}>السعر</label>
+            <label className={styles.filterLabel}>{t("filters.price")}</label>
             <div className={styles.priceRange}>
               <input
                 className={styles.filterInput}
                 type="number"
-                placeholder="من"
+                placeholder={t("filters.priceFrom")}
                 value={filters.minPrice || ""}
                 onChange={(e) => updateFilter("minPrice", e.target.value)}
                 min="0"
@@ -114,7 +117,7 @@ const Filters = ({
               <input
                 className={styles.filterInput}
                 type="number"
-                placeholder="إلى"
+                placeholder={t("filters.priceTo")}
                 value={filters.maxPrice || ""}
                 onChange={(e) => updateFilter("maxPrice", e.target.value)}
                 min="0"
@@ -125,10 +128,10 @@ const Filters = ({
           {/* Rating */}
           <div className={styles.filterItem}>
             <FilterSelect
-              label="التقييم"
+              label={t("filters.rating")}
               value={filters.minRating}
               onChange={(e) => updateFilter("minRating", e.target.value)}
-              options={RATING_OPTIONS}
+              options={ratingOptions}
             />
           </div>
         </div>
@@ -139,7 +142,7 @@ const Filters = ({
           onClick={onOpenFiltersPopup}
         >
           <Search size={20} />
-          <span>الفلاتر</span>
+          <span>{t("filters.title")}</span>
         </button>
 
         {/* Search */}
@@ -148,7 +151,7 @@ const Filters = ({
           <input
             className={styles.searchInput}
             type="text"
-            placeholder="ابحث عن أي شيء ..."
+            placeholder={t("search.placeholder")}
             value={searchQuery}
             onChange={(e) => onSearch(e.target.value)}
           />
@@ -159,7 +162,10 @@ const Filters = ({
       {activeFilters.length > 0 && (
         <div className={styles.activeFilters}>
           <span className={styles.resultsCount}>
-            {resultsCount.toLocaleString()} من {totalCount?.toLocaleString()} نتيجة
+            {t("filters.resultsCount", {
+              count: resultsCount.toLocaleString(),
+              total: totalCount?.toLocaleString(),
+            })}
           </span>
           <div className={styles.filterTags}>
             {activeFilters.map((filter) => (
@@ -168,7 +174,7 @@ const Filters = ({
                 <X
                   size={12}
                   onClick={() => onRemoveFilter(filter.name)}
-                  style={{ cursor: "pointer" }}
+                  className={styles.removeIcon}
                 />
               </div>
             ))}

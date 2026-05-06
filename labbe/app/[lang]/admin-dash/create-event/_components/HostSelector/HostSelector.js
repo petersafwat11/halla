@@ -116,11 +116,22 @@ const HostSelector = ({
 
   const handleSelectSelf = useCallback(() => {
     if (onHostSelect && currentUser) {
-      // For platform admins, set unlimited subscription
-      // For whitelabel admins, use their actual subscription from currentUser
-      const subscription = isPlatformAdmin
-        ? { isUnlimited: true }
-        : currentUser.subscription || null;
+      // Platform admins (super_admin, admin, moderator without whitelabelId): unlimited
+      // Whitelabel admins: use their actual subscription
+      // Whitelabel moderators: use the whitelabel's subscription (fetched from auth store)
+      let subscription;
+      if (isPlatformAdmin) {
+        subscription = { isUnlimited: true };
+      } else if (isWhitelabelAdmin) {
+        subscription = currentUser.subscription || null;
+      } else if (currentUser.role === 'whitelabel_moderator' && currentUser.whitelabelId) {
+        // Whitelabel moderator shares the whitelabel admin's plan
+        // The whitelabel subscription should be available via currentUser.whitelabelSubscription
+        // or we use the currentUser.subscription if the backend already resolved it
+        subscription = currentUser.whitelabelSubscription || currentUser.subscription || null;
+      } else {
+        subscription = currentUser.subscription || null;
+      }
 
       onHostSelect({
         ...currentUser,
@@ -129,7 +140,7 @@ const HostSelector = ({
         subscription,
       });
     }
-  }, [onHostSelect, currentUser, isPlatformAdmin]);
+  }, [onHostSelect, currentUser, isPlatformAdmin, isWhitelabelAdmin]);
 
   const hasActiveSubscription = (target) => {
     if (target?.subscription?.isUnlimited) return true;

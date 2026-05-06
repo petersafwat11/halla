@@ -6,20 +6,23 @@ import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaCrown, FaCheckCircle, FaClock, FaBan } from "react-icons/fa";
-import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import styles from "./WhitelabelStats.module.css";
 
 export default function WhitelabelStats() {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminWhitelabels");
   const searchParams = useSearchParams();
 
-  const filters = {
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  };
+  const filters = useMemo(
+    () => ({
+      page: searchParams.get("page") || 1,
+      limit: searchParams.get("limit") || 10,
+      search: searchParams.get("search"),
+      status: searchParams.get("status"),
+      from: searchParams.get("from"),
+      to: searchParams.get("to"),
+    }),
+    [searchParams]
+  );
 
   const { data, isLoading } = useAdminWhitelabels(filters);
 
@@ -32,32 +35,32 @@ export default function WhitelabelStats() {
 
     return [
       {
-        src: <FaCrown style={{ color: "#C28E5C", fontSize: "2.4rem" }} />,
+        src: <FaCrown className={styles.iconTotal} />,
         alt: "total-whitelabels",
-        title: t("whitelabels.stats.total", "إجمالي العلامات البيضاء"),
+        title: t("stats.total"),
         value: total,
-        subtitle: t("whitelabels.stats.allTime", "جميع الأوقات"),
+        subtitle: t("stats.allTime"),
       },
       {
-        src: <FaCheckCircle style={{ color: "#2A8C5B", fontSize: "2.4rem" }} />,
+        src: <FaCheckCircle className={styles.iconActive} />,
         alt: "active-whitelabels",
-        title: t("whitelabels.stats.active", "العلامات النشطة"),
+        title: t("stats.active"),
         value: active,
-        subtitle: t("whitelabels.stats.activeNow", "نشط الآن"),
+        subtitle: t("stats.activeNow"),
       },
       {
-        src: <FaClock style={{ color: "#D38200", fontSize: "2.4rem" }} />,
+        src: <FaClock className={styles.iconPending} />,
         alt: "pending-whitelabels",
-        title: t("whitelabels.stats.pending", "قيد الانتظار"),
+        title: t("stats.pending"),
         value: pending,
-        subtitle: t("whitelabels.stats.awaitingActivation", "في انتظار التفعيل"),
+        subtitle: t("stats.awaitingActivation"),
       },
       {
-        src: <FaBan style={{ color: "#C0392B", fontSize: "2.4rem" }} />,
+        src: <FaBan className={styles.iconSuspended} />,
         alt: "suspended-whitelabels",
-        title: t("whitelabels.stats.suspended", "موقوف"),
+        title: t("stats.suspended"),
         value: suspended,
-        subtitle: t("whitelabels.stats.temporarilySuspended", "موقوف مؤقتاً"),
+        subtitle: t("stats.temporarilySuspended"),
       },
     ];
   }, [data, t]);

@@ -591,3 +591,70 @@ export const useAdminEventMutation = (action) => {
 
   return useMutation(mutations[action]);
 };
+
+// ============================================
+// ADMIN PLANS QUERIES & MUTATIONS
+// ============================================
+
+export const useAdminPlans = (options = {}) => {
+  return useQuery({
+    queryKey: ["admin", "plans"],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.plans.adminGetAll,
+      }),
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
+export const useAdminPlanMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ code, data }) =>
+      apiRequest({
+        method: "PATCH",
+        path: API_PATHS.plans.adminUpdate(code),
+        data,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "plans"] });
+    },
+  });
+};
+
+// ============================================
+// ADMIN PAYMENTS QUERIES
+// ============================================
+
+export const useAdminPayments = (filters = {}, options = {}) => {
+  return useQuery({
+    queryKey: ["admin", "payments", filters],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.payments.getAll,
+        params: filters,
+      }),
+    staleTime: 2 * 60 * 1000,
+    ...options,
+  });
+};
+
+// ============================================
+// HOST PLANS QUERY
+// ============================================
+
+export const useHostPlans = (options = {}) => {
+  return useQuery({
+    queryKey: ["plans", "host"],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.plans.getHostPlans,
+      }),
+    staleTime: 10 * 60 * 1000,
+    ...options,
+  });
+};

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import styles from "./stepOne.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
-import CheckBoxItems from "@/ui/commen/inputs/checkboxItems/CheckBoxItems";
 import { StepTitle } from "../../../../commen/title/SectionTitle";
 import SectionTitle from "../../../../commen/title/SectionTitle";
 import { useTranslation } from "react-i18next";

@@ -5,25 +5,15 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Animated,
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { accountSettingsSchema } from "../../utils/schemas/settingsSchema";
-import {
-  TextInput,
-  EmailInput,
-  PasswordInput,
-  Button,
-  OTPInput,
-} from "../commen";
+import { TextInput, PasswordInput } from "../commen";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
-import {
-  sendEmailVerificationCodeAPI,
-  verifyEmailAPI,
-} from "../../services/settingsService";
+import EmailVerificationSection from "./_components/EmailVerificationSection";
 
 const AccountSettings = ({
   onProfileUpdate,
@@ -31,22 +21,9 @@ const AccountSettings = ({
 }) => {
   const { t } = useTranslation("settings");
   const toast = useToast();
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
 
-  const [showVerificationInput, setShowVerificationInput] = useState(false);
-  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const fadeAnim = React.useRef(new Animated.Value(0)).current;
-
-  React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, []);
 
   const methods = useForm({
     resolver: zodResolver(accountSettingsSchema),
@@ -68,45 +45,10 @@ const AccountSettings = ({
   } = methods;
 
   const emailValue = watch("email");
-  const currentPassword = watch("currentPassword");
-  const newPassword = watch("newPassword");
-
-  const handleSendVerificationCode = async () => {
-    setIsVerifyingEmail(true);
-    try {
-      await sendEmailVerificationCodeAPI(token);
-      setShowVerificationInput(true);
-      toast.success(t("account.verificationCodeSent"));
-    } catch (error) {
-      toast.error(error.message || t("account.verificationCodeError"));
-    } finally {
-      setIsVerifyingEmail(false);
-    }
-  };
-
-  const handleVerifyCode = async () => {
-    if (verificationCode.length !== 6) {
-      toast.error(t("account.invalidVerificationCode"));
-      return;
-    }
-
-    setIsVerifyingEmail(true);
-    try {
-      await verifyEmailAPI(verificationCode, token);
-      toast.success(t("account.emailVerified"));
-      setShowVerificationInput(false);
-      setVerificationCode("");
-    } catch (error) {
-      toast.error(error.message || t("account.verificationError"));
-    } finally {
-      setIsVerifyingEmail(false);
-    }
-  };
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      // Update profile info if changed
       if (data.username !== user?.username || data.email !== user?.email) {
         const profileData = {
           username: data.username,
@@ -115,7 +57,6 @@ const AccountSettings = ({
         await onProfileUpdate(profileData);
       }
 
-      // Change password if provided
       if (data.currentPassword && data.newPassword) {
         await onPasswordChange(data.currentPassword, data.newPassword);
       }
@@ -141,12 +82,11 @@ const AccountSettings = ({
 
   return (
     <FormProvider {...methods}>
-      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+      <View style={styles.container}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Personal Information Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t("account.personalInfo")}</Text>
 
@@ -158,74 +98,15 @@ const AccountSettings = ({
                 disabled={loading}
               />
 
-              <View style={styles.emailWrapper}>
-                <EmailInput
-                  name="email"
-                  label={t("account.email")}
-                  placeholder={t("account.emailPlaceholder")}
-                  disabled={loading}
-                />
-
-                {!user?.emailVerified && !showVerificationInput && (
-                  <TouchableOpacity
-                    style={[styles.verifyButton]}
-                    onPress={handleSendVerificationCode}
-                    disabled={isVerifyingEmail || !emailValue}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.verifyButtonText}>
-                      {isVerifyingEmail
-                        ? t("account.sending")
-                        : t("account.sendCode")}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-
-                {user?.emailVerified && (
-                  <View style={styles.verifiedBadge}>
-                    <Text style={styles.verifiedText}>
-                      ✓ {t("account.emailVerified")}
-                    </Text>
-                  </View>
-                )}
-
-                {showVerificationInput && (
-                  <View style={styles.verificationGroup}>
-                    <OTPInput
-                      value={verificationCode}
-                      onChangeText={setVerificationCode}
-                      length={6}
-                    />
-                    <TouchableOpacity
-                      style={[
-                        styles.verifyCodeButton,
-                        (isVerifyingEmail || verificationCode.length !== 6) &&
-                          styles.verifyCodeButtonDisabled,
-                      ]}
-                      onPress={handleVerifyCode}
-                      disabled={
-                        isVerifyingEmail || verificationCode.length !== 6
-                      }
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.verifyCodeButtonText}>
-                        {isVerifyingEmail
-                          ? t("account.verifying")
-                          : t("account.verifyCode")}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
+              <EmailVerificationSection emailValue={emailValue} loading={loading} />
             </View>
           </View>
 
-          {/* Change Password Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
               {t("account.changePassword")}
             </Text>
-            <Text style={[styles.sectionDescription]}>
+            <Text style={styles.sectionDescription}>
               {t("account.changePasswordDescription")}
             </Text>
 
@@ -253,7 +134,6 @@ const AccountSettings = ({
             </View>
           </View>
 
-          {/* Action Buttons */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.cancelButton}
@@ -278,9 +158,8 @@ const AccountSettings = ({
               </Text>
             </TouchableOpacity>
           </View>
-
         </ScrollView>
-      </Animated.View>
+      </View>
     </FormProvider>
   );
 };
@@ -312,55 +191,6 @@ const styles = StyleSheet.create({
   },
   inputsGroup: {
     width: "100%",
-  },
-  emailWrapper: {
-    width: "100%",
-  },
-  verifyButton: {
-    backgroundColor: "#c28e5c",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  verifyButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-  },
-  verifiedBadge: {
-    backgroundColor: "#4caf50",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  verifiedText: {
-    color: "#fff",
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-  },
-  verificationGroup: {
-    marginTop: 16,
-    width: "100%",
-  },
-  verifyCodeButton: {
-    backgroundColor: "#c28e5c",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 12,
-  },
-  verifyCodeButtonDisabled: {
-    backgroundColor: "#e0e0e0",
-  },
-  verifyCodeButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
   },
   buttonContainer: {
     flexDirection: "row-reverse",

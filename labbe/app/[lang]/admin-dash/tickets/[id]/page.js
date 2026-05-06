@@ -17,7 +17,7 @@ export default async function AdminTicketDetailsPage({ params }) {
     await prefetchServerData({
       queryClient,
       queryKey: ["tickets", id],
-      path: API_PATHS.tickets.getById(id),
+      path: API_PATHS.tickets.getTicketById(id),
       token,
     });
   }

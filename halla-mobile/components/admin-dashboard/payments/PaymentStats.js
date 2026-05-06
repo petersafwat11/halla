@@ -13,7 +13,7 @@ const PaymentStats = ({ stats }) => {
       <StatCard
         icon="cash-outline"
         label={t("payments.stats.totalRevenue")}
-        value={`${stats.totalRevenue || 0} SAR`}
+        value={`${stats.totalRevenue || 0} ${t("payments.details.currency", "SAR")}`}
         color={colors.success[500]}
       />
       <StatCard

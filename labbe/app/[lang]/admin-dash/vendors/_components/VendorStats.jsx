@@ -6,20 +6,20 @@ import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaStore, FaCheckCircle, FaClock, FaBan } from "react-icons/fa";
-import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import styles from "./VendorStats.module.css";
 
 export default function VendorStats() {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminVendors");
   const searchParams = useSearchParams();
 
-  const filters = {
+  const filters = useMemo(() => ({
     page: searchParams.get("page") || 1,
     limit: searchParams.get("limit") || 10,
     search: searchParams.get("search"),
     status: searchParams.get("status"),
     from: searchParams.get("from"),
     to: searchParams.get("to"),
-  };
+  }), [searchParams]);
 
   const { data, isLoading } = useAdminVendors(filters);
 
@@ -32,32 +32,32 @@ export default function VendorStats() {
 
     return [
       {
-        src: <FaStore style={{ color: "#C28E5C", fontSize: "2.4rem" }} />,
+        src: <FaStore className={styles.iconTotal} />,
         alt: "total-vendors",
-        title: t("vendors.stats.total", "إجمالي التجار"),
+        title: t("stats.totalVendors"),
         value: total,
-        subtitle: t("vendors.stats.allTime", "جميع الأوقات"),
+        subtitle: t("dateRange.all"),
       },
       {
-        src: <FaCheckCircle style={{ color: "#2A8C5B", fontSize: "2.4rem" }} />,
+        src: <FaCheckCircle className={styles.iconApproved} />,
         alt: "approved-vendors",
-        title: t("vendors.stats.approved", "التجار المعتمدين"),
+        title: t("stats.activeVendors"),
         value: approved,
-        subtitle: t("vendors.stats.activeNow", "نشط الآن"),
+        subtitle: t("table.status.active"),
       },
       {
-        src: <FaClock style={{ color: "#D38200", fontSize: "2.4rem" }} />,
+        src: <FaClock className={styles.iconPending} />,
         alt: "pending-vendors",
-        title: t("vendors.stats.pending", "قيد المراجعة"),
+        title: t("stats.pendingVendors"),
         value: pending,
-        subtitle: t("vendors.stats.awaitingApproval", "في انتظار الموافقة"),
+        subtitle: t("table.status.pending"),
       },
       {
-        src: <FaBan style={{ color: "#C0392B", fontSize: "2.4rem" }} />,
+        src: <FaBan className={styles.iconRejected} />,
         alt: "rejected-vendors",
-        title: t("vendors.stats.rejected", "مرفوض"),
+        title: t("stats.suspendedVendors"),
         value: rejected,
-        subtitle: t("vendors.stats.notApproved", "غير معتمد"),
+        subtitle: t("table.status.rejected"),
       },
     ];
   }, [data, t]);

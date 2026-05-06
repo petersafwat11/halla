@@ -12,6 +12,7 @@
 
 const express = require("express");
 const rateLimit = require("express-rate-limit");
+const multer = require("multer");
 
 const { protect } = require("../../shared/middleware/auth");
 const { requirePageAccess } = require("../../shared/middleware/rbac");
@@ -38,6 +39,15 @@ const uploadUrlLimiter = rateLimit({
   message: { success: false, error: "RATE_LIMIT_EXCEEDED" },
 });
 
+const memUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) =>
+    /^image\/(jpeg|png|webp)$/.test(file.mimetype)
+      ? cb(null, true)
+      : cb(new Error("Only jpeg, png, webp images are allowed")),
+});
+
 const adminRouter = express.Router();
 adminRouter.use(protect);
 
@@ -52,6 +62,14 @@ adminRouter.post(
   requirePageAccess(ADMIN_PAGES.TEMPLATES, "create"),
   uploadUrlLimiter,
   controller.adminGetUploadUrl
+);
+
+adminRouter.post(
+  "/upload-image",
+  requirePageAccess(ADMIN_PAGES.TEMPLATES, "create"),
+  uploadUrlLimiter,
+  memUpload.single("image"),
+  controller.adminUploadImage
 );
 
 adminRouter.post(

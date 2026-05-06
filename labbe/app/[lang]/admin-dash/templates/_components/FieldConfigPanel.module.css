@@ -1,0 +1,354 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: #f8f7f4;
+  min-height: 100%;
+}
+
+/* ── Section ── */
+.section {
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #faf8f5 0%, #ffffff 100%);
+  border-bottom: 1px solid #f0ede8;
+}
+
+.sectionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #c28e5c 0%, #a07448 100%);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c2c2c;
+  letter-spacing: -0.01em;
+}
+
+.sectionHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+/* ── Form Layout ── */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.formGrid4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 0 20px 16px;
+}
+
+.formGrid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 0 20px 16px;
+}
+
+.formGroup {
+  padding: 0 20px 16px;
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+  padding: 0 20px 16px;
+  align-items: flex-start;
+}
+
+.formField {
+  flex: 1;
+  min-width: 0;
+}
+
+.toggleField {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #faf8f5;
+  border-radius: 12px;
+  border: 1px solid #f0ede8;
+  flex-shrink: 0;
+}
+
+.subsectionLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a5a5a;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.inputLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a5a5a;
+  margin-bottom: 8px;
+}
+
+.iconPickerField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.iconPickerBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.iconPickerBtn:hover {
+  border-color: #c28e5c;
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.08);
+}
+
+.iconPickerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #faf5ed 0%, #f5f0e8 100%);
+  color: #c28e5c;
+  flex-shrink: 0;
+}
+
+.iconPickerName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c2c2c;
+  text-align: left;
+}
+
+.iconPickerPlaceholder {
+  flex: 1;
+  font-size: 14px;
+  color: #b0b0b0;
+  text-align: left;
+}
+
+.chevronDown {
+  color: #b0a898;
+  flex-shrink: 0;
+}
+
+/* ── Card (for decorations/overlays items) ── */
+.card {
+  margin: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid #f0ede8;
+  background: #faf8f5;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #f0ede8;
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.iconPreview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #faf5ed 0%, #f5f0e8 100%);
+  color: #c28e5c;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8a7a6a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Color Picker ── */
+.colorPickerWrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.colorPicker {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+
+.colorPicker:hover {
+  border-color: #c28e5c;
+}
+
+.colorPicker::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 10px;
+}
+
+.colorPicker::-webkit-color-swatch {
+  border: none;
+  border-radius: 10px;
+}
+
+.colorInput {
+  flex: 1;
+  height: 48px;
+  padding: 0 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #2c2c2c;
+  font-size: 14px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.colorInput:focus {
+  outline: none;
+  border-color: #c28e5c;
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.1);
+}
+
+.colorInput::placeholder {
+  color: #b0b0b0;
+}
+
+/* ── Empty State ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.emptyText {
+  margin: 12px 0 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #5a5a5a;
+}
+
+.emptySubtext {
+  margin: 0;
+  font-size: 13px;
+  color: #999;
+}
+
+/* ── Scrollbar ── */
+.panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel::-webkit-scrollbar-thumb {
+  background: #d8d4cc;
+  border-radius: 3px;
+}
+
+.panel::-webkit-scrollbar-thumb:hover {
+  background: #c2bfb6;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .panel {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    padding: 12px 16px;
+  }
+
+  .formGrid4 {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 16px 12px;
+  }
+
+  .formRow {
+    flex-direction: column;
+    padding: 0 16px 12px;
+  }
+
+  .toggleField {
+    width: 100%;
+  }
+
+  .card {
+    margin: 12px 16px;
+  }
+
+  .sectionHeader {
+    padding: 14px 16px;
+  }
+}

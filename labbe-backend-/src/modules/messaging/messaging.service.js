@@ -82,7 +82,7 @@ class MessagingService {
 
     // Build the resolution context. dotted-path keys resolve against
     // this object so admins can map {{N}} → "guest.name" / "host.name"
-    // / "eventDetails.title" / "hostNote" etc.
+    // / "eventDetails.title" etc.
     const ctx = {
       guest: { name: guestName || 'ضيفنا الكريم' },
       eventDetails: {
@@ -92,8 +92,6 @@ class MessagingService {
       host: event.host && typeof event.host === 'object'
         ? { name: event.host.name || event.host.username || '' }
         : {},
-      hostNote: event.hostNote || event.invitationSettings?.note || '',
-      invitationMessage: event.invitationMessage || '',
     };
 
     // Sort mappings by placeholder so {{1}}, {{2}}, … come out in order.

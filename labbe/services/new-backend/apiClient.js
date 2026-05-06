@@ -109,9 +109,6 @@ axiosInstance.interceptors.response.use(
     // Parse and normalize error
     const parsedError = parseError(error);
 
-    // Log errors
-    console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${parsedError.status || 'Unknown'} (${duration}ms):`, parsedError.message);
-
     // Phase 1a: on 401, attempt one silent refresh and replay the original
     // request before bouncing the user. We skip retry on auth routes
     // themselves (login / refresh / logout) to avoid loops, and skip when
@@ -123,6 +120,18 @@ axiosInstance.interceptors.response.use(
       url.includes('/auth/refresh') ||
       url.includes('/auth/login') ||
       url.includes('/auth/logout');
+
+    // Suppress the console error for 401s that are about to be retried —
+    // logging there is noise, and if the retry succeeds the user has no
+    // way to know the "error" was harmless. Real failures (non-401, or
+    // 401s on auth routes / already-retried requests) still log.
+    const willRetry401 =
+      parsedError.type === ErrorTypes.AUTH &&
+      parsedError.status === 401 &&
+      !skipRefresh;
+    if (!willRetry401) {
+      console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${parsedError.status || 'Unknown'} (${duration}ms):`, parsedError.message);
+    }
 
     if (
       parsedError.type === ErrorTypes.AUTH &&

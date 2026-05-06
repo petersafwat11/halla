@@ -73,7 +73,7 @@ export const getEventStats = async (token) => {
     ]);
 
     const stats = statsData.data || {};
-    const events = eventsData.data || [];
+    const events = eventsData.data?.events || [];
 
     const totalGuests = stats.totalGuests || 0;
     const confirmedGuests = stats.confirmedGuests || 0;

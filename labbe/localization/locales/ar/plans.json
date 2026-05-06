@@ -1,5 +1,6 @@
 {
   "currentPlan": { "title": "الباقة الحالية", "events": "مناسبات", "invites": "دعوات", "daysRemaining": "أيام متبقية" },
+  "noActiveSubscription": { "title": "لا يوجد اشتراك نشط حالياً", "subtitle": "اختر باقة من الأسفل لتفعيل اشتراكك" },
   "pageTitle": "اختر باقتك",
   "pageSubtitle": "اختر الباقة المناسبة لمناسبتك",
   "loading": "جار التحميل...",

@@ -5,14 +5,14 @@ import { usePageAccess } from "@/hooks/usePageAccess";
 import AdminPageHeader from "../../_components/AdminPageHeader";
 
 export default function ModeratorsPageHeader({ onAddClick }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminModerators");
   const { canCreate } = usePageAccess("moderators");
 
   return (
     <AdminPageHeader
-      title="إدارة المشرفين"
-      subtitle="عرض وإدارة جميع المشرفين"
-      addButtonTitle={canCreate ? t("moderators.addModerator", "إضافة مشرف") : undefined}
+      title={t("header.title")}
+      subtitle={t("header.subtitle")}
+      addButtonTitle={canCreate ? t("header.addModerator") : undefined}
       onAddButtonClick={canCreate ? onAddClick : undefined}
     />
   );

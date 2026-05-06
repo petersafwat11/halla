@@ -1,39 +1,32 @@
 "use client";
-import React from "react";
+import React, { useCallback } from "react";
 import styles from "./hostsTable.module.css";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
 import { FaUsers, FaExternalLinkAlt } from "react-icons/fa";
+
+const STATUS_CSS_MAP = {
+  active: styles.statusActive,
+  suspended: styles.statusSuspended,
+  inactive: styles.statusInactive,
+};
 
 const HostsTable = ({ hosts, whitelabelId, stats }) => {
   const { t } = useTranslation("adminWhitelabels");
   const router = useRouter();
   const params = useParams();
 
-  const getStatusBadge = (status) => {
-    const statuses = {
-      active: {
-        color: "#2A8C5B",
-        bg: "#EAF4EF",
-        label: t("status.active", "نشط"),
-      },
-      suspended: {
-        color: "#C0392B",
-        bg: "#F9EBEA",
-        label: t("status.suspended", "موقوف"),
-      },
-      inactive: {
-        color: "#7F8C8D",
-        bg: "#F5F5F5",
-        label: t("status.inactive", "غير نشط"),
-      },
+  const getStatusBadge = useCallback((status) => {
+    const cssClass = STATUS_CSS_MAP[status] || STATUS_CSS_MAP.inactive;
+    return {
+      className: cssClass,
+      label: t(`status.${status}`, status),
     };
-    return statuses[status] || statuses.inactive;
-  };
+  }, [t]);
 
-  const handleViewHost = (hostId) => {
+  const handleViewHost = useCallback((hostId) => {
     router.push(`/${params.lang}/admin-dash/hosts/${hostId}`);
-  };
+  }, [router, params.lang]);
 
   return (
     <div className={styles.container}>
@@ -73,13 +66,7 @@ const HostsTable = ({ hosts, whitelabelId, stats }) => {
                     <td>{host.email || "-"}</td>
                     <td>{host.phoneNumber || "-"}</td>
                     <td>
-                      <span
-                        className={styles.statusBadge}
-                        style={{
-                          color: statusBadge.color,
-                          background: statusBadge.bg,
-                        }}
-                      >
+                      <span className={`${styles.statusBadge} ${statusBadge.className}`}>
                         {statusBadge.label}
                       </span>
                     </td>

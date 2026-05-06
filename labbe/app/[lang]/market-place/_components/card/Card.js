@@ -1,23 +1,34 @@
 "use client";
 import React from "react";
+import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import styles from "./card.module.css";
 
 const ServiceCard = ({ service }) => {
+  const { t } = useTranslation("marketplace");
+
   const {
-    image = "https://api.builder.io/api/v1/image/assets/TEMP/ba61aae99c0ebb072c04788ba3236d7e98076d3c?width=580",
+    image = "/images/placeholder-vendor.jpg",
     rating = 4.9,
-    reviewsCount = 127,
-    title = "تصوير اللحظات الذهبية",
-    location = "دبي، الإمارات العربية المتحدة",
-    tags = ["فعاليات الشركات", "تصوير حفلات الزفاف", "جلسات بورتريه"],
-    price = "250 ريال",
+    reviewsCount = 0,
+    title = "",
+    location = "",
+    tags = [],
+    price = "",
     onCallClick,
   } = service || {};
 
   return (
     <div className={styles.card}>
       <div className={styles.imageContainer}>
-        <img src={image} alt={title} className={styles.image} />
+        <Image
+          src={image}
+          alt={title}
+          className={styles.image}
+          fill
+          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 290px"
+          style={{ objectFit: "cover" }}
+        />
         <div className={styles.ratingBadge}>
           <svg
             width="13"
@@ -36,7 +47,9 @@ const ServiceCard = ({ service }) => {
             />
           </svg>
           <span className={styles.ratingValue}>{rating}</span>
-          <span className={styles.reviewsCount}>({reviewsCount} مستخدم)</span>
+          <span className={styles.reviewsCount}>
+            ({reviewsCount} {t("card.users")})
+          </span>
         </div>
       </div>
 
@@ -94,7 +107,7 @@ const ServiceCard = ({ service }) => {
                 strokeMiterlimit="10"
               />
             </svg>
-            اتصل الان
+            {t("card.callNow")}
           </button>
         </div>
       </div>

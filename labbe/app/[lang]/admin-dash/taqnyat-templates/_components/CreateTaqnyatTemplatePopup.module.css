@@ -1,0 +1,142 @@
+.popup {
+  padding: 2rem;
+  width: 100%;
+  max-width: 60rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 3rem;
+  color: #95a5a6;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 3rem;
+  height: 3rem;
+}
+
+.closeBtn:hover {
+  color: #7f8c8d;
+}
+
+.note {
+  background: #fff8e1;
+  border: 1px solid #f5d271;
+  color: #6b5310;
+  padding: 1rem 1.2rem;
+  border-radius: 0.6rem;
+  font-size: 1.3rem;
+  margin-bottom: 1.6rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+
+.selectGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.selectGroup label {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--c-s700, #3a3028);
+}
+
+.select {
+  padding: 0.9rem;
+  border: 1px solid #ddd;
+  border-radius: 0.6rem;
+  font-size: 1.4rem;
+  background: #fff;
+  font-family: "Cairo", sans-serif;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #c28e5c;
+}
+
+.examplesBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  background: #f7f7f7;
+  border-radius: 0.6rem;
+  padding: 1.2rem;
+}
+
+.examplesLabel {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--c-s700, #3a3028);
+}
+
+.exampleRow {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.placeholder {
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--c-s700, #3a3028);
+}
+
+.exampleInput {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 1.3rem;
+  background: #fff;
+  font-family: "Cairo", sans-serif;
+}
+
+.exampleInput:focus {
+  outline: none;
+  border-color: #c28e5c;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.actions > * {
+  flex: 1;
+}

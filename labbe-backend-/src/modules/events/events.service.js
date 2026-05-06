@@ -431,7 +431,7 @@ class EventsService {
       if (!validation.allowed) {
         throw new PackageLimitError(
           "events",
-          validation.limits?.maxEventsPerMonth || 0
+          validation.limits?.maxEvents || 0
         );
       }
     }
@@ -527,7 +527,6 @@ class EventsService {
           onAbsent: inv.absenceAutoReply ?? eventData.guestReplies?.onAbsent,
           onExpected: inv.expectedAttendanceAutoReply ?? eventData.guestReplies?.onExpected,
         };
-        if (inv.note !== undefined) eventData.hostNote = inv.note;
       }
 
       // Set host and tracking info
@@ -1034,40 +1033,79 @@ class EventsService {
    */
   async getSubscriptionInfo(userId, subscription) {
     if (!subscription) {
-      return { hasSubscription: false, limits: null, usage: null, canCreateEvent: false };
+      return { hasSubscription: false, canCreateEvent: false };
     }
 
-    // Dynamic event count (Bugs 1, 2, 8)
+    const limits = subscription.limits;
+    const planType = subscription.planId?.planType;
+    const isPerEvent = planType
+      ? require("../../shared/constants/plans").isPerEventPlan(planType)
+      : false;
+    const isPool = planType
+      ? require("../../shared/constants/plans").isPoolPlan(planType)
+      : false;
+
+    // Plan schema field is `maxEvents`. Pool plans (basic_monthly, premium_monthly,
+    // business_quarterly, business_annual, unlimited) have maxEvents=-1 (unlimited
+    // events; the cap is invitePool). Per-event plans have maxEvents=1.
+    const maxEvents = limits?.maxEvents ?? (isPerEvent ? 1 : -1);
     let eventsThisPeriod = subscription.usage?.eventsCreated || 0;
-    const maxEPM = subscription.limits?.maxEventsPerMonth || 0;
-    if (maxEPM > 0) {
+    if (!isPerEvent && maxEvents !== -1 && maxEvents > 0) {
       const billingStart = subscription.getBillingPeriodStart
         ? subscription.getBillingPeriodStart()
         : (subscription.startDate || subscription.createdAt);
       eventsThisPeriod = await Event.countDocuments({
-        host: userId, createdAt: { $gte: billingStart }, status: { $ne: 'deleted' },
+        host: userId, createdAt: { $gte: billingStart }, status: { $ne: "deleted" },
       });
     }
-    const canCreateEvent = maxEPM === -1 ? true : eventsThisPeriod < maxEPM;
+
+    // canCreateEvent: per-event plans allow 1 event, pool plans (-1) unlimited
+    let canCreateEvent;
+    if (isPerEvent) {
+      canCreateEvent = (subscription.usage?.eventsCreated || 0) < 1 && !subscription.eventId;
+    } else {
+      canCreateEvent = maxEvents === -1 ? true : eventsThisPeriod < maxEvents;
+    }
+
+    // Normalized guest limits — single source of truth for frontend
+    let guestLimit, isGuestUnlimited, invitePool, invitesRemaining;
+    if (isPerEvent) {
+      guestLimit = limits?.maxInvitesPerEvent ?? 50;
+      isGuestUnlimited = guestLimit === -1;
+      invitePool = null;
+      invitesRemaining = null;
+    } else if (isPool) {
+      guestLimit = -1;
+      isGuestUnlimited = true;
+      invitePool = subscription.invitePool ?? null;
+      invitesRemaining = subscription.invitesRemaining ?? null;
+    } else {
+      guestLimit = limits?.maxInvitesPerEvent ?? 50;
+      isGuestUnlimited = guestLimit === -1;
+      invitePool = subscription.invitePool ?? null;
+      invitesRemaining = subscription.invitesRemaining ?? null;
+    }
+
+    const eventsRemaining = isPerEvent
+      ? Math.max(0, 1 - (subscription.usage?.eventsCreated || 0))
+      : maxEvents === -1
+        ? -1
+        : Math.max(0, maxEvents - eventsThisPeriod);
 
     return {
       hasSubscription: true,
       status: subscription.status,
       planType: subscription.planType,
       planCode: subscription.planCode,
-      limits: subscription.limits,
-      usage: { ...subscription.usage?.toObject?.() || subscription.usage, eventsThisPeriod },
+      isSingleEvent: isPerEvent,
+      isPoolPlan: isPool,
       canCreateEvent,
-      // Explicit invite fields for frontend
-      guests: {
-        limitPerEvent: subscription.limits?.maxInvitesPerEvent ?? subscription.limits?.maxGuestsPerEvent ?? 50,
-        isUnlimited: (subscription.limits?.maxInvitesPerEvent ?? subscription.limits?.maxGuestsPerEvent) === -1,
-      },
-      events: {
-        used: eventsThisPeriod,
-        limit: maxEPM,
-        remaining: maxEPM === -1 ? -1 : Math.max(0, maxEPM - eventsThisPeriod),
-      },
+      guestLimit,
+      isGuestUnlimited,
+      invitePool,
+      invitesRemaining,
+      eventsRemaining,
+      eventsUsed: eventsThisPeriod,
     };
   }
 
@@ -1083,12 +1121,48 @@ class EventsService {
    */
   async getSingleEventStats(eventId, userContext) {
     const query = this._buildScopedEventQuery(eventId, userContext);
-    const event = await Event.findOne(query);
+    const event = await Event.findOne(query).populate("host", "username email phoneNumber name");
     if (!event) throw new NotFoundError("Event");
 
     const guests = await Guest.find({ event: eventId });
 
+    const eventObj = event.toObject ? event.toObject() : event;
+    const host = eventObj.host || null;
+
     return {
+      event: {
+        id: eventObj._id,
+        title: eventObj.eventDetails?.title || "",
+        type: eventObj.eventDetails?.type || "",
+        date: eventObj.eventDetails?.date,
+        testMessageSent: eventObj.testMessageSent || false,
+        whatsappTemplateStatus: eventObj.whatsappTemplateStatus || null,
+        launchSettings: eventObj.launchSettings || null,
+        status: eventObj.status,
+      },
+      host: host
+        ? {
+            id: host._id,
+            username: host.username || "",
+            name: host.name || "",
+            phoneNumber: host.phoneNumber || "",
+          }
+        : null,
+      guests: guests.map((g) => {
+        const guestObj = g.toObject ? g.toObject() : g;
+        return {
+          guestId: guestObj._id,
+          name: guestObj.name || "",
+          phone: guestObj.phone || "",
+          email: guestObj.email || "",
+          status: guestObj.status || "invited",
+          addedBy: guestObj.addedBy || "",
+          respondAt: guestObj.rsvp?.respondedAt || null,
+        };
+      }),
+      staff: eventObj.staffList || [],
+      subscription: eventObj.subscription || null,
+      eventDetails: eventObj.eventDetails || null,
       eventId,
       totalGuests: guests.length,
       confirmed: guests.filter((g) => g.status === "confirmed").length,
@@ -1840,7 +1914,6 @@ class EventsService {
     //   guestReplies.onAttend          → invitationSettings.attendanceAutoReply
     //   guestReplies.onAbsent          → invitationSettings.absenceAutoReply
     //   guestReplies.onExpected        → invitationSettings.expectedAttendanceAutoReply
-    //   hostNote                       → invitationSettings.note
     //
     // Legacy → canonical projections work in reverse during the same write.
     const legacyMerge = { ...(event.invitationSettings?.toObject?.() || event.invitationSettings || {}) };
@@ -1884,10 +1957,6 @@ class EventsService {
       legacyMerge.expectedAttendanceAutoReply = settings.expectedAttendanceAutoReply;
       canonicalReplies.onExpected = settings.expectedAttendanceAutoReply;
     }
-    if (settings.note !== undefined) {
-      legacyMerge.note = settings.note;
-      event.hostNote = settings.note;
-    }
 
     // Apply incoming canonical keys — back-fill the legacy side too.
     // Defensively resolve in case a client sends a non-ObjectId value.
@@ -1918,13 +1987,6 @@ class EventsService {
       if (settings.guestReplies.onAttend !== undefined) legacyMerge.attendanceAutoReply = settings.guestReplies.onAttend;
       if (settings.guestReplies.onAbsent !== undefined) legacyMerge.absenceAutoReply = settings.guestReplies.onAbsent;
       if (settings.guestReplies.onExpected !== undefined) legacyMerge.expectedAttendanceAutoReply = settings.guestReplies.onExpected;
-    }
-    if (settings.invitationMessage !== undefined) {
-      event.invitationMessage = settings.invitationMessage;
-    }
-    if (settings.hostNote !== undefined) {
-      event.hostNote = settings.hostNote;
-      legacyMerge.note = settings.hostNote;
     }
 
     // Phase 4c W0-VISUAL-BACKEND — validate fieldValues against

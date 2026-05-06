@@ -223,7 +223,6 @@ subscriptionSchema.virtual("limits").get(function () {
   return (
     this.planId?.limits || {
       maxEvents: 1,
-      maxEventsPerMonth: -1,
       maxInvitesPerEvent: 50,
     }
   );
@@ -235,22 +234,11 @@ subscriptionSchema.virtual("features").get(function () {
 });
 
 // Events remaining (requires populated planId)
+// Plan schema field is `maxEvents`: -1 = unlimited (pool plans), 1 = per-event.
 subscriptionSchema.virtual("eventsRemaining").get(function () {
-  const limits = this.limits;
-  const planType = this.planId?.planType;
-
-  // Per-event plans - max 1 event
-  if (isPerEventPlan(planType)) {
-    const maxEvents = limits.maxEvents || 1;
-    return Math.max(0, maxEvents - (this.usage?.eventsCreated || 0));
-  }
-
-  // Unlimited plans
-  if (isUnlimited(limits.maxEventsPerMonth)) return -1;
-  return Math.max(
-    0,
-    limits.maxEventsPerMonth - (this.usage?.eventsCreated || 0)
-  );
+  const maxEvents = this.limits.maxEvents;
+  if (isUnlimited(maxEvents)) return -1;
+  return Math.max(0, (maxEvents || 1) - (this.usage?.eventsCreated || 0));
 });
 
 // Get max invites from plan (requires populated planId)
@@ -290,12 +278,7 @@ subscriptionSchema.methods.canCreateEvent = function () {
     return { allowed: true };
   }
 
-  // Unlimited plans
-  if (isUnlimited(this.limits.maxEventsPerMonth)) {
-    return { allowed: true };
-  }
-
-  // Return true here — the service layer does dynamic counting
+  // Pool / unlimited plans — service layer does dynamic counting
   return { allowed: true };
 };
 

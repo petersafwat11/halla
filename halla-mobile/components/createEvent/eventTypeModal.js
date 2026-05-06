@@ -8,6 +8,7 @@ import {
   Pressable,
   ScrollView
 } from "react-native";
+import { useTranslation } from "../../localization";
 import Svg, { Path } from "react-native-svg";
 
 const CheckIcon = () => (
@@ -29,6 +30,8 @@ const EventTypeModal = ({
   selectedType,
   eventTypes
 }) => {
+  const { t } = useTranslation("createEvent");
+
   return (
     <Modal
       visible={visible}
@@ -41,17 +44,11 @@ const EventTypeModal = ({
           style={styles.modalContainer}
           onPress={(e) => e.stopPropagation()}
         >
-          {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>
-              نوع المناسبة
-            </Text>
-            <Text style={styles.headerSubtitle}>
-              اختر نوع المناسبة المناسب لك
-            </Text>
+            <Text style={styles.headerTitle}>{t("stepOne.eventType")}</Text>
+            <Text style={styles.headerSubtitle}>{t("stepOne.eventTypePlaceholder")}</Text>
           </View>
 
-          {/* Event Types List */}
           <ScrollView
             style={styles.listContainer}
             showsVerticalScrollIndicator={false}
@@ -84,13 +81,12 @@ const EventTypeModal = ({
             ))}
           </ScrollView>
 
-          {/* Close Button */}
           <TouchableOpacity
             style={styles.closeButton}
             onPress={onClose}
             activeOpacity={0.7}
           >
-            <Text style={styles.closeButtonText}>إلغاء</Text>
+            <Text style={styles.closeButtonText}>{t("common.cancel")}</Text>
           </TouchableOpacity>
         </Pressable>
       </Pressable>

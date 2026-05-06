@@ -113,25 +113,22 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
 
   const validate = () => {
     const e = {};
-    if (!formData.name.trim()) e.name = t("common.name") + " " + t("common.required", "is required");
+    if (!formData.name.trim()) e.name = t("moderators.add.nameRequired");
     if (!formData.email.trim()) {
-      e.email = t("common.email") + " " + t("common.required", "is required");
+      e.email = t("moderators.add.emailRequired");
     } else if (!EMAIL_RE.test(formData.email)) {
-      e.email = t("common.invalidEmail", "Invalid email format");
+      e.email = t("moderators.add.invalidEmail");
     }
     if (!isEdit && !formData.password.trim()) {
-      e.password = t("moderators.add.password") + " " + t("common.required", "is required");
+      e.password = t("moderators.add.passwordRequired");
     }
     if (!isEdit && !formData.phoneNumber.trim()) {
-      e.phoneNumber = t("moderators.add.phoneRequired") + " " + t("common.required", "is required");
+      e.phoneNumber = t("moderators.add.phoneRequired");
     }
     // H-15: SUPER_ADMIN must select a tenant for ADMIN/MODERATOR/WL_*
     // creations.
     if (showWhitelabelPicker && !formData.whitelabelId) {
-      e.whitelabelId = t(
-        "moderators.add.whitelabelRequired",
-        "اختر العلامة البيضاء"
-      );
+      e.whitelabelId = t("moderators.add.whitelabelRequired");
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -165,7 +162,7 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
       onSave && onSave();
       onClose();
     } catch (err) {
-      toast.error(err?.message || "Failed to save moderator");
+      toast.error(err?.message || t("moderators.add.saveFailed"));
     }
   };
 
@@ -311,20 +308,17 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
             {showWhitelabelPicker ? (
               <View style={styles.field}>
                 <Text style={styles.label}>
-                  {t("moderators.add.whitelabel", "العلامة البيضاء")} *
+                  {t("moderators.add.whitelabel")} *
                 </Text>
                 {whitelabelsQuery.isLoading ? (
-                  <Text style={styles.roleDesc}>
-                    {t("common.loading", "جارٍ التحميل...")}
-                  </Text>
+                <Text style={styles.roleDesc}>
+                  {t("common.loading")}
+                </Text>
                 ) : (
                   <View style={styles.roleList}>
                     {whitelabelOptions.length === 0 ? (
                       <Text style={styles.roleDesc}>
-                        {t(
-                          "moderators.add.noWhitelabels",
-                          "لا توجد علامات بيضاء متاحة"
-                        )}
+                        {t("moderators.add.noWhitelabels")}
                       </Text>
                     ) : (
                       whitelabelOptions.map((opt) => {

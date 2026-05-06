@@ -1,5 +1,6 @@
 {
   "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
+  "noActiveSubscription": { "title": "No active subscription", "subtitle": "Choose a plan below to activate your subscription" },
   "pageTitle": "Choose Your Plan",
   "pageSubtitle": "Select the right plan for your event",
   "loading": "Loading...",

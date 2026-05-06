@@ -52,6 +52,9 @@
   letter-spacing: 0.08px;
   min-height: 10rem;
 }
+.input_with_prefix {
+  padding-left: 9rem;
+}
 .input_error {
   border: 1.5px solid #c0392b;
   background: #fdf5f5;
