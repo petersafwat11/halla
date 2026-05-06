@@ -38,6 +38,9 @@ class PostEventService {
     return {
       eventId: event._id,
       eventTitle: event.eventDetails?.title,
+      thankYouMessage: content
+        ? { text: content.title || '', textAr: content.titleAr || '' }
+        : { text: '', textAr: '' },
       content: content || { posts: [], settings: { isPublished: false } },
     };
   }

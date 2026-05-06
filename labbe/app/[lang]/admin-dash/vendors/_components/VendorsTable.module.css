@@ -1,3 +1,14 @@
 .container {
   margin-top: 2rem;
 }
+
+.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.ratingClickable {
+  color: #3498DB;
+  cursor: pointer;
+  text-decoration: underline;
+}

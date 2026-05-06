@@ -260,14 +260,18 @@ export async function htmlToImageConvert(
   const html2canvas = (await import('html2canvas')).default;
 
   try {
-    // Configure html2canvas options
+    // Configure html2canvas options. We deliberately do NOT set
+    // `allowTaint: true` — pairing it with `useCORS` produces a
+    // tainted canvas when the source bucket lacks CORS, which then
+    // silently bakes a partial image (text only, no background) and
+    // makes `canvas.toBlob` return null. Strict CORS-only loading
+    // surfaces the underlying S3/CDN misconfiguration as a clear
+    // error instead of shipping a broken file downstream.
     const canvas = await html2canvas(imageRef.current, {
       useCORS: true,
-      allowTaint: true,
       backgroundColor: '#ffffff',
       scale: 2, // Higher quality
       logging: false,
-      // Ignore elements that might cause issues
       ignoreElements: (element) => {
         return element.tagName === 'SCRIPT' || element.tagName === 'NOSCRIPT';
       },

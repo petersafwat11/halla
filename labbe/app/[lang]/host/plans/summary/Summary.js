@@ -74,7 +74,7 @@ const Summary = ({
         subtotal,
         planFamily || null
       );
-      const result = response?.data?.data || response?.data || response;
+      const result = response?.data || response;
       if (result?.valid) {
         const discount = result.discountAmount || 0;
         setDiscountAmount(discount);

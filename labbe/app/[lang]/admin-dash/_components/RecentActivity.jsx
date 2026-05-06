@@ -3,16 +3,52 @@
 import { useAdminDashboard } from "@/hooks/reactQueryHooks/useAdmin";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { useMemo } from "react";
-import { cookieUtils } from "@/utils/cookieUtils";
+import { useCallback } from "react";
+import useAuthStore from "@/stores/authStore";
 import Table from "@/ui/commen/new-table/Table";
 import Bottom from "@/ui/admin/dashboard/bottom/Bottom";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./RecentActivity.module.css";
 
+const HOST_STATUS_KEYS = {
+  active: "tables.recentHosts.status.active",
+  pending: "tables.recentHosts.status.pending",
+  suspended: "tables.recentHosts.status.suspended",
+};
+
+const HOST_STATUS_STYLES = {
+  active: styles.statusBadgeActive,
+  pending: styles.statusBadgePending,
+  suspended: styles.statusBadgeSuspended,
+};
+
+const EVENT_STATUS_KEYS = {
+  scheduled: "tables.recentEvents.status.scheduled",
+  live: "tables.recentEvents.status.live",
+  completed: "tables.recentEvents.status.completed",
+  draft: "tables.recentEvents.status.draft",
+};
+
+const EVENT_STATUS_STYLES = {
+  scheduled: styles.statusBadgeScheduled,
+  live: styles.statusBadgeLive,
+  completed: styles.statusBadgeCompleted,
+  draft: styles.statusBadgeDraft,
+};
+
+function formatDate(value, locale = "ar-SA") {
+  if (!value) return value;
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 export default function RecentActivity() {
-  const { t } = useTranslation("adminDashboard");
+  const { t, i18n } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
+  const { user } = useAuthStore();
 
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -22,144 +58,71 @@ export default function RecentActivity() {
     ...(to && { to }),
   };
 
-  const { data: responseData, isLoading } = useAdminDashboard(filters);
+  const { data: responseData, isLoading, error } = useAdminDashboard(filters);
   const data = responseData?.data || responseData;
-
-  const user = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    const userData = cookieUtils.getCookie("user");
-    return userData ? JSON.parse(userData) : null;
-  }, []);
 
   const isWhitelabelAdmin = user?.role === "whitelabel_admin";
 
-  const renderStatusCell = (key, value) => {
-    if (key === "status") {
-      const statusConfig = {
-        active: {
-          bg: "#EAF4EF",
-          color: "#2A8C5B",
-          text: t("tables.recentHosts.status.active", "نشط"),
-        },
-        pending: {
-          bg: "#FBF3E6",
-          color: "#D38200",
-          text: t("tables.recentHosts.status.pending", "قيد الانتظار"),
-        },
-        suspended: {
-          bg: "#F9EBEA",
-          color: "#C0392B",
-          text: t("tables.recentHosts.status.suspended", "موقوف"),
-        },
-      };
-      const config = statusConfig[value] || statusConfig.active;
-      return (
-        <div
-          style={{
-            display: "inline-flex",
-            padding: "0.3rem 1.2rem",
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: "9999px",
-            background: config.bg,
-          }}
-        >
-          <span
-            style={{
-              color: config.color,
-              fontFamily: "Cairo",
-              fontSize: "1.2rem",
-            }}
-          >
-            {config.text}
+  const renderStatusCell = useCallback(
+    (key, value) => {
+      if (key === "status") {
+        const labelKey = HOST_STATUS_KEYS[value] || HOST_STATUS_KEYS.active;
+        const badgeClass = HOST_STATUS_STYLES[value] || styles.statusBadgeActive;
+        return (
+          <span className={`${styles.statusBadge} ${badgeClass}`}>
+            {t(labelKey)}
           </span>
-        </div>
-      );
-    }
-    if (key === "createdAt" && value) {
-      const date = new Date(value);
-      const arabicMonths = [
-        "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
-        "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
-      ];
-      return `${date.getDate()} ${arabicMonths[date.getMonth()]} ${date.getFullYear()}`;
-    }
-    return value;
-  };
+        );
+      }
+      if (key === "createdAt" && value) {
+        return formatDate(value, i18n.language);
+      }
+      return value;
+    },
+    [t, i18n.language]
+  );
 
-  const renderEventStatusCell = (key, value) => {
-    if (key === "status") {
-      const statusConfig = {
-        scheduled: {
-          bg: "#E8F4FD",
-          color: "#3498DB",
-          text: t("tables.recentEvents.status.scheduled", "مجدول"),
-        },
-        live: {
-          bg: "#EAF4EF",
-          color: "#2A8C5B",
-          text: t("tables.recentEvents.status.live", "مباشر"),
-        },
-        completed: {
-          bg: "#F5F5F5",
-          color: "#666666",
-          text: t("tables.recentEvents.status.completed", "منتهي"),
-        },
-        draft: {
-          bg: "#FBF3E6",
-          color: "#D38200",
-          text: t("tables.recentEvents.status.draft", "مسودة"),
-        },
-      };
-      const config = statusConfig[value] || statusConfig.draft;
-      return (
-        <div
-          style={{
-            display: "inline-flex",
-            padding: "0.3rem 1.2rem",
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: "9999px",
-            background: config.bg,
-          }}
-        >
-          <span
-            style={{
-              color: config.color,
-              fontFamily: "Cairo",
-              fontSize: "1.2rem",
-            }}
-          >
-            {config.text}
+  const renderEventStatusCell = useCallback(
+    (key, value) => {
+      if (key === "status") {
+        const labelKey = EVENT_STATUS_KEYS[value] || EVENT_STATUS_KEYS.draft;
+        const badgeClass = EVENT_STATUS_STYLES[value] || styles.statusBadgeDraft;
+        return (
+          <span className={`${styles.statusBadge} ${badgeClass}`}>
+            {t(labelKey)}
           </span>
-        </div>
-      );
-    }
-    if (key === "date" && value) {
-      const date = new Date(value);
-      const arabicMonths = [
-        "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
-        "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
-      ];
-      return `${date.getDate()} ${arabicMonths[date.getMonth()]} ${date.getFullYear()}`;
-    }
-    return value;
-  };
+        );
+      }
+      if (key === "date" && value) {
+        return formatDate(value, i18n.language);
+      }
+      return value;
+    },
+    [t, i18n.language]
+  );
 
   if (isLoading) {
     return <SimpleLoading />;
+  }
+
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <p>{t("errors.loadFailed", "Failed to load recent activity")}</p>
+      </div>
+    );
   }
 
   return (
     <div className={styles.container}>
       <div className={styles.tables}>
         <Table
-          title={t("tables.recentHosts.title", "العملاء الجدد")}
+          title={t("tables.recentHosts.title", "Recent Hosts")}
           headers={[
-            t("tables.recentHosts.columns.name", "الاسم"),
-            t("tables.recentHosts.columns.email", "البريد الإلكتروني"),
-            t("tables.recentHosts.columns.status", "الحالة"),
-            t("tables.recentHosts.columns.createdAt", "التاريخ"),
+            t("tables.recentHosts.columns.name", "Name"),
+            t("tables.recentHosts.columns.email", "Email"),
+            t("tables.recentHosts.columns.status", "Status"),
+            t("tables.recentHosts.columns.createdAt", "Date"),
           ]}
           data={(data?.recentActivity?.hosts || []).map((host) => ({
             id: host.id || host._id,
@@ -175,12 +138,12 @@ export default function RecentActivity() {
           showCheckboxes={false}
         />
         <Table
-          title={t("tables.recentEvents.title", "المناسبات الأخيرة")}
+          title={t("tables.recentEvents.title", "Recent Events")}
           headers={[
-            t("tables.recentEvents.columns.title", "العنوان"),
-            t("tables.recentEvents.columns.host", "المضيف"),
-            t("tables.recentEvents.columns.date", "التاريخ"),
-            t("tables.recentEvents.columns.status", "الحالة"),
+            t("tables.recentEvents.columns.title", "Title"),
+            t("tables.recentEvents.columns.host", "Host"),
+            t("tables.recentEvents.columns.date", "Date"),
+            t("tables.recentEvents.columns.status", "Status"),
           ]}
           data={(data?.recentActivity?.events || []).map((event) => ({
             id: event.id || event._id,

@@ -1,0 +1,219 @@
+.fieldsContainer {
+  padding: 0 20px 20px;
+}
+
+.fieldsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.fieldCount {
+  font-size: 13px;
+  font-weight: 500;
+  color: #8a7a6a;
+  background: #faf8f5;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+/* ── Field Card ── */
+.fieldCard {
+  border-radius: 12px;
+  border: 1px solid #f0ede8;
+  background: #ffffff;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.fieldCard:hover {
+  border-color: #e0dcd5;
+}
+
+.fieldCard.expanded {
+  border-color: #c28e5c;
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.12);
+}
+
+.fieldCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.fieldCardHeader:hover {
+  background: #faf8f5;
+}
+
+.fieldCardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fieldIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #c28e5c 0%, #a07448 100%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.fieldCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fieldCardKey {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c2c2c;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.fieldCardType {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a7a6a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f5f3f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.fieldCardHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chevron {
+  color: #b0a898;
+  transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ── Card Body ── */
+.fieldCardBody {
+  padding: 16px;
+  background: #faf8f5;
+  border-top: 1px solid #f0ede8;
+}
+
+/* ── Config Groups ── */
+.configGroup {
+  margin-bottom: 16px;
+}
+
+.configGroup:last-child {
+  margin-bottom: 0;
+}
+
+.configGroupTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a7a6a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e0dcd5;
+}
+
+/* ── Form Layouts ── */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.formGrid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.formField {
+  min-width: 0;
+}
+
+.validationRow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toggleWrapper {
+  padding: 8px 12px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #f0ede8;
+}
+
+/* ── Empty State ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.emptyText {
+  margin: 12px 0 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #5a5a5a;
+}
+
+.emptySubtext {
+  margin: 0;
+  font-size: 13px;
+  color: #999;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .fieldsContainer {
+    padding: 0 16px 16px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formGrid3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fieldCardHeader {
+    padding: 12px;
+  }
+
+  .fieldCardBody {
+    padding: 12px;
+  }
+}

@@ -1,8 +1,7 @@
-"use client";
 import React from "react";
 import styles from "./header.module.css";
 
-export default function Header({ eventName = "مناسبة زفاف ابراهيم كامل" }) {
+export default function Header({ eventName }) {
   return (
     <div className={styles.headerContainer}>
       <div className={styles.headerCard}>

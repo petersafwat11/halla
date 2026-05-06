@@ -1,22 +1,22 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaCheckCircle, FaTicketAlt, FaStar } from "react-icons/fa";
 import { useTicket, useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import StarRating from "@/ui/commen/inputs/starRating/StarRating";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
 import { ticketRatingSchema, defaultTicketRatingValues } from "@/utils/schemas/ticketRatingSchema";
+import { handleError } from "@/services/errorHandlingService";
+import { toastUtils } from "@/utils/toastUtils";
+import { TICKET_STATUS } from "@/services/tickets";
+import ErrorBoundary from "@/ui/common/errorBoundary/ErrorBoundary";
 import styles from "./page.module.css";
 
-const RATING_LABELS = ["veryPoor", "poor", "average", "good", "excellent"];
-
-const TicketRatingPage = () => {
+const TicketRatingContent = () => {
   const { id: ticketId } = useParams();
   const router = useRouter();
   const { t, i18n } = useTranslation("ticketRating");
@@ -25,7 +25,7 @@ const TicketRatingPage = () => {
   const [submittedData, setSubmittedData] = useState(null);
 
   // Fetch ticket data with React Query
-  const { data: ticketData, isLoading, error } = useTicket(ticketId);
+  const { data: ticketData, isLoading, error, refetch } = useTicket(ticketId);
 
   // Rating submission mutation
   const rateMutation = useTicketMutation("rateTicket");
@@ -71,7 +71,7 @@ const TicketRatingPage = () => {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty, submitted]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = useCallback(async (data) => {
     try {
       await rateMutation.mutateAsync({
         ticketId,
@@ -80,17 +80,14 @@ const TicketRatingPage = () => {
       });
       setSubmitted(true);
       setSubmittedData(data);
-      toast.success(t("success.title"));
-    } catch (error) {
-      console.error("Error submitting rating:", error);
-      toast.error(error?.response?.data?.message || t("errors.submitFailed"));
+      toastUtils.success(t("success.title"));
+    } catch (err) {
+      handleError(err, t, { fallbackMessage: "errors.submitFailed" });
     }
-  };
+  }, [rateMutation, ticketId, t]);
 
-  const getRatingLabel = (value) => {
-    if (value >= 1 && value <= 5) return t(`rating.${RATING_LABELS[value - 1]}`);
-    return "";
-  };
+  const handleReload = useCallback(() => refetch(), [refetch]);
+  const handleGoHome = useCallback(() => router.push("/"), [router]);
 
   // Loading state
   if (isLoading) {
@@ -105,12 +102,16 @@ const TicketRatingPage = () => {
   if (error) {
     return (
       <div className={styles.container}>
-        <ErrorBoundary
-          onRetry={() => window.location.reload()}
-          fallbackMessage={t("errors.loadFailed")}
-        >
-          <div />
-        </ErrorBoundary>
+        <div className={styles.statusCard}>
+          <FaTicketAlt className={styles.statusIcon} />
+          <h2>{t("errors.loadFailed")}</h2>
+          <button
+            onClick={handleReload}
+            className={styles.secondaryButton}
+          >
+            {t("buttons.retry")}
+          </button>
+        </div>
       </div>
     );
   }
@@ -124,7 +125,7 @@ const TicketRatingPage = () => {
           <h2>{t("notFound.title")}</h2>
           <p>{t("notFound.description")}</p>
           <button
-            onClick={() => router.push("/")}
+            onClick={handleGoHome}
             className={styles.secondaryButton}
           >
             {t("buttons.backToHome")}
@@ -135,7 +136,7 @@ const TicketRatingPage = () => {
   }
 
   // Ticket not resolved state
-  if (ticket.status !== "resolved" && ticket.status !== "closed") {
+  if (ticket.status !== TICKET_STATUS.RESOLVED && ticket.status !== TICKET_STATUS.CLOSED) {
     return (
       <div className={styles.container}>
         <div className={styles.statusCard}>
@@ -174,7 +175,7 @@ const TicketRatingPage = () => {
               </div>
             )}
             <button
-              onClick={() => router.push("/")}
+              onClick={handleGoHome}
               className={styles.secondaryButton}
             >
               {t("buttons.backToHome")}
@@ -216,7 +217,6 @@ const TicketRatingPage = () => {
                 placeholder={t("feedback.placeholder")}
                 rows={4}
                 maxLength={1000}
-                showCount
               />
             </section>
 
@@ -231,6 +231,18 @@ const TicketRatingPage = () => {
         </FormProvider>
       </div>
     </div>
+  );
+};
+
+const TicketRatingPage = () => {
+  const { t } = useTranslation("ticketRating");
+  return (
+    <ErrorBoundary
+      fallbackTitle={t("errors.loadFailed")}
+      fallbackMessage={t("errors.submitFailed")}
+    >
+      <TicketRatingContent />
+    </ErrorBoundary>
   );
 };
 

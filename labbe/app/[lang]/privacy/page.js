@@ -4,11 +4,11 @@ import privacyData from "@/ui/landing/Legal/data/privacy.json";
 const SIBLINGS = [
   {
     href: "/terms",
-    title: { ar: "الشروط والأحكام", en: "Terms & Conditions" },
+    titleKey: "legal.siblings.terms",
   },
   {
     href: "/refund",
-    title: { ar: "سياسة الإلغاء والاسترداد", en: "Cancellation & Refund" },
+    titleKey: "legal.siblings.refund",
   },
 ];
 

@@ -279,5 +279,42 @@
     "brand": "Halla — Events & Invitations",
     "title": "Join Halla Now",
     "description": "Your smart platform for managing invitations and events professionally.\nSend personalized WhatsApp invites, track attendance via QR, and manage your team — all from the app."
+  },
+  "legal": {
+    "backHome": "Back to Home",
+    "lastUpdated": "Last Updated",
+    "articles": "Articles",
+    "legalDocs": "Legal Documents",
+    "jumpTo": "Jump to",
+    "onThisPage": "On this page",
+    "contactTitle": "Need help?",
+    "contactDesc": "If you have any questions, feel free to contact us.",
+    "contactEmail": "Contact via Email",
+    "contactWA": "Contact via WhatsApp",
+    "backToTop": "Back to Top",
+    "langAr": "العربية",
+    "langEn": "English",
+    "privacyTitle": "Privacy Policy",
+    "termsTitle": "Terms & Conditions",
+    "refundTitle": "Cancellation & Refund",
+    "siblings": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms & Conditions",
+      "refund": "Cancellation & Refund"
+    },
+    "metadata": {
+      "terms": {
+        "title": "Terms & Conditions – Halla",
+        "description": "Terms and conditions for using the Halla event management platform"
+      },
+      "privacy": {
+        "title": "Privacy Policy – Halla",
+        "description": "Privacy policy for using the Halla event management platform"
+      },
+      "refund": {
+        "title": "Cancellation & Refund Policy – Halla",
+        "description": "Cancellation, postponement, and refund policy for the Halla platform"
+      }
+    }
   }
 }

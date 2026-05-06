@@ -107,26 +107,25 @@ export default function PricingSection({ lang = "ar" }) {
 
   // ── State ──
   const [audience,      setAudience]      = useState("host");
-  const [planFamily,    setPlanFamily]    = useState("basic");     // basic | premium
   const [billingType,   setBillingType]   = useState("event");     // event | monthly
   const [selInvites,    setSelInvites]    = useState(50);
   const [selPool,       setSelPool]       = useState(100);
   const [bizType,       setBizType]       = useState("event");     // event | quarterly | annual
   const [selBizInvites, setSelBizInvites] = useState(100);
 
-  const resetToHost     = (next) => { setAudience(next); setPlanFamily("basic"); setBillingType("event"); setBizType("event"); };
+  const resetToHost     = (next) => { setAudience(next); setBillingType("event"); setBizType("event"); };
 
   // ── Derived ──
-  const hostEventTiers   = planFamily === "premium" ? PREMIUM_EVENT_TIERS   : BASIC_EVENT_TIERS;
-  const hostMonthlyTiers = planFamily === "premium" ? PREMIUM_MONTHLY_TIERS : BASIC_MONTHLY_TIERS;
-  const activeHostFeatures = planFamily === "premium" ? premiumFeatures : basicFeatures;
-
-  const currentEventTier    = hostEventTiers.find(x => x.invites === selInvites)   || hostEventTiers[1];
-  const currentMonthlyTier  = hostMonthlyTiers.find(x => x.pool === selPool)       || hostMonthlyTiers[0];
+  const currentEventTier    = BASIC_EVENT_TIERS.find(x => x.invites === selInvites)   || BASIC_EVENT_TIERS[1];
+  const currentPremiumEvent = PREMIUM_EVENT_TIERS.find(x => x.invites === selInvites) || PREMIUM_EVENT_TIERS[1];
+  const currentMonthlyTier  = BASIC_MONTHLY_TIERS.find(x => x.pool === selPool)       || BASIC_MONTHLY_TIERS[0];
+  const currentPremiumMonthly = PREMIUM_MONTHLY_TIERS.find(x => x.pool === selPool)   || PREMIUM_MONTHLY_TIERS[0];
   const currentBizEventTier = BUSINESS_EVENT_TIERS.find(x => x.invites === selBizInvites) || BUSINESS_EVENT_TIERS[0];
 
   const eventComp     = Math.floor(currentEventTier.invites         * COMPENSATION_PCT / 100);
+  const premiumEventComp = Math.floor(currentPremiumEvent.invites   * COMPENSATION_PCT / 100);
   const monthlyComp   = Math.floor(currentMonthlyTier.pool          * COMPENSATION_PCT / 100);
+  const premiumMonthlyComp = Math.floor(currentPremiumMonthly.pool  * COMPENSATION_PCT / 100);
   const bizEventComp  = Math.floor(currentBizEventTier.invites      * COMPENSATION_PCT / 100);
   const quarterlyComp = Math.floor(BUSINESS_QUARTERLY.pool          * COMPENSATION_PCT / 100);
   const annualComp    = Math.floor(BUSINESS_ANNUAL.pool             * COMPENSATION_PCT / 100);
@@ -172,48 +171,31 @@ export default function PricingSection({ lang = "ar" }) {
 
           <div className={styles.prSep} />
 
-          {/* Row 2 — plan family (host) / biz type (business) */}
-          <div className={styles.prBillRow}>
-            <div className={styles.prBillTrack}>
-              {audience === "host" ? (
-                <>
-                  <button
-                    className={`${styles.prBillBtn}${planFamily === "basic" ? ` ${styles.active}` : ""}`}
-                    onClick={() => { setPlanFamily("basic"); setSelInvites(50); setSelPool(100); }}
-                  >
-                    {t("pricing.basic")}
-                  </button>
-                  <button
-                    className={`${styles.prBillBtn}${planFamily === "premium" ? ` ${styles.active}` : ""}`}
-                    onClick={() => { setPlanFamily("premium"); setSelInvites(50); setSelPool(100); }}
-                  >
-                    {t("pricing.premium")}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    className={`${styles.prBillBtn}${bizType === "event" ? ` ${styles.active}` : ""}`}
-                    onClick={() => { setBizType("event"); setSelBizInvites(100); }}
-                  >
-                    {t("pricing.bizEventTab")}
-                  </button>
-                  <button
-                    className={`${styles.prBillBtn}${bizType === "quarterly" ? ` ${styles.active}` : ""}`}
-                    onClick={() => setBizType("quarterly")}
-                  >
-                    {t("pricing.bizQuarterlyTab")}
-                  </button>
-                  <button
-                    className={`${styles.prBillBtn}${bizType === "annual" ? ` ${styles.active}` : ""}`}
-                    onClick={() => setBizType("annual")}
-                  >
-                    {t("pricing.bizAnnualTab")}
-                  </button>
-                </>
-              )}
+          {/* Row 2 — biz type (business only) */}
+          {audience === "business" && (
+            <div className={styles.prBillRow}>
+              <div className={styles.prBillTrack}>
+                <button
+                  className={`${styles.prBillBtn}${bizType === "event" ? ` ${styles.active}` : ""}`}
+                  onClick={() => { setBizType("event"); setSelBizInvites(100); }}
+                >
+                  {t("pricing.bizEventTab")}
+                </button>
+                <button
+                  className={`${styles.prBillBtn}${bizType === "quarterly" ? ` ${styles.active}` : ""}`}
+                  onClick={() => setBizType("quarterly")}
+                >
+                  {t("pricing.bizQuarterlyTab")}
+                </button>
+                <button
+                  className={`${styles.prBillBtn}${bizType === "annual" ? ` ${styles.active}` : ""}`}
+                  onClick={() => setBizType("annual")}
+                >
+                  {t("pricing.bizAnnualTab")}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Row 3 — billing type (host only) */}
           {audience === "host" && (
@@ -237,93 +219,213 @@ export default function PricingSection({ lang = "ar" }) {
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════════
-            HOST — PER EVENT
+            HOST — PER EVENT (Basic + Premium side-by-side)
         ══════════════════════════════════════════════════════════════════════ */}
         {audience === "host" && billingType === "event" && (
-          <div className={styles.prHostCard}>
-            <div>
-              <div className={styles.prGuestLabel}>{t("pricing.selectInvites")}</div>
-              <div className={styles.prGuestTrack}>
-                {hostEventTiers.map(item => (
-                  <button
-                    key={item.invites}
-                    className={`${styles.prGuestBtn}${selInvites === item.invites ? ` ${styles.active}` : ""}`}
-                    onClick={() => setSelInvites(item.invites)}
-                  >
-                    <span className={styles.prGuestNum}>{item.invites}</span>
-                    <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                  </button>
-                ))}
+          <div className={styles.prGrid}>
+            {/* Basic Card */}
+            <div className={styles.prCard}>
+              <div className={styles.prCardTop}>
+                <div>
+                  <h3 className={styles.prCardName}>{t("pricing.basic")}</h3>
+                </div>
+                <div className={styles.prPrice}>
+                  <div className={styles.prPriceRow}>
+                    <span className={styles.prPriceNum}>{currentEventTier.price.toLocaleString()}</span>
+                    <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
+                  </div>
+                  <span className={styles.prPricePer}>{t("pricing.pricePerEvent")}</span>
+                </div>
+              </div>
+
+              <div>
+                <div className={styles.prGuestLabel}>{t("pricing.selectInvites")}</div>
+                <div className={styles.prGuestTrack}>
+                  {BASIC_EVENT_TIERS.map(item => (
+                    <button
+                      key={item.invites}
+                      className={`${styles.prGuestBtn}${selInvites === item.invites ? ` ${styles.active}` : ""}`}
+                      onClick={() => setSelInvites(item.invites)}
+                    >
+                      <span className={styles.prGuestNum}>{item.invites}</span>
+                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.prManaged}>
+                <div className={styles.prManagedTextWrap}>
+                  <span className={styles.prManagedTitle}>{t("pricing.validDays90")}</span>
+                </div>
+              </div>
+
+              <div className={styles.prFeatSection}>
+                <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
+                <FeatureList features={basicFeatures} />
+              </div>
+
+              <div className={styles.prCardFooter}>
+                <CompRow count={eventComp} t={t} />
+                <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
 
-            <div className={styles.prHostPrice}>
-              <span className={styles.prHostPriceNum}>{currentEventTier.price.toLocaleString()}</span>
-              <span className={styles.prHostPriceCur}>{t("pricing.sar")}</span>
-              <span className={styles.prHostPricePer}>{t("pricing.pricePerEvent")}</span>
-            </div>
-
-            <div className={styles.prManaged}>
-              <div className={styles.prManagedTextWrap}>
-                <span className={styles.prManagedTitle}>{t("pricing.validDays90")}</span>
+            {/* Premium Card */}
+            <div className={`${styles.prCard} ${styles.popular}`}>
+              <div className={styles.prPopularBadge}>{t("pricing.premium")}</div>
+              <div className={styles.prCardTop}>
+                <div>
+                  <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
+                </div>
+                <div className={styles.prPrice}>
+                  <div className={styles.prPriceRow}>
+                    <span className={styles.prPriceNum}>{currentPremiumEvent.price.toLocaleString()}</span>
+                    <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
+                  </div>
+                  <span className={styles.prPricePer}>{t("pricing.pricePerEvent")}</span>
+                </div>
               </div>
-            </div>
 
-            <div className={styles.prFeatSection}>
-              <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-              <FeatureList features={activeHostFeatures} />
-            </div>
+              <div>
+                <div className={styles.prGuestLabel}>{t("pricing.selectInvites")}</div>
+                <div className={styles.prGuestTrack}>
+                  {PREMIUM_EVENT_TIERS.map(item => (
+                    <button
+                      key={item.invites}
+                      className={`${styles.prGuestBtn}${selInvites === item.invites ? ` ${styles.active}` : ""}`}
+                      onClick={() => setSelInvites(item.invites)}
+                    >
+                      <span className={styles.prGuestNum}>{item.invites}</span>
+                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <div className={styles.prCardFooter}>
-              <CompRow count={eventComp} t={t} />
-              <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
+              <div className={styles.prManaged}>
+                <div className={styles.prManagedTextWrap}>
+                  <span className={styles.prManagedTitle}>{t("pricing.validDays90")}</span>
+                </div>
+              </div>
+
+              <div className={styles.prFeatSection}>
+                <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
+                <FeatureList features={premiumFeatures} />
+              </div>
+
+              <div className={styles.prCardFooter}>
+                <CompRow count={premiumEventComp} t={t} />
+                <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
+              </div>
             </div>
           </div>
         )}
 
         {/* ══════════════════════════════════════════════════════════════════════
-            HOST — MONTHLY POOL
+            HOST — MONTHLY POOL (Basic + Premium side-by-side)
         ══════════════════════════════════════════════════════════════════════ */}
         {audience === "host" && billingType === "monthly" && (
-          <div className={styles.prHostCard}>
-            <div>
-              <div className={styles.prGuestLabel}>{t("pricing.selectPool")}</div>
-              <div className={styles.prGuestTrack}>
-                {hostMonthlyTiers.map(item => (
-                  <button
-                    key={item.pool}
-                    className={`${styles.prGuestBtn}${selPool === item.pool ? ` ${styles.active}` : ""}`}
-                    onClick={() => setSelPool(item.pool)}
-                  >
-                    <span className={styles.prGuestNum}>{item.pool}</span>
-                    <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                  </button>
-                ))}
+          <div className={styles.prGrid}>
+            {/* Basic Card */}
+            <div className={styles.prCard}>
+              <div className={styles.prCardTop}>
+                <div>
+                  <h3 className={styles.prCardName}>{t("pricing.basic")}</h3>
+                </div>
+                <div className={styles.prPrice}>
+                  <div className={styles.prPriceRow}>
+                    <span className={styles.prPriceNum}>{currentMonthlyTier.price.toLocaleString()}</span>
+                    <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
+                  </div>
+                  <span className={styles.prPricePer}>{t("pricing.pricePerMonth")}</span>
+                </div>
+              </div>
+
+              <div>
+                <div className={styles.prGuestLabel}>{t("pricing.selectPool")}</div>
+                <div className={styles.prGuestTrack}>
+                  {BASIC_MONTHLY_TIERS.map(item => (
+                    <button
+                      key={item.pool}
+                      className={`${styles.prGuestBtn}${selPool === item.pool ? ` ${styles.active}` : ""}`}
+                      onClick={() => setSelPool(item.pool)}
+                    >
+                      <span className={styles.prGuestNum}>{item.pool}</span>
+                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.prManaged}>
+                <div className={styles.prManagedTextWrap}>
+                  <span className={styles.prManagedTitle}>
+                    {t("pricing.unlimitedEvents")} · {t("pricing.validDays30")}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.prFeatSection}>
+                <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
+                <FeatureList features={basicFeatures} />
+              </div>
+
+              <div className={styles.prCardFooter}>
+                <CompRow count={monthlyComp} t={t} />
+                <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
 
-            <div className={styles.prHostPrice}>
-              <span className={styles.prHostPriceNum}>{currentMonthlyTier.price.toLocaleString()}</span>
-              <span className={styles.prHostPriceCur}>{t("pricing.sar")}</span>
-              <span className={styles.prHostPricePer}>{t("pricing.pricePerMonth")}</span>
-            </div>
-
-            <div className={styles.prManaged}>
-              <div className={styles.prManagedTextWrap}>
-                <span className={styles.prManagedTitle}>
-                  {t("pricing.unlimitedEvents")} · {t("pricing.validDays30")}
-                </span>
+            {/* Premium Card */}
+            <div className={`${styles.prCard} ${styles.popular}`}>
+              <div className={styles.prPopularBadge}>{t("pricing.premium")}</div>
+              <div className={styles.prCardTop}>
+                <div>
+                  <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
+                </div>
+                <div className={styles.prPrice}>
+                  <div className={styles.prPriceRow}>
+                    <span className={styles.prPriceNum}>{currentPremiumMonthly.price.toLocaleString()}</span>
+                    <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
+                  </div>
+                  <span className={styles.prPricePer}>{t("pricing.pricePerMonth")}</span>
+                </div>
               </div>
-            </div>
 
-            <div className={styles.prFeatSection}>
-              <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-              <FeatureList features={activeHostFeatures} />
-            </div>
+              <div>
+                <div className={styles.prGuestLabel}>{t("pricing.selectPool")}</div>
+                <div className={styles.prGuestTrack}>
+                  {PREMIUM_MONTHLY_TIERS.map(item => (
+                    <button
+                      key={item.pool}
+                      className={`${styles.prGuestBtn}${selPool === item.pool ? ` ${styles.active}` : ""}`}
+                      onClick={() => setSelPool(item.pool)}
+                    >
+                      <span className={styles.prGuestNum}>{item.pool}</span>
+                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <div className={styles.prCardFooter}>
-              <CompRow count={monthlyComp} t={t} />
-              <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
+              <div className={styles.prManaged}>
+                <div className={styles.prManagedTextWrap}>
+                  <span className={styles.prManagedTitle}>
+                    {t("pricing.unlimitedEvents")} · {t("pricing.validDays30")}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.prFeatSection}>
+                <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
+                <FeatureList features={premiumFeatures} />
+              </div>
+
+              <div className={styles.prCardFooter}>
+                <CompRow count={premiumMonthlyComp} t={t} />
+                <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
+              </div>
             </div>
           </div>
         )}

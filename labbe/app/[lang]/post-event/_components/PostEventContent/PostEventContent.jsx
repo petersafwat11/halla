@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import PageHeader from "../PageHeader/PageHeader";
 import UserInfo from "../UserInfo/UserInfo";
 import InvitationCard from "../InvitationCard/InvitationCard";
@@ -8,8 +9,17 @@ import ActionButtons from "../ActionButtons/ActionButtons";
 import CommentSection from "../CommentSection/CommentSection";
 import styles from "./postEventContent.module.css";
 
-const PostEventContent = () => {
+const PostEventContent = ({ content, eventInfo, guestInfo, eventId, loading }) => {
   const { t } = useTranslation("postEvent");
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <SimpleLoading message={t("loading", "جاري التحميل...")} />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.contentWrapper}>
@@ -17,20 +27,26 @@ const PostEventContent = () => {
 
         <div className={styles.postCard}>
           <div className={styles.postHeader}>
-            <UserInfo name={t("personName")} date={t("date")} />
+            <UserInfo
+              name={guestInfo?.name || t("personName")}
+              date={eventInfo?.date || t("date")}
+              avatarUrl={guestInfo?.avatarUrl}
+            />
           </div>
 
-          <div className={styles.eventTitle}>{t("eventTitle")}</div>
+          <div className={styles.eventTitle}>
+            {eventInfo?.title || t("eventTitle")}
+          </div>
 
-          <InvitationCard t={t} />
+          <InvitationCard eventInfo={eventInfo} content={content} />
 
           <div className={styles.bottomSection}>
-            <ActionButtons />
+            <ActionButtons eventId={eventId} postId={content?._id} />
           </div>
 
           <div className={styles.commentDivider}></div>
 
-          <CommentSection t={t} />
+          <CommentSection eventId={eventId} postId={content?._id} />
         </div>
       </div>
     </div>

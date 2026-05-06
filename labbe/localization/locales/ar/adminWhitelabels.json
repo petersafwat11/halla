@@ -8,7 +8,15 @@
   "stats": {
     "totalWhitelabels": "إجمالي الوايت ليبل",
     "activeWhitelabels": "النشطين",
-    "pendingWhitelabels": "قيد المراجعة"
+    "pendingWhitelabels": "قيد المراجعة",
+    "total": "إجمالي الوايت ليبل",
+    "active": "الوايت ليبل النشطة",
+    "pending": "قيد الانتظار",
+    "suspended": "موقوف",
+    "allTime": "جميع الأوقات",
+    "activeNow": "نشط الآن",
+    "awaitingActivation": "في انتظار التفعيل",
+    "temporarilySuspended": "موقوف مؤقتاً"
   },
   "table": {
     "title": "قائمة الوايت ليبل",
@@ -92,7 +100,18 @@
     "assignPlan": "تعيين الخطة",
     "updateSuccess": "تم تحديث الاشتراك بنجاح",
     "updateError": "فشل في تحديث الاشتراك",
-    "noWhitelabelId": "معرف الوايت ليبل غير موجود"
+    "noWhitelabelId": "معرف الوايت ليبل غير موجود",
+    "loadingPlans": "جاري تحميل الخطط...",
+    "subscriptionUpdateSuccess": "تم تحديث الاشتراك بنجاح",
+    "subscriptionUpdateError": "فشل تحديث الاشتراك"
+  },
+  "form": {
+    "name": "اسم الوايت ليبل",
+    "plan": "الخطة",
+    "selectPlan": "اختر خطة",
+    "status": "الحالة",
+    "selectStatus": "اختر الحالة",
+    "loadingPlans": "جاري تحميل الخطط..."
   },
   "plans": {
     "currency": "ر.س",
@@ -143,7 +162,13 @@
     "bulkDeleteSuccess": "تم حذف الوايت ليبل بنجاح",
     "bulkDeleteError": "فشل في حذف الوايت ليبل",
     "notificationSent": "تم إرسال الإشعار بنجاح",
-    "notificationError": "فشل في إرسال الإشعار"
+    "notificationError": "فشل في إرسال الإشعار",
+    "selectRows": "الرجاء تحديد علامات للحذف",
+    "exportError": "فشل في تصدير الوايت ليبل",
+    "noSubscription": "لا يوجد",
+    "phone": "الهاتف",
+    "domain": "النطاق",
+    "subscription": "الاشتراك"
   },
   "noData": "لا توجد بيانات",
   "dateRange": {

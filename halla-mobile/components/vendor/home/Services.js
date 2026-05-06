@@ -1,22 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  Animated,
-  useWindowDimensions,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import ServiceCard from "./Service";
 
+const ServiceList = React.memo(({ services, onEditService, onDeleteService, onToggleService }) => {
+  const renderService = useCallback(({ item }) => (
+    <ServiceCard
+      id={item.id}
+      name={item.name}
+      imageUri={item.imageUri}
+      categories={item.categories}
+      price={item.price}
+      isAvailable={item.isAvailable}
+      onEdit={() => onEditService?.(item)}
+      onDelete={() => onDeleteService?.(item.id)}
+      onToggle={() => onToggleService?.(item.id)}
+    />
+  ), [onEditService, onDeleteService, onToggleService]);
+
+  return (
+    <FlatList
+      data={services}
+      renderItem={renderService}
+      keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+      contentContainerStyle={styles.listContent}
+      showsVerticalScrollIndicator={false}
+    />
+  );
+});
+
+const EmptyServiceState = React.memo(({ onAddService, t }) => (
+  <View style={styles.emptyStateContainer}>
+    <MaterialCommunityIcons name="briefcase-outline" size={48} color="#CCC" />
+    <Text style={styles.emptyStateTitle}>{t("services.noServices")}</Text>
+    <Text style={styles.emptyStateSubtitle}>{t("services.noServicesHint")}</Text>
+    <TouchableOpacity style={styles.addButton} onPress={onAddService} activeOpacity={0.7}>
+      <MaterialCommunityIcons name="plus" size={20} color="#FFF" />
+      <Text style={styles.addButtonText}>{t("services.addService")}</Text>
+    </TouchableOpacity>
+  </View>
+));
+
 const Services = ({ services = [], onAddService, onEditService, onDeleteService, onToggleService }) => {
   const { t } = useTranslation("vendor");
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const fadeAnim = new Animated.Value(1);
-  const { width } = useWindowDimensions();
 
   const filters = [
     { id: "all", label: t("services.filterAll"), icon: "list" },
@@ -30,62 +64,9 @@ const Services = ({ services = [], onAddService, onEditService, onDeleteService,
     return true;
   });
 
-  const handleFilterChange = (filterId) => {
-    Animated.sequence([
-      Animated.timing(fadeAnim, {
-        toValue: 0.5,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
+  const handleFilterChange = useCallback((filterId) => {
     setSelectedFilter(filterId);
-  };
-
-  const renderService = ({ item }) => (
-    <ServiceCard
-      id={item.id}
-      name={item.name}
-      imageUri={item.imageUri}
-      categories={item.categories}
-      price={item.price}
-      isAvailable={item.isAvailable}
-      onEdit={() => onEditService?.(item)}
-      onDelete={() => onDeleteService?.(item.id)}
-      onToggle={() => onToggleService?.(item.id)}
-    />
-  );
-
-  const renderEmptyState = () => (
-    <View style={styles.emptyStateContainer}>
-      <MaterialCommunityIcons
-        name="briefcase-outline"
-        size={48}
-        color="#CCC"
-      />
-      <Text style={styles.emptyStateTitle}>{t("services.noServices")}</Text>
-      <Text style={styles.emptyStateSubtitle}>
-        {t("services.noServicesHint")}
-      </Text>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={onAddService}
-        activeOpacity={0.7}
-      >
-        <MaterialCommunityIcons
-          name="plus"
-          size={20}
-          color="#FFF"
-        />
-        <Text style={styles.addButtonText}>{t("services.addService")}</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -97,19 +78,11 @@ const Services = ({ services = [], onAddService, onEditService, onDeleteService,
             onPress={onAddService}
             activeOpacity={0.7}
           >
-            <MaterialCommunityIcons
-              name="plus"
-              size={24}
-              color="#FFF"
-            />
+            <MaterialCommunityIcons name="plus" size={24} color="#FFF" />
           </TouchableOpacity>
 
           <View style={styles.searchInputContainer}>
-            <MaterialCommunityIcons
-              name="magnify"
-              size={16}
-              color="#767676"
-            />
+            <MaterialCommunityIcons name="magnify" size={16} color="#767676" />
             <Text style={styles.searchPlaceholder}>{t("services.searchPlaceholder")}</Text>
           </View>
         </View>
@@ -130,9 +103,7 @@ const Services = ({ services = [], onAddService, onEditService, onDeleteService,
             <MaterialCommunityIcons
               name={filter.icon}
               size={14}
-              color={
-                selectedFilter === filter.id ? "#C28E5C" : "#656565"
-              }
+              color={selectedFilter === filter.id ? "#C28E5C" : "#656565"}
             />
             <Text
               style={[
@@ -147,21 +118,18 @@ const Services = ({ services = [], onAddService, onEditService, onDeleteService,
       </View>
 
       {/* Services List */}
-      <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
+      <View style={{ flex: 1 }}>
         {filteredServices.length > 0 ? (
-          <FlatList
-            data={filteredServices}
-            renderItem={renderService}
-            keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={true}
-            nestedScrollEnabled={true}
+          <ServiceList
+            services={filteredServices}
+            onEditService={onEditService}
+            onDeleteService={onDeleteService}
+            onToggleService={onToggleService}
           />
         ) : (
-          renderEmptyState()
+          <EmptyServiceState onAddService={onAddService} t={t} />
         )}
-      </Animated.View>
+      </View>
     </View>
   );
 };

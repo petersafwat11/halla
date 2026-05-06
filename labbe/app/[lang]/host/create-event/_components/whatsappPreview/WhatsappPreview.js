@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 const WhatsappPreview = ({
   eventTitle = "",
-  invitationMessage = "",
+  previewBody = "",
   templateImage = "/svg/events/invitation.svg",
   templateData = {},
   locale = "ar",
@@ -28,13 +28,13 @@ const WhatsappPreview = ({
   }, [entryDate, locale]);
 
   const resolvedMessage = useMemo(() => {
-    if (!invitationMessage) return "";
-    return invitationMessage
+    if (!previewBody) return "";
+    return previewBody
       .replace(/\{\{1\}\}/g, "ضيف عزيز")
       .replace(/\{\{2\}\}/g, eventTitle || "اسم المناسبة")
       .replace(/\{\{3\}\}/g, formattedDate || (entryDate ? entryDate : "التاريخ"))
       .replace(/\{\{4\}\}/g, address || "الموقع");
-  }, [invitationMessage, eventTitle, formattedDate, entryDate, address]);
+  }, [previewBody, eventTitle, formattedDate, entryDate, address]);
 
   const displayImage = useMemo(() => {
     if (!templateImage || templateImage === "/svg/events/invitation.svg") {

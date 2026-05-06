@@ -59,8 +59,8 @@ export const loginWithEmailAPI = async ({ email, password }) => {
     dlog("[AUTH SERVICE] Login successful:", data.user?.email);
 
     return {
-      token: data.token,
-      refreshToken: data.refreshToken,
+      token: data.data?.token || data.token,
+      refreshToken: data.data?.refreshToken || data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
     };
@@ -79,25 +79,36 @@ export const signupVendorAPI = async (vendorData) => {
   try {
     dlog("[AUTH SERVICE] Vendor signup:", vendorData instanceof FormData ? "[FormData]" : vendorData.email);
 
-    // VendorSignupScreen builds FormData directly — use it as-is.
-    // If a plain object is passed (e.g. from tests), build FormData from it.
     let formData;
     if (vendorData instanceof FormData) {
       formData = vendorData;
     } else {
       formData = new FormData();
-      const fileFields = ['businessLogo', 'nationalIdImage', 'commercialRecordImage', 'portfolioImages'];
-      Object.entries(vendorData).forEach(([key, value]) => {
-        if (fileFields.includes(key) && value) {
-          if (Array.isArray(value)) {
-            value.forEach((file) => formData.append(key, file));
-          } else {
-            formData.append(key, value);
-          }
-        } else if (value !== undefined && value !== null) {
-          formData.append(key, value);
-        }
-      });
+      const { identity, serviceData, samplesAndPackages, commercialVerification, socialLinks } = vendorData;
+
+      if (identity?.email) formData.append("email", identity.email);
+      if (identity?.phoneNumber) formData.append("phoneNumber", identity.phoneNumber);
+      if (identity?.password) formData.append("password", identity.password);
+      if (identity?.brandName) formData.append("brandName", identity.brandName);
+      if (identity?.ownerFullName) formData.append("ownerFullName", identity.ownerFullName);
+
+      if (serviceData?.serviceDescription) formData.append("serviceDescription", serviceData.serviceDescription);
+      if (serviceData?.serviceCategories) formData.append("serviceCategories", JSON.stringify(serviceData.serviceCategories));
+
+      if (commercialVerification?.nationalId) formData.append("nationalId", commercialVerification.nationalId);
+      if (commercialVerification?.nationalIdImage) formData.append("nationalIdImage", commercialVerification.nationalIdImage);
+      if (commercialVerification?.commercialRecordImage) formData.append("commercialRecordImage", commercialVerification.commercialRecordImage);
+
+      if (samplesAndPackages?.portfolioImages?.length) {
+        samplesAndPackages.portfolioImages.forEach((img) => formData.append("portfolioImages", img));
+      }
+      if (samplesAndPackages?.pricePackages?.length) {
+        formData.append("pricePackages", JSON.stringify(samplesAndPackages.pricePackages));
+      }
+
+      if (socialLinks) {
+        formData.append("socialLinks", JSON.stringify(socialLinks));
+      }
     }
 
     const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.SIGNUP_VENDOR}`, {
@@ -117,8 +128,8 @@ export const signupVendorAPI = async (vendorData) => {
     dlog("[AUTH SERVICE] Vendor signup successful");
 
     return {
-      token: data.token,
-      refreshToken: data.refreshToken,
+      token: data.data?.token || data.token,
+      refreshToken: data.data?.refreshToken || data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -191,8 +202,8 @@ export const signupWhitelabelAPI = async (whitelabelData) => {
     dlog("[AUTH SERVICE] Whitelabel signup successful");
 
     return {
-      token: data.token,
-      refreshToken: data.refreshToken,
+      token: data.data?.token || data.token,
+      refreshToken: data.data?.refreshToken || data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -270,8 +281,8 @@ export const verifyOTPAPI = async ({ mobile, otp }) => {
     );
 
     return {
-      token: data.token,
-      refreshToken: data.refreshToken,
+      token: data.data?.token || data.token,
+      refreshToken: data.data?.refreshToken || data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
       profileCompleted: data.data?.profileCompleted,
@@ -338,8 +349,8 @@ export const verifySignupOTPAPI = async ({ mobile, otp }) => {
     dlog("[AUTH SERVICE] Signup OTP verified successfully");
 
     return {
-      token: data.token,
-      refreshToken: data.refreshToken,
+      token: data.data?.token || data.token,
+      refreshToken: data.data?.refreshToken || data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
       profileCompleted: data.data?.profileCompleted,
@@ -393,8 +404,8 @@ export const completeProfileAPI = async ({
     );
 
     return {
-      token: data.token,
-      refreshToken: data.refreshToken,
+      token: data.data?.token || data.token,
+      refreshToken: data.data?.refreshToken || data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -521,12 +532,12 @@ export const refreshTokenAPI = async (refreshToken) => {
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.message || "Failed to refresh token");
+    throw new Error(data.message || "Password reset failed");
   }
 
   return {
-    accessToken: data.token,
-    refreshToken: data.refreshToken,
+    accessToken: data.data?.token || data.token,
+    refreshToken: data.data?.refreshToken || data.refreshToken,
     user: data.data?.user,
   };
 };
@@ -548,8 +559,8 @@ export const resetPasswordAPI = async ({ token, password, passwordConfirm }) => 
   }
 
   return {
-    accessToken: data.token,
-    refreshToken: data.refreshToken,
+    accessToken: data.data?.token || data.token,
+    refreshToken: data.data?.refreshToken || data.refreshToken,
     user: data.data?.user,
   };
 };
@@ -578,8 +589,8 @@ export const setupPasswordAPI = async ({ token, password, passwordConfirm }) => 
   }
 
   return {
-    accessToken: data.token,
-    refreshToken: data.refreshToken,
+    accessToken: data.data?.token || data.token,
+    refreshToken: data.data?.refreshToken || data.refreshToken,
     user: data.data?.user,
   };
 };

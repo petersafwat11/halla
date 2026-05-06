@@ -1,5 +1,6 @@
 {
   "welcome": "مرحباً",
+  "guest": "ضيف",
   "dashboard": {
     "title": "لوحة التحكم",
     "stats": {
@@ -23,5 +24,11 @@
     "createEvent": "إنشاء مناسبة",
     "viewEvents": "عرض جميع المناسبات",
     "manageGuests": "إدارة الضيوف"
+  },
+  "notifyStaff": {
+    "successTitle": "تم",
+    "successMessage": "تم إرسال الإشعار للفريق",
+    "errorTitle": "خطأ",
+    "errorMessage": "فشل إرسال الإشعار"
   }
 }

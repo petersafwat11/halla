@@ -56,8 +56,8 @@ export const otpVerificationSchema = (t) =>
     phoneNumber: z.string().min(9).max(11),
     otp: z
       .string()
-      .length(6, t("loginForm.errors.otpInvalid") || "Invalid OTP")
-      .regex(/^[0-9]+$/, t("loginForm.errors.otpInvalid") || "Invalid OTP"),
+      .length(6, t("loginForm.errors.otpInvalid"))
+      .regex(/^[0-9]+$/, t("loginForm.errors.otpInvalid")),
   });
 
 // ============================================
@@ -98,8 +98,7 @@ export const updatePasswordSchema = (t) =>
         .string()
         .min(
           1,
-          t("changePasswordForm.errors.newPasswordRequired") ||
-            "Current password is required"
+          t("changePasswordForm.errors.newPasswordRequired")
         ),
       newPassword: z
         .string()
@@ -127,13 +126,11 @@ export const hostSignupSchema = (t) =>
       .string()
       .min(
         9,
-        t?.("signupForm.hostSignup.errors.phoneNumberInvalid") ||
-          "Invalid phone number"
+        t("signupForm.hostSignup.errors.phoneNumberInvalid")
       )
       .max(
         11,
-        t?.("signupForm.hostSignup.errors.phoneNumberInvalid") ||
-          "Invalid phone number"
+        t("signupForm.hostSignup.errors.phoneNumberInvalid")
       )
       .refine(
         (val) => {
@@ -145,8 +142,7 @@ export const hostSignupSchema = (t) =>
         },
         {
           message:
-            t?.("signupForm.hostSignup.errors.phoneNumberInvalid") ||
-            "Invalid phone number. Must be 9 digits starting with 5 (Saudi) or 11 digits starting with 01 (Egypt)",
+            t("signupForm.hostSignup.errors.phoneNumberInvalid"),
         }
       ),
   });
@@ -158,33 +154,28 @@ export const hostProfileCompletionSchema = (t) =>
         .string()
         .min(
           3,
-          t("signupForm.hostSignup.errors.usernameMinLength") ||
-            t("signupForm.continueSignup.errors.fullNameMinLength")
+          t("signupForm.hostSignup.errors.usernameMinLength")
         ),
       email: z
         .string()
         .min(
           1,
-          t("signupForm.hostSignup.errors.emailRequired") ||
-            t("signupForm.continueSignup.errors.emailRequired")
+          t("signupForm.hostSignup.errors.emailRequired")
         )
         .email(
-          t("signupForm.hostSignup.errors.invalidEmail") ||
-            t("signupForm.continueSignup.errors.invalidEmail")
+          t("signupForm.hostSignup.errors.invalidEmail")
         ),
       password: z
         .string()
         .min(
           8,
-          t("signupForm.hostSignup.errors.passwordMinLength") ||
-            t("signupForm.continueSignup.errors.passwordMinLength")
+          t("signupForm.hostSignup.errors.passwordMinLength")
         ),
       passwordConfirm: z
         .string()
         .min(
           1,
-          t("signupForm.hostSignup.errors.passwordConfirmRequired") ||
-            t("signupForm.continueSignup.errors.confirmPasswordRequired")
+          t("signupForm.hostSignup.errors.passwordConfirmRequired")
         ),
       name: z.string().optional(),
       company: z.string().optional(),
@@ -193,8 +184,7 @@ export const hostProfileCompletionSchema = (t) =>
     })
     .refine((data) => data.password === data.passwordConfirm, {
       message:
-        t("signupForm.hostSignup.errors.passwordsDoNotMatch") ||
-        t("signupForm.continueSignup.errors.passwordsDoNotMatch"),
+        t("signupForm.hostSignup.errors.passwordsDoNotMatch"),
       path: ["passwordConfirm"],
     });
 
@@ -288,8 +278,7 @@ export const vendorSignupSchema = (t) =>
           .number()
           .min(
             1,
-            t("signupForm.vendor.serviceData.errors.regionRequired") ||
-              "Region is required"
+            t("signupForm.vendor.serviceData.errors.regionRequired")
           ),
         regionNameAr: z.string().optional(),
         regionNameEn: z.string().optional(),
@@ -334,21 +323,20 @@ export const vendorSignupSchema = (t) =>
           saudiCommercialRegRegex,
           t(
             "signupForm.vendor.commercialVerification.commercialRecord.invalidFormat"
-          ) || "رقم السجل التجاري يجب أن يكون 10 أرقام"
+          )
         ),
       commercialRecordImage: z.any().optional(),
       nationalId: z
         .string()
         .min(
           1,
-          t("signupForm.vendor.commercialVerification.nationalId.label") ||
-            "National ID is required"
+          t("signupForm.vendor.commercialVerification.nationalId.label")
         )
         .regex(
           saudiNationalIdRegex,
           t(
             "signupForm.vendor.commercialVerification.nationalId.invalidFormat"
-          ) || "رقم الهوية يجب أن يكون 10 أرقام ويبدأ بـ 1 أو 2"
+          )
         ),
       nationalIdImage: z.any().optional(),
     }),
@@ -449,11 +437,10 @@ export const whitelabelSignupSchema = (t) =>
         placeNumber: z
           .string()
           .optional()
-          .refine(
-            (val) => !val || /^\d{1,4}$/.test(val),
-            t("signupForm.whiteLabel.payment.errors.buildingNumberRequired") ||
-              "Invalid place number"
-          ),
+        .refine(
+          (val) => !val || /^\d{1,4}$/.test(val),
+          t("signupForm.whiteLabel.payment.errors.buildingNumberRequired")
+        ),
       }),
     }),
 
@@ -466,13 +453,11 @@ export const whitelabelSignupSchema = (t) =>
         .string()
         .min(
           9,
-          t("signupForm.whiteLabel.login.fields.phoneNumber.invalid") ||
-            "Invalid phone number"
+          t("signupForm.whiteLabel.login.fields.phoneNumber.invalid")
         )
         .max(
           11,
-          t("signupForm.whiteLabel.login.fields.phoneNumber.invalid") ||
-            "Invalid phone number"
+          t("signupForm.whiteLabel.login.fields.phoneNumber.invalid")
         ),
     }),
 
@@ -509,7 +494,7 @@ export const whitelabelSignupSchema = (t) =>
 
     // Plan Selection - Required
     planSelection: z.object({
-      planCode: z.string().min(1, "Plan selection is required"),
+      planCode: z.string().min(1, t("signupForm.whiteLabel.planSelection.planRequired")),
       billingCycle: z.enum(["monthly", "yearly"]).default("yearly"),
       needsCustomBranding: z.boolean().default(false),
     }),
@@ -538,8 +523,7 @@ export const updateProfileSchema = (t) =>
       .string()
       .min(
         2,
-        t("signupForm.hostSignup.errors.usernameMinLength") ||
-          "Username must be at least 2 characters"
+        t("signupForm.hostSignup.errors.usernameMinLength")
       )
       .optional(),
     name: z.string().optional(),
@@ -547,8 +531,7 @@ export const updateProfileSchema = (t) =>
       .string()
       .length(
         9,
-        t("signupForm.hostSignup.errors.phoneNumberInvalid") ||
-          "Invalid phone number"
+        t("signupForm.hostSignup.errors.phoneNumberInvalid")
       )
       .optional()
       .or(z.literal("")),

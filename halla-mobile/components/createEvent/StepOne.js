@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useTranslation } from "../../localization";
 import TextInput from "../commen/TextInput";
 import MapPicker from "../commen/MapPicker";
 import EventTypeModal from "./eventTypeModal";
@@ -68,17 +69,11 @@ const ChevronDownIcon = () => (
   </Svg>
 );
 
-const EVENT_TYPES = [
-  { value: "wedding", label: "زواج", emoji: "💍" },
-  { value: "birthday", label: "عيد ميلاد", emoji: "🎂" },
-  { value: "graduation", label: "تخرج", emoji: "🎓" },
-  { value: "meeting", label: "اجتماع", emoji: "👥" },
-  { value: "conference", label: "مؤتمر", emoji: "🎤" },
-  { value: "other", label: "أخرى", emoji: "📅" },
-];
+const EVENT_TYPE_VALUES = ["wedding", "birthday", "graduation", "meeting", "conference", "other"];
 
 const StepOne = () => {
   const { control, setValue, watch } = useFormContext();
+  const { t } = useTranslation("createEvent");
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const minDate = new Date();
@@ -90,9 +85,16 @@ const StepOne = () => {
   const eventDate = watch("eventDate");
   const eventTime = watch("eventTime");
 
+  const eventTypes = useMemo(() =>
+    EVENT_TYPE_VALUES.map((value) => ({
+      value,
+      label: t(`stepOne.eventTypes.${value}`),
+      emoji: t(`stepOne.eventTypes.${value}.emoji`),
+    })), [t]);
+
   const getEventTypeLabel = () => {
-    const type = EVENT_TYPES.find((t) => t.value === eventType);
-    return type ? `${type.emoji} ${type.label}` : "اختر نوع المناسبة";
+    const type = eventTypes.find((t) => t.value === eventType);
+    return type ? `${type.emoji} ${type.label}` : t("stepOne.eventTypePlaceholder");
   };
 
   const formatDate = (date) => {
@@ -131,14 +133,14 @@ const StepOne = () => {
       {/* Event Name */}
       <TextInput
         name="eventName"
-        label="اسم المناسبة"
-        placeholder="أدخل اسم المناسبة"
-        rules={{ required: "اسم المناسبة مطلوب" }}
+        label={t("stepOne.eventName")}
+        placeholder={t("stepOne.eventNamePlaceholder")}
+        rules={{ required: t("stepOne.eventNameRequired") }}
       />
 
       {/* Event Type */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>نوع المناسبة</Text>
+        <Text style={styles.label}>{t("stepOne.eventType")}</Text>
         <TouchableOpacity
           style={styles.selectButton}
           onPress={() => setShowEventTypeModal(true)}
@@ -158,7 +160,7 @@ const StepOne = () => {
 
       {/* Event Date */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>تاريخ المناسبة</Text>
+        <Text style={styles.label}>{t("stepOne.eventDate")}</Text>
         <TouchableOpacity
           style={styles.selectButton}
           onPress={() => setShowDatePicker(true)}
@@ -172,7 +174,7 @@ const StepOne = () => {
               { flex: 1 },
             ]}
           >
-            {eventDate ? formatDate(eventDate) : "اختر تاريخ المناسبة"}
+            {eventDate ? formatDate(eventDate) : t("stepOne.eventDatePlaceholder")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -189,7 +191,7 @@ const StepOne = () => {
 
       {/* Event Time */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>وقت المناسبة</Text>
+        <Text style={styles.label}>{t("stepOne.eventTime")}</Text>
         <TouchableOpacity
           style={styles.selectButton}
           onPress={() => setShowTimePicker(true)}
@@ -203,7 +205,7 @@ const StepOne = () => {
               { flex: 1 },
             ]}
           >
-            {eventTime || "اختر وقت المناسبة"}
+            {eventTime || t("stepOne.eventTimePlaceholder")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -220,13 +222,13 @@ const StepOne = () => {
       {/* Location */}
       <MapPicker
         name="address"
-        label="موقع المناسبة"
-        placeholder="اختر موقع المناسبة"
+        label={t("stepOne.location")}
+        placeholder={t("stepOne.locationPlaceholder")}
         rules={{
-          required: "موقع المناسبة مطلوب",
+          required: t("stepOne.locationRequired"),
           validate: (value) => {
             if (!value || !value.address || value.address.trim() === "") {
-              return "يرجى اختيار موقع صحيح";
+              return t("stepOne.locationInvalid");
             }
             return true;
           },
@@ -241,7 +243,7 @@ const StepOne = () => {
           setShowEventTypeModal(false);
         }}
         selectedType={eventType}
-        eventTypes={EVENT_TYPES}
+        eventTypes={eventTypes}
       />
     </View>
   );

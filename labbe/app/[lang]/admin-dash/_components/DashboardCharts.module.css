@@ -98,3 +98,13 @@
   text-align: end;
   flex-shrink: 0;
 }
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: #c0392b;
+  font-family: Cairo, sans-serif;
+  font-size: 1rem;
+}

@@ -1,0 +1,21 @@
+.statIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+}
+
+.statIcon svg {
+  width: 1em;
+  height: 1em;
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: #c0392b;
+  font-family: Cairo, sans-serif;
+  font-size: 1rem;
+}

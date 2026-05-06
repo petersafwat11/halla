@@ -4,7 +4,8 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAdminModeratorMutation } from "@/hooks/reactQueryHooks/useAdmin";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
 import { editModeratorSchema } from "@/utils/schemas/adminPopupSchemas";
@@ -53,10 +54,10 @@ export default function EditModeratorPopup({ moderator, onClose }) {
         moderatorId: moderator.id || moderator._id,
         data: { ...formData, phoneNumber: phone },
       });
-      toast.success(t("moderators.updateSuccess", "تم تحديث المشرف بنجاح"));
+      toastUtils.success(t("editModerator.success", "Moderator updated successfully"));
       onClose();
     } catch (error) {
-      toast.error(error.message || t("moderators.updateError", "فشل تحديث المشرف"));
+      handleError(error, t);
     }
   };
 

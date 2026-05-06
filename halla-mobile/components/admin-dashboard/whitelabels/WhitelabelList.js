@@ -152,7 +152,7 @@ const WhitelabelList = ({
       icon: "ban-outline",
       label: t("whitelabels.actions.suspend"),
       color: colors.warning[500],
-      bg: "#fff4e0",
+      bg: colors.warning[50],
       loading: bulkSuspend.isPending,
       onPress: handleBulkSuspend,
     },

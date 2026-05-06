@@ -47,14 +47,14 @@ const SingleEventPlans = ({ plans, selectedPlan, onSelectPlan }) => {
 
   // All features — using locale-agnostic hardcoded labels (no old singleEvent.features.* keys exist)
   const getFeatures = () => [
-    { icon: "phone-portrait-outline", text: isArabic ? "إرسال الدعوات عبر التطبيق" : "Send invites through the app" },
-    { icon: "logo-whatsapp", text: isArabic ? "استلام الدعوات عبر واتساب أو رسائل نصية" : "Receive invites via WhatsApp or SMS" },
-    { icon: "qr-code-outline", text: isArabic ? "مسح الدخول ورفع الاسم والرقم" : "Scan entry and upload name & number" },
-    { icon: "swap-horizontal-outline", text: isArabic ? "وضع دخول مرن بدون جهاز خاص" : "Flexible entry mode without special device" },
-    { icon: "shield-checkmark-outline", text: isArabic ? "تعيين حارس بوابة أو مدير قائمة" : "Assign gate keeper or list manager" },
-    { icon: "chatbubbles-outline", text: isArabic ? "استلام ردود الحضور" : "Receive RSVP responses" },
-    { icon: "notifications-outline", text: isArabic ? "تذكيرات تلقائية" : "Auto reminders" },
-    { icon: "people-outline", text: isArabic ? "إدارة الطاقم" : "Staff management" },
+    { icon: "phone-portrait-outline", text: t("features.sendInvites") },
+    { icon: "logo-whatsapp", text: t("features.receiveInvites") },
+    { icon: "qr-code-outline", text: t("features.scanEntry") },
+    { icon: "swap-horizontal-outline", text: t("features.flexibleEntry") },
+    { icon: "shield-checkmark-outline", text: t("features.gateKeeper") },
+    { icon: "chatbubbles-outline", text: t("features.rsvpResponses") },
+    { icon: "notifications-outline", text: t("features.autoReminders") },
+    { icon: "people-outline", text: t("features.staffManagement") },
   ];
 
   return (
@@ -145,7 +145,7 @@ const SingleEventPlans = ({ plans, selectedPlan, onSelectPlan }) => {
             <View style={styles.selectedIndicator}>
               <Ionicons name="checkmark" size={12} color="#FFF" />
               <Text style={styles.selectedText}>
-                {isArabic ? "تم الاختيار" : "Selected"}
+                {t("badges.selected")}
               </Text>
             </View>
           </View>

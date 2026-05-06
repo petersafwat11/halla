@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback } from "react";
 import { FormProvider } from "react-hook-form";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import styles from "../../../host/create-event/page.module.css";
 import Header from "../../../host/create-event/_components/header/Header";
@@ -29,12 +29,79 @@ import { handleError } from "@/services/errorHandlingService";
 
 const WHITELABEL_ADMIN_ROLES = ["whitelabel_admin", "whitelabel_moderator"];
 
+/**
+ * Normalize subscription from any source into the canonical shape
+ * that StepTwo and GuestQuotaCounter expect.
+ *
+ * Sources:
+ *  - Platform admin self: { isUnlimited: true }
+ *  - Backend getEventTargets: { status, planType, isSingleEvent, isPoolPlan, guestLimit, isGuestUnlimited, ... }
+ *  - Auth store getSummary: { status, planType, limits, maxGuests, invitePool, invitesRemaining, ... }
+ */
+function normalizeSubscription(sub) {
+  if (!sub) return null;
+  if (sub.isUnlimited) {
+    return {
+      isUnlimited: true,
+      guestLimit: -1,
+      isGuestUnlimited: true,
+      invitePool: null,
+      invitesRemaining: null,
+      eventsRemaining: -1,
+      eventsUsed: 0,
+    };
+  }
+  // Already normalized (from getEventTargets / getUserSubscriptionInfo)
+  if (sub.isGuestUnlimited !== undefined && sub.guestLimit !== undefined) {
+    return {
+      isUnlimited: false,
+      guestLimit: sub.guestLimit,
+      isGuestUnlimited: sub.isGuestUnlimited,
+      invitePool: sub.invitePool ?? null,
+      invitesRemaining: sub.invitesRemaining ?? null,
+      eventsRemaining: sub.eventsRemaining ?? 0,
+      eventsUsed: sub.eventsUsed ?? 0,
+    };
+  }
+  // From auth store getSummary() — has limits.maxInvitesPerEvent and maxGuests
+  const limits = sub.limits || {};
+  const isPerEvent = sub.isSingleEvent === true;
+  const isPool = sub.isPoolSubscription === true;
+
+  let guestLimit, isGuestUnlimited, invitePool, invitesRemaining;
+  if (isPerEvent) {
+    guestLimit = limits.maxInvitesPerEvent ?? 50;
+    isGuestUnlimited = guestLimit === -1;
+    invitePool = null;
+    invitesRemaining = null;
+  } else if (isPool) {
+    guestLimit = -1;
+    isGuestUnlimited = true;
+    invitePool = sub.invitePool ?? null;
+    invitesRemaining = sub.invitesRemaining ?? null;
+  } else {
+    guestLimit = limits.maxInvitesPerEvent ?? 50;
+    isGuestUnlimited = guestLimit === -1;
+    invitePool = sub.invitePool ?? null;
+    invitesRemaining = sub.invitesRemaining ?? null;
+  }
+
+  return {
+    isUnlimited: false,
+    guestLimit,
+    isGuestUnlimited,
+    invitePool,
+    invitesRemaining,
+    eventsRemaining: sub.eventsRemaining ?? 0,
+    eventsUsed: sub.usage?.eventsCreated ?? 0,
+  };
+}
+
 export default function AdminCreateEvent() {
   const { t } = useTranslation("createEvent");
   const { t: tAdmin } = useTranslation("adminEvents");
   const router = useRouter();
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1];
+  const { lang: locale } = useParams();
 
   const { user, subscription: authSubscription } = useAuthStore();
 
@@ -68,15 +135,11 @@ export default function AdminCreateEvent() {
   // Check if the selected host/self can create events
   const canSelectedTargetCreateEvent = useCallback(() => {
     if (!selectedHost) return true;
-    const sub = selectedHost.subscription;
-    // Platform admins with unlimited access can always create
-    if (sub?.isUnlimited) return true;
-    // No subscription at all
+    const sub = normalizeSubscription(selectedHost.subscription);
     if (!sub) return false;
-    // Subscription not active
-    if (sub.status !== "active" && sub.status !== "trial") return false;
-    // Check remaining events (eventsRemaining === -1 means unlimited)
-    if (sub.eventsRemaining !== undefined && sub.eventsRemaining !== -1 && sub.eventsRemaining <= 0) return false;
+    if (sub.isUnlimited) return true;
+    if (sub.eventsRemaining === -1) return true;
+    if (sub.eventsRemaining <= 0) return false;
     return true;
   }, [selectedHost]);
 
@@ -166,20 +229,20 @@ export default function AdminCreateEvent() {
 
   // Block event creation if selected target has no active subscription or no remaining events
   if (adminStep >= 1 && !canSelectedTargetCreateEvent()) {
-    const sub = selectedHost?.subscription;
-    const eventsUsed = sub?.usage?.eventsThisMonth || 0;
-    const eventsLimit = sub?.limits?.maxEventsPerMonth || sub?.eventsRemaining || 0;
+    const sub = normalizeSubscription(selectedHost?.subscription);
+    const eventsUsed = sub?.eventsUsed ?? 0;
+    const eventsLimit = sub?.eventsRemaining === -1 ? -1 : (sub?.eventsUsed ?? 0) + (sub?.eventsRemaining ?? 0);
     return (
       <div className={styles.page_container}>
         <div className={styles.main_content}>
-          <EventLimitReached
-            subscription={{
-              events: {
-                used: sub ? eventsUsed : 0,
-                limit: sub ? eventsLimit : 0,
-              },
-              planType: sub?.planType || "none",
-            }}
+        <EventLimitReached
+          subscription={{
+            events: {
+              used: eventsUsed,
+              limit: eventsLimit,
+            },
+            planType: sub?.planType || "none",
+          }}
             onUpgrade={() => {
               if (isWhitelabelUser) {
                 router.push(`/${locale}/admin-dash/plans`);
@@ -217,7 +280,7 @@ export default function AdminCreateEvent() {
                 />
               }
             />
-            <StepTwo subscription={selectedHost?.subscription} />
+            <StepTwo subscription={normalizeSubscription(selectedHost?.subscription)} />
           </>
         );
       case 3:
@@ -283,7 +346,7 @@ export default function AdminCreateEvent() {
             {currentStep === 4 && (
               <WhatsappPreview
                 eventTitle={formData.eventName || ""}
-                invitationMessage={formData.invitationMessage || ""}
+                previewBody={formData.selectedTemplate?.bodyText || ""}
                 templateImage={formData.templateImage || formData.selectedTemplate?.image || "/svg/events/invitation.svg"}
                 templateData={formData.selectedTemplate?.data || {}}
                 locale={locale}
@@ -303,7 +366,7 @@ export default function AdminCreateEvent() {
                 </button>
                 <WhatsappPreview
                   eventTitle={formData.eventName || ""}
-                  invitationMessage={formData.invitationMessage || ""}
+                  previewBody={formData.selectedTemplate?.bodyText || ""}
                   templateImage={formData.templateImage || formData.selectedTemplate?.image || "/svg/events/invitation.svg"}
                   templateData={formData.selectedTemplate?.data || {}}
                   locale={locale}

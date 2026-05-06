@@ -53,5 +53,8 @@
     "contactInfo": "Contact Information"
   },
   "noResults": "No results found",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "errors": {
+    "loadFailed": "Failed to load vendors"
+  }
 }

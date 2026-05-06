@@ -245,6 +245,10 @@
   font-size: 13px;
 }
 
+.removeIcon {
+  cursor: pointer;
+}
+
 /* Responsive - Tablet & Mobile */
 @media (max-width: 1024px) {
   .desktopFilters {

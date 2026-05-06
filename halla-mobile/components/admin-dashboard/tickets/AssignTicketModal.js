@@ -7,18 +7,16 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  TouchableOpacity,
   TextInput,
 } from "react-native";
 import PropTypes from "prop-types";
-import { Ionicons } from "@expo/vector-icons";
 import { ActionButton } from "../common";
+import ModeratorList from "./ModeratorList";
 import {
   colors,
   spacing,
   textStyles,
   borderRadius,
-  typography,
   backgrounds,
 } from "../../../styles/tokens";
 import { useAdminModerators, useAssignTicket } from "../../../hooks";
@@ -69,7 +67,7 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
    */
   const handleSave = async () => {
     if (!selectedModeratorId) {
-      Alert.alert("Validation Error", "Please select a moderator");
+      Alert.alert(t("common.error"), t("tickets.assign.validationSelectModerator"));
       return;
     }
 
@@ -81,7 +79,6 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
       onSave();
       handleClose();
     } catch (error) {
-      console.error("Error assigning ticket:", error);
       Alert.alert(t("common.error"), error?.message || t("common.error"));
     }
   };
@@ -129,59 +126,11 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
                 {/* Moderator Selection - Radio list */}
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>{t("tickets.assign.selectModerator")} *</Text>
-                  {moderators.length === 0 ? (
-                    <View style={styles.emptyModerators}>
-                      <Ionicons name="people-outline" size={28} color={colors.natural[300]} />
-                      <Text style={styles.emptyText}>No active moderators available</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.moderatorList}>
-                      {moderators.map((moderator) => {
-                        const modId = moderator.id || moderator._id;
-                        const isSelected = selectedModeratorId === modId;
-                        return (
-                          <TouchableOpacity
-                            key={modId}
-                            style={[
-                              styles.moderatorItem,
-                              isSelected && styles.moderatorItemSelected,
-                            ]}
-                            onPress={() => setSelectedModeratorId(modId)}
-                            activeOpacity={0.75}
-                          >
-                            <View style={styles.moderatorItemLeft}>
-                              <View style={[styles.radio, isSelected && styles.radioSelected]}>
-                                {isSelected && <View style={styles.radioDot} />}
-                              </View>
-                              <View style={styles.moderatorInfo}>
-                                <Text
-                                  style={[
-                                    styles.moderatorName,
-                                    isSelected && styles.moderatorNameSelected,
-                                  ]}
-                                  numberOfLines={1}
-                                >
-                                  {moderator.name || moderator.username || "—"}
-                                </Text>
-                                {moderator.email ? (
-                                  <Text style={styles.moderatorEmail} numberOfLines={1}>
-                                    {moderator.email}
-                                  </Text>
-                                ) : null}
-                              </View>
-                            </View>
-                            {isSelected && (
-                              <Ionicons
-                                name="checkmark-circle"
-                                size={20}
-                                color={colors.primary[500]}
-                              />
-                            )}
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  )}
+                  <ModeratorList
+                    moderators={moderators}
+                    selectedModeratorId={selectedModeratorId}
+                    onSelect={setSelectedModeratorId}
+                  />
                 </View>
 
                 {/* Optional Note */}
@@ -192,7 +141,7 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
                       style={styles.textArea}
                       onChangeText={setNote}
                       value={note}
-                      placeholder="Add any notes about this assignment..."
+                      placeholder={t("tickets.assign.notesPlaceholder")}
                       placeholderTextColor={colors.natural[400]}
                       multiline
                       numberOfLines={4}
@@ -200,7 +149,7 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
                     />
                   </View>
                   <Text style={styles.helperText}>
-                    This note will be visible to the assigned moderator
+                    {t("tickets.assign.notesHelper")}
                   </Text>
                 </View>
               </>
@@ -295,74 +244,9 @@ const styles = StyleSheet.create({
     color: colors.natural[900],
     marginBottom: spacing[8],
   },
-  emptyModerators: {
-    alignItems: "center",
-    paddingVertical: spacing[24],
-    gap: spacing[8],
-  },
   emptyText: {
     ...textStyles.bodySmall,
     color: colors.natural[400],
-  },
-  moderatorList: {
-    borderRadius: borderRadius[12],
-    borderWidth: 1,
-    borderColor: colors.natural[200],
-    overflow: "hidden",
-  },
-  moderatorItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: spacing[12],
-    paddingHorizontal: spacing[16],
-    backgroundColor: backgrounds.card[1],
-    borderBottomWidth: 1,
-    borderBottomColor: colors.natural[150],
-  },
-  moderatorItemSelected: {
-    backgroundColor: `${colors.primary[500]}08`,
-  },
-  moderatorItemLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing[12],
-    flex: 1,
-  },
-  radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: colors.natural[300],
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  radioSelected: {
-    borderColor: colors.primary[500],
-  },
-  radioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.primary[500],
-  },
-  moderatorInfo: {
-    flex: 1,
-  },
-  moderatorName: {
-    fontSize: typography.fontSize.body.medium,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.natural[800],
-  },
-  moderatorNameSelected: {
-    color: colors.primary[500],
-    fontWeight: typography.fontWeight.semibold,
-  },
-  moderatorEmail: {
-    fontSize: typography.fontSize.body.small,
-    color: colors.natural[450],
-    marginTop: 2,
   },
   textAreaContainer: {
     backgroundColor: backgrounds.artboard,

@@ -1,27 +1,92 @@
 {
-  "pageTitle": "Plans", "loading": "Loading plans...",
+  "pageTitle": "Business Plans",
+  "loading": "Loading plans...",
+  "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
+  "noActiveSubscription": { "title": "No active subscription", "subtitle": "Choose a plan below to activate your subscription" },
+  "tabs": {
+    "event": "Per Event",
+    "quarterly": "3-Month Pool",
+    "annual": "Annual Pool"
+  },
   "planFamilies": { "basic": "Halaa Basic", "premium": "Halaa Premium" },
   "planFamilyDescriptions": {
     "basic": "Self-managed — you handle everything",
     "premium": "Fully managed by our team"
   },
   "billingTypes": { "event": "Per Event", "monthly": "Monthly Pool" },
+  "billingTypeLabels": { "event": "/ event", "monthly": "/ month" },
   "billingTypeDescriptions": {
     "event": "1 event — valid 90 days",
     "monthly": "Invite Pool — unlimited events — 30 days"
   },
-  "inviteSelector": { "label": "Select invites", "poolLabel": "Invite pool", "invites": "invites" },
+  "inviteSelector": { "label": "Select invite count", "poolLabel": "Invite pool", "invites": "invites" },
   "currency": "SAR",
-  "compensation": { "title": "Free Compensation Invites", "invites": "invites" },
+  "compensation": { "title": "Free Compensation Invites", "invites": "compensation invites (15%)" },
   "features": { "title": "Included Features" },
-  "buttons": { "subscribeNow": "Subscribe Now" },
-  "errors": { "loadFailed": "Failed to load plans. Please try again.", "selectPlan": "Please select a plan." },
+  "buttons": { "subscribeNow": "Contact Us", "subscribeAction": "Subscribe Now" },
+  "errors": { "loadFailed": "Failed to load plans", "selectPlan": "Please select a plan.", "noPlansAvailable": "No plans available" },
+  "eventTab": {
+    "hint": "1 event per plan — valid 90 days · 1,200 SAR one-time setup fee",
+    "validity": "Valid 90 days",
+    "priceSuffix": "SAR / event",
+    "invitesSuffix": "invites / event"
+  },
+  "quarterlyTab": {
+    "hint": "Shared invite pool for unlimited events — 90 days",
+    "validity": "Valid 90 days",
+    "priceSuffix": "SAR / 3 months",
+    "invitesSuffix": "invites (shared pool)",
+    "whatsappTemplates": "{{count}} custom WhatsApp templates",
+    "setupIncluded": "Setup fee included",
+    "noPlans": "No quarterly plan available"
+  },
+  "annualTab": {
+    "hint": "Shared invite pool for unlimited events — 365 days",
+    "validity": "Valid 365 days",
+    "priceSuffix": "SAR / year",
+    "invitesSuffix": "invites (shared pool)",
+    "whatsappTemplates": "{{count}} custom WhatsApp templates",
+    "setupIncluded": "Setup fee included",
+    "noPlans": "No annual plan available"
+  },
+  "contactNote": "Our team will contact you to complete payment.",
+  "infoNote": "Our team will contact you after subscription to complete payment and get started.",
+  "addons": {
+    "title": "Add-Ons",
+    "subtitle": "Enhance your plan with optional extras",
+    "extraInvites": { "title": "Extra Invites", "description": "Add more invites to your plan" },
+    "extraReminders": { "title": "Extra Reminders", "description": "Send additional reminder messages" },
+    "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
+    "designTypes": {
+      "ready_made": "Ready-made design",
+      "custom_male": "Custom male design",
+      "custom_themed": "Themed design",
+      "animated": "Animated design",
+      "3d": "3D design"
+    },
+    "purchase": {
+      "total": "Total",
+      "cta": "Purchase selected add-ons",
+      "processing": "Processing...",
+      "noneSelected": "Select an add-on first",
+      "success": "Add-ons purchased",
+      "error": "Failed to purchase add-on"
+    }
+  },
   "summary": {
     "title": "Order Summary", "planDetails": "Plan Details",
     "invitePool": "Invite Pool", "validDays": "Valid for", "days": "days",
     "oneEvent": "1 event", "unlimitedEvents": "Unlimited events",
     "compensationInvites": "compensation invites",
     "activateButton": "Activate Subscription", "activating": "Activating...", "total": "Total",
+    "enterprisePlan": "Enterprise Plan",
+    "validFor": "Valid for",
+    "periods": {
+      "yearly": "1 year (365 days)",
+      "quarterly": "90 days",
+      "monthly": "30 days",
+      "custom": "{{days}} days"
+    },
     "discountCode": {
       "title": "Discount Code",
       "placeholder": "Enter discount code",
@@ -42,7 +107,25 @@
     "invalidCode": "Invalid discount code",
     "subscriptionSuccess": "Subscription activated!",
     "activeSubscription": "You already have an active subscription. You can create an event now.",
-    "subscriptionFailed": "Failed to activate subscription. Please try again."
+    "subscriptionFailed": "Failed to activate subscription. Please try again.",
+    "paymentFailed": "Payment failed. Please try again.",
+    "invalidPlan": "Invalid plan code.",
+    "processing": "Processing...",
+    "proceedButton": "Proceed to Payment"
   },
-  "toasts": { "success": "Subscription activated!", "failed": "Failed to activate. Please try again." }
+  "toasts": { "success": "Subscription activated!", "failed": "Failed to activate. Please try again." },
+  "features": {
+    "title": "Included Features",
+    "sendInvites": "Send invites through the app",
+    "receiveInvites": "Receive invites via WhatsApp or SMS",
+    "scanEntry": "Scan entry and upload name & number",
+    "flexibleEntry": "Flexible entry mode without special device",
+    "gateKeeper": "Assign gate keeper or list manager",
+    "rsvpResponses": "Receive RSVP responses",
+    "autoReminders": "Auto reminders",
+    "staffManagement": "Staff management"
+  },
+  "badges": { "selected": "Selected" },
+  "monthlyPlan": { "durationNote": "Valid 30 days — unlimited events" },
+  "summary": { "singleEvent": "Single event" }
 }

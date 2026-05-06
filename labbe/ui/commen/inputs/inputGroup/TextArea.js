@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import styles from "./textarea.module.css";
 import Image from "next/image";
 import { get, useFormContext } from "react-hook-form";
@@ -19,12 +19,6 @@ const TextArea = ({
   maxLength,
   rows = 4,
 }) => {
-  console.log(
-    "🔴 TextArea COMPONENT RENDERED - name:",
-    name,
-    "maxLength:",
-    maxLength
-  );
   const {
     register,
     formState: { errors },
@@ -34,20 +28,6 @@ const TextArea = ({
   const formError = get(errors, name)?.message;
   const formValue = watch?.(name);
   const isControlled = inputValue !== undefined && onChange !== undefined;
-  console.log("maxxxxxxxxxxxxxxxxx", maxLength);
-  // Debug logging
-  useEffect(() => {
-    console.log("maxxxxxxxxxxx", maxLength);
-    if (maxLength) {
-      console.log(`[TextArea ${name}] Counter should show:`, {
-        maxLength,
-        currentLength:
-          (isControlled ? inputValue?.length : formValue?.length) || 0,
-        formValue,
-        isControlled,
-      });
-    }
-  }, [name, maxLength, formValue, inputValue, isControlled]);
 
   return (
     <div className={styles.input_group}>
@@ -61,7 +41,11 @@ const TextArea = ({
         {prefixText && <span className={styles.prefix_text}>{prefixText}</span>}
         <textarea
           className={
-            formError || externalError ? styles.input_error : styles.input
+            formError || externalError
+              ? styles.input_error
+              : prefixText
+                ? `${styles.input} ${styles.input_with_prefix}`
+                : styles.input
           }
           placeholder={placeholder}
           name={name}
@@ -70,9 +54,8 @@ const TextArea = ({
           {...(isControlled
             ? { value: inputValue, onChange }
             : register
-            ? register(name)
-            : {})}
-          style={prefixText ? { paddingLeft: "9rem" } : {}}
+              ? register(name)
+              : {})}
         />
         {iconPath && (
           <Image

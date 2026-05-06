@@ -13,6 +13,7 @@
 
 .months {
   margin: 0;
+  position: relative;
 }
 
 /* Caption (Month/Year header with navigation) */
@@ -20,7 +21,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   /* margin-bottom: 1.6rem; */
   padding: 0.8rem 0;
   border-bottom: 1px solid #f3f4f6;

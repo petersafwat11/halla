@@ -44,10 +44,10 @@ export const templatesService = {
     apiRequest({ method: "GET", path: API_PATHS.templates.adminGetById(id) }),
 
   adminCreateTemplate: (body) =>
-    apiRequest({ method: "POST", path: API_PATHS.templates.adminCreate, body }),
+    apiRequest({ method: "POST", path: API_PATHS.templates.adminCreate, data: body }),
 
   adminUpdateTemplate: (id, body) =>
-    apiRequest({ method: "PUT", path: API_PATHS.templates.adminUpdate(id), body }),
+    apiRequest({ method: "PUT", path: API_PATHS.templates.adminUpdate(id), data: body }),
 
   adminDeleteTemplate: (id) =>
     apiRequest({ method: "DELETE", path: API_PATHS.templates.adminDelete(id) }),
@@ -56,39 +56,28 @@ export const templatesService = {
     apiRequest({ method: "POST", path: API_PATHS.templates.adminDuplicate(id) }),
 
   /**
-   * Get a presigned POST policy from the backend, then upload the file
-   * directly to S3 via multipart form POST. Returns the s3Key the
-   * backend should reference when persisting the Template doc.
+   * Send the file to the backend, which proxies it to S3.
+   * Avoids the browser→S3 CORS restriction of the old presigned-POST flow.
    */
   adminUploadImage: async (file, { templateId = "new", onProgress } = {}) => {
-    const presignRes = await apiRequest({
-      method: "POST",
-      path: `${API_PATHS.templates.adminUploadUrl}?templateId=${encodeURIComponent(templateId)}`,
-      body: { filename: file.name, contentType: file.type },
-    });
-
-    const presigned =
-      presignRes?.data || presignRes; // apiClient may unwrap; tolerate both
-
-    const { url, fields, s3Key } = presigned;
-
     const formData = new FormData();
-    Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
-    formData.append("file", file);
+    formData.append("image", file);
 
-    await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", url);
-      if (typeof onProgress === "function") {
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
-        };
-      }
-      xhr.onload = () => (xhr.status === 204 || xhr.status === 201 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`)));
-      xhr.onerror = () => reject(new Error("Upload network error"));
-      xhr.send(formData);
+    const result = await apiRequest({
+      method: "POST",
+      path: `${API_PATHS.templates.adminUploadImage}?templateId=${encodeURIComponent(templateId)}`,
+      data: formData,
+      config: {
+        headers: { "Content-Type": undefined },
+        ...(typeof onProgress === "function" && {
+          onUploadProgress: (e) => {
+            if (e.total) onProgress(Math.round((e.loaded / e.total) * 100));
+          },
+        }),
+      },
     });
 
+    const { s3Key } = result?.data || result;
     return { s3Key };
   },
 
@@ -96,9 +85,9 @@ export const templatesService = {
   adminListCategories: () =>
     apiRequest({ method: "GET", path: API_PATHS.templates.adminCategories }),
   adminCreateCategory: (body) =>
-    apiRequest({ method: "POST", path: API_PATHS.templates.adminCreateCategory, body }),
+    apiRequest({ method: "POST", path: API_PATHS.templates.adminCreateCategory, data: body }),
   adminUpdateCategory: (id, body) =>
-    apiRequest({ method: "PUT", path: API_PATHS.templates.adminUpdateCategory(id), body }),
+    apiRequest({ method: "PUT", path: API_PATHS.templates.adminUpdateCategory(id), data: body }),
   adminDeleteCategory: (id) =>
     apiRequest({ method: "DELETE", path: API_PATHS.templates.adminDeleteCategory(id) }),
 };

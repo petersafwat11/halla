@@ -111,3 +111,18 @@
   border-color: #c28e5c;
   color: #c28e5c;
 }
+
+.statusActive {
+  color: #2A8C5B;
+  background: #EAF4EF;
+}
+
+.statusSuspended {
+  color: #C0392B;
+  background: #F9EBEA;
+}
+
+.statusInactive {
+  color: #7F8C8D;
+  background: #F5F5F5;
+}

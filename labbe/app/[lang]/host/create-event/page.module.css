@@ -164,3 +164,21 @@
   font-size: 16px;
   font-weight: 500;
 }
+
+/* Live-event status banner */
+.live_event_banner {
+  margin: 1.2rem 2.4rem;
+  padding: 1.2rem 1.6rem;
+  border-radius: 0.8rem;
+  background: #fff7e6;
+  color: #7a4f01;
+  border: 1px solid #ffd591;
+  font-size: 1.4rem;
+}
+
+/* Fieldset reset — removes browser default border/padding around step content */
+.fieldset_reset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}

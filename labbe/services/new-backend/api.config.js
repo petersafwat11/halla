@@ -172,6 +172,9 @@ export const API_PATHS = {
     // Plans
     getAvailablePlans: '/subscriptions/plans',
     getPlanByCode: (code) => `/subscriptions/plans/${code}`,
+
+    // Payment History
+    getMyPayments: '/subscriptions/payments',
   },
 
   // ============================================
@@ -292,6 +295,7 @@ export const API_PATHS = {
     adminDelete: (id) => `/admin/templates/${id}`,
     adminDuplicate: (id) => `/admin/templates/${id}/duplicate`,
     adminUploadUrl: '/admin/templates/upload-url',
+    adminUploadImage: '/admin/templates/upload-image',
     // Categories admin
     adminCategories: '/admin/template-categories',
     adminCreateCategory: '/admin/template-categories',
@@ -304,7 +308,9 @@ export const API_PATHS = {
     // Admin
     adminList: '/admin/taqnyat-templates',
     adminSync: '/admin/taqnyat-templates/sync',
+    adminCreate: '/admin/taqnyat-templates',
     adminAssign: (id) => `/admin/taqnyat-templates/${id}`,
+    adminDelete: (id) => `/admin/taqnyat-templates/${id}`,
   },
 
   // ============================================
@@ -317,6 +323,20 @@ export const API_PATHS = {
     getEnterprisePlans: '/plans/enterprise',
     getPlanById: (id) => `/plans/${id}`,
     getPlanByCode: (code) => `/plans/code/${code}`,
+    // Admin-only plan management
+    adminGetAll: '/plans/admin/all',
+    adminGetByCode: (code) => `/plans/admin/${code}`,
+    adminUpdate: (code) => `/plans/admin/${code}`,
+  },
+
+  // ============================================
+  // PAYMENTS MODULE (Admin)
+  // ============================================
+  payments: {
+    getAll: '/admin/payments',
+    getById: (id) => `/admin/payments/${id}`,
+    getSummary: '/admin/payments/summary',
+    export: '/admin/payments/export',
   },
 
   // ============================================
@@ -415,7 +435,7 @@ export const API_PATHS = {
       createForHost: '/admin/events/create-for-host',
       update: (id) => `/admin/events/${id}`,
       updateStatus: (id) => `/admin/events/${id}/status`,
-      delete: (id) => `/admin/events/${id}`,
+      delete: (id) => `/events/admin/${id}`,
       bulkDelete: '/admin/events/bulk-delete',
       bulkStatus: '/admin/events/bulk-status',
       export: '/admin/events/export',
@@ -448,4 +468,5 @@ export const {
   postEvent,
   vendorServices,
   admin,
+  payments,
 } = API_PATHS;

@@ -75,10 +75,21 @@ class DashboardService {
    * Get main dashboard statistics
    * @param {string} period
    * @param {Object} whitelabelFilter
+   * @param {Object|null} dateRange - Optional { from, to } to override period-based range
    * @returns {Promise<Object>}
    */
-  async getDashboardStats(period = 'month', whitelabelFilter = {}) {
-    const { startDate, endDate } = this.getDateRange(period);
+  async getDashboardStats(period = 'month', whitelabelFilter = {}, dateRange = null) {
+    let startDate;
+    let endDate;
+
+    if (dateRange?.from || dateRange?.to) {
+      startDate = dateRange.from ? new Date(dateRange.from) : new Date(0);
+      endDate = dateRange.to ? new Date(dateRange.to) : new Date();
+    } else {
+      const range = this.getDateRange(period);
+      startDate = range.startDate;
+      endDate = range.endDate;
+    }
 
     const previousStartDate = new Date(startDate);
     previousStartDate.setTime(previousStartDate.getTime() - (endDate - startDate));
@@ -300,7 +311,7 @@ class DashboardService {
       Subscription.findOne({ userId, status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } }).populate('planId'),
       // Get the last created event with full details
       Event.findOne({ host: userId })
-        .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings invitationSettings testMessageSent visualTemplate taqnyatTemplate guestReplies hostNote invitationMessage')
+        .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings invitationSettings testMessageSent visualTemplate taqnyatTemplate guestReplies')
         .sort({ createdAt: -1 })
         .populate('guestList'),
     ]);

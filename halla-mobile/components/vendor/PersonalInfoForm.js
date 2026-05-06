@@ -60,7 +60,6 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
         setAvatarFile(result.assets[0]);
       }
     } catch (error) {
-      console.error("Error picking image:", error);
       Alert.alert(t("common.error"), t("settings.imagePickError"));
     }
   };

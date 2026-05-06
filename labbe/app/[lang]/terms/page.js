@@ -1,30 +1,35 @@
+import initTranslations from "@/localization/i18n";
 import LegalPage from "@/ui/landing/Legal/LegalPage";
 import termsData from "@/ui/landing/Legal/data/terms.json";
 
 const SIBLINGS = [
   {
     href: "/privacy",
-    title: { ar: "سياسة الخصوصية", en: "Privacy Policy" },
+    titleKey: "legal.siblings.privacy",
   },
   {
     href: "/refund",
-    title: { ar: "سياسة الإلغاء والاسترداد", en: "Cancellation & Refund" },
+    titleKey: "legal.siblings.refund",
   },
 ];
 
 export async function generateMetadata({ params }) {
-  const { lang } = await params;
+  const resolvedParams = await params;
+  const { lang } = resolvedParams;
+  const { t } = await initTranslations(lang, ["landing"]);
+
   return {
-    title: lang === "ar" ? "الشروط والأحكام – هلا" : "Terms & Conditions – Halla",
-    description:
-      lang === "ar"
-        ? "الشروط والأحكام الخاصة باستخدام منصة هلا لإدارة المناسبات"
-        : "Terms and conditions for using the Halla event management platform",
+    title: t("legal.metadata.terms.title", "Terms & Conditions – Halla"),
+    description: t(
+      "legal.metadata.terms.description",
+      "Terms and conditions for using the Halla event management platform"
+    ),
   };
 }
 
 export default async function TermsPage({ params }) {
-  const { lang } = await params;
+  const resolvedParams = await params;
+  const { lang } = resolvedParams;
   const doc = termsData[lang] || termsData.ar;
 
   return <LegalPage doc={doc} lang={lang} siblingPages={SIBLINGS} />;

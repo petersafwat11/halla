@@ -102,7 +102,7 @@ const ModeratorList = ({
   const handleBulkSuspend = (ids) => {
     Alert.alert(
       t("common.suspendConfirmTitle"),
-      `${t("common.suspend")} ${ids.length} moderator(s)?`,
+      t("common.bulkSuspendModerators", { count: ids.length }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -125,7 +125,7 @@ const ModeratorList = ({
   const handleBulkDelete = (ids) => {
     Alert.alert(
       t("common.deleteConfirmTitle"),
-      `${t("common.delete")} ${ids.length} moderator(s)? ${t("common.deleteConfirmMessage")}`,
+      t("common.bulkDeleteModerators", { count: ids.length }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -150,7 +150,7 @@ const ModeratorList = ({
       icon: "pause-circle-outline",
       label: t("common.suspend"),
       color: colors.warning[600],
-      bg: "#fff4e0",
+      bg: colors.warning[50],
       loading: bulkSuspend.isPending,
       onPress: handleBulkSuspend,
     },

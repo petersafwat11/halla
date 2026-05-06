@@ -1,14 +1,8 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./filtersPopup.module.css";
 import SearchableSelect from "@/ui/commen/inputs/SearchableSelect/SearchableSelect";
-
-const RATING_OPTIONS = [
-  { value: "", label: "الكل" },
-  { value: "4", label: "4+ نجوم" },
-  { value: "3", label: "3+ نجوم" },
-  { value: "2", label: "2+ نجوم" },
-];
 
 const FiltersPopup = ({
   isOpen,
@@ -24,9 +18,16 @@ const FiltersPopup = ({
   onRemoveFilter,
   onReset,
 }) => {
+  const { t } = useTranslation("marketplace");
   const popupRef = useRef(null);
   const firstFocusableRef = useRef(null);
-  const lastFocusableRef = useRef(null);
+
+  const ratingOptions = [
+    { value: "", label: t("filters.ratingAll") },
+    { value: "4", label: t("filters.rating4") },
+    { value: "3", label: t("filters.rating3") },
+    { value: "2", label: t("filters.rating2") },
+  ];
 
   // Handle escape key and focus trap
   useEffect(() => {
@@ -91,14 +92,19 @@ const FiltersPopup = ({
   if (!isOpen) return null;
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="filters-title">
+    <div
+      className={styles.overlay}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="filters-title"
+    >
       <div className={styles.popup} ref={popupRef}>
         <div className={styles.header}>
           <button
             ref={firstFocusableRef}
             className={styles.backButton}
             onClick={onClose}
-            aria-label="Close filters"
+            aria-label={t("filtersPopup.close")}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
@@ -117,11 +123,13 @@ const FiltersPopup = ({
               />
             </svg>
           </button>
-          <h2 id="filters-title" className={styles.title}>الفلاتر</h2>
+          <h2 id="filters-title" className={styles.title}>
+            {t("filters.title")}
+          </h2>
           <button
-            ref={lastFocusableRef}
             className={styles.closeBtn}
             onClick={onClose}
+            aria-label={t("filtersPopup.close")}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
@@ -145,13 +153,13 @@ const FiltersPopup = ({
         <div className={styles.content}>
           {/* Region */}
           <div className={styles.filterGroup}>
-            <label className={styles.label}>المنطقة</label>
+            <label className={styles.label}>{t("filters.region")}</label>
             <select
               className={styles.select}
               value={filters.regionId}
               onChange={(e) => updateFilter("regionId", e.target.value)}
             >
-              <option value="">جميع المناطق</option>
+              <option value="">{t("filters.allRegions")}</option>
               {regions.map((region) => (
                 <option key={region.region_id} value={region.region_id}>
                   {region.name_ar}
@@ -164,17 +172,17 @@ const FiltersPopup = ({
           {filters.regionId && (
             <div className={styles.filterGroup}>
               <SearchableSelect
-                label="المدينة"
+                label={t("filters.city")}
                 options={cities.map((city) => ({
                   value: city.city_id,
                   label: city.name_ar,
                 }))}
                 value={filters.cityId}
                 onChange={(val) => updateFilter("cityId", val)}
-                placeholder="جميع المدن"
-                searchPlaceholder="ابحث عن مدينة..."
+                placeholder={t("filters.allCities")}
+                searchPlaceholder={t("filters.searchCity")}
                 loading={loadingCities}
-                allOption={{ value: "", label: "جميع المدن" }}
+                allOption={{ value: "", label: t("filters.allCities") }}
               />
             </div>
           )}
@@ -183,30 +191,30 @@ const FiltersPopup = ({
           {filters.cityId && districts.length > 0 && (
             <div className={styles.filterGroup}>
               <SearchableSelect
-                label="الحي"
+                label={t("filters.district")}
                 options={districts.map((d) => ({
                   value: d.district_id,
                   label: d.name_ar,
                 }))}
                 value={filters.districtIds}
                 onChange={(val) => updateFilter("districtIds", val)}
-                placeholder="جميع الأحياء"
-                searchPlaceholder="ابحث عن حي..."
+                placeholder={t("filters.allDistricts")}
+                searchPlaceholder={t("filters.searchDistrict")}
                 loading={loadingDistricts}
                 multiple={true}
-                allOption={{ value: "", label: "جميع الأحياء" }}
+                allOption={{ value: "", label: t("filters.allDistricts") }}
               />
             </div>
           )}
 
           {/* Price Range */}
           <div className={styles.filterGroup}>
-            <label className={styles.label}>نطاق السعر (ريال)</label>
+            <label className={styles.label}>{t("filters.priceRange")}</label>
             <div className={styles.priceRange}>
               <input
                 type="number"
                 className={styles.priceInput}
-                placeholder="من"
+                placeholder={t("filters.priceFrom")}
                 value={filters.minPrice}
                 onChange={(e) => updateFilter("minPrice", e.target.value)}
                 min="0"
@@ -215,7 +223,7 @@ const FiltersPopup = ({
               <input
                 type="number"
                 className={styles.priceInput}
-                placeholder="إلى"
+                placeholder={t("filters.priceTo")}
                 value={filters.maxPrice}
                 onChange={(e) => updateFilter("maxPrice", e.target.value)}
                 min="0"
@@ -225,13 +233,13 @@ const FiltersPopup = ({
 
           {/* Rating */}
           <div className={styles.filterGroup}>
-            <label className={styles.label}>التقييم</label>
+            <label className={styles.label}>{t("filters.rating")}</label>
             <select
               className={styles.select}
               value={filters.minRating}
               onChange={(e) => updateFilter("minRating", e.target.value)}
             >
-              {RATING_OPTIONS.map((opt) => (
+              {ratingOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
@@ -242,7 +250,9 @@ const FiltersPopup = ({
           {/* Active Filters */}
           {activeFilters.length > 0 && (
             <div className={styles.activeFiltersSection}>
-              <h3 className={styles.sectionTitle}>المرشحات النشطة</h3>
+              <h3 className={styles.sectionTitle}>
+                {t("filters.activeFilters")}
+              </h3>
               <div className={styles.filterTags}>
                 {activeFilters.map((filter, index) => (
                   <div key={index} className={styles.filterTag}>
@@ -250,6 +260,9 @@ const FiltersPopup = ({
                     <button
                       className={styles.removeBtn}
                       onClick={() => onRemoveFilter(filter.name)}
+                      aria-label={t("filters.removeFilter", {
+                        name: filter.label,
+                      })}
                     >
                       <svg
                         width="14"
@@ -282,10 +295,10 @@ const FiltersPopup = ({
 
         <div className={styles.footer}>
           <button className={styles.resetBtn} onClick={onReset}>
-            إعادة تعيين
+            {t("buttons.resetFilters")}
           </button>
           <button className={styles.applyBtn} onClick={onClose}>
-            تطبيق
+            {t("buttons.applyFilters")}
           </button>
         </div>
       </div>

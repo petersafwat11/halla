@@ -6,10 +6,10 @@ import { colors } from "../../../styles/tokens";
 import AdminListItem from "../common/AdminListItem";
 
 const PRIORITY_CONFIG = {
-  low:    { color: "#2A8C5B", bg: "#EAF4EF", labelKey: "tickets.priority.low" },
-  medium: { color: "#D38200", bg: "#FBF3E6", labelKey: "tickets.priority.medium" },
-  high:   { color: "#C0392B", bg: "#F9EBEA", labelKey: "tickets.priority.high" },
-  urgent: { color: "#E74C3C", bg: "#FDEDEC", labelKey: "tickets.priority.urgent" },
+  low:    { color: colors.success[600], bg: colors.success[50], labelKey: "tickets.priority.low" },
+  medium: { color: colors.warning[600], bg: colors.warning[50], labelKey: "tickets.priority.medium" },
+  high:   { color: colors.error[600], bg: colors.error[50], labelKey: "tickets.priority.high" },
+  urgent: { color: colors.error[500], bg: colors.error[50], labelKey: "tickets.priority.urgent" },
 };
 
 // Priority avatar tints the circle to signal urgency immediately
@@ -20,8 +20,8 @@ const PRIORITY_AVATAR_COLOR = {
   urgent: "#E74C3C",
 };
 
-const formatDate = (d) => {
-  if (!d) return "—";
+const formatDate = (d, t) => {
+  if (!d) return t("common.unknown");
   return new Date(d).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -76,7 +76,7 @@ const TicketListItem = ({ ticket, onPress, onResolve, onAssign, selected = false
   const details = [
     ticketNum && { icon: "receipt-outline", text: `#${ticketNum}` },
     ticket.category && { icon: "folder-outline", text: ticket.category },
-    { icon: "calendar-outline", text: formatDate(ticket.createdAt) },
+    { icon: "calendar-outline", text: formatDate(ticket.createdAt, t) },
   ].filter(Boolean);
 
   const actions = canEdit

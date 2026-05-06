@@ -9,6 +9,8 @@ import {
 import { useFormContext, Controller } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../localization";
+import { formatTemplateDate } from "../../utils/formatTemplateDate";
 
 const DatePicker = ({
   name,
@@ -20,16 +22,10 @@ const DatePicker = ({
   rules,
   ...props
 }) => {
+  const { t } = useTranslation("common");
   const { control } = useFormContext();
 
-  const formatDate = (date) => {
-    if (!date) return "";
-    const d = new Date(date);
-    const day = d.getDate();
-    const month = d.getMonth() + 1;
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+  const formatDate = (date) => formatTemplateDate(date, t);
 
   return (
     <Controller

@@ -1,23 +1,18 @@
 "use client";
 /**
- * StepFour — Phase 4c W1-WIZARD-RENAME (D4c-1: Taqnyat picker step)
+ * StepFour — Taqnyat picker + auto-replies (5-step wizard)
  *
- * Per the locked 6-step wizard structure:
- *   1 details / 2 guest+staff / 3 visual template / 4 Taqnyat picker /
- *   5 messaging+replies+note / 6 summary
- *
- * Step 4 is now the Taqnyat-template picker (filtered by the category
- * locked in step 3 via the visual template's `categories[]`). Reads
- * from the new backend cache `GET /api/v2/taqnyat-templates?category=`
- * — no more direct passthrough to Taqnyat at host wizard load time.
+ * Step 4 combines the Taqnyat-template picker (filtered by the category
+ * locked in step 3) with the auto-replies editor below it.
  *
  * Saves the host's pick into:
  *   - selectedTemplate (legacy, for messaging.service compat)
- *   - taqnyatTemplate.templateRef (canonical, used by W0-DYNAMIC
- *     resolver for {{N}} param resolution)
+ *   - taqnyatTemplate.templateRef (canonical)
+ *
+ * Auto-replies dual-write canonical guestReplies.* + legacy keys.
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import styles from "./stepfour.module.css";
@@ -29,17 +24,28 @@ const CheckIcon = () => (
   </svg>
 );
 
+const AUTO_REPLIES_DEFAULTS = {
+  attending:
+    "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
+  maybe: "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
+  absence: "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹",
+};
+
+const REPLY_TABS = [
+  { key: "attending", label: "الحضور", canonical: "onAttend", legacy: "attendanceAutoReply" },
+  { key: "maybe", label: "ربما", canonical: "onExpected", legacy: "expectedAttendanceAutoReply" },
+  { key: "absence", label: "الاعتذار", canonical: "onAbsent", legacy: "absenceAutoReply" },
+];
+
 const StepFour = () => {
   const { setValue, watch } = useFormContext();
   const { t } = useTranslation("createEvent");
+  const [activeTab, setActiveTab] = useState("attending");
 
   const visualTemplate = watch("visualTemplate");
   const selectedTemplate = watch("selectedTemplate");
+  const guestReplies = watch("guestReplies") || {};
 
-  // Filter by the visual template's first category (D4c-1 — picker
-  // narrows to the same category the host already picked in step 3).
-  // If the visual template has no categories yet (mid-rename events),
-  // fall back to the unfiltered list.
   const category = visualTemplate?.categories?.[0] || "";
 
   const { data, isLoading } = useHostTaqnyatTemplates(
@@ -48,13 +54,27 @@ const StepFour = () => {
   );
   const templates = data?.data?.templates || data?.templates || [];
 
+  useEffect(() => {
+    if (!watch("guestReplies.onAttend")) {
+      setValue("guestReplies.onAttend", AUTO_REPLIES_DEFAULTS.attending, { shouldDirty: false });
+      setValue("attendanceAutoReply", AUTO_REPLIES_DEFAULTS.attending, { shouldDirty: false });
+    }
+    if (!watch("guestReplies.onAbsent")) {
+      setValue("guestReplies.onAbsent", AUTO_REPLIES_DEFAULTS.absence, { shouldDirty: false });
+      setValue("absenceAutoReply", AUTO_REPLIES_DEFAULTS.absence, { shouldDirty: false });
+    }
+    if (!watch("guestReplies.onExpected")) {
+      setValue("guestReplies.onExpected", AUTO_REPLIES_DEFAULTS.maybe, { shouldDirty: false });
+      setValue("expectedAttendanceAutoReply", AUTO_REPLIES_DEFAULTS.maybe, { shouldDirty: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleTemplateSelect = (template) => {
-    // Save under both legacy and canonical names so dual-write reads
-    // resolve correctly.
     const enriched = {
-      id: template._id,                      // legacy `selectedTemplate.id`
+      id: template._id,
       _id: template._id,
-      name: template.templateName,            // legacy `.name`
+      name: template.templateName,
       templateName: template.templateName,
       language: template.language || "ar",
       hasImageHeader: template.hasImageHeader || false,
@@ -66,9 +86,20 @@ const StepFour = () => {
     setValue("taqnyatTemplateRef", template._id, { shouldValidate: false });
   };
 
+  const activeReply = REPLY_TABS.find((tab) => tab.key === activeTab);
+  const replyText = guestReplies?.[activeReply?.canonical];
+
+  const handleReplyChange = (e) => {
+    const value = e.target.value;
+    if (!activeReply) return;
+    setValue(`guestReplies.${activeReply.canonical}`, value, { shouldDirty: true });
+    setValue(activeReply.legacy, value, { shouldDirty: true });
+  };
+
   return (
     <div className={styles.stepFour}>
       <div className={styles.formSection}>
+        {/* ── Taqnyat template picker ──────────────────────────── */}
         <div className={styles.templateSection}>
           <div className={styles.templateHeader}>
             <label className={styles.sectionLabel}>
@@ -148,6 +179,52 @@ const StepFour = () => {
               })}
             </div>
           )}
+        </div>
+
+        {/* ── Auto-replies ─────────────────────────────────────── */}
+        <div className={styles.repliesSection}>
+          <div className={styles.repliesHeader}>
+            <label className={styles.sectionLabel}>
+              {t("auto_replies", "الردود التلقائية")}
+            </label>
+            <p className={styles.repliesHint}>
+              {t(
+                "auto_replies_hint_editable",
+                "تُرسل تلقائياً للضيف فور اختياره — يمكنك تعديل النص"
+              )}
+            </p>
+          </div>
+
+          <div className={styles.tabsWrapper}>
+            {REPLY_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`${styles.tabBtn} ${activeTab === tab.key ? styles.tabBtnActive : ""}`}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <textarea
+            value={replyText || ""}
+            onChange={handleReplyChange}
+            rows={4}
+            maxLength={500}
+            className={styles.replyTextarea}
+            placeholder={t("auto_reply_placeholder", "اكتب الرد التلقائي هنا")}
+            style={{
+              width: "100%",
+              padding: 12,
+              borderRadius: 8,
+              border: "1px solid #ddd",
+              fontFamily: "inherit",
+              fontSize: 14,
+              direction: "rtl",
+            }}
+          />
         </div>
       </div>
     </div>

@@ -1,94 +1,57 @@
 "use client";
 
-import { useAdminWhitelabels, useAdminWhitelabelMutation } from "@/hooks/reactQueryHooks/useAdmin";
-import { usePageAccess } from "@/hooks/usePageAccess";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
+import { useAdminWhitelabels } from "@/hooks/reactQueryHooks/useAdmin";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
-import { toast } from "react-toastify";
 import { FiEye, FiCheckCircle, FiSlash, FiCreditCard, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
-import { whitelabelAPI } from "@/services/adminDashboard";
 import WhitelabelSubscriptionPopup from "./WhitelabelSubscriptionPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { useWhitelabelTableActions } from "./useWhitelabelTableActions";
 import styles from "./WhitelabelsTable.module.css";
 
 export default function WhitelabelsTable() {
-  const { t } = useTranslation("adminDashboard");
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { canUpdate, canDelete } = usePageAccess("whitelabels");
+  const { t } = useTranslation("adminWhitelabels");
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
   const [selectedWhitelabel, setSelectedWhitelabel] = useState(null);
 
-  const filters = {
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  };
+  const {
+    filters, canUpdate, canDelete,
+    handleDelete, handleBulkDelete, handleStatusChange,
+    handleExport, handlePageChange, data, router,
+  } = useWhitelabelTableActions();
 
-  const { data, isLoading } = useAdminWhitelabels(filters);
-  const deleteWhitelabel = useAdminWhitelabelMutation("delete");
-  const bulkDelete = useAdminWhitelabelMutation("bulkDelete");
-  const updateStatus = useAdminWhitelabelMutation("updateStatus");
+  const { data: queryData, isLoading, isError } = useAdminWhitelabels(filters);
+  const mergedData = queryData || data;
 
-  const handleDelete = async (whitelabelId) => {
-    if (!confirm(t("whitelabels.confirmDelete", "هل أنت متأكد من حذف هذه العلامة البيضاء؟"))) return;
-    try {
-      await deleteWhitelabel.mutateAsync(whitelabelId);
-      toast.success(t("whitelabels.deleteSuccess", "تم حذف العلامة البيضاء بنجاح"));
-    } catch (error) {
-      toast.error(error.message || t("whitelabels.deleteError", "فشل حذف العلامة البيضاء"));
-    }
-  };
-
-  const handleBulkDelete = async (ids) => {
-    if (!ids?.length) { toast.warning(t("whitelabels.selectRows", "الرجاء تحديد علامات للحذف")); return; }
-    if (!confirm(t("whitelabels.confirmBulkDelete", `هل أنت متأكد من حذف ${ids.length} علامة؟`))) return;
-    try {
-      await bulkDelete.mutateAsync(ids);
-      toast.success(t("whitelabels.bulkDeleteSuccess", "تم حذف العلامات بنجاح"));
-    } catch (error) {
-      toast.error(error.message || t("whitelabels.bulkDeleteError", "فشل حذف العلامات"));
-    }
-  };
-
-  const handleStatusChange = async (whitelabelId, newStatus) => {
-    try {
-      await updateStatus.mutateAsync({ whitelabelId, status: newStatus });
-      toast.success(t("whitelabels.statusUpdateSuccess", "تم تحديث الحالة بنجاح"));
-    } catch (error) {
-      toast.error(error.message || t("whitelabels.statusUpdateError", "فشل تحديث الحالة"));
-    }
-  };
-
-  const handleSubscriptionClick = (whitelabel) => {
+  const handleSubscriptionClick = useCallback((whitelabel) => {
     setSelectedWhitelabel(whitelabel);
     setShowSubscriptionPopup(true);
+  }, []);
+
+  const handleCloseSubscriptionPopup = useCallback(() => {
+    setShowSubscriptionPopup(false);
+    setSelectedWhitelabel(null);
+  }, []);
+
+  const statusClassMap = {
+    active: styles.statusActive,
+    pending: styles.statusPending,
+    suspended: styles.statusSuspended,
   };
 
-  const handleExport = async () => {
-    try {
-      await whitelabelAPI.export({
-        search: filters.search,
-        status: filters.status,
-        from: filters.from,
-        to: filters.to,
-      });
-    } catch (error) {
-      toast.error(t("whitelabels.exportError", "فشل تصدير البيانات"));
-    }
+  const statusTextMap = {
+    active: t("status.active"),
+    pending: t("status.pending"),
+    suspended: t("status.suspended"),
   };
 
-  const getRowActions = (row) => {
+  const getRowActions = useCallback((row) => {
     const actions = [
       {
         type: "dropdown",
         icon: <FiEye size={16} />,
-        text: t("whitelabels.viewDetails", "عرض التفاصيل"),
+        text: t("actions.viewDetails"),
         onClick: (r) => router.push(`/admin-dash/whitelabels/${r.id}`),
       },
     ];
@@ -97,17 +60,17 @@ export default function WhitelabelsTable() {
       actions.push({
         type: "dropdown",
         icon: row.status === "suspended" ? <FiCheckCircle size={16} /> : <FiSlash size={16} />,
-        text: row.status === "suspended"
-          ? t("whitelabels.activate", "تفعيل")
-          : t("whitelabels.suspend", "إيقاف"),
+        text: row.status === "suspended" ? t("actions.activate") : t("actions.suspend"),
         onClick: (r) => handleStatusChange(r.id, r.status === "suspended" ? "active" : "suspended"),
       });
       actions.push({
         type: "dropdown",
         icon: <FiCreditCard size={16} />,
-        text: t("whitelabels.subscription", "الاشتراك"),
+        text: t("actions.managePlan"),
         onClick: (r) => {
-          const wl = (data?.data?.whitelabels || data?.data || []).find(w => (w.id || w._id) === r.id);
+          const wl = (mergedData?.data?.whitelabels || mergedData?.data || []).find(
+            (w) => (w.id || w._id) === r.id
+          );
           if (wl) handleSubscriptionClick({ ...r, ...wl });
         },
       });
@@ -117,64 +80,44 @@ export default function WhitelabelsTable() {
       actions.push({
         type: "dropdown",
         icon: <FiTrash2 size={16} />,
-        text: t("whitelabels.delete", "حذف"),
+        text: t("actions.delete"),
         onClick: (r) => handleDelete(r.id),
       });
     }
 
     return actions;
-  };
+  }, [canUpdate, canDelete, mergedData, t, router, handleStatusChange, handleSubscriptionClick, handleDelete]);
 
-  const bulkActions = [];
-  if (canDelete) {
-    bulkActions.push({
-      icon: <FiTrash2 size={16} />,
-      text: t("whitelabels.bulkDelete", "حذف المحدد"),
-      onClick: (ids) => handleBulkDelete(ids),
-    });
-  }
+  const bulkActions = canDelete
+    ? [{ icon: <FiTrash2 size={16} />, text: t("bulkActions.delete"), onClick: (ids) => handleBulkDelete(ids) }]
+    : [];
 
-  const renderCell = (key, value, row) => {
+  const renderCell = useCallback((key, value, row) => {
     if (key === "status") {
-      const statusConfig = {
-        active: { bg: "#EAF4EF", color: "#2A8C5B", text: t("whitelabels.status.active", "نشط") },
-        pending: { bg: "#FBF3E6", color: "#D38200", text: t("whitelabels.status.pending", "قيد الانتظار") },
-        suspended: { bg: "#F9EBEA", color: "#C0392B", text: t("whitelabels.status.suspended", "موقوف") },
-      };
-      const config = statusConfig[value] || statusConfig.active;
+      const colorClass = statusClassMap[value] || styles.statusActive;
       return (
         <div
-          style={{
-            display: "inline-flex", padding: "0.3rem 1.2rem", justifyContent: "center",
-            alignItems: "center", borderRadius: "9999px", background: config.bg,
-            cursor: canUpdate ? "pointer" : "default",
-          }}
-          onClick={() => {
-            if (!canUpdate) return;
-            handleStatusChange(row.id, value === "active" ? "suspended" : "active");
-          }}
+          className={`${styles.statusBadge} ${colorClass} ${canUpdate ? styles.clickable : ""}`}
+          onClick={() => { if (canUpdate) handleStatusChange(row.id, value === "active" ? "suspended" : "active"); }}
         >
-          <span style={{ color: config.color, fontFamily: "Cairo", fontSize: "1.2rem" }}>{config.text}</span>
+          <span>{statusTextMap[value] || value}</span>
         </div>
       );
     }
 
     if (key === "subscription") {
       return (
-        <span
-          style={{ color: canUpdate ? "#3498DB" : "inherit", cursor: canUpdate ? "pointer" : "default", textDecoration: canUpdate ? "underline" : "none" }}
-          onClick={() => canUpdate && handleSubscriptionClick(row)}
-        >
-          {value || t("whitelabels.noSubscription", "لا يوجد")}
+        <span className={canUpdate ? styles.subscriptionClickable : ""} onClick={() => canUpdate && handleSubscriptionClick(row)}>
+          {value || t("messages.noSubscription")}
         </span>
       );
     }
 
-    if (key === "createdAt" && value) return new Date(value).toLocaleDateString("ar-SA");
+    if (key === "createdAt" && value) return new Date(value).toLocaleDateString();
     return value;
-  };
+  }, [canUpdate, statusClassMap, statusTextMap, handleStatusChange, handleSubscriptionClick, t]);
 
-  const tableData = (data?.data?.whitelabels || data?.data || []).map((wl) => ({
+  const tableData = (mergedData?.data?.whitelabels || mergedData?.data || []).map((wl) => ({
     id: wl.id || wl._id,
     name: wl.username || wl.name || "-",
     email: wl.email || "-",
@@ -186,20 +129,21 @@ export default function WhitelabelsTable() {
   }));
 
   if (isLoading) return <SimpleLoading />;
+  if (isError) return <div className={styles.error}>{t("errors.loadFailed", "Failed to load data")}</div>;
 
   return (
     <>
       <div className={styles.container}>
         <Table
-          title={t("whitelabels.title", "إدارة العلامات البيضاء")}
+          title={t("table.title")}
           headers={[
-            t("whitelabels.columns.name", "الاسم"),
-            t("whitelabels.columns.email", "البريد الإلكتروني"),
-            t("whitelabels.columns.phone", "الهاتف"),
-            t("whitelabels.columns.domain", "النطاق"),
-            t("whitelabels.columns.status", "الحالة"),
-            t("whitelabels.columns.subscription", "الاشتراك"),
-            t("whitelabels.columns.createdAt", "تاريخ التسجيل"),
+            t("table.columns.companyName"),
+            t("table.columns.email"),
+            t("messages.phone"),
+            t("messages.domain"),
+            t("table.columns.status"),
+            t("messages.subscription"),
+            t("table.columns.createdAt"),
           ]}
           data={tableData}
           renderCell={renderCell}
@@ -209,20 +153,16 @@ export default function WhitelabelsTable() {
           showExport={true}
           onExportClick={handleExport}
           filterOptions={[
-            { label: t("whitelabels.filter.all", "الكل"), value: "" },
-            { label: t("whitelabels.filter.active", "نشط"), value: "active" },
-            { label: t("whitelabels.filter.pending", "قيد الانتظار"), value: "pending" },
-            { label: t("whitelabels.filter.suspended", "موقوف"), value: "suspended" },
+            { label: t("dateRange.all"), value: "" },
+            { label: t("status.active"), value: "active" },
+            { label: t("status.pending"), value: "pending" },
+            { label: t("status.suspended"), value: "suspended" },
           ]}
           pagination={{
             currentPage: parseInt(filters.page),
-            totalPages: data?.data?.pagination?.pages || data?.pagination?.totalPages || 1,
-            totalItems: data?.data?.pagination?.total || data?.pagination?.total || 0,
-            onPageChange: (page) => {
-              const params = new URLSearchParams(searchParams);
-              params.set("page", page);
-              router.push(`?${params.toString()}`);
-            },
+            totalPages: mergedData?.data?.pagination?.pages || mergedData?.pagination?.totalPages || 1,
+            totalItems: mergedData?.data?.pagination?.total || mergedData?.pagination?.total || 0,
+            onPageChange: handlePageChange,
           }}
         />
       </div>
@@ -230,7 +170,7 @@ export default function WhitelabelsTable() {
       {showSubscriptionPopup && selectedWhitelabel && (
         <WhitelabelSubscriptionPopup
           whitelabel={selectedWhitelabel}
-          onClose={() => { setShowSubscriptionPopup(false); setSelectedWhitelabel(null); }}
+          onClose={handleCloseSubscriptionPopup}
         />
       )}
     </>

@@ -28,7 +28,9 @@
       "unlimited": "Unlimited",
       "contactSales": "Contact Sales",
       "upgrade": "Upgrade",
-      "downgrade": "Downgrade"
+      "downgrade": "Downgrade",
+      "subscribing": "Subscribing...",
+      "subscribeNow": "Subscribe Now"
     },
     "features": {
       "hasInAppInvites": "Send invitations from app",
@@ -54,6 +56,13 @@
       "description": "Our team will contact you to discuss your plan upgrade.",
       "close": "Close"
     },
+    "subscriptionStatus": "Subscription Status",
+    "noSubscription": {
+      "title": "No Active Subscription",
+      "text": "Choose a plan below to start using all features"
+    },
+    "successMessage": "Subscribed successfully!",
+    "failedMessage": "Failed to subscribe",
     "loading": "Loading plans...",
     "error": "Failed to load plans. Please try again."
   }

@@ -2,7 +2,7 @@
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
-import AdminPageHeader from "../_components/AdminPageHeader";
+import TicketsPageHeader from "./_components/TicketsPageHeader";
 import TicketsTable from "./_components/TicketsTable";
 import TicketStats from "./_components/TicketStats";
 import styles from "./page.module.css";
@@ -39,10 +39,7 @@ export default async function TicketsPage({ params, searchParams }) {
   return (
     <QueryClientServerProvider queryClient={queryClient}>
       <div className={styles.container}>
-        <AdminPageHeader
-          title="إدارة التذاكر"
-          subtitle="عرض وإدارة تذاكر الدعم"
-        />
+        <TicketsPageHeader />
         <TicketStats />
         <TicketsTable />
       </div>

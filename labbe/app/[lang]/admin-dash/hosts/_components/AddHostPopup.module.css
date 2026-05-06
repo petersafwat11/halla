@@ -74,3 +74,28 @@
 .actions > * {
   flex: 1;
 }
+
+.billingToggle {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.billingOption {
+  flex: 1;
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.6rem;
+  border: 1.5px solid #dfdfdf;
+  background: #fff;
+  color: #555;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.billingOptionActive {
+  border-color: #c28e5c;
+  background: #f5ece4;
+  color: #c28e5c;
+  font-weight: 600;
+}

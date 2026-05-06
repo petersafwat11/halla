@@ -13,6 +13,15 @@ import { useTranslation } from "../../localization/hooks/useTranslation";
 import Button from "../commen/Button";
 import * as ImagePicker from "expo-image-picker";
 
+const ImageGridItem = React.memo(({ uri, onRemove }) => (
+  <View style={styles.imageItem}>
+    <Image source={{ uri }} style={styles.image} />
+    <TouchableOpacity style={styles.removeButton} onPress={onRemove}>
+      <Text style={styles.removeButtonText}>{"\u2715"}</Text>
+    </TouchableOpacity>
+  </View>
+));
+
 const ImagesAndPricingForm = ({ data, onSave, loading }) => {
   const { t } = useTranslation("vendor");
   const [portfolioImages, setPortfolioImages] = useState(
@@ -53,7 +62,6 @@ const ImagesAndPricingForm = ({ data, onSave, loading }) => {
         }
       }
     } catch (error) {
-      console.error("Error picking images:", error);
       Alert.alert(t("common.error"), t("settings.imagePickError"));
     }
   };
@@ -91,20 +99,6 @@ const ImagesAndPricingForm = ({ data, onSave, loading }) => {
     onSave(submitData);
   };
 
-  const renderImageItem =
-    (type) =>
-    ({ item, index }) => (
-      <View style={styles.imageItem}>
-        <Image source={{ uri: item }} style={styles.image} />
-        <TouchableOpacity
-          style={styles.removeButton}
-          onPress={() => removeImage(type, index)}
-        >
-          <Text style={styles.removeButtonText}>✕</Text>
-        </TouchableOpacity>
-      </View>
-    );
-
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
@@ -134,7 +128,9 @@ const ImagesAndPricingForm = ({ data, onSave, loading }) => {
           {portfolioImages.length > 0 ? (
             <FlatList
               data={portfolioImages}
-              renderItem={renderImageItem("portfolio")}
+              renderItem={({ item, index }) => (
+                <ImageGridItem uri={item} onRemove={() => removeImage("portfolio", index)} />
+              )}
               keyExtractor={(item, index) => `portfolio-${index}`}
               numColumns={3}
               columnWrapperStyle={styles.imageGrid}
@@ -169,7 +165,9 @@ const ImagesAndPricingForm = ({ data, onSave, loading }) => {
           {pricePackages.length > 0 ? (
             <FlatList
               data={pricePackages}
-              renderItem={renderImageItem("pricing")}
+              renderItem={({ item, index }) => (
+                <ImageGridItem uri={item} onRemove={() => removeImage("pricing", index)} />
+              )}
               keyExtractor={(item, index) => `pricing-${index}`}
               numColumns={3}
               columnWrapperStyle={styles.imageGrid}

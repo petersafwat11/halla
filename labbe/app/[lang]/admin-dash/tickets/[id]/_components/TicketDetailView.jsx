@@ -1,21 +1,34 @@
 "use client";
-import React, { useState } from "react";
+
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import {
   FaArrowLeft,
   FaCheckCircle,
-  FaExclamationCircle,
   FaUser,
   FaClock,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+import { useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { handleError } from "@/services/errorHandlingService";
+import { toastUtils } from "@/utils/toastUtils";
 import styles from "./TicketDetailView.module.css";
-import { cookieUtils } from "@/utils/cookieUtils";
-import adminDashboardAPI from "@/services/adminDashboard";
-import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import TicketResponsePopup from "../../_components/TicketResponsePopup";
 import AssignTicketPopup from "../../_components/AssignTicketPopup";
+
+const STATUS_CLASS_MAP = {
+  open: styles.badgeOpen,
+  in_progress: styles.badgeInProgress,
+  resolved: styles.badgeResolved,
+  closed: styles.badgeClosed,
+};
+
+const PRIORITY_CLASS_MAP = {
+  urgent: styles.badgeUrgent,
+  high: styles.badgeHigh,
+  medium: styles.badgeMedium,
+  low: styles.badgeLow,
+};
 
 const TicketDetailView = ({ ticket }) => {
   const router = useRouter();
@@ -23,53 +36,45 @@ const TicketDetailView = ({ ticket }) => {
   const [isResolvePopupOpen, setIsResolvePopupOpen] = useState(false);
   const [isAssignPopupOpen, setIsAssignPopupOpen] = useState(false);
 
-  if (!ticket) return null;
+  const reopenMutation = useTicketMutation("updateStatus");
 
-  const handleReopen = async () => {
+  const handleReopen = useCallback(async () => {
     try {
-      const token = cookieUtils.getCookie("token");
-      await adminDashboardAPI.tickets.reopenTicket(ticket.id || ticket._id, token);
-      toast.success(t("messages.reopenSuccess", "Ticket reopened successfully"));
+      await reopenMutation.mutateAsync({
+        ticketId: ticket.id || ticket._id,
+        status: "open",
+      });
+      toastUtils.success(t("messages.reopenSuccess", "Ticket reopened successfully"));
       router.refresh();
     } catch (error) {
-      console.error("Error reopening ticket:", error);
-      toast.error(t("messages.reopenError", "Failed to reopen ticket"));
+      handleError(error, t, { fallbackMessage: "messages.reopenError" });
     }
-  };
+  }, [reopenMutation, ticket, t, router]);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "open":
-        return "#f59e0b"; // Orange
-      case "in_progress":
-        return "#3b82f6"; // Blue
-      case "resolved":
-        return "#10b981"; // Green
-      case "closed":
-        return "#6b7280"; // Gray
-      default:
-        return "#6b7280";
-    }
-  };
+  const handleOpenAssign = useCallback(() => setIsAssignPopupOpen(true), []);
+  const handleOpenResolve = useCallback(() => setIsResolvePopupOpen(true), []);
+  const handleCloseAssign = useCallback(() => setIsAssignPopupOpen(false), []);
+  const handleCloseResolve = useCallback(() => setIsResolvePopupOpen(false), []);
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "urgent":
-        return "#ef4444"; // Red
-      case "high":
-        return "#f97316"; // Orange
-      case "medium":
-        return "#3b82f6"; // Blue
-      case "low":
-        return "#10b981"; // Green
-      default:
-        return "#6b7280";
-    }
-  };
+  const handleAssignSuccess = useCallback(() => {
+    setIsAssignPopupOpen(false);
+    router.refresh();
+  }, [router]);
+
+  const handleResolveSuccess = useCallback(() => {
+    setIsResolvePopupOpen(false);
+    router.refresh();
+  }, [router]);
+
+  if (!ticket) return null;
+
+  const statusLabel = t(`status.${ticket.status}`, ticket.status);
+  const priorityLabel = t(`priority.${ticket.priority}`, ticket.priority);
+  const statusClass = STATUS_CLASS_MAP[ticket.status] || styles.badgeClosed;
+  const priorityClass = PRIORITY_CLASS_MAP[ticket.priority] || styles.badgeMedium;
 
   return (
     <div className={styles.container}>
-      {/* Header */}
       <div className={styles.header}>
         <button onClick={() => router.back()} className={styles.backButton}>
           <FaArrowLeft /> {t("actions.back", "Back to Tickets")}
@@ -77,17 +82,14 @@ const TicketDetailView = ({ ticket }) => {
         <div className={styles.actions}>
           {ticket.status !== "resolved" && (
             <>
-              <button
-                onClick={() => setIsAssignPopupOpen(true)}
-                className={styles.actionButton}
-              >
-                {t("actions.assign", "Assign")}
+              <button onClick={handleOpenAssign} className={styles.actionButton}>
+                {t("actions.assign")}
               </button>
               <button
-                onClick={() => setIsResolvePopupOpen(true)}
+                onClick={handleOpenResolve}
                 className={`${styles.actionButton} ${styles.resolveButton}`}
               >
-                {t("actions.resolve", "Resolve")}
+                {t("actions.resolve")}
               </button>
             </>
           )}
@@ -95,115 +97,95 @@ const TicketDetailView = ({ ticket }) => {
             <button
               onClick={handleReopen}
               className={`${styles.actionButton} ${styles.reopenButton}`}
+              disabled={reopenMutation.isPending}
             >
-              {t("actions.reopen", "Reopen")}
+              {t("actions.reopen")}
             </button>
           )}
         </div>
       </div>
 
-      {/* Main Content */}
       <div className={styles.content}>
         <div className={styles.mainCard}>
           <div className={styles.ticketHeader}>
             <h1 className={styles.ticketTitle}>
-              #{ticket.ticketNumber} - {ticket.title || t("noTitle", "No Title")}
+              #{ticket.ticketNumber} - {ticket.title || t("table.title")}
             </h1>
             <div className={styles.badges}>
-              <span
-                className={styles.badge}
-                style={{ backgroundColor: getStatusColor(ticket.status) }}
-              >
-                {ticket.status}
+              <span className={`${styles.badge} ${statusClass}`}>
+                {statusLabel}
               </span>
-              <span
-                className={styles.badge}
-                style={{ backgroundColor: getPriorityColor(ticket.priority) }}
-              >
-                {ticket.priority}
+              <span className={`${styles.badge} ${priorityClass}`}>
+                {priorityLabel}
               </span>
             </div>
           </div>
 
           <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>{t("details.message", "Message")}</h3>
+            <h3 className={styles.sectionTitle}>{t("close.originalMessage")}</h3>
             <p className={styles.message}>{ticket.message}</p>
           </div>
 
           {ticket.resolution && (
             <div className={`${styles.section} ${styles.resolutionSection}`}>
-               <h3 className={styles.sectionTitle}>
-                 <FaCheckCircle /> {t("details.resolution", "Resolution")}
-               </h3>
-               <p className={styles.message}>{ticket.resolution.message}</p>
-               <p className={styles.meta}>
-                 {t("details.resolvedBy", "Resolved by")}: {ticket.resolution.by?.name} on{" "}
-                 {new Date(ticket.resolution.at).toLocaleDateString()}
-               </p>
+              <h3 className={styles.sectionTitle}>
+                <FaCheckCircle /> {t("viewResolution.title")}
+              </h3>
+              <p className={styles.message}>{ticket.resolution.message}</p>
+              <p className={styles.meta}>
+                {t("viewResolution.resolvedBy")}: {ticket.resolution.by?.username || ticket.resolution.by}{" "}
+                {t("viewResolution.resolvedAt")}: {new Date(ticket.resolution.at).toLocaleDateString()}
+              </p>
             </div>
           )}
         </div>
 
-        {/* Sidebar */}
         <div className={styles.sidebar}>
           <div className={styles.card}>
-            <h3 className={styles.cardTitle}>{t("details.info", "Info")}</h3>
+            <h3 className={styles.cardTitle}>{t("close.status")}</h3>
             <div className={styles.infoRow}>
               <FaUser className={styles.icon} />
               <div>
-                <span className={styles.label}>{t("details.submittedBy", "Submitted By")}</span>
-                <p>{ticket.submittedBy?.name || ticket.submittedBy?.username || "Unknown"}</p>
-                <p className={styles.subtext}>{ticket.submittedBy?.email}</p>
+                <span className={styles.label}>{t("table.columns.submittedBy")}</span>
+                <p>{ticket.user?.username || ticket.user?.email || t("assign.selectModerator")}</p>
+                <p className={styles.subtext}>{ticket.user?.email}</p>
               </div>
             </div>
             <div className={styles.infoRow}>
               <FaClock className={styles.icon} />
               <div>
-                 <span className={styles.label}>{t("details.created", "Created At")}</span>
-                 <p>{new Date(ticket.createdAt).toLocaleString()}</p>
+                <span className={styles.label}>{t("table.columns.createdAt")}</span>
+                <p>{new Date(ticket.createdAt).toLocaleString()}</p>
               </div>
             </div>
             {ticket.assignedTo && (
-               <div className={styles.infoRow}>
-                 <FaUser className={styles.icon} />
-                 <div>
-                   <span className={styles.label}>{t("details.assignedTo", "Assigned To")}</span>
-                   <p>{ticket.assignedTo.name || ticket.assignedTo.username}</p>
-                 </div>
-               </div>
+              <div className={styles.infoRow}>
+                <FaUser className={styles.icon} />
+                <div>
+                  <span className={styles.label}>{t("table.columns.assignedTo")}</span>
+                  <p>{ticket.assignedTo.username || ticket.assignedTo.email}</p>
+                </div>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Popups */}
-      <PopupLayout
-        isOpen={isResolvePopupOpen}
-        onClose={() => setIsResolvePopupOpen(false)}
-      >
+      {isResolvePopupOpen && (
         <TicketResponsePopup
           ticket={ticket}
-          onClose={() => setIsResolvePopupOpen(false)}
-          onSuccess={() => {
-            setIsResolvePopupOpen(false);
-            router.refresh();
-          }}
+          onClose={handleCloseResolve}
+          onSuccess={handleResolveSuccess}
         />
-      </PopupLayout>
+      )}
 
-      <PopupLayout
-        isOpen={isAssignPopupOpen}
-        onClose={() => setIsAssignPopupOpen(false)}
-      >
+      {isAssignPopupOpen && (
         <AssignTicketPopup
           ticket={ticket}
-          onClose={() => setIsAssignPopupOpen(false)}
-          onSuccess={() => {
-            setIsAssignPopupOpen(false);
-            router.refresh();
-          }}
+          onClose={handleCloseAssign}
+          onSuccess={handleAssignSuccess}
         />
-      </PopupLayout>
+      )}
     </div>
   );
 };

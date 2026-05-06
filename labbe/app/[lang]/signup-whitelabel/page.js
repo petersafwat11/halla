@@ -1,12 +1,12 @@
-import React from "react";
 import WhiteLabelForm from "@/ui/auth/signup/whiteLabel/WhiteLabelForm";
+import styles from "./page.module.css";
 
-const page = () => {
+const SignupWhitelabelPage = () => {
   return (
-    <div style={{ backgroundColor: "#f4efe9" }}>
+    <div className={styles.wrapper}>
       <WhiteLabelForm />
     </div>
   );
 };
 
-export default page;
+export default SignupWhitelabelPage;

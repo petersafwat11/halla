@@ -44,6 +44,25 @@ export const useValidateLimits = (action, count, options = {}) => {
   });
 };
 
+/**
+ * Hook to fetch my payment history
+ * @param {Object} params - Query parameters (page, limit, status)
+ * @returns {UseQueryResult}
+ */
+export const useMyPayments = (params = {}, options = {}) => {
+  return useQuery({
+    queryKey: ["subscriptions", "my-payments", params],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.subscriptions.getMyPayments,
+        params,
+      }),
+    staleTime: 2 * 60 * 1000,
+    ...options,
+  });
+};
+
 // ============================================
 // SUBSCRIPTIONS MUTATIONS
 // ============================================
@@ -59,11 +78,11 @@ export const useSubscriptionMutation = (action) => {
   const mutations = {
     // Subscribe to plan
     subscribe: {
-      mutationFn: ({ planId, data }) =>
+      mutationFn: ({ planCode, discountCode }) =>
         apiRequest({
           method: "POST",
           path: API_PATHS.subscriptions.subscribe,
-          data: { planId, ...data },
+          data: { planCode, ...(discountCode ? { discountCode } : {}) },
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["subscriptions"] });

@@ -1,0 +1,272 @@
+.overlaysContainer {
+  padding: 0 20px 20px;
+}
+
+.overlaysHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.overlayCount {
+  font-size: 13px;
+  font-weight: 500;
+  color: #8a7a6a;
+  background: #faf8f5;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+/* ── Overlay Card ── */
+.overlayCard {
+  border-radius: 12px;
+  border: 1px solid #f0ede8;
+  background: #ffffff;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.overlayCard:hover {
+  border-color: #e0dcd5;
+}
+
+.overlayCard.expanded {
+  border-color: #c28e5c;
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.12);
+}
+
+.overlayCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.overlayCardHeader:hover {
+  background: #faf8f5;
+}
+
+.overlayCardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.overlayIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #8b6f47 0%, #6b5437 100%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.overlayCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.overlayCardField {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c2c2c;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.overlayCardPosition {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a7a6a;
+  background: #f5f3f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.overlayCardHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chevron {
+  color: #b0a898;
+  transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ── Card Body ── */
+.overlayCardBody {
+  padding: 16px;
+  background: #faf8f5;
+  border-top: 1px solid #f0ede8;
+}
+
+/* ── Config Groups ── */
+.configGroup {
+  margin-bottom: 16px;
+}
+
+.configGroup:last-child {
+  margin-bottom: 0;
+}
+
+.configGroupTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a7a6a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e0dcd5;
+}
+
+/* ── Form Layouts ── */
+.formGrid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.formGrid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.formField {
+  min-width: 0;
+}
+
+/* ── Color Picker ── */
+.colorPickerWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.colorLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a5a5a;
+}
+
+.colorInputs {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.colorPicker {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+
+.colorPicker:hover {
+  border-color: #c28e5c;
+}
+
+.colorPicker::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 10px;
+}
+
+.colorPicker::-webkit-color-swatch {
+  border: none;
+  border-radius: 10px;
+}
+
+.colorInput {
+  flex: 1;
+  height: 48px;
+  padding: 0 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #2c2c2c;
+  font-size: 14px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.colorInput:focus {
+  outline: none;
+  border-color: #c28e5c;
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.1);
+}
+
+.colorInput::placeholder {
+  color: #b0b0b0;
+}
+
+/* ── Empty State ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.emptyText {
+  margin: 12px 0 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #5a5a5a;
+}
+
+.emptySubtext {
+  margin: 0;
+  font-size: 13px;
+  color: #999;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .overlaysContainer {
+    padding: 0 16px 16px;
+  }
+
+  .formGrid4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .formGrid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .overlayCardHeader {
+    padding: 12px;
+  }
+
+  .overlayCardBody {
+    padding: 12px;
+  }
+}

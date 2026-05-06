@@ -44,14 +44,14 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
    */
   const validateForm = () => {
     if (!responseMessage.trim()) {
-      Alert.alert("Validation Error", "Response message is required");
+      Alert.alert(t("common.error"), t("tickets.resolve.validationMessageRequired"));
       return false;
     }
 
     if (responseMessage.trim().length < 10) {
       Alert.alert(
-        "Validation Error",
-        "Response message must be at least 10 characters",
+        t("common.error"),
+        t("tickets.resolve.validationMessageMinLength"),
       );
       return false;
     }
@@ -75,7 +75,6 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
       onSave();
       handleClose();
     } catch (error) {
-      console.error("Error resolving ticket:", error);
       Alert.alert(t("common.error"), error?.message || t("common.error"));
     }
   };
@@ -119,7 +118,7 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
                   style={styles.textArea}
                   onChangeText={setResponseMessage}
                   value={responseMessage}
-                  placeholder="Enter your response to the ticket submitter..."
+                  placeholder={t("tickets.resolve.resolutionPlaceholder")}
                   placeholderTextColor={colors.natural[400]}
                   multiline
                   numberOfLines={6}
@@ -127,10 +126,10 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
                 />
               </View>
               <Text style={styles.helperText}>
-                This message will be sent to the ticket submitter
+                {t("tickets.resolve.resolutionHelper")}
               </Text>
               <Text style={styles.characterCount}>
-                {responseMessage.length} characters
+                {t("tickets.resolve.characterCount", { count: responseMessage.length })}
               </Text>
             </View>
 
@@ -142,7 +141,7 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
                   style={styles.textArea}
                   onChangeText={setInternalNotes}
                   value={internalNotes}
-                  placeholder="Add internal notes for your team (not visible to submitter)..."
+                  placeholder={t("tickets.resolve.notesPlaceholder")}
                   placeholderTextColor={colors.natural[400]}
                   multiline
                   numberOfLines={4}
@@ -150,15 +149,14 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
                 />
               </View>
               <Text style={styles.helperText}>
-                These notes are only visible to admins and moderators
+                {t("tickets.resolve.notesHelper")}
               </Text>
             </View>
 
             {/* Warning Message */}
             <View style={styles.warningContainer}>
               <Text style={styles.warningText}>
-                ⚠️ Resolving this ticket will mark it as resolved and notify the
-                submitter. This action can be undone by reopening the ticket.
+                {t("tickets.resolve.warningText")}
               </Text>
             </View>
           </ScrollView>

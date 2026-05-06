@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import Image from "next/image";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import ToggleInput from "@/ui/commen/inputs/toggelInput/ToggelInput";
@@ -55,18 +56,23 @@ const EditPlanPopup = ({ plan, onClose, onSuccess, planType }) => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      await plansAPI.updatePlan(plan.code, data);
-      toast.success(
-        isArabic ? "تم حفظ التغييرات بنجاح" : "Changes saved successfully",
-      );
+      const payload = {
+        nameAr: data.nameAr,
+        nameEn: data.nameEn,
+        pricing: {
+          oneTime: data.pricing.direct.oneTime,
+          monthly: data.pricing.direct.monthly,
+          yearly: data.pricing.direct.yearly,
+        },
+        limits: data.limits,
+        isActive: data.isActive,
+      };
+      await plansAPI.updatePlan(plan.code, payload);
+      toastUtils.success(isArabic ? "تم حفظ التغييرات بنجاح" : "Changes saved successfully");
       onSuccess?.();
       onClose?.();
     } catch (error) {
-      console.error("Error updating plan:", error);
-      toast.error(
-        error.message ||
-          (isArabic ? "فشل في حفظ التغييرات" : "Failed to save changes"),
-      );
+      handleError(error, null);
     } finally {
       setIsLoading(false);
     }

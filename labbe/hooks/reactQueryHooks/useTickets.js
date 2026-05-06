@@ -186,8 +186,5 @@ export const useTicketMutation = (action) => {
 
   return useMutation({
     ...mutationConfig,
-    onError: (error) => {
-      console.error(`Ticket mutation error (${action}):`, error);
-    },
   });
 };

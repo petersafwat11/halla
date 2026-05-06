@@ -10,3 +10,5 @@ export { default as TicketDetailsCard } from "./TicketDetailsCard";
 export { default as AssignTicketModal } from "./AssignTicketModal";
 export { default as ResolveTicketModal } from "./ResolveTicketModal";
 export { default as TicketActions } from "./TicketActions";
+export { TicketSectionCard, TicketInfoRow } from "./TicketSectionCard";
+export { default as TicketHeroCard } from "./TicketHeroCard";

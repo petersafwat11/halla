@@ -22,9 +22,8 @@ export default function EventHeader({ eventId }) {
   const updateStaffMutation = useEventMutation("updateStaff");
   const deleteStaffMutation = useEventMutation("deleteStaff");
 
-  // Extract data — backend getEventById returns { event: { eventDetails: { title, ... }, staffList: [...] } }
-  const actualData = eventData?.data || eventData;
-  const event = actualData?.event;
+  // Extract data — backend returns { status, data: { event: { ... } } }
+  const event = eventData?.data?.event || eventData?.event;
   const eventTitle = event?.eventDetails?.title || t("singleEvent.header.eventDetails");
   const staff = event?.staffList || [];
 

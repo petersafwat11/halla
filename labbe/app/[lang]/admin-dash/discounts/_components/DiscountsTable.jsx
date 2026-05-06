@@ -1,9 +1,10 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
 import { FaToggleOn, FaToggleOff, FaCopy } from "react-icons/fa";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
@@ -37,7 +38,7 @@ export default function DiscountsTable({ onEdit }) {
   const queryClient = useQueryClient();
   const filters = buildFilters(searchParams);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["discounts", "admin", filters],
     queryFn: () => discountsAPI.getAll(filters),
     staleTime: 5 * 60 * 1000,
@@ -58,13 +59,13 @@ export default function DiscountsTable({ onEdit }) {
   const handleToggle = async (discount) => {
     try {
       await toggleDiscount.mutateAsync(discount.id);
-      toast.success(
+      toastUtils.success(
         discount.isActive
           ? t("discounts.deactivated", "تم تعطيل الكود")
           : t("discounts.activated", "تم تفعيل الكود")
       );
     } catch {
-      toast.error(t("discounts.toggleError", "فشل تغيير الحالة"));
+      toastUtils.error(t("discounts.toggleError", "فشل تغيير الحالة"));
     }
   };
 
@@ -72,20 +73,24 @@ export default function DiscountsTable({ onEdit }) {
     if (!confirm(t("discounts.confirmDelete", "هل تريد حذف هذا الكود؟"))) return;
     try {
       await deleteDiscount.mutateAsync(id);
-      toast.success(t("discounts.deleteSuccess", "تم حذف الكود"));
+      toastUtils.success(t("discounts.deleteSuccess", "تم حذف الكود"));
     } catch {
-      toast.error(t("discounts.deleteError", "فشل الحذف"));
+      toastUtils.error(t("discounts.deleteError", "فشل الحذف"));
     }
   };
 
   const handleCopy = (code) => {
     navigator.clipboard.writeText(code).then(() =>
-      toast.success(t("discounts.copied", "تم نسخ الكود"))
+      toastUtils.success(t("discounts.copied", "تم نسخ الكود"))
     );
   };
 
-  const discounts = data?.discounts || data?.data?.discounts || [];
-  const pagination = data?.pagination || data?.data?.pagination || {};
+  if (isLoading) return <SimpleLoading />;
+  if (error) return null;
+  if (!data) return null;
+
+  const discounts = data.discounts;
+  const pagination = data.pagination;
 
   const tableData = discounts.map((discount) => ({
     id: discount.id,
@@ -227,7 +232,11 @@ export default function DiscountsTable({ onEdit }) {
     },
   ];
 
-  if (isLoading) return <SimpleLoading />;
+  const handlePageChange = useCallback((page) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", page);
+    router.push(`?${params.toString()}`);
+  }, [searchParams, router]);
 
   return (
     <div className={styles.container}>
@@ -251,11 +260,7 @@ export default function DiscountsTable({ onEdit }) {
           currentPage: parseInt(filters.page),
           totalPages: pagination.pages || 1,
           totalItems: pagination.total || 0,
-          onPageChange: (page) => {
-            const params = new URLSearchParams(searchParams);
-            params.set("page", page);
-            router.push(`?${params.toString()}`);
-          },
+          onPageChange: handlePageChange,
         }}
       />
     </div>

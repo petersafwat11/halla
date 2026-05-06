@@ -14,14 +14,14 @@ export default function EventStats() {
   const { t } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
 
-  const filters = {
+  const filters = useMemo(() => ({
     page: searchParams.get("page") || 1,
     limit: searchParams.get("limit") || 10,
     search: searchParams.get("search"),
     status: searchParams.get("status"),
     from: searchParams.get("from"),
     to: searchParams.get("to"),
-  };
+  }), [searchParams]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["events", "admin", filters],
@@ -35,8 +35,9 @@ export default function EventStats() {
   });
 
   const statsCards = useMemo(() => {
-    const events = data?.data || [];
-    const total = data?.pagination?.total || events.length;
+    if (!data?.data || !data?.pagination) return [];
+    const events = data.data;
+    const total = data.pagination.total;
     const active = events.filter((e) => e.status === "live" || e.status === "scheduled").length;
     const scheduled = events.filter((e) => e.status === "scheduled").length;
     const completed = events.filter((e) => e.status === "completed").length;

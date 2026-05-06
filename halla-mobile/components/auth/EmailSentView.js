@@ -25,14 +25,12 @@ const EmailSentView = ({ onGoToEmail, onResend, resendDisabled = false }) => {
   }, []);
 
   const handleGoToEmail = () => {
-    console.log("Go to Email");
     if (onGoToEmail) {
       onGoToEmail();
     }
   };
 
   const handleResend = () => {
-    console.log("Resend Email");
     if (onResend) {
       onResend();
     }

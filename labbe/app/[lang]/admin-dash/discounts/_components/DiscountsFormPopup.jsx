@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import { discountsAPI } from "@/services/adminDashboard";
@@ -73,24 +74,24 @@ export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount })
   const createMutation = useMutation({
     mutationFn: (data) => discountsAPI.create(data),
     onSuccess: () => {
-      toast.success(t("discounts.createSuccess", "تم إنشاء الكود"));
+      toastUtils.success(t("discounts.createSuccess", "تم إنشاء الكود"));
       invalidate();
       onClose();
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || err?.message || "Error");
+      handleError(err, t, { fallbackMessage: "discounts.createError" });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => discountsAPI.update(id, data),
     onSuccess: () => {
-      toast.success(t("discounts.updateSuccess", "تم تحديث الكود"));
+      toastUtils.success(t("discounts.updateSuccess", "تم تحديث الكود"));
       invalidate();
       onClose();
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || err?.message || "Error");
+      handleError(err, t, { fallbackMessage: "discounts.updateError" });
     },
   });
 
@@ -169,7 +170,7 @@ export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount })
               type="text"
               value={form.code}
               onChange={(e) => set("code", e.target.value.toUpperCase())}
-              placeholder="e.g. SAVE20"
+              placeholder={t("discounts.fields.codePlaceholder", "e.g. SAVE20")}
               disabled={!!editingDiscount}
             />
             {errors.code && <span className={styles.error}>{errors.code}</span>}
@@ -185,7 +186,7 @@ export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount })
               type="text"
               value={form.descriptionEn}
               onChange={(e) => set("descriptionEn", e.target.value)}
-              placeholder="e.g. 20% off for new users"
+              placeholder={t("discounts.fields.descEnPlaceholder", "e.g. 20% off for new users")}
             />
           </div>
 
@@ -200,7 +201,7 @@ export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount })
               dir="rtl"
               value={form.descriptionAr}
               onChange={(e) => set("descriptionAr", e.target.value)}
-              placeholder="مثال: خصم 20% للمستخدمين الجدد"
+              placeholder={t("discounts.fields.descArPlaceholder", "مثال: خصم 20% للمستخدمين الجدد")}
             />
           </div>
 

@@ -121,11 +121,11 @@ const VendorSettings = () => {
               <PersonalInfoSection
                 data={{
                   name:
-                    vendorData?.roleData?.ownerFullName ||
+                    vendorData?.profile.vendorData?.ownerFullName ||
                     vendorData?.name ||
                     "",
                   email: vendorData?.email || "",
-                  avatar: getImageUrl(vendorData?.roleData?.businessLogo),
+                  avatar: getImageUrl(vendorData?.profile.vendorData?.businessLogo),
                 }}
                 onSave={handleSavePersonalInfo}
               />
@@ -133,21 +133,25 @@ const VendorSettings = () => {
               <div className={styles.dataSection}>
                 <BasicAccountInfo
                   data={{
-                    ownerFullName: vendorData?.roleData?.ownerFullName || "",
-                    brandName: vendorData?.roleData?.brandName || "",
+                    ownerFullName: vendorData?.profile.vendorData?.ownerFullName || "",
+                    brandName: vendorData?.profile.vendorData?.brandName || "",
                     email: vendorData?.email || "",
                     phoneNumber: vendorData?.phoneNumber || "",
                   }}
                   onSave={async (data) => {
                     const { email, phoneNumber, ...vendorFields } = data;
                     try {
-                      // Update vendor-specific fields
-                      if (Object.keys(vendorFields).length > 0) {
-                        await updateSectionMutation.mutateAsync({ section: "vendorData", data: vendorFields });
+                      // Update vendor-specific fields (phoneNumber goes here as vendor data)
+                      const vendorDataToUpdate = { ...vendorFields };
+                      if (phoneNumber) {
+                        vendorDataToUpdate.phoneNumber = phoneNumber;
                       }
-                      // Update top-level user fields
-                      if (email || phoneNumber) {
-                        await updateProfileMutation.mutateAsync({ email, phoneNumber });
+                      if (Object.keys(vendorDataToUpdate).length > 0) {
+                        await updateSectionMutation.mutateAsync({ section: "vendorData", data: vendorDataToUpdate });
+                      }
+                      // Update top-level user fields (email only — phone requires OTP flow)
+                      if (email) {
+                        await updateProfileMutation.mutateAsync({ email });
                       }
                       toast.success(t("messages.saveSuccess", "Changes saved successfully"));
                       refetchProfile();
@@ -161,18 +165,18 @@ const VendorSettings = () => {
                 <ServiceDetailsSection
                   data={{
                     serviceDescription:
-                      vendorData?.roleData?.serviceDescription || "",
-                    nationalId: vendorData?.roleData?.nationalId || "",
+                      vendorData?.profile.vendorData?.serviceDescription || "",
+                    nationalId: vendorData?.profile.vendorData?.nationalId || "",
                     nationalIdImage: getImageUrl(
-                      vendorData?.roleData?.nationalIdImage
+                      vendorData?.profile.vendorData?.nationalIdImage
                     ),
                     commercialRecordImage: getImageUrl(
-                      vendorData?.roleData?.commercialRecordImage
+                      vendorData?.profile.vendorData?.commercialRecordImage
                     ),
                     serviceLocation:
-                      vendorData?.roleData?.serviceLocation || {},
+                      vendorData?.profile.vendorData?.serviceLocation || {},
                     serviceCategories: extractCategoriesArray(
-                      vendorData?.roleData?.serviceCategories
+                      vendorData?.profile.vendorData?.serviceCategories
                     ),
                   }}
                   onSave={handleSaveVendorData}
@@ -182,11 +186,11 @@ const VendorSettings = () => {
               <ImagesAndPricingSection
                 data={{
                   portfolioImages: (
-                    vendorData?.roleData?.portfolioImages || []
+                    vendorData?.profile.vendorData?.portfolioImages || []
                   )
                     .map((img) => getImageUrl(img))
                     .filter(Boolean),
-                  pricePackages: (vendorData?.roleData?.pricePackages || [])
+                  pricePackages: (vendorData?.profile.vendorData?.pricePackages || [])
                     .map((img) => getImageUrl(img))
                     .filter(Boolean),
                 }}
@@ -195,12 +199,12 @@ const VendorSettings = () => {
 
               <AdditionalLinksSection
                 data={{
-                  website: vendorData?.roleData?.socialLinks?.website || "",
+                  website: vendorData?.profile.vendorData?.socialLinks?.website || "",
                   instagram:
-                    vendorData?.roleData?.socialLinks?.instagram || "",
-                  facebook: vendorData?.roleData?.socialLinks?.facebook || "",
-                  twitter: vendorData?.roleData?.socialLinks?.twitter || "",
-                  tiktok: vendorData?.roleData?.socialLinks?.tiktok || "",
+                    vendorData?.profile.vendorData?.socialLinks?.instagram || "",
+                  facebook: vendorData?.profile.vendorData?.socialLinks?.facebook || "",
+                  twitter: vendorData?.profile.vendorData?.socialLinks?.twitter || "",
+                  tiktok: vendorData?.profile.vendorData?.socialLinks?.tiktok || "",
                 }}
                 onSave={handleSaveVendorData}
               />
@@ -220,7 +224,7 @@ const VendorSettings = () => {
           {activeTab === "notifications" && (
             <div className={styles.notificationsContainer}>
               <NotificationPreferences
-                initialData={notificationPrefsData?.data?.notifications}
+                initialData={notificationPrefsData?.data?.preferences}
                 userRole={USER_ROLES.VENDOR}
                 emailVerified={vendorData?.emailVerified || false}
               />

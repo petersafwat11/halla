@@ -46,7 +46,7 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
             <TextInput
               name="website"
               label={t("settings.additionalLinks.website")}
-              placeholder="https://www.example.com"
+              placeholder={t("settings.additionalLinks.websitePlaceholder")}
               keyboardType="url"
               autoCapitalize="none"
             />
@@ -56,7 +56,7 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
             <TextInput
               name="instagram"
               label={t("settings.additionalLinks.instagram")}
-              placeholder="https://www.instagram.com/username"
+              placeholder={t("settings.additionalLinks.instagramPlaceholder")}
               keyboardType="url"
               autoCapitalize="none"
             />
@@ -66,7 +66,7 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
             <TextInput
               name="facebook"
               label={t("settings.additionalLinks.facebook")}
-              placeholder="https://www.facebook.com/username"
+              placeholder={t("settings.additionalLinks.facebookPlaceholder")}
               keyboardType="url"
               autoCapitalize="none"
             />
@@ -76,7 +76,7 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
             <TextInput
               name="twitter"
               label={t("settings.additionalLinks.twitter")}
-              placeholder="https://twitter.com/username"
+              placeholder={t("settings.additionalLinks.twitterPlaceholder")}
               keyboardType="url"
               autoCapitalize="none"
             />
@@ -86,7 +86,7 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
             <TextInput
               name="tiktok"
               label={t("settings.additionalLinks.tiktok")}
-              placeholder="https://www.tiktok.com/@username"
+              placeholder={t("settings.additionalLinks.tiktokPlaceholder")}
               keyboardType="url"
               autoCapitalize="none"
             />

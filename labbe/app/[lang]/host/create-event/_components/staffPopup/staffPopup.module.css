@@ -54,6 +54,13 @@
   gap: 24px;
 }
 
+.description {
+  font-size: 1.5rem;
+  color: #656565;
+  margin: 0;
+  line-height: 1.6;
+}
+
 .formSection {
   display: flex;
   flex-direction: column;

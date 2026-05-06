@@ -60,9 +60,11 @@ class SubscriptionsService {
       };
     }
 
-    // FIX Bugs 1,2: Dynamic event count for billing period
+    // Dynamic event count only matters when the plan caps total events (maxEvents > 0).
+    // Pool plans have maxEvents = -1 (unlimited events; cap is invitePool).
     let dynamicEventCount = null;
-    if (userId && subscription.limits?.maxEventsPerMonth > 0) {
+    const maxEvents = subscription.limits?.maxEvents;
+    if (userId && maxEvents > 0) {
       dynamicEventCount = await this.countEventsInBillingPeriod(userId, subscription);
     }
 
@@ -70,11 +72,11 @@ class SubscriptionsService {
     const addonExtraGuests = await this._getAddonExtraGuests(subscription._id);
     const limits = this._getPackageLimits(subscription, dynamicEventCount, addonExtraGuests);
 
-    // Check event limit
-    if (limits.maxEventsPerMonth !== -1 && limits.eventsRemaining <= 0) {
+    // Check event limit (only applies when the plan has a finite maxEvents)
+    if (limits.maxEvents > 0 && limits.eventsRemaining <= 0) {
       return {
         allowed: false,
-        reason: `You have reached your monthly event limit of ${limits.maxEventsPerMonth} events. Please upgrade your plan or wait for next month.`,
+        reason: `You have reached your event limit of ${limits.maxEvents} events. Please upgrade your plan.`,
         limits,
       };
     }
@@ -136,8 +138,7 @@ class SubscriptionsService {
   _getPackageLimits(subscription, dynamicEventCount = null, addonExtraGuests = 0) {
     if (!subscription) {
       return {
-        maxEventsPerMonth: 0,
-        maxGuestsPerEvent: 0,
+        maxEvents: 0,
         eventsUsed: 0,
         eventsRemaining: 0,
         totalGuestLimit: 0,
@@ -145,14 +146,20 @@ class SubscriptionsService {
     }
 
     const planType = subscription.planId?.planType || subscription.planType;
+    const eventsUsed = dynamicEventCount !== null
+      ? dynamicEventCount
+      : (subscription.usage?.eventsCreated || 0);
 
-    // Pool plans: return pool-based limits
+    // Pool plans: events are unlimited; the cap is the invite pool.
     if (isPoolPlan(planType)) {
-      const invitePool = subscription.invitePool ?? subscription.limits?.invitePool ?? 0;
-      const compensationPool = subscription.compensationPool ?? Math.floor(invitePool * 0.15);
+      const invitePool = subscription.invitePool ?? 0;
+      const compensationPool = subscription.compensationPool ?? 0;
       const invitesConsumed = subscription.invitesConsumed || 0;
       const invitesRemaining = Math.max(0, invitePool + compensationPool - invitesConsumed);
       return {
+        maxEvents: -1,
+        eventsUsed,
+        eventsRemaining: -1,
         invitePool,
         compensationPool,
         invitesConsumed,
@@ -160,25 +167,22 @@ class SubscriptionsService {
       };
     }
 
-    // Per-event plans: return per-event limits
+    // Per-event plans: 1 event, fixed maxInvitesPerEvent.
     if (isPerEventPlan(planType)) {
-      const maxInvitesPerEvent = subscription.limits?.maxInvitesPerEvent ?? subscription.limits?.maxGuestsPerEvent ?? 0;
-      const maxEvents = subscription.limits?.maxEvents || 1;
+      const maxEvents = subscription.limits?.maxEvents ?? 1;
+      const maxInvitesPerEvent = subscription.limits?.maxInvitesPerEvent ?? 0;
       return {
-        maxInvitesPerEvent,
         maxEvents,
+        maxInvitesPerEvent,
+        eventsUsed,
+        eventsRemaining: maxEvents === -1 ? -1 : Math.max(0, maxEvents - eventsUsed),
       };
     }
 
-    // Fallback (legacy / unknown plan types)
-    const maxEvents = subscription.limits?.maxEventsPerMonth || 0;
-    const maxGuests = subscription.limits?.maxInvitesPerEvent ?? subscription.limits?.maxGuestsPerEvent ?? 0;
-    const addOnGuests = addonExtraGuests; // FLOW-12-F02: read from Addon collection, not embedded (always-zero) field
-    const totalGuestLimit = maxGuests === -1 ? -1 : maxGuests + addOnGuests;
-
-    const eventsUsed = dynamicEventCount !== null
-      ? dynamicEventCount
-      : (subscription.usage?.eventsCreated || 0);
+    // Generic plans (e.g. unlimited platform plan).
+    const maxEvents = subscription.limits?.maxEvents ?? -1;
+    const maxGuests = subscription.limits?.maxInvitesPerEvent ?? 0;
+    const totalGuestLimit = maxGuests === -1 ? -1 : maxGuests + addonExtraGuests;
     const eventsRemaining = maxEvents === -1 ? -1 : Math.max(0, maxEvents - eventsUsed);
 
     let compensationInvites = 0;
@@ -192,10 +196,9 @@ class SubscriptionsService {
     }
 
     return {
-      maxEventsPerMonth: maxEvents,
+      maxEvents,
       maxInvitesPerEvent: maxGuests,
-      maxGuestsPerEvent: maxGuests, // alias for backward compat
-      addOnGuests,
+      addOnGuests: addonExtraGuests,
       compensationInvites,
       totalGuestLimit: totalGuestLimit === -1 ? -1 : totalGuestLimit + compensationInvites,
       eventsUsed,
@@ -881,6 +884,92 @@ class SubscriptionsService {
       features: plan.features,
       isPopular: plan.isPopular,
       sortOrder: plan.sortOrder,
+    };
+  }
+
+  // ============================================
+  // PAYMENT HISTORY (Host-facing)
+  // ============================================
+
+  /**
+   * Map subscription status to payment status for display
+   * @private
+   */
+  _mapSubStatusToPayment(subscriptionStatus) {
+    switch (subscriptionStatus) {
+      case 'active':
+      case 'completed':
+        return 'completed';
+      case 'trial':
+        return 'pending';
+      case 'cancelled':
+      case 'expired':
+        return 'failed';
+      default:
+        return 'pending';
+    }
+  }
+
+  /**
+   * Get current user's payment history (backed by Subscription records)
+   * @param {string} userId
+   * @param {Object} options - { page, limit, status, from, to }
+   * @returns {Promise<Object>}
+   */
+  async getMyPayments(userId, options = {}) {
+    const { page = 1, limit = 20, status = 'all', from, to } = options;
+    const skip = (page - 1) * limit;
+
+    const match = { userId };
+
+    // Map payment status filter back to subscription statuses
+    if (status && status !== 'all') {
+      const statusMap = {
+        completed: { $in: ['active', 'completed'] },
+        pending: 'trial',
+        failed: { $in: ['cancelled', 'expired'] },
+      };
+      if (statusMap[status]) {
+        match.status = statusMap[status];
+      }
+    }
+
+    // Date range filter
+    if (from || to) {
+      match.createdAt = {};
+      if (from) match.createdAt.$gte = new Date(from);
+      if (to) match.createdAt.$lte = new Date(to);
+    }
+
+    const [subscriptions, total] = await Promise.all([
+      Subscription.find(match)
+        .populate('planId', 'name nameEn nameAr code')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Subscription.countDocuments(match),
+    ]);
+
+    const payments = subscriptions.map((sub) => ({
+      id: sub._id,
+      service: sub.planId?.nameEn || sub.planId?.name || sub.planId?.code || 'Subscription',
+      amount: sub.pricePaid || 0,
+      currency: sub.currency || 'SAR',
+      status: this._mapSubStatusToPayment(sub.status),
+      billingCycle: sub.billingCycle,
+      subscriptionStatus: sub.status,
+      createdAt: sub.createdAt,
+    }));
+
+    return {
+      payments,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 

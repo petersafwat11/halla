@@ -308,3 +308,36 @@
   cursor: not-allowed;
   transform: none;
 }
+
+.crownIcon {
+  color: #F39C12;
+  margin-inline-end: 0.8rem;
+}
+
+.featureCheckIcon {
+  font-size: 1.2rem;
+}
+
+.selectedCheckIcon {
+  color: #fff;
+}
+
+.sectionLabel {
+  padding: 0 2rem 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.planLimitInfo {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0.5rem 0 1rem;
+}
+
+.plansLoading {
+  padding: 2rem;
+  text-align: center;
+  color: #888;
+  font-size: 1rem;
+}

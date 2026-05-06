@@ -5,7 +5,8 @@ import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import { FiEdit2, FiCheckCircle, FiSlash, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import { moderatorsAPI } from "@/services/adminDashboard";
@@ -40,32 +41,32 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
   const updateStatus = useAdminModeratorMutation("updateStatus");
 
   const handleDelete = async (moderatorId) => {
-    if (!confirm(t("moderators.confirmDelete", "هل أنت متأكد من حذف هذا المشرف؟"))) return;
+    if (!confirm(t("confirmDelete.message", "Are you sure you want to delete this moderator?"))) return;
     try {
       await deleteModerator.mutateAsync(moderatorId);
-      toast.success(t("moderators.deleteSuccess", "تم حذف المشرف بنجاح"));
+      toastUtils.success(t("deleteModerator.success", "Moderator deleted successfully"));
     } catch (error) {
-      toast.error(error.message || t("moderators.deleteError", "فشل حذف المشرف"));
+      handleError(error, t);
     }
   };
 
   const handleBulkDelete = async (ids) => {
-    if (!ids?.length) { toast.warning(t("moderators.selectRows", "الرجاء تحديد مشرفين للحذف")); return; }
-    if (!confirm(t("moderators.confirmBulkDelete", `هل أنت متأكد من حذف ${ids.length} مشرف؟`))) return;
+    if (!ids?.length) { toastUtils.warning(t("table.selectRows", "Please select moderators to delete")); return; }
+    if (!confirm(t("confirmDelete.message", "Are you sure you want to delete these moderators?"))) return;
     try {
       await bulkDelete.mutateAsync(ids);
-      toast.success(t("moderators.bulkDeleteSuccess", "تم حذف المشرفين بنجاح"));
+      toastUtils.success(t("deleteModerator.success", "Moderators deleted successfully"));
     } catch (error) {
-      toast.error(error.message || t("moderators.bulkDeleteError", "فشل حذف المشرفين"));
+      handleError(error, t);
     }
   };
 
   const handleStatusChange = async (moderatorId, newStatus) => {
     try {
       await updateStatus.mutateAsync({ moderatorId, status: newStatus });
-      toast.success(t("moderators.statusUpdateSuccess", "تم تحديث الحالة بنجاح"));
+      toastUtils.success(t("table.statusUpdated", "Status updated successfully"));
     } catch (error) {
-      toast.error(error.message || t("moderators.statusUpdateError", "فشل تحديث الحالة"));
+      handleError(error, t);
     }
   };
 
@@ -83,7 +84,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
         to: filters.to,
       });
     } catch (error) {
-      toast.error(t("moderators.exportError", "فشل تصدير البيانات"));
+      handleError(error, t);
     }
   };
 
@@ -96,7 +97,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
         icon: <FiEdit2 size={16} />,
         text: t("moderators.edit", "تعديل"),
         onClick: (r) => {
-          const mod = (data?.data?.moderators || data?.data || []).find(m => (m.id || m._id) === r.id);
+          const mod = (data?.moderators || []).find(m => (m.id || m._id) === r.id);
           if (mod) handleEditClick(mod);
         },
       });
@@ -134,24 +135,21 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
   const renderCell = (key, value, row) => {
     if (key === "status") {
       const statusConfig = {
-        active: { bg: "#EAF4EF", color: "#2A8C5B", text: t("moderators.status.active", "نشط") },
-        inactive: { bg: "#F9EBEA", color: "#C0392B", text: t("moderators.status.inactive", "غير نشط") },
-        pending: { bg: "#FBF3E6", color: "#D38200", text: t("moderators.status.pending", "قيد الانتظار") },
+        active: { bg: "#EAF4EF", color: "#2A8C5B", text: t("table.status.active", "Active") },
+        inactive: { bg: "#F9EBEA", color: "#C0392B", text: t("table.status.inactive", "Inactive") },
+        pending: { bg: "#FBF3E6", color: "#D38200", text: t("table.status.pending", "Pending") },
       };
       const config = statusConfig[value] || statusConfig.pending;
       return (
         <div
-          style={{
-            display: "inline-flex", padding: "0.3rem 1.2rem", justifyContent: "center",
-            alignItems: "center", borderRadius: "9999px", background: config.bg,
-            cursor: canUpdate ? "pointer" : "default",
-          }}
+          className={`${styles.statusBadge} ${canUpdate ? styles.statusBadgeClickable : styles.statusBadgeReadonly}`}
+          style={{ background: config.bg }}
           onClick={() => {
             if (!canUpdate) return;
             handleStatusChange(row.id, value === "active" ? "inactive" : "active");
           }}
         >
-          <span style={{ color: config.color, fontFamily: "Cairo", fontSize: "1.2rem" }}>{config.text}</span>
+          <span className={styles.statusBadgeText} style={{ color: config.color }}>{config.text}</span>
         </div>
       );
     }
@@ -159,7 +157,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
     if (key === "name") {
       return (
         <span
-          style={{ color: canUpdate ? "#3498DB" : "inherit", cursor: canUpdate ? "pointer" : "default", textDecoration: canUpdate ? "underline" : "none" }}
+          className={canUpdate ? styles.linkCell : styles.plainCell}
           onClick={() => canUpdate && handleEditClick(row)}
         >
           {value}
@@ -171,7 +169,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
     return value;
   };
 
-  const tableData = (data?.data?.moderators || data?.data || []).map((moderator) => ({
+  const tableData = (data?.moderators || []).map((moderator) => ({
     id: moderator.id || moderator._id,
     name: moderator.name || moderator.username || "-",
     email: moderator.email || "-",
@@ -210,8 +208,8 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
           ]}
           pagination={{
             currentPage: parseInt(filters.page),
-            totalPages: data?.data?.pagination?.pages || data?.pagination?.totalPages || 1,
-            totalItems: data?.data?.pagination?.total || data?.pagination?.total || 0,
+            totalPages: data?.pagination?.pages || 1,
+            totalItems: data?.pagination?.total || 0,
             onPageChange: (page) => {
               const params = new URLSearchParams(searchParams);
               params.set("page", page);

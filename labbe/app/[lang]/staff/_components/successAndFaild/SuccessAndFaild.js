@@ -95,9 +95,9 @@ export default function SuccessAndFaild({
             <h2 className={styles.title}>
               {isSuccess
                 ? isAlreadyCheckedIn
-                  ? t("alreadyCheckedIn", "تم التسجيل مسبقاً")
+                  ? t("alreadyCheckedIn")
                   : t("confirmAttendance")
-                : t("error", "حدث خطأ")}
+                : t("error")}
             </h2>
 
             {isSuccess && displayGuest && (

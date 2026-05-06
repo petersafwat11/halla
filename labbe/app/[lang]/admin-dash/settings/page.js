@@ -34,7 +34,7 @@ const AdminSettingsPage = async ({ params }) => {
       const notifResponse = await settingsService.getNotificationPreferences(
         token
       );
-      const apiNotifications = notifResponse?.data?.preferences || null;
+      const apiNotifications = notifResponse?.data || null;
       if (apiNotifications) {
         notifications = {
           appNotifications: apiNotifications.appNotifications || {},

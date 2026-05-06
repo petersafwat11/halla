@@ -8,8 +8,8 @@ export default function DiscountsPageHeader({ onAddClick }) {
 
   return (
     <AdminPageHeader
-      title="إدارة الخصومات والكوبونات"
-      subtitle="إنشاء وإدارة أكواد الخصم للباقات"
+      title={t("discounts.title", "إدارة الخصومات والكوبونات")}
+      subtitle={t("discounts.subtitle", "إنشاء وإدارة أكواد الخصم للباقات")}
       addButtonTitle={t("discounts.newCode", "كود جديد")}
       onAddButtonClick={onAddClick}
     />

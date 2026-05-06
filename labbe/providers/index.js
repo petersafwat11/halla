@@ -20,6 +20,7 @@ const i18nNamespaces = [
   "adminSettings",
   "adminModerators",
   "adminDashboard",
+  "admin",
   "vendorSettings",
   "vendorServices",
   "hostPayments",
@@ -30,6 +31,7 @@ const i18nNamespaces = [
   "postEvent",
   "whitelabelPlans",
   "landing",
+  "marketplace",
 ];
 
 export default async function GlobalProvider({ children, lang }) {

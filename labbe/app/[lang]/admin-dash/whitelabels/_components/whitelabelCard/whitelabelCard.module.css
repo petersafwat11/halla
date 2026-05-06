@@ -220,3 +220,59 @@
   font-size: 1.2rem;
   font-weight: 600;
 }
+
+/* Status badge variants */
+.statusActive {
+  color: #2A8C5B;
+  background: #EAF4EF;
+}
+
+.statusSuspended {
+  color: #C0392B;
+  background: #F9EBEA;
+}
+
+.statusPending {
+  color: #D38200;
+  background: #FBF3E6;
+}
+
+.statusInactive {
+  color: #7F8C8D;
+  background: #F5F5F5;
+}
+
+/* Action button icon colors */
+.iconManagePlan {
+  color: #F39C12;
+}
+
+.iconActivate {
+  color: #2A8C5B;
+}
+
+.iconSuspend {
+  color: #C0392B;
+}
+
+/* Stat icon colors */
+.statIconHosts {
+  font-size: 2.4rem;
+  color: #3498DB;
+}
+
+.statIconEvents {
+  font-size: 2.4rem;
+  color: #E67E22;
+}
+
+.statIconModerators {
+  font-size: 2.4rem;
+  color: #1ABC9C;
+}
+
+/* Logo icon */
+.logoIcon {
+  font-size: 3.2rem;
+  color: #C28E5C;
+}

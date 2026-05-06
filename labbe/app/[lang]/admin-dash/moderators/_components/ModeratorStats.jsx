@@ -24,8 +24,8 @@ export default function ModeratorStats() {
   const { data, isLoading } = useAdminModerators(filters);
 
   const statsCards = useMemo(() => {
-    const moderators = data?.data?.moderators || data?.data || [];
-    const total = data?.data?.pagination?.total || moderators.length;
+    const moderators = data?.moderators || [];
+    const total = data?.pagination?.total || moderators.length;
     const active = moderators.filter((m) => m.status === "active").length;
     const pending = moderators.filter((m) => m.status === "pending").length;
     const inactive = moderators.filter((m) => m.status === "inactive").length;

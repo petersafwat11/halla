@@ -36,8 +36,6 @@ const mongoose = require("mongoose");
  *   - eventDetails.time          → "HH:MM:AM" event time
  *   - eventDetails.location.address
  *   - host.name
- *   - hostNote                   → top-level Event.hostNote
- *   - invitationMessage          → top-level Event.invitationMessage
  */
 const varMappingSchema = new mongoose.Schema(
   {
@@ -92,6 +90,15 @@ const taqnyatTemplateSchema = new mongoose.Schema(
 
     /** Soft-disable in our UI without removing from Meta */
     active: { type: Boolean, default: true, index: true },
+
+    /**
+     * True when the last sync did not return this taqnyatId from upstream
+     * (Meta deletion or status change that strips it from the list). Kept
+     * orthogonal from `active` so admin intent and upstream availability
+     * don't fight each other; the host filter excludes any row with this
+     * flag set. Reset to false on the next sync that sees the row again.
+     */
+    removedFromMeta: { type: Boolean, default: false, index: true },
 
     /** Last successful sync from Meta */
     lastSyncedAt: { type: Date, default: null },

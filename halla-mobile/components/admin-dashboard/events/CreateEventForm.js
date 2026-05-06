@@ -4,12 +4,13 @@ import {
   ScrollView,
   Alert,
   StyleSheet,
+  Text,
 } from 'react-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import EventsService from '../../../services/EventsService';
 import { useTranslation } from '../../../localization';
 import { useAuthStore } from '../../../stores/authStore';
-import { useSubscription } from '../../../hooks';
+import { useSubscriptionInfo } from '../../../hooks';
 import StepOne from '../../createEvent/StepOne';
 import StepTwo from '../../createEvent/StepTwo';
 import StepThree from '../../createEvent/StepThree';
@@ -18,6 +19,7 @@ import EventSummary from '../../createEvent/EventSummary';
 import StepHeader from '../../createEvent/StepHeader';
 import PrevAndNextBtns from '../../createEvent/PrevAndNextBtns';
 import HostSelectorStep from './HostSelectorStep';
+import LimitReachedView from '../../createEvent/LimitReachedView';
 import { spacing } from '../../../styles/tokens';
 
 const TOTAL_STEPS = 6;
@@ -31,14 +33,20 @@ const STEP_INFO = (t) => [
   { title: t('events.steps.review'), description: '' },
 ];
 
+// Both subscription sources we accept already deliver the canonical normalized shape:
+//   - useSubscriptionInfo() -> backend events.service.getSubscriptionInfo
+//   - HostSelectorStep target.subscription -> backend admin.service._formatTargetSubscription
+// Shape: { canCreateEvent, isUnlimited?, guestLimit, isGuestUnlimited, invitePool,
+//          invitesRemaining, eventsRemaining, eventsUsed, isSingleEvent, isPoolPlan }
+
 const CreateEventForm = ({ onSubmit, loading }) => {
   const { t } = useTranslation('admin');
   const token = useAuthStore((state) => state.token);
   const [currentStep, setCurrentStep] = useState(1);
   const [hostSelection, setHostSelection] = useState({});
 
-  const { data: subscriptionData } = useSubscription();
-  const subscription = subscriptionData?.data?.subscription;
+  const { data: subInfoData } = useSubscriptionInfo();
+  const selfSubscription = subInfoData ?? null;
 
   const methods = useForm({
     mode: 'onChange',
@@ -47,6 +55,21 @@ const CreateEventForm = ({ onSubmit, loading }) => {
 
   const { watch, handleSubmit, setValue } = methods;
   const formData = watch();
+
+  // Pick the subscription that gates event creation: self when admin creates for themselves,
+  // otherwise the target host's normalized subscription from HostSelectorStep.
+  const hostSubscription = useMemo(() => {
+    if (hostSelection.createForSelf) return selfSubscription;
+    return hostSelection.subscription ?? null;
+  }, [hostSelection, selfSubscription]);
+
+  const canCreateEvent = useMemo(() => {
+    if (!hostSelection.createForSelf && !hostSelection.targetUserId) return true;
+    if (!hostSubscription) return false;
+    if (hostSubscription.isUnlimited) return true;
+    if (hostSubscription.eventsRemaining === -1) return true;
+    return hostSubscription.eventsRemaining > 0;
+  }, [hostSelection, hostSubscription]);
 
   const isStepValid = useMemo(() => {
     if (currentStep === 1) {
@@ -58,7 +81,7 @@ const CreateEventForm = ({ onSubmit, loading }) => {
 
   const onNext = useCallback(() => {
     if (!isStepValid) {
-      Alert.alert('خطأ', 'يرجى إكمال جميع الحقول المطلوبة');
+      Alert.alert(t('common.error'), t('events.steps.incompleteFields'));
       return;
     }
     if (currentStep < TOTAL_STEPS) {
@@ -110,6 +133,17 @@ const CreateEventForm = ({ onSubmit, loading }) => {
   const stepInfoList = STEP_INFO(t);
   const stepInfo = stepInfoList[currentStep - 1] || { title: '', description: '' };
 
+  // Block event creation if selected target has no active subscription or no remaining events
+  if (currentStep > 1 && !canCreateEvent) {
+    return (
+      <LimitReachedView
+        tEvents={t}
+        title={t('events.create')}
+        navigation={null}
+      />
+    );
+  }
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -126,7 +160,7 @@ const CreateEventForm = ({ onSubmit, loading }) => {
           <StepTwo
             guestList={formData.guestList}
             staffList={formData.staffList}
-            subscription={subscription}
+            subscription={hostSubscription}
           />
         );
       case 4:

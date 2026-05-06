@@ -80,5 +80,20 @@
   },
   "confirmDelete": {
     "message": "Are you sure you want to delete this vendor?"
+  },
+  "messages": {
+    "selectRows": "Please select vendors first",
+    "confirmBulkDelete": "Are you sure you want to delete {{count}} vendors?",
+    "bulkDeleteSuccess": "Vendors deleted successfully",
+    "bulkDeleteError": "Failed to delete vendors",
+    "bulkApproveSuccess": "Vendors approved successfully",
+    "bulkSuspendSuccess": "Vendors suspended successfully",
+    "exportError": "Failed to export vendors",
+    "activate": "Activate",
+    "noRating": "N/A",
+    "createdAt": "Registration Date",
+    "bulkApprove": "Approve Selected",
+    "bulkSuspend": "Suspend Selected",
+    "bulkDelete": "Delete Selected"
   }
 }

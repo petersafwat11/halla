@@ -213,7 +213,6 @@ router.post(
   uploadLogo,
   validateEmail("email"),
   validatePhone("phoneNumber"),
-  validatePassword("password"),
   validateStringLength("englishName", { min: 2, max: 100 }),
   validateStringLength("arabicName", { min: 2, max: 100 }),
   checkDuplicates,

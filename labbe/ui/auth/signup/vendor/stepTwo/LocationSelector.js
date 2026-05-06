@@ -150,7 +150,7 @@ const LocationSelector = () => {
   const cityOptions = [
     {
       value: "all",
-      label: isArabic ? "جميع مدن المنطقة" : "All cities in region",
+      label: t("signupForm.vendor.serviceData.location.allCities"),
     },
     ...cities.map((c) => ({
       value: c.city_id.toString(),
@@ -176,12 +176,8 @@ const LocationSelector = () => {
         >
           <option value="">
             {regionsLoading
-              ? isArabic
-                ? "جاري التحميل..."
-                : "Loading..."
-              : isArabic
-                ? "اختر المنطقة"
-                : "Select region"}
+              ? t("signupForm.vendor.serviceData.location.loading")
+              : t("signupForm.vendor.serviceData.location.selectRegion")}
           </option>
           {regionOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -212,7 +208,7 @@ const LocationSelector = () => {
           >
             {citiesLoading ? (
               <option value="">
-                {isArabic ? "جاري التحميل..." : "Loading..."}
+                {t("signupForm.vendor.serviceData.location.loading")}
               </option>
             ) : (
               cityOptions.map((opt) => (
@@ -241,12 +237,8 @@ const LocationSelector = () => {
             >
               <span className={styles.multiSelectValue}>
                 {selectedDistrictIds.length === 0
-                  ? isArabic
-                    ? "جميع أحياء المدينة"
-                    : "All districts"
-                  : isArabic
-                    ? `${selectedDistrictIds.length} حي محدد`
-                    : `${selectedDistrictIds.length} districts selected`}
+                  ? t("signupForm.vendor.serviceData.location.allDistricts")
+                  : t("signupForm.vendor.serviceData.location.districtsSelected", { count: selectedDistrictIds.length })}
               </span>
               <svg
                 className={`${styles.dropdownArrow} ${isDistrictsDropdownOpen ? styles.dropdownArrowOpen : ""
@@ -270,9 +262,7 @@ const LocationSelector = () => {
                   <input
                     type="text"
                     className={styles.searchInput}
-                    placeholder={
-                      isArabic ? "ابحث عن حي..." : "Search district..."
-                    }
+                    placeholder={t("signupForm.vendor.serviceData.location.searchDistrict")}
                     value={districtsSearchQuery}
                     onChange={(e) => setDistrictsSearchQuery(e.target.value)}
                     onClick={(e) => e.stopPropagation()}
@@ -289,7 +279,7 @@ const LocationSelector = () => {
                       onChange={() => handleDistrictToggle("all")}
                     />
                     <span>
-                      {isArabic ? "جميع أحياء المدينة" : "All districts"}
+                      {t("signupForm.vendor.serviceData.location.allDistricts")}
                     </span>
                   </label>
 
@@ -333,17 +323,15 @@ const LocationSelector = () => {
       {selectedRegionId && (
         <div className={styles.summary}>
           <span className={styles.summaryLabel}>
-            {isArabic ? "نطاق التغطية:" : "Coverage:"}
+            {t("signupForm.vendor.serviceData.location.coverageLabel")}
           </span>
           <span className={styles.summaryValue}>
             {coverageType === "region" &&
-              (isArabic ? "جميع المنطقة" : "Entire region")}
+              t("signupForm.vendor.serviceData.location.entireRegion")}
             {coverageType === "city" &&
-              (isArabic ? "جميع أحياء المدينة" : "Entire city")}
+              t("signupForm.vendor.serviceData.location.entireCity")}
             {coverageType === "districts" &&
-              (isArabic
-                ? `${selectedDistrictIds.length} أحياء محددة`
-                : `${selectedDistrictIds.length} selected districts`)}
+              t("signupForm.vendor.serviceData.location.selectedDistricts", { count: selectedDistrictIds.length })}
           </span>
         </div>
       )}

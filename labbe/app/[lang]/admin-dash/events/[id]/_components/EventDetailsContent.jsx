@@ -1,6 +1,7 @@
 "use client";
 import { useSingleEventStats } from "@/hooks/events";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import AdminEventHeader from "../_components/AdminEventHeader";
 import EventStats from "@/app/[lang]/host/events/[id]/_components/EventStats";
@@ -10,6 +11,7 @@ import styles from "./EventDetailsContent.module.css";
 
 export default function EventDetailsContent({ eventId }) {
   const router = useRouter();
+  const { t } = useTranslation("adminEvents");
   const { data, isLoading, error } = useSingleEventStats(eventId);
 
   if (isLoading) {
@@ -19,14 +21,14 @@ export default function EventDetailsContent({ eventId }) {
   if (error) {
     return (
       <div className={styles.error}>
-        <h2>Error Loading Event</h2>
+        <h2>{t("errors.loadingEvent", "Error Loading Event")}</h2>
         <p>{error.message}</p>
-        <button onClick={() => router.back()}>Go Back</button>
+        <button onClick={() => router.back()}>{t("buttons.goBack", "Go Back")}</button>
       </div>
     );
   }
 
-  const eventData = data?.data || data;
+  const eventData = data.data;
 
   return (
     <>

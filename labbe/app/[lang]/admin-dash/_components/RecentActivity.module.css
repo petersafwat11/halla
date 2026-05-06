@@ -8,3 +8,61 @@
   gap: 2rem;
   margin-bottom: 3rem;
 }
+
+/* Status badge base */
+.statusBadge {
+  display: inline-flex;
+  padding: 0.3rem 1.2rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 9999px;
+  font-family: Cairo, sans-serif;
+  font-size: 1.2rem;
+}
+
+/* Host status variants */
+.statusBadgeActive {
+  background: #eaf4ef;
+  color: #2a8c5b;
+}
+
+.statusBadgePending {
+  background: #fbf3e6;
+  color: #d38200;
+}
+
+.statusBadgeSuspended {
+  background: #f9ebea;
+  color: #c0392b;
+}
+
+/* Event status variants */
+.statusBadgeScheduled {
+  background: #e8f4fd;
+  color: #3498db;
+}
+
+.statusBadgeLive {
+  background: #eaf4ef;
+  color: #2a8c5b;
+}
+
+.statusBadgeCompleted {
+  background: #f5f5f5;
+  color: #666666;
+}
+
+.statusBadgeDraft {
+  background: #fbf3e6;
+  color: #d38200;
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: #c0392b;
+  font-family: Cairo, sans-serif;
+  font-size: 1rem;
+}

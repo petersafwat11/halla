@@ -45,3 +45,14 @@ exports.assignMapping = catchAsync(async (req, res) => {
   const doc = await service.assignMapping(id, updates, req.user);
   sendSuccess(res, { template: doc }, "Template updated");
 });
+
+exports.createUpstream = catchAsync(async (req, res) => {
+  const doc = await service.createUpstreamTemplate(req.body, req.user);
+  sendSuccess(res, { template: doc }, "Template submitted to Meta for approval");
+});
+
+exports.deleteUpstream = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await service.deleteUpstreamTemplate(id, req.user);
+  sendSuccess(res, result, "Template deleted from Taqnyat");
+});

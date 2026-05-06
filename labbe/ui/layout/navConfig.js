@@ -229,6 +229,7 @@ export const adminNavItems = [
     icon: IoImagesOutline,
     labelKey: "adminSidebar.templates",
     defaultLabel: "قوالب الدعوات",
+    exactMatch: true,
   },
   {
     key: "template_categories",

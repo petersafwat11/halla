@@ -4,15 +4,17 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAdminVendorMutation } from "@/hooks/reactQueryHooks/useAdmin";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { handleError } from "@/services/errorHandlingService";
+import { toastUtils } from "@/utils/toastUtils";
 import StarRating from "@/ui/commen/inputs/starRating/StarRating";
 import { vendorRatingSchema } from "@/utils/schemas/adminPopupSchemas";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
+import { FiX } from "react-icons/fi";
 import styles from "./VendorRatingPopup.module.css";
 
 export default function VendorRatingPopup({ vendor, onClose }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminVendors");
   const updateRating = useAdminVendorMutation("updateRating");
 
   const methods = useForm({
@@ -26,10 +28,10 @@ export default function VendorRatingPopup({ vendor, onClose }) {
         vendorId: vendor.id || vendor._id,
         rating: data.rating,
       });
-      toast.success(t("vendors.ratingUpdateSuccess", "تم تحديث التقييم بنجاح"));
+      toastUtils.success(t("giveRating.success"));
       onClose();
     } catch (error) {
-      toast.error(error.message || t("vendors.ratingUpdateError", "فشل تحديث التقييم"));
+      handleError(error, t, { fallbackMessage: "giveRating.error" });
     }
   };
 
@@ -37,30 +39,37 @@ export default function VendorRatingPopup({ vendor, onClose }) {
     <PopupLayout isOpen={true} onClose={onClose}>
       <div className={styles.popup}>
         <div className={styles.header}>
-          <h2>{t("vendors.updateRating", "تحديث التقييم")}</h2>
-          <button className={styles.closeBtn} onClick={onClose}>×</button>
+          <h2>{t("giveRating.title")}</h2>
+          <button className={styles.closeBtn} onClick={onClose} aria-label={t("dateRange.cancel")}>
+            <FiX size={24} />
+          </button>
         </div>
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.form}>
             <div className={styles.formGroup}>
-              <label>{t("vendors.form.vendorName", "اسم التاجر")}</label>
-              <input type="text" value={vendor?.username || vendor?.name || ""} disabled style={{ background: "#f5f5f5" }} />
+              <label>{t("table.columns.username")}</label>
+              <input
+                type="text"
+                value={vendor?.username || vendor?.name || ""}
+                disabled
+                className={styles.inputDisabled}
+              />
             </div>
             <StarRating
               name="rating"
-              label={t("vendors.form.rating", "التقييم")}
+              label={t("giveRating.ratingLabel")}
               required
             />
             <div className={styles.actions}>
               <Button
                 variant="secondary"
-                title={t("common.cancel", "إلغاء")}
+                title={t("dateRange.cancel")}
                 onClick={onClose}
                 disabled={updateRating.isPending}
               />
               <Button
                 variant="primary"
-                title={updateRating.isPending ? t("common.loading", "جاري التحديث...") : t("common.update", "تحديث")}
+                title={updateRating.isPending ? t("giveRating.submitting") : t("giveRating.submitButton")}
                 type="submit"
                 disabled={updateRating.isPending}
               />

@@ -50,7 +50,6 @@ const overlaySchema = new mongoose.Schema(
     topPct: { type: Number, required: true, min: 0, max: 100 },
     leftPct: { type: Number, required: true, min: 0, max: 100 },
     widthPct: { type: Number, min: 0, max: 100 },
-    heightPct: { type: Number, min: 0, max: 100 },
     fontSizeVh: { type: Number, min: 0 },
     fontWeight: {
       type: String,
@@ -80,7 +79,7 @@ const decorationSchema = new mongoose.Schema(
     topPct: { type: Number, required: true, min: 0, max: 100 },
     leftPct: { type: Number, required: true, min: 0, max: 100 },
     widthPct: { type: Number, required: true, min: 0, max: 100 },
-    heightPct: { type: Number, required: true, min: 0, max: 100 },
+    iconSizeVh: { type: Number, min: 0 },
     zIndex: { type: Number, default: 0 },
   },
   { _id: false }

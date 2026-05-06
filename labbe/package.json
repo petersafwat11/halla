@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@halla/shared-schemas": "*",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",

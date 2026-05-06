@@ -13,7 +13,7 @@ const OTPVerification = ({ phoneNumber, onBack, type = "signup" }) => {
     mutateAsync: verifyOTP,
     isPending: isVerifying,
     error,
-  } = useAuthMutation("verifyOTP");
+  } = useAuthMutation("verifySignupOTP");
 
   const isLoading = isVerifying;
   const errorMessage = error?.message || "";

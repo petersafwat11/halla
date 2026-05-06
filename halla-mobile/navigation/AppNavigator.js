@@ -10,35 +10,35 @@ import { colors, backgrounds } from "../styles/tokens";
 
 // Import your screen components here
 import WelcomeWrapper from "../components/welcom/WelcomeWrapper";
-import HomeScreen from "../screens/HomeScreen";
-import VendorHomeScreen from "../screens/VendorHomeScreen";
-import LoginScreen from "../screens/LoginScreen";
-import SignupScreen from "../screens/SignupScreen";
-import ForgetPasswordScreen from "../screens/ForgetPasswordScreen";
-import PlansScreen from "../screens/PlansScreen";
-import PlansSummaryScreen from "../screens/PlansSummaryScreen";
-import SettingsScreen from "../screens/SettingsScreen";
-import AccountSettingsScreen from "../screens/AccountSettingsScreen";
-import NotificationSettingsScreen from "../screens/NotificationSettingsScreen";
-import TicketsScreen from "../screens/TicketsScreen";
-import Marketplace from "../screens/Marketplace";
-import EventsScreen from "../screens/EventsScreen";
-import CreateEventScreen from "../screens/CreateEventScreen";
+import HomeScreen from "../screens/host/HomeScreen";
+import VendorHomeScreen from "../screens/vendor/VendorHomeScreen";
+import LoginScreen from "../screens/auth/LoginScreen";
+import SignupScreen from "../screens/auth/SignupScreen";
+import ForgetPasswordScreen from "../screens/auth/ForgetPasswordScreen";
+import PlansScreen from "../screens/host/PlansScreen";
+import PlansSummaryScreen from "../screens/host/PlansSummaryScreen";
+import SettingsScreen from "../screens/host/SettingsScreen";
+import AccountSettingsScreen from "../screens/host/AccountSettingsScreen";
+import NotificationSettingsScreen from "../screens/host/NotificationSettingsScreen";
+import TicketsScreen from "../screens/common/TicketsScreen";
+import Marketplace from "../screens/host/Marketplace";
+import EventsScreen from "../screens/host/EventsScreen";
+import CreateEventScreen from "../screens/host/CreateEventScreen";
 // Phase 4d W1-MOBILE-UPDATE: single unified update wizard for every
 // role. The legacy `screens/host/UpdateEventScreen.js` is now a thin
 // re-export shim for any other import paths still in flight.
-import UpdateEventScreen from "../screens/update-event/UpdateEventScreen";
-import NotificationsScreen from "../screens/NotificationsScreen";
-import VendorServicesScreen from "../screens/VendorServicesScreen";
+import UpdateEventScreen from "../screens/common/update-event/UpdateEventScreen";
+import NotificationsScreen from "../screens/common/NotificationsScreen";
+import VendorServicesScreen from "../screens/vendor/VendorServicesScreen";
 
-import VendorSettingsScreen from "../screens/VendorSettingsScreen";
-import VendorAccountSetupScreen from "../screens/VendorAccountSetupScreen";
-import VendorSignupScreen from "../screens/VendorSignupScreen";
-import WhitelabelSignupScreen from "../screens/WhitelabelSignupScreen";
-import PostEventScreen from "../screens/PostEventScreen";
-import StaffPortalScreen from "../screens/StaffPortalScreen";
-import HostPostEventScreen from "../screens/HostPostEventScreen";
-import SetupPasswordScreen from "../screens/SetupPasswordScreen";
+import VendorSettingsScreen from "../screens/vendor/VendorSettingsScreen";
+import VendorAccountSetupScreen from "../screens/vendor/VendorAccountSetupScreen";
+import VendorSignupScreen from "../screens/auth/VendorSignupScreen";
+import WhitelabelSignupScreen from "../screens/auth/WhitelabelSignupScreen";
+import PostEventScreen from "../screens/host/PostEventScreen";
+import StaffPortalScreen from "../screens/common/StaffPortalScreen";
+import HostPostEventScreen from "../screens/host/HostPostEventScreen";
+import SetupPasswordScreen from "../screens/auth/SetupPasswordScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();

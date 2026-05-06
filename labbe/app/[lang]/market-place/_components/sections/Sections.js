@@ -1,13 +1,16 @@
 "use client";
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./sections.module.css";
 import { useVendorCategories } from "@/hooks/reactQueryHooks/useVendors";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
 const Sections = ({ selectedSection, onSectionChange }) => {
+  const { t } = useTranslation("marketplace");
   const { data: categoriesData, isLoading: loading } = useVendorCategories();
 
   const serviceTypes = useMemo(() => {
-    const allOption = { id: "all", key: "all", name: "الكل" };
+    const allOption = { id: "all", key: "all", name: t("sections.all") };
     const categories = categoriesData?.data?.categories || [];
     const mapped = categories.map((cat) => ({
       id: cat.key,
@@ -15,20 +18,20 @@ const Sections = ({ selectedSection, onSectionChange }) => {
       name: cat.nameAr || cat.nameEn,
     }));
     return [allOption, ...mapped];
-  }, [categoriesData]);
+  }, [categoriesData, t]);
 
   if (loading) {
     return (
       <div className={styles.container}>
-        <h3 className={styles.title}>الأقسام</h3>
-        <div className={styles.loading}>جاري التحميل...</div>
+        <h3 className={styles.title}>{t("sections.title")}</h3>
+        <SimpleLoading />
       </div>
     );
   }
 
   return (
     <div className={styles.container}>
-      <h3 className={styles.title}>الأقسام</h3>
+      <h3 className={styles.title}>{t("sections.title")}</h3>
       <div className={styles.filter}>
         <div className={styles.category}>
           {serviceTypes.map((section) => (

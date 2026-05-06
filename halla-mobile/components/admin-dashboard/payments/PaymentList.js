@@ -16,7 +16,7 @@ const PaymentList = ({
   return (
     <AdminFlatList
       data={payments || []}
-      keyExtractor={(item) => item._id || item.id || String(Math.random())}
+      keyExtractor={(item, index) => item._id || item.id || `payment-${index}`}
       renderItem={({ item }) => <PaymentListItem payment={item} />}
       loading={loading}
       onRefresh={onRefresh}

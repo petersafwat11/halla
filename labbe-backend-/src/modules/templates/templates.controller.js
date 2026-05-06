@@ -47,6 +47,18 @@ exports.adminGetUploadUrl = catchAsync(async (req, res) => {
   sendSuccess(res, result);
 });
 
+exports.adminUploadImage = catchAsync(async (req, res) => {
+  if (!req.file) throw new (require("../../shared/errors").ValidationError)("image file is required");
+  const templateId = req.query.templateId || "new";
+  const result = await service.handleImageUpload({
+    fileBuffer: req.file.buffer,
+    filename: req.file.originalname,
+    contentType: req.file.mimetype,
+    templateId,
+  });
+  sendSuccess(res, result);
+});
+
 exports.adminCreate = catchAsync(async (req, res) => {
   const doc = await service.createTemplate(req.body, req.user);
   sendCreated(res, { template: doc }, "Template created");

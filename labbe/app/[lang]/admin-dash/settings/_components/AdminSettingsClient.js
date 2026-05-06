@@ -51,11 +51,7 @@ const AdminSettingsClient = ({
         <h1 className={styles.title}>
           <IoIosArrowForward
             onClick={() => router.push(`/${lang}/admin-dash`)}
-            style={{
-              transform: isArabic ? "rotate(0deg)" : "rotate(180deg)",
-              cursor: "pointer",
-              fontSize: "2.4rem",
-            }}
+            className={`${styles.backIcon} ${isArabic ? styles.backIconRtl : ""}`}
           />
           {tSettings("title") || "Settings"}
         </h1>

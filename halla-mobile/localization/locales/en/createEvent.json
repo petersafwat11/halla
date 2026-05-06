@@ -1,0 +1,204 @@
+{
+  "common": {
+    "cancel": "Cancel"
+  },
+  "title": "Create Event",
+  "steps": {
+    "1": {
+      "title": "Event Details",
+      "description": "Enter event details correctly"
+    },
+    "2": {
+      "title": "Guest & Moderator List",
+      "description": "Add your guest and moderator list"
+    },
+    "3": {
+      "title": "Invitation Design",
+      "description": "Customize the template and your invitation easily"
+    },
+    "4": {
+      "title": "WhatsApp Template",
+      "description": "Choose the Meta-approved message template"
+    },
+    "5": {
+      "title": "Message Text & Replies",
+      "description": "Write the invitation text and auto-replies"
+    },
+    "6": {
+      "title": "Review & Launch Event",
+      "description": "Review all details carefully"
+    }
+  },
+  "validation": {
+    "incompleteFields": "Error",
+    "completeRequiredFields": "Please complete all required fields"
+  },
+  "auth": {
+    "loginRequired": "Error",
+    "mustLoginFirst": "You must be logged in first"
+  },
+  "success": {
+    "eventCreated": "Success",
+    "eventCreatedMessage": "Event created successfully!"
+  },
+  "errors": {
+    "createFailed": "Error",
+    "createFailedMessage": "Failed to create event. Please try again."
+  },
+  "cancel": {
+    "title": "Cancel Event Creation",
+    "message": "Are you sure you want to cancel event creation? All data will be lost.",
+    "continue": "Continue",
+    "cancel": "Cancel"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "message": "You will be directed to the contact page soon"
+  },
+  "buttons": {
+    "save": "Save",
+    "next": "Next",
+    "preview": "Preview"
+  },
+  "subscription": {
+    "eventLimitReached": "You have reached your event limit for this period",
+    "upgradePrompt": "Upgrade your plan to create more events",
+    "upgradePlan": "Upgrade Plan"
+  },
+  "stepTwo": {
+    "tabs": {
+      "guests": "Guests",
+      "moderators": "Moderators"
+    },
+    "guestForm": {
+      "nameLabel": "Guest Name",
+      "namePlaceholder": "Enter guest name",
+      "phoneLabel": "Mobile Number",
+      "phonePlaceholder": "5xxxxxxxx",
+      "addButton": "Add Guest"
+    },
+    "moderatorForm": {
+      "nameLabel": "Moderator Name",
+      "namePlaceholder": "Enter moderator name",
+      "phoneLabel": "Mobile Number",
+      "phonePlaceholder": "5xxxxxxxx",
+      "addButton": "Add Moderator"
+    },
+    "limitReached": {
+      "title": "Maximum Limit Reached",
+      "message": "You have reached the maximum number of guests allowed in your plan. Upgrade your plan to add more guests.",
+      "ok": "OK",
+      "bannerText": "Maximum guest limit reached. You cannot add more.",
+      "upgradeHint": "Upgrade your plan to get more guests"
+    },
+    "importExport": {
+      "import": "Import Excel",
+      "export": "Download Template",
+      "importLimitReached": "You have reached the maximum number of guests allowed in your plan.",
+      "importErrorTitle": "Import Error",
+      "importSuccessTitle": "Imported",
+      "importSuccessMessage": "Successfully added {{count}} guests.",
+      "skippedLimit": "\nSkipped {{count}} guests due to limit.",
+      "skippedDuplicate": "\nSkipped {{count}} duplicate guests.",
+      "rowsWithErrors": "\n{{count}} rows with errors.",
+      "fileError": "Error",
+      "fileErrorMessage": "An error occurred while importing the file",
+      "templateName": "guests_template"
+    },
+    "importErrors": {
+      "title": "Import Errors ({{count}})",
+      "row": "Row {{row}}: {{errors}}"
+    },
+    "viewList": "View List ({{count}})",
+    "listModal": {
+      "guestsTitle": "Guest List",
+      "moderatorsTitle": "Moderator List"
+    },
+    "delete": {
+      "guestTitle": "Delete Guest",
+      "guestMessage": "Are you sure you want to delete this guest?",
+      "moderatorTitle": "Delete Moderator",
+      "moderatorMessage": "Are you sure you want to delete this moderator?",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "phoneRequired": "Mobile number is required",
+      "phoneFormat": "Mobile number must be 9 digits starting with 5"
+    }
+  },
+  "summary": {
+    "eventTypes": {
+      "wedding": "Wedding Ceremony",
+      "birthday": "Birthday",
+      "graduation": "Graduation",
+      "meeting": "Meeting",
+      "conference": "Conference",
+      "other": "Event"
+    },
+    "metrics": {
+      "guests": "Guests",
+      "moderators": "Moderators",
+      "dateTime": "Date & Time",
+      "location": "Location"
+    },
+    "invitationPreview": {
+      "title": "Invitation Preview",
+      "noTemplateSelected": "No message template selected yet — please select a template in the previous step",
+      "whatsappTemplate": "WhatsApp Template",
+      "noImageSelected": "No image selected",
+      "attending": "I will attend",
+      "declining": "I will decline",
+      "maybe": "Maybe"
+    },
+    "details": {
+      "title": "Event Details"
+    },
+    "templateDetails": {
+      "title": "Template Details"
+    },
+    "schedule": {
+      "title": "Scheduled Launch",
+      "launchesImmediately": "Launches immediately on submit"
+    },
+    "confirm": {
+      "label": "I have reviewed all details and confirm they are correct"
+    }
+  },
+  "preview": {
+    "title": "Invitation Preview",
+    "weddingTitle": "Wedding of {{brideName}} and {{groomName}}",
+    "defaultTitle": "Event Title",
+    "datePrefix": "Date:",
+    "timePrefix": "Time:",
+    "details": "Event Details",
+    "attending": "I will attend",
+    "declining": "I will decline",
+    "maybe": "Maybe",
+    "timestamp": "10:30 AM"
+  },
+  "stepOne": {
+    "eventName": "Event Name",
+    "eventNamePlaceholder": "Enter event name",
+    "eventNameRequired": "Event name is required",
+    "eventType": "Event Type",
+    "eventTypePlaceholder": "Select event type",
+    "eventTypes": {
+      "wedding": { "label": "Wedding", "emoji": "💍" },
+      "birthday": { "label": "Birthday", "emoji": "🎂" },
+      "graduation": { "label": "Graduation", "emoji": "🎓" },
+      "meeting": { "label": "Meeting", "emoji": "👥" },
+      "conference": { "label": "Conference", "emoji": "🎤" },
+      "other": { "label": "Other", "emoji": "📅" }
+    },
+    "eventDate": "Event Date",
+    "eventDatePlaceholder": "Select event date",
+    "eventTime": "Event Time",
+    "eventTimePlaceholder": "Select event time",
+    "location": "Location",
+    "locationPlaceholder": "Select event location",
+    "locationRequired": "Location is required",
+    "locationInvalid": "Please select a valid location"
+  }
+}

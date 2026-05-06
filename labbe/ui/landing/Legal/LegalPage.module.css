@@ -1,4 +1,16 @@
 /* ════════════════════════════════════════
+   Icon helpers
+════════════════════════════════════════ */
+.iconFlippable {
+  flex-shrink: 0;
+}
+
+.iconFlipped {
+  flex-shrink: 0;
+  transform: scaleX(-1);
+}
+
+/* ════════════════════════════════════════
    Root
 ════════════════════════════════════════ */
 .root {
@@ -14,6 +26,7 @@
   top: 0;
   inset-inline-start: 0;
   height: 3px;
+  width: var(--progress, 0%);
   background: var(--color-primary-500);
   z-index: 9999;
   transition: width 0.1s linear;

@@ -32,7 +32,7 @@ const TicketsPage = () => {
 
   // Extract tickets from response
   const tickets = useMemo(() => {
-    return ticketsData?.data?.data || ticketsData?.data || [];
+    return ticketsData?.data || [];
   }, [ticketsData]);
 
   // Filter tickets based on search query
@@ -74,14 +74,10 @@ const TicketsPage = () => {
 
     queryClient.setQueryData(["tickets", "my-tickets", {}], (old) => {
       if (!old) return old;
-      const oldData = old.data?.data || old.data || old;
+      const oldData = old?.data || old;
       return {
         ...old,
-        data: {
-          ...old.data,
-          data: oldData.data?.filter((t) => t.id !== deleteModal.ticketId) ||
-            oldData.filter((t) => t.id !== deleteModal.ticketId)
-        },
+        data: oldData.filter((t) => t.id !== deleteModal.ticketId),
       };
     });
 

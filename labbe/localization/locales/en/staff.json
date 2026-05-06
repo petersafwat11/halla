@@ -10,6 +10,7 @@
   "guests": "Guests",
   "scanQrCode": "Scan QR Code",
   "confirmAttendance": "Confirm Attendance",
+  "alreadyCheckedIn": "Already Checked In",
   "confirm": "Confirm",
   "cancel": "Cancel",
   "guestName": "Guest Name",
@@ -19,5 +20,18 @@
   "loading": "Loading...",
   "error": "An error occurred",
   "success": "Success",
-  "defaultEventName": "Wedding Event"
+  "defaultEventName": "Wedding Event",
+  "errors": {
+    "noAccessToken": "No access token provided",
+    "accessDenied": "Access denied",
+    "verificationFailed": "Verification failed. Please try again.",
+    "checkInFailed": "Check-in failed. Please try again.",
+    "accessError": "Access Error"
+  },
+  "qr": {
+    "scanTitle": "Scan QR Code",
+    "instructions": "Position the QR code within the frame",
+    "retry": "Retry",
+    "cameraError": "Unable to access camera"
+  }
 }

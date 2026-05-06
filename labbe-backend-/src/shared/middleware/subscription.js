@@ -225,12 +225,11 @@ exports.incrementEventUsage = catchAsync(async (req, res, next) => {
 
   const subscription = req.subscription;
 
-  if (subscription && !isUnlimited(subscription.limits?.maxEventsPerMonth)) {
-    // Use atomic findOneAndUpdate with a condition to prevent race conditions
-    const maxEvents = subscription.limits?.maxEventsPerMonth;
+  if (subscription) {
+    const maxEvents = subscription.limits?.maxEvents;
     const query = { _id: subscription._id };
 
-    // For plans with limits, add a condition check
+    // For plans with a finite cap, atomically guard against overshooting.
     if (maxEvents && !isUnlimited(maxEvents)) {
       query['usage.eventsCreated'] = { $lt: maxEvents };
     }

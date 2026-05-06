@@ -603,6 +603,7 @@
         "identity": "Visual Identity",
         "login": "Login Details",
         "requirements": "System Requirements",
+        "choosePlan": "Choose Plan",
         "services": "Additional Services",
         "payment": "Payment & Billing",
         "summary": "Application Summary"
@@ -969,6 +970,29 @@
       },
       "buttons": {
         "continue": "Continue"
+      },
+      "planSelection": {
+        "title": "Choose Your Plan",
+        "description": "Select the plan that fits your platform needs",
+        "loadingPlans": "Loading plans...",
+        "loadError": "Failed to load plans. Please try again.",
+        "retry": "Try Again",
+        "planRequired": "Plan selection is required",
+        "perEventPlans": "Per-Event Plans",
+        "perEventDescription": "1 event per plan · valid 90 days",
+        "threeMonthPool": "3-Month Pool",
+        "threeMonthPoolDescription": "shared invite pool · unlimited events",
+        "annualPool": "Annual Pool",
+        "annualPoolDescription": "shared invite pool · unlimited events",
+        "invitesPerEvent": "invites / event",
+        "oneEvent": "1 event",
+        "invitesPool": "invites (pool)",
+        "unlimitedEvents": "Unlimited events · 90 days",
+        "unlimitedEventsAnnual": "Unlimited events · 365 days",
+        "selectPlan": "Select Plan",
+        "selected": "✓ Selected",
+        "features": "Features",
+        "compensationMessages": "compensation messages"
       }
     },
     "host": {

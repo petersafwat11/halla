@@ -19,10 +19,7 @@ const StepThree = ({ goToPreviousStep }) => {
       <StepTitle
         title={t("signupForm.whiteLabel.requirements.title")}
         description={t("signupForm.whiteLabel.requirements.description")}
-        onArrowClick={() => {
-          console.log("StepThree previous arrow clicked!");
-          goToPreviousStep();
-        }}
+        onArrowClick={goToPreviousStep}
       />
 
       <div className={styles.sections}>
@@ -81,7 +78,7 @@ const StepThree = ({ goToPreviousStep }) => {
             />
 
             {showOtherInput && (
-              <div style={{ marginTop: "1.6rem" }}>
+              <div className={styles.other_input_wrapper}>
                 <InputGroup
                   label={t(
                     "signupForm.whiteLabel.requirements.eventTypes.otherLabel"

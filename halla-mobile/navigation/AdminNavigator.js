@@ -19,33 +19,33 @@ import { useAuthStore } from "../stores/authStore";
 import { useTranslation } from "../localization";
 
 // Screen imports
-import AdminDashboardScreen from "../screens/admin-dashboard/AdminDashboardScreen";
-import AdminHostsScreen from "../screens/admin-dashboard/AdminHostsScreen";
-import AdminModeratorsScreen from "../screens/admin-dashboard/AdminModeratorsScreen";
-import AdminVendorsScreen from "../screens/admin-dashboard/AdminVendorsScreen";
-import AdminWhitelabelsScreen from "../screens/admin-dashboard/AdminWhitelabelsScreen";
-import HostDetailsScreen from "../screens/admin-dashboard/HostDetailsScreen";
-import VendorDetailsScreen from "../screens/admin-dashboard/VendorDetailsScreen";
-import WhitelabelDetailsScreen from "../screens/admin-dashboard/WhitelabelDetailsScreen";
-import AdminEventsScreen from "../screens/admin-dashboard/AdminEventsScreen";
-import EventDetailsScreen from "../screens/admin-dashboard/EventDetailsScreen";
-import CreateEventScreen from "../screens/admin-dashboard/CreateEventScreen";
+import AdminDashboardScreen from "../screens/admin/admin-dashboard/AdminDashboardScreen";
+import AdminHostsScreen from "../screens/admin/admin-dashboard/AdminHostsScreen";
+import AdminModeratorsScreen from "../screens/admin/admin-dashboard/AdminModeratorsScreen";
+import AdminVendorsScreen from "../screens/admin/admin-dashboard/AdminVendorsScreen";
+import AdminWhitelabelsScreen from "../screens/admin/admin-dashboard/AdminWhitelabelsScreen";
+import HostDetailsScreen from "../screens/admin/admin-dashboard/HostDetailsScreen";
+import VendorDetailsScreen from "../screens/admin/admin-dashboard/VendorDetailsScreen";
+import WhitelabelDetailsScreen from "../screens/admin/admin-dashboard/WhitelabelDetailsScreen";
+import AdminEventsScreen from "../screens/admin/admin-dashboard/AdminEventsScreen";
+import EventDetailsScreen from "../screens/admin/admin-dashboard/EventDetailsScreen";
+import CreateEventScreen from "../screens/admin/admin-dashboard/CreateEventScreen";
 // Phase 4d W1-MOBILE-UPDATE: admin route now resolves to the unified
 // update wizard (D2 — single update-event page used by all roles). The
 // admin-dashboard path stays as a re-export shim.
-import UpdateEventScreen from "../screens/update-event/UpdateEventScreen";
-import AdminTicketsScreen from "../screens/admin-dashboard/AdminTicketsScreen";
-import TicketDetailsScreen from "../screens/admin-dashboard/TicketDetailsScreen";
-import AdminPaymentsScreen from "../screens/admin-dashboard/AdminPaymentsScreen";
-import AdminPlansScreen from "../screens/admin-dashboard/AdminPlansScreen";
-import AdminSettingsScreen from "../screens/admin-dashboard/AdminSettingsScreen";
-import AdminAccountSettingsScreen from "../screens/admin-dashboard/AdminAccountSettingsScreen";
-import AdminNotificationSettingsScreen from "../screens/admin-dashboard/AdminNotificationSettingsScreen";
-import AdminMoreScreen from "../screens/admin-dashboard/AdminMoreScreen";
-import AdminDiscountsScreen from "../screens/admin-dashboard/AdminDiscountsScreen";
-import AdminTemplatesScreen from "../screens/admin-dashboard/AdminTemplatesScreen";
-import WhitelabelPlansScreen from "../screens/WhitelabelPlansScreen";
-import WhitelabelPlansSummaryScreen from "../screens/WhitelabelPlansSummaryScreen";
+import UpdateEventScreen from "../screens/common/update-event/UpdateEventScreen";
+import AdminTicketsScreen from "../screens/admin/admin-dashboard/AdminTicketsScreen";
+import TicketDetailsScreen from "../screens/admin/admin-dashboard/TicketDetailsScreen";
+import AdminPaymentsScreen from "../screens/admin/admin-dashboard/AdminPaymentsScreen";
+import AdminPlansScreen from "../screens/admin/admin-dashboard/AdminPlansScreen";
+import AdminSettingsScreen from "../screens/admin/admin-dashboard/AdminSettingsScreen";
+import AdminAccountSettingsScreen from "../screens/admin/admin-dashboard/AdminAccountSettingsScreen";
+import AdminNotificationSettingsScreen from "../screens/admin/admin-dashboard/AdminNotificationSettingsScreen";
+import AdminMoreScreen from "../screens/admin/admin-dashboard/AdminMoreScreen";
+import AdminDiscountsScreen from "../screens/admin/admin-dashboard/AdminDiscountsScreen";
+import AdminTemplatesScreen from "../screens/admin/admin-dashboard/AdminTemplatesScreen";
+import WhitelabelPlansScreen from "../screens/admin/WhitelabelPlansScreen";
+import WhitelabelPlansSummaryScreen from "../screens/admin/WhitelabelPlansSummaryScreen";
 
 // Create navigators
 const Tab = createBottomTabNavigator();

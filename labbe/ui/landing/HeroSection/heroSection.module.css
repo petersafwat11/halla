@@ -6,8 +6,8 @@
 .heroSection {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 0 5.94rem 13.1rem;
+  align-items: flex-start;
+  padding: 5rem 5.94rem ;
   gap: 4.68rem;
   width: 100%;
   max-width: 1430px;
@@ -32,7 +32,7 @@
   font-size: 5.98rem;
   font-style: normal;
   font-weight: 700;
-  line-height: 8.42rem;
+  line-height: 6rem;
   letter-spacing: -0.154px;
   margin: 0;
 }

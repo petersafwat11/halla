@@ -5,14 +5,14 @@ import { usePageAccess } from "@/hooks/usePageAccess";
 import AdminPageHeader from "../../_components/AdminPageHeader";
 
 export default function HostsPageHeader({ onAddClick }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminHosts");
   const { canCreate } = usePageAccess("hosts");
 
   return (
     <AdminPageHeader
-      title="إدارة المضيفين"
-      subtitle="عرض وإدارة جميع المضيفين"
-      addButtonTitle={canCreate ? t("hosts.addHost", "إضافة مضيف") : undefined}
+      title={t("header.title")}
+      subtitle={t("header.subtitle")}
+      addButtonTitle={canCreate ? t("header.addHost") : undefined}
       onAddButtonClick={canCreate ? onAddClick : undefined}
     />
   );

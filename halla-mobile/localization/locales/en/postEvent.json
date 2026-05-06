@@ -28,12 +28,71 @@
     "sending": "Sending...",
     "empty": "No comments yet. Be the first!",
     "success": "Comment added",
-    "error": "Failed to add comment"
+    "error": "Failed to add comment",
+    "guestFallback": "Guest"
   },
   "like": {
     "error": "Failed to update like"
   },
   "event": {
     "hostLabel": "Hosted by"
+  },
+  "buttons": {
+    "back": "Back"
+  },
+  "postEventFallback": "Post Event",
+  "hostPostEvent": {
+    "title": "Post Event Page",
+    "status": {
+      "published": "Published — Guests can access content",
+      "draft": "Draft — Not yet published"
+    },
+    "photos": {
+      "title": "Photos",
+      "add": "Add Photos",
+      "uploading": "Uploading...",
+      "empty": "Tap to add event photos",
+      "deleteConfirm": "Delete this photo?",
+      "deleteTitle": "Delete Photo",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "permissionRequired": "Permission Required",
+      "permissionMessage": "Please allow gallery access to upload photos"
+    },
+    "thankYouMessage": {
+      "title": "Thank You Message",
+      "placeholder": "Write a thank you message for guests...",
+      "save": "Save Message",
+      "saving": "Saving...",
+      "saved": "Saved"
+    },
+    "summary": {
+      "title": "Content Summary",
+      "photos": "Photos",
+      "videos": "Videos",
+      "comments": "Comments"
+    },
+    "actions": {
+      "publish": "Publish & Send to Guests",
+      "publishing": "Publishing...",
+      "resend": "Resend Links",
+      "resending": "Sending...",
+      "publishConfirm": "This will send access links to all guests who attended. Continue?",
+      "resendConfirm": "This will resend access links to guests. Continue?",
+      "publishSuccess": "Content published and links sent to guests successfully",
+      "resendSuccess": "Links sent to {{count}} guests",
+      "cancel": "Cancel",
+      "publishAction": "Publish",
+      "resendAction": "Send"
+    },
+    "errors": {
+      "loadFailed": "Failed to load data",
+      "retry": "Retry",
+      "uploadFailed": "Failed to upload photos",
+      "deleteFailed": "Failed to delete photo",
+      "saveFailed": "Failed to save message",
+      "publishFailed": "Failed to publish",
+      "resendFailed": "Failed to resend"
+    }
   }
 }

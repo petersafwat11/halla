@@ -121,7 +121,7 @@
   .prSegBtn { padding: .8rem 1rem; gap: .6rem; }
   .prSegLabel { font-size: 1.25rem; }
   .prSegSub { display: none; }
-  .prFeatGrid { grid-template-columns: 1fr; }
+  .prFeatGrid { grid-template-columns: repeat(2, 1fr); gap: .5rem; }
   .prGuestTrack { gap: .6rem; }
   .prGuestBtn { min-width: 70px; padding: .8rem .6rem; }
   .prGuestNum { font-size: 1.6rem; }

@@ -6,152 +6,17 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
-  Platform,
 } from "react-native";
 import { useFormContext, FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import EventTemplates from "../home/EventTemplates";
-import TextInput from "../commen/TextInput";
-import TextAreaInput from "../commen/TextAreaInput";
-import DatePicker from "../commen/DatePicker";
-import TimePicker from "../commen/TimePicker";
-import ColorPicker from "../commen/colorPicker";
-import DropdownInput from "../commen/DropdownInput";
 import PreviewInvitation from "./PreviewInvitation";
 import { useTranslation } from "../../localization";
 import { buildDynamicTemplateSchema, buildDefaultValues } from "../../utils/schemas/createEventSchema";
 import { dateToTimeString } from "../../utils/timeFormat";
-// Phase 4c hardening (post-review) — bake the visual canvas on confirm
-// so the WhatsApp header carries the user-overlaid image (web bakes via
-// html2canvas; mobile bakes via react-native-view-shot).
 import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 import { bakeCanvas } from "../../utils/canvasBake";
-
-const INPUT_MODE_TO_KEYBOARD = {
-  text: "default",
-  numeric: "numeric",
-  decimal: "decimal-pad",
-  tel: "phone-pad",
-  email: "email-address",
-  url: Platform.OS === "ios" ? "url" : "default",
-};
-
-function renderField(field, locale, t) {
-  const label = locale === "ar" ? field.labelAr : field.labelEn;
-  const placeholder = locale === "ar" ? field.placeholderAr : field.placeholderEn;
-  const name = field.key;
-  const writingDirection = field.dir === "ltr" ? "ltr" : field.dir === "rtl" ? "rtl" : "auto";
-
-  switch (field.type) {
-    case "text":
-      return (
-        <TextInput
-          key={name}
-          name={name}
-          label={label}
-          placeholder={placeholder}
-          keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "default"}
-          autoCapitalize={field.autoCapitalize ?? "sentences"}
-          style={{ writingDirection }}
-        />
-      );
-    case "textarea":
-      return (
-        <TextAreaInput
-          key={name}
-          name={name}
-          label={label}
-          placeholder={placeholder}
-          numberOfLines={field.rows ?? 3}
-          maxLength={field.maxLength}
-          autoCapitalize={field.autoCapitalize ?? "sentences"}
-          style={{ writingDirection }}
-        />
-      );
-    case "date":
-      return (
-        <DatePicker
-          key={name}
-          name={name}
-          label={label}
-          placeholder={placeholder}
-        />
-      );
-    case "time":
-      return (
-        <TimePicker
-          key={name}
-          name={name}
-          label={label}
-        />
-      );
-    case "color":
-      return (
-        <ColorPicker
-          key={name}
-          name={name}
-          label={label}
-          showPresets={true}
-        />
-      );
-    case "font": {
-      const fontOptions = [
-        { label: "Cairo", value: "cairo" },
-        { label: "Inter", value: "inter" },
-        { label: "Lato", value: "lato" },
-        { label: "Amiri", value: "amiri" },
-        { label: "IBM Plex Sans Arabic", value: "ibm_plex_arabic" },
-        { label: "Noto Sans Arabic", value: "noto_sans_arabic" },
-      ];
-      return (
-        <DropdownInput
-          key={name}
-          name={name}
-          label={label}
-          placeholder={placeholder}
-          options={fontOptions}
-        />
-      );
-    }
-    case "number":
-      return (
-        <TextInput
-          key={name}
-          name={name}
-          label={label}
-          placeholder={placeholder}
-          keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "numeric"}
-          style={{ writingDirection }}
-        />
-      );
-    case "email":
-      return (
-        <TextInput
-          key={name}
-          name={name}
-          label={label}
-          placeholder={placeholder}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          style={{ writingDirection: "ltr" }}
-        />
-      );
-    case "password":
-      return (
-        <TextInput
-          key={name}
-          name={name}
-          label={label}
-          placeholder={placeholder}
-          secureTextEntry={true}
-          autoCapitalize="none"
-          style={{ writingDirection: "ltr" }}
-        />
-      );
-    default:
-      return null;
-  }
-}
+import { renderTemplateField } from "./_components/TemplateFieldRenderer";
 
 const StepThree = () => {
   const { setValue: parentSetValue, watch: parentWatch } = useFormContext();
@@ -188,7 +53,12 @@ const StepThree = () => {
 
   const handleTemplateSelect = useCallback((template) => {
     parentSetValue("visualTemplate", template, { shouldValidate: true });
-    parentSetValue("templateImage", template.thumbnailUrl || template.imageUrl, { shouldValidate: true });
+    // Do not seed templateImage with the stock thumbnail/imageUrl.
+    // The host must confirm via handleConfirmTemplate, which bakes the
+    // canvas with their entered overlay data into a real File. Pre-
+    // populating with the URL would let a stock image silently slip
+    // through if the bake step is skipped.
+    parentSetValue("templateImage", null, { shouldValidate: true });
     setTemplateConfirmed(false);
   }, [parentSetValue]);
 
@@ -207,26 +77,27 @@ const StepThree = () => {
       fieldValues: converted,
     }, { shouldValidate: true });
 
-    // Phase 4c hardening — bake the canvas with the user-overlaid data
-    // so the WhatsApp header carries the customised image. On any
-    // capture failure, fall back to the stock template thumbnail so
-    // submit is never blocked by an environment without view-shot.
+    // Bake the canvas with the user-overlaid data so the WhatsApp
+    // header carries the customised image. No fallback: if the bake
+    // fails, surface the error to the host and do NOT mark the
+    // template as confirmed — they must retry rather than silently
+    // shipping a stock thumbnail with no overlay data.
     setBakeError(null);
     try {
       const baked = await bakeCanvas(canvasRef, {
         width: selectedTemplate?.naturalWidth,
         height: selectedTemplate?.naturalHeight,
       });
-      if (baked?.file?.uri) {
-        parentSetValue("templateImage", baked.file, { shouldValidate: true });
+      if (!baked?.file?.uri) {
+        throw new Error("bakeCanvas returned no file");
       }
+      parentSetValue("templateImage", baked.file, { shouldValidate: true });
+      setTemplateConfirmed(true);
     } catch (err) {
-      console.warn("[StepThree] bakeCanvas failed — falling back to stock template:", err?.message);
+      console.error("[StepThree] bakeCanvas failed:", err);
       setBakeError(err?.message || "BAKE_FAILED");
-      const fallback = selectedTemplate?.imageUrl || selectedTemplate?.thumbnailUrl;
-      if (fallback) parentSetValue("templateImage", fallback, { shouldValidate: true });
+      parentSetValue("templateImage", null, { shouldValidate: true });
     }
-    setTemplateConfirmed(true);
   });
 
   return (
@@ -260,7 +131,7 @@ const StepThree = () => {
               {t("templates.stepThree.customizeTitle") || "تصميم قالب الدعوة"}
             </Text>
             <View style={styles.formContainer}>
-              {selectedTemplate.fields.map(field => renderField(field, locale, t))}
+              {selectedTemplate.fields.map(field => renderTemplateField(field, locale, t))}
 
               <TouchableOpacity
                 style={styles.previewButton}
@@ -293,8 +164,8 @@ const StepThree = () => {
               {bakeError && (
                 <View style={styles.bakeWarningBadge}>
                   <Text style={styles.bakeWarningText}>
-                    {t("templates.stepThree.bakeFallback") ||
-                      "تعذّر إنشاء معاينة مخصّصة — سيُستخدم القالب الأصلي."}
+                    {t("templates.stepThree.bakeFailed") ||
+                      "تعذّر إنشاء صورة الدعوة. يرجى المحاولة مرة أخرى."}
                   </Text>
                 </View>
               )}

@@ -1,0 +1,204 @@
+{
+  "common": {
+    "cancel": "إلغاء"
+  },
+  "title": "إنشاء مناسبة",
+  "steps": {
+    "1": {
+      "title": "تفاصيل المناسبة",
+      "description": "ادخل تفاصيل المناسبة بشكل صحيح"
+    },
+    "2": {
+      "title": "قائمة الضيوف والمشرفين",
+      "description": "أضف قائمة الضيوف والمشرفين الخاصة بك"
+    },
+    "3": {
+      "title": "تصميم الدعوة",
+      "description": "قم بتخصيص القالب ودعوتك بشكل سهل"
+    },
+    "4": {
+      "title": "قالب الواتساب",
+      "description": "اختر قالب الرسالة المعتمد من Meta"
+    },
+    "5": {
+      "title": "نص الرسالة والردود",
+      "description": "اكتب نص الدعوة والردود التلقائية"
+    },
+    "6": {
+      "title": "مراجعة واطلاق المناسبة",
+      "description": "راجع كل التفاصيل بتركيز"
+    }
+  },
+  "validation": {
+    "incompleteFields": "خطأ",
+    "completeRequiredFields": "يرجى إكمال جميع الحقول المطلوبة"
+  },
+  "auth": {
+    "loginRequired": "خطأ",
+    "mustLoginFirst": "يجب تسجيل الدخول أولاً"
+  },
+  "success": {
+    "eventCreated": "نجح",
+    "eventCreatedMessage": "تم إنشاء المناسبة بنجاح!"
+  },
+  "errors": {
+    "createFailed": "خطأ",
+    "createFailedMessage": "فشل في إنشاء المناسبة. يرجى المحاولة مرة أخرى."
+  },
+  "cancel": {
+    "title": "إلغاء إنشاء المناسبة",
+    "message": "هل أنت متأكد من إلغاء إنشاء المناسبة؟ سيتم فقدان جميع البيانات.",
+    "continue": "استمرار",
+    "cancel": "إلغاء"
+  },
+  "contact": {
+    "title": "تواصل معنا",
+    "message": "سيتم توجيهك لصفحة التواصل قريباً"
+  },
+  "buttons": {
+    "save": "حفظ",
+    "next": "التالي",
+    "preview": "معاينة"
+  },
+  "subscription": {
+    "eventLimitReached": "لقد وصلت إلى الحد الأقصى من المناسبات لهذه الفترة",
+    "upgradePrompt": "قم بترقية باقتك لإنشاء مزيد من المناسبات",
+    "upgradePlan": "ترقية الباقة"
+  },
+  "stepTwo": {
+    "tabs": {
+      "guests": "الضيوف",
+      "moderators": "المشرفين"
+    },
+    "guestForm": {
+      "nameLabel": "اسم الضيف",
+      "namePlaceholder": "أدخل اسم الضيف",
+      "phoneLabel": "رقم الجوال",
+      "phonePlaceholder": "5xxxxxxxx",
+      "addButton": "إضافة ضيف"
+    },
+    "moderatorForm": {
+      "nameLabel": "اسم المشرف",
+      "namePlaceholder": "أدخل اسم المشرف",
+      "phoneLabel": "رقم الجوال",
+      "phonePlaceholder": "5xxxxxxxx",
+      "addButton": "إضافة مشرف"
+    },
+    "limitReached": {
+      "title": "تم الوصول للحد الأقصى",
+      "message": "لقد وصلت للحد الأقصى من الضيوف المسموح به في باقتك. قم بترقية باقتك لإضافة المزيد من الضيوف.",
+      "ok": "حسناً",
+      "bannerText": "تم الوصول للحد الأقصى من الضيوف. لا يمكنك إضافة المزيد.",
+      "upgradeHint": "قم بترقية باقتك للحصول على المزيد من الضيوف"
+    },
+    "importExport": {
+      "import": "استيراد Excel",
+      "export": "تنزيل القالب",
+      "importLimitReached": "لقد وصلت للحد الأقصى من الضيوف المسموح به في باقتك.",
+      "importErrorTitle": "خطأ في الاستيراد",
+      "importSuccessTitle": "تم الاستيراد",
+      "importSuccessMessage": "تم إضافة {{count}} ضيف بنجاح.",
+      "skippedLimit": "\nتم تخطي {{count}} ضيف بسبب الحد الأقصى.",
+      "skippedDuplicate": "\nتم تخطي {{count}} ضيف مكرر.",
+      "rowsWithErrors": "\n{{count}} صف يحتوي على أخطاء.",
+      "fileError": "خطأ",
+      "fileErrorMessage": "حدث خطأ أثناء استيراد الملف",
+      "templateName": "قالب_الضيوف"
+    },
+    "importErrors": {
+      "title": "أخطاء في الاستيراد ({{count}})",
+      "row": "سطر {{row}}: {{errors}}"
+    },
+    "viewList": "عرض القائمة ({{count}})",
+    "listModal": {
+      "guestsTitle": "قائمة الضيوف",
+      "moderatorsTitle": "قائمة المشرفين"
+    },
+    "delete": {
+      "guestTitle": "حذف ضيف",
+      "guestMessage": "هل أنت متأكد من حذف هذا الضيف؟",
+      "moderatorTitle": "حذف مشرف",
+      "moderatorMessage": "هل أنت متأكد من حذف هذا المشرف؟",
+      "cancel": "إلغاء",
+      "delete": "حذف"
+    },
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "phoneRequired": "رقم الجوال مطلوب",
+      "phoneFormat": "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5"
+    }
+  },
+  "summary": {
+    "eventTypes": {
+      "wedding": "حفل زفاف",
+      "birthday": "عيد ميلاد",
+      "graduation": "تخرج",
+      "meeting": "اجتماع",
+      "conference": "مؤتمر",
+      "other": "مناسبة"
+    },
+    "metrics": {
+      "guests": "الضيوف",
+      "moderators": "المشرفين",
+      "dateTime": "التوقيت",
+      "location": "العنوان"
+    },
+    "invitationPreview": {
+      "title": "معاينة الدعوة",
+      "noTemplateSelected": "لم يتم اختيار قالب الرسالة بعد — يرجى اختيار قالب في الخطوة السابقة",
+      "whatsappTemplate": "قالب WhatsApp",
+      "noImageSelected": "لم يتم اختيار صورة",
+      "attending": "سأحضر",
+      "declining": "سأعتذر",
+      "maybe": "ربما"
+    },
+    "details": {
+      "title": "تفاصيل المناسبة"
+    },
+    "templateDetails": {
+      "title": "تفاصيل القالب"
+    },
+    "schedule": {
+      "title": "موعد الإرسال",
+      "launchesImmediately": "ينطلق فور التأكيد"
+    },
+    "confirm": {
+      "label": "لقد راجعت جميع التفاصيل وأؤكد صحتها"
+    }
+  },
+  "preview": {
+    "title": "معاينة الدعوة",
+    "weddingTitle": "حفل زفاف {{brideName}} و{{groomName}}",
+    "defaultTitle": "عنوان المناسبة",
+    "datePrefix": "بتاريخ",
+    "timePrefix": "الساعة",
+    "details": "تفاصيل المناسبة",
+    "attending": "سأحضر",
+    "declining": "سأعتذر",
+    "maybe": "ربما",
+    "timestamp": "10:30 صباحًا"
+  },
+  "stepOne": {
+    "eventName": "اسم المناسبة",
+    "eventNamePlaceholder": "أدخل اسم المناسبة",
+    "eventNameRequired": "اسم المناسبة مطلوب",
+    "eventType": "نوع المناسبة",
+    "eventTypePlaceholder": "اختر نوع المناسبة",
+    "eventTypes": {
+      "wedding": { "label": "زواج", "emoji": "💍" },
+      "birthday": { "label": "عيد ميلاد", "emoji": "🎂" },
+      "graduation": { "label": "تخرج", "emoji": "🎓" },
+      "meeting": { "label": "اجتماع", "emoji": "👥" },
+      "conference": { "label": "مؤتمر", "emoji": "🎤" },
+      "other": { "label": "أخرى", "emoji": "📅" }
+    },
+    "eventDate": "تاريخ المناسبة",
+    "eventDatePlaceholder": "اختر تاريخ المناسبة",
+    "eventTime": "وقت المناسبة",
+    "eventTimePlaceholder": "اختر وقت المناسبة",
+    "location": "موقع المناسبة",
+    "locationPlaceholder": "اختر موقع المناسبة",
+    "locationRequired": "موقع المناسبة مطلوب",
+    "locationInvalid": "يرجى اختيار موقع صحيح"
+  }
+}

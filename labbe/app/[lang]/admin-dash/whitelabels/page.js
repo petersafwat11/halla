@@ -2,7 +2,7 @@
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
-import AdminPageHeader from "../_components/AdminPageHeader";
+import WhitelabelsPageHeader from "./_components/WhitelabelsPageHeader";
 import WhitelabelsTable from "./_components/WhitelabelsTable";
 import WhitelabelStats from "./_components/WhitelabelStats";
 import styles from "./page.module.css";
@@ -38,10 +38,7 @@ export default async function WhitelabelsPage({ params, searchParams }) {
   return (
     <QueryClientServerProvider queryClient={queryClient}>
       <div className={styles.container}>
-        <AdminPageHeader
-          title="إدارة الوايت ليبل"
-          subtitle="عرض وإدارة تطبيقات الوايت ليبل"
-        />
+        <WhitelabelsPageHeader />
         <WhitelabelStats />
         <WhitelabelsTable />
       </div>

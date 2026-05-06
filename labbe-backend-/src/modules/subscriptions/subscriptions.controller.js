@@ -138,3 +138,26 @@ exports.getPlanByCode = catchAsync(async (req, res) => {
 
   sendSuccess(res, plan);
 });
+
+// ============================================
+// PAYMENT HISTORY
+// ============================================
+
+/**
+ * Get current user's payment history
+ * GET /api/v2/subscriptions/payments
+ */
+exports.getMyPayments = catchAsync(async (req, res) => {
+  const { page, limit, status, from, to } = req.query;
+  const options = {
+    page: parseInt(page) || 1,
+    limit: parseInt(limit) || 20,
+    status: status || 'all',
+    from,
+    to,
+  };
+
+  const result = await subscriptionsService.getMyPayments(req.user._id, options);
+
+  sendSuccess(res, result);
+});

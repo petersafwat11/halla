@@ -69,9 +69,19 @@
   .sections {
     padding: 2rem 1.6rem;
   }
-  
+
   .section {
     border-radius: 1.2rem;
     border: 1px solid #f0f0f0;
   }
+}
+
+.other_input_wrapper {
+  margin-top: 1.6rem;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }

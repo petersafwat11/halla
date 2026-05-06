@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm, FormProvider } from "react-hook-form";
 import { toast } from "react-toastify";
-import Cookies from "js-cookie";
 import styles from "./addServicePopup.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
@@ -14,15 +13,14 @@ import {
   PREDEFINED_TAGS,
   validateAddService,
 } from "@/utils/schemas/addServiceSchema";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
+import { useServiceMutation } from "@/hooks/reactQueryHooks/useServices";
 
 const AddServicePopup = ({ onClose, onSuccess }) => {
   const { t, i18n } = useTranslation("vendorServices");
   const [selectedTags, setSelectedTags] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+
+  const createServiceMutation = useServiceMutation("createService");
 
   const methods = useForm({
     mode: "onChange",
@@ -34,13 +32,11 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
     formState: { errors },
   } = methods;
 
-  // Get options from schema
   const serviceTypeOptions = SERVICE_TYPES.map((type) => ({
     label: t(type.labelKey, type.labelAr),
     value: type.value,
   }));
 
-  // Get predefined tags from schema
   const predefinedTags = PREDEFINED_TAGS.map((tag) => ({
     label: t(tag.labelKey, tag.labelAr),
     value: tag.value,
@@ -52,13 +48,11 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
     } else {
       setSelectedTags([...selectedTags, tag]);
     }
-    // Clear tags error when user selects a tag
     if (validationErrors.tags) {
       setValidationErrors((prev) => ({ ...prev, tags: null }));
     }
   };
 
-  // Get display text for selected tags
   const getTagsDisplayText = () => {
     if (selectedTags.length === 0) {
       return "";
@@ -67,14 +61,12 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
   };
 
   const onSubmit = async (data) => {
-    // Validate using schema
     const validation = validateAddService(data);
     if (!validation.isValid) {
       setValidationErrors(validation.errors);
       return;
     }
 
-    setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append("name", data.serviceName);
@@ -83,30 +75,16 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
       formData.append("price", data.price);
       formData.append("tags", JSON.stringify(selectedTags.map((t) => t.value)));
 
-      // Add image if uploaded
       if (data.image && data.image.length > 0) {
         formData.append("image", data.image[0]);
       }
 
-      const token = Cookies.get("token");
-      const response = await fetch(`${API_BASE_URL}/services`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to create service");
-      }
+      await createServiceMutation.mutateAsync(formData);
 
       toast.success(t("addServicePopup.success", "تم إضافة الخدمة بنجاح"));
 
       if (onSuccess) {
-        onSuccess(result.data);
+        onSuccess();
       }
       onClose();
     } catch (error) {
@@ -114,8 +92,6 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
       toast.error(
         error.message || t("addServicePopup.error", "فشل في إضافة الخدمة")
       );
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -268,9 +244,9 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
             <button
               type="submit"
               className={styles.submitButton}
-              disabled={isLoading}
+              disabled={createServiceMutation.isPending}
             >
-              {isLoading
+              {createServiceMutation.isPending
                 ? t("addServicePopup.submitting", "جاري الإنشاء...")
                 : t("addServicePopup.submit", "إنشاء")}
             </button>
@@ -278,7 +254,7 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
               type="button"
               className={styles.cancelButton}
               onClick={onClose}
-              disabled={isLoading}
+              disabled={createServiceMutation.isPending}
             >
               {t("addServicePopup.cancel", "الغاء")}
             </button>

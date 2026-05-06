@@ -29,13 +29,14 @@ const smsClient = axios.create({
 });
 
 // WhatsApp client (separate base URL, same API key)
+// 60s timeout because Meta-backed create calls regularly take >30s.
 const waClient = axios.create({
   baseURL: TAQNYAT_CONFIG.waBaseUrl,
   headers: {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${TAQNYAT_CONFIG.apiKey}`,
   },
-  timeout: 30000,
+  timeout: 60000,
 });
 
 // ============================================
@@ -329,20 +330,78 @@ const createTemplate = async (name, category, language, components, options = {}
 };
 
 /**
- * Get all templates (to check approval status)
+ * Get all templates (to check approval status).
+ *
+ * Taqnyat's GET /wa/v2/templates/ requires a JSON body { sync: 1 } — without
+ * it the API returns { message: "401", reason: "No Data" } and silently yields
+ * zero templates. `sync: 1` forces a refresh from Meta; `sync: 0` returns the
+ * cached list. We use 1 so callers always see the freshest status.
  */
 const getTemplates = async () => {
   if (!TAQNYAT_CONFIG.apiKey) {
     throw new Error('Taqnyat API key is not configured');
   }
   try {
-    const response = await waClient.get('/templates/');
+    const response = await waClient.request({
+      method: 'GET',
+      url: '/templates/',
+      data: { sync: 1 },
+    });
     const data = response.data;
+    const err = checkWaResponseForError(data);
+    if (err) return err;
     // Taqnyat API returns templates under waba_templates
     const templates = data.waba_templates || data.data || (Array.isArray(data) ? data : []);
     return {
       success: true,
       templates,
+    };
+  } catch (error) {
+    return handleWaError(error);
+  }
+};
+
+/**
+ * Delete a WhatsApp template upstream on Meta via Taqnyat.
+ * Per Taqnyat docs the DELETE accepts a JSON body { name, id }.
+ *
+ * Quirk: Taqnyat's delete is inconsistent about the HTTP status code —
+ * we have observed both `200 { message: "201", reason: "success" }` and
+ * `400 { message: "200", reason: "template = ... was deleted" }` on
+ * a clean delete. We override validateStatus so axios doesn't throw on
+ * those 4xx-success cases and inspect the body ourselves: any `message`
+ * in the 2xx range, or a `reason` containing "deleted"/"success", is
+ * treated as success.
+ */
+const deleteTemplate = async (name, id) => {
+  if (!TAQNYAT_CONFIG.apiKey) {
+    throw new Error('Taqnyat API key is not configured');
+  }
+  if (!name && !id) {
+    throw new Error('deleteTemplate requires at least name or id');
+  }
+  try {
+    const response = await waClient.request({
+      method: 'DELETE',
+      url: '/templates/',
+      data: { name, id },
+      validateStatus: () => true,
+    });
+    const data = response.data || {};
+    const code = String(data.message || response.status);
+    const reason = String(data.reason || '');
+    const isSuccess =
+      /^2\d\d$/.test(code) ||
+      /deleted|success/i.test(reason);
+    if (isSuccess) {
+      return { success: true, raw: data };
+    }
+    // Real error — surface it through the same channel as the other helpers.
+    return {
+      success: false,
+      error: TAQNYAT_ERRORS[code] || reason || `Delete failed (status ${response.status})`,
+      code,
+      details: reason,
     };
   } catch (error) {
     return handleWaError(error);
@@ -373,6 +432,7 @@ module.exports = {
   uploadTemplateMedia,
   createTemplate,
   getTemplates,
+  deleteTemplate,
   checkBalance,
   TAQNYAT_CONFIG,
 };

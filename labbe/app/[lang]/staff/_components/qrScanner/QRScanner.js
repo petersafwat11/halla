@@ -45,14 +45,8 @@ export default function QRScanner({ isOpen, onClose, onScan, t }) {
         await videoRef.current.play();
       }
     } catch (err) {
-      console.error("Camera error:", err);
       setHasCamera(false);
-      setError(
-        t?.(
-          "qr.cameraError",
-          "لا يمكن الوصول إلى الكاميرا. تأكد من إعطاء الإذن."
-        )
-      );
+      setError(t("qr.cameraError"));
       setIsScanning(false);
     }
   }, [facingMode, t]);
@@ -176,7 +170,7 @@ export default function QRScanner({ isOpen, onClose, onScan, t }) {
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
-          <h2 className={styles.title}>{t?.("qr.scanTitle", "مسح رمز QR")}</h2>
+          <h2 className={styles.title}>{t("qr.scanTitle")}</h2>
           <button className={styles.flipButton} onClick={toggleCamera}>
             <svg
               width="24"
@@ -201,7 +195,7 @@ export default function QRScanner({ isOpen, onClose, onScan, t }) {
               <div className={styles.errorIcon}>📷</div>
               <p>{error}</p>
               <button className={styles.retryButton} onClick={startCamera}>
-                {t?.("qr.retry", "إعادة المحاولة")}
+                {t("qr.retry")}
               </button>
             </div>
           ) : (
@@ -234,9 +228,7 @@ export default function QRScanner({ isOpen, onClose, onScan, t }) {
 
         {/* Instructions */}
         <div className={styles.instructions}>
-          <p>
-            {t?.("qr.instructions", "وجّه الكاميرا نحو رمز QR الخاص بالضيف")}
-          </p>
+          <p>{t("qr.instructions")}</p>
         </div>
       </div>
     </div>

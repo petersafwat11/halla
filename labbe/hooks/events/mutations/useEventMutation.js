@@ -363,8 +363,9 @@ export const useEventMutation = (action) => {
     ...mutationConfig,
     ...DEFAULT_RETRY_CONFIG,
     retry: shouldRetry,
-    onError: (error) => {
-      console.error(`Event mutation error (${action}):`, error);
+    onError: () => {
+      // Errors are surfaced to callers via mutateAsync rejection;
+      // handleError() in each call-site provides user-facing feedback.
     },
   });
 };

@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
+import { handleError } from "@/services/errorHandlingService";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
@@ -15,7 +16,7 @@ import { eventsAPI } from "@/services/adminDashboard";
 import messagingService from "@/services/messaging";
 
 export default function AdminGuestTable({ data }) {
-  const { t, i18n } = useTranslation("home-events");
+  const { t, i18n } = useTranslation("adminEvents");
   const router = useRouter();
   const { id: eventId, lang } = useParams();
   const isArabic = i18n.language === "ar";
@@ -28,21 +29,20 @@ export default function AdminGuestTable({ data }) {
   const [isSendingInvitation, setIsSendingInvitation] = useState(false);
   const [selectedGuests, setSelectedGuests] = useState([]);
 
+  const guests = data.guests;
+
   const handleExportGuests = async () => {
     try {
       const token = cookieUtils.getCookie("token");
       await eventsAPI.exportGuests(eventId, token);
-      toast.success(
+      toastUtils.success(
         t(
           "singleEvent.guestTable.exportSuccess",
           "Guests exported successfully"
         )
       );
     } catch (error) {
-      console.error("Export error:", error);
-      toast.error(
-        t("singleEvent.guestTable.exportError", "Failed to export guests")
-      );
+      handleError(error, t, { fallbackMessage: "singleEvent.guestTable.exportError" });
     }
   };
 
@@ -57,7 +57,7 @@ export default function AdminGuestTable({ data }) {
     }
 
     if (!guest.guestId && !guest._id) {
-      toast.error(t("errors.noGuestId", "Guest ID not found"));
+      toastUtils.error(t("errors.noGuestId", "Guest ID not found"));
       return;
     }
 
@@ -79,15 +79,12 @@ export default function AdminGuestTable({ data }) {
       const guestId = guest.guestId || guest._id;
       await eventsAPI.deleteGuest(eventId, guestId, token);
 
-      toast.success(
+      toastUtils.success(
         t("singleEvent.guestTable.deleteSuccess", "Guest deleted successfully")
       );
       router.refresh();
     } catch (error) {
-      console.error("Delete error:", error);
-      toast.error(
-        t("singleEvent.guestTable.deleteError", "Failed to delete guest")
-      );
+      handleError(error, t, { fallbackMessage: "singleEvent.guestTable.deleteError" });
     } finally {
       setIsDeleting(false);
     }
@@ -99,15 +96,12 @@ export default function AdminGuestTable({ data }) {
       await eventsAPI.updateGuest(eventId, guestId, guestData, token);
       setShowEditPopup(false);
       setEditingGuest(null);
-      toast.success(
+      toastUtils.success(
         t("singleEvent.guestTable.updateSuccess", "Guest updated successfully")
       );
       router.refresh();
     } catch (error) {
-      console.error("Error updating guest:", error);
-      toast.error(
-        t("singleEvent.guestTable.updateError", "Failed to update guest")
-      );
+      handleError(error, t, { fallbackMessage: "singleEvent.guestTable.updateError" });
       throw error;
     }
   };
@@ -128,18 +122,17 @@ export default function AdminGuestTable({ data }) {
   const handleConfirmReminder = async (message) => {
     try {
       await messagingService.sendReminder(eventId, "sms", lang || "ar", message);
-      toast.success(t("reminderPopup.success", "Reminder sent successfully"));
+      toastUtils.success(t("reminderPopup.success", "Reminder sent successfully"));
       setShowReminderPopup(false);
     } catch (error) {
-      console.error("Error sending reminder:", error);
-      toast.error(t("reminderPopup.error", "Failed to send reminder"));
+      handleError(error, t, { fallbackMessage: "reminderPopup.error" });
     }
   };
 
   const handleSendInvitation = () => {
     const guestsWithPhone = guests.filter((g) => g.phone && g.phone !== "-");
     if (guestsWithPhone.length === 0) {
-      toast.error(t("messaging.noGuestsWithPhone", "لا يوجد ضيوف لديهم أرقام هواتف"));
+      toastUtils.error(t("messaging.noGuestsWithPhone", "لا يوجد ضيوف لديهم أرقام هواتف"));
       return;
     }
     setSelectedGuests(guestsWithPhone.map((g) => g.guestId || g._id));
@@ -159,7 +152,7 @@ export default function AdminGuestTable({ data }) {
       );
 
       if (result.status === "success") {
-        toast.success(
+        toastUtils.success(
           t("messaging.invitationsSent", {
             count: result.data?.successful || selectedGuests.length,
           }) || `تم إرسال ${result.data?.successful || selectedGuests.length} دعوة بنجاح`
@@ -169,10 +162,7 @@ export default function AdminGuestTable({ data }) {
       setSelectedGuests([]);
       router.refresh();
     } catch (error) {
-      console.error("Error sending invitations:", error);
-      toast.error(
-        t("messaging.sendError", "حدث خطأ أثناء إرسال الدعوات")
-      );
+      handleError(error, t, { fallbackMessage: "messaging.sendError" });
     } finally {
       setIsSendingInvitation(false);
     }
@@ -182,8 +172,6 @@ export default function AdminGuestTable({ data }) {
     setShowInvitationPopup(false);
     setSelectedGuests([]);
   };
-
-  const guests = data?.guests || [];
 
   return (
     <>
@@ -305,33 +293,10 @@ export default function AdminGuestTable({ data }) {
               );
             }
             if (key === "responseTime" && value) {
-              const date = new Date(value);
-              if (isArabic) {
-                const arabicMonths = [
-                  "يناير",
-                  "فبراير",
-                  "مارس",
-                  "أبريل",
-                  "مايو",
-                  "يونيو",
-                  "يوليو",
-                  "أغسطس",
-                  "سبتمبر",
-                  "أكتوبر",
-                  "نوفمبر",
-                  "ديسمبر",
-                ];
-                const day = date.getDate();
-                const month = arabicMonths[date.getMonth()];
-                const year = date.getFullYear();
-                return `${day} ${month} ${year}`;
-              } else {
-                return date.toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                });
-              }
+              return new Date(value).toLocaleDateString(
+                isArabic ? "ar-SA" : "en-US",
+                { year: "numeric", month: "long", day: "numeric" }
+              );
             }
             return value;
           }}

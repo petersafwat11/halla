@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "../../localization";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -18,7 +18,7 @@ const PreviewInvitation = ({
   visible = false,
   onClose,
   eventTitle = "",
-  invitationMessage = "",
+  previewBody = "",
   templateImage = null,
   templateData = {},
   selectedTemplate = null,
@@ -26,7 +26,8 @@ const PreviewInvitation = ({
   eventTime = "",
   location = "",
 }) => {
-  // Format date for display
+  const { t } = useTranslation("createEvent");
+
   const formattedDate = useMemo(() => {
     if (!eventDate) return "";
     try {
@@ -41,15 +42,14 @@ const PreviewInvitation = ({
     }
   }, [eventDate]);
 
-  // Generate title from bride and groom names or use event title
   const displayTitle = useMemo(() => {
     const brideName = templateData?.brideName;
     const groomName = templateData?.groomName;
     if (brideName && groomName) {
-      return `حفل زفاف ${brideName} و${groomName}`;
+      return `${t("preview.weddingTitle", { brideName, groomName })}`;
     }
-    return eventTitle || "عنوان المناسبة";
-  }, [templateData, eventTitle]);
+    return eventTitle || t("preview.defaultTitle");
+  }, [templateData, eventTitle, t]);
 
   return (
     <Modal
@@ -63,7 +63,7 @@ const PreviewInvitation = ({
         <View style={styles.modalContainer}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>معاينة الدعوة</Text>
+            <Text style={styles.headerTitle}>{t("preview.title")}</Text>
             <TouchableOpacity
               onPress={onClose}
               style={styles.closeButton}
@@ -91,9 +91,7 @@ const PreviewInvitation = ({
                 style={styles.templateImage}
                 resizeMode="cover"
                 defaultSource={require("../../assets/invetation.png")}
-                onError={(error) => {
-                  console.log("Image load error:", error.nativeEvent.error);
-                }}
+                onError={() => {}}
               />
 
               {/* Event Details */}
@@ -104,9 +102,9 @@ const PreviewInvitation = ({
                 )}
 
                 {/* Invitation Message */}
-                {invitationMessage && (
+                {previewBody && (
                   <Text style={[styles.invitationMessage]}>
-                    {invitationMessage}
+                    {previewBody}
                   </Text>
                 )}
 
@@ -119,7 +117,7 @@ const PreviewInvitation = ({
                       color="#656565"
                     />
                     <Text style={styles.detailText}>
-                      بتاريخ {formattedDate}
+                      {t("preview.datePrefix")} {formattedDate}
                     </Text>
                   </View>
                 )}
@@ -128,7 +126,7 @@ const PreviewInvitation = ({
                 {eventTime && (
                   <View style={styles.detailRow}>
                     <Ionicons name="time-outline" size={16} color="#656565" />
-                    <Text style={styles.detailText}>الساعة {eventTime}</Text>
+                    <Text style={styles.detailText}>{t("preview.timePrefix")} {eventTime}</Text>
                   </View>
                 )}
 
@@ -151,7 +149,7 @@ const PreviewInvitation = ({
                   style={styles.actionButton}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.actionButtonText}>تفاصيل المناسبة</Text>
+                  <Text style={styles.actionButtonText}>{t("preview.details")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.actionButton, styles.confirmButton]}
@@ -160,25 +158,24 @@ const PreviewInvitation = ({
                   <Text
                     style={[styles.actionButtonText, styles.confirmButtonText]}
                   >
-                    سأحضر
+                    {t("preview.attending")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.actionButtonText}>سأعتذر</Text>
+                  <Text style={styles.actionButtonText}>{t("preview.declining")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.actionButtonText}>ربما</Text>
+                  <Text style={styles.actionButtonText}>{t("preview.maybe")}</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Timestamp */}
-              <Text style={styles.timestamp}>10:30 صباحًا</Text>
+              <Text style={styles.timestamp}>{t("preview.timestamp")}</Text>
             </View>
           </ScrollView>
         </View>

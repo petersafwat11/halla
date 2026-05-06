@@ -6,68 +6,22 @@ import Table from "@/ui/commen/new-table/Table";
 import StatusBadge from "./StatusBadge";
 import { MdDelete } from "react-icons/md";
 import { useTranslation } from "react-i18next";
-
-const paymentsData = [
-  // {
-  //   id: 1,
-  //   service: "حفل زفاف احمد ومريم",
-  //   amount: "2000 ريال",
-  //   date: "2020-05-04 09:18:16",
-  //   status: "success",
-  //   statusText: "ناجحة",
-  // },
-  // {
-  //   id: 2,
-  //   service: "حفل زفاف احمد ومريم",
-  //   amount: "2000 ريال",
-  //   date: "2020-05-01 06:05:46",
-  //   status: "cancelled",
-  //   statusText: "ملغية",
-  // },
-  // {
-  //   id: 3,
-  //   service: "حفل زفاف احمد ومريم",
-  //   amount: "2000 ريال",
-  //   date: "2020-05-05 10:21:13",
-  //   status: "pending",
-  //   statusText: "معلقة",
-  // },
-  // {
-  //   id: 5,
-  //   service: "حفل زفاف احمد ومريم",
-  //   amount: "2000 ريال",
-  //   date: "2020-05-06 11:24:08",
-  //   status: "cancelled",
-  //   statusText: "ملغية",
-  // },
-  // {
-  //   id: 6,
-  //   service: "حفل زفاف احمد ومريم",
-  //   amount: "2000 ريال",
-  //   date: "2020-05-02 07:10:15",
-  //   status: "cancelled",
-  //   statusText: "ملغية",
-  // },
-  // {
-  //   id: 7,
-  //   service: "حفل زفاف احمد ومريم",
-  //   amount: "2000 ريال",
-  //   date: "2020-05-03 08:14:01",
-  //   status: "cancelled",
-  //   statusText: "ملغية",
-  // },
-];
+import { useMyPayments } from "@/hooks/reactQueryHooks/useSubscriptions";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
 const PaymentsClient = () => {
   const { t } = useTranslation("hostPayments");
-  const [payments, setPayments] = useState(paymentsData);
   const [filter, setFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
-  // Filter data based on selected filter
-  const filteredData = payments.filter((item) => {
-    if (filter === "all") return true;
-    return item.status === filter;
-  });
+  const { data: paymentsData, isLoading } = useMyPayments(
+    { page, limit, status: filter },
+    { staleTime: 1 * 60 * 1000 }
+  );
+
+  const payments = paymentsData?.data?.payments || [];
+  const pagination = paymentsData?.data?.pagination || { page: 1, pages: 1, total: 0 };
 
   const headers = [
     t("table.columns.service"),
@@ -76,52 +30,43 @@ const PaymentsClient = () => {
     t("table.columns.status"),
   ];
 
-  const handleDelete = (row) => {
-    if (confirm(`${t("table.actions.delete")} ${row.service}?`)) {
-      setPayments((prev) => prev.filter((item) => item.id !== row.id));
-      console.log("Deleted payment:", row.id);
-    }
-  };
-
-  const handleDeleteAll = () => {
-    if (confirm(t("table.actions.deleteAll") + "?")) {
-      setPayments([]);
-      console.log("Deleted all payments");
-    }
-  };
-
-  const actions = [
-    {
-      icon: <MdDelete size={16} color="#C0392B" />,
-      text: t("table.actions.delete"),
-      onClick: handleDelete,
-    },
-  ];
+  const tableData = payments.map((item) => ({
+    id: item.id,
+    service: item.service,
+    amount: `${item.amount} ${item.currency}`,
+    date: new Date(item.createdAt).toLocaleString(),
+    status: item.status,
+    statusText: t(`table.status.${item.status}`, item.status),
+  }));
 
   const filterOptions = [
     {
       text: t("table.filter.all"),
-      onClick: () => setFilter("all"),
+      onClick: () => {
+        setFilter("all");
+        setPage(1);
+      },
     },
     {
       text: t("table.filter.success"),
-      onClick: () => setFilter("success"),
+      onClick: () => {
+        setFilter("completed");
+        setPage(1);
+      },
     },
     {
       text: t("table.filter.pending"),
-      onClick: () => setFilter("pending"),
+      onClick: () => {
+        setFilter("pending");
+        setPage(1);
+      },
     },
     {
       text: t("table.filter.cancelled"),
-      onClick: () => setFilter("cancelled"),
-    },
-  ];
-
-  const moreOptions = [
-    {
-      text: t("table.actions.deleteAll"),
-      icon: <MdDelete size={16} color="#C0392B" />,
-      onClick: handleDeleteAll,
+      onClick: () => {
+        setFilter("failed");
+        setPage(1);
+      },
     },
   ];
 
@@ -133,8 +78,17 @@ const PaymentsClient = () => {
   };
 
   const handleExport = () => {
-    console.log("Export payments data", filteredData);
+    console.log("Export payments data", payments);
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.page}>
+        <PaymentsHeader />
+        <SimpleLoading message={t("loading")} />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
@@ -142,15 +96,19 @@ const PaymentsClient = () => {
       <Table
         title={t("table.title")}
         headers={headers}
-        data={filteredData}
-        actions={actions}
+        data={tableData}
         filterOptions={filterOptions}
-        moreOptions={moreOptions}
         renderCell={renderCell}
         onExportClick={handleExport}
         showSearch={true}
         showFilter={true}
         showExport={true}
+        pagination={{
+          currentPage: pagination.page,
+          totalPages: pagination.pages,
+          totalItems: pagination.total,
+          onPageChange: setPage,
+        }}
       />
     </div>
   );

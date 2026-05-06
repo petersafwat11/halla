@@ -102,8 +102,12 @@ const SendTicketPopup = ({
         subject: data.subject,
         type: data.complaintType,
         message: data.complaintText,
-        priority: data.priority || "medium",
       };
+
+      // Priority is only set on creation (non-admin cannot update it)
+      if (!isEditMode) {
+        ticketData.priority = data.priority || "medium";
+      }
 
       let response;
       if (isEditMode) {

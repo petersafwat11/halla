@@ -1,5 +1,6 @@
 {
   "welcome": "Welcome",
+  "guest": "Guest",
   "dashboard": {
     "title": "Dashboard",
     "stats": {
@@ -23,5 +24,11 @@
     "createEvent": "Create Event",
     "viewEvents": "View All Events",
     "manageGuests": "Manage Guests"
+  },
+  "notifyStaff": {
+    "successTitle": "Done",
+    "successMessage": "Notification sent to the team",
+    "errorTitle": "Error",
+    "errorMessage": "Failed to send notification"
   }
 }

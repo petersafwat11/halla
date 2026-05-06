@@ -82,7 +82,6 @@ const ServiceDetailsForm = ({ data, onSave, loading }) => {
         }
       }
     } catch (error) {
-      console.error("Error picking image:", error);
       Alert.alert(t("common.error"), t("settings.imagePickError"));
     }
   };

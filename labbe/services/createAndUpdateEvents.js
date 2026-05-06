@@ -604,12 +604,11 @@ export const createUpdateEventsHelpers = {
       })),
       invitationSettings: {
         selectedTemplate: formData.selectedTemplate,
-        invitationMessage: formData.invitationMessage,
         attendanceAutoReply: formData.attendanceAutoReply,
         absenceAutoReply: formData.absenceAutoReply,
         expectedAttendanceAutoReply: formData.expectedAttendanceAutoReply,
         templateImage: formData.templateImage,
-        note: formData.note,
+        guestReplies: formData.guestReplies,
       },
       launchSettings: {
         sendSchedule: formData.sendSchedule || "now",
@@ -665,10 +664,6 @@ export const createUpdateEventsHelpers = {
         event.visualTemplate?.bakedImagePath ||
         event.invitationSettings?.templateImage ||
         "",
-      invitationMessage:
-        event.invitationMessage ||
-        event.invitationSettings?.invitationMessage ||
-        "",
       attendanceAutoReply:
         event.guestReplies?.onAttend ||
         event.invitationSettings?.attendanceAutoReply ||
@@ -686,8 +681,6 @@ export const createUpdateEventsHelpers = {
         onAbsent: event.invitationSettings?.absenceAutoReply || "",
         onExpected: event.invitationSettings?.expectedAttendanceAutoReply || "",
       },
-      note: event.hostNote || event.invitationSettings?.note || "",
-      hostNote: event.hostNote || event.invitationSettings?.note || "",
       sendSchedule: event.launchSettings?.sendSchedule || "now",
       scheduleDate: event.launchSettings?.scheduledDate || "",
       scheduleTime: event.launchSettings?.scheduledTime || "",
@@ -714,20 +707,12 @@ export const createUpdateEventsHelpers = {
       case 3:
         return formData.selectedTemplate !== null;
       case 4:
-        return (
-          formData.invitationMessage && formData.invitationMessage.trim() !== ""
-        );
-      case 5:
         return formData.confirmReviewed === true;
       default:
         return false;
     }
   },
 
-  /**
-   * Get default form values
-   * @returns {Object} Default form values
-   */
   getDefaultFormValues: () => ({
     eventType: "",
     eventName: "",
@@ -744,11 +729,14 @@ export const createUpdateEventsHelpers = {
     staffList: [],
     selectedTemplate: null,
     templateImage: "",
-    invitationMessage: "",
     attendanceAutoReply: "",
     absenceAutoReply: "",
     expectedAttendanceAutoReply: "",
-    note: "",
+    guestReplies: {
+      onAttend: "",
+      onAbsent: "",
+      onExpected: "",
+    },
     sendSchedule: "now",
     scheduleDate: "",
     scheduleTime: "",

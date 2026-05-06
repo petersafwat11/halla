@@ -30,13 +30,10 @@ export default function DiscountsStats() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const discounts = data?.discounts || data?.data?.discounts || [];
-  const total =
-    data?.pagination?.total ||
-    data?.data?.pagination?.total ||
-    discounts.length;
-
   const statsCards = useMemo(() => {
+    if (!data?.discounts || !data?.pagination) return [];
+    const discounts = data.discounts;
+    const total = data.pagination.total;
     const now = new Date();
     const active = discounts.filter((d) => d.isActive).length;
     const expired = discounts.filter(
@@ -70,7 +67,9 @@ export default function DiscountsStats() {
         alt: "uses",
       },
     ];
-  }, [discounts, total, t]);
+  }, [data, t]);
+
+  if (!data) return null;
 
   return <StatsCards cards={statsCards} />;
 }

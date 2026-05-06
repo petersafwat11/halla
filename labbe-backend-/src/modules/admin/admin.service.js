@@ -73,8 +73,8 @@ class AdminService {
         currentPeriodEnd: user.subscription.endDate || user.subscription.currentPeriodEnd,
         billingCycle: user.subscription.billingCycle,
         limits: {
-          maxEvents: user.subscription.planId?.limits?.maxEventsPerMonth ?? null,
-          maxGuestsPerEvent: user.subscription.planId?.limits?.maxGuestsPerEvent ?? null,
+          maxEvents: user.subscription.planId?.limits?.maxEvents ?? null,
+          maxGuestsPerEvent: user.subscription.planId?.limits?.maxInvitesPerEvent ?? null,
         },
       } : null,
       createdAt: user.createdAt,
@@ -87,6 +87,7 @@ class AdminService {
       base.brandName = vd?.brandName || null;
       base.vendorStatus = vd?.vendorStatus || null;
       base.rating = vd?.rating ?? null;
+      base.ratingComment = vd?.ratingComment || null;
       base.serviceCategories = vd?.serviceCategories || null;
     }
 
@@ -735,7 +736,7 @@ class AdminService {
   /**
    * Update vendor rating
    */
-  async updateVendorRating(vendorId, rating, whitelabelId) {
+  async updateVendorRating(vendorId, rating, comment, whitelabelId) {
     const query = { _id: vendorId, role: ROLES.VENDOR };
     if (whitelabelId !== undefined) {
       query.whitelabelId = whitelabelId;
@@ -753,10 +754,13 @@ class AdminService {
     vendor.profile = vendor.profile || {};
     vendor.profile.vendorData = vendor.profile.vendorData || {};
     vendor.profile.vendorData.rating = rating;
+    if (comment !== undefined && comment !== null) {
+      vendor.profile.vendorData.ratingComment = comment;
+    }
 
     await vendor.save();
 
-    return { success: true, rating };
+    return { success: true, rating, comment };
   }
 
   /**
@@ -1204,17 +1208,35 @@ class AdminService {
       throw new NotFoundError('Whitelabel');
     }
 
-    const [hostCount, eventCount] = await Promise.all([
+    const [hostCount, eventCount, recentHosts] = await Promise.all([
       User.countDocuments({ whitelabelId, role: ROLES.HOST }),
       Event.countDocuments({ whitelabelId }),
+      User.find({ whitelabelId, role: ROLES.HOST })
+        .select('username name email phoneNumber status createdAt')
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean(),
     ]);
 
     return {
       ...this._formatUserResponse(whitelabel),
+      planSelection: whitelabel.planSelection || null,
       statistics: {
         totalHosts: hostCount,
         totalEvents: eventCount,
+        hostsCount: hostCount,
+        eventsCount: eventCount,
+        moderatorsCount: await User.countDocuments({ whitelabelId, role: { $in: [ROLES.MODERATOR, ROLES.WHITELABEL_MODERATOR, ROLES.ADMIN, ROLES.WHITELABEL_ADMIN] } }),
       },
+      recentHosts: recentHosts.map(h => ({
+        id: h._id,
+        name: h.name || h.username,
+        username: h.username,
+        email: h.email,
+        phoneNumber: h.phoneNumber,
+        status: h.status,
+        createdAt: h.createdAt,
+      })),
     };
   }
 
@@ -1431,6 +1453,61 @@ class AdminService {
   }
 
   /**
+   * Get whitelabel features
+   */
+  async getWhitelabelFeatures(whitelabelId) {
+    const whitelabel = await User.findOne({
+      _id: whitelabelId,
+      role: ROLES.WHITELABEL_ADMIN,
+    }).lean();
+
+    if (!whitelabel) {
+      throw new NotFoundError('Whitelabel');
+    }
+
+    const storedFeatures = whitelabel.features || {};
+
+    // Canonical feature definitions
+    const FEATURE_DEFINITIONS = [
+      { name: 'whatsappMessaging', label: 'WhatsApp Messaging', description: 'Send WhatsApp messages to guests' },
+      { name: 'customDomain', label: 'Custom Domain', description: 'Use a custom domain for the whitelabel platform' },
+      { name: 'advancedAnalytics', label: 'Advanced Analytics', description: 'Access detailed analytics and reports' },
+      { name: 'apiAccess', label: 'API Access', description: 'Access the platform API programmatically' },
+      { name: 'whiteLabelBranding', label: 'White-label Branding', description: 'Remove platform branding and use custom branding' },
+      { name: 'prioritySupport', label: 'Priority Support', description: 'Get priority customer support' },
+    ];
+
+    return FEATURE_DEFINITIONS.map((def) => ({
+      ...def,
+      enabled: storedFeatures[def.name] === true,
+    }));
+  }
+
+  /**
+   * Update a single whitelabel feature toggle
+   */
+  async updateWhitelabelFeature(whitelabelId, featureName, enabled) {
+    const whitelabel = await User.findOne({
+      _id: whitelabelId,
+      role: ROLES.WHITELABEL_ADMIN,
+    });
+
+    if (!whitelabel) {
+      throw new NotFoundError('Whitelabel');
+    }
+
+    whitelabel.features = whitelabel.features || {};
+    whitelabel.features[featureName] = enabled;
+    await whitelabel.save();
+
+    return {
+      success: true,
+      feature: featureName,
+      enabled,
+    };
+  }
+
+  /**
    * Delete whitelabel
    */
   async deleteWhitelabel(whitelabelId) {
@@ -1521,7 +1598,7 @@ class AdminService {
 
     const event = await Event.findOne(query)
       .populate('host', 'username email phoneNumber name')
-      .populate('guestList', 'name email phone status');
+      .populate('guestList', 'name email phone status rsvpStatus checkedIn');
 
     if (!event) {
       throw new NotFoundError('Event');
@@ -1552,12 +1629,9 @@ class AdminService {
       'eventDetails',
       'invitationSettings',
       'staffList',
-      // canonical Phase 4c keys (W0-RENAME)
       'visualTemplate',
       'taqnyatTemplate',
       'guestReplies',
-      'invitationMessage',
-      'hostNote',
     ];
     allowedFields.forEach((field) => {
       if (updateData[field] !== undefined) {
@@ -1610,7 +1684,6 @@ class AdminService {
       if (legacy.absenceAutoReply !== undefined) replies.onAbsent = legacy.absenceAutoReply;
       if (legacy.expectedAttendanceAutoReply !== undefined) replies.onExpected = legacy.expectedAttendanceAutoReply;
       event.guestReplies = replies;
-      if (legacy.note !== undefined && !updateData.hostNote) event.hostNote = legacy.note;
     }
     if (updateData.guestReplies) {
       const merged = { ...inv };
@@ -1618,9 +1691,6 @@ class AdminService {
       if (updateData.guestReplies.onAbsent !== undefined) merged.absenceAutoReply = updateData.guestReplies.onAbsent;
       if (updateData.guestReplies.onExpected !== undefined) merged.expectedAttendanceAutoReply = updateData.guestReplies.onExpected;
       event.invitationSettings = merged;
-    }
-    if (updateData.hostNote !== undefined) {
-      event.invitationSettings = { ...(event.invitationSettings || {}), note: updateData.hostNote };
     }
 
     // Handle guest list update
@@ -1694,41 +1764,43 @@ class AdminService {
       const isSuperAdmin = requestingUser.role === ROLES.SUPER_ADMIN;
 
       if (isWhitelabelUser && requestingUser.whitelabelId) {
-        // Whitelabel admin: only hosts that belong to their whitelabel
         query.whitelabelId = requestingUser.whitelabelId;
       } else if (!isSuperAdmin) {
-        // Platform admin (admin/moderator): hosts without a whitelabel
         query.whitelabelId = null;
       }
-      // Super admin: no filter, sees all
     }
 
     const users = await User.find(query)
       .select('username name email phoneNumber role status whitelabelId')
       .lean();
 
-    // Get subscriptions for all users
     const userIds = users.map(u => u._id);
     const subscriptions = await Subscription.find({ userId: { $in: userIds } })
-      .populate('planId', 'name code features')
+      .populate('planId', 'planType code limits features')
       .lean();
 
     const subMap = {};
     subscriptions.forEach(s => { subMap[s.userId.toString()] = s; });
 
+    // When whitelabel admin queries for their hosts, hosts share the whitelabel's plan.
+    // Fetch the whitelabel's subscription once and apply it to all their hosts.
+    let whitelabelSub = null;
+    if (type === 'host' && requestingUser && WHITELABEL_ROLES.includes(requestingUser.role) && requestingUser.whitelabelId) {
+      const wlSubs = await Subscription.findActiveForUser(requestingUser.whitelabelId);
+      whitelabelSub = wlSubs[0] || null;
+    }
+
     const targets = users.map(u => {
-      const sub = subMap[u._id.toString()];
+      // For whitelabel admin querying hosts: use whitelabel's subscription
+      // For all other cases: use the user's own subscription
+      const sub = (type === 'host' && whitelabelSub)
+        ? whitelabelSub
+        : subMap[u._id.toString()];
+
       return {
         ...u,
         id: u._id,
-        subscription: sub ? {
-          status: sub.status,
-          planType: sub.planType,
-          planName: sub.planId?.name || null,
-          eventsRemaining: sub.planId?.features?.maxEventsPerMonth
-            ? sub.planId.features.maxEventsPerMonth - (sub.usage?.eventsCreated || 0)
-            : -1,
-        } : null,
+        subscription: sub ? this._formatTargetSubscription(sub) : null,
       };
     });
 
@@ -1736,35 +1808,78 @@ class AdminService {
   }
 
   /**
+   * Normalize subscription data for event-target cards.
+   * Returns a consistent shape regardless of plan type.
+   */
+  _formatTargetSubscription(sub) {
+    const limits = sub.planId?.limits || {};
+    const planType = sub.planId?.planType;
+    const isPerEvent = planType ? require('../../shared/constants/plans').isPerEventPlan(planType) : false;
+    const isPool = planType ? require('../../shared/constants/plans').isPoolPlan(planType) : false;
+
+    let guestLimit, isGuestUnlimited, invitePool, invitesRemaining;
+    if (isPerEvent) {
+      guestLimit = limits.maxInvitesPerEvent ?? 50;
+      isGuestUnlimited = guestLimit === -1;
+      invitePool = null;
+      invitesRemaining = null;
+    } else if (isPool) {
+      guestLimit = -1;
+      isGuestUnlimited = true;
+      invitePool = sub.invitePool ?? null;
+      const totalPool = (sub.invitePool || 0) + (sub.compensationPool || 0);
+      invitesRemaining = totalPool - (sub.invitesConsumed || 0);
+    } else {
+      guestLimit = limits.maxInvitesPerEvent ?? 50;
+      isGuestUnlimited = guestLimit === -1;
+      invitePool = sub.invitePool ?? null;
+      invitesRemaining = sub.invitesRemaining ?? null;
+    }
+
+    // Plan schema field is `maxEvents` (-1 = unlimited / pool, 1 = per-event).
+    const maxEvents = limits.maxEvents ?? (isPerEvent ? 1 : -1);
+    const eventsUsed = sub.usage?.eventsCreated || 0;
+    const eventsRemaining = isPerEvent
+      ? Math.max(0, 1 - eventsUsed)
+      : maxEvents === -1 ? -1 : Math.max(0, maxEvents - eventsUsed);
+
+    return {
+      status: sub.status,
+      planType: sub.planType,
+      planCode: sub.planId?.code || null,
+      isSingleEvent: isPerEvent,
+      isPoolPlan: isPool,
+      guestLimit,
+      isGuestUnlimited,
+      invitePool,
+      invitesRemaining,
+      eventsRemaining,
+      eventsUsed,
+    };
+  }
+
+  /**
    * Get user subscription info
    */
   async getUserSubscriptionInfo(userId) {
-    const user = await User.findById(userId).select('role name').lean();
+    const user = await User.findById(userId).select('role name whitelabelId').lean();
     if (!user) throw new NotFoundError('User');
 
-    // H-10: was findOne({userId}) — would surface cancelled subs at random.
-    // Use the canonical helper, then re-populate the fields the lean read
-    // expects (findActiveForUser populates 'planId' fully; we filter to
-    // the projection here to keep the wire response slim).
     const activeSubs = await Subscription.findActiveForUser(userId);
-    const subscription = activeSubs[0] || null;
+    let subscription = activeSubs[0] || null;
+
+    // If user is a whitelabel moderator (no own sub), use the whitelabel's subscription
+    if (!subscription && user.whitelabelId && user.role === ROLES.WHITELABEL_MODERATOR) {
+      const wlSubs = await Subscription.findActiveForUser(user.whitelabelId);
+      subscription = wlSubs[0] || null;
+    }
 
     if (!subscription) {
       return { subscription: null };
     }
 
     return {
-      subscription: {
-        id: subscription._id,
-        status: subscription.status,
-        planType: subscription.planType,
-        planName: subscription.planId?.name || null,
-        features: subscription.planId?.features || null,
-        eventsRemaining: subscription.planId?.features?.maxEventsPerMonth
-          ? subscription.planId.features.maxEventsPerMonth - (subscription.usage?.eventsCreated || 0)
-          : -1,
-        currentPeriodEnd: subscription.currentPeriodEnd,
-      },
+      subscription: this._formatTargetSubscription(subscription),
     };
   }
 

@@ -25,7 +25,7 @@ import {
 import { toastUtils } from "@/utils/toastUtils";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 import ErrorDisplay from "@/ui/commen/ErrorDisplay";
-import { getAuthErrorMessage } from "@/services/errorHandlingService";
+import { getAuthErrorMessage, handleError } from "@/services/errorHandlingService";
 
 const VendorSignup = () => {
   const { t } = useTranslation("signup");
@@ -53,20 +53,22 @@ const VendorSignup = () => {
     { id: 3, desc: t("signupForm.vendor.steps.samplesAndPackages") },
     { id: 4, desc: t("signupForm.vendor.steps.commercialVerification") },
     { id: 5, desc: t("signupForm.vendor.steps.otherLinksAndData") },
+    { id: 6, desc: t("signupForm.vendor.steps.summary") },
   ];
 
   const methods = useForm({
     resolver: zodResolver(vendorSignupSchema(t)),
-    reValidateMode: "onSubmit",
+    reValidateMode: "onChange",
     shouldFocusError: false,
     mode: "onTouched",
+    defaultValues: {
+      identity: {},
+      serviceData: { serviceLocation: { coverageType: "city" } },
+      samplesAndPackages: { portfolioImages: [], pricePackages: [] },
+      commercialVerification: {},
+      socialLinks: {},
+    },
   });
-
-  console.log(
-    "vendor Values errors",
-    methods.watch(),
-    methods.formState.errors,
-  );
 
   // Validate current step using utility
   const validateCurrentStep = useCallback(() => {
@@ -118,32 +120,26 @@ const VendorSignup = () => {
     }
   };
 
-  const handleSubmitVendor = async () => {
+  const handleSubmitVendor = useCallback(async () => {
     const formValues = methods.getValues();
-    console.log("Submitting Vendor data:", formValues);
 
     // Build FormData using utility function
     const formData = buildVendorFormData(formValues);
 
     try {
       await signupVendor(formData);
-      console.log("Vendor signup successful");
       // Show success toast
-      toastUtils.success(
-        currentLocale === "ar"
-          ? "تم التسجيل بنجاح! حسابك قيد المراجعة."
-          : "Registration successful! Your account is pending approval.",
-      );
+      toastUtils.success(t("signupForm.vendor.successMessage"));
       router.push(`/${currentLocale}/login`);
     } catch (error) {
-      console.error("Vendor signup error:", error.message);
-      // Error will be displayed via ErrorDisplay component
+      handleError(error, t, { fallbackMessage: "signupForm.vendor.errorMessage" });
     }
-  };
+  }, [methods, signupVendor, t, router, currentLocale]);
 
-  const onFinalSubmit = methods.handleSubmit(() => {
-    handleSubmitVendor();
-  });
+  const onFinalSubmit = useCallback(
+    methods.handleSubmit(() => handleSubmitVendor()),
+    [methods, handleSubmitVendor]
+  );
 
   const goToPreviousStep = useCallback(() => {
     utilPrevStep({
@@ -235,8 +231,7 @@ const VendorSignup = () => {
                         onClick={goToPreviousStep}
                         disabled={isSubmitting}
                       >
-                        {t("signupForm.initialForm.buttons.backButton") ||
-                          "رجوع"}
+                        {t("signupForm.initialForm.buttons.backButton")}
                       </button>
                     )}
                     <button
@@ -248,7 +243,7 @@ const VendorSignup = () => {
                       disabled={isSubmitting}
                     >
                       {isSubmitting
-                        ? "جاري الإرسال..."
+                        ? t("signupForm.vendor.submitting")
                         : step === steps.length
                           ? t("signupForm.vendor.summary.submit")
                           : t("signupForm.initialForm.buttons.continueButton")}

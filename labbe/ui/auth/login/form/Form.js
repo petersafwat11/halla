@@ -146,7 +146,7 @@ const Form = () => {
         email: formData.email,
         password: formData.password,
       });
-      navigateByRole(result.data?.user?.role);
+      navigateByRole(result.user?.role);
     } catch (error) {
       // Error is handled by mutation and displayed via error state
     }
@@ -179,12 +179,12 @@ const Form = () => {
       });
 
       // Check if profile is complete (for admin-created accounts)
-      const profileCompleted = result.data?.profileCompleted ?? true;
+      const profileCompleted = result.profileCompleted ?? true;
       if (!profileCompleted) {
         window.location.href = `/${currentLocale}/signup/continue-signup`;
         return;
       }
-      navigateByRole(result.data?.user?.role);
+      navigateByRole(result.user?.role);
     } catch (error) {
       // Error is handled by mutation
     }

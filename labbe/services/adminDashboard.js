@@ -626,7 +626,7 @@ export const eventsAPI = {
 
   delete: async (eventId, token = null) => {
     if (!eventId) throw new Error("Event ID is required");
-    return apiClient.delete(`/admin/events/${eventId}`, { token });
+    return apiClient.delete(`/events/admin/${eventId}`, { token });
   },
 
   bulkDelete: async (eventIds, token = null) => {

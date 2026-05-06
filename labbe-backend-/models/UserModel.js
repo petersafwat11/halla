@@ -201,6 +201,14 @@ const whitelabelDataSchema = new mongoose.Schema(
           "business_quarterly", "business_annual",
         ],
       },
+      billingCycle: {
+        type: String,
+        enum: ["monthly", "yearly", "once"],
+      },
+      needsCustomBranding: {
+        type: Boolean,
+        default: false,
+      },
     },
 
     // Application status

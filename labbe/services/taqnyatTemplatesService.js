@@ -34,11 +34,24 @@ export const taqnyatTemplatesService = {
   adminSync: () =>
     apiRequest({ method: "POST", path: API_PATHS.taqnyatTemplates.adminSync }),
 
+  adminCreate: (body) =>
+    apiRequest({
+      method: "POST",
+      path: API_PATHS.taqnyatTemplates.adminCreate,
+      data: body,
+    }),
+
   adminAssign: (id, body) =>
     apiRequest({
       method: "PATCH",
       path: API_PATHS.taqnyatTemplates.adminAssign(id),
-      body,
+      data: body,
+    }),
+
+  adminDelete: (id) =>
+    apiRequest({
+      method: "DELETE",
+      path: API_PATHS.taqnyatTemplates.adminDelete(id),
     }),
 };
 

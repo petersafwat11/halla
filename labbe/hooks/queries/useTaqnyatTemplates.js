@@ -38,3 +38,19 @@ export function useAssignTaqnyat() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["taqnyat-templates"] }),
   });
 }
+
+export function useCreateTaqnyatTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body) => taqnyatTemplatesService.adminCreate(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["taqnyat-templates"] }),
+  });
+}
+
+export function useDeleteTaqnyatTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => taqnyatTemplatesService.adminDelete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["taqnyat-templates"] }),
+  });
+}

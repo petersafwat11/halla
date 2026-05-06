@@ -48,16 +48,21 @@ export const togglePostEventLike = async (eventId, postId, sessionToken) =>
     "Failed to toggle like"
   );
 
-export const addPostEventComment = async (eventId, postId, text, sessionToken) =>
-  _request(
+export const addPostEventComment = async (eventId, postId, text, sessionToken) => {
+  const formData = new FormData();
+  formData.append("text", text);
+  return _request(
     `${API_BASE_URL}${ENDPOINTS.POST_EVENT.ADD_COMMENT(eventId, postId)}`,
     {
       method: "POST",
-      headers: _withSession(sessionToken),
-      body: JSON.stringify({ text }),
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+      },
+      body: formData,
     },
     "Failed to add comment"
   );
+};
 
 export const getPostEventComments = async (eventId, postId, sessionToken, page = 1) =>
   _request(
