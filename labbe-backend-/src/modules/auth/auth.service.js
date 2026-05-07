@@ -41,7 +41,7 @@ const logger = require('../../shared/utils/logger');
 
 class AuthService {
   /**
-   * Sign a short-lived access token (FLOW-01-F01).
+   * Sign a short-lived access token.
    * @param {string} id - User ID
    * @param {string} [role] - User role
    * @returns {string} JWT
@@ -97,7 +97,7 @@ class AuthService {
   }
 
   /**
-   * Rotate a refresh token (FLOW-01-F02 + FLOW-01-F05).
+   * Rotate a refresh token.
    * - Validates the incoming raw refresh token against the stored hash.
    * - On success, marks the old token revoked and issues a new pair.
    * - On a replay (already-revoked token presented again) revokes every
@@ -114,13 +114,12 @@ class AuthService {
 
     const tokenHash = this._hashRefresh(rawRefresh);
 
-    // H-1 fix: rotation must be atomic. The previous find→check→issue→save
-    // sequence let two parallel /auth/refresh calls both pass the
-    // `revokedAt == null` check, both issue new pairs, and only one would
-    // win the save — without triggering replay detection. Use a single
-    // findOneAndUpdate that atomically claims (and revokes) the row only
-    // if it is still active. A null result means somebody already claimed
-    // it → REPLAY, and we revoke everything for the user.
+    // Rotation must be atomic. A find→check→issue→save sequence would let
+    // two parallel /auth/refresh calls both pass the `revokedAt == null`
+    // check and both issue new pairs without triggering replay detection.
+    // findOneAndUpdate atomically claims (and revokes) the row only if it
+    // is still active. A null result means somebody already claimed it →
+    // REPLAY, and we revoke every refresh token for the user.
     const claimed = await RefreshToken.findOneAndUpdate(
       { tokenHash, revokedAt: null },
       { $set: { revokedAt: new Date() } },
@@ -185,7 +184,7 @@ class AuthService {
   }
 
   /**
-   * Revoke every refresh token for a user (FLOW-05-F02 / FLOW-06-F03).
+   * Revoke every refresh token for a user.
    * Used by password reset, password update, and replay detection.
    * @param {string} userId
    */
@@ -226,10 +225,9 @@ class AuthService {
    * @returns {Promise<Object|null>} Subscription summary
    */
   async getUserSubscription(userId) {
-    // H-10: route through `findActiveForUser` for deterministic ordering and
-    // expiry filtering. The previous direct findOne() had no sort and no
-    // expiry filter, so a stale active row (status flip pending) could win
-    // over the most recent one.
+    // findActiveForUser returns deterministic ordering with expiry filtering.
+    // A direct findOne() would let a stale active row (status flip pending)
+    // win over the most recent one.
     const subscriptions = await Subscription.findActiveForUser(userId);
     const subscription = subscriptions[0] || null;
     if (!subscription) return null;
@@ -503,7 +501,7 @@ class AuthService {
     const serviceLocation = this._parseJsonField(userData.serviceLocation);
     const socialLinks = this._parseJsonField(userData.socialLinks);
 
-    // FLOW-03-F01: validate serviceCategories keys against allowed enum
+    // validate serviceCategories keys against allowed enum
     const ALLOWED_CATEGORY_KEYS = new Set([
       'eventPlanning', 'mediaProduction', 'giftsAndGiveaways', 'foodAndBeverages',
       'beautyAndFashion', 'logisticsAndDelivery', 'corporateServices', 'supportServices',
@@ -516,7 +514,7 @@ class AuthService {
       }
     }
 
-    // FLOW-03-F02: validate social links as URLs
+    // validate social links as URLs
     if (socialLinks && typeof socialLinks === 'object') {
       const URL_FIELDS = ['instagram', 'facebook', 'tiktok', 'twitter', 'website', 'whatsapp'];
       const urlRegex = /^https?:\/\/.+/i;
@@ -540,7 +538,7 @@ class AuthService {
       commercialRecordNumber: userData.commercialRecordNumber || '',
     };
 
-    // Handle file uploads via S3 utility (FLOW-03-F03 / FLOW-24-F03)
+    // Handle file uploads via S3 utility
     const uploadedPaths = processUploadedFiles(files);
     if (uploadedPaths.businessLogo) vendorData.businessLogo = uploadedPaths.businessLogo;
     if (uploadedPaths.nationalIdImage) vendorData.nationalIdImage = uploadedPaths.nationalIdImage;
@@ -607,7 +605,7 @@ class AuthService {
     const address = this._parseJsonField(userData.address);
     const parsedPlanSelection = this._parseJsonField(planSelection);
 
-    // FLOW-04-F02: resolve logo URL from S3-uploaded file if provided
+    // resolve logo URL from S3-uploaded file if provided
     const logoUrl = logoFile ? getFileUrl(logoFile) : null;
 
     const whitelabelData = {
@@ -677,7 +675,7 @@ class AuthService {
   }
 
   // ============================================
-  // EMAIL VERIFICATION LINK (FLOW-02-F01)
+  // EMAIL VERIFICATION LINK
   // ============================================
 
   /**
@@ -895,7 +893,7 @@ class AuthService {
     this._validateUserStatus(user);
 
     const tokens = await this.issueTokenPair(user, context);
-    const profileCompleted = user.profile?.hostData?.profileCompleted ?? false; // FLOW-02-F02: missing hostData ≠ complete
+    const profileCompleted = user.profile?.hostData?.profileCompleted ?? false; // missing hostData ≠ complete
     const subscriptionInfo = user.subscription?.getSummary
       ? user.subscription.getSummary()
       : user.subscription;
@@ -972,7 +970,7 @@ class AuthService {
       {
         userName: user.name || user.username || 'User',
         resetUrl: resetURL,
-        expiresIn: '1 hour', // FLOW-06-F01
+        expiresIn: '1 hour',
       },
       lang
     );
@@ -981,8 +979,7 @@ class AuthService {
   }
 
   /**
-   * Reset password with token.
-   * Closes FLOW-06-F02 (clear lockout) + FLOW-06-F03 (revoke refresh tokens).
+   * Reset password with token. Clears the lockout and revokes refresh tokens.
    * @param {string} token
    * @param {string} password
    * @param {string} passwordConfirm
@@ -1013,12 +1010,12 @@ class AuthService {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     user.passwordChangedAt = Date.now() - 1000;
-    // FLOW-06-F02: a successful password reset proves identity, so unlock the account.
+    // a successful password reset proves identity, so unlock the account.
     user.loginAttempts = 0;
     user.lockUntil = undefined;
     await user.save();
 
-    // FLOW-06-F03 / FLOW-05-F02: invalidate every existing session before issuing a new pair.
+    // invalidate every existing session before issuing a new pair.
     await this.revokeAllForUser(user._id);
     const tokens = await this.issueTokenPair(user, context);
 
@@ -1063,7 +1060,7 @@ class AuthService {
     user.passwordChangedAt = Date.now() - 1000;
     await user.save();
 
-    // FLOW-05-F02: a password change must invalidate all other sessions immediately.
+    // a password change must invalidate all other sessions immediately.
     await this.revokeAllForUser(user._id);
     const tokens = await this.issueTokenPair(user, context);
 

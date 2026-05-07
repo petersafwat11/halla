@@ -22,18 +22,18 @@ import {
 } from "../services/secureStorage";
 
 /**
- * Phase 1a auth store (mobile).
+ * Mobile auth store.
  *
- * - Refresh token: expo-secure-store (FLOW-01-F03).
+ * - Refresh token: expo-secure-store.
  * - Access token: in-memory only (`token` field below). Never written to
  *   AsyncStorage.
- * - User shadow: a thin copy of the last known user object is mirrored to
- *   secure storage so cold-launch UX shows "Welcome back" without waiting on
- *   the network round-trip. The shadow is always reconciled by `/auth/me`
- *   before any privileged action.
- * - Role: derived strictly from the server response. The previous
- *   `user.role || "vendor"` / `|| "host"` fallbacks (FLOW-05-F02) are gone —
- *   a missing role surfaces as an authentication error.
+ * - User shadow: a thin copy of the last known user object is mirrored
+ *   to secure storage so cold-launch UX shows "Welcome back" without
+ *   waiting on the network round-trip. The shadow is always reconciled
+ *   by `/auth/me` before any privileged action.
+ * - Role: derived strictly from the server response. A missing role
+ *   surfaces as an authentication error rather than silently falling
+ *   back to a default.
  */
 
 const initialState = {
@@ -193,19 +193,17 @@ export const useAuthStore = create((set, get) => ({
         mobile: tempMobile,
         otp,
       });
-      // H-4 fix: persist the refresh token to secure-store IMMEDIATELY.
-      //
-      // The previous "hold in memory until completeProfile" approach
-      // orphaned the server-side refresh row whenever the user backgrounded
-      // the app between OTP verification and profile completion: the
-      // backend already issued a 30-day refresh token, but mobile threw
-      // away its only copy on cold-launch.
+      // Persist the refresh token to secure-store IMMEDIATELY.
+      // Holding it in memory until completeProfile would orphan the
+      // server-side refresh row if the user backgrounded the app between
+      // OTP verification and profile completion (the backend already
+      // issued a 30-day refresh token, but mobile would lose its only
+      // copy on cold-launch).
       //
       // The user is now in an "authenticated but profile-incomplete"
       // state. Downstream guards (`requireRole`, profile-completion gate)
       // are responsible for routing such users back to the
-      // complete-profile screen — we do NOT use the absence of a stored
-      // refresh token as that signal anymore.
+      // complete-profile screen.
       const role = requireRole(user);
       await get()._persistAuth({
         user,

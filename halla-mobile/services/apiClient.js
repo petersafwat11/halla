@@ -1,20 +1,18 @@
 /**
  * Mobile API client.
  *
- * Phase 1a: thin wrapper around `fetch` that
+ * Thin wrapper around `fetch` that
  *   1) attaches the in-memory access token from the auth store, and
  *   2) on 401, calls `useAuthStore.refreshTokens()` once and replays the
  *      request with the fresh token.
  *
- * Phase 4 (W0-AUTH): adds a default 30 s request timeout via
- * `AbortController`, surfaces it to callers via `options.timeoutMs`, and
- * preserves any caller-supplied `options.signal`. The intent is that
- * every authenticated request on mobile inherits the same upper bound
- * without each service file re-implementing it.
+ * Adds a default 30 s request timeout via `AbortController`, surfaces it
+ * to callers via `options.timeoutMs`, and preserves any caller-supplied
+ * `options.signal`. Every authenticated mobile request inherits the same
+ * upper bound without each service re-implementing it.
  *
- * Existing services still using raw `fetch` are migrated in W0-AUTH so
- * they share the auth interceptor + timeout. New mobile code MUST call
- * `apiFetch`.
+ * New mobile code MUST call `apiFetch` rather than raw `fetch` so it
+ * shares the auth interceptor + timeout.
  *
  * Usage:
  *
@@ -148,13 +146,10 @@ export const apiFetch = async (path, options = {}) => {
 
   let initialToken = useAuthStore.getState().token;
 
-  // Phase 4 review fix — if the access token is missing on a non-public
-  // request, try to refresh BEFORE issuing a guaranteed-401 request.
-  // Without this, every authenticated call after a session restoration
-  // gap would burn an extra round-trip waiting for the 401 → refresh
-  // path to kick in. We only refresh if a refresh token is present
-  // (`refreshTokens()` returns null otherwise, in which case the call
-  // proceeds unauthenticated and the backend will reject it cleanly).
+  // If the access token is missing on a non-public request, try to
+  // refresh BEFORE issuing a guaranteed-401 request. Skips when no refresh
+  // token exists (`refreshTokens()` returns null), in which case the call
+  // proceeds unauthenticated and the backend will reject it cleanly.
   if (!initialToken && !skipAuth && !path.startsWith("/auth/refresh")) {
     const refreshed = await _refreshOnce();
     if (refreshed) initialToken = refreshed;

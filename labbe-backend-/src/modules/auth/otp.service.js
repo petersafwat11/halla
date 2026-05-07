@@ -65,7 +65,7 @@ const sendOTP = async (phoneNumber, lang = 'ar') => {
 
 const verifyOTP = async (phoneNumber, otp) => {
   const normalizedPhone = normalizePhoneNumber(phoneNumber);
-  // FLOW-02-F02: exclude already-used records to prevent replay attacks
+  // exclude already-used records to prevent replay attacks
   const stored = await OTP.findOne({ phoneNumber: normalizedPhone, used: { $ne: true } });
 
   if (!stored) {
@@ -92,8 +92,8 @@ const verifyOTP = async (phoneNumber, otp) => {
     return { success: false, error: 'Invalid OTP code.' };
   }
 
-  // FLOW-02-F02: soft-invalidate instead of hard-delete so the record
-  // survives for audit purposes but cannot be replayed.
+  // soft-invalidate instead of hard-delete so the record survives for
+  // audit purposes but cannot be replayed.
   await OTP.updateOne({ _id: stored._id }, { $set: { used: true } });
   return { success: true };
 };
@@ -117,7 +117,7 @@ const hasValidOTP = async (phoneNumber) => {
 };
 
 // ============================================
-// EMAIL VERIFICATION TOKEN (FLOW-02-F01)
+// EMAIL VERIFICATION TOKEN
 // ============================================
 
 const EMAIL_VERIFICATION_TTL_HOURS = 24;
@@ -171,7 +171,7 @@ const redeemEmailVerificationToken = async (rawToken) => {
     return { success: false, error: 'Verification link is invalid or has expired. Please request a new one.' };
   }
 
-  // Soft-invalidate (FLOW-02-F02)
+  // Soft-invalidate so the record survives for audit but cannot be replayed.
   await OTP.updateOne({ _id: record._id }, { $set: { used: true } });
 
   return { success: true, userId: record.userId?.toString() };

@@ -258,8 +258,8 @@ router.post("/login", authLimiter, validateZod(loginSchema), authController.logi
  *       401:
  *         description: Refresh token invalid, revoked, or replayed
  */
-// H-2 fix: rate-limit /auth/refresh. 60 req/min per IP — generous enough for
-// mobile + multiple web tabs but blocks refresh-token brute force.
+// 60 req/min per IP — generous enough for mobile + multiple web tabs but
+// blocks refresh-token brute force.
 router.post("/refresh", refreshLimiter, authController.refresh);
 
 // ============================================
@@ -501,11 +501,9 @@ router.patch(
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  */
-// B-R2 hardening (post-review) — defense-in-depth rate limit. Setup
-// tokens are sha256(32 random bytes) and computationally infeasible to
-// enumerate, but every other auth endpoint runs through `authLimiter`
-// and this is the only outlier. Rate limit prevents stuffing-style
-// probes from generating server load.
+// Defense-in-depth rate limit. Setup tokens are sha256(32 random bytes)
+// and computationally infeasible to enumerate, but rate-limiting blocks
+// stuffing-style probes from generating server load.
 router.get("/validate-setup-token/:token", authLimiter, authController.validateSetupToken);
 
 /**
