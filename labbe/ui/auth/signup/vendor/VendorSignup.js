@@ -21,7 +21,7 @@ import {
   handlePrevStep as utilPrevStep,
   buildVendorFormData,
   VENDOR_STEP_FIELDS,
-} from "@/services/auth";
+} from "@/utils/authFormHelpers";
 import { toastUtils } from "@/utils/toastUtils";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 import ErrorDisplay from "@/ui/commen/ErrorDisplay";

@@ -111,6 +111,16 @@ export const useAuthMutation = (action) => {
       },
     },
 
+    // OTP - Resend (login or signup flow)
+    resendOTP: {
+      mutationFn: ({ phoneNumber, type }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.auth.resendOTP,
+          data: { phoneNumber, type },
+        }),
+    },
+
     // Password Reset - Forgot Password
     forgotPassword: {
       mutationFn: (email) =>

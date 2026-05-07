@@ -3,7 +3,6 @@ import React from "react";
 import styles from "./sidebar.module.css";
 import { useTranslation } from "react-i18next";
 import { usePathname, useRouter } from "next/navigation";
-import { authAPI } from "@/services/authService";
 import Link from "next/link";
 import useSidebarStore from "@/stores/sidebarStore";
 import useAuthStore from "@/stores/authStore";
@@ -49,17 +48,10 @@ function Sidebar({ className, dashboardType: propDashboardType }) {
     .slice(2, pathname.split("/").length)
     .join("/");
 
-  // Handle logout
   const handleLogout = async () => {
-    try {
-      setIsOpen(false);
-      await authAPI.logout();
-    } catch (err) {
-      console.error("Logout failed:", err);
-    } finally {
-      useAuthStore.getState().logout();
-      router.replace("/");
-    }
+    setIsOpen(false);
+    await useAuthStore.getState().logout();
+    router.replace("/");
   };
 
   // Get translation based on dashboard type

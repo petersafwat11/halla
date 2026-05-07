@@ -77,8 +77,6 @@ const ContinueSignupForm = () => {
   const onSubmit = async (formData) => {
     setLocalError("");
 
-    console.log("Completing host profile:", formData);
-
     try {
       await completeProfile({
         username: formData.username,
@@ -86,11 +84,11 @@ const ContinueSignupForm = () => {
         password: formData.password,
         passwordConfirm: formData.passwordConfirm,
       });
-      console.log("Host profile completed successfully");
       router.push(`/${currentLocale}/host`);
     } catch (error) {
       setLocalError(
-        error.message || "Failed to complete profile. Please try again."
+        error.message ||
+          t("errors.complete_profile_failed", "Failed to complete profile. Please try again.")
       );
     }
   };

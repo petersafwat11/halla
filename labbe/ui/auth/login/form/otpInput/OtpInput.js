@@ -6,7 +6,14 @@ import { FaArrowRightLong, FaArrowLeftLong } from "react-icons/fa6";
 import { useTranslation } from "react-i18next";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 
-const OtpInput = ({ verificationCode, setVerificationCode, onGoBack, phoneNumber }) => {
+const OtpInput = ({
+  verificationCode,
+  setVerificationCode,
+  onGoBack,
+  phoneNumber,
+  onResend,
+  isResending = false,
+}) => {
   const { t } = useTranslation("login");
   const { currentLocale } = useLanguageChange();
   const [resendTime, setResendTime] = useState(90);
@@ -15,15 +22,20 @@ const OtpInput = ({ verificationCode, setVerificationCode, onGoBack, phoneNumber
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setResendTime((prev) => {
-        if (prev > 0) {
-          return prev - 1;
-        }
-        return 0;
-      });
+      setResendTime((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleResendClick = async () => {
+    if (!onResend || resendTime > 0 || isResending) return;
+    try {
+      await onResend();
+      setResendTime(90);
+    } catch (_e) {
+      /* error surfaced by parent */
+    }
+  };
 
   const otpInputHandler = (e, index) => {
     const value = e.target.value;
@@ -114,9 +126,28 @@ const OtpInput = ({ verificationCode, setVerificationCode, onGoBack, phoneNumber
             </span>
             {t("loginForm.otpLogin.verificationDescriptionEnd")}
           </p>
-          <p className={styles.resend_code}>
-            {t("loginForm.otpLogin.resendCode", { seconds: resendTime })}
-          </p>
+          {resendTime > 0 ? (
+            <p className={styles.resend_code}>
+              {t("loginForm.otpLogin.resendCode", { seconds: resendTime })}
+            </p>
+          ) : (
+            <button
+              type="button"
+              className={styles.resend_code}
+              onClick={handleResendClick}
+              disabled={isResending}
+              style={{
+                cursor: isResending ? "default" : "pointer",
+                background: "none",
+                border: "none",
+                padding: 0,
+              }}
+            >
+              {isResending
+                ? t("loginForm.otpLogin.resending", "Resending...")
+                : t("loginForm.otpLogin.resendNow", "Resend code")}
+            </button>
+          )}
         </div>
         <div style={{ direction: "ltr" }} className={styles.input_container}>
           {[1, 2, 3, 4, 5, 6].map((item, index) => (
