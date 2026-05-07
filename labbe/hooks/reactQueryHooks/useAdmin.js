@@ -469,11 +469,6 @@ export const useAdminWhitelabelMutation = (action) => {
 
   const mutations = {
     updateStatus: {
-      // Phase 4b W1-WL-EMAIL: callers can pass `dispatchSetupEmail: true`
-      // alongside `status: 'active'` so the backend mints a fresh
-      // password-setup token and emails the link in the same request
-      // (D5 — atomic confirm-popup approval). Existing callers that
-      // omit the flag keep the previous status-only behavior.
       mutationFn: ({ whitelabelId, status, dispatchSetupEmail }) =>
         apiRequest({
           method: "PATCH",
@@ -656,7 +651,6 @@ export const useAdminPaymentDetail = (paymentId, options = {}) => {
   });
 };
 
-// §15.6: caller MUST pass `idempotencyKey` (one UUID per modal session).
 export const useAdminPaymentRefund = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -717,6 +711,119 @@ export const useHostPlans = (options = {}) => {
         path: API_PATHS.plans.getHostPlans,
       }),
     staleTime: 10 * 60 * 1000,
+    ...options,
+  });
+};
+
+// ============================================
+// ADMIN EVENTS QUERIES
+// ============================================
+
+export const useAdminEvents = (filters = {}, options = {}) => {
+  return useQuery({
+    queryKey: ["events", "admin", filters],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.events.getAllEvents,
+        params: filters,
+      }),
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
+export const useAdminEvent = (eventId, options = {}) => {
+  return useQuery({
+    queryKey: ["admin", "events", eventId],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.admin.events.getById(eventId),
+      }),
+    enabled: !!eventId,
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
+export const useAdminEventTargets = (type = "host", options = {}) => {
+  return useQuery({
+    queryKey: ["admin", "event-targets", type],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.admin.events.eventTargets,
+        params: { type },
+      }),
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
+export const useAdminUserSubscriptionInfo = (userId, options = {}) => {
+  return useQuery({
+    queryKey: ["admin", "users", userId, "subscription-info"],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.admin.events.userSubscriptionInfo(userId),
+      }),
+    enabled: !!userId,
+    staleTime: 2 * 60 * 1000,
+    ...options,
+  });
+};
+
+// ============================================
+// ADMIN WHITELABEL FEATURES QUERIES
+// ============================================
+
+export const useAdminWhitelabelFeatures = (whitelabelId, options = {}) => {
+  return useQuery({
+    queryKey: ["admin", "whitelabels", whitelabelId, "features"],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.admin.whitelabels.features(whitelabelId),
+      }),
+    enabled: !!whitelabelId,
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
+export const useAdminWhitelabelFeatureMutation = (whitelabelId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ feature, enabled }) =>
+      apiRequest({
+        method: "PATCH",
+        path: API_PATHS.admin.whitelabels.features(whitelabelId),
+        data: { feature, enabled },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "whitelabels", whitelabelId, "features"],
+      });
+    },
+  });
+};
+
+// ============================================
+// ADMIN PAYMENT SUMMARY QUERY
+// ============================================
+
+export const useAdminPaymentSummary = (filters = {}, options = {}) => {
+  return useQuery({
+    queryKey: ["admin", "payments", "summary", filters],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.payments.getSummary,
+        params: filters,
+      }),
+    staleTime: 2 * 60 * 1000,
     ...options,
   });
 };

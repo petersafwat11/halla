@@ -437,6 +437,7 @@ export const API_PATHS = {
       updateStatus: (id) => `/admin/moderators/${id}/status`,
       delete: (id) => `/admin/moderators/${id}`,
       bulkDelete: '/admin/moderators/bulk-delete',
+      bulkStatus: '/admin/moderators/bulk-status',
       export: '/admin/moderators/export',
     },
 
@@ -446,8 +447,11 @@ export const API_PATHS = {
       getById: (id) => `/admin/whitelabels/${id}`,
       updateStatus: (id) => `/admin/whitelabels/${id}/status`,
       updateSubscription: (id) => `/admin/whitelabels/${id}/subscription`,
+      features: (id) => `/admin/whitelabels/${id}/features`,
       delete: (id) => `/admin/whitelabels/${id}`,
       bulkDelete: '/admin/whitelabels/bulk-delete',
+      bulkStatus: '/admin/whitelabels/bulk-status',
+      export: '/admin/whitelabels/export',
     },
 
     // Event Management (Admin)
@@ -457,11 +461,12 @@ export const API_PATHS = {
       createForHost: '/admin/events/create-for-host',
       update: (id) => `/admin/events/${id}`,
       updateStatus: (id) => `/admin/events/${id}/status`,
-      delete: (id) => `/events/admin/${id}`,
+      delete: (id) => `/admin/events/${id}`,
       bulkDelete: '/admin/events/bulk-delete',
       bulkStatus: '/admin/events/bulk-status',
       export: '/admin/events/export',
-      getEventTargets: '/admin/event-targets',
+      eventTargets: '/admin/event-targets',
+      userSubscriptionInfo: (id) => `/admin/users/${id}/subscription-info`,
     },
   },
 };

@@ -10,11 +10,8 @@ import UpdateEventWizard from "../../host/update-event/_components/UpdateEventWi
 import styles from "./page.module.css";
 
 /**
- * Admin update-event route. Phase 4b W1-UNIFY: this page used to ship a
- * 392-line duplicate (`_components/UpdateEventContent.jsx`). The
- * duplicate has been deleted; this route now thin-wraps the unified
- * `UpdateEventWizard` exported from the host route per D2 / D11. Same
- * wizard, same per-step PATCH dispatch, role-aware branches inside.
+ * Admin update-event route — thin wrapper around the shared UpdateEventWizard.
+ * Same wizard, same per-step PATCH dispatch, role-aware branches inside.
  *
  * The whitelabel-admin / whitelabel-moderator users currently navigate
  * here too (their admin surface lives under `/admin-dash/`); when their

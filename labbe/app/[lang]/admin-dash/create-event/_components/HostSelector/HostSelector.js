@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FaSearch,
@@ -12,6 +12,7 @@ import {
 import { hostsAPI } from "@/services/adminDashboard";
 import { cookieUtils } from "@/utils/cookieUtils";
 import { toastUtils } from "@/utils/toastUtils";
+import { useAdminEventTargets } from "@/hooks/reactQueryHooks/useAdmin";
 import styles from "./hostSelector.module.css";
 
 const PLATFORM_ADMIN_ROLES = ["super_admin", "admin", "moderator"];
@@ -28,8 +29,6 @@ const HostSelector = ({
   const [searchMode, setSearchMode] = useState("list");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [targets, setTargets] = useState([]);
-  const [isLoadingTargets, setIsLoadingTargets] = useState(false);
   const [searchResult, setSearchResult] = useState(null);
   const [searchError, setSearchError] = useState(null);
 
@@ -43,26 +42,13 @@ const HostSelector = ({
   const isWhitelabelAdmin =
     currentUser && WHITELABEL_ADMIN_ROLES.includes(currentUser.role);
 
-  useEffect(() => {
-    const loadTargets = async () => {
-      if (targetType === "self") return;
-      setIsLoadingTargets(true);
-      try {
-        const token = cookieUtils.getCookie("token");
-        const response = await hostsAPI.getEventTargets(
-          { type: targetType === "whitelabel" ? "whitelabel" : "host" },
-          token
-        );
-        const targetsList = response?.data?.targets || response?.targets || [];
-        setTargets(targetsList);
-      } catch (error) {
-        console.error("Error loading targets:", error);
-      } finally {
-        setIsLoadingTargets(false);
-      }
-    };
-    loadTargets();
-  }, [targetType]);
+  const targetsType = targetType === "whitelabel" ? "whitelabel" : "host";
+  const { data: targetsData, isLoading: isLoadingTargets } = useAdminEventTargets(
+    targetsType,
+    { enabled: targetType !== "self" }
+  );
+  const targets = targetsData?.data?.targets || targetsData?.targets || [];
+
 
   const handleSearch = useCallback(async () => {
     if (!phoneNumber.trim()) {
@@ -87,7 +73,6 @@ const HostSelector = ({
         );
       }
     } catch (error) {
-      console.error("Error searching host:", error);
       setSearchResult(null);
       const errorMessage =
         error?.response?.data?.message ||
