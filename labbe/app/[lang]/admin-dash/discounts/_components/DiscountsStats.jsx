@@ -1,12 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FaGift, FaToggleOn, FaTimes, FaTag } from "react-icons/fa";
 import StatsCards from "@/ui/host/main-page/StatsCards";
-import { discountsAPI } from "@/services/adminDashboard";
+import { useDiscounts } from "@/hooks/reactQueryHooks/useDiscounts";
 
 function buildFilters(searchParams) {
   const status = searchParams.get("status");
@@ -24,16 +23,12 @@ export default function DiscountsStats() {
   const searchParams = useSearchParams();
   const filters = buildFilters(searchParams);
 
-  const { data } = useQuery({
-    queryKey: ["discounts", "admin", filters],
-    queryFn: () => discountsAPI.getAll(filters),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data } = useDiscounts(filters);
 
   const statsCards = useMemo(() => {
-    if (!data?.discounts || !data?.pagination) return [];
-    const discounts = data.discounts;
-    const total = data.pagination.total;
+    const discounts = data?.data || [];
+    const total = data?.pagination?.total ?? 0;
+    if (!data) return [];
     const now = new Date();
     const active = discounts.filter((d) => d.isActive).length;
     const expired = discounts.filter(

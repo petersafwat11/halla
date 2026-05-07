@@ -897,47 +897,6 @@ export const addonsAPI = {
 };
 
 /**
- * Discounts / Coupon Codes Management API
- */
-export const discountsAPI = {
-  getAll: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    return apiClient.get(`/discounts/admin${qs}`, { token });
-  },
-
-  getById: async (id, token = null) => {
-    if (!id) throw new Error("Discount ID is required");
-    return apiClient.get(`/discounts/admin/${id}`, { token });
-  },
-
-  create: async (data, token = null) => {
-    return apiClient.post("/discounts/admin", data, { token });
-  },
-
-  update: async (id, data, token = null) => {
-    if (!id) throw new Error("Discount ID is required");
-    return apiClient.patch(`/discounts/admin/${id}`, data, { token });
-  },
-
-  toggleStatus: async (id, token = null) => {
-    if (!id) throw new Error("Discount ID is required");
-    return apiClient.patch(`/discounts/admin/${id}/toggle`, {}, { token });
-  },
-
-  delete: async (id, token = null) => {
-    if (!id) throw new Error("Discount ID is required");
-    return apiClient.delete(`/discounts/admin/${id}`, { token });
-  },
-
-  /**
-   * Validate a discount code for a given plan amount (used on summary page)
-   */
-  validate: async (code, amount, planType = null, token = null) => {
-    return apiClient.post("/discounts/validate", { code, amount, planType }, { token });
-  },
-};
-
-/**
  * Combined Admin Dashboard API
  */
 const adminDashboardAPI = {
@@ -951,7 +910,6 @@ const adminDashboardAPI = {
   events: eventsAPI,
   payments: paymentsAPI,
   plans: plansAPI,
-  discounts: discountsAPI,
 };
 
 // Alias for backward compatibility with old lib/admin.js imports

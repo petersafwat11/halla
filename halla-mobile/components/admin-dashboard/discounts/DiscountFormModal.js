@@ -35,6 +35,7 @@ const EMPTY_FORM = {
   validUntil: "",
   minimumAmount: "0",
   isActive: true,
+  applicablePlanTypes: [],
 };
 
 const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
@@ -66,6 +67,7 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
             : "",
           minimumAmount: String(discount.minimumAmount ?? 0),
           isActive: discount.isActive !== false,
+          applicablePlanTypes: discount.applicablePlanTypes || [],
         });
       } else {
         setForm(EMPTY_FORM);
@@ -94,8 +96,7 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
   const handleSave = async () => {
     if (!validate()) return;
 
-    const payload = {
-      code: form.code.trim().toUpperCase(),
+    const basePayload = {
       descriptionEn: form.descriptionEn.trim(),
       descriptionAr: form.descriptionAr.trim(),
       discountType: form.discountType,
@@ -105,14 +106,20 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
       validUntil: form.validUntil || undefined,
       minimumAmount: parseFloat(form.minimumAmount) || 0,
       isActive: form.isActive,
+      applicablePlanTypes: form.applicablePlanTypes || [],
     };
 
     try {
       if (isEdit) {
-        await updateDiscount.mutateAsync({ id: discount.id, data: payload });
+        // Why: `code` is immutable post-create; the strict Zod update schema
+        // rejects unknown fields, so we must not include it in PATCH bodies.
+        await updateDiscount.mutateAsync({ id: discount.id, data: basePayload });
         toast.success(t("discounts.success.updated"));
       } else {
-        await createDiscount.mutateAsync(payload);
+        await createDiscount.mutateAsync({
+          code: form.code.trim().toUpperCase(),
+          ...basePayload,
+        });
         toast.success(t("discounts.success.created"));
       }
       onSave?.();

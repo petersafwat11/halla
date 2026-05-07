@@ -12,9 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
-import { useCheckout } from "../../hooks";
-import { useAuthStore } from "../../stores/authStore";
-import adminDashboardService from "../../services/adminDashboardService";
+import { useCheckout, useValidateDiscount } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
 import PlanSummaryCard from "../../components/plans/PlanSummaryCard";
 import DiscountCodeCard from "../../components/plans/DiscountCodeCard";
@@ -43,17 +41,17 @@ const PlansSummaryScreen = () => {
   const route = useRoute();
   const toast = useToast();
   const checkoutMutation = useCheckout();
+  const validateDiscount = useValidateDiscount();
   const isArabic = currentLanguage === "ar";
 
   const { selectedPlan, addonItems = [], addonTotal = 0 } = route.params || {};
-  const token = useAuthStore((state) => state.token);
 
   const billingType = selectedPlan?.billingType || "event";
 
   const [discountCode, setDiscountCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
   const [discountApplied, setDiscountApplied] = useState(false);
-  const [validating, setValidating] = useState(false);
+  const validating = validateDiscount.isPending;
 
   const planPrice =
     parseFloat(selectedPlan?.price || selectedPlan?.pricing?.oneTime) || 0;
@@ -64,28 +62,20 @@ const PlansSummaryScreen = () => {
 
   const handleApplyDiscount = async () => {
     if (!discountCode.trim() || validating) return;
-    setValidating(true);
     try {
       // Validate against the bundled subtotal so the preview matches what
-      // backend /payments/checkout charges; pass the plan's canonical
-      // planType (with code as fallback) so the applicablePlanTypes check
-      // resolves the same way on client and server.
-      const planTypeKey =
-        selectedPlan?.planType || selectedPlan?.code || null;
-      const res = await adminDashboardService.discounts.validate(token, {
+      // backend /payments/checkout charges. Use the plan's canonical
+      // planType (the source of truth in the backend's PLAN_TYPES enum) —
+      // never fall back to `selectedPlan?.code`, which is the granular
+      // PLAN_CODES vocabulary and never matches applicablePlanTypes.
+      const planTypeKey = selectedPlan?.planType || null;
+      const body = await validateDiscount.mutateAsync({
         code: discountCode.trim().toUpperCase(),
         amount: subtotal,
         planType: planTypeKey,
       });
 
-      if (!res?.success) {
-        setDiscountApplied(false);
-        setDiscountAmount(0);
-        toast.error(t("summary.discount.invalidDefault"));
-        return;
-      }
-
-      const result = res?.data?.data;
+      const result = body?.data;
       if (result?.valid) {
         setDiscountAmount(result.discountAmount || 0);
         setDiscountApplied(true);
@@ -93,19 +83,17 @@ const PlansSummaryScreen = () => {
           t("summary.discount.success", {
             code: discountCode.trim().toUpperCase(),
             amount: (result.discountAmount || 0).toFixed(0),
-          })
+          }),
         );
       } else {
         setDiscountApplied(false);
         setDiscountAmount(0);
-        toast.error(t("summary.discount.invalidDefault"));
+        toast.error(result?.reason || t("summary.discount.invalidDefault"));
       }
     } catch {
       setDiscountApplied(false);
       setDiscountAmount(0);
       toast.error(t("summary.discount.networkError"));
-    } finally {
-      setValidating(false);
     }
   };
 

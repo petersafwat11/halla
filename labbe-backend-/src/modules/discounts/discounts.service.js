@@ -5,25 +5,16 @@
  */
 
 const Discount = require('../../../models/DiscountModel');
-const { NotFoundError, ValidationError, ConflictError } = require('../../shared/errors');
+const { NotFoundError, ConflictError } = require('../../shared/errors');
 
 class DiscountsService {
   // ============================================
   // ADMIN CRUD
   // ============================================
 
-  /**
-   * Get all discount codes (admin)
-   * @param {Object} filters - { page, limit, search, isActive }
-   * @param {Object|null} whitelabelFilter - { whitelabelId } or null
-   */
-  async getAll(filters = {}, whitelabelFilter = null) {
+  async getAll(filters = {}) {
     const { page = 1, limit = 20, search, isActive } = filters;
     const query = {};
-
-    if (whitelabelFilter) {
-      query.whitelabelId = whitelabelFilter.whitelabelId;
-    }
 
     if (typeof isActive !== 'undefined') {
       query.isActive = isActive === 'true' || isActive === true;
@@ -38,90 +29,65 @@ class DiscountsService {
       ];
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const total = await Discount.countDocuments(query);
-    const discounts = await Discount.find(query)
-      .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [total, discounts] = await Promise.all([
+      Discount.countDocuments(query),
+      Discount.find(query)
+        .populate('createdBy', 'name email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+    ]);
 
     return {
       discounts: discounts.map(this._format),
       pagination: {
         total,
-        page: parseInt(page),
-        pages: Math.ceil(total / parseInt(limit)),
-        limit: parseInt(limit),
+        page: pageNum,
+        pages: Math.ceil(total / limitNum),
+        limit: limitNum,
       },
     };
   }
 
-  /**
-   * Get single discount by ID (admin)
-   */
   async getById(id) {
-    const discount = await Discount.findById(id).populate('createdBy', 'name email');
+    const discount = await Discount.findById(id)
+      .populate('createdBy', 'name email')
+      .lean();
     if (!discount) throw new NotFoundError('Discount');
     return { discount: this._format(discount) };
   }
 
-  /**
-   * Create a new discount code (admin)
-   */
   async create(data, createdBy) {
-    const {
-      code,
-      descriptionEn,
-      descriptionAr,
-      discountType,
-      value,
-      maxUses,
-      validFrom,
-      validUntil,
-      isActive,
-      applicablePlanTypes,
-      minimumAmount,
-      whitelabelId,
-    } = data;
+    try {
+      const discount = await Discount.create({
+        code: data.code,
+        descriptionEn: data.descriptionEn || '',
+        descriptionAr: data.descriptionAr || '',
+        discountType: data.discountType,
+        value: data.value,
+        maxUses: data.maxUses || 0,
+        validFrom: data.validFrom || new Date(),
+        validUntil: data.validUntil || null,
+        isActive: typeof data.isActive === 'undefined' ? true : data.isActive,
+        applicablePlanTypes: data.applicablePlanTypes || [],
+        minimumAmount: data.minimumAmount || 0,
+        createdBy,
+      });
 
-    // Validate percentage cap
-    if (discountType === 'percentage' && value > 100) {
-      throw new ValidationError('Percentage discount cannot exceed 100%');
+      return { discount: this._format(discount.toObject()) };
+    } catch (err) {
+      if (err && err.code === 11000) {
+        throw new ConflictError(`Discount code "${data.code}" already exists`);
+      }
+      throw err;
     }
-
-    // Validate date range
-    if (validFrom && validUntil && new Date(validFrom) >= new Date(validUntil)) {
-      throw new ValidationError('validUntil must be after validFrom');
-    }
-
-    const existing = await Discount.findOne({ code: code.toUpperCase() });
-    if (existing) {
-      throw new ConflictError(`Discount code "${code.toUpperCase()}" already exists`);
-    }
-
-    const discount = await Discount.create({
-      code,
-      descriptionEn: descriptionEn || '',
-      descriptionAr: descriptionAr || '',
-      discountType,
-      value,
-      maxUses: maxUses || 0,
-      validFrom: validFrom || new Date(),
-      validUntil: validUntil || null,
-      isActive: typeof isActive === 'undefined' ? true : isActive,
-      applicablePlanTypes: applicablePlanTypes || [],
-      minimumAmount: minimumAmount || 0,
-      whitelabelId: whitelabelId || null,
-      createdBy,
-    });
-
-    return { discount: this._format(discount) };
   }
 
-  /**
-   * Update a discount code (admin)
-   */
   async update(id, data) {
     const allowed = [
       'descriptionEn', 'descriptionAr', 'discountType', 'value',
@@ -136,36 +102,36 @@ class DiscountsService {
       }
     }
 
-    if (updateData.discountType === 'percentage' && updateData.value > 100) {
-      throw new ValidationError('Percentage discount cannot exceed 100%');
-    }
-
     const discount = await Discount.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
-    }).populate('createdBy', 'name email');
+    })
+      .populate('createdBy', 'name email')
+      .lean();
 
     if (!discount) throw new NotFoundError('Discount');
     return { discount: this._format(discount) };
   }
 
-  /**
-   * Delete a discount code (admin)
-   */
   async delete(id) {
     const discount = await Discount.findByIdAndDelete(id);
     if (!discount) throw new NotFoundError('Discount');
     return { message: 'Discount deleted successfully' };
   }
 
-  /**
-   * Toggle active status (admin)
-   */
   async toggleStatus(id) {
-    const discount = await Discount.findById(id);
+    // Why: pipeline-form $set with $not flips isActive in a single round-trip
+    // — no read-modify-write race. Populated + .lean() so the response shape
+    // matches every other admin endpoint.
+    const discount = await Discount.findByIdAndUpdate(
+      id,
+      [{ $set: { isActive: { $not: '$isActive' } } }],
+      { new: true }
+    )
+      .populate('createdBy', 'name email')
+      .lean();
+
     if (!discount) throw new NotFoundError('Discount');
-    discount.isActive = !discount.isActive;
-    await discount.save();
     return { discount: this._format(discount) };
   }
 
@@ -173,38 +139,19 @@ class DiscountsService {
   // PUBLIC VALIDATION (used by summary page)
   // ============================================
 
-  /**
-   * Validate a discount code for a given plan amount
-   * @param {string} code - The discount code
-   * @param {number} amount - The plan price/amount
-   * @param {string|null} planType - Plan type to check applicability
-   * @param {Object|null} whitelabelFilter - Whitelabel scope
-   */
-  async validate(code, amount, planType = null, whitelabelFilter = null) {
-    const query = { code: code.toUpperCase() };
+  async validate(code, amount, planType = null) {
+    const discount = await Discount.findOne({ code: code.toUpperCase() });
 
-    // Scoped to platform or whitelabel
-    if (whitelabelFilter) {
-      query.$or = [
-        { whitelabelId: whitelabelFilter.whitelabelId },
-        { whitelabelId: null },
-      ];
-    } else {
-      query.whitelabelId = null;
+    // Why: collapse "doesn't exist", "inactive", "expired", and "exhausted"
+    // into a single message. Distinguishing them leaks the keyspace to anyone
+    // with a valid auth token (the endpoint is rate-limited but still
+    // brute-forceable). minimumAmount and applicablePlanTypes are surfaced
+    // explicitly because they help legit users and only fire after the code
+    // is already known-valid.
+    if (!discount || !discount.isValid().valid) {
+      return { valid: false, reason: 'Discount code is invalid or expired' };
     }
 
-    const discount = await Discount.findOne(query);
-
-    if (!discount) {
-      return { valid: false, reason: 'Invalid discount code' };
-    }
-
-    const validity = discount.isValid();
-    if (!validity.valid) {
-      return { valid: false, reason: validity.reason };
-    }
-
-    // Check minimum amount
     if (discount.minimumAmount > 0 && amount < discount.minimumAmount) {
       return {
         valid: false,
@@ -212,7 +159,6 @@ class DiscountsService {
       };
     }
 
-    // Check plan type restriction
     if (
       discount.applicablePlanTypes.length > 0 &&
       planType &&
@@ -239,15 +185,21 @@ class DiscountsService {
     };
   }
 
-  /**
-   * Apply a discount (increment usage). Called when subscription is created.
-   * @param {string} code
-   */
   async applyDiscount(code) {
-    const discount = await Discount.findOne({ code: code.toUpperCase() });
-    if (discount) {
-      await discount.incrementUsage();
-    }
+    // Why: single atomic findOneAndUpdate with the maxUses guard expression.
+    // Two-trip read-then-inc could let usedCount exceed maxUses under
+    // concurrent payments. The match expression accepts maxUses === 0
+    // (unlimited) or usedCount < maxUses; otherwise nothing is updated.
+    await Discount.findOneAndUpdate(
+      {
+        code: code.toUpperCase(),
+        $or: [
+          { maxUses: 0 },
+          { $expr: { $lt: ['$usedCount', '$maxUses'] } },
+        ],
+      },
+      { $inc: { usedCount: 1 } }
+    );
   }
 
   // ============================================
@@ -269,7 +221,6 @@ class DiscountsService {
       isActive: discount.isActive,
       applicablePlanTypes: discount.applicablePlanTypes,
       minimumAmount: discount.minimumAmount,
-      whitelabelId: discount.whitelabelId,
       createdBy: discount.createdBy,
       createdAt: discount.createdAt,
       updatedAt: discount.updatedAt,

@@ -1,7 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
@@ -9,7 +8,11 @@ import { FaToggleOn, FaToggleOff, FaCopy } from "react-icons/fa";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import { discountsAPI } from "@/services/adminDashboard";
+import {
+  useDiscounts,
+  useToggleDiscount,
+  useDeleteDiscount,
+} from "@/hooks/reactQueryHooks/useDiscounts";
 import styles from "./DiscountsTable.module.css";
 
 function buildFilters(searchParams) {
@@ -31,30 +34,23 @@ function getDiscountStatus(discount) {
   return discount.isActive ? "active" : "inactive";
 }
 
+const STATUS_CLASS = {
+  active: styles.statusActive,
+  inactive: styles.statusInactive,
+  expired: styles.statusExpired,
+  exhausted: styles.statusExhausted,
+};
+
 export default function DiscountsTable({ onEdit }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t, i18n } = useTranslation("adminDashboard");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
   const filters = buildFilters(searchParams);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["discounts", "admin", filters],
-    queryFn: () => discountsAPI.getAll(filters),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data, isLoading, error } = useDiscounts(filters);
 
-  const toggleDiscount = useMutation({
-    mutationFn: (id) => discountsAPI.toggleStatus(id),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["discounts"] }),
-  });
-
-  const deleteDiscount = useMutation({
-    mutationFn: (id) => discountsAPI.delete(id),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["discounts"] }),
-  });
+  const toggleDiscount = useToggleDiscount();
+  const deleteDiscount = useDeleteDiscount();
 
   const handleToggle = async (discount) => {
     try {
@@ -85,12 +81,38 @@ export default function DiscountsTable({ onEdit }) {
     );
   };
 
+  const handlePageChange = useCallback((page) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", page);
+    router.push(`?${params.toString()}`);
+  }, [searchParams, router]);
+
+  const filterOptions = useMemo(() => {
+    const navigate = (status) => () => {
+      const params = new URLSearchParams(searchParams);
+      if (status === null) params.delete("status");
+      else params.set("status", status);
+      params.delete("page");
+      router.push(`?${params.toString()}`);
+    };
+    return [
+      { text: t("discounts.filter.all", "الكل"), onClick: navigate(null) },
+      { text: t("discounts.filter.active", "نشطة"), onClick: navigate("active") },
+      { text: t("discounts.filter.inactive", "معطلة"), onClick: navigate("inactive") },
+    ];
+  }, [searchParams, router, t]);
+
   if (isLoading) return <SimpleLoading />;
-  if (error) return null;
+  if (error)
+    return (
+      <div className={styles.errorState}>
+        {t("discounts.loadError", "تعذر تحميل أكواد الخصم")}
+      </div>
+    );
   if (!data) return null;
 
-  const discounts = data.discounts;
-  const pagination = data.pagination;
+  const discounts = data?.data || [];
+  const pagination = data?.pagination || { total: 0, pages: 1 };
 
   const tableData = discounts.map((discount) => ({
     id: discount.id,
@@ -106,6 +128,8 @@ export default function DiscountsTable({ onEdit }) {
     // kept for actions lookup
     _isActive: discount.isActive,
   }));
+
+  const dateLocale = i18n.language === "ar" ? "ar-SA" : "en-US";
 
   const renderCell = (key, value, row) => {
     if (key === "code") {
@@ -137,33 +161,22 @@ export default function DiscountsTable({ onEdit }) {
     }
 
     if (key === "status") {
-      const statusMap = {
-        active: { bg: "#EAF4EF", color: "#2A8C5B", label: t("discounts.status.active", "نشط") },
-        inactive: { bg: "#F5F5F5", color: "#666", label: t("discounts.status.inactive", "معطل") },
-        expired: { bg: "#F9EBEA", color: "#C0392B", label: t("discounts.status.expired", "منتهي") },
-        exhausted: { bg: "#FBF3E6", color: "#D38200", label: t("discounts.status.exhausted", "مستنفد") },
+      const labelMap = {
+        active: t("discounts.status.active", "نشط"),
+        inactive: t("discounts.status.inactive", "معطل"),
+        expired: t("discounts.status.expired", "منتهي"),
+        exhausted: t("discounts.status.exhausted", "مستنفد"),
       };
-      const cfg = statusMap[value] || statusMap.inactive;
       return (
-        <span
-          style={{
-            display: "inline-flex",
-            padding: "0.3rem 1.2rem",
-            borderRadius: "9999px",
-            background: cfg.bg,
-            color: cfg.color,
-            fontSize: "1.2rem",
-            fontFamily: "Cairo",
-          }}
-        >
-          {cfg.label}
+        <span className={`${styles.statusPill} ${STATUS_CLASS[value] || styles.statusInactive}`}>
+          {labelMap[value] || labelMap.inactive}
         </span>
       );
     }
 
     if (key === "expires") {
       if (!value) return t("discounts.noExpiry", "بلا تاريخ");
-      return new Date(value).toLocaleDateString("ar-SA");
+      return new Date(value).toLocaleDateString(dateLocale);
     }
 
     if (key === "_isActive") return null;
@@ -201,42 +214,6 @@ export default function DiscountsTable({ onEdit }) {
       },
     ];
   };
-
-  const filterOptions = [
-    {
-      text: t("discounts.filter.all", "الكل"),
-      onClick: () => {
-        const params = new URLSearchParams(searchParams);
-        params.delete("status");
-        params.delete("page");
-        router.push(`?${params.toString()}`);
-      },
-    },
-    {
-      text: t("discounts.filter.active", "نشطة"),
-      onClick: () => {
-        const params = new URLSearchParams(searchParams);
-        params.set("status", "active");
-        params.delete("page");
-        router.push(`?${params.toString()}`);
-      },
-    },
-    {
-      text: t("discounts.filter.inactive", "معطلة"),
-      onClick: () => {
-        const params = new URLSearchParams(searchParams);
-        params.set("status", "inactive");
-        params.delete("page");
-        router.push(`?${params.toString()}`);
-      },
-    },
-  ];
-
-  const handlePageChange = useCallback((page) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", page);
-    router.push(`?${params.toString()}`);
-  }, [searchParams, router]);
 
   return (
     <div className={styles.container}>

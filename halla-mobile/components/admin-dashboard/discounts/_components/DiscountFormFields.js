@@ -15,9 +15,18 @@ import {
   textStyles,
   backgrounds,
 } from "../../../../styles/tokens";
+import { PLAN_TYPES } from "../discountsFormUtils";
 
 const DiscountFormFields = ({ form, isEdit, set, t }) => {
   const setField = (key, value) => set(key, value);
+
+  const togglePlanType = (type) =>
+    set(
+      "applicablePlanTypes",
+      (form.applicablePlanTypes || []).includes(type)
+        ? (form.applicablePlanTypes || []).filter((x) => x !== type)
+        : [...(form.applicablePlanTypes || []), type],
+    );
 
   return (
     <>
@@ -139,6 +148,27 @@ const DiscountFormFields = ({ form, isEdit, set, t }) => {
         />
       </View>
 
+      <View style={styles.field}>
+        <Text style={styles.label}>{t("discounts.form.planTypes")}</Text>
+        <View style={styles.chips}>
+          {PLAN_TYPES.map((value) => {
+            const active = (form.applicablePlanTypes || []).includes(value);
+            return (
+              <TouchableOpacity
+                key={value}
+                style={[styles.chip, active && styles.chipActive]}
+                onPress={() => togglePlanType(value)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                  {t(`discounts.planTypes.${value}`, value)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
       <View style={styles.toggleRow}>
         <Text style={styles.label}>{t("discounts.form.isActive")}</Text>
         <Switch
@@ -204,6 +234,31 @@ const styles = StyleSheet.create({
     color: colors.natural[600],
   },
   typeBtnTextActive: {
+    color: "#FFF",
+  },
+  chips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing[8],
+  },
+  chip: {
+    paddingHorizontal: spacing[12],
+    paddingVertical: spacing[8],
+    borderRadius: borderRadius[20],
+    borderWidth: 1.5,
+    borderColor: colors.natural[200],
+    backgroundColor: "#FFF",
+  },
+  chipActive: {
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
+  },
+  chipText: {
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.label.large,
+    color: colors.natural[600],
+  },
+  chipTextActive: {
     color: "#FFF",
   },
   toggleRow: {

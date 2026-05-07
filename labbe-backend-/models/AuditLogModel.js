@@ -73,6 +73,7 @@ const auditLogSchema = new mongoose.Schema(
         // Phase 6 — payment system: refund / capture / void / webhook /
         // reconcile / pending_refund all target a Payment row.
         "payment",
+        "discount",
       ],
       index: true,
     },

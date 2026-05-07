@@ -298,6 +298,7 @@ export const ENDPOINTS = {
       BASE: "/discounts/admin",
       BY_ID: (id) => `/discounts/admin/${id}`,
       TOGGLE: (id) => `/discounts/admin/${id}/toggle`,
+      VALIDATE: "/discounts/validate",
     },
     EVENT_TARGETS: "/admin/event-targets",
     USER_SUBSCRIPTION_INFO: (id) => `/admin/users/${id}/subscription-info`,

@@ -217,19 +217,6 @@ export function useAdminEventById(id) {
   });
 }
 
-export function useAdminDiscounts(params = {}) {
-  const token = useAuthStore((state) => state.token);
-  return useQuery({
-    queryKey: ['admin', 'discounts', params],
-    queryFn: async () => {
-      const response = await adminDashboardService.discounts.getAll(token, params);
-      return response.data;
-    },
-    enabled: !!token,
-    staleTime: 2 * 60 * 1000,
-  });
-}
-
 export function useAdminPaymentSummary(params = {}) {
   const token = useAuthStore((state) => state.token);
   return useQuery({

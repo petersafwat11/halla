@@ -333,7 +333,7 @@ export const discounts = {
     apiRequest(ENDPOINTS.ADMIN.DISCOUNTS.TOGGLE(id), "PATCH"),
 
   validate: async (token, data) =>
-    apiRequest("/discounts/validate", "POST", data),
+    apiRequest(ENDPOINTS.ADMIN.DISCOUNTS.VALIDATE, "POST", data),
 };
 
 export default {

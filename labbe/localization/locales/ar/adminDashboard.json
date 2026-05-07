@@ -167,5 +167,18 @@
         "draft": "مسودة"
       }
     }
+  },
+  "discounts": {
+    "planTypes": {
+      "trial": "تجريبي",
+      "basic_event": "أساسي — لكل مناسبة",
+      "basic_monthly": "أساسي — شهري",
+      "premium_event": "مميّز — لكل مناسبة",
+      "premium_monthly": "مميّز — شهري",
+      "business_event": "أعمال — لكل مناسبة",
+      "business_quarterly": "أعمال — ربع سنوي",
+      "business_annual": "أعمال — سنوي",
+      "unlimited": "غير محدود"
+    }
   }
 }

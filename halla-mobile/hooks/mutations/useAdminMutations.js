@@ -518,62 +518,6 @@ export function useBulkApproveVendors() {
   });
 }
 
-export function useCreateDiscount() {
-  const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
-  return useMutation({
-    mutationFn: async (data) => {
-      const response = await adminDashboardService.discounts.create(token, data);
-      return assertOk(response);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'discounts'] });
-    },
-  });
-}
-
-export function useUpdateDiscount() {
-  const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
-  return useMutation({
-    mutationFn: async ({ id, data }) => {
-      const response = await adminDashboardService.discounts.update(token, id, data);
-      return assertOk(response);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'discounts'] });
-    },
-  });
-}
-
-export function useDeleteDiscount() {
-  const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
-  return useMutation({
-    mutationFn: async (id) => {
-      const response = await adminDashboardService.discounts.delete(token, id);
-      return assertOk(response);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'discounts'] });
-    },
-  });
-}
-
-export function useToggleDiscount() {
-  const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
-  return useMutation({
-    mutationFn: async (id) => {
-      const response = await adminDashboardService.discounts.toggleStatus(token, id);
-      return assertOk(response);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'discounts'] });
-    },
-  });
-}
-
 export function useBulkSuspendVendors() {
   const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);

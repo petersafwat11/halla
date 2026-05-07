@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import { discountsAPI } from "@/services/adminDashboard";
+import { useValidateDiscount } from "@/hooks/reactQueryHooks/useDiscounts";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import PaymentMethodSelector from "../_components/PaymentMethodSelector";
 import PlanSummaryCard from "./_components/PlanSummaryCard";
@@ -32,9 +32,11 @@ const Summary = ({
   const [discountAmount, setDiscountAmount] = useState(0);
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountError, setDiscountError] = useState("");
-  const [discountLoading, setDiscountLoading] = useState(false);
   const [appliedCode, setAppliedCode] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const validateDiscount = useValidateDiscount();
+  const discountLoading = validateDiscount.isPending;
 
   const planPrice = parseFloat(selectedPlan?.price) || 0;
   const subtotal = planPrice + addonTotal;
@@ -43,20 +45,18 @@ const Summary = ({
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) return;
     setDiscountError("");
-    setDiscountLoading(true);
     try {
-      // Use the plan's canonical planType (e.g. "host_basic_monthly") rather
-      // than the family ("basic"/"premium") so the discount's
-      // applicablePlanTypes check matches the backend's. Falls back to family
-      // if the plan object pre-dates that field.
-      const planTypeKey =
-        selectedPlan?.planType || selectedPlan?.type || planFamily || null;
-      const response = await discountsAPI.validate(
-        discountCode.trim(),
-        subtotal,
-        planTypeKey
-      );
-      const result = response?.data || response;
+      // Why: backend's applicablePlanTypes enum is the canonical PLAN_TYPES
+      // vocabulary (e.g. "basic_event"). selectedPlan.planType IS that value;
+      // .type is the legacy field name; sending null is fine when the plan
+      // doesn't carry one (the backend treats null as no plan-restriction).
+      const planTypeKey = selectedPlan?.planType || selectedPlan?.type || null;
+      const response = await validateDiscount.mutateAsync({
+        code: discountCode.trim(),
+        amount: subtotal,
+        planType: planTypeKey,
+      });
+      const result = response?.data;
       if (result?.valid) {
         const discount = result.discountAmount || 0;
         setDiscountAmount(discount);
@@ -72,8 +72,6 @@ const Summary = ({
       setDiscountApplied(false);
       setDiscountAmount(0);
       setDiscountError(t("summary.discount.networkError"));
-    } finally {
-      setDiscountLoading(false);
     }
   };
 

@@ -13,9 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
-import { useAuthStore } from "../../stores/authStore";
-import { useSubscribe } from "../../hooks";
-import adminDashboardService from "../../services/adminDashboardService";
+import { useSubscribe, useValidateDiscount } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
 import { PlanSummaryCard, DiscountCodeCard, PaymentSummaryCard } from "../../components/plans/SummaryCards";
 
@@ -24,8 +22,8 @@ const WhitelabelPlansSummaryScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const toast = useToast();
-  const token = useAuthStore((state) => state.token);
   const subscribeMutation = useSubscribe();
+  const validateDiscount = useValidateDiscount();
   const isArabic = currentLanguage === "ar";
 
   const { selectedPlan } = route.params || {};
@@ -33,7 +31,7 @@ const WhitelabelPlansSummaryScreen = () => {
   const [discountCode, setDiscountCode] = useState("");
   const [discountData, setDiscountData] = useState(null);
   const [discountApplied, setDiscountApplied] = useState(false);
-  const [validating, setValidating] = useState(false);
+  const validating = validateDiscount.isPending;
 
   const planPrice = parseFloat(selectedPlan?.price) || 0;
   const discountAmt = discountData?.discountAmount || 0;
@@ -56,43 +54,39 @@ const WhitelabelPlansSummaryScreen = () => {
 
   const handleApplyDiscount = useCallback(async () => {
     if (!discountCode.trim() || validating) return;
-    setValidating(true);
     try {
-      const res = await adminDashboardService.discounts.validate(token, {
+      // Why: whitelabel plans don't map cleanly onto the host PLAN_TYPES
+      // enum. Pass the plan's planType when present, otherwise null — the
+      // backend treats null as "no plan-restriction", letting platform-wide
+      // codes apply without forcing us to invent a fake enum value
+      // (the previous "enterprise" literal would now fail Zod validation).
+      const planTypeKey = selectedPlan?.planType || null;
+      const body = await validateDiscount.mutateAsync({
         code: discountCode.trim().toUpperCase(),
         amount: planPrice,
-        planType: "enterprise",
+        planType: planTypeKey,
       });
 
-      if (!res?.success) {
-        setDiscountApplied(false);
-        setDiscountData(null);
-        toast.error(t("summary.invalidCode"));
-        return;
-      }
-
-      const result = res?.data?.data;
+      const result = body?.data;
       if (result?.valid) {
         setDiscountData(result);
         setDiscountApplied(true);
         toast.success(
           t("summary.discountCode.success", {
             amount: result.discountAmount?.toFixed(0) ?? 0,
-          })
+          }),
         );
       } else {
         setDiscountApplied(false);
         setDiscountData(null);
-        toast.error(t("summary.invalidCode"));
+        toast.error(result?.reason || t("summary.invalidCode"));
       }
     } catch {
       setDiscountApplied(false);
       setDiscountData(null);
       toast.error(t("summary.invalidCode"));
-    } finally {
-      setValidating(false);
     }
-  }, [discountCode, validating, token, planPrice, toast, t]);
+  }, [discountCode, validating, planPrice, selectedPlan, toast, t, validateDiscount]);
 
   const handlePayment = useCallback(async () => {
     if (!selectedPlan) return;
