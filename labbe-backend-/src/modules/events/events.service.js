@@ -47,6 +47,7 @@ const { GUEST_LIST_BELOW_CONFIRMED, EVENT_EDIT_LOCKED } = require('../../shared/
 const notificationService = require('../notifications/notifications.service');
 const SubscriptionsService = require('../subscriptions/subscriptions.service');
 const { logAudit } = require('../../shared/utils/auditLog');
+const logger = require('../../shared/utils/logger');
 const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 const taqnyat = require('../../infrastructure/taqnyat');
 
@@ -290,7 +291,8 @@ class EventsService {
     const query = this._buildScopedEventQuery(eventId, userContext);
     const event = await Event.findOne(query)
       .populate("guestList", "name email phone status")
-      .populate("host", "username email phoneNumber");
+      .populate("host", "username email phoneNumber")
+      .lean();
 
     if (!event) {
       throw new NotFoundError("Event");
@@ -442,17 +444,18 @@ class EventsService {
       ? await Subscription.findById(subscription._id).populate('planId')
       : await Subscription.getCapacityForEvent(userId, guestCount);
 
-    if (!capacitySub) throw new Error('No active subscription with sufficient capacity');
+    if (!capacitySub) {
+      throw new PackageLimitError(
+        'subscription',
+        0,
+        'No active subscription with sufficient capacity'
+      );
+    }
 
-    // PIPELINE-F03 (Phase 3a.4): consume invites and create the event with
-    // a compensating return on failure. The previous flow debited the pool
-    // before `Event.save()` ever ran, so a save failure left the user with
-    // their pool quota silently consumed and no event to show for it.
-    //
-    // Approach: track whether we consumed (poolConsumed) and what we
-    // consumed (capacitySub._id, guestCount). If anything between
-    // consumption and the *final* save throws, release the invites and
-    // rethrow.
+    // Consume invites and create the event with a compensating return on
+    // failure. We track whether we consumed (poolConsumed) and how much; if
+    // anything between consumption and the final save throws, we release
+    // the invites and rethrow.
     let poolConsumed = false;
     if (isPoolPlan(capacitySub.planId?.planType)) {
       await Subscription.consumeInvites(capacitySub._id, guestCount);
@@ -460,7 +463,11 @@ class EventsService {
     } else if (isPerEventPlan(capacitySub.planId?.planType)) {
       const maxInvites = capacitySub.planId?.limits?.maxInvitesPerEvent;
       if (maxInvites !== null && maxInvites !== undefined && guestCount > maxInvites) {
-        throw new Error(`Guest count exceeds plan limit of ${maxInvites}`);
+        throw new PackageLimitError(
+          'guests',
+          maxInvites,
+          `Guest count exceeds plan limit of ${maxInvites}`
+        );
       }
     }
 
@@ -592,9 +599,8 @@ class EventsService {
         .populate("host", "username email phoneNumber")
         .populate("guestList", "name email phone status");
 
-      // Send notifications (non-blocking)
       this._notifyEventCreated(populatedEvent, userId, guestIds.length).catch(
-        console.error
+        (e) => logger.warn('event creation notification failed', { err: e?.message })
       );
 
       // FLOW-13-F05 / Track-B: audit event creation
@@ -623,13 +629,11 @@ class EventsService {
           //      row that an admin reconciliation script can pick up
           //   3. notify admins out-of-band so the host doesn't lose
           //      capacity quietly
-          // eslint-disable-next-line no-console
-          console.error(
-            `[events.createEvent] FAILED to release ${guestCount} invites on subscription ${capacitySub._id} after Event.save error:`,
-            releaseErr.message
+          logger.error(
+            `[events.createEvent] FAILED to release ${guestCount} invites on subscription ${capacitySub._id} after Event.save error`,
+            { err: releaseErr.message, originalError: err?.message }
           );
           try {
-            const { logAudit } = require("../../shared/utils/auditLog");
             await logAudit({
               action: "subscription.invite_pool_reconcile_pending",
               actor: { _id: userId, role: userRole || "host" },
@@ -688,9 +692,9 @@ class EventsService {
     const role = userContext.role;
 
     const isHost = event.host?.toString() === userId;
-    const isAdmin = ["admin", "super_admin"].includes(role);
+    const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN].includes(role);
     const isWhitelabelAdmin =
-      role === "whitelabel_admin" &&
+      role === ROLES.WHITELABEL_ADMIN &&
       event.whitelabelId &&
       userContext.whitelabelId &&
       event.whitelabelId.toString() === userContext.whitelabelId.toString();
@@ -727,7 +731,6 @@ class EventsService {
     const { runEventLaunch } = require("../../shared/utils/scheduledTasks");
     const result = await runEventLaunch(event, `manual:${userId}`);
 
-    const { logAudit } = require("../../shared/utils/auditLog");
     await logAudit({
       action: "event.launch_manual_retry",
       actor: userContext,
@@ -829,12 +832,24 @@ class EventsService {
           if (guestCount > 0) await Subscription.releaseInvites(event.subscriptionId, guestCount);
         }
       } catch (e) {
-        console.error('Failed to release pool invites on cancellation:', e.message);
+        logger.warn('Failed to release pool invites on cancellation', { err: e.message });
       }
     }
 
     // Notify about status change (non-blocking)
-    this._notifyEventStatusChange(event, status, userId, isAdmin).catch(console.error);
+    this._notifyEventStatusChange(event, status, userId, isAdmin).catch((e) =>
+      logger.warn('event status notification failed', { err: e?.message })
+    );
+
+    logAudit({
+      action: isAdmin
+        ? 'event.status_updated_by_admin'
+        : 'event.status_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { status, isAdmin },
+    }).catch(() => {});
 
     return { event };
   }
@@ -866,7 +881,7 @@ class EventsService {
       message: `Event "${eventTitle}" has been deleted.`,
       messageAr: `تم حذف مناسبة "${eventTitle}".`,
       data: { entityType: 'event', entityId: eventId },
-    }).catch(console.error);
+    }).catch((e) => logger.warn('admin notify on event delete failed', { err: e?.message }));
 
     // If admin is deleting, also notify the host
     if (isAdmin && hostId && hostId.toString() !== userId.toString()) {
@@ -878,7 +893,7 @@ class EventsService {
         messageAr: `تم حذف مناسبتك "${eventTitle}" من قبل المسؤول.`,
         data: { entityType: 'event', entityId: eventId },
         priority: 'high',
-      }).catch(console.error);
+      }).catch((e) => logger.warn('host notify on event delete failed', { err: e?.message }));
     }
 
     // Use transaction for atomic deletion
@@ -931,14 +946,24 @@ class EventsService {
       ? await Subscription.findById(event.subscriptionId).populate('planId')
       : await Subscription.getCapacityForEvent(userId, newGuestCount);
 
-    if (!capacitySub) throw new Error('No active subscription with sufficient capacity');
+    if (!capacitySub) {
+      throw new PackageLimitError(
+        'subscription',
+        0,
+        'No active subscription with sufficient capacity'
+      );
+    }
 
     if (isPoolPlan(capacitySub.planId?.planType)) {
       await Subscription.consumeInvites(capacitySub._id, newGuestCount);
     } else if (isPerEventPlan(capacitySub.planId?.planType)) {
       const maxInvites = capacitySub.planId?.limits?.maxInvitesPerEvent;
       if (maxInvites !== null && maxInvites !== undefined && newGuestCount > maxInvites) {
-        throw new Error(`Guest count exceeds plan limit of ${maxInvites}`);
+        throw new PackageLimitError(
+          'guests',
+          maxInvites,
+          `Guest count exceeds plan limit of ${maxInvites}`
+        );
       }
     }
 
@@ -1038,12 +1063,8 @@ class EventsService {
 
     const limits = subscription.limits;
     const planType = subscription.planId?.planType;
-    const isPerEvent = planType
-      ? require("../../shared/constants/plans").isPerEventPlan(planType)
-      : false;
-    const isPool = planType
-      ? require("../../shared/constants/plans").isPoolPlan(planType)
-      : false;
+    const isPerEvent = planType ? isPerEventPlan(planType) : false;
+    const isPool = planType ? isPoolPlan(planType) : false;
 
     // Plan schema field is `maxEvents`. Pool plans (basic_monthly, premium_monthly,
     // business_quarterly, business_annual, unlimited) have maxEvents=-1 (unlimited
@@ -1183,23 +1204,32 @@ class EventsService {
    * @param {string} userId
    * @returns {Promise<Buffer>}
    */
-  async exportEventsAsExcel(userId) {
+  async exportEventsAsExcel(user) {
     const { generateExcel, guardExportMaxRows } = require("../../shared/utils/excelExport");
 
-    // FLOW-28-F02: enforce export row cap
-    const count = await Event.countDocuments({ host: userId });
+    const userId = user._id || user;
+    const query = { host: userId };
+    // Whitelabel admins/moderators may only export rows inside their tenant.
+    // Super-admin / platform contexts are unscoped.
+    if (
+      user?.role === ROLES.WHITELABEL_ADMIN ||
+      user?.role === ROLES.WHITELABEL_MODERATOR ||
+      user?.role === ROLES.ADMIN ||
+      user?.role === ROLES.MODERATOR
+    ) {
+      if (user.whitelabelId) query.whitelabelId = user.whitelabelId;
+    }
+
+    const count = await Event.countDocuments(query);
     guardExportMaxRows(count, 'events');
 
-    const events = await Event.find({ host: userId }).populate(
-      "guestList",
-      "status"
-    );
+    const events = await Event.find(query)
+      .populate("guestList", "status")
+      .lean();
 
     const data = events.map((e) => ({
       Title: e.eventDetails?.title || "",
       Type: e.eventDetails?.type || "",
-      // M-5: render in Asia/Riyadh wall-clock so admins on a UTC server
-      // don't see Riyadh-evening events on the previous calendar day.
       Date: e.eventDetails?.date
         ? formatRiyadh(e.eventDetails.date, { style: "date" })
         : "",
@@ -1226,11 +1256,11 @@ class EventsService {
         path: 'guestList',
         select: 'name email phone status rsvp checkIn invitation addedBy',
         populate: { path: 'addedBy', select: 'username email' },
-      });
+      })
+      .lean();
 
     if (!event) throw new NotFoundError("Event");
 
-    // FLOW-28-F02: enforce export row cap
     const guestCount = event.guestList?.length || 0;
     guardExportMaxRows(guestCount, 'guests');
 
@@ -1262,13 +1292,38 @@ class EventsService {
    * @returns {Promise<Object>}
    */
   async bulkDeleteEvents(eventIds, userId) {
-    const events = await Event.find({ _id: { $in: eventIds }, host: userId });
+    const events = await Event.find({ _id: { $in: eventIds }, host: userId })
+      .select('_id eventDetails.title')
+      .lean();
     const validIds = events.map((e) => e._id);
+    if (validIds.length === 0) return { deletedCount: 0 };
 
-    await Guest.deleteMany({ event: { $in: validIds } });
-    const result = await Event.deleteMany({ _id: { $in: validIds } });
+    const session = await require('mongoose').startSession();
+    let deletedCount = 0;
+    try {
+      await session.withTransaction(async () => {
+        await Guest.deleteMany({ event: { $in: validIds } }, { session });
+        const result = await Event.deleteMany(
+          { _id: { $in: validIds } },
+          { session }
+        );
+        deletedCount = result.deletedCount;
+      });
+    } finally {
+      await session.endSession();
+    }
 
-    return { deletedCount: result.deletedCount };
+    logAudit({
+      action: 'event.bulk_deleted',
+      actor: { _id: userId },
+      targetType: 'event',
+      metadata: {
+        deletedCount,
+        eventIds: validIds.map((id) => id.toString()),
+      },
+    }).catch(() => {});
+
+    return { deletedCount };
   }
 
   // ============================================
@@ -1425,13 +1480,29 @@ class EventsService {
         await Subscription.findByIdAndUpdate(event.subscriptionId, {
           $inc: { "usage.guestsUsed": newGuestIds.length, "usage.totalGuests": newGuestIds.length },
         });
-      } catch (e) { console.error("Failed to track guest addition:", e); }
+      } catch (e) {
+        logger.warn('Failed to track guest addition on subscription', { err: e?.message });
+      }
     }
 
     const updated = await Event.findById(eventId).populate(
       "guestList",
       "name email phone status"
     );
+
+    logAudit({
+      action: 'event.guest_list_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: {
+        addedCount: newGuestIds.length,
+        removedCount: toDeleteIds.length,
+        keptCount: keptGuestIds.length,
+        totalCount: updated.guestList.length,
+      },
+    }).catch(() => {});
+
     return { event: updated, addedCount: newGuestIds.length };
   }
 
@@ -1446,10 +1517,14 @@ class EventsService {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
-    // Don't allow modifications to completed or cancelled events
     if (['completed', 'cancelled'].includes(event.status)) {
       throw new ValidationError('Cannot modify a completed or cancelled event');
     }
+
+    const userId =
+      typeof userContext === 'object' && userContext !== null
+        ? userContext._id?.toString?.() || userContext._id
+        : userContext;
 
     const preImagePhones = (event.staffList || []).map((s) => s.phone);
     event.staffList = (staffList || []).map((s) => ({
@@ -1458,11 +1533,20 @@ class EventsService {
     }));
     await event.save();
 
-    // D-R3 hardening (post-review) — revoke StaffAccessToken records
-    // for any phone removed from the list. Without this, removed
-    // staff retain a working portal link until the token's TTL
-    // expires (default 48h). Best-effort + non-blocking.
+    // Revoke StaffAccessToken records for any phone dropped from the list
+    // so removed staff lose portal access immediately (D-R3).
     await this._revokeRemovedStaffTokens(eventId, preImagePhones, event.staffList);
+
+    logAudit({
+      action: 'event.staff_list_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: {
+        previousCount: preImagePhones.length,
+        newCount: event.staffList.length,
+      },
+    }).catch(() => {});
 
     return { event };
   }
@@ -1515,7 +1599,7 @@ class EventsService {
     } catch (err) {
       // Non-fatal — the staffList update already committed. Log so an
       // operator can re-revoke manually if needed.
-      console.error('[events.service] _revokeRemovedStaffTokens failed:', err?.message);
+      logger.warn('_revokeRemovedStaffTokens failed', { err: err?.message });
     }
   }
 
@@ -1770,9 +1854,9 @@ class EventsService {
             // paths — that's the whole point of the deferred-delete
             // sequencing (preserves QR codes / RSVP / checkIn).
           } catch (rollbackErr) {
-            console.error(
-              `[updateEventStep2] compensation rollback (failedAt=${failedAt}) failed:`,
-              rollbackErr?.message
+            logger.error(
+              `[updateEventStep2] compensation rollback (failedAt=${failedAt}) failed`,
+              { err: rollbackErr?.message }
             );
           }
         };
@@ -1837,7 +1921,7 @@ class EventsService {
               { $set: { deleted: true, deletedAt: new Date() } }
             );
           } catch (deleteErr) {
-            console.error('[updateEventStep2] post-commit guest soft-delete failed:', deleteErr);
+            logger.warn('[updateEventStep2] post-commit guest soft-delete failed', { err: deleteErr?.message });
           }
         }
 
@@ -1854,7 +1938,7 @@ class EventsService {
               },
             });
           } catch (e) {
-            console.error("[updateEventStep2] Failed to track guest addition:", e);
+            logger.warn('[updateEventStep2] Failed to track guest addition', { err: e?.message });
           }
         }
       }
@@ -2005,6 +2089,19 @@ class EventsService {
 
     await event.save();
 
+    const userId =
+      typeof userContext === 'object' && userContext !== null
+        ? userContext._id?.toString?.() || userContext._id
+        : userContext;
+
+    logAudit({
+      action: 'event.invitation_settings_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { changedKeys: Object.keys(settings || {}) },
+    }).catch(() => {});
+
     return { event };
   }
 
@@ -2019,12 +2116,11 @@ class EventsService {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
-    // Don't allow modifications to completed or cancelled events
     if (['completed', 'cancelled'].includes(event.status)) {
       throw new ValidationError('Cannot modify a completed or cancelled event');
     }
 
-    // FLOW-13-F01: 24h pre-launch edit lock — block scheduledDate/time changes
+    // 24h pre-launch edit lock — block scheduledDate/time changes within the window.
     this._checkEditLock(event, {
       date: settings.scheduledDate,
       time: settings.scheduledTime,
@@ -2032,6 +2128,19 @@ class EventsService {
 
     event.launchSettings = { ...event.launchSettings, ...settings };
     await event.save();
+
+    const userId =
+      typeof userContext === 'object' && userContext !== null
+        ? userContext._id?.toString?.() || userContext._id
+        : userContext;
+
+    logAudit({
+      action: 'event.launch_settings_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { changedKeys: Object.keys(settings || {}) },
+    }).catch(() => {});
 
     return { event };
   }
@@ -2048,11 +2157,29 @@ class EventsService {
     if (!event) throw new NotFoundError("Event");
 
     const messagingService = require('../messaging/messaging.service');
-    return messagingService.sendTestMessage({
+    const result = await messagingService.sendTestMessage({
       eventId,
       phoneNumber: messageData.phoneNumber || messageData.phone,
       channel: messageData.channel || 'sms',
     });
+
+    const userId =
+      typeof userContext === 'object' && userContext !== null
+        ? userContext._id?.toString?.() || userContext._id
+        : userContext;
+
+    logAudit({
+      action: 'event.test_message_sent',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: {
+        phoneNumber: messageData.phoneNumber || messageData.phone,
+        channel: messageData.channel || 'sms',
+      },
+    }).catch(() => {});
+
+    return result;
   }
 
   // ============================================
@@ -2087,6 +2214,14 @@ class EventsService {
     event.guestList.push(guest._id);
     await event.save();
 
+    logAudit({
+      action: 'event.guest_added',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { guestId: guest._id, guestName: guest.name },
+    }).catch(() => {});
+
     return { guest };
   }
 
@@ -2115,6 +2250,15 @@ class EventsService {
     );
 
     if (!guest) throw new NotFoundError("Guest");
+
+    logAudit({
+      action: 'event.guest_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { guestId, changes: update },
+    }).catch(() => {});
+
     return { guest };
   }
 
@@ -2135,6 +2279,14 @@ class EventsService {
     event.guestList = event.guestList.filter((id) => id.toString() !== guestId);
     await event.save();
     await Guest.findByIdAndDelete(guestId);
+
+    logAudit({
+      action: 'event.guest_deleted',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { guestId, guestName: guest.name },
+    }).catch(() => {});
   }
 
   // ============================================
@@ -2164,9 +2316,17 @@ class EventsService {
     event.staffList.push(staffMember);
     await event.save();
 
-    return {
-      staff: event.staffList[event.staffList.length - 1],
-    };
+    const added = event.staffList[event.staffList.length - 1];
+
+    logAudit({
+      action: 'event.staff_added',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { staffId: added._id, staffName: added.name, staffPhone: added.phone },
+    }).catch(() => {});
+
+    return { staff: added };
   }
 
   /**
@@ -2188,12 +2348,24 @@ class EventsService {
       throw new NotFoundError("Staff");
 
     const allowedFields = ["name", "phone", "status"];
+    const changes = {};
     allowedFields.forEach((f) => {
-      if (updateData[f] !== undefined)
+      if (updateData[f] !== undefined) {
         event.staffList[staffIndex][f] = updateData[f];
+        changes[f] = updateData[f];
+      }
     });
 
     await event.save();
+
+    logAudit({
+      action: 'event.staff_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { staffId, changes },
+    }).catch(() => {});
+
     return { staff: event.staffList[staffIndex] };
   }
 
@@ -2220,15 +2392,33 @@ class EventsService {
     const event = await Event.findOne({ _id: eventId, host: userId });
     if (!event) throw new NotFoundError("Event");
 
-    const initialLength = event.staffList?.length || 0;
+    const removed = (event.staffList || []).find(
+      (s) => s._id?.toString() === staffId
+    );
+    if (!removed) throw new NotFoundError("Staff");
+
+    const removedPhone = removed.phone;
     event.staffList = (event.staffList || []).filter(
       (s) => s._id?.toString() !== staffId
     );
 
-    if (event.staffList.length === initialLength)
-      throw new NotFoundError("Staff");
-
     await event.save();
+
+    // D-R3: revoke any active StaffAccessToken so the removed staff loses
+    // portal access immediately rather than at natural 48h TTL.
+    if (removedPhone) {
+      await this._revokeRemovedStaffTokens(eventId, [removedPhone], event.staffList);
+    }
+
+    logAudit({
+      action: 'event.staff_deleted',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { staffId, staffName: removed.name, staffPhone: removedPhone },
+    }).catch(() => {});
+
+    return { staffId };
   }
 
   // ============================================
@@ -2305,6 +2495,14 @@ class EventsService {
         });
       }
     }
+
+    logAudit({
+      action: 'event.notify_staff',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { sent, failed, total: activeStaff.length },
+    }).catch(() => {});
 
     return { sent, failed, total: activeStaff.length, results };
   }
@@ -2454,7 +2652,7 @@ class EventsService {
         message: `Event "${eventTitle}" status changed to ${newStatus}.`,
         messageAr: `مناسبة "${eventTitle}" تغيرت حالتها إلى ${newStatus}.`,
         data: { entityType: 'event', entityId: event._id, metadata: { newStatus } },
-      }).catch(console.error);
+      }).catch((e) => logger.warn('admin notify on status change failed', { err: e?.message }));
     }
   }
 

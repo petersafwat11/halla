@@ -110,7 +110,7 @@ exports.getSingleEventStats = catchAsync(async (req, res) => {
  * GET /api/v2/events/export/events
  */
 exports.exportEventsAsExcel = catchAsync(async (req, res) => {
-  const buffer = await eventsService.exportEventsAsExcel(req.user._id);
+  const buffer = await eventsService.exportEventsAsExcel(req.user);
 
   res.setHeader(
     "Content-Type",
@@ -162,23 +162,10 @@ exports.getEventById = catchAsync(async (req, res) => {
  * POST /api/v2/events
  */
 exports.createEvent = catchAsync(async (req, res) => {
-  let guestList = [];
-  let eventData = {};
-
-  try {
-    if (req.body.guestList) guestList = JSON.parse(req.body.guestList);
-    if (req.body.eventDetails)
-      eventData.eventDetails = JSON.parse(req.body.eventDetails);
-    if (req.body.staffList)
-      eventData.staffList = JSON.parse(req.body.staffList);
-    if (req.body.invitationSettings)
-      eventData.invitationSettings = JSON.parse(req.body.invitationSettings);
-    if (req.body.launchSettings)
-      eventData.launchSettings = JSON.parse(req.body.launchSettings);
-  } catch (error) {
-    const { ValidationError } = require("../../shared/errors");
-    throw new ValidationError(`Invalid JSON format: ${error.message}`);
-  }
+  // parseFormDataJsonFields + validateZod have already coerced these into
+  // their object/array shapes — no manual parsing here.
+  const { guestList = [], eventDetails, staffList, invitationSettings, launchSettings } = req.body;
+  const eventData = { eventDetails, staffList, invitationSettings, launchSettings };
 
   const context = {
     userId: req.user._id,
@@ -276,18 +263,10 @@ exports.updateStaffList = catchAsync(async (req, res) => {
  * `/staff-list` compat endpoints (kept for one release cycle).
  */
 exports.updateEventStep2 = catchAsync(async (req, res) => {
+  // Zod schema enforces guestList + at least one of staffList/supervisorsList.
+  // Normalise to a single canonical key before handing off to the service.
   const guestList = req.body.guestList;
   const staffList = req.body.staffList ?? req.body.supervisorsList;
-
-  if (!Array.isArray(guestList) || !Array.isArray(staffList)) {
-    const { ValidationError } = require("../../shared/errors");
-    if (!Array.isArray(guestList)) {
-      throw new ValidationError("guestList is required and must be an array");
-    }
-    throw new ValidationError(
-      "staffList (or supervisorsList) is required and must be an array"
-    );
-  }
 
   const result = await eventsService.updateEventStep2(
     req.params.id,
@@ -302,28 +281,11 @@ exports.updateEventStep2 = catchAsync(async (req, res) => {
  * PATCH /api/v2/events/:id/invitation-settings
  */
 exports.updateInvitationSettings = catchAsync(async (req, res) => {
-  // Multer delivers FormData text fields as strings — parse any JSON-encoded
-  // values for both the legacy keys (selectedTemplate / visualTemplate) AND
-  // the Phase 4c canonical keys (fieldValues, guestReplies).
-  const settings = { ...req.body };
-  for (const key of [
-    "selectedTemplate",
-    "visualTemplate",
-    "fieldValues",
-    "guestReplies",
-  ]) {
-    if (typeof settings[key] === "string") {
-      try {
-        settings[key] = JSON.parse(settings[key]);
-      } catch {
-        /* keep as-is */
-      }
-    }
-  }
-
+  // parseFormDataJsonFields middleware coerces JSON-string fields to
+  // objects before this handler runs.
   const result = await eventsService.updateInvitationSettings(
     req.params.id,
-    settings,
+    req.body,
     req.user,
     req.file
   );
@@ -465,7 +427,10 @@ exports.deleteStaff = catchAsync(async (req, res) => {
  * POST /api/v2/events/:eventId/notify-staff
  */
 exports.notifyStaff = catchAsync(async (req, res) => {
-  const isAdmin = ['super_admin', 'admin', 'moderator'].includes(req.user.role);
+  const { ROLES } = require("../../shared/constants/roles");
+  const isAdmin = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR].includes(
+    req.user.role
+  );
   const result = await eventsService.notifyStaff(
     req.params.eventId,
     req.user._id,
@@ -484,7 +449,7 @@ exports.notifyStaff = catchAsync(async (req, res) => {
  */
 exports.retryLaunch = catchAsync(async (req, res) => {
   const result = await eventsService.retryEventLaunch(req.params.id, req.user);
-  res.status(200).json({ status: "success", data: result });
+  sendSuccess(res, result, "Launch retry kicked off");
 });
 
 // ============================================

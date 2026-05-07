@@ -38,9 +38,27 @@ const { uploadTemplateImage } = require("../../shared/utils/fileUpload");
 const { idempotency } = require("../../shared/middleware/idempotency");
 const {
   validateObjectId,
-  validateArray,
-  validateObjectIdArray,
+  validateZod,
+  parseFormDataJsonFields,
 } = require("../../shared/middleware/validation");
+const {
+  createEventSchema,
+  updateEventDetailsSchema,
+  updateGuestListSchema,
+  updateStaffListSchema,
+  updateStep2Schema,
+  updateInvitationSettingsSchema,
+  updateLaunchSettingsSchema,
+  sendTestMessageSchema,
+  addGuestSchema,
+  updateGuestSchema,
+  addStaffSchema,
+  updateStaffSchema,
+  updateStaffStatusSchema,
+  bulkDeleteSchema,
+  adminUpdateStatusSchema,
+  notifyStaffSchema,
+} = require("./events.validation");
 
 const { ADMIN_PAGES, ROLES } = require("../../shared/constants");
 
@@ -244,11 +262,11 @@ router.get(
  *                     event:
  *                       $ref: '#/components/schemas/Event'
  *       400:
- *         $ref: '#/components/responses/BadRequest'
+ *         $ref: '#/components/responses/GuestLimitExceededError'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
- *         description: Subscription limit reached
+ *         description: Subscription required or event-cap reached
  */
 router.post(
   "/",
@@ -266,6 +284,14 @@ router.post(
   }),
   injectWhitelabel,
   uploadTemplateImage,
+  parseFormDataJsonFields([
+    "eventDetails",
+    "guestList",
+    "staffList",
+    "invitationSettings",
+    "launchSettings",
+  ]),
+  validateZod(createEventSchema),
   eventsController.createEvent
 );
 
@@ -326,7 +352,7 @@ router.get("/:id", validateObjectId("id"), eventsController.getEventById);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
+ *             $ref: '#/components/schemas/EventUpdateRequest'
  *     responses:
  *       200:
  *         description: Event details updated successfully
@@ -338,25 +364,16 @@ router.get("/:id", validateObjectId("id"), eventsController.getEventById);
 router.patch(
   "/:id/event-details",
   validateObjectId("id"),
+  validateZod(updateEventDetailsSchema),
   eventsController.updateEventDetails
 );
 
-
 /**
  * @swagger
- * /events/{id}/step2:
+ * /events/{id}/guest-list:
  *   patch:
- *     summary: Atomically update guest list + staff list (Phase 4d W0-ATOMIC)
- *     description: |
- *       Updates `guestList` and `staffList` in a single transaction so a
- *       capacity-guard rejection on either side leaves both fields at
- *       their pre-call values. On standalone Mongo topologies (no replica
- *       set) the controller falls back to ordered writes with
- *       compensation rollback (D4d-3).
- *
- *       Accepts both `supervisorsList` (web naming) and `staffList`
- *       (mobile naming) for the staff payload — normalized at the
- *       controller boundary (D4d-2).
+ *     summary: Replace guest list (partial update)
+ *     description: Kept for guest-only edits in the update wizard. The full guest+staff replace lives at /events/{id}/step2.
  *     tags: [Events]
  *     security:
  *       - bearerAuth: []
@@ -368,28 +385,99 @@ router.patch(
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [guestList]
  *             properties:
  *               guestList:
  *                 type: array
  *                 items:
  *                   $ref: '#/components/schemas/Guest'
- *               supervisorsList:
- *                 type: array
- *                 items:
- *                   type: object
+ *     responses:
+ *       200:
+ *         description: Guest list updated
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+router.patch(
+  "/:id/guest-list",
+  validateObjectId("id"),
+  requireSubscription,
+  checkGuestLimit((req) => req.body.guestList?.length || 0),
+  validateZod(updateGuestListSchema),
+  eventsController.updateGuestList
+);
+
+/**
+ * @swagger
+ * /events/{id}/staff-list:
+ *   patch:
+ *     summary: Replace staff list (partial update)
+ *     description: Kept for staff-only edits in the update wizard. The full guest+staff replace lives at /events/{id}/step2.
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/IdParam'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [staffList]
+ *             properties:
  *               staffList:
  *                 type: array
  *                 items:
  *                   type: object
  *     responses:
  *       200:
- *         description: Step 2 updated successfully
- *       400:
- *         description: Capacity-guard rejection — pre-image preserved
+ *         description: Staff list updated
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
- *       403:
- *         description: Guest limit exceeded
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+router.patch(
+  "/:id/staff-list",
+  validateObjectId("id"),
+  validateZod(updateStaffListSchema),
+  eventsController.updateStaffList
+);
+
+
+/**
+ * @swagger
+ * /events/{id}/step2:
+ *   patch:
+ *     summary: Atomically replace guest list + staff list
+ *     description: |
+ *       Updates `guestList` and `staffList` in a single transaction so a
+ *       capacity-guard rejection on either side leaves both fields at
+ *       their pre-call values.
+ *
+ *       Accepts both `supervisorsList` (web naming) and `staffList`
+ *       (mobile naming) for the staff payload, normalized at the
+ *       controller boundary.
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/IdParam'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Step2Request'
+ *     responses:
+ *       200:
+ *         description: Step 2 updated successfully
+ *       400:
+ *         $ref: '#/components/responses/GuestLimitExceededError'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
@@ -398,6 +486,7 @@ router.patch(
   validateObjectId("id"),
   requireSubscription,
   checkGuestLimit((req) => req.body.guestList?.length || 0),
+  validateZod(updateStep2Schema),
   eventsController.updateEventStep2
 );
 
@@ -406,7 +495,7 @@ router.patch(
  * /events/{id}/invitation-settings:
  *   patch:
  *     summary: Update invitation settings
- *     description: Update invitation settings for a specific event
+ *     description: Update invitation settings for a specific event (multipart/form-data)
  *     tags: [Events]
  *     security:
  *       - bearerAuth: []
@@ -417,7 +506,7 @@ router.patch(
  *       content:
  *         multipart/form-data:
  *           schema:
- *             type: object
+ *             $ref: '#/components/schemas/InvitationSettingsRequest'
  *     responses:
  *       200:
  *         description: Invitation settings updated successfully
@@ -430,6 +519,13 @@ router.patch(
   "/:id/invitation-settings",
   validateObjectId("id"),
   uploadTemplateImage,
+  parseFormDataJsonFields([
+    "selectedTemplate",
+    "visualTemplate",
+    "fieldValues",
+    "guestReplies",
+  ]),
+  validateZod(updateInvitationSettingsSchema),
   eventsController.updateInvitationSettings
 );
 
@@ -449,10 +545,12 @@ router.patch(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
+ *             $ref: '#/components/schemas/LaunchSettingsRequest'
  *     responses:
  *       200:
  *         description: Launch settings updated successfully
+ *       400:
+ *         $ref: '#/components/responses/EventEditLockedError'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
@@ -461,6 +559,7 @@ router.patch(
 router.patch(
   "/:id/launch-settings",
   validateObjectId("id"),
+  validateZod(updateLaunchSettingsSchema),
   eventsController.updateLaunchSettings
 );
 
@@ -473,12 +572,18 @@ router.patch(
  * /events/{id}/test-message:
  *   patch:
  *     summary: Send test message
- *     description: Send a test message for a specific event
+ *     description: Send a test SMS/WhatsApp using the event's invitation template (idempotent)
  *     tags: [Events]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/IdParam'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SendTestMessageRequest'
  *     responses:
  *       200:
  *         description: Test message sent successfully
@@ -491,6 +596,8 @@ router.patch(
   "/:id/test-message",
   validateObjectId("id"),
   requireSubscription,
+  idempotency({ scope: "events.test_message" }),
+  validateZod(sendTestMessageSchema),
   eventsController.sendTestMessage
 );
 
@@ -520,6 +627,8 @@ router.patch(
 router.post(
   "/:eventId/notify-staff",
   validateObjectId("eventId"),
+  idempotency({ scope: "events.notify_staff" }),
+  validateZod(notifyStaffSchema),
   eventsController.notifyStaff
 );
 
@@ -553,7 +662,7 @@ router.delete("/:id", validateObjectId("id"), eventsController.deleteEvent);
  * /events/bulk-delete:
  *   post:
  *     summary: Bulk delete events
- *     description: Delete multiple events at once
+ *     description: Delete multiple events at once (transactional)
  *     tags: [Events]
  *     security:
  *       - bearerAuth: []
@@ -562,14 +671,7 @@ router.delete("/:id", validateObjectId("id"), eventsController.deleteEvent);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - eventIds
- *             properties:
- *               eventIds:
- *                 type: array
- *                 items:
- *                   type: string
+ *             $ref: '#/components/schemas/BulkDeleteRequest'
  *     responses:
  *       200:
  *         description: Events deleted successfully
@@ -578,8 +680,7 @@ router.delete("/:id", validateObjectId("id"), eventsController.deleteEvent);
  */
 router.post(
   "/bulk-delete",
-  validateArray("eventIds", { minLength: 1, maxLength: 100 }),
-  validateObjectIdArray("eventIds"),
+  validateZod(bulkDeleteSchema),
   eventsController.bulkDeleteEvents
 );
 
@@ -619,6 +720,7 @@ router.post(
   validateObjectId("eventId"),
   requireSubscription,
   checkGuestLimit(1),
+  validateZod(addGuestSchema),
   eventsController.addGuestToEvent
 );
 
@@ -639,7 +741,7 @@ router.post(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Guest'
+ *             $ref: '#/components/schemas/UpdateGuestRequest'
  *     responses:
  *       200:
  *         description: Guest updated successfully
@@ -652,6 +754,7 @@ router.put(
   "/:eventId/guests/:guestId",
   validateObjectId("eventId"),
   validateObjectId("guestId"),
+  validateZod(updateGuestSchema),
   eventsController.updateEventGuest
 );
 
@@ -702,7 +805,7 @@ router.delete(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
+ *             $ref: '#/components/schemas/AddStaffRequest'
  *     responses:
  *       201:
  *         description: Staff added successfully
@@ -715,6 +818,7 @@ router.post(
   "/:eventId/staff",
   validateObjectId("eventId"),
   requireSubscription,
+  validateZod(addStaffSchema),
   eventsController.addStaffToEvent
 );
 
@@ -739,7 +843,7 @@ router.post(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
+ *             $ref: '#/components/schemas/UpdateStaffRequest'
  *     responses:
  *       200:
  *         description: Staff updated successfully
@@ -752,6 +856,7 @@ router.put(
   "/:eventId/staff/:staffId",
   validateObjectId("eventId"),
   validateObjectId("staffId"),
+  validateZod(updateStaffSchema),
   eventsController.updateStaff
 );
 
@@ -792,6 +897,7 @@ router.put(
   "/:eventId/staff/:staffId/status",
   validateObjectId("eventId"),
   validateObjectId("staffId"),
+  validateZod(updateStaffStatusSchema),
   eventsController.updateStaffStatus
 );
 
@@ -827,13 +933,35 @@ router.delete(
 );
 
 /**
- * Revoke a staff access token (Phase 3e.1 / FLOW-20-F01).
- * The `:staffId` here is the StaffAccessToken document _id.
- * RBAC: host or whitelabel-admin (admin / super_admin allowed via
- * `restrictTo` at the router head).
- *
- * Idempotent at the action level — re-revoke returns 200 with the same
- * final state.
+ * @swagger
+ * /events/{eventId}/staff/{staffId}/revoke:
+ *   post:
+ *     summary: Revoke a staff access token
+ *     description: |
+ *       Revokes a StaffAccessToken so the staff portal link stops working
+ *       immediately. The `:staffId` path param is the
+ *       StaffAccessToken document `_id` (not the embedded staffList entry id).
+ *       Idempotent — re-revoking returns 200 with the same final state.
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/EventIdParam'
+ *       - name: staffId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[0-9a-fA-F]{24}$'
+ *     responses:
+ *       200:
+ *         description: Token revoked (or already revoked)
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.post(
   "/:eventId/staff/:staffId/revoke",
@@ -881,10 +1009,11 @@ router.get(
  * /events/{id}/retry-launch:
  *   post:
  *     summary: Manually retry a failed launch
- *     description: Only the host (event creator), whitelabel admin (own whitelabel),
- *                  admin or super_admin can retry. Resets attemptCount to 0 and
- *                  fires the launch flow immediately. Returns 409 if the event
- *                  is not in `failed` or `scheduled` state.
+ *     description: |
+ *       Only the host (event creator), whitelabel admin (own whitelabel),
+ *       admin or super_admin can retry. Resets attemptCount to 0 and
+ *       fires the launch flow immediately. Returns 409 if the event
+ *       is not in `failed` or `scheduled` state.
  *     tags: [Events]
  *     security:
  *       - bearerAuth: []
@@ -894,16 +1023,10 @@ router.get(
  *       200:
  *         description: Retry kicked off (whether or not the launch succeeded)
  *       403:
- *         description: Caller is not authorized to retry this event
+ *         $ref: '#/components/responses/Forbidden'
  *       409:
- *         description: Event not in a retryable state
+ *         $ref: '#/components/responses/EventNotRetryableError'
  */
-// L-9: route-level RBAC matches the service-level check inside
-// events.service.retryLaunch (host / wl-admin tied to the event /
-// admin / super_admin). Previously the route inherited the broader
-// router-level allow-list which let MODERATOR / WHITELABEL_MODERATOR
-// reach the controller and get a 403 from the service. Tightening the
-// route returns 401/403 earlier and clarifies the audit log story.
 router.post(
   "/:id/retry-launch",
   validateObjectId("id"),
@@ -980,10 +1103,7 @@ router.get(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: string
+ *             $ref: '#/components/schemas/AdminUpdateStatusRequest'
  *     responses:
  *       200:
  *         description: Event status updated successfully
@@ -998,6 +1118,7 @@ router.patch(
   "/admin/:id/status",
   validateObjectId("id"),
   requirePageAccess(ADMIN_PAGES.EVENTS, "update"),
+  validateZod(adminUpdateStatusSchema),
   eventsController.adminUpdateEventStatus
 );
 
