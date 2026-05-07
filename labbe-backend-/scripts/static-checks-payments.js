@@ -174,5 +174,39 @@ assert(
 );
 ok('env.js Joi schema declares MOYASAR_* entries');
 
+// 16. AuditLog targetType enum includes "payment" — refund / capture /
+// void / webhook / pending_refund all write rows with that target.
+const auditLogSrc = read('models/AuditLogModel.js');
+assert(
+  /['"]payment['"]\s*,/.test(auditLogSrc),
+  'AuditLogModel targetType enum missing "payment" — webhook + admin actions will silently drop audit rows'
+);
+ok('AuditLogModel.targetType enum includes "payment"');
+
+// 17. No leftover paymentTransactionId writes in the active service paths.
+const subSvcLegacy = subSvcSrc.match(/paymentTransactionId\s*[=:]\s*[^/]/g) || [];
+assert(
+  subSvcLegacy.length === 0,
+  `subscriptions.service.js still writes paymentTransactionId (${subSvcLegacy.length} sites) — should use paymentId`
+);
+const addonSvcLegacy = addonSvcSrc.match(/paymentTransactionId\s*[=:]\s*[^/]/g) || [];
+assert(
+  addonSvcLegacy.length === 0,
+  `addons.service.js still writes paymentTransactionId (${addonSvcLegacy.length} sites) — should use paymentId`
+);
+ok('subscriptions/addons services no longer write paymentTransactionId');
+
+// 18. Frontend api.config has hostPayments + payments.refund/capture/void.
+const feApiSrc = read('../labbe/services/new-backend/api.config.js');
+assert(
+  /hostPayments:\s*\{/.test(feApiSrc) &&
+    /poll3ds:/.test(feApiSrc) &&
+    /payments:\s*\{[\s\S]*refund:/.test(feApiSrc) &&
+    /capture:/.test(feApiSrc) &&
+    /void:/.test(feApiSrc),
+  'labbe/services/new-backend/api.config.js missing hostPayments or payments admin write paths'
+);
+ok('labbe api.config.js declares hostPayments + payments.refund/capture/void');
+
 // eslint-disable-next-line no-console
-console.log(`\nstatic-checks-payments: OK (${checks} / 15)`);
+console.log(`\nstatic-checks-payments: OK (${checks} / 18)`);

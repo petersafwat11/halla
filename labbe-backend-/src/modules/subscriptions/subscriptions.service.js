@@ -954,7 +954,14 @@ class SubscriptionsService {
       return { skipped: true, reason: 'already_pending_invoice' };
     }
 
-    const amount = plan.pricing?.recurring ?? plan.pricing?.oneTime ?? subscription.pricePaid;
+    // PlanModel has `pricing.oneTime` (SAR major units) — there is no
+    // separate `recurring` field today. Fall back to the price paid on
+    // the existing subscription record (`pricePaid` is `{ amount, currency }`).
+    const amount =
+      plan.pricing?.recurring
+      ?? plan.pricing?.oneTime
+      ?? subscription.pricePaid?.amount
+      ?? 0;
     if (!amount || amount <= 0) {
       return { skipped: true, reason: 'no_renewal_price' };
     }
@@ -962,7 +969,7 @@ class SubscriptionsService {
     const callbackUrl = `${process.env.FRONTEND_URL || ''}/host/payments/return`;
     const invoice = await paymentProvider.createInvoice({
       amount,
-      currency: subscription.currency || 'SAR',
+      currency: subscription.pricePaid?.currency || plan.currency || 'SAR',
       description: `Renewal — ${plan.code}`,
       callbackUrl,
       metadata: {
