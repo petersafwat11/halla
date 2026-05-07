@@ -16,9 +16,11 @@ const adminController = require('./admin.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { restrictTo, requirePageAccess } = require('../../shared/middleware/rbac');
 const { ADMIN_PAGES } = require('../../shared/constants');
-const { validateObjectId } = require('../../shared/middleware/validation');
+const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
 const { filterByWhitelabel, injectWhitelabel } = require('../../shared/middleware/whitelabel');
 const { auditLog } = require('../../shared/middleware/auditLog');
+const { bulkOperationLimiter } = require('../../shared/middleware/rateLimiter');
+const adminValidation = require('./admin.validation');
 
 // All admin routes require authentication
 router.use(protect);
@@ -122,6 +124,7 @@ router.get('/hosts/verify-phone',
 router.post('/hosts/find-or-create',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'create'),
   filterByWhitelabel,
+  validateZod(adminValidation.findOrCreateHostSchema),
   adminController.findOrCreateHost
 );
 
@@ -148,6 +151,30 @@ router.post('/hosts/find-or-create',
  *         description: Forbidden
  *       404:
  *         description: Host not found
+ */
+/**
+ * @swagger
+ * /admin/hosts/export:
+ *   get:
+ *     summary: Export hosts
+ *     description: Export hosts list as CSV/XLSX. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Hosts export file
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
 router.get('/hosts/export',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'view'),
@@ -193,6 +220,8 @@ router.get('/hosts/:id',
 router.post('/hosts',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'create'),
   filterByWhitelabel,
+  validateZod(adminValidation.createHostSchema),
+  auditLog({ action: 'host.create', targetType: 'user', targetIdFrom: (_req, res) => res.locals?.createdId }),
   adminController.createHost
 );
 
@@ -233,6 +262,18 @@ router.patch('/hosts/:id/status',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  validateZod(adminValidation.updateHostStatusSchema),
+  auditLog({
+    action: 'host.status_change',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    captureBefore: async (req) => {
+      const User = require('../../../models/UserModel');
+      const prior = await User.findById(req.params.id).select('status').lean();
+      return prior?.status || null;
+    },
+    changesFrom: (req) => ({ after: { status: req.body?.status } }),
+  }),
   adminController.updateHostStatus
 );
 
@@ -273,6 +314,13 @@ router.patch('/hosts/:id/subscription',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  validateZod(adminValidation.updateHostSubscriptionSchema),
+  auditLog({
+    action: 'host.subscription_change',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    changesFrom: (req) => ({ after: { planCode: req.body?.planCode, billingCycle: req.body?.billingCycle } }),
+  }),
   adminController.updateHostSubscription
 );
 
@@ -304,6 +352,11 @@ router.delete('/hosts/:id',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'delete'),
   validateObjectId('id'),
   filterByWhitelabel,
+  auditLog({
+    action: 'host.delete',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+  }),
   adminController.deleteHost
 );
 
@@ -337,7 +390,14 @@ router.delete('/hosts/:id',
  */
 router.post('/hosts/bulk-delete',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'delete'),
+  bulkOperationLimiter,
   filterByWhitelabel,
+  validateZod(adminValidation.bulkDeleteHostsSchema),
+  auditLog({
+    action: 'host.bulk_delete',
+    targetType: 'user',
+    metadataFrom: (req) => ({ ids: req.body?.ids }),
+  }),
   adminController.bulkDeleteHosts
 );
 
@@ -405,6 +465,30 @@ router.get('/vendors',
  *       404:
  *         description: Vendor not found
  */
+/**
+ * @swagger
+ * /admin/vendors/export:
+ *   get:
+ *     summary: Export vendors
+ *     description: Export vendors list as CSV/XLSX. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Vendors export file
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.get('/vendors/export',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'view'),
   filterByWhitelabel,
@@ -455,15 +539,14 @@ router.patch('/vendors/:id/status',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  validateZod(adminValidation.updateVendorStatusSchema),
   auditLog({
     action: 'vendor.status_change',
     targetType: 'user',
     targetIdFrom: (req) => req.params.id,
     captureBefore: async (req) => {
       const User = require('../../../models/UserModel');
-      const prior = await User.findById(req.params.id)
-        .select('status')
-        .lean();
+      const prior = await User.findById(req.params.id).select('status').lean();
       return prior?.status || null;
     },
     changesFrom: (req) => ({ after: { status: req.body?.status } }),
@@ -508,6 +591,13 @@ router.patch('/vendors/:id/rating',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  validateZod(adminValidation.updateVendorRatingSchema),
+  auditLog({
+    action: 'vendor.rating_change',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    changesFrom: (req) => ({ after: { rating: req.body?.rating } }),
+  }),
   adminController.updateVendorRating
 );
 
@@ -539,6 +629,11 @@ router.delete('/vendors/:id',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'delete'),
   validateObjectId('id'),
   filterByWhitelabel,
+  auditLog({
+    action: 'vendor.delete',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+  }),
   adminController.deleteVendor
 );
 
@@ -572,7 +667,14 @@ router.delete('/vendors/:id',
  */
 router.post('/vendors/bulk-delete',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'delete'),
+  bulkOperationLimiter,
   filterByWhitelabel,
+  validateZod(adminValidation.bulkDeleteVendorsSchema),
+  auditLog({
+    action: 'vendor.bulk_delete',
+    targetType: 'user',
+    metadataFrom: (req) => ({ ids: req.body?.ids }),
+  }),
   adminController.bulkDeleteVendors
 );
 
@@ -607,7 +709,14 @@ router.post('/vendors/bulk-delete',
  */
 router.post('/vendors/bulk-status',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'update'),
+  bulkOperationLimiter,
   filterByWhitelabel,
+  validateZod(adminValidation.bulkVendorStatusSchema),
+  auditLog({
+    action: 'vendor.bulk_status_change',
+    targetType: 'user',
+    metadataFrom: (req) => ({ ids: req.body?.ids, status: req.body?.status }),
+  }),
   adminController.bulkUpdateVendorStatus
 );
 
@@ -670,6 +779,8 @@ router.get('/moderators',
 router.post('/moderators',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'create'),
   filterByWhitelabel,
+  validateZod(adminValidation.createModeratorSchema),
+  auditLog({ action: 'moderator.create', targetType: 'user' }),
   adminController.createModerator
 );
 
@@ -701,6 +812,12 @@ router.patch('/moderators/:id',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  validateZod(adminValidation.updateModeratorSchema),
+  auditLog({
+    action: 'moderator.update',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+  }),
   adminController.updateModerator
 );
 
@@ -732,6 +849,18 @@ router.patch('/moderators/:id/status',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  validateZod(adminValidation.updateModeratorStatusSchema),
+  auditLog({
+    action: 'moderator.status_change',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    captureBefore: async (req) => {
+      const User = require('../../../models/UserModel');
+      const prior = await User.findById(req.params.id).select('status').lean();
+      return prior?.status || null;
+    },
+    changesFrom: (req) => ({ after: { status: req.body?.status } }),
+  }),
   adminController.updateModeratorStatus
 );
 
@@ -763,6 +892,11 @@ router.delete('/moderators/:id',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'delete'),
   validateObjectId('id'),
   filterByWhitelabel,
+  auditLog({
+    action: 'moderator.delete',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+  }),
   adminController.deleteModerator
 );
 
@@ -796,13 +930,58 @@ router.delete('/moderators/:id',
  */
 router.post('/moderators/bulk-delete',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'delete'),
+  bulkOperationLimiter,
   filterByWhitelabel,
+  validateZod(adminValidation.bulkDeleteModeratorsSchema),
+  auditLog({
+    action: 'moderator.bulk_delete',
+    targetType: 'user',
+    metadataFrom: (req) => ({ ids: req.body?.ids }),
+  }),
   adminController.bulkDeleteModerators
 );
 
+/**
+ * @swagger
+ * /admin/moderators/bulk-status:
+ *   post:
+ *     summary: Bulk update moderator status
+ *     description: Update the status of multiple moderators at once. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [ids, status]
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items: { type: string }
+ *               status:
+ *                 type: string
+ *                 enum: [active, suspended, inactive]
+ *     responses:
+ *       200:
+ *         description: Moderators status updated
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.post('/moderators/bulk-status',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'update'),
+  bulkOperationLimiter,
   filterByWhitelabel,
+  validateZod(adminValidation.bulkModeratorStatusSchema),
+  auditLog({
+    action: 'moderator.bulk_status_change',
+    targetType: 'user',
+    metadataFrom: (req) => ({ ids: req.body?.ids, status: req.body?.status }),
+  }),
   adminController.bulkUpdateModeratorStatus
 );
 
@@ -856,6 +1035,27 @@ router.get('/whitelabels',
  *       404:
  *         description: Whitelabel not found
  */
+/**
+ * @swagger
+ * /admin/whitelabels/export:
+ *   get:
+ *     summary: Export whitelabels
+ *     description: Export whitelabels list as CSV/XLSX. Super admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Whitelabels export file
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.get('/whitelabels/export',
   requirePageAccess(ADMIN_PAGES.WHITELABELS, 'view'),
   filterByWhitelabel,
@@ -895,6 +1095,18 @@ router.get('/whitelabels/:id',
 router.patch('/whitelabels/:id/status',
   requirePageAccess(ADMIN_PAGES.WHITELABELS, 'update'),
   validateObjectId('id'),
+  validateZod(adminValidation.updateWhitelabelStatusSchema),
+  auditLog({
+    action: 'whitelabel.status_change',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    captureBefore: async (req) => {
+      const User = require('../../../models/UserModel');
+      const prior = await User.findById(req.params.id).select('status').lean();
+      return prior?.status || null;
+    },
+    changesFrom: (req) => ({ after: { status: req.body?.status } }),
+  }),
   adminController.updateWhitelabelStatus
 );
 
@@ -925,6 +1137,13 @@ router.patch('/whitelabels/:id/status',
 router.patch('/whitelabels/:id/subscription',
   requirePageAccess(ADMIN_PAGES.WHITELABELS, 'update'),
   validateObjectId('id'),
+  validateZod(adminValidation.updateWhitelabelSubscriptionSchema),
+  auditLog({
+    action: 'whitelabel.subscription_change',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    changesFrom: (req) => ({ after: { planCode: req.body?.planCode } }),
+  }),
   adminController.updateWhitelabelSubscription
 );
 
@@ -997,6 +1216,13 @@ router.get('/whitelabels/:id/features',
 router.patch('/whitelabels/:id/features',
   requirePageAccess(ADMIN_PAGES.WHITELABELS, 'update'),
   validateObjectId('id'),
+  validateZod(adminValidation.updateWhitelabelFeatureSchema),
+  auditLog({
+    action: 'whitelabel.feature_toggle',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    changesFrom: (req) => ({ after: { feature: req.body?.feature, enabled: req.body?.enabled } }),
+  }),
   adminController.updateWhitelabelFeature
 );
 
@@ -1027,6 +1253,11 @@ router.patch('/whitelabels/:id/features',
 router.delete('/whitelabels/:id',
   requirePageAccess(ADMIN_PAGES.WHITELABELS, 'delete'),
   validateObjectId('id'),
+  auditLog({
+    action: 'whitelabel.delete',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+  }),
   adminController.deleteWhitelabel
 );
 
@@ -1060,11 +1291,56 @@ router.delete('/whitelabels/:id',
  */
 router.post('/whitelabels/bulk-delete',
   requirePageAccess(ADMIN_PAGES.WHITELABELS, 'delete'),
+  bulkOperationLimiter,
+  validateZod(adminValidation.bulkDeleteWhitelabelsSchema),
+  auditLog({
+    action: 'whitelabel.bulk_delete',
+    targetType: 'user',
+    metadataFrom: (req) => ({ ids: req.body?.ids }),
+  }),
   adminController.bulkDeleteWhitelabels
 );
 
+/**
+ * @swagger
+ * /admin/whitelabels/bulk-status:
+ *   post:
+ *     summary: Bulk update whitelabel status
+ *     description: Update the status of multiple whitelabels at once. Super admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [ids, status]
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items: { type: string }
+ *               status:
+ *                 type: string
+ *                 enum: [active, suspended, inactive]
+ *     responses:
+ *       200:
+ *         description: Whitelabels status updated
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.post('/whitelabels/bulk-status',
   requirePageAccess(ADMIN_PAGES.WHITELABELS, 'update'),
+  bulkOperationLimiter,
+  validateZod(adminValidation.bulkWhitelabelStatusSchema),
+  auditLog({
+    action: 'whitelabel.bulk_status_change',
+    targetType: 'user',
+    metadataFrom: (req) => ({ ids: req.body?.ids, status: req.body?.status }),
+  }),
   adminController.bulkUpdateWhitelabelStatus
 );
 
@@ -1133,6 +1409,13 @@ router.patch('/events/:id/status',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  validateZod(adminValidation.updateEventStatusSchema),
+  auditLog({
+    action: 'event.status_change',
+    targetType: 'event',
+    targetIdFrom: (req) => req.params.id,
+    changesFrom: (req) => ({ after: { status: req.body?.status } }),
+  }),
   adminController.updateEventStatus
 );
 
@@ -1164,6 +1447,11 @@ router.delete('/events/:id',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'delete'),
   validateObjectId('id'),
   filterByWhitelabel,
+  auditLog({
+    action: 'event.delete',
+    targetType: 'event',
+    targetIdFrom: (req) => req.params.id,
+  }),
   adminController.deleteEvent
 );
 
@@ -1197,22 +1485,111 @@ router.delete('/events/:id',
  */
 router.post('/events/bulk-delete',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'delete'),
+  bulkOperationLimiter,
   filterByWhitelabel,
+  validateZod(adminValidation.bulkDeleteEventsSchema),
+  auditLog({
+    action: 'event.bulk_delete',
+    targetType: 'event',
+    metadataFrom: (req) => ({ ids: req.body?.ids }),
+  }),
   adminController.bulkDeleteEvents
 );
 
+/**
+ * @swagger
+ * /admin/events/bulk-status:
+ *   post:
+ *     summary: Bulk update event status
+ *     description: Update the status of multiple events at once. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [ids, status]
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items: { type: string }
+ *               status:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Events status updated
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.post('/events/bulk-status',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'update'),
+  bulkOperationLimiter,
   filterByWhitelabel,
+  validateZod(adminValidation.bulkEventStatusSchema),
+  auditLog({
+    action: 'event.bulk_status_change',
+    targetType: 'event',
+    metadataFrom: (req) => ({ ids: req.body?.ids, status: req.body?.status }),
+  }),
   adminController.bulkUpdateEventStatus
 );
 
+/**
+ * @swagger
+ * /admin/event-targets:
+ *   get:
+ *     summary: Get event targets
+ *     description: Retrieve hosts or whitelabels available as event targets for admin event creation. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema: { type: string, enum: [hosts, whitelabels] }
+ *     responses:
+ *       200:
+ *         description: List of event targets
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.get('/event-targets',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'view'),
   filterByWhitelabel,
   adminController.getEventTargets
 );
 
+/**
+ * @swagger
+ * /admin/users/{id}/subscription-info:
+ *   get:
+ *     summary: Get user subscription info
+ *     description: Retrieve active subscription details for a host user. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Subscription info
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: User not found
+ */
 router.get('/users/:id/subscription-info',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'view'),
   validateObjectId('id'),
@@ -1258,6 +1635,30 @@ router.get('/payments',
   adminController.getPayments
 );
 
+/**
+ * @swagger
+ * /admin/payments/summary:
+ *   get:
+ *     summary: Get payment summary
+ *     description: Retrieve aggregated payment statistics (totals, counts by status). Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200:
+ *         description: Payment summary statistics
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.get('/payments/summary',
   requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
   filterByWhitelabel,
@@ -1268,6 +1669,33 @@ router.get('/payments/summary',
 // EXPORT ROUTES
 // ============================================
 
+/**
+ * @swagger
+ * /admin/payments/export:
+ *   get:
+ *     summary: Export payments
+ *     description: Export payment records as CSV/XLSX. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200:
+ *         description: Payments export file
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.get('/payments/export',
   requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
   filterByWhitelabel,
@@ -1276,6 +1704,30 @@ router.get('/payments/export',
 
 // `:id` route MUST come AFTER literal paths (`summary`, `export`) so
 // Express does not match those against the dynamic `:id` route.
+/**
+ * @swagger
+ * /admin/payments/{id}:
+ *   get:
+ *     summary: Get payment detail
+ *     description: Retrieve a single payment record by ID. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Payment details
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Payment not found
+ */
 router.get('/payments/:id',
   requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
   validateObjectId('id'),
@@ -1283,18 +1735,90 @@ router.get('/payments/:id',
   adminController.getPaymentDetail
 );
 
+/**
+ * @swagger
+ * /admin/moderators/export:
+ *   get:
+ *     summary: Export moderators
+ *     description: Export moderators list as CSV/XLSX. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Moderators export file
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.get('/moderators/export',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'view'),
   filterByWhitelabel,
   adminController.exportModerators
 );
 
+/**
+ * @swagger
+ * /admin/events/export:
+ *   get:
+ *     summary: Export events
+ *     description: Export admin events as CSV/XLSX. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200:
+ *         description: Events export file
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.get('/events/export',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'view'),
   filterByWhitelabel,
   adminController.exportEvents
 );
 
+/**
+ * @swagger
+ * /admin/events/{id}:
+ *   get:
+ *     summary: Get event by ID
+ *     description: Retrieve a single admin-managed event by ID. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Event details
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Event not found
+ */
 router.get('/events/:id',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'view'),
   validateObjectId('id'),
@@ -1302,10 +1826,47 @@ router.get('/events/:id',
   adminController.getEventById
 );
 
+/**
+ * @swagger
+ * /admin/events/{id}:
+ *   patch:
+ *     summary: Update event (full)
+ *     description: Update all editable fields of an event including guest list. Admin only.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               eventDetails: { type: string, description: JSON-stringified event fields }
+ *     responses:
+ *       200:
+ *         description: Event updated
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Event not found
+ */
 router.patch('/events/:id',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  auditLog({
+    action: 'event.update',
+    targetType: 'event',
+    targetIdFrom: (req) => req.params.id,
+  }),
   adminController.updateEventFull
 );
 

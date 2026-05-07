@@ -60,10 +60,6 @@ exports.createHost = catchAsync(async (req, res) => {
   const { email, phoneNumber, name, username, password } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!phoneNumber || !name) {
-    throw new ValidationError('Phone number and name are required');
-  }
-
   const host = await adminService.createHost({
     email, phoneNumber, name, username,
     password: password || crypto.randomBytes(16).toString('hex'),
@@ -78,8 +74,6 @@ exports.updateHostStatus = catchAsync(async (req, res) => {
   const { status } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!status) throw new ValidationError('Status is required');
-
   const host = await adminService.updateHostStatus(id, status, whitelabelId);
   sendSuccess(res, { host }, 'Host status updated successfully');
 });
@@ -88,8 +82,6 @@ exports.updateHostSubscription = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { planCode, status, billingCycle } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
-
-  if (!planCode) throw new ValidationError('Plan code is required');
 
   const result = await adminService.updateHostSubscription(id, { planCode, status, billingCycle }, whitelabelId);
   sendSuccess(res, result, result.message);
@@ -103,14 +95,10 @@ exports.deleteHost = catchAsync(async (req, res) => {
 });
 
 exports.bulkDeleteHosts = catchAsync(async (req, res) => {
-  const { hostIds } = req.body;
+  const { ids } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!hostIds || !Array.isArray(hostIds) || hostIds.length === 0) {
-    throw new ValidationError('Host IDs array is required');
-  }
-
-  const result = await adminService.bulkDeleteHosts(hostIds, whitelabelId);
+  const result = await adminService.bulkDeleteHosts(ids, whitelabelId);
   sendSuccess(res, result, result.message);
 });
 
@@ -127,10 +115,6 @@ exports.verifyHostByPhone = catchAsync(async (req, res) => {
 exports.findOrCreateHost = catchAsync(async (req, res) => {
   const { phoneNumber, name, email } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
-
-  if (!phoneNumber || !name) {
-    throw new ValidationError('Phone number and name are required');
-  }
 
   const result = await adminService.findOrCreateHost({ phoneNumber, name, email, whitelabelId });
   const message = result.created ? 'Host created successfully' : 'Host found';
@@ -166,8 +150,6 @@ exports.updateVendorStatus = catchAsync(async (req, res) => {
   const { status } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!status) throw new ValidationError('Status is required');
-
   const vendor = await adminService.updateVendorStatus(id, status, whitelabelId, req.user?._id);
   sendSuccess(res, { vendor }, 'Vendor status updated successfully');
 });
@@ -176,8 +158,6 @@ exports.updateVendorRating = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { rating, comment } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
-
-  if (rating === undefined) throw new ValidationError('Rating is required');
 
   const result = await adminService.updateVendorRating(id, rating, comment, whitelabelId);
   sendSuccess(res, result, 'Vendor rating updated successfully');
@@ -191,27 +171,18 @@ exports.deleteVendor = catchAsync(async (req, res) => {
 });
 
 exports.bulkDeleteVendors = catchAsync(async (req, res) => {
-  const { vendorIds } = req.body;
+  const { ids } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!vendorIds || !Array.isArray(vendorIds) || vendorIds.length === 0) {
-    throw new ValidationError('Vendor IDs array is required');
-  }
-
-  const result = await adminService.bulkDeleteVendors(vendorIds, whitelabelId);
+  const result = await adminService.bulkDeleteVendors(ids, whitelabelId);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkUpdateVendorStatus = catchAsync(async (req, res) => {
-  const { vendorIds, status } = req.body;
+  const { ids, status } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!vendorIds || !Array.isArray(vendorIds) || vendorIds.length === 0) {
-    throw new ValidationError('Vendor IDs array is required');
-  }
-  if (!status) throw new ValidationError('Status is required');
-
-  const result = await adminService.bulkUpdateVendorStatus(vendorIds, status, whitelabelId);
+  const result = await adminService.bulkUpdateVendorStatus(ids, status, whitelabelId);
   sendSuccess(res, result, result.message);
 });
 
@@ -236,27 +207,11 @@ exports.createModerator = catchAsync(async (req, res) => {
   const { email, phoneNumber, name, username, password, permissions, role, whitelabelId: bodyWhitelabelId } = req.body;
   const filterWhitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!email || !phoneNumber || !name || !password) {
-    throw new ValidationError('Email, phone number, name, and password are required');
-  }
-
-  // Non-super-admin creators inherit the whitelabel from their own scope;
-  // super admins must explicitly pass the target whitelabelId in the body.
-  let whitelabelId;
-  if (req.user.role === ROLES.SUPER_ADMIN) {
-    whitelabelId = bodyWhitelabelId;
-    if (!whitelabelId) {
-      throw new ValidationError('whitelabelId is required when a super admin creates an admin or moderator');
-    }
-  } else {
-    whitelabelId = filterWhitelabelId;
-    if (!whitelabelId) {
-      throw new ValidationError('Creator has no whitelabel scope; cannot create moderator');
-    }
-  }
-
   const moderator = await adminService.createModerator({
-    email, phoneNumber, name, username, password, permissions, whitelabelId, role,
+    email, phoneNumber, name, username, password, permissions, role,
+    actorRole: req.user.role,
+    bodyWhitelabelId,
+    filterWhitelabelId,
   });
 
   sendSuccess(res, { moderator }, 'Moderator created successfully', 201);
@@ -274,8 +229,6 @@ exports.updateModeratorStatus = catchAsync(async (req, res) => {
   const { status } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!status) throw new ValidationError('Status is required');
-
   const moderator = await adminService.updateModeratorStatus(id, status, whitelabelId);
   sendSuccess(res, { moderator }, 'Moderator status updated successfully');
 });
@@ -288,27 +241,18 @@ exports.deleteModerator = catchAsync(async (req, res) => {
 });
 
 exports.bulkDeleteModerators = catchAsync(async (req, res) => {
-  const { moderatorIds } = req.body;
+  const { ids } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!moderatorIds || !Array.isArray(moderatorIds) || moderatorIds.length === 0) {
-    throw new ValidationError('Moderator IDs array is required');
-  }
-
-  const result = await adminService.bulkDeleteModerators(moderatorIds, whitelabelId);
+  const result = await adminService.bulkDeleteModerators(ids, whitelabelId);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkUpdateModeratorStatus = catchAsync(async (req, res) => {
-  const { moderatorIds, status } = req.body;
+  const { ids, status } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!moderatorIds || !Array.isArray(moderatorIds) || moderatorIds.length === 0) {
-    throw new ValidationError('Moderator IDs array is required');
-  }
-  if (!status) throw new ValidationError('Status is required');
-
-  const result = await adminService.bulkUpdateModeratorStatus(moderatorIds, status, whitelabelId);
+  const result = await adminService.bulkUpdateModeratorStatus(ids, status, whitelabelId);
   sendSuccess(res, result, result.message);
 });
 
@@ -338,8 +282,6 @@ exports.updateWhitelabelStatus = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { status, dispatchSetupEmail } = req.body;
 
-  if (!status) throw new ValidationError('Status is required');
-
   const result = await adminService.updateWhitelabelStatus(id, status, {
     dispatchSetupEmail: !!dispatchSetupEmail,
     actor: req.user,
@@ -359,8 +301,6 @@ exports.updateWhitelabelSubscription = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { planCode, status } = req.body;
 
-  if (!planCode) throw new ValidationError('Plan code is required');
-
   const result = await adminService.updateWhitelabelSubscription(id, { planCode, status });
   sendSuccess(res, result, result.message);
 });
@@ -375,9 +315,6 @@ exports.updateWhitelabelFeature = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { feature, enabled } = req.body;
 
-  if (!feature) throw new ValidationError('Feature name is required');
-  if (typeof enabled !== 'boolean') throw new ValidationError('Enabled must be a boolean');
-
   const result = await adminService.updateWhitelabelFeature(id, feature, enabled);
   sendSuccess(res, result, 'Feature updated successfully');
 });
@@ -389,25 +326,16 @@ exports.deleteWhitelabel = catchAsync(async (req, res) => {
 });
 
 exports.bulkDeleteWhitelabels = catchAsync(async (req, res) => {
-  const { whitelabelIds } = req.body;
+  const { ids } = req.body;
 
-  if (!whitelabelIds || !Array.isArray(whitelabelIds) || whitelabelIds.length === 0) {
-    throw new ValidationError('Whitelabel IDs array is required');
-  }
-
-  const result = await adminService.bulkDeleteWhitelabels(whitelabelIds);
+  const result = await adminService.bulkDeleteWhitelabels(ids);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkUpdateWhitelabelStatus = catchAsync(async (req, res) => {
-  const { whitelabelIds, status } = req.body;
+  const { ids, status } = req.body;
 
-  if (!whitelabelIds || !Array.isArray(whitelabelIds) || whitelabelIds.length === 0) {
-    throw new ValidationError('Whitelabel IDs array is required');
-  }
-  if (!status) throw new ValidationError('Status is required');
-
-  const result = await adminService.bulkUpdateWhitelabelStatus(whitelabelIds, status);
+  const result = await adminService.bulkUpdateWhitelabelStatus(ids, status);
   sendSuccess(res, result, result.message);
 });
 
@@ -447,14 +375,9 @@ exports.createEventForHost = catchAsync(async (req, res) => {
 
   if (!targetUserId) throw new ValidationError('Target user is required');
 
-  const Subscription = require('../../../models/SubscriptionModel');
-  const activeSubs = await Subscription.findActiveForUser(targetUserId);
-  const subscription = activeSubs[0] || null;
-
   const context = {
     userId: targetUserId,
     userRole: req.user.role,
-    subscription,
     file: req.file,
     whitelabelId: req.body.whitelabelId || getWhitelabelIdFromFilter(req),
   };
@@ -482,28 +405,19 @@ exports.deleteEvent = catchAsync(async (req, res) => {
 });
 
 exports.bulkDeleteEvents = catchAsync(async (req, res) => {
-  const { eventIds } = req.body;
+  const { ids } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!eventIds || !Array.isArray(eventIds) || eventIds.length === 0) {
-    throw new ValidationError('Event IDs array is required');
-  }
-
-  const result = await adminService.bulkDeleteEvents(eventIds, whitelabelId);
+  const result = await adminService.bulkDeleteEvents(ids, whitelabelId);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkUpdateEventStatus = catchAsync(async (req, res) => {
-  const { eventIds, status } = req.body;
+  const { ids, status } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  if (!eventIds || !Array.isArray(eventIds) || eventIds.length === 0) {
-    throw new ValidationError('Event IDs array is required');
-  }
-  if (!status) throw new ValidationError('Status is required');
-
   const results = await Promise.all(
-    eventIds.map((id) => adminService.updateEventStatus(id, status, whitelabelId))
+    ids.map((id) => adminService.updateEventStatus(id, status, whitelabelId))
   );
   sendSuccess(res, { updated: results.length }, `${results.length} event(s) updated to ${status}`);
 });

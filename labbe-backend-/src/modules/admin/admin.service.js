@@ -17,6 +17,7 @@ const notificationService = require('../notifications/notifications.service');
 const config = require('../../config');
 const email = require('../../../email');
 const { logAudit } = require('../../shared/utils/auditLog');
+const logger = require('../../shared/utils/logger');
 const { guardExportMaxRows } = require('../../shared/utils/excelExport');
 const {
   resolveTaqnyatTemplateRef,
@@ -306,18 +307,25 @@ class AdminService {
       },
     });
 
-    // Create trial subscription and link to user
+    // Create trial subscription and link to user atomically
     const trialPlan = await Plan.findOne({ code: 'trial' });
     if (trialPlan) {
-      const subscription = await Subscription.create({
-        userId: host._id,
-        planId: trialPlan._id,
-        planType: 'trial',
-        status: 'trial',
-        startDate: new Date(),
-        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      });
-      await User.findByIdAndUpdate(host._id, { subscription: subscription._id });
+      const session = await mongoose.startSession();
+      try {
+        await session.withTransaction(async () => {
+          const [subscription] = await Subscription.create([{
+            userId: host._id,
+            planId: trialPlan._id,
+            planType: 'trial',
+            status: 'trial',
+            startDate: new Date(),
+            currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          }], { session });
+          await User.findByIdAndUpdate(host._id, { subscription: subscription._id }, { session });
+        });
+      } finally {
+        session.endSession();
+      }
     }
 
     // Welcome notification to new host (non-blocking)
@@ -328,7 +336,7 @@ class AdminService {
       message: 'Your host account has been created successfully. Start creating events!',
       messageAr: 'تم إنشاء حساب المضيف بنجاح. ابدأ في إنشاء المناسبات!',
       data: { entityType: 'user', entityId: host._id },
-    }).catch(console.error);
+    }).catch((err) => logger.error('admin.service notify failed', err));
 
     return this._formatUserResponse(host);
   }
@@ -360,7 +368,7 @@ class AdminService {
       message: `Your account status has been updated to ${status}.`,
       messageAr: `تم تحديث حالة حسابك إلى ${status}.`,
       data: { entityType: 'user', entityId: host._id, metadata: { status } },
-    }).catch(console.error);
+    }).catch((err) => logger.error('admin.service notify failed', err));
 
     return this._formatUserResponse(host);
   }
@@ -391,16 +399,21 @@ class AdminService {
     const finalBillingCycle = billingCycle || (plan.planType === 'single_event' ? 'once' : 'monthly');
 
     if (!subscription) {
-      // Create new subscription and link to user
-      const newSub = await Subscription.create({
-        userId: hostId,
-        planId: plan._id,
-        status: subscriptionStatus || SUBSCRIPTION_STATUS.ACTIVE,
-        billingCycle: finalBillingCycle,
-        startDate: new Date(),
-        // endDate is automatically computed by Subscription model pre-save hook based on billingCycle if not passed!
-      });
-      await User.findByIdAndUpdate(hostId, { subscription: newSub._id });
+      const session = await mongoose.startSession();
+      try {
+        await session.withTransaction(async () => {
+          const [newSub] = await Subscription.create([{
+            userId: hostId,
+            planId: plan._id,
+            status: subscriptionStatus || SUBSCRIPTION_STATUS.ACTIVE,
+            billingCycle: finalBillingCycle,
+            startDate: new Date(),
+          }], { session });
+          await User.findByIdAndUpdate(hostId, { subscription: newSub._id }, { session });
+        });
+      } finally {
+        session.endSession();
+      }
     } else {
       // Update existing subscription
       subscription.planId = plan._id;
@@ -434,7 +447,7 @@ class AdminService {
       message: `Your subscription has been updated to the ${planCode} plan.`,
       messageAr: `تم تحديث اشتراكك إلى باقة ${planCode}.`,
       data: { entityType: 'subscription', metadata: { planCode } },
-    }).catch(console.error);
+    }).catch((err) => logger.error('admin.service notify failed', err));
 
     return { success: true, message: 'Subscription updated successfully' };
   }
@@ -699,7 +712,7 @@ class AdminService {
           : 'للأسف، تم رفض طلب حساب التاجر الخاص بك. يرجى التواصل مع الدعم.',
         data: { entityType: 'user', entityId: vendor._id, metadata: { vendorStatus } },
         priority: 'high',
-      }).catch(console.error);
+      }).catch((err) => logger.error('admin.service notify failed', err));
 
       // email ensures vendor is notified even when push delivery fails
       if (isApproved && vendor.email) {
@@ -709,7 +722,7 @@ class AdminService {
           ownerName: vendor.profile?.vendorData?.ownerFullName || vendor.name,
           status: vendorStatus,
           dashboardUrl: `${frontendUrl}/ar/vendor-dashboard`,
-        }).catch((err) => console.error('[admin.updateVendorStatus] approval email failed:', err.message));
+        }).catch((err) => logger.error('admin.updateVendorStatus approval email failed', err));
       }
     } else if (vendorStatus === VENDOR_STATUS.SUSPENDED) {
       notificationService.sendToUser(vendor._id, {
@@ -720,7 +733,7 @@ class AdminService {
         messageAr: 'تم تعليق حساب التاجر الخاص بك. يرجى التواصل مع الدعم للمزيد من المعلومات.',
         data: { entityType: 'user', entityId: vendor._id, metadata: { vendorStatus } },
         priority: 'high',
-      }).catch(console.error);
+      }).catch((err) => logger.error('admin.service notify failed', err));
     }
 
     return this._formatUserResponse(vendor);
@@ -902,7 +915,19 @@ class AdminService {
   /**
    * Create new moderator
    */
-  async createModerator({ email, phoneNumber, name, username, password, permissions, whitelabelId, role: requestedRole }) {
+  async createModerator({ email, phoneNumber, name, username, password, permissions, role: requestedRole, actorRole, bodyWhitelabelId, filterWhitelabelId }) {
+    let whitelabelId;
+    if (actorRole === ROLES.SUPER_ADMIN) {
+      whitelabelId = bodyWhitelabelId;
+      if (!whitelabelId) {
+        throw new ValidationError('whitelabelId is required when a super admin creates an admin or moderator');
+      }
+    } else {
+      whitelabelId = filterWhitelabelId;
+      if (!whitelabelId) {
+        throw new ValidationError('Creator has no whitelabel scope; cannot create moderator');
+      }
+    }
     const existingUser = await User.findOne({
       $or: [
         { email: email?.toLowerCase() },
@@ -917,13 +942,6 @@ class AdminService {
       if (existingUser.phoneNumber === phoneNumber) {
         throw new ConflictError('Phone number already exists', 'phoneNumber');
       }
-    }
-
-    // SUPER_ADMIN is the only cross-tenant role; it is never created from this endpoint.
-    if (!whitelabelId) {
-      throw new ValidationError(
-        'whitelabelId is required when creating an admin or moderator user'
-      );
     }
 
     // Determine the correct role. Both branches require a whitelabelId.
@@ -962,7 +980,7 @@ class AdminService {
       message: `Your moderator account has been created. You now have access to the admin dashboard.`,
       messageAr: 'تم إنشاء حساب المشرف الخاص بك. يمكنك الآن الوصول إلى لوحة التحكم.',
       data: { entityType: 'user', entityId: moderator._id },
-    }).catch(console.error);
+    }).catch((err) => logger.error('admin.service notify failed', err));
 
     return this._formatUserResponse(moderator);
   }
@@ -1040,7 +1058,7 @@ class AdminService {
       message: `Your account status has been updated to ${status}.`,
       messageAr: `تم تحديث حالة حسابك إلى ${status}.`,
       data: { entityType: 'user', entityId: moderator._id, metadata: { status } },
-    }).catch(console.error);
+    }).catch((err) => logger.error('admin.service notify failed', err));
 
     return this._formatUserResponse(moderator);
   }
@@ -1147,7 +1165,7 @@ class AdminService {
       query.createdAt = dateRange;
     }
 
-    const [whitelabels, total] = await Promise.all([
+    const [whitelabels, total, hostCountAgg] = await Promise.all([
       User.find(query)
         .select('-password -passwordResetToken')
         .populate('subscription', 'planType status currentPeriodEnd')
@@ -1156,21 +1174,20 @@ class AdminService {
         .limit(limit)
         .lean(),
       User.countDocuments(query),
+      User.aggregate([
+        { $match: { role: ROLES.HOST } },
+        { $group: { _id: '$whitelabelId', count: { $sum: 1 } } },
+      ]),
     ]);
 
-    const whitelabelsWithStats = await Promise.all(
-      whitelabels.map(async (wl) => {
-        const hostCount = await User.countDocuments({
-          whitelabelId: wl._id,
-          role: ROLES.HOST,
-        });
-
-        return {
-          ...this._formatUserResponse(wl),
-          hostCount,
-        };
-      })
+    const hostCountMap = Object.fromEntries(
+      hostCountAgg.map(({ _id, count }) => [String(_id), count])
     );
+
+    const whitelabelsWithStats = whitelabels.map((wl) => ({
+      ...this._formatUserResponse(wl),
+      hostCount: hostCountMap[String(wl._id)] || 0,
+    }));
 
     return {
       whitelabels: whitelabelsWithStats,
@@ -1192,7 +1209,7 @@ class AdminService {
       role: ROLES.WHITELABEL_ADMIN,
     })
       .select('-password -passwordResetToken')
-      .populate('subscription')
+      .populate('subscription', 'planType status currentPeriodEnd planId')
       .lean();
 
     if (!whitelabel) {
@@ -1308,7 +1325,7 @@ class AdminService {
         message: `Your platform account status has been updated to ${status}.`,
         messageAr: `تم تحديث حالة حساب منصتك إلى ${status}.`,
         data: { entityType: 'user', entityId: whitelabel._id, metadata: { status } },
-      }).catch(console.error);
+      }).catch((err) => logger.error('admin.service notify failed', err));
     }
 
     let emailDispatch = { sent: false, attempted: false };
@@ -1342,11 +1359,7 @@ class AdminService {
         );
         emailDispatch.sent = true;
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(
-          `[admin.updateWhitelabelStatus] email send failed for whitelabel ${whitelabelId}:`,
-          err?.message || err
-        );
+        logger.error('admin.updateWhitelabelStatus email send failed', { whitelabelId, err: err?.message || err });
         emailDispatch.error = err?.message || String(err);
       }
     }
@@ -1426,7 +1439,7 @@ class AdminService {
       message: `Your platform subscription has been updated to the ${planCode} plan.`,
       messageAr: `تم تحديث اشتراك منصتك إلى باقة ${planCode}.`,
       data: { entityType: 'subscription', metadata: { planCode } },
-    }).catch(console.error);
+    }).catch((err) => logger.error('admin.service notify failed', err));
 
     return { success: true, message: 'Subscription updated successfully' };
   }
@@ -1577,7 +1590,8 @@ class AdminService {
 
     const event = await Event.findOne(query)
       .populate('host', 'username email phoneNumber name')
-      .populate('guestList', 'name email phone status rsvpStatus checkedIn');
+      .populate('guestList', 'name email phone status rsvpStatus checkedIn')
+      .lean();
 
     if (!event) {
       throw new NotFoundError('Event');
@@ -1668,25 +1682,30 @@ class AdminService {
       event.invitationSettings = merged;
     }
 
-    // Handle guest list update
+    // Handle guest list update inside a transaction so deleteMany + insertMany are atomic
     if (updateData.guestList) {
       const Guest = require('../../../models/GuestModel');
-      // Remove old guests
-      await Guest.deleteMany({ event: eventId });
-      // Create new guests
-      if (updateData.guestList.length > 0) {
-        const docs = updateData.guestList.map(g => ({
-          name: g.name,
-          phone: g.phone,
-          email: g.email,
-          event: eventId,
-          status: 'invited',
-          addedBy: context.adminId,
-        }));
-        const saved = await Guest.insertMany(docs);
-        event.guestList = saved.map(g => g._id);
-      } else {
-        event.guestList = [];
+      const session = await mongoose.startSession();
+      try {
+        await session.withTransaction(async () => {
+          await Guest.deleteMany({ event: eventId }, { session });
+          if (updateData.guestList.length > 0) {
+            const docs = updateData.guestList.map(g => ({
+              name: g.name,
+              phone: g.phone,
+              email: g.email,
+              event: eventId,
+              status: 'invited',
+              addedBy: context.adminId,
+            }));
+            const saved = await Guest.insertMany(docs, { session });
+            event.guestList = saved.map(g => g._id);
+          } else {
+            event.guestList = [];
+          }
+        });
+      } finally {
+        session.endSession();
       }
     }
 
@@ -1712,7 +1731,7 @@ class AdminService {
         message: `Your event "${eventTitle}" has been updated by an admin.`,
         messageAr: `تم تحديث مناسبتك "${eventTitle}" من قبل المسؤول.`,
         data: { entityType: 'event', entityId: event._id },
-      }).catch(console.error);
+      }).catch((err) => logger.error('admin.service notify failed', err));
     }
 
     return { event };
@@ -1859,8 +1878,10 @@ class AdminService {
    * Create event for host (admin action) - rewritten to use eventsService pattern
    */
   async createEventForHost(eventData, guestList, context) {
+    const activeSubs = await Subscription.findActiveForUser(context.userId);
+    const subscription = activeSubs[0] || null;
     const eventsService = require('../events/events.service');
-    return eventsService.createEvent(eventData, guestList, context);
+    return eventsService.createEvent(eventData, guestList, { ...context, subscription });
   }
 
   /**
@@ -1904,7 +1925,7 @@ class AdminService {
         message: `Your event "${eventTitle}" status has been updated to ${event.status}.`,
         messageAr: `تم تحديث حالة مناسبتك "${eventTitle}" إلى ${event.status}.`,
         data: { entityType: 'event', entityId: event._id, metadata: { newStatus: event.status } },
-      }).catch(console.error);
+      }).catch((err) => logger.error('admin.service notify failed', err));
     }
 
     return event;
@@ -1924,7 +1945,7 @@ class AdminService {
       throw new NotFoundError('Event');
     }
 
-    event.status = 'deleted';
+    event.status = EVENT_STATUS.DELETED;
     event.deletedAt = new Date();
     await event.save();
 
@@ -1943,7 +1964,7 @@ class AdminService {
     const result = await Event.updateMany(
       query,
       {
-        status: 'deleted',
+        status: EVENT_STATUS.DELETED,
         deletedAt: new Date(),
       }
     );

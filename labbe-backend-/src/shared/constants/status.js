@@ -44,6 +44,7 @@ const EVENT_STATUS = {
   COMPLETED: 'completed',
   ARCHIVED: 'archived',
   FAILED: 'failed',
+  DELETED: 'deleted',
 };
 
 /**
