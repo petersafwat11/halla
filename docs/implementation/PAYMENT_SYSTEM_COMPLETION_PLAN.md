@@ -3394,10 +3394,10 @@ object instead of touching `process.env` directly. The codebase rule
 access elsewhere"; we deliberately keep `paymentProvider/moyasar.js` as
 the single allowed exception (it predates the rule).
 
-### 15.3 Naming overlap — `PAYMENT_STATUS`
+### 15.3 Naming overlap — `PAYMENT_STATUS` (delete the legacy one)
 
-`src/shared/constants/status.js` lines 117-123 already defines a
-`PAYMENT_STATUS` constant:
+`src/shared/constants/status.js` lines 117-123 defines a `PAYMENT_STATUS`
+constant:
 
 ```js
 const PAYMENT_STATUS = {
@@ -3409,16 +3409,27 @@ const PAYMENT_STATUS = {
 };
 ```
 
-It is exported from `shared/constants/index.js` and used by the legacy
-admin reporting view (`completed/pending/failed` buckets). The new
-Payment model attaches its own enum as `Payment.PAYMENT_STATUS` —
-broader (`pending_3ds`, `authorized`, `captured`, `partially_refunded`,
-`voided`). **Do not unify these two constants.** The legacy one is a
-display-bucket vocabulary (used by `getPayments_legacy`); the new one
-is the lifecycle vocabulary on the Payment row. The `getPayments`
-re-target in §7.1 is exactly the seam where lifecycle statuses get
-collapsed back into legacy buckets for the table view — keep that
-mapping in `admin.service.getPayments`.
+It is exported from `shared/constants/index.js` and **has zero
+references anywhere in the codebase** (`grep -r 'PAYMENT_STATUS'`
+returns only the definition + the re-export — no imports, no usages in
+the backend, web, or mobile app).
+
+**Action:** delete it as part of Phase 1.
+
+- Remove the `const PAYMENT_STATUS = { ... }` block from `status.js`.
+- Remove `PAYMENT_STATUS` from the `module.exports` list in the same
+  file (line 207).
+- Re-run `grep -rn 'PAYMENT_STATUS' src models` to confirm only
+  `Payment.PAYMENT_STATUS` (the model static, with the broader
+  lifecycle vocabulary) remains.
+
+The new lifecycle enum (`pending | pending_3ds | authorized | paid |
+captured | failed | refunded | partially_refunded | voided`) lives on
+`PaymentModel` as a static and is the single source of truth going
+forward. Admin reporting buckets the lifecycle into display labels
+(`completed/pending/failed/refunded`) inside `admin.service.getPayments`
+— that mapping is local to the service, not a shared constant, so it
+doesn't need a parallel enum.
 
 ### 15.4 Partial-refund detection on Moyasar snapshots
 
@@ -3570,6 +3581,7 @@ original draft and are required for the corrected §15 instructions:
 | **MODIFY** | `labbe-backend-/src/modules/subscriptions/subscriptions.controller.js` | accept `source`/`callbackUrl`, branch on `requiresAction` (§15.2A) |
 | **MODIFY** | `labbe-backend-/src/modules/addons/addons.controller.js` | same — accept `source`, branch on `requiresAction` |
 | **MODIFY** | `labbe-backend-/src/config/env.js` | add Joi entries for the new Moyasar env vars (§15.2F) |
+| **MODIFY** | `labbe-backend-/src/shared/constants/status.js` | delete the unused `PAYMENT_STATUS` constant + its re-export (§15.3) |
 | **CREATE** (optional) | `labbe-backend-/scripts/static-checks-payments.js` | CI gate (§15.8) |
 
 ---
