@@ -1161,6 +1161,118 @@ const swaggerOptions = {
           },
         },
 
+        // ---- Checkout (bundled plan + addons) ----
+        CheckoutAddonItem: {
+          type: 'object',
+          required: ['addonType'],
+          properties: {
+            addonType: {
+              type: 'string',
+              enum: [
+                'extra_invites',
+                'extra_reminders',
+                'design_template',
+                'business_customization',
+              ],
+            },
+            quantity: { type: 'integer', minimum: 1, maximum: 50 },
+            templateType: {
+              type: 'string',
+              enum: ['ready_made', 'custom_male', 'custom_themed', 'animated', '3d'],
+            },
+            scope: {
+              type: 'string',
+              enum: ['pool', 'org'],
+              description: 'Event scope is forbidden in checkout (no event yet at subscription time)',
+            },
+          },
+        },
+        CheckoutRequest: {
+          type: 'object',
+          required: ['planCode'],
+          properties: {
+            planCode: { type: 'string', example: 'host_basic_monthly' },
+            addons: {
+              type: 'array',
+              maxItems: 20,
+              items: { $ref: '#/components/schemas/CheckoutAddonItem' },
+            },
+            discountCode: { type: 'string' },
+            source: {
+              type: 'object',
+              properties: {
+                type: {
+                  type: 'string',
+                  enum: ['creditcard', 'creditcard_3ds_test', 'stcpay', 'applepay'],
+                },
+                name: { type: 'string' },
+                number: { type: 'string' },
+                month: { oneOf: [{ type: 'integer' }, { type: 'string' }] },
+                year: { oneOf: [{ type: 'integer' }, { type: 'string' }] },
+                cvc: { type: 'string' },
+                mobile: { type: 'string' },
+                token: { type: 'string', nullable: true },
+              },
+            },
+            callbackUrl: { type: 'string', format: 'uri' },
+          },
+        },
+        CheckoutTotals: {
+          type: 'object',
+          properties: {
+            planPrice: { type: 'number' },
+            addonsTotal: { type: 'number' },
+            discountAmount: { type: 'number' },
+            total: { type: 'number' },
+          },
+        },
+        CheckoutResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: {
+                subscription: { $ref: '#/components/schemas/Subscription' },
+                addons: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Addon' },
+                },
+                failedAddons: {
+                  type: 'array',
+                  description: 'Per-line refund tickets for addons that could not be activated',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      addonType: { type: 'string' },
+                      quantity: { type: 'integer' },
+                      price: { type: 'number' },
+                      reason: { type: 'string' },
+                    },
+                  },
+                },
+                paymentId: { type: 'string', nullable: true },
+                totals: { $ref: '#/components/schemas/CheckoutTotals' },
+              },
+            },
+          },
+        },
+        Checkout3DSResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: {
+                requiresAction: { type: 'boolean', example: true },
+                redirectUrl: { type: 'string', format: 'uri' },
+                paymentId: { type: 'string' },
+                totals: { $ref: '#/components/schemas/CheckoutTotals' },
+              },
+            },
+          },
+        },
+
         // Subscription Request Models
         SubscribeRequest: {
           type: 'object',

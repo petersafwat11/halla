@@ -55,6 +55,13 @@ exports.poll3ds = catchAsync(async (req, res) => {
         ) {
           const addonsService = require('../addons/addons.service');
           await addonsService.finalizePending3ds(payment._id);
+        } else if (
+          purpose === 'checkout' &&
+          payment.metadata?.pendingCheckoutIntent &&
+          !payment.metadata?.checkoutFinalizedAt
+        ) {
+          const checkoutService = require('./checkout.service');
+          await checkoutService.finalizePending3ds(payment._id);
         }
       } catch (_) { /* finalize errors emit their own pending_refund audit */ }
       payment = await paymentsService.getById(payment._id);

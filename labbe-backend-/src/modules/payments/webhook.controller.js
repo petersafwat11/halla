@@ -137,6 +137,13 @@ exports.handle = async (req, res) => {
             ) {
               const addonsService = require('../addons/addons.service');
               await addonsService.finalizePending3ds(payment._id);
+            } else if (
+              purpose === 'checkout' &&
+              payment.metadata?.pendingCheckoutIntent &&
+              !payment.metadata?.checkoutFinalizedAt
+            ) {
+              const checkoutService = require('./checkout.service');
+              await checkoutService.finalizePending3ds(payment._id);
             }
           } catch (err) {
             // eslint-disable-next-line no-console
