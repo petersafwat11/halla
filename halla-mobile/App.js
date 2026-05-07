@@ -4,7 +4,6 @@ import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Font from "expo-font";
-// TODO: run: npx expo install expo-notifications expo-constants
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 
@@ -22,8 +21,8 @@ import { QueryProvider } from "./contexts/QueryProvider";
 import { useAuthStore } from "./stores/authStore";
 import AppNavigator from "./navigation/AppNavigator";
 import LanguageSelector from "./components/languagePrefrence/LanguageSelector";
-import { API_BASE_URL } from "./config/api";
-import { fetchWithTimeout } from "./services/apiClient";
+import { ENDPOINTS } from "./config/api";
+import { apiFetch } from "./services/apiClient";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 // ------------------------------------------------- //
@@ -41,9 +40,10 @@ Notifications.setNotificationHandler({
 
 /**
  * Request permission, obtain an Expo Push Token, and register it with the backend.
- * @param {string} authToken - The user's JWT, used to authenticate the PATCH request.
+ * Routed through apiFetch so token refresh is automatic if the access token
+ * has expired since the last app foreground.
  */
-const registerForPushNotifications = async (authToken) => {
+const registerForPushNotifications = async () => {
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -62,14 +62,10 @@ const registerForPushNotifications = async (authToken) => {
     const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
     const pushToken = tokenData.data;
 
-    if (authToken && pushToken) {
-      await fetchWithTimeout(`${API_BASE_URL}/auth/update-push-token`, {
+    if (pushToken) {
+      await apiFetch(ENDPOINTS.AUTH.UPDATE_PUSH_TOKEN, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ pushToken }),
+        body: { pushToken },
       }).catch(() => {});
     }
 
@@ -115,7 +111,7 @@ function AppContent() {
   // This fires on cold start (session restored) and after fresh login.
   useEffect(() => {
     if (authStatus === "authenticated" && authToken) {
-      registerForPushNotifications(authToken);
+      registerForPushNotifications();
     }
   }, [authStatus, authToken]);
 

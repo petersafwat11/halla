@@ -15,7 +15,7 @@ export function useProfile() {
 
   return useQuery({
     queryKey: ['user', 'profile'],
-    queryFn: () => getProfileAPI(token),
+    queryFn: () => getProfileAPI(),
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
   });
@@ -31,8 +31,8 @@ export function useNotificationSettings() {
   return useQuery({
     queryKey: ['user', 'notification-settings'],
     queryFn: async () => {
-      const response = await getNotificationPreferencesAPI(token);
-      return response.data?.preferences || response.data || response;
+      const response = await getNotificationPreferencesAPI();
+      return response.data?.preferences || response.data;
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,

@@ -3,6 +3,7 @@ import {
   loginWithEmailAPI,
   sendOTPAPI,
   verifyOTPAPI,
+  resendOTPAPI,
   signupWithPhoneAPI,
   verifySignupOTPAPI,
   signupVendorAPI,
@@ -139,6 +140,17 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       set({ status: "unauthenticated", error: error.message || "Failed to send OTP" });
       return { success: false, error: error.message };
+    }
+  },
+
+  resendOTP: async ({ type = "login" } = {}) => {
+    const { tempMobile } = get();
+    if (!tempMobile) return { success: false, error: "Mobile number not found" };
+    try {
+      await resendOTPAPI({ mobile: tempMobile, type });
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message || "Failed to resend OTP" };
     }
   },
 

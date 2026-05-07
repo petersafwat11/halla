@@ -16,6 +16,7 @@ import { useTranslation } from "../../localization";
 const OTPVerificationForm = ({
   onSubmit,
   onEditPhone,
+  onResend,
   phoneNumber,
   loading = false,
   resendTimer = 90,
@@ -54,10 +55,20 @@ const OTPVerificationForm = ({
     }
   }, [timer]);
 
-  const handleResend = () => {
-    console.log("Resend OTP");
-    setTimer(resendTimer);
-    setCanResend(false);
+  const [isResending, setIsResending] = useState(false);
+
+  const handleResend = async () => {
+    if (!canResend || isResending) return;
+    setIsResending(true);
+    try {
+      if (onResend) await onResend();
+      setTimer(resendTimer);
+      setCanResend(false);
+    } catch (_e) {
+      /* error surfaced by parent */
+    } finally {
+      setIsResending(false);
+    }
   };
 
   const onFormSubmit = async (data) => {

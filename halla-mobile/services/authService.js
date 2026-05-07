@@ -59,8 +59,8 @@ export const loginWithEmailAPI = async ({ email, password }) => {
     dlog("[AUTH SERVICE] Login successful:", data.user?.email);
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
     };
@@ -128,8 +128,8 @@ export const signupVendorAPI = async (vendorData) => {
     dlog("[AUTH SERVICE] Vendor signup successful");
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -202,8 +202,8 @@ export const signupWhitelabelAPI = async (whitelabelData) => {
     dlog("[AUTH SERVICE] Whitelabel signup successful");
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -281,8 +281,8 @@ export const verifyOTPAPI = async ({ mobile, otp }) => {
     );
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
       profileCompleted: data.data?.profileCompleted,
@@ -349,8 +349,8 @@ export const verifySignupOTPAPI = async ({ mobile, otp }) => {
     dlog("[AUTH SERVICE] Signup OTP verified successfully");
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
       profileCompleted: data.data?.profileCompleted,
@@ -404,8 +404,8 @@ export const completeProfileAPI = async ({
     );
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -536,8 +536,8 @@ export const refreshTokenAPI = async (refreshToken) => {
   }
 
   return {
-    accessToken: data.data?.token || data.token,
-    refreshToken: data.data?.refreshToken || data.refreshToken,
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
     user: data.data?.user,
   };
 };
@@ -559,8 +559,8 @@ export const resetPasswordAPI = async ({ token, password, passwordConfirm }) => 
   }
 
   return {
-    accessToken: data.data?.token || data.token,
-    refreshToken: data.data?.refreshToken || data.refreshToken,
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
     user: data.data?.user,
   };
 };
@@ -589,8 +589,8 @@ export const setupPasswordAPI = async ({ token, password, passwordConfirm }) => 
   }
 
   return {
-    accessToken: data.data?.token || data.token,
-    refreshToken: data.data?.refreshToken || data.refreshToken,
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
     user: data.data?.user,
   };
 };

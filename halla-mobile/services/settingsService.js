@@ -1,11 +1,8 @@
 /**
  * Settings service.
  *
- * Phase 4 W0-AUTH: routed through `apiFetch` so the centralized
- * interceptor handles `Authorization` attachment, 401 → refresh, and the
- * 30 s default timeout. Legacy callers that still pass a `token`
- * argument continue to work — the argument is ignored because the
- * wrapper reads the in-memory access token directly.
+ * All requests go through `apiFetch` which attaches Authorization, refreshes
+ * on 401, and applies the 30s default timeout. Callers do not pass tokens.
  */
 
 import { ENDPOINTS } from "../config/api";
@@ -20,28 +17,17 @@ const _request = async (path, init = {}, errorMessage) => {
   return data;
 };
 
-/**
- * Get user profile.
- * @param {string} [_legacyToken] - ignored; kept for caller compatibility
- */
-export const getProfileAPI = async (_legacyToken) =>
+export const getProfileAPI = () =>
   _request(ENDPOINTS.USERS.PROFILE, { method: "GET" }, "Failed to get profile");
 
-/**
- * Update user profile.
- */
-export const updateProfileAPI = async (data, _legacyToken) =>
+export const updateProfileAPI = (data) =>
   _request(
     ENDPOINTS.USERS.UPDATE_PROFILE,
     { method: "PATCH", body: data },
     "Failed to update profile"
   );
 
-/**
- * Upload profile image (multipart). Goes through `apiFetch` so we still
- * inherit the timeout — note the wrapper does not retry FormData on 401.
- */
-export const uploadProfileImageAPI = async (imageFile, _legacyToken) => {
+export const uploadProfileImageAPI = (imageFile) => {
   const formData = new FormData();
   formData.append("avatar", imageFile);
   return _request(
@@ -51,62 +37,52 @@ export const uploadProfileImageAPI = async (imageFile, _legacyToken) => {
   );
 };
 
-/**
- * Change password.
- */
-export const changePasswordAPI = async (passwordData, token) => {
-  let currentPassword;
-  let newPassword;
-  if (typeof passwordData === "object") {
-    currentPassword = passwordData.oldPassword || passwordData.currentPassword;
-    newPassword = passwordData.newPassword;
-  } else {
-    currentPassword = passwordData;
-    newPassword = token;
-  }
-
-  return _request(
+export const changePasswordAPI = ({ oldPassword, currentPassword, newPassword }) =>
+  _request(
     ENDPOINTS.AUTH.UPDATE_PASSWORD,
     {
       method: "PATCH",
-      body: { currentPassword, newPassword, passwordConfirm: newPassword },
+      body: {
+        currentPassword: currentPassword || oldPassword,
+        newPassword,
+        passwordConfirm: newPassword,
+      },
     },
     "Failed to change password"
   );
-};
 
-export const deleteAccountAPI = async (_legacyToken) =>
+export const deleteAccountAPI = () =>
   _request(ENDPOINTS.USERS.PROFILE, { method: "DELETE" }, "Failed to delete account");
 
-export const updateAccountAPI = async (data, _legacyToken) =>
+export const updateAccountAPI = (data) =>
   _request(
     ENDPOINTS.USERS.UPDATE_PROFILE,
     { method: "PATCH", body: data },
     "Failed to update account"
   );
 
-export const getNotificationPreferencesAPI = async (_legacyToken) =>
+export const getNotificationPreferencesAPI = () =>
   _request(
     ENDPOINTS.USERS.NOTIFICATION_SETTINGS,
     { method: "GET" },
     "Failed to get notification preferences"
   );
 
-export const updateNotificationPreferencesAPI = async (data, _legacyToken) =>
+export const updateNotificationPreferencesAPI = (data) =>
   _request(
     ENDPOINTS.USERS.NOTIFICATION_SETTINGS,
     { method: "PATCH", body: data },
     "Failed to update notification preferences"
   );
 
-export const sendEmailVerificationCodeAPI = async (_legacyToken) =>
+export const sendEmailVerificationCodeAPI = () =>
   _request(
     ENDPOINTS.AUTH.SEND_VERIFICATION_CODE,
     { method: "POST" },
     "Failed to send verification code"
   );
 
-export const verifyEmailAPI = async (code, _legacyToken) =>
+export const verifyEmailAPI = (code) =>
   _request(
     ENDPOINTS.AUTH.VERIFY_EMAIL,
     { method: "POST", body: { code } },

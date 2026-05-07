@@ -25,7 +25,7 @@ const { width } = Dimensions.get("window");
 export default function LoginScreen({ navigation }) {
   const { t } = useTranslation("auth");
   const toast = useToast();
-  const { loginWithEmail, sendOTP, verifyOTP, status, getTempMobile, error: authError } =
+  const { loginWithEmail, sendOTP, verifyOTP, resendOTP, status, getTempMobile, error: authError } =
     useAuthStore();
   const [step, setStep] = useState("input");
   const [loginMethod, setLoginMethod] = useState("mobile");
@@ -134,6 +134,13 @@ export default function LoginScreen({ navigation }) {
                 <OTPVerificationForm
                   onSubmit={handleOTPVerification}
                   onEditPhone={handleEditPhone}
+                  onResend={async () => {
+                    const result = await resendOTP({ type: "login" });
+                    if (!result.success) {
+                      toast.error(result.error || t("errors.otpFailed", "فشل التحقق من الرمز"));
+                      throw new Error(result.error);
+                    }
+                  }}
                   phoneNumber={`+966${getTempMobile()}`}
                   loading={loading}
                 />

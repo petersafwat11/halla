@@ -31,6 +31,7 @@ export default function SignupScreen({ navigation }) {
     verifySignupOTP,
     completeProfile,
     signupVendor,
+    resendOTP,
     status,
     getTempMobile,
     tempMobile,
@@ -144,6 +145,13 @@ export default function SignupScreen({ navigation }) {
           <OTPVerificationForm
             onSubmit={handleOTPVerification}
             onEditPhone={handleEditPhone}
+            onResend={async () => {
+              const result = await resendOTP({ type: "signup" });
+              if (!result.success) {
+                toast.error(result.error || t("errors.otpFailed", "فشل إرسال الرمز"));
+                throw new Error(result.error);
+              }
+            }}
             phoneNumber={`+966${getTempMobile()}`}
             loading={loading}
           />
