@@ -37,6 +37,7 @@ const emailModule = require('../../infrastructure/email');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
 const { processUploadedFiles, getFileUrl } = require('../../shared/utils/s3Upload');
 const { logAudit } = require('../../shared/utils/auditLog');
+const logger = require('../../shared/utils/logger');
 
 class AuthService {
   /**
@@ -429,7 +430,9 @@ class AuthService {
     await host.save({ validateBeforeSave: false });
 
     // Send admin notification (non-blocking)
-    this._notifyAdminsNewUser(host, ROLES.HOST).catch(console.error);
+    this._notifyAdminsNewUser(host, ROLES.HOST).catch((err) =>
+      logger.error('host signup: notify admins failed', err)
+    );
 
     // Send welcome notification to new host (non-blocking)
     notificationService.sendToUser(host._id, {
@@ -439,9 +442,8 @@ class AuthService {
       message: 'Your account has been created successfully. Start creating your first event!',
       messageAr: 'تم إنشاء حسابك بنجاح. ابدأ في إنشاء أول مناسبة لك!',
       data: { entityType: 'user', entityId: host._id },
-    }).catch(console.error);
+    }).catch((err) => logger.error('host signup: welcome notification failed', err));
 
-    // FLOW-02-F01: send email verification link (non-blocking, only if email present)
     if (host.email) {
       const lang = context.lang || 'ar';
       otpService.createEmailVerificationToken(host.email, host._id)
@@ -453,16 +455,17 @@ class AuthService {
             expiresIn: '24 hours',
           }, lang);
         })
-        .catch(console.error);
+        .catch((err) => logger.error('host signup: email verification send failed', err));
     }
 
-    // FLOW-02-F03: send welcome email (non-blocking, only if email present)
     if (host.email) {
       emailModule.send.welcome(host.email, {
         name: host.name || host.username,
         email: host.email,
         role: ROLES.HOST,
-      }, context.lang || 'ar').catch(console.error);
+      }, context.lang || 'ar').catch((err) =>
+        logger.error('host signup: welcome email failed', err)
+      );
     }
 
     const tokens = await this.issueTokenPair(host, context);
@@ -556,14 +559,27 @@ class AuthService {
     });
 
     // Notifications
-    this._notifyAdminsNewVendor(vendor, brandName, ownerFullName).catch(console.error);
+    this._notifyAdminsNewVendor(vendor, brandName, ownerFullName).catch((err) =>
+      logger.error('vendor signup: notify admins failed', err)
+    );
     if (email) {
       emailModule.send.vendorApplicationPending(email, {
         vendorName: ownerFullName,
         brandName,
         email,
-      }).catch(console.error);
+      }).catch((err) =>
+        logger.error('vendor signup: pending email failed', err)
+      );
     }
+
+    logAudit({
+      action: 'vendor_signup',
+      actor: vendor._id,
+      targetType: 'User',
+      targetId: vendor._id,
+      metadata: { brandName, ownerFullName, email },
+      status: 'success',
+    }).catch((err) => logger.error('vendor signup: audit log failed', err));
 
     return {
       user: this.sanitizeUser(vendor),
@@ -629,15 +645,29 @@ class AuthService {
     await whitelabel.save({ validateBeforeSave: false });
 
     // Notifications
-    this._notifyAdminsNewWhitelabel(whitelabel, englishName, arabicName).catch(console.error);
+    this._notifyAdminsNewWhitelabel(whitelabel, englishName, arabicName).catch((err) =>
+      logger.error('whitelabel signup: notify admins failed', err)
+    );
     if (email) {
       const planName = parsedPlanSelection?.planCode || 'Business';
       emailModule.send.whitelabelApplicationPending(email, {
         platformName: englishName || arabicName,
         email,
         planName,
-      }).catch(console.error);
+      }).catch((err) =>
+        logger.error('whitelabel signup: pending email failed', err)
+      );
     }
+
+    logAudit({
+      action: 'whitelabel_signup',
+      actor: whitelabel._id,
+      targetType: 'User',
+      targetId: whitelabel._id,
+      whitelabelId: whitelabel._id,
+      metadata: { englishName, arabicName, planCode: parsedPlanSelection?.planCode },
+      status: 'success',
+    }).catch((err) => logger.error('whitelabel signup: audit log failed', err));
 
     return {
       user: this.sanitizeUser(whitelabel),
@@ -799,7 +829,9 @@ class AuthService {
     await user.save({ validateBeforeSave: false });
     await subscription.populate('planId');
 
-    this._notifyAdminsNewUser(user, ROLES.HOST).catch(console.error);
+    this._notifyAdminsNewUser(user, ROLES.HOST).catch((err) =>
+      logger.error('signup OTP verify: notify admins failed', err)
+    );
 
     // Send welcome notification to new user (non-blocking)
     notificationService.sendToUser(user._id, {
@@ -809,9 +841,22 @@ class AuthService {
       message: 'Your account has been created successfully. Start creating your first event!',
       messageAr: 'تم إنشاء حسابك بنجاح. ابدأ في إنشاء أول مناسبة لك!',
       data: { entityType: 'user', entityId: user._id },
-    }).catch(console.error);
+    }).catch((err) =>
+      logger.error('signup OTP verify: welcome notification failed', err)
+    );
 
     const tokens = await this.issueTokenPair(user, context);
+
+    logAudit({
+      action: 'signup_otp_verified',
+      actor: user._id,
+      targetType: 'User',
+      targetId: user._id,
+      metadata: { phoneNumber: normalizedPhone },
+      status: 'success',
+      ip: context.ip,
+      userAgent: context.userAgent,
+    }).catch((err) => logger.error('signup OTP verify: audit log failed', err));
 
     return {
       user: this.sanitizeUser(user),
@@ -1042,9 +1087,11 @@ class AuthService {
    */
   async getMe(userId) {
     const user = await User.findById(userId)
+      .select('-password -passwordResetToken -passwordResetExpires -passwordSetupToken -passwordSetupExpires -emailVerificationCode -emailVerificationExpires')
       .populate({
         path: 'subscription',
-        populate: { path: 'planId' },
+        select: 'status planId currentPeriodEnd trialEndsAt cancelAtPeriodEnd',
+        populate: { path: 'planId', select: 'code name price billingCycle features' },
       })
       .populate('whitelabelId', 'identity domain status');
 
@@ -1096,7 +1143,70 @@ class AuthService {
 
     await user.save();
 
+    logAudit({
+      action: 'profile_completed',
+      actor: user._id,
+      targetType: 'User',
+      targetId: user._id,
+      metadata: { username: user.username, email: user.email },
+      status: 'success',
+    }).catch((err) => logger.error('complete profile: audit log failed', err));
+
     return this.sanitizeUser(user);
+  }
+
+  /**
+   * Send a 6-digit email verification code to the user's email.
+   * @param {string} userId
+   * @returns {Promise<void>}
+   */
+  async sendEmailVerificationCode(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+    if (!user.email) {
+      throw new ValidationError('No email address to verify');
+    }
+    if (user.emailVerified) {
+      throw new ValidationError('Email is already verified');
+    }
+
+    const code = user.createEmailVerificationCode();
+    await user.save({ validateBeforeSave: false });
+
+    await emailModule({
+      email: user.email,
+      subject: 'Email Verification Code',
+      message: `<h2>Email Verification</h2><p>Your verification code is: <strong>${code}</strong></p><p>This code expires in 15 minutes.</p>`,
+    });
+  }
+
+  /**
+   * Verify the user's email using the 6-digit code.
+   * @param {string} userId
+   * @param {string} code
+   * @returns {Promise<void>}
+   */
+  async verifyEmail(userId, code) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+
+    if (!user.verifyEmailCode(code)) {
+      throw new ValidationError('Invalid or expired verification code');
+    }
+
+    user.emailVerified = true;
+    user.emailVerificationCode = undefined;
+    user.emailVerificationExpires = undefined;
+
+    if (user.profile?.hostData) {
+      user.profile.hostData.emailVerified = true;
+    }
+
+    await user.save({ validateBeforeSave: false });
   }
 
   // ============================================

@@ -8,6 +8,7 @@
 const crypto = require('crypto');
 const taqnyat = require('../../infrastructure/taqnyat');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
+const logger = require('../../shared/utils/logger');
 const OTP = require('../../../models/OTPModel');
 
 const OTP_CONFIG = {
@@ -23,6 +24,18 @@ const generateOTP = () => {
 
 const sendOTP = async (phoneNumber, lang = 'ar') => {
   const normalizedPhone = normalizePhoneNumber(phoneNumber);
+
+  const recent = await OTP.findOne({ phoneNumber: normalizedPhone });
+  if (recent && (Date.now() - recent.createdAt.getTime()) < OTP_CONFIG.cooldownSeconds * 1000) {
+    const waitTime = Math.ceil(
+      (OTP_CONFIG.cooldownSeconds * 1000 - (Date.now() - recent.createdAt.getTime())) / 1000
+    );
+    return {
+      success: false,
+      error: `Please wait ${waitTime} seconds before requesting a new code.`,
+    };
+  }
+
   const otp = generateOTP();
 
   // Remove any existing OTP for this phone
@@ -45,7 +58,7 @@ const sendOTP = async (phoneNumber, lang = 'ar') => {
     const result = await taqnyat.sendSMS(normalizedPhone, messages[lang] || messages.ar);
     return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('[OTP] Send failed:', error);
+    logger.error('OTP send failed', error);
     return { success: false, error: error.message };
   }
 };

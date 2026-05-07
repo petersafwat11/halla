@@ -30,16 +30,24 @@ const authController = require("./auth.controller");
 // Shared middleware (using existing during migration)
 const { protect } = require("../../shared/middleware/auth");
 const {
-  validateEmail,
-  validatePhone,
-  validatePassword,
-  validateStringLength,
-  validate,
+  validateZod,
 } = require("../../shared/middleware/validation");
 const {
   loginSchema,
   hostSignupSchema,
+  vendorSignupSchema,
+  whitelabelSignupSchema,
+  otpSendSchema,
   otpVerifySchema,
+  otpResendSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  updatePasswordSchema,
+  completeProfileSchema,
+  setupPasswordSchema,
+  verifyEmailSchema,
+  resendSetupEmailSchema,
+  verifyEmailLinkSchema,
 } = require("./auth.validation");
 const {
   authLimiter,
@@ -81,15 +89,6 @@ const checkDuplicates = catchAsync(async (req, res, next) => {
 
   next();
 });
-
-const validateOTP = (req, res, next) => {
-  const { otp, code } = req.body;
-  const otpValue = otp || code;
-  if (!otpValue || !/^\d{4,6}$/.test(otpValue)) {
-    return next(new AppError("OTP must be 4-6 digits", 400));
-  }
-  next();
-};
 
 // ============================================
 // PUBLIC ROUTES
@@ -134,7 +133,8 @@ const validateOTP = (req, res, next) => {
  */
 router.post(
   "/signup/host",
-  validate(hostSignupSchema),
+  authLimiter,
+  validateZod(hostSignupSchema),
   checkDuplicates,
   authController.hostSignup
 );
@@ -163,12 +163,9 @@ router.post(
  */
 router.post(
   "/signup/vendor",
+  authLimiter,
   uploadVendorFiles,
-  validateEmail("email", { required: true }),
-  validatePhone("phoneNumber", { required: true }),
-  validatePassword("password", { required: true }),
-  validateStringLength("brandName", { required: true, min: 2, max: 100 }),
-  validateStringLength("ownerFullName", { required: true, min: 2, max: 100 }),
+  validateZod(vendorSignupSchema),
   checkDuplicates,
   authController.vendorSignup
 );
@@ -210,11 +207,9 @@ router.post(
  */
 router.post(
   "/signup/whitelabel",
+  authLimiter,
   uploadLogo,
-  validateEmail("email"),
-  validatePhone("phoneNumber"),
-  validateStringLength("englishName", { min: 2, max: 100 }),
-  validateStringLength("arabicName", { min: 2, max: 100 }),
+  validateZod(whitelabelSignupSchema),
   checkDuplicates,
   authController.whitelabelSignup
 );
@@ -248,7 +243,7 @@ router.post(
  *       429:
  *         $ref: '#/components/responses/TooManyRequests'
  */
-router.post("/login", authLimiter, validate(loginSchema), authController.login);
+router.post("/login", authLimiter, validateZod(loginSchema), authController.login);
 
 /**
  * @swagger
@@ -296,7 +291,7 @@ router.post(
   "/otp/send-signup",
   otpLimiter,
   otpHourlyLimiter,
-  validatePhone("phoneNumber"),
+  validateZod(otpSendSchema),
   checkDuplicates,
   authController.sendSignupOTP
 );
@@ -322,7 +317,7 @@ router.post(
  *       429:
  *         $ref: '#/components/responses/TooManyRequests'
  */
-router.post("/otp/verify-signup", authLimiter, validate(otpVerifySchema), authController.verifySignupOTP);
+router.post("/otp/verify-signup", authLimiter, validateZod(otpVerifySchema), authController.verifySignupOTP);
 
 /**
  * @swagger
@@ -347,7 +342,7 @@ router.post(
   "/otp/send-login",
   otpLimiter,
   otpHourlyLimiter,
-  validatePhone("phoneNumber"),
+  validateZod(otpSendSchema),
   authController.sendLoginOTP
 );
 
@@ -376,7 +371,7 @@ router.post(
  *       429:
  *         $ref: '#/components/responses/TooManyRequests'
  */
-router.post("/otp/verify-login", authLimiter, validate(otpVerifySchema), authController.verifyLoginOTP);
+router.post("/otp/verify-login", authLimiter, validateZod(otpVerifySchema), authController.verifyLoginOTP);
 
 /**
  * @swagger
@@ -401,7 +396,7 @@ router.post(
   "/otp/resend",
   otpLimiter,
   otpHourlyLimiter,
-  validatePhone("phoneNumber"),
+  validateZod(otpResendSchema),
   authController.resendOTP
 );
 
@@ -438,7 +433,7 @@ router.post(
 router.post(
   "/forgot-password",
   passwordResetLimiter,
-  validateEmail("email"),
+  validateZod(forgotPasswordSchema),
   authController.forgotPassword
 );
 
@@ -479,6 +474,7 @@ router.post(
 router.patch(
   "/reset-password/:token",
   authLimiter,
+  validateZod(resetPasswordSchema),
   authController.resetPassword
 );
 
@@ -541,7 +537,12 @@ router.get("/validate-setup-token/:token", authLimiter, authController.validateS
  *       429:
  *         $ref: '#/components/responses/TooManyRequests'
  */
-router.post("/setup-password", authLimiter, authController.setupPassword);
+router.post(
+  "/setup-password",
+  authLimiter,
+  validateZod(setupPasswordSchema),
+  authController.setupPassword
+);
 
 /**
  * @swagger
@@ -572,7 +573,7 @@ router.post("/setup-password", authLimiter, authController.setupPassword);
 router.post(
   "/resend-setup-email",
   passwordResetLimiter,
-  validateEmail("email"),
+  validateZod(resendSetupEmailSchema),
   authController.resendSetupEmail
 );
 
@@ -596,11 +597,14 @@ router.post(
 // Logout is intentionally public: clearing cookies + revoking the
 // presented refresh token must work even when the access token has
 // already expired.
-router.post("/logout", authController.logout);
+router.post("/logout", authLimiter, authController.logout);
 
-// FLOW-02-F01: redeem the email verification link sent at host signup.
-// Must be public (no access token when clicking the link from email).
-router.get("/verify-email-link", authLimiter, authController.verifyEmailLink);
+router.get(
+  "/verify-email-link",
+  authLimiter,
+  validateZod(verifyEmailLinkSchema, "query"),
+  authController.verifyEmailLink
+);
 
 // ============================================
 // PROTECTED ROUTES
@@ -672,37 +676,9 @@ router.get("/me", authController.getMe);
 router.patch(
   "/update-password",
   authLimiter,
-  validatePassword("newPassword"),
+  validateZod(updatePasswordSchema),
   authController.updatePassword
 );
-
-/**
- * @swagger
- * /auth/update-me:
- *   patch:
- *     summary: Update profile
- *     description: Update current user's profile information
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               fullName:
- *                 type: string
- *               phoneNumber:
- *                 type: string
- *     responses:
- *       200:
- *         description: Profile updated successfully
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.patch("/update-me", authController.updateMe);
 
 /**
  * @swagger
@@ -725,7 +701,11 @@ router.patch("/update-me", authController.updateMe);
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.patch("/complete-profile", authController.completeHostProfile);
+router.patch(
+  "/complete-profile",
+  validateZod(completeProfileSchema),
+  authController.completeHostProfile
+);
 
 /**
  * @swagger
@@ -774,6 +754,10 @@ router.post(
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.post("/verify-email", authController.verifyEmail);
+router.post(
+  "/verify-email",
+  validateZod(verifyEmailSchema),
+  authController.verifyEmail
+);
 
 module.exports = router;

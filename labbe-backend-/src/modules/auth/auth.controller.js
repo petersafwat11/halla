@@ -103,8 +103,19 @@ const requestContext = (req) => ({
 });
 
 /**
+ * Detect whether the request originates from a browser. Browsers send the
+ * refresh token in an HttpOnly cookie, so we strip it from the JSON body to
+ * shrink leak surface (logs, error reporters, screenshots). Mobile keeps the
+ * body field — it stores the token in SecureStore.
+ */
+const isBrowserClient = (req) => {
+  if (req.get("x-client") === "mobile") return false;
+  return Boolean(req.cookies && Object.keys(req.cookies).length > 0);
+};
+
+/**
  * Send the standard auth response.
- * Backwards-compatible shape: token/refreshToken at root, user nested under data.
+ * Shape: status, token (root, legacy), refreshToken (mobile only), data.user.
  */
 const sendAuthResponse = (
   res,
@@ -112,13 +123,16 @@ const sendAuthResponse = (
 ) => {
   const response = {
     status: "success",
-    token: accessToken, // top-level for legacy compatibility (mobile reads `data.token`)
-    refreshToken, // mobile clients keep this in expo-secure-store
+    token: accessToken,
     data: {
       user,
       ...additionalData,
     },
   };
+
+  if (refreshToken && !isBrowserClient(res.req)) {
+    response.refreshToken = refreshToken;
+  }
 
   if (message) response.message = message;
 
@@ -412,36 +426,6 @@ exports.getMe = catchAsync(async (req, res) => {
 });
 
 /**
- * Update current user profile
- * PATCH /api/v2/auth/update-me
- */
-exports.updateMe = catchAsync(async (req, res) => {
-  const allowedFields = ["username", "email", "avatar", "phoneNumber"];
-  const updateData = {};
-
-  allowedFields.forEach((field) => {
-    if (req.body[field] !== undefined) {
-      updateData[field] = req.body[field];
-    }
-  });
-
-  if (req.file) {
-    updateData.avatar = req.file.path || req.file.filename;
-  }
-
-  const user = await User.findByIdAndUpdate(req.user._id, updateData, {
-    new: true,
-    runValidators: true,
-  });
-
-  sendSuccess(
-    res,
-    { user: user.toPublicJSON() },
-    "Profile updated successfully"
-  );
-});
-
-/**
  * Complete host profile
  * PATCH /api/v2/auth/complete-profile
  *
@@ -487,26 +471,7 @@ exports.verifyEmailLink = catchAsync(async (req, res) => {
  * POST /api/v2/auth/send-verification-code
  */
 exports.sendEmailVerificationCode = catchAsync(async (req, res) => {
-  const user = await User.findById(req.user._id);
-
-  if (!user.email) {
-    throw new ValidationError("No email address to verify");
-  }
-
-  if (user.emailVerified) {
-    throw new ValidationError("Email is already verified");
-  }
-
-  const code = user.createEmailVerificationCode();
-  await user.save({ validateBeforeSave: false });
-
-  const emailModule = require("../../infrastructure/email");
-  await emailModule({
-    email: user.email,
-    subject: "Email Verification Code",
-    message: `<h2>Email Verification</h2><p>Your verification code is: <strong>${code}</strong></p><p>This code expires in 15 minutes.</p>`,
-  });
-
+  await authService.sendEmailVerificationCode(req.user._id);
   sendSuccess(res, null, "Verification code sent to your email");
 });
 
@@ -515,23 +480,7 @@ exports.sendEmailVerificationCode = catchAsync(async (req, res) => {
  * POST /api/v2/auth/verify-email
  */
 exports.verifyEmail = catchAsync(async (req, res) => {
-  const { code } = req.body;
-  const user = await User.findById(req.user._id);
-
-  if (!user.verifyEmailCode(code)) {
-    throw new ValidationError("Invalid or expired verification code");
-  }
-
-  user.emailVerified = true;
-  user.emailVerificationCode = undefined;
-  user.emailVerificationExpires = undefined;
-
-  if (user.profile?.hostData) {
-    user.profile.hostData.emailVerified = true;
-  }
-
-  await user.save({ validateBeforeSave: false });
-
+  await authService.verifyEmail(req.user._id, req.body.code);
   sendSuccess(res, null, "Email verified successfully");
 });
 
