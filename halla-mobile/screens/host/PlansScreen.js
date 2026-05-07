@@ -36,6 +36,8 @@ const PlansScreen = () => {
 
   const [billingType, setBillingType] = useState("event");
   const [selectedInvites, setSelectedInvites] = useState(null);
+  const [addonItems, setAddonItems] = useState([]);
+  const [addonTotal, setAddonTotal] = useState(0);
 
   const { data: response, isLoading: loading, error } = useHostPlans();
   const { data: subscriptionData } = useSubscription();
@@ -72,6 +74,11 @@ const PlansScreen = () => {
     return Math.floor(selectedInvites * 0.15);
   }, [selectedInvites]);
 
+  const handleAddonsChange = (items, total) => {
+    setAddonItems(items);
+    setAddonTotal(total);
+  };
+
   const handleSubscribe = (planFamily, plan) => {
     if (!plan) {
       toast.error(t("errors.selectPlan"));
@@ -85,6 +92,8 @@ const PlansScreen = () => {
         planFamily,
         billingType,
       },
+      addonItems,
+      addonTotal,
     });
   };
 
@@ -167,7 +176,7 @@ const PlansScreen = () => {
           </>
         )}
 
-        <AddonsSection />
+        <AddonsSection onAddonsChange={handleAddonsChange} />
 
         <View style={styles.infoNote}>
           <Text style={styles.infoIcon}>💡</Text>

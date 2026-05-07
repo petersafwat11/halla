@@ -30,6 +30,9 @@
     "monthly": "Invite Pool — unlimited events"
   },
   "currency": "SAR",
+  "common": {
+    "currency": { "sar": "SAR" }
+  },
   "inviteSelector": { "label": "Select number of invites", "poolLabel": "Invite pool", "invites": "invites" },
   "planLimits": { "invitesPerEvent": "invites/event", "invitePool": "invite pool" },
   "features": { "title": "Included Features" },
@@ -40,19 +43,84 @@
     "extraInvites": { "title": "Extra Invites", "description": "Add more invites to your plan" },
     "extraReminders": { "title": "Extra Reminders", "description": "Send additional reminder messages" },
     "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
-    "addButton": "Add", "removeButton": "Remove", "addedBadge": "Added"
+    "addButton": "Add", "removeButton": "Remove", "addedBadge": "Added",
+    "loading": "Loading add-ons...",
+    "loadFailed": "Could not load add-ons.",
+    "purchase": {
+      "total": "Total",
+      "cta": "Purchase selected add-ons",
+      "processing": "Processing...",
+      "noneSelected": "Select an add-on first",
+      "success": "{{count}} add-on(s) purchased",
+      "error": "Failed to purchase add-on"
+    },
+    "designTypes": {
+      "ready_made": "Ready-made design (male/female)",
+      "custom_male": "Custom male design",
+      "custom_themed": "Themed custom design",
+      "animated": "Animated background design",
+      "3d": "3D invitation design"
+    }
   },
   "infoNote": "Our team will contact you after subscription to complete payment and get started.",
-  "errors": { "loadFailed": "Failed to load plans. Please try again.", "selectPlan": "Please select a plan to continue." },
+  "errors": {
+    "loadFailed": "Failed to load plans. Please try again.",
+    "selectPlan": "Please select a plan to continue.",
+    "summaryBoundary": "We could not display the order summary. Please try again."
+  },
   "toasts": {
     "subscriptionCreated": "Subscription activated successfully!",
+    "subscriptionPartial": "Subscription activated; {{count}} add-on(s) need follow-up — our team will reach out.",
     "alreadyActive": "You have an active subscription.",
     "subscriptionFailed": "Failed to activate subscription. Please try again."
   },
   "summary": {
-    "title": "Order Summary", "planDetails": "Plan Details",
-    "invitePool": "Invite Pool", "validDays": "Valid for", "days": "days",
+    "title": "Order Summary",
+    "subtitle": "Review your order before payment",
+    "back": "Back",
+    "planDetails": "Plan Details",
+    "planFamilyBadges": { "basic": "Basic", "premium": "Premium" },
+    "singleEvent": "Single Event",
+    "invitePoolLabel": "{{count}} invites (pool)",
+    "invitesLabel": "{{count}} invites",
+    "unlimitedEvents": "Unlimited events",
+    "singleEvent90Days": "1 event — 90 days",
+    "compensationInvitesLabel": "{{count}} compensation invites",
+    "billingPeriodLabel": "Billing Period:",
+    "periods": {
+      "monthly": "30 days",
+      "event": "90 days (1 event)"
+    },
+    "discount": {
+      "title": "Discount Code",
+      "placeholder": "Enter discount code",
+      "apply": "Apply",
+      "remove": "Remove",
+      "success": "✓ Code \"{{code}}\" — {{amount}} SAR off",
+      "invalidDefault": "Invalid discount code",
+      "networkError": "Could not verify code. Please try again"
+    },
+    "payment": {
+      "title": "Payment Summary",
+      "planPrice": "Plan Price",
+      "discount": "Discount",
+      "total": "Total",
+      "method": "Payment Method"
+    },
+    "proceed": {
+      "cta": "Activate Subscription",
+      "processing": "Activating..."
+    },
+    "terms": "By clicking Complete Payment, you agree to our Terms of Service and Privacy Policy",
+    "addonItems": {
+      "extra_invites": "Extra Invites +{{quantity}}",
+      "extra_reminders": "Extra Reminders +{{quantity}}",
+      "design_template": "Design Template"
+    },
+    "invitePool": "Invite Pool",
+    "validDays": "Valid for",
+    "days": "days",
     "compensationInvites": "compensation invites",
-    "oneEvent": "1 event", "unlimitedEvents": "Unlimited events"
+    "oneEvent": "1 event"
   }
 }

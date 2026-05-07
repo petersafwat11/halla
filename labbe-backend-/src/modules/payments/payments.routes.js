@@ -2,10 +2,13 @@ const express = require('express');
 const router = express.Router();
 
 const paymentsController = require('./payments.controller');
+const checkoutController = require('./checkout.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { restrictTo } = require('../../shared/middleware/rbac');
 const { idempotency } = require('../../shared/middleware/idempotency');
+const { validateZod } = require('../../shared/middleware/validation');
 const { ROLES } = require('../../shared/constants');
+const { checkoutSchema } = require('./checkout.validation');
 
 // ─── Public webhook (NO `protect`) ────────────────────────────
 router.post('/webhook', paymentsController.webhook);
@@ -15,6 +18,51 @@ router.get('/_stub/3ds-complete', paymentsController.stubComplete3ds);
 
 // ─── Authenticated routes ─────────────────────────────────────
 router.use(protect);
+
+/**
+ * @swagger
+ * /payments/checkout:
+ *   post:
+ *     summary: Bundled plan + addons checkout
+ *     description: |
+ *       Charges plan price + addon prices − discount as a single Moyasar
+ *       transaction. On success: activates subscription + creates each addon
+ *       row (sequentially with line-item compensating refunds on per-addon
+ *       failure). On 3DS, returns `requiresAction: true` and stashes the
+ *       intent on `Payment.metadata.pendingCheckoutIntent`; the webhook /
+ *       poll3ds path resumes finalization once the user returns.
+ *     tags: [Payments]
+ *     parameters:
+ *       - in: header
+ *         name: Idempotency-Key
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CheckoutRequest' }
+ *     responses:
+ *       200:
+ *         description: 3DS redirect required — client must redirect to `data.redirectUrl`
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Checkout3DSResponse' }
+ *       201:
+ *         description: Checkout completed; subscription + addons active
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/CheckoutResponse' }
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.post(
+  '/checkout',
+  validateZod(checkoutSchema),
+  idempotency({ scope: 'payments.checkout' }),
+  checkoutController.checkout
+);
 
 router.get('/:id', paymentsController.getById);
 router.get('/:id/poll', paymentsController.poll3ds);

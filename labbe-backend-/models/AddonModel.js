@@ -17,13 +17,11 @@ const addonSchema = new mongoose.Schema(
     currency: { type: String, default: 'SAR' },
     status: {
       type: String,
-      // FLOW-10-F01: `pending_provisioning` covers business-customization
-      // and any future addon type that requires manual operator
-      // approval after payment. Admin endpoint flips it to `active`.
-      //
-      // B-4: `failed_quota` records the case where the charge succeeded
-      // but the downstream quota application threw. Admin reconciliation
-      // pairs this row with the corresponding pending-refund audit entry.
+      // pending_provisioning: addon types that need manual operator approval
+      //   after payment (e.g. business_customization). Admin endpoint flips
+      //   it to active.
+      // failed_quota: charge succeeded but the downstream quota application
+      //   threw. Reconciliation pairs this with a pending_refund audit entry.
       enum: [
         'pending',
         'pending_3ds',

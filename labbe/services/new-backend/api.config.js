@@ -183,6 +183,17 @@ export const API_PATHS = {
   hostPayments: {
     getById: (id) => `/payments/${id}`,
     poll3ds: (id) => `/payments/${id}/poll`,
+    checkout: '/payments/checkout',
+  },
+
+  // ============================================
+  // ADDONS MODULE
+  // ============================================
+  addons: {
+    getCatalog: '/addons',
+    purchase: '/addons/purchase',
+    listMine: '/addons/my',
+    adminActivate: (id) => `/addons/admin/${id}/activate`,
   },
 
   // ============================================
@@ -481,4 +492,5 @@ export const {
   admin,
   payments,
   hostPayments,
+  addons,
 } = API_PATHS;

@@ -1,10 +1,8 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useMemo, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { useToast } from "../../contexts/ToastContext";
-import { useAuthStore } from "../../stores/authStore";
-import { addons as addonsAPI } from "../../services/adminDashboardService";
+import { useAvailableAddons } from "../../hooks";
 import {
   colors,
   spacing,
@@ -12,56 +10,58 @@ import {
   typography,
 } from "../../styles/tokens";
 
-const EXTRA_INVITES_TIERS = [
-  { quantity: 10, price: 40 },
-  { quantity: 20, price: 75 },
-  { quantity: 30, price: 105 },
-  { quantity: 40, price: 130 },
-  { quantity: 50, price: 150 },
-];
+/**
+ * Addon picker. Selections are bubbled up via `onAddonsChange` and the actual
+ * purchase happens in PlansSummaryScreen → useCheckout (single bundled
+ * Moyasar charge for plan + addons − discount). This component never calls
+ * the addons-purchase endpoint directly.
+ */
+const AddonsSection = ({ onAddonsChange }) => {
+  const { t } = useTranslation("plans");
+  const { data: catalogResponse, isLoading, error } = useAvailableAddons();
+  const catalog = catalogResponse?.data || null;
 
-const EXTRA_REMINDERS_TIERS = [
-  { quantity: 1, price: 25 },
-  { quantity: 2, price: 45 },
-  { quantity: 3, price: 60 },
-  { quantity: 4, price: 70 },
-  { quantity: 5, price: 75 },
-];
-
-const DESIGN_TEMPLATE_TIERS = [
-  { type: "ready_made", price: 200 },
-  { type: "custom_male", price: 200 },
-  { type: "custom_themed", price: 275 },
-  { type: "animated", price: 350 },
-  { type: "3d", price: 500 },
-];
-
-const generateIdempotencyKey = (addonType) => {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return `addon-${addonType}-${crypto.randomUUID()}`;
-  }
-  return `addon-${addonType}-${Date.now()}-${Math.random()
-    .toString(36)
-    .slice(2)}`;
-};
-
-const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
-  const { t, i18n } = useTranslation("plans");
-  const isArabic = i18n.language === "ar";
-  const toast = useToast();
-  const token = useAuthStore((state) => state.token);
+  const tiers = useMemo(
+    () => ({
+      extraInvites: catalog?.extra_invites || [],
+      extraReminders: catalog?.extra_reminders || [],
+      designTemplate: catalog?.design_template || [],
+    }),
+    [catalog]
+  );
 
   const [extraInvites, setExtraInvites] = useState(null);
   const [extraReminders, setExtraReminders] = useState(null);
   const [designTemplate, setDesignTemplate] = useState(null);
-  const [purchasing, setPurchasing] = useState(false);
 
   const notify = (inv, rem, des) => {
     const total = (inv?.price || 0) + (rem?.price || 0) + (des?.price || 0);
     const items = [];
-    if (inv) items.push({ type: "extra_invites", quantity: inv.quantity, price: inv.price });
-    if (rem) items.push({ type: "extra_reminders", quantity: rem.quantity, price: rem.price });
-    if (des) items.push({ type: "design_template", templateType: des.type, quantity: 1, price: des.price });
+    if (inv) {
+      items.push({
+        addonType: "extra_invites",
+        type: "extra_invites",
+        quantity: inv.quantity,
+        price: inv.price,
+      });
+    }
+    if (rem) {
+      items.push({
+        addonType: "extra_reminders",
+        type: "extra_reminders",
+        quantity: rem.quantity,
+        price: rem.price,
+      });
+    }
+    if (des) {
+      items.push({
+        addonType: "design_template",
+        type: "design_template",
+        templateType: des.type,
+        quantity: 1,
+        price: des.price,
+      });
+    }
     onAddonsChange?.(items, total);
   };
 
@@ -81,69 +81,29 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
     notify(extraInvites, extraReminders, next);
   };
 
-  const purchaseSelected = async () => {
-    const selections = [];
-    if (extraInvites) {
-      selections.push({
-        addonType: "extra_invites",
-        quantity: extraInvites.quantity,
-        scope,
-        eventId: scope === "event" ? eventId : undefined,
-      });
-    }
-    if (extraReminders) {
-      selections.push({
-        addonType: "extra_reminders",
-        quantity: extraReminders.quantity,
-        scope: "org",
-      });
-    }
-    if (designTemplate) {
-      selections.push({
-        addonType: "design_template",
-        templateType: designTemplate.type,
-        quantity: 1,
-        scope: "org",
-      });
-    }
-    if (selections.length === 0) {
-      toast.info(t("addons.purchase.noneSelected"));
-      return;
-    }
+  if (isLoading) {
+    return (
+      <View style={styles.section}>
+        <View style={styles.heading}>
+          <Text style={styles.title}>{t("addons.title")}</Text>
+        </View>
+        <ActivityIndicator color={colors.primary[500]} />
+      </View>
+    );
+  }
 
-    setPurchasing(true);
-    const errors = [];
-    let succeeded = 0;
-    for (const sel of selections) {
-      try {
-        await addonsAPI.purchase(token, sel, generateIdempotencyKey(sel.addonType));
-        succeeded += 1;
-      } catch (err) {
-        errors.push({
-          addonType: sel.addonType,
-          message: err?.message || t("addons.purchase.error"),
-        });
-      }
-    }
-    setPurchasing(false);
-
-    if (succeeded > 0) {
-      toast.success(t("addons.purchase.success"));
-      setExtraInvites(null);
-      setExtraReminders(null);
-      setDesignTemplate(null);
-      notify(null, null, null);
-    }
-    for (const e of errors) {
-      toast.error(`${e.addonType}: ${e.message}`);
-    }
-  };
-
-  const hasSelection = !!(extraInvites || extraReminders || designTemplate);
-  const totalPrice =
-    (extraInvites?.price || 0) +
-    (extraReminders?.price || 0) +
-    (designTemplate?.price || 0);
+  if (error || !catalog) {
+    return (
+      <View style={styles.section}>
+        <View style={styles.heading}>
+          <Text style={styles.title}>{t("addons.title")}</Text>
+          <Text style={styles.subtitle}>
+            {t("addons.loadFailed", { defaultValue: "Could not load add-ons." })}
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.section}>
@@ -152,7 +112,6 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
         <Text style={styles.subtitle}>{t("addons.subtitle")}</Text>
       </View>
 
-      {/* Extra Invites */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardName}>{t("addons.extraInvites.title")}</Text>
@@ -161,7 +120,7 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
           </Text>
         </View>
         <View style={styles.tierRow}>
-          {EXTRA_INVITES_TIERS.map((tier) => {
+          {tiers.extraInvites.map((tier) => {
             const active = extraInvites?.quantity === tier.quantity;
             return (
               <TouchableOpacity
@@ -174,7 +133,7 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
                   +{tier.quantity}
                 </Text>
                 <Text style={[styles.tierPrice, active && styles.tierPriceActive]}>
-                  {tier.price} {isArabic ? "ر.س" : "SAR"}
+                  {tier.price} {t("common.currency.sar")}
                 </Text>
               </TouchableOpacity>
             );
@@ -182,7 +141,6 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
         </View>
       </View>
 
-      {/* Extra Reminders */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardName}>{t("addons.extraReminders.title")}</Text>
@@ -191,7 +149,7 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
           </Text>
         </View>
         <View style={styles.tierRow}>
-          {EXTRA_REMINDERS_TIERS.map((tier) => {
+          {tiers.extraReminders.map((tier) => {
             const active = extraReminders?.quantity === tier.quantity;
             return (
               <TouchableOpacity
@@ -204,7 +162,7 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
                   +{tier.quantity}
                 </Text>
                 <Text style={[styles.tierPrice, active && styles.tierPriceActive]}>
-                  {tier.price} {isArabic ? "ر.س" : "SAR"}
+                  {tier.price} {t("common.currency.sar")}
                 </Text>
               </TouchableOpacity>
             );
@@ -212,29 +170,6 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
         </View>
       </View>
 
-      {/* Purchase summary */}
-      {hasSelection ? (
-        <View style={styles.purchaseRow}>
-          <Text style={styles.purchaseTotal}>
-            {t("addons.purchase.total")}: {totalPrice}{" "}
-            {isArabic ? "ر.س" : "SAR"}
-          </Text>
-          <TouchableOpacity
-            style={[styles.purchaseBtn, purchasing && styles.purchaseBtnDisabled]}
-            onPress={purchaseSelected}
-            disabled={purchasing}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.purchaseBtnText}>
-              {purchasing
-                ? t("addons.purchase.processing")
-                : t("addons.purchase.cta")}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      ) : null}
-
-      {/* Design Template */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardName}>{t("addons.designTemplate.title")}</Text>
@@ -243,7 +178,7 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
           </Text>
         </View>
         <View style={styles.templateList}>
-          {DESIGN_TEMPLATE_TIERS.map((tier) => {
+          {tiers.designTemplate.map((tier) => {
             const active = designTemplate?.type === tier.type;
             return (
               <TouchableOpacity
@@ -259,10 +194,8 @@ const AddonsSection = ({ onAddonsChange, eventId = null, scope = "pool" }) => {
                   {t(`addons.designTypes.${tier.type}`)}
                 </Text>
                 <View style={styles.templateRight}>
-                  <Text
-                    style={[styles.tierPrice, active && styles.tierPriceActive]}
-                  >
-                    {tier.price} {isArabic ? "ر.س" : "SAR"}
+                  <Text style={[styles.tierPrice, active && styles.tierPriceActive]}>
+                    {tier.price} {t("common.currency.sar")}
                   </Text>
                   {active ? (
                     <Ionicons
@@ -399,37 +332,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-  },
-  purchaseRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: spacing[12],
-    padding: spacing[12],
-    borderWidth: 1,
-    borderColor: colors.primary[200],
-    borderRadius: borderRadius[12],
-    backgroundColor: colors.primary[50],
-  },
-  purchaseTotal: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.body.medium,
-    color: colors.secondary[700],
-    flexShrink: 1,
-  },
-  purchaseBtn: {
-    paddingVertical: spacing[8],
-    paddingHorizontal: spacing[16],
-    borderRadius: borderRadius[12],
-    backgroundColor: colors.primary[500],
-  },
-  purchaseBtnDisabled: {
-    opacity: 0.6,
-  },
-  purchaseBtnText: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.body.small,
-    color: colors.natural[50],
   },
 });
 
