@@ -3,7 +3,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
-import { toast } from "react-toastify";
+import { toastUtils } from "@/utils/toastUtils";
 import { IoIosArrowForward } from "react-icons/io";
 
 import {
@@ -11,11 +11,11 @@ import {
   BillingTypeToggle,
   AddonsSection,
   HostPlanCard,
-  PaymentMethodSelector,
 } from "./_components";
 import Summary from "./summary/Summary";
 import { useHostPlans } from "@/hooks/reactQueryHooks/usePlans";
-import { useMySubscription, useSubscriptionMutation } from "@/hooks/reactQueryHooks/useSubscriptions";
+import { useMySubscription } from "@/hooks/reactQueryHooks/useSubscriptions";
+import { useCheckout } from "@/hooks/reactQueryHooks/useCheckout";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./plans.module.css";
 
@@ -56,7 +56,7 @@ const PlansPage = () => {
 
   const { data: plansData, isLoading: plansLoading, error: plansError } = useHostPlans();
   const { data: subscriptionData, isLoading: subLoading, error: subError } = useMySubscription();
-  const subscribeMutation = useSubscriptionMutation("subscribe");
+  const checkoutMutation = useCheckout();
 
   const [showSummary, setShowSummary] = useState(false);
   const [billingType, setBillingType] = useState("event");
@@ -70,11 +70,8 @@ const PlansPage = () => {
   const [cardData, setCardData] = useState(null);
   const [stcMobile, setStcMobile] = useState("");
 
-  const actualPlansData = plansData?.data || plansData;
-  const subscription =
-    subscriptionData?.data?.subscription ||
-    subscriptionData?.subscription ||
-    null;
+  const actualPlansData = plansData?.data ?? null;
+  const subscription = subscriptionData?.data?.subscription ?? null;
   const usage = subscription?.usage || null;
 
   const basicPlans = useMemo(
@@ -143,18 +140,40 @@ const PlansPage = () => {
       return { type: "stcpay", mobile: stcMobile };
     }
     if (paymentMethod === "applepay") {
-      // PassKit token sourcing is a separate mini-feature (§13 Q1).
-      // The selector exists so the backend understands the source type.
+      // applepay token left null until PassKit integration ships.
       return { type: "applepay", token: null };
     }
     return null;
   }, [paymentMethod, cardData, stcMobile]);
 
+  // Map the AddonsSection cart into the checkout endpoint's body shape.
+  // Scope is forced to pool/org — checkout addons cannot be event-scoped
+  // since there is no event yet at initial subscription.
+  const buildCheckoutAddons = useCallback(
+    () =>
+      addonItems.map((item) => {
+        const type = item.addonType || item.type;
+        const base = { addonType: type, scope: "org" };
+        if (type === "extra_invites") {
+          return { ...base, scope: "pool", quantity: item.quantity };
+        }
+        if (type === "extra_reminders") {
+          return { ...base, quantity: item.quantity };
+        }
+        if (type === "design_template") {
+          return { ...base, templateType: item.templateType };
+        }
+        return base;
+      }),
+    [addonItems]
+  );
+
   const handleProceedToPayment = useCallback(async () => {
     if (!selectedPlan) return;
     try {
-      const result = await subscribeMutation.mutateAsync({
+      const result = await checkoutMutation.mutateAsync({
         planCode: selectedPlan.code,
+        addons: buildCheckoutAddons(),
         ...(appliedDiscountCode ? { discountCode: appliedDiscountCode } : {}),
         source: buildSource(),
       });
@@ -163,24 +182,37 @@ const PlansPage = () => {
         // success toast — the user is mid-redirect to the bank.
         return;
       }
-      toast.success(t("toasts.subscriptionCreated"));
+      const failedCount = result?.failedAddons?.length || 0;
+      if (failedCount > 0) {
+        toastUtils.warning(
+          t("toasts.subscriptionPartial", {
+            defaultValue: "Subscription activated; some add-ons need follow-up",
+            count: failedCount,
+          })
+        );
+      } else {
+        toastUtils.success(t("toasts.subscriptionCreated"));
+      }
       router.push(`/${lang}/host/create-event`);
     } catch (error) {
+      const message =
+        error?.response?.data?.message || error?.message || "";
       if (
-        error.response?.status === 400 &&
-        error.message?.includes("already have an active subscription")
+        error?.response?.status === 400 &&
+        message.includes("already have an active subscription")
       ) {
-        toast.info(t("toasts.alreadyActive"));
+        toastUtils.info(t("toasts.alreadyActive"));
         router.push(`/${lang}/host/create-event`);
       } else {
-        toast.error(t("toasts.subscriptionFailed"));
+        toastUtils.error(message || t("toasts.subscriptionFailed"));
       }
     }
   }, [
     selectedPlan,
-    subscribeMutation,
+    checkoutMutation,
     appliedDiscountCode,
     buildSource,
+    buildCheckoutAddons,
     t,
     router,
     lang,

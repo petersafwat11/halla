@@ -30,6 +30,9 @@
     "monthly": "رصيد دعوات — مناسبات غير محدودة"
   },
   "currency": "ر.س",
+  "common": {
+    "currency": { "sar": "ر.س" }
+  },
   "inviteSelector": { "label": "اختر عدد الدعوات", "poolLabel": "رصيد الدعوات", "invites": "دعوة" },
   "planLimits": { "invitesPerEvent": "دعوة/مناسبة", "invitePool": "رصيد الدعوات" },
   "features": { "title": "المميزات المشمولة" },
@@ -40,19 +43,84 @@
     "extraInvites": { "title": "دعوات إضافية", "description": "أضف دعوات أكثر إلى باقتك" },
     "extraReminders": { "title": "تذكيرات إضافية", "description": "أرسل رسائل تذكير إضافية" },
     "designTemplate": { "title": "قالب تصميم", "description": "تصميم دعوة احترافي من فريقنا" },
-    "addButton": "إضافة", "removeButton": "إزالة", "addedBadge": "مُضاف"
+    "addButton": "إضافة", "removeButton": "إزالة", "addedBadge": "مُضاف",
+    "loading": "جارِ تحميل الإضافات...",
+    "loadFailed": "تعذّر تحميل الإضافات.",
+    "purchase": {
+      "total": "الإجمالي",
+      "cta": "شراء الإضافات المحددة",
+      "processing": "جارٍ المعالجة...",
+      "noneSelected": "اختر إضافة أولاً",
+      "success": "تم شراء {{count}} إضافة",
+      "error": "فشل شراء الإضافة"
+    },
+    "designTypes": {
+      "ready_made": "تصميم دعوات جاهزة (رجالي/نسائي)",
+      "custom_male": "تصميم دعوات رجالية مخصصة",
+      "custom_themed": "تصميم دعوات حسب ثيم المناسبة",
+      "animated": "تصميم دعوات بخلفيات متحركة",
+      "3d": "تصميم دعوات ثلاثية الأبعاد (3D)"
+    }
   },
   "infoNote": "سيتواصل معك فريقنا بعد الاشتراك لإتمام الدفع والبدء.",
-  "errors": { "loadFailed": "فشل تحميل الباقات. حاول مرة أخرى.", "selectPlan": "الرجاء اختيار باقة للمتابعة." },
+  "errors": {
+    "loadFailed": "فشل تحميل الباقات. حاول مرة أخرى.",
+    "selectPlan": "الرجاء اختيار باقة للمتابعة.",
+    "summaryBoundary": "تعذّر عرض ملخص الطلب. حاول مرة أخرى."
+  },
   "toasts": {
     "subscriptionCreated": "تم تفعيل الاشتراك بنجاح!",
+    "subscriptionPartial": "تم تفعيل الاشتراك؛ {{count}} إضافة بحاجة إلى متابعة — سيتواصل معك فريقنا.",
     "alreadyActive": "لديك اشتراك نشط بالفعل.",
     "subscriptionFailed": "فشل تفعيل الاشتراك. حاول مرة أخرى."
   },
   "summary": {
-    "title": "ملخص الطلب", "planDetails": "تفاصيل الباقة",
-    "invitePool": "رصيد الدعوات", "validDays": "صالحة لـ", "days": "يوم",
+    "title": "ملخص الطلب",
+    "subtitle": "راجع طلبك قبل إتمام الدفع",
+    "back": "رجوع",
+    "planDetails": "تفاصيل الباقة",
+    "planFamilyBadges": { "basic": "بيسك", "premium": "بريميوم" },
+    "singleEvent": "مناسبة واحدة",
+    "invitePoolLabel": "{{count}} دعوة (شهري)",
+    "invitesLabel": "{{count}} دعوة",
+    "unlimitedEvents": "مناسبات غير محدودة",
+    "singleEvent90Days": "مناسبة واحدة — 90 يوم",
+    "compensationInvitesLabel": "{{count}} دعوات تعويضية",
+    "billingPeriodLabel": "فترة الاشتراك:",
+    "periods": {
+      "monthly": "30 يوم",
+      "event": "90 يوم (مناسبة واحدة)"
+    },
+    "discount": {
+      "title": "كود الخصم",
+      "placeholder": "أدخل كود الخصم",
+      "apply": "تطبيق",
+      "remove": "إزالة",
+      "success": "✓ كود \"{{code}}\" — خصم {{amount}} ر.س",
+      "invalidDefault": "كود الخصم غير صالح",
+      "networkError": "تعذر التحقق من الكود. حاول مرة أخرى"
+    },
+    "payment": {
+      "title": "ملخص الدفع",
+      "planPrice": "سعر الباقة",
+      "discount": "الخصم",
+      "total": "الإجمالي",
+      "method": "طريقة الدفع"
+    },
+    "proceed": {
+      "cta": "تفعيل الاشتراك",
+      "processing": "جاري التفعيل..."
+    },
+    "terms": "بالضغط على إتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية",
+    "addonItems": {
+      "extra_invites": "دعوات إضافية +{{quantity}}",
+      "extra_reminders": "تذكيرات إضافية +{{quantity}}",
+      "design_template": "تصميم الدعوة"
+    },
+    "invitePool": "رصيد الدعوات",
+    "validDays": "صالحة لـ",
+    "days": "يوم",
     "compensationInvites": "دعوات تعويضية",
-    "oneEvent": "مناسبة واحدة", "unlimitedEvents": "مناسبات غير محدودة"
+    "oneEvent": "مناسبة واحدة"
   }
 }

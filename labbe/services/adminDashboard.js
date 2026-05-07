@@ -852,9 +852,8 @@ export const plansAPI = {
 };
 
 /**
- * H-14: Phase 2 subscription admin endpoints. SUPER_ADMIN can assign a
- * subscription to a host directly (e.g. comp / migration). Audit log
- * is wired server-side.
+ * SUPER_ADMIN can assign a subscription to a host directly (e.g. comp /
+ * migration). Audit log is wired server-side.
  */
 export const subscriptionAdminAPI = {
   assign: async (data, token = null) => {
@@ -865,10 +864,9 @@ export const subscriptionAdminAPI = {
 };
 
 /**
- * H-14: Phase 2 addon endpoints — purchase + admin activate. The host
- * UI calls `purchase` from the AddonsSection on /host/plans; admin
- * activate is for the manual provisioning step on
- * BUSINESS_CUSTOMIZATION addons.
+ * Legacy addons API surface. New code should use the `useAddons` and
+ * `useCheckout` hooks from `hooks/reactQueryHooks/`. This export remains
+ * for the admin dashboard's bulk operations.
  */
 export const addonsAPI = {
   purchase: async (data, token = null, idempotencyKey = null) => {
