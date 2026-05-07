@@ -1454,6 +1454,125 @@ const swaggerOptions = {
           },
         },
 
+        // ---- Discount Models ----
+        Discount: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', example: '507f1f77bcf86cd799439011' },
+            code: { type: 'string', example: 'WELCOME10' },
+            descriptionEn: { type: 'string' },
+            descriptionAr: { type: 'string' },
+            discountType: { type: 'string', enum: ['percentage', 'fixed'] },
+            value: { type: 'number', example: 10 },
+            maxUses: { type: 'integer', description: '0 = unlimited' },
+            usedCount: { type: 'integer' },
+            validFrom: { type: 'string', format: 'date-time' },
+            validUntil: { type: 'string', format: 'date-time', nullable: true },
+            isActive: { type: 'boolean' },
+            applicablePlanTypes: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: [
+                  'trial', 'basic_event', 'basic_monthly',
+                  'premium_event', 'premium_monthly',
+                  'business_event', 'business_quarterly', 'business_annual',
+                  'unlimited',
+                ],
+              },
+              description: 'Empty = applies to all plan types',
+            },
+            minimumAmount: { type: 'number' },
+            createdBy: { type: 'object', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        DiscountInput: {
+          type: 'object',
+          required: ['code', 'discountType', 'value'],
+          properties: {
+            code: {
+              type: 'string',
+              pattern: '^[A-Z0-9_-]{3,30}$',
+              example: 'WELCOME10',
+            },
+            descriptionEn: { type: 'string', maxLength: 200 },
+            descriptionAr: { type: 'string', maxLength: 200 },
+            discountType: { type: 'string', enum: ['percentage', 'fixed'] },
+            value: {
+              type: 'number',
+              minimum: 0,
+              description: 'Percentage discounts must be <= 100',
+            },
+            maxUses: { type: 'integer', minimum: 0 },
+            validFrom: { type: 'string', format: 'date-time' },
+            validUntil: { type: 'string', format: 'date-time' },
+            isActive: { type: 'boolean' },
+            applicablePlanTypes: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: [
+                  'trial', 'basic_event', 'basic_monthly',
+                  'premium_event', 'premium_monthly',
+                  'business_event', 'business_quarterly', 'business_annual',
+                  'unlimited',
+                ],
+              },
+            },
+            minimumAmount: { type: 'number', minimum: 0 },
+          },
+        },
+        DiscountValidateRequest: {
+          type: 'object',
+          required: ['code', 'amount'],
+          properties: {
+            code: { type: 'string', pattern: '^[A-Z0-9_-]{3,30}$' },
+            amount: { type: 'number', minimum: 0 },
+            planType: {
+              type: 'string',
+              nullable: true,
+              enum: [
+                'trial', 'basic_event', 'basic_monthly',
+                'premium_event', 'premium_monthly',
+                'business_event', 'business_quarterly', 'business_annual',
+                'unlimited',
+              ],
+            },
+          },
+        },
+        DiscountValidateResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              oneOf: [
+                {
+                  type: 'object',
+                  properties: {
+                    valid: { type: 'boolean', example: false },
+                    reason: { type: 'string' },
+                  },
+                },
+                {
+                  type: 'object',
+                  properties: {
+                    valid: { type: 'boolean', example: true },
+                    code: { type: 'string' },
+                    discountType: { type: 'string', enum: ['percentage', 'fixed'] },
+                    value: { type: 'number' },
+                    discountAmount: { type: 'number' },
+                    finalAmount: { type: 'number' },
+                    descriptionEn: { type: 'string' },
+                    descriptionAr: { type: 'string' },
+                  },
+                },
+              ],
+            },
+          },
+        },
+
         // Subscription Request Models
         SubscribeRequest: {
           type: 'object',

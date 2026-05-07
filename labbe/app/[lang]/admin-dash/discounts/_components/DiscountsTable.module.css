@@ -29,3 +29,37 @@
 .copyBtn:hover {
   color: var(--c-p500, #c28e5c);
 }
+
+/* Why: extracted from inline JSX `style={{...}}` to keep render output stable
+   and let RTL/dark-mode tweaks live in one place. Colors must match the
+   previous literals exactly to preserve pixel parity. */
+.statusPill {
+  display: inline-flex;
+  padding: 0.3rem 1.2rem;
+  border-radius: 9999px;
+  font-size: 1.2rem;
+  font-family: Cairo;
+}
+.statusActive {
+  background: #EAF4EF;
+  color: #2A8C5B;
+}
+.statusInactive {
+  background: #F5F5F5;
+  color: #666;
+}
+.statusExpired {
+  background: #F9EBEA;
+  color: #C0392B;
+}
+.statusExhausted {
+  background: #FBF3E6;
+  color: #D38200;
+}
+
+.errorState {
+  padding: 2rem;
+  text-align: center;
+  color: var(--c-n400, #888);
+  font-size: 1.4rem;
+}

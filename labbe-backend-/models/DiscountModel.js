@@ -4,6 +4,7 @@
  */
 
 const mongoose = require('mongoose');
+const { PLAN_TYPES } = require('../src/shared/constants/plans');
 
 const discountSchema = new mongoose.Schema(
   {
@@ -35,15 +36,9 @@ const discountSchema = new mongoose.Schema(
     validUntil: { type: Date, default: null },
     isActive: { type: Boolean, default: true },
     // empty array = applies to all plan types
-    applicablePlanTypes: [{ type: String }],
+    applicablePlanTypes: [{ type: String, enum: Object.values(PLAN_TYPES) }],
     // minimum plan price to apply discount (0 = no minimum)
     minimumAmount: { type: Number, default: 0, min: 0 },
-    // null = platform-wide; set to whitelabel ObjectId to restrict to one tenant
-    whitelabelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null,
-    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -56,7 +51,6 @@ const discountSchema = new mongoose.Schema(
 // Indexes (code is already indexed via unique:true in schema)
 discountSchema.index({ isActive: 1 });
 discountSchema.index({ validUntil: 1 });
-discountSchema.index({ whitelabelId: 1 });
 
 /**
  * Check if discount is currently valid (not expired, not exhausted)

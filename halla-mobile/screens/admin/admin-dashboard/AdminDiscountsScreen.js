@@ -37,10 +37,7 @@ const AdminDiscountsScreen = () => {
     if (error) toast.error(t("common.error"));
   }, [error]);
 
-  const rawDiscounts = useMemo(() => {
-    const d = data?.data || data;
-    return d?.discounts || [];
-  }, [data]);
+  const rawDiscounts = useMemo(() => data?.data || [], [data]);
 
   const getStatus = (discount) => {
     if (discount.validUntil && new Date(discount.validUntil) < new Date())

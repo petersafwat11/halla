@@ -1064,9 +1064,21 @@
       "isActive": "Active",
       "percentage": "Percentage (%)",
       "fixed": "Fixed Amount (SAR)",
+      "planTypes": "Applicable Plans (empty = all plans)",
       "save": "Save",
       "saving": "Saving...",
       "cancel": "Cancel"
+    },
+    "planTypes": {
+      "trial": "Trial",
+      "basic_event": "Basic — Per Event",
+      "basic_monthly": "Basic — Monthly",
+      "premium_event": "Premium — Per Event",
+      "premium_monthly": "Premium — Monthly",
+      "business_event": "Business — Per Event",
+      "business_quarterly": "Business — Quarterly",
+      "business_annual": "Business — Annual",
+      "unlimited": "Unlimited"
     },
     "labels": {
       "code": "Code",

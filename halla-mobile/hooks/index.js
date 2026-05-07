@@ -10,6 +10,7 @@ export * from './queries/useUser';
 export * from './queries/useAdmin';
 export * from './queries/useAdminInfinite';
 export * from './queries/useAddons';
+export * from './queries/useDiscounts';
 export { useDebouncedValue } from './useDebouncedValue';
 
 // Mutation Hooks
@@ -22,3 +23,4 @@ export * from './mutations/useAdminMutations';
 export * from './mutations/useNotificationMutations';
 export * from './mutations/useAddonMutations';
 export * from './mutations/useCheckout';
+export * from './mutations/useDiscountMutations';

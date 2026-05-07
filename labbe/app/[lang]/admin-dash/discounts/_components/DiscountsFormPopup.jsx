@@ -1,48 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
-import { FaCheck, FaTimes } from "react-icons/fa";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
-import { discountsAPI } from "@/services/adminDashboard";
+import { useCreateDiscount, useUpdateDiscount } from "@/hooks/reactQueryHooks/useDiscounts";
+import DiscountsFormFields from "./DiscountsFormFields";
+import { EMPTY_FORM, validateForm, buildPayload } from "./discountsFormUtils";
 import styles from "./DiscountsFormPopup.module.css";
 
-const PLAN_TYPE_OPTIONS = [
-  { value: "single_event", en: "Single Event", ar: "مناسبة واحدة" },
-  { value: "subscription", en: "Subscription", ar: "اشتراك" },
-  { value: "enterprise", en: "Enterprise", ar: "مؤسسات" },
-  { value: "trial", en: "Trial", ar: "تجريبي" },
-  { value: "lite", en: "Lite", ar: "لايت" },
-  { value: "pro", en: "Pro", ar: "برو" },
-  { value: "elite", en: "Elite", ar: "إيليت" },
-];
-
-const EMPTY_FORM = {
-  code: "",
-  descriptionEn: "",
-  descriptionAr: "",
-  discountType: "percentage",
-  value: "",
-  maxUses: "",
-  validFrom: "",
-  validUntil: "",
-  isActive: true,
-  applicablePlanTypes: [],
-  minimumAmount: "",
-};
-
 export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount }) {
-  const { t, i18n } = useTranslation("adminDashboard");
-  const isAr = i18n.language === "ar";
-  const queryClient = useQueryClient();
+  const { t } = useTranslation("adminDashboard");
 
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
 
-  // Populate form when editing
   useEffect(() => {
     if (editingDiscount) {
       setForm({
@@ -68,32 +41,8 @@ export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount })
     setErrors({});
   }, [editingDiscount, isOpen]);
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["discounts"] });
-
-  const createMutation = useMutation({
-    mutationFn: (data) => discountsAPI.create(data),
-    onSuccess: () => {
-      toastUtils.success(t("discounts.createSuccess", "تم إنشاء الكود"));
-      invalidate();
-      onClose();
-    },
-    onError: (err) => {
-      handleError(err, t, { fallbackMessage: "discounts.createError" });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => discountsAPI.update(id, data),
-    onSuccess: () => {
-      toastUtils.success(t("discounts.updateSuccess", "تم تحديث الكود"));
-      invalidate();
-      onClose();
-    },
-    onError: (err) => {
-      handleError(err, t, { fallbackMessage: "discounts.updateError" });
-    },
-  });
+  const createMutation = useCreateDiscount();
+  const updateMutation = useUpdateDiscount();
 
   const saving = createMutation.isPending || updateMutation.isPending;
 
@@ -103,50 +52,41 @@ export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount })
     setForm((prev) => ({
       ...prev,
       applicablePlanTypes: prev.applicablePlanTypes.includes(type)
-        ? prev.applicablePlanTypes.filter((t) => t !== type)
+        ? prev.applicablePlanTypes.filter((x) => x !== type)
         : [...prev.applicablePlanTypes, type],
     }));
 
-  const validate = () => {
-    const e = {};
-    if (!form.code.trim())
-      e.code = t("discounts.validation.codeRequired", "الكود مطلوب");
-    if (form.value === "" || form.value === null)
-      e.value = t("discounts.validation.valueRequired", "القيمة مطلوبة");
-    if (parseFloat(form.value) < 0)
-      e.value = t("discounts.validation.valuePositive", "القيمة يجب أن تكون موجبة");
-    if (form.discountType === "percentage" && parseFloat(form.value) > 100)
-      e.value = t("discounts.validation.maxPercent", "النسبة لا تتجاوز 100%");
-    if (
-      form.validFrom &&
-      form.validUntil &&
-      new Date(form.validFrom) >= new Date(form.validUntil)
-    )
-      e.validUntil = t(
-        "discounts.validation.dateRange",
-        "تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء"
-      );
-    return e;
-  };
-
   const handleSubmit = () => {
-    const e = validate();
+    const e = validateForm(form, t);
     if (Object.keys(e).length > 0) {
       setErrors(e);
       return;
     }
-    const payload = {
-      ...form,
-      value: parseFloat(form.value),
-      maxUses: form.maxUses !== "" ? parseInt(form.maxUses) : 0,
-      minimumAmount: form.minimumAmount !== "" ? parseFloat(form.minimumAmount) : 0,
-      validFrom: form.validFrom || undefined,
-      validUntil: form.validUntil || undefined,
+    const payload = buildPayload(form);
+
+    const onSuccess = (msgKey, fallback) => {
+      toastUtils.success(t(msgKey, fallback));
+      onClose();
     };
+
     if (editingDiscount) {
-      updateMutation.mutate({ id: editingDiscount.id, data: payload });
+      // Update payload: drop the immutable `code` so the strict Zod schema
+      // doesn't reject it.
+      const { code: _ignored, ...updateData } = payload;
+      updateMutation.mutate(
+        { id: editingDiscount.id, data: updateData },
+        {
+          onSuccess: () => onSuccess("discounts.updateSuccess", "تم تحديث الكود"),
+          onError: (err) =>
+            handleError(err, t, { fallbackMessage: "discounts.updateError" }),
+        }
+      );
     } else {
-      createMutation.mutate(payload);
+      createMutation.mutate(payload, {
+        onSuccess: () => onSuccess("discounts.createSuccess", "تم إنشاء الكود"),
+        onError: (err) =>
+          handleError(err, t, { fallbackMessage: "discounts.createError" }),
+      });
     }
   };
 
@@ -159,187 +99,13 @@ export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount })
             : t("discounts.createTitle", "إنشاء كود خصم جديد")}
         </h2>
 
-        <div className={styles.grid}>
-          {/* Code */}
-          <div className={styles.fieldFull}>
-            <label className={styles.label}>
-              {t("discounts.fields.code", "كود الخصم *")}
-            </label>
-            <input
-              className={`${styles.input} ${errors.code ? styles.inputError : ""}`}
-              type="text"
-              value={form.code}
-              onChange={(e) => set("code", e.target.value.toUpperCase())}
-              placeholder={t("discounts.fields.codePlaceholder", "e.g. SAVE20")}
-              disabled={!!editingDiscount}
-            />
-            {errors.code && <span className={styles.error}>{errors.code}</span>}
-          </div>
-
-          {/* Description EN */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("discounts.fields.descEn", "الوصف (إنجليزي)")}
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              value={form.descriptionEn}
-              onChange={(e) => set("descriptionEn", e.target.value)}
-              placeholder={t("discounts.fields.descEnPlaceholder", "e.g. 20% off for new users")}
-            />
-          </div>
-
-          {/* Description AR */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("discounts.fields.descAr", "الوصف (عربي)")}
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              dir="rtl"
-              value={form.descriptionAr}
-              onChange={(e) => set("descriptionAr", e.target.value)}
-              placeholder={t("discounts.fields.descArPlaceholder", "مثال: خصم 20% للمستخدمين الجدد")}
-            />
-          </div>
-
-          {/* Discount Type */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("discounts.fields.type", "نوع الخصم *")}
-            </label>
-            <select
-              className={styles.input}
-              value={form.discountType}
-              onChange={(e) => set("discountType", e.target.value)}
-            >
-              <option value="percentage">
-                {t("discounts.type.percentage", "نسبة مئوية (%)")}
-              </option>
-              <option value="fixed">
-                {t("discounts.type.fixed", "مبلغ ثابت (ر.س)")}
-              </option>
-            </select>
-          </div>
-
-          {/* Value */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {form.discountType === "percentage"
-                ? t("discounts.fields.percent", "النسبة (%) *")
-                : t("discounts.fields.amount", "المبلغ (ر.س) *")}
-            </label>
-            <input
-              className={`${styles.input} ${errors.value ? styles.inputError : ""}`}
-              type="number"
-              min="0"
-              max={form.discountType === "percentage" ? 100 : undefined}
-              value={form.value}
-              onChange={(e) => set("value", e.target.value)}
-            />
-            {errors.value && <span className={styles.error}>{errors.value}</span>}
-          </div>
-
-          {/* Max Uses */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("discounts.fields.maxUses", "الحد الأقصى للاستخدام (0 = غير محدود)")}
-            </label>
-            <input
-              className={styles.input}
-              type="number"
-              min="0"
-              value={form.maxUses}
-              onChange={(e) => set("maxUses", e.target.value)}
-            />
-          </div>
-
-          {/* Minimum Amount */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("discounts.fields.minAmount", "الحد الأدنى للمبلغ (ر.س)")}
-            </label>
-            <input
-              className={styles.input}
-              type="number"
-              min="0"
-              value={form.minimumAmount}
-              onChange={(e) => set("minimumAmount", e.target.value)}
-            />
-          </div>
-
-          {/* Valid From */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("discounts.fields.validFrom", "صالح من")}
-            </label>
-            <input
-              className={styles.input}
-              type="date"
-              value={form.validFrom}
-              onChange={(e) => set("validFrom", e.target.value)}
-            />
-          </div>
-
-          {/* Valid Until */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("discounts.fields.validUntil", "صالح حتى")}
-            </label>
-            <input
-              className={`${styles.input} ${errors.validUntil ? styles.inputError : ""}`}
-              type="date"
-              value={form.validUntil}
-              onChange={(e) => set("validUntil", e.target.value)}
-            />
-            {errors.validUntil && (
-              <span className={styles.error}>{errors.validUntil}</span>
-            )}
-          </div>
-
-          {/* Status */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("discounts.fields.status", "الحالة")}
-            </label>
-            <button
-              type="button"
-              className={`${styles.statusToggle} ${form.isActive ? styles.statusActive : styles.statusInactive}`}
-              onClick={() => set("isActive", !form.isActive)}
-            >
-              {form.isActive ? (
-                <><FaCheck /> {t("discounts.status.active", "نشط")}</>
-              ) : (
-                <><FaTimes /> {t("discounts.status.inactive", "معطل")}</>
-              )}
-            </button>
-          </div>
-
-          {/* Applicable Plan Types */}
-          <div className={styles.fieldFull}>
-            <label className={styles.label}>
-              {t("discounts.fields.planTypes", "الباقات المطبقة (فارغ = جميع الباقات)")}
-            </label>
-            <div className={styles.chips}>
-              {PLAN_TYPE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={`${styles.chip} ${
-                    form.applicablePlanTypes.includes(opt.value)
-                      ? styles.chipActive
-                      : ""
-                  }`}
-                  onClick={() => togglePlanType(opt.value)}
-                >
-                  {isAr ? opt.ar : opt.en}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <DiscountsFormFields
+          form={form}
+          errors={errors}
+          set={set}
+          togglePlanType={togglePlanType}
+          editingDiscount={editingDiscount}
+        />
 
         <div className={styles.actions}>
           <button className={styles.cancelBtn} onClick={onClose} disabled={saving}>

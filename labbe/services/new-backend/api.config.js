@@ -187,6 +187,19 @@ export const API_PATHS = {
   },
 
   // ============================================
+  // DISCOUNTS MODULE
+  // ============================================
+  discounts: {
+    validate: '/discounts/validate',
+    list: '/discounts/admin',
+    create: '/discounts/admin',
+    byId: (id) => `/discounts/admin/${id}`,
+    update: (id) => `/discounts/admin/${id}`,
+    toggle: (id) => `/discounts/admin/${id}/toggle`,
+    delete: (id) => `/discounts/admin/${id}`,
+  },
+
+  // ============================================
   // ADDONS MODULE
   // ============================================
   addons: {
@@ -497,4 +510,5 @@ export const {
   payments,
   hostPayments,
   addons,
+  discounts,
 } = API_PATHS;
