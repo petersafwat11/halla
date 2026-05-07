@@ -78,13 +78,28 @@ export const useSubscriptionMutation = (action) => {
   const mutations = {
     // Subscribe to plan
     subscribe: {
-      mutationFn: ({ planCode, discountCode }) =>
-        apiRequest({
+      mutationFn: async ({ planCode, discountCode, source, callbackUrl }) => {
+        const data = await apiRequest({
           method: "POST",
           path: API_PATHS.subscriptions.subscribe,
-          data: { planCode, ...(discountCode ? { discountCode } : {}) },
-        }),
-      onSuccess: () => {
+          data: {
+            planCode,
+            ...(discountCode ? { discountCode } : {}),
+            ...(source ? { source } : {}),
+            ...(callbackUrl ? { callbackUrl } : {}),
+          },
+        });
+        // Backend response shape on 3DS: { data: { requiresAction, redirectUrl, paymentId } }
+        const inner = data?.data || data;
+        if (inner?.requiresAction && inner?.redirectUrl && typeof window !== "undefined") {
+          window.location.href = inner.redirectUrl;
+          // Surface a recognisable promise state so callers don't toast a "success"
+          return { requiresAction: true, paymentId: inner.paymentId };
+        }
+        return data;
+      },
+      onSuccess: (result) => {
+        if (result?.requiresAction) return;
         queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
         queryClient.invalidateQueries({ queryKey: ["events", "subscription-info"] });
       },

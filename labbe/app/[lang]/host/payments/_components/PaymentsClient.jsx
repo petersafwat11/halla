@@ -26,6 +26,8 @@ const PaymentsClient = () => {
   const headers = [
     t("table.columns.service"),
     t("table.columns.amount"),
+    t("table.columns.method", "Method"),
+    t("table.columns.transactionId", "Transaction"),
     t("table.columns.date"),
     t("table.columns.status"),
   ];
@@ -33,7 +35,16 @@ const PaymentsClient = () => {
   const tableData = payments.map((item) => ({
     id: item.id,
     service: item.service,
-    amount: `${item.amount} ${item.currency}`,
+    amount:
+      item.refundedAmount && item.refundedAmount > 0
+        ? `${item.amount} ${item.currency} (- ${item.refundedAmount})`
+        : `${item.amount} ${item.currency}`,
+    method: item.paymentMethod
+      ? `${t(`table.method.${item.paymentMethod}`, item.paymentMethod)}${
+          item.paymentMethodLast4 ? ` •••• ${item.paymentMethodLast4}` : ""
+        }`
+      : "—",
+    transactionId: item.transactionId || "—",
     date: new Date(item.createdAt).toLocaleString(),
     status: item.status,
     statusText: t(`table.status.${item.status}`, item.status),

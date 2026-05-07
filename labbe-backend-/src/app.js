@@ -36,6 +36,7 @@ const { routes: messagingRoutes } = require("./modules/messaging");
 const { routes: adminRoutes } = require("./modules/admin");
 const { discountsRoutes } = require("./modules/discounts");
 const addonsRoutes = require("./modules/addons/addons.routes");
+const { routes: paymentsRoutes } = require("./modules/payments");
 // Phase 4c W0-MODEL: Taqnyat-template cache + sync + admin assignment
 // (public list + admin sub-router under /admin/taqnyat-templates).
 const taqnyatTemplatesModule = require("./modules/taqnyat-templates");
@@ -224,6 +225,7 @@ const createApp = () => {
     app.use(`${prefix}/admin`, adminRoutes);
     app.use(`${prefix}/discounts`, discountsRoutes);
     app.use(`${prefix}/addons`, addonsRoutes);
+    app.use(`${prefix}/payments`, paymentsRoutes);
     // Phase 4c: visual templates + categories + Taqnyat templates.
     // Admin sub-routers are mounted under /admin/<resource> alongside
     // the public host-facing routers under /<resource>.

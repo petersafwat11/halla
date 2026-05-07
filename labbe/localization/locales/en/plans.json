@@ -1,4 +1,18 @@
 {
+  "checkout": {
+    "method": {
+      "card": "Card",
+      "applepay": "Apple Pay",
+      "stcpay": "STC Pay"
+    },
+    "card": {
+      "name": "Cardholder name",
+      "number": "Card number"
+    },
+    "applepay": {
+      "note": "You'll be prompted by Apple Pay on the next step."
+    }
+  },
   "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
   "noActiveSubscription": { "title": "No active subscription", "subtitle": "Choose a plan below to activate your subscription" },
   "pageTitle": "Choose Your Plan",

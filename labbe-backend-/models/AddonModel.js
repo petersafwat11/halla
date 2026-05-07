@@ -26,6 +26,7 @@ const addonSchema = new mongoose.Schema(
       // pairs this row with the corresponding pending-refund audit entry.
       enum: [
         'pending',
+        'pending_3ds',
         'pending_provisioning',
         'active',
         'fulfilled',

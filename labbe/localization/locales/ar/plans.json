@@ -1,4 +1,18 @@
 {
+  "checkout": {
+    "method": {
+      "card": "بطاقة",
+      "applepay": "آبل باي",
+      "stcpay": "إس تي سي باي"
+    },
+    "card": {
+      "name": "اسم حامل البطاقة",
+      "number": "رقم البطاقة"
+    },
+    "applepay": {
+      "note": "سيُطلب منك التأكيد عبر آبل باي في الخطوة التالية."
+    }
+  },
   "currentPlan": { "title": "الباقة الحالية", "events": "مناسبات", "invites": "دعوات", "daysRemaining": "أيام متبقية" },
   "noActiveSubscription": { "title": "لا يوجد اشتراك نشط حالياً", "subtitle": "اختر باقة من الأسفل لتفعيل اشتراكك" },
   "pageTitle": "اختر باقتك",

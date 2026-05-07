@@ -1263,6 +1263,12 @@ router.get('/payments',
   adminController.getPayments
 );
 
+router.get('/payments/summary',
+  requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
+  filterByWhitelabel,
+  adminController.getPaymentSummary
+);
+
 // ============================================
 // EXPORT ROUTES
 // ============================================
@@ -1271,6 +1277,14 @@ router.get('/payments/export',
   requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
   filterByWhitelabel,
   adminController.exportPayments
+);
+
+// `:id` route MUST come AFTER literal paths (`summary`, `export`) so
+// Express does not match those against the dynamic `:id` route.
+router.get('/payments/:id',
+  requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
+  filterByWhitelabel,
+  adminController.getPaymentDetail
 );
 
 router.get('/hosts/export',

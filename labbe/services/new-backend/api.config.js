@@ -178,6 +178,14 @@ export const API_PATHS = {
   },
 
   // ============================================
+  // PAYMENTS MODULE (host-facing single payment + 3DS)
+  // ============================================
+  hostPayments: {
+    getById: (id) => `/payments/${id}`,
+    poll3ds: (id) => `/payments/${id}/poll`,
+  },
+
+  // ============================================
   // TICKETS MODULE
   // ============================================
   tickets: {
@@ -337,6 +345,9 @@ export const API_PATHS = {
     getById: (id) => `/admin/payments/${id}`,
     getSummary: '/admin/payments/summary',
     export: '/admin/payments/export',
+    refund: (id) => `/payments/${id}/refund`,
+    capture: (id) => `/payments/${id}/capture`,
+    void: (id) => `/payments/${id}/void`,
   },
 
   // ============================================
@@ -469,4 +480,5 @@ export const {
   vendorServices,
   admin,
   payments,
+  hostPayments,
 } = API_PATHS;

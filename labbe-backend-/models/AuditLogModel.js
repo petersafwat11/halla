@@ -70,6 +70,9 @@ const auditLogSchema = new mongoose.Schema(
         // targetType:"system"; now have their own enum values.
         "plan",
         "addon",
+        // Phase 6 — payment system: refund / capture / void / webhook /
+        // reconcile / pending_refund all target a Payment row.
+        "payment",
       ],
       index: true,
     },

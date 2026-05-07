@@ -2006,90 +2006,138 @@ class AdminService {
   }
 
   /**
-   * Get all payments (backed by Subscription records)
+   * Get all payments (backed by Payment collection — Phase 4 §7.1).
+   *
+   * The legacy Subscription-backed implementation was replaced after
+   * the §4.10 backfill ran: every old subscription that had a
+   * `metadata.paymentTransactionId` now has a corresponding Payment
+   * row (status: paid, backfilledFrom: 'subscription'), so historical
+   * data is queryable via Payment directly.
    */
   async getPayments({ page = 1, limit = 10, status, from, to, whitelabelId } = {}) {
+    const Payment = require('../../../models/PaymentModel');
     const skip = (page - 1) * limit;
 
     const match = {};
-    if (whitelabelId !== undefined) {
-      match.whitelabelId = whitelabelId;
-    }
+    if (whitelabelId !== undefined) match.whitelabelId = whitelabelId;
 
-    // Map payment status filter back to subscription statuses
     if (status && status !== 'all') {
-      const statusMap = {
-        completed: { $in: ['active', 'completed'] },
-        pending:   'trial',
-        failed:    { $in: ['cancelled', 'expired'] },
+      const map = {
+        completed: { $in: ['paid', 'captured', 'partially_refunded'] },
+        pending: { $in: ['pending', 'pending_3ds', 'authorized'] },
+        failed: { $in: ['failed', 'voided', 'refunded'] },
+        refunded: { $in: ['refunded', 'partially_refunded'] },
       };
-      if (statusMap[status]) {
-        match.status = statusMap[status];
-      }
+      if (map[status]) match.status = map[status];
     }
-
     const dateRange = this._buildDateRangeQuery(from, to);
-    if (Object.keys(dateRange).length > 0) {
-      match.createdAt = dateRange;
-    }
+    if (Object.keys(dateRange).length > 0) match.createdAt = dateRange;
 
     const baseMatch = whitelabelId !== undefined ? { whitelabelId } : {};
-
-    const [subscriptions, total, statsAgg] = await Promise.all([
-      Subscription.find(match)
+    const [rows, total, statsAgg] = await Promise.all([
+      Payment.find(match)
         .populate('userId', 'name email phoneNumber')
-        .populate('planId', 'name nameEn nameAr code')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Subscription.countDocuments(match),
-      Subscription.aggregate([
+      Payment.countDocuments(match),
+      Payment.aggregate([
         { $match: baseMatch },
-        {
-          $group: {
-            _id: '$status',
-            count: { $sum: 1 },
-            revenue: { $sum: '$pricePaid.amount' },
-          },
-        },
+        { $group: { _id: '$status', count: { $sum: 1 }, revenue: { $sum: '$amount' } } },
       ]),
     ]);
 
-    const statsByStatus = {};
+    const byStatus = {};
     let totalRevenue = 0;
-    statsAgg.forEach((s) => {
-      statsByStatus[s._id] = { count: s.count, revenue: s.revenue || 0 };
-      totalRevenue += s.revenue || 0;
-    });
-
-    const payments = subscriptions.map((sub) => ({
-      _id: sub._id,
-      amount: sub.pricePaid?.amount || 0,
-      currency: sub.pricePaid?.currency || 'SAR',
-      status: this._mapSubStatusToPayment(sub.status),
-      hostName: sub.userId?.name || sub.userId?.email || null,
-      description: sub.planId?.name || sub.planId?.nameEn || null,
-      billingCycle: sub.billingCycle,
-      subscriptionStatus: sub.status,
-      createdAt: sub.createdAt,
-    }));
+    let pending = 0;
+    let completed = 0;
+    let failed = 0;
+    for (const s of statsAgg) {
+      byStatus[s._id] = { count: s.count, revenue: s.revenue || 0 };
+      if (['paid', 'captured', 'partially_refunded'].includes(s._id)) {
+        completed += s.count;
+        totalRevenue += s.revenue || 0;
+      } else if (['pending', 'pending_3ds', 'authorized'].includes(s._id)) {
+        pending += s.count;
+      } else if (['failed', 'voided', 'refunded'].includes(s._id)) {
+        failed += s.count;
+      }
+    }
 
     return {
-      payments,
-      stats: {
-        totalRevenue,
-        pending:   statsByStatus.trial?.count || 0,
-        completed: (statsByStatus.active?.count || 0) + (statsByStatus.completed?.count || 0),
-        failed:    (statsByStatus.cancelled?.count || 0) + (statsByStatus.expired?.count || 0),
-      },
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      payments: rows.map((p) => ({
+        _id: p._id,
+        amount: p.amount,
+        currency: p.currency,
+        status: ['paid', 'captured'].includes(p.status)
+          ? 'completed'
+          : ['pending', 'pending_3ds', 'authorized'].includes(p.status)
+          ? 'pending'
+          : ['failed', 'voided'].includes(p.status)
+          ? 'failed'
+          : ['refunded', 'partially_refunded'].includes(p.status)
+          ? 'refunded'
+          : p.status,
+        providerStatus: p.status,
+        hostName: p.userId?.name || p.userId?.email || null,
+        description: p.description,
+        paymentMethod: p.paymentMethod?.type || null,
+        paymentMethodLast4: p.paymentMethod?.last4 || null,
+        moyasarPaymentId: p.moyasarPaymentId,
+        refundedAmount: p.refundedAmount || 0,
+        createdAt: p.createdAt,
+      })),
+      stats: { totalRevenue, pending, completed, failed },
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     };
+  }
+
+  /**
+   * Phase 4 §7.1 — payment summary widget for the admin dashboard.
+   * Returns the same `stats` block produced by `getPayments` without
+   * paginating the rows.
+   */
+  async getPaymentSummary({ whitelabelId } = {}) {
+    const Payment = require('../../../models/PaymentModel');
+    const baseMatch = whitelabelId !== undefined ? { whitelabelId } : {};
+    const statsAgg = await Payment.aggregate([
+      { $match: baseMatch },
+      { $group: { _id: '$status', count: { $sum: 1 }, revenue: { $sum: '$amount' } } },
+    ]);
+    let totalRevenue = 0;
+    let pending = 0;
+    let completed = 0;
+    let failed = 0;
+    for (const s of statsAgg) {
+      if (['paid', 'captured', 'partially_refunded'].includes(s._id)) {
+        completed += s.count;
+        totalRevenue += s.revenue || 0;
+      } else if (['pending', 'pending_3ds', 'authorized'].includes(s._id)) {
+        pending += s.count;
+      } else if (['failed', 'voided', 'refunded'].includes(s._id)) {
+        failed += s.count;
+      }
+    }
+    return { totalRevenue, pending, completed, failed };
+  }
+
+  /**
+   * Phase 4 §7.1 — single payment detail (admin payment-detail modal).
+   * Whitelabel scope is enforced by the controller (§15.2B).
+   */
+  async getPaymentDetail(paymentId) {
+    const Payment = require('../../../models/PaymentModel');
+    const detail = await Payment.findById(paymentId)
+      .populate('userId', 'name email phoneNumber')
+      .populate({ path: 'subscriptionId', populate: { path: 'planId', select: 'code name nameEn nameAr' } })
+      .populate('addonId')
+      .lean();
+    if (!detail) {
+      const { NotFoundError } = require('../../shared/errors');
+      throw new NotFoundError('Payment');
+    }
+    return detail;
   }
 
   // ============================================
@@ -2182,33 +2230,37 @@ class AdminService {
   }
 
   async exportPayments(whitelabelId, { status, from, to } = {}) {
+    const Payment = require('../../../models/PaymentModel');
     const match = {};
     if (whitelabelId !== undefined) match.whitelabelId = whitelabelId;
     if (status && status !== 'all') {
-      const statusMap = {
-        completed: { $in: ['active', 'completed'] },
-        pending: 'trial',
-        failed: { $in: ['cancelled', 'expired'] },
+      const map = {
+        completed: { $in: ['paid', 'captured', 'partially_refunded'] },
+        pending: { $in: ['pending', 'pending_3ds', 'authorized'] },
+        failed: { $in: ['failed', 'voided', 'refunded'] },
+        refunded: { $in: ['refunded', 'partially_refunded'] },
       };
-      if (statusMap[status]) match.status = statusMap[status];
+      if (map[status]) match.status = map[status];
     }
     const dateRange = this._buildDateRangeQuery(from, to);
     if (Object.keys(dateRange).length > 0) match.createdAt = dateRange;
 
-    const subscriptions = await Subscription.find(match)
+    const rows = await Payment.find(match)
       .populate('userId', 'name email phoneNumber')
-      .populate('planId', 'nameEn nameAr code')
       .sort({ createdAt: -1 })
       .lean();
 
-    return subscriptions.map((sub) => ({
-      Host: sub.userId?.name || sub.userId?.email || '-',
-      'Host Email': sub.userId?.email || '-',
-      Plan: sub.planId?.nameEn || sub.planId?.nameAr || sub.planId?.code || '-',
-      Amount: `${sub.pricePaid?.amount || 0} ${sub.pricePaid?.currency || 'SAR'}`,
-      'Billing Cycle': sub.billingCycle || '-',
-      Status: this._mapSubStatusToPayment(sub.status),
-      'Created At': sub.createdAt ? new Date(sub.createdAt).toISOString().split('T')[0] : '-',
+    return rows.map((p) => ({
+      Host: p.userId?.name || p.userId?.email || '-',
+      'Host Email': p.userId?.email || '-',
+      Description: p.description || '-',
+      Amount: `${p.amount || 0} ${p.currency || 'SAR'}`,
+      'Refunded Amount': `${p.refundedAmount || 0} ${p.currency || 'SAR'}`,
+      Status: p.status,
+      'Payment Method': p.paymentMethod?.type || '-',
+      Last4: p.paymentMethod?.last4 || '-',
+      'Transaction ID': p.moyasarPaymentId || '-',
+      'Created At': p.createdAt ? new Date(p.createdAt).toISOString().split('T')[0] : '-',
     }));
   }
 
