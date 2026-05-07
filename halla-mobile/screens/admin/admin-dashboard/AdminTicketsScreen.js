@@ -43,14 +43,12 @@ const AdminTicketsScreen = () => {
   const role  = useAuthStore((state) => state.user?.role);
   const canDelete = canDeleteOnPage(role, PAGES.TICKETS);
 
-  // Phase 4 review fix — server-side filters via the infinite hook.
   const debouncedSearch = useDebouncedValue(searchQuery, 350);
   const ticketsFilters = useMemo(
     () => ({ search: debouncedSearch, status: activeFilter }),
     [debouncedSearch, activeFilter]
   );
 
-  // Phase 4 W3-PAGE: infinite scroll for admin tickets.
   const {
     items: rawTickets,
     isLoading,
@@ -86,7 +84,6 @@ const AdminTicketsScreen = () => {
     [rawTickets],
   );
 
-  // Phase 4 review: counts dropped (misleading under pagination).
   const filterOptions = useMemo(
     () =>
       STATUS_FILTER_IDS.map((id) => ({

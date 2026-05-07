@@ -13,7 +13,7 @@ import { colors, spacing, textStyles, backgrounds } from "../../../styles/tokens
 /**
  * AdminFlatList - Unified FlatList for admin pages.
  * Handles loading spinner (first load), pull-to-refresh, empty state,
- * and (Phase 4 W3-PAGE) infinite-scroll pagination via `onEndReached`.
+ * and infinite-scroll pagination via `onEndReached`.
  *
  * @param {Array}     data                  - Items to render
  * @param {Function}  renderItem            - Render function for each item

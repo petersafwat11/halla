@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/authStore';
 import adminDashboardService from '../../services/adminDashboardService';
 
@@ -8,8 +8,6 @@ export function useAdminStats(period = 'month') {
     queryKey: ['admin', 'stats', period],
     queryFn: async () => {
       const response = await adminDashboardService.dashboard.getStats(token, period);
-      // adminDashboardService wraps the backend response: { success, data: backendEnvelope, error }
-      // backendEnvelope = { success, status, data: { statsCards, charts, recentActivity, ... } }
       return response.data?.data || response.data;
     },
     enabled: !!token,
@@ -138,11 +136,9 @@ export function useAdminPayments(params = {}) {
  * @param {Object} [params] - server filter params
  * @param {Object} [opts]
  * @param {boolean} [opts.enabled=true] - mirror of react-query's `enabled`
- *   so callers (e.g. AddModeratorModal H-15) can gate the request on
- *   role. Without this, every non-super-admin opening a screen that
- *   imports the hook fires `GET /admin/whitelabels` and the backend
- *   responds 403/401 — log noise and a request the user is not
- *   authorised to make.
+ *   so callers can gate the request on role. Without this, every
+ *   non-super-admin opening a screen that imports the hook fires
+ *   `GET /admin/whitelabels` and the backend responds 403/401.
  */
 export function useAdminWhitelabels(params = {}, opts = {}) {
   const token = useAuthStore((state) => state.token);
@@ -246,5 +242,33 @@ export function useAdminPaymentSummary(params = {}) {
     },
     enabled: !!token,
     staleTime: 3 * 60 * 1000,
+  });
+}
+
+export function useAdminWhitelabelFeatures(whitelabelId) {
+  const token = useAuthStore((state) => state.token);
+  return useQuery({
+    queryKey: ['admin', 'whitelabels', whitelabelId, 'features'],
+    queryFn: async () => {
+      const response = await adminDashboardService.whitelabels.getFeatures(token, whitelabelId);
+      return response.data;
+    },
+    enabled: !!token && !!whitelabelId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useUpdateAdminWhitelabelFeatureMutation(whitelabelId) {
+  const token = useAuthStore((state) => state.token);
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ feature, enabled }) => {
+      const response = await adminDashboardService.whitelabels.updateFeature(token, whitelabelId, feature, enabled);
+      if (!response.success) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'whitelabels', whitelabelId, 'features'] });
+    },
   });
 }

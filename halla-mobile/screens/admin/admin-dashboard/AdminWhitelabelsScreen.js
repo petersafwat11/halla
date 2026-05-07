@@ -12,7 +12,6 @@ const AdminWhitelabelsScreen = ({ navigation }) => {
   const toast = useToast();
   const { t } = useTranslation("admin");
 
-  // Phase 4 review fix — controlled filters at screen level.
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const debouncedSearch = useDebouncedValue(search, 350);
@@ -21,7 +20,6 @@ const AdminWhitelabelsScreen = ({ navigation }) => {
     [debouncedSearch, activeFilter]
   );
 
-  // Phase 4 W3-PAGE: infinite scroll for admin whitelabels.
   const {
     items: whitelabels,
     isLoading,

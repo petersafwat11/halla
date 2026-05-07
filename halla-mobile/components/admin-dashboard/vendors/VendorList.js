@@ -24,8 +24,6 @@ const VendorList = ({
   hasMore = false,
   onLoadMore,
   loadingMore = false,
-  // Phase 4 review fix — controlled filter props from the screen so
-  // server-side filtering re-keys the infinite query on change.
   searchQuery: searchQueryProp,
   onSearchQueryChange,
   activeFilter: activeFilterProp,
@@ -61,7 +59,6 @@ const VendorList = ({
     return map[id] || id;
   };
 
-  // Phase 4 review: counts dropped (misleading under pagination).
   const filterOptions = useMemo(
     () =>
       FILTER_IDS.map((id) => ({

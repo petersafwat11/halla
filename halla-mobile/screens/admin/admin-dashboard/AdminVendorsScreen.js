@@ -12,8 +12,6 @@ const AdminVendorsScreen = ({ navigation }) => {
   const toast  = useToast();
   const { t }  = useTranslation("admin");
 
-  // Phase 4 review fix — controlled filters at screen level so the
-  // infinite hook re-keys (and resets to page 1) when the user filters.
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const debouncedSearch = useDebouncedValue(searchQuery, 350);
@@ -22,7 +20,6 @@ const AdminVendorsScreen = ({ navigation }) => {
     [debouncedSearch, activeFilter]
   );
 
-  // Phase 4 W3-PAGE: infinite scroll across vendors.
   const {
     items: vendors,
     isLoading,

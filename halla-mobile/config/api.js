@@ -232,6 +232,77 @@ export const ENDPOINTS = {
   FONTS: {
     LIST: "/fonts",
   },
+
+  // Admin endpoints
+  ADMIN: {
+    HOSTS: {
+      BASE: "/admin/hosts",
+      BY_ID: (id) => `/admin/hosts/${id}`,
+      STATUS: (id) => `/admin/hosts/${id}/status`,
+      SUBSCRIPTION: (id) => `/admin/hosts/${id}/subscription`,
+      BULK_DELETE: "/admin/hosts/bulk-delete",
+      EXPORT: "/admin/hosts/export",
+      VERIFY_PHONE: "/admin/hosts/verify-phone",
+      FIND_OR_CREATE: "/admin/hosts/find-or-create",
+    },
+    MODERATORS: {
+      BASE: "/admin/moderators",
+      BY_ID: (id) => `/admin/moderators/${id}`,
+      STATUS: (id) => `/admin/moderators/${id}/status`,
+      BULK_DELETE: "/admin/moderators/bulk-delete",
+      BULK_STATUS: "/admin/moderators/bulk-status",
+      EXPORT: "/admin/moderators/export",
+    },
+    VENDORS: {
+      BASE: "/admin/vendors",
+      BY_ID: (id) => `/admin/vendors/${id}`,
+      STATUS: (id) => `/admin/vendors/${id}/status`,
+      RATING: (id) => `/admin/vendors/${id}/rating`,
+      BULK_DELETE: "/admin/vendors/bulk-delete",
+      BULK_STATUS: "/admin/vendors/bulk-status",
+      EXPORT: "/admin/vendors/export",
+    },
+    EVENTS: {
+      ADMIN_ALL: "/events/admin/all",
+      BY_ID: (id) => `/admin/events/${id}`,
+      CREATE_FOR_HOST: "/admin/events/create-for-host",
+      STATUS: (id) => `/admin/events/${id}/status`,
+      BULK_DELETE: "/admin/events/bulk-delete",
+      BULK_STATUS: "/admin/events/bulk-status",
+      EXPORT: "/admin/events/export",
+    },
+    PAYMENTS: {
+      BASE: "/admin/payments",
+      BY_ID: (id) => `/admin/payments/${id}`,
+      SUMMARY: "/admin/payments/summary",
+      EXPORT: "/admin/payments/export",
+    },
+    PLANS: {
+      ALL: "/plans/admin/all",
+      BY_CODE: (code) => `/plans/admin/${code}`,
+      CREATE: "/plans/admin",
+    },
+    SUBSCRIPTIONS: {
+      ASSIGN: "/subscriptions/admin/assign",
+    },
+    WHITELABELS: {
+      BASE: "/admin/whitelabels",
+      BY_ID: (id) => `/admin/whitelabels/${id}`,
+      STATUS: (id) => `/admin/whitelabels/${id}/status`,
+      SUBSCRIPTION: (id) => `/admin/whitelabels/${id}/subscription`,
+      FEATURES: (id) => `/admin/whitelabels/${id}/features`,
+      BULK_DELETE: "/admin/whitelabels/bulk-delete",
+      BULK_STATUS: "/admin/whitelabels/bulk-status",
+      EXPORT: "/admin/whitelabels/export",
+    },
+    DISCOUNTS: {
+      BASE: "/discounts/admin",
+      BY_ID: (id) => `/discounts/admin/${id}`,
+      TOGGLE: (id) => `/discounts/admin/${id}/toggle`,
+    },
+    EVENT_TARGETS: "/admin/event-targets",
+    USER_SUBSCRIPTION_INFO: (id) => `/admin/users/${id}/subscription-info`,
+  },
 };
 
 export default {
