@@ -10,7 +10,7 @@ const {
   ValidationError,
   AppError,
 } = require("../../shared/errors");
-// M-5: every export/notification helper uses formatRiyadh so we don't
+// Every export/notification helper uses formatRiyadh so we don't
 // re-render UTC server-locale dates as the previous local day.
 const { parseEventTime } = require("../../shared/utils/timezone");
 
@@ -19,14 +19,13 @@ const Event = require("../../../models/EventModel");
 
 // File upload helper
 const { getFileUrl } = require('../../shared/utils/fileUpload');
-// Phase 4c W0-VISUAL-BACKEND — server-side validator for the host's
-// per-template field values (per v4.1 §A-12). Lazily-required at the
-// call site to keep boot-time cycles minimal.
+// Server-side validator for the host's per-template field values.
+// Lazily-required at the call site to keep boot-time cycles minimal.
 const Template = require('../../../models/TemplateModel');
 const { validateTemplateData } = require('./templateDataValidator');
-// Phase 4c hardening — resolves legacy `inv.selectedTemplate.id` (Meta
-// taqnyatId string) and `inv.visualTemplate.id` (legacy Number) into
-// canonical ObjectId refs without throwing CastError on dual-write.
+// Resolves legacy `inv.selectedTemplate.id` (Meta taqnyatId string)
+// and `inv.visualTemplate.id` (legacy Number) into canonical ObjectId
+// refs without throwing CastError on dual-write.
 const {
   resolveTaqnyatTemplateRef,
   resolveVisualTemplateRef,
@@ -39,8 +38,8 @@ const { logAudit } = require('../../shared/utils/auditLog');
 
 module.exports = {
   /**
-   * Phase 4c W0-VISUAL-BACKEND — validate the host-supplied template
-   * field values against the picked Template's `fields[]` definitions.
+   * Validate the host-supplied template field values against the picked
+   * Template's `fields[]` definitions.
    *
    * Resolves `templateRef` (canonical) to the live Template doc, then
    * delegates to `validateTemplateData`. Throws AppError(400) with
@@ -79,7 +78,7 @@ module.exports = {
       throw new NotFoundError("Event");
     }
 
-    // FLOW-13-F04: extended status block list
+    // Extended status block list
     if (
       [EVENT_STATUS.LIVE, EVENT_STATUS.PUBLISHED, EVENT_STATUS.COMPLETED,
        EVENT_STATUS.CANCELLED, EVENT_STATUS.ARCHIVED].includes(event.status)
@@ -102,7 +101,7 @@ module.exports = {
 
     await event.save();
 
-    // FLOW-13-F05 / Track-B: audit event update
+    // Audit event update
     logAudit({
       action: 'event.updated',
       actor: { _id: userId },
@@ -117,10 +116,9 @@ module.exports = {
   /**
    * Update event details.
    *
-   * Phase 4b W1-UNIFY: accepts the full user context so the unified
-   * update wizard works for admin / whitelabel-admin / whitelabel-moderator,
-   * not only the host. Scope resolution mirrors `getEventById` via
-   * `_buildScopedEventQuery`.
+   * Accepts the full user context so the unified update wizard works for
+   * admin / whitelabel-admin / whitelabel-moderator, not only the host.
+   * Scope resolution mirrors `getEventById` via `_buildScopedEventQuery`.
    *
    * @param {string} eventId
    * @param {Object} details
@@ -131,19 +129,19 @@ module.exports = {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
-    // FLOW-13-F04: extended status block list — live/published events are immutable
+    // Live/published events are immutable
     const BLOCKED_STATUSES = ['live', 'published', 'completed', 'cancelled', 'archived'];
     if (BLOCKED_STATUSES.includes(event.status)) {
       throw new ValidationError(`Cannot modify event details when status is '${event.status}'`);
     }
 
-    // FLOW-13-F01: 24h pre-launch edit lock
+    // 24h pre-launch edit lock
     this._checkEditLock(event, details);
 
     event.eventDetails = { ...event.eventDetails, ...details };
     await event.save();
 
-    // FLOW-13-F05: audit event details update
+    // Audit event details update
     logAudit({
       action: 'event.details_updated',
       actor: userContext,
@@ -177,13 +175,13 @@ module.exports = {
       if (templateImagePath) settings.templateImage = templateImagePath;
     }
 
-    // Phase 4c W0-RENAME — DUAL WRITE.
+    // DUAL WRITE.
     //
     // The wizard may submit either the legacy `invitationSettings.*`
     // shape (older clients) or the canonical top-level shape (new
     // clients), or a mix during the dual-write window. We accept both
     // and write both so reads from either shape resolve correctly until
-    // the legacy field is dropped in Phase 5.
+    // the legacy field is dropped.
     //
     // Canonical → legacy projections (read-back compatibility):
     //   visualTemplate.templateRef     → invitationSettings.visualTemplate.id
@@ -268,8 +266,7 @@ module.exports = {
       if (settings.guestReplies.onExpected !== undefined) legacyMerge.expectedAttendanceAutoReply = settings.guestReplies.onExpected;
     }
 
-    // Phase 4c W0-VISUAL-BACKEND — validate fieldValues against
-    // Template.fields[] BEFORE the save commits (per v4.1 §A-12).
+    // Validate fieldValues against Template.fields[] BEFORE the save commits.
     if (canonicalVisual.templateRef && canonicalVisual.fieldValues) {
       await this._validateVisualTemplateFieldValues(
         canonicalVisual.templateRef,
@@ -378,7 +375,7 @@ module.exports = {
   },
 
   /**
-   * FLOW-13-F01: 24h pre-launch edit lock.
+   * 24h pre-launch edit lock.
    *
    * Rejects changes to date/time/location when the event is `scheduled`
    * and launch is within 24 hours. Cosmetic fields (title, notes) are

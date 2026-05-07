@@ -88,10 +88,10 @@ exports.getSubscriptionInfo = catchAsync(async (req, res) => {
  * Get single event stats
  * GET /api/v2/events/stats/:id
  *
- * Phase 4b W0-RBAC: scope is resolved inside the service via the full
- * user context (role + whitelabelId), so admin / moderator / whitelabel
- * tier roles see events under their tenant scope without needing a
- * separate admin route.
+ * Scope is resolved inside the service via the full user context
+ * (role + whitelabelId), so admin / moderator / whitelabel tier roles
+ * see events under their tenant scope without needing a separate
+ * admin route.
  */
 exports.getSingleEventStats = catchAsync(async (req, res) => {
   const stats = await eventsService.getSingleEventStats(
@@ -149,8 +149,8 @@ exports.exportEventGuestsAsExcel = catchAsync(async (req, res) => {
  * Get event by ID
  * GET /api/v2/events/:id
  *
- * Phase 4b W0-RBAC: scope resolved inside the service via the full
- * user context. See `eventsService._buildScopedEventQuery`.
+ * Scope resolved inside the service via the full user context.
+ * See `eventsService._buildScopedEventQuery`.
  */
 exports.getEventById = catchAsync(async (req, res) => {
   const result = await eventsService.getEventById(req.params.id, req.user);
@@ -206,9 +206,9 @@ exports.bulkDeleteEvents = catchAsync(async (req, res) => {
  * Update event details
  * PATCH /api/v2/events/:id/event-details
  *
- * Phase 4b W1-UNIFY: scope resolved from req.user inside the service so
- * the unified update wizard works for admin / whitelabel-admin /
- * whitelabel-moderator on the SAME endpoint as the host.
+ * Scope resolved from req.user inside the service so the unified update
+ * wizard works for admin / whitelabel-admin / whitelabel-moderator on
+ * the SAME endpoint as the host.
  */
 exports.updateEventDetails = catchAsync(async (req, res) => {
   const result = await eventsService.updateEventDetails(
@@ -246,12 +246,12 @@ exports.updateStaffList = catchAsync(async (req, res) => {
 });
 
 /**
- * Phase 4d W0-ATOMIC — atomically update guest list + staff list
+ * Atomically update guest list + staff list
  * PATCH /api/v2/events/:id/step2
  *
  * Accepts both `supervisorsList` (web naming) and `staffList` (mobile
- * naming) per D4d-2; normalises to a single `staffList` payload before
- * handing off to the service. Both keys may appear together — `staffList`
+ * naming); normalises to a single `staffList` payload before handing
+ * off to the service. Both keys may appear together — `staffList`
  * wins (mobile-first stays canonical) and `supervisorsList` is only used
  * when `staffList` is absent.
  *

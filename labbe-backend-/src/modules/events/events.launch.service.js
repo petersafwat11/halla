@@ -21,7 +21,7 @@ const logger = require('../../shared/utils/logger');
 
 module.exports = {
   /**
-   * Manual launch retry (Phase 3c.1, FLOW-15-F04).
+   * Manual launch retry.
    *
    * Permitted for the host (event creator), the whitelabel-admin who owns
    * the event's whitelabel, or any global admin / super-admin (the route

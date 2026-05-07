@@ -1,5 +1,5 @@
 /**
- * templateRefResolver — Phase 4c hardening (post-review).
+ * templateRefResolver.
  *
  * Resolves legacy `Event.invitationSettings.{selectedTemplate.id, visualTemplate.id}`
  * values to canonical ObjectId refs without throwing CastError when the

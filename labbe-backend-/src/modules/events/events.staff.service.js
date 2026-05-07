@@ -10,7 +10,7 @@ const {
   NotFoundError,
   ValidationError,
 } = require("../../shared/errors");
-// M-5: every export/notification helper uses formatRiyadh so we don't
+// Every export/notification helper uses formatRiyadh so we don't
 // re-render UTC server-locale dates as the previous local day.
 const { formatRiyadh } = require("../../shared/utils/timezone");
 
@@ -51,7 +51,7 @@ module.exports = {
     await event.save();
 
     // Revoke StaffAccessToken records for any phone dropped from the list
-    // so removed staff lose portal access immediately (D-R3).
+    // so removed staff lose portal access immediately.
     await this._revokeRemovedStaffTokens(eventId, preImagePhones, event.staffList);
 
     logAudit({
@@ -69,8 +69,8 @@ module.exports = {
   },
 
   /**
-   * D-R3 hardening — invalidate StaffAccessToken records for staff
-   * removed from an event's staffList.
+   * Invalidate StaffAccessToken records for staff removed from an event's
+   * staffList.
    *
    * Phone strings on `staffList` and on the token records are stored
    * in raw form (the entry the host typed). We normalise both sides
@@ -231,7 +231,7 @@ module.exports = {
 
     await event.save();
 
-    // D-R3: revoke any active StaffAccessToken so the removed staff loses
+    // Revoke any active StaffAccessToken so the removed staff loses
     // portal access immediately rather than at natural 48h TTL.
     if (removedPhone) {
       await this._revokeRemovedStaffTokens(eventId, [removedPhone], event.staffList);
@@ -271,7 +271,7 @@ module.exports = {
 
     const frontendUrl = config.frontend.url;
     const eventTitle = event.eventDetails?.title || "Untitled";
-    // M-5: Asia/Riyadh wall-clock with explicit timeZone option.
+    // Asia/Riyadh wall-clock with explicit timeZone option.
     const eventDate = event.eventDetails?.date
       ? formatRiyadh(event.eventDetails.date, { style: "date", locale: "ar-SA" })
       : "";
@@ -306,7 +306,7 @@ module.exports = {
         results.push({ name: staffMember.name, phone: staffMember.phone, status: "sent" });
       } catch (error) {
         failed++;
-        // FLOW-20-F02: track staff SMS failures for host dashboard visibility
+        // Track staff SMS failures for host dashboard visibility
         event.messagingStatus = event.messagingStatus || {};
         event.messagingStatus.staffFailedCount = (event.messagingStatus.staffFailedCount || 0) + 1;
         await event.save().catch(() => {});

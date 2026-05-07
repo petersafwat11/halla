@@ -976,7 +976,7 @@ router.post(
  * @swagger
  * /events/{eventId}/staff-tokens:
  *   get:
- *     summary: List staff access tokens for an event (Phase 4b W0-STAFF)
+ *     summary: List staff access tokens for an event
  *     description: |
  *       Returns active and revoked StaffAccessToken records for
  *       this event (RBAC: host / wl-admin / admin / super_admin).

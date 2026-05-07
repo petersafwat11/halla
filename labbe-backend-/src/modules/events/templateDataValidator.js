@@ -1,9 +1,9 @@
 /**
- * Template Data Validator — Phase 4c W0-VISUAL-BACKEND
+ * Template Data Validator
  *
- * Per v4.1 §A-12 [PATCH 2] — runs before the visual-template snapshot is
- * persisted on the event. Rejects unknown keys, enforces required +
- * minLength/maxLength + min/max + email format + hex color regex.
+ * Runs before the visual-template snapshot is persisted on the event.
+ * Rejects unknown keys, enforces required + minLength/maxLength + min/max
+ * + email format + hex color regex.
  *
  * Throws an `AppError` (statusCode 400) with `validationErrors[]`
  * populated; caller surfaces this to the wizard so the host fixes their

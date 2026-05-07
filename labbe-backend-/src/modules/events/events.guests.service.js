@@ -36,7 +36,7 @@ module.exports = {
   async createGuestsFromList(guestData, eventId, userId) {
     if (!guestData.length) return [];
 
-    // FLOW-11-F03: deduplicate by normalized phone — keep last occurrence
+    // Deduplicate by normalized phone — keep last occurrence
     const seen = new Map();
     for (const guest of guestData) {
       const key = normalizePhoneNumber(guest.phone);
@@ -176,12 +176,11 @@ module.exports = {
         `Guest list exceeds the limit of ${limit}.`);
     }
 
-    // Phase 4b W0-RBAC (inventory 03 §5 gap 2 / Bug #6): the guest-list
-    // editor can drop a guest the host has already removed in the UI, but
-    // it must not let the new total fall below the count of guests who
-    // already confirmed (or already checked in). Doing so would silently
-    // delete confirmed RSVPs and leave the host with a smaller list than
-    // the number of attendees they're expecting.
+    // The guest-list editor can drop a guest the host has already removed
+    // in the UI, but it must not let the new total fall below the count of
+    // guests who already confirmed (or already checked in). Doing so would
+    // silently delete confirmed RSVPs and leave the host with a smaller
+    // list than the number of attendees they're expecting.
     //
     // The middleware guard `checkGuestLimit` only protects against
     // exceeding the plan ceiling; this guards the floor.
@@ -232,7 +231,7 @@ module.exports = {
       }
     }
 
-    // Soft-delete guests removed from the UI (FLOW-13-F02: tombstone, not hard delete)
+    // Soft-delete guests removed from the UI (tombstone, not hard delete)
     const toDeleteIds = existingGuests
       .filter(g => !incomingPhones.has(normalizePhoneNumber(g.phone)))
       .map(g => g._id);

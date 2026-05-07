@@ -21,9 +21,9 @@ const { isPoolPlan, isPerEventPlan } = require('../../shared/constants/plans');
 
 // File upload helper
 const { getFileUrl } = require('../../shared/utils/fileUpload');
-// Phase 4c hardening — resolves legacy `inv.selectedTemplate.id` (Meta
-// taqnyatId string) and `inv.visualTemplate.id` (legacy Number) into
-// canonical ObjectId refs without throwing CastError on dual-write.
+// Resolves legacy `inv.selectedTemplate.id` (Meta taqnyatId string)
+// and `inv.visualTemplate.id` (legacy Number) into canonical ObjectId
+// refs without throwing CastError on dual-write.
 const {
   resolveTaqnyatTemplateRef,
   resolveVisualTemplateRef,
@@ -132,17 +132,17 @@ module.exports = {
   /**
    * Build a scoped Mongo query for a single event lookup.
    *
-   * Phase 4b W0-RBAC: previously the host-facing endpoints filtered on
-   * `{ host: userId }` only, so a whitelabel admin/moderator viewing the
-   * same event got 404 instead of being scoped by their tenant. Roles:
+   * Host-facing endpoints used to filter on `{ host: userId }` only, so a
+   * whitelabel admin/moderator viewing the same event got 404 instead of
+   * being scoped by their tenant. Roles:
    *
    *   - HOST                          → own event only
    *   - SUPER_ADMIN                   → any event
    *   - ADMIN, MODERATOR              → events whose `whitelabelId` matches
    *                                      the caller's `whitelabelId`
-   *                                      (TENANT-F01 already scopes admin
-   *                                      filters this way; we mirror the
-   *                                      single-doc query for consistency).
+   *                                      (admin filters scope this way;
+   *                                      we mirror the single-doc query
+   *                                      for consistency).
    *   - WHITELABEL_ADMIN,
    *     WHITELABEL_MODERATOR          → same tenant scope
    *
@@ -197,8 +197,8 @@ module.exports = {
   /**
    * Get event by ID.
    *
-   * Phase 4b W0-RBAC: accepts the full user context so admins / whitelabel
-   * tier roles can read events under their scope, not just the event host.
+   * Accepts the full user context so admins / whitelabel tier roles can
+   * read events under their scope, not just the event host.
    *
    * @param {string} eventId
    * @param {Object} userContext - req.user
@@ -392,8 +392,8 @@ module.exports = {
 
       // Handle file upload — resolves correctly for both S3 (file.location) and local (file.path/filename)
       //
-      // Phase 4c W0-RENAME: dual-write the baked header image into both
-      // the legacy `invitationSettings.templateImage` AND the canonical
+      // Dual-write the baked header image into both the legacy
+      // `invitationSettings.templateImage` AND the canonical
       // `visualTemplate.bakedImagePath` so reads from either shape
       // resolve correctly during the dual-write window.
       if (file) {
@@ -411,13 +411,13 @@ module.exports = {
         }
       }
 
-      // Phase 4c W0-RENAME: project legacy keys submitted by older
-      // clients into the canonical fields, and vice versa.
+      // Project legacy keys submitted by older clients into the canonical
+      // fields, and vice versa.
       //
-      // Hardening (post-review): legacy ids are not ObjectIds — Number
-      // for visualTemplate, Meta taqnyatId for selectedTemplate.
-      // `templateRefResolver` resolves them safely; missing/unresolvable
-      // ids leave the canonical ref empty (read paths fall back to legacy).
+      // Legacy ids are not ObjectIds — Number for visualTemplate,
+      // Meta taqnyatId for selectedTemplate. `templateRefResolver`
+      // resolves them safely; missing/unresolvable ids leave the
+      // canonical ref empty (read paths fall back to legacy).
       if (eventData.invitationSettings) {
         const inv = eventData.invitationSettings;
         if (inv.visualTemplate) {
@@ -478,9 +478,8 @@ module.exports = {
         }
       }
 
-      // Phase 4c W0-VISUAL-BACKEND — validate host-supplied
-      // fieldValues against Template.fields[] BEFORE persisting (per
-      // v4.1 §A-12). Throws 400 with validationErrors[] on mismatch.
+      // Validate host-supplied fieldValues against Template.fields[]
+      // BEFORE persisting. Throws 400 with validationErrors[] on mismatch.
       if (eventData.visualTemplate?.templateRef) {
         await this._validateVisualTemplateFieldValues(
           eventData.visualTemplate.templateRef,
@@ -516,7 +515,7 @@ module.exports = {
         (e) => logger.warn('event creation notification failed', { err: e?.message })
       );
 
-      // FLOW-13-F05 / Track-B: audit event creation
+      // Audit event creation
       logAudit({
         action: 'event.created',
         actor: { _id: userId, role: userRole || 'host' },
@@ -534,9 +533,9 @@ module.exports = {
         try {
           await Subscription.releaseInvites(capacitySub._id, guestCount);
         } catch (releaseErr) {
-          // M-22: when the compensating release ALSO fails, the pool stays
+          // When the compensating release ALSO fails, the pool stays
           // debited for an event that was never created. Without
-          // reconciliation hooks, that capacity is silently lost. We now:
+          // reconciliation hooks, that capacity is silently lost. We:
           //   1. log loudly with both errors so on-call gets paged
           //   2. emit a `subscription.invite_pool_reconcile_pending` audit
           //      row that an admin reconciliation script can pick up
@@ -692,7 +691,7 @@ module.exports = {
       await session.endSession();
     }
 
-    // FLOW-13-F05 / Track-B: audit event deletion
+    // Audit event deletion
     logAudit({
       action: 'event.deleted',
       actor: { _id: userId },
@@ -746,7 +745,7 @@ module.exports = {
   /**
    * Format event for response.
    *
-   * Phase 3c: surface the launch-lifecycle fields (`attemptCount`,
+   * Surfaces the launch-lifecycle fields (`attemptCount`,
    * `failureReason`, `failedAt`, `launchedAt`) so the failure-banner UI
    * has them in list-view and detail-view payloads. Without these, the
    * mobile EventDetails screen (which receives the event as a prop from
@@ -765,12 +764,12 @@ module.exports = {
       guestCount: event.guestList?.length || 0,
       confirmedCount:
         event.guestList?.filter((g) => g.status === "confirmed").length || 0,
-      // Launch lifecycle (Phase 3a/3c)
+      // Launch lifecycle
       attemptCount: event.attemptCount || 0,
       failureReason: event.failureReason || null,
       failedAt: event.failedAt || null,
       launchedAt: event.launchedAt || null,
-      // Messaging status (Phase 4b + FLOW-20-F02)
+      // Messaging status
       messagingStatus: event.messagingStatus ? {
         sentCount: event.messagingStatus.sentCount || 0,
         failedCount: event.messagingStatus.failedCount || 0,

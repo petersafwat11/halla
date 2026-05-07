@@ -25,7 +25,7 @@ const logger = require('../../shared/utils/logger');
 
 module.exports = {
   /**
-   * Phase 4d W0-ATOMIC — atomically replace guest list + staff list.
+   * Atomically replace guest list + staff list.
    *
    * Wraps the same business rules as `updateGuestList` + `updateStaffList`
    * inside a Mongo transaction so a capacity-guard rejection on either
@@ -33,12 +33,11 @@ module.exports = {
    * Mongo topology (no replica set) `session.startTransaction()` throws
    * `MongoServerError: Transaction numbers are only allowed on a replica
    * set member or mongos`; we catch that, fall back to ordered writes,
-   * and rollback the guest changes by hand if the staff write fails
-   * (D4d-3).
+   * and rollback the guest changes by hand if the staff write fails.
    *
-   * Reuses the Phase 4b W0-RBAC `GUEST_LIST_BELOW_CONFIRMED` capacity
-   * guard so the floor check (no shrink below confirmed/checked-in
-   * guests) fires before any writes land.
+   * Reuses the `GUEST_LIST_BELOW_CONFIRMED` capacity guard so the floor
+   * check (no shrink below confirmed/checked-in guests) fires before any
+   * writes land.
    *
    * @param {string} eventId
    * @param {{ guestList: Array, staffList: Array }} payload
@@ -153,7 +152,7 @@ module.exports = {
       if (useTransactions) {
         // Happy path — replica-set / sharded cluster.
         if (toDeleteIds.length > 0) {
-          // FLOW-13-F02: soft-delete tombstone
+          // Soft-delete tombstone
           await Guest.updateMany(
             { _id: { $in: toDeleteIds } },
             { $set: { deleted: true, deletedAt: new Date() } },
@@ -194,10 +193,10 @@ module.exports = {
 
         await session.commitTransaction();
 
-        // D-R3 hardening — revoke tokens for removed staff. Done AFTER
-        // the transaction commits because StaffAccessToken writes are
-        // outside the event-doc transaction scope and we don't want a
-        // commit blocked on a side-effect collection.
+        // Revoke tokens for removed staff. Done AFTER the transaction
+        // commits because StaffAccessToken writes are outside the
+        // event-doc transaction scope and we don't want a commit
+        // blocked on a side-effect collection.
         await this._revokeRemovedStaffTokens(eventId, preImageStaffList.map((s) => s.phone), normalisedStaff);
       } else {
         // Standalone / no-transaction path. Order matters and the delete
@@ -231,13 +230,12 @@ module.exports = {
         const updatePreImages = new Map();
         const newGuestIds = [];
 
-        // D-R4 hardening (post-review) — unified rollback handler.
-        // Pass 1 of the original hardening protected only the staff-save
-        // failure window. The in-place updates (step 1) and the
-        // first event.save() (step 3) ALSO had no rollback — a throw
-        // anywhere in steps 1-3 left the DB with orphan guests and
-        // mutated names, with no compensation. This handler restores
-        // every step that had committed by the time the throw happened.
+        // Unified rollback handler.
+        // The in-place updates (step 1) and the first event.save()
+        // (step 3) need rollback — without it, a throw anywhere in
+        // steps 1-3 leaves the DB with orphan guests and mutated names,
+        // with no compensation. This handler restores every step that
+        // had committed by the time the throw happened.
         const runCompensation = async (failedAt) => {
           try {
             // Always: drop the freshly-created guests (whatever step we
@@ -334,7 +332,7 @@ module.exports = {
           throw staffErr;
         }
 
-        // Step 5: soft-delete the removed guests (FLOW-13-F02: tombstone, preserves QR/RSVP/checkIn).
+        // Step 5: soft-delete the removed guests (tombstone, preserves QR/RSVP/checkIn).
         if (toDeleteIds.length > 0) {
           try {
             await Guest.updateMany(
@@ -346,8 +344,8 @@ module.exports = {
           }
         }
 
-        // D-R3 hardening — revoke tokens for removed staff. Reaches
-        // here only after step 4 (staff save) committed.
+        // Revoke tokens for removed staff. Reaches here only after
+        // step 4 (staff save) committed.
         await this._revokeRemovedStaffTokens(eventId, preImageStaffList.map((s) => s.phone), normalisedStaff);
 
         if (event.subscriptionId && newGuestIds.length > 0) {

@@ -9,7 +9,7 @@ const { ROLES } = require("../../shared/constants/roles");
 const {
   NotFoundError,
 } = require("../../shared/errors");
-// M-5: every export/notification helper uses formatRiyadh so we don't
+// Every export/notification helper uses formatRiyadh so we don't
 // re-render UTC server-locale dates as the previous local day.
 const { formatRiyadh } = require("../../shared/utils/timezone");
 
@@ -137,7 +137,7 @@ module.exports = {
   /**
    * Get single event stats.
    *
-   * Phase 4b W0-RBAC: tenant-scoped via `_buildScopedEventQuery` so
+   * Tenant-scoped via `_buildScopedEventQuery` so
    * whitelabel-admin/moderator can poll stats for their own events.
    *
    * @param {string} eventId
@@ -270,10 +270,10 @@ module.exports = {
       Email: g.email || "",
       Status: g.status || "invited",
       "Response Date": g.rsvp?.respondedAt
-        ? formatRiyadh(g.rsvp.respondedAt) // M-5
+        ? formatRiyadh(g.rsvp.respondedAt)
         : "",
       "Check-in Time": g.checkIn?.time
-        ? formatRiyadh(g.checkIn.time) // M-5
+        ? formatRiyadh(g.checkIn.time)
         : "",
       "Invitation Sent": g.invitation?.sent ? "Yes" : "No",
     }));
