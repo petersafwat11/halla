@@ -8,7 +8,7 @@ import { cookieUtils } from "@/utils/cookieUtils";
 import Link from "next/link";
 import { IoIosArrowDown } from "react-icons/io";
 import { FaRegUser } from "react-icons/fa";
-import { authAPI } from "@/services/authService";
+import useAuthStore from "@/stores/authStore";
 import {
   getDashboardTypeFromPath,
   getBasePath,
@@ -63,14 +63,9 @@ function Header({ dashboardType: propDashboardType }) {
   };
 
   const handleLogout = async () => {
-    try {
-      setIsOpen(false);
-      await authAPI.logout();
-      router.replace("/");
-    } catch (err) {
-      console.error("Logout failed:", err);
-      router.replace("/");
-    }
+    setIsOpen(false);
+    await useAuthStore.getState().logout();
+    router.replace("/");
   };
 
   // Get role label based on dashboard type

@@ -77,9 +77,8 @@ export default function SetupPassword({ token }) {
       try {
         const resp = await validate.mutateAsync(token);
         if (cancelled) return;
-        const data = resp?.data?.data || resp?.data || resp;
-        if (data?.valid) {
-          setTokenInfo(data.user || null);
+        if (resp?.data?.valid) {
+          setTokenInfo(resp.data.user || null);
           setTokenStatus("valid");
         } else {
           setTokenStatus("invalid");

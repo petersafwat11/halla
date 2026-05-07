@@ -29,6 +29,9 @@ const Form = () => {
     error: sendOTPError,
   } = useAuthMutation("sendLoginOTP");
 
+  const { mutateAsync: resendOTP, isPending: isResendingOTP } =
+    useAuthMutation("resendOTP");
+
   const {
     mutateAsync: verifyLoginOTP,
     isPending: isVerifyingOTP,
@@ -246,6 +249,10 @@ const Form = () => {
                 setVerificationCode={(data) => setVerificationCode(data.value)}
                 onGoBack={handleGoBackToPhone}
                 phoneNumber={formValues.phoneNumber}
+                onResend={() =>
+                  resendOTP({ phoneNumber: formValues.phoneNumber, type: "login" })
+                }
+                isResending={isResendingOTP}
               />
             ) : loginType === "otp" ? (
               <PhoneSection />

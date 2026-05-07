@@ -37,10 +37,11 @@ const emailModule = require('../../infrastructure/email');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
 const { processUploadedFiles, getFileUrl } = require('../../shared/utils/s3Upload');
 const { logAudit } = require('../../shared/utils/auditLog');
+const logger = require('../../shared/utils/logger');
 
 class AuthService {
   /**
-   * Sign a short-lived access token (FLOW-01-F01).
+   * Sign a short-lived access token.
    * @param {string} id - User ID
    * @param {string} [role] - User role
    * @returns {string} JWT
@@ -96,7 +97,7 @@ class AuthService {
   }
 
   /**
-   * Rotate a refresh token (FLOW-01-F02 + FLOW-01-F05).
+   * Rotate a refresh token.
    * - Validates the incoming raw refresh token against the stored hash.
    * - On success, marks the old token revoked and issues a new pair.
    * - On a replay (already-revoked token presented again) revokes every
@@ -113,13 +114,12 @@ class AuthService {
 
     const tokenHash = this._hashRefresh(rawRefresh);
 
-    // H-1 fix: rotation must be atomic. The previous find→check→issue→save
-    // sequence let two parallel /auth/refresh calls both pass the
-    // `revokedAt == null` check, both issue new pairs, and only one would
-    // win the save — without triggering replay detection. Use a single
-    // findOneAndUpdate that atomically claims (and revokes) the row only
-    // if it is still active. A null result means somebody already claimed
-    // it → REPLAY, and we revoke everything for the user.
+    // Rotation must be atomic. A find→check→issue→save sequence would let
+    // two parallel /auth/refresh calls both pass the `revokedAt == null`
+    // check and both issue new pairs without triggering replay detection.
+    // findOneAndUpdate atomically claims (and revokes) the row only if it
+    // is still active. A null result means somebody already claimed it →
+    // REPLAY, and we revoke every refresh token for the user.
     const claimed = await RefreshToken.findOneAndUpdate(
       { tokenHash, revokedAt: null },
       { $set: { revokedAt: new Date() } },
@@ -184,7 +184,7 @@ class AuthService {
   }
 
   /**
-   * Revoke every refresh token for a user (FLOW-05-F02 / FLOW-06-F03).
+   * Revoke every refresh token for a user.
    * Used by password reset, password update, and replay detection.
    * @param {string} userId
    */
@@ -225,10 +225,9 @@ class AuthService {
    * @returns {Promise<Object|null>} Subscription summary
    */
   async getUserSubscription(userId) {
-    // H-10: route through `findActiveForUser` for deterministic ordering and
-    // expiry filtering. The previous direct findOne() had no sort and no
-    // expiry filter, so a stale active row (status flip pending) could win
-    // over the most recent one.
+    // findActiveForUser returns deterministic ordering with expiry filtering.
+    // A direct findOne() would let a stale active row (status flip pending)
+    // win over the most recent one.
     const subscriptions = await Subscription.findActiveForUser(userId);
     const subscription = subscriptions[0] || null;
     if (!subscription) return null;
@@ -429,7 +428,9 @@ class AuthService {
     await host.save({ validateBeforeSave: false });
 
     // Send admin notification (non-blocking)
-    this._notifyAdminsNewUser(host, ROLES.HOST).catch(console.error);
+    this._notifyAdminsNewUser(host, ROLES.HOST).catch((err) =>
+      logger.error('host signup: notify admins failed', err)
+    );
 
     // Send welcome notification to new host (non-blocking)
     notificationService.sendToUser(host._id, {
@@ -439,9 +440,8 @@ class AuthService {
       message: 'Your account has been created successfully. Start creating your first event!',
       messageAr: 'تم إنشاء حسابك بنجاح. ابدأ في إنشاء أول مناسبة لك!',
       data: { entityType: 'user', entityId: host._id },
-    }).catch(console.error);
+    }).catch((err) => logger.error('host signup: welcome notification failed', err));
 
-    // FLOW-02-F01: send email verification link (non-blocking, only if email present)
     if (host.email) {
       const lang = context.lang || 'ar';
       otpService.createEmailVerificationToken(host.email, host._id)
@@ -453,16 +453,17 @@ class AuthService {
             expiresIn: '24 hours',
           }, lang);
         })
-        .catch(console.error);
+        .catch((err) => logger.error('host signup: email verification send failed', err));
     }
 
-    // FLOW-02-F03: send welcome email (non-blocking, only if email present)
     if (host.email) {
       emailModule.send.welcome(host.email, {
         name: host.name || host.username,
         email: host.email,
         role: ROLES.HOST,
-      }, context.lang || 'ar').catch(console.error);
+      }, context.lang || 'ar').catch((err) =>
+        logger.error('host signup: welcome email failed', err)
+      );
     }
 
     const tokens = await this.issueTokenPair(host, context);
@@ -500,7 +501,7 @@ class AuthService {
     const serviceLocation = this._parseJsonField(userData.serviceLocation);
     const socialLinks = this._parseJsonField(userData.socialLinks);
 
-    // FLOW-03-F01: validate serviceCategories keys against allowed enum
+    // validate serviceCategories keys against allowed enum
     const ALLOWED_CATEGORY_KEYS = new Set([
       'eventPlanning', 'mediaProduction', 'giftsAndGiveaways', 'foodAndBeverages',
       'beautyAndFashion', 'logisticsAndDelivery', 'corporateServices', 'supportServices',
@@ -513,7 +514,7 @@ class AuthService {
       }
     }
 
-    // FLOW-03-F02: validate social links as URLs
+    // validate social links as URLs
     if (socialLinks && typeof socialLinks === 'object') {
       const URL_FIELDS = ['instagram', 'facebook', 'tiktok', 'twitter', 'website', 'whatsapp'];
       const urlRegex = /^https?:\/\/.+/i;
@@ -537,7 +538,7 @@ class AuthService {
       commercialRecordNumber: userData.commercialRecordNumber || '',
     };
 
-    // Handle file uploads via S3 utility (FLOW-03-F03 / FLOW-24-F03)
+    // Handle file uploads via S3 utility
     const uploadedPaths = processUploadedFiles(files);
     if (uploadedPaths.businessLogo) vendorData.businessLogo = uploadedPaths.businessLogo;
     if (uploadedPaths.nationalIdImage) vendorData.nationalIdImage = uploadedPaths.nationalIdImage;
@@ -556,14 +557,27 @@ class AuthService {
     });
 
     // Notifications
-    this._notifyAdminsNewVendor(vendor, brandName, ownerFullName).catch(console.error);
+    this._notifyAdminsNewVendor(vendor, brandName, ownerFullName).catch((err) =>
+      logger.error('vendor signup: notify admins failed', err)
+    );
     if (email) {
       emailModule.send.vendorApplicationPending(email, {
         vendorName: ownerFullName,
         brandName,
         email,
-      }).catch(console.error);
+      }).catch((err) =>
+        logger.error('vendor signup: pending email failed', err)
+      );
     }
+
+    logAudit({
+      action: 'vendor_signup',
+      actor: vendor._id,
+      targetType: 'User',
+      targetId: vendor._id,
+      metadata: { brandName, ownerFullName, email },
+      status: 'success',
+    }).catch((err) => logger.error('vendor signup: audit log failed', err));
 
     return {
       user: this.sanitizeUser(vendor),
@@ -591,7 +605,7 @@ class AuthService {
     const address = this._parseJsonField(userData.address);
     const parsedPlanSelection = this._parseJsonField(planSelection);
 
-    // FLOW-04-F02: resolve logo URL from S3-uploaded file if provided
+    // resolve logo URL from S3-uploaded file if provided
     const logoUrl = logoFile ? getFileUrl(logoFile) : null;
 
     const whitelabelData = {
@@ -629,15 +643,29 @@ class AuthService {
     await whitelabel.save({ validateBeforeSave: false });
 
     // Notifications
-    this._notifyAdminsNewWhitelabel(whitelabel, englishName, arabicName).catch(console.error);
+    this._notifyAdminsNewWhitelabel(whitelabel, englishName, arabicName).catch((err) =>
+      logger.error('whitelabel signup: notify admins failed', err)
+    );
     if (email) {
       const planName = parsedPlanSelection?.planCode || 'Business';
       emailModule.send.whitelabelApplicationPending(email, {
         platformName: englishName || arabicName,
         email,
         planName,
-      }).catch(console.error);
+      }).catch((err) =>
+        logger.error('whitelabel signup: pending email failed', err)
+      );
     }
+
+    logAudit({
+      action: 'whitelabel_signup',
+      actor: whitelabel._id,
+      targetType: 'User',
+      targetId: whitelabel._id,
+      whitelabelId: whitelabel._id,
+      metadata: { englishName, arabicName, planCode: parsedPlanSelection?.planCode },
+      status: 'success',
+    }).catch((err) => logger.error('whitelabel signup: audit log failed', err));
 
     return {
       user: this.sanitizeUser(whitelabel),
@@ -647,7 +675,7 @@ class AuthService {
   }
 
   // ============================================
-  // EMAIL VERIFICATION LINK (FLOW-02-F01)
+  // EMAIL VERIFICATION LINK
   // ============================================
 
   /**
@@ -799,7 +827,9 @@ class AuthService {
     await user.save({ validateBeforeSave: false });
     await subscription.populate('planId');
 
-    this._notifyAdminsNewUser(user, ROLES.HOST).catch(console.error);
+    this._notifyAdminsNewUser(user, ROLES.HOST).catch((err) =>
+      logger.error('signup OTP verify: notify admins failed', err)
+    );
 
     // Send welcome notification to new user (non-blocking)
     notificationService.sendToUser(user._id, {
@@ -809,9 +839,22 @@ class AuthService {
       message: 'Your account has been created successfully. Start creating your first event!',
       messageAr: 'تم إنشاء حسابك بنجاح. ابدأ في إنشاء أول مناسبة لك!',
       data: { entityType: 'user', entityId: user._id },
-    }).catch(console.error);
+    }).catch((err) =>
+      logger.error('signup OTP verify: welcome notification failed', err)
+    );
 
     const tokens = await this.issueTokenPair(user, context);
+
+    logAudit({
+      action: 'signup_otp_verified',
+      actor: user._id,
+      targetType: 'User',
+      targetId: user._id,
+      metadata: { phoneNumber: normalizedPhone },
+      status: 'success',
+      ip: context.ip,
+      userAgent: context.userAgent,
+    }).catch((err) => logger.error('signup OTP verify: audit log failed', err));
 
     return {
       user: this.sanitizeUser(user),
@@ -850,7 +893,7 @@ class AuthService {
     this._validateUserStatus(user);
 
     const tokens = await this.issueTokenPair(user, context);
-    const profileCompleted = user.profile?.hostData?.profileCompleted ?? false; // FLOW-02-F02: missing hostData ≠ complete
+    const profileCompleted = user.profile?.hostData?.profileCompleted ?? false; // missing hostData ≠ complete
     const subscriptionInfo = user.subscription?.getSummary
       ? user.subscription.getSummary()
       : user.subscription;
@@ -927,7 +970,7 @@ class AuthService {
       {
         userName: user.name || user.username || 'User',
         resetUrl: resetURL,
-        expiresIn: '1 hour', // FLOW-06-F01
+        expiresIn: '1 hour',
       },
       lang
     );
@@ -936,8 +979,7 @@ class AuthService {
   }
 
   /**
-   * Reset password with token.
-   * Closes FLOW-06-F02 (clear lockout) + FLOW-06-F03 (revoke refresh tokens).
+   * Reset password with token. Clears the lockout and revokes refresh tokens.
    * @param {string} token
    * @param {string} password
    * @param {string} passwordConfirm
@@ -968,12 +1010,12 @@ class AuthService {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     user.passwordChangedAt = Date.now() - 1000;
-    // FLOW-06-F02: a successful password reset proves identity, so unlock the account.
+    // a successful password reset proves identity, so unlock the account.
     user.loginAttempts = 0;
     user.lockUntil = undefined;
     await user.save();
 
-    // FLOW-06-F03 / FLOW-05-F02: invalidate every existing session before issuing a new pair.
+    // invalidate every existing session before issuing a new pair.
     await this.revokeAllForUser(user._id);
     const tokens = await this.issueTokenPair(user, context);
 
@@ -1018,7 +1060,7 @@ class AuthService {
     user.passwordChangedAt = Date.now() - 1000;
     await user.save();
 
-    // FLOW-05-F02: a password change must invalidate all other sessions immediately.
+    // a password change must invalidate all other sessions immediately.
     await this.revokeAllForUser(user._id);
     const tokens = await this.issueTokenPair(user, context);
 
@@ -1042,9 +1084,11 @@ class AuthService {
    */
   async getMe(userId) {
     const user = await User.findById(userId)
+      .select('-password -passwordResetToken -passwordResetExpires -passwordSetupToken -passwordSetupExpires -emailVerificationCode -emailVerificationExpires')
       .populate({
         path: 'subscription',
-        populate: { path: 'planId' },
+        select: 'status planId currentPeriodEnd trialEndsAt cancelAtPeriodEnd',
+        populate: { path: 'planId', select: 'code name price billingCycle features' },
       })
       .populate('whitelabelId', 'identity domain status');
 
@@ -1096,7 +1140,70 @@ class AuthService {
 
     await user.save();
 
+    logAudit({
+      action: 'profile_completed',
+      actor: user._id,
+      targetType: 'User',
+      targetId: user._id,
+      metadata: { username: user.username, email: user.email },
+      status: 'success',
+    }).catch((err) => logger.error('complete profile: audit log failed', err));
+
     return this.sanitizeUser(user);
+  }
+
+  /**
+   * Send a 6-digit email verification code to the user's email.
+   * @param {string} userId
+   * @returns {Promise<void>}
+   */
+  async sendEmailVerificationCode(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+    if (!user.email) {
+      throw new ValidationError('No email address to verify');
+    }
+    if (user.emailVerified) {
+      throw new ValidationError('Email is already verified');
+    }
+
+    const code = user.createEmailVerificationCode();
+    await user.save({ validateBeforeSave: false });
+
+    await emailModule({
+      email: user.email,
+      subject: 'Email Verification Code',
+      message: `<h2>Email Verification</h2><p>Your verification code is: <strong>${code}</strong></p><p>This code expires in 15 minutes.</p>`,
+    });
+  }
+
+  /**
+   * Verify the user's email using the 6-digit code.
+   * @param {string} userId
+   * @param {string} code
+   * @returns {Promise<void>}
+   */
+  async verifyEmail(userId, code) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+
+    if (!user.verifyEmailCode(code)) {
+      throw new ValidationError('Invalid or expired verification code');
+    }
+
+    user.emailVerified = true;
+    user.emailVerificationCode = undefined;
+    user.emailVerificationExpires = undefined;
+
+    if (user.profile?.hostData) {
+      user.profile.hostData.emailVerified = true;
+    }
+
+    await user.save({ validateBeforeSave: false });
   }
 
   // ============================================

@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import ActionButton from "../common/ActionButton";
-import { useAuthStore } from "../../../stores/authStore";
 import { changePasswordAPI } from "../../../services/settingsService";
 import { colors, spacing, borderRadius, form, textStyles, backgrounds } from "../../../styles/tokens";
 
 const SettingsSecurity = () => {
-  const token = useAuthStore((state) => state.token);
   const [current, setCurrent] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -25,7 +23,7 @@ const SettingsSecurity = () => {
 
     setLoading(true);
     try {
-      await changePasswordAPI({ currentPassword: current, newPassword: newPass }, token);
+      await changePasswordAPI({ currentPassword: current, newPassword: newPass });
       Alert.alert("Success", "Password changed successfully");
       setCurrent(""); setNewPass(""); setConfirm("");
     } catch (error) {

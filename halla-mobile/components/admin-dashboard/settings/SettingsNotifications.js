@@ -16,7 +16,7 @@ const SettingsNotifications = () => {
   useEffect(() => {
     const fetchPrefs = async () => {
       try {
-        const data = await getNotificationPreferencesAPI(token);
+        const data = await getNotificationPreferencesAPI();
         const p = data?.data?.preferences || data?.preferences;
         if (p?.appNotifications || p?.emailNotifications) {
           setPrefs({
@@ -41,7 +41,7 @@ const SettingsNotifications = () => {
     setPrefs(updated);
     setSaving(true);
     try {
-      await updateNotificationPreferencesAPI(updated, token);
+      await updateNotificationPreferencesAPI(updated);
     } catch (error) {
       setPrefs(prefs);
     } finally {

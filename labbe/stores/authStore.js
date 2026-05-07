@@ -28,11 +28,11 @@ export const USER_STATUS = {
 // AUTH STORE - STATE ONLY
 // All API logic moved to hooks/auth/useAuthMutation.js
 //
-// Phase 1a: tokens live in HttpOnly cookies (`access_token`, `refresh_token`).
-// JS never reads them. The legacy `token` field is preserved on the in-memory
-// state for components that still display the JWT during a session, but it is
-// **not persisted**: a page reload no longer leaves a copy behind in
-// localStorage. `partialize` below pins the persisted slice.
+// Tokens live in HttpOnly cookies (`access_token`, `refresh_token`).
+// JS never reads them. The in-memory `token` field is kept for components
+// that still display the JWT during a session, but it is **not persisted**:
+// a page reload leaves no copy in localStorage. `partialize` pins the
+// persisted slice.
 // ============================================
 
 const useAuthStore = create(
@@ -149,13 +149,11 @@ const useAuthStore = create(
       /**
        * Logout - revoke server-side refresh token and clear local state.
        *
-       * H-3 fix: previously this only cleared in-memory state, which left
-       * the refresh token live on the backend until its 30-day TTL — a
-       * stolen cookie could keep refreshing access tokens long after the
-       * user thought they were logged out. We now call /auth/logout
-       * first (best-effort, non-throwing) so the backend revokes the
-       * refresh row and clears the HttpOnly cookies, THEN clear local
-       * state regardless of network outcome.
+       * Calls /auth/logout (best-effort, non-throwing) so the backend
+       * revokes the refresh row and clears HttpOnly cookies, THEN clears
+       * local state regardless of network outcome. Without the backend
+       * call a stolen cookie could keep refreshing access tokens until
+       * the 30-day TTL.
        *
        * Note on import shape: this method is also wired through the
        * `useAuthMutation('logout')` mutation in `useAuthMutation.js` for

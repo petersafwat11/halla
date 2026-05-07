@@ -14,6 +14,8 @@ const OTPVerification = ({ phoneNumber, onBack, type = "signup" }) => {
     isPending: isVerifying,
     error,
   } = useAuthMutation("verifySignupOTP");
+  const { mutateAsync: resendOTP, isPending: isResendingOTP } =
+    useAuthMutation("resendOTP");
 
   const isLoading = isVerifying;
   const errorMessage = error?.message || "";
@@ -72,6 +74,10 @@ const OTPVerification = ({ phoneNumber, onBack, type = "signup" }) => {
           setVerificationCode={setVerificationCode}
           onGoBack={onBack}
           phoneNumber={phoneNumber}
+          onResend={() =>
+            resendOTP({ phoneNumber, type: "signup" })
+          }
+          isResending={isResendingOTP}
         />
 
         {/* Error message */}

@@ -1,5 +1,5 @@
 /**
- * Phase 4 W3-WL — Whitelabel post-approval setup-password screen.
+ * Whitelabel post-approval setup-password screen.
  *
  * Flow:
  *   1. Admin approves a whitelabel signup on web. The backend mints a
@@ -13,11 +13,8 @@
  *      `/auth/setup-password`. On success we authenticate the new
  *      session via the existing auth store and route to the home tab.
  *
- * The screen also accepts a manual paste path: if a user installs the
- * app fresh and the email link can't auto-open it, they can paste the
- * token into the input field.
- *
- * Phase 4 review fix: bilingual via translations (`auth.setupPassword.*`).
+ * Manual paste path: if a user installs the app fresh and the email link
+ * can't auto-open it, they can paste the token into the input field.
  */
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -70,9 +67,8 @@ const SetupPasswordScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialToken]);
 
-  // Phase 4 review fix — `.trim()` the token at validation time so a
-  // copy-paste that accidentally captured surrounding whitespace doesn't
-  // fail the (length-only) sanity check.
+  // .trim() the token at validation time so copy-paste that captured
+  // surrounding whitespace doesn't fail the length-only sanity check.
   const trimmedToken = token.trim();
   const tokenLooksValid = trimmedToken.length >= 16;
   const passwordValid = password.length >= MIN_PASSWORD_LENGTH;

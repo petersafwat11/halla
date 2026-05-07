@@ -18,7 +18,7 @@ import {
 const EmailVerificationSection = ({ emailValue, loading }) => {
   const { t } = useTranslation("settings");
   const toast = useToast();
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
 
   const [showVerificationInput, setShowVerificationInput] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
@@ -37,7 +37,7 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
   const handleSendVerificationCode = async () => {
     setIsVerifyingEmail(true);
     try {
-      await sendEmailVerificationCodeAPI(token);
+      await sendEmailVerificationCodeAPI();
       setShowVerificationInput(true);
       toast.success(t("account.verificationCodeSent"));
     } catch (error) {
@@ -55,7 +55,7 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
 
     setIsVerifyingEmail(true);
     try {
-      await verifyEmailAPI(verificationCode, token);
+      await verifyEmailAPI(verificationCode);
       toast.success(t("account.emailVerified"));
       setShowVerificationInput(false);
       setVerificationCode("");

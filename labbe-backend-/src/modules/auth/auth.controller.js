@@ -2,17 +2,14 @@
  * Auth Controller
  * HTTP request handling only - delegates to auth.service.
  *
- * Phase 1a (FLOW-01-F01..F07, FLOW-05-F02, FLOW-06-F03):
- * Authentication now uses two cookies on web and a body-delivered refresh
- * token on mobile.
+ * Authentication uses two HttpOnly cookies on web and a body-delivered
+ * refresh token on mobile:
+ *   - access_token  : HttpOnly cookie, path=/, 15-min TTL
+ *   - refresh_token : HttpOnly cookie, path=/api/v2/auth/refresh, 30-day TTL
  *
- *   - access_token  : HttpOnly + SameSite=Strict cookie, path=/, 15-min TTL
- *   - refresh_token : HttpOnly + SameSite=Strict cookie, path=/api/v2/auth/refresh,
- *                     30-day TTL — only sent to the refresh endpoint
- *
- * Mobile clients pass the refresh token in the request body. The cookie path
- * restriction means non-refresh routes never see the refresh token even on
- * web, eliminating CSRF surface for the long-lived credential.
+ * Mobile clients pass the refresh token in the request body. The cookie
+ * path restriction means non-refresh routes never see the refresh token
+ * on web, eliminating CSRF surface for the long-lived credential.
  *
  * @module modules/auth/auth.controller
  */
@@ -35,25 +32,15 @@ const REFRESH_COOKIE = "refresh_token";
 /**
  * Build base cookie options for the access token (path=/).
  *
- * M-12 decision: SameSite=Lax (production same-VPS deployment).
+ * SameSite=Lax: web and API live on the same VPS in production but on
+ * different ports in dev. Lax keeps top-level GETs (Next.js SSR first
+ * paint) and same-site fetches working while blocking cross-site form
+ * POSTs from malicious origins. `None` would force a CSRF token on every
+ * mutation; `Strict` would break dev. Mobile uses Authorization headers,
+ * not cookies, so SameSite is web-only concern.
  *
- * Production: web (Next.js) and backend (Express) live on the SAME VPS
- * behind a single nginx reverse proxy on one hostname. Same-origin means
- * cookies travel automatically; CORS is not strictly required for the
- * web↔API path. We still pick Lax (not Strict) because:
- *   1. React Native app calls the API from a non-web origin (mobile uses
- *      the Authorization Bearer header from the auth store, not cookies,
- *      so this is belt-and-braces).
- *   2. Dev workflow runs web on :3000 and API on :3001 — different ports
- *      are different origins, so Lax keeps cookies flowing in dev.
- * `None` would force a CSRF token on every state-changing route. `Strict`
- * would break dev. Lax keeps top-level GETs (so Next.js SSR can read the
- * cookie on first paint) and same-site fetches while blocking cross-site
- * form POSTs from a malicious origin. CSRF risk is therefore limited to
- * top-level GET-by-link, which never mutates state in this API.
- *
- * `Secure: true` only in production (HTTPS). `HttpOnly: true` ensures the
- * JS layer cannot read the token — paired with B-1 (removed JS mirror).
+ * `Secure: true` only in production (HTTPS). `HttpOnly: true` ensures
+ * JavaScript cannot read the token.
  */
 const accessCookieOptions = () => ({
   httpOnly: true,
@@ -103,8 +90,19 @@ const requestContext = (req) => ({
 });
 
 /**
+ * Detect whether the request originates from a browser. Browsers send the
+ * refresh token in an HttpOnly cookie, so we strip it from the JSON body to
+ * shrink leak surface (logs, error reporters, screenshots). Mobile keeps the
+ * body field — it stores the token in SecureStore.
+ */
+const isBrowserClient = (req) => {
+  if (req.get("x-client") === "mobile") return false;
+  return Boolean(req.cookies && Object.keys(req.cookies).length > 0);
+};
+
+/**
  * Send the standard auth response.
- * Backwards-compatible shape: token/refreshToken at root, user nested under data.
+ * Shape: status, token (root, legacy), refreshToken (mobile only), data.user.
  */
 const sendAuthResponse = (
   res,
@@ -112,13 +110,16 @@ const sendAuthResponse = (
 ) => {
   const response = {
     status: "success",
-    token: accessToken, // top-level for legacy compatibility (mobile reads `data.token`)
-    refreshToken, // mobile clients keep this in expo-secure-store
+    token: accessToken,
     data: {
       user,
       ...additionalData,
     },
   };
+
+  if (refreshToken && !isBrowserClient(res.req)) {
+    response.refreshToken = refreshToken;
+  }
 
   if (message) response.message = message;
 
@@ -239,7 +240,6 @@ exports.vendorSignup = catchAsync(async (req, res) => {
  * POST /api/v2/auth/signup/whitelabel
  */
 exports.whitelabelSignup = catchAsync(async (req, res) => {
-  // FLOW-04-F02: pass the uploaded logo file (req.file from multer.single)
   const result = await authService.signupWhitelabel(req.body, req.file);
 
   sendAuthResponse(res, {
@@ -412,40 +412,10 @@ exports.getMe = catchAsync(async (req, res) => {
 });
 
 /**
- * Update current user profile
- * PATCH /api/v2/auth/update-me
- */
-exports.updateMe = catchAsync(async (req, res) => {
-  const allowedFields = ["username", "email", "avatar", "phoneNumber"];
-  const updateData = {};
-
-  allowedFields.forEach((field) => {
-    if (req.body[field] !== undefined) {
-      updateData[field] = req.body[field];
-    }
-  });
-
-  if (req.file) {
-    updateData.avatar = req.file.path || req.file.filename;
-  }
-
-  const user = await User.findByIdAndUpdate(req.user._id, updateData, {
-    new: true,
-    runValidators: true,
-  });
-
-  sendSuccess(
-    res,
-    { user: user.toPublicJSON() },
-    "Profile updated successfully"
-  );
-});
-
-/**
  * Complete host profile
  * PATCH /api/v2/auth/complete-profile
  *
- * Phase 1a: re-issues a fresh token pair so the new (potentially elevated)
+ * Re-issues a fresh token pair so the new (potentially elevated)
  * profile state takes effect immediately.
  */
 exports.completeHostProfile = catchAsync(async (req, res) => {
@@ -464,7 +434,7 @@ exports.completeHostProfile = catchAsync(async (req, res) => {
 });
 
 // ============================================
-// EMAIL VERIFICATION LINK (FLOW-02-F01)
+// EMAIL VERIFICATION LINK
 // ============================================
 
 /**
@@ -487,26 +457,7 @@ exports.verifyEmailLink = catchAsync(async (req, res) => {
  * POST /api/v2/auth/send-verification-code
  */
 exports.sendEmailVerificationCode = catchAsync(async (req, res) => {
-  const user = await User.findById(req.user._id);
-
-  if (!user.email) {
-    throw new ValidationError("No email address to verify");
-  }
-
-  if (user.emailVerified) {
-    throw new ValidationError("Email is already verified");
-  }
-
-  const code = user.createEmailVerificationCode();
-  await user.save({ validateBeforeSave: false });
-
-  const emailModule = require("../../infrastructure/email");
-  await emailModule({
-    email: user.email,
-    subject: "Email Verification Code",
-    message: `<h2>Email Verification</h2><p>Your verification code is: <strong>${code}</strong></p><p>This code expires in 15 minutes.</p>`,
-  });
-
+  await authService.sendEmailVerificationCode(req.user._id);
   sendSuccess(res, null, "Verification code sent to your email");
 });
 
@@ -515,23 +466,7 @@ exports.sendEmailVerificationCode = catchAsync(async (req, res) => {
  * POST /api/v2/auth/verify-email
  */
 exports.verifyEmail = catchAsync(async (req, res) => {
-  const { code } = req.body;
-  const user = await User.findById(req.user._id);
-
-  if (!user.verifyEmailCode(code)) {
-    throw new ValidationError("Invalid or expired verification code");
-  }
-
-  user.emailVerified = true;
-  user.emailVerificationCode = undefined;
-  user.emailVerificationExpires = undefined;
-
-  if (user.profile?.hostData) {
-    user.profile.hostData.emailVerified = true;
-  }
-
-  await user.save({ validateBeforeSave: false });
-
+  await authService.verifyEmail(req.user._id, req.body.code);
   sendSuccess(res, null, "Email verified successfully");
 });
 
@@ -568,7 +503,7 @@ exports.validateSetupToken = catchAsync(async (req, res) => {
  * Setup password (first time for whitelabel)
  * POST /api/v2/auth/setup-password
  *
- * Phase 1a: returns a full token pair through the new cookie + body shape.
+ * Returns a full token pair through the cookie + body shape.
  */
 exports.setupPassword = catchAsync(async (req, res) => {
   const { token, password, passwordConfirm } = req.body;
@@ -596,19 +531,17 @@ exports.setupPassword = catchAsync(async (req, res) => {
   user.passwordSetupToken = undefined;
   user.passwordSetupExpires = undefined;
   user.passwordChangedAt = Date.now() - 1000;
-  // FLOW-04-F03: activate the whitelabel account once they set their password
+  // activate the whitelabel account once they set their password
   if (user.status !== 'active') {
     user.status = 'active';
   }
 
   await user.save();
 
-  // M-15 fix: a setupPassword call is effectively a credentials handover for
-  // a whitelabel admin (the temp password issued by the platform is replaced
-  // with one the user controls). Any refresh tokens that may have been
-  // issued under the temp credential must be invalidated now, before we
-  // mint a fresh pair, so that a stolen interim session cannot survive the
-  // setup ceremony.
+  // setupPassword is effectively a credentials handover (the temp password
+  // is replaced with one the user controls). Invalidate any refresh tokens
+  // issued under the temp credential before minting a fresh pair, so a
+  // stolen interim session cannot survive the setup ceremony.
   await authService.revokeAllForUser(user._id);
 
   const tokens = await authService.issueTokenPair(user, requestContext(req));

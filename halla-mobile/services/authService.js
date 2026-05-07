@@ -59,8 +59,8 @@ export const loginWithEmailAPI = async ({ email, password }) => {
     dlog("[AUTH SERVICE] Login successful:", data.user?.email);
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
     };
@@ -128,8 +128,8 @@ export const signupVendorAPI = async (vendorData) => {
     dlog("[AUTH SERVICE] Vendor signup successful");
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -202,8 +202,8 @@ export const signupWhitelabelAPI = async (whitelabelData) => {
     dlog("[AUTH SERVICE] Whitelabel signup successful");
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -281,8 +281,8 @@ export const verifyOTPAPI = async ({ mobile, otp }) => {
     );
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
       profileCompleted: data.data?.profileCompleted,
@@ -349,8 +349,8 @@ export const verifySignupOTPAPI = async ({ mobile, otp }) => {
     dlog("[AUTH SERVICE] Signup OTP verified successfully");
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
       subscription: data.data?.subscription,
       profileCompleted: data.data?.profileCompleted,
@@ -404,8 +404,8 @@ export const completeProfileAPI = async ({
     );
 
     return {
-      token: data.data?.token || data.token,
-      refreshToken: data.data?.refreshToken || data.refreshToken,
+      token: data.token,
+      refreshToken: data.refreshToken,
       user: data.data?.user,
     };
   } catch (error) {
@@ -481,10 +481,9 @@ export const resendOTPAPI = async ({ mobile, type = "login" }) => {
 };
 
 /**
- * Logout — revoke the current refresh token on the backend.
- *
- * Phase 1a: best-effort. Local state must be cleared regardless of network
- * outcome, so this never throws.
+ * Logout — revoke the current refresh token on the backend. Best-effort:
+ * local state must be cleared regardless of network outcome, so this
+ * never throws.
  *
  * @param {Object} params
  * @param {string} [params.accessToken]
@@ -511,10 +510,10 @@ export const logoutAPI = async ({ accessToken, refreshToken } = {}) => {
 /**
  * Rotate access + refresh tokens.
  *
- * Phase 1a (FLOW-01-F02): mobile sends the refresh token in the request body
- * because there is no cookie jar on React Native. The response carries a
- * fresh access token (mobile keeps it in-memory) and a fresh refresh token
- * (mobile writes it to expo-secure-store).
+ * Mobile sends the refresh token in the request body because there is no
+ * cookie jar on React Native. The response carries a fresh access token
+ * (mobile keeps it in-memory) and a fresh refresh token (mobile writes
+ * it to expo-secure-store).
  *
  * @param {string} refreshToken - Current refresh token
  * @returns {Promise<{accessToken: string, refreshToken: string, user: Object}>}
@@ -536,15 +535,14 @@ export const refreshTokenAPI = async (refreshToken) => {
   }
 
   return {
-    accessToken: data.data?.token || data.token,
-    refreshToken: data.data?.refreshToken || data.refreshToken,
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
     user: data.data?.user,
   };
 };
 
 /**
  * Reset password with a token from the forgot-password email.
- * Phase 1a (FLOW-06-F03).
  */
 export const resetPasswordAPI = async ({ token, password, passwordConfirm }) => {
   const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.RESET_PASSWORD(token)}`, {
@@ -559,16 +557,16 @@ export const resetPasswordAPI = async ({ token, password, passwordConfirm }) => 
   }
 
   return {
-    accessToken: data.data?.token || data.token,
-    refreshToken: data.data?.refreshToken || data.refreshToken,
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
     user: data.data?.user,
   };
 };
 
 /**
- * Phase 4 W3-WL — set the initial password for a whitelabel admin (or
- * any user holding a one-time setup token) after they tap the email
- * link. Backend: POST /auth/setup-password.
+ * Set the initial password for a whitelabel admin (or any user holding a
+ * one-time setup token) after they tap the email link.
+ * Backend: POST /auth/setup-password.
  *
  * Returns the same token-pair shape as login so the auth store can
  * authenticate the user immediately.
@@ -589,8 +587,8 @@ export const setupPasswordAPI = async ({ token, password, passwordConfirm }) => 
   }
 
   return {
-    accessToken: data.data?.token || data.token,
-    refreshToken: data.data?.refreshToken || data.refreshToken,
+    accessToken: data.token,
+    refreshToken: data.refreshToken,
     user: data.data?.user,
   };
 };

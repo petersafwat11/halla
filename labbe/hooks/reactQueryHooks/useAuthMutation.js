@@ -10,16 +10,16 @@ import useAuthStore from "@/stores/authStore";
 // COOKIE HELPERS
 // ============================================
 //
-// B-1 fix: the access token is now exclusively delivered via the backend's
-// HttpOnly `access_token` cookie (set by /auth/login, /auth/refresh, etc.).
-// The previous JS-readable `token` cookie defeated the entire HttpOnly
-// design — XSS could read it and forge `Authorization: Bearer …` against
-// the API. We no longer write or read it from the JS layer.
+// The access token is delivered exclusively via the backend's HttpOnly
+// `access_token` cookie (set by /auth/login, /auth/refresh). JS never
+// reads or writes the access token — that would defeat the HttpOnly
+// design (XSS could read it and forge Authorization headers).
 //
 // `userType` and `profileCompleted` remain JS-readable for client-side
-// routing convenience (e.g. middleware deciding host-vs-vendor first paint).
-// DO NOT use these as a trust signal — they are user-modifiable. The server
-// is authoritative; every protected route re-derives role from the JWT.
+// routing convenience (e.g. middleware deciding host-vs-vendor first
+// paint). DO NOT use these as a trust signal — they are user-modifiable.
+// The server is authoritative; every protected route re-derives role
+// from the JWT.
 
 const setAuthRoutingCookies = (userRole, profileCompleted = true) => {
   // userType / profileCompleted: client-side routing hints only. Server is
@@ -109,6 +109,16 @@ export const useAuthMutation = (action) => {
 
         return { user, isNewUser: false, profileCompleted };
       },
+    },
+
+    // OTP - Resend (login or signup flow)
+    resendOTP: {
+      mutationFn: ({ phoneNumber, type }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.auth.resendOTP,
+          data: { phoneNumber, type },
+        }),
     },
 
     // Password Reset - Forgot Password
@@ -231,12 +241,9 @@ export const useAuthMutation = (action) => {
 
     // ============================================
     // PASSWORD SETUP (Whitelabel approval flow)
-    // Phase 4b W1-WL-EMAIL: `validateSetupToken` confirms the link from
-    // the approval email is still valid before showing the form;
-    // `setupPassword` actually sets the password and (server-side) mints
-    // a fresh access + refresh pair. Both endpoints existed on the
-    // backend (auth.routes.js) but were never wired in the FE mutation
-    // hook — the setup-password page itself was missing entirely.
+    // `validateSetupToken` confirms the link from the approval email is
+    // still valid before showing the form; `setupPassword` sets the
+    // password and (server-side) mints a fresh access + refresh pair.
     // ============================================
 
     validateSetupToken: {

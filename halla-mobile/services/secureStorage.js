@@ -1,16 +1,15 @@
 /**
  * Secure storage wrapper.
  *
- * Phase 1a (FLOW-01-F03): the long-lived refresh token must live in the
- * platform's secure enclave (iOS Keychain / Android Keystore via
- * expo-secure-store). This module is the single entry point so the rest of
- * the app never touches AsyncStorage for credentials.
+ * The long-lived refresh token lives in the platform's secure enclave
+ * (iOS Keychain / Android Keystore via expo-secure-store). This module
+ * is the single entry point so the rest of the app never touches
+ * AsyncStorage for credentials.
  *
  * - Native (iOS / Android): expo-secure-store.
- * - Web bundle (Expo for web): SecureStore is not available; we fall back to
- *   AsyncStorage so dev workflows still function. Production web users
- *   authenticate via cookies, not the mobile bundle, so this fallback is
- *   acceptable for parity, not for security.
+ * - Web bundle (Expo for web): SecureStore is not available; falls back
+ *   to AsyncStorage so dev workflows still function. Production web users
+ *   authenticate via cookies, not the mobile bundle.
  */
 
 import { Platform } from "react-native";

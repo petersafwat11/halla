@@ -1,168 +1,185 @@
 /**
  * Auth Validation Schemas
- * Joi schemas for input validation
+ * Zod schemas for request input validation
  * @module modules/auth/auth.validation
  */
 
-const Joi = require('joi');
+const { z } = require('zod');
 
-/**
- * Phone number pattern (Saudi format)
- */
 const phonePattern = /^(\+966|966|0)?5\d{8}$/;
+const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
 
-/**
- * Password requirements
- */
-const passwordSchema = Joi.string()
-  .min(8)
-  .max(128)
-  .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-  .messages({
-    'string.min': 'Password must be at least 8 characters',
-    'string.max': 'Password must be at most 128 characters',
-    'string.pattern.base': 'Password must contain uppercase, lowercase, and number',
+const phoneNumber = z
+  .string()
+  .trim()
+  .regex(phonePattern, 'Invalid Saudi phone number format');
+
+const email = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email('Invalid email format');
+
+const password = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(128, 'Password must be at most 128 characters')
+  .regex(passwordPattern, 'Password must contain uppercase, lowercase, and number');
+
+const username = z
+  .string()
+  .trim()
+  .min(3, 'Username must be at least 3 characters')
+  .max(50, 'Username must be at most 50 characters')
+  .regex(/^[a-zA-Z0-9_]+$/, 'Username may contain letters, numbers, and underscores only');
+
+const stringOrJson = z.union([z.string(), z.record(z.any()), z.array(z.any())]);
+
+const otpCode = z
+  .string()
+  .length(6, 'OTP must be 6 digits')
+  .regex(/^\d+$/, 'OTP must contain only digits');
+
+const passwordsMatch = (passwordField, confirmField) => (data, ctx) => {
+  if (data[confirmField] !== data[passwordField]) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [confirmField],
+      message: 'Passwords do not match',
+    });
+  }
+};
+
+const loginSchema = z
+  .object({
+    email: email.optional(),
+    phoneNumber: phoneNumber.optional(),
+    password: z.string().min(1, 'Password is required'),
+  })
+  .refine((data) => data.email || data.phoneNumber, {
+    message: 'Email or phone number is required',
+    path: ['email'],
   });
 
-/**
- * Login schema
- */
-const loginSchema = Joi.object({
-  email: Joi.string().email().lowercase(),
-  phoneNumber: Joi.string().pattern(phonePattern),
-  password: Joi.string().required(),
-}).or('email', 'phoneNumber').messages({
-  'object.missing': 'Email or phone number is required',
+const hostSignupSchema = z
+  .object({
+    email: email.optional(),
+    phoneNumber,
+    password,
+    passwordConfirm: z.string(),
+    username: username.optional(),
+    name: z.string().trim().min(2).max(100).optional(),
+  })
+  .superRefine(passwordsMatch('password', 'passwordConfirm'));
+
+const vendorSignupSchema = z
+  .object({
+    email,
+    phoneNumber,
+    password,
+    brandName: z.string().trim().min(2).max(100),
+    ownerFullName: z.string().trim().min(2).max(100),
+    serviceDescription: z.string().max(1000).optional(),
+    serviceCategories: stringOrJson.optional(),
+    serviceLocation: stringOrJson.optional(),
+    socialLinks: stringOrJson.optional(),
+    nationalId: z.string().optional(),
+    commercialRecordNumber: z.string().optional(),
+    otherData: z.string().optional(),
+  })
+  .passthrough();
+
+const whitelabelSignupSchema = z
+  .object({
+    email: email.optional(),
+    phoneNumber: phoneNumber.optional(),
+    englishName: z.string().trim().min(2).max(100).optional(),
+    arabicName: z.string().trim().min(2).max(100).optional(),
+    platformName: z.string().max(100).optional(),
+    companyName: z.string().max(100).optional(),
+    requirements: stringOrJson.optional(),
+    address: stringOrJson.optional(),
+    planSelection: stringOrJson.optional(),
+    licenseNumber: z.string().optional(),
+    taxNumber: z.string().optional(),
+  })
+  .passthrough()
+  .refine((data) => data.email || data.phoneNumber, {
+    message: 'Email or phone number is required',
+    path: ['email'],
+  });
+
+const otpSendSchema = z.object({
+  phoneNumber,
 });
 
-/**
- * Host signup schema
- */
-const hostSignupSchema = Joi.object({
-  email: Joi.string().email().lowercase(),
-  phoneNumber: Joi.string().pattern(phonePattern).required().messages({
-    'string.pattern.base': 'Invalid Saudi phone number format',
-    'any.required': 'Phone number is required',
-  }),
-  password: passwordSchema.required(),
-  passwordConfirm: Joi.string().valid(Joi.ref('password')).required().messages({
-    'any.only': 'Passwords do not match',
-  }),
-  username: Joi.string().min(3).max(50).pattern(/^[a-zA-Z0-9_]+$/),
-  name: Joi.string().min(2).max(100),
+const otpVerifySchema = z.object({
+  phoneNumber,
+  otp: otpCode,
 });
 
-/**
- * Vendor signup schema
- */
-const vendorSignupSchema = Joi.object({
-  email: Joi.string().email().lowercase().required(),
-  phoneNumber: Joi.string().pattern(phonePattern).required(),
-  password: passwordSchema.required(),
-  brandName: Joi.string().min(2).max(100).required(),
-  ownerFullName: Joi.string().min(2).max(100).required(),
-  serviceDescription: Joi.string().max(1000),
-  serviceCategories: Joi.alternatives().try(Joi.string(), Joi.object()),
-  serviceLocation: Joi.alternatives().try(Joi.string(), Joi.object()),
-  socialLinks: Joi.alternatives().try(Joi.string(), Joi.object()),
-  nationalId: Joi.string(),
-  commercialRecordNumber: Joi.string(),
-  otherData: Joi.string(),
+const otpResendSchema = z.object({
+  phoneNumber,
+  type: z.enum(['signup', 'login']),
 });
 
-/**
- * Whitelabel signup schema
- */
-const whitelabelSignupSchema = Joi.object({
-  email: Joi.string().email().lowercase(),
-  phoneNumber: Joi.string().pattern(phonePattern),
-  englishName: Joi.string().min(2).max(100),
-  arabicName: Joi.string().min(2).max(100),
-  platformName: Joi.string().max(100),
-  companyName: Joi.string().max(100),
-  requirements: Joi.alternatives().try(Joi.string(), Joi.object()),
-  address: Joi.alternatives().try(Joi.string(), Joi.object()),
-  planSelection: Joi.alternatives().try(Joi.string(), Joi.object()),
-  licenseNumber: Joi.string(),
-  taxNumber: Joi.string(),
-}).or('email', 'phoneNumber');
-
-/**
- * OTP send schema
- */
-const otpSendSchema = Joi.object({
-  phoneNumber: Joi.string().pattern(phonePattern).required().messages({
-    'string.pattern.base': 'Invalid Saudi phone number format',
-    'any.required': 'Phone number is required',
-  }),
+const forgotPasswordSchema = z.object({
+  email,
 });
 
-/**
- * OTP verify schema
- */
-const otpVerifySchema = Joi.object({
-  phoneNumber: Joi.string().pattern(phonePattern).required(),
-  otp: Joi.string().length(6).pattern(/^\d+$/).required().messages({
-    'string.length': 'OTP must be 6 digits',
-    'string.pattern.base': 'OTP must contain only digits',
-  }),
+const resetPasswordSchema = z
+  .object({
+    password,
+    passwordConfirm: z.string(),
+  })
+  .superRefine(passwordsMatch('password', 'passwordConfirm'));
+
+const updatePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: password,
+    passwordConfirm: z.string(),
+  })
+  .superRefine(passwordsMatch('newPassword', 'passwordConfirm'));
+
+const completeProfileSchema = z
+  .object({
+    username: username.optional(),
+    email: email.optional(),
+    password: password.optional(),
+    passwordConfirm: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.password && data.passwordConfirm !== data.password) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['passwordConfirm'],
+        message: 'Passwords do not match',
+      });
+    }
+  });
+
+const setupPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'Token is required'),
+    password,
+    passwordConfirm: z.string(),
+  })
+  .superRefine(passwordsMatch('password', 'passwordConfirm'));
+
+const verifyEmailSchema = z.object({
+  code: z
+    .string()
+    .length(6, 'Verification code must be 6 digits')
+    .regex(/^\d+$/, 'Verification code must contain only digits'),
 });
 
-/**
- * OTP resend schema
- */
-const otpResendSchema = Joi.object({
-  phoneNumber: Joi.string().pattern(phonePattern).required(),
-  type: Joi.string().valid('signup', 'login').required(),
+const resendSetupEmailSchema = z.object({
+  email,
 });
 
-/**
- * Forgot password schema
- */
-const forgotPasswordSchema = Joi.object({
-  email: Joi.string().email().lowercase().required(),
-});
-
-/**
- * Reset password schema
- */
-const resetPasswordSchema = Joi.object({
-  password: passwordSchema.required(),
-  passwordConfirm: Joi.string().valid(Joi.ref('password')).required().messages({
-    'any.only': 'Passwords do not match',
-  }),
-});
-
-/**
- * Update password schema
- */
-const updatePasswordSchema = Joi.object({
-  currentPassword: Joi.string().required(),
-  newPassword: passwordSchema.required(),
-  passwordConfirm: Joi.string().valid(Joi.ref('newPassword')).required().messages({
-    'any.only': 'Passwords do not match',
-  }),
-});
-
-/**
- * Complete profile schema
- */
-const completeProfileSchema = Joi.object({
-  username: Joi.string().min(3).max(50).pattern(/^[a-zA-Z0-9_]+$/),
-  email: Joi.string().email().lowercase(),
-  password: passwordSchema,
-  passwordConfirm: Joi.string().valid(Joi.ref('password')).messages({
-    'any.only': 'Passwords do not match',
-  }),
-});
-
-/**
- * Verify email schema
- */
-const verifyEmailSchema = Joi.object({
-  code: Joi.string().length(6).pattern(/^\d+$/).required().messages({
-    'string.length': 'Verification code must be 6 digits',
-  }),
+const verifyEmailLinkSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
 });
 
 module.exports = {
@@ -177,5 +194,8 @@ module.exports = {
   resetPasswordSchema,
   updatePasswordSchema,
   completeProfileSchema,
+  setupPasswordSchema,
   verifyEmailSchema,
+  resendSetupEmailSchema,
+  verifyEmailLinkSchema,
 };
