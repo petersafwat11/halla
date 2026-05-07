@@ -63,6 +63,22 @@ export const ENDPOINTS = {
     FEATURE_ACCESS: (featureName) => `/subscriptions/features/${featureName}`,
   },
 
+  // Addons endpoints
+  ADDONS: {
+    BASE: "/addons",
+    CATALOG: "/addons",
+    PURCHASE: "/addons/purchase",
+    MY: "/addons/my",
+    ADMIN_ACTIVATE: (id) => `/addons/admin/${id}/activate`,
+  },
+
+  // Payments endpoints (host-facing)
+  PAYMENTS: {
+    CHECKOUT: "/payments/checkout",
+    BY_ID: (id) => `/payments/${id}`,
+    POLL_3DS: (id) => `/payments/${id}/poll`,
+  },
+
   // Events endpoints
   EVENTS: {
     BASE: "/events",

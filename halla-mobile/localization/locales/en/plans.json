@@ -21,8 +21,10 @@
   },
   "inviteSelector": { "label": "Select invite count", "poolLabel": "Invite pool", "invites": "invites" },
   "currency": "SAR",
+  "common": {
+    "currency": { "sar": "SAR" }
+  },
   "compensation": { "title": "Free Compensation Invites", "invites": "compensation invites (15%)" },
-  "features": { "title": "Included Features" },
   "buttons": { "subscribeNow": "Contact Us", "subscribeAction": "Subscribe Now" },
   "errors": { "loadFailed": "Failed to load plans", "selectPlan": "Please select a plan.", "noPlansAvailable": "No plans available" },
   "eventTab": {
@@ -54,15 +56,16 @@
   "addons": {
     "title": "Add-Ons",
     "subtitle": "Enhance your plan with optional extras",
+    "loadFailed": "Could not load add-ons.",
     "extraInvites": { "title": "Extra Invites", "description": "Add more invites to your plan" },
     "extraReminders": { "title": "Extra Reminders", "description": "Send additional reminder messages" },
     "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
     "designTypes": {
-      "ready_made": "Ready-made design",
+      "ready_made": "Ready-made design (male/female)",
       "custom_male": "Custom male design",
-      "custom_themed": "Themed design",
-      "animated": "Animated design",
-      "3d": "3D design"
+      "custom_themed": "Themed custom design",
+      "animated": "Animated background design",
+      "3d": "3D invitation design"
     },
     "purchase": {
       "total": "Total",
@@ -74,18 +77,41 @@
     }
   },
   "summary": {
-    "title": "Order Summary", "planDetails": "Plan Details",
-    "invitePool": "Invite Pool", "validDays": "Valid for", "days": "days",
-    "oneEvent": "1 event", "unlimitedEvents": "Unlimited events",
+    "title": "Order Summary",
+    "planDetails": "Plan Details",
+    "invitePool": "Invite Pool",
+    "validDays": "Valid for",
+    "days": "days",
+    "oneEvent": "1 event",
+    "singleEvent": "Single event",
+    "unlimitedEvents": "Unlimited events",
     "compensationInvites": "compensation invites",
-    "activateButton": "Activate Subscription", "activating": "Activating...", "total": "Total",
+    "activateButton": "Activate Subscription",
+    "activating": "Activating...",
+    "total": "Total",
     "enterprisePlan": "Enterprise Plan",
     "validFor": "Valid for",
+    "addonsTitle": "Selected Add-Ons",
+    "addonItems": {
+      "extra_invites": "Extra Invites +{{quantity}}",
+      "extra_reminders": "Extra Reminders +{{quantity}}",
+      "design_template": "Design Template"
+    },
     "periods": {
       "yearly": "1 year (365 days)",
       "quarterly": "90 days",
       "monthly": "30 days",
+      "event": "90 days (1 event)",
       "custom": "{{days}} days"
+    },
+    "discount": {
+      "title": "Discount Code",
+      "placeholder": "Enter discount code",
+      "apply": "Apply",
+      "applied": "Applied",
+      "success": "✓ Code \"{{code}}\" — {{amount}} SAR off",
+      "invalidDefault": "Invalid discount code",
+      "networkError": "Could not verify code. Please try again"
     },
     "discountCode": {
       "title": "Discount Code",
@@ -97,8 +123,17 @@
     "paymentSummary": {
       "title": "Payment Summary",
       "planPrice": "Plan Price",
+      "addons": "Add-Ons",
       "discount": "Discount",
       "total": "Total"
+    },
+    "payment": {
+      "title": "Payment Summary",
+      "planPrice": "Plan Price",
+      "addons": "Add-Ons",
+      "discount": "Discount",
+      "total": "Total",
+      "method": "Payment Method"
     },
     "invitesLabel": "invites",
     "currency": "SAR",
@@ -113,7 +148,11 @@
     "processing": "Processing...",
     "proceedButton": "Proceed to Payment"
   },
-  "toasts": { "success": "Subscription activated!", "failed": "Failed to activate. Please try again." },
+  "toasts": {
+    "success": "Subscription activated!",
+    "failed": "Failed to activate. Please try again.",
+    "subscriptionPartial": "Subscription activated; {{count}} add-on(s) need follow-up — our team will reach out."
+  },
   "features": {
     "title": "Included Features",
     "sendInvites": "Send invites through the app",
@@ -126,6 +165,5 @@
     "staffManagement": "Staff management"
   },
   "badges": { "selected": "Selected" },
-  "monthlyPlan": { "durationNote": "Valid 30 days — unlimited events" },
-  "summary": { "singleEvent": "Single event" }
+  "monthlyPlan": { "durationNote": "Valid 30 days — unlimited events" }
 }
