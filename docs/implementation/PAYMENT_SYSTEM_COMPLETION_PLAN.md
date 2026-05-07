@@ -1,7 +1,13 @@
 # Payment System Completion Plan
 
 **Original date:** 2026-05-06
-**Last reviewed:** 2026-05-06 (post-codebase audit)
+**Last reviewed:** 2026-05-07 (implementation-readiness pass — see §15)
+
+> **Implementer:** Phases 1-4 are ready to copy-edit-paste, but **§15
+> ("Implementation-readiness corrections") supersedes specific snippets
+> in §4-§7**. Read §15 first; it lists the runtime bugs that would crash
+> the build if you applied the older sections verbatim, with the corrected
+> code inline. Anywhere §15 contradicts an earlier section, §15 wins.
 
 ---
 
@@ -2073,7 +2079,9 @@ exports.handle = async (req, res) => {
 ```js
 const paymentsService = require('./payments.service');
 const webhookController = require('./webhook.controller');
-const { catchAsync } = require('../../shared/errors');
+// NOTE: catchAsync lives in shared/utils, not shared/errors. The codebase
+// convention everywhere (auth, admin, plans, users…) is the direct path.
+const catchAsync = require('../../shared/utils/catchAsync');
 const { ROLES } = require('../../shared/constants');
 
 exports.webhook = webhookController.handle;
@@ -2579,27 +2587,44 @@ exports.runReconcileTick = async () => {
 
 **MODIFY** `labbe-backend-/src/shared/utils/scheduledTasks.js`:
 
-Add an import near the top (around line 24):
+Add an import near the top (around line 24). `cronLease` is already
+required further down at line 770 — reuse that import or move it up; do
+**not** import a non-existent `acquireCronLease` named export:
+
 ```js
 const { runReconcileTick } = require("../../modules/payments/payments.reconcile");
-const { acquireCronLease } = require("./cronLease");
+// cronLease is already required at line ~770; no re-import needed if you
+// keep schedulePaymentReconcile defined below that point.
 ```
 
-Above `initScheduledTasks`, add:
+Above `initScheduledTasks`, add (modeled after
+`scheduleSubscriptionStatusUpdate` at line 771, which is the canonical
+multi-instance cron pattern in this file):
+
 ```js
 const schedulePaymentReconcile = () => {
   cron.schedule("*/5 * * * *", async () => {
-    const got = await acquireCronLease("payment_reconcile", { ttlMs: 4 * 60 * 1000 });
-    if (!got) return;
-    try {
-      const { scanned, reconciled } = await runReconcileTick();
-      if (scanned > 0) {
-        // eslint-disable-next-line no-console
-        console.log(`[Cron] payment_reconcile: scanned=${scanned} reconciled=${reconciled}`);
-      }
-    } catch (err) {
+    const result = await cronLease.withLease(
+      "payment_reconcile",
+      async () => {
+        try {
+          const { scanned, reconciled } = await runReconcileTick();
+          if (scanned > 0) {
+            // eslint-disable-next-line no-console
+            console.log(
+              `[Cron] payment_reconcile: scanned=${scanned} reconciled=${reconciled}`
+            );
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("[Cron] payment_reconcile error:", err.message);
+        }
+      },
+      { ttlMs: 4 * 60 * 1000 }
+    );
+    if (!result.ran) {
       // eslint-disable-next-line no-console
-      console.error("[Cron] payment_reconcile error:", err.message);
+      console.log("[Cron] payment_reconcile — skipped (lease held by another node)");
     }
   });
 };
@@ -2609,10 +2634,12 @@ Inside `initScheduledTasks()` add `schedulePaymentReconcile();` and an
 extra console line for the boot banner. Export `schedulePaymentReconcile`
 in the bottom `module.exports` for testability.
 
-> **Note on `acquireCronLease`:** the current `cronLease.js` exports the
-> primitive but other crons in this file use it without a wrapper;
-> follow the same pattern. If your `cronLease.js` exposes a different
-> name, adjust the import.
+> **`cronLease` API contract:** the actual exports of
+> `src/shared/utils/cronLease.js` are `acquire(name, opts)`,
+> `release(name)`, and `withLease(name, fn, opts)`. There is no
+> `acquireCronLease` named export. The `withLease` wrapper is the right
+> abstraction here: it acquires, runs, and releases atomically, matching
+> the existing `scheduleSubscriptionStatusUpdate` pattern.
 
 ---
 
@@ -2837,18 +2864,48 @@ exports.getPaymentDetail = catchAsync(async (req, res) => {
   shows the full Moyasar response, refund history, linked subscription/addon.
 
 **MODIFY** `labbe/services/adminDashboard.js` (where `paymentsAPI` is
-defined) — add the action calls. They reuse the host-side path (the
-admin RBAC is server-side):
+defined). The existing `paymentsAPI` uses `apiClient.get/post`, so we
+keep that style for consistency:
 
 ```js
+import { apiRequest } from "@/services/new-backend/apiClient";
+
 export const paymentsAPI = {
-  // …existing…
-  getById: (id)       => apiRequest({ method: "GET",  path: API_PATHS.payments.getById(id) }),
-  refund: (id, body)  => apiRequest({ method: "POST", path: API_PATHS.payments.refund(id), data: body, headers: { "Idempotency-Key": crypto.randomUUID() } }),
-  capture: (id, body) => apiRequest({ method: "POST", path: API_PATHS.payments.capture(id), data: body, headers: { "Idempotency-Key": crypto.randomUUID() } }),
-  void: (id)          => apiRequest({ method: "POST", path: API_PATHS.payments.void(id),    headers: { "Idempotency-Key": crypto.randomUUID() } }),
+  // …existing getSummary / getAll / getById / export…
+
+  // Admin write actions. The Idempotency-Key MUST be supplied by the
+  // caller — generate it ONCE per logical operation (e.g. when the
+  // refund-confirm modal opens) and pass the same value to any retry.
+  // Generating a fresh UUID inside the helper would defeat idempotency:
+  // a double-clicked "Refund" button would fire two distinct keys and
+  // result in two real refunds.
+  refund: (paymentId, { amount, reason }, idempotencyKey) =>
+    apiRequest({
+      method: "POST",
+      path: API_PATHS.payments.refund(paymentId),
+      data: { amount, reason },
+      config: { headers: { "Idempotency-Key": idempotencyKey } },
+    }),
+  capture: (paymentId, { amount } = {}, idempotencyKey) =>
+    apiRequest({
+      method: "POST",
+      path: API_PATHS.payments.capture(paymentId),
+      data: { amount },
+      config: { headers: { "Idempotency-Key": idempotencyKey } },
+    }),
+  void: (paymentId, idempotencyKey) =>
+    apiRequest({
+      method: "POST",
+      path: API_PATHS.payments.void(paymentId),
+      config: { headers: { "Idempotency-Key": idempotencyKey } },
+    }),
 };
 ```
+
+> **`apiRequest` shape:** the helper at `labbe/services/new-backend/apiClient.js`
+> accepts `{ method, path, data, params, config, isExport, isServer, serverToken }`.
+> Custom headers go inside `config.headers`, **not** as a top-level
+> `headers` field. (The earlier draft had this wrong.)
 
 **MODIFY** `labbe/hooks/reactQueryHooks/useAdmin.js` — add mutations:
 
@@ -3182,6 +3239,338 @@ before Phase 2 ships:
 | Card data leaks into `IdempotencyKey.response.body` cache | The cached `response.body` is the trimmed object returned by `paymentProvider.charge`, which already redacts raw Moyasar payload (only last4 / bin in `paymentMethod`). PAN, CVC, full numbers are never returned. |
 | Refund endpoint replayed via stale Idempotency-Key | Route-level idempotency middleware caches the 2xx response; a second call replays the cached refund summary without re-hitting Moyasar. |
 | `pending_refund` audit rows accumulate | A dashboard query + alert (admin homepage widget) counts these and pages on > 0 for > 1 hour. (Implementation: a new `getPendingRefundCount` admin route, surfaced as a stat card.) |
+
+---
+
+## 15. Implementation-readiness corrections
+
+This section was added on 2026-05-07 after a second pass against HEAD.
+The earlier sections were written from a partly-stale model of the
+codebase; the items below are the deltas an implementer would otherwise
+hit at runtime. **Where this section disagrees with §4-§7, this section
+is correct.** Snippets in §4 / §7 that were already wrong have been
+inline-edited; the catalogue here exists so a reviewer can see *what*
+changed and *why*.
+
+### 15.1 Runtime-blocking bugs (now fixed inline above)
+
+These three would have crashed at import time or silently broken
+idempotency. They have been corrected in the relevant section; the list
+is here for traceability.
+
+| # | Where (section) | Symptom | Fix |
+|---|---|---|---|
+| 1 | §4.8 `payments.controller.js` | `const { catchAsync } = require('../../shared/errors')` returns `undefined`; controller routes blow up on first request. | Use `const catchAsync = require('../../shared/utils/catchAsync')` (matches every other controller in the repo). |
+| 2 | §5.2 reconcile cron | `const { acquireCronLease } = require('./cronLease')` — `acquireCronLease` is not an export. The module exports `acquire`, `release`, `withLease`. | Use `cronLease.withLease(name, fn, { ttlMs })`, mirroring `scheduleSubscriptionStatusUpdate` at line 771 of the existing `scheduledTasks.js`. |
+| 3 | §7.3 `paymentsAPI.refund/capture/void` | (a) `apiRequest({…, headers: {…}})` is the wrong shape — the apiClient ignores top-level `headers`; (b) `crypto.randomUUID()` per call defeats idempotency. | Pass headers via `config: { headers: { … } }`; require the caller to supply the `idempotencyKey` so a double-clicked "Refund" reuses the same key. |
+
+### 15.2 Missing wiring (must add)
+
+These pieces were missing from §4 and would let the new code compile but
+fail at the request boundary.
+
+#### A. `subscriptions.controller.js` — accept `source` and handle the 3DS branch
+
+**MODIFY** `labbe-backend-/src/modules/subscriptions/subscriptions.controller.js`
+around lines 33-43. The current handler hard-codes
+`{ planCode, discountCode }` and always calls `sendCreated`. Once the
+service can return `{ requiresAction, redirectUrl, paymentId }` we have
+to (a) pass `source` and `callbackUrl` through, and (b) branch on the
+3DS response so the client doesn't see a `201 Created` for a payment
+that is still mid-redirect:
+
+```js
+exports.subscribe = catchAsync(async (req, res) => {
+  const { planCode, discountCode, source, callbackUrl } = req.body;
+  const idempotencyKey = req.get('idempotency-key') || undefined;
+
+  const result = await subscriptionsService.subscribe(req.user._id, {
+    planCode,
+    discountCode,
+    source,
+    callbackUrl,
+    idempotencyKey,
+  });
+
+  if (result?.requiresAction) {
+    // 3DS / STC OTP redirect — no resource created yet. Use 200 so the
+    // client distinguishes "completed" (201) from "redirect required" (200).
+    return sendSuccess(res, result, 'Payment requires additional action');
+  }
+  return sendCreated(res, result, 'Subscription created successfully');
+});
+```
+
+The same shape applies to `addonsController.purchaseAddon` — accept
+`source` from the body, return `200` with the redirect for the 3DS path.
+
+#### B. `getPaymentDetail` whitelabel scoping
+
+§4.8 + §7.2 mount `GET /admin/payments/:id` behind
+`requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view')`. Per
+`shared/constants/permissions.js`, `WHITELABEL_ADMIN.PAYMENTS = FULL`,
+so a whitelabel admin from org A would otherwise be able to read a
+payment belonging to org B by guessing the id. **`adminController.getPaymentDetail`
+must enforce ownership before returning:**
+
+```js
+exports.getPaymentDetail = catchAsync(async (req, res) => {
+  const detail = await adminService.getPaymentDetail(req.params.id);
+  const wlFilter = getWhitelabelIdFromFilter(req); // existing helper at top of admin.controller.js
+  if (
+    wlFilter !== undefined
+    && String(detail?.whitelabelId || '') !== String(wlFilter || '')
+  ) {
+    return next(new AppError('Payment not found', 404));
+  }
+  return sendSuccess(res, detail, 'Payment retrieved successfully');
+});
+```
+
+The host-side `GET /payments/:id` controller in §4.8 already does an
+ownership check (`String(payment.userId) !== String(req.user._id)`) for
+non-admins; the gap is admin-side.
+
+#### C. `subscriptions.service.subscribe()` — preserve `existingActive` across the new flow
+
+The replacement block in §4.5 lifts the cancel-old-subs loop out of its
+original position. The variable `existingActive` is computed on actual
+line 360-363 of the file (before the charge block). Keep that
+computation *exactly where it is* — the replacement block in §4.5 only
+covers lines 378-510 (the `let paymentTransactionId = null` through the
+end of the create-try). **Do not move or delete the
+`existingActive = await Subscription.find(...)` query.** The plan's
+diff anchors are:
+
+| Plan said | Actual line range to replace |
+|---|---|
+| "the body of `subscribe()` between lines 375 and 507" | Lines **378-510** of the current file (from `let paymentTransactionId = null;` through the closing `}` of the `} catch (createErr) { … }` block). |
+| "post-create work (lines 509+) is unchanged" | Actual lines **512-541** (discount apply → user update → notification → return). |
+| "`_recordPendingRefund` signature update around lines 985-1040" | Actual lines **988-1043**. |
+
+#### D. Frontend `api.config.js` — exact insertion point
+
+§4.9 says "add to the existing top-level object." The file has two
+distinct registers: `API_PATHS` (constructed object, lines 7-450) and
+the named-export block at the bottom (lines 459-470). To make the new
+section consumable both ways:
+
+1. Add `hostPayments: { … }` inside `API_PATHS` (anywhere; alphabetical
+   neighbours sit around `subscriptions` at line 161).
+2. Extend the existing `payments: { … }` block at line 335 with the new
+   action paths.
+3. Append `hostPayments` to the bottom destructured `export const { … }`
+   list (otherwise consumers can only read it via `API_PATHS.hostPayments`).
+
+#### E. `useSubscriptionMutation('subscribe')` — pass `source` through
+
+The current mutation at `labbe/hooks/reactQueryHooks/useSubscriptions.js`
+lines 80-91 destructures `{ planCode, discountCode }` only. The §4.9
+replacement block is correct; the only gap is that the file at line 81
+takes the args inside the `mutationFn` arrow directly — when you replace
+it, keep the surrounding shape (`useSubscriptionMutation` factory + the
+`mutations` object).
+
+#### F. Joi env-schema (optional, recommended)
+
+`labbe-backend-/src/config/env.js` validates env at boot via Joi. The
+schema currently has `unknown(true)` so missing entries don't fail
+validation, but adding the new keys lets `config.env` boot loudly when
+they are misset:
+
+```js
+// inside the envSchema object:
+MOYASAR_API_KEY: Joi.string().allow('').default(''),
+MOYASAR_PUBLISHABLE_KEY: Joi.string().allow('').default(''),
+MOYASAR_BASE_URL: Joi.string().uri().default('https://api.moyasar.com/v1'),
+MOYASAR_WEBHOOK_SECRET: Joi.string().allow('').default(''),
+MOYASAR_WEBHOOK_IP_WHITELIST: Joi.string().allow('').default(''),
+```
+
+Nice-to-have: surface `config.payments = { moyasarKey: env.MOYASAR_API_KEY, … }`
+in `src/config/index.js` so the modules can import the typed config
+object instead of touching `process.env` directly. The codebase rule
+(comment at the top of `config/index.js`) is "NO direct process.env
+access elsewhere"; we deliberately keep `paymentProvider/moyasar.js` as
+the single allowed exception (it predates the rule).
+
+### 15.3 Naming overlap — `PAYMENT_STATUS`
+
+`src/shared/constants/status.js` lines 117-123 already defines a
+`PAYMENT_STATUS` constant:
+
+```js
+const PAYMENT_STATUS = {
+  PENDING: 'pending',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  REFUNDED: 'refunded',
+  CANCELLED: 'cancelled',
+};
+```
+
+It is exported from `shared/constants/index.js` and used by the legacy
+admin reporting view (`completed/pending/failed` buckets). The new
+Payment model attaches its own enum as `Payment.PAYMENT_STATUS` —
+broader (`pending_3ds`, `authorized`, `captured`, `partially_refunded`,
+`voided`). **Do not unify these two constants.** The legacy one is a
+display-bucket vocabulary (used by `getPayments_legacy`); the new one
+is the lifecycle vocabulary on the Payment row. The `getPayments`
+re-target in §7.1 is exactly the seam where lifecycle statuses get
+collapsed back into legacy buckets for the table view — keep that
+mapping in `admin.service.getPayments`.
+
+### 15.4 Partial-refund detection on Moyasar snapshots
+
+`PaymentModel.applyMoyasarSnapshot` (§4.1, lines 479-526 of the plan)
+flips to PARTIALLY_REFUNDED only when Moyasar's `status === 'refunded'`
+and `refundedAmount < amount`. In practice Moyasar reports partial
+refunds with `status === 'paid'` or `'captured'` and a non-zero
+`refunded` field — the plan's `if` would never fire for the real
+partial-refund case. Tighten the mapping:
+
+```js
+const internal = map[status];
+if (internal) {
+  // Partial-refund detection: Moyasar keeps `status` at `paid`/`captured`
+  // and just bumps the `refunded` number. Detect that case explicitly.
+  if (
+    (internal === PAYMENT_STATUS.PAID || internal === PAYMENT_STATUS.CAPTURED)
+    && this.refundedAmount > 0
+    && this.refundedAmount < this.amount
+  ) {
+    this.status = PAYMENT_STATUS.PARTIALLY_REFUNDED;
+  } else if (internal === PAYMENT_STATUS.REFUNDED && this.refundedAmount < this.amount) {
+    this.status = PAYMENT_STATUS.PARTIALLY_REFUNDED;
+  } else {
+    this.status = internal;
+  }
+  // …unchanged timestamp updates…
+}
+```
+
+### 15.5 Webhook body parsing
+
+Plan §4.8 `webhook.controller.js` reads `req.body?.secret_token` — this
+relies on `express.json()` having parsed the body. The codebase mounts
+JSON globally (`src/app.js` around line 165), so the read works as
+written. The HMAC of the *raw* body is **not** part of the Moyasar
+contract (their auth is the constant `secret_token` field, not a body
+HMAC), so we don't need raw-body capture. Documenting this here so a
+future maintainer doesn't introduce a `bodyParser.raw()` shim hoping to
+"strengthen" the auth — that would break the existing constant-time
+compare.
+
+### 15.6 Idempotency-Key generation in the admin UI
+
+The corrected §7.3 `paymentsAPI` helpers now require the caller to
+supply the `idempotencyKey`. The standard pattern in the rest of the
+admin app (e.g. host bulk-actions) is:
+
+```jsx
+const [refundIdempotencyKey] = useState(() => crypto.randomUUID());
+// …
+const onConfirmRefund = () =>
+  paymentRefundMutation.mutateAsync({
+    id: payment._id,
+    amount,
+    reason,
+    idempotencyKey: refundIdempotencyKey,  // SAME UUID across retries within the modal session
+  });
+```
+
+`useAdminPaymentRefund` (§7.3) should accept and forward the
+`idempotencyKey`. The mutation does **not** generate one — that's the
+caller's job, because the caller knows the operation boundary (a single
+modal session) that the key must outlive.
+
+### 15.7 Source-typing constraints on Moyasar `source` field
+
+Moyasar's `/v1/payments` documents these `source.type` values:
+`creditcard`, `applepay`, `samsungpay`, `stcpay`, `token`. The plan
+already uses these. Two contractual subtleties to anchor:
+
+- `creditcard` requires `name`, `number`, `month`, `year`, `cvc`.
+- `stcpay` requires `mobile` (saudi-format `05XXXXXXXX`) and a Moyasar
+  side OTP (returned via `transaction_url` redirect — same flow as 3DS).
+- `applepay` requires `token` (the encrypted PassKit payload — see §13
+  question 1).
+- `token` (saved-card in §8) requires `token` only; no callback_url
+  unless 3DS step-up is required by the issuer.
+
+Add input validation for these in
+`subscriptions.service.subscribe()` *before* hitting the provider, so
+the user gets a 400 with a useful message rather than a
+`paymentProvider.charge: 'source' is required (e.g. { type: 'creditcard', ... })`
+proxied as a generic "Payment failed".
+
+### 15.8 Static-checks file — concrete contract
+
+The §10.3 reference to `scripts/static-checks-payments.js` should
+verify, at minimum:
+
+```js
+// scripts/static-checks-payments.js
+const fs = require('fs');
+const path = require('path');
+const assert = require('assert');
+
+const root = path.join(__dirname, '..');
+
+// 1. Provider factory exposes the new methods.
+const factory = require(path.join(root, 'src/infrastructure/paymentProvider'));
+['charge', 'refund', 'capture', 'voidPayment', 'fetchPayment'].forEach((m) => {
+  assert(typeof factory[m] === 'function', `paymentProvider.${m} missing`);
+});
+
+// 2. PaymentModel statics carry the lifecycle enum.
+const Payment = require(path.join(root, 'models/PaymentModel'));
+assert(Payment.PAYMENT_STATUS && Payment.PAYMENT_STATUS.PENDING_3DS,
+  'PaymentModel.PAYMENT_STATUS.PENDING_3DS missing');
+
+// 3. app.js mounts /payments under /api/v2.
+const appSrc = fs.readFileSync(path.join(root, 'src/app.js'), 'utf8');
+assert(/\/api\/v2.*\/payments/.test(appSrc) || appSrc.includes("`${prefix}/payments`"),
+  '/payments routes not mounted');
+
+// 4. scheduledTasks initialises the reconcile cron.
+const tasksSrc = fs.readFileSync(path.join(root, 'src/shared/utils/scheduledTasks.js'), 'utf8');
+assert(tasksSrc.includes('schedulePaymentReconcile()'),
+  'schedulePaymentReconcile() not invoked from initScheduledTasks');
+
+// 5. Webhook secret env var is referenced.
+const webhookSrc = fs.readFileSync(
+  path.join(root, 'src/modules/payments/webhook.controller.js'), 'utf8'
+);
+assert(webhookSrc.includes('MOYASAR_WEBHOOK_SECRET'),
+  'webhook handler does not consult MOYASAR_WEBHOOK_SECRET');
+
+console.log('static-checks-payments: OK');
+```
+
+### 15.9 Definition-of-done addendum to §12
+
+Each weekly checkpoint must additionally:
+
+- run `node scripts/static-checks-payments.js` in CI green;
+- run a one-shot reconciliation against staging Moyasar (sandbox key) to
+  verify a real `pending_3ds` row migrates to `paid` after the cron tick;
+- assert `IdempotencyKey.findOne({ scope: 'payment.charge' })` returns a
+  cached row with `status: 'completed'` after the test charge — proves
+  the new `given_id` code path also flows through `withIdempotency`
+  (defense-in-depth).
+
+### 15.10 Files this plan now touches that the §3 table missed
+
+The §3 file-table is still authoritative, but these were missed in the
+original draft and are required for the corrected §15 instructions:
+
+| Action | Path | Reason |
+|---|---|---|
+| **MODIFY** | `labbe-backend-/src/modules/subscriptions/subscriptions.controller.js` | accept `source`/`callbackUrl`, branch on `requiresAction` (§15.2A) |
+| **MODIFY** | `labbe-backend-/src/modules/addons/addons.controller.js` | same — accept `source`, branch on `requiresAction` |
+| **MODIFY** | `labbe-backend-/src/config/env.js` | add Joi entries for the new Moyasar env vars (§15.2F) |
+| **CREATE** (optional) | `labbe-backend-/scripts/static-checks-payments.js` | CI gate (§15.8) |
 
 ---
 
