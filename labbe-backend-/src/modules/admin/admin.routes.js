@@ -455,15 +455,10 @@ router.patch('/vendors/:id/status',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
-  // Phase 1b consumer: vendor approve/reject is the canonical sensitive
-  // admin write. The middleware records actor, target, and the requested
-  // status into AuditLogModel after a 2xx response.
   auditLog({
     action: 'vendor.status_change',
     targetType: 'user',
     targetIdFrom: (req) => req.params.id,
-    // H-9: capture the prior `status` BEFORE the controller mutates the
-    // vendor doc so the audit row records both before and after.
     captureBefore: async (req) => {
       const User = require('../../../models/UserModel');
       const prior = await User.findById(req.params.id)
@@ -1283,20 +1278,9 @@ router.get('/payments/export',
 // Express does not match those against the dynamic `:id` route.
 router.get('/payments/:id',
   requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
+  validateObjectId('id'),
   filterByWhitelabel,
   adminController.getPaymentDetail
-);
-
-router.get('/hosts/export',
-  requirePageAccess(ADMIN_PAGES.HOSTS, 'view'),
-  filterByWhitelabel,
-  adminController.exportHosts
-);
-
-router.get('/vendors/export',
-  requirePageAccess(ADMIN_PAGES.VENDORS, 'view'),
-  filterByWhitelabel,
-  adminController.exportVendors
 );
 
 router.get('/moderators/export',

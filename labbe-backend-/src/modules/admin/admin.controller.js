@@ -240,10 +240,8 @@ exports.createModerator = catchAsync(async (req, res) => {
     throw new ValidationError('Email, phone number, name, and password are required');
   }
 
-  // TENANT-F01: every moderator/admin user must be tenant-bound.
-  // Non-super-admin creators inherit the whitelabel from their own scope
-  // (the middleware filter); they cannot target a different tenant.
-  // Super admins must explicitly pass the target whitelabelId in the body.
+  // Non-super-admin creators inherit the whitelabel from their own scope;
+  // super admins must explicitly pass the target whitelabelId in the body.
   let whitelabelId;
   if (req.user.role === ROLES.SUPER_ADMIN) {
     whitelabelId = bodyWhitelabelId;
@@ -342,9 +340,6 @@ exports.updateWhitelabelStatus = catchAsync(async (req, res) => {
 
   if (!status) throw new ValidationError('Status is required');
 
-  // Phase 4b W0-EMAIL: when admin clicks Approve and confirms in the
-  // ApproveWhitelabelDialog, the FE sends `dispatchSetupEmail: true` so
-  // the service mints a fresh setup-password token and emails the link.
   const result = await adminService.updateWhitelabelStatus(id, status, {
     dispatchSetupEmail: !!dispatchSetupEmail,
     actor: req.user,
@@ -452,9 +447,6 @@ exports.createEventForHost = catchAsync(async (req, res) => {
 
   if (!targetUserId) throw new ValidationError('Target user is required');
 
-  // Get subscription for target user.
-  // H-10: was findOne with no filter/sort — would return whichever sub
-  // happened to come back first. Use canonical helper.
   const Subscription = require('../../../models/SubscriptionModel');
   const activeSubs = await Subscription.findActiveForUser(targetUserId);
   const subscription = activeSubs[0] || null;
@@ -576,9 +568,8 @@ exports.getPaymentSummary = catchAsync(async (req, res) => {
 exports.getPaymentDetail = catchAsync(async (req, res, next) => {
   const { AppError } = require('../../shared/errors');
   const detail = await adminService.getPaymentDetail(req.params.id);
-  // §15.2B: enforce whitelabel scope at the controller. WHITELABEL_ADMIN
-  // has PAYMENTS: FULL on their org, so the route-level RBAC alone would
-  // allow them to read any payment by id-guess.
+  // Enforce whitelabel scope here: WHITELABEL_ADMIN has PAYMENTS:FULL on their
+  // own org, so route-level RBAC alone would allow reading any payment by id-guess.
   const wlFilter = getWhitelabelIdFromFilter(req);
   if (
     wlFilter !== undefined &&

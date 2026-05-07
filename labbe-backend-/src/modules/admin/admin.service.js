@@ -18,8 +18,6 @@ const config = require('../../config');
 const email = require('../../../email');
 const { logAudit } = require('../../shared/utils/auditLog');
 const { guardExportMaxRows } = require('../../shared/utils/excelExport');
-// Phase 4c hardening — resolves legacy template ids to canonical
-// ObjectId refs so dual-write doesn't CastError.
 const {
   resolveTaqnyatTemplateRef,
   resolveVisualTemplateRef,
@@ -264,7 +262,6 @@ class AdminService {
       }
     }
 
-    // FLOW-04-F03: enforce maxHosts limit when creating under a whitelabel
     if (whitelabelId) {
       const whitelabelAdmin = await User.findById(whitelabelId).lean();
       if (whitelabelAdmin?.subscription) {
@@ -387,9 +384,6 @@ class AdminService {
       throw new NotFoundError('Plan');
     }
 
-    // H-10: previous code used `findOne({ userId })` with no status filter
-    // and no sort — would return cancelled subs at random. Use the
-    // canonical helper for the active-or-trial sub.
     const activeSubs = await Subscription.findActiveForUser(hostId);
     const subscription = activeSubs[0] || null;
 
@@ -658,7 +652,7 @@ class AdminService {
       throw new NotFoundError('Vendor');
     }
 
-    // FLOW-03-F04: state machine guard — PENDING is set at signup only
+    // PENDING is set at signup only; manual transitions are disallowed.
     if (vendorStatus === VENDOR_STATUS.PENDING) {
       throw new ValidationError('Cannot manually set vendor status to pending');
     }
@@ -681,7 +675,6 @@ class AdminService {
 
     await vendor.save();
 
-    // FLOW-24-F02: audit trail on vendor status transition
     logAudit({
       action: 'vendor.status_updated',
       actor: { _id: actorId },
@@ -708,7 +701,7 @@ class AdminService {
         priority: 'high',
       }).catch(console.error);
 
-      // FLOW-24-F01: send approval email so vendor is notified even without push notifications
+      // email ensures vendor is notified even when push delivery fails
       if (isApproved && vendor.email) {
         const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
         email.send.vendorApproval(vendor.email, {
@@ -926,9 +919,7 @@ class AdminService {
       }
     }
 
-    // TENANT-F01: every admin / moderator / whitelabel-admin / whitelabel-moderator
-    // must be tenant-scoped via a non-null whitelabelId. SUPER_ADMIN is the only
-    // role allowed to be cross-tenant; we never create it from this endpoint.
+    // SUPER_ADMIN is the only cross-tenant role; it is never created from this endpoint.
     if (!whitelabelId) {
       throw new ValidationError(
         'whitelabelId is required when creating an admin or moderator user'
@@ -1243,21 +1234,13 @@ class AdminService {
   /**
    * Update whitelabel status.
    *
-   * Phase 4b W0-EMAIL (D5): the Approve action on the admin dashboard now
-   * fires this with `{ status: 'active', dispatchSetupEmail: true }`. When
-   * BOTH conditions hold (status is `active` AND the caller asks for an
-   * email), we mint a fresh password setup token and send the existing
-   * `whitelabelApproval` email template — which has a `setupPasswordUrl`
-   * slot that's been waiting for an admin-side dispatch since Phase 4.
+   * When `{ status: 'active', dispatchSetupEmail: true }` is sent, a fresh
+   * setup-password token is minted and the `whitelabelApproval` email is
+   * dispatched. Re-approval regenerates the token, invalidating the prior link.
    *
-   * Re-approval (admin clicks Approve again on an already-active row)
-   * regenerates the token so the prior link is invalidated.
-   *
-   * Token + status are persisted in a single `whitelabel.save()`. If the
-   * email send itself fails we log it loudly and write a `partial` audit
-   * row but keep the new status / token so an admin can re-trigger from
-   * the UI. Email failures must not roll back the status flip — the
-   * platform is still approved either way.
+   * Token + status are persisted in a single `whitelabel.save()`. Email
+   * failures write a `partial` audit row but do not roll back the status
+   * flip — the platform is still approved either way.
    *
    * @param {string} whitelabelId
    * @param {string} status - one of USER_STATUS values
@@ -1336,10 +1319,7 @@ class AdminService {
       emailDispatch.attempted = true;
       try {
         const frontendUrl = config?.frontend?.url || '';
-        // Setup-password route lives at /[lang]/setup-password/[token]
-        // (Phase 4b W1-WL-EMAIL). Arabic-first matches the existing email
-        // copy; the FE redirects users to the correct dashboard after
-        // setup based on their role.
+        // Arabic-first path; the FE redirects to the correct dashboard after setup.
         const setupPasswordUrl = `${frontendUrl}/ar/setup-password/${setupToken}`;
         // Whitelabel admins navigate the platform admin tree at /admin-dash;
         // there is no dedicated /whitelabel route space (verified in
@@ -1416,7 +1396,6 @@ class AdminService {
       throw new NotFoundError('Plan');
     }
 
-    // H-10: was findOne({userId}) with no filter/sort. Use canonical helper.
     const activeWlSubs = await Subscription.findActiveForUser(whitelabelId);
     const subscription = activeWlSubs[0] || null;
 
@@ -1621,10 +1600,6 @@ class AdminService {
       throw new NotFoundError('Event');
     }
 
-    // Phase 4c W0-RENAME — admin update event accepts both legacy
-    // `invitationSettings.*` AND canonical top-level keys per the
-    // dual-write window. Top-level fields are passed through verbatim
-    // so the backend reads on either shape resolve correctly.
     const allowedFields = [
       'eventDetails',
       'invitationSettings',
@@ -1715,9 +1690,6 @@ class AdminService {
       }
     }
 
-    // Handle file upload — Phase 4c W0-RENAME dual-write to both
-    // legacy `invitationSettings.templateImage` AND canonical
-    // `visualTemplate.bakedImagePath`.
     if (context.file) {
       const templateImagePath = `/uploads/templates/${context.file.filename}`;
       event.invitationSettings = event.invitationSettings || {};
@@ -2006,13 +1978,11 @@ class AdminService {
   }
 
   /**
-   * Get all payments (backed by Payment collection — Phase 4 §7.1).
+   * Get all payments.
    *
-   * The legacy Subscription-backed implementation was replaced after
-   * the §4.10 backfill ran: every old subscription that had a
-   * `metadata.paymentTransactionId` now has a corresponding Payment
-   * row (status: paid, backfilledFrom: 'subscription'), so historical
-   * data is queryable via Payment directly.
+   * Historical subscriptions with a `metadata.paymentTransactionId` were
+   * backfilled into the Payment collection (status: paid, backfilledFrom:
+   * 'subscription'), so all data is queryable via Payment directly.
    */
   async getPayments({ page = 1, limit = 10, status, from, to, whitelabelId } = {}) {
     const Payment = require('../../../models/PaymentModel');
@@ -2093,11 +2063,7 @@ class AdminService {
     };
   }
 
-  /**
-   * Phase 4 §7.1 — payment summary widget for the admin dashboard.
-   * Returns the same `stats` block produced by `getPayments` without
-   * paginating the rows.
-   */
+  /** Payment summary widget — same stats block as getPayments without paginating rows. */
   async getPaymentSummary({ whitelabelId } = {}) {
     const Payment = require('../../../models/PaymentModel');
     const baseMatch = whitelabelId !== undefined ? { whitelabelId } : {};
@@ -2122,10 +2088,7 @@ class AdminService {
     return { totalRevenue, pending, completed, failed };
   }
 
-  /**
-   * Phase 4 §7.1 — single payment detail (admin payment-detail modal).
-   * Whitelabel scope is enforced by the controller (§15.2B).
-   */
+  /** Single payment detail. Whitelabel scope is enforced by the controller. */
   async getPaymentDetail(paymentId) {
     const Payment = require('../../../models/PaymentModel');
     const detail = await Payment.findById(paymentId)
@@ -2275,7 +2238,7 @@ class AdminService {
     const dateRange = this._buildDateRangeQuery(from, to);
     if (Object.keys(dateRange).length > 0) query.createdAt = dateRange;
 
-    // FLOW-28-F02: enforce export row cap
+    // enforce export row cap
     const count = await Event.countDocuments(query);
     guardExportMaxRows(count, 'events');
 
@@ -2306,7 +2269,7 @@ class AdminService {
     const dateRange = this._buildDateRangeQuery(from, to);
     if (Object.keys(dateRange).length > 0) query.createdAt = dateRange;
 
-    // FLOW-28-F02: enforce export row cap
+    // enforce export row cap
     const count = await User.countDocuments(query);
     guardExportMaxRows(count, 'whitelabels');
 
