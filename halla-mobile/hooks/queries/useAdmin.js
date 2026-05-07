@@ -1,15 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/authStore';
 import adminDashboardService from '../../services/adminDashboardService';
+import { getAdminDashboard } from '../../services/dashboardService';
 
 export function useAdminStats(period = 'month') {
   const token = useAuthStore((state) => state.token);
   return useQuery({
     queryKey: ['admin', 'stats', period],
-    queryFn: async () => {
-      const response = await adminDashboardService.dashboard.getStats(token, period);
-      return response.data?.data || response.data;
-    },
+    queryFn: () => getAdminDashboard(period),
     enabled: !!token,
     staleTime: 3 * 60 * 1000,
   });

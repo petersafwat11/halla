@@ -45,7 +45,7 @@ export default function DashboardCharts() {
   };
 
   const { data: responseData, isLoading, error } = useAdminDashboard(filters);
-  const data = responseData?.data || responseData;
+  const data = responseData?.data;
 
   const isWhitelabelRole =
     user?.role === "whitelabel_admin" || user?.role === "whitelabel_moderator";
@@ -141,20 +141,6 @@ export default function DashboardCharts() {
 
   return (
     <div className={styles.chartsGrid}>
-      <div className={styles.chartBox}>
-        <PieChartComponent
-          data={chartsData.revenue || {}}
-          type="revenue"
-          title={t("charts.revenue", "Revenue")}
-        />
-      </div>
-      <div className={styles.chartBox}>
-        <PieChartComponent
-          data={chartsData.tickets || {}}
-          type="tickets"
-          title={t("charts.tickets", "Tickets")}
-        />
-      </div>
       <div className={styles.chartBox}>
         <PieChartComponent
           data={chartsData.subscriptionsByPlan || {}}

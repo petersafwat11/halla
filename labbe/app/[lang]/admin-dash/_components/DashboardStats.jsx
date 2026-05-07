@@ -46,22 +46,6 @@ function getIconElement(iconKey) {
   );
 }
 
-const cardTitleKeys = {
-  hosts: "stats.totalHosts",
-  vendors: "stats.totalVendors",
-  events: "stats.totalEventsCard",
-  subscriptions: "stats.activeSubscriptions",
-  tickets: "stats.openTickets",
-};
-
-const cardSubtitleLabels = {
-  hosts: "stats.active",
-  vendors: "stats.pendingApproval",
-  events: "stats.active",
-  subscriptions: "stats.byPlan",
-  tickets: "stats.resolvedThisPeriod",
-};
-
 export default function DashboardStats() {
   const { t } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
@@ -76,7 +60,7 @@ export default function DashboardStats() {
   };
 
   const { data: responseData, isLoading, error } = useAdminDashboard(filters);
-  const data = responseData?.data || responseData;
+  const data = responseData?.data;
 
   const isWhitelabelRole =
     user?.role === "whitelabel_admin" || user?.role === "whitelabel_moderator";
@@ -112,7 +96,9 @@ export default function DashboardStats() {
           alt: "total-hosts",
           title: t("stats.whitelabel.totalClients", "Total Clients"),
           value: hostsCard.value ?? 0,
-          subtitle: hostsCard.subtitle || "",
+          subtitle: hostsCard.subtitle
+            ? t(hostsCard.subtitle.labelKey, { count: hostsCard.subtitle.count })
+            : "",
         },
         {
           id: "total-guests",
@@ -125,63 +111,19 @@ export default function DashboardStats() {
       ];
     }
 
-    if (backendCards.length > 0) {
-      return backendCards.map((card) => {
-        const titleKey = cardTitleKeys[card.id];
-        const subtitleLabelKey = cardSubtitleLabels[card.id];
-        const subtitleNumber = card.subtitle?.split(" ")[0] || "";
-        return {
-          id: card.id || card.title,
-          src: getIconElement(card.icon) || getIconElement("users"),
-          alt: card.id || card.title,
-          title: titleKey ? t(titleKey) : card.title,
-          value: card.value,
-          subtitle: subtitleLabelKey
-            ? t("stats.subtitleWithCount", "{{count}} {{label}}", { count: subtitleNumber, label: t(subtitleLabelKey) })
-            : card.subtitle,
-        };
-      });
-    }
-
-    const hostsData = data?.users?.hosts || data?.hosts || {};
-    const vendorsData = data?.users?.vendors || data?.vendors || {};
-    const eventsData = data?.events || {};
-    const ticketsData = data?.tickets || {};
-
-    return [
-      {
-        id: "total-hosts",
-        src: getIconElement("users"),
-        alt: "total-hosts",
-        title: t("stats.totalHosts", "Total Hosts"),
-        value: hostsData?.total || hostsData?.totalHosts || 0,
-        subtitle: t("stats.newThisPeriodCount", "{{count}} new this month", { count: hostsData?.newThisPeriod || 0 }),
-      },
-      {
-        id: "active-vendors",
-        src: getIconElement("store"),
-        alt: "active-vendors",
-        title: t("stats.activeVendors", "Active Vendors"),
-        value: vendorsData?.total || vendorsData?.totalVendors || 0,
-        subtitle: t("stats.pendingCount", "{{count}} pending", { count: vendorsData?.pending || vendorsData?.totalPending || 0 }),
-      },
-      {
-        id: "active-events",
-        src: getIconElement("calendar"),
-        alt: "active-events",
-        title: t("stats.activeEvents", "Active Events"),
-        value: eventsData?.active || eventsData?.endedPublishedEvents || 0,
-        subtitle: t("stats.totalEventsCount", "{{count}} total", { count: eventsData?.total || 0 }),
-      },
-      {
-        id: "open-tickets",
-        src: getIconElement("credit-card"),
-        alt: "open-tickets",
-        title: t("stats.openTickets", "Open Tickets"),
-        value: ticketsData?.open || ticketsData?.allTickets || 0,
-        subtitle: t("stats.resolvedCount", "{{count}} resolved", { count: ticketsData?.resolvedThisPeriod || ticketsData?.resolved || 0 }),
-      },
-    ];
+    return backendCards.map((card) => ({
+      id: card.id,
+      src: getIconElement(card.icon),
+      alt: card.id,
+      title: t(card.titleKey),
+      value: card.value,
+      subtitle: card.subtitle
+        ? t(card.subtitle.labelKey, { count: card.subtitle.count })
+        : "",
+      highlight: card.highlight
+        ? t(card.highlight.labelKey, { count: card.highlight.count })
+        : null,
+    }));
   }, [data, t, isWhitelabelRole]);
 
   if (isLoading) return <SimpleLoading />;

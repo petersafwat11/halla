@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/authStore';
 import * as eventsService2 from '../../services/eventsService2';
-import { getHostDashboard } from '../../services/dashboardService';
 
 /**
  * Hook to fetch user events with statistics
@@ -97,18 +96,3 @@ export function useSingleEventStats(eventId, opts) {
   });
 }
 
-/**
- * Hook to fetch host dashboard stats
- * Matches web frontend's useHostDashboard -> GET /dashboard/host
- * Returns: { stats, lastEvent, subscription, hasEvents }
- */
-export function useHostDashboard() {
-  const token = useAuthStore((state) => state.token);
-
-  return useQuery({
-    queryKey: ['dashboard', 'host'],
-    queryFn: () => getHostDashboard(token),
-    enabled: !!token,
-    staleTime: 5 * 60 * 1000,
-  });
-}

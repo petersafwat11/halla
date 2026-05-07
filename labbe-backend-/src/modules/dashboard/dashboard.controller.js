@@ -27,12 +27,3 @@ exports.getHostDashboard = catchAsync(async (req, res) => {
   const stats = await dashboardService.getHostDashboardStats(req.user._id);
   sendSuccess(res, stats);
 });
-
-/**
- * Get vendor dashboard
- * GET /api/v2/dashboard/vendor
- */
-exports.getVendorDashboard = catchAsync(async (req, res) => {
-  const stats = await dashboardService.getVendorDashboardStats(req.user._id);
-  sendSuccess(res, stats);
-});

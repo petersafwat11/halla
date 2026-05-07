@@ -90,8 +90,12 @@
     },
     "quota": {
       "remainingGuests": "ضيوف المناسبة المتبقين",
-      "compensationMessages": "الرسائل التعويضية المتبقية"
+      "compensationMessages": "الرسائل التعويضية المتبقية",
+      "unlimited": "غير محدود"
     }
+  },
+  "errors": {
+    "loadFailed": "تعذّر تحميل لوحة التحكم"
   },
   "subscription": {
     "eventLimitReached": "تم الوصول للحد الأقصى من المناسبات",

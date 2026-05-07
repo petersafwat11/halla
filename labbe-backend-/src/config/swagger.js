@@ -98,6 +98,187 @@ const swaggerOptions = {
           },
         },
 
+        // Dashboard schemas
+        StatsCard: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', example: 'hosts' },
+            icon: { type: 'string', example: 'users' },
+            titleKey: { type: 'string', example: 'stats.hosts.title' },
+            value: { type: 'integer', example: 42 },
+            subtitle: {
+              type: 'object',
+              properties: {
+                count: { type: 'integer', example: 30 },
+                labelKey: { type: 'string', example: 'stats.hosts.subtitle' },
+              },
+            },
+            highlight: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                count: { type: 'integer', example: 5 },
+                labelKey: { type: 'string', example: 'stats.hosts.highlight' },
+              },
+            },
+          },
+        },
+        AdminDashboardStats: {
+          type: 'object',
+          properties: {
+            statsCards: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/StatsCard' },
+            },
+            charts: {
+              type: 'object',
+              properties: {
+                subscriptionsByPlan: {
+                  type: 'object',
+                  additionalProperties: { type: 'integer' },
+                },
+                period: { type: 'string', example: 'month' },
+              },
+            },
+            recentActivity: {
+              type: 'object',
+              properties: {
+                hosts: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      name: { type: 'string' },
+                      email: { type: 'string', format: 'email' },
+                      status: { type: 'string' },
+                      createdAt: { type: 'string', format: 'date-time' },
+                    },
+                  },
+                },
+                events: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      title: { type: 'string' },
+                      date: { type: 'string', format: 'date-time' },
+                      status: { type: 'string' },
+                      host: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+            bestVendors: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  numberOfClicks: { type: 'integer' },
+                },
+              },
+            },
+            analytics: {
+              type: 'object',
+              nullable: true,
+              description: 'Whitelabel-tenant-only analytics block',
+              properties: {
+                monthlyEvents: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      month: { type: 'string' },
+                      year: { type: 'integer' },
+                      count: { type: 'integer' },
+                    },
+                  },
+                },
+                eventsByStatus: {
+                  type: 'object',
+                  properties: {
+                    draft: { type: 'integer' },
+                    scheduled: { type: 'integer' },
+                    live: { type: 'integer' },
+                    completed: { type: 'integer' },
+                  },
+                },
+                totalGuests: { type: 'integer' },
+                activeEvents: { type: 'integer' },
+              },
+            },
+            period: { type: 'string', example: 'month' },
+          },
+        },
+        HostDashboardStats: {
+          type: 'object',
+          properties: {
+            stats: {
+              type: 'object',
+              properties: {
+                totalEvents: { type: 'integer' },
+                activeEvents: { type: 'integer' },
+                draftEvents: { type: 'integer' },
+                endedEvents: { type: 'integer' },
+              },
+            },
+            lastEvent: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                id: { type: 'string' },
+                title: { type: 'string' },
+                date: { type: 'string', format: 'date-time' },
+                time: { type: 'string' },
+                location: { type: 'string' },
+                locationName: { type: 'string' },
+                status: { type: 'string' },
+                createdAt: { type: 'string', format: 'date-time' },
+                guestCount: { type: 'integer' },
+                responseRate: { type: 'string', example: '67%' },
+                stats: {
+                  type: 'object',
+                  properties: {
+                    total: { type: 'integer' },
+                    confirmed: { type: 'integer' },
+                    declined: { type: 'integer' },
+                    invited: { type: 'integer' },
+                    checkedIn: { type: 'integer' },
+                  },
+                },
+                quota: {
+                  type: 'object',
+                  properties: {
+                    remainingGuests: { type: 'integer', nullable: true, description: 'null = unlimited' },
+                    compensationMessages: { type: 'integer' },
+                  },
+                },
+                testMessageSent: { type: 'boolean' },
+                launchSettings: { type: 'object', nullable: true },
+                visualTemplate: { type: 'object', nullable: true },
+                taqnyatTemplate: { type: 'object', nullable: true },
+              },
+            },
+            subscription: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                planName: { type: 'string' },
+                status: { type: 'string' },
+                expiresAt: { type: 'string', format: 'date-time' },
+                eventsUsed: { type: 'integer' },
+                eventsLimit: { type: 'integer' },
+                guestsUsed: { type: 'integer' },
+                guestsLimit: { type: 'integer', nullable: true, description: 'null = unlimited' },
+              },
+            },
+            hasEvents: { type: 'boolean' },
+          },
+        },
+
         // User Models
         User: {
           type: 'object',

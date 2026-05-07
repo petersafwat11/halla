@@ -27,7 +27,33 @@
     "resolved": "resolved",
     "pendingApproval": "pending approval",
     "byPlan": "by plan",
-    "resolvedThisPeriod": "resolved this period"
+    "resolvedThisPeriod": "resolved this period",
+    "hosts": {
+      "title": "Total Hosts",
+      "subtitle": "{{count}} active",
+      "highlight": "+{{count}} new"
+    },
+    "vendors": {
+      "title": "Total Vendors",
+      "subtitle": "{{count}} pending approval",
+      "highlight": "+{{count}} new"
+    },
+    "events": {
+      "title": "Total Events",
+      "subtitle": "{{count}} active",
+      "highlight": "{{count}}% vs last period"
+    },
+    "subscriptions": {
+      "title": "Active Subscriptions",
+      "subtitle": "{{count}} by plan"
+    },
+    "tickets": {
+      "title": "Open Tickets",
+      "subtitle": "{{count}} resolved this period"
+    }
+  },
+  "errors": {
+    "loadFailed": "Failed to load dashboard"
   },
   "charts": {
     "guestResponse": "Guest Response",
