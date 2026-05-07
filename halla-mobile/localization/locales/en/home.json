@@ -30,5 +30,40 @@
     "successMessage": "Notification sent to the team",
     "errorTitle": "Error",
     "errorMessage": "Failed to send notification"
+  },
+  "lastEvent": {
+    "untitled": "Untitled event",
+    "guests": "guests",
+    "noResponse": "No response",
+    "declined": "Declined",
+    "approved": "Approved",
+    "quota": {
+      "remainingGuests": "Remaining guests",
+      "compensationMessages": "Compensation messages",
+      "unlimited": "Unlimited"
+    },
+    "buttons": {
+      "testMessage": "Test message",
+      "scheduleEvent": "Schedule event",
+      "notifyStaff": "Notify staff",
+      "notifying": "Sending...",
+      "viewStats": "View stats",
+      "sharePostEvent": "Share post-event",
+      "editEvent": "Edit event"
+    },
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "completed": "Completed",
+      "suspended": "Suspended",
+      "default": "Saved"
+    },
+    "dropdown": {
+      "eventDetails": "Event details",
+      "guestList": "Guest list",
+      "invitationDesign": "Invitation design",
+      "invitationCustomization": "Invitation customization"
+    }
   }
 }

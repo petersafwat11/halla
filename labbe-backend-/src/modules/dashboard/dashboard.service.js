@@ -10,10 +10,8 @@ const {
   EVENT_STATUS,
   TICKET_STATUS,
   SUBSCRIPTION_STATUS,
-  SERVICE_STATUS,
 } = require('../../shared/constants');
 
-// Import existing models during migration
 const User = require('../../../models/UserModel');
 const Event = require('../../../models/EventModel');
 const Subscription = require('../../../models/SubscriptionModel');
@@ -132,9 +130,8 @@ class DashboardService {
       ]),
       Ticket.countDocuments({ status: { $in: [TICKET_STATUS.OPEN, TICKET_STATUS.IN_PROGRESS] }, ...whitelabelFilter }),
       Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED, updatedAt: { $gte: startDate, $lte: endDate }, ...whitelabelFilter }),
-      User.find({ role: ROLES.HOST, ...whitelabelFilter }).select('username name email createdAt status').sort({ createdAt: -1 }).limit(5),
-      Event.find({ ...whitelabelFilter }).select('eventDetails.title eventDetails.date status host').populate('host', 'username name').sort({ createdAt: -1 }).limit(5),
-      // Top 5 vendors by total service views
+      User.find({ role: ROLES.HOST, ...whitelabelFilter }).select('username name email createdAt status').sort({ createdAt: -1 }).limit(5).lean(),
+      Event.find({ ...whitelabelFilter }).select('eventDetails.title eventDetails.date status host').populate('host', 'username name').sort({ createdAt: -1 }).limit(5).lean(),
       Service.aggregate([
         { $group: { _id: '$vendor', totalViews: { $sum: { $ifNull: ['$views', 0] } } } },
         { $sort: { totalViews: -1 } },
@@ -160,8 +157,7 @@ class DashboardService {
       subscriptionsByPlanFormatted[item._id || 'unknown'] = item.count;
     });
 
-    // --- Whitelabel-specific analytics ---
-    // Only runs for whitelabel tenants (whitelabelId is a real ObjectId, not null)
+    // Only runs for whitelabel tenants (whitelabelId is a real ObjectId, not null).
     let analytics = null;
     const isWhitelabelTenant = whitelabelFilter?.whitelabelId != null;
 
@@ -214,56 +210,65 @@ class DashboardService {
       };
     }
 
+    const totalSubscriptionsByPlan = Object.values(subscriptionsByPlanFormatted).reduce((a, b) => a + b, 0);
+
     return {
-      // For StatsCards component - pre-mapped array ready for rendering
+      // statsCards items use translation keys; clients render via t(titleKey) and
+      // t(subtitle.labelKey, { count: subtitle.count }). highlight is null when
+      // there's nothing to show.
       statsCards: [
         {
           id: 'hosts',
           icon: 'users',
-          title: 'Total Hosts',
+          titleKey: 'stats.hosts.title',
           value: totalHosts,
-          subtitle: `${activeHosts} active`,
-          highlight: newHostsThisPeriod > 0 ? `+${newHostsThisPeriod} new` : null,
+          subtitle: { count: activeHosts, labelKey: 'stats.hosts.subtitle' },
+          highlight: newHostsThisPeriod > 0
+            ? { count: newHostsThisPeriod, labelKey: 'stats.hosts.highlight' }
+            : null,
         },
         {
           id: 'vendors',
           icon: 'store',
-          title: 'Total Vendors',
+          titleKey: 'stats.vendors.title',
           value: totalVendors,
-          subtitle: `${pendingVendors} pending approval`,
-          highlight: newVendorsThisPeriod > 0 ? `+${newVendorsThisPeriod} new` : null,
+          subtitle: { count: pendingVendors, labelKey: 'stats.vendors.subtitle' },
+          highlight: newVendorsThisPeriod > 0
+            ? { count: newVendorsThisPeriod, labelKey: 'stats.vendors.highlight' }
+            : null,
         },
         {
           id: 'events',
           icon: 'calendar',
-          title: 'Total Events',
+          titleKey: 'stats.events.title',
           value: totalEvents,
-          subtitle: `${activeEvents} active`,
-          highlight: this.calculateChange(newEventsThisPeriod, newEventsPreviousPeriod),
+          subtitle: { count: activeEvents, labelKey: 'stats.events.subtitle' },
+          highlight: {
+            count: this.calculateChange(newEventsThisPeriod, newEventsPreviousPeriod),
+            labelKey: 'stats.events.highlight',
+          },
         },
         {
           id: 'subscriptions',
           icon: 'credit-card',
-          title: 'Active Subscriptions',
+          titleKey: 'stats.subscriptions.title',
           value: activeSubscriptions,
-          subtitle: `${Object.values(subscriptionsByPlanFormatted).reduce((a, b) => a + b, 0)} by plan`,
+          subtitle: { count: totalSubscriptionsByPlan, labelKey: 'stats.subscriptions.subtitle' },
           highlight: null,
         },
         {
           id: 'tickets',
           icon: 'ticket',
-          title: 'Open Tickets',
+          titleKey: 'stats.tickets.title',
           value: openTickets,
-          subtitle: `${resolvedTicketsThisPeriod} resolved this period`,
+          subtitle: { count: resolvedTicketsThisPeriod, labelKey: 'stats.tickets.subtitle' },
           highlight: null,
         },
       ],
-      // Charts data
       charts: {
         subscriptionsByPlan: subscriptionsByPlanFormatted,
         period,
       },
-      // Tables data
       recentActivity: {
         hosts: recentHosts.map((h) => ({
           id: h._id,
@@ -280,7 +285,6 @@ class DashboardService {
           host: e.host?.name || e.host?.username,
         })),
       },
-      // Top vendors by service views — used by both web Bottom component and mobile AdminDashboardScreen
       bestVendors: topVendorsByViews.map((v) => ({
         name: v.name || 'Unknown',
         numberOfClicks: v.numberOfClicks || 0,
@@ -308,18 +312,17 @@ class DashboardService {
       Event.countDocuments({ host: userId, status: { $in: [EVENT_STATUS.SCHEDULED, EVENT_STATUS.LIVE] } }),
       Event.countDocuments({ host: userId, status: EVENT_STATUS.COMPLETED }),
       Event.countDocuments({ host: userId, status: EVENT_STATUS.DRAFT }),
-      Subscription.findOne({ userId, status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } }).populate('planId'),
-      // Get the last created event with full details
+      Subscription.findOne({ userId, status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } }).populate('planId').lean(),
       Event.findOne({ host: userId })
         .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings invitationSettings testMessageSent visualTemplate taqnyatTemplate guestReplies')
         .sort({ createdAt: -1 })
-        .populate('guestList'),
+        .populate('guestList')
+        .lean(),
     ]);
 
-    // Get guest stats for the last event if it exists
     let lastEventData = null;
     if (lastEvent) {
-      const guests = await Guest.find({ event: lastEvent._id });
+      const guests = await Guest.find({ event: lastEvent._id }).lean();
 
       const guestStats = {
         total: guests.length,
@@ -333,14 +336,18 @@ class DashboardService {
         ? Math.round(((guestStats.confirmed + guestStats.declined) / guestStats.total) * 100)
         : 0;
 
-      // Calculate remaining guests quota from actual guests in event
+      // Plan schema field is `maxInvitesPerEvent`. `null` means unlimited.
       const planLimits = subscription?.planId?.limits || {};
       const planFeatures = subscription?.planId?.features || {};
-      const maxGuestsPerEvent = planLimits.maxGuestsPerEvent || 100;
-      const remainingGuests = Math.max(0, maxGuestsPerEvent - guests.length);
-      const compensationMessages = planFeatures.hasCompensationInvites
-        ? Math.floor((planFeatures.compensationPercentage || 10) / 100 * maxGuestsPerEvent)
-        : 0;
+      const maxInvitesPerEvent = planLimits.maxInvitesPerEvent ?? null;
+      const remainingGuests =
+        maxInvitesPerEvent == null
+          ? null
+          : Math.max(0, maxInvitesPerEvent - guests.length);
+      const compensationMessages =
+        planFeatures.hasCompensationInvites && maxInvitesPerEvent != null
+          ? Math.floor(((planFeatures.compensationPercentage ?? 10) / 100) * maxInvitesPerEvent)
+          : 0;
 
       lastEventData = {
         id: lastEvent._id,
@@ -360,10 +367,7 @@ class DashboardService {
         },
         testMessageSent: lastEvent.testMessageSent || false,
         launchSettings: lastEvent.launchSettings || null,
-        // Phase 4c W0-RENAME — emit BOTH legacy `invitationSettings`
-        // shape (for older clients) AND the canonical top-level keys
-        // (for new readers). Resolves templateImage from the canonical
-        // `visualTemplate.bakedImagePath` first, falls back to legacy.
+        // Emits both legacy and canonical template fields during the consumer-migration window.
         invitationSettings: {
           selectedTemplate: lastEvent.invitationSettings?.selectedTemplate || null,
           templateImage:
@@ -377,77 +381,29 @@ class DashboardService {
     }
 
     return {
-      // For StatsCards component - direct use
       stats: {
         totalEvents,
         activeEvents,
         draftEvents,
         endedEvents: completedEvents,
       },
-      // For LastEventStats component - pre-mapped, no calculations needed
       lastEvent: lastEventData,
-      // For HeroSection component
+      // `guestsLimit: null` means unlimited.
       subscription: subscription
         ? {
           planName: subscription.planId?.name || 'Unknown',
           status: subscription.status,
           expiresAt: subscription.endDate,
-          eventsUsed: subscription.usage?.eventsCreated || 0,
-          eventsLimit: subscription.planId?.limits?.maxEvents || subscription.planId?.limits?.events || 1,
-          guestsUsed: subscription.usage?.guestsUsed || 0,
-          guestsLimit: subscription.planId?.limits?.maxGuestsPerEvent || subscription.planId?.limits?.guests || 100,
+          eventsUsed: subscription.usage?.eventsCreated ?? 0,
+          eventsLimit: subscription.planId?.limits?.maxEvents ?? 1,
+          guestsUsed: subscription.usage?.guestsUsed ?? 0,
+          guestsLimit: subscription.planId?.limits?.maxInvitesPerEvent ?? null,
         }
         : null,
-      // Templates data (if needed)
       hasEvents: totalEvents > 0,
     };
   }
 
-  /**
-   * Get vendor dashboard stats
-   * @param {string} userId
-   * @returns {Promise<Object>}
-   */
-  async getVendorDashboardStats(userId) {
-    const user = await User.findById(userId).select('profile.vendorData services');
-
-    // Get vendor services statistics
-    const services = await Service.find({ vendor: userId });
-
-    const totalServices = services.length;
-    const activeServices = services.filter(s => s.status === SERVICE_STATUS.ACTIVE).length;
-    const inactiveServices = services.filter(s => s.status === SERVICE_STATUS.INACTIVE || s.status === SERVICE_STATUS.DISABLED).length;
-
-    // Calculate rating from services
-    const totalRating = services.reduce((sum, s) => sum + (s.rating || 0), 0);
-    const averageRating = totalServices > 0 ? (totalRating / totalServices).toFixed(1) : '0.0';
-
-    return {
-      // For VendorStatsCards component - direct use
-      stats: {
-        totalServices,
-        activeServices,
-        inactiveServices,
-        rating: averageRating,
-      },
-      // For profile display
-      profile: {
-        brandName: user?.profile?.vendorData?.brandName,
-        status: user?.profile?.vendorData?.vendorStatus,
-        rating: averageRating,
-        reviewCount: user?.profile?.vendorData?.reviewCount || 0,
-      },
-      // Services list for the page
-      services: services.map(s => ({
-        id: s._id,
-        name: s.name,
-        status: s.status,
-        rating: s.rating || 0,
-        views: s.views || 0,
-        inquiries: s.inquiries || 0,
-      })),
-    };
-  }
 }
 
 module.exports = new DashboardService();

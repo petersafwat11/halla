@@ -2,6 +2,7 @@
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import HostDashboardContent from "./HostDashboardContent";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 
 export default async function HostPage({ params }) {
   const cookieStore = await cookies();
@@ -25,7 +26,9 @@ export default async function HostPage({ params }) {
   }
   return (
     <QueryClientServerProvider queryClient={queryClient}>
-      <HostDashboardContent />
+      <ErrorBoundary>
+        <HostDashboardContent />
+      </ErrorBoundary>
     </QueryClientServerProvider>
   );
 }

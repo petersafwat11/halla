@@ -40,7 +40,6 @@ export const ENDPOINTS = {
   DASHBOARD: {
     HOST: "/dashboard/host",
     ADMIN: "/dashboard/admin",
-    VENDOR: "/dashboard/vendor",
   },
 
   // Plans endpoints

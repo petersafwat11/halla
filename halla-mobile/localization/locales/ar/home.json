@@ -30,5 +30,40 @@
     "successMessage": "تم إرسال الإشعار للفريق",
     "errorTitle": "خطأ",
     "errorMessage": "فشل إرسال الإشعار"
+  },
+  "lastEvent": {
+    "untitled": "مناسبة بدون عنوان",
+    "guests": "ضيف",
+    "noResponse": "لم يرد",
+    "declined": "معتذر",
+    "approved": "موافق",
+    "quota": {
+      "remainingGuests": "ضيوف المناسبة المتبقين",
+      "compensationMessages": "الرسائل التعويضية المتبقية",
+      "unlimited": "غير محدود"
+    },
+    "buttons": {
+      "testMessage": "رسالة تجريبية",
+      "scheduleEvent": "جدولة المناسبة",
+      "notifyStaff": "إشعار الفريق",
+      "notifying": "جارٍ الإرسال...",
+      "viewStats": "عرض الإحصائيات",
+      "sharePostEvent": "مشاركة ما بعد المناسبة",
+      "editEvent": "تعديل المناسبة"
+    },
+    "status": {
+      "draft": "مسودة",
+      "scheduled": "مجدول",
+      "live": "نشطة",
+      "completed": "مكتمل",
+      "suspended": "موقوف",
+      "default": "محفوظة"
+    },
+    "dropdown": {
+      "eventDetails": "تفاصيل المناسبة",
+      "guestList": "قائمة الضيوف",
+      "invitationDesign": "تصميم الدعوة",
+      "invitationCustomization": "تخصيص الدعوة"
+    }
   }
 }

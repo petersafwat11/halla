@@ -273,7 +273,6 @@ export const API_PATHS = {
   dashboard: {
     getAdminDashboard: '/dashboard/admin',
     getHostDashboard: '/dashboard/host',
-    getVendorDashboard: '/dashboard/vendor',
   },
 
   // ============================================

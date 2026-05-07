@@ -1,20 +1,13 @@
 /**
- * Admin Dashboard Service
- * Provides API integration for admin dashboard functionality.
- *
- * Routed through `apiFetch` so admin requests inherit the centralized
- * 401-refresh + 30 s timeout. Token args are accepted but ignored —
- * `apiFetch` reads the in-memory access token directly.
- *
- * The admin endpoints live at both `/api/admin/*` and `/api/v2/admin/*`
- * (dual mount in backend `app.js`); `apiFetch` uses `/api/v2` so the paths
- * here remain unchanged.
+ * Admin service: hosts, vendors, moderators, events, tickets, payments,
+ * plans, whitelabels, discounts. Token args are accepted but ignored —
+ * apiFetch reads the in-memory access token directly.
  */
 
 import { Linking } from "react-native";
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
 import { apiFetch } from "./apiClient";
-import { useAuthStore } from "../stores/authStore"; // getState() for non-hook export URL
+import { useAuthStore } from "../stores/authStore";
 
 const BASE_URL = API_BASE_URL;
 
@@ -75,15 +68,6 @@ const openExportUrl = async (path, filters = {}) => {
   await Linking.openURL(url);
 };
 
-// ─── Dashboard ────────────────────────────────────────────────────────────────
-export const dashboard = {
-  getStats: async (token, period = 'month') => {
-    const qs = period ? `?period=${period}` : '';
-    return apiRequest(`${ENDPOINTS.DASHBOARD.ADMIN}${qs}`);
-  },
-};
-
-// ─── Hosts ────────────────────────────────────────────────────────────────────
 export const hosts = {
   getAll: async (token, params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -123,7 +107,6 @@ export const hosts = {
     apiRequest(`${ENDPOINTS.ADMIN.HOSTS.VERIFY_PHONE}?phoneNumber=${encodeURIComponent(phoneNumber)}`),
 };
 
-// ─── Moderators ───────────────────────────────────────────────────────────────
 export const moderators = {
   getAll: async (token, params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -152,7 +135,6 @@ export const moderators = {
     openExportUrl(ENDPOINTS.ADMIN.MODERATORS.EXPORT, filters),
 };
 
-// ─── Vendors ──────────────────────────────────────────────────────────────────
 export const vendors = {
   getAll: async (token, params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -187,7 +169,6 @@ export const vendors = {
     openExportUrl(ENDPOINTS.ADMIN.VENDORS.EXPORT, filters),
 };
 
-// ─── Events ───────────────────────────────────────────────────────────────────
 export const events = {
   getAll: async (token, params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -219,7 +200,6 @@ export const events = {
     openExportUrl(ENDPOINTS.ADMIN.EVENTS.EXPORT, filters),
 };
 
-// ─── Tickets ──────────────────────────────────────────────────────────────────
 export const tickets = {
   getAll: async (token, params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -248,7 +228,6 @@ export const tickets = {
     openExportUrl("/tickets/export", filters),
 };
 
-// ─── Payments ─────────────────────────────────────────────────────────────────
 export const payments = {
   getAll: async (token, params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -267,7 +246,6 @@ export const payments = {
     openExportUrl(ENDPOINTS.ADMIN.PAYMENTS.EXPORT, filters),
 };
 
-// ─── Plans ────────────────────────────────────────────────────────────────────
 export const plans = {
   getAll: async (token) => apiRequest(ENDPOINTS.PLANS.ALL),
   getHostPlans: async (token) => apiRequest(ENDPOINTS.PLANS.HOST_PLANS),
@@ -278,18 +256,13 @@ export const plans = {
   deletePlan: async (token, code) => apiRequest(ENDPOINTS.ADMIN.PLANS.BY_CODE(code), "DELETE"),
 };
 
-// ─── Subscriptions (admin) ────────────────────────────────────────────────────
-// SUPER_ADMIN can assign a subscription to a host directly; audit log is wired
-// server-side.
+// SUPER_ADMIN assigns a subscription to a host directly; audit log is wired server-side.
 export const subscriptionsAdmin = {
   assign: async (token, data) =>
     apiRequest(ENDPOINTS.ADMIN.SUBSCRIPTIONS.ASSIGN, "POST", data),
 };
 
-// ─── Addons (legacy) ──────────────────────────────────────────────────────────
-// New mobile code should use services/addonsService.js + the useAddons /
-// useCheckout hooks. This export is kept for any forgotten admin caller; both
-// methods opt into idempotency via Idempotency-Key when supplied.
+// Legacy: prefer services/addonsService.js + useAddons / useCheckout in new code.
 export const addons = {
   purchase: async (token, data, idempotencyKey = null) => {
     const headers = idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined;
@@ -307,7 +280,6 @@ export const addons = {
   },
 };
 
-// ─── Whitelabels ──────────────────────────────────────────────────────────────
 export const whitelabels = {
   getAll: async (token, params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -342,7 +314,6 @@ export const whitelabels = {
     apiRequest(ENDPOINTS.ADMIN.WHITELABELS.FEATURES(whitelabelId), "PATCH", { feature: featureName, enabled }),
 };
 
-// ─── Discounts ────────────────────────────────────────────────────────────────
 export const discounts = {
   getAll: async (token, params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -366,7 +337,6 @@ export const discounts = {
 };
 
 export default {
-  dashboard,
   hosts,
   moderators,
   vendors,

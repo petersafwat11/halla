@@ -17,7 +17,9 @@ const dashboardController = require('./dashboard.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { restrictTo, requirePageAccess } = require('../../shared/middleware/rbac');
 const { whitelabelIsolation } = require('../../shared/middleware/whitelabel');
+const { validateZod } = require('../../shared/middleware/validation');
 const { ROLES, ADMIN_PAGES } = require('../../shared/constants');
+const { adminDashboardQuery } = require('./dashboard.validation');
 
 router.use(protect);
 
@@ -35,14 +37,32 @@ router.use(protect);
  *         name: period
  *         schema:
  *           type: string
- *         description: Time period for stats filtering
+ *           enum: [today, week, month, quarter, year]
+ *         description: Predefined period window for the stats. Ignored if `from` or `to` is provided.
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: ISO 8601 start of custom range (must be <= `to`).
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: ISO 8601 end of custom range.
  *     responses:
  *       200:
  *         description: Admin dashboard stats retrieved successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/AdminDashboardStats'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -52,6 +72,7 @@ router.get(
   '/admin',
   requirePageAccess(ADMIN_PAGES.DASHBOARD, 'view'),
   whitelabelIsolation,
+  validateZod(adminDashboardQuery, 'query'),
   dashboardController.getAdminDashboard
 );
 
@@ -70,7 +91,12 @@ router.get(
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/HostDashboardStats'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -80,33 +106,6 @@ router.get(
   '/host',
   restrictTo(ROLES.HOST),
   dashboardController.getHostDashboard
-);
-
-/**
- * @swagger
- * /dashboard/vendor:
- *   get:
- *     summary: Get vendor dashboard stats
- *     description: Get dashboard statistics for the authenticated vendor user.
- *     tags: [Dashboard]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Vendor dashboard stats retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       403:
- *         $ref: '#/components/responses/Forbidden'
- */
-router.get(
-  '/vendor',
-  restrictTo(ROLES.VENDOR),
-  dashboardController.getVendorDashboard
 );
 
 module.exports = router;

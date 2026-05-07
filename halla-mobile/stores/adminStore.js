@@ -372,26 +372,6 @@ export const useAdminStore = create((set, get) => ({
   // ============================================
 
   /**
-   * Fetch dashboard stats
-   */
-  fetchStats: async (token) => {
-    set({ loading: true, error: null });
-    try {
-      const result = await adminDashboardService.dashboard.getStats(token);
-      if (result.success) {
-        set({ stats: result.data, loading: false });
-        return { success: true };
-      } else {
-        set({ error: result.error, loading: false });
-        return { success: false, error: result.error };
-      }
-    } catch (error) {
-      set({ error: error.message, loading: false });
-      return { success: false, error: error.message };
-    }
-  },
-
-  /**
    * Fetch hosts
    */
   fetchHosts: async (token, params = {}) => {

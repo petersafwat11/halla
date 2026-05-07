@@ -1,5 +1,6 @@
 // Query Hooks
 export * from './queries/useEvents';
+export * from './queries/useDashboard';
 export * from './queries/usePlans';
 export * from './queries/useTickets';
 export * from './queries/useNotifications';

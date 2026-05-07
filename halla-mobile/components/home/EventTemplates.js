@@ -331,24 +331,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#FFF",
   },
-  //   indicatorsContainer: {
-  //     flexDirection: "row",
-  //     justifyContent: "center",
-  //     alignItems: "center",
-  //     gap: 8,
-  //     paddingVertical: 8,
-  //     paddingHorizontal: 4,
-  //     marginTop: 8,
-  //   },
-  //   indicator: {
-  //     width: 8,
-  //     height: 8,
-  //     borderRadius: 4,
-  //     backgroundColor: "rgba(0, 0, 0, 0.1)",
-  //   },
-  //   indicatorActive: {
-  //     backgroundColor: "#C28E5C",
-  //   }
 });
 
 export default EventTemplates;

@@ -52,6 +52,31 @@
       "clicks": "نقرة"
     }
   },
+  "stats": {
+    "hosts": {
+      "title": "إجمالي المضيفين",
+      "subtitle": "{{count}} نشط",
+      "highlight": "+{{count}} جديد"
+    },
+    "vendors": {
+      "title": "إجمالي الموردين",
+      "subtitle": "{{count}} قيد الموافقة",
+      "highlight": "+{{count}} جديد"
+    },
+    "events": {
+      "title": "إجمالي المناسبات",
+      "subtitle": "{{count}} نشطة",
+      "highlight": "{{count}}% مقارنة بالفترة السابقة"
+    },
+    "subscriptions": {
+      "title": "الاشتراكات النشطة",
+      "subtitle": "{{count}} حسب الخطة"
+    },
+    "tickets": {
+      "title": "التذاكر المفتوحة",
+      "subtitle": "{{count}} محلولة هذه الفترة"
+    }
+  },
   "hosts": {
     "title": "المضيفون",
     "addHost": "إضافة مضيف",

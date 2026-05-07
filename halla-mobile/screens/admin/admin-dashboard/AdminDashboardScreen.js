@@ -36,13 +36,22 @@ const AdminDashboardScreen = () => {
     if (error) toast.error(t("common.error"));
   }, [error]);
 
-  const statsCards = data?.statsCards?.length
-    ? data.statsCards
+  const backendCards = data?.statsCards?.length ? data.statsCards : null;
+  const statsCards = backendCards
+    ? backendCards.map((card) => ({
+        id: card.id,
+        icon: card.icon,
+        title: card.titleKey ? t(card.titleKey) : card.title,
+        value: card.value ?? "—",
+        subtitle: card.subtitle?.labelKey
+          ? t(card.subtitle.labelKey, { count: card.subtitle.count })
+          : null,
+      }))
     : [
-        { id: "hosts", icon: "users", title: t("dashboard.stats.totalHosts"), value: "—", subtitle: null },
-        { id: "events", icon: "calendar", title: t("dashboard.stats.activeEvents"), value: "—", subtitle: null },
-        { id: "vendors", icon: "store", title: t("dashboard.stats.totalVendors"), value: "—", subtitle: null },
-        { id: "tickets", icon: "ticket", title: t("dashboard.stats.openTickets"), value: "—", subtitle: null },
+        { id: "hosts", icon: "users", title: t("stats.hosts.title"), value: "—", subtitle: null },
+        { id: "events", icon: "calendar", title: t("stats.events.title"), value: "—", subtitle: null },
+        { id: "vendors", icon: "store", title: t("stats.vendors.title"), value: "—", subtitle: null },
+        { id: "tickets", icon: "ticket", title: t("stats.tickets.title"), value: "—", subtitle: null },
       ];
 
   const subscriptionsByPlan = data?.charts?.subscriptionsByPlan ?? {};

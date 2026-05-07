@@ -9,6 +9,7 @@ import StatsCards from "@/ui/host/main-page/StatsCards";
 import EventTemplatesSection from "@/ui/host/main-page/EventTemplatesSection";
 import LastEventStats from "@/ui/host/main-page/latsEventStats/LastEventStats";
 import Button from "@/ui/commen/button/Button";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
 export default function HostDashboardContent() {
   const { data, isLoading, error } = useHostDashboard();
@@ -16,15 +17,17 @@ export default function HostDashboardContent() {
   const router = useRouter();
   const { lang } = useParams();
 
-  if (isLoading) {
-    return <div className={styles.loading}>Loading...</div>;
-  }
+  if (isLoading) return <SimpleLoading />;
 
   if (error) {
-    return <div className={styles.error}>Error: {error.message}</div>;
+    return (
+      <div className={styles.error}>
+        <p>{t("errors.loadFailed", "Failed to load dashboard")}</p>
+      </div>
+    );
   }
 
-  const dashData = data?.data || data;
+  const dashData = data?.data;
   const hasEvents = dashData?.hasEvents || false;
   const stats = dashData?.stats || {};
 

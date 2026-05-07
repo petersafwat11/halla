@@ -59,7 +59,7 @@ export default function RecentActivity() {
   };
 
   const { data: responseData, isLoading, error } = useAdminDashboard(filters);
-  const data = responseData?.data || responseData;
+  const data = responseData?.data;
 
   const isWhitelabelAdmin = user?.role === "whitelabel_admin";
 
@@ -125,11 +125,11 @@ export default function RecentActivity() {
             t("tables.recentHosts.columns.createdAt", "Date"),
           ]}
           data={(data?.recentActivity?.hosts || []).map((host) => ({
-            id: host.id || host._id,
-            name: host.username || host.name || "-",
-            email: host.email || "-",
-            status: host.status || "active",
-            createdAt: host.createdAt || host.created_at || new Date().toISOString(),
+            id: host.id,
+            name: host.name,
+            email: host.email,
+            status: host.status,
+            createdAt: host.createdAt,
           }))}
           renderCell={renderStatusCell}
           showSearch={false}
@@ -146,11 +146,11 @@ export default function RecentActivity() {
             t("tables.recentEvents.columns.status", "Status"),
           ]}
           data={(data?.recentActivity?.events || []).map((event) => ({
-            id: event.id || event._id,
-            title: event.title || "-",
-            host: event.host || "-",
+            id: event.id,
+            title: event.title,
+            host: event.host,
             date: event.date,
-            status: event.status || "draft",
+            status: event.status,
           }))}
           renderCell={renderEventStatusCell}
           showSearch={false}
@@ -159,12 +159,7 @@ export default function RecentActivity() {
           showCheckboxes={false}
         />
       </div>
-      {!isWhitelabelAdmin && (
-        <Bottom
-          bestVendors={data?.bestVendors}
-          lastEvents={data?.recentActivity?.events}
-        />
-      )}
+      {!isWhitelabelAdmin && <Bottom bestVendors={data?.bestVendors} />}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import DashboardPageHeader from "./_components/DashboardPageHeader";
 import DashboardStats from "./_components/DashboardStats";
 import DashboardCharts from "./_components/DashboardCharts";
 import RecentActivity from "./_components/RecentActivity";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import styles from "./page.module.css";
 
 export default async function AdminDashboardPage({ params, searchParams }) {
@@ -43,12 +44,14 @@ export default async function AdminDashboardPage({ params, searchParams }) {
 
   return (
     <QueryClientServerProvider queryClient={queryClient}>
-      <div className={styles.container}>
-        <DashboardPageHeader lang={lang} />
-        <DashboardStats lang={lang} />
-        <DashboardCharts lang={lang} />
-        <RecentActivity lang={lang} />
-      </div>
+      <ErrorBoundary>
+        <div className={styles.container}>
+          <DashboardPageHeader lang={lang} />
+          <DashboardStats lang={lang} />
+          <DashboardCharts lang={lang} />
+          <RecentActivity lang={lang} />
+        </div>
+      </ErrorBoundary>
     </QueryClientServerProvider>
   );
 }

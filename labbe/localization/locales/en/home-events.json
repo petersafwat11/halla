@@ -87,8 +87,12 @@
     },
     "quota": {
       "remainingGuests": "Remaining Guests",
-      "compensationMessages": "Remaining Compensation Messages"
+      "compensationMessages": "Remaining Compensation Messages",
+      "unlimited": "Unlimited"
     }
+  },
+  "errors": {
+    "loadFailed": "Failed to load dashboard"
   },
   "subscription": {
     "eventLimitReached": "Event Limit Reached",
