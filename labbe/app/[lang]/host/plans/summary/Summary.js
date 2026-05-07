@@ -45,10 +45,16 @@ const Summary = ({
     setDiscountError("");
     setDiscountLoading(true);
     try {
+      // Use the plan's canonical planType (e.g. "host_basic_monthly") rather
+      // than the family ("basic"/"premium") so the discount's
+      // applicablePlanTypes check matches the backend's. Falls back to family
+      // if the plan object pre-dates that field.
+      const planTypeKey =
+        selectedPlan?.planType || selectedPlan?.type || planFamily || null;
       const response = await discountsAPI.validate(
         discountCode.trim(),
         subtotal,
-        planFamily || null
+        planTypeKey
       );
       const result = response?.data || response;
       if (result?.valid) {

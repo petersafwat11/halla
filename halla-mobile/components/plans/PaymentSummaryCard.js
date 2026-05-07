@@ -1,7 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-const PaymentSummaryCard = ({ planPrice, discountAmount, finalTotal, t }) => (
+const PaymentSummaryCard = ({
+  planPrice,
+  addonTotal = 0,
+  discountAmount,
+  finalTotal,
+  t,
+}) => (
   <View style={styles.card}>
     <View style={styles.cardHeader}>
       <Text style={styles.cardTitle}>{t("summary.paymentSummary.title")}</Text>
@@ -16,6 +22,17 @@ const PaymentSummaryCard = ({ planPrice, discountAmount, finalTotal, t }) => (
             {planPrice} {t("summary.currency")}
           </Text>
         </View>
+
+        {addonTotal > 0 && (
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>
+              {t("summary.paymentSummary.addons")}
+            </Text>
+            <Text style={styles.summaryValue}>
+              {addonTotal} {t("summary.currency")}
+            </Text>
+          </View>
+        )}
 
         {discountAmount > 0 && (
           <View style={[styles.summaryRow, styles.discountRow]}>

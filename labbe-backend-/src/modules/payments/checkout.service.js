@@ -72,16 +72,18 @@ class CheckoutService {
 
     const resolvedAddons = this._resolveAndPriceAddons(addons, plan);
     const addonsTotal = resolvedAddons.reduce((s, a) => s + a.price, 0);
+    const subtotal = planPrice + addonsTotal;
 
     let discountAmount = 0;
     let validatedDiscountCode = null;
     if (discountCode) {
       const discountsService = require('../discounts/discounts.service');
-      // Discount applies to the plan price only (matches existing subscribe()
-      // semantics — addon prices are tier-locked).
+      // Discount applies to the full bundled subtotal (plan + addons). The
+      // user-visible Summary computes its preview on the same base, so the
+      // amount they see is the amount we charge.
       const result = await discountsService.validate(
         discountCode,
-        planPrice,
+        subtotal,
         plan.planType
       );
       if (!result.valid) {
@@ -91,7 +93,7 @@ class CheckoutService {
       validatedDiscountCode = result.code;
     }
 
-    const total = Math.max(0, planPrice + addonsTotal - discountAmount);
+    const total = Math.max(0, subtotal - discountAmount);
 
     // Free path: trial or fully discounted. No charge → fulfill immediately.
     if (total <= 0 || isFreePlan) {

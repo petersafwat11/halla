@@ -66,10 +66,16 @@ const PlansSummaryScreen = () => {
     if (!discountCode.trim() || validating) return;
     setValidating(true);
     try {
+      // Validate against the bundled subtotal so the preview matches what
+      // backend /payments/checkout charges; pass the plan's canonical
+      // planType (with code as fallback) so the applicablePlanTypes check
+      // resolves the same way on client and server.
+      const planTypeKey =
+        selectedPlan?.planType || selectedPlan?.code || null;
       const res = await adminDashboardService.discounts.validate(token, {
         code: discountCode.trim().toUpperCase(),
-        amount: planPrice,
-        planType: selectedPlan?.code || null,
+        amount: subtotal,
+        planType: planTypeKey,
       });
 
       if (!res?.success) {
