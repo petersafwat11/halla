@@ -1,5 +1,4 @@
 export { default as PlansOverview } from "./PlansOverview";
-export { default as AddionalFeatures } from "./AddionalFeatures";
 export { default as PaymentSummery } from "./PaymentSummery";
 export { default as TopBar } from "./TopBar";
 export { default as PlanSummaryCard } from "./PlanSummaryCard";
@@ -8,3 +7,4 @@ export { default as PaymentSummaryCard } from "./PaymentSummaryCard";
 export { default as CurrentPlanCard } from "./CurrentPlanCard";
 export { default as HostPlanCard } from "./HostPlanCard";
 export { default as AddonsSection } from "./AddonsSection";
+export { default as AddonsSummaryCard } from "./AddonsSummaryCard";

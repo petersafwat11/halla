@@ -2,12 +2,12 @@
  * Admin Dashboard Service
  * Provides API integration for admin dashboard functionality.
  *
- * Phase 4 W0-AUTH: routed through `apiFetch` so admin requests inherit
- * the centralized 401-refresh + 30 s timeout. Token args are accepted
- * but ignored — `apiFetch` reads the in-memory access token directly.
+ * Routed through `apiFetch` so admin requests inherit the centralized
+ * 401-refresh + 30 s timeout. Token args are accepted but ignored —
+ * `apiFetch` reads the in-memory access token directly.
  *
  * The admin endpoints live at both `/api/admin/*` and `/api/v2/admin/*`
- * (dual mount in backend `app.js`). `apiFetch` uses `/api/v2` so paths
+ * (dual mount in backend `app.js`); `apiFetch` uses `/api/v2` so the paths
  * here remain unchanged.
  */
 
@@ -271,23 +271,22 @@ export const plans = {
   getEnterprisePlans: async (token) => apiRequest("/plans/enterprise", "GET", token),
   getAllForAdmin: async (token) => apiRequest("/plans/admin/all", "GET", token),
   updatePlan: async (token, code, data) => apiRequest(`/plans/admin/${code}`, "PATCH", token, data),
-  // H-14: Phase 2 admin endpoints — were defined backend-only.
   createPlan: async (token, data) => apiRequest("/plans/admin", "POST", token, data),
   deletePlan: async (token, code) => apiRequest(`/plans/admin/${code}`, "DELETE", token),
 };
 
 // ─── Subscriptions (admin) ────────────────────────────────────────────────────
-// H-14: SUPER_ADMIN can assign a subscription to a host directly. Audit
-// log is wired server-side.
+// SUPER_ADMIN can assign a subscription to a host directly; audit log is wired
+// server-side.
 export const subscriptionsAdmin = {
   assign: async (token, data) =>
     apiRequest("/subscriptions/admin/assign", "POST", token, data),
 };
 
-// ─── Addons ───────────────────────────────────────────────────────────────────
-// H-14: addon purchase (host) and admin activation (manual provisioning
-// for BUSINESS_CUSTOMIZATION). Both opt-in to the idempotency
-// middleware via Idempotency-Key when supplied.
+// ─── Addons (legacy) ──────────────────────────────────────────────────────────
+// New mobile code should use services/addonsService.js + the useAddons /
+// useCheckout hooks. This export is kept for any forgotten admin caller; both
+// methods opt into idempotency via Idempotency-Key when supplied.
 export const addons = {
   purchase: async (token, data, idempotencyKey = null) => {
     const headers = idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined;
