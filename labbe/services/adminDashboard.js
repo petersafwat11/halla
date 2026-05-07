@@ -768,6 +768,36 @@ export const paymentsAPI = {
       `payments_export_${new Date().toISOString().split("T")[0]}.xlsx`,
     );
   },
+
+  // §15.6: the caller MUST supply `idempotencyKey` (one UUID per modal
+  // session) so a double-click of "Refund" reuses the same key.
+  // Generating a fresh UUID here would defeat idempotency.
+  refund: async (paymentId, { amount, reason } = {}, idempotencyKey, token = null) => {
+    if (!paymentId) throw new Error("Payment ID is required");
+    if (!idempotencyKey) throw new Error("idempotencyKey is required");
+    return apiClient.post(`/payments/${paymentId}/refund`, { amount, reason }, {
+      token,
+      headers: { "Idempotency-Key": idempotencyKey },
+    });
+  },
+
+  capture: async (paymentId, { amount } = {}, idempotencyKey, token = null) => {
+    if (!paymentId) throw new Error("Payment ID is required");
+    if (!idempotencyKey) throw new Error("idempotencyKey is required");
+    return apiClient.post(`/payments/${paymentId}/capture`, { amount }, {
+      token,
+      headers: { "Idempotency-Key": idempotencyKey },
+    });
+  },
+
+  void: async (paymentId, idempotencyKey, token = null) => {
+    if (!paymentId) throw new Error("Payment ID is required");
+    if (!idempotencyKey) throw new Error("idempotencyKey is required");
+    return apiClient.post(`/payments/${paymentId}/void`, {}, {
+      token,
+      headers: { "Idempotency-Key": idempotencyKey },
+    });
+  },
 };
 
 /**

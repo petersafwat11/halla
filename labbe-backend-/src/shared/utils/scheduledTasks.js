@@ -15,6 +15,7 @@ const messagingService = require("../../modules/messaging/messaging.service");
 const taqnyat = require("../../infrastructure/taqnyat");
 const { runBatched } = require("./runBatched");
 const { withIdempotency } = require("./idempotency");
+const { runReconcileTick } = require("../../modules/payments/payments.reconcile");
 const {
   generateDailyReportPDF,
   generateWeeklyReportPDF,
@@ -1145,6 +1146,98 @@ const scheduleNotificationDelivery = () => {
   });
 };
 
+// ─────────────────────────────────────────────────────────────────
+// Phase 1 §5.2 — Payment reconciliation cron (every 5 minutes).
+// Catches Payment rows stuck in `pending` / `pending_3ds` for > 2 min,
+// pulls fresh state from Moyasar, and finalizes any outstanding
+// subscription / addon intent the way the webhook would.
+// ─────────────────────────────────────────────────────────────────
+const schedulePaymentReconcile = () => {
+  cron.schedule("*/5 * * * *", async () => {
+    const result = await cronLease.withLease(
+      "payment_reconcile",
+      async () => {
+        try {
+          const { scanned, reconciled } = await runReconcileTick();
+          if (scanned > 0) {
+            // eslint-disable-next-line no-console
+            console.log(
+              `[Cron] payment_reconcile: scanned=${scanned} reconciled=${reconciled}`
+            );
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("[Cron] payment_reconcile error:", err.message);
+        }
+      },
+      { ttlMs: 4 * 60 * 1000 }
+    );
+    if (!result.ran) {
+      // eslint-disable-next-line no-console
+      console.log("[Cron] payment_reconcile — skipped (lease held by another node)");
+    }
+  });
+};
+
+// ─────────────────────────────────────────────────────────────────
+// Phase 3 §6.2 — Subscription renewal cron (daily at 02:00).
+// For every active subscription expiring in <= 3 days that has no
+// pending invoice yet, ask the subscription service to open a
+// Moyasar invoice and email the host the payment link.
+// ─────────────────────────────────────────────────────────────────
+const scheduleSubscriptionRenewal = () => {
+  cron.schedule("0 2 * * *", async () => {
+    const result = await cronLease.withLease(
+      "subscription_renewal",
+      async () => {
+        try {
+          const subscriptionsService = require("../../modules/subscriptions/subscriptions.service");
+          const cutoff = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+          const candidates = await Subscription.find({
+            status: { $in: ["active", "past_due"] },
+            expiresAt: { $ne: null, $lte: cutoff },
+            $or: [
+              { "metadata.pendingInvoiceId": { $exists: false } },
+              { "metadata.pendingInvoiceId": null },
+            ],
+          }).select("_id userId planId expiresAt status").limit(200);
+
+          let opened = 0;
+          for (const sub of candidates) {
+            try {
+              if (typeof subscriptionsService.renewSubscription === "function") {
+                await subscriptionsService.renewSubscription(sub._id);
+                opened += 1;
+              }
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.error(
+                "[Cron] subscription_renewal sub %s: %s",
+                sub._id,
+                err?.message
+              );
+            }
+          }
+          if (candidates.length > 0) {
+            // eslint-disable-next-line no-console
+            console.log(
+              `[Cron] subscription_renewal: candidates=${candidates.length} invoicesOpened=${opened}`
+            );
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("[Cron] subscription_renewal error:", err.message);
+        }
+      },
+      { ttlMs: 30 * 60 * 1000 }
+    );
+    if (!result.ran) {
+      // eslint-disable-next-line no-console
+      console.log("[Cron] subscription_renewal — skipped (lease held by another node)");
+    }
+  });
+};
+
 const initScheduledTasks = () => {
   console.log("[Cron] Initializing scheduled tasks...");
 
@@ -1158,6 +1251,8 @@ const initScheduledTasks = () => {
   scheduleEventCompletion();
   scheduleGuestReminders();
   scheduleNotificationDelivery();
+  schedulePaymentReconcile();
+  scheduleSubscriptionRenewal();
 
   console.log("[Cron] Scheduled tasks initialized:");
   console.log("  - Event reminders (host): Daily at 8:00 AM");
@@ -1171,6 +1266,8 @@ const initScheduledTasks = () => {
   console.log("  - Event completion (live → completed): Every hour");
   console.log("  - 24h guest reminder SMS: Every 30 minutes");
   console.log("  - Scheduled notification delivery: Every 5 minutes");
+  console.log("  - Payment reconciliation: Every 5 minutes");
+  console.log("  - Subscription renewal (Moyasar invoice): Daily at 2:00 AM");
 };
 
 module.exports = {
@@ -1183,6 +1280,8 @@ module.exports = {
   scheduleEventRetry,
   scheduleEventCompletion,
   scheduleGuestReminders,
+  schedulePaymentReconcile,
+  scheduleSubscriptionRenewal,
   runEventLaunch,
   MAX_LAUNCH_ATTEMPTS,
   LAUNCH_RETRY_WINDOW_MS,

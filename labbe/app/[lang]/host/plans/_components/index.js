@@ -6,3 +6,4 @@ export { default as InviteSelector } from "./InviteSelector";
 export { default as FeaturesList } from "./FeaturesList";
 export { default as AddonsSection } from "./AddonsSection";
 export { default as HostPlanCard } from "./HostPlanCard";
+export { default as PaymentMethodSelector } from "./PaymentMethodSelector";

@@ -642,6 +642,68 @@ export const useAdminPayments = (filters = {}, options = {}) => {
   });
 };
 
+export const useAdminPaymentDetail = (paymentId, options = {}) => {
+  return useQuery({
+    queryKey: ["admin", "payments", "detail", paymentId],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.payments.getById(paymentId),
+      }),
+    enabled: !!paymentId,
+    staleTime: 30 * 1000,
+    ...options,
+  });
+};
+
+// §15.6: caller MUST pass `idempotencyKey` (one UUID per modal session).
+export const useAdminPaymentRefund = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, amount, reason, idempotencyKey }) =>
+      apiRequest({
+        method: "POST",
+        path: API_PATHS.payments.refund(id),
+        data: { amount, reason },
+        config: { headers: { "Idempotency-Key": idempotencyKey } },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "payments"] });
+    },
+  });
+};
+
+export const useAdminPaymentCapture = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, amount, idempotencyKey }) =>
+      apiRequest({
+        method: "POST",
+        path: API_PATHS.payments.capture(id),
+        data: { amount },
+        config: { headers: { "Idempotency-Key": idempotencyKey } },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "payments"] });
+    },
+  });
+};
+
+export const useAdminPaymentVoid = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, idempotencyKey }) =>
+      apiRequest({
+        method: "POST",
+        path: API_PATHS.payments.void(id),
+        config: { headers: { "Idempotency-Key": idempotencyKey } },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "payments"] });
+    },
+  });
+};
+
 // ============================================
 // HOST PLANS QUERY
 // ============================================

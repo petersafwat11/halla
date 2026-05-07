@@ -14,22 +14,53 @@
     "searchPlaceholder": "البحث في المعاملات...",
     "filter": "التصفية",
     "export": "تصدير",
+    "refundedTag": "مسترد",
     "columns": {
       "id": "رقم المعاملة",
       "name": "الاسم",
       "amount": "المبلغ",
       "currency": "العملة",
-      "planType": "نوع الباقة",
+      "planType": "الوصف",
       "paymentMethod": "طريقة الدفع",
+      "method": "طريقة الدفع",
+      "transactionId": "رقم المعاملة",
       "status": "الحالة",
-      "createdAt": "تاريخ الإنشاء"
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "إجراءات"
     },
     "status": {
+      "all": "الكل",
       "successful": "نجحت",
+      "completed": "مكتملة",
       "pending": "في الانتظار",
+      "pending_3ds": "في انتظار التحقق الآمن",
+      "authorized": "مفوضة",
+      "captured": "مقبوضة",
       "failed": "فشلت",
+      "refunded": "مستردة",
+      "partially_refunded": "مستردة جزئيًا",
+      "voided": "ملغاة",
       "cancelled": "ملغية"
+    },
+    "method": {
+      "creditcard": "بطاقة",
+      "applepay": "آبل باي",
+      "samsungpay": "سامسونج باي",
+      "stcpay": "إس تي سي باي",
+      "token": "بطاقة محفوظة"
     }
+  },
+  "actions": {
+    "refund": "استرداد",
+    "capture": "قبض",
+    "void": "إلغاء",
+    "viewDetails": "عرض التفاصيل",
+    "confirmRefund": "هل تريد استرداد {{amount}} {{currency}}؟",
+    "confirmCapture": "هل تريد قبض هذه الدفعة المفوضة؟",
+    "confirmVoid": "هل تريد إلغاء هذه الدفعة المفوضة؟",
+    "refundAmountPlaceholder": "المبلغ (فارغ = استرداد كامل)",
+    "captureAmountPlaceholder": "المبلغ (فارغ = قبض كامل)",
+    "reasonPlaceholder": "السبب"
   },
   "dateRange": {
     "all": "الكل",

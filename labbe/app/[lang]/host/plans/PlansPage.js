@@ -11,6 +11,7 @@ import {
   BillingTypeToggle,
   AddonsSection,
   HostPlanCard,
+  PaymentMethodSelector,
 } from "./_components";
 import Summary from "./summary/Summary";
 import { useHostPlans } from "@/hooks/reactQueryHooks/usePlans";
@@ -65,6 +66,9 @@ const PlansPage = () => {
   const [appliedDiscountCode, setAppliedDiscountCode] = useState("");
   const [addonItems, setAddonItems] = useState([]);
   const [addonTotal, setAddonTotal] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState("creditcard");
+  const [cardData, setCardData] = useState(null);
+  const [stcMobile, setStcMobile] = useState("");
 
   const actualPlansData = plansData?.data || plansData;
   const subscription =
@@ -124,24 +128,63 @@ const PlansPage = () => {
     setShowSummary(true);
   }, []);
 
+  const buildSource = useCallback(() => {
+    if (paymentMethod === "creditcard") {
+      return {
+        type: "creditcard",
+        name: cardData?.name,
+        number: cardData?.number,
+        month: Number(cardData?.month),
+        year: Number(cardData?.year),
+        cvc: cardData?.cvc,
+      };
+    }
+    if (paymentMethod === "stcpay") {
+      return { type: "stcpay", mobile: stcMobile };
+    }
+    if (paymentMethod === "applepay") {
+      // PassKit token sourcing is a separate mini-feature (§13 Q1).
+      // The selector exists so the backend understands the source type.
+      return { type: "applepay", token: null };
+    }
+    return null;
+  }, [paymentMethod, cardData, stcMobile]);
+
   const handleProceedToPayment = useCallback(async () => {
     if (!selectedPlan) return;
     try {
-      await subscribeMutation.mutateAsync({
+      const result = await subscribeMutation.mutateAsync({
         planCode: selectedPlan.code,
         ...(appliedDiscountCode ? { discountCode: appliedDiscountCode } : {}),
+        source: buildSource(),
       });
+      if (result?.requiresAction) {
+        // The mutation already redirects via window.location. Avoid the
+        // success toast — the user is mid-redirect to the bank.
+        return;
+      }
       toast.success(t("toasts.subscriptionCreated"));
       router.push(`/${lang}/host/create-event`);
     } catch (error) {
-      if (error.response?.status === 400 && error.message?.includes("already have an active subscription")) {
+      if (
+        error.response?.status === 400 &&
+        error.message?.includes("already have an active subscription")
+      ) {
         toast.info(t("toasts.alreadyActive"));
         router.push(`/${lang}/host/create-event`);
       } else {
         toast.error(t("toasts.subscriptionFailed"));
       }
     }
-  }, [selectedPlan, subscribeMutation, appliedDiscountCode, t, router, lang]);
+  }, [
+    selectedPlan,
+    subscribeMutation,
+    appliedDiscountCode,
+    buildSource,
+    t,
+    router,
+    lang,
+  ]);
 
   const handleBack = useCallback(() => setShowSummary(false), []);
 
@@ -156,6 +199,10 @@ const PlansPage = () => {
         onDiscountApply={(code) => setAppliedDiscountCode(code)}
         onProceedToPayment={handleProceedToPayment}
         onBack={handleBack}
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={setPaymentMethod}
+        onCardChange={setCardData}
+        onMobileChange={setStcMobile}
       />
     );
   }

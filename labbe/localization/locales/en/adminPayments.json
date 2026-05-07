@@ -14,22 +14,53 @@
     "searchPlaceholder": "Search transactions...",
     "filter": "Filter",
     "export": "Export",
+    "refundedTag": "refunded",
     "columns": {
       "id": "Transaction ID",
       "name": "Name",
       "amount": "Amount",
       "currency": "Currency",
-      "planType": "Plan Type",
+      "planType": "Description",
       "paymentMethod": "Payment Method",
+      "method": "Method",
+      "transactionId": "Transaction ID",
       "status": "Status",
-      "createdAt": "Created Date"
+      "createdAt": "Created Date",
+      "actions": "Actions"
     },
     "status": {
+      "all": "All",
       "successful": "Successful",
+      "completed": "Completed",
       "pending": "Pending",
+      "pending_3ds": "Awaiting 3-D Secure",
+      "authorized": "Authorized",
+      "captured": "Captured",
       "failed": "Failed",
+      "refunded": "Refunded",
+      "partially_refunded": "Partially refunded",
+      "voided": "Voided",
       "cancelled": "Cancelled"
+    },
+    "method": {
+      "creditcard": "Card",
+      "applepay": "Apple Pay",
+      "samsungpay": "Samsung Pay",
+      "stcpay": "STC Pay",
+      "token": "Saved card"
     }
+  },
+  "actions": {
+    "refund": "Refund",
+    "capture": "Capture",
+    "void": "Void",
+    "viewDetails": "View details",
+    "confirmRefund": "Refund {{amount}} {{currency}}?",
+    "confirmCapture": "Capture this authorized payment?",
+    "confirmVoid": "Void this authorized payment?",
+    "refundAmountPlaceholder": "Amount (blank = full refund)",
+    "captureAmountPlaceholder": "Amount (blank = full capture)",
+    "reasonPlaceholder": "Reason"
   },
   "dateRange": {
     "all": "All",

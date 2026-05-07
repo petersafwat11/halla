@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 import { SiVisa, SiMastercard } from "react-icons/si";
 import { discountsAPI } from "@/services/adminDashboard";
+import PaymentMethodSelector from "../_components/PaymentMethodSelector";
 
 const Summary = ({
   selectedPlan,
@@ -28,6 +29,10 @@ const Summary = ({
   onDiscountApply,
   onProceedToPayment,
   onBack,
+  paymentMethod,
+  onPaymentMethodChange,
+  onCardChange,
+  onMobileChange,
 }) => {
   const { i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
@@ -335,6 +340,25 @@ const Summary = ({
               </div>
             </div>
           </div>
+
+          {/* Payment Method (creditcard / Apple Pay / STC Pay) */}
+          {onPaymentMethodChange && (
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>
+                  {isArabic ? "طريقة الدفع" : "Payment Method"}
+                </h2>
+              </div>
+              <div className={styles.cardContent}>
+                <PaymentMethodSelector
+                  value={paymentMethod || "creditcard"}
+                  onChange={onPaymentMethodChange}
+                  onCardChange={onCardChange}
+                  onMobileChange={onMobileChange}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Proceed Button */}
           <button

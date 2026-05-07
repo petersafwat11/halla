@@ -10,13 +10,19 @@ const getAvailableAddons = async (req, res, next) => {
 const purchaseAddon = async (req, res, next) => {
   try {
     const idempotencyKey = req.get('idempotency-key') || undefined;
-    const addon = await addonsService.purchaseAddon(
+    const result = await addonsService.purchaseAddon(
       req.user._id,
       req.body,
       { idempotencyKey }
     );
-    res.locals.addonAudit = { addonId: addon._id, status: addon.status };
-    res.status(201).json({ success: true, data: addon });
+    // 3DS branch: service returns { requiresAction, redirectUrl, paymentId }
+    // — no addon row yet, the webhook/poll path will create it. Use 200
+    // (not 201) so the client distinguishes "completed" from "redirect".
+    if (result?.requiresAction) {
+      return res.status(200).json({ success: true, data: result });
+    }
+    res.locals.addonAudit = { addonId: result._id, status: result.status };
+    res.status(201).json({ success: true, data: result });
   } catch (err) { next(err); }
 };
 

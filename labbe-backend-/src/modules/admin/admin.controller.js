@@ -567,6 +567,28 @@ exports.getPayments = catchAsync(async (req, res) => {
   sendSuccess(res, result, 'Payments retrieved successfully');
 });
 
+exports.getPaymentSummary = catchAsync(async (req, res) => {
+  const whitelabelId = getWhitelabelIdFromFilter(req);
+  const summary = await adminService.getPaymentSummary({ whitelabelId });
+  sendSuccess(res, summary, 'Payment summary retrieved successfully');
+});
+
+exports.getPaymentDetail = catchAsync(async (req, res, next) => {
+  const { AppError } = require('../../shared/errors');
+  const detail = await adminService.getPaymentDetail(req.params.id);
+  // §15.2B: enforce whitelabel scope at the controller. WHITELABEL_ADMIN
+  // has PAYMENTS: FULL on their org, so the route-level RBAC alone would
+  // allow them to read any payment by id-guess.
+  const wlFilter = getWhitelabelIdFromFilter(req);
+  if (
+    wlFilter !== undefined &&
+    String(detail?.whitelabelId || '') !== String(wlFilter || '')
+  ) {
+    return next(new AppError('Payment not found', 404));
+  }
+  sendSuccess(res, detail, 'Payment retrieved successfully');
+});
+
 // ============================================
 // EXPORT HANDLERS
 // ============================================

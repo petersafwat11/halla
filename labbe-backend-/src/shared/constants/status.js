@@ -111,16 +111,11 @@ const NOTIFICATION_STATUS = {
   READ: 'read',
 };
 
-/**
- * Payment status
- */
-const PAYMENT_STATUS = {
-  PENDING: 'pending',
-  COMPLETED: 'completed',
-  FAILED: 'failed',
-  REFUNDED: 'refunded',
-  CANCELLED: 'cancelled',
-};
+// Payment status enum lives on the PaymentModel as a static
+// (`Payment.PAYMENT_STATUS`) — the single source of truth with the
+// full lifecycle (pending | pending_3ds | authorized | paid | captured
+// | failed | refunded | partially_refunded | voided). The legacy
+// constant in this file was unused and has been removed (§15.3).
 
 /**
  * Whitelabel application status
@@ -204,7 +199,6 @@ module.exports = {
   RSVP_STATUS,
   CHECKIN_STATUS,
   NOTIFICATION_STATUS,
-  PAYMENT_STATUS,
   WHITELABEL_APPLICATION_STATUS,
   SERVICE_STATUS,
   WHATSAPP_TEMPLATE_STATUS,

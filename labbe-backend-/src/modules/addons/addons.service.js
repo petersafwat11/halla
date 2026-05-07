@@ -1,6 +1,7 @@
 const Addon = require('../../../models/AddonModel');
 const Subscription = require('../../../models/SubscriptionModel');
 const Event = require('../../../models/EventModel');
+const Payment = require('../../../models/PaymentModel');
 const {
   ADDON_TYPES,
   EXTRA_INVITES_TIERS,
@@ -91,17 +92,46 @@ class AddonsService {
     const idempotencyKey =
       options.idempotencyKey || data?.idempotencyKey || null;
 
-    // FLOW-10-F01: skip payment for free addons (matches the 3.1 trial
-    // guard pattern). Today no addon tier is free, but we keep the guard
-    // explicit so promotional / zero-price tiers don't surprise the
-    // provider.
-    let paymentTransactionId = null;
+    // §2.1: only `paymentRecord` is the source of truth. We do NOT
+    // copy a `paymentTransactionId` onto the addon row anymore —
+    // `addon.metadata.paymentId` references the Payment row, which
+    // owns the moyasarPaymentId.
+    let paymentRecord = null;
     if (price > 0) {
+      const callbackUrl = `${process.env.FRONTEND_URL || ''}/host/payments/return`;
+      const derivedKey = idempotencyKey
+        || `addon:${userId}:${addonType}:${scope}:${eventId || 'pool'}:${price}`;
+
+      paymentRecord = await Payment.create({
+        userId,
+        amount: price,
+        currency: 'SAR',
+        provider: 'moyasar',
+        status: Payment.PAYMENT_STATUS.PENDING,
+        callbackUrl,
+        description: `Addon purchase ${addonType}`,
+        // `purpose: 'addon'` is the dispatch key used by webhook/reconcile/poll.
+        metadata: {
+          addonType,
+          quantity: quantity || 1,
+          templateType: templateType || null,
+          scope,
+          eventId: eventId || null,
+          purpose: 'addon',
+        },
+      });
+
       const chargeParams = {
         amount: price,
         currency: 'SAR',
+        // Default `creditcard` → stub immediate-paid; tests opt into the
+        // 3DS redirect path explicitly via `creditcard_3ds_test`.
+        source: data?.source || { type: 'creditcard' },
         customer: { id: userId },
-        userId, // H-5 — scope idempotency cache row by user
+        callbackUrl,
+        userId,
+        idempotencyKey: derivedKey,
+        description: `Addon purchase ${addonType}`,
         metadata: {
           addonType,
           quantity: quantity || 1,
@@ -109,17 +139,18 @@ class AddonsService {
           scope,
           subscriptionId: subscriptionId || null,
           eventId: eventId || null,
-          description: `Addon purchase ${addonType}`,
+          purpose: 'addon',
+          userId: String(userId),
         },
       };
-      // Derived key when client did not supply one — guards against
-      // double-tap double-charge even without explicit Idempotency-Key.
-      chargeParams.idempotencyKey =
-        idempotencyKey
-          || `addon:${userId}:${addonType}:${scope}:${eventId || 'pool'}:${price}`;
       const charge = await paymentProvider.charge(chargeParams);
+
       if (!charge.success) {
-        // H-11: don't leak provider error string to client.
+        paymentRecord.status = Payment.PAYMENT_STATUS.FAILED;
+        paymentRecord.failedAt = new Date();
+        paymentRecord.providerStatus = charge.providerStatus || charge.error || 'unknown';
+        await paymentRecord.save().catch(() => {});
+
         // eslint-disable-next-line no-console
         console.error(
           '[addons.purchase] payment provider error:',
@@ -127,7 +158,41 @@ class AddonsService {
         );
         throw new ValidationError('Payment failed; addon not activated');
       }
-      paymentTransactionId = charge.transactionId || null;
+
+      paymentRecord.moyasarPaymentId = charge.transactionId;
+      paymentRecord.givenId = charge.givenId || null;
+      paymentRecord.providerStatus = charge.providerStatus;
+      paymentRecord.fee = charge.fee || 0;
+      if (charge.paymentMethod) paymentRecord.paymentMethod = charge.paymentMethod;
+
+      if (charge.requiresAction) {
+        paymentRecord.status = Payment.PAYMENT_STATUS.PENDING_3DS;
+        paymentRecord.redirectUrl = charge.redirectUrl;
+        paymentRecord.metadata = {
+          ...(paymentRecord.metadata || {}),
+          pendingAddonIntent: {
+            addonType,
+            quantity: quantity || 1,
+            templateType: templateType || null,
+            subscriptionId,
+            eventId,
+            scope,
+          },
+        };
+        await paymentRecord.save();
+        return {
+          requiresAction: true,
+          redirectUrl: charge.redirectUrl,
+          paymentId: paymentRecord._id,
+        };
+      }
+
+      paymentRecord.status = charge.providerStatus === 'authorized'
+        ? Payment.PAYMENT_STATUS.AUTHORIZED
+        : Payment.PAYMENT_STATUS.PAID;
+      if (paymentRecord.status === Payment.PAYMENT_STATUS.PAID) paymentRecord.paidAt = new Date();
+      if (paymentRecord.status === Payment.PAYMENT_STATUS.AUTHORIZED) paymentRecord.authorizedAt = new Date();
+      await paymentRecord.save();
     }
 
     // Decide initial status. Business customization is provisioned
@@ -183,17 +248,22 @@ class AddonsService {
         status: initialStatus,
         scope,
         metadata: {
-          paymentTransactionId,
+          paymentId: paymentRecord?._id || null,
           idempotencyKey: idempotencyKey || null,
           activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
         },
       });
+
+      if (paymentRecord) {
+        paymentRecord.addonId = addon._id;
+        await paymentRecord.save().catch(() => {});
+      }
     } catch (createErr) {
       await this._recordPendingRefund({
         userId,
         amount: price,
         currency: 'SAR',
-        paymentTransactionId,
+        paymentId: paymentRecord?._id || null,
         reason: 'addon_create_failed',
         detail: createErr?.message,
         addonType,
@@ -229,7 +299,7 @@ class AddonsService {
           userId,
           amount: price,
           currency: 'SAR',
-          paymentTransactionId,
+          paymentId: paymentRecord?._id || null,
           reason: 'addon_quota_failed',
           detail: quotaErr?.message,
           addonType,
@@ -256,7 +326,8 @@ class AddonsService {
         scope,
         price,
         status: initialStatus,
-        paymentTransactionId,
+        paymentId: paymentRecord?._id || null,
+        moyasarPaymentId: paymentRecord?.moyasarPaymentId || null,
         eventId: eventId || null,
         subscriptionId: resolvedSubscriptionId || null,
       },
@@ -359,7 +430,7 @@ class AddonsService {
     userId,
     amount,
     currency,
-    paymentTransactionId,
+    paymentId,
     reason,
     detail,
     addonType,
@@ -368,25 +439,30 @@ class AddonsService {
     addonId,
   }) {
     try {
+      const moyasarPaymentId = paymentId
+        ? (await Payment.findById(paymentId).select('moyasarPaymentId'))?.moyasarPaymentId
+        : null;
       // eslint-disable-next-line no-console
       console.error(
-        '[addons.purchase] PENDING REFUND %s userId=%s amount=%s tx=%s detail=%s',
+        '[addons.purchase] PENDING REFUND %s userId=%s amount=%s paymentId=%s moyasarId=%s detail=%s',
         reason,
         userId,
         amount,
-        paymentTransactionId || 'n/a',
+        paymentId || 'n/a',
+        moyasarPaymentId || 'n/a',
         detail || 'n/a'
       );
       await logAudit({
         action: 'addon.pending_refund',
         actor: { _id: userId, role: 'host' },
-        targetType: 'system',
-        targetId: addonId || paymentTransactionId || userId,
+        targetType: 'payment',
+        targetId: paymentId || addonId || userId,
         metadata: {
           reason,
           amount,
           currency,
-          paymentTransactionId,
+          paymentId,
+          moyasarPaymentId,
           addonType,
           scope,
           eventId,
@@ -400,11 +476,11 @@ class AddonsService {
           type: 'addon_pending_refund',
           title: 'Addon purchase requires refund',
           titleAr: 'مشتريات إضافة تحتاج إلى استرداد',
-          message: `Charge succeeded but addon could not be activated. Tx ${paymentTransactionId || 'n/a'} userId ${userId}.`,
+          message: `Charge succeeded but addon could not be activated. paymentId ${paymentId || 'n/a'} moyasarId ${moyasarPaymentId || 'n/a'} userId ${userId}.`,
           data: {
-            entityType: 'addon',
-            entityId: addonId || null,
-            metadata: { reason, amount, currency, paymentTransactionId },
+            entityType: 'payment',
+            entityId: paymentId || null,
+            metadata: { reason, amount, currency, paymentId, moyasarPaymentId },
           },
           priority: 'high',
         });
@@ -413,10 +489,6 @@ class AddonsService {
         console.warn('[addons.purchase] admin notify failed:', notifyErr?.message);
       }
     } catch (auditErr) {
-      // The audit failure is logged but doesn't override the original
-      // ValidationError — losing the audit row would be terrible, but
-      // throwing here would replace the user-visible error with a
-      // generic 500.
       // eslint-disable-next-line no-console
       console.error('[addons.purchase] _recordPendingRefund logAudit failed:', auditErr?.message);
     }
@@ -469,6 +541,141 @@ class AddonsService {
         $inc: { invitePool: quantity },
       });
     }
+  }
+
+  /**
+   * Finalize a pending-3ds addon purchase. Idempotent — if the addon
+   * row already exists (Payment.addonId is set), returns it as-is.
+   *
+   * Called by:
+   *   - the webhook handler on payment_paid
+   *   - the frontend's poll endpoint when the user returns from 3DS
+   *   - the reconciliation cron when it spots a stale pending_3ds row
+   */
+  async finalizePending3ds(paymentId) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new NotFoundError('Payment');
+
+    if (payment.addonId) {
+      const existing = await Addon.findById(payment.addonId);
+      if (existing) return existing;
+    }
+
+    if (![Payment.PAYMENT_STATUS.PAID, Payment.PAYMENT_STATUS.AUTHORIZED]
+        .includes(payment.status)) {
+      throw new ValidationError(
+        `Payment ${paymentId} is in status "${payment.status}", cannot finalize`
+      );
+    }
+
+    const intent = payment.metadata?.pendingAddonIntent;
+    if (!intent) {
+      throw new ValidationError(`Payment ${paymentId} has no addon intent`);
+    }
+
+    const { addonType, quantity, templateType, subscriptionId, eventId, scope } = intent;
+    const userId = payment.userId;
+    const price = payment.amount;
+
+    let resolvedSubscriptionId = subscriptionId || null;
+    if (!resolvedSubscriptionId && (scope === 'pool' || scope === 'org')) {
+      const activeSubs = await Subscription.findActiveForUser(userId);
+      const activeSub = activeSubs[0] || null;
+      if (activeSub) resolvedSubscriptionId = activeSub._id;
+    }
+
+    let targetEvent = null;
+    if (scope === 'event' && eventId) {
+      targetEvent = await Event.findById(eventId);
+      if (!targetEvent) throw new NotFoundError('Event');
+    }
+
+    const isBusinessCustomization = addonType === ADDON_TYPES.BUSINESS_CUSTOMIZATION;
+    const initialStatus = isBusinessCustomization ? 'pending_provisioning' : 'active';
+
+    let addon;
+    try {
+      addon = await Addon.create({
+        userId,
+        addonType,
+        quantity: quantity || 1,
+        templateType: templateType || null,
+        price,
+        currency: 'SAR',
+        subscriptionId: resolvedSubscriptionId,
+        eventId: eventId || null,
+        status: initialStatus,
+        scope,
+        metadata: {
+          paymentId: payment._id,
+          activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
+        },
+      });
+      payment.addonId = addon._id;
+      await payment.save();
+    } catch (createErr) {
+      await this._recordPendingRefund({
+        userId,
+        amount: price,
+        currency: 'SAR',
+        paymentId: payment._id,
+        reason: 'addon_finalize3ds_create_failed',
+        detail: createErr?.message,
+        addonType,
+        scope,
+        eventId,
+      });
+      throw createErr;
+    }
+
+    if (initialStatus === 'active') {
+      try {
+        await this._applyQuota(addon, { targetEvent });
+      } catch (quotaErr) {
+        try {
+          addon.status = 'failed_quota';
+          addon.metadata = {
+            ...(addon.metadata || {}),
+            quotaError: quotaErr?.message || 'unknown',
+          };
+          await addon.save();
+        } catch (_) { /* swallow */ }
+        await this._recordPendingRefund({
+          userId,
+          amount: price,
+          currency: 'SAR',
+          paymentId: payment._id,
+          reason: 'addon_finalize3ds_quota_failed',
+          detail: quotaErr?.message,
+          addonType,
+          scope,
+          eventId,
+          addonId: addon._id,
+        });
+        throw quotaErr;
+      }
+    }
+
+    await logAudit({
+      action: 'addon.purchased_3ds',
+      actor: { _id: userId, role: 'host' },
+      targetType: 'system',
+      targetId: addon._id,
+      metadata: {
+        addonId: addon._id,
+        addonType,
+        quantity: quantity || 1,
+        scope,
+        price,
+        status: initialStatus,
+        paymentId: payment._id,
+        moyasarPaymentId: payment.moyasarPaymentId,
+        eventId: eventId || null,
+        subscriptionId: resolvedSubscriptionId || null,
+      },
+    });
+
+    return addon;
   }
 }
 

@@ -22,6 +22,7 @@ const {
 const Subscription = require('../../../models/SubscriptionModel');
 const Plan = require('../../../models/PlanModel');
 const User = require('../../../models/UserModel');
+const Payment = require('../../../models/PaymentModel');
 const BusinessSetupFee = require('../../../models/BusinessSetupFeeModel');
 const { isPerEventPlan, isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
 const notificationService = require('../notifications/notifications.service');
@@ -375,48 +376,123 @@ class SubscriptionsService {
     // forgets the header — combined with the compound {userId,scope,key}
     // unique index in IdempotencyKeyModel (H-5), accidental cross-user
     // collision is impossible.
-    let paymentTransactionId = null;
+    // ─── Charge ───────────────────────────────────────────────────
+    // Only `paymentRecord` is the source of truth for the charge. The
+    // legacy `paymentTransactionId` local + subscription.metadata field
+    // have been removed (§2.1) — `subscription.metadata.paymentId`
+    // refers to the Payment row, which carries the moyasarPaymentId.
+    let paymentRecord = null;
+    let pendingRedirect = null;
+
     if (!isFreePlan) {
       const derivedKey =
         subscriptionData?.idempotencyKey
           || `subscribe:${userId}:${plan.code}:${planPrice}`;
+
+      const callbackUrl =
+        (subscriptionData?.callbackUrl)
+          || `${process.env.FRONTEND_URL || ''}/host/payments/return`;
+
       const chargeParams = {
         amount: planPrice,
         currency: plan?.currency || 'SAR',
+        // Default `creditcard` is the stub's immediate-paid path. Tests
+        // that need to exercise the 3DS redirect/poll flow opt in by
+        // passing `source: { type: 'creditcard_3ds_test' }`. The real
+        // frontend always sends a populated `source` in production.
+        source: subscriptionData?.source || { type: 'creditcard' },
         customer: { id: userId },
-        userId, // H-5: scope cache-row by user
+        callbackUrl,
+        userId,
         idempotencyKey: derivedKey,
+        description: `Subscription to ${plan.code}`,
         metadata: {
           planCode: plan.code,
           discountCode,
-          description: `Subscription to ${plan.code}`,
+          purpose: 'subscription',
+          userId: String(userId),
         },
       };
+
+      // Pre-create a Payment row in `pending` so we have a stable id
+      // before we hit Moyasar. If the charge call itself throws, we
+      // mark the row failed; if it succeeds (paid / authorized /
+      // initiated) we update accordingly.
+      paymentRecord = await Payment.create({
+        userId,
+        whitelabelId: user.whitelabelId || null,
+        amount: planPrice,
+        currency: plan?.currency || 'SAR',
+        provider: 'moyasar',
+        status: Payment.PAYMENT_STATUS.PENDING,
+        callbackUrl,
+        description: `Subscription to ${plan.code}`,
+        // `purpose` is the dispatch key used by webhook/reconcile/poll
+        // to decide which finalizePending3ds path to call.
+        metadata: { planCode: plan.code, discountCode, purpose: 'subscription' },
+      });
+
       const charge = await paymentProvider.charge(chargeParams);
+
       if (!charge.success) {
-        throw new ValidationError(
-          // H-11: don't leak provider error string to client; log it,
-          // surface a generic message.
-          (() => {
-            try {
-              // eslint-disable-next-line no-console
-              console.error(
-                '[subscribe] payment provider error:',
-                charge.error || charge.providerStatus || 'unknown'
-              );
-            } catch (_) { /* swallow */ }
-            return 'Payment failed; subscription not activated';
-          })()
+        paymentRecord.status = Payment.PAYMENT_STATUS.FAILED;
+        paymentRecord.failedAt = new Date();
+        paymentRecord.providerStatus = charge.providerStatus || charge.error || 'unknown';
+        await paymentRecord.save().catch(() => {});
+
+        // eslint-disable-next-line no-console
+        console.error(
+          '[subscribe] payment provider error:',
+          charge.error || charge.providerStatus || 'unknown'
         );
+        throw new ValidationError('Payment failed; subscription not activated');
       }
-      paymentTransactionId = charge.transactionId || null;
+
+      paymentRecord.moyasarPaymentId = charge.transactionId;
+      paymentRecord.givenId = charge.givenId || null;
+      paymentRecord.providerStatus = charge.providerStatus;
+      paymentRecord.fee = charge.fee || 0;
+      if (charge.paymentMethod) paymentRecord.paymentMethod = charge.paymentMethod;
+
+      if (charge.requiresAction) {
+        // 3DS: don't activate the subscription yet. Save the redirect
+        // URL on the payment, return it to the controller, and let the
+        // webhook (or the frontend's polling page) finish the job.
+        paymentRecord.status = Payment.PAYMENT_STATUS.PENDING_3DS;
+        paymentRecord.redirectUrl = charge.redirectUrl;
+        await paymentRecord.save();
+        pendingRedirect = charge.redirectUrl;
+      } else {
+        paymentRecord.status = charge.providerStatus === 'authorized'
+          ? Payment.PAYMENT_STATUS.AUTHORIZED
+          : Payment.PAYMENT_STATUS.PAID;
+        if (paymentRecord.status === Payment.PAYMENT_STATUS.PAID) paymentRecord.paidAt = new Date();
+        if (paymentRecord.status === Payment.PAYMENT_STATUS.AUTHORIZED) paymentRecord.authorizedAt = new Date();
+        await paymentRecord.save();
+      }
+    }
+
+    // If 3DS is required, defer subscription creation. We record
+    // the intent on the Payment so the webhook can finish it.
+    if (pendingRedirect) {
+      paymentRecord.metadata = {
+        ...(paymentRecord.metadata || {}),
+        pendingSubscribeIntent: {
+          planId: plan._id,
+          planCode: plan.code,
+          discountCode,
+          existingActiveIds: existingActive.map((s) => s._id),
+        },
+      };
+      await paymentRecord.save();
+      return {
+        requiresAction: true,
+        redirectUrl: pendingRedirect,
+        paymentId: paymentRecord._id,
+      };
     }
 
     // B-3: charge succeeded (or wasn't needed) — NOW cancel the old subs.
-    // If this loop throws (very unlikely; just save() calls), the new
-    // subscription create below will not run and we'll be left with the
-    // old sub still active and a money charge already taken. We log the
-    // partial failure so ops can reconcile.
     for (const existing of existingActive) {
       try {
         existing.status = SUBSCRIPTION_STATUS.CANCELLED;
@@ -430,17 +506,10 @@ class SubscriptionsService {
           existing._id,
           cancelErr?.message
         );
-        // Continue — better to have two active subs than to refund the
-        // user. Operations can clean this up; the audit log captures it.
       }
     }
 
     // Create new subscription.
-    //
-    // HIGH-6 review: if anything from this point through subscription.save()
-    // throws AFTER a successful charge, we have a money-taken-no-benefit
-    // case symmetric to addons.purchase (B-4). Wrap and emit the same
-    // pending-refund signal so on-call can reconcile.
     let subscription;
     try {
       subscription = await Subscription.createForUser(userId, plan, {
@@ -453,12 +522,6 @@ class SubscriptionsService {
         },
       });
 
-      // FLOW-09-F02: trial duration is **14 days** regardless of the
-      // plan's configured durationDays. createForUser reads
-      // plan.limits.durationDays (currently 90 for the trial plan, used
-      // for event-creation lifecycle math); we override expiresAt here so
-      // the daily expiry cron transitions the trial subscription to
-      // `expired` after two weeks. Documented in PHASE_2_PLAN.md.
       if (planCode === 'trial') {
         const TRIAL_DURATION_DAYS = 14;
         const trialExpiresAt = new Date(
@@ -468,27 +531,42 @@ class SubscriptionsService {
         subscription.expiresAt = trialExpiresAt;
       }
 
-      if (paymentTransactionId) {
+      if (paymentRecord) {
         subscription.metadata = {
           ...(subscription.metadata || {}),
-          paymentTransactionId,
+          paymentId: paymentRecord._id,
         };
+        if (paymentRecord.paymentMethod?.type) {
+          subscription.paymentMethod = {
+            type: paymentRecord.paymentMethod.type,
+            last4: paymentRecord.paymentMethod.last4,
+            brand: paymentRecord.paymentMethod.company,
+            expiryMonth: paymentRecord.paymentMethod.expiryMonth,
+            expiryYear: paymentRecord.paymentMethod.expiryYear,
+          };
+        }
       }
 
-      if (planCode === 'trial' || paymentTransactionId) {
+      if (planCode === 'trial' || paymentRecord) {
         await subscription.save();
+      }
+
+      // Backlink the payment to the new subscription.
+      if (paymentRecord) {
+        paymentRecord.subscriptionId = subscription._id;
+        await paymentRecord.save();
       }
     } catch (createErr) {
       // HIGH-6: payment succeeded but the subscription record didn't
       // land. Record a pending-refund audit row + admin alert; surface
       // a clear "money taken" error.
-      if (paymentTransactionId) {
+      if (paymentRecord) {
         try {
           await this._recordPendingRefund({
             userId,
             amount: planPrice,
             currency: plan?.currency || 'SAR',
-            paymentTransactionId,
+            paymentId: paymentRecord._id,
             reason: 'subscribe_create_failed',
             detail: createErr?.message,
             planCode: plan?.code,
@@ -536,6 +614,126 @@ class SubscriptionsService {
       message: `Your ${planCode} subscription has been activated successfully.`,
       messageAr: `تم تفعيل اشتراكك في باقة ${planCode} بنجاح.`,
       data: { entityType: 'subscription', entityId: subscription._id, metadata: { planCode } },
+    }).catch(console.error);
+
+    return subscription.getSummary ? subscription.getSummary() : subscription;
+  }
+
+  /**
+   * Finalize a pending-3ds subscription purchase. Called by:
+   *   - the webhook handler when `payment_paid` arrives
+   *   - the frontend's poll endpoint when the user is back from the
+   *     3DS challenge and we want to finish synchronously
+   *
+   * Idempotent: if the subscription is already created (paymentRecord
+   * has a subscriptionId), it returns the existing one.
+   */
+  async finalizePending3ds(paymentId) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) throw new NotFoundError('Payment');
+
+    if (payment.subscriptionId) {
+      const existing = await Subscription.findById(payment.subscriptionId).populate('planId');
+      if (existing) return existing;
+    }
+
+    if (payment.status !== Payment.PAYMENT_STATUS.PAID
+        && payment.status !== Payment.PAYMENT_STATUS.AUTHORIZED) {
+      throw new ValidationError(
+        `Payment ${paymentId} is in status "${payment.status}", cannot finalize`
+      );
+    }
+
+    const intent = payment.metadata?.pendingSubscribeIntent;
+    if (!intent) {
+      throw new ValidationError(`Payment ${paymentId} has no subscribe intent`);
+    }
+
+    const plan = await Plan.findById(intent.planId);
+    if (!plan) throw new ValidationError(`Plan ${intent.planId} no longer exists`);
+
+    // Cancel existing active subs (matching the pre-charge snapshot)
+    if (Array.isArray(intent.existingActiveIds)) {
+      for (const sid of intent.existingActiveIds) {
+        try {
+          const old = await Subscription.findById(sid);
+          if (old && (old.status === SUBSCRIPTION_STATUS.ACTIVE || old.status === SUBSCRIPTION_STATUS.TRIAL)) {
+            old.status = SUBSCRIPTION_STATUS.CANCELLED;
+            old.cancelledAt = new Date();
+            old.cancelReason = `Auto-cancelled on 3DS-confirmed new subscribe to ${plan.code}`;
+            await old.save();
+          }
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('[finalize3ds] cancel-old failed:', e?.message);
+        }
+      }
+    }
+
+    let subscription;
+    try {
+      subscription = await Subscription.createForUser(payment.userId, plan, {
+        pricePaid: payment.amount,
+        currency: payment.currency,
+        status: plan.code === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
+        createdBy: { user: payment.userId, onBehalfOf: false },
+      });
+
+      if (plan.code === 'trial') {
+        const TRIAL_DURATION_DAYS = 14;
+        subscription.expiresAt = new Date(
+          (subscription.activatedAt || subscription.createdAt).getTime()
+            + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000
+        );
+      }
+
+      subscription.metadata = {
+        ...(subscription.metadata || {}),
+        paymentId: payment._id,
+      };
+      if (payment.paymentMethod?.type) {
+        subscription.paymentMethod = {
+          type: payment.paymentMethod.type,
+          last4: payment.paymentMethod.last4,
+          brand: payment.paymentMethod.company,
+          expiryMonth: payment.paymentMethod.expiryMonth,
+          expiryYear: payment.paymentMethod.expiryYear,
+        };
+      }
+      await subscription.save();
+
+      payment.subscriptionId = subscription._id;
+      await payment.save();
+    } catch (createErr) {
+      await this._recordPendingRefund({
+        userId: payment.userId,
+        amount: payment.amount,
+        currency: payment.currency,
+        paymentId: payment._id,
+        reason: 'subscribe_finalize3ds_failed',
+        detail: createErr?.message,
+        planCode: plan.code,
+      });
+      throw createErr;
+    }
+
+    if (intent.discountCode) {
+      try {
+        const discountsService = require('../discounts/discounts.service');
+        await discountsService.applyDiscount(intent.discountCode);
+      } catch (e) { /* non-fatal */ }
+    }
+    await User.findByIdAndUpdate(payment.userId, {
+      subscription: subscription._id,
+      'profile.hostData.subscribedBefore': true,
+    });
+    notificationService.sendToUser(payment.userId, {
+      type: 'subscription_activated',
+      title: 'Subscription Activated',
+      titleAr: 'تم تفعيل الاشتراك',
+      message: `Your ${plan.code} subscription has been activated successfully.`,
+      messageAr: `تم تفعيل اشتراكك في باقة ${plan.code} بنجاح.`,
+      data: { entityType: 'subscription', entityId: subscription._id, metadata: { planCode: plan.code } },
     }).catch(console.error);
 
     return subscription.getSummary ? subscription.getSummary() : subscription;
@@ -731,6 +929,80 @@ class SubscriptionsService {
     return subscription.getSummary ? subscription.getSummary() : subscription;
   }
 
+  /**
+   * Phase 3 §6.2 — Renew a subscription via a Moyasar invoice.
+   *
+   * Called by `scheduleSubscriptionRenewal()` daily for subscriptions
+   * expiring within 3 days. Per-event and trial plans are skipped (they
+   * don't renew). Opens an invoice, stores the id on
+   * `subscription.metadata.pendingInvoiceId` so the
+   * `invoice_paid` / `invoice_failed` webhook handler can find it
+   * later, and emails the host the payment link.
+   */
+  async renewSubscription(subscriptionId) {
+    const subscription = await Subscription.findById(subscriptionId).populate('planId');
+    if (!subscription) throw new NotFoundError('Subscription');
+
+    const plan = subscription.planId;
+    if (!plan) throw new ValidationError('Subscription has no plan');
+
+    // Per-event and trial plans don't renew.
+    if (plan.code === 'trial' || isPerEventPlan(plan.planType)) {
+      return { skipped: true, reason: 'non_renewable_plan' };
+    }
+    if (subscription.metadata?.pendingInvoiceId) {
+      return { skipped: true, reason: 'already_pending_invoice' };
+    }
+
+    const amount = plan.pricing?.recurring ?? plan.pricing?.oneTime ?? subscription.pricePaid;
+    if (!amount || amount <= 0) {
+      return { skipped: true, reason: 'no_renewal_price' };
+    }
+
+    const callbackUrl = `${process.env.FRONTEND_URL || ''}/host/payments/return`;
+    const invoice = await paymentProvider.createInvoice({
+      amount,
+      currency: subscription.currency || 'SAR',
+      description: `Renewal — ${plan.code}`,
+      callbackUrl,
+      metadata: {
+        purpose: 'subscription_renewal',
+        subscriptionId: String(subscription._id),
+        userId: String(subscription.userId),
+        planCode: plan.code,
+      },
+    });
+    if (!invoice.success) {
+      // eslint-disable-next-line no-console
+      console.error('[renewSubscription] invoice creation failed:', invoice.error);
+      return { skipped: true, reason: 'invoice_failed', error: invoice.error };
+    }
+
+    subscription.metadata = {
+      ...(subscription.metadata || {}),
+      pendingInvoiceId: invoice.invoiceId,
+      pendingInvoiceUrl: invoice.url,
+      pendingInvoiceOpenedAt: new Date().toISOString(),
+    };
+    await subscription.save();
+
+    // Notify the host (non-blocking).
+    notificationService.sendToUser(subscription.userId, {
+      type: 'subscription_renewal_invoice',
+      title: 'Renew your subscription',
+      titleAr: 'جدد اشتراكك',
+      message: `Your ${plan.code} subscription is renewing soon. Pay here: ${invoice.url}`,
+      messageAr: `سيتم تجديد اشتراك ${plan.code} قريبًا. ادفع هنا: ${invoice.url}`,
+      data: {
+        entityType: 'subscription',
+        entityId: subscription._id,
+        metadata: { invoiceId: invoice.invoiceId, invoiceUrl: invoice.url },
+      },
+    }).catch(console.error);
+
+    return { ok: true, invoiceId: invoice.invoiceId, invoiceUrl: invoice.url };
+  }
+
   // ============================================
   // PACKAGE/LIMIT VALIDATION
   // ============================================
@@ -911,7 +1183,7 @@ class SubscriptionsService {
   }
 
   /**
-   * Get current user's payment history (backed by Subscription records)
+   * Get current user's payment history (backed by Payment collection)
    * @param {string} userId
    * @param {Object} options - { page, limit, status, from, to }
    * @returns {Promise<Object>}
@@ -922,44 +1194,57 @@ class SubscriptionsService {
 
     const match = { userId };
 
-    // Map payment status filter back to subscription statuses
     if (status && status !== 'all') {
       const statusMap = {
-        completed: { $in: ['active', 'completed'] },
-        pending: 'trial',
-        failed: { $in: ['cancelled', 'expired'] },
+        completed: { $in: ['paid', 'captured', 'partially_refunded'] },
+        pending: { $in: ['pending', 'pending_3ds', 'authorized'] },
+        failed: { $in: ['failed', 'voided'] },
+        refunded: { $in: ['refunded', 'partially_refunded'] },
       };
       if (statusMap[status]) {
         match.status = statusMap[status];
       }
     }
 
-    // Date range filter
     if (from || to) {
       match.createdAt = {};
       if (from) match.createdAt.$gte = new Date(from);
       if (to) match.createdAt.$lte = new Date(to);
     }
 
-    const [subscriptions, total] = await Promise.all([
-      Subscription.find(match)
-        .populate('planId', 'name nameEn nameAr code')
+    const [rows, total] = await Promise.all([
+      Payment.find(match)
+        .populate('subscriptionId', 'planId pricePaid')
+        .populate('addonId', 'addonType price')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Subscription.countDocuments(match),
+      Payment.countDocuments(match),
     ]);
 
-    const payments = subscriptions.map((sub) => ({
-      id: sub._id,
-      service: sub.planId?.nameEn || sub.planId?.name || sub.planId?.code || 'Subscription',
-      amount: sub.pricePaid || 0,
-      currency: sub.currency || 'SAR',
-      status: this._mapSubStatusToPayment(sub.status),
-      billingCycle: sub.billingCycle,
-      subscriptionStatus: sub.status,
-      createdAt: sub.createdAt,
+    const payments = rows.map((p) => ({
+      id: p._id,
+      service: p.metadata?.purpose === 'addon'
+        ? `Addon: ${p.metadata?.addonType || p.addonId?.addonType || ''}`
+        : `Subscription: ${p.metadata?.planCode || ''}`,
+      amount: p.amount,
+      currency: p.currency || 'SAR',
+      status: ['paid', 'captured'].includes(p.status)
+        ? 'completed'
+        : ['pending', 'pending_3ds', 'authorized'].includes(p.status)
+        ? 'pending'
+        : ['failed', 'voided'].includes(p.status)
+        ? 'failed'
+        : ['refunded', 'partially_refunded'].includes(p.status)
+        ? 'refunded'
+        : p.status,
+      providerStatus: p.status,
+      paymentMethod: p.paymentMethod?.type || null,
+      paymentMethodLast4: p.paymentMethod?.last4 || null,
+      transactionId: p.moyasarPaymentId,
+      refundedAmount: p.refundedAmount || 0,
+      createdAt: p.createdAt,
     }));
 
     return {
@@ -989,30 +1274,36 @@ class SubscriptionsService {
     userId,
     amount,
     currency,
-    paymentTransactionId,
+    paymentId,
     reason,
     detail,
     planCode,
   }) {
+    const moyasarPaymentId = paymentId
+      ? (await Payment.findById(paymentId).select('moyasarPaymentId'))?.moyasarPaymentId
+      : null;
+
     // eslint-disable-next-line no-console
     console.error(
-      '[subscribe] PENDING REFUND %s userId=%s amount=%s tx=%s detail=%s',
+      '[subscribe] PENDING REFUND %s userId=%s amount=%s paymentId=%s moyasarId=%s detail=%s',
       reason,
       userId,
       amount,
-      paymentTransactionId || 'n/a',
+      paymentId || 'n/a',
+      moyasarPaymentId || 'n/a',
       detail || 'n/a'
     );
     await logAudit({
       action: 'subscription.pending_refund',
       actor: { _id: userId, role: 'host' },
-      targetType: 'system',
-      targetId: paymentTransactionId || userId,
+      targetType: 'payment',
+      targetId: paymentId || userId,
       metadata: {
         reason,
         amount,
         currency,
-        paymentTransactionId,
+        paymentId,
+        moyasarPaymentId,
         planCode,
         detail,
       },
@@ -1025,11 +1316,11 @@ class SubscriptionsService {
         titleAr: 'اشتراك يحتاج إلى استرداد',
         message:
           `Charge succeeded but the subscription record could not be created. `
-          + `Tx ${paymentTransactionId || 'n/a'} userId ${userId} plan ${planCode || 'n/a'}.`,
+          + `paymentId ${paymentId || 'n/a'} moyasarId ${moyasarPaymentId || 'n/a'} userId ${userId} plan ${planCode || 'n/a'}.`,
         data: {
-          entityType: 'subscription',
-          entityId: paymentTransactionId || userId,
-          metadata: { reason, amount, currency, paymentTransactionId, planCode },
+          entityType: 'payment',
+          entityId: paymentId || userId,
+          metadata: { reason, amount, currency, paymentId, moyasarPaymentId, planCode },
         },
         priority: 'high',
       });

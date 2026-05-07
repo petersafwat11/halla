@@ -31,15 +31,23 @@ exports.getMySubscription = catchAsync(async (req, res) => {
  * POST /api/v2/subscriptions/subscribe
  */
 exports.subscribe = catchAsync(async (req, res) => {
-  const { planCode, discountCode } = req.body;
+  const { planCode, discountCode, source, callbackUrl } = req.body;
   const idempotencyKey = req.get('idempotency-key') || undefined;
-  const subscription = await subscriptionsService.subscribe(req.user._id, {
+
+  const result = await subscriptionsService.subscribe(req.user._id, {
     planCode,
     discountCode,
+    source,
+    callbackUrl,
     idempotencyKey,
   });
 
-  sendCreated(res, subscription, 'Subscription created successfully');
+  if (result?.requiresAction) {
+    // 3DS / STC OTP redirect — no resource created yet. Use 200 so the
+    // client distinguishes "completed" (201) from "redirect required" (200).
+    return sendSuccess(res, result, 'Payment requires additional action');
+  }
+  return sendCreated(res, result, 'Subscription created successfully');
 });
 
 /**

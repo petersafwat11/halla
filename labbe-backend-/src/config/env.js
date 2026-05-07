@@ -79,6 +79,13 @@ const envSchema = Joi.object({
   // to narrow filters.
   EXPORT_MAX_ROWS: Joi.number().min(100).default(10_000),
 
+  // ─── Moyasar (payments) ────────────────────────────────────────
+  MOYASAR_API_KEY: Joi.string().allow('').default(''),
+  MOYASAR_PUBLISHABLE_KEY: Joi.string().allow('').default(''),
+  MOYASAR_BASE_URL: Joi.string().uri().default('https://api.moyasar.com/v1'),
+  MOYASAR_WEBHOOK_SECRET: Joi.string().allow('').default(''),
+  MOYASAR_WEBHOOK_IP_WHITELIST: Joi.string().allow('').default(''),
+
 }).unknown(true); // Allow unknown keys for flexibility
 
 const { error, value: envVars } = envSchema.validate(process.env, {

@@ -1,28 +1,18 @@
 /**
  * Payment provider factory.
  *
- * Phase 1b foundation. Choose Moyasar or the stub provider based on
- * `MOYASAR_API_KEY`. The chosen provider is logged once at module load so
- * it is obvious in boot logs which mode is active. Consumers import
- * `paymentProvider` and call `.charge(...)`; they don't care which
- * implementation backs it.
+ * Chooses Moyasar or stub based on `MOYASAR_API_KEY`. Wraps `charge()`
+ * with `withIdempotency()` so the outbound call is exactly-once when
+ * the caller supplies an `idempotencyKey`. The same key is also passed
+ * down to the provider, which converts it to a Moyasar `given_id` —
+ * defense in depth: if the network retries past our cache, Moyasar
+ * still dedupes.
  *
- * Cross-utility wiring: `charge()` accepts an `idempotencyKey` and uses
- * the idempotency utility (`shared/utils/idempotency`) to guarantee
- * exactly-once external calls when the caller supplies a key. This pairs
- * with the Phase 1b idempotency utility — the same key that guards the
- * HTTP route also guards the outbound charge.
- *
- * AMOUNT UNIT (B-2): see `moyasar.js`. `amount` is a SAR major-unit
- * number (e.g. 29 = 29.00 SAR, 99.99 = 99.99 SAR). The provider
- * converts to halalas internally — callers MUST pass SAR.
- *
- * REQUEST HASH (post-M-1 fix):
- * The idempotency layer requires a `requestHash` so that a key reused
- * with a different body is detected as a conflict. We compute it here
- * over the canonical, side-effect-relevant fields — explicitly EXCLUDING
- * `idempotencyKey` itself (it is not part of the logical payload) and
- * `customer` PII (which can carry session-volatile fields).
+ * `fetchPayment`, `refund`, `capture`, `voidPayment` are passed through
+ * directly. Refunds are NOT idempotency-wrapped at this layer because
+ * partial refunds must be permitted in sequence (one /refund call per
+ * partial event). The admin endpoints have their own idempotency
+ * middleware to guard double-clicks.
  */
 
 const stub = require("./stub");
@@ -39,30 +29,15 @@ console.log(
 );
 
 const computeChargeRequestHash = (params) => {
-  const { amount, currency, paymentMethod, metadata } = params || {};
+  const { amount, currency, source, metadata } = params || {};
   return sha256({
     amount: amount ?? null,
     currency: currency ?? null,
-    paymentMethod: paymentMethod ?? null,
+    sourceType: source?.type ?? null,
     metadata: metadata ?? null,
   });
 };
 
-/**
- * Charge a customer.
- *
- * @param {Object} params
- * @param {number} params.amount         REQUIRED. SAR major units —
- *                                        e.g. 29 (= 29.00 SAR) or 99.99.
- * @param {string} [params.currency]     ISO-4217. Default "SAR".
- * @param {Object} [params.customer]
- * @param {Object} [params.metadata]
- * @param {string} [params.idempotencyKey]
- * @param {string} [params.paymentMethod]
- * @param {string|import('mongoose').Types.ObjectId|null} [params.userId]
- *   Used to scope the idempotency record per-user. Defaults to null.
- * @returns {Promise<Object>}
- */
 const charge = async (params) => {
   const { idempotencyKey, userId = null } = params || {};
   if (!idempotencyKey) {
@@ -82,6 +57,17 @@ const charge = async (params) => {
 module.exports = {
   active,
   charge,
-  refund: (...args) => active.refund(...args),
+  fetchPayment: (id) => active.fetchPayment(id),
+  refund: (params) => active.refund(params),
+  capture: (params) => active.capture(params),
+  voidPayment: (params) => active.voidPayment(params),
+  createInvoice: (params) =>
+    typeof active.createInvoice === "function"
+      ? active.createInvoice(params)
+      : Promise.resolve({ success: false, error: "createInvoice not supported", provider: active.name }),
+  fetchInvoice: (id) =>
+    typeof active.fetchInvoice === "function"
+      ? active.fetchInvoice(id)
+      : Promise.resolve({ success: false, error: "fetchInvoice not supported", provider: active.name }),
   isMoyasarConfigured,
 };
