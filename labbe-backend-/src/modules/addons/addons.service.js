@@ -9,9 +9,11 @@ const {
   DESIGN_TEMPLATE_TIERS,
   BUSINESS_CUSTOMIZATION,
 } = require('../../shared/constants/addons');
+const { ROLES } = require('../../shared/constants/roles');
 const { ValidationError, NotFoundError } = require('../../shared/errors');
 const paymentProvider = require('../../infrastructure/paymentProvider');
 const { logAudit } = require('../../shared/utils/auditLog');
+const logger = require('../../shared/utils/logger');
 const notificationService = require('../notifications/notifications.service');
 
 /**
@@ -72,6 +74,17 @@ class AddonsService {
       const hostId = targetEvent.host?.toString?.() || targetEvent.host;
       if (hostId && hostId.toString() !== userId.toString()) {
         throw new ValidationError('eventId does not belong to current user');
+      }
+      // Reject extra_invites for an event with unlimited capacity. _applyQuota
+      // would silently no-op on guestLimit null/-1 — without this guard the
+      // host would pay and get nothing back.
+      if (
+        addonType === ADDON_TYPES.EXTRA_INVITES
+        && (targetEvent.guestLimit === null || targetEvent.guestLimit === -1)
+      ) {
+        throw new ValidationError(
+          'Cannot purchase extra invites: this event already has unlimited capacity.'
+        );
       }
     }
 
@@ -149,13 +162,19 @@ class AddonsService {
         paymentRecord.status = Payment.PAYMENT_STATUS.FAILED;
         paymentRecord.failedAt = new Date();
         paymentRecord.providerStatus = charge.providerStatus || charge.error || 'unknown';
-        await paymentRecord.save().catch(() => {});
+        try {
+          await paymentRecord.save();
+        } catch (saveErr) {
+          logger.error('[addons.purchase] failed to persist FAILED payment status', {
+            paymentId: paymentRecord._id,
+            error: saveErr?.message,
+          });
+        }
 
-        // eslint-disable-next-line no-console
-        console.error(
-          '[addons.purchase] payment provider error:',
-          charge.error || charge.providerStatus || 'unknown'
-        );
+        logger.error('[addons.purchase] payment provider error', {
+          error: charge.error || charge.providerStatus || 'unknown',
+          paymentId: paymentRecord._id,
+        });
         throw new ValidationError('Payment failed; addon not activated');
       }
 
@@ -256,7 +275,18 @@ class AddonsService {
 
       if (paymentRecord) {
         paymentRecord.addonId = addon._id;
-        await paymentRecord.save().catch(() => {});
+        try {
+          await paymentRecord.save();
+        } catch (saveErr) {
+          // Non-fatal: addon row was created and quota will be applied; this only
+          // misses the back-reference from Payment to Addon. Reconciliation can
+          // recover via Payment.metadata.purpose === 'addon'.
+          logger.error('[addons.purchase] failed to persist payment.addonId back-reference', {
+            paymentId: paymentRecord._id,
+            addonId: addon._id,
+            error: saveErr?.message,
+          });
+        }
       }
     } catch (createErr) {
       await this._recordPendingRefund({
@@ -316,7 +346,7 @@ class AddonsService {
 
     await logAudit({
       action: 'addon.purchased',
-      actor: { _id: userId, role: 'host' },
+      actor: { _id: userId, role: ROLES.HOST },
       targetType: 'system',
       targetId: addon._id,
       metadata: {
@@ -373,8 +403,24 @@ class AddonsService {
     return addon;
   }
 
-  async getMyAddons(userId) {
-    return Addon.find({ userId }).sort({ createdAt: -1 });
+  async getMyAddons(userId, { page = 1, limit = 20, skip = 0 } = {}) {
+    const [items, total] = await Promise.all([
+      Addon.find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Addon.countDocuments({ userId }),
+    ]);
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit) || 1,
+      },
+    };
   }
 
   // ---- internals ----
@@ -442,19 +488,17 @@ class AddonsService {
       const moyasarPaymentId = paymentId
         ? (await Payment.findById(paymentId).select('moyasarPaymentId'))?.moyasarPaymentId
         : null;
-      // eslint-disable-next-line no-console
-      console.error(
-        '[addons.purchase] PENDING REFUND %s userId=%s amount=%s paymentId=%s moyasarId=%s detail=%s',
+      logger.error('[addons.purchase] PENDING REFUND', {
         reason,
         userId,
         amount,
-        paymentId || 'n/a',
-        moyasarPaymentId || 'n/a',
-        detail || 'n/a'
-      );
+        paymentId: paymentId || null,
+        moyasarPaymentId: moyasarPaymentId || null,
+        detail: detail || null,
+      });
       await logAudit({
         action: 'addon.pending_refund',
-        actor: { _id: userId, role: 'host' },
+        actor: { _id: userId, role: ROLES.HOST },
         targetType: 'payment',
         targetId: paymentId || addonId || userId,
         metadata: {
@@ -485,12 +529,14 @@ class AddonsService {
           priority: 'high',
         });
       } catch (notifyErr) {
-        // eslint-disable-next-line no-console
-        console.warn('[addons.purchase] admin notify failed:', notifyErr?.message);
+        logger.warn('[addons.purchase] admin notify failed', {
+          error: notifyErr?.message,
+        });
       }
     } catch (auditErr) {
-      // eslint-disable-next-line no-console
-      console.error('[addons.purchase] _recordPendingRefund logAudit failed:', auditErr?.message);
+      logger.error('[addons.purchase] _recordPendingRefund logAudit failed', {
+        error: auditErr?.message,
+      });
     }
   }
 
@@ -658,7 +704,7 @@ class AddonsService {
 
     await logAudit({
       action: 'addon.purchased_3ds',
-      actor: { _id: userId, role: 'host' },
+      actor: { _id: userId, role: ROLES.HOST },
       targetType: 'system',
       targetId: addon._id,
       metadata: {

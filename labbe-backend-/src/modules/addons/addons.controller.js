@@ -1,4 +1,5 @@
 const addonsService = require('./addons.service');
+const { getPaginationFromQuery } = require('../../shared/utils/responseHelper');
 
 const getAvailableAddons = async (req, res, next) => {
   try {
@@ -21,6 +22,7 @@ const purchaseAddon = async (req, res, next) => {
     if (result?.requiresAction) {
       return res.status(200).json({ success: true, data: result });
     }
+    // audit middleware reads res.locals.addonAudit
     res.locals.addonAudit = { addonId: result._id, status: result.status };
     res.status(201).json({ success: true, data: result });
   } catch (err) { next(err); }
@@ -28,15 +30,12 @@ const purchaseAddon = async (req, res, next) => {
 
 const getMyAddons = async (req, res, next) => {
   try {
-    const addons = await addonsService.getMyAddons(req.user._id);
-    res.json({ success: true, data: addons });
+    const pagination = getPaginationFromQuery(req.query, 20);
+    const result = await addonsService.getMyAddons(req.user._id, pagination);
+    res.json({ success: true, data: result.items, pagination: result.pagination });
   } catch (err) { next(err); }
 };
 
-/**
- * Admin-only: activate a `pending_provisioning` addon.
- * POST /addons/admin/:id/activate
- */
 const adminActivateAddon = async (req, res, next) => {
   try {
     const { notes } = req.body || {};
@@ -45,6 +44,7 @@ const adminActivateAddon = async (req, res, next) => {
       req.params.id,
       notes
     );
+    // audit middleware reads res.locals.addonAudit
     res.locals.addonAudit = { addonId: addon._id, status: addon.status };
     res.json({ success: true, data: addon });
   } catch (err) { next(err); }
