@@ -453,45 +453,10 @@ exports.retryLaunch = catchAsync(async (req, res) => {
 });
 
 // ============================================
-// ADMIN ENDPOINTS
+// ADMIN ENDPOINTS — extracted to events.admin.controller.js, re-exported
+// here so any external imports of `events.controller` keep working.
 // ============================================
-
-/**
- * Get all events (admin)
- * GET /api/v2/events/admin/all
- */
-exports.getAllEvents = catchAsync(async (req, res) => {
-  const { page, limit, ...filters } = req.query;
-  const options = { page: parseInt(page) || 1, limit: parseInt(limit) || 10 };
-
-  const result = await eventsService.getAllEvents(
-    filters,
-    options,
-    req.whitelabelFilter
-  );
-  sendPaginated(res, result.data, result.pagination);
-});
-
-/**
- * Admin update event status
- * PATCH /api/v2/events/admin/:id/status
- */
-exports.adminUpdateEventStatus = catchAsync(async (req, res) => {
-  const { status } = req.body;
-  const result = await eventsService.updateEventStatus(
-    req.params.id,
-    status,
-    req.user._id,
-    true
-  );
-  sendSuccess(res, result, "Event status updated successfully");
-});
-
-/**
- * Admin delete event
- * DELETE /api/v2/events/admin/:id
- */
-exports.adminDeleteEvent = catchAsync(async (req, res) => {
-  await eventsService.deleteEvent(req.params.id, req.user._id, true);
-  sendDeleted(res, "Event deleted successfully");
-});
+const adminController = require("./events.admin.controller");
+exports.getAllEvents = adminController.getAllEvents;
+exports.adminUpdateEventStatus = adminController.adminUpdateEventStatus;
+exports.adminDeleteEvent = adminController.adminDeleteEvent;

@@ -24,7 +24,7 @@ const staffController = require("../staff/staff.controller");
 
 // Middleware (using existing during migration)
 const { protect } = require("../../shared/middleware/auth");
-const { restrictTo, requirePageAccess } = require("../../shared/middleware/rbac");
+const { restrictTo } = require("../../shared/middleware/rbac");
 const {
   requireSubscription,
   checkEventLimit,
@@ -56,11 +56,12 @@ const {
   updateStaffSchema,
   updateStaffStatusSchema,
   bulkDeleteSchema,
-  adminUpdateStatusSchema,
   notifyStaffSchema,
 } = require("./events.validation");
 
-const { ADMIN_PAGES, ROLES } = require("../../shared/constants");
+const adminRouter = require("./events.admin.routes");
+
+const { ROLES } = require("../../shared/constants");
 
 // All routes require authentication
 router.use(protect);
@@ -1041,113 +1042,8 @@ router.post(
 );
 
 // ============================================
-// ADMIN EVENT ROUTES
+// ADMIN EVENT ROUTES — extracted to events.admin.routes.js
 // ============================================
-
-/**
- * @swagger
- * /events/admin/all:
- *   get:
- *     summary: Get all events (admin)
- *     description: Retrieve all events. Requires admin role with events view permission
- *     tags: [Events]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - $ref: '#/components/parameters/PageParam'
- *       - $ref: '#/components/parameters/LimitParam'
- *     responses:
- *       200:
- *         description: Events retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     events:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Event'
- *                     pagination:
- *                       $ref: '#/components/schemas/Pagination'
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       403:
- *         description: Insufficient permissions
- */
-router.get(
-  "/admin/all",
-  requirePageAccess(ADMIN_PAGES.EVENTS, "view"),
-  filterByWhitelabel,
-  eventsController.getAllEvents
-);
-
-/**
- * @swagger
- * /events/admin/{id}/status:
- *   patch:
- *     summary: Admin update event status
- *     description: Update event status. Requires admin role with events update permission
- *     tags: [Events]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - $ref: '#/components/parameters/IdParam'
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AdminUpdateStatusRequest'
- *     responses:
- *       200:
- *         description: Event status updated successfully
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       403:
- *         description: Insufficient permissions
- *       404:
- *         $ref: '#/components/responses/NotFound'
- */
-router.patch(
-  "/admin/:id/status",
-  validateObjectId("id"),
-  requirePageAccess(ADMIN_PAGES.EVENTS, "update"),
-  validateZod(adminUpdateStatusSchema),
-  eventsController.adminUpdateEventStatus
-);
-
-/**
- * @swagger
- * /events/admin/{id}:
- *   delete:
- *     summary: Admin delete event
- *     description: Delete an event. Requires admin role with events delete permission
- *     tags: [Events]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - $ref: '#/components/parameters/IdParam'
- *     responses:
- *       200:
- *         description: Event deleted successfully
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       403:
- *         description: Insufficient permissions
- *       404:
- *         $ref: '#/components/responses/NotFound'
- */
-router.delete(
-  "/admin/:id",
-  validateObjectId("id"),
-  requirePageAccess(ADMIN_PAGES.EVENTS, "delete"),
-  eventsController.adminDeleteEvent
-);
+router.use("/admin", adminRouter);
 
 module.exports = router;
