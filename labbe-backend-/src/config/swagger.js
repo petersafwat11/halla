@@ -990,6 +990,177 @@ const swaggerOptions = {
           },
         },
 
+        // ---- Addon Models ----
+        AddonTier: {
+          type: 'object',
+          properties: {
+            quantity: { type: 'integer', example: 10 },
+            price: { type: 'number', example: 40 },
+          },
+        },
+        AddonDesignTier: {
+          type: 'object',
+          properties: {
+            type: {
+              type: 'string',
+              enum: ['ready_made', 'custom_male', 'custom_themed', 'animated', '3d'],
+            },
+            nameAr: { type: 'string' },
+            nameEn: { type: 'string' },
+            price: { type: 'number' },
+          },
+        },
+        AddonBusinessCustomization: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', example: 'business_customization' },
+            nameAr: { type: 'string' },
+            nameEn: { type: 'string' },
+            price: { type: 'number', example: 2500 },
+            descriptionAr: { type: 'string' },
+            descriptionEn: { type: 'string' },
+          },
+        },
+        AddonCatalog: {
+          type: 'object',
+          properties: {
+            extra_invites: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/AddonTier' },
+            },
+            extra_reminders: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/AddonTier' },
+            },
+            design_template: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/AddonDesignTier' },
+            },
+            business_customization: {
+              $ref: '#/components/schemas/AddonBusinessCustomization',
+            },
+          },
+        },
+        Addon: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            userId: { type: 'string' },
+            addonType: {
+              type: 'string',
+              enum: [
+                'extra_invites',
+                'extra_reminders',
+                'design_template',
+                'business_customization',
+              ],
+            },
+            quantity: { type: 'integer' },
+            templateType: { type: 'string', nullable: true },
+            price: { type: 'number' },
+            currency: { type: 'string', example: 'SAR' },
+            scope: { type: 'string', enum: ['event', 'pool', 'org'] },
+            subscriptionId: { type: 'string', nullable: true },
+            eventId: { type: 'string', nullable: true },
+            status: {
+              type: 'string',
+              enum: [
+                'pending',
+                'active',
+                'pending_provisioning',
+                'failed_quota',
+                'cancelled',
+              ],
+            },
+            metadata: { type: 'object' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        AddonPurchaseRequest: {
+          type: 'object',
+          required: ['addonType'],
+          properties: {
+            addonType: {
+              type: 'string',
+              enum: [
+                'extra_invites',
+                'extra_reminders',
+                'design_template',
+                'business_customization',
+              ],
+            },
+            quantity: {
+              type: 'integer',
+              description: 'Required for extra_invites and extra_reminders',
+              minimum: 1,
+              maximum: 50,
+            },
+            templateType: {
+              type: 'string',
+              enum: ['ready_made', 'custom_male', 'custom_themed', 'animated', '3d'],
+              description: 'Required for design_template; forbidden otherwise',
+            },
+            scope: {
+              type: 'string',
+              enum: ['event', 'pool', 'org'],
+              description: 'Defaults to pool/org per addon type',
+            },
+            eventId: {
+              type: 'string',
+              pattern: '^[0-9a-fA-F]{24}$',
+              description: 'Required when scope is "event"',
+            },
+            subscriptionId: {
+              type: 'string',
+              pattern: '^[0-9a-fA-F]{24}$',
+            },
+            source: {
+              type: 'object',
+              properties: {
+                type: {
+                  type: 'string',
+                  enum: ['creditcard', 'creditcard_3ds_test', 'stcpay', 'applepay'],
+                },
+                name: { type: 'string' },
+                number: { type: 'string' },
+                month: { oneOf: [{ type: 'integer' }, { type: 'string' }] },
+                year: { oneOf: [{ type: 'integer' }, { type: 'string' }] },
+                cvc: { type: 'string' },
+                mobile: { type: 'string' },
+                token: { type: 'string', nullable: true },
+              },
+            },
+          },
+        },
+        AddonPurchaseResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: { $ref: '#/components/schemas/Addon' },
+          },
+        },
+        Addon3DSResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: {
+                requiresAction: { type: 'boolean', example: true },
+                redirectUrl: { type: 'string', format: 'uri' },
+                paymentId: { type: 'string' },
+              },
+            },
+          },
+        },
+        AdminActivateRequest: {
+          type: 'object',
+          properties: {
+            notes: { type: 'string', maxLength: 2000 },
+          },
+        },
+
         // Subscription Request Models
         SubscribeRequest: {
           type: 'object',

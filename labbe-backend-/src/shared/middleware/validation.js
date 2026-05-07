@@ -359,3 +359,27 @@ exports.validate = (schema, source = 'body') => {
     next();
   };
 };
+
+/**
+ * Generic Zod schema validation middleware
+ * Mirrors `validate` but accepts a Zod schema. On parse success the parsed
+ * (coerced + stripped) value replaces req[source] so downstream handlers
+ * read the canonical shape.
+ *
+ * @param {import('zod').ZodTypeAny} schema - Zod schema
+ * @param {string} [source='body'] - Request property to validate ('body', 'query', 'params')
+ * @returns {Function} Express middleware
+ */
+exports.validateZod = (schema, source = 'body') => {
+  return (req, res, next) => {
+    const result = schema.safeParse(req[source]);
+    if (!result.success) {
+      const message = result.error.issues
+        .map((i) => `${i.path.join('.') || source}: ${i.message}`)
+        .join(', ');
+      return next(new AppError(message, 400));
+    }
+    req[source] = result.data;
+    next();
+  };
+};
