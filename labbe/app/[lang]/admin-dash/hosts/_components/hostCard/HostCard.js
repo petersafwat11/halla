@@ -78,7 +78,6 @@ const HostCard = ({ data }) => {
       toast.success(t("actions.suspendSuccess", "تم إيقاف المضيف بنجاح"));
       router.refresh();
     } catch (error) {
-      console.error("Error suspending host:", error);
       toast.error(t("actions.suspendError", "فشل في إيقاف المضيف"));
     }
   };
@@ -96,7 +95,6 @@ const HostCard = ({ data }) => {
       toast.success(t("actions.activateSuccess", "تم تنشيط المضيف بنجاح"));
       router.refresh();
     } catch (error) {
-      console.error("Error activating host:", error);
       toast.error(t("actions.activateError", "فشل في تنشيط المضيف"));
     }
   };

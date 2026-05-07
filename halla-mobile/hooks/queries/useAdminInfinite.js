@@ -1,33 +1,12 @@
 /**
- * Phase 4 W3-PAGE — infinite-query variants of the admin list hooks.
+ * Infinite-query variants of the admin list hooks.
+ * Each hook wraps `useInfiniteQuery` for FlatList `onEndReached`-driven
+ * pagination (page size 20). Returns { items, isLoading, isFetchingNextPage,
+ * hasNextPage, fetchNextPage, refetch, error }.
  *
- * Each hook wraps `useInfiniteQuery` so the screens can switch from a
- * "fetch first 20 then stop" pattern to FlatList `onEndReached`-driven
- * pagination. Page size is 20 across the board (master plan D5).
- *
- * Each hook returns a flattened helper API:
- *
- *   const { items, isLoading, isFetchingNextPage, hasNextPage,
- *           fetchNextPage, refetch, error } = useAdminHostsInfinite();
- *
- * **Filter handling (Phase 4 review fix).** Each hook accepts a
- * `filters` object that's serialized into the query string; React
- * Query keys on `filters` so changing the filter automatically resets
- * pagination to page 1 and refetches. Without this, screens that
- * filter client-side miss matching rows on later pages.
- *
- * Backend response shapes (both supported by `_normalizePage`):
- *   - `sendSuccess(res, { hosts, pagination })` →
- *     `{ data: { data: { hosts, pagination } } }` after the apiRequest
- *     wrap (used by the `/admin/*` endpoints).
- *   - `sendPaginated(res, array, pagination)` →
- *     `{ data: { data: array, pagination } }` after the apiRequest
- *     wrap (used by `/events/admin/all`, `/tickets`).
- *
- * `pagination.hasMore` is the canonical "is there a next page" flag.
- * When absent we fall back through `pagination.pages` /
- * `pagination.totalPages` / `pagination.total` / a "did the page return
- * exactly `limit` rows?" heuristic.
+ * Backend endpoints return two shapes — both handled by `_normalizePage`:
+ *   - `sendSuccess(res, { hosts, pagination })` — object-envelope (admin endpoints)
+ *   - `sendPaginated(res, array, pagination)` — array + sibling pagination
  */
 
 import { useInfiniteQuery } from "@tanstack/react-query";

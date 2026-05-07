@@ -26,8 +26,6 @@ import { useTranslation } from "../../../localization";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// H-15: roles that REQUIRE a whitelabelId server-side. Mirror of the web
-// AddModeratorPopup constant.
 const ROLES_THAT_NEED_TENANT = new Set([
   "admin",
   "moderator",
@@ -43,10 +41,6 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
   const currentUser = useAuthStore((s) => s.user);
   const isSuperAdmin = currentUser?.role === "super_admin";
 
-  // H-15: whitelabel tenant picker for SUPER_ADMIN. Other roles never see
-  // the picker (the backend auto-inherits whitelabelId for WL admins).
-  // Gate the request on `isSuperAdmin` so non-super-admins don't hit
-  // /admin/whitelabels and trigger 401/403 log noise.
   const whitelabelsQuery = useAdminWhitelabels({}, { enabled: isSuperAdmin });
   const whitelabelOptions = (
     whitelabelsQuery.data?.data ||
@@ -125,8 +119,6 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
     if (!isEdit && !formData.phoneNumber.trim()) {
       e.phoneNumber = t("moderators.add.phoneRequired");
     }
-    // H-15: SUPER_ADMIN must select a tenant for ADMIN/MODERATOR/WL_*
-    // creations.
     if (showWhitelabelPicker && !formData.whitelabelId) {
       e.whitelabelId = t("moderators.add.whitelabelRequired");
     }
@@ -144,9 +136,6 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
         role:        formData.role,
       };
       if (!isEdit) payload.password = formData.password;
-      // H-15: only attach whitelabelId when picker was shown (SUPER_ADMIN
-      // creating a tenant-scoped role). WHITELABEL_ADMIN inheritance is
-      // handled server-side from req.user.whitelabelId.
       if (showWhitelabelPicker && formData.whitelabelId) {
         payload.whitelabelId = formData.whitelabelId;
       }

@@ -24,10 +24,6 @@ const WhitelabelList = ({
   hasMore = false,
   onLoadMore,
   loadingMore = false,
-  // Phase 4 review fix — controlled filter props from the screen so
-  // server-side filtering re-keys the infinite query on change. The
-  // existing prop name in this list is `search` (not `searchQuery`),
-  // matching the existing `setSearch`.
   search: searchProp,
   onSearchChange,
   activeFilter: activeFilterProp,
@@ -51,8 +47,6 @@ const WhitelabelList = ({
   const bulkSuspend = useBulkSuspendWhitelabels();
   const toast = useToast();
 
-  // Phase 4 review: counts dropped — they were misleading once we
-  // paginate server-side and only loaded pages contributed.
   const filterOptions = useMemo(
     () =>
       FILTER_IDS.map((id) => ({

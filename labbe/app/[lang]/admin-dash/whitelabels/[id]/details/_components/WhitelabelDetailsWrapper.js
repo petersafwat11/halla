@@ -1,10 +1,12 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { useAdminWhitelabel } from "@/hooks/reactQueryHooks/useAdmin";
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import {
+  useAdminWhitelabel,
+  useAdminWhitelabelFeatures,
+  useAdminWhitelabelFeatureMutation,
+} from "@/hooks/reactQueryHooks/useAdmin";
 import { handleError } from "@/services/errorHandlingService";
 import FeatureToggle from "@/ui/admin/FeatureToggle";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -35,44 +37,24 @@ const WhitelabelDetailsWrapper = ({ whitelabelId }) => {
   const { lang } = useParams();
   const { t } = useTranslation("adminWhitelabels");
   const { data, isLoading, error } = useAdminWhitelabel(whitelabelId);
-
-  const [features, setFeatures] = useState([]);
-  const [loadingFeatures, setLoadingFeatures] = useState(false);
+  const {
+    data: featuresData,
+    isLoading: loadingFeatures,
+  } = useAdminWhitelabelFeatures(whitelabelId);
+  const featureMutation = useAdminWhitelabelFeatureMutation(whitelabelId);
 
   const wl = data?.data?.whitelabel || data?.data || data;
   const wlData = wl?.roleData || wl?.profile?.whitelabelData || {};
   const planSelection = wl?.planSelection || {};
-
-  const fetchFeatures = useCallback(async () => {
-    if (!whitelabelId) return;
-    try {
-      setLoadingFeatures(true);
-      const result = await apiRequest({
-        method: "GET",
-        path: `${API_PATHS.admin.whitelabels.getById(whitelabelId)}/features`,
-      });
-      setFeatures(result.data?.features || []);
-    } catch (err) {
-      console.error("Error fetching features:", err);
-    } finally {
-      setLoadingFeatures(false);
-    }
-  }, [whitelabelId]);
-
-  useEffect(() => { fetchFeatures(); }, [fetchFeatures]);
+  const features = featuresData?.data?.features || [];
 
   const handleFeatureToggle = useCallback(async (featureName, enabled) => {
     try {
-      await apiRequest({
-        method: "PATCH",
-        path: `${API_PATHS.admin.whitelabels.getById(whitelabelId)}/features`,
-        data: { feature: featureName, enabled },
-      });
-      setFeatures((prev) => prev.map((f) => (f.name === featureName ? { ...f, enabled } : f)));
+      await featureMutation.mutateAsync({ feature: featureName, enabled });
     } catch (err) {
       handleError(err, t, { fallbackMessage: "errors.featureToggleFailed" });
     }
-  }, [whitelabelId, t]);
+  }, [featureMutation, t]);
 
   if (isLoading) return <SimpleLoading />;
 

@@ -24,10 +24,6 @@ const HostList = ({
   hasMore = false,
   onLoadMore,
   loadingMore = false,
-  // Phase 4 review fix — when these are passed, the screen owns the
-  // filter state and we forward changes upward so the infinite hook
-  // can re-key. When omitted, we fall back to local UI state for
-  // backwards compatibility.
   searchQuery: searchQueryProp,
   onSearchQueryChange,
   activeFilter: activeFilterProp,
@@ -49,10 +45,6 @@ const HostList = ({
   const bulkDelete = useBulkDeleteHosts();
   const toast = useToast();
 
-  // Phase 4 review: counts come from the loaded pages only, which is
-  // misleading once we paginate server-side. Drop the count badge so
-  // chips show the label only — re-add when the backend exposes
-  // `statusCounts` (hosts already does, vendors/etc don't yet).
   const filterOptions = useMemo(() => [
     { id: "all",       label: t("hosts.filters.all") },
     { id: "active",    label: t("hosts.filters.active") },

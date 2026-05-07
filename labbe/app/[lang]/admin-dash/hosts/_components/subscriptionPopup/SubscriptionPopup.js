@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { cookieUtils } from "@/utils/cookieUtils";
 import { useTranslation } from "react-i18next";
 import adminDashboardAPI from "@/services/adminDashboard";
+import { useHostPlans } from "@/hooks/reactQueryHooks/useAdmin";
 import styles from "./subscriptionPopup.module.css";
 import Image from "next/image";
 import {
@@ -14,8 +15,6 @@ import {
   FaGift,
   FaSpinner,
 } from "react-icons/fa";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
 
 const SubscriptionPopup = ({
   host,
@@ -36,26 +35,9 @@ const SubscriptionPopup = ({
   const [planFamily, setPlanFamily] = useState("basic");
   const [billingType, setBillingType] = useState("event");
   const [isLoading, setIsLoading] = useState(false);
-  const [plansData, setPlansData] = useState(null);
-  const [loadingPlans, setLoadingPlans] = useState(true);
 
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        setLoadingPlans(true);
-        const response = await fetch(`${API_BASE}/plans/host`);
-        const result = await response.json();
-        if (result.status === "success" && result.data) {
-          setPlansData(result.data);
-        }
-      } catch (error) {
-        console.error("Error fetching plans:", error);
-      } finally {
-        setLoadingPlans(false);
-      }
-    };
-    fetchPlans();
-  }, []);
+  const { data: plansResponse, isLoading: loadingPlans } = useHostPlans();
+  const plansData = plansResponse?.data || null;
 
   const handleSubmit = async () => {
     const hostId = host?.id || host?._id;
@@ -84,7 +66,6 @@ const SubscriptionPopup = ({
       toast.success(t("subscription.updateSuccess", "تم تحديث الاشتراك بنجاح"));
       onSuccess && onSuccess();
     } catch (error) {
-      console.error("Error updating subscription:", error);
       toast.error(t("subscription.updateError", "فشل في تحديث الاشتراك"));
     } finally {
       setIsLoading(false);
@@ -94,13 +75,13 @@ const SubscriptionPopup = ({
   const currentPlans = plansData?.[planFamily]?.[billingType] || [];
 
   const familyTabs = [
-    { key: "basic", label: isArabic ? "أساسي" : "Basic" },
-    { key: "premium", label: isArabic ? "مميز" : "Premium" },
+    { key: "basic", label: t("subscription.familyBasic", "Basic") },
+    { key: "premium", label: t("subscription.familyPremium", "Premium") },
   ];
 
   const billingTabs = [
-    { key: "event", label: isArabic ? "لكل مناسبة" : "Per Event" },
-    { key: "monthly", label: isArabic ? "شهري" : "Monthly" },
+    { key: "event", label: t("subscription.billingPerEvent", "Per Event") },
+    { key: "monthly", label: t("subscription.billingMonthly", "Monthly") },
   ];
 
   return (
@@ -134,14 +115,14 @@ const SubscriptionPopup = ({
       {loadingPlans ? (
         <div className={styles.loadingContainer}>
           <FaSpinner className={styles.spinner} />
-          <p>{isArabic ? "جار تحميل الباقات..." : "Loading plans..."}</p>
+          <p>{t("subscription.loadingPlans", "Loading plans...")}</p>
         </div>
       ) : (
         <>
           {/* Family tabs: Basic / Premium */}
           <div className={styles.planSection}>
             <h4 className={styles.sectionLabel}>
-              {isArabic ? "فئة الباقة" : "Plan Family"}
+              {t("subscription.planFamily", "Plan Family")}
             </h4>
             <div className={styles.billingToggle}>
               {familyTabs.map((tab) => (

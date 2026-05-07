@@ -1,10 +1,7 @@
 "use client";
 
 import { useMemo, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
-import { useAdminEventMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminEvents, useAdminEventMutation } from "@/hooks/reactQueryHooks/useAdmin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -30,16 +27,7 @@ export default function EventsTable() {
     to: searchParams.get("to"),
   }), [searchParams]);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["events", "admin", filters],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.events.getAllEvents,
-        params: filters,
-      }),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data, isLoading, error } = useAdminEvents(filters);
 
   const deleteEvent = useAdminEventMutation("delete");
   const bulkDelete = useAdminEventMutation("bulkDelete");
@@ -198,7 +186,11 @@ export default function EventsTable() {
   }, [searchParams, router]);
 
   if (isLoading) return <SimpleLoading />;
-  if (error) return null;
+  if (error) return (
+    <div className={styles.container}>
+      <p className={styles.error}>{t("events.loadError", "فشل في تحميل المناسبات")}</p>
+    </div>
+  );
 
   return (
     <div className={styles.container}>

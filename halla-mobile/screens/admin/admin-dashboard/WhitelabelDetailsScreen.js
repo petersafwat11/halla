@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, Alert, TouchableOpacity, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAdminWhitelabelById, useUpdateWhitelabelStatus, useUpdateWhitelabelSubscription, useDeleteWhitelabel } from "../../../hooks";
+import { useAdminWhitelabelById, useUpdateWhitelabelStatus, useUpdateWhitelabelSubscription, useDeleteWhitelabel, useAdminWhitelabelFeatures, useUpdateAdminWhitelabelFeatureMutation } from "../../../hooks";
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
-import { apiFetch } from "../../../services/apiClient";
 import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
 import StatusBadge from "../../../components/admin-dashboard/common/StatusBadge";
 import { WhitelabelSubscriptionModal, WhitelabelHeroCard, WhitelabelStatsRow, WhitelabelActionRow } from "../../../components/admin-dashboard/whitelabels";
@@ -48,29 +47,20 @@ const WhitelabelDetailsScreen = () => {
   const updateStatus = useUpdateWhitelabelStatus();
   const deleteWhitelabel = useDeleteWhitelabel();
   const [subModalVisible, setSubModalVisible] = useState(false);
-  const [features, setFeatures] = useState([]);
-  const [featuresLoading, setFeaturesLoading] = useState(false);
+  const { data: featuresResp, isLoading: featuresLoading } = useAdminWhitelabelFeatures(whitelabelId);
+  const featureMutation = useUpdateAdminWhitelabelFeatureMutation(whitelabelId);
 
   if (error) toast.error(t("whitelabelDetails.loadFailed"));
 
   const whitelabel = resp?.data?.whitelabel || resp?.data || null;
   const wlData = whitelabel?.roleData || whitelabel?.whitelabelData || {};
   const planSelection = whitelabel?.planSelection || resp?.data?.planSelection || {};
-
-  useEffect(() => {
-    if (!whitelabelId || !token) return;
-    const fetchFeatures = async () => {
-      setFeaturesLoading(true);
-      try { const res = await apiFetch(`/admin/whitelabels/${whitelabelId}/features`); if (res.ok) { const json = await res.json().catch(() => ({})); setFeatures(json.data?.features || []); } } catch {} finally { setFeaturesLoading(false); }
-    };
-    fetchFeatures();
-  }, [whitelabelId, token]);
+  const features = featuresResp?.data?.features || featuresResp?.features || [];
 
   const handleFeatureToggle = async (featureName, enabled) => {
     try {
-      const res = await apiFetch(`/admin/whitelabels/${whitelabelId}/features`, { method: "PATCH", body: { feature: featureName, enabled } });
-      if (res.ok) { setFeatures((prev) => prev.map((f) => (f.name === featureName ? { ...f, enabled } : f))); toast.success(t("whitelabelDetails.featureUpdated")); }
-      else toast.error(t("whitelabelDetails.featureUpdateFailed"));
+      await featureMutation.mutateAsync({ feature: featureName, enabled });
+      toast.success(t("whitelabelDetails.featureUpdated"));
     } catch { toast.error(t("whitelabelDetails.featureUpdateFailed")); }
   };
 

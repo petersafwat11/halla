@@ -15,9 +15,6 @@ const AdminHostsScreen = ({ navigation }) => {
   const toast = useToast();
   const role = useAuthStore((state) => state.user?.role);
 
-  // Phase 4 review fix — lift filter state to the screen so the infinite
-  // hook re-keys (and refetches from page 1) on change. Search is
-  // debounced 350ms to avoid spamming the backend on every keystroke.
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const debouncedSearch = useDebouncedValue(searchQuery, 350);
@@ -29,7 +26,6 @@ const AdminHostsScreen = ({ navigation }) => {
     [debouncedSearch, activeFilter]
   );
 
-  // Phase 4 W3-PAGE: infinite-scroll across hosts.
   const {
     items: hosts,
     isLoading,

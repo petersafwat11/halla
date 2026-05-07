@@ -68,7 +68,7 @@ const EditPlanPopup = ({ plan, onClose, onSuccess, planType }) => {
         isActive: data.isActive,
       };
       await plansAPI.updatePlan(plan.code, payload);
-      toastUtils.success(isArabic ? "تم حفظ التغييرات بنجاح" : "Changes saved successfully");
+      toastUtils.success(t("adminPlans.saveSuccess", "Changes saved successfully"));
       onSuccess?.();
       onClose?.();
     } catch (error) {

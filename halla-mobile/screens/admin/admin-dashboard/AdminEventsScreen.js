@@ -18,7 +18,6 @@ const AdminEventsScreen = () => {
   const role = useAuthStore((state) => state.user?.role);
   const canEdit = canEditPage(role, PAGES.EVENTS);
 
-  // Phase 4 review fix — controlled filters at screen level.
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const debouncedSearch = useDebouncedValue(searchQuery, 350);
@@ -27,7 +26,6 @@ const AdminEventsScreen = () => {
     [debouncedSearch, activeFilter]
   );
 
-  // Phase 4 W3-PAGE: infinite scroll for admin events.
   const {
     items: events,
     isLoading,

@@ -25,7 +25,7 @@ const SettingsNotifications = () => {
           });
         }
       } catch (error) {
-        console.error("Failed to load notification preferences:", error);
+        // silent — UI shows nothing rather than crashing
       } finally {
         setLoading(false);
       }
@@ -43,9 +43,7 @@ const SettingsNotifications = () => {
     try {
       await updateNotificationPreferencesAPI(updated, token);
     } catch (error) {
-      // Revert on failure
       setPrefs(prefs);
-      console.error("Failed to save notification preferences:", error);
     } finally {
       setSaving(false);
     }

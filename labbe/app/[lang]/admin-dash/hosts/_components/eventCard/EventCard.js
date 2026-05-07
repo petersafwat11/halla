@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
 const EventCard = ({ data }) => {
-  console.log("data", data);
   const router = useRouter();
   const { t } = useTranslation("adminHosts");
 

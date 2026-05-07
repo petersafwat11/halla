@@ -30,8 +30,6 @@ const ModeratorList = ({
   hasMore = false,
   onLoadMore,
   loadingMore = false,
-  // Phase 4 review fix — controlled filter props from the screen so
-  // server-side filtering re-keys the infinite query on change.
   searchQuery: searchQueryProp,
   onSearchQueryChange,
   activeFilter: activeFilterProp,
@@ -52,7 +50,6 @@ const ModeratorList = ({
   const bulkSuspend = useBulkSuspendModerators();
   const toast = useToast();
 
-  // Phase 4 review: counts dropped (misleading under pagination).
   const filterOptions = useMemo(
     () =>
       FILTER_IDS.map((id) => ({

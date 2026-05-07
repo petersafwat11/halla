@@ -91,7 +91,7 @@ export default function AdminPaymentsClient() {
         ...(from && { from }),
         ...(to && { to }),
       });
-      toastUtils.success(isArabic ? "تم تصدير المدفوعات" : "Payments exported");
+      toastUtils.success(t("adminPayments.exportSuccess", "Payments exported"));
     } catch (err) {
       handleError(err, t);
     } finally {
