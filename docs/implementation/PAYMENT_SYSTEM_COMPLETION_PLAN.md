@@ -120,8 +120,12 @@ Key contracts that **must not** be re-litigated by the implementer:
     via `cronLease`. **This is where new cron jobs go.**
 - **`SubscriptionModel.paymentMethod`** (sub-document): `{ type, last4,
   brand, expiryMonth, expiryYear }` — schema present, never populated.
-- **`subscription.getSummary()`** already surfaces
+- **`subscription.getSummary()`** currently surfaces
   `paymentTransactionId: this.metadata?.paymentTransactionId || null`.
+  The frontend does not read it (verified by grep across `labbe/` and
+  `halla-mobile/`); see §15.3 — this field is removed in Phase 1 along
+  with the legacy `paymentTransactionId` write paths. After the cleanup,
+  `getSummary()` exposes `paymentId` instead.
 
 ### 1.2 Differences from the prior draft
 
@@ -132,7 +136,7 @@ Key contracts that **must not** be re-litigated by the implementer:
 | Mount `/api/v1/payments/...` | API prefix is `/api/v2/...`; mobile + web were migrated in Phase 1a (FLOW-01-F05). |
 | "Webhook signature verification" (HMAC) | Moyasar uses a `secret_token` constant (sent in the webhook body or as a header configured per-webhook in the dashboard). There is no HMAC of the body. |
 | Frontend at `labbe-mobile/` | Web frontend is at `labbe/`. `halla-mobile/` is the separate Expo app. |
-| Create new admin payment endpoints | They already exist; this is a **migration** (move the underlying source-of-truth from `Subscription` to a new `Payment` collection while keeping both writable for one release cycle). |
+| Create new admin payment endpoints | They already exist; this is a **clean cutover** (move the source-of-truth from `Subscription` to a new `Payment` collection in one release, backed by a one-time backfill script — see §4.10). |
 | Use `Idempotency-Key` header on Moyasar charge | Moyasar's documented idempotency field is `given_id` in the request body (UUID v4). Current code passes an `Idempotency-Key` HTTP header which Moyasar **silently ignores** — the provider call is *not actually* idempotent on retries today. **This must be fixed.** |
 | `_recordPendingRefund` not yet implemented | Already exists for both subscription and addon flows. New work integrates with it. |
 
@@ -160,31 +164,54 @@ Key contracts that **must not** be re-litigated by the implementer:
 These choices are the load-bearing parts of the plan. Skim them before
 reading the phases.
 
-### 2.1 Dual-write Payment collection (not migration-and-cutover)
+### 2.1 Single-write Payment collection (clean cutover, one-time backfill)
 
-We introduce a new `Payment` collection but **do not** remove the
-`Subscription.metadata.paymentTransactionId` field, and the existing
-`admin.service.getPayments()` continues to read from `Subscription` for
-one release. The new collection is the system of record for the
-**individual charge**; the subscription remains the system of record
-for **what the user bought**. Reasons:
+We introduce a new `Payment` collection as the **only** system of
+record for individual charges. The legacy
+`Subscription.metadata.paymentTransactionId` and
+`Addon.metadata.paymentTransactionId` fields are **removed in the
+same phase that introduces the new model** — no parallel writes, no
+fallback `getPayments_legacy`, no two-week soak.
 
-- The prior `getPayments()` already aggregates over `Subscription`;
-  swapping its data source is a separate, riskier change. Backfilling
-  the new collection from existing subs lets us validate the new view
-  side-by-side before flipping.
-- Admin payment refund/capture/void need a payment-id-keyed row that
-  outlives the subscription lifecycle.
-- A subscription can over time map to many payments (renewals, upgrades).
+The cutover is safe because:
 
-Cutover ordering:
+- The frontend never reads `paymentTransactionId` (grep across
+  `labbe/` and `halla-mobile/` returns zero hits) — only the backend
+  surfaces it via `subscription.getSummary()`, which itself has no
+  consumer that depends on the field.
+- A one-time backfill script (§4.10) creates a `Payment` row for every
+  existing `Subscription` / `Addon` whose `metadata.paymentTransactionId`
+  is set, populates `subscription.metadata.paymentId` (and the addon
+  equivalent) with the new row's id, then nulls out
+  `metadata.paymentTransactionId`. After the script runs every record
+  is queryable via `Payment` directly.
+- `admin.service.getPayments()` is replaced (not renamed) with a query
+  against `Payment`. Old rows show up via the backfilled records; new
+  rows show up via the runtime writes. There is no period where the
+  two paths can drift.
 
-1. Phase 1: introduce `Payment` model + write to it from `subscribe()`,
-   `changePlan()`, `purchaseAddon()`. The subscription `metadata.paymentTransactionId`
-   continues to be set.
-2. Phase 4: re-implement `admin.service.getPayments()` to read from
-   `Payment`. Keep `getPayments_legacy()` exported as a fallback flag.
-3. After two weeks of clean stats, remove the legacy function.
+Cutover ordering (all inside Phase 1):
+
+1. Ship `PaymentModel` + write paths in `subscribe()`, `changePlan()`,
+   `purchaseAddon()`. These write `Payment` rows and set
+   `subscription.metadata.paymentId` / `addon.metadata.paymentId`.
+   They do **not** write `paymentTransactionId` anymore.
+2. Run the backfill script (§4.10) against staging, then production.
+   It is idempotent — re-runs are safe.
+3. Replace `admin.service.getPayments()` and
+   `subscriptionsService.getMyPayments()` with the `Payment`-backed
+   implementations (§7.1). Drop `subscription.getSummary()`'s
+   `paymentTransactionId` field; expose `paymentId` instead.
+
+Why a single Payment collection at all (rather than just a richer
+Subscription field)?
+
+- Refund/capture/void need a payment-id-keyed row that outlives the
+  subscription lifecycle (refunding a cancelled subscription, etc.).
+- A subscription can over time map to many payments (renewals,
+  upgrades, addons).
+- 3DS flows have a payment lifecycle (`pending_3ds → paid`) that
+  doesn't map onto the subscription's lifecycle.
 
 ### 2.2 3D-Secure handling
 
@@ -257,6 +284,7 @@ new `src/jobs/` directory.
 | Action | Path | Phase |
 |---|---|---|
 | **CREATE** | `labbe-backend-/models/PaymentModel.js` | 1.1 |
+| **CREATE** | `labbe-backend-/scripts/backfill-payments.js` | 4.10 |
 | **CREATE** | `labbe-backend-/src/modules/payments/payments.service.js` | 1.2, 4.1 |
 | **CREATE** | `labbe-backend-/src/modules/payments/payments.controller.js` | 1.2, 4.1 |
 | **CREATE** | `labbe-backend-/src/modules/payments/payments.routes.js` | 1.2, 4.1 |
@@ -271,8 +299,8 @@ new `src/jobs/` directory.
 | **MODIFY** | `labbe-backend-/src/infrastructure/paymentProvider/index.js` | 1.2, 2.3 |
 | **MODIFY** | `labbe-backend-/src/modules/subscriptions/subscriptions.service.js` | 1.2, 1.4, 3.3 |
 | **MODIFY** | `labbe-backend-/src/modules/addons/addons.service.js` | 1.2 |
-| **MODIFY** | `labbe-backend-/models/SubscriptionModel.js` | 1.2 (status enum + paymentId ref) |
-| **MODIFY** | `labbe-backend-/models/AddonModel.js` | 1.2 (paymentId ref) |
+| **MODIFY** | `labbe-backend-/models/SubscriptionModel.js` | 1.2, 4.10 (status enum touch + drop `paymentTransactionId` from `getSummary`) |
+| **MODIFY** | `labbe-backend-/models/AddonModel.js` | 1.2 (status enum: add `pending_3ds`) |
 | **MODIFY** | `labbe-backend-/src/modules/admin/admin.service.js` | 4.1 (re-target getPayments) |
 | **MODIFY** | `labbe-backend-/src/modules/admin/admin.controller.js` | 4.1 (refund/capture/void admin actions) |
 | **MODIFY** | `labbe-backend-/src/modules/admin/admin.routes.js` | 4.1 (admin payment action routes) |
@@ -1089,7 +1117,10 @@ work (lines 509+) are unchanged.
 
 ```js
     // ─── Charge ───────────────────────────────────────────────────
-    let paymentTransactionId = null;
+    // Only `paymentRecord` is the source of truth for the charge. The
+    // legacy `paymentTransactionId` local + `subscription.metadata.paymentTransactionId`
+    // field have been removed (§2.1) — `subscription.metadata.paymentId`
+    // refers to the Payment row, which carries the moyasarPaymentId.
     let paymentRecord = null;
     let pendingRedirect = null;
 
@@ -1157,7 +1188,6 @@ work (lines 509+) are unchanged.
         throw new ValidationError('Payment failed; subscription not activated');
       }
 
-      paymentTransactionId = charge.transactionId || null;
       paymentRecord.moyasarPaymentId = charge.transactionId;
       paymentRecord.givenId = charge.givenId || null;
       paymentRecord.providerStatus = charge.providerStatus;
@@ -1236,13 +1266,12 @@ work (lines 509+) are unchanged.
         );
       }
 
-      if (paymentTransactionId) {
+      if (paymentRecord) {
         subscription.metadata = {
           ...(subscription.metadata || {}),
-          paymentTransactionId,
-          paymentId: paymentRecord?._id,
+          paymentId: paymentRecord._id,
         };
-        if (paymentRecord?.paymentMethod?.type) {
+        if (paymentRecord.paymentMethod?.type) {
           subscription.paymentMethod = {
             type:        paymentRecord.paymentMethod.type,
             last4:       paymentRecord.paymentMethod.last4,
@@ -1253,7 +1282,7 @@ work (lines 509+) are unchanged.
         }
       }
 
-      if (planCode === 'trial' || paymentTransactionId) {
+      if (planCode === 'trial' || paymentRecord) {
         await subscription.save();
       }
 
@@ -1263,14 +1292,13 @@ work (lines 509+) are unchanged.
         await paymentRecord.save();
       }
     } catch (createErr) {
-      if (paymentTransactionId) {
+      if (paymentRecord) {
         try {
           await this._recordPendingRefund({
             userId,
             amount: planPrice,
             currency: plan?.currency || 'SAR',
-            paymentTransactionId,
-            paymentId: paymentRecord?._id,
+            paymentId: paymentRecord._id,
             reason: 'subscribe_create_failed',
             detail: createErr?.message,
             planCode: plan?.code,
@@ -1289,36 +1317,49 @@ work (lines 509+) are unchanged.
 ```
 
 **Subscription service — `_recordPendingRefund` signature update**
-(around lines 985-1040): add `paymentId` to the destructured params and
-include it in the audit metadata. Replace the destructure header and
-the `metadata` field:
+(actual lines 988-1043): replace the `paymentTransactionId` parameter
+with `paymentId`. The Payment row is the source of truth; if the audit
+reader needs the Moyasar id for forensics they can dereference
+`Payment.findById(paymentId).moyasarPaymentId`. We also stamp
+`moyasarPaymentId` directly into the audit metadata for human-readable
+copy/paste — but it is *derived from* the Payment row, not stored
+twice on the subscription:
 
 ```js
   async _recordPendingRefund({
     userId,
     amount,
     currency,
-    paymentTransactionId,
-    paymentId,        // NEW
+    paymentId,        // ObjectId of the Payment row
     reason,
     detail,
     planCode,
   }) {
-    // …unchanged log line…
+    const Payment = require('../../../models/PaymentModel');
+    const moyasarPaymentId = paymentId
+      ? (await Payment.findById(paymentId).select('moyasarPaymentId'))?.moyasarPaymentId
+      : null;
+
+    // eslint-disable-next-line no-console
+    console.error(
+      '[subscribe] PENDING REFUND %s userId=%s amount=%s paymentId=%s moyasarId=%s detail=%s',
+      reason, userId, amount, paymentId || 'n/a', moyasarPaymentId || 'n/a', detail || 'n/a'
+    );
     await logAudit({
       action: 'subscription.pending_refund',
       actor: { _id: userId, role: 'host' },
-      targetType: 'system',
-      targetId: paymentTransactionId || userId,
+      targetType: 'payment',
+      targetId: paymentId || userId,
       metadata: {
         reason, amount, currency,
-        paymentTransactionId,
-        paymentId,        // NEW
+        paymentId,
+        moyasarPaymentId,
         planCode, detail,
       },
       status: 'failure',
     });
-    // …unchanged admin notification…
+    // …unchanged admin notification (update its message string to
+    // reference paymentId / moyasarPaymentId rather than tx id)…
   }
 ```
 
@@ -1401,7 +1442,6 @@ Add at the bottom of the class, before `module.exports`:
 
       subscription.metadata = {
         ...(subscription.metadata || {}),
-        paymentTransactionId: payment.moyasarPaymentId,
         paymentId: payment._id,
       };
       if (payment.paymentMethod?.type) {
@@ -1422,7 +1462,6 @@ Add at the bottom of the class, before `module.exports`:
         userId: payment.userId,
         amount: payment.amount,
         currency: payment.currency,
-        paymentTransactionId: payment.moyasarPaymentId,
         paymentId: payment._id,
         reason: 'subscribe_finalize3ds_failed',
         detail: createErr?.message,
@@ -1467,7 +1506,10 @@ const Payment = require('../../../models/PaymentModel');
 **REPLACE** the charge block (current lines 98-131) with:
 
 ```js
-    let paymentTransactionId = null;
+    // §2.1: only `paymentRecord` is the source of truth. We do NOT
+    // copy a `paymentTransactionId` onto the addon row anymore —
+    // `addon.metadata.paymentId` references the Payment row, which
+    // owns the moyasarPaymentId.
     let paymentRecord = null;
     if (price > 0) {
       const callbackUrl = `${process.env.FRONTEND_URL || ''}/host/payments/return`;
@@ -1520,7 +1562,6 @@ const Payment = require('../../../models/PaymentModel');
         throw new ValidationError('Payment failed; addon not activated');
       }
 
-      paymentTransactionId = charge.transactionId || null;
       paymentRecord.moyasarPaymentId = charge.transactionId;
       paymentRecord.givenId = charge.givenId || null;
       paymentRecord.providerStatus = charge.providerStatus;
@@ -1554,9 +1595,9 @@ const Payment = require('../../../models/PaymentModel');
     }
 ```
 
-**REPLACE** the `Addon.create` call (current line 174) — add
-`paymentId: paymentRecord?._id` to the doc, and inside the post-create
-block backlink the addon onto the payment:
+**REPLACE** the `Addon.create` call (current line 174) — `paymentId`
+replaces the legacy `paymentTransactionId` in metadata, and the
+post-create block backlinks the addon onto the payment:
 
 ```js
       addon = await Addon.create({
@@ -1571,21 +1612,22 @@ block backlink the addon onto the payment:
         status: initialStatus,
         scope,
         metadata: {
-          paymentTransactionId,
-          paymentId: paymentRecord?._id,                            // NEW
+          paymentId: paymentRecord?._id || null,
           idempotencyKey: idempotencyKey || null,
           activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
         },
       });
 
-      if (paymentRecord) {                                          // NEW
+      if (paymentRecord) {
         paymentRecord.addonId = addon._id;
         await paymentRecord.save().catch(() => {});
       }
 ```
 
-Add `paymentId` to the destructure of `_recordPendingRefund` and include
-it in the audit metadata, identical to the subscription edit above.
+Update `_recordPendingRefund` parallel to the subscription edit above:
+the destructured params take `paymentId` (not `paymentTransactionId`),
+and the audit metadata stamps `paymentId` + the dereferenced
+`moyasarPaymentId`.
 
 **Addons service — `finalizePending3ds()` (NEW METHOD)**
 
@@ -1629,7 +1671,6 @@ applies quota *after* the user has cleared the 3DS challenge:
     const { addonType, quantity, templateType, subscriptionId, eventId, scope } = intent;
     const userId = payment.userId;
     const price = payment.amount;
-    const paymentTransactionId = payment.moyasarPaymentId;
 
     let resolvedSubscriptionId = subscriptionId || null;
     if (!resolvedSubscriptionId && (scope === 'pool' || scope === 'org')) {
@@ -1661,7 +1702,6 @@ applies quota *after* the user has cleared the 3DS challenge:
         status: initialStatus,
         scope,
         metadata: {
-          paymentTransactionId,
           paymentId: payment._id,
           activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
         },
@@ -1673,7 +1713,6 @@ applies quota *after* the user has cleared the 3DS challenge:
         userId,
         amount: price,
         currency: 'SAR',
-        paymentTransactionId,
         paymentId: payment._id,
         reason: 'addon_finalize3ds_create_failed',
         detail: createErr?.message,
@@ -1695,7 +1734,6 @@ applies quota *after* the user has cleared the 3DS challenge:
           userId,
           amount: price,
           currency: 'SAR',
-          paymentTransactionId,
           paymentId: payment._id,
           reason: 'addon_finalize3ds_quota_failed',
           detail: quotaErr?.message,
@@ -1714,7 +1752,8 @@ applies quota *after* the user has cleared the 3DS challenge:
       metadata: {
         addonId: addon._id, addonType, quantity: quantity || 1,
         scope, price, status: initialStatus,
-        paymentTransactionId, paymentId: payment._id,
+        paymentId: payment._id,
+        moyasarPaymentId: payment.moyasarPaymentId,
         eventId: eventId || null, subscriptionId: resolvedSubscriptionId || null,
       },
     });
@@ -2383,6 +2422,189 @@ export default function PaymentReturnClient() {
 }
 ```
 
+### 4.10 Backfill script — one-shot, idempotent
+
+**CREATE** `labbe-backend-/scripts/backfill-payments.js`:
+
+```js
+/**
+ * One-time backfill from Subscription/Addon legacy fields to the new
+ * Payment collection.
+ *
+ * For every Subscription with `metadata.paymentTransactionId` set:
+ *   1. If a Payment row already exists for that moyasarPaymentId, skip
+ *      (the script is idempotent — re-runs are safe).
+ *   2. Otherwise create a Payment row in `paid` status with the values
+ *      we can reconstruct from the Subscription (amount, currency,
+ *      timestamps, paymentMethod sub-doc).
+ *   3. Set `subscription.metadata.paymentId = newPayment._id` and
+ *      unset `subscription.metadata.paymentTransactionId`.
+ *
+ * Same loop for Addons (`metadata.paymentTransactionId` → Payment row,
+ * `metadata.paymentId` set, legacy field unset).
+ *
+ * After this runs, every Subscription/Addon points at a Payment row
+ * and the legacy field can be removed from the schema (see §15.10).
+ *
+ * Usage:
+ *   NODE_ENV=production node scripts/backfill-payments.js
+ *   NODE_ENV=production node scripts/backfill-payments.js --dry-run
+ */
+
+require('dotenv').config({ path: __dirname + '/../config.env' });
+const mongoose = require('mongoose');
+
+const Subscription = require('../models/SubscriptionModel');
+const Addon = require('../models/AddonModel');
+const Payment = require('../models/PaymentModel');
+
+const DRY_RUN = process.argv.includes('--dry-run');
+
+const log = (...args) => {
+  // eslint-disable-next-line no-console
+  console.log('[backfill]', ...args);
+};
+
+const reconstructPaymentMethod = (sub) => {
+  const pm = sub.paymentMethod || {};
+  return {
+    type:        pm.type || 'creditcard',
+    company:     pm.brand || null,
+    last4:       pm.last4 || null,
+    expiryMonth: pm.expiryMonth || null,
+    expiryYear:  pm.expiryYear || null,
+  };
+};
+
+const backfillSubscriptions = async () => {
+  const cursor = Subscription.find({
+    'metadata.paymentTransactionId': { $exists: true, $ne: null },
+  }).cursor();
+
+  let scanned = 0, created = 0, linked = 0, skipped = 0;
+  for await (const sub of cursor) {
+    scanned += 1;
+    const moyasarPaymentId = sub.metadata.paymentTransactionId;
+
+    // Idempotency: re-runs must converge.
+    let payment = await Payment.findOne({ moyasarPaymentId });
+    if (!payment) {
+      const doc = {
+        userId: sub.userId,
+        whitelabelId: sub.whitelabelId || null,
+        subscriptionId: sub._id,
+        amount: sub.pricePaid?.amount ?? sub.pricePaid ?? 0,
+        currency: sub.pricePaid?.currency || sub.currency || 'SAR',
+        provider: 'moyasar',
+        status: Payment.PAYMENT_STATUS.PAID,
+        moyasarPaymentId,
+        paymentMethod: reconstructPaymentMethod(sub),
+        description: `Subscription (backfill) ${sub.planId}`,
+        metadata: { backfilledFrom: 'subscription', purpose: 'subscription' },
+        initiatedAt: sub.activatedAt || sub.createdAt,
+        paidAt:      sub.activatedAt || sub.createdAt,
+      };
+      if (!DRY_RUN) payment = await Payment.create(doc);
+      created += 1;
+    }
+
+    if (!DRY_RUN) {
+      await Subscription.updateOne(
+        { _id: sub._id },
+        {
+          $set: { 'metadata.paymentId': payment._id },
+          $unset: { 'metadata.paymentTransactionId': '' },
+        }
+      );
+    }
+    linked += 1;
+  }
+  log(`subscriptions: scanned=${scanned} created=${created} linked=${linked} skipped=${skipped}`);
+};
+
+const backfillAddons = async () => {
+  const cursor = Addon.find({
+    'metadata.paymentTransactionId': { $exists: true, $ne: null },
+  }).cursor();
+
+  let scanned = 0, created = 0, linked = 0;
+  for await (const addon of cursor) {
+    scanned += 1;
+    const moyasarPaymentId = addon.metadata.paymentTransactionId;
+
+    let payment = await Payment.findOne({ moyasarPaymentId });
+    if (!payment) {
+      const doc = {
+        userId: addon.userId,
+        addonId: addon._id,
+        amount: addon.price,
+        currency: addon.currency || 'SAR',
+        provider: 'moyasar',
+        status: Payment.PAYMENT_STATUS.PAID,
+        moyasarPaymentId,
+        description: `Addon (backfill) ${addon.addonType}`,
+        metadata: { backfilledFrom: 'addon', purpose: 'addon', addonType: addon.addonType },
+        initiatedAt: addon.createdAt,
+        paidAt:      addon.createdAt,
+      };
+      if (!DRY_RUN) payment = await Payment.create(doc);
+      created += 1;
+    }
+
+    if (!DRY_RUN) {
+      await Addon.updateOne(
+        { _id: addon._id },
+        {
+          $set: { 'metadata.paymentId': payment._id },
+          $unset: { 'metadata.paymentTransactionId': '' },
+        }
+      );
+    }
+    linked += 1;
+  }
+  log(`addons: scanned=${scanned} created=${created} linked=${linked}`);
+};
+
+const main = async () => {
+  if (!process.env.DATABASE) throw new Error('DATABASE env var missing');
+  await mongoose.connect(process.env.DATABASE);
+  log(DRY_RUN ? 'DRY RUN — no writes' : 'WRITE MODE');
+  await backfillSubscriptions();
+  await backfillAddons();
+  await mongoose.disconnect();
+  log('done');
+};
+
+main().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error('[backfill] failed:', err);
+  process.exit(1);
+});
+```
+
+**Run order in production:**
+
+1. Deploy the Phase 1 code (PaymentModel + new write paths). The new
+   `subscribe()` / `purchaseAddon()` already write `paymentId` only,
+   not `paymentTransactionId`. Existing rows in the DB still carry the
+   legacy field — that's fine because nothing reads it yet.
+2. `NODE_ENV=production node scripts/backfill-payments.js --dry-run`
+   on a maintenance window. Inspect the counts.
+3. `NODE_ENV=production node scripts/backfill-payments.js` to do the
+   real run. Re-run if it fails partway — idempotent.
+4. Deploy Phase 4 (`getPayments` reading from Payment) and the
+   `subscription.getSummary()` cleanup. At this point no code reads
+   `metadata.paymentTransactionId`.
+5. **Schema cleanup commit** (separate PR after green stats): drop
+   the field from the Mongoose schemas and add a sanity check
+   asserting `db.subscriptions.countDocuments({ 'metadata.paymentTransactionId': { $exists: true } }) === 0`.
+
+> **Why we don't gate Phase 4 on a soak window:** the new code path
+> doesn't depend on `paymentTransactionId` at all. The backfill is a
+> data-only operation — once it runs, every subscription/addon has a
+> `paymentId`. There is no failure mode that produces silent drift,
+> because the new write path never touches the legacy field.
+
 ---
 
 ## 5. Phase 2 — Payment methods & reconciliation (P1)
@@ -2726,15 +2948,13 @@ This phase ships **after** Phase 1 + Phase 2 are stable in production.
 
 **MODIFY** `labbe-backend-/src/modules/admin/admin.service.js`:
 
-Rename the existing function to `getPayments_legacy` (keep it for the
-dual-write release window) and add a new `getPayments` that reads from
-the `Payment` collection. Skeleton:
+**Replace** the existing `getPayments` body with the `Payment`-backed
+implementation below. There is no `getPayments_legacy` retention — the
+backfill (§4.10) ensures every old subscription has a corresponding
+Payment row, so the new query covers historical data on day one.
 
 ```js
 const Payment = require('../../../models/PaymentModel');
-
-// existing:
-//   async getPayments(...) { ... } → rename to getPayments_legacy
 
 async getPayments({ page = 1, limit = 10, status, from, to, whitelabelId } = {}) {
   const skip = (page - 1) * limit;
@@ -3185,9 +3405,9 @@ trying to read someone else's payment. The route does not gate by
 
 | Week | Phase | Definition of done |
 |---|---|---|
-| 1 | §4 (Phase 1) | PaymentModel exists; new provider methods land; subscribe + addon write Payment rows; webhook responds 200 with secret check; refund admin endpoint works end-to-end against the stub; static-checks-payments.js green. |
+| 1 | §4 (Phase 1) | PaymentModel exists; new provider methods land; subscribe + addon write Payment rows (and only `paymentId` — no `paymentTransactionId`); webhook responds 200 with secret check; refund admin endpoint works end-to-end against the stub; backfill script (§4.10) green on staging; static-checks-payments.js green. |
 | 2 | §5 (Phase 2) | Frontend method selector renders; `source` is forwarded on subscribe; 3DS return page polls and finalizes; reconcile cron runs in dev. |
-| 3 | §7 (Phase 4) | Admin payments page reads from Payment collection (legacy retained as fallback); admin refund/capture/void usable from UI; localization updated. |
+| 3 | §7 (Phase 4) | Admin payments page reads from Payment collection (no legacy fallback); admin refund/capture/void usable from UI; localization updated; `subscription.getSummary()` exposes `paymentId` (not `paymentTransactionId`). |
 | 4 | §6 (Phase 3) | Recurring billing via Moyasar invoice for monthly/quarterly/annual plans; renewal cron registered; expired subscriptions transition to `past_due` on invoice failure. |
 | 5 | §8 + §9 | Saved-card tokenization; coupon visibility on payment history. |
 
@@ -3197,10 +3417,12 @@ Each weekly checkpoint must include:
 - Production smoke against a known-test card (Moyasar provides several):
   4111 1111 1111 1111 (success), 4242 4242 4242 4242 (failure).
 
-Once Phase 4 is two weeks old in production with no
-`getPayments_legacy` reads, delete the legacy function and the
-`subscription.metadata.paymentTransactionId` field becomes a read-only
-backward-compat surface.
+After Phase 1 ships and the backfill (§4.10) has run, immediately open
+the schema-cleanup PR that removes `metadata.paymentTransactionId`
+support from the codebase entirely (search-and-delete; no soak window
+required, since no code path reads the field anymore). The cleanup PR
+includes a one-shot index removal if any was created against the
+legacy field.
 
 ---
 
@@ -3582,6 +3804,8 @@ original draft and are required for the corrected §15 instructions:
 | **MODIFY** | `labbe-backend-/src/modules/addons/addons.controller.js` | same — accept `source`, branch on `requiresAction` |
 | **MODIFY** | `labbe-backend-/src/config/env.js` | add Joi entries for the new Moyasar env vars (§15.2F) |
 | **MODIFY** | `labbe-backend-/src/shared/constants/status.js` | delete the unused `PAYMENT_STATUS` constant + its re-export (§15.3) |
+| **MODIFY** | `labbe-backend-/models/SubscriptionModel.js` | drop `paymentTransactionId` from `getSummary()` return shape (line 490); replace with `paymentId` (§2.1, §4.10) |
+| **MODIFY** | `labbe-backend-/src/modules/subscriptions/subscriptions.service.js` `getMyPayments` | re-target at the new Payment collection (host-side mirror of `admin.service.getPayments` §7.1) |
 | **CREATE** (optional) | `labbe-backend-/scripts/static-checks-payments.js` | CI gate (§15.8) |
 
 ---
