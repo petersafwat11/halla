@@ -25,8 +25,8 @@ const EventsTable = () => {
   const deleteMutation = useEventMutation("deleteEvent");
   const bulkDeleteMutation = useEventMutation("bulkDeleteEvents");
 
-  // Extract events from response
-  const events = eventsData?.data?.data || eventsData?.data || eventsData || [];
+  // Backend's sendPaginated returns { status, data: [...], pagination }.
+  const events = eventsData?.data || [];
 
   // Delete modal state
   const [deleteModal, setDeleteModal] = useState({
@@ -84,14 +84,11 @@ const EventsTable = () => {
 
       queryClient.setQueryData(["events", "my-events"], (old) => {
         if (!old) return old;
-        const oldEvents = old.data?.data || old.data || old;
-        const filtered = Array.isArray(oldEvents)
-          ? oldEvents.filter((event) => !deleteModal.selectedIds.includes(event.id))
-          : [];
-        return {
-          ...old,
-          data: { ...(old.data || {}), data: filtered },
-        };
+        const oldEvents = Array.isArray(old.data) ? old.data : [];
+        const filtered = oldEvents.filter(
+          (event) => !deleteModal.selectedIds.includes(event.id)
+        );
+        return { ...old, data: filtered };
       });
 
       try {
@@ -112,14 +109,11 @@ const EventsTable = () => {
 
       queryClient.setQueryData(["events", "my-events"], (old) => {
         if (!old) return old;
-        const oldEvents = old.data?.data || old.data || old;
-        const filtered = Array.isArray(oldEvents)
-          ? oldEvents.filter((event) => event.id !== deleteModal.eventId)
-          : [];
-        return {
-          ...old,
-          data: { ...(old.data || {}), data: filtered },
-        };
+        const oldEvents = Array.isArray(old.data) ? old.data : [];
+        const filtered = oldEvents.filter(
+          (event) => event.id !== deleteModal.eventId
+        );
+        return { ...old, data: filtered };
       });
 
       try {

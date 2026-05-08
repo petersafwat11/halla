@@ -21,13 +21,9 @@ const Header = () => {
       <h2 className={styles.title}>
         <IoIosArrowForward
           onClick={() => router.push(`/${lang}/host`)}
-          style={{
-            transform: isArabic ? "rotate(0deg)" : "rotate(180deg)",
-            cursor: "pointer",
-            fontSize: "2.4rem",
-          }}
+          className={`${styles.backArrow} ${isArabic ? "" : styles.backArrowLtr}`}
         />
-        {t("events.title", "المناسبات")}
+        {t("events.title")}
       </h2>
       <Button
         variant="primary"
