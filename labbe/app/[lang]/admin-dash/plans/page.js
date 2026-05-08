@@ -2,10 +2,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./page.module.css";
 import useAuthStore from "@/stores/authStore";
 import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
-import subscriptionService from "@/services/subscriptionService";
+import { useCheckout } from "@/hooks/reactQueryHooks/useCheckout";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import Summary from "@/app/[lang]/host/plans/summary/Summary";
@@ -15,14 +16,18 @@ import PlanCard from "./_components/PlanCard";
 
 const PlansPageInner = () => {
   const { t } = useTranslation("businessPlans");
-  const { user, subscription, setSubscription, isWhitelabel } = useAuthStore();
+  const { user, subscription, isWhitelabel } = useAuthStore();
   const router = useRouter();
   const { lang } = useParams();
+  const queryClient = useQueryClient();
+  const checkoutMutation = useCheckout();
 
-  const [subscribing, setSubscribing] = useState(null);
   const [showSummary, setShowSummary] = useState(false);
   const [selectedPlanForSummary, setSelectedPlanForSummary] = useState(null);
   const [appliedDiscountCode, setAppliedDiscountCode] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("creditcard");
+  const [cardData, setCardData] = useState(null);
+  const [stcMobile, setStcMobile] = useState("");
 
   useEffect(() => {
     if (user && !isWhitelabel()) {
@@ -33,8 +38,7 @@ const PlansPageInner = () => {
   const { data: businessPlansResponse, isLoading, error } = useBusinessPlans({
     enabled: !!user && isWhitelabel(),
   });
-  const businessPlansData =
-    businessPlansResponse?.data || businessPlansResponse || {};
+  const businessPlansData = businessPlansResponse?.data ?? {};
   const plans = [
     ...(businessPlansData?.event || []),
     ...(businessPlansData?.quarterly || []),
@@ -49,26 +53,54 @@ const PlansPageInner = () => {
     setShowSummary(true);
   };
 
+  const buildSource = useCallback(() => {
+    if (paymentMethod === "creditcard") {
+      return {
+        type: "creditcard",
+        name: cardData?.name,
+        number: cardData?.number,
+        month: Number(cardData?.month),
+        year: Number(cardData?.year),
+        cvc: cardData?.cvc,
+      };
+    }
+    if (paymentMethod === "stcpay") {
+      return { type: "stcpay", mobile: stcMobile };
+    }
+    if (paymentMethod === "applepay") {
+      return { type: "applepay", token: null };
+    }
+    return null;
+  }, [paymentMethod, cardData, stcMobile]);
+
   const handleProceedToPayment = useCallback(async () => {
     if (!selectedPlanForSummary) return;
     try {
-      setSubscribing(selectedPlanForSummary.code);
-      const response = await subscriptionService.subscribe({
+      const result = await checkoutMutation.mutateAsync({
         planCode: selectedPlanForSummary.code,
+        addons: [],
         ...(appliedDiscountCode ? { discountCode: appliedDiscountCode } : {}),
+        source: buildSource(),
       });
-      if (response?.data) {
-        setSubscription(response.data);
-        toastUtils.success(t("plansPage.successMessage"));
-        setShowSummary(false);
-        setSelectedPlanForSummary(null);
+      if (result?.requiresAction) {
+        // useCheckout already redirected via window.location; skip the toast.
+        return;
       }
+      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      toastUtils.success(t("plansPage.successMessage"));
+      setShowSummary(false);
+      setSelectedPlanForSummary(null);
     } catch (err) {
       handleError(err, t, { fallbackMessage: "plansPage.failedMessage" });
-    } finally {
-      setSubscribing(null);
     }
-  }, [selectedPlanForSummary, appliedDiscountCode, t, setSubscription]);
+  }, [
+    selectedPlanForSummary,
+    appliedDiscountCode,
+    buildSource,
+    checkoutMutation,
+    queryClient,
+    t,
+  ]);
 
   const handleBackFromSummary = useCallback(() => {
     setShowSummary(false);
@@ -103,6 +135,10 @@ const PlansPageInner = () => {
         onDiscountApply={(code) => setAppliedDiscountCode(code)}
         onProceedToPayment={handleProceedToPayment}
         onBack={handleBackFromSummary}
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={setPaymentMethod}
+        onCardChange={setCardData}
+        onMobileChange={setStcMobile}
       />
     );
   }
@@ -130,7 +166,10 @@ const PlansPageInner = () => {
               key={plan.code}
               plan={plan}
               isCurrent={plan.code === subscription?.plan?.code}
-              isSubscribing={subscribing === plan.code}
+              isSubscribing={
+                checkoutMutation.isPending &&
+                selectedPlanForSummary?.code === plan.code
+              }
               onSubscribe={handleSubscribe}
             />
           ))}

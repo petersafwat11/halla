@@ -511,15 +511,10 @@ subscriptionSchema.methods.getSummary = function () {
  * @returns {Promise<Subscription[]>}
  */
 subscriptionSchema.statics.findActiveForUser = async function (userId) {
-  // FLOW-12-F01 / FLOW-09-F02: sort newest-first so callers that grab
-  // [0] always see the most recently created active subscription. The
-  // primary fix is `subscribe()` auto-cancelling old subs (matches
-  // changePlan), but we keep this as defence-in-depth in case a stray
-  // historical record slips through.
-  // M-16: sort with `_id` as tiebreaker. With identical createdAt timestamps
-  // (sub-millisecond inserts during a test seed or a concurrent burst),
-  // single-key createdAt sort is non-deterministic. ObjectId's monotonic
-  // counter makes _id a stable secondary key.
+  // Sort newest-first (with _id as a stable tiebreaker for sub-ms inserts)
+  // so callers that grab [0] always see the most recently created active
+  // subscription. The single-active invariant is enforced upstream in the
+  // checkout flow; this sort is defence-in-depth for stray historical rows.
   return this.find({
     userId,
     status: { $in: ['active', 'trial'] },

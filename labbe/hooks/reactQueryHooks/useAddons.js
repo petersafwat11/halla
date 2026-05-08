@@ -87,8 +87,8 @@ export const usePurchaseAddon = () => {
         inner?.redirectUrl &&
         typeof window !== "undefined"
       ) {
-        // Mirror useSubscriptionMutation's 3DS handling: redirect now and
-        // hand back a sentinel so the caller doesn't toast a fake success.
+        // 3DS: redirect now and hand back a sentinel so the caller
+        // doesn't toast a fake success.
         window.location.href = inner.redirectUrl;
         return { requiresAction: true, paymentId: inner.paymentId };
       }

@@ -8,7 +8,7 @@ import {
 import { FormProvider, useForm } from "react-hook-form";
 import EventsService from "../../../services/EventsService";
 import { useTranslation } from "../../../localization";
-import { useSubscription } from "../../../hooks";
+import { useMySubscription } from "../../../hooks";
 import StepOne from "../../createEvent/StepOne";
 import StepTwo from "../../createEvent/StepTwo";
 import StepThree from "../../createEvent/StepThree";
@@ -88,7 +88,7 @@ const UpdateEventForm = ({ initialData, onSubmit, loading }) => {
   const { t } = useTranslation("admin");
   const [currentStep, setCurrentStep] = useState(1);
 
-  const { data: subscriptionData } = useSubscription();
+  const { data: subscriptionData } = useMySubscription();
   const subscription = subscriptionData?.data?.subscription;
 
   const methods = useForm({

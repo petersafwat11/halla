@@ -99,23 +99,22 @@ assert(
 );
 ok('moyasar.js uses given_id (no Idempotency-Key HTTP header)');
 
-// 8. Subscription service writes Payment rows + finalize3ds path.
-const subSvcSrc = read('src/modules/subscriptions/subscriptions.service.js');
-assert(
-  subSvcSrc.includes('finalizePending3ds') &&
-    subSvcSrc.includes('paymentRecord') &&
-    subSvcSrc.includes('PaymentModel'),
-  'subscriptions.service.js missing Payment write or finalize3ds'
-);
-ok('subscriptions.service.js writes Payment rows and exposes finalizePending3ds');
-
-// 9. Addons service writes Payment rows + finalize3ds path.
+// 8. Addons service writes Payment rows + finalize3ds path.
 const addonSvcSrc = read('src/modules/addons/addons.service.js');
 assert(
   addonSvcSrc.includes('finalizePending3ds') && addonSvcSrc.includes('PaymentModel'),
   'addons.service.js missing Payment write or finalize3ds'
 );
 ok('addons.service.js writes Payment rows and exposes finalizePending3ds');
+
+// 9. Checkout service is the canonical finalization path (subscriptions
+// no longer owns its own subscribe-3DS finalization).
+const checkoutSvcSrc = read('src/modules/payments/checkout.service.js');
+assert(
+  checkoutSvcSrc.includes('finalizePending3ds') && checkoutSvcSrc.includes('PaymentModel'),
+  'checkout.service.js missing Payment write or finalize3ds'
+);
+ok('checkout.service.js writes Payment rows and exposes finalizePending3ds');
 
 // 10. Legacy paymentTransactionId removed from getSummary; replaced with paymentId.
 const subModelSrc = read('models/SubscriptionModel.js');

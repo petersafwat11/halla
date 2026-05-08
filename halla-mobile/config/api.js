@@ -51,15 +51,10 @@ export const ENDPOINTS = {
     BY_ID: (id) => `/plans/${id}`,
   },
 
-  // Subscriptions endpoints
+  // Subscriptions endpoints (reads only; self-subscribe via PAYMENTS.CHECKOUT)
   SUBSCRIPTIONS: {
     MY_SUBSCRIPTION: "/subscriptions/my-subscription",
-    SUBSCRIBE: "/subscriptions/subscribe",
-    CHANGE_PLAN: "/subscriptions/change-plan",
-    CANCEL: "/subscriptions/cancel",
-    VALIDATE_LIMITS: "/subscriptions/validate-limits",
-    LIMITS: "/subscriptions/limits",
-    FEATURE_ACCESS: (featureName) => `/subscriptions/features/${featureName}`,
+    MY_PAYMENTS: "/subscriptions/payments",
   },
 
   // Addons endpoints

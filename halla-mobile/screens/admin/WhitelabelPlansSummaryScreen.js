@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   ActivityIndicator,
   I18nManager,
 } from "react-native";
@@ -14,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
-import { useSubscribe, useValidateDiscount } from "../../hooks";
+import { useCheckout, useValidateDiscount } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
 import { PlanSummaryCard, DiscountCodeCard, PaymentSummaryCard } from "../../components/plans/SummaryCards";
 import { getLocalized } from "../../utils/locale";
@@ -24,7 +23,7 @@ const WhitelabelPlansSummaryScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const toast = useToast();
-  const subscribeMutation = useSubscribe();
+  const checkoutMutation = useCheckout();
   const validateDiscount = useValidateDiscount();
 
   const { selectedPlan } = route.params || {};
@@ -88,30 +87,25 @@ const WhitelabelPlansSummaryScreen = () => {
   const handlePayment = useCallback(async () => {
     if (!selectedPlan) return;
     try {
-      const payload = {
+      const result = await checkoutMutation.mutateAsync({
         planCode: selectedPlan.code,
-        ...(discountCode ? { discountCode: discountCode.trim() } : {}),
-      };
-      await subscribeMutation.mutateAsync(payload);
+        addons: [],
+        ...(discountApplied && discountCode
+          ? { discountCode: discountCode.trim() }
+          : {}),
+      });
+      if (result?.requiresAction) {
+        // useCheckout has already opened the redirect URL via Linking; the
+        // user is mid-flow with the bank — don't toast a fake success.
+        return;
+      }
       toast.success(t("summary.subscriptionSuccess"));
       navigation.goBack();
       navigation.goBack();
     } catch (error) {
-      if (error.status === 400 && error.message?.includes("already have an active subscription")) {
-        toast.info(t("summary.activeSubscription"));
-        navigation.goBack();
-        navigation.goBack();
-      } else if (error.status === 400 && error.message?.includes("Payment failed")) {
-        toast.error(t("summary.paymentFailed"));
-      } else if (error.status === 400 && error.message?.includes("Invalid plan code")) {
-        toast.error(t("summary.invalidPlan"));
-      } else {
-        toast.error(t("summary.subscriptionFailed"));
-      }
+      toast.error(error?.message || t("summary.subscriptionFailed"));
     }
-  }, [selectedPlan, discountCode, subscribeMutation, toast, t, navigation]);
-
-  const goBack = useCallback(() => navigation.goBack(), [navigation]);
+  }, [selectedPlan, discountCode, discountApplied, checkoutMutation, toast, t, navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -185,18 +179,17 @@ const WhitelabelPlansSummaryScreen = () => {
           <Text style={styles.termsNotice}>{t("summary.termsNotice")}</Text>
         </ScrollView>
 
-        {/* Bottom Button */}
         <View style={styles.bottomContainer}>
           <TouchableOpacity
             style={[
               styles.proceedButton,
-              subscribeMutation.isPending && styles.proceedButtonDisabled,
+              checkoutMutation.isPending && styles.proceedButtonDisabled,
             ]}
             onPress={handlePayment}
-            disabled={subscribeMutation.isPending}
+            disabled={checkoutMutation.isPending}
             activeOpacity={0.8}
           >
-            {subscribeMutation.isPending ? (
+            {checkoutMutation.isPending ? (
               <>
                 <ActivityIndicator size="small" color="#FFF" />
                 <Text style={styles.proceedButtonText}>

@@ -97,13 +97,6 @@ class PaymentsService {
     if (!purpose) return;
     try {
       if (
-        purpose === 'subscription' &&
-        payment.metadata?.pendingSubscribeIntent &&
-        !payment.subscriptionId
-      ) {
-        const subscriptionsService = require('../subscriptions/subscriptions.service');
-        await subscriptionsService.finalizePending3ds(payment._id);
-      } else if (
         purpose === 'addon' &&
         payment.metadata?.pendingAddonIntent &&
         !payment.addonId
