@@ -16,24 +16,98 @@ const router = express.Router();
 
 const plansController = require('./plans.controller');
 const { protect } = require('../../shared/middleware/auth');
-const { restrictTo } = require('../../shared/middleware/rbac');
+const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { auditLog } = require('../../shared/middleware/auditLog');
-const { ROLES } = require('../../shared/constants');
-const { validateObjectId } = require('../../shared/middleware/validation');
+const { ADMIN_PAGES } = require('../../shared/constants');
+const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
+const { createPlanSchema, updatePlanSchema } = require('./plans.schemas');
 
-// Admin plan routes (protected)
+// ============================================
+// ADMIN ROUTES (protected)
+// ============================================
+
+/**
+ * @swagger
+ * /plans/admin/all:
+ *   get:
+ *     summary: List all plans (admin)
+ *     description: Returns every plan including inactive ones. Requires `manage_plans` view access.
+ *     tags: [Plans]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Plans retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     plans:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Plan'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ */
 router.get(
   '/admin/all',
   protect,
-  restrictTo(ROLES.SUPER_ADMIN),
+  requirePageAccess(ADMIN_PAGES.MANAGE_PLANS, 'view'),
   plansController.getAllPlansAdmin
 );
 
-// FLOW-08-F01: create
+/**
+ * @swagger
+ * /plans/admin:
+ *   post:
+ *     summary: Create a plan (admin)
+ *     description: Creates a new subscription plan. Requires `manage_plans` create access.
+ *     tags: [Plans]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PlanCreate'
+ *     responses:
+ *       201:
+ *         description: Plan created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     plan:
+ *                       $ref: '#/components/schemas/Plan'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       409:
+ *         description: Plan code already exists
+ */
 router.post(
   '/admin',
   protect,
-  restrictTo(ROLES.SUPER_ADMIN),
+  requirePageAccess(ADMIN_PAGES.MANAGE_PLANS, 'create'),
+  validateZod(createPlanSchema),
   auditLog({
     action: 'plan.created',
     targetType: 'system',
@@ -49,11 +123,55 @@ router.post(
   plansController.createPlan
 );
 
-// FLOW-08-F01: soft-delete
+/**
+ * @swagger
+ * /plans/admin/{code}:
+ *   delete:
+ *     summary: Soft-delete a plan (admin)
+ *     description: |
+ *       Marks the plan inactive. Hard delete is intentionally blocked to
+ *       preserve historical subscriptions. Returns 409 if any active
+ *       subscribers are on the plan. Requires `manage_plans` delete access.
+ *     tags: [Plans]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Plan code
+ *     responses:
+ *       200:
+ *         description: Plan deactivated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     plan:
+ *                       $ref: '#/components/schemas/Plan'
+ *                     activeSubscribers:
+ *                       type: integer
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       409:
+ *         description: Plan still has active subscribers
+ */
 router.delete(
   '/admin/:code',
   protect,
-  restrictTo(ROLES.SUPER_ADMIN),
+  requirePageAccess(ADMIN_PAGES.MANAGE_PLANS, 'delete'),
   auditLog({
     action: 'plan.deactivated',
     targetType: 'system',
@@ -70,11 +188,60 @@ router.delete(
   plansController.deletePlan
 );
 
-// FLOW-08-F02 + FLOW-08-F03: validated update with before/after audit
+/**
+ * @swagger
+ * /plans/admin/{code}:
+ *   patch:
+ *     summary: Update a plan (admin)
+ *     description: |
+ *       Patches a plan by code. `code` and `planType` are immutable. Limit
+ *       reductions that would orphan active subscribers are rejected with
+ *       400. Requires `manage_plans` update access.
+ *     tags: [Plans]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Plan code
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PlanUpdate'
+ *     responses:
+ *       200:
+ *         description: Plan updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     plan:
+ *                       $ref: '#/components/schemas/Plan'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
 router.patch(
   '/admin/:code',
   protect,
-  restrictTo(ROLES.SUPER_ADMIN),
+  requirePageAccess(ADMIN_PAGES.MANAGE_PLANS, 'update'),
+  validateZod(updatePlanSchema),
   auditLog({
     action: 'plan.updated',
     targetType: 'system',
@@ -91,7 +258,9 @@ router.patch(
   plansController.updatePlanByCode
 );
 
-// All routes below are public
+// ============================================
+// PUBLIC ROUTES
+// ============================================
 
 /**
  * @swagger
@@ -112,9 +281,12 @@ router.patch(
  *                 status:
  *                   type: string
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Plan'
+ *                   type: object
+ *                   properties:
+ *                     plans:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Plan'
  */
 router.get('/', plansController.getPlans);
 
@@ -123,7 +295,7 @@ router.get('/', plansController.getPlans);
  * /plans/business:
  *   get:
  *     summary: Get business plans
- *     description: Retrieve all business-tier subscription plans (event, quarterly, annual)
+ *     description: Retrieve all business-availability subscription plans (event, quarterly, annual)
  *     tags: [Plans]
  *     security: []
  *     responses:
@@ -137,30 +309,16 @@ router.get('/', plansController.getPlans);
  *                 status:
  *                   type: string
  *                 data:
- *                   type: object
+ *                   $ref: '#/components/schemas/BusinessPlansResponse'
  */
 router.get('/business', plansController.getBusinessPlans);
-
-/**
- * @swagger
- * /plans/enterprise:
- *   get:
- *     summary: Get enterprise plans (backward compat — use /business)
- *     description: Retrieve all enterprise-tier subscription plans
- *     tags: [Plans]
- *     security: []
- *     responses:
- *       200:
- *         description: Enterprise plans retrieved successfully
- */
-router.get('/enterprise', plansController.getBusinessPlans);
 
 /**
  * @swagger
  * /plans/host:
  *   get:
  *     summary: Get host plans
- *     description: Retrieve host plans (single event and monthly)
+ *     description: Retrieve host plans (basic and premium × event and monthly)
  *     tags: [Plans]
  *     security: []
  *     responses:
@@ -174,9 +332,7 @@ router.get('/enterprise', plansController.getBusinessPlans);
  *                 status:
  *                   type: string
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Plan'
+ *                   $ref: '#/components/schemas/HostPlansResponse'
  */
 router.get('/host', plansController.getHostPlans);
 
@@ -206,7 +362,10 @@ router.get('/host', plansController.getHostPlans);
  *                 status:
  *                   type: string
  *                 data:
- *                   $ref: '#/components/schemas/Plan'
+ *                   type: object
+ *                   properties:
+ *                     plan:
+ *                       $ref: '#/components/schemas/Plan'
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
@@ -233,7 +392,10 @@ router.get('/code/:code', plansController.getPlanByCode);
  *                 status:
  *                   type: string
  *                 data:
- *                   $ref: '#/components/schemas/Plan'
+ *                   type: object
+ *                   properties:
+ *                     plan:
+ *                       $ref: '#/components/schemas/Plan'
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */

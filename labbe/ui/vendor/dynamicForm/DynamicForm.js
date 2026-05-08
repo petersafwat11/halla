@@ -44,7 +44,6 @@ const DynamicForm = ({
   cancelLabel,
 }) => {
   const { t, i18n } = useTranslation("vendorSettings");
-  const isArabic = i18n.language === "ar";
 
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
@@ -189,7 +188,7 @@ const DynamicForm = ({
               <option value="">{getPlaceholder(field)}</option>
               {field.options?.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {isArabic
+                  {i18n.language === "ar"
                     ? option.labelAr
                     : t(option.labelKey, option.labelAr)}
                 </option>

@@ -3,9 +3,9 @@ import { API_BASE_URL, ENDPOINTS } from "../config/api";
 import { fetchWithTimeout } from "../services/apiClient";
 
 /**
- * Phase 4 W0-AUTH: routed through `fetchWithTimeout` so locations
- * lookups time out at 30 s instead of hanging on a flaky link. No auth
- * needed (public endpoints), so we don't go through `apiFetch`.
+ * Routed through `fetchWithTimeout` so locations lookups time out at
+ * 30 s instead of hanging on a flaky link. No auth needed (public
+ * endpoints), so we don't go through `apiFetch`.
  */
 const fetchJSON = async (url) => {
   const response = await fetchWithTimeout(url);
@@ -40,14 +40,5 @@ export const useDistrictsByCity = (cityId, options = {}) =>
     staleTime: 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     enabled: !!cityId,
-    ...options,
-  });
-
-export const useEnterprisePlans = (options = {}) =>
-  useQuery({
-    queryKey: ["plans", "enterprise"],
-    queryFn: () => fetchJSON(`${API_BASE_URL}${ENDPOINTS.PLANS.ENTERPRISE}`),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
     ...options,
   });

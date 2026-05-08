@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -18,9 +18,11 @@ import {
   textStyles,
   backgrounds,
 } from "../../../styles/tokens";
-import { useHostPlans, useUpdateHostSubscription } from "../../../hooks";
+import { useAdminPlans, useUpdateHostSubscription } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { planHasBillingCycle } from "../../../utils/constants/plans";
+import { getLocalized } from "../../../utils/locale";
 
 const PickDropdown = ({ label, options, selectedValue, onSelect }) => (
   <View style={styles.field}>
@@ -53,11 +55,18 @@ const PickDropdown = ({ label, options, selectedValue, onSelect }) => (
 );
 
 const SubscriptionModal = ({ visible, onClose, host }) => {
-  const { t } = useTranslation("admin");
+  const { t, i18n } = useTranslation("admin");
+  const locale = i18n.language;
   const [selectedPlan, setSelectedPlan] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("active");
+  const [selectedBillingCycle, setSelectedBillingCycle] = useState("monthly");
   const updateSubscription = useUpdateHostSubscription();
-  const { data: plansData, isLoading: isLoadingPlans } = useHostPlans();
+  const {
+    data: plansData,
+    isLoading: isLoadingPlans,
+    error: plansError,
+    refetch: refetchPlans,
+  } = useAdminPlans();
   const toast = useToast();
 
   const statusOptions = [
@@ -66,30 +75,32 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
     { label: t("hosts.subscription.statusCancelled"),   value: "cancelled" },
   ];
 
-  const dynamicPlanOptions = React.useMemo(() => {
-    if (!plansData?.data) return [];
+  const billingCycleOptions = [
+    { label: t("hosts.subscription.monthly"),  value: "monthly" },
+    { label: t("hosts.subscription.yearly"),   value: "yearly" },
+  ];
 
-    const basicEvent = (plansData.data?.basic?.event || []);
-    const basicMonthly = (plansData.data?.basic?.monthly || []);
-    const premiumEvent = (plansData.data?.premium?.event || []);
-    const premiumMonthly = (plansData.data?.premium?.monthly || []);
-    const allPlans = [...basicEvent, ...basicMonthly, ...premiumEvent, ...premiumMonthly];
-
-    return allPlans.map((p) => ({
-      label: p.nameEn || p.code,
+  const planOptions = useMemo(() => {
+    const list = plansData?.data?.plans || [];
+    return list.map((p) => ({
+      label: getLocalized(p, "name", locale),
       value: p.code,
+      planType: p.planType,
     }));
-  }, [plansData, t]);
+  }, [plansData, locale]);
+
+  const selectedPlanType = useMemo(
+    () => planOptions.find((opt) => opt.value === selectedPlan)?.planType,
+    [planOptions, selectedPlan]
+  );
+
+  const showBillingCyclePicker = planHasBillingCycle(selectedPlanType);
 
   useEffect(() => {
     if (visible && host) {
-      setSelectedPlan(
-        host.subscription?.planId?.code ||
-        host.subscription?.planCode ||
-        host.subscription?.planType ||
-        "",
-      );
+      setSelectedPlan(host.subscription?.planId?.code || "");
       setSelectedStatus(host.subscription?.status || "active");
+      setSelectedBillingCycle(host.subscription?.billingCycle || "monthly");
     }
   }, [visible, host]);
 
@@ -101,11 +112,10 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
 
     try {
       await updateSubscription.mutateAsync({
-        hostId: host.id || host._id,
-        subscriptionData: {
-          planCode: selectedPlan,
-          status: selectedStatus,
-        },
+        hostId: host.id,
+        planCode: selectedPlan,
+        status: selectedStatus,
+        ...(showBillingCyclePicker ? { billingCycle: selectedBillingCycle } : {}),
       });
       toast.success(t("hosts.subscription.updated"));
       onClose();
@@ -145,10 +155,26 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
                 <ActivityIndicator size="large" color={colors.primary[500]} />
                 <Text style={styles.loadingText}>{t("hosts.subscription.loadingPlans")}</Text>
               </View>
+            ) : plansError ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle-outline" size={36} color={colors.error[500]} />
+                <Text style={styles.errorText}>
+                  {t("hosts.subscription.errorLoadingPlans")}
+                </Text>
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={() => refetchPlans()}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.retryButtonText}>
+                    {t("hosts.subscription.retry")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             ) : (
               <PickDropdown
                 label={t("hosts.subscription.selectPlan")}
-                options={dynamicPlanOptions}
+                options={planOptions}
                 selectedValue={selectedPlan}
                 onSelect={setSelectedPlan}
               />
@@ -161,7 +187,14 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
               onSelect={setSelectedStatus}
             />
 
-
+            {showBillingCyclePicker && (
+              <PickDropdown
+                label={t("hosts.subscription.billingCycle")}
+                options={billingCycleOptions}
+                selectedValue={selectedBillingCycle}
+                onSelect={setSelectedBillingCycle}
+              />
+            )}
           </View>
 
           <View style={styles.footer}>
@@ -253,6 +286,28 @@ const styles = StyleSheet.create({
     marginTop: spacing[12],
     color: colors.natural[600],
     fontSize: typography.fontSize.body.medium,
+  },
+  errorContainer: {
+    padding: spacing[24],
+    alignItems: "center",
+    gap: spacing[8],
+  },
+  errorText: {
+    color: colors.natural[700],
+    fontSize: typography.fontSize.body.medium,
+    textAlign: "center",
+  },
+  retryButton: {
+    marginTop: spacing[8],
+    paddingVertical: spacing[8],
+    paddingHorizontal: spacing[20],
+    backgroundColor: colors.primary[500],
+    borderRadius: borderRadius[8],
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: typography.fontSize.body.medium,
+    fontWeight: typography.fontWeight.semibold,
   },
   field: {
     marginBottom: spacing[20],

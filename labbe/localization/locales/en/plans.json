@@ -35,9 +35,29 @@
   },
   "inviteSelector": { "label": "Select number of invites", "poolLabel": "Invite pool", "invites": "invites" },
   "planLimits": { "invitesPerEvent": "invites/event", "invitePool": "invite pool" },
-  "features": { "title": "Included Features" },
+  "features": {
+    "title": "Included Features",
+    "hasInAppInvites": { "label": "In-app invitations" },
+    "hasWhatsAppInvites": { "label": "WhatsApp invitations" },
+    "hasSMSInvites": { "label": "SMS invitations" },
+    "hasQRCode": { "label": "QR code entry" },
+    "hasQRScanning": { "label": "QR scanning at the door" },
+    "hasFlexibleEntryMode": { "label": "Flexible entry mode" },
+    "hasStaffCheckIn": { "label": "Staff check-in" },
+    "hasStaffAssignment": { "label": "Staff assignment" },
+    "hasRSVPTracking": { "label": "RSVP tracking" },
+    "hasAutoReminders": { "label": "Automatic reminders" },
+    "hasEmailNotifications": { "label": "Email notifications" },
+    "hasCustomWhatsAppNumber": { "label": "Custom WhatsApp number" },
+    "hasCompensationInvites": { "label": "Compensation invitations" },
+    "hasBasicTemplates": { "label": "Basic templates" },
+    "hasPremiumTemplates": { "label": "Premium templates" },
+    "hasPostEventPage": { "label": "Post-event page" },
+    "hasCustomReports": { "label": "Custom reports" },
+    "hasWhatsAppSupport": { "label": "WhatsApp support" }
+  },
   "compensation": { "title": "Free Compensation Invites", "invites": "invites" },
-  "buttons": { "subscribeNow": "Subscribe Now" },
+  "buttons": { "subscribeNow": "Subscribe Now", "retry": "Retry" },
   "addons": {
     "title": "Add-Ons", "subtitle": "Enhance your plan with optional extras",
     "extraInvites": { "title": "Extra Invites", "description": "Add more invites to your plan" },
@@ -63,6 +83,10 @@
     }
   },
   "infoNote": "Our team will contact you after subscription to complete payment and get started.",
+  "managedService": {
+    "contactWhatsApp": "Contact us on WhatsApp",
+    "whatsappMessage": "Hello, I want to inquire about event management service"
+  },
   "errors": {
     "loadFailed": "Failed to load plans. Please try again.",
     "selectPlan": "Please select a plan to continue.",

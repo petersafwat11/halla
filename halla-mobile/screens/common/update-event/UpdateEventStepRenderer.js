@@ -33,7 +33,8 @@ const UpdateEventStepRenderer = ({
               eventData?.guestLimit ??
               subscription?.guestLimit ??
               subscription?.guests?.limitPerEvent ??
-              subscription?.limits?.maxGuestsPerEvent ??
+              subscription?.limits?.invitePool ??
+              subscription?.limits?.maxInvitesPerEvent ??
               0,
             isGuestUnlimited:
               eventData?.guestLimit === -1 ||

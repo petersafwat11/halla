@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -42,7 +43,6 @@ const PlansSummaryScreen = () => {
   const toast = useToast();
   const checkoutMutation = useCheckout();
   const validateDiscount = useValidateDiscount();
-  const isArabic = currentLanguage === "ar";
 
   const { selectedPlan, addonItems = [], addonTotal = 0 } = route.params || {};
 
@@ -53,8 +53,7 @@ const PlansSummaryScreen = () => {
   const [discountApplied, setDiscountApplied] = useState(false);
   const validating = validateDiscount.isPending;
 
-  const planPrice =
-    parseFloat(selectedPlan?.price || selectedPlan?.pricing?.oneTime) || 0;
+  const planPrice = parseFloat(selectedPlan?.pricing?.oneTime) || 0;
   const subtotal = planPrice + (addonTotal || 0);
   const finalTotal = Math.max(0, subtotal - discountAmount);
 
@@ -148,7 +147,7 @@ const PlansSummaryScreen = () => {
           <PlanSummaryCard
             selectedPlan={selectedPlan}
             billingType={billingType}
-            isArabic={isArabic}
+            locale={currentLanguage}
             planPrice={planPrice}
             t={t}
           />
@@ -198,7 +197,7 @@ const PlansSummaryScreen = () => {
                   {t("summary.activateButton")}
                 </Text>
                 <Ionicons
-                  name={isArabic ? "chevron-back" : "chevron-forward"}
+                  name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
                   size={20}
                   color="#FFF"
                 />

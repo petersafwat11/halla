@@ -12,7 +12,7 @@ export function usePlans() {
       const response = await plansService.getPlans();
       return response;
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -27,22 +27,22 @@ export function useHostPlans() {
       const response = await plansService.getHostPlans();
       return response;
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
 /**
- * Hook to fetch enterprise plans
- * GET /plans/enterprise
+ * Hook to fetch business plans (event / quarterly / annual groups)
+ * GET /plans/business
  */
-export function useEnterprisePlans() {
+export function useBusinessPlans() {
   return useQuery({
-    queryKey: ['plans', 'enterprise'],
+    queryKey: ['plans', 'business'],
     queryFn: async () => {
-      const response = await plansService.getEnterprisePlans();
+      const response = await plansService.getBusinessPlans();
       return response;
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -58,7 +58,7 @@ export function usePlanByCode(code) {
       return response;
     },
     enabled: !!code,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -74,6 +74,6 @@ export function usePlanById(id) {
       return response;
     },
     enabled: !!id,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }

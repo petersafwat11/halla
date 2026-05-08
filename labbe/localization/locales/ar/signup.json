@@ -885,7 +885,15 @@
       "summary": {
         "title": "ملخص الطلب",
         "description": "يرجى مراجعة جميع المعلومات التي قدمتها قبل إرسال طلبك",
-        "submit": "إرسال الطلب"
+        "submit": "إرسال الطلب",
+        "contactInfo": "معلومات التواصل",
+        "phoneNumber": "رقم الجوال",
+        "orderSummary": "ملخص الطلب",
+        "planLine": "باقة {{name}}",
+        "setupFee": "رسوم الإعداد لمرة واحدة",
+        "total": "الإجمالي",
+        "currency": "ر.س",
+        "billingNote": "سيتواصل معك فريقنا بعد التسجيل لإتمام عملية الدفع ومناقشة احتياجاتك."
       },
       "payment": {
         "title": "معلومات المنشأة والدفع",
@@ -991,11 +999,12 @@
         "retry": "إعادة المحاولة",
         "planRequired": "اختيار الباقة مطلوب",
         "perEventPlans": "باقات لكل مناسبة",
-        "perEventDescription": "باقة واحدة لكل مناسبة · صالحة ٩٠ يوماً",
+        "perEventDescription": "— باقة واحدة لكل مناسبة · صالحة ٩٠ يوماً",
         "threeMonthPool": "رصيد ٣ أشهر",
-        "threeMonthPoolDescription": "رصيد دعوات مشترك · مناسبات غير محدودة",
+        "threeMonthPoolDescription": "— رصيد دعوات مشترك · مناسبات غير محدودة",
         "annualPool": "رصيد سنوي",
-        "annualPoolDescription": "رصيد دعوات مشترك · مناسبات غير محدودة",
+        "annualPoolDescription": "— رصيد دعوات مشترك · مناسبات غير محدودة",
+        "currency": "ر.س",
         "invitesPerEvent": "دعوة / مناسبة",
         "oneEvent": "مناسبة واحدة",
         "invitesPool": "دعوة (رصيد)",

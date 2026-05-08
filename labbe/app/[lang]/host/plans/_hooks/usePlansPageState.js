@@ -25,8 +25,8 @@ const FEATURE_MAP = {
 };
 
 const getInviteValue = (plan, billingType) => {
-  if (billingType === "monthly") return plan.invitePool;
-  return plan.invites || plan.limits?.maxInvitesPerEvent;
+  if (billingType === "monthly") return plan.invitePool ?? 0;
+  return plan.invites ?? 0;
 };
 
 const computeFeatures = (plan) => {
@@ -94,8 +94,14 @@ export const usePlansPageState = () => {
 
   const compensationInvites = useMemo(() => {
     if (!selectedInvites) return 0;
-    return Math.floor(selectedInvites * 0.15);
-  }, [selectedInvites]);
+    const plan =
+      basicPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
+      premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
+      basicPlans[0] ||
+      premiumPlans[0];
+    const percent = plan?.compensationPercentage ?? 10;
+    return Math.floor((selectedInvites * percent) / 100);
+  }, [selectedInvites, basicPlans, premiumPlans, billingType]);
 
   const basicFeatures = useMemo(
     () =>
@@ -194,15 +200,7 @@ export const usePlansPageState = () => {
     } catch (error) {
       const message =
         error?.response?.data?.message || error?.message || "";
-      if (
-        error?.response?.status === 400 &&
-        message.includes("already have an active subscription")
-      ) {
-        toastUtils.info(t("toasts.alreadyActive"));
-        router.push(`/${lang}/host/create-event`);
-      } else {
-        toastUtils.error(message || t("toasts.subscriptionFailed"));
-      }
+      toastUtils.error(message || t("toasts.subscriptionFailed"));
     }
   }, [
     selectedPlan,

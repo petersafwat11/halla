@@ -1,11 +1,10 @@
 /**
  * Plan Model
  * Static configuration for subscription plans
- * Supports: Trial, Single Event (hosts), Lite (hosts), Pro/Elite (whitelabel)
+ * Supports: Trial, Host (basic/premium event+monthly), Business (event+quarterly+annual)
  */
 
 const mongoose = require("mongoose");
-const { PLAN_TYPES, PLAN_AVAILABILITY, PLAN_FAMILIES, BILLING_TYPES, isPerEventPlan, isPoolPlan, isManagedPlan } = require('../src/shared/constants/plans');
 
 // ============================================
 // FEATURES SCHEMA
@@ -31,6 +30,10 @@ const featuresSchema = new mongoose.Schema(
     hasAutoReminders: { type: Boolean, default: true }, // تذكيرات تلقائية
     hasEmailNotifications: { type: Boolean, default: true },
     hasCustomWhatsAppNumber: { type: Boolean, default: false },
+    hasOfficialSenderNumber: { type: Boolean, default: false },
+    hasCustomWebPage: { type: Boolean, default: false },
+    hasMessageTracking: { type: Boolean, default: false },
+    whatsAppTemplates: { type: Number, default: 0 },
 
     // Compensation Invites (دعوات تعويضية)
     hasCompensationInvites: { type: Boolean, default: true }, // رصيد دعوات تعويضية
@@ -47,7 +50,7 @@ const featuresSchema = new mongoose.Schema(
     hasCustomReports: { type: Boolean, default: false },
 
     // Support
-    priorityPoints: { type: Number, default: 1 }, // 1=Trial, 2=Lite, 3=Pro, 4=Elite
+    priorityPoints: { type: Number, default: 1 }, // 1=Trial, 2=Basic, 3=Premium, 4=Business
     hasWhatsAppSupport: { type: Boolean, default: true },
   },
   { _id: false }
@@ -57,7 +60,7 @@ const featuresSchema = new mongoose.Schema(
 // PRICING SCHEMA
 // ============================================
 //
-// AMOUNT UNIT CONTRACT (B-2):
+// AMOUNT UNIT CONTRACT:
 //   `oneTime` is a non-negative number in **SAR major units** (Saudi
 //   Riyals). E.g. `29` = 29.00 SAR, `99.99` = 99.99 SAR. SAR has 2-decimal
 //   precision (halalas), so values with more than 2 decimal places are
@@ -97,7 +100,7 @@ const limitsSchema = new mongoose.Schema(
     maxInvitesPerEvent: { type: Number, default: null },
     invitePool: { type: Number, default: null },
     durationDays: { type: Number, default: 90 },
-    maxHosts: { type: Number, default: null }, // FLOW-04-F03: null = no limit
+    maxHosts: { type: Number, default: null }, // null = no limit
   },
   { _id: false }
 );
@@ -161,15 +164,10 @@ const planSchema = new mongoose.Schema(
     // ============ DISPLAY ============
     isPopular: { type: Boolean, default: false },
     sortOrder: { type: Number, default: 0 },
-    color: String,
-    icon: String,
 
     // ============ VISIBILITY ============
     isActive: { type: Boolean, default: true },
     isPublic: { type: Boolean, default: true },
-
-    // ============ METADATA ============
-    metadata: mongoose.Schema.Types.Mixed,
   },
   {
     timestamps: true,
@@ -204,88 +202,32 @@ planSchema.virtual("description").get(function () {
   };
 });
 
-// Monthly discount percentage when paying yearly (for direct pricing)
-planSchema.virtual("yearlyDiscount").get(function () {
-  const monthlyTotal = (this.pricing?.direct?.monthly || 0) * 12;
-  const yearlyPrice = this.pricing?.direct?.yearly || 0;
-  if (monthlyTotal === 0) return 0;
-  return Math.round(((monthlyTotal - yearlyPrice) / monthlyTotal) * 100);
-});
-
-// Check if this is a per-event plan
-planSchema.virtual("isSingleEvent").get(function () {
-  return isPerEventPlan(this.planType);
-});
-
-planSchema.virtual("isPoolPlan").get(function () {
-  return isPoolPlan(this.planType);
-});
-
-planSchema.virtual("isManagedPlan").get(function () {
-  return isManagedPlan(this.planType);
-});
-
-// Check if this is a host plan
-planSchema.virtual("isHostPlan").get(function () {
-  return this.availableFor === PLAN_AVAILABILITY.HOST;
-});
-
-// Check if this is a whitelabel plan
-planSchema.virtual("isWhitelabelPlan").get(function () {
-  return this.availableFor === PLAN_AVAILABILITY.WHITELABEL;
-});
-
-// ============================================
-// INSTANCE METHODS
-// ============================================
-
-/**
- * Get plan display info for frontend
- * @param {string} lang - Language code (ar/en)
- * @returns {Object}
- */
-planSchema.methods.getDisplayInfo = function (lang = "ar") {
-  return {
-    code: this.code,
-    planType: this.planType,
-    availableFor: this.availableFor,
-    name: lang === "ar" ? this.nameAr : this.nameEn,
-    description: lang === "ar" ? this.descriptionAr : this.descriptionEn,
-    pricing: { oneTime: this.pricing?.oneTime || 0 },
-    currency: this.currency,
-    limits: this.limits,
-    features: this.features,
-    isPopular: this.isPopular,
-    color: this.color,
-    icon: this.icon,
-  };
-};
-
 // ============================================
 // STATIC METHODS
 // ============================================
 
 /**
- * Get plan by code
+ * Get plan by code, falling back to PLAN_DEFAULTS in dev/test only.
+ *
+ * Dev/test convenience: auto-creates the plan from `PLAN_DEFAULTS` so
+ * unseeded local databases keep working. In production and staging this
+ * is unsafe — a missing plan there means seeding is broken, not that we
+ * should silently materialise one from a fixture — so we throw instead.
+ *
  * @param {string} code
- * @returns {Promise<Plan>}
- */
-planSchema.statics.getByCode = async function (code) {
-  return this.findOne({ code, isActive: true });
-};
-
-/**
- * Get plan by code, creating from PLAN_DEFAULTS if not in database
- * This ensures single event plans work without requiring database seeding
- * @param {string} code
- * @returns {Promise<Plan>}
+ * @returns {Promise<Plan|null>}
  */
 planSchema.statics.getOrCreateByCode = async function (code) {
   // First try to find in database
   let plan = await this.findOne({ code, isActive: true });
   if (plan) return plan;
 
-  // If not found, try to create from PLAN_DEFAULTS
+  // Production / staging: missing plans are a seeding bug — fail loud, never auto-create.
+  if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging") {
+    throw new Error(`Plan '${code}' missing — DB seeding incomplete`);
+  }
+
+  // Dev / test: fall back to fixture defaults so local flows keep working.
   const { PLAN_DEFAULTS } = require("../src/shared/constants");
   const planConfig = PLAN_DEFAULTS[code];
 
@@ -293,7 +235,6 @@ planSchema.statics.getOrCreateByCode = async function (code) {
     return null; // Plan code not found in defaults either
   }
 
-  // Create the plan from defaults
   try {
     plan = await this.create({
       code,

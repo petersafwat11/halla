@@ -14,6 +14,7 @@ import {
   FaComments,
   FaSms,
 } from "react-icons/fa";
+import { getLocalized } from "@/utils/locale";
 import styles from "./FeaturesList.module.css";
 
 const FEATURE_ICONS = {
@@ -37,7 +38,6 @@ const FEATURE_ICONS = {
  */
 const FeaturesList = ({ features = [], title }) => {
   const { i18n } = useTranslation("plans");
-  const isArabic = i18n.language === "ar";
 
   if (!features.length) return null;
 
@@ -50,7 +50,7 @@ const FeaturesList = ({ features = [], title }) => {
           return (
             <div key={index} className={styles.featureItem}>
               <IconComponent className={styles.featureIcon} />
-              <span>{isArabic ? feature.labelAr : feature.labelEn}</span>
+              <span>{getLocalized(feature, "label", i18n.language)}</span>
             </div>
           );
         })}

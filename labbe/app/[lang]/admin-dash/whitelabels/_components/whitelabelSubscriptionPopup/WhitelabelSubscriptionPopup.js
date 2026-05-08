@@ -7,6 +7,7 @@ import { toastUtils } from "@/utils/toastUtils";
 import { useAdminWhitelabelMutation } from "@/hooks/reactQueryHooks/useAdmin";
 import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { getLocalized } from "@/utils/locale";
 import styles from "./whitelabelSubscriptionPopup.module.css";
 import Image from "next/image";
 import { FaCheck, FaCrown } from "react-icons/fa";
@@ -18,7 +19,6 @@ const WhitelabelSubscriptionPopup = ({
   onSuccess,
 }) => {
   const { t, i18n } = useTranslation("adminWhitelabels");
-  const isArabic = i18n.language === "ar";
   const updateSubscription = useAdminWhitelabelMutation("updateSubscription");
 
   const { data: plansData, isLoading: plansLoading } = useBusinessPlans();
@@ -34,7 +34,7 @@ const WhitelabelSubscriptionPopup = ({
       return;
     }
     if (!selectedPlan) {
-      toastUtils.error(t("subscription.noPlanSelected", "Please select a plan"));
+      toastUtils.error(t("subscription.noPlanSelected"));
       return;
     }
 
@@ -52,7 +52,7 @@ const WhitelabelSubscriptionPopup = ({
 
   const renderPlanCard = (plan) => {
     const isSelected = selectedPlan === plan.code;
-    const planName = isArabic ? plan.nameAr : plan.nameEn;
+    const planName = getLocalized(plan, "name", i18n.language);
     const price = plan.pricing?.oneTime || 0;
     const isPoolPlan =
       plan.planType === "business_quarterly" ||
@@ -60,6 +60,7 @@ const WhitelabelSubscriptionPopup = ({
     const inviteDisplay = isPoolPlan
       ? plan.limits?.invitePool
       : plan.limits?.maxInvitesPerEvent;
+    const featuresArray = plan.featuresArray || [];
 
     return (
       <div
@@ -67,33 +68,28 @@ const WhitelabelSubscriptionPopup = ({
         className={`${styles.planCard} ${isSelected ? styles.selectedPlan : ""} ${plan.isPopular ? styles.popularPlan : ""}`}
         onClick={() => setSelectedPlan(plan.code)}
       >
-        {plan.badge && (
-          <div className={styles.popularBadge}>
-            {isArabic ? plan.badge.labelAr : plan.badge.labelEn}
-          </div>
-        )}
         <div className={styles.planHeader}>
           <h3 className={styles.planName}>{planName}</h3>
           <p className={styles.planPrice}>
             <span className={styles.priceValue}>{price.toLocaleString()}</span>
             <span className={styles.priceCurrency}>
-              {t("subscription.currency", " SAR")}
+              {" "}{plan.currency || t("subscription.currency")}
             </span>
           </p>
         </div>
         {inviteDisplay != null && (
           <p className={styles.planLimitInfo}>
             {isPoolPlan
-              ? `${inviteDisplay} ${t("subscription.invitesPool", "invites (pool)")}`
-              : `${inviteDisplay} ${t("subscription.invitesEvent", "invites/event")}`}
+              ? `${inviteDisplay} ${t("subscription.invitesPool")}`
+              : `${inviteDisplay} ${t("subscription.invitesEvent")}`}
           </p>
         )}
-        {plan.features && plan.features.length > 0 && (
+        {featuresArray.length > 0 && (
           <ul className={styles.planFeatures}>
-            {plan.features.map((feature, index) => (
+            {featuresArray.map((feature, index) => (
               <li key={index} className={styles.featureItem}>
                 <FaCheck className={styles.featureCheckIcon} />
-                <span>{isArabic ? feature.labelAr : feature.labelEn}</span>
+                <span>{getLocalized(feature, "label", i18n.language)}</span>
               </li>
             ))}
           </ul>
@@ -107,9 +103,9 @@ const WhitelabelSubscriptionPopup = ({
     );
   };
 
-  const eventPlans = plansData?.data?.event || plansData?.event || [];
-  const quarterlyPlan = (plansData?.data?.quarterly || plansData?.quarterly)?.[0];
-  const annualPlan = (plansData?.data?.annual || plansData?.annual)?.[0];
+  const eventPlans = plansData?.data?.event || [];
+  const quarterlyPlan = plansData?.data?.quarterly?.[0];
+  const annualPlan = plansData?.data?.annual?.[0];
   const isSubmitting = updateSubscription.isPending;
 
   return (
@@ -146,7 +142,7 @@ const WhitelabelSubscriptionPopup = ({
           {eventPlans.length > 0 && (
             <div>
               <h4 className={styles.sectionLabel}>
-                {t("subscription.eventPlans", "Event Plans")}
+                {t("subscription.eventPlans")}
               </h4>
               <div className={styles.plansGrid}>
                 {eventPlans.map(renderPlanCard)}
@@ -157,7 +153,7 @@ const WhitelabelSubscriptionPopup = ({
           {quarterlyPlan && (
             <div>
               <h4 className={styles.sectionLabel}>
-                {t("subscription.quarterlyPlan", "Quarterly Plan")}
+                {t("subscription.quarterlyPlan")}
               </h4>
               <div className={styles.plansGrid}>
                 {renderPlanCard(quarterlyPlan)}
@@ -168,7 +164,7 @@ const WhitelabelSubscriptionPopup = ({
           {annualPlan && (
             <div>
               <h4 className={styles.sectionLabel}>
-                {t("subscription.annualPlan", "Annual Plan")}
+                {t("subscription.annualPlan")}
               </h4>
               <div className={styles.plansGrid}>
                 {renderPlanCard(annualPlan)}

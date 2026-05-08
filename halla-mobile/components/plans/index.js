@@ -1,5 +1,3 @@
-export { default as PlansOverview } from "./PlansOverview";
-export { default as PaymentSummery } from "./PaymentSummery";
 export { default as TopBar } from "./TopBar";
 export { default as PlanSummaryCard } from "./PlanSummaryCard";
 export { default as DiscountCodeCard } from "./DiscountCodeCard";

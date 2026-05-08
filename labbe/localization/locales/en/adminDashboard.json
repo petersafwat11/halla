@@ -168,6 +168,27 @@
       }
     }
   },
+  "subscription": {
+    "title": "Update Subscription",
+    "hostName": "Host Name",
+    "plan": "Plan",
+    "selectPlan": "Select a plan",
+    "loadingPlans": "Loading plans...",
+    "errorLoadingPlans": "Failed to load plans. Please try again.",
+    "retry": "Retry",
+    "status": "Status",
+    "selectStatus": "Select status",
+    "billingCycle": "Billing Cycle",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "cancel": "Cancel",
+    "update": "Update",
+    "updating": "Updating...",
+    "updateSuccess": "Subscription updated successfully",
+    "statusActive": "Active",
+    "statusExpired": "Expired",
+    "statusCancelled": "Cancelled"
+  },
   "discounts": {
     "planTypes": {
       "trial": "Trial",

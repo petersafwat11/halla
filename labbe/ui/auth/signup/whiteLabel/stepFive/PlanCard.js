@@ -9,6 +9,7 @@ import {
   FaUsers,
   FaCalendarAlt,
 } from "react-icons/fa";
+import { getLocalized } from "@/utils/locale";
 
 const PLAN_ICONS = {
   event: FaStar,
@@ -18,7 +19,6 @@ const PLAN_ICONS = {
 
 const PlanCard = ({ plan, type, isSelected, onSelect, limitLabel }) => {
   const { t, i18n } = useTranslation("signup");
-  const isArabic = i18n.language === "ar";
   const IconComp = PLAN_ICONS[type] || FaStar;
 
   return (
@@ -26,11 +26,6 @@ const PlanCard = ({ plan, type, isSelected, onSelect, limitLabel }) => {
       className={`${styles.planCard} ${isSelected ? styles.selected : ""} ${plan.isPopular ? styles.popular : ""}`}
       onClick={() => onSelect(plan.code)}
     >
-      {plan.badge && (
-        <div className={styles.popularBadge}>
-          {isArabic ? plan.badge.labelAr : plan.badge.labelEn}
-        </div>
-      )}
       {isSelected && (
         <div className={styles.selectedCheck}>
           <FaCheck />
@@ -41,7 +36,7 @@ const PlanCard = ({ plan, type, isSelected, onSelect, limitLabel }) => {
           <IconComp />
         </div>
         <h3 className={styles.planName}>
-          {isArabic ? plan.nameAr : plan.nameEn}
+          {getLocalized(plan, "name", i18n.language)}
         </h3>
       </div>
       <div className={styles.planPrice}>

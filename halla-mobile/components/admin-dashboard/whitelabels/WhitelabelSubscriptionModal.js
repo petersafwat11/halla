@@ -17,18 +17,17 @@ import {
   textStyles,
   backgrounds,
 } from "../../../styles/tokens";
-import { useUpdateWhitelabelSubscription, useAdminEnterprisePlans } from "../../../hooks";
+import { useUpdateWhitelabelSubscription, useAdminPlans } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import PlanCard from "./PlanCard";
 
 const WhitelabelSubscriptionModal = ({ visible, onClose, whitelabel, onSave }) => {
-  const { t, currentLanguage } = useTranslation("admin");
-  const isArabic = currentLanguage === "ar";
+  const { t } = useTranslation("admin");
   const [selectedPlan, setSelectedPlan] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("active");
   const updateSubscription = useUpdateWhitelabelSubscription();
-  const { data: plansData, isLoading: isLoadingPlans } = useAdminEnterprisePlans();
+  const { data: plansData, isLoading: isLoadingPlans } = useAdminPlans();
   const toast = useToast();
 
   const statusOptions = [
@@ -38,11 +37,21 @@ const WhitelabelSubscriptionModal = ({ visible, onClose, whitelabel, onSave }) =
   ];
 
   const planSections = useMemo(() => {
-    const d = plansData?.data || plansData;
+    // `useAdminPlans()` returns the apiRequest body
+    // `{success, status, data: {plans:[...]}}`. Filter to whitelabel
+    // plans and group into event / quarterly / annual buckets by
+    // `planType` suffix — mirrors `WhitelabelSubscriptionPopup.js`
+    // on the web.
+    const list = (plansData?.data?.plans || []).filter(
+      (p) => p.availableFor === "whitelabel"
+    );
+    const event = list.filter((p) => p.planType?.endsWith("_event"));
+    const quarterly = list.filter((p) => p.planType?.endsWith("_quarterly"));
+    const annual = list.filter((p) => p.planType?.endsWith("_annual"));
     return [
-      { key: "event",     labelEn: t("whitelabels.subscription.eventPlans"),   labelAr: t("whitelabels.subscription.eventPlansAr"),   plans: d?.event     || [] },
-      { key: "quarterly", labelEn: t("whitelabels.subscription.quarterlyPool"), labelAr: t("whitelabels.subscription.quarterlyPoolAr"), plans: d?.quarterly || [] },
-      { key: "annual",    labelEn: t("whitelabels.subscription.annualPool"),    labelAr: t("whitelabels.subscription.annualPoolAr"),    plans: d?.annual    || [] },
+      { key: "event",     label: t("whitelabels.subscription.sections.event"),     plans: event },
+      { key: "quarterly", label: t("whitelabels.subscription.sections.quarterly"), plans: quarterly },
+      { key: "annual",    label: t("whitelabels.subscription.sections.annual"),    plans: annual },
     ].filter((s) => s.plans.length > 0);
   }, [plansData, t]);
 
@@ -65,7 +74,8 @@ const WhitelabelSubscriptionModal = ({ visible, onClose, whitelabel, onSave }) =
     try {
       await updateSubscription.mutateAsync({
         whitelabelId: whitelabel._id || whitelabel.id,
-        subscriptionData: { planCode: selectedPlan, status: selectedStatus },
+        planCode: selectedPlan,
+        status: selectedStatus,
       });
       toast.success(t("whitelabels.subscription.updated"));
       if (onSave) onSave({ planCode: selectedPlan, status: selectedStatus });
@@ -109,7 +119,7 @@ const WhitelabelSubscriptionModal = ({ visible, onClose, whitelabel, onSave }) =
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.sectionLabel}>{t("whitelabels.subscription.enterprisePlan")}</Text>
+            <Text style={styles.sectionLabel}>{t("whitelabels.subscription.businessPlan")}</Text>
 
             {isLoadingPlans ? (
               <View style={styles.loadingContainer}>
@@ -123,7 +133,7 @@ const WhitelabelSubscriptionModal = ({ visible, onClose, whitelabel, onSave }) =
                 {planSections.map((section) => (
                     <View key={section.key} style={{ marginBottom: spacing[16] }}>
                       <Text style={styles.sectionGroupLabel}>
-                        {isArabic ? section.labelAr : section.labelEn}
+                        {section.label}
                       </Text>
                       <View style={styles.plansContainer}>
                         {section.plans.map((plan) => (

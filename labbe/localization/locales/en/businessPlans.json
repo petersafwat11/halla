@@ -1,0 +1,35 @@
+{
+  "plansPage": {
+    "title": "Subscription Plans",
+    "subtitle": "View and manage your subscription plan",
+    "currentPlan": {
+      "title": "Your Current Plan",
+      "badge": "Active",
+      "validUntil": "Valid until",
+      "unlimited": "Unlimited"
+    },
+    "availablePlans": {
+      "title": "Available Plans",
+      "subtitle": "Compare plans and features"
+    },
+    "planCard": {
+      "currentPlan": "Current Plan",
+      "features": "Features",
+      "events": "events",
+      "invitesPool": "invites (pool)",
+      "invitesPerEvent": "invites/event",
+      "unlimited": "Unlimited",
+      "subscribing": "Subscribing...",
+      "subscribeNow": "Subscribe Now"
+    },
+    "subscriptionStatus": "Subscription Status",
+    "noSubscription": {
+      "title": "No Active Subscription",
+      "text": "Choose a plan below to start using all features"
+    },
+    "successMessage": "Subscribed successfully!",
+    "failedMessage": "Failed to subscribe",
+    "loading": "Loading plans...",
+    "error": "Failed to load plans. Please try again."
+  }
+}

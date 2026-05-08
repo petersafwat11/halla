@@ -220,9 +220,9 @@ const WhitelabelCard = ({ data }) => {
                   {t("subscription.eventsLimit")}:
                 </span>
                 <span className={styles.subscriptionValue}>
-                  {subscription?.limits?.maxEventsPerMonth === -1
+                  {subscription?.limits?.maxEvents === -1
                     ? t("subscription.unlimited")
-                    : subscription?.limits?.maxEventsPerMonth || 5}
+                    : subscription?.limits?.maxEvents ?? 0}
                 </span>
               </div>
               {subscription?.expiresAt && (

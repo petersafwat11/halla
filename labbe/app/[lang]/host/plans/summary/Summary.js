@@ -26,7 +26,7 @@ const Summary = ({
   onMobileChange,
 }) => {
   const { t, i18n } = useTranslation("plans");
-  const isArabic = i18n.language === "ar";
+  const isRtl = i18n.language === "ar";
 
   const [discountCode, setDiscountCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -96,7 +96,7 @@ const Summary = ({
     <ErrorBoundary fallbackMessage={t("errors.summaryBoundary", { defaultValue: "" })}>
       <div className={styles.container} style={{ position: "relative" }}>
         <button className={styles.backButton} onClick={onBack} type="button">
-          {isArabic ? <FaArrowRight /> : <FaArrowLeft />}
+          {isRtl ? <FaArrowRight /> : <FaArrowLeft />}
           <span>{t("summary.back")}</span>
         </button>
 

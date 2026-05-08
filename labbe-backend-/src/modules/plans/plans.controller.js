@@ -27,15 +27,6 @@ exports.getBusinessPlans = catchAsync(async (req, res) => {
 });
 
 /**
- * Get enterprise plans (backward compat alias for /business)
- * GET /api/v2/plans/enterprise
- */
-exports.getEnterprisePlans = catchAsync(async (req, res) => {
-  const result = await plansService.getBusinessPlans();
-  sendSuccess(res, result);
-});
-
-/**
  * Get host plans (single event + monthly)
  * GET /api/v2/plans/host
  */

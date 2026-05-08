@@ -5,8 +5,8 @@ import FeaturesList from "./FeaturesList";
 import styles from "./HostPlanCard.module.css";
 
 const getOptionValue = (plan, billingType) => {
-  if (billingType === "monthly") return plan.invitePool;
-  return plan.invites || plan.limits?.maxInvitesPerEvent;
+  if (billingType === "monthly") return plan.invitePool ?? 0;
+  return plan.invites ?? 0;
 };
 
 const HostPlanCard = ({

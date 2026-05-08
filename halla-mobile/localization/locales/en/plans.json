@@ -26,7 +26,7 @@
   },
   "compensation": { "title": "Free Compensation Invites", "invites": "compensation invites (15%)" },
   "buttons": { "subscribeNow": "Contact Us", "subscribeAction": "Subscribe Now" },
-  "errors": { "loadFailed": "Failed to load plans", "selectPlan": "Please select a plan.", "noPlansAvailable": "No plans available" },
+  "errors": { "loadFailed": "Failed to load plans", "selectPlan": "Please select a plan.", "noPlansAvailable": "No plans available", "retry": "Retry" },
   "eventTab": {
     "hint": "1 event per plan — valid 90 days · 1,200 SAR one-time setup fee",
     "validity": "Valid 90 days",
@@ -89,7 +89,7 @@
     "activateButton": "Activate Subscription",
     "activating": "Activating...",
     "total": "Total",
-    "enterprisePlan": "Enterprise Plan",
+    "businessPlan": "Business Plan",
     "validFor": "Valid for",
     "addonsTitle": "Selected Add-Ons",
     "addonItems": {
@@ -112,13 +112,6 @@
       "success": "✓ Code \"{{code}}\" — {{amount}} SAR off",
       "invalidDefault": "Invalid discount code",
       "networkError": "Could not verify code. Please try again"
-    },
-    "discountCode": {
-      "title": "Discount Code",
-      "placeholder": "Enter discount code",
-      "apply": "Apply",
-      "applied": "Applied",
-      "success": "Discount of {{amount}} SAR applied"
     },
     "paymentSummary": {
       "title": "Payment Summary",
@@ -162,7 +155,20 @@
     "gateKeeper": "Assign gate keeper or list manager",
     "rsvpResponses": "Receive RSVP responses",
     "autoReminders": "Auto reminders",
-    "staffManagement": "Staff management"
+    "staffManagement": "Staff management",
+    "hasInAppInvites":         { "label": "In-App Invites" },
+    "hasWhatsAppInvites":      { "label": "WhatsApp Invites" },
+    "hasSMSInvites":           { "label": "SMS Invites" },
+    "hasQRCode":               { "label": "QR Code Entry" },
+    "hasQRScanning":           { "label": "QR Scanning" },
+    "hasFlexibleEntryMode":    { "label": "Flexible Entry Mode" },
+    "hasStaffCheckIn":         { "label": "Staff Check-in" },
+    "hasStaffAssignment":      { "label": "Staff Assignment" },
+    "hasRSVPTracking":         { "label": "RSVP Tracking" },
+    "hasAutoReminders":        { "label": "Auto Reminders" },
+    "hasEmailNotifications":   { "label": "Email Notifications" },
+    "hasCompensationInvites":  { "label": "Compensation Invites" },
+    "hasBasicTemplates":       { "label": "Basic Templates" }
   },
   "badges": { "selected": "Selected" },
   "monthlyPlan": { "durationNote": "Valid 30 days — unlimited events" }

@@ -1,11 +1,21 @@
 "use client";
 import { FaCalendarAlt, FaUsers, FaCheckCircle, FaCrown, FaRocket } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import { getLocalized } from "@/utils/locale";
 import styles from "../page.module.css";
 
+const POOL_PLAN_TYPES = new Set([
+  "business_quarterly",
+  "business_annual",
+  "basic_monthly",
+  "premium_monthly",
+  "unlimited",
+]);
+
+const isPoolPlan = (planType) => POOL_PLAN_TYPES.has(planType);
+
 export default function CurrentPlanCard({ subscription, plans }) {
-  const { t, i18n } = useTranslation("whitelabelPlans");
-  const isArabic = i18n.language === "ar";
+  const { t, i18n } = useTranslation("businessPlans");
 
   const hasActiveSubscription = subscription && subscription.status === "active";
   const currentPlan = subscription?.plan;
@@ -20,6 +30,15 @@ export default function CurrentPlanCard({ subscription, plans }) {
     }) || currentPlan;
 
   const displayLimits = fullPlan?.limits || subscription?.limits || {};
+  const planType = fullPlan?.planType || currentPlan?.planType;
+  const pool = isPoolPlan(planType);
+  const eventValue = displayLimits?.maxEvents;
+  const inviteValue = pool
+    ? displayLimits?.invitePool
+    : displayLimits?.maxInvitesPerEvent;
+  const currency = fullPlan?.currency || subscription?.pricePaid?.currency || "SAR";
+  const pricePaid = subscription?.pricePaid?.amount ?? fullPlan?.pricing?.oneTime ?? 0;
+  const unlimited = t("plansPage.currentPlan.unlimited");
 
   return (
     <div className={styles.currentPlanSection}>
@@ -35,41 +54,41 @@ export default function CurrentPlanCard({ subscription, plans }) {
             <div className={styles.planInfo}>
               <FaCrown className={styles.planIcon} />
               <span className={styles.planName}>
-                {isArabic ? fullPlan?.nameAr : fullPlan?.nameEn}
+                {getLocalized(fullPlan, "name", i18n.language)}
               </span>
               <span className={styles.activeBadge}>
                 {t("plansPage.currentPlan.badge")}
               </span>
             </div>
             <div className={styles.planPrice}>
-              {new Intl.NumberFormat("ar-SA", {
+              {new Intl.NumberFormat(i18n.language === "ar" ? "ar-SA" : "en-US", {
                 style: "currency",
-                currency: "SAR",
+                currency,
                 minimumFractionDigits: 0,
-              }).format(subscription?.pricePaid?.amount || 0)}
+              }).format(pricePaid)}
             </div>
           </div>
           <div className={styles.currentPlanDetails}>
             <div className={styles.detailItem}>
               <FaCalendarAlt className={styles.detailIcon} />
               <span className={styles.detailLabel}>
-                {t("plansPage.planCard.eventsPerMonth")}
+                {t("plansPage.planCard.events")}
               </span>
               <span className={styles.detailValue}>
-                {displayLimits?.maxEventsPerMonth === -1
-                  ? "∞"
-                  : displayLimits?.maxEventsPerMonth}
+                {eventValue === -1 ? unlimited : eventValue ?? 0}
               </span>
             </div>
             <div className={styles.detailItem}>
               <FaUsers className={styles.detailIcon} />
               <span className={styles.detailLabel}>
-                {t("plansPage.planCard.guestsPerEvent")}
+                {pool
+                  ? t("plansPage.planCard.invitesPool")
+                  : t("plansPage.planCard.invitesPerEvent")}
               </span>
               <span className={styles.detailValue}>
-                {displayLimits?.maxGuestsPerEvent === -1
-                  ? "∞"
-                  : displayLimits?.maxGuestsPerEvent}
+                {inviteValue === -1
+                  ? unlimited
+                  : (inviteValue ?? 0).toLocaleString()}
               </span>
             </div>
             {subscription.expiresAt && (
@@ -80,7 +99,7 @@ export default function CurrentPlanCard({ subscription, plans }) {
                 </span>
                 <span className={styles.detailValue}>
                   {new Date(subscription.expiresAt).toLocaleDateString(
-                    isArabic ? "ar-SA" : "en-US"
+                    i18n.language === "ar" ? "ar-SA" : "en-US"
                   )}
                 </span>
               </div>

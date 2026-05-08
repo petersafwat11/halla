@@ -187,10 +187,7 @@ export function formatTimeWithSpans(timeString, locale, t) {
     const minute = parseInt(timeParts[1]);
     const ampm = timeParts[2];
 
-    // Check if we're in Arabic locale using the component's locale
-    const isArabic = locale === "ar";
-
-    if (isArabic) {
+    if (locale === "ar") {
       // Arabic format: "فى تمام الساعة الثامنة و الدقائق مساءا"
       const arabicNumbers = [
         "",

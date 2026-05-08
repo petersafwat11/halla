@@ -53,7 +53,7 @@ const PLAN_AVAILABILITY = {
   PLATFORM_ADMIN: 'platform_admin',
 };
 
-const COMPENSATION_PERCENTAGE = 15;
+const COMPENSATION_PERCENTAGE = 10;
 const BUSINESS_SETUP_FEE = 1200;
 
 const FEATURE_LABELS = {
@@ -77,6 +77,7 @@ const FEATURE_LABELS = {
   hasOfficialSenderNumber: { labelAr: 'رقم مرسل رسمي',                 labelEn: 'Official sender number',        icon: 'verified' },
   hasCustomWebPage:        { labelAr: 'صفحة ويب مخصصة بهوية الجهة',   labelEn: 'Custom branded web page',       icon: 'web'      },
   hasMessageTracking:      { labelAr: 'تتبع الرسائل لحظياً',           labelEn: 'Real-time message tracking',    icon: 'tracking' },
+  whatsAppTemplates:       { labelAr: 'قوالب واتساب',                   labelEn: 'WhatsApp templates',            icon: 'template' },
 };
 
 const buildFeaturesArray = (features) => {

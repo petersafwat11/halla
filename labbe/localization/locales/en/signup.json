@@ -872,7 +872,15 @@
       "summary": {
         "title": "Application Summary",
         "description": "Please review all the information you've provided before submitting your application.",
-        "submit": "Submit Application"
+        "submit": "Submit Application",
+        "contactInfo": "Contact Information",
+        "phoneNumber": "Phone Number",
+        "orderSummary": "Order Summary",
+        "planLine": "{{name}} Plan",
+        "setupFee": "One-time Setup Fee",
+        "total": "Total",
+        "currency": "SAR",
+        "billingNote": "Our team will contact you after registration to complete payment and discuss your needs."
       },
       "payment": {
         "title": "Create Your Own Environment",
@@ -979,11 +987,12 @@
         "retry": "Try Again",
         "planRequired": "Plan selection is required",
         "perEventPlans": "Per-Event Plans",
-        "perEventDescription": "1 event per plan · valid 90 days",
+        "perEventDescription": "— 1 event per plan · valid 90 days",
         "threeMonthPool": "3-Month Pool",
-        "threeMonthPoolDescription": "shared invite pool · unlimited events",
+        "threeMonthPoolDescription": "— shared invite pool · unlimited events",
         "annualPool": "Annual Pool",
-        "annualPoolDescription": "shared invite pool · unlimited events",
+        "annualPoolDescription": "— shared invite pool · unlimited events",
+        "currency": "SAR",
         "invitesPerEvent": "invites / event",
         "oneEvent": "1 event",
         "invitesPool": "invites (pool)",

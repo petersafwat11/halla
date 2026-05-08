@@ -1,6 +1,7 @@
 ﻿import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import PlansPage from "./PlansPage";
 
 export default async function PlansPageServer({ params }) {
@@ -32,7 +33,9 @@ export default async function PlansPageServer({ params }) {
 
   return (
     <QueryClientServerProvider queryClient={queryClient}>
-      <PlansPage />
+      <ErrorBoundary>
+        <PlansPage />
+      </ErrorBoundary>
     </QueryClientServerProvider>
   );
 }

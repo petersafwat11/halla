@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,12 +11,24 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
-import { useAdminEnterprisePlans } from "../../hooks";
+import { useBusinessPlans } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
-import EnterprisePlanCard from "../../components/plans/EnterprisePlanCard";
+import BusinessPlanCard from "../../components/plans/BusinessPlanCard";
+import { DEFAULT_COMPENSATION_PERCENTAGE } from "../../utils/constants/plans";
 
-const COMPENSATION_PCT = 0.15;
-const comp = (n) => Math.floor(n * COMPENSATION_PCT);
+/**
+ * Compensation invites per plan: prefer the backend-pre-computed
+ * `compensationPool` (set on pool plans by `_formatPlan`), otherwise
+ * derive from the plan's `compensationPercentage` (default 10).
+ */
+const planCompensation = (plan) => {
+  if (!plan) return 0;
+  if (plan.compensationPool != null) return plan.compensationPool;
+  const invites =
+    plan.limits?.invitePool ?? plan.limits?.maxInvitesPerEvent ?? 0;
+  const pct = plan.compensationPercentage ?? DEFAULT_COMPENSATION_PERCENTAGE;
+  return Math.floor(invites * (pct / 100));
+};
 
 const WhitelabelPlansScreen = () => {
   const { t } = useTranslation("plans");
@@ -25,7 +37,7 @@ const WhitelabelPlansScreen = () => {
   const [activeTab, setActiveTab] = useState("event");
   const [selectedEventInvites, setSelectedEventInvites] = useState(null);
 
-  const { data, isLoading, error } = useAdminEnterprisePlans();
+  const { data, isLoading, error } = useBusinessPlans();
 
   const plansData = useMemo(() => {
     const d = data?.data || data;
@@ -38,11 +50,11 @@ const WhitelabelPlansScreen = () => {
 
   const { event: eventPlans, quarterly: quarterlyPlan, annual: annualPlan } = plansData;
 
-  useMemo(() => {
+  useEffect(() => {
     if (eventPlans.length > 0 && selectedEventInvites === null) {
       setSelectedEventInvites(eventPlans[0].limits?.maxInvitesPerEvent);
     }
-  }, [eventPlans]);
+  }, [eventPlans, selectedEventInvites]);
 
   const selectedEventPlan =
     eventPlans.find((p) => p.limits?.maxInvitesPerEvent === selectedEventInvites) ||
@@ -146,9 +158,9 @@ const WhitelabelPlansScreen = () => {
               </View>
 
               {selectedEventPlan && (
-                <EnterprisePlanCard
+                <BusinessPlanCard
                   plan={selectedEventPlan}
-                  compInvites={comp(selectedEventPlan.limits?.maxInvitesPerEvent || 0)}
+                  compInvites={planCompensation(selectedEventPlan)}
                   compLabel={t("buttons.subscribeNow")}
                   validityLabel={t("eventTab.validity")}
                   currency={t("currency")}
@@ -167,9 +179,9 @@ const WhitelabelPlansScreen = () => {
                 {t("quarterlyTab.hint")}
               </Text>
               {quarterlyPlan ? (
-                <EnterprisePlanCard
+                <BusinessPlanCard
                   plan={quarterlyPlan}
-                  compInvites={comp(quarterlyPlan.limits?.invitePool || 0)}
+                  compInvites={planCompensation(quarterlyPlan)}
                   compLabel={t("buttons.subscribeNow")}
                   validityLabel={t("quarterlyTab.validity")}
                   currency={t("currency")}
@@ -194,9 +206,9 @@ const WhitelabelPlansScreen = () => {
                 {t("annualTab.hint")}
               </Text>
               {annualPlan ? (
-                <EnterprisePlanCard
+                <BusinessPlanCard
                   plan={annualPlan}
-                  compInvites={comp(annualPlan.limits?.invitePool || 0)}
+                  compInvites={planCompensation(annualPlan)}
                   compLabel={t("buttons.subscribeNow")}
                   validityLabel={t("annualTab.validity")}
                   currency={t("currency")}

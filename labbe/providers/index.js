@@ -29,7 +29,7 @@ const i18nNamespaces = [
   "ticketRating",
   "staff",
   "postEvent",
-  "whitelabelPlans",
+  "businessPlans",
   "landing",
   "marketplace",
   "guest-portal",

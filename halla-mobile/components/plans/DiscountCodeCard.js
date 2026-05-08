@@ -21,7 +21,7 @@ const DiscountCodeCard = ({
     <View style={styles.cardHeader}>
       <Text style={styles.cardTitle}>
         <Ionicons name="pricetag-outline" size={16} color="#2C2C2C" />{" "}
-        {t("summary.discountCode.title")}
+        {t("summary.discount.title")}
       </Text>
     </View>
     <View style={styles.cardContent}>
@@ -31,7 +31,7 @@ const DiscountCodeCard = ({
             styles.discountInput,
             discountApplied && styles.discountInputApplied,
           ]}
-          placeholder={t("summary.discountCode.placeholder")}
+          placeholder={t("summary.discount.placeholder")}
           placeholderTextColor="#999"
           value={discountCode}
           onChangeText={onCodeChange}
@@ -54,12 +54,12 @@ const DiscountCodeCard = ({
             <>
               <Ionicons name="checkmark" size={16} color="#FFF" />
               <Text style={styles.applyButtonText}>
-                {t("summary.discountCode.applied")}
+                {t("summary.discount.applied")}
               </Text>
             </>
           ) : (
             <Text style={styles.applyButtonText}>
-              {t("summary.discountCode.apply")}
+              {t("summary.discount.apply")}
             </Text>
           )}
         </TouchableOpacity>

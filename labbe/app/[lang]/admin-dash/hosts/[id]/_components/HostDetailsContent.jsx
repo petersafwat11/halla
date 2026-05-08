@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
-import PopupLayout from "@/ui/commen/popup/PopupLayout";
-import SubscriptionPopup from "../../_components/subscriptionPopup/SubscriptionPopup";
+import HostSubscriptionPopup from "../../_components/HostSubscriptionPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { FiMail, FiPhone, FiCalendar, FiClock, FiShield, FiUsers, FiCreditCard, FiAlertCircle } from "react-icons/fi";
 import { FaCrown } from "react-icons/fa";
@@ -73,7 +72,7 @@ export default function HostDetailsContent({ hostId }) {
   const statItems = [
     { icon: <FiCalendar size={18} />, label: t("hostDetails.eventsCount", "Events"), value: events.length },
     { icon: <FiCreditCard size={18} />, label: t("subscription.plan", "Plan"), value: plan.label, badgeStyle: { color: plan.color, background: plan.bg } },
-    { icon: <FiUsers size={18} />, label: t("subscription.guestsLimit", "Guests Limit"), value: sub?.limits?.maxGuestsPerEvent || "—" },
+    { icon: <FiUsers size={18} />, label: t("subscription.guestsLimit", "Guests Limit"), value: sub?.limits?.maxInvitesPerEvent ?? sub?.limits?.invitePool ?? "—" },
     { icon: <FiShield size={18} />, label: t("subscription.status", "Sub Status"), value: subStatus.label, badgeStyle: { color: subStatus.color, background: subStatus.bg } },
   ];
 
@@ -139,7 +138,7 @@ export default function HostDetailsContent({ hostId }) {
                 { label: t("subscription.plan", "Plan"), badge: { color: plan.color, background: plan.bg }, value: plan.label },
                 { label: t("subscription.status", "Status"), badge: { color: subStatus.color, background: subStatus.bg }, value: subStatus.label },
                 { label: t("subscription.eventsLimit", "Events Limit"), value: sub?.limits?.maxEvents || "—" },
-                { label: t("subscription.guestsLimit", "Guests Limit"), value: sub?.limits?.maxGuestsPerEvent || "—" },
+                { label: t("subscription.guestsLimit", "Guests Limit"), value: sub?.limits?.maxInvitesPerEvent ?? sub?.limits?.invitePool ?? "—" },
                 ...(sub?.currentPeriodEnd ? [{ label: t("subscription.expiresAt", "Expires At"), value: fmtDate(sub.currentPeriodEnd, locale) }] : []),
               ].map((item, i) => (
                 <div key={i} className={styles.subItem}>
@@ -174,9 +173,12 @@ export default function HostDetailsContent({ hostId }) {
         )}
       </div>
 
-      <PopupLayout isOpen={subOpen} onClose={() => setSubOpen(false)}>
-        <SubscriptionPopup host={host} currentSubscription={sub} onClose={() => setSubOpen(false)} onSuccess={() => { setSubOpen(false); router.refresh(); }} />
-      </PopupLayout>
+      {subOpen && (
+        <HostSubscriptionPopup
+          host={host}
+          onClose={() => { setSubOpen(false); router.refresh(); }}
+        />
+      )}
     </>
   );
 }

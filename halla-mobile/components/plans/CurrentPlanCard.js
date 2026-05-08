@@ -8,10 +8,11 @@ import {
   borderRadius,
   typography,
 } from "../../styles/tokens";
+import { getLocalized } from "../../utils/locale";
+import { isPoolPlan } from "../../utils/constants/plans";
 
 const CurrentPlanCard = ({ subscription, usage }) => {
   const { t, i18n } = useTranslation("plans");
-  const isArabic = i18n.language === "ar";
 
   if (!subscription) {
     return (
@@ -36,18 +37,20 @@ const CurrentPlanCard = ({ subscription, usage }) => {
     );
   }
 
-  const planName = isArabic
-    ? subscription.planNameAr || subscription.planName
-    : subscription.planNameEn || subscription.planName;
+  const planName = getLocalized(subscription, "planName", i18n.language);
+
+  const planType = subscription.planType;
+  const isPool = isPoolPlan(planType);
 
   const eventsUsed = usage?.eventsUsed || 0;
   const eventsLimit =
-    usage?.eventsLimit || subscription.limits?.maxEventsPerMonth || 0;
+    usage?.eventsLimit ?? subscription.limits?.maxEvents ?? 0;
   const guestsUsed = usage?.guestsUsed || 0;
   const guestsLimit =
-    usage?.guestsLimit ||
-    subscription.limits?.maxInvitesPerEvent ||
-    subscription.limits?.maxGuestsPerEvent ||
+    usage?.guestsLimit ??
+    (isPool
+      ? subscription.limits?.invitePool
+      : subscription.limits?.maxInvitesPerEvent) ??
     0;
   const daysRemaining = subscription.daysRemaining || 0;
 

@@ -54,7 +54,6 @@ const WhitelabelStep5Summary = () => {
       </SectionCard>
 
       <SectionCard title={t('signupForm.whiteLabel.summary.sections.planSelection')} icon="pricetag-outline">
-        <SummaryRow label={t('signupForm.whiteLabel.planSelection.billingCycleSection')} value={values.planSelection?.billingCycle} />
         <SummaryRow label="Plan" value={values.planSelection?.planCode} />
       </SectionCard>
     </View>

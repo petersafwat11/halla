@@ -113,109 +113,6 @@ export const useSearchLocations = (query, options = {}) => {
   });
 };
 
-/**
- * ============================================
- * PLANS QUERIES - For WhiteLabel Signup
- * ============================================
- */
-
-const PLANS_STALE_TIME = 5 * 60 * 1000; // 5 minutes
-const PLANS_CACHE_TIME = 10 * 60 * 1000; // 10 minutes
-
-/**
- * Hook to fetch all active plans
- * @returns {UseQueryResult} Array of plans
- */
-export const usePlans = (options = {}) => {
-  return useQuery({
-    queryKey: ["plans"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.plans.getPlans,
-      }),
-    staleTime: PLANS_STALE_TIME,
-    cacheTime: PLANS_CACHE_TIME,
-    ...options,
-  });
-};
-
-/**
- * Hook to fetch enterprise plans for WhiteLabel
- * @returns {UseQueryResult} Array of enterprise plans
- */
-export const useEnterprisePlans = (options = {}) => {
-  return useQuery({
-    queryKey: ["plans", "enterprise"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.plans.getEnterprisePlans,
-      }),
-    staleTime: PLANS_STALE_TIME,
-    cacheTime: PLANS_CACHE_TIME,
-    ...options,
-  });
-};
-
-/**
- * Hook to fetch host plans
- * @returns {UseQueryResult} Array of host plans
- */
-export const useHostPlans = (options = {}) => {
-  return useQuery({
-    queryKey: ["plans", "host"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.plans.getHostPlans,
-      }),
-    staleTime: PLANS_STALE_TIME,
-    cacheTime: PLANS_CACHE_TIME,
-    ...options,
-  });
-};
-
-/**
- * Hook to fetch plan by code
- * @param {string} code - Plan code
- * @returns {UseQueryResult} Plan details
- */
-export const usePlanByCode = (code, options = {}) => {
-  return useQuery({
-    queryKey: ["plans", "code", code],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.plans.getPlanByCode(code),
-      }),
-    staleTime: PLANS_STALE_TIME,
-    cacheTime: PLANS_CACHE_TIME,
-    enabled: !!code,
-    ...options,
-  });
-};
-
-/**
- * Hook to fetch plan by ID
- * @param {string} id - Plan ID
- * @returns {UseQueryResult} Plan details
- */
-export const usePlanById = (id, options = {}) => {
-  return useQuery({
-    queryKey: ["plans", id],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.plans.getPlanById(id),
-      }),
-    staleTime: PLANS_STALE_TIME,
-    cacheTime: PLANS_CACHE_TIME,
-    enabled: !!id,
-    ...options,
-  });
-};
-
 // Default export
 export default {
   useRegions,
@@ -223,9 +120,4 @@ export default {
   useDistrictsByCity,
   useAllLocations,
   useSearchLocations,
-  usePlans,
-  useEnterprisePlans,
-  useHostPlans,
-  usePlanByCode,
-  usePlanById,
 };

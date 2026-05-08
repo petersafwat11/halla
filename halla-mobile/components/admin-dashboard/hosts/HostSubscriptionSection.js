@@ -64,15 +64,19 @@ const HostSubscriptionSection = ({ subscription, formatDate }) => {
       {hasLimits && (
         <View style={styles.limits}>
           <View style={styles.limitItem}>
-            <Text style={styles.limitLabel}>Max Guests</Text>
+            <Text style={styles.limitLabel}>Max Invites</Text>
             <Text style={styles.limitValue}>
-              {subscription.planId.limits.maxGuestsPerEvent ?? "∞"}
+              {subscription.planId.limits.invitePool ??
+                subscription.planId.limits.maxInvitesPerEvent ??
+                "∞"}
             </Text>
           </View>
           <View style={styles.limitItem}>
             <Text style={styles.limitLabel}>Max Events</Text>
             <Text style={styles.limitValue}>
-              {subscription.planId.limits.maxEventsPerMonth ?? "∞"}
+              {subscription.planId.limits.maxEvents === -1
+                ? "∞"
+                : subscription.planId.limits.maxEvents ?? "∞"}
             </Text>
           </View>
         </View>

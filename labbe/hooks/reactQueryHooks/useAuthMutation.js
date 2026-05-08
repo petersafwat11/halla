@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 import { apiRequest } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
@@ -312,46 +312,6 @@ export const useAuthMutation = (action) => {
         status: parsed.status || null,
       });
     },
-  });
-};
-
-// ============================================
-// PLANS QUERIES - For WhiteLabel Plan Selection
-// ============================================
-
-/**
- * Hook to fetch all plans for WhiteLabel signup step 4
- * @returns {UseQueryResult}
- */
-export const usePlans = (options = {}) => {
-  return useQuery({
-    queryKey: ["plans"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.plans.getPlans,
-      }),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
-    ...options,
-  });
-};
-
-/**
- * Hook to fetch enterprise plans for WhiteLabel
- * @returns {UseQueryResult}
- */
-export const useEnterprisePlans = (options = {}) => {
-  return useQuery({
-    queryKey: ["plans", "enterprise"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.plans.getEnterprisePlans,
-      }),
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
-    ...options,
   });
 };
 

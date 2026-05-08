@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
-import WhitelabelSubscriptionPopup from "../../_components/WhitelabelSubscriptionPopup";
+import WhitelabelSubscriptionPopup from "../../_components/whitelabelSubscriptionPopup/WhitelabelSubscriptionPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import ApproveWhitelabelDialog from "@/ui/admin/whitelabels/ApproveWhitelabelDialog";
 import WhitelabelHero from "./WhitelabelHero";

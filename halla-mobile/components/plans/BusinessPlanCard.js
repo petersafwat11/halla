@@ -1,8 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../localization";
+import { getLocalized, formatNumber } from "../../utils/locale";
 
-const EnterprisePlanCard = ({
+const BusinessPlanCard = ({
   plan,
   compInvites,
   compLabel,
@@ -15,28 +17,25 @@ const EnterprisePlanCard = ({
   setupIncluded,
   onSubscribe,
 }) => {
-  const planName = plan.nameAr || plan.nameEn || "";
-  const badgeLabel = plan.badge?.labelAr || plan.badge?.labelEn || null;
+  const { i18n } = useTranslation("plans");
+  const locale = i18n.language;
+
+  const planName = getLocalized(plan, "name", locale);
   const price = plan.pricing?.oneTime || 0;
   const inviteCount = (plan.limits?.invitePool ?? plan.limits?.maxInvitesPerEvent) || 0;
 
   return (
     <View style={styles.planCard}>
-      {badgeLabel && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{badgeLabel}</Text>
-        </View>
-      )}
       <Text style={styles.planName}>{planName}</Text>
       <View style={styles.priceRow}>
-        <Text style={styles.priceAmount}>{price.toLocaleString()}</Text>
+        <Text style={styles.priceAmount}>{formatNumber(price, locale)}</Text>
         <Text style={styles.priceCurrency}>{priceSuffix}</Text>
       </View>
       <View style={styles.limitsBox}>
         <View style={styles.limitItem}>
           <Ionicons name="people-outline" size={16} color="#C28E5C" />
           <Text style={styles.limitText}>
-            {inviteCount.toLocaleString()} {invitesSuffix}
+            {formatNumber(inviteCount, locale)} {invitesSuffix}
           </Text>
         </View>
         <View style={styles.limitItem}>
@@ -62,13 +61,13 @@ const EnterprisePlanCard = ({
           </View>
         )}
       </View>
-      {plan.features?.length > 0 && (
+      {Array.isArray(plan.featuresArray) && plan.featuresArray.length > 0 && (
         <View style={styles.featuresList}>
-          {plan.features.map((f, i) => (
+          {plan.featuresArray.map((f, i) => (
             <View key={i} style={styles.featureItem}>
               <Ionicons name="checkmark-circle-outline" size={14} color="#2A8C5B" />
               <Text style={styles.featureText}>
-                {f.labelAr || f.labelEn}
+                {getLocalized(f, "label", locale)}
               </Text>
             </View>
           ))}
@@ -98,19 +97,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     marginBottom: 16,
-  },
-  badge: {
-    backgroundColor: "#C28E5C",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-    alignSelf: "flex-start",
-    marginBottom: 10,
-  },
-  badgeText: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: 11,
-    color: "#FFF",
   },
   planName: {
     fontFamily: "Cairo_700Bold",
@@ -180,4 +166,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EnterprisePlanCard;
+export default BusinessPlanCard;
