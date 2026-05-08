@@ -14,7 +14,7 @@ export function useCreateEvent() {
 
   return useMutation({
     mutationFn: async (formData) => {
-      // Phase 4 W0-AUTH: route through apiFetch (multipart, 60 s timeout).
+      // Route through apiFetch (multipart, 60 s timeout).
       const response = await apiFetch(ENDPOINTS.EVENTS.CREATE, {
         method: "POST",
         body: formData,
@@ -223,14 +223,12 @@ export function useRetryFailed() {
 }
 
 /**
- * Phase 4d W1-MOBILE-UPDATE — atomic guest+staff update for the
- * unified update wizard's step 2.
+ * Atomic guest+staff update for the unified update wizard's step 2.
  *
- * Hits the new `PATCH /events/:id/step2` endpoint (Phase 4d W0-ATOMIC)
- * so a capacity-guard rejection on either side leaves both fields at
- * their pre-call values. Falls back to compensation on standalone Mongo
- * topologies — the controller handles that, the client just sees a 200
- * or a thrown AppError.
+ * Hits `PATCH /events/:id/step2` so a capacity-guard rejection on
+ * either side leaves both fields at their pre-call values. Falls back
+ * to compensation on standalone Mongo topologies — the controller
+ * handles that, the client just sees a 200 or a thrown AppError.
  */
 export function useUpdateEventStep2() {
   const queryClient = useQueryClient();
@@ -255,7 +253,7 @@ export function useUpdateEventStep2() {
 }
 
 /**
- * Phase 4d W1-MOBILE-UPDATE — invitation settings update wrapper.
+ * Invitation settings update wrapper.
  *
  * Wraps `eventsService2.updateInvitationSettings` (multipart) so the
  * unified update wizard step 3+4+5 can dispatch through React Query for
@@ -277,7 +275,7 @@ export function useUpdateInvitationSettings() {
 }
 
 /**
- * Phase 4d W1-MOBILE-UPDATE — launch settings update wrapper.
+ * Launch settings update wrapper.
  */
 export function useUpdateLaunchSettings() {
   const queryClient = useQueryClient();
@@ -295,7 +293,7 @@ export function useUpdateLaunchSettings() {
 }
 
 /**
- * Phase 4d W1-MOBILE-UPDATE — visual-template update wrapper.
+ * Visual-template update wrapper.
  *
  * Backend has no dedicated `/visual-template` endpoint; the canonical
  * shape is persisted via `updateInvitationSettings` (multipart). This
@@ -313,8 +311,8 @@ export function useUpdateVisualTemplate() {
       if (visualTemplate !== undefined) settings.visualTemplate = visualTemplate;
       if (fieldValues !== undefined) settings.fieldValues = fieldValues;
       // Backend canonical-key alias: `visualTemplateRef` writes through
-      // to `event.visualTemplate.templateRef` per the 4c W0-RENAME
-      // dual-write contract.
+      // to `event.visualTemplate.templateRef` per the dual-write
+      // contract.
       if (visualTemplate?.templateRef || visualTemplate?._id || visualTemplate?.id) {
         settings.visualTemplateRef =
           visualTemplate.templateRef || visualTemplate._id || visualTemplate.id;
@@ -330,7 +328,7 @@ export function useUpdateVisualTemplate() {
 }
 
 /**
- * Phase 4d W1-MOBILE-UPDATE — Taqnyat-template selection update.
+ * Taqnyat-template selection update.
  *
  * Same backing endpoint as visual-template; this narrowed payload
  * isolates the Taqnyat picker step's save action.
@@ -360,13 +358,13 @@ export function useUpdateTaqnyatTemplate() {
 }
 
 /**
- * Phase 4d W1-MOBILE-UPDATE — messaging + auto-replies + host note
- * update wrapper for the unified wizard's StepFive.
+ * Messaging + auto-replies + host note update wrapper for the unified
+ * wizard's StepFive.
  *
  * Dual-writes legacy `attendanceAutoReply` / `absenceAutoReply` /
  * `expectedAttendanceAutoReply` / `note` alongside canonical
  * `guestReplies.*` / `invitationMessage` / `hostNote` so the read paths
- * resolve under either shape until Phase 5 drops the legacy field.
+ * resolve under either shape until the legacy field is dropped.
  */
 export function useUpdateMessagingContent() {
   const queryClient = useQueryClient();

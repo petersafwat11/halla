@@ -294,8 +294,8 @@ export const validateStepData = (stepNumber, formData) => {
       return !!(formData.guestList && formData.guestList.length > 0);
 
     case 3:
-      // Visual invitation card (Step 3 = visualTemplate). Phase 4c
-      // accepts either the canonical templateRef or the legacy id.
+      // Visual invitation card (Step 3 = visualTemplate). Accept
+      // either the canonical templateRef or the legacy id.
       return !!(
         formData.visualTemplate?.templateRef ||
         formData.visualTemplate?._id ||
@@ -304,8 +304,8 @@ export const validateStepData = (stepNumber, formData) => {
       );
 
     case 4:
-      // Phase 4c W2-MOBILE-WIZARD — Taqnyat picker. Accept either the
-      // legacy `selectedTemplate.name` or the canonical
+      // Taqnyat picker. Accept either the legacy
+      // `selectedTemplate.name` or the canonical
       // `taqnyatTemplate.templateRef`.
       return !!(
         formData.selectedTemplate?.name ||
@@ -314,9 +314,9 @@ export const validateStepData = (stepNumber, formData) => {
       );
 
     case 5:
-      // Phase 4c W2-MOBILE-WIZARD — messaging + replies + note. The
-      // defaults are seeded by StepFive on mount, so this is satisfied
-      // as soon as the host sees the step.
+      // Messaging + replies + note. The defaults are seeded by
+      // StepFive on mount, so this is satisfied as soon as the host
+      // sees the step.
       return true;
 
     case 6:
@@ -372,9 +372,9 @@ export const transformFormDataToPayload = (formData) => {
       name: moderator.name,
       phone: moderator.phone || moderator.mobile,
     })),
-    // Phase 4c W2-MOBILE-WIZARD + W2-MOBILE-RENAME — DUAL-WRITE both
-    // legacy `invitationSettings.*` (existing consumers) AND canonical
-    // top-level keys per W0-RENAME so backend reads from either shape.
+    // DUAL-WRITE both legacy `invitationSettings.*` (existing
+    // consumers) AND canonical top-level keys so backend reads from
+    // either shape.
     invitationSettings: {
       selectedTemplate: formData.selectedTemplate,
       visualTemplate: formData.visualTemplate
@@ -392,7 +392,7 @@ export const transformFormDataToPayload = (formData) => {
       templateImage: formData.templateImage,
       guestReplies: formData.guestReplies,
     },
-    // Phase 4c W0-RENAME canonical keys (backend prefers these on read)
+    // Canonical top-level keys (backend prefers these on read)
     taqnyatTemplateRef:
       formData.taqnyatTemplate?.templateRef ||
       formData.taqnyatTemplateRef ||
