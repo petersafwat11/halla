@@ -87,10 +87,7 @@ const getExpiringSubscriptions = async (daysAhead = 7) => {
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + daysAhead);
 
-  // FLOW-09-F03: Subscription schema field is `expiresAt`, not `endDate`.
-  // The previous query never matched anything, so neither the warning
-  // notifications nor the auto-expire transitions ran. Switching to the
-  // correct field re-activates the cron.
+  // Subscription schema field is `expiresAt` (renamed from `endDate`).
   return Subscription.find({
     status: { $in: ["active", "trial"] },
     expiresAt: { $gte: now, $lte: futureDate },
@@ -738,11 +735,9 @@ const scheduleGuestReminders = () => {
 };
 
 /**
- * Subscription status auto-update — runs daily at 1:00 AM (FLOW-09-F03).
+ * Subscription status auto-update — runs daily at 1:00 AM.
  *
- * Phase 2: the previous implementation queried the non-existent `endDate`
- * field and the non-existent `BILLING_CYCLES.ONCE` constant, so it has
- * been a no-op since the constants reorg. We now query `expiresAt` (the
+ * Queries `expiresAt` (the
  * real field) and emit a `subscription.expired` audit row per
  * transitioned record so admins can trace the lifecycle event.
  *

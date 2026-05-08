@@ -67,7 +67,7 @@ export const useCheckout = () => {
     onSuccess: async (result) => {
       if (result?.requiresAction) return;
       await clearPendingCheckoutCart();
-      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
       queryClient.invalidateQueries({ queryKey: ["addons"] });
     },
   });

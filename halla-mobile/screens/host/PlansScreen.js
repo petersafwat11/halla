@@ -17,7 +17,7 @@ import TopBar from "../../components/plans/TopBar";
 import CurrentPlanCard from "../../components/plans/CurrentPlanCard";
 import HostPlanCard from "../../components/plans/HostPlanCard";
 import AddonsSection from "../../components/plans/AddonsSection";
-import { useHostPlans, useSubscription } from "../../hooks";
+import { useHostPlans, useMySubscription } from "../../hooks";
 import { DEFAULT_COMPENSATION_PERCENTAGE } from "../../utils/constants/plans";
 import {
   colors,
@@ -42,7 +42,7 @@ const PlansScreen = () => {
   const [addonTotal, setAddonTotal] = useState(0);
 
   const { data: response, isLoading: loading, error, refetch } = useHostPlans();
-  const { data: subscriptionData } = useSubscription();
+  const { data: subscriptionData } = useMySubscription();
   const subscription = subscriptionData?.data?.subscription || null;
   const usage = subscription?.usage || null;
 

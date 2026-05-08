@@ -39,6 +39,7 @@ import PostEventScreen from "../screens/host/PostEventScreen";
 import StaffPortalScreen from "../screens/common/StaffPortalScreen";
 import HostPostEventScreen from "../screens/host/HostPostEventScreen";
 import PaymentReturnScreen from "../screens/host/PaymentReturnScreen";
+import PaymentsScreen from "../screens/host/PaymentsScreen";
 import SetupPasswordScreen from "../screens/auth/SetupPasswordScreen";
 import InvitationScreen from "../screens/guest-portal/InvitationScreen";
 
@@ -268,6 +269,7 @@ function HostStack() {
       <Stack.Screen name="HostPostEvent" component={HostPostEventScreen} />
       <Stack.Screen name="Invitation" component={InvitationScreen} />
       <Stack.Screen name="PaymentReturn" component={PaymentReturnScreen} />
+      <Stack.Screen name="Payments" component={PaymentsScreen} />
     </Stack.Navigator>
   );
 }

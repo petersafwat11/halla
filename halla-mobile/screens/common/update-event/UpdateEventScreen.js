@@ -17,7 +17,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useSubscription } from "../../../hooks";
+import { useMySubscription } from "../../../hooks";
 import { useTranslation } from "../../../localization";
 import {
   useUpdateEvent, useUpdateEventStep2, useUpdateVisualTemplate, useUpdateTaqnyatTemplate,
@@ -51,7 +51,7 @@ const UpdateEventScreen = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: subscriptionData } = useSubscription();
+  const { data: subscriptionData } = useMySubscription();
   const subscription = subscriptionData?.data?.subscription;
 
   const updateEventDetails = useUpdateEvent();

@@ -26,8 +26,8 @@ export default async function PlansPageServer({ params }) {
         path: API_PATHS.subscriptions.getMySubscription,
         token,
       });
-    } catch (error) {
-      console.error("Error prefetching plans data:", error);
+    } catch {
+      // Prefetch is best-effort; client-side fetch will retry and surface errors.
     }
   }
 

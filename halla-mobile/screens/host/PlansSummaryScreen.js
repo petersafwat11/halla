@@ -122,15 +122,7 @@ const PlansSummaryScreen = () => {
       }
       navigation.navigate("CreateEventScreen");
     } catch (error) {
-      if (
-        error.status === 400 &&
-        error.message?.includes("already have an active subscription")
-      ) {
-        toast.info(t("summary.activeSubscription"));
-        navigation.navigate("CreateEventScreen");
-      } else {
-        toast.error(error.message || t("toasts.failed"));
-      }
+      toast.error(error?.message || t("toasts.failed"));
     }
   };
 

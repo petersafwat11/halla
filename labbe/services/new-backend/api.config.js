@@ -154,20 +154,7 @@ export const API_PATHS = {
   // ============================================
   subscriptions: {
     getMySubscription: '/subscriptions/my-subscription',
-    subscribe: '/subscriptions/subscribe',
-    changePlan: '/subscriptions/change-plan',
-    cancelSubscription: '/subscriptions/cancel',
-
-    // Limits
-    validateLimits: '/subscriptions/validate-limits',
-    getPackageLimits: '/subscriptions/limits',
-    checkFeatureAccess: (featureName) => `/subscriptions/features/${featureName}`,
-
-    // Plans
-    getAvailablePlans: '/subscriptions/plans',
-    getPlanByCode: (code) => `/subscriptions/plans/${code}`,
-
-    // Payment History
+    adminAssign: '/subscriptions/admin/assign',
     getMyPayments: '/subscriptions/payments',
   },
 
