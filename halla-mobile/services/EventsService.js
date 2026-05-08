@@ -417,60 +417,6 @@ export const transformFormDataToPayload = (formData) => {
   };
 };
 
-/**
- * @deprecated Use useCreateEvent mutation (hooks/mutations/useEventMutations.js) instead.
- * This function sends JSON instead of FormData and won't work with the backend's
- * multipart/form-data requirement (uploadTemplateImage middleware).
- */
-export const createEvent = async (formData, api) => {
-  console.warn("[DEPRECATED] EventsService.createEvent — use useCreateEvent mutation instead");
-  try {
-    const payload = transformFormDataToPayload(formData);
-    const response = await api.post("/events", payload);
-    return {
-      success: true,
-      data: response.data,
-      error: null,
-    };
-  } catch (error) {
-    console.error("Error creating event:", error);
-    return {
-      success: false,
-      data: null,
-      error:
-        error.response?.data?.message ||
-        "فشل في إنشاء المناسبة. يرجى المحاولة مرة أخرى.",
-    };
-  }
-};
-
-/**
- * @deprecated No PUT /events/:id endpoint exists on the backend.
- * Use PATCH /events/:id/event-details, /guest-list, /invitation-settings, /launch-settings
- * via eventsService2 functions instead.
- */
-export const updateEvent = async (eventId, formData, api) => {
-  console.warn("[DEPRECATED] EventsService.updateEvent — no PUT /events/:id endpoint exists");
-  try {
-    const payload = transformFormDataToPayload(formData);
-    const response = await api.put(`/events/${eventId}`, payload);
-    return {
-      success: true,
-      data: response.data,
-      error: null,
-    };
-  } catch (error) {
-    console.error("Error updating event:", error);
-    return {
-      success: false,
-      data: null,
-      error:
-        error.response?.data?.message ||
-        "فشل في تحديث المناسبة. يرجى المحاولة مرة أخرى.",
-    };
-  }
-};
-
 // ============================================================================
 // DEFAULT VALUES
 // ============================================================================
@@ -541,8 +487,6 @@ export default {
   processImportedCSV,
 
   // API Operations
-  createEvent,
-  updateEvent,
   transformFormDataToPayload,
 
   // Defaults
