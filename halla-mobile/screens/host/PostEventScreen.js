@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -13,91 +13,118 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
-import { validatePostEventToken, getPostEventContent } from "../../services/postEventService";
-import PostCard from "../../components/host/post-event/PostCard";
+import {
+  usePostEventContent,
+  useValidatePostEventToken,
+} from "../../hooks/queries/post-event/useGuestPostEvent";
+import PostCard from "../../components/host/post-event/post-card/PostCard";
+import GuestEventHeader from "../../components/host/post-event/GuestEventHeader";
+
+const _resolveQrErrorKey = (error) => {
+  const reason = error?.data?.body?.reason || error?.data?.reason;
+  switch (reason) {
+    case "qr_rotated":
+      return "errors.qrRotated";
+    case "qr_revoked":
+      return "errors.qrRevoked";
+    case "qr_expired":
+      return "errors.qrExpired";
+    case "qr_lookup":
+    case "qr_lookup_miss":
+      return "errors.qrLookup";
+    default:
+      return "errors.qrInvalid";
+  }
+};
 
 export default function PostEventScreen({ navigation, route }) {
-  const { t, i18n } = useTranslation("postEvent");
+  const { t } = useTranslation("postEvent");
   const toast = useToast();
-  const isArabic = i18n.language === "ar";
   const { token: accessToken } = route?.params || {};
 
-  const [stage, setStage] = useState("validating");
-  const [sessionToken, setSessionToken] = useState(null);
-  const [guestInfo, setGuestInfo] = useState(null);
-  const [eventInfo, setEventInfo] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [thankYouMessage, setThankYouMessage] = useState(null);
+  const validateQuery = useValidatePostEventToken(accessToken);
+  const validation = validateQuery.data?.data || validateQuery.data || {};
+  const sessionToken = validation?.sessionToken || null;
+  const guestInfo = validation?.guest || null;
+  const eventInfo = validation?.event || null;
+  const eventId = eventInfo?._id || eventInfo?.id || null;
 
+  const contentQuery = usePostEventContent(eventId, sessionToken);
+  const contentPayload =
+    contentQuery.data?.data || contentQuery.data || {};
+
+  const posts = useMemo(() => {
+    const media = Array.isArray(contentPayload.media)
+      ? contentPayload.media
+      : [];
+    return media
+      .filter((m) => m.isPublished !== false)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [contentPayload.media]);
+
+  const thankYouMessage = contentPayload.thankYouMessage || {
+    text: contentPayload.title,
+    textAr: contentPayload.titleAr,
+  };
+
+  const [errorKey, setErrorKey] = useState(null);
   useEffect(() => {
     if (!accessToken) {
-      setStage("invalid");
+      setErrorKey("errors.qrInvalid");
       return;
     }
-    handleValidate();
-  }, [accessToken]);
-
-  const handleValidate = async () => {
-    setStage("validating");
-    try {
-      const result = await validatePostEventToken(accessToken);
-      const { valid, guest, event, sessionToken: sToken } = result?.data || result || {};
-      if (!valid || !sToken) {
-        setStage("invalid");
-        return;
-      }
-      setSessionToken(sToken);
-      setGuestInfo(guest);
-      setEventInfo(event);
-      await handleLoadContent(event?._id || event?.id, sToken);
-    } catch {
-      setStage("invalid");
+    if (validateQuery.isError) {
+      setErrorKey(_resolveQrErrorKey(validateQuery.error));
+      return;
     }
-  };
-
-  const handleLoadContent = async (evId, sToken) => {
-    setStage("loading");
-    try {
-      const result = await getPostEventContent(evId, sToken);
-      const payload = result?.data || result || {};
-      const rawPosts = payload.posts || [];
-      const published = rawPosts
-        .filter((p) => p.isPublished !== false)
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      setPosts(published);
-      setThankYouMessage(payload.thankYouMessage);
-      setStage("ready");
-    } catch {
-      setStage("ready");
+    if (validateQuery.data && (validation?.valid === false || !sessionToken)) {
+      setErrorKey("errors.qrInvalid");
+      return;
     }
-  };
+    setErrorKey(null);
+  }, [
+    accessToken,
+    validateQuery.isError,
+    validateQuery.error,
+    validateQuery.data,
+    sessionToken,
+    validation?.valid,
+  ]);
 
   const handleBack = () => {
     if (navigation?.canGoBack()) navigation.goBack();
   };
 
-  if (stage === "validating" || stage === "loading") {
+  const isValidating = validateQuery.isLoading;
+  const isLoadingContent =
+    !!sessionToken && contentQuery.isLoading && !contentQuery.data;
+
+  if (isValidating || isLoadingContent) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <View style={styles.centeredContainer}>
           <ActivityIndicator size="large" color="#c28e5c" />
           <Text style={styles.loadingText}>
-            {stage === "validating" ? t("validating") : t("loading")}
+            {isValidating ? t("validating") : t("loading")}
           </Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  if (stage === "invalid") {
+  if (errorKey) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <View style={styles.centeredContainer}>
           <Ionicons name="lock-closed-outline" size={64} color="#c28e5c" />
           <Text style={styles.invalidTitle}>{t("accessDenied")}</Text>
-          <Text style={styles.invalidDesc}>{t("accessDeniedDesc")}</Text>
+          <Text style={styles.invalidDesc}>{t(errorKey)}</Text>
           {navigation?.canGoBack() && (
-            <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBack}
+              activeOpacity={0.7}
+            >
               <Text style={styles.backButtonText}>{t("buttons.back")}</Text>
             </TouchableOpacity>
           )}
@@ -106,52 +133,16 @@ export default function PostEventScreen({ navigation, route }) {
     );
   }
 
-  const ListHeader = () => (
-    <View>
-      <View style={styles.eventHeader}>
-        <View style={styles.eventHeaderIcon}>
-          <Ionicons name="sparkles" size={28} color="#c28e5c" />
-        </View>
-        <View style={styles.eventHeaderText}>
-          {eventInfo?.title && (
-            <Text style={styles.eventTitle} numberOfLines={2}>
-              {eventInfo.title}
-            </Text>
-          )}
-          {guestInfo?.name && (
-            <Text style={styles.guestName}>
-              <Ionicons name="person" size={13} color="#a0a0a0" /> {guestInfo.name}
-            </Text>
-          )}
-        </View>
-      </View>
-
-      <View style={styles.thankYouCard}>
-        <Ionicons name="heart" size={24} color="#e74c3c" style={styles.thankYouIcon} />
-        <Text style={styles.thankYouTitle}>
-          {thankYouMessage?.text || t("thankYou.defaultTitle")}
-        </Text>
-        {thankYouMessage?.textAr && (
-          <Text style={styles.thankYouSubtitle}>{thankYouMessage.textAr}</Text>
-        )}
-      </View>
-
-      {posts.length === 0 && (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="images-outline" size={64} color="#e0d5cc" />
-          <Text style={styles.emptyTitle}>{t("noContent")}</Text>
-          <Text style={styles.emptyDesc}>{t("noContentDesc")}</Text>
-        </View>
-      )}
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <View style={styles.topBar}>
           {navigation?.canGoBack() && (
-            <TouchableOpacity onPress={handleBack} style={styles.topBarBack} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={handleBack}
+              style={styles.topBarBack}
+              activeOpacity={0.7}
+            >
               <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
           )}
@@ -172,14 +163,21 @@ export default function PostEventScreen({ navigation, route }) {
             renderItem={({ item }) => (
               <PostCard
                 post={item}
-                eventId={eventInfo?._id || eventInfo?.id}
+                eventId={eventId}
                 sessionToken={sessionToken}
-                guestId={guestInfo?._id}
                 t={t}
                 toast={toast}
               />
             )}
-            ListHeaderComponent={<ListHeader />}
+            ListHeaderComponent={
+              <GuestEventHeader
+                eventInfo={eventInfo}
+                guestInfo={guestInfo}
+                thankYouMessage={thankYouMessage}
+                postsCount={posts.length}
+                t={t}
+              />
+            }
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           />
@@ -259,82 +257,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   listContent: { paddingBottom: 32 },
-  eventHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    margin: 16,
-    marginBottom: 12,
-    gap: 12,
-  },
-  eventHeaderIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#f5ece4",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  eventHeaderText: { flex: 1 },
-  eventTitle: {
-    fontSize: 18,
-    fontFamily: "Cairo_700Bold",
-    color: "#2c2c2c",
-    lineHeight: 26,
-  },
-  guestName: {
-    fontSize: 13,
-    fontFamily: "Cairo_400Regular",
-    color: "#a0a0a0",
-    marginTop: 2,
-  },
-  thankYouCard: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "#f5ece4",
-  },
-  thankYouIcon: { marginBottom: 8 },
-  thankYouTitle: {
-    fontSize: 18,
-    fontFamily: "Cairo_700Bold",
-    color: "#2c2c2c",
-    textAlign: "center",
-    lineHeight: 26,
-  },
-  thankYouSubtitle: {
-    fontSize: 15,
-    fontFamily: "Cairo_400Regular",
-    color: "#666",
-    textAlign: "center",
-    marginTop: 6,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    paddingVertical: 40,
-    paddingHorizontal: 32,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontFamily: "Cairo_700Bold",
-    color: "#2c2c2c",
-    marginTop: 16,
-    textAlign: "center",
-  },
-  emptyDesc: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
-    color: "#999",
-    textAlign: "center",
-    lineHeight: 20,
-    marginTop: 8,
-  },
 });

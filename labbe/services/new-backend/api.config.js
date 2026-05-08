@@ -360,14 +360,14 @@ export const API_PATHS = {
 
     // Host Routes
     getHostContent: (eventId) => `/post-event/${eventId}`,
-    uploadPhotos: (eventId) => `/post-event/${eventId}/photos`,
-    uploadVideo: (eventId) => `/post-event/${eventId}/videos`,
+    uploadMedia: (eventId) => `/post-event/${eventId}/media`,
+    deleteMedia: (eventId, mediaId) => `/post-event/${eventId}/media/${mediaId}`,
     updateThankYouMessage: (eventId) => `/post-event/${eventId}/thank-you`,
-    deletePhoto: (eventId, photoId) => `/post-event/${eventId}/photos/${photoId}`,
-    deleteVideo: (eventId, videoId) => `/post-event/${eventId}/videos/${videoId}`,
+    updateMessagingTemplate: (eventId) => `/post-event/${eventId}/messaging`,
     publishContent: (eventId) => `/post-event/${eventId}/publish`,
+    unpublishContent: (eventId) => `/post-event/${eventId}/unpublish`,
     generateBulkTokens: (eventId) => `/post-event/${eventId}/generate-tokens`,
-    sendBulkAccessEmails: (eventId) => `/post-event/${eventId}/send-emails`,
+    sendBulkAccessLinks: (eventId) => `/post-event/${eventId}/send-access-links`,
   },
 
   // ============================================

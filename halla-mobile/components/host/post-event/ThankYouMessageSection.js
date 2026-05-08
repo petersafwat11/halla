@@ -1,19 +1,31 @@
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const ThankYouMessageSection = ({
-  message, onChangeMessage, onSave, saving, saved, t,
+  message,
+  onChangeMessage,
+  onSave,
+  saving,
+  saved,
+  t,
 }) => (
   <View style={styles.section}>
-    <Text style={styles.sectionTitle}>{t("hostPostEvent.thankYouMessage.title", "رسالة الشكر")}</Text>
+    <Text style={styles.sectionTitle}>{t("host.thankYouMessage.title")}</Text>
     <TextInput
       style={styles.messageInput}
       value={message}
       onChangeText={onChangeMessage}
       multiline
       numberOfLines={4}
-      placeholder={t("hostPostEvent.thankYouMessage.placeholder", "اكتب رسالة شكر للضيوف...")}
+      placeholder={t("host.thankYouMessage.placeholder")}
       placeholderTextColor="#B0B0B0"
       textAlign="right"
       textAlignVertical="top"
@@ -33,13 +45,7 @@ const ThankYouMessageSection = ({
           color="#FFF"
         />
       )}
-      <Text style={styles.saveButtonText}>
-        {saving
-          ? t("hostPostEvent.thankYouMessage.saving", "جاري الحفظ...")
-          : saved
-            ? t("hostPostEvent.thankYouMessage.saved", "تم الحفظ")
-            : t("hostPostEvent.thankYouMessage.save", "حفظ الرسالة")}
-      </Text>
+      <Text style={styles.saveButtonText}>{t("host.thankYouMessage.save")}</Text>
     </TouchableOpacity>
   </View>
 );

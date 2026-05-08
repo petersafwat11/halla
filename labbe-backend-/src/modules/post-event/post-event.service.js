@@ -1,105 +1,172 @@
 /**
  * Post-Event Content Service
- * Business logic for post-event content management (photos, videos, thank you messages)
+ * Business logic for post-event content management. Bulk Taqnyat dispatch
+ * lives in `post-event.dispatch.service.js`.
  * @module modules/post-event/post-event.service
  */
 
 const config = require('../../config');
-const { NotFoundError, ForbiddenError, ValidationError } = require('../../shared/errors');
 const jwt = require('jsonwebtoken');
+
+const {
+  NotFoundError,
+  ForbiddenError,
+  ValidationError,
+} = require('../../shared/errors');
+const AppError = require('../../shared/errors/AppError');
 
 const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
 const GuestAccessToken = require('../../../models/GuestAccessTokenModel');
 const PostEventContent = require('../../../models/PostEventContentModel');
 
-const notificationService = require('../notifications/notifications.service');
-const taqnyat = require('../../infrastructure/taqnyat');
 const { runBatched } = require('../../shared/utils/runBatched');
-const { withIdempotency } = require('../../shared/utils/idempotency');
 const { logAudit } = require('../../shared/utils/auditLog');
+const logger = require('../../shared/utils/logger');
+const { GUEST_STATUS } = require('../../shared/constants');
+const { resolveTaqnyatTemplateRef } = require('../events/templateRefResolver');
+
+const dispatchService = require('./post-event.dispatch.service');
+
+// ============================================
+// HELPERS
+// ============================================
+
+/**
+ * Build a `status` query fragment from the guest filter shortcut used by
+ * the host-facing UI:
+ *   - 'attended'  → guests who checked in (DB enum: 'checked_in')
+ *   - 'confirmed' → confirmed RSVPs plus those who checked in
+ *   - 'all'       → no status filter
+ */
+const guestFilterToQuery = (filter) => {
+  if (filter === 'attended') return { status: GUEST_STATUS.CHECKED_IN };
+  if (filter === 'confirmed') {
+    return { status: { $in: [GUEST_STATUS.CONFIRMED, GUEST_STATUS.CHECKED_IN] } };
+  }
+  return {};
+};
 
 class PostEventService {
+  // ============================================
+  // HOST READ
+  // ============================================
+
   /**
-   * Get post-event content for an event (host view)
+   * Get post-event content for an event (host or guest view).
+   * Reads event + content in parallel.
    */
   async getPostEventContent(eventId, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId })
-      .select('eventDetails status');
+    const [event, content] = await Promise.all([
+      Event.findOne({ _id: eventId, host: userId })
+        .select('eventDetails status visualTemplate host')
+        .populate('host', 'name username'),
+      PostEventContent.findOne({ event: eventId })
+        .populate('host', 'name username')
+        .populate('taqnyatTemplate.templateRef')
+        .lean(),
+    ]);
 
     if (!event) {
       throw new NotFoundError('Event');
     }
 
-    const content = await PostEventContent.findOne({ event: eventId })
-      .populate('host', 'name username')
-      .lean();
-
     return {
       eventId: event._id,
       eventTitle: event.eventDetails?.title,
+      event,
       thankYouMessage: content
         ? { text: content.title || '', textAr: content.titleAr || '' }
         : { text: '', textAr: '' },
-      content: content || { posts: [], settings: { isPublished: false } },
-    };
-  }
-
-  /**
-   * Upload photos to post-event content
-   */
-  async uploadPhotos(eventId, files, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
-    if (!event) throw new NotFoundError('Event');
-
-    let content = await PostEventContent.findOne({ event: eventId });
-    if (!content) {
-      content = await PostEventContent.createForEvent(eventId, userId);
-    }
-
-    for (const file of files) {
-      await content.addPost({
-        type: 'photo',
-        content: {
-          mediaUrl: file.location || file.path || `/uploads/post-event/${file.filename}`,
-        },
-      });
-    }
-
-    // Reload to get updated posts
-    content = await PostEventContent.findOne({ event: eventId });
-    return {
-      photos: content.posts.filter(p => p.type === 'photo'),
-      addedCount: files.length,
-    };
-  }
-
-  /**
-   * Upload video to post-event content
-   */
-  async uploadVideo(eventId, file, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
-    if (!event) throw new NotFoundError('Event');
-
-    let content = await PostEventContent.findOne({ event: eventId });
-    if (!content) {
-      content = await PostEventContent.createForEvent(eventId, userId);
-    }
-
-    const updatedContent = await content.addPost({
-      type: 'video',
-      content: {
-        mediaUrl: file.location || file.path || `/uploads/post-event/${file.filename}`,
+      content: content || {
+        media: [],
+        taqnyatTemplate: { templateRef: null },
+        settings: { isPublished: false },
       },
-    });
+    };
+  }
 
-    const newPost = updatedContent.posts[updatedContent.posts.length - 1];
-    return { video: newPost };
+  // ============================================
+  // HOST: MEDIA (unified photo + video)
+  // ============================================
+
+  /**
+   * Upload one or more media files (photos and/or videos) to post-event
+   * content. Distinguishes type by MIME prefix.
+   */
+  async uploadMedia(eventId, files, userId) {
+    if (!files?.length) throw new ValidationError('No files uploaded');
+
+    const event = await Event.findOne({ _id: eventId, host: userId });
+    if (!event) throw new NotFoundError('Event');
+
+    let content = await PostEventContent.findOne({ event: eventId });
+    if (!content) {
+      content = await PostEventContent.createForEvent(eventId, userId);
+    }
+
+    const added = [];
+    for (const file of files) {
+      const isVideo = (file.mimetype || '').startsWith('video/');
+      const isImage = (file.mimetype || '').startsWith('image/');
+      if (!isVideo && !isImage) {
+        throw new ValidationError(`Unsupported file type: ${file.mimetype}`);
+      }
+      const item = await content.addMedia({
+        type: isVideo ? 'video' : 'photo',
+        url: file.location || file.path || `/uploads/post-event/${file.filename}`,
+        mimeType: file.mimetype,
+        size: file.size,
+      });
+      added.push(item);
+    }
+
+    logAudit({
+      action: 'post_event.media_uploaded',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: event._id,
+      metadata: {
+        contentId: content._id,
+        ids: added.map((m) => m._id),
+        types: added.map((m) => m.type),
+        count: added.length,
+      },
+    }).catch(() => {});
+
+    return { media: added, addedCount: added.length };
   }
 
   /**
-   * Update thank you message / title
+   * Delete a media item (photo or video) by id.
    */
+  async deleteMedia(eventId, mediaId, userId) {
+    const event = await Event.findOne({ _id: eventId, host: userId });
+    if (!event) throw new NotFoundError('Event');
+
+    const content = await PostEventContent.findOne({ event: eventId });
+    if (!content) throw new NotFoundError('Post-event content');
+
+    const item = content.media.id(mediaId);
+    if (!item) throw new NotFoundError('Media');
+    const type = item.type;
+
+    const removed = await content.removeMedia(mediaId);
+    if (!removed) throw new NotFoundError('Media');
+
+    logAudit({
+      action: 'post_event.media_deleted',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: event._id,
+      metadata: { contentId: content._id, mediaId, type },
+    }).catch(() => {});
+  }
+
+  // ============================================
+  // HOST: THANK-YOU MESSAGE
+  // ============================================
+
   async updateThankYouMessage(eventId, messageData, userId) {
     const event = await Event.findOne({ _id: eventId, host: userId });
     if (!event) throw new NotFoundError('Event');
@@ -109,67 +176,94 @@ class PostEventService {
       content = await PostEventContent.createForEvent(eventId, userId);
     }
 
-    if (messageData.text) content.title = messageData.text;
-    if (messageData.textAr) content.titleAr = messageData.textAr;
-    if (messageData.description) content.description = messageData.description;
-    if (messageData.descriptionAr) content.descriptionAr = messageData.descriptionAr;
+    if (messageData.text !== undefined) content.title = messageData.text;
+    if (messageData.textAr !== undefined) content.titleAr = messageData.textAr;
+    if (messageData.description !== undefined) content.description = messageData.description;
+    if (messageData.descriptionAr !== undefined) content.descriptionAr = messageData.descriptionAr;
     await content.save();
 
-    return { thankYouMessage: { text: content.title, textAr: content.titleAr } };
+    logAudit({
+      action: 'post_event.thank_you_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: event._id,
+      metadata: { contentId: content._id },
+    }).catch(() => {});
+
+    return {
+      thankYouMessage: { text: content.title, textAr: content.titleAr },
+      description: content.description,
+      descriptionAr: content.descriptionAr,
+    };
   }
 
+  // ============================================
+  // HOST: MESSAGING TEMPLATE (StepFour-pattern)
+  // ============================================
+
   /**
-   * Delete photo post from post-event content
+   * Save the host's chosen Taqnyat WhatsApp template for access-link
+   * dispatch. Mirrors `events.settings.service.updateInvitationSettings`
+   * for the canonical-only path.
    */
-  async deletePhoto(eventId, photoId, userId) {
+  async updateMessagingTemplate(eventId, { taqnyatTemplateRef }, userId) {
     const event = await Event.findOne({ _id: eventId, host: userId });
     if (!event) throw new NotFoundError('Event');
 
-    const content = await PostEventContent.findOne({ event: eventId });
-    if (!content) throw new NotFoundError('Post-event content');
+    const resolvedRef = await resolveTaqnyatTemplateRef(taqnyatTemplateRef);
+    if (!resolvedRef) {
+      throw new ValidationError('Taqnyat template not found in cache');
+    }
 
-    const post = content.posts.id(photoId);
-    if (!post) throw new NotFoundError('Photo');
+    let content = await PostEventContent.findOne({ event: eventId });
+    if (!content) {
+      content = await PostEventContent.createForEvent(eventId, userId);
+    }
 
-    post.remove();
+    content.taqnyatTemplate = { templateRef: resolvedRef };
     await content.save();
+
+    logAudit({
+      action: 'post_event.messaging_template_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: event._id,
+      metadata: { contentId: content._id, templateRef: resolvedRef },
+    }).catch(() => {});
+
+    return {
+      taqnyatTemplate: { templateRef: resolvedRef },
+    };
   }
 
-  /**
-   * Delete video post from post-event content
-   */
-  async deleteVideo(eventId, videoId, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
-    if (!event) throw new NotFoundError('Event');
+  // ============================================
+  // HOST: PUBLISH / UNPUBLISH
+  // ============================================
 
-    const content = await PostEventContent.findOne({ event: eventId });
-    if (!content) throw new NotFoundError('Post-event content');
-
-    const post = content.posts.id(videoId);
-    if (!post) throw new NotFoundError('Video');
-
-    post.remove();
-    await content.save();
-  }
-
-  /**
-   * Publish post-event content to guests
-   */
   async publishContent(eventId, userId) {
     const event = await Event.findOne({ _id: eventId, host: userId })
-      .populate('guestList', 'name phone status');
+      .populate('guestList', 'name phone status')
+      .populate('host', 'name username');
 
     if (!event) throw new NotFoundError('Event');
 
-    const content = await PostEventContent.findOne({ event: eventId });
+    const content = await PostEventContent.findOne({ event: eventId })
+      .populate('taqnyatTemplate.templateRef');
     if (!content) throw new ValidationError('No post-event content to publish');
 
     await content.publish();
 
-    // Generate tokens and notify guests via WhatsApp/SMS (non-blocking)
-    this._generateTokensAndNotify(event, content).catch(console.error);
+    // Non-blocking: dispatch access-link messages. Errors are logged but
+    // don't fail the publish call.
+    dispatchService
+      .autoNotifyAfterPublish(event, content)
+      .catch((err) => {
+        logger.error('[post-event] autoNotifyAfterPublish failed', {
+          eventId: event._id.toString(),
+          error: err.message,
+        });
+      });
 
-    // Track-B: audit content publish — targetType:'event' (post_event_content not in enum)
     logAudit({
       action: 'post_event.published',
       actor: { _id: userId },
@@ -185,9 +279,6 @@ class PostEventService {
     };
   }
 
-  /**
-   * Unpublish (revoke) post-event content (FLOW-21 Track-B)
-   */
   async unpublishContent(eventId, userId) {
     const event = await Event.findOne({ _id: eventId, host: userId }).select('_id');
     if (!event) throw new NotFoundError('Event');
@@ -210,28 +301,8 @@ class PostEventService {
     return { unpublished: true };
   }
 
-  /**
-   * Get published content for guest portal (accessed via invitation code)
-   */
-  async getPublishedContentForGuest(eventId, guestCode) {
-    const guest = await Guest.findOne({
-      event: eventId,
-      $or: [
-        { 'invitation.code': guestCode },
-        { qrcode: guestCode },
-      ],
-    });
-
-    if (!guest) throw new ForbiddenError('Invalid invitation code');
-
-    const content = await PostEventContent.getForGuest(eventId, guest._id);
-    if (!content) throw new NotFoundError('No published content available');
-
-    return content;
-  }
-
   // ============================================
-  // GUEST INTERACTION METHODS
+  // GUEST: TOKEN VALIDATE
   // ============================================
 
   async validateGuestToken(token) {
@@ -239,21 +310,18 @@ class PostEventService {
 
     const validation = await GuestAccessToken.validateToken(token, {});
     if (!validation.valid) {
-      // Phase 3e.3 / 3e.4 (D7 / D8): rotated / revoked / expired tokens
-      // surface as a 410 Gone with the reason in the body. Plain
-      // unknown-token (lookup miss) stays 403 since it's a credential
-      // error, not a "the resource is gone" error.
+      // Rotated / revoked / expired tokens surface as 410 Gone with a
+      // structured `reason` in `err.body`. globalErrorHandler bubbles the
+      // body fields into the JSON response so the frontend can pick the
+      // localised message. Plain unknown-token (lookup miss) stays 403
+      // since it's a credential error, not a "the resource is gone" error.
       const goneReasons = ['qr_rotated', 'qr_revoked', 'qr_expired'];
       if (goneReasons.includes(validation.reason)) {
-        const AppError = require('../../shared/errors/AppError');
         const err = new AppError(
           validation.message || validation.reason,
           410,
           validation.reason.toUpperCase()
         );
-        // The controller-level catch maps this to a structured 410 body;
-        // even if it doesn't, the global handler returns 410 because
-        // AppError sets `statusCode` and `isOperational`.
         err.body = { reason: validation.reason, message: validation.message };
         throw err;
       }
@@ -262,7 +330,6 @@ class PostEventService {
 
     const { guest, event } = validation;
 
-    // Check that post-event content is published for this event
     const content = await PostEventContent.findOne({
       event: event._id,
       'settings.isPublished': true,
@@ -273,8 +340,13 @@ class PostEventService {
     }
 
     const sessionToken = jwt.sign(
-      { type: 'guest_session', guestId: guest._id, eventId: event._id, guestName: guest.name },
-      process.env.JWT_SECRET,
+      {
+        type: 'guest_session',
+        guestId: guest._id,
+        eventId: event._id,
+        guestName: guest.name,
+      },
+      config.jwt.secret,
       { expiresIn: '7d' }
     );
 
@@ -286,17 +358,21 @@ class PostEventService {
     };
   }
 
-  async toggleLike(eventId, postId, guestUser) {
+  // ============================================
+  // GUEST: LIKE / COMMENT
+  // ============================================
+
+  async toggleLike(eventId, mediaId, guestUser) {
     const content = await PostEventContent.findOne({
       event: eventId,
       'settings.isPublished': true,
     });
     if (!content) throw new NotFoundError('Content not found');
 
-    return content.toggleLike(postId, guestUser.guestId);
+    return content.toggleLike(mediaId, guestUser.guestId);
   }
 
-  async addComment(eventId, postId, body, files, guestUser) {
+  async addComment(eventId, mediaId, body, files, guestUser) {
     const content = await PostEventContent.findOne({
       event: eventId,
       'settings.isPublished': true,
@@ -305,14 +381,15 @@ class PostEventService {
 
     if (!body.text?.trim()) throw new ValidationError('Comment text is required');
 
-    // FLOW-21-F02: enforce requireApproval — hide comment until host reviews
     const commentData = {
       text: body.text.trim(),
-      images: (files || []).map(f => ({ url: f.location || f.path })),
+      images: (files || []).map((f) => ({ url: f.location || f.path })),
+      // When `requireApproval` is enabled, hide the comment until the host
+      // reviews it.
       ...(content.settings?.requireApproval && { isHidden: true, pendingApproval: true }),
     };
 
-    const comment = await content.addComment(postId, guestUser.guestId, commentData);
+    const comment = await content.addComment(mediaId, guestUser.guestId, commentData);
 
     return {
       comment: {
@@ -322,40 +399,50 @@ class PostEventService {
         images: comment.images,
         createdAt: comment.createdAt,
       },
-      commentsCount: content.posts.id(postId)?.comments?.length || 0,
+      commentsCount: content.media.id(mediaId)?.comments?.length || 0,
     };
   }
 
-  async getComments(eventId, postId, { page = 1, limit = 20 }) {
+  async getComments(eventId, mediaId, { page = 1, limit = 20 }) {
     const content = await PostEventContent.findOne({
       event: eventId,
       'settings.isPublished': true,
     });
     if (!content) throw new NotFoundError('Content not found');
 
-    const post = content.posts.id(postId);
-    if (!post) throw new NotFoundError('Post not found');
+    const item = content.media.id(mediaId);
+    if (!item) throw new NotFoundError('Media not found');
 
-    const visible = (post.comments || []).filter(c => !c.isHidden);
+    const visible = (item.comments || []).filter((c) => !c.isHidden);
     const total = visible.length;
     const skip = (page - 1) * limit;
-    const paginated = visible.sort((a, b) => b.createdAt - a.createdAt).slice(skip, skip + limit);
+    const paginated = visible
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(skip, skip + limit);
 
-    const guestIds = paginated.map(c => c.guest);
+    const guestIds = paginated.map((c) => c.guest);
     const guests = await Guest.find({ _id: { $in: guestIds } }).select('name').lean();
-    const guestMap = new Map(guests.map(g => [g._id.toString(), g.name]));
+    const guestMap = new Map(guests.map((g) => [g._id.toString(), g.name]));
 
     return {
-      comments: paginated.map(c => ({
+      comments: paginated.map((c) => ({
         _id: c._id,
         guest: { _id: c.guest, name: guestMap.get(c.guest?.toString()) || 'Guest' },
         text: c.text,
         images: c.images,
         createdAt: c.createdAt,
       })),
-      pagination: { currentPage: page, totalPages: Math.ceil(total / limit), totalComments: total },
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalComments: total,
+      },
     };
   }
+
+  // ============================================
+  // HOST: BULK TOKEN GENERATION
+  // ============================================
 
   async generateBulkTokens(eventId, userId, { guestIds, filter = 'attended' }) {
     const event = await Event.findOne({ _id: eventId, host: userId });
@@ -365,147 +452,71 @@ class PostEventService {
     if (guestIds?.length) {
       guests = await Guest.find({ _id: { $in: guestIds }, event: eventId });
     } else {
-      const query = { event: eventId };
-      if (filter === 'attended') query.status = 'attended';
-      else if (filter === 'confirmed') query.status = { $in: ['confirmed', 'attended'] };
-      guests = await Guest.find(query);
+      guests = await Guest.find({ event: eventId, ...guestFilterToQuery(filter) });
     }
 
     if (!guests?.length) throw new NotFoundError('No guests found');
 
-    const frontendUrl = config.frontend?.url || process.env.FRONTEND_URL;
     const tokens = [];
     const errors = [];
 
-    for (const guest of guests) {
-      try {
-        // createForGuest returns existing valid token or creates a new one
-        const tokenDoc = await GuestAccessToken.createForGuest(guest._id, eventId, 'post_event', 30);
-        tokens.push({
+    const batched = await runBatched(
+      guests,
+      async (guest) => {
+        const tokenDoc = await GuestAccessToken.createForGuest(
+          guest._id,
+          eventId,
+          'post_event',
+          30
+        );
+        return {
           guestId: guest._id,
           guestName: guest.name,
           token: tokenDoc.token,
-          accessLink: `${frontendUrl}/ar/post-event?token=${tokenDoc.token}`,
+          accessLink: dispatchService.buildAccessLink(tokenDoc.token),
           expiresAt: tokenDoc.expiresAt,
-        });
-      } catch (err) {
-        errors.push({ guestId: guest._id, guestName: guest.name, error: err.message });
-      }
-    }
-
-    return {
-      tokens,
-      errors: errors.length ? errors : undefined,
-      summary: { total: guests.length, generated: tokens.length, failed: errors.length },
-    };
-  }
-
-  // FLOW-21-F04: renamed from sendBulkAccessEmails — sends WhatsApp/SMS, not email
-  async sendBulkAccessLinks(eventId, userId, { guestIds, filter = 'attended' }) {
-    // Sends access links via WhatsApp (with SMS fallback), not email
-    const event = await Event.findOne({ _id: eventId, host: userId });
-    if (!event) throw new NotFoundError('Event');
-
-    const tokenQuery = { event: eventId, expiresAt: { $gt: new Date() }, isRevoked: false };
-    if (guestIds?.length) tokenQuery.guest = { $in: guestIds };
-
-    let tokens = await GuestAccessToken.find(tokenQuery).populate('guest', 'name phone status');
-
-    if (!guestIds && filter !== 'all') {
-      const statuses = filter === 'attended' ? ['attended'] : ['confirmed', 'attended'];
-      tokens = tokens.filter(t => t.guest && statuses.includes(t.guest.status));
-    }
-
-    const reachable = tokens.filter(t => t.guest?.phone);
-    if (!reachable.length) throw new NotFoundError('No guests with phone numbers found');
-
-    const frontendUrl = config.frontend?.url || process.env.FRONTEND_URL;
-    const SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp';
-
-    // Phase 3b.3 (FLOW-21-F01): same runBatched + idempotency contract as
-    // launch / reminder sends. Two clicks of "send post-event link" within
-    // the cache TTL deduplicate against the per-guest key, so guests don't
-    // get the same SMS twice.
-    const batched = await runBatched(
-      reachable,
-      (t) => {
-        const key = `post_event_access:${eventId}:${t.guest._id}`;
-        return withIdempotency(key, async () => {
-          const link = `${frontendUrl}/ar/post-event?token=${t.token}`;
-          const msg = `شكراً لحضورك! يمكنك مشاهدة صور ومقاطع المناسبة من هنا:\n${link}`;
-          await taqnyat.sendSMS(t.guest.phone, msg, { sender: SENDER });
-          return { ok: true };
-        }, { scope: 'post_event_access', userId });
+        };
       },
       { concurrency: 5, ratePerSecond: 10 }
     );
 
-    const sent = batched.results
-      .filter(r => r.ok)
-      .map(r => ({ guestId: r.item.guest._id, guestName: r.item.guest.name, phone: r.item.guest.phone }));
-    const failed = batched.results
-      .filter(r => !r.ok)
-      .map(r => ({ guestId: r.item.guest._id, phone: r.item.guest.phone, error: r.error }));
+    for (const r of batched.results) {
+      if (r.ok) {
+        tokens.push(r.value);
+      } else {
+        errors.push({
+          guestId: r.item._id,
+          guestName: r.item.name,
+          error: r.error,
+        });
+      }
+    }
+
+    logAudit({
+      action: 'post_event.tokens_generated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: event._id,
+      metadata: { count: tokens.length, filter, failed: errors.length },
+    }).catch(() => {});
 
     return {
-      sent,
-      failed: failed.length ? failed : undefined,
-      summary: { total: reachable.length, sent: sent.length, failed: failed.length },
+      tokens,
+      errors,
+      summary: {
+        total: guests.length,
+        generated: tokens.length,
+        failed: errors.length,
+      },
     };
   }
 
   // ============================================
-  // PRIVATE HELPERS
+  // HOST: BULK ACCESS-LINK DISPATCH (delegates to dispatchService)
   // ============================================
 
-  /**
-   * Generate access tokens for all guests and send them their post-event link via SMS.
-   * Called non-blocking after publishContent().
-   */
-  async _generateTokensAndNotify(event, content) {
-    const frontendUrl = config.frontend?.url || process.env.FRONTEND_URL || 'https://halaa.sa';
-    const SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp';
-
-    const guests = (event.guestList || []).filter(g => g.phone);
-
-    // Phase 3b.3 (FLOW-21-F01): runBatched + idempotency. Publishing the
-    // same post-event content twice (e.g. host clicks "Publish" again
-    // after a network blip) doesn't double-SMS guests within the cache
-    // window.
-    await runBatched(
-      guests,
-      (guest) => withIdempotency(
-        `post_event_publish:${event._id}:${guest._id}`,
-        async () => {
-          const tokenDoc = await GuestAccessToken.createForGuest(guest._id, event._id, 'post_event', 30);
-          const link = `${frontendUrl}/ar/post-event?token=${tokenDoc.token}`;
-          const message =
-            `${guest.name}، شكراً لحضورك! 🌹\n` +
-            `يمكنك مشاهدة صور ومقاطع المناسبة من هنا:\n${link}`;
-          await taqnyat.sendSMS(guest.phone, message, { sender: SENDER });
-          return { ok: true };
-        },
-        { scope: 'post_event_publish' }
-      ).catch((err) => {
-        console.error(`[PostEvent] Failed to notify guest ${guest._id}:`, err.message);
-        return { ok: false };
-      }),
-      { concurrency: 5, ratePerSecond: 10 }
-    );
-
-    // Notify the host
-    try {
-      await notificationService.sendToUser(event.host, {
-        type: 'post_event_published',
-        title: 'Post-Event Content Published',
-        titleAr: 'تم نشر محتوى ما بعد المناسبة',
-        message: `Your post-event content for "${event.eventDetails?.title}" has been published to ${guests.length} guests.`,
-        messageAr: `تم نشر محتوى ما بعد مناسبة "${event.eventDetails?.title}" لـ ${guests.length} ضيف.`,
-        data: { entityType: 'event', entityId: event._id },
-      });
-    } catch (err) {
-      console.error('[PostEvent] Failed to notify host:', err.message);
-    }
+  async sendBulkAccessLinks(eventId, userId, body) {
+    return dispatchService.sendBulkAccessLinks(eventId, userId, body);
   }
 }
 

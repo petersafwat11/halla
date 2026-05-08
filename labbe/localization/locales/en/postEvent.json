@@ -1,22 +1,99 @@
 {
-  "pageTitle": "Participate in Congratulations",
-  "eventTitle": "The Haj Ibrahim Kamal Abdel Halim family is pleased to invite you to attend their son's wedding ceremony at Al Amir Hall",
-  "waitingText": "We are waiting for you to share the joy with us",
-  "weddingCelebration": "At their wedding celebration",
-  "quranVerse": "\"And of His signs is that He created for you from yourselves mates that you may find tranquility in them; and He placed between you affection and mercy. Indeed in that are signs for a people who give thought.\" (Surah Ar-Rum, Verse 21).",
-  "groomName": "Ahmed Kamel",
-  "brideName": "Nour",
-  "and": "&",
-  "saturday": "Saturday",
-  "day": "25",
-  "month": "May",
-  "year": "2025",
-  "timeText": "At exactly seven o'clock in the evening",
-  "villaNumber": "Villa 250",
-  "address": "401 Your City, Your District, Saudi Arabia",
-  "attendanceText": "We are waiting for your attendance",
-  "commentPlaceholder": "Write your comment here....",
+  "pageTitle": "Share the Joy",
+  "loading": "Loading...",
+  "commentPlaceholder": "Write your comment here...",
   "sendButton": "Send",
-  "personName": "Person Name",
-  "date": "12/5/502"
+  "personName": "Guest",
+  "date": "",
+  "floralDecoration": "Floral decoration",
+  "invitationImageAlt": "Event invitation",
+  "comments": {
+    "unavailable": "Comments are not available right now."
+  },
+  "aria": {
+    "like": "Like",
+    "comment": "Comment",
+    "emoji": "Emoji",
+    "attachFile": "Attach file"
+  },
+  "errors": {
+    "accessError": "Access error",
+    "noToken": "Please open the link sent to you.",
+    "qrRotated": "This link is no longer active because the host issued a new one. Please use the most recent message you received.",
+    "qrRevoked": "Your access to the event content has been revoked. Please contact the host.",
+    "qrExpired": "The access window has ended. The event content is no longer available via this link.",
+    "qrInvalid": "Invalid or expired link.",
+    "qrLookup": "We couldn't verify the link. Please try again."
+  },
+  "host": {
+    "title": "Post-event content",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "statusPublished": "Published",
+    "statusDraft": "Draft",
+    "publish": "Publish",
+    "publishSuccess": "Post-event content published.",
+    "publishConfirmTitle": "Publish post-event content?",
+    "publishConfirmMessage": "Guests with access will be able to view the gallery and thank-you message.",
+    "unpublish": "Unpublish",
+    "unpublishSuccess": "Post-event content unpublished.",
+    "unpublishConfirmTitle": "Unpublish post-event content?",
+    "unpublishConfirmMessage": "Existing access links will return a 'gone' error until you publish again.",
+    "media": {
+      "title": "Photos & videos",
+      "uploadHint": "Drop photos or videos here, or click to choose.",
+      "uploadSubHint": "Up to 20 files per upload. Photos and videos in the same batch are fine.",
+      "uploading": "Uploading...",
+      "empty": "No media yet. Upload photos or videos to share with your guests.",
+      "deleteConfirm": "Delete this item?"
+    },
+    "messaging": {
+      "title": "WhatsApp template",
+      "subtitle": "Pick the Meta-approved template used to send guests their post-event access links.",
+      "empty": "No templates available for this category.",
+      "emptyHint": "Ask the admin team to assign at least one approved template to the post-event category.",
+      "varCount": "Variables: {{count}}",
+      "preview": "Preview",
+      "saveSuccess": "Template saved.",
+      "saveFailed": "Couldn't save the template selection."
+    },
+    "thankYouMessage": {
+      "title": "Thank-you message",
+      "titleEn": "Title (English)",
+      "titleAr": "Title (Arabic)",
+      "descriptionEn": "Description (English)",
+      "descriptionAr": "Description (Arabic)",
+      "placeholder": "Thank you for celebrating with us!",
+      "save": "Save",
+      "saveSuccess": "Thank-you message saved.",
+      "saveFailed": "Couldn't save the thank-you message.",
+      "atLeastOne": "Please fill in at least one field."
+    },
+    "accessLinks": {
+      "title": "Send access links",
+      "templatePicker": "WhatsApp template",
+      "filterTitle": "Send to",
+      "filterAttended": "Guests who attended",
+      "filterConfirmed": "Confirmed guests",
+      "filterAll": "All guests",
+      "send": "Send",
+      "success": "Sent to {{sent}} guest(s) — WhatsApp: {{whatsapp}}, SMS: {{sms}}, failed: {{failed}}.",
+      "channelBreakdown": "Delivery breakdown",
+      "noTemplateConfigured": "No WhatsApp template is configured yet.",
+      "noTemplateCta": "Configure messaging templates"
+    },
+    "summary": {
+      "photos": "Photos",
+      "videos": "Videos",
+      "comments": "Comments",
+      "likes": "Likes",
+      "linksSent": "Links sent"
+    },
+    "errors": {
+      "uploadFailed": "Couldn't upload media.",
+      "deleteFailed": "Couldn't delete this item.",
+      "publishFailed": "Couldn't publish the content.",
+      "sendFailed": "Couldn't send access links."
+    }
+  }
 }

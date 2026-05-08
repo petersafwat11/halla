@@ -1,7 +1,7 @@
 /**
  * Post-Event Content Model
  * Manages post-event content shared by hosts with guests
- * Includes posts, likes, comments, and guest interactions
+ * Includes media (photos/videos), likes, comments, and guest interactions.
  */
 
 const mongoose = require("mongoose");
@@ -34,7 +34,6 @@ const commentSchema = new mongoose.Schema(
       ref: "User",
     },
     hiddenAt: Date,
-    // FLOW-21-F02: set to true when requireApproval is enabled — hides until host approves
     pendingApproval: { type: Boolean, default: false },
   },
   {
@@ -59,24 +58,21 @@ const likeSchema = new mongoose.Schema(
   { _id: true }
 );
 
-// Post sub-schema
-const postSchema = new mongoose.Schema(
+// Media item sub-schema (one record per uploaded photo or video)
+const mediaItemSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ["photo", "video", "message", "gallery"],
+      enum: ["photo", "video"],
       required: true,
     },
-    content: {
-      text: {
-        type: String,
-        maxlength: [2000, "Post text cannot exceed 2000 characters"],
-        trim: true,
-      },
-      mediaUrl: String,
-      thumbnailUrl: String,
-      mediaUrls: [String], // For gallery type
+    url: {
+      type: String,
+      required: true,
     },
+    thumbnailUrl: String,
+    mimeType: String,
+    size: Number,
     order: {
       type: Number,
       default: 0,
@@ -94,20 +90,32 @@ const postSchema = new mongoose.Schema(
   }
 );
 
-// Virtual for like count
-postSchema.virtual("likesCount").get(function () {
+mediaItemSchema.virtual("likesCount").get(function () {
   return this.likes?.length || 0;
 });
 
-// Virtual for comment count
-postSchema.virtual("commentsCount").get(function () {
+mediaItemSchema.virtual("commentsCount").get(function () {
   return this.comments?.filter((c) => !c.isHidden).length || 0;
 });
+
+// Canonical Taqnyat-template reference — identical shape to
+// EventModel.canonicalTaqnyatTemplateSchema (Event.taqnyatTemplate.templateRef).
+// Holds the host's chosen WhatsApp template for post-event access-link
+// dispatch. Resolved at send time by messaging.formatting.resolveTaqnyatTemplate.
+const taqnyatTemplateSchema = new mongoose.Schema(
+  {
+    templateRef: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TaqnyatTemplate",
+      default: null,
+    },
+  },
+  { _id: false }
+);
 
 // Main Post-Event Content Schema
 const postEventContentSchema = new mongoose.Schema(
   {
-    // Event reference
     event: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Event",
@@ -116,7 +124,6 @@ const postEventContentSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Host who created the content
     host: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -124,7 +131,6 @@ const postEventContentSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Content metadata
     title: {
       type: String,
       default: "Thank you for attending!",
@@ -149,10 +155,15 @@ const postEventContentSchema = new mongoose.Schema(
     },
     coverImage: String,
 
-    // Posts array
-    posts: [postSchema],
+    // Unified media array (photos + videos in one place, distinguished by `type`).
+    media: [mediaItemSchema],
 
-    // Settings
+    // Host's chosen Taqnyat WhatsApp template for access-link dispatch.
+    taqnyatTemplate: {
+      type: taqnyatTemplateSchema,
+      default: () => ({}),
+    },
+
     settings: {
       allowComments: {
         type: Boolean,
@@ -175,17 +186,16 @@ const postEventContentSchema = new mongoose.Schema(
         default: false,
       },
       publishedAt: Date,
-      expiresAt: Date, // Optional expiry
+      expiresAt: Date,
     },
 
-    // Statistics
     stats: {
       totalViews: {
         type: Number,
         default: 0,
       },
-      // FLOW-21-F05: authoritative count (unbounded); array capped at 5000 for lookup only
       uniqueVisitorCount: { type: Number, default: 0 },
+      // Capped at 5000; uniqueVisitorCount is the authoritative count.
       uniqueVisitors: [
         {
           type: mongoose.Schema.Types.ObjectId,
@@ -202,7 +212,6 @@ const postEventContentSchema = new mongoose.Schema(
       },
     },
 
-    // Multi-tenant support
     whitelabelId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "WhiteLabel",
@@ -216,17 +225,14 @@ const postEventContentSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
 postEventContentSchema.index({ host: 1, createdAt: -1 });
 postEventContentSchema.index({ "settings.isPublished": 1 });
 postEventContentSchema.index({ whitelabelId: 1 });
 
-// Virtual for unique visitor count
 postEventContentSchema.virtual("uniqueVisitorCount").get(function () {
   return this.stats?.uniqueVisitors?.length || 0;
 });
 
-// Static method to create post-event content
 postEventContentSchema.statics.createForEvent = async function (
   eventId,
   hostId,
@@ -244,7 +250,6 @@ postEventContentSchema.statics.createForEvent = async function (
   });
 };
 
-// Static method to get content for guest
 postEventContentSchema.statics.getForGuest = async function (eventId, guestId) {
   const content = await this.findOne({
     event: eventId,
@@ -256,10 +261,8 @@ postEventContentSchema.statics.getForGuest = async function (eventId, guestId) {
 
   if (!content) return null;
 
-  // Track visitor — FLOW-21-F05: cap uniqueVisitors array at 5000; use uniqueVisitorCount for true count
   const UNIQUE_VISITOR_CAP = 5000;
   await this.updateOne({ _id: content._id }, { $inc: { "stats.totalViews": 1 } });
-  // Only push to array if under cap and not already present
   await this.updateOne(
     {
       _id: content._id,
@@ -272,18 +275,16 @@ postEventContentSchema.statics.getForGuest = async function (eventId, guestId) {
     }
   );
 
-  // Add guest-specific data (whether they liked each post)
-  if (content.posts) {
-    content.posts = content.posts
-      .filter((p) => p.isPublished)
-      .map((post) => ({
-        ...post,
-        likesCount: post.likes?.length || 0,
-        commentsCount: post.comments?.filter((c) => !c.isHidden).length || 0,
-        userLiked: post.likes?.some(
+  if (content.media) {
+    content.media = content.media
+      .filter((m) => m.isPublished)
+      .map((item) => ({
+        ...item,
+        likesCount: item.likes?.length || 0,
+        commentsCount: item.comments?.filter((c) => !c.isHidden).length || 0,
+        userLiked: item.likes?.some(
           (l) => l.guest?.toString() === guestId?.toString()
         ),
-        // Remove full likes/comments array for privacy
         likes: undefined,
         comments: undefined,
       }));
@@ -292,55 +293,64 @@ postEventContentSchema.statics.getForGuest = async function (eventId, guestId) {
   return content;
 };
 
-// Instance method to add a post
-postEventContentSchema.methods.addPost = async function (postData) {
-  const maxOrder = this.posts.reduce((max, p) => Math.max(max, p.order || 0), -1);
-  this.posts.push({
-    ...postData,
+// Add a media item (photo or video).
+postEventContentSchema.methods.addMedia = async function (mediaData) {
+  const maxOrder = this.media.reduce((max, m) => Math.max(max, m.order || 0), -1);
+  this.media.push({
+    ...mediaData,
     order: maxOrder + 1,
   });
-  return this.save();
+  await this.save();
+  return this.media[this.media.length - 1];
 };
 
-// Instance method to toggle like
-postEventContentSchema.methods.toggleLike = async function (postId, guestId) {
-  const post = this.posts.id(postId);
-  if (!post) {
-    throw new Error("Post not found");
+// Remove a media item by id. Mongoose 6+ requires `.pull()` on the parent
+// array — `subdoc.remove()` is no longer a function.
+postEventContentSchema.methods.removeMedia = async function (mediaId) {
+  const item = this.media.id(mediaId);
+  if (!item) return false;
+  this.media.pull(mediaId);
+  await this.save();
+  return true;
+};
+
+postEventContentSchema.methods.toggleLike = async function (mediaId, guestId) {
+  const item = this.media.id(mediaId);
+  if (!item) {
+    throw new Error("Media not found");
   }
 
   if (!this.settings.allowLikes) {
     throw new Error("Likes are disabled for this event");
   }
 
-  const existingLikeIndex = post.likes.findIndex(
+  const existingLikeIndex = item.likes.findIndex(
     (l) => l.guest.toString() === guestId.toString()
   );
 
   let liked;
   if (existingLikeIndex > -1) {
-    post.likes.splice(existingLikeIndex, 1);
+    item.likes.splice(existingLikeIndex, 1);
     this.stats.totalLikes = Math.max(0, this.stats.totalLikes - 1);
     liked = false;
   } else {
-    post.likes.push({ guest: guestId });
+    item.likes.push({ guest: guestId });
     this.stats.totalLikes += 1;
     liked = true;
   }
 
   await this.save();
-  return { liked, likesCount: post.likes.length };
+  return { liked, likesCount: item.likes.length };
 };
 
-// Instance method to add comment
 postEventContentSchema.methods.addComment = async function (
-  postId,
+  mediaId,
   guestId,
   commentData
 ) {
-  const post = this.posts.id(postId);
-  if (!post) {
-    throw new Error("Post not found");
+  const item = this.media.id(mediaId);
+  if (!item) {
+    throw new Error("Media not found");
   }
 
   if (!this.settings.allowComments) {
@@ -352,14 +362,13 @@ postEventContentSchema.methods.addComment = async function (
     ...commentData,
   };
 
-  post.comments.push(comment);
+  item.comments.push(comment);
   this.stats.totalComments += 1;
 
   await this.save();
-  return post.comments[post.comments.length - 1];
+  return item.comments[item.comments.length - 1];
 };
 
-// Instance method to publish content
 postEventContentSchema.methods.publish = async function () {
   this.settings.isPublished = true;
   this.settings.publishedAt = new Date();

@@ -7,43 +7,28 @@ import PostEventContent from "./_components/PostEventContent/PostEventContent";
 import {
   useValidatePostEventToken,
   usePostEventContent,
-} from "@/hooks/reactQueryHooks/usePostEvent";
-import { guestTokenUtils } from "@/services/postEvent";
+} from "@/hooks/reactQueryHooks/post-event/useGuestPostEvent";
+import { guestTokenUtils } from "@/services/guestTokenUtils";
 import styles from "./page.module.css";
 
-// H-16: render distinct messages per structured `qr_*` reason returned by
-// GuestAccessToken.validateToken. Reasons:
-//   - qr_rotated  → guest scanned a rotated link; ask them to use the newest message
-//   - qr_revoked  → host revoked their access; ask them to contact host
-//   - qr_expired  → access window ended; explain politely
-//   - qr_invalid  → unknown token (typo / phishing) → generic invalid
+// Render distinct messages per structured `qr_*` reason returned by
+// GuestAccessToken.validateToken (qr_rotated / qr_revoked / qr_expired /
+// qr_invalid). 410 vs 403 — rotated/revoked/expired share Gone semantics.
 const useReasonToMessage = (t) =>
   useMemo(
-    () =>
-      (reason, fallback) => {
-        switch (reason) {
-          case "qr_rotated":
-            return t(
-              "errors.qrRotated",
-              "هذا الرابط لم يعد فعّالاً لأن المضيف أصدر رابطاً جديداً. يرجى استخدام أحدث رسالة وصلت إليك."
-            );
-          case "qr_revoked":
-            return t(
-              "errors.qrRevoked",
-              "تم إلغاء صلاحيتك للوصول إلى محتوى المناسبة. يرجى التواصل مع المضيف."
-            );
-          case "qr_expired":
-            return t(
-              "errors.qrExpired",
-              "انتهت فترة صلاحية الرابط. لم يعد محتوى المناسبة متاحاً عبر هذا الرابط."
-            );
-          case "qr_invalid":
-          default:
-            return (
-              fallback || t("errors.invalidToken", "رابط غير صالح أو منتهي الصلاحية.")
-            );
-        }
-      },
+    () => (reason, fallback) => {
+      switch (reason) {
+        case "qr_rotated":
+          return t("errors.qrRotated");
+        case "qr_revoked":
+          return t("errors.qrRevoked");
+        case "qr_expired":
+          return t("errors.qrExpired");
+        case "qr_invalid":
+        default:
+          return fallback || t("errors.qrInvalid");
+      }
+    },
     [t]
   );
 
@@ -54,56 +39,46 @@ const PostEventPage = () => {
 
   const token = searchParams.get("token");
 
-  // ------------------------------------------------------------------
-  // Session fallback: if no token in URL, check cookie-based session
-  // ------------------------------------------------------------------
+  // Session fallback: no `?token=` in URL → resume from cookie + sessionStorage.
   const sessionEventId = !token ? guestTokenUtils.getEventId() : null;
-  const hasSession = !token && !!guestTokenUtils.getToken() && !!sessionEventId;
+  const hasSession =
+    !token && !!guestTokenUtils.getToken() && !!sessionEventId;
 
-  // ------------------------------------------------------------------
-  // React Query: validate token (only when token is present in URL)
-  // ------------------------------------------------------------------
   const {
     data: validateData,
     isLoading: isValidating,
     error: validateError,
   } = useValidatePostEventToken(token);
 
-  // ------------------------------------------------------------------
-  // Derive authenticated state and event ID from query result
-  // ------------------------------------------------------------------
-  const isAuthenticated = hasSession || (validateData?.valid === true);
+  const validatePayload = validateData?.data ?? validateData;
+  const isAuthenticated = hasSession || validatePayload?.valid === true;
   const eventId =
-    (validateData?.event?._id) ||
-    (hasSession ? sessionEventId : null);
-  const guestInfo = validateData?.guest || null;
-  const eventInfo = validateData?.event || null;
+    validatePayload?.event?._id || (hasSession ? sessionEventId : null);
+  const guestInfo = validatePayload?.guest || null;
+  const eventInfo = validatePayload?.event || null;
+  const guestId = guestInfo?._id || null;
 
-  // ------------------------------------------------------------------
-  // React Query: fetch post-event content once authenticated
-  // ------------------------------------------------------------------
-  const {
-    data: content,
-    isLoading: isContentLoading,
-  } = usePostEventContent(eventId, { enabled: isAuthenticated && !!eventId });
+  const { data: contentResponse, isLoading: isContentLoading } =
+    usePostEventContent(eventId, {
+      enabled: isAuthenticated && !!eventId,
+    });
+  const content = contentResponse?.data ?? contentResponse;
 
-  // ------------------------------------------------------------------
-  // Derive auth error message
-  // ------------------------------------------------------------------
   const authError = useMemo(() => {
     if (isValidating) return null;
 
-    // No token and no valid session
     if (!token && !hasSession) {
-      return t("errors.noToken", "يرجى استخدام الرابط المرسل إليك.");
+      return t("errors.noToken");
     }
 
-    // Validation returned valid:false (200 shape, no error thrown)
-    if (!isAuthenticated && validateData && validateData.valid === false) {
-      return reasonToMessage(validateData.reason || "qr_invalid");
+    if (
+      !isAuthenticated &&
+      validatePayload &&
+      validatePayload.valid === false
+    ) {
+      return reasonToMessage(validatePayload.reason || "qr_invalid");
     }
 
-    // Network / HTTP error from the query
     if (validateError) {
       const reason =
         validateError?.response?.data?.reason ||
@@ -113,31 +88,38 @@ const PostEventPage = () => {
       return (
         validateError?.response?.data?.message ||
         validateError.message ||
-        t("errors.validationFailed", "فشل التحقق من الرابط.")
+        t("errors.qrLookup")
       );
     }
 
     return null;
-  }, [isValidating, token, hasSession, isAuthenticated, validateData, validateError, reasonToMessage, t]);
+  }, [
+    isValidating,
+    token,
+    hasSession,
+    isAuthenticated,
+    validateData,
+    validateError,
+    reasonToMessage,
+    t,
+  ]);
 
-  // Loading state
   if (isValidating) {
     return (
       <div className={styles.page}>
         <div className={styles.loadingContainer}>
-          <SimpleLoading message={t("loading", "جاري التحميل...")} />
+          <SimpleLoading message={t("loading")} />
         </div>
       </div>
     );
   }
 
-  // Error state
   if (authError) {
     return (
       <div className={styles.page}>
         <div className={styles.errorContainer}>
           <div className={styles.errorIcon}>⚠️</div>
-          <h2>{t("errors.accessError", "خطأ في الوصول")}</h2>
+          <h2>{t("errors.accessError")}</h2>
           <p>{authError}</p>
         </div>
       </div>
@@ -150,6 +132,7 @@ const PostEventPage = () => {
         content={content}
         eventInfo={eventInfo}
         guestInfo={guestInfo}
+        guestId={guestId}
         eventId={eventId}
         loading={isContentLoading}
       />

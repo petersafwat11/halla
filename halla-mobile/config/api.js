@@ -189,21 +189,27 @@ export const ENDPOINTS = {
   // Post-Event endpoints (guest access + host management)
   POST_EVENT: {
     VALIDATE_TOKEN: "/post-event/validate",
-    // Guest routes (require sessionToken from validate)
+    // Guest routes
     CONTENT: (eventId) => `/post-event/${eventId}/content`,
-    TOGGLE_LIKE: (eventId, postId) => `/post-event/${eventId}/posts/${postId}/like`,
-    ADD_COMMENT: (eventId, postId) => `/post-event/${eventId}/posts/${postId}/comments`,
-    GET_COMMENTS: (eventId, postId) => `/post-event/${eventId}/posts/${postId}/comments`,
-    // Host routes (require auth token)
+    TOGGLE_LIKE: (eventId, postId) =>
+      `/post-event/${eventId}/posts/${postId}/like`,
+    ADD_COMMENT: (eventId, postId) =>
+      `/post-event/${eventId}/posts/${postId}/comments`,
+    GET_COMMENTS: (eventId, postId) =>
+      `/post-event/${eventId}/posts/${postId}/comments`,
+    // Host routes
     HOST_CONTENT: (eventId) => `/post-event/${eventId}`,
-    UPLOAD_PHOTOS: (eventId) => `/post-event/${eventId}/photos`,
-    UPLOAD_VIDEO: (eventId) => `/post-event/${eventId}/videos`,
+    UPLOAD_MEDIA: (eventId) => `/post-event/${eventId}/media`,
+    DELETE_MEDIA: (eventId, mediaId) =>
+      `/post-event/${eventId}/media/${mediaId}`,
     UPDATE_THANK_YOU: (eventId) => `/post-event/${eventId}/thank-you`,
-    DELETE_PHOTO: (eventId, photoId) => `/post-event/${eventId}/photos/${photoId}`,
-    DELETE_VIDEO: (eventId, videoId) => `/post-event/${eventId}/videos/${videoId}`,
+    UPDATE_MESSAGING_TEMPLATE: (eventId) =>
+      `/post-event/${eventId}/messaging`,
     PUBLISH: (eventId) => `/post-event/${eventId}/publish`,
+    UNPUBLISH: (eventId) => `/post-event/${eventId}/unpublish`,
     GENERATE_TOKENS: (eventId) => `/post-event/${eventId}/generate-tokens`,
-    SEND_EMAILS: (eventId) => `/post-event/${eventId}/send-emails`,
+    SEND_ACCESS_LINKS: (eventId) =>
+      `/post-event/${eventId}/send-access-links`,
   },
 
   // Messaging endpoints

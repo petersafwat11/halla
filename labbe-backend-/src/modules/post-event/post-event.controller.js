@@ -1,6 +1,6 @@
 /**
  * Post-Event Content Controller
- * HTTP request handling for post-event content
+ * HTTP request handling for post-event content.
  * @module modules/post-event/post-event.controller
  */
 
@@ -12,8 +12,20 @@ const {
 const postEventService = require("./post-event.service");
 
 /**
- * Get post-event content
- * GET /api/v2/post-event/:eventId
+ * Validate guest access token.
+ * GET /api/v2/post-event/validate?token=xxx
+ *
+ * Returns 410 Gone for rotated / revoked / expired tokens. The structured
+ * `reason` field in `err.body` is bubbled into the response by
+ * `globalErrorHandler` so the frontend can render the right message.
+ */
+exports.validateToken = catchAsync(async (req, res) => {
+  const result = await postEventService.validateGuestToken(req.query.token);
+  sendSuccess(res, result);
+});
+
+/**
+ * Get post-event content (guest or host view; the route layer scopes which).
  */
 exports.getContent = catchAsync(async (req, res) => {
   const result = await postEventService.getPostEventContent(
@@ -23,34 +35,42 @@ exports.getContent = catchAsync(async (req, res) => {
   sendSuccess(res, result);
 });
 
+exports.getHostContent = catchAsync(async (req, res) => {
+  const result = await postEventService.getPostEventContent(
+    req.params.eventId,
+    req.user._id
+  );
+  sendSuccess(res, result);
+});
+
 /**
- * Upload photos
- * POST /api/v2/post-event/:eventId/photos
+ * Upload one or more media files (photos and/or videos) — unified endpoint.
+ * POST /api/v2/post-event/:eventId/media
  */
-exports.uploadPhotos = catchAsync(async (req, res) => {
-  const result = await postEventService.uploadPhotos(
+exports.uploadMedia = catchAsync(async (req, res) => {
+  const result = await postEventService.uploadMedia(
     req.params.eventId,
     req.files,
     req.user._id
   );
-  sendSuccess(res, result, "Photos uploaded successfully");
+  sendSuccess(res, result, "Media uploaded successfully");
 });
 
 /**
- * Upload video
- * POST /api/v2/post-event/:eventId/videos
+ * Delete a media item by id (works for photos and videos).
+ * DELETE /api/v2/post-event/:eventId/media/:mediaId
  */
-exports.uploadVideo = catchAsync(async (req, res) => {
-  const result = await postEventService.uploadVideo(
+exports.deleteMedia = catchAsync(async (req, res) => {
+  await postEventService.deleteMedia(
     req.params.eventId,
-    req.file,
+    req.params.mediaId,
     req.user._id
   );
-  sendSuccess(res, result, "Video uploaded successfully");
+  sendDeleted(res, "Media deleted");
 });
 
 /**
- * Update thank you message
+ * Update thank you message.
  * PATCH /api/v2/post-event/:eventId/thank-you
  */
 exports.updateThankYouMessage = catchAsync(async (req, res) => {
@@ -63,33 +83,21 @@ exports.updateThankYouMessage = catchAsync(async (req, res) => {
 });
 
 /**
- * Delete photo
- * DELETE /api/v2/post-event/:eventId/photos/:photoId
+ * Save the host's chosen Taqnyat WhatsApp template for access-link
+ * dispatch (StepFour pattern).
+ * PATCH /api/v2/post-event/:eventId/messaging
  */
-exports.deletePhoto = catchAsync(async (req, res) => {
-  await postEventService.deletePhoto(
+exports.updateMessagingTemplate = catchAsync(async (req, res) => {
+  const result = await postEventService.updateMessagingTemplate(
     req.params.eventId,
-    req.params.photoId,
+    req.body,
     req.user._id
   );
-  sendDeleted(res, "Photo deleted");
+  sendSuccess(res, result, "Messaging template updated");
 });
 
 /**
- * Delete video
- * DELETE /api/v2/post-event/:eventId/videos/:videoId
- */
-exports.deleteVideo = catchAsync(async (req, res) => {
-  await postEventService.deleteVideo(
-    req.params.eventId,
-    req.params.videoId,
-    req.user._id
-  );
-  sendDeleted(res, "Video deleted");
-});
-
-/**
- * Publish content
+ * Publish post-event content to guests.
  * POST /api/v2/post-event/:eventId/publish
  */
 exports.publishContent = catchAsync(async (req, res) => {
@@ -101,7 +109,7 @@ exports.publishContent = catchAsync(async (req, res) => {
 });
 
 /**
- * Unpublish post-event content (revoke access)
+ * Unpublish (revoke) post-event content.
  * PATCH /api/v2/post-event/:eventId/unpublish
  */
 exports.unpublishContent = catchAsync(async (req, res) => {
@@ -113,52 +121,7 @@ exports.unpublishContent = catchAsync(async (req, res) => {
 });
 
 /**
- * Get published content for guest (legacy route)
- * GET /api/v2/post-event/:eventId/guest/:guestCode
- */
-exports.getGuestContent = catchAsync(async (req, res) => {
-  const result = await postEventService.getPublishedContentForGuest(
-    req.params.eventId,
-    req.params.guestCode
-  );
-  sendSuccess(res, result);
-});
-
-/**
- * Validate guest access token (Phase 3e.3 / 3e.4).
- * GET /api/v2/post-event/validate?token=xxx
- *
- * Returns 410 Gone for rotated / revoked / expired tokens, with the
- * structured `reason` in the body so the frontend can render the right
- * message ("هذا الرمز انتهت صلاحيته" vs "تم إلغاء هذا الرمز" vs ...).
- */
-exports.validateToken = catchAsync(async (req, res) => {
-  const { token } = req.query;
-  try {
-    const result = await postEventService.validateGuestToken(token);
-    sendSuccess(res, result);
-  } catch (err) {
-    if (err && err.statusCode === 410 && err.body) {
-      return res.status(410).json({ status: 'error', ...err.body });
-    }
-    throw err;
-  }
-});
-
-/**
- * Get host content (management view)
- * GET /api/v2/post-event/:eventId
- */
-exports.getHostContent = catchAsync(async (req, res) => {
-  const result = await postEventService.getPostEventContent(
-    req.params.eventId,
-    req.user._id
-  );
-  sendSuccess(res, result);
-});
-
-/**
- * Toggle like on a post
+ * Toggle like on a media item.
  * POST /api/v2/post-event/:eventId/posts/:postId/like
  */
 exports.toggleLike = catchAsync(async (req, res) => {
@@ -171,7 +134,7 @@ exports.toggleLike = catchAsync(async (req, res) => {
 });
 
 /**
- * Add comment to a post
+ * Add comment to a media item.
  * POST /api/v2/post-event/:eventId/posts/:postId/comments
  */
 exports.addComment = catchAsync(async (req, res) => {
@@ -186,43 +149,41 @@ exports.addComment = catchAsync(async (req, res) => {
 });
 
 /**
- * Get comments for a post
+ * Get comments for a media item (paginated).
  * GET /api/v2/post-event/:eventId/posts/:postId/comments
  */
 exports.getComments = catchAsync(async (req, res) => {
-  const { page, limit } = req.query;
   const result = await postEventService.getComments(
     req.params.eventId,
     req.params.postId,
-    { page: parseInt(page) || 1, limit: parseInt(limit) || 20 }
+    { page: req.query.page, limit: req.query.limit }
   );
   sendSuccess(res, result);
 });
 
 /**
- * Generate bulk access tokens for guests
+ * Generate bulk access tokens for guests.
  * POST /api/v2/post-event/:eventId/generate-tokens
  */
 exports.generateBulkTokens = catchAsync(async (req, res) => {
-  const { guestIds, filter } = req.body;
   const result = await postEventService.generateBulkTokens(
     req.params.eventId,
     req.user._id,
-    { guestIds, filter }
+    req.body
   );
   sendSuccess(res, result, "Tokens generated");
 });
 
 /**
- * Send post-event access links to guests via WhatsApp/SMS (FLOW-21-F04: renamed from sendBulkAccessEmails)
+ * Send post-event access links to guests via Taqnyat WhatsApp template
+ * (with native SMS fallback).
  * POST /api/v2/post-event/:eventId/send-access-links
  */
 exports.sendBulkAccessLinks = catchAsync(async (req, res) => {
-  const { guestIds, filter } = req.body;
   const result = await postEventService.sendBulkAccessLinks(
     req.params.eventId,
     req.user._id,
-    { guestIds, filter }
+    req.body
   );
   sendSuccess(res, result, "Access links sent");
 });

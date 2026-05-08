@@ -1,27 +1,39 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-const ContentSummary = ({ photos, content, t }) => {
-  const videoCount = content?.posts?.filter((p) => p.type === "video")?.length || 0;
-  const commentCount = content?.posts?.reduce((acc, p) => acc + (p.commentsCount || 0), 0) || 0;
+const ContentSummary = ({ media = [], content, t }) => {
+  const photoCount = media.filter((m) => m.type === "photo").length;
+  const videoCount = media.filter((m) => m.type === "video").length;
+  const commentCount = media.reduce(
+    (acc, m) => acc + (m.commentsCount || m.comments?.length || 0),
+    0
+  );
+  const likeCount =
+    content?.stats?.totalLikes ??
+    media.reduce((acc, m) => acc + (m.likesCount || m.likes?.length || 0), 0);
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t("hostPostEvent.summary.title", "ملخص المحتوى")}</Text>
+      <Text style={styles.sectionTitle}>{t("host.summary.title")}</Text>
       <View style={styles.summaryRow}>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryValue}>{photos.length}</Text>
-          <Text style={styles.summaryLabel}>{t("hostPostEvent.summary.photos", "صورة")}</Text>
+          <Text style={styles.summaryValue}>{photoCount}</Text>
+          <Text style={styles.summaryLabel}>{t("host.summary.photos")}</Text>
         </View>
         <View style={styles.summarySep} />
         <View style={styles.summaryItem}>
           <Text style={styles.summaryValue}>{videoCount}</Text>
-          <Text style={styles.summaryLabel}>{t("hostPostEvent.summary.videos", "فيديو")}</Text>
+          <Text style={styles.summaryLabel}>{t("host.summary.videos")}</Text>
         </View>
         <View style={styles.summarySep} />
         <View style={styles.summaryItem}>
           <Text style={styles.summaryValue}>{commentCount}</Text>
-          <Text style={styles.summaryLabel}>{t("hostPostEvent.summary.comments", "تعليق")}</Text>
+          <Text style={styles.summaryLabel}>{t("host.summary.comments")}</Text>
+        </View>
+        <View style={styles.summarySep} />
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryValue}>{likeCount}</Text>
+          <Text style={styles.summaryLabel}>{t("host.summary.likes")}</Text>
         </View>
       </View>
     </View>

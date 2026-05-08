@@ -41,6 +41,82 @@
     "back": "رجوع"
   },
   "postEventFallback": "ما بعد المناسبة",
+  "errors": {
+    "qrInvalid": "هذا الرابط غير صالح.",
+    "qrRotated": "تم استبدال هذا الرابط برابط أحدث.",
+    "qrRevoked": "تم إلغاء هذا الرابط.",
+    "qrExpired": "انتهت صلاحية هذا الرابط.",
+    "qrLookup": "تعذر العثور على دعوتك. يرجى طلب رابط جديد."
+  },
+  "host": {
+    "title": "صفحة ما بعد المناسبة",
+    "publish": "نشر وإرسال للضيوف",
+    "publishSuccess": "تم نشر المحتوى وإرسال الروابط بنجاح",
+    "publishConfirmTitle": "نشر محتوى ما بعد المناسبة",
+    "publishConfirmMessage": "سيتم إرسال روابط الوصول لجميع الضيوف الذين حضروا. هل تريد المتابعة؟",
+    "unpublish": "إلغاء النشر",
+    "unpublishSuccess": "تم إلغاء نشر المحتوى",
+    "unpublishConfirmTitle": "إلغاء نشر محتوى ما بعد المناسبة",
+    "unpublishConfirmMessage": "سيتم إلغاء جميع روابط الوصول الحالية. هل تريد المتابعة؟",
+    "media": {
+      "uploadHint": "اختر ما تريد إضافته",
+      "empty": "اضغط لإضافة محتوى المناسبة",
+      "deleteConfirm": "هل تريد حذف هذا العنصر؟",
+      "deleteTitle": "حذف العنصر",
+      "cancel": "إلغاء",
+      "delete": "حذف",
+      "add": "إضافة محتوى",
+      "uploading": "جاري الرفع...",
+      "pickPhotos": "صور",
+      "pickVideos": "فيديو",
+      "permissionRequired": "إذن مطلوب",
+      "permissionMessage": "يرجى السماح بالوصول إلى المعرض لرفع المحتوى"
+    },
+    "messaging": {
+      "title": "قالب رابط الوصول",
+      "subtitle": "اختر قالب واتساب الذي يصل للضيوف عند النشر.",
+      "empty": "لا توجد قوالب متاحة",
+      "emptyHint": "اطلب من المسؤول تعيين قالب معتمد لفئة ما بعد المناسبة.",
+      "varCount": "{{count}} متغيرات",
+      "preview": "معاينة",
+      "saveSuccess": "تم حفظ القالب",
+      "saveFailed": "تعذر حفظ القالب"
+    },
+    "thankYouMessage": {
+      "title": "رسالة الشكر",
+      "placeholder": "اكتب رسالة شكر للضيوف...",
+      "save": "حفظ الرسالة",
+      "saveSuccess": "تم حفظ الرسالة"
+    },
+    "accessLinks": {
+      "title": "إرسال روابط الوصول",
+      "templatePicker": "تجاوز القالب (اختياري)",
+      "filterLabel": "إرسال إلى",
+      "filterAttended": "الحاضرون",
+      "filterConfirmed": "المؤكدون",
+      "filterAll": "كل الضيوف",
+      "send": "إرسال",
+      "success": "تم إرسال {{count}} رابط وصول",
+      "channelBreakdown": "واتساب: {{whatsapp}} · SMS: {{sms}} · فشل: {{failed}}",
+      "noTemplateConfigured": "لم يتم اختيار قالب — اختر واحداً قبل الإرسال.",
+      "noTemplateCta": "اختر قالباً"
+    },
+    "summary": {
+      "title": "ملخص المحتوى",
+      "photos": "صورة",
+      "videos": "فيديو",
+      "comments": "تعليق",
+      "likes": "إعجاب",
+      "linksSent": "روابط مرسلة"
+    },
+    "errors": {
+      "uploadFailed": "فشل رفع المحتوى",
+      "deleteFailed": "فشل حذف العنصر",
+      "publishFailed": "فشل النشر",
+      "saveFailed": "فشل الحفظ",
+      "sendFailed": "فشل إرسال روابط الوصول"
+    }
+  },
   "hostPostEvent": {
     "title": "صفحة ما بعد المناسبة",
     "status": {
@@ -48,51 +124,11 @@
       "draft": "مسودة — لم يتم النشر بعد"
     },
     "photos": {
-      "title": "الصور",
-      "add": "إضافة صور",
-      "uploading": "جاري الرفع...",
-      "empty": "اضغط لإضافة صور المناسبة",
-      "deleteConfirm": "هل تريد حذف هذه الصورة؟",
-      "deleteTitle": "حذف الصورة",
-      "cancel": "إلغاء",
-      "delete": "حذف",
-      "permissionRequired": "إذن مطلوب",
-      "permissionMessage": "يرجى السماح بالوصول إلى المعرض لرفع الصور"
-    },
-    "thankYouMessage": {
-      "title": "رسالة الشكر",
-      "placeholder": "اكتب رسالة شكر للضيوف...",
-      "save": "حفظ الرسالة",
-      "saving": "جاري الحفظ...",
-      "saved": "تم الحفظ"
-    },
-    "summary": {
-      "title": "ملخص المحتوى",
-      "photos": "صورة",
-      "videos": "فيديو",
-      "comments": "تعليق"
-    },
-    "actions": {
-      "publish": "نشر وإرسال للضيوف",
-      "publishing": "جاري النشر...",
-      "resend": "إعادة إرسال الروابط",
-      "resending": "جاري الإرسال...",
-      "publishConfirm": "سيتم إرسال روابط الوصول لجميع الضيوف الذين حضروا المناسبة. هل تريد المتابعة؟",
-      "resendConfirm": "سيتم إعادة إرسال روابط الوصول للضيوف. هل تريد المتابعة؟",
-      "publishSuccess": "تم نشر المحتوى وإرسال الروابط للضيوف بنجاح",
-      "resendSuccess": "تم إرسال الروابط لـ {{count}} ضيف",
-      "cancel": "إلغاء",
-      "publishAction": "نشر",
-      "resendAction": "إرسال"
+      "title": "المحتوى"
     },
     "errors": {
       "loadFailed": "خطأ في تحميل البيانات",
-      "retry": "إعادة المحاولة",
-      "uploadFailed": "فشل رفع الصور",
-      "deleteFailed": "فشل حذف الصورة",
-      "saveFailed": "فشل حفظ الرسالة",
-      "publishFailed": "فشل النشر",
-      "resendFailed": "فشل إعادة الإرسال"
+      "retry": "إعادة المحاولة"
     }
   }
 }

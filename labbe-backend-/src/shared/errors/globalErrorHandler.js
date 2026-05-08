@@ -105,6 +105,7 @@ const sendErrorProd = (err, res) => {
     if (err.errors) response.errors = err.errors;
     if (err.field) response.field = err.field;
     if (err.feature) response.feature = err.feature;
+    if (err.body && typeof err.body === 'object') Object.assign(response, err.body);
 
     res.status(err.statusCode).json(response);
   } else {

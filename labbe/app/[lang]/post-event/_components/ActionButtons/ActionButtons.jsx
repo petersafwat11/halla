@@ -1,49 +1,53 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { usePostEventMutation } from "@/hooks/reactQueryHooks/usePostEvent";
+import { useTogglePostEventLike } from "@/hooks/reactQueryHooks/post-event/useGuestPostEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./actionButtons.module.css";
 
-const ActionButtons = ({ eventId, postId }) => {
+const ActionButtons = ({ eventId, postId, post, guestId }) => {
   const { t } = useTranslation("postEvent");
-  const [isLiked, setIsLiked] = useState(false);
+  const toggleLike = useTogglePostEventLike();
 
-  const likeMutation = usePostEventMutation("likeContent");
-  const unlikeMutation = usePostEventMutation("unlikeContent");
+  // Source-of-truth: derive from server data when available, else fall back
+  // to a transient optimistic flag updated by onMutate / onError.
+  const serverIsLiked = useMemo(() => {
+    const likes = post?.likes;
+    if (!Array.isArray(likes) || !guestId) return null;
+    return likes.some((l) => {
+      const id = typeof l === "object" ? l.guest || l._id : l;
+      return id && String(id) === String(guestId);
+    });
+  }, [post?.likes, guestId]);
+
+  const [optimisticIsLiked, setOptimisticIsLiked] = useState(null);
+  const isLiked = optimisticIsLiked ?? serverIsLiked ?? false;
+
+  const disabled = !eventId || !postId || toggleLike.isPending;
 
   const handleLike = useCallback(() => {
-    if (!eventId || !postId) {
-      setIsLiked((prev) => !prev);
-      return;
-    }
-
-    if (isLiked) {
-      unlikeMutation.mutate(
-        { eventId, contentId: postId },
-        {
-          onSuccess: () => setIsLiked(false),
-          onError: (error) => handleError(error, t),
-        }
-      );
-    } else {
-      likeMutation.mutate(
-        { eventId, contentId: postId },
-        {
-          onSuccess: () => setIsLiked(true),
-          onError: (error) => handleError(error, t),
-        }
-      );
-    }
-  }, [eventId, postId, isLiked, likeMutation, unlikeMutation, t]);
+    if (disabled) return;
+    const next = !isLiked;
+    setOptimisticIsLiked(next);
+    toggleLike.mutate(
+      { eventId, postId },
+      {
+        onSuccess: () => setOptimisticIsLiked(null),
+        onError: (error) => {
+          setOptimisticIsLiked(!next);
+          handleError(error, t);
+        },
+      }
+    );
+  }, [disabled, isLiked, eventId, postId, toggleLike, t]);
 
   return (
     <div className={styles.actionButtonsContainer}>
       <button
         className={`${styles.iconButton} ${isLiked ? styles.liked : ""}`}
         onClick={handleLike}
-        aria-label={t("aria.like", "Like")}
-        disabled={likeMutation.isPending || unlikeMutation.isPending}
+        aria-label={t("aria.like")}
+        disabled={disabled}
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -57,7 +61,7 @@ const ActionButtons = ({ eventId, postId }) => {
         </svg>
       </button>
 
-      <button className={styles.iconButton} aria-label={t("aria.comment", "Comment")}>
+      <button className={styles.iconButton} aria-label={t("aria.comment")}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"

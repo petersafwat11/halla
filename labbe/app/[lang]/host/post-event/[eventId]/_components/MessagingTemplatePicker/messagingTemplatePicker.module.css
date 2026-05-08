@@ -1,0 +1,194 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.headerRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.templateList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.templateCard {
+  text-align: start;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.templateCard:hover {
+  border-color: #6366f1;
+}
+
+.templateCardSelected {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.cardTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.templateName {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.radioRing {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radioRingSelected {
+  border-color: #4f46e5;
+}
+
+.radioDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4f46e5;
+}
+
+.bubbleWrap {
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.bubbleText {
+  font-size: 13px;
+  color: #374151;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.varCount {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.skeletonList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.skeletonCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 320ms ease both;
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeletonPulse {
+  background: linear-gradient(90deg, #eee 0%, #f6f6f6 50%, #eee 100%);
+  background-size: 200% 100%;
+  animation: pulse 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.skeletonRadio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+.skeletonTitle {
+  height: 14px;
+  flex: 1;
+}
+
+.skeletonBody {
+  height: 36px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 24px;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.emptyIcon {
+  font-size: 28px;
+}
+
+.emptyTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.emptyHint {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.emptyCta {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+@keyframes pulse {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: -200% 50%;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}

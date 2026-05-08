@@ -135,6 +135,72 @@ function getEventImageUrl(event) {
   return null;
 }
 
+/**
+ * Build body params for a post-event Taqnyat template variable.
+ *
+ * Mirrors `getEventBodyParams` but adds an `access` context branch so
+ * templates can reference `{{access.link}}` and `{{access.expiresAt}}` in
+ * their varMapping. Falls back to a sensible 3-param shape when the
+ * template has no varMapping.
+ */
+function getPostEventBodyParams(event, guestName, taqnyatTemplate, accessCtx = {}) {
+  const fallback = () => [
+    guestName || 'ضيفنا الكريم',
+    event.eventDetails?.title || 'مناسبة',
+    accessCtx.link || '',
+  ];
+
+  if (
+    !taqnyatTemplate
+    || !Array.isArray(taqnyatTemplate.varMapping)
+    || taqnyatTemplate.varMapping.length === 0
+  ) {
+    return fallback();
+  }
+
+  const ctx = {
+    guest: { name: guestName || 'ضيفنا الكريم' },
+    eventDetails: {
+      ...(event.eventDetails || {}),
+      dateFormatted: formatDate(event.eventDetails?.date),
+    },
+    host:
+      event.host && typeof event.host === 'object'
+        ? { name: event.host.name || event.host.username || '' }
+        : {},
+    access: {
+      link: accessCtx.link || '',
+      expiresAt: accessCtx.expiresAt || '',
+    },
+  };
+
+  const ordered = [...taqnyatTemplate.varMapping].sort((a, b) => {
+    const ai = parseInt(String(a.placeholder).replace(/\D/g, ''), 10) || 0;
+    const bi = parseInt(String(b.placeholder).replace(/\D/g, ''), 10) || 0;
+    return ai - bi;
+  });
+
+  return ordered.map((m) => {
+    const value = m.sourceKey
+      .split('.')
+      .reduce((acc, k) => (acc == null ? acc : acc[k]), ctx);
+    const resolved =
+      value === undefined || value === null || value === '' ? m.fallback : value;
+    return resolved == null ? '' : String(resolved);
+  });
+}
+
+/**
+ * Short SMS-fallback body for post-event access links. Used when the
+ * recipient has no WhatsApp capability and Taqnyat falls back to SMS via
+ * the `payload.sms` field.
+ */
+function buildPostEventAccessLinkSmsBody(event, guestName, accessLink) {
+  const title = event.eventDetails?.title || 'مناسبة';
+  const name = guestName ? `${guestName}، ` : '';
+  return `${name}شكراً لحضورك ${title}.\nشاهد صور ومقاطع المناسبة من هنا:\n${accessLink}`;
+}
+
 module.exports = {
   TAQNYAT_SENDER,
   formatDate,
@@ -142,4 +208,6 @@ module.exports = {
   getEventBodyParams,
   buildSmsBody,
   getEventImageUrl,
+  getPostEventBodyParams,
+  buildPostEventAccessLinkSmsBody,
 };
