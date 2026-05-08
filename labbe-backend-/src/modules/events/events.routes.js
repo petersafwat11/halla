@@ -50,8 +50,6 @@ const {
   updateInvitationSettingsSchema,
   updateLaunchSettingsSchema,
   sendTestMessageSchema,
-  addGuestSchema,
-  updateGuestSchema,
   addStaffSchema,
   updateStaffSchema,
   updateStaffStatusSchema,
@@ -194,36 +192,6 @@ router.get(
  *         $ref: '#/components/responses/Unauthorized'
  */
 router.get("/export/events", eventsController.exportEventsAsExcel);
-
-/**
- * @swagger
- * /events/export/{id}/guests:
- *   get:
- *     summary: Export event guests as Excel
- *     description: Download guest list for a specific event as an Excel spreadsheet
- *     tags: [Events]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - $ref: '#/components/parameters/IdParam'
- *     responses:
- *       200:
- *         description: Excel file downloaded successfully
- *         content:
- *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
- *             schema:
- *               type: string
- *               format: binary
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- */
-router.get(
-  "/export/:id/guests",
-  validateObjectId("id"),
-  eventsController.exportEventGuestsAsExcel
-);
 
 // ============================================
 // CREATE EVENT
@@ -683,107 +651,6 @@ router.post(
   "/bulk-delete",
   validateZod(bulkDeleteSchema),
   eventsController.bulkDeleteEvents
-);
-
-// ============================================
-// GUEST MANAGEMENT
-// ============================================
-
-/**
- * @swagger
- * /events/{eventId}/guests:
- *   post:
- *     summary: Add guest to event
- *     description: Add a new guest to a specific event
- *     tags: [Events]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - $ref: '#/components/parameters/EventIdParam'
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AddGuestRequest'
- *     responses:
- *       201:
- *         description: Guest added successfully
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       403:
- *         description: Guest limit exceeded
- *       404:
- *         $ref: '#/components/responses/NotFound'
- */
-router.post(
-  "/:eventId/guests",
-  validateObjectId("eventId"),
-  requireSubscription,
-  checkGuestLimit(1),
-  validateZod(addGuestSchema),
-  eventsController.addGuestToEvent
-);
-
-/**
- * @swagger
- * /events/{eventId}/guests/{guestId}:
- *   put:
- *     summary: Update event guest
- *     description: Update a specific guest in an event
- *     tags: [Events]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - $ref: '#/components/parameters/EventIdParam'
- *       - $ref: '#/components/parameters/GuestIdParam'
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/UpdateGuestRequest'
- *     responses:
- *       200:
- *         description: Guest updated successfully
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- */
-router.put(
-  "/:eventId/guests/:guestId",
-  validateObjectId("eventId"),
-  validateObjectId("guestId"),
-  validateZod(updateGuestSchema),
-  eventsController.updateEventGuest
-);
-
-/**
- * @swagger
- * /events/{eventId}/guests/{guestId}:
- *   delete:
- *     summary: Delete event guest
- *     description: Remove a specific guest from an event
- *     tags: [Events]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - $ref: '#/components/parameters/EventIdParam'
- *       - $ref: '#/components/parameters/GuestIdParam'
- *     responses:
- *       200:
- *         description: Guest deleted successfully
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- */
-router.delete(
-  "/:eventId/guests/:guestId",
-  validateObjectId("eventId"),
-  validateObjectId("guestId"),
-  eventsController.deleteEventGuest
 );
 
 // ============================================

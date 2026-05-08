@@ -169,6 +169,11 @@
       "status": "الحالة",
       "respondAt": "تاريخ الرد",
       "actions": "الإجراءات"
+    },
+    "channel": {
+      "whatsapp": "واتساب",
+      "sms": "SMS",
+      "smsFallback": "SMS (بديل)"
     }
   },
   "confirmDelete": "هل أنت متأكد من حذف هذه المناسبة؟ لا يمكن التراجع عن هذا الإجراء.",

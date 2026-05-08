@@ -17,37 +17,20 @@ const crypto = require('crypto');
 const guestsController = require('./guests.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { apiLimiter } = require('../../shared/middleware/rateLimiter');
-const { validateObjectId } = require('../../shared/middleware/validation');
+const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
 const { idempotency } = require('../../shared/middleware/idempotency');
+const { requireSubscription, checkGuestLimit } = require('../../shared/middleware/subscription');
+const {
+  addGuestSchema,
+  updateGuestSchema,
+  submitRSVPSchema,
+} = require('./guests.validation');
 
 /**
- * RSVP idempotency-key derivation (Phase 3d.2 / FLOW-19-F02 / decision D2).
- *
- * If the client doesn't send `Idempotency-Key`, derive one server-side
- * from `${eventId}:${guestId}:${rsvpChoice}` (Phase 3de decision D2). The
- * eventId is sourced via the `Guest` doc's `event` field — the route
- * doesn't expose eventId in the URL, so we'd need to look it up before
- * deriving the key. To avoid that DB hit on every RSVP we lean on the
- * fact that `guestId` is globally unique and ties to exactly one event,
- * making `${guestId}:${choice}` functionally equivalent. The
- * invitationCode is added so the same guest with multiple invitations
- * (rare; typically pre-Phase-3 legacy data) doesn't collide.
- *
- *   - A double-tap on the same answer is deduplicated (same key).
- *   - A guest changing answers ('confirmed' → 'declined') is a fresh
- *     request (different key, new write, new host notification).
- *
- * L-11: D2 doc spelled out `${eventId}:${guestId}:${choice}`. The code
- * uses `${guestId}:${choice}:${code}` because:
- *   1. Guest is globally unique → guestId already implies eventId.
- *   2. Adding `eventId` would require a DB lookup before key derivation
- *      (the route only has guestId), which we want to avoid for the
- *      idempotency middleware path.
- *   3. `code` (invitationCode) covers the edge case of one guest
- *      record having multiple invitations across events — extremely
- *      rare but cheap to disambiguate.
- * Both forms are functionally equivalent for collision; the code's
- * choice is the cheaper one. D2 doc to be updated.
+ * Derive an RSVP idempotency key from `${guestId}:${choice}:${code}` so a
+ * double-tap on the same answer is deduped, but `confirmed → declined` is a
+ * fresh request. `guestId` already implies `eventId` (globally unique), so
+ * we avoid the extra DB lookup the URL would otherwise require.
  */
 function deriveRsvpIdempotencyKey(req, _res, next) {
   if (!req.get('idempotency-key')) {
@@ -55,9 +38,6 @@ function deriveRsvpIdempotencyKey(req, _res, next) {
     const choice = req.body?.response || '';
     const code = req.body?.invitationCode || '';
     const seed = `${guestId}:${choice}:${code}`;
-    // 32 hex chars (128 bits) is plenty of collision resistance for an
-    // idempotency key; truncating shortens the IdempotencyKey.key index
-    // entry without weakening dedup. The model accepts up to 256 chars.
     const derived = crypto.createHash('sha256').update(seed).digest('hex').slice(0, 32);
     req.headers['idempotency-key'] = `rsvp_${derived}`;
   }
@@ -112,7 +92,13 @@ router.get('/invitation/:code', apiLimiter, guestsController.getByInvitationCode
  *     tags: [Guests]
  *     security: []
  *     parameters:
- *       - $ref: '#/components/parameters/IdParam'
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[0-9a-fA-F]{24}$'
+ *         description: Guest ID (24-char hex ObjectId)
  *     requestBody:
  *       required: true
  *       content:
@@ -123,15 +109,19 @@ router.get('/invitation/:code', apiLimiter, guestsController.getByInvitationCode
  *             properties:
  *               response:
  *                 type: string
- *                 enum: [confirmed, declined]
+ *                 enum: [confirmed, declined, maybe]
  *               invitationCode:
  *                 type: string
  *               message:
  *                 type: string
+ *                 maxLength: 500
  *               dietaryRestrictions:
  *                 type: string
+ *                 maxLength: 200
  *               plusOnes:
  *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 10
  *     responses:
  *       200:
  *         description: RSVP submitted successfully
@@ -139,10 +129,16 @@ router.get('/invitation/:code', apiLimiter, guestsController.getByInvitationCode
  *         $ref: '#/components/responses/BadRequest'
  *       404:
  *         $ref: '#/components/responses/NotFound'
+ *       409:
+ *         description: Idempotency replay — request body differs from the original idempotent request for the same key
+ *       410:
+ *         description: Idempotency replay — original request is no longer cached or the event no longer accepts RSVPs
  */
 router.post(
   '/:id/rsvp',
   apiLimiter,
+  validateObjectId('id'),
+  validateZod(submitRSVPSchema),
   deriveRsvpIdempotencyKey,
   idempotency({ scope: 'guests.rsvp' }),
   guestsController.submitRSVP
@@ -189,14 +185,11 @@ router.use(protect);
  *                 status:
  *                   type: string
  *                 data:
- *                   type: object
- *                   properties:
- *                     guests:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Guest'
- *                     pagination:
- *                       $ref: '#/components/schemas/Pagination'
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Guest'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
@@ -240,8 +233,17 @@ router.get('/events/:eventId', validateObjectId('eventId'), guestsController.get
  *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Guest limit exceeded
  */
-router.post('/events/:eventId', validateObjectId('eventId'), guestsController.addGuest);
+router.post(
+  '/events/:eventId',
+  validateObjectId('eventId'),
+  requireSubscription,
+  checkGuestLimit(1),
+  validateZod(addGuestSchema),
+  guestsController.addGuest
+);
 
 /**
  * @swagger
@@ -286,7 +288,7 @@ router.get('/events/:eventId/export', validateObjectId('eventId'), guestsControl
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/AddGuestRequest'
+ *             $ref: '#/components/schemas/UpdateGuestRequest'
  *     responses:
  *       200:
  *         description: Guest updated successfully
@@ -295,7 +297,13 @@ router.get('/events/:eventId/export', validateObjectId('eventId'), guestsControl
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.patch('/events/:eventId/guests/:guestId', validateObjectId('eventId'), validateObjectId('guestId'), guestsController.updateGuest);
+router.patch(
+  '/events/:eventId/guests/:guestId',
+  validateObjectId('eventId'),
+  validateObjectId('guestId'),
+  validateZod(updateGuestSchema),
+  guestsController.updateGuest
+);
 
 /**
  * @swagger
@@ -320,12 +328,30 @@ router.patch('/events/:eventId/guests/:guestId', validateObjectId('eventId'), va
 router.delete('/events/:eventId/guests/:guestId', validateObjectId('eventId'), validateObjectId('guestId'), guestsController.deleteGuest);
 
 /**
- * Phase 3e.3 — Rotate guest QR (FLOW-18-F03).
- *
- * Marks the active post_event GuestAccessToken `isRevoked: true` with
- * `revokedReason: 'rotation'` and issues a fresh token. RBAC: host or
- * whitelabel-admin (admin / super_admin via the routes-level
- * `restrictTo` already in place).
+ * @swagger
+ * /guests/events/{eventId}/guests/{guestId}/rotate-qr:
+ *   post:
+ *     summary: Rotate guest QR code
+ *     description: Revoke the active post-event guest access token and issue a fresh one. Best-effort delivery to the guest's phone via SMS.
+ *     tags: [Guests]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/EventIdParam'
+ *       - $ref: '#/components/parameters/GuestIdParam'
+ *     responses:
+ *       200:
+ *         description: QR rotated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/GuestRotateQrResponse'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.post(
   '/events/:eventId/guests/:guestId/rotate-qr',
@@ -336,10 +362,30 @@ router.post(
 );
 
 /**
- * Phase 3e.4 — Manual revoke (FLOW-21-F03).
- *
- * Distinct from rotation. Marks the active token revoked with
- * `revokedReason: 'manual'`; subsequent scans → 410 Gone, `qr_revoked`.
+ * @swagger
+ * /guests/events/{eventId}/guests/{guestId}/revoke-access:
+ *   post:
+ *     summary: Revoke guest access token
+ *     description: Manually revoke the active post-event guest access token. Subsequent scans return 410 Gone.
+ *     tags: [Guests]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/EventIdParam'
+ *       - $ref: '#/components/parameters/GuestIdParam'
+ *     responses:
+ *       200:
+ *         description: Access revoked (idempotent — succeeds with `wasAlreadyRevoked: true` when no active token exists)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/GuestRevokeAccessResponse'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.post(
   '/events/:eventId/guests/:guestId/revoke-access',

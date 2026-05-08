@@ -6,6 +6,11 @@
  *   `import service from '../services/eventsService2'`
  * — the named re-exports preserve the first form, and the default
  * object preserves the second.
+ *
+ * Per-guest CRUD (`addGuest`, `updateGuest`, `deleteGuest`,
+ * `rotateGuestQr`, `revokeGuestAccess`, `exportEventGuests`) lives in
+ * `services/guestsService.js` and hits the canonical `/guests/...`
+ * mount. Only the bulk `updateGuestList` (events-module) re-exports here.
  */
 
 import {
@@ -22,15 +27,7 @@ import {
   calculateResponseRate,
   groupGuestsByStatus,
 } from "./eventsService.crud";
-import {
-  updateGuestList,
-  addGuest,
-  updateGuestStatus,
-  deleteGuest,
-  updateGuest,
-  rotateGuestQr,
-  revokeGuestAccess,
-} from "./eventsService.guests";
+import { updateGuestList } from "./eventsService.guests";
 import {
   updateStaffList,
   addStaff,
@@ -46,10 +43,7 @@ import {
   sendTestMessage,
   updateEventDetails,
 } from "./eventsService.settings";
-import {
-  exportEvents,
-  exportEventGuests,
-} from "./eventsService.exports";
+import { exportEvents } from "./eventsService.exports";
 
 export {
   getUserEventsWithStats,
@@ -65,12 +59,6 @@ export {
   calculateResponseRate,
   groupGuestsByStatus,
   updateGuestList,
-  addGuest,
-  updateGuestStatus,
-  deleteGuest,
-  updateGuest,
-  rotateGuestQr,
-  revokeGuestAccess,
   updateStaffList,
   addStaff,
   updateStaff,
@@ -83,7 +71,6 @@ export {
   sendTestMessage,
   updateEventDetails,
   exportEvents,
-  exportEventGuests,
 };
 
 export default {
@@ -100,12 +87,6 @@ export default {
   calculateResponseRate,
   groupGuestsByStatus,
   updateGuestList,
-  addGuest,
-  updateGuestStatus,
-  deleteGuest,
-  updateGuest,
-  rotateGuestQr,
-  revokeGuestAccess,
   updateStaffList,
   addStaff,
   updateStaff,
@@ -118,5 +99,4 @@ export default {
   sendTestMessage,
   updateEventDetails,
   exportEvents,
-  exportEventGuests,
 };

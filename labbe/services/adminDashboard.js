@@ -689,48 +689,6 @@ export const eventsAPI = {
     );
   },
 
-  /**
-   * Delete event guest (admin)
-   */
-  deleteGuest: async (eventId, guestId, token = null) => {
-    if (!eventId) throw new Error("Event ID is required");
-    if (!guestId) throw new Error("Guest ID is required");
-    return apiClient.delete(`/events/${eventId}/guests/${guestId}`, { token });
-  },
-
-  /**
-   * Update event guest (admin)
-   */
-  updateGuest: async (eventId, guestId, guestData, token = null) => {
-    if (!eventId) throw new Error("Event ID is required");
-    if (!guestId) throw new Error("Guest ID is required");
-    return apiClient.put(`/events/${eventId}/guests/${guestId}`, guestData, {
-      token,
-    });
-  },
-
-  /**
-   * Export event guests (admin)
-   */
-  exportGuests: async (eventId, token = null) => {
-    if (!eventId) throw new Error("Event ID is required");
-    const blob = await apiClient.get(`/events/export/${eventId}/guests`, {
-      token,
-    });
-
-    // Create a download link
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `event-${eventId}-guests.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-
-    return { success: true, message: "Guests exported successfully" };
-  },
-
   export: async (filters = {}, token = null) => {
     const qs = apiClient.buildQueryString(filters);
     const blob = await apiClient.get(`/admin/events/export${qs}`, { token });

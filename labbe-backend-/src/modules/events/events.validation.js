@@ -103,18 +103,6 @@ const sendTestMessageSchema = z.object({
   { path: ['phoneNumber'], message: 'phoneNumber is required' }
 );
 
-const addGuestSchema = guestEntry;
-
-const updateGuestSchema = z.object({
-  name: z.string().trim().min(1).max(120).optional(),
-  phone: saudiPhone.optional(),
-  email: z.string().email().optional().or(z.literal('')),
-  status: z.enum(Object.values(GUEST_STATUS)).optional(),
-}).refine(
-  (v) => Object.keys(v).length > 0,
-  { message: 'At least one field is required' }
-);
-
 const addStaffSchema = staffEntry;
 
 const updateStaffSchema = z.object({
@@ -151,8 +139,6 @@ module.exports = {
   updateInvitationSettingsSchema,
   updateLaunchSettingsSchema,
   sendTestMessageSchema,
-  addGuestSchema,
-  updateGuestSchema,
   addStaffSchema,
   updateStaffSchema,
   updateStaffStatusSchema,

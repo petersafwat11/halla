@@ -31,34 +31,3 @@ export const exportEvents = async (_legacyToken) => {
     filename: "events-export.xlsx",
   };
 };
-
-/**
- * Export event guests to Excel
- * Note: Returns blob URL for download on mobile
- * @param {string} eventId - Event ID
- * @param {string} _legacyToken - ignored; apiFetch reads from auth store
- * @returns {Promise<Object>}
- */
-export const exportEventGuests = async (eventId, _legacyToken) => {
-  if (!eventId) {
-    throw new Error("Event ID is required");
-  }
-
-  const response = await apiFetch(ENDPOINTS.EVENTS.EXPORT_GUESTS(eventId), {
-    method: "GET",
-    timeoutMs: 60 * 1000,
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to export guests");
-  }
-
-  const blob = await response.blob();
-
-  return {
-    success: true,
-    blob,
-    filename: `event-${eventId}-guests.xlsx`,
-  };
-};

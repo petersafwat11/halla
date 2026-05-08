@@ -39,7 +39,7 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
     try {
       if (isEditing) {
         // Update existing guest
-        await onConfirm(editGuest._id, data);
+        await onConfirm(editGuest.id || editGuest._id, data);
         toast.success(
           t("singleEvent.updateGuest.success") || "Guest updated successfully"
         );

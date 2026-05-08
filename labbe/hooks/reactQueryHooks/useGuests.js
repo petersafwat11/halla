@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/services/new-backend/apiClient";
+import { apiRequest, downloadExportFile } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 
 // ============================================
@@ -9,28 +9,7 @@ import { API_PATHS } from "@/services/new-backend/api.config";
 // ============================================
 
 /**
- * Hook to fetch event guests
- * @param {string} eventId
- * @returns {UseQueryResult}
- */
-export const useEventGuests = (eventId, options = {}) => {
-  return useQuery({
-    queryKey: ["events", eventId, "guests"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.guests.getEventGuests(eventId),
-      }),
-    enabled: !!eventId,
-    staleTime: 2 * 60 * 1000,
-    ...options,
-  });
-};
-
-/**
- * Hook to fetch guest by token (for RSVP)
- * @param {string} token
- * @returns {UseQueryResult}
+ * Fetch a guest record by their public invitation code (whitelabel portal).
  */
 export const useGuestByToken = (token, options = {}) => {
   return useQuery({
@@ -47,9 +26,8 @@ export const useGuestByToken = (token, options = {}) => {
 };
 
 /**
- * Hook to fetch guest invitation details
- * @param {string} invitationToken
- * @returns {UseQueryResult}
+ * Alias of `useGuestByToken` kept for callers that read it as the
+ * invitation-details query.
  */
 export const useGuestInvitation = (invitationToken, options = {}) => {
   return useQuery({
@@ -70,24 +48,92 @@ export const useGuestInvitation = (invitationToken, options = {}) => {
 // ============================================
 
 /**
- * Unified Guests Mutation Hook
- * @param {string} action - The guest action to perform
- * @returns {UseMutationResult}
+ * Canonical guests-module mutation factory.
+ *
+ * Supported actions:
+ *   - add          → POST   /guests/events/:eventId
+ *   - update       → PATCH  /guests/events/:eventId/guests/:guestId
+ *   - delete       → DELETE /guests/events/:eventId/guests/:guestId
+ *   - rotateQr     → POST   /guests/events/:eventId/guests/:guestId/rotate-qr
+ *   - revokeAccess → POST   /guests/events/:eventId/guests/:guestId/revoke-access
+ *   - export       → GET    /guests/events/:eventId/export (file download)
+ *   - rsvp         → POST   /guests/:id/rsvp (public, whitelabel portal)
  */
 export const useGuestMutation = (action) => {
   const queryClient = useQueryClient();
 
+  const invalidateEventGuests = (eventId) => {
+    if (!eventId) return;
+    queryClient.invalidateQueries({ queryKey: ["guests", "events", eventId] });
+    queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+  };
+
   const mutations = {
-    // RSVP to Event
+    add: {
+      mutationFn: ({ eventId, data, guestData }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.guests.addGuest(eventId),
+          data: data ?? guestData,
+        }),
+      onSuccess: (_, { eventId }) => invalidateEventGuests(eventId),
+    },
+
+    update: {
+      mutationFn: ({ eventId, guestId, data }) =>
+        apiRequest({
+          method: "PATCH",
+          path: API_PATHS.guests.updateGuest(eventId, guestId),
+          data,
+        }),
+      onSuccess: (_, { eventId }) => invalidateEventGuests(eventId),
+    },
+
+    delete: {
+      mutationFn: ({ eventId, guestId }) =>
+        apiRequest({
+          method: "DELETE",
+          path: API_PATHS.guests.deleteGuest(eventId, guestId),
+        }),
+      onSuccess: (_, { eventId }) => invalidateEventGuests(eventId),
+    },
+
+    rotateQr: {
+      mutationFn: ({ eventId, guestId }) =>
+        apiRequest({
+          method: "POST",
+          path: `${API_PATHS.guests.updateGuest(eventId, guestId)}/rotate-qr`,
+        }),
+      onSuccess: (_, { eventId }) => invalidateEventGuests(eventId),
+    },
+
+    revokeAccess: {
+      mutationFn: ({ eventId, guestId }) =>
+        apiRequest({
+          method: "POST",
+          path: `${API_PATHS.guests.updateGuest(eventId, guestId)}/revoke-access`,
+        }),
+      onSuccess: (_, { eventId }) => invalidateEventGuests(eventId),
+    },
+
+    export: {
+      mutationFn: ({ eventId, filename }) =>
+        downloadExportFile({
+          path: API_PATHS.guests.exportGuests(eventId),
+          filename: filename || `guests-event-${eventId}.xlsx`,
+        }),
+    },
+
     rsvp: {
       mutationFn: ({ token, response, data }) =>
         apiRequest({
           method: "POST",
           path: API_PATHS.guests.submitRSVP(token),
-          data: { response, ...data },
+          data: { response, ...(data || {}) },
         }),
       onSuccess: (_, { token }) => {
         queryClient.invalidateQueries({ queryKey: ["guests", "token", token] });
+        queryClient.invalidateQueries({ queryKey: ["guests", "invitation", token] });
       },
     },
   };
@@ -98,10 +144,5 @@ export const useGuestMutation = (action) => {
     throw new Error(`Unknown guest action: ${action}`);
   }
 
-  return useMutation({
-    ...mutationConfig,
-    onError: (error) => {
-      console.error(`Guest mutation error (${action}):`, error);
-    },
-  });
+  return useMutation(mutationConfig);
 };

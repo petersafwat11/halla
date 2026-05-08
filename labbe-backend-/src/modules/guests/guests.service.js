@@ -6,6 +6,8 @@
 
 const config = require('../../config');
 const { NotFoundError, ValidationError, ForbiddenError } = require('../../shared/errors');
+const { ROLES } = require('../../shared/constants');
+const logger = require('../../shared/utils/logger');
 
 // Import existing models during migration
 const Event = require('../../../models/EventModel');
@@ -14,7 +16,7 @@ const Guest = require('../../../models/GuestModel');
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const { generateExcel, guardExportMaxRows } = require('../../shared/utils/excelExport');
-const { formatRiyadh } = require('../../shared/utils/timezone'); // M-5
+const { formatRiyadh } = require('../../shared/utils/timezone');
 const GuestAccessToken = require('../../../models/GuestAccessTokenModel');
 const { logAudit } = require('../../shared/utils/auditLog');
 
@@ -90,8 +92,10 @@ class GuestsService {
 
     await guest.save();
 
-    // Notify host of RSVP
-    this._notifyHostRSVP(guest, response, previousStatus).catch(console.error);
+    // Notify host of RSVP — fire-and-forget
+    this._notifyHostRSVP(guest, response, previousStatus).catch((err) =>
+      logger.error('guests.submitRSVP notify host failed', err)
+    );
 
     return { guest: this._formatGuestPortal(guest) };
   }
@@ -114,7 +118,7 @@ class GuestsService {
       throw new NotFoundError('Event');
     }
 
-    let query = { event: eventId };
+    let query = { event: eventId, deleted: { $ne: true } };
 
     if (search) {
       const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -150,10 +154,11 @@ class GuestsService {
    * Add guest to event
    * @param {string} eventId
    * @param {Object} guestData
-   * @param {string} userId
+   * @param {Object|string} actor - req.user or userId
    * @returns {Promise<Object>}
    */
-  async addGuest(eventId, guestData, userId) {
+  async addGuest(eventId, guestData, actor) {
+    const userId = this._actorId(actor);
     const event = await Event.findOne({ _id: eventId, host: userId });
     if (!event) {
       throw new NotFoundError('Event');
@@ -161,7 +166,10 @@ class GuestsService {
 
     // Check guest limit from event's guestLimit field
     if (event.guestLimit) {
-      const currentGuestCount = await Guest.countDocuments({ event: eventId });
+      const currentGuestCount = await Guest.countDocuments({
+        event: eventId,
+        deleted: { $ne: true },
+      });
       if (currentGuestCount >= event.guestLimit) {
         throw new ValidationError(`Guest limit reached (max ${event.guestLimit} guests)`);
       }
@@ -177,6 +185,14 @@ class GuestsService {
     event.guestList.push(guest._id);
     await event.save();
 
+    logAudit({
+      action: 'guest.added',
+      actor: this._actorRef(actor),
+      targetType: 'guest',
+      targetId: guest._id,
+      metadata: { eventId, guestName: guest.name },
+    }).catch(() => {});
+
     return { guest: this._formatGuest(guest) };
   }
 
@@ -185,10 +201,11 @@ class GuestsService {
    * @param {string} eventId
    * @param {string} guestId
    * @param {Object} updateData
-   * @param {string} userId
+   * @param {Object|string} actor - req.user or userId
    * @returns {Promise<Object>}
    */
-  async updateGuest(eventId, guestId, updateData, userId) {
+  async updateGuest(eventId, guestId, updateData, actor) {
+    const userId = this._actorId(actor);
     const event = await Event.findOne({ _id: eventId, host: userId });
     if (!event) {
       throw new NotFoundError('Event');
@@ -197,15 +214,6 @@ class GuestsService {
     const guest = await Guest.findOne({ _id: guestId, event: eventId });
     if (!guest) {
       throw new NotFoundError('Guest');
-    }
-
-    // Validate phone if provided
-    if (updateData.phone) {
-      const cleanPhone = updateData.phone.replace(/[\s\-\(\)]/g, '');
-      if (!/^[\+]?[0-9]{7,15}$/.test(cleanPhone)) {
-        throw new ValidationError('Invalid phone number format');
-      }
-      updateData.phone = cleanPhone;
     }
 
     const allowedFields = ['name', 'email', 'phone', 'status'];
@@ -224,8 +232,18 @@ class GuestsService {
 
     // Notify host if status changed
     if (updateObj.status && updateObj.status !== previousStatus) {
-      this._notifyHostStatusChange(event.host, updatedGuest, updateObj.status).catch(console.error);
+      this._notifyHostStatusChange(event.host, updatedGuest, updateObj.status).catch((err) =>
+        logger.error('guests.updateGuest notify host failed', err)
+      );
     }
+
+    logAudit({
+      action: 'guest.updated',
+      actor: this._actorRef(actor),
+      targetType: 'guest',
+      targetId: guestId,
+      metadata: { eventId, changes: updateObj },
+    }).catch(() => {});
 
     return { guest: this._formatGuest(updatedGuest) };
   }
@@ -234,10 +252,11 @@ class GuestsService {
    * Delete guest
    * @param {string} eventId
    * @param {string} guestId
-   * @param {string} userId
+   * @param {Object|string} actor - req.user or userId
    * @returns {Promise<void>}
    */
-  async deleteGuest(eventId, guestId, userId) {
+  async deleteGuest(eventId, guestId, actor) {
+    const userId = this._actorId(actor);
     const event = await Event.findOne({ _id: eventId, host: userId });
     if (!event) {
       throw new NotFoundError('Event');
@@ -251,15 +270,24 @@ class GuestsService {
     event.guestList = event.guestList.filter((id) => id.toString() !== guestId);
     await event.save();
     await Guest.findByIdAndDelete(guestId);
+
+    logAudit({
+      action: 'guest.deleted',
+      actor: this._actorRef(actor),
+      targetType: 'guest',
+      targetId: guestId,
+      metadata: { eventId, guestName: guest.name },
+    }).catch(() => {});
   }
 
   /**
    * Export guests to Excel
    * @param {string} eventId
-   * @param {string} userId
+   * @param {Object|string} actor - req.user or userId
    * @returns {Promise<Buffer>}
    */
-  async exportGuestsExcel(eventId, userId) {
+  async exportGuestsExcel(eventId, actor) {
+    const userId = this._actorId(actor);
     const event = await Event.findOne({ _id: eventId, host: userId })
       .populate({
         path: 'guestList',
@@ -271,7 +299,6 @@ class GuestsService {
       throw new NotFoundError('Event');
     }
 
-    // FLOW-28-F02: enforce export row cap
     const guestCount = event.guestList?.length || 0;
     guardExportMaxRows(guestCount, 'guests');
 
@@ -281,27 +308,34 @@ class GuestsService {
       Email: guest.email || '',
       Status: guest.status || 'invited',
       'Response Date': guest.rsvp?.respondedAt
-        ? formatRiyadh(guest.rsvp.respondedAt) // M-5
+        ? formatRiyadh(guest.rsvp.respondedAt)
         : '',
-      'Check-in Time': guest.checkIn?.time
-        ? formatRiyadh(guest.checkIn.time) // M-5
+      'Check-in Time': guest.checkIn?.checkedInAt
+        ? formatRiyadh(guest.checkIn.checkedInAt)
         : '',
       'Invitation Sent': guest.invitation?.sent ? 'Yes' : 'No',
       'Added By': guest.addedBy?.username || guest.addedBy?.email || 'Unknown',
     }));
 
-    return generateExcel(guestsForExport, `event-${eventId}-guests`);
+    const buffer = await generateExcel(guestsForExport, `event-${eventId}-guests`);
+
+    logAudit({
+      action: 'event.exported',
+      actor: this._actorRef(actor),
+      targetType: 'event',
+      targetId: eventId,
+      metadata: { format: 'xlsx' },
+    }).catch(() => {});
+
+    return buffer;
   }
 
   /**
-   * Rotate the active GuestAccessToken for a guest (Phase 3e.3 / FLOW-18-F03 / D7).
-   *
-   * Marks the existing active post_event token revoked with reason
-   * `'rotation'`, then issues a new token (default 90-day expiry, falling
-   * back to 365 days for legacy events without `eventDetails.date`).
-   *
-   * RBAC: host or whitelabel-admin only (admin / super_admin allowed via
-   * the existing `restrictTo` setup at the route head).
+   * Rotate the active GuestAccessToken for a guest. Marks the existing
+   * active post_event token revoked with reason 'rotation', then issues a
+   * new token (default 90-day expiry from event date, or now if missing).
+   * Best-effort SMS delivery — rotation must reach the guest (lost-phone
+   * scenario), but a delivery failure does not roll back the rotation.
    */
   async rotateGuestQR(eventId, guestId, actor) {
     const event = await Event.findById(eventId);
@@ -310,9 +344,9 @@ class GuestsService {
     const actorId = actor?._id?.toString?.() || actor?._id;
     const role = actor?.role;
     const isHost = event.host?.toString() === actorId;
-    const isAdmin = ['admin', 'super_admin'].includes(role);
+    const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN].includes(role);
     const isWhitelabelAdmin =
-      role === 'whitelabel_admin' &&
+      role === ROLES.WHITELABEL_ADMIN &&
       event.whitelabelId &&
       actor?.whitelabelId &&
       event.whitelabelId.toString() === actor.whitelabelId.toString();
@@ -323,8 +357,6 @@ class GuestsService {
     const guest = await Guest.findOne({ _id: guestId, event: eventId });
     if (!guest) throw new NotFoundError('Guest');
 
-    // Revoke any active post_event token(s) for this guest+event with
-    // reason 'rotation'.
     await GuestAccessToken.updateMany(
       {
         guest: guestId,
@@ -342,8 +374,6 @@ class GuestsService {
       }
     );
 
-    // Generate a new token. Expiry default per D8: event.eventDate + 90d
-    // when known, else createdAt + 90d.
     const expiryDays = 90;
     const eventDate = event.eventDetails?.date;
     const expiresAt = eventDate
@@ -360,13 +390,6 @@ class GuestsService {
 
     const qrUrl = GuestAccessToken.getTokenLink(fresh.token, 'post_event', 'ar');
 
-    // H-18: rotation MUST deliver the new QR to the guest. The whole point of
-    // rotation is the "lost phone" scenario — without this dispatch, the
-    // guest sees only "QR rotated, you have a newer one" with no way to find
-    // it. Send via Taqnyat SMS (matches the post-event link delivery
-    // pattern in post-event.service.js). Best-effort: a delivery failure is
-    // surfaced to the host in the response but doesn't roll back the
-    // rotation (the host can manually re-send the link they receive).
     let delivery = { attempted: false };
     if (guest.phone) {
       delivery = { attempted: true, channel: 'sms' };
@@ -404,11 +427,9 @@ class GuestsService {
   }
 
   /**
-   * Manually revoke a guest access token (Phase 3e.4 / FLOW-21-F03 / D8).
-   *
-   * Distinct from rotation: this revokes the active token and does NOT
-   * issue a replacement. Subsequent scans return 410 Gone with
-   * `reason: 'qr_revoked'`.
+   * Manually revoke a guest access token. Distinct from rotation: revokes
+   * the active token without issuing a replacement. Idempotent — when no
+   * active token exists, returns `wasAlreadyRevoked: true` instead of 404.
    */
   async revokeGuestAccess(eventId, guestId, actor) {
     const event = await Event.findById(eventId);
@@ -417,9 +438,9 @@ class GuestsService {
     const actorId = actor?._id?.toString?.() || actor?._id;
     const role = actor?.role;
     const isHost = event.host?.toString() === actorId;
-    const isAdmin = ['admin', 'super_admin'].includes(role);
+    const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN].includes(role);
     const isWhitelabelAdmin =
-      role === 'whitelabel_admin' &&
+      role === ROLES.WHITELABEL_ADMIN &&
       event.whitelabelId &&
       actor?.whitelabelId &&
       event.whitelabelId.toString() === actor.whitelabelId.toString();
@@ -427,8 +448,6 @@ class GuestsService {
       throw new ForbiddenError('Not authorized to revoke this QR');
     }
 
-    // Verify guest exists in the event so we don't silently no-op on a
-    // typo'd guestId.
     const guest = await Guest.findOne({ _id: guestId, event: eventId });
     if (!guest) throw new NotFoundError('Guest');
 
@@ -461,11 +480,6 @@ class GuestsService {
     });
 
     return {
-      // `revoked: true` only when at least one token transitioned. If
-      // the staff member already had no active tokens, the response is
-      // still 200 (idempotent action) but `revoked: false` +
-      // `wasAlreadyRevoked: true` so the UI can render the right
-      // message.
       revoked: affected > 0,
       affected,
       wasAlreadyRevoked: affected === 0,
@@ -475,6 +489,18 @@ class GuestsService {
   // ============================================
   // PRIVATE HELPERS
   // ============================================
+
+  _actorId(actor) {
+    if (!actor) return undefined;
+    if (typeof actor === 'string') return actor;
+    return actor._id?.toString?.() || actor._id;
+  }
+
+  _actorRef(actor) {
+    if (!actor) return undefined;
+    if (typeof actor === 'string') return { _id: actor };
+    return { _id: actor._id, role: actor.role };
+  }
 
   _formatGuest(guest) {
     return {

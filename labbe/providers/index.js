@@ -32,6 +32,7 @@ const i18nNamespaces = [
   "whitelabelPlans",
   "landing",
   "marketplace",
+  "guest-portal",
 ];
 
 export default async function GlobalProvider({ children, lang }) {

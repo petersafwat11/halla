@@ -7,7 +7,6 @@
 const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess, sendCreated, sendPaginated, sendDeleted } = require('../../shared/utils/responseHelper');
 const guestsService = require('./guests.service');
-const { logAudit } = require('../../shared/utils/auditLog');
 
 // ============================================
 // GUEST PORTAL (Public)
@@ -67,7 +66,7 @@ exports.addGuest = catchAsync(async (req, res) => {
   const result = await guestsService.addGuest(
     req.params.eventId,
     req.body,
-    req.user._id
+    req.user
   );
   sendCreated(res, result, 'Guest added successfully');
 });
@@ -82,7 +81,7 @@ exports.updateGuest = catchAsync(async (req, res) => {
     eventId,
     guestId,
     req.body,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, 'Guest updated successfully');
 });
@@ -93,12 +92,12 @@ exports.updateGuest = catchAsync(async (req, res) => {
  */
 exports.deleteGuest = catchAsync(async (req, res) => {
   const { eventId, guestId } = req.params;
-  await guestsService.deleteGuest(eventId, guestId, req.user._id);
+  await guestsService.deleteGuest(eventId, guestId, req.user);
   sendDeleted(res, 'Guest deleted successfully');
 });
 
 /**
- * Rotate a guest's QR (Phase 3e.3 / FLOW-18-F03).
+ * Rotate a guest's QR.
  * POST /api/v2/guests/events/:eventId/guests/:guestId/rotate-qr
  */
 exports.rotateQR = catchAsync(async (req, res) => {
@@ -108,7 +107,7 @@ exports.rotateQR = catchAsync(async (req, res) => {
 });
 
 /**
- * Manually revoke a guest's access token (Phase 3e.4 / FLOW-21-F03).
+ * Manually revoke a guest's access token.
  * POST /api/v2/guests/events/:eventId/guests/:guestId/revoke-access
  */
 exports.revokeAccess = catchAsync(async (req, res) => {
@@ -124,16 +123,8 @@ exports.revokeAccess = catchAsync(async (req, res) => {
 exports.exportGuests = catchAsync(async (req, res) => {
   const buffer = await guestsService.exportGuestsExcel(
     req.params.eventId,
-    req.user._id
+    req.user
   );
-
-  logAudit({
-    action: 'event.exported',
-    actor: { _id: req.user._id, role: req.user.role },
-    targetType: 'event',
-    targetId: req.params.eventId,
-    metadata: { format: 'xlsx' },
-  }).catch(() => {});
 
   res.setHeader(
     'Content-Type',

@@ -242,42 +242,4 @@ module.exports = {
 
     return generateExcel(data, "events");
   },
-
-  /**
-   * Export event guests as Excel
-   * @param {string} eventId
-   * @param {string} userId
-   * @returns {Promise<Buffer>}
-   */
-  async exportEventGuestsAsExcel(eventId, userId) {
-    const { generateExcel, guardExportMaxRows } = require("../../shared/utils/excelExport");
-    const event = await Event.findOne({ _id: eventId, host: userId })
-      .populate({
-        path: 'guestList',
-        select: 'name email phone status rsvp checkIn invitation addedBy',
-        populate: { path: 'addedBy', select: 'username email' },
-      })
-      .lean();
-
-    if (!event) throw new NotFoundError("Event");
-
-    const guestCount = event.guestList?.length || 0;
-    guardExportMaxRows(guestCount, 'guests');
-
-    const data = (event.guestList || []).map((g) => ({
-      Name: g.name || "",
-      Phone: g.phone || "",
-      Email: g.email || "",
-      Status: g.status || "invited",
-      "Response Date": g.rsvp?.respondedAt
-        ? formatRiyadh(g.rsvp.respondedAt)
-        : "",
-      "Check-in Time": g.checkIn?.time
-        ? formatRiyadh(g.checkIn.time)
-        : "",
-      "Invitation Sent": g.invitation?.sent ? "Yes" : "No",
-    }));
-
-    return generateExcel(data, `event-${eventId}-guests`);
-  },
 };

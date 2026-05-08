@@ -1114,6 +1114,45 @@ const swaggerOptions = {
           },
         },
 
+        GuestRotateQrResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                token: { type: 'string' },
+                qrUrl: { type: 'string' },
+                expiresAt: { type: 'string', format: 'date-time' },
+                delivery: {
+                  type: 'object',
+                  properties: {
+                    attempted: { type: 'boolean' },
+                    channel: { type: 'string' },
+                    success: { type: 'boolean' },
+                    error: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+
+        GuestRevokeAccessResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                revoked: { type: 'boolean' },
+                affected: { type: 'integer' },
+                wasAlreadyRevoked: { type: 'boolean' },
+              },
+            },
+          },
+        },
+
         AddStaffRequest: {
           type: 'object',
           required: ['name', 'phone'],
