@@ -39,7 +39,7 @@ export function useEventStats() {
 }
 
 /**
- * Stats polling cadence — Phase 3d.4 (decision D4).
+ * Stats polling cadence:
  *
  *   live      → 30s
  *   completed → 5min
@@ -64,14 +64,14 @@ const _statsPollInterval = (eventStatus) => {
 /**
  * Hook to fetch statistics for a single event.
  *
- * L-12: signature is now options-object first to match the web hook
+ * Signature is options-object first to match the web hook
  * (`labbe/hooks/events/queries/useSingleEventStats.js`). Calls that
  * pass a positional eventStatus (legacy mobile pattern) still work
  * via a backwards-compatible shim — but new code should pass
  * `{ eventStatus }` so the two tiers stay structurally identical.
  *
- * Pass `eventStatus` to enable status-keyed polling per D4. Without it
- * the hook is one-shot (with a 2-minute staleTime as before).
+ * Pass `eventStatus` to enable status-keyed polling. Without it the
+ * hook is one-shot (with a 2-minute staleTime as before).
  *
  * @param {string} eventId
  * @param {{ eventStatus?: string } | string} [opts] - options object

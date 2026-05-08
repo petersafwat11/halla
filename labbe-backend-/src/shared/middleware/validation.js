@@ -361,6 +361,34 @@ exports.validate = (schema, source = 'body') => {
 };
 
 /**
+ * Parse JSON-encoded fields from a multipart/form-data request body.
+ * Multer delivers FormData text fields as raw strings; this middleware
+ * walks a list of expected keys and JSON.parses any that are strings.
+ * Non-string values pass through untouched. Invalid JSON returns 400.
+ *
+ * Apply AFTER the upload middleware and BEFORE `validateZod`.
+ *
+ * @param {string[]} fields - Body keys whose values should be JSON.parsed
+ */
+exports.parseFormDataJsonFields = (fields = []) => {
+  return (req, res, next) => {
+    if (!req.body) return next();
+    for (const key of fields) {
+      const value = req.body[key];
+      if (typeof value !== 'string') continue;
+      try {
+        req.body[key] = JSON.parse(value);
+      } catch (err) {
+        return next(
+          new AppError(`Invalid JSON in field "${key}": ${err.message}`, 400)
+        );
+      }
+    }
+    next();
+  };
+};
+
+/**
  * Generic Zod schema validation middleware
  * Mirrors `validate` but accepts a Zod schema. On parse success the parsed
  * (coerced + stripped) value replaces req[source] so downstream handlers

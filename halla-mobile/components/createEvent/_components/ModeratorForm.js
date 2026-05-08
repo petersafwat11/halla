@@ -38,7 +38,7 @@ export default function ModeratorForm() {
           value={moderatorName}
           onChangeText={setModeratorName}
         />
-        {moderatorErrors.name && <Text style={styles.errorText}>{moderatorErrors.name}</Text>}
+        {moderatorErrors.name && <Text style={styles.errorText}>{t(moderatorErrors.name)}</Text>}
       </View>
       <View style={styles.inputWrapper}>
         <Text style={styles.inputLabel}>{t("events.moderator.phoneLabel")}</Text>
@@ -50,7 +50,7 @@ export default function ModeratorForm() {
           onChangeText={setModeratorPhone}
           keyboardType="phone-pad"
         />
-        {moderatorErrors.phone && <Text style={styles.errorText}>{moderatorErrors.phone}</Text>}
+        {moderatorErrors.phone && <Text style={styles.errorText}>{t(moderatorErrors.phone)}</Text>}
       </View>
       <Button
         text={t("events.moderator.addModerator")}

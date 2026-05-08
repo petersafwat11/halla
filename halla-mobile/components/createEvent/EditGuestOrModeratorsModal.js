@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Pressable
 } from "react-native";
+import { useTranslation } from "../../localization";
 import TextInput from "../commen/TextInput";
 import Button from "../commen/Button";
 import Svg, { Path } from "react-native-svg";
@@ -30,6 +31,7 @@ const EditGuestOrModeratorsModal = ({
   type = "guest",
   onSave
 }) => {
+  const { t } = useTranslation("events");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState({});
@@ -46,7 +48,11 @@ const EditGuestOrModeratorsModal = ({
     const result = onSave(item.id, { name, phone });
 
     if (result && !result.success && result.errors) {
-      setErrors(result.errors);
+      // Validators return i18n keys; translate before surfacing.
+      setErrors({
+        name: result.errors.name ? t(result.errors.name) : null,
+        phone: result.errors.phone ? t(result.errors.phone) : null,
+      });
     }
   };
 

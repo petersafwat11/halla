@@ -88,10 +88,10 @@ exports.getSubscriptionInfo = catchAsync(async (req, res) => {
  * Get single event stats
  * GET /api/v2/events/stats/:id
  *
- * Phase 4b W0-RBAC: scope is resolved inside the service via the full
- * user context (role + whitelabelId), so admin / moderator / whitelabel
- * tier roles see events under their tenant scope without needing a
- * separate admin route.
+ * Scope is resolved inside the service via the full user context
+ * (role + whitelabelId), so admin / moderator / whitelabel tier roles
+ * see events under their tenant scope without needing a separate
+ * admin route.
  */
 exports.getSingleEventStats = catchAsync(async (req, res) => {
   const stats = await eventsService.getSingleEventStats(
@@ -110,7 +110,7 @@ exports.getSingleEventStats = catchAsync(async (req, res) => {
  * GET /api/v2/events/export/events
  */
 exports.exportEventsAsExcel = catchAsync(async (req, res) => {
-  const buffer = await eventsService.exportEventsAsExcel(req.user._id);
+  const buffer = await eventsService.exportEventsAsExcel(req.user);
 
   res.setHeader(
     "Content-Type",
@@ -149,8 +149,8 @@ exports.exportEventGuestsAsExcel = catchAsync(async (req, res) => {
  * Get event by ID
  * GET /api/v2/events/:id
  *
- * Phase 4b W0-RBAC: scope resolved inside the service via the full
- * user context. See `eventsService._buildScopedEventQuery`.
+ * Scope resolved inside the service via the full user context.
+ * See `eventsService._buildScopedEventQuery`.
  */
 exports.getEventById = catchAsync(async (req, res) => {
   const result = await eventsService.getEventById(req.params.id, req.user);
@@ -162,23 +162,10 @@ exports.getEventById = catchAsync(async (req, res) => {
  * POST /api/v2/events
  */
 exports.createEvent = catchAsync(async (req, res) => {
-  let guestList = [];
-  let eventData = {};
-
-  try {
-    if (req.body.guestList) guestList = JSON.parse(req.body.guestList);
-    if (req.body.eventDetails)
-      eventData.eventDetails = JSON.parse(req.body.eventDetails);
-    if (req.body.staffList)
-      eventData.staffList = JSON.parse(req.body.staffList);
-    if (req.body.invitationSettings)
-      eventData.invitationSettings = JSON.parse(req.body.invitationSettings);
-    if (req.body.launchSettings)
-      eventData.launchSettings = JSON.parse(req.body.launchSettings);
-  } catch (error) {
-    const { ValidationError } = require("../../shared/errors");
-    throw new ValidationError(`Invalid JSON format: ${error.message}`);
-  }
+  // parseFormDataJsonFields + validateZod have already coerced these into
+  // their object/array shapes — no manual parsing here.
+  const { guestList = [], eventDetails, staffList, invitationSettings, launchSettings } = req.body;
+  const eventData = { eventDetails, staffList, invitationSettings, launchSettings };
 
   const context = {
     userId: req.user._id,
@@ -219,9 +206,9 @@ exports.bulkDeleteEvents = catchAsync(async (req, res) => {
  * Update event details
  * PATCH /api/v2/events/:id/event-details
  *
- * Phase 4b W1-UNIFY: scope resolved from req.user inside the service so
- * the unified update wizard works for admin / whitelabel-admin /
- * whitelabel-moderator on the SAME endpoint as the host.
+ * Scope resolved from req.user inside the service so the unified update
+ * wizard works for admin / whitelabel-admin / whitelabel-moderator on
+ * the SAME endpoint as the host.
  */
 exports.updateEventDetails = catchAsync(async (req, res) => {
   const result = await eventsService.updateEventDetails(
@@ -259,12 +246,12 @@ exports.updateStaffList = catchAsync(async (req, res) => {
 });
 
 /**
- * Phase 4d W0-ATOMIC — atomically update guest list + staff list
+ * Atomically update guest list + staff list
  * PATCH /api/v2/events/:id/step2
  *
  * Accepts both `supervisorsList` (web naming) and `staffList` (mobile
- * naming) per D4d-2; normalises to a single `staffList` payload before
- * handing off to the service. Both keys may appear together — `staffList`
+ * naming); normalises to a single `staffList` payload before handing
+ * off to the service. Both keys may appear together — `staffList`
  * wins (mobile-first stays canonical) and `supervisorsList` is only used
  * when `staffList` is absent.
  *
@@ -276,18 +263,10 @@ exports.updateStaffList = catchAsync(async (req, res) => {
  * `/staff-list` compat endpoints (kept for one release cycle).
  */
 exports.updateEventStep2 = catchAsync(async (req, res) => {
+  // Zod schema enforces guestList + at least one of staffList/supervisorsList.
+  // Normalise to a single canonical key before handing off to the service.
   const guestList = req.body.guestList;
   const staffList = req.body.staffList ?? req.body.supervisorsList;
-
-  if (!Array.isArray(guestList) || !Array.isArray(staffList)) {
-    const { ValidationError } = require("../../shared/errors");
-    if (!Array.isArray(guestList)) {
-      throw new ValidationError("guestList is required and must be an array");
-    }
-    throw new ValidationError(
-      "staffList (or supervisorsList) is required and must be an array"
-    );
-  }
 
   const result = await eventsService.updateEventStep2(
     req.params.id,
@@ -302,28 +281,11 @@ exports.updateEventStep2 = catchAsync(async (req, res) => {
  * PATCH /api/v2/events/:id/invitation-settings
  */
 exports.updateInvitationSettings = catchAsync(async (req, res) => {
-  // Multer delivers FormData text fields as strings — parse any JSON-encoded
-  // values for both the legacy keys (selectedTemplate / visualTemplate) AND
-  // the Phase 4c canonical keys (fieldValues, guestReplies).
-  const settings = { ...req.body };
-  for (const key of [
-    "selectedTemplate",
-    "visualTemplate",
-    "fieldValues",
-    "guestReplies",
-  ]) {
-    if (typeof settings[key] === "string") {
-      try {
-        settings[key] = JSON.parse(settings[key]);
-      } catch {
-        /* keep as-is */
-      }
-    }
-  }
-
+  // parseFormDataJsonFields middleware coerces JSON-string fields to
+  // objects before this handler runs.
   const result = await eventsService.updateInvitationSettings(
     req.params.id,
-    settings,
+    req.body,
     req.user,
     req.file
   );
@@ -465,7 +427,10 @@ exports.deleteStaff = catchAsync(async (req, res) => {
  * POST /api/v2/events/:eventId/notify-staff
  */
 exports.notifyStaff = catchAsync(async (req, res) => {
-  const isAdmin = ['super_admin', 'admin', 'moderator'].includes(req.user.role);
+  const { ROLES } = require("../../shared/constants/roles");
+  const isAdmin = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR].includes(
+    req.user.role
+  );
   const result = await eventsService.notifyStaff(
     req.params.eventId,
     req.user._id,
@@ -484,49 +449,14 @@ exports.notifyStaff = catchAsync(async (req, res) => {
  */
 exports.retryLaunch = catchAsync(async (req, res) => {
   const result = await eventsService.retryEventLaunch(req.params.id, req.user);
-  res.status(200).json({ status: "success", data: result });
+  sendSuccess(res, result, "Launch retry kicked off");
 });
 
 // ============================================
-// ADMIN ENDPOINTS
+// ADMIN ENDPOINTS — extracted to events.admin.controller.js, re-exported
+// here so any external imports of `events.controller` keep working.
 // ============================================
-
-/**
- * Get all events (admin)
- * GET /api/v2/events/admin/all
- */
-exports.getAllEvents = catchAsync(async (req, res) => {
-  const { page, limit, ...filters } = req.query;
-  const options = { page: parseInt(page) || 1, limit: parseInt(limit) || 10 };
-
-  const result = await eventsService.getAllEvents(
-    filters,
-    options,
-    req.whitelabelFilter
-  );
-  sendPaginated(res, result.data, result.pagination);
-});
-
-/**
- * Admin update event status
- * PATCH /api/v2/events/admin/:id/status
- */
-exports.adminUpdateEventStatus = catchAsync(async (req, res) => {
-  const { status } = req.body;
-  const result = await eventsService.updateEventStatus(
-    req.params.id,
-    status,
-    req.user._id,
-    true
-  );
-  sendSuccess(res, result, "Event status updated successfully");
-});
-
-/**
- * Admin delete event
- * DELETE /api/v2/events/admin/:id
- */
-exports.adminDeleteEvent = catchAsync(async (req, res) => {
-  await eventsService.deleteEvent(req.params.id, req.user._id, true);
-  sendDeleted(res, "Event deleted successfully");
-});
+const adminController = require("./events.admin.controller");
+exports.getAllEvents = adminController.getAllEvents;
+exports.adminUpdateEventStatus = adminController.adminUpdateEventStatus;
+exports.adminDeleteEvent = adminController.adminDeleteEvent;

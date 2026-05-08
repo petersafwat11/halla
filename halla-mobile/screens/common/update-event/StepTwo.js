@@ -1,15 +1,12 @@
 /**
- * Phase 4d W1-MOBILE-UPDATE — Update wizard Step 2 (guest list + staff).
+ * Update wizard Step 2 (guest list + staff). Wraps the create-event
+ * StepTwo and surfaces the live-event "allow-add-only" branch so step 2
+ * stays interactive while every other step locks. Existing rows are
+ * visually marked read-only via the `allowAddOnly` flag.
  *
- * Wraps the create-event StepTwo and surfaces the D10 live-event
- * "allow-add-only" branch so step 2 stays interactive on a live event
- * while every other step locks. Existing rows are visually marked
- * read-only via the `allowAddOnly` flag, which the create-event StepTwo
- * already accepts in its prop signature.
- *
- * Save dispatch: the parent screen calls `useUpdateEventStep2` so guest
- * list + staff list update atomically through the new
- * `PATCH /events/:id/step2` endpoint.
+ * Save dispatch: the parent screen calls `useUpdateEventStep2` so the
+ * guest + staff lists update atomically through
+ * `PATCH /events/:id/step2`.
  */
 
 import React from "react";

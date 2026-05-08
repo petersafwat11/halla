@@ -6,6 +6,7 @@ import { useTranslation } from "../../localization";
 import EventList from "../../components/events/EventList";
 import EventDetails from "../../components/events/EventDetails";
 import SingleEventStats from "../../components/events/SingleEventStats";
+import MakeYourFirst from "../../components/home/MakeYourFirst";
 import { TopBar } from "../../components/plans";
 import { useEventStats, useSingleEventStats } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
@@ -90,6 +91,15 @@ const EventsScreen = ({ navigation }) => {
 
     switch (currentView) {
       case "list":
+        if ((eventsData?.events?.length ?? 0) === 0) {
+          return (
+            <View style={styles.emptyContainer}>
+              <MakeYourFirst
+                onCreatePress={() => navigation.navigate("CreateEventScreen")}
+              />
+            </View>
+          );
+        }
         return (
           <EventList
             events={eventsData?.events || []}
@@ -134,7 +144,7 @@ const EventsScreen = ({ navigation }) => {
       default:
         return null;
     }
-  }, [loading, error, currentView, eventsData, selectedEvent, statsLoading, statsError, eventStats, handleEventPress, handleStatsPress, handleBackToList, handleBackToDetails, t]);
+  }, [loading, error, currentView, eventsData, selectedEvent, statsLoading, statsError, eventStats, handleEventPress, handleStatsPress, handleBackToList, handleBackToDetails, navigation, t]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -180,6 +190,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
     gap: 8,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 24,
   },
   errorText: {
     fontSize: 16,

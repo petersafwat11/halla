@@ -25,10 +25,10 @@ import useStepConfig from "../_hooks/useStepConfig";
 import useUpdateEventActions from "../_hooks/useUpdateEventActions";
 
 /**
- * Phase 4b W1-UNIFY: shared update-event wizard used by host, admin-dash,
- * and (in the future) any whitelabel-scoped route. Role-aware behavior
- * lives inside this component as branches; there is no separate
- * admin/whitelabel component tree.
+ * Shared update-event wizard used by host, admin-dash, and (in the
+ * future) any whitelabel-scoped route. Role-aware behaviour lives
+ * inside this component as branches rather than a separate component
+ * tree.
  *
  * Props
  *   returnPath  — relative locale-less path to push on save / cancel
@@ -69,8 +69,8 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   const subscriptionInfo = subscriptionData?.data;
 
   const eventRaw = eventData?.data?.event || eventData?.event || null;
-  // Phase 4b W1-UPD (D10): when an event is `live`, every section except
-  // step 2's allow-add-only branch is locked.
+  // When an event is `live`, every section except step 2's
+  // allow-add-only branch is locked.
   const isEventLive = eventRaw?.status === "live";
 
   useEffect(() => {
@@ -116,9 +116,9 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   const currentStepConfig = stepConfig[currentStep];
   const { Component: StepComponent, props: stepProps = {} } = currentStepConfig;
 
-  // Phase 4b W1-UPD (D10): the lockout banner appears at the top of every
-  // step on a live event. Step 2 stays interactive (allow-add-only); other
-  // steps render the banner above the disabled form.
+  // The lockout banner appears at the top of every step on a live
+  // event. Step 2 stays interactive (allow-add-only); other steps
+  // render the banner above the disabled form.
   const lockoutActive = isEventLive && currentStep !== 2;
 
   return (

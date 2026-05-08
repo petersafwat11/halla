@@ -1,17 +1,15 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import Table from "@/ui/commen/new-table/Table";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
-import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMyEvents, useEventMutation } from "@/hooks/reactQueryHooks/useEvents";
-import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
+import { useMyEvents } from "@/hooks/reactQueryHooks/useEvents";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
+import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
-import { downloadExportFile } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { useEventsTableExport } from "./EventsTableToolbar";
+import { useEventsTableActions } from "./EventsTableActions";
 
 const EventsTable = () => {
   const { t } = useTranslation("host-events");
@@ -22,123 +20,12 @@ const EventsTable = () => {
 
   // React Query hooks
   const { data: eventsData, isLoading, error } = useMyEvents();
-  const deleteMutation = useEventMutation("deleteEvent");
-  const bulkDeleteMutation = useEventMutation("bulkDeleteEvents");
 
-  // Extract events from response
-  const events = eventsData?.data?.data || eventsData?.data || eventsData || [];
+  // Backend's sendPaginated returns { status, data: [...], pagination }.
+  const events = eventsData?.data || [];
 
-  // Delete modal state
-  const [deleteModal, setDeleteModal] = useState({
-    isOpen: false,
-    eventId: null,
-    isBulk: false,
-    selectedIds: [],
-  });
-
-  // Handle export
-  const handleExportEvents = async () => {
-    try {
-      const result = await downloadExportFile({
-        path: API_PATHS.events.exportEventsAsExcel,
-        filename: "events.xlsx",
-      });
-
-      if (result.success) {
-        toast.success(t("table.exportSuccess"));
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      console.error("Export error:", error);
-      toast.error(t("table.exportError"));
-    }
-  };
-
-  // Open delete modal for single event
-  const handleDeleteClick = (eventId) => {
-    setDeleteModal({
-      isOpen: true,
-      eventId,
-      isBulk: false,
-      selectedIds: [],
-    });
-  };
-
-  // Open delete modal for bulk delete
-  const handleBulkDeleteClick = (selectedRowIds) => {
-    if (!selectedRowIds || selectedRowIds.length === 0) return;
-    setDeleteModal({
-      isOpen: true,
-      eventId: null,
-      isBulk: true,
-      selectedIds: selectedRowIds,
-    });
-  };
-
-  // Confirm delete with optimistic update
-  const handleConfirmDelete = async () => {
-    if (deleteModal.isBulk) {
-      // Optimistic update for bulk delete
-      const previousEvents = queryClient.getQueryData(["events", "my-events"]);
-
-      queryClient.setQueryData(["events", "my-events"], (old) => {
-        if (!old) return old;
-        const oldEvents = old.data?.data || old.data || old;
-        const filtered = Array.isArray(oldEvents)
-          ? oldEvents.filter((event) => !deleteModal.selectedIds.includes(event.id))
-          : [];
-        return {
-          ...old,
-          data: { ...(old.data || {}), data: filtered },
-        };
-      });
-
-      try {
-        await bulkDeleteMutation.mutateAsync(deleteModal.selectedIds);
-        toast.success(
-          t("table.bulkDeleteSuccess", {
-            count: deleteModal.selectedIds.length,
-          })
-        );
-      } catch (error) {
-        // Rollback on error
-        queryClient.setQueryData(["events", "my-events"], previousEvents);
-        toast.error(t("table.bulkDeleteError"));
-      }
-    } else {
-      // Optimistic update for single delete
-      const previousEvents = queryClient.getQueryData(["events", "my-events"]);
-
-      queryClient.setQueryData(["events", "my-events"], (old) => {
-        if (!old) return old;
-        const oldEvents = old.data?.data || old.data || old;
-        const filtered = Array.isArray(oldEvents)
-          ? oldEvents.filter((event) => event.id !== deleteModal.eventId)
-          : [];
-        return {
-          ...old,
-          data: { ...(old.data || {}), data: filtered },
-        };
-      });
-
-      try {
-        await deleteMutation.mutateAsync(deleteModal.eventId);
-        toast.success(t("table.deleteSuccess"));
-      } catch (error) {
-        // Rollback on error
-        queryClient.setQueryData(["events", "my-events"], previousEvents);
-        toast.error(t("table.deleteError"));
-      }
-    }
-
-    setDeleteModal({ isOpen: false, eventId: null, isBulk: false, selectedIds: [] });
-  };
-
-  // Close delete modal
-  const handleCloseDeleteModal = () => {
-    setDeleteModal({ isOpen: false, eventId: null, isBulk: false, selectedIds: [] });
-  };
+  const { handleExportEvents } = useEventsTableExport(t);
+  const { getRowActions, bulkActions, deleteModalElement } = useEventsTableActions({ t });
 
   // Prefetch event details on hover
   const handleRowHover = (row) => {
@@ -148,37 +35,12 @@ const EventsTable = () => {
     });
   };
 
-  // Row actions for each event
-  const getRowActions = (row) => [
-    {
-      type: "dropdown",
-      icon: "/svg/events/trash.svg",
-      text: t("table.actions.delete", "حذف"),
-      onClick: () => handleDeleteClick(row.id),
-      variant: "danger",
-    },
-  ];
-
-  // Bulk actions - Table passes selectedRows to onClick
-  const bulkActions = [
-    {
-      icon: "/svg/events/trash.svg",
-      text: t("table.actions.deleteSelected", "حذف المحدد"),
-      onClick: handleBulkDeleteClick,
-      variant: "danger",
-    },
-  ];
-
   if (isLoading) {
     return <SimpleLoading message={t("loading")} />;
   }
 
   if (error) {
-    return (
-      <ErrorBoundary onRetry={() => queryClient.invalidateQueries({ queryKey: ["events"] })}>
-        <div />
-      </ErrorBoundary>
-    );
+    return <ErrorFallback message={t("errors.loadFailed", "Failed to load events")} />;
   }
 
   return (
@@ -291,22 +153,7 @@ const EventsTable = () => {
         showCheckboxes={true}
       />
 
-      <DeleteConfirmation
-        isOpen={deleteModal.isOpen}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDelete}
-        title={deleteModal.isBulk ? t("table.bulkDeleteTitle") : t("table.deleteTitle")}
-        message={
-          deleteModal.isBulk ? (
-            t("table.bulkDeleteConfirm", { count: deleteModal.selectedIds.length })
-          ) : (
-            t("table.deleteConfirm")
-          )
-        }
-        confirmText={t("table.confirmDelete")}
-        cancelText={t("table.cancelDelete")}
-        isLoading={deleteMutation.isPending || bulkDeleteMutation.isPending}
-      />
+      {deleteModalElement}
     </>
   );
 };

@@ -1,10 +1,8 @@
 /**
- * Phase 4d W1-MOBILE-UPDATE — Update wizard Step 4 (Taqnyat picker).
- *
- * Reuses the create-event StepFour (Phase 4c W2-MOBILE-WIZARD), which
- * filters Taqnyat templates by the visual template's category and
- * dual-writes `selectedTemplate` (legacy) + `taqnyatTemplate.templateRef`
- * (canonical).
+ * Update wizard Step 4 (Taqnyat picker). Reuses the create-event
+ * StepFour, which filters Taqnyat templates by the visual template's
+ * category and dual-writes `selectedTemplate` and
+ * `taqnyatTemplate.templateRef`.
  */
 
 import React from "react";

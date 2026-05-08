@@ -7,9 +7,8 @@ const TemplatesCards = ({ templates, selectedTemplate, onTemplateSelect }) => {
   return (
     <div className={styles.templatesGrid}>
       {templates.map((template) => {
-        // Phase 4c W1-VISUAL: ids may be either numeric (legacy hardcoded
-        // demo IDs) or Mongo ObjectIds (new backend-served templates),
-        // and selection match might happen by either id or _id.
+        // ids may be numeric (legacy hardcoded demo IDs) or Mongo
+        // ObjectIds (backend-served templates); match either way.
         const isSelected =
           (selectedTemplate?.id && selectedTemplate.id === template.id) ||
           (selectedTemplate?._id && selectedTemplate._id === template._id);

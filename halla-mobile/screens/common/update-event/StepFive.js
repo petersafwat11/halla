@@ -1,11 +1,9 @@
 /**
- * Phase 4d W1-MOBILE-UPDATE — Update wizard Step 5 (messaging + replies + note).
- *
- * Reuses the create-event StepFive (Phase 4c W2-MOBILE-WIZARD). All
- * canonical writes (`invitationMessage`, `guestReplies.*`, `hostNote`)
- * happen via the form-context `setValue` calls inside the create
- * component; the parent screen calls `useUpdateMessagingContent` on
- * save.
+ * Update wizard Step 5 (messaging + replies + note). Reuses the
+ * create-event StepFive; canonical writes (`invitationMessage`,
+ * `guestReplies.*`, `hostNote`) happen via form-context `setValue`
+ * calls inside the create component, and the parent screen calls
+ * `useUpdateMessagingContent` on save.
  */
 
 import React from "react";

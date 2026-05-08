@@ -1,5 +1,5 @@
 /**
- * templateRefResolver — Phase 4c hardening (post-review).
+ * templateRefResolver.
  *
  * Resolves legacy `Event.invitationSettings.{selectedTemplate.id, visualTemplate.id}`
  * values to canonical ObjectId refs without throwing CastError when the
@@ -25,6 +25,7 @@
  */
 
 const mongoose = require("mongoose");
+const logger = require("../../shared/utils/logger");
 
 /**
  * Returns true when `value` can be cast to a Mongoose ObjectId without
@@ -62,7 +63,7 @@ async function resolveTaqnyatTemplateRef(value) {
     // Connection errors etc. — log and degrade to "no canonical ref".
     // The caller will keep the legacy field populated so messaging still
     // works via the legacy fallback.
-    console.warn("[templateRefResolver] resolveTaqnyatTemplateRef failed:", err.message);
+    logger.warn('[templateRefResolver] resolveTaqnyatTemplateRef failed', { err: err.message });
     return null;
   }
 }

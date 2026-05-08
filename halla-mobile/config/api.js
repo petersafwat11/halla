@@ -90,8 +90,8 @@ export const ENDPOINTS = {
     UPDATE_DETAILS: (id) => `/events/${id}/event-details`,
     UPDATE_GUEST_LIST: (id) => `/events/${id}/guest-list`,
     UPDATE_STAFF_LIST: (id) => `/events/${id}/staff-list`,
-    // Phase 4d W0-ATOMIC — single endpoint that updates guests + staff
-    // in one transaction. Old endpoints stay as compat for one cycle.
+    // Single endpoint that updates guests + staff in one transaction.
+    // Old endpoints stay as compat for one cycle.
     UPDATE_STEP2: (id) => `/events/${id}/step2`,
     UPDATE_INVITATION: (id) => `/events/${id}/invitation-settings`,
     UPDATE_LAUNCH: (id) => `/events/${id}/launch-settings`,
@@ -111,6 +111,12 @@ export const ENDPOINTS = {
     EXPORT_GUESTS: (id) => `/events/export/${id}/guests`,
     // Staff notification
     NOTIFY_STAFF: (eventId) => `/events/${eventId}/notify-staff`,
+    // Manual launch retry
+    RETRY_LAUNCH: (id) => `/events/${id}/retry-launch`,
+    // Staff access tokens (active + revoked) for an event
+    LIST_STAFF_TOKENS: (eventId) => `/events/${eventId}/staff-tokens`,
+    // Revoke a single staff access token (resolved by staffList sub-doc id)
+    REVOKE_STAFF: (eventId, staffId) => `/events/${eventId}/staff/${staffId}/revoke`,
   },
 
   // Guests endpoints
@@ -119,6 +125,10 @@ export const ENDPOINTS = {
     RSVP: (id) => `/guests/${id}/rsvp`,
     EVENT_GUESTS: (eventId) => `/guests/events/${eventId}`,
     EXPORT: (eventId) => `/guests/events/${eventId}/export`,
+    ROTATE_QR: (eventId, guestId) =>
+      `/guests/events/${eventId}/guests/${guestId}/rotate-qr`,
+    REVOKE_ACCESS: (eventId, guestId) =>
+      `/guests/events/${eventId}/guests/${guestId}/revoke-access`,
   },
 
   // Notifications endpoints

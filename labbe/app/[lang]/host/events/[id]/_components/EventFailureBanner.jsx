@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * EventFailureBanner — Phase 3c.4 (FLOW-15-F03 / F04 / F05).
+ * EventFailureBanner.
  *
  * Renders the "we're sorry" UI on the host event detail page when the
  * event is in `failed` status, plus a softer "we're retrying"
@@ -22,12 +22,12 @@ import { EVENT_STATUS } from "@/utils/constants/eventStatus";
 import WhatsAppContactButton from "@/ui/commen/whatsappButton/WhatsAppContactButton";
 import styles from "./eventFailureBanner.module.css";
 
-// L-8: prefer the shared constant over a literal so a backend rename
-// surfaces as an import error.
+// Prefer the shared constant over a literal so a backend rename surfaces
+// as an import error.
 const FAILED_STATUS = EVENT_STATUS.FAILED;
 const MAX_VISIBLE_ATTEMPTS = 5;
 
-// M-20: countdown to next retry attempt. Mirror of LAUNCH_BACKOFF_MS in
+// Countdown to next retry attempt. Mirror of LAUNCH_BACKOFF_MS in
 // scheduledTasks.js — the values are duplicated rather than imported so
 // the FE bundle doesn't pull in server-only code. Keep in sync.
 const RETRY_BACKOFF_MS = [
@@ -57,9 +57,9 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
   const retryLaunch = useRetryLaunch();
   const isRtl = lang !== "en";
   const dir = isRtl ? "rtl" : "ltr";
-  // M-20: i18n via react-i18next, with hard-coded Arabic strings as
-  // fallback so the banner still works even when the translations file
-  // hasn't been wired yet.
+  // i18n via react-i18next, with hard-coded Arabic strings as fallback
+  // so the banner still works even when the translations file hasn't
+  // been wired yet.
   let t;
   try {
     ({ t } = useTranslation("events"));
@@ -86,8 +86,8 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
 
   // Retrying-state banner: scheduled + at least one attempt already burned.
   if (status === EVENT_STATUS.SCHEDULED && attemptCount > 0 && !event?.launchedAt) {
-    // M-20: compute time until the next attempt is eligible. The retry
-    // cron uses the (attemptCount-1)-indexed backoff (since attempt 1 is
+    // Compute time until the next attempt is eligible. The retry cron
+    // uses the (attemptCount-1)-indexed backoff (since attempt 1 is
     // already done). Tick value is read so React re-renders.
     void tick;
     const backoff =
@@ -121,7 +121,7 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
 
   if (status !== FAILED_STATUS) return null;
 
-  // Post-review polish — single source of truth for retry-button RBAC.
+  // Single source of truth for retry-button RBAC.
   // `useEventActionGate.canManualRetry` mirrors the backend
   // restrictTo on `/events/:id/retry-launch`. The server enforces the
   // same check; the UI gate just keeps the button out of the way for

@@ -8,7 +8,10 @@
 // ============================================================================
 
 /**
- * Validates a guest or moderator item
+ * Validates a guest or moderator item. Errors are returned as i18n keys
+ * (e.g. `events:validation.guestNameRequired`); the caller translates
+ * them via `t(key)`.
+ *
  * @param {Object} item - The item to validate
  * @param {string} item.name - Name of the person
  * @param {string} item.phone - Phone number (mobile)
@@ -21,26 +24,26 @@ export const validateListItem = (item, type = "guest", existingList = []) => {
   const name = (item.name || "").trim();
   const phone = (item.phone || item.mobile || "").trim();
 
-  // Validate name
   if (!name) {
-    errors.name = type === "guest" ? "اسم الضيف مطلوب" : "اسم المشرف مط��وب";
+    errors.name =
+      type === "guest"
+        ? "events:validation.guestNameRequired"
+        : "events:validation.staffNameRequired";
   }
 
-  // Validate phone
   if (!phone) {
-    errors.phone = "رقم الجوال مطلوب";
+    errors.phone = "events:validation.phoneRequired";
   } else if (!/^5[0-9]{8}$/.test(phone)) {
-    errors.phone = "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5";
+    errors.phone = "events:validation.phoneInvalid";
   }
 
-  // Check for duplicate phone (exclude current item when editing)
   if (phone && !item.id) {
     const phoneExists = existingList.some(
       (existingItem) =>
         existingItem.phone === phone || existingItem.mobile === phone
     );
     if (phoneExists) {
-      errors.phone = "هذا الرقم موجود بالفعل في القائمة";
+      errors.phone = "events:validation.phoneDuplicate";
     }
   }
 
@@ -51,22 +54,23 @@ export const validateListItem = (item, type = "guest", existingList = []) => {
 };
 
 /**
- * Validates a row from CSV import
+ * Validates a row from CSV import. Errors are returned as i18n keys; the
+ * caller translates them via `t(key)`.
  * @param {Object} row - Row data from CSV
  * @param {number} index - Row index
- * @returns {Object} - { valid: boolean, errors: Array }
+ * @returns {Object} - { valid: boolean, errors: Array<string> }
  */
 export const validateCSVRow = (row, index) => {
   const errors = [];
 
   if (!row.name || !row.name.trim()) {
-    errors.push("الاسم مطلوب");
+    errors.push("events:validation.nameRequired");
   }
 
   if (!row.mobile || !row.mobile.trim()) {
-    errors.push("رقم الجوال مطلوب");
+    errors.push("events:validation.phoneRequired");
   } else if (!/^5[0-9]{8}$/.test(row.mobile)) {
-    errors.push("رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5");
+    errors.push("events:validation.phoneInvalid");
   }
 
   return { valid: errors.length === 0, errors };
@@ -182,9 +186,16 @@ export const bulkRemoveListItems = (ids = [], currentList = []) => {
  * @returns {Object} - { headers: Array, sampleData: Array, fileName: string }
  */
 export const generateCSVTemplate = (type = "guest") => {
+  // Header labels are returned as i18n keys; callers translate via `t(key)`.
   const headers = [
-    { key: "name", label: type === "guest" ? "اسم الضيف" : "اسم المشرف" },
-    { key: "mobile", label: "رقم الجوال" },
+    {
+      key: "name",
+      label:
+        type === "guest"
+          ? "events:csv.headers.guestName"
+          : "events:csv.headers.staffName",
+    },
+    { key: "mobile", label: "events:csv.headers.phone" },
   ];
 
   const sampleData = [
@@ -221,7 +232,7 @@ export const processImportedCSV = (
     if (existingPhones.includes(phone)) {
       duplicates.push({
         row: index + 2, // +2 because of header row and 0-index
-        errors: ["هذا الرقم موجود بالفعل في القائمة"],
+        errors: ["events:validation.phoneDuplicate"],
       });
       return;
     }
@@ -294,8 +305,8 @@ export const validateStepData = (stepNumber, formData) => {
       return !!(formData.guestList && formData.guestList.length > 0);
 
     case 3:
-      // Visual invitation card (Step 3 = visualTemplate). Phase 4c
-      // accepts either the canonical templateRef or the legacy id.
+      // Visual invitation card (Step 3 = visualTemplate). Accept
+      // either the canonical templateRef or the legacy id.
       return !!(
         formData.visualTemplate?.templateRef ||
         formData.visualTemplate?._id ||
@@ -304,8 +315,8 @@ export const validateStepData = (stepNumber, formData) => {
       );
 
     case 4:
-      // Phase 4c W2-MOBILE-WIZARD — Taqnyat picker. Accept either the
-      // legacy `selectedTemplate.name` or the canonical
+      // Taqnyat picker. Accept either the legacy
+      // `selectedTemplate.name` or the canonical
       // `taqnyatTemplate.templateRef`.
       return !!(
         formData.selectedTemplate?.name ||
@@ -314,9 +325,9 @@ export const validateStepData = (stepNumber, formData) => {
       );
 
     case 5:
-      // Phase 4c W2-MOBILE-WIZARD — messaging + replies + note. The
-      // defaults are seeded by StepFive on mount, so this is satisfied
-      // as soon as the host sees the step.
+      // Messaging + replies + note. The defaults are seeded by
+      // StepFive on mount, so this is satisfied as soon as the host
+      // sees the step.
       return true;
 
     case 6:
@@ -372,9 +383,9 @@ export const transformFormDataToPayload = (formData) => {
       name: moderator.name,
       phone: moderator.phone || moderator.mobile,
     })),
-    // Phase 4c W2-MOBILE-WIZARD + W2-MOBILE-RENAME — DUAL-WRITE both
-    // legacy `invitationSettings.*` (existing consumers) AND canonical
-    // top-level keys per W0-RENAME so backend reads from either shape.
+    // DUAL-WRITE both legacy `invitationSettings.*` (existing
+    // consumers) AND canonical top-level keys so backend reads from
+    // either shape.
     invitationSettings: {
       selectedTemplate: formData.selectedTemplate,
       visualTemplate: formData.visualTemplate
@@ -392,7 +403,7 @@ export const transformFormDataToPayload = (formData) => {
       templateImage: formData.templateImage,
       guestReplies: formData.guestReplies,
     },
-    // Phase 4c W0-RENAME canonical keys (backend prefers these on read)
+    // Canonical top-level keys (backend prefers these on read)
     taqnyatTemplateRef:
       formData.taqnyatTemplate?.templateRef ||
       formData.taqnyatTemplateRef ||
@@ -415,60 +426,6 @@ export const transformFormDataToPayload = (formData) => {
       scheduledTime: formData.scheduleTime,
     },
   };
-};
-
-/**
- * @deprecated Use useCreateEvent mutation (hooks/mutations/useEventMutations.js) instead.
- * This function sends JSON instead of FormData and won't work with the backend's
- * multipart/form-data requirement (uploadTemplateImage middleware).
- */
-export const createEvent = async (formData, api) => {
-  console.warn("[DEPRECATED] EventsService.createEvent — use useCreateEvent mutation instead");
-  try {
-    const payload = transformFormDataToPayload(formData);
-    const response = await api.post("/events", payload);
-    return {
-      success: true,
-      data: response.data,
-      error: null,
-    };
-  } catch (error) {
-    console.error("Error creating event:", error);
-    return {
-      success: false,
-      data: null,
-      error:
-        error.response?.data?.message ||
-        "فشل في إنشاء المناسبة. يرجى المحاولة مرة أخرى.",
-    };
-  }
-};
-
-/**
- * @deprecated No PUT /events/:id endpoint exists on the backend.
- * Use PATCH /events/:id/event-details, /guest-list, /invitation-settings, /launch-settings
- * via eventsService2 functions instead.
- */
-export const updateEvent = async (eventId, formData, api) => {
-  console.warn("[DEPRECATED] EventsService.updateEvent — no PUT /events/:id endpoint exists");
-  try {
-    const payload = transformFormDataToPayload(formData);
-    const response = await api.put(`/events/${eventId}`, payload);
-    return {
-      success: true,
-      data: response.data,
-      error: null,
-    };
-  } catch (error) {
-    console.error("Error updating event:", error);
-    return {
-      success: false,
-      data: null,
-      error:
-        error.response?.data?.message ||
-        "فشل في تحديث المناسبة. يرجى المحاولة مرة أخرى.",
-    };
-  }
 };
 
 // ============================================================================
@@ -541,8 +498,6 @@ export default {
   processImportedCSV,
 
   // API Operations
-  createEvent,
-  updateEvent,
   transformFormDataToPayload,
 
   // Defaults

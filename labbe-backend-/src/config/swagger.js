@@ -1092,23 +1092,143 @@ const swaggerOptions = {
         // Guest Request Models
         AddGuestRequest: {
           type: 'object',
-          required: ['name'],
+          required: ['name', 'phone'],
           properties: {
-            name: {
+            name: { type: 'string', example: 'John Smith' },
+            phone: { type: 'string', example: '501234567' },
+            email: { type: 'string', format: 'email' },
+          },
+        },
+
+        UpdateGuestRequest: {
+          type: 'object',
+          minProperties: 1,
+          properties: {
+            name: { type: 'string' },
+            phone: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            status: {
               type: 'string',
-              example: 'John Smith',
+              enum: ['invited', 'confirmed', 'declined', 'checked_in', 'no_show', 'maybe'],
             },
-            phone: {
-              type: 'string',
-              example: '+966501234567',
+          },
+        },
+
+        AddStaffRequest: {
+          type: 'object',
+          required: ['name', 'phone'],
+          properties: {
+            name: { type: 'string' },
+            phone: { type: 'string', example: '501234567' },
+            status: { type: 'string', enum: ['active', 'inactive'] },
+          },
+        },
+
+        UpdateStaffRequest: {
+          type: 'object',
+          minProperties: 1,
+          properties: {
+            name: { type: 'string' },
+            phone: { type: 'string' },
+            status: { type: 'string', enum: ['active', 'inactive'] },
+          },
+        },
+
+        EventUpdateRequest: {
+          type: 'object',
+          minProperties: 1,
+          description: 'Partial update of event details. At least one field is required.',
+          properties: {
+            title: { type: 'string' },
+            type: { type: 'string' },
+            date: { type: 'string', format: 'date' },
+            time: { type: 'string' },
+            location: {
+              type: 'object',
+              properties: {
+                address: { type: 'string' },
+                latitude: { type: 'number' },
+                longitude: { type: 'number' },
+                city: { type: 'string' },
+                country: { type: 'string' },
+              },
             },
-            email: {
-              type: 'string',
-              format: 'email',
+            description: { type: 'string' },
+          },
+        },
+
+        Step2Request: {
+          type: 'object',
+          required: ['guestList'],
+          description: 'Replaces guestList AND staffList atomically. staffList or supervisorsList must be present.',
+          properties: {
+            guestList: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Guest' },
             },
-            category: {
+            staffList: { type: 'array', items: { type: 'object' } },
+            supervisorsList: { type: 'array', items: { type: 'object' } },
+          },
+        },
+
+        LaunchSettingsRequest: {
+          type: 'object',
+          minProperties: 1,
+          properties: {
+            scheduledDate: { type: 'string', format: 'date-time' },
+            scheduledTime: { type: 'string' },
+            launchChannel: { type: 'string' },
+          },
+        },
+
+        InvitationSettingsRequest: {
+          type: 'object',
+          description: 'multipart/form-data — text fields can be JSON-encoded objects (eventDetails, visualTemplate, fieldValues, guestReplies); image goes on the `templateImage` file field.',
+          properties: {
+            visualTemplate: { type: 'object' },
+            selectedTemplate: { type: 'object' },
+            fieldValues: { type: 'object' },
+            guestReplies: { type: 'object' },
+            attendanceAutoReply: { type: 'string' },
+            absenceAutoReply: { type: 'string' },
+            expectedAttendanceAutoReply: { type: 'string' },
+            templateImage: { type: 'string', format: 'binary' },
+          },
+        },
+
+        SendTestMessageRequest: {
+          type: 'object',
+          required: ['phoneNumber'],
+          properties: {
+            phoneNumber: { type: 'string', example: '501234567' },
+            channel: { type: 'string', enum: ['sms', 'whatsapp'] },
+          },
+        },
+
+        BulkDeleteRequest: {
+          type: 'object',
+          required: ['eventIds'],
+          properties: {
+            eventIds: {
+              type: 'array',
+              items: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },
+              minItems: 1,
+              maxItems: 100,
+            },
+          },
+        },
+
+        AdminUpdateStatusRequest: {
+          type: 'object',
+          required: ['status'],
+          properties: {
+            status: {
               type: 'string',
-              example: 'Family',
+              enum: [
+                'draft', 'pending_review', 'scheduled', 'live',
+                'published', 'cancelled', 'completed', 'archived',
+                'failed', 'deleted',
+              ],
             },
           },
         },
@@ -1802,6 +1922,62 @@ const swaggerOptions = {
                 status: 'error',
                 message: 'Something went wrong',
                 statusCode: 500,
+              },
+            },
+          },
+        },
+        EventEditLockedError: {
+          description: 'Event launch settings are locked within the 24h pre-launch window',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+              example: {
+                status: 'error',
+                code: 'EVENT_EDIT_LOCKED',
+                message: 'Cannot edit launch settings within 24h of scheduled time',
+                statusCode: 400,
+              },
+            },
+          },
+        },
+        GuestListBelowConfirmedError: {
+          description: 'Guest list cannot drop below the count of already-confirmed guests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+              example: {
+                status: 'error',
+                code: 'GUEST_LIST_BELOW_CONFIRMED',
+                message: 'Cannot reduce guest list below confirmed guests',
+                statusCode: 400,
+              },
+            },
+          },
+        },
+        EventNotRetryableError: {
+          description: 'Event is not in a retryable state (failed/scheduled)',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+              example: {
+                status: 'error',
+                code: 'EVENT_NOT_RETRYABLE',
+                message: 'Event is not in a retryable state',
+                statusCode: 409,
+              },
+            },
+          },
+        },
+        GuestLimitExceededError: {
+          description: 'Plan/event guest cap exceeded',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+              example: {
+                status: 'error',
+                code: 'PACKAGE_LIMIT',
+                message: 'Guest limit exceeded',
+                statusCode: 400,
               },
             },
           },

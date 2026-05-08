@@ -3,27 +3,19 @@
 import { useMemo } from "react";
 
 /**
- * Phase 4b W1-GATE-FAIL: shared gate hook for the host single-event UI.
+ * Shared gate hook for the host single-event UI. Centralises the
+ * per-action visibility logic so EventActionsHeader, LastEventStats, and
+ * the mobile companions can't drift apart.
  *
- * Centralises the per-action visibility logic that previously lived
- * inlined in `ui/host/events/EventActionsHeader.jsx`,
- * `ui/host/main-page/latsEventStats/LastEventStats.jsx`, and the mobile
- * companions. A single call site makes it impossible to drift the
- * gating in one consumer relative to another.
+ * Inputs:
+ *   event           — { status, invitationSettings, staffList,
+ *                       messagingStatus, attemptCount, host, whitelabelId }
+ *   testMessageSent — local UI state set by the test-message popup
+ *   currentUser     — { _id, role, whitelabelId }; gates manual retry
  *
- * Inputs
- *   event           — the event payload (with status, invitationSettings,
- *                     staffList, messagingStatus, attemptCount, host,
- *                     whitelabelId).
- *   testMessageSent — local UI state (the host page tracks this
- *                     optimistically after the test-message popup).
- *   currentUser     — req.user equivalent ({ _id, role, whitelabelId });
- *                     used to gate the manual retry button.
- *
- * Outputs
- *   hasTemplate, canSendTest, canSchedule, hasStaff, isCompleted, isLive,
- *   isFailed, isScheduled, hasFailedSends (live + failedCount > 0),
- *   canManualRetry (mirror of EventFailureBanner's RBAC).
+ * Outputs: hasTemplate, canSendTest, canSchedule, hasStaff, isCompleted,
+ * isLive, isFailed, isScheduled, hasFailedSends, failedCount,
+ * canManualRetry (mirrors EventFailureBanner's RBAC).
  */
 export function useEventActionGate({
   event,
@@ -48,10 +40,8 @@ export function useEventActionGate({
     }
 
     const status = event.status;
-    // Phase 4c W0-RENAME — accept either canonical
-    // `taqnyatTemplate.templateRef` or legacy
-    // `invitationSettings.selectedTemplate.name` during the dual-write
-    // window. Mirrors the mobile gate.
+    // Accept canonical `taqnyatTemplate.templateRef` or legacy
+    // `invitationSettings.selectedTemplate.name`; mirrors the mobile gate.
     const hasTemplate =
       !!event.taqnyatTemplate?.templateRef ||
       !!event.invitationSettings?.selectedTemplate?.name;

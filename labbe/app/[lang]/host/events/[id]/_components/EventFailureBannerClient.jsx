@@ -10,8 +10,8 @@ export default function EventFailureBannerClient({ eventId }) {
   const { data: eventResp } = useEvent(eventId);
   const { user } = useAuthStore();
   const event = eventResp?.data?.event || eventResp?.event;
-  // M-20: pass the current locale through so banner strings are rendered
-  // in the user's selected language (was Arabic-only).
+  // Pass the current locale so banner strings render in the user's
+  // selected language.
   const params = useParams();
   const lang = (params?.lang === "en" ? "en" : "ar");
   return <EventFailureBanner event={event} currentUser={user} lang={lang} />;

@@ -68,9 +68,8 @@ export const mapEventToFormValues = (event) => ({
   address: event.eventDetails?.location || DEFAULT_ADDRESS,
   guestList: transformGuestList(event.guestList),
   staffList: transformStaffList(event.staffList),
-  // Phase 4c W1-WIZARD-RENAME — read from canonical fields first (new
-  // backend reads), fall back to legacy `invitationSettings.*` for
-  // pre-migration events during the dual-write window.
+  // Read canonical top-level fields first; fall back to
+  // `invitationSettings.*` for events stored before the rename.
   templateImage:
     event.visualTemplate?.bakedImagePath ||
     event.invitationSettings?.templateImage ||
@@ -130,9 +129,8 @@ export const buildEventPayload = (data) => ({
     name: s.name,
     phone: s.mobile || s.phone,
   })),
-  // Phase 4c W1-WIZARD-RENAME — DUAL-WRITE both shapes:
-  // legacy `invitationSettings.*` for existing consumers + canonical
-  // top-level fields per W0-RENAME for new reads.
+  // Dual-write: legacy `invitationSettings.*` for existing consumers and
+  // canonical top-level fields for new reads.
   invitationSettings: {
     // selectedTemplate.name is the Taqnyat templateName used when sending
     selectedTemplate: data.selectedTemplate
@@ -154,8 +152,8 @@ export const buildEventPayload = (data) => ({
       data.guestReplies?.onExpected || data.expectedAttendanceAutoReply,
     templateImage: data.templateImage,
   },
-  // Canonical top-level keys per Phase 4c W0-RENAME — backend dual-write
-  // accepts these alongside `invitationSettings.*`.
+  // Canonical top-level keys; backend dual-writes alongside
+  // `invitationSettings.*`.
   taqnyatTemplateRef:
     data.taqnyatTemplate?.templateRef ||
     data.taqnyatTemplateRef ||
@@ -338,11 +336,9 @@ export const useEventForm = (options = {}) => {
             successMessage: t("success.event_details_updated"),
           };
         case 2:
-          // Phase 4d W1-WEB-ATOMIC — single payload for the new
-          // PATCH /events/:id/step2 atomic endpoint. Server accepts
-          // either `supervisorsList` (web naming, what we send) or
-          // `staffList` (mobile naming) per D4d-2; we pin to
-          // `supervisorsList` here for self-documentation.
+          // Atomic guest+staff replace via PATCH /events/:id/step2. Server
+          // accepts either `supervisorsList` or `staffList`; we pin to
+          // `supervisorsList` for self-documentation.
           return {
             type: "step2",
             data: {

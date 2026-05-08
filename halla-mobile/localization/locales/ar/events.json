@@ -113,5 +113,20 @@
       "timeRequired": "الوقت مطلوب",
       "minDate": "يجب أن يكون التاريخ بعد يومين على الأقل من اليوم"
     }
+  },
+  "validation": {
+    "guestNameRequired": "اسم الضيف مطلوب",
+    "staffNameRequired": "اسم المشرف مطلوب",
+    "nameRequired": "الاسم مطلوب",
+    "phoneRequired": "رقم الجوال مطلوب",
+    "phoneInvalid": "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5",
+    "phoneDuplicate": "هذا الرقم موجود بالفعل في القائمة"
+  },
+  "csv": {
+    "headers": {
+      "guestName": "اسم الضيف",
+      "staffName": "اسم المشرف",
+      "phone": "رقم الجوال"
+    }
   }
 }
