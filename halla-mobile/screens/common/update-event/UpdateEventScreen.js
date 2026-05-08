@@ -1,34 +1,15 @@
 /**
- * Phase 4d W1-MOBILE-UPDATE — Unified update-event wizard.
- *
- * One screen for every role per D2 + D4d-4: host edits own events,
- * admin/super-admin edits any event, whitelabel admin/moderator edits
- * any event under their tenant. Role checks happen inline via
- * `useAuthStore` — no per-role component tree.
- *
- * Five visible steps, mirroring the post-Phase-4c structure used on web
- * (event details → guests+staff → visual template → Taqnyat picker →
- * messaging). Each step dispatches its own mutation so saves stay
- * scoped:
- *   1. `useUpdateEventDetails`    — `PATCH /:id/event-details`
- *   2. `useUpdateEventStep2`      — `PATCH /:id/step2` (atomic, 4d W0)
- *   3. `useUpdateVisualTemplate`  — `PATCH /:id/invitation-settings`
- *   4. `useUpdateTaqnyatTemplate` — `PATCH /:id/invitation-settings`
- *
- * D10: when the event is `live`, only step 2 stays interactive (allow-
- * add-only). Every other step renders the lockout banner and disables
- * the step content.
+ * Unified update-event wizard for every role (host edits own events,
+ * admin/super-admin any event, whitelabel admin/moderator any event in
+ * their tenant — role check inside `useEventLoadAndGate`). Four steps
+ * mirror the create wizard; each step dispatches its own scoped
+ * mutation. On a `live` event only step 2 stays interactive (allow-
+ * add-only); other steps render the lockout banner and freeze content.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  TouchableOpacity,
-  Text,
-  ActivityIndicator,
+  View, StyleSheet, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FormProvider, useForm } from "react-hook-form";
@@ -36,135 +17,22 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useAuthStore } from "../../../stores/authStore";
 import { useSubscription } from "../../../hooks";
 import { useTranslation } from "../../../localization";
 import {
-  useUpdateEvent,
-  useUpdateEventStep2,
-  useUpdateVisualTemplate,
-  useUpdateTaqnyatTemplate,
+  useUpdateEvent, useUpdateEventStep2, useUpdateVisualTemplate, useUpdateTaqnyatTemplate,
 } from "../../../hooks/mutations/useEventMutations";
-import * as eventsService2 from "../../../services/eventsService2";
 import EventsService from "../../../services/EventsService";
-import useEventActionGate from "../../../hooks/useEventActionGate";
 
 import TopBar from "../../../components/plans/TopBar";
 import StepHeader from "../../../components/createEvent/StepHeader";
 import PrevAndNextBtns from "../../../components/createEvent/PrevAndNextBtns";
 import PreviewInvitation from "../../../components/createEvent/PreviewInvitation";
 
-import StepOne from "./StepOne";
-import StepTwo from "./StepTwo";
-import StepThree from "./StepThree";
-import StepFour from "./StepFour";
+import useEventLoadAndGate from "./useEventLoadAndGate";
+import UpdateEventStepRenderer from "./UpdateEventStepRenderer";
 
 const TOTAL_STEPS = 4;
-
-/**
- * Maps the event API response onto the form-state shape that the
- * create-event step components consume. Canonical-first per Phase 4c
- * dual-write contract (`visualTemplate.fieldValues`, `guestReplies.*`,
- * `taqnyatTemplate.templateRef`, top-level `invitationMessage` /
- * `hostNote`); legacy `invitationSettings.*` is the fallback.
- */
-const mapApiToFormValues = (eventData) => {
-  if (!eventData) return EventsService.getDefaultFormValues();
-
-  const details = eventData.eventDetails || eventData;
-  const guestList = (eventData.guestList || []).map((g, i) => ({
-    id: g._id || i,
-    name: g.name || "",
-    phone: g.phone || g.mobile || "",
-    email: g.email || "",
-  }));
-  const staffList = (eventData.staffList || []).map((m, i) => ({
-    id: m._id || i,
-    name: m.name || "",
-    phone: m.phone || m.mobile || "",
-  }));
-
-  const inv = eventData.invitationSettings || {};
-  const canonicalVisual = eventData.visualTemplate || {};
-  const canonicalTaqnyat = eventData.taqnyatTemplate || {};
-  const canonicalReplies = eventData.guestReplies || {};
-
-  // Visual template — prefer canonical templateRef + fieldValues.
-  const visualTemplate = canonicalVisual?.templateRef
-    ? {
-        ...(inv.visualTemplate || {}),
-        templateRef: canonicalVisual.templateRef,
-        fieldValues: canonicalVisual.fieldValues,
-        bakedImagePath: canonicalVisual.bakedImagePath,
-        // Legacy mirrors so existing UI consumers still resolve.
-        id: canonicalVisual.templateRef,
-        _id: canonicalVisual.templateRef,
-        data: canonicalVisual.fieldValues || inv.visualTemplate?.data,
-        src: canonicalVisual.bakedImagePath || inv.visualTemplate?.src,
-      }
-    : inv.visualTemplate || null;
-
-  return {
-    ...EventsService.getDefaultFormValues(),
-    eventName: details.title || details.name || "",
-    eventType: details.type || "",
-    eventDate: details.date || null,
-    eventTime: details.time || "",
-    address: details.location || {
-      address: details.locationText || "",
-      latitude: 24.7136,
-      longitude: 46.6753,
-      city: "",
-      country: "",
-    },
-    description: details.description || "",
-    guestList,
-    staffList,
-    visualTemplate,
-    selectedTemplate: inv.selectedTemplate || null,
-    taqnyatTemplate: canonicalTaqnyat?.templateRef ? canonicalTaqnyat : null,
-    attendanceAutoReply: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
-    absenceAutoReply: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
-    expectedAttendanceAutoReply:
-      canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
-    guestReplies: {
-      onAttend: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
-      onAbsent: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
-      onExpected: canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
-    },
-  };
-};
-
-/**
- * Pre-flight role gate. The backend's `_buildScopedEventQuery` returns
- * 404 for unauthorised roles, but a client-side gate produces a clearer
- * UX message and avoids a wasted round-trip on the wizard load.
- *
- * Mirrors the same scopes used on the backend:
- *   - SUPER_ADMIN / ADMIN — can edit any event the API returns.
- *   - WHITELABEL_ADMIN / WHITELABEL_MODERATOR / MODERATOR — only events
- *     under their `whitelabelId`.
- *   - HOST — only events they own.
- */
-const canEditEvent = (event, user) => {
-  if (!event || !user) return false;
-  const role = user.role;
-  const userId = user._id?.toString?.() || user._id;
-  const userWl = user.whitelabelId?.toString?.() || user.whitelabelId;
-  const eventHostId = event.host?._id || event.host;
-  const eventWl = event.whitelabelId?.toString?.() || event.whitelabelId;
-
-  if (role === "super_admin" || role === "admin") return true;
-  if (
-    role === "whitelabel_admin" ||
-    role === "whitelabel_moderator" ||
-    role === "moderator"
-  ) {
-    return Boolean(userWl) && userWl === eventWl;
-  }
-  // Default: host. Match by ownership.
-  return eventHostId?.toString?.() === userId?.toString?.();
-};
 
 const UpdateEventScreen = () => {
   const navigation = useNavigation();
@@ -172,9 +40,6 @@ const UpdateEventScreen = () => {
   const queryClient = useQueryClient();
 
   const { t } = useTranslation("admin");
-
-  const token = useAuthStore((state) => state.token);
-  const user = useAuthStore((state) => state.user);
 
   const eventId = route.params?.eventId;
   const initialStep = Math.min(
@@ -184,9 +49,6 @@ const UpdateEventScreen = () => {
 
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [showPreview, setShowPreview] = useState(false);
-  const [eventData, setEventData] = useState(null);
-  const [loadingEvent, setLoadingEvent] = useState(true);
-  const [loadError, setLoadError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const { data: subscriptionData } = useSubscription();
@@ -204,128 +66,77 @@ const UpdateEventScreen = () => {
   const { watch, handleSubmit, reset } = methods;
   const formData = watch();
 
-  // ─── Load event ────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!eventId) {
-      setLoadingEvent(false);
-      setLoadError(t("events.update.noEventId"));
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoadingEvent(true);
-        const res = await eventsService2.getEventById(eventId, token);
-        if (cancelled) return;
-        const payload = res?.event || res?.data || res;
-        if (payload) setEventData(payload);
-        else setLoadError(t("events.update.loadError"));
-      } catch (err) {
-        if (!cancelled) {
-          setLoadError(err?.message || t("events.update.loadError"));
-        }
-      } finally {
-        if (!cancelled) setLoadingEvent(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [eventId, token, t]);
+  const {
+    eventData,
+    formValues,
+    loadingEvent,
+    loadError,
+    allowed,
+    isLive,
+    lockoutActive,
+    allowAddOnlyOnStep2,
+  } = useEventLoadAndGate({ eventId, currentStep });
 
   useEffect(() => {
-    if (eventData) reset(mapApiToFormValues(eventData));
-  }, [eventData, reset]);
+    if (formValues) reset(formValues);
+  }, [formValues, reset]);
 
-  // ─── Role gate ─────────────────────────────────────────────────────
-  const allowed = useMemo(
-    () => (eventData ? canEditEvent(eventData, user) : true),
-    [eventData, user]
-  );
-
-  // ─── Live-event lockout (D10) ──────────────────────────────────────
-  const actionGate = useEventActionGate({
-    event: eventData,
-    currentUser: user,
-  });
-  const isLive = actionGate.isLive;
-  // Step 2 stays interactive on live events (allow-add-only); every
-  // other step is frozen.
-  const lockoutActive = isLive && currentStep !== 2;
-  const allowAddOnlyOnStep2 = isLive && currentStep === 2;
-
-  // ─── Per-step save dispatcher ──────────────────────────────────────
   const saveStep = useCallback(
     async (data) => {
       if (!eventId) return;
       setIsSaving(true);
       try {
-        switch (currentStep) {
-          case 1: {
-            await updateEventDetails.mutateAsync({
-              eventId,
-              eventData: {
-                title: data.eventName,
-                type: data.eventType,
-                date: data.eventDate,
-                time: data.eventTime,
-                location: data.address,
-                description: data.description || "",
-              },
-            });
-            break;
-          }
-          case 2: {
-            await updateStep2.mutateAsync({
-              eventId,
-              guestList: (data.guestList || []).map((g) => ({
-                name: g.name,
-                phone: g.phone || g.mobile || "",
-                email: g.email || "",
-              })),
-              staffList: (data.staffList || []).map((s) => ({
-                name: s.name,
-                phone: s.phone || s.mobile || "",
-              })),
-            });
-            break;
-          }
-          case 3: {
-            await updateVisualTemplate.mutateAsync({
-              eventId,
-              visualTemplate: data.visualTemplate || null,
-              fieldValues:
-                data.visualTemplate?.fieldValues ||
-                data.visualTemplate?.data ||
-                undefined,
-              templateImage:
-                data.templateImage && typeof data.templateImage === "object"
-                  ? data.templateImage
-                  : undefined,
-            });
-            break;
-          }
-          case 4: {
-            await updateTaqnyatTemplate.mutateAsync({
-              eventId,
-              selectedTemplate: data.selectedTemplate || null,
-              taqnyatTemplate: data.taqnyatTemplate || null,
-              guestReplies: data.guestReplies || {
-                onAttend: data.attendanceAutoReply || "",
-                onAbsent: data.absenceAutoReply || "",
-                onExpected: data.expectedAttendanceAutoReply || "",
-              },
-            });
-            break;
-          }
-          default:
-            break;
+        if (currentStep === 1) {
+          await updateEventDetails.mutateAsync({
+            eventId,
+            eventData: {
+              title: data.eventName,
+              type: data.eventType,
+              date: data.eventDate,
+              time: data.eventTime,
+              location: data.address,
+              description: data.description || "",
+            },
+          });
+        } else if (currentStep === 2) {
+          await updateStep2.mutateAsync({
+            eventId,
+            guestList: (data.guestList || []).map((g) => ({
+              name: g.name,
+              phone: g.phone || g.mobile || "",
+              email: g.email || "",
+            })),
+            staffList: (data.staffList || []).map((s) => ({
+              name: s.name,
+              phone: s.phone || s.mobile || "",
+            })),
+          });
+        } else if (currentStep === 3) {
+          await updateVisualTemplate.mutateAsync({
+            eventId,
+            visualTemplate: data.visualTemplate || null,
+            fieldValues:
+              data.visualTemplate?.fieldValues || data.visualTemplate?.data || undefined,
+            templateImage:
+              data.templateImage && typeof data.templateImage === "object"
+                ? data.templateImage
+                : undefined,
+          });
+        } else if (currentStep === 4) {
+          await updateTaqnyatTemplate.mutateAsync({
+            eventId,
+            selectedTemplate: data.selectedTemplate || null,
+            taqnyatTemplate: data.taqnyatTemplate || null,
+            guestReplies: data.guestReplies || {
+              onAttend: data.attendanceAutoReply || "",
+              onAbsent: data.absenceAutoReply || "",
+              onExpected: data.expectedAttendanceAutoReply || "",
+            },
+          });
         }
 
         queryClient.invalidateQueries({ queryKey: ["events"] });
-        queryClient.invalidateQueries({
-          queryKey: ["events", "single-stats", eventId],
-        });
+        queryClient.invalidateQueries({ queryKey: ["events", "single-stats", eventId] });
 
         if (currentStep < TOTAL_STEPS) {
           setCurrentStep((s) => s + 1);
@@ -341,16 +152,8 @@ const UpdateEventScreen = () => {
       }
     },
     [
-      currentStep,
-      eventId,
-      navigation,
-      queryClient,
-      t,
-      updateEventDetails,
-      updateStep2,
-      updateVisualTemplate,
-      updateTaqnyatTemplate,
-      updateMessagingContent,
+      currentStep, eventId, navigation, queryClient, t,
+      updateEventDetails, updateStep2, updateVisualTemplate, updateTaqnyatTemplate,
     ]
   );
 
@@ -394,71 +197,22 @@ const UpdateEventScreen = () => {
     </TouchableOpacity>
   );
 
-  if (loadingEvent) {
+  if (loadingEvent || loadError || !allowed) {
     return (
       <SafeAreaView style={styles.container}>
         <TopBar title={t("events.update.title")} leftContent={topBarLeftContent} />
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#C28E5C" />
+          {loadingEvent ? (
+            <ActivityIndicator size="large" color="#C28E5C" />
+          ) : (
+            <Text style={styles.errorText}>
+              {loadError || t("events.update.notAllowed")}
+            </Text>
+          )}
         </View>
       </SafeAreaView>
     );
   }
-  if (loadError) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <TopBar title={t("events.update.title")} leftContent={topBarLeftContent} />
-        <View style={styles.center}>
-          <Text style={styles.errorText}>{loadError}</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-  if (!allowed) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <TopBar title={t("events.update.title")} leftContent={topBarLeftContent} />
-        <View style={styles.center}>
-          <Text style={styles.errorText}>
-            {t("events.update.notAllowed")}
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return <StepOne disabled={lockoutActive} />;
-      case 2:
-        return (
-          <StepTwo
-            guestList={formData.guestList}
-            staffList={formData.staffList}
-            allowAddOnly={allowAddOnlyOnStep2}
-            subscription={{
-              guestLimit:
-                eventData?.guestLimit ??
-                subscription?.guestLimit ??
-                subscription?.guests?.limitPerEvent ??
-                subscription?.limits?.maxGuestsPerEvent ??
-                0,
-              isGuestUnlimited:
-                eventData?.guestLimit === -1 ||
-                subscription?.isGuestUnlimited === true ||
-                false,
-            }}
-          />
-        );
-      case 3:
-        return <StepThree disabled={lockoutActive} />;
-      case 4:
-        return <StepFour disabled={lockoutActive} />;
-      default:
-        return null;
-    }
-  };
 
   return (
     <FormProvider {...methods}>
@@ -484,7 +238,16 @@ const UpdateEventScreen = () => {
             title={t(`events.update.steps.${currentStep}.title`)}
             description={t(`events.update.steps.${currentStep}.description`)}
           />
-          <View style={styles.contentContainer}>{renderStepContent()}</View>
+          <View style={styles.contentContainer}>
+            <UpdateEventStepRenderer
+              currentStep={currentStep}
+              formData={formData}
+              eventData={eventData}
+              subscription={subscription}
+              lockoutActive={lockoutActive}
+              allowAddOnlyOnStep2={allowAddOnlyOnStep2}
+            />
+          </View>
           <PrevAndNextBtns
             onNext={onNext}
             onPrevious={onPrevious}
@@ -534,63 +297,28 @@ const UpdateEventScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F9F4EF" },
   scrollView: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    paddingBottom: 100,
-  },
+  scrollContent: { paddingHorizontal: 16, paddingVertical: 24, paddingBottom: 100 },
   contentContainer: { marginVertical: 24 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   errorText: {
-    fontSize: 16,
-    fontFamily: "Cairo_400Regular",
-    color: "#e74c3c",
-    textAlign: "center",
-    padding: 16,
+    fontSize: 16, fontFamily: "Cairo_400Regular", color: "#e74c3c",
+    textAlign: "center", padding: 16,
   },
-  closeButton: {
-    width: 32,
-    height: 32,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  closeButton: { width: 32, height: 32, justifyContent: "center", alignItems: "center" },
   floatingPreviewButton: {
-    position: "absolute",
-    bottom: 100,
-    right: 20,
-    backgroundColor: "#C28E5C",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    position: "absolute", bottom: 100, right: 20, backgroundColor: "#C28E5C",
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    paddingVertical: 14, paddingHorizontal: 20, borderRadius: 25, gap: 8,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 8, elevation: 8,
   },
-  floatingPreviewText: {
-    fontSize: 16,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#FFF",
-  },
+  floatingPreviewText: { fontSize: 16, fontFamily: "Cairo_600SemiBold", color: "#FFF" },
   lockoutBanner: {
-    margin: 0,
-    marginBottom: 12,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: "#FFF7E6",
-    borderWidth: 1,
-    borderColor: "#FFD591",
+    margin: 0, marginBottom: 12, padding: 12, borderRadius: 8,
+    backgroundColor: "#FFF7E6", borderWidth: 1, borderColor: "#FFD591",
   },
   lockoutText: {
-    fontSize: 13,
-    color: "#7A4F01",
-    fontFamily: "Cairo_500Medium",
-    textAlign: "right",
+    fontSize: 13, color: "#7A4F01", fontFamily: "Cairo_500Medium", textAlign: "right",
   },
 });
 
