@@ -35,10 +35,9 @@ const fontOptions = [
 ];
 
 function TemplateForm({ isOpen, onClose, locale, setEventValues, template }) {
-  // Phase 4c W1-VISUAL: when the template carries `fields[]` (a
-  // backend-served Template doc), use the dynamic renderField path.
-  // Otherwise fall back to the legacy hardcoded form for the SVG
-  // demo templates.
+  // When the template carries `fields[]` (a backend-served Template
+  // doc), use the dynamic renderField path. Otherwise fall back to the
+  // legacy hardcoded form for the SVG demo templates.
   if (template?.fields && template.fields.length > 0) {
     return (
       <DynamicTemplateForm
@@ -61,7 +60,7 @@ function TemplateForm({ isOpen, onClose, locale, setEventValues, template }) {
   );
 }
 
-// ── Phase 4c dynamic path ─────────────────────────────────────────────────
+// ── Dynamic field path ────────────────────────────────────────────────────
 function DynamicTemplateForm({ isOpen, onClose, locale, setEventValues, template }) {
   const { t } = useTranslation("createEvent");
   const isLg = useMediaQuery("(min-width: 1024px)");

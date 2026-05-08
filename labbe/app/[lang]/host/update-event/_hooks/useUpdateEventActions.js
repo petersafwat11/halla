@@ -28,7 +28,7 @@ const useUpdateEventActions = ({
   t,
 }) => {
   const updateEventDetails = useUpdateEventDetails();
-  // Phase 4d W1-WEB-ATOMIC: single PATCH to /events/:id/step2.
+  // Atomic guest+staff replace via PATCH /events/:id/step2.
   const updateEventStep2 = useUpdateEventStep2();
   const updateInvitationSettings = useUpdateInvitationSettings();
 

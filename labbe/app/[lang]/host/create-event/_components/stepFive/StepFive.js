@@ -1,21 +1,14 @@
 "use client";
 /**
- * StepFive — Phase 4c W1-WIZARD-RENAME (D4c-1: messaging + replies + note)
+ * Step 5 of the create-event wizard: invitation messaging + auto-replies
+ * + optional note.
  *
- * Per the locked 6-step wizard structure, Step 5 collects the host's
- * invitation messaging + auto-replies + optional note. The previous
- * Step 4 mixed Taqnyat picking with auto-reply preview; the new Step
- * 4 is the picker only and the messaging content moved here.
- *
- * Form context contract (canonical names per W0-RENAME):
+ * Form context contract (canonical / legacy keys are dual-written):
  *   - invitationMessage          (top-level)
- *   - guestReplies.onAttend      (canonical) ⇄ attendanceAutoReply (legacy)
- *   - guestReplies.onAbsent      (canonical) ⇄ absenceAutoReply (legacy)
- *   - guestReplies.onExpected    (canonical) ⇄ expectedAttendanceAutoReply (legacy)
- *   - hostNote                   (canonical) ⇄ note (legacy)
- *
- * We dual-write to support events read by clients on either shape
- * during the dual-write window.
+ *   - guestReplies.onAttend      ⇄ attendanceAutoReply
+ *   - guestReplies.onAbsent      ⇄ absenceAutoReply
+ *   - guestReplies.onExpected    ⇄ expectedAttendanceAutoReply
+ *   - hostNote                   ⇄ note
  */
 
 import React, { useEffect, useState } from "react";

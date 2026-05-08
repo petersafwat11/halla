@@ -1,11 +1,9 @@
 "use client";
 /**
- * renderField — Phase 4c W1-VISUAL (per v4.1 §E)
- *
  * Maps a Template field-def (from `template.fields[]`) to the catalogued
  * input component. Each component already integrates with RHF via
  * `useFormContext()` so we don't wrap in `<Controller>` — that would
- * double-register per v4.1 §8.7 forbidden patterns.
+ * double-register the field.
  */
 
 import React from "react";

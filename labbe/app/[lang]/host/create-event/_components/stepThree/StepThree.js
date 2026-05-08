@@ -1,22 +1,17 @@
 "use client";
 /**
- * StepThree (visual template) — Phase 4c W1-VISUAL
+ * StepThree (visual template) — backend-driven thumbnail grid; selecting
+ * a thumbnail opens `TemplateForm`, which renders the dynamic fields
+ * from `template.fields[]` and bakes the canvas into a baked image at
+ * save.
  *
- * Replaces the hardcoded 3-template array with a backend-driven
- * thumbnail grid (filtered by category once that selector lands in
- * StepOne / a dedicated picker). Selecting a thumbnail opens
- * `TemplateForm`, which renders the dynamic fields from
- * `template.fields[]` and bakes the canvas into a baked image at save.
- *
- * Form context contract (preserved from prior version + extended for
- * Phase 4c W0-RENAME canonical names):
+ * Form context contract (canonical / legacy keys are dual-written):
  *   - templateImage:                File (the baked PNG/Blob)
- *   - visualTemplate:               full Template doc + .data (legacy
- *                                    field name kept for compat) and
- *                                    .fieldValues (canonical) and
- *                                    .templateRef (canonical id)
- *   - invitationSettings.visualTemplate: legacy mirror (dual-write)
- *   - invitationSettings.templateImage:  legacy mirror (dual-write)
+ *   - visualTemplate:               full Template doc + .data (legacy)
+ *                                   .fieldValues (canonical)
+ *                                   .templateRef (canonical id)
+ *   - invitationSettings.visualTemplate: legacy mirror
+ *   - invitationSettings.templateImage:  legacy mirror
  */
 
 import React, { useState } from "react";
