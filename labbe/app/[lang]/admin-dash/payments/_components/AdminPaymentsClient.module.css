@@ -245,3 +245,135 @@
   font-size: 1.4rem;
   color: #656565;
 }
+
+/* Action / detail modals */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalBody {
+  background: #fff;
+  padding: 2.4rem;
+  border-radius: 1.2rem;
+  min-width: 32rem;
+  max-width: 48rem;
+}
+
+.modalBodyWide {
+  composes: modalBody;
+  min-width: 36rem;
+  max-width: 64rem;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modalTitle {
+  margin-top: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: flex-end;
+}
+
+.modalConfirm {
+  background: #2e7d32;
+  color: #fff;
+  padding: 0.8rem 1.6rem;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  font-size: 1.4rem;
+}
+
+.modalConfirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 0.6rem;
+  font-size: 1.4rem;
+}
+
+.modalInputLast {
+  margin-bottom: 1.2rem;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.8rem 1.6rem;
+  font-size: 1.4rem;
+  margin-bottom: 1.6rem;
+}
+
+.detailLabel {
+  color: #656565;
+  font-weight: 500;
+}
+
+.detailValue {
+  color: #2c2c2c;
+  word-break: break-all;
+}
+
+.detailMono {
+  composes: detailValue;
+  font-family: monospace;
+  font-size: 1.2rem;
+}
+
+.detailSection {
+  margin-top: 1.6rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid #eee;
+}
+
+.detailSectionTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+.refundRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.3rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px dotted #eee;
+}
+
+.refundRow:last-child {
+  border-bottom: none;
+}
+
+.actionRow {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.txCell {
+  font-family: monospace;
+  font-size: 1.2rem;
+}
+
+.refundedTag {
+  margin-left: 0.6rem;
+  color: #1565c0;
+  font-size: 1.2rem;
+}

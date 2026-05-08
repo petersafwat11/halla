@@ -4,8 +4,8 @@
  * Runs every 5 minutes (registered in scheduledTasks.js). For every
  * Payment row in `pending` or `pending_3ds` for more than 2 minutes,
  * call Moyasar to fetch the current state. If the state has flipped
- * to `paid`/`failed`/etc., update the row and (if relevant) finalize
- * any pending subscription/addon intent the way the webhook would.
+ * to `paid`, run the matching finalization (subscription / addon /
+ * checkout bundle) the way the webhook would.
  *
  * Multi-instance safe via cronLease.
  *
@@ -16,7 +16,7 @@
 
 const Payment = require('../../../models/PaymentModel');
 const paymentsService = require('./payments.service');
-const subscriptionsService = require('../subscriptions/subscriptions.service');
+const logger = require('../../shared/utils/logger');
 
 const BATCH_LIMIT = 50;
 const STALE_AFTER_MS = 2 * 60 * 1000;
@@ -39,31 +39,14 @@ exports.runReconcileTick = async () => {
       if (updated.status !== before) {
         reconciled += 1;
         if (updated.status === Payment.PAYMENT_STATUS.PAID) {
-          const purpose = updated.metadata?.purpose;
-          try {
-            if (
-              purpose === 'subscription' &&
-              updated.metadata?.pendingSubscribeIntent &&
-              !updated.subscriptionId
-            ) {
-              await subscriptionsService.finalizePending3ds(updated._id);
-            } else if (
-              purpose === 'addon' &&
-              updated.metadata?.pendingAddonIntent &&
-              !updated.addonId
-            ) {
-              const addonsService = require('../addons/addons.service');
-              await addonsService.finalizePending3ds(updated._id);
-            }
-          } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('[reconcile] finalize3ds failed:', err?.message);
-          }
+          await paymentsService.runFinalization(updated);
         }
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('[reconcile] payment %s error: %s', p._id, err?.message);
+      logger.error('[reconcile] payment error', {
+        paymentId: String(p._id),
+        error: err?.message,
+      });
     }
   }
   return { scanned: pendings.length, reconciled };

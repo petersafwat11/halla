@@ -237,10 +237,26 @@ export const payments = {
   getById: async (token, paymentId) =>
     apiRequest(ENDPOINTS.ADMIN.PAYMENTS.BY_ID(paymentId)),
 
-  getSummary: async (token, params = {}) => {
-    const qs = new URLSearchParams(params).toString();
-    return apiRequest(`${ENDPOINTS.ADMIN.PAYMENTS.SUMMARY}${qs ? `?${qs}` : ""}`);
+  // Mutations target the canonical /payments/:id/{refund|capture|void} mounts
+  // (host-self lock + manage RBAC verb live on those routes). The admin
+  // surface re-uses them rather than mirroring under /admin/payments/:id.
+  refund: async (token, paymentId, { amount, reason } = {}, idempotencyKey = null) => {
+    const headers = idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined;
+    return apiRequest(ENDPOINTS.PAYMENTS.REFUND(paymentId), "POST", { amount, reason }, headers);
   },
+
+  capture: async (token, paymentId, { amount } = {}, idempotencyKey = null) => {
+    const headers = idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined;
+    return apiRequest(ENDPOINTS.PAYMENTS.CAPTURE(paymentId), "POST", { amount }, headers);
+  },
+
+  void: async (token, paymentId, idempotencyKey = null) => {
+    const headers = idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined;
+    return apiRequest(ENDPOINTS.PAYMENTS.VOID(paymentId), "POST", null, headers);
+  },
+
+  poll3ds: async (token, paymentId) =>
+    apiRequest(ENDPOINTS.PAYMENTS.POLL_3DS(paymentId)),
 
   export: async (token, filters = {}) =>
     openExportUrl(ENDPOINTS.ADMIN.PAYMENTS.EXPORT, filters),

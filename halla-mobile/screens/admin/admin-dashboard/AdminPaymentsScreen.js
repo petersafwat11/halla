@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import { useAdminPaymentsInfinite, useDebouncedValue } from "../../../hooks";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
@@ -12,11 +13,13 @@ import AdminPageHeader from "../../../components/admin-dashboard/common/AdminPag
 import ExportButton from "../../../components/admin-dashboard/common/ExportButton";
 import { backgrounds } from "../../../styles/tokens";
 
-const FILTER_IDS = ["all", "completed", "pending", "failed"];
+// Match the web admin payments filter set + backend status enum.
+const FILTER_IDS = ["all", "completed", "pending", "failed", "refunded"];
 
 const AdminPaymentsScreen = () => {
   const { t } = useTranslation("admin");
   const toast = useToast();
+  const navigation = useNavigation();
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
@@ -95,6 +98,11 @@ const AdminPaymentsScreen = () => {
           hasMore={hasNextPage}
           onLoadMore={fetchNextPage}
           loadingMore={isFetchingNextPage}
+          onPressPayment={(payment) =>
+            navigation.navigate("PaymentDetail", {
+              paymentId: payment._id || payment.id,
+            })
+          }
         />
       </View>
     </SafeAreaView>

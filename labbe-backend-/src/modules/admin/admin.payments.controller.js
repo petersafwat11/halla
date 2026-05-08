@@ -10,13 +10,13 @@ const { generateExcel } = require('../../shared/utils/excelExport');
 const { getWhitelabelIdFromFilter } = require('./admin.controller.shared');
 
 exports.getPayments = catchAsync(async (req, res) => {
-  const { page, limit, status, from, to } = req.query;
+  const { page, limit, status, search, from, to } = req.query;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
   const result = await adminService.getPayments({
     page: parseInt(page) || 1,
     limit: parseInt(limit) || 20,
-    status, from, to, whitelabelId,
+    status, search, from, to, whitelabelId,
   });
 
   sendSuccess(res, result, 'Payments retrieved successfully');
@@ -44,9 +44,9 @@ exports.getPaymentDetail = catchAsync(async (req, res, next) => {
 });
 
 exports.exportPayments = catchAsync(async (req, res) => {
-  const { status, from, to } = req.query;
+  const { status, search, from, to } = req.query;
   const whitelabelId = getWhitelabelIdFromFilter(req);
-  const data = await adminService.exportPayments(whitelabelId, { status, from, to });
+  const data = await adminService.exportPayments(whitelabelId, { status, search, from, to });
   const buffer = generateExcel(data, 'payments');
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', 'attachment; filename=payments.xlsx');

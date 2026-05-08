@@ -4,7 +4,33 @@
  */
 
 const { NotFoundError } = require('../../shared/errors');
-const { buildDateRangeQuery } = require('./admin.shared.service');
+const { buildDateRangeQuery, buildSearchQuery } = require('./admin.shared.service');
+
+/**
+ * Resolve a free-text search into a Mongo `$or` clause that matches Payment
+ * docs whose host (populated `userId`) matches the term, OR whose direct
+ * `moyasarPaymentId` regex-matches. Returns null when nothing should match.
+ */
+async function buildPaymentSearchClause(search) {
+  if (!search || !String(search).trim()) return null;
+  const term = String(search).trim();
+  const User = require('../../../models/UserModel');
+
+  // Step 1: pre-resolve user IDs whose name/email/phone match the term.
+  const userQuery = buildSearchQuery(term, ['name', 'email', 'phoneNumber']);
+  const matchedUsers = userQuery.$or
+    ? await User.find(userQuery).select('_id').lean()
+    : [];
+  const userIds = matchedUsers.map((u) => u._id);
+
+  // Step 2: regex on direct Payment fields.
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const directRegex = { $regex: escaped, $options: 'i' };
+
+  const or = [{ moyasarPaymentId: directRegex }];
+  if (userIds.length > 0) or.push({ userId: { $in: userIds } });
+  return { $or: or };
+}
 
 /**
  * Get all payments.
@@ -13,7 +39,7 @@ const { buildDateRangeQuery } = require('./admin.shared.service');
  * backfilled into the Payment collection (status: paid, backfilledFrom:
  * 'subscription'), so all data is queryable via Payment directly.
  */
-async function getPayments({ page = 1, limit = 10, status, from, to, whitelabelId } = {}) {
+async function getPayments({ page = 1, limit = 10, status, search, from, to, whitelabelId } = {}) {
   const Payment = require('../../../models/PaymentModel');
   const skip = (page - 1) * limit;
 
@@ -29,6 +55,8 @@ async function getPayments({ page = 1, limit = 10, status, from, to, whitelabelI
     };
     if (map[status]) match.status = map[status];
   }
+  const searchClause = await buildPaymentSearchClause(search);
+  if (searchClause) Object.assign(match, searchClause);
   const dateRange = buildDateRangeQuery(from, to);
   if (Object.keys(dateRange).length > 0) match.createdAt = dateRange;
 
@@ -134,7 +162,7 @@ async function getPaymentDetail(paymentId) {
 /**
  * Export payments
  */
-async function exportPayments(whitelabelId, { status, from, to } = {}) {
+async function exportPayments(whitelabelId, { status, search, from, to } = {}) {
   const Payment = require('../../../models/PaymentModel');
   const match = {};
   if (whitelabelId !== undefined) match.whitelabelId = whitelabelId;
@@ -147,6 +175,8 @@ async function exportPayments(whitelabelId, { status, from, to } = {}) {
     };
     if (map[status]) match.status = map[status];
   }
+  const searchClause = await buildPaymentSearchClause(search);
+  if (searchClause) Object.assign(match, searchClause);
   const dateRange = buildDateRangeQuery(from, to);
   if (Object.keys(dateRange).length > 0) match.createdAt = dateRange;
 

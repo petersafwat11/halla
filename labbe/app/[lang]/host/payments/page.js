@@ -1,13 +1,14 @@
 import React from "react";
 import initTranslations from "@/localization/i18n";
 import ClientComponentsTranslationsProvider from "@/providers/ClientCompTrans";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import PaymentsClient from "./_components/PaymentsClient";
 
 const i18nNamespaces = ["hostPayments", "table"];
 
 const PaymentsPage = async ({ params }) => {
-  const { lang } = params;
-  const { t, resources } = await initTranslations(lang, i18nNamespaces);
+  const { lang } = await params;
+  const { resources } = await initTranslations(lang, i18nNamespaces);
 
   return (
     <ClientComponentsTranslationsProvider
@@ -15,7 +16,9 @@ const PaymentsPage = async ({ params }) => {
       namespaces={i18nNamespaces}
       resources={resources}
     >
-      <PaymentsClient />
+      <ErrorBoundary>
+        <PaymentsClient />
+      </ErrorBoundary>
     </ClientComponentsTranslationsProvider>
   );
 };

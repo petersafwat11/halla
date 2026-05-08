@@ -169,3 +169,24 @@ exports.getMyPayments = catchAsync(async (req, res) => {
 
   sendSuccess(res, result);
 });
+
+/**
+ * Export current user's payment history as Excel
+ * GET /api/v2/subscriptions/payments/export
+ */
+exports.exportMyPayments = catchAsync(async (req, res) => {
+  const { generateExcel } = require('../../shared/utils/excelExport');
+  const { status, from, to } = req.query;
+  const data = await subscriptionsService.exportMyPayments(req.user._id, {
+    status: status || 'all',
+    from,
+    to,
+  });
+  const buffer = generateExcel(data, 'my_payments');
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+  res.setHeader('Content-Disposition', 'attachment; filename=my_payments.xlsx');
+  res.send(buffer);
+});

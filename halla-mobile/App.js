@@ -148,6 +148,10 @@ function AppContent() {
           // an unauthenticated device land directly without forcing a
           // login first.
           Invitation: "invitation/:code",
+          // 3DS callback. Moyasar appends `?id=<moyasarId>&status=…` to
+          // the redirect URL we hand it at checkout time. The screen
+          // accepts either query param shape via `usePaymentPoll`.
+          PaymentReturn: "host/payments/return",
         },
       },
     }),

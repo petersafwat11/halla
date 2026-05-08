@@ -212,8 +212,13 @@ const getPageAccess = (user, page) => {
  * Check if user can perform action on a page
  * @param {Object} user - User object
  * @param {string} page - Page from ADMIN_PAGES
- * @param {string} action - 'view' | 'create' | 'update' | 'delete' | 'export'
+ * @param {string} action - 'view' | 'create' | 'update' | 'delete' | 'export' | 'manage'
  * @returns {boolean}
+ *
+ * The `manage` verb is for global-only sensitive actions (e.g. payment
+ * refund/capture/void). It requires FULL page access AND the user's role
+ * to be SUPER_ADMIN or ADMIN, so a WHITELABEL_ADMIN with FULL access on
+ * their org cannot pass it.
  */
 const canAccessPage = (user, page, action = 'view') => {
   const access = getPageAccess(user, page);
@@ -225,6 +230,12 @@ const canAccessPage = (user, page, action = 'view') => {
   }
   if (action === 'create' || action === 'update' || action === 'edit') {
     return access === ACCESS_LEVELS.FULL || access === ACCESS_LEVELS.EDIT;
+  }
+  if (action === 'manage') {
+    return (
+      access === ACCESS_LEVELS.FULL &&
+      (user.role === ROLES.SUPER_ADMIN || user.role === ROLES.ADMIN)
+    );
   }
 
   return false;

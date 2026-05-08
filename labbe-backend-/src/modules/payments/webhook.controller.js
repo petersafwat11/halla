@@ -39,9 +39,9 @@ const crypto = require('crypto');
 const Payment = require('../../../models/PaymentModel');
 const Subscription = require('../../../models/SubscriptionModel');
 const paymentsService = require('./payments.service');
-const subscriptionsService = require('../subscriptions/subscriptions.service');
 const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 const { logAudit } = require('../../shared/utils/auditLog');
+const logger = require('../../shared/utils/logger');
 
 const constantTimeEqual = (a, b) => {
   const ab = Buffer.from(String(a || ''));
@@ -57,8 +57,7 @@ const constantTimeEqual = (a, b) => {
 const verifySecret = (req) => {
   const expected = process.env.MOYASAR_WEBHOOK_SECRET;
   if (!expected) {
-    // eslint-disable-next-line no-console
-    console.error('[moyasar.webhook] MOYASAR_WEBHOOK_SECRET not configured — rejecting all traffic');
+    logger.error('[moyasar.webhook] MOYASAR_WEBHOOK_SECRET not configured — rejecting all traffic');
     return false;
   }
   const headerToken = req.get('x-moyasar-auth') || req.get('moyasar-auth');
@@ -78,8 +77,7 @@ const verifyIp = (req) => {
 
 exports.handle = async (req, res) => {
   if (!verifyIp(req)) {
-    // eslint-disable-next-line no-console
-    console.warn('[moyasar.webhook] rejected by IP allowlist:', req.ip);
+    logger.warn('[moyasar.webhook] rejected by IP allowlist', { ip: req.ip });
     return res.status(403).json({ status: 'error', message: 'forbidden' });
   }
   if (!verifySecret(req)) {
@@ -120,38 +118,12 @@ exports.handle = async (req, res) => {
         await payment.save();
 
         // Dispatch on `purpose` (set by the originating service): a
-        // single Payment row finalises EITHER a subscription OR an addon.
+        // single Payment row finalises EITHER a subscription OR an addon
+        // OR a bundled checkout. `runFinalization` swallows errors so the
+        // webhook still acks payment-state reconciliation; finalize
+        // failure already wrote a `pending_refund` audit row.
         if (eventType === 'payment_paid') {
-          const purpose = payment.metadata?.purpose;
-          try {
-            if (
-              purpose === 'subscription' &&
-              payment.metadata?.pendingSubscribeIntent &&
-              !payment.subscriptionId
-            ) {
-              await subscriptionsService.finalizePending3ds(payment._id);
-            } else if (
-              purpose === 'addon' &&
-              payment.metadata?.pendingAddonIntent &&
-              !payment.addonId
-            ) {
-              const addonsService = require('../addons/addons.service');
-              await addonsService.finalizePending3ds(payment._id);
-            } else if (
-              purpose === 'checkout' &&
-              payment.metadata?.pendingCheckoutIntent &&
-              !payment.metadata?.checkoutFinalizedAt
-            ) {
-              const checkoutService = require('./checkout.service');
-              await checkoutService.finalizePending3ds(payment._id);
-            }
-          } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('[moyasar.webhook] finalize3ds failed:', err?.message);
-            // Do NOT re-throw — the webhook still succeeded as far as
-            // payment-state reconciliation goes; finalize failure has
-            // already written a `pending_refund` audit row.
-          }
+          await paymentsService.runFinalization(payment);
         }
 
         await logAudit({
@@ -183,8 +155,7 @@ exports.handle = async (req, res) => {
     );
     return res.status(200).json({ status: 'success', ...result });
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('[moyasar.webhook] handler error:', err?.message);
+    logger.error('[moyasar.webhook] handler error', { error: err?.message });
     // Return 500 so Moyasar retries.
     return res.status(500).json({ status: 'error', message: 'internal' });
   }
@@ -212,8 +183,7 @@ async function handleInvoiceEvent(eventType, data) {
       try {
         await sub.renew();
       } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error('[invoice_paid] sub.renew() failed:', e?.message);
+        logger.error('[invoice_paid] sub.renew() failed', { error: e?.message });
       }
     }
     sub.metadata = { ...(sub.metadata || {}), pendingInvoiceId: null };

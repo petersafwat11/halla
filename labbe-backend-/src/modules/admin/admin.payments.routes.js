@@ -15,7 +15,10 @@ const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
  * /admin/payments:
  *   get:
  *     summary: Get all payments
- *     description: Retrieve a paginated list of subscription-based payment records. Admin only.
+ *     description: |
+ *       Retrieve a paginated list of payment records, with stats and pagination
+ *       envelope. Whitelabel-scoped via `filterByWhitelabel`. Optional `search`
+ *       matches against host name / email / Moyasar payment id (case-insensitive).
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -28,7 +31,11 @@ const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
  *         schema: { type: integer }
  *       - in: query
  *         name: status
- *         schema: { type: string, enum: [completed, pending, failed] }
+ *         schema: { type: string, enum: [all, completed, pending, failed, refunded] }
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *         description: Case-insensitive match against host name / email / Moyasar payment id
  *       - in: query
  *         name: from
  *         schema: { type: string, format: date }

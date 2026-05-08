@@ -178,6 +178,7 @@ export const API_PATHS = {
     getById: (id) => `/payments/${id}`,
     poll3ds: (id) => `/payments/${id}/poll`,
     checkout: '/payments/checkout',
+    export: '/subscriptions/payments/export',
   },
 
   // ============================================
@@ -352,7 +353,6 @@ export const API_PATHS = {
   payments: {
     getAll: '/admin/payments',
     getById: (id) => `/admin/payments/${id}`,
-    getSummary: '/admin/payments/summary',
     export: '/admin/payments/export',
     refund: (id) => `/payments/${id}/refund`,
     capture: (id) => `/payments/${id}/capture`,

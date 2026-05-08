@@ -1,103 +1,58 @@
 const paymentsService = require('./payments.service');
 const webhookController = require('./webhook.controller');
 const catchAsync = require('../../shared/utils/catchAsync');
-const { ROLES } = require('../../shared/constants');
+const { sendSuccess } = require('../../shared/utils/responseHelper');
+const logger = require('../../shared/utils/logger');
 
 exports.webhook = webhookController.handle;
 
 exports.getById = catchAsync(async (req, res) => {
-  const payment = await paymentsService.getById(req.params.id);
-  // Authorization: hosts may only see their own payments; admins see all.
-  const userId = String(req.user._id);
-  const isAdmin = [
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN,
-    ROLES.MODERATOR,
-    ROLES.WHITELABEL_ADMIN,
-    ROLES.WHITELABEL_MODERATOR,
-  ].includes(req.user.role);
-  if (!isAdmin && String(payment.userId?._id || payment.userId) !== userId) {
-    return res.status(403).json({ status: 'error', message: 'forbidden' });
-  }
-  return res.status(200).json({ status: 'success', data: payment });
+  const payment = await paymentsService.getById(req.params.id, req.user);
+  sendSuccess(res, payment);
 });
 
 exports.poll3ds = catchAsync(async (req, res) => {
-  let payment = await paymentsService.getById(req.params.id);
-  // Same self-only guard as getById — never leak payment status by id-guess.
-  const userId = String(req.user._id);
-  const isAdmin = [
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN,
-    ROLES.MODERATOR,
-    ROLES.WHITELABEL_ADMIN,
-    ROLES.WHITELABEL_MODERATOR,
-  ].includes(req.user.role);
-  if (!isAdmin && String(payment.userId?._id || payment.userId) !== userId) {
-    return res.status(403).json({ status: 'error', message: 'forbidden' });
-  }
+  let payment = await paymentsService.getById(req.params.id, req.user);
   if (payment.status === 'pending_3ds' || payment.status === 'pending') {
     payment = await paymentsService.reconcileWithProvider(payment._id);
     if (payment.status === 'paid') {
-      const purpose = payment.metadata?.purpose;
-      try {
-        if (
-          purpose === 'subscription' &&
-          payment.metadata?.pendingSubscribeIntent &&
-          !payment.subscriptionId
-        ) {
-          const subscriptionsService = require('../subscriptions/subscriptions.service');
-          await subscriptionsService.finalizePending3ds(payment._id);
-        } else if (
-          purpose === 'addon' &&
-          payment.metadata?.pendingAddonIntent &&
-          !payment.addonId
-        ) {
-          const addonsService = require('../addons/addons.service');
-          await addonsService.finalizePending3ds(payment._id);
-        } else if (
-          purpose === 'checkout' &&
-          payment.metadata?.pendingCheckoutIntent &&
-          !payment.metadata?.checkoutFinalizedAt
-        ) {
-          const checkoutService = require('./checkout.service');
-          await checkoutService.finalizePending3ds(payment._id);
-        }
-      } catch (_) { /* finalize errors emit their own pending_refund audit */ }
-      payment = await paymentsService.getById(payment._id);
+      await paymentsService.runFinalization(payment);
+      payment = await paymentsService.getById(payment._id, req.user);
     }
   }
-  return res.status(200).json({ status: 'success', data: payment });
+  sendSuccess(res, payment);
 });
 
-// Admin actions ────────────────────────────────────────────────
 exports.refund = catchAsync(async (req, res) => {
   const { amount, reason } = req.body || {};
   const payment = await paymentsService.issueRefund({
     paymentId: req.params.id,
-    amount: typeof amount === 'number' ? amount : undefined,
+    amount,
     reason,
     actorUserId: req.user._id,
+    actorRole: req.user.role,
   });
-  return res.status(200).json({ status: 'success', data: payment });
+  sendSuccess(res, payment, 'Refund issued');
 });
 
 exports.capture = catchAsync(async (req, res) => {
   const { amount } = req.body || {};
   const payment = await paymentsService.capturePayment({
     paymentId: req.params.id,
-    amount: typeof amount === 'number' ? amount : undefined,
+    amount,
     actorUserId: req.user._id,
+    actorRole: req.user.role,
   });
-  return res.status(200).json({ status: 'success', data: payment });
+  sendSuccess(res, payment, 'Payment captured');
 });
 
 exports.void = catchAsync(async (req, res) => {
   const payment = await paymentsService.voidPayment({
     paymentId: req.params.id,
     actorUserId: req.user._id,
+    actorRole: req.user.role,
   });
-  return res.status(200).json({ status: 'success', data: payment });
+  sendSuccess(res, payment, 'Payment voided');
 });
 
 // Stub-only: allow tests to flip a stub payment to `paid` without
@@ -106,5 +61,8 @@ exports.stubComplete3ds = catchAsync(async (req, res) => {
   if (process.env.MOYASAR_API_KEY) return res.status(404).end();
   const stub = require('../../infrastructure/paymentProvider/stub');
   stub._setStubStatus(req.query.id, 'paid');
+  logger.warn('[payments] stub 3DS completion used — must not happen in production', {
+    moyasarId: req.query.id,
+  });
   res.send('Stub 3DS complete. You may close this window.');
 });

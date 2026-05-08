@@ -9,6 +9,7 @@ export * from './queries/useVendor';
 export * from './queries/useUser';
 export * from './queries/useAdmin';
 export * from './queries/useAdminInfinite';
+export * from './queries/usePaymentPoll';
 export * from './queries/useAddons';
 export * from './queries/useDiscounts';
 export { useDebouncedValue } from './useDebouncedValue';

@@ -71,11 +71,16 @@ export const ENDPOINTS = {
     ADMIN_ACTIVATE: (id) => `/addons/admin/${id}/activate`,
   },
 
-  // Payments endpoints (host-facing)
+  // Payments endpoints. Host-self lock + manage RBAC verb live on
+  // `/payments/:id/{refund|capture|void}` so admin surfaces hit the
+  // same canonical paths rather than admin-prefixed mirrors.
   PAYMENTS: {
     CHECKOUT: "/payments/checkout",
     BY_ID: (id) => `/payments/${id}`,
     POLL_3DS: (id) => `/payments/${id}/poll`,
+    REFUND: (id) => `/payments/${id}/refund`,
+    CAPTURE: (id) => `/payments/${id}/capture`,
+    VOID: (id) => `/payments/${id}/void`,
   },
 
   // Events endpoints
@@ -273,7 +278,6 @@ export const ENDPOINTS = {
     PAYMENTS: {
       BASE: "/admin/payments",
       BY_ID: (id) => `/admin/payments/${id}`,
-      SUMMARY: "/admin/payments/summary",
       EXPORT: "/admin/payments/export",
     },
     PLANS: {
