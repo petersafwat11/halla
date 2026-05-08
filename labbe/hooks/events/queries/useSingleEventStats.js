@@ -5,7 +5,7 @@ import { apiRequest } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 
 /**
- * Stats polling cadence (Phase 3d.4 / decision D4).
+ * Stats polling cadence:
  *
  *   live      → 30s
  *   completed → 5min

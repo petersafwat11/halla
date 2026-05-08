@@ -1,18 +1,16 @@
 "use client";
 
 /**
- * PartialFailureBanner — Phase 4b W1-GATE-FAIL.
- *
  * Sibling of `EventFailureBanner`. Renders a softer "warning"-tier
  * banner when the event has actually launched (status `live`) but the
  * bulk send didn't deliver to every guest (`messagingStatus.failedCount
- * > 0`). The existing `EventFailureBanner` only fires for `status ===
- * 'failed'` (full-launch failure) and for in-flight retries — partial
- * delivery on a live event was previously invisible to the host.
+ * > 0`). `EventFailureBanner` only fires for `status === 'failed'`
+ * (full-launch failure) and for in-flight retries — partial delivery
+ * on a live event was previously invisible to the host.
  *
- * D9: any failed → show. The host can decide whether to retry the
- * failed sends from the existing failure list (out of scope here) or
- * accept the partial coverage.
+ * Any failed → show. The host can decide whether to retry the failed
+ * sends from the existing failure list (out of scope here) or accept
+ * the partial coverage.
  *
  * Mounted on the host single-event page next to `EventStats`.
  */
