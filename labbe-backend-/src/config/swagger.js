@@ -1314,18 +1314,87 @@ const swaggerOptions = {
         // Messaging Request Models
         SendMessageRequest: {
           type: 'object',
-          required: ['guestId', 'message'],
+          required: ['guestId', 'eventId'],
           properties: {
-            guestId: {
+            guestId: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },
+            eventId: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },
+            channel: {
               type: 'string',
-            },
-            message: {
-              type: 'string',
-            },
-            type: {
-              type: 'string',
-              enum: ['sms', 'whatsapp', 'email'],
+              enum: ['sms', 'whatsapp'],
               default: 'sms',
+            },
+          },
+        },
+        SendBulkRequest: {
+          type: 'object',
+          required: ['guestIds', 'eventId'],
+          properties: {
+            guestIds: {
+              type: 'array',
+              items: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },
+              minItems: 1,
+              maxItems: 5000,
+            },
+            eventId: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },
+            channel: {
+              type: 'string',
+              enum: ['sms', 'whatsapp'],
+              default: 'sms',
+            },
+          },
+        },
+        RetryMessageRequest: {
+          type: 'object',
+          required: ['eventId'],
+          properties: {
+            eventId: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },
+            channel: {
+              type: 'string',
+              enum: ['sms', 'whatsapp'],
+              default: 'sms',
+            },
+          },
+        },
+        SendReminderRequest: {
+          type: 'object',
+          required: ['eventId'],
+          properties: {
+            eventId: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },
+            guestIds: {
+              type: 'array',
+              items: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },
+            },
+            channel: {
+              type: 'string',
+              enum: ['sms', 'whatsapp'],
+              default: 'sms',
+            },
+            customMessage: { type: 'string', maxLength: 1000 },
+            reminderTemplateName: {
+              type: 'string',
+              pattern: '^[a-z0-9_]{1,80}$',
+            },
+          },
+        },
+        ScheduleSendRequest: {
+          type: 'object',
+          required: ['eventId', 'scheduledDate', 'scheduledTime'],
+          properties: {
+            eventId: { type: 'string', pattern: '^[0-9a-fA-F]{24}$' },
+            scheduledDate: {
+              type: 'string',
+              format: 'date-time',
+              description: 'ISO 8601 date or date-time, must be in the future',
+            },
+            scheduledTime: {
+              type: 'string',
+              pattern: '^([01]\\d|2[0-3]):[0-5]\\d$',
+              description: 'HH:mm 24-hour wall-clock time (Asia/Riyadh)',
+            },
+            channel: {
+              type: 'string',
+              enum: ['sms', 'whatsapp'],
+              default: 'whatsapp',
             },
           },
         },

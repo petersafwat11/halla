@@ -7,7 +7,7 @@ import { z } from "zod";
 import styles from "./testMessagePopup.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import Button from "@/ui/commen/button/Button";
-import { useEventMutation } from "@/hooks/reactQueryHooks/useEvents";
+import { useSendTestMessage } from "@/hooks/reactQueryHooks/useMessaging";
 import { toast } from "react-toastify";
 
 const testMessageSchema = (t) =>
@@ -21,7 +21,7 @@ const testMessageSchema = (t) =>
 
 const TestMessagePopup = ({ onConfirm, onCancel, eventId }) => {
   const { t } = useTranslation("home-events");
-  const sendTestMessage = useEventMutation("sendTestMessage");
+  const sendTestMessage = useSendTestMessage();
 
   const methods = useForm({
     resolver: zodResolver(testMessageSchema(t)),
@@ -45,10 +45,8 @@ const TestMessagePopup = ({ onConfirm, onCancel, eventId }) => {
     try {
       await sendTestMessage.mutateAsync({
         eventId,
-        data: {
-          phoneNumber: data.phoneNumber,
-          channel: data.channel,
-        },
+        phoneNumber: data.phoneNumber,
+        channel: data.channel,
       });
       toast.success(
         t("testMessage.success") || "Test message sent successfully"

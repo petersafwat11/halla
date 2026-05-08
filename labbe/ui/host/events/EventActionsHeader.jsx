@@ -26,9 +26,9 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
   // Resolve the event ID robustly — Mongoose virtual `id` OR raw `_id`
   const effectiveEventId = event?.id?.toString() || event?._id?.toString();
 
-  // Phase 4b W1-GATE-FAIL: gate logic centralised in `useEventActionGate`
-  // so the header, the dashboard widget, and the mobile companions all
-  // resolve action visibility identically. (Manual-retry RBAC stays in
+  // Gate logic centralised in `useEventActionGate` so the header, the
+  // dashboard widget, and the mobile companions all resolve action
+  // visibility identically. (Manual-retry RBAC stays in
   // `EventFailureBanner`; here we only need the test/schedule/staff
   // gates so the existing `event` prop is enough.)
   const { canSendTest, canSchedule, hasStaff, isCompleted } =

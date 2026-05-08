@@ -9,11 +9,11 @@ import Button from "@/ui/commen/button/Button";
 import DatePicker from "@/ui/commen/inputs/datePicker";
 import TimePicker from "@/ui/commen/inputs/TimePicker";
 import { toast } from "react-toastify";
-import { useEventMutation } from "@/hooks/reactQueryHooks/useEvents";
+import { useScheduleSend } from "@/hooks/reactQueryHooks/useMessaging";
 
 const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule }) => {
   const { t } = useTranslation("common");
-  const scheduleSend = useEventMutation("scheduleSend");
+  const scheduleSend = useScheduleSend();
 
   // Calculate minimum date (2 days from now)
   const getTwoDaysFromNow = () => {

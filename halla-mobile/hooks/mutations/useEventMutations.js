@@ -16,15 +16,17 @@ export { useUpdateGuestList } from "./useEventGuestMutations";
 export { useNotifyStaff } from "./useEventStaffMutations";
 
 export {
-  useSubmitTemplate,
-  useSendTestMessage,
-  useScheduleSend,
-  useSendBulkInvitations,
-  useRetryFailed,
   useUpdateInvitationSettings,
   useUpdateLaunchSettings,
   useUpdateVisualTemplate,
   useUpdateTaqnyatTemplate,
   useUpdateMessagingContent,
-  useSendReminder,
 } from "./useEventSettingsMutations";
+
+export {
+  useSendTestMessage,
+  useScheduleSend,
+  useSendBulkInvitations,
+  useRetryFailed,
+  useSendReminder,
+} from "./useMessagingMutations";

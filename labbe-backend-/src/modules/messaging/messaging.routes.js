@@ -15,194 +15,76 @@ const router = express.Router();
 const messagingController = require('./messaging.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { requireSubscription } = require('../../shared/middleware/subscription');
-const { validateObjectId } = require('../../shared/middleware/validation');
+const { validateZod } = require('../../shared/middleware/validation');
+const { idempotency } = require('../../shared/middleware/idempotency');
+const {
+  authLimiter,
+  bulkOperationLimiter,
+  webhookLimiter,
+} = require('../../shared/middleware/rateLimiter');
+const {
+  sendMessageSchema,
+  sendBulkSchema,
+  retrySchema,
+  scheduleSchema,
+  reminderSchema,
+} = require('./messaging.validation');
 
-// Webhook routes (no auth required - called by Taqnyat/Meta)
-/**
- * @swagger
- * /messaging/webhook:
- *   get:
- *     summary: WhatsApp webhook verification
- *     description: Verify webhook endpoint for WhatsApp/Meta
- *     tags: [Messaging]
- *     parameters:
- *       - in: query
- *         name: hub.mode
- *         schema:
- *           type: string
- *       - in: query
- *         name: hub.verify_token
- *         schema:
- *           type: string
- *       - in: query
- *         name: hub.challenge
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Webhook verified
- */
+// Webhook routes (no auth required — called by Taqnyat / Meta).
 router.get('/webhook', messagingController.webhookVerify);
+router.post('/webhook', webhookLimiter, messagingController.webhook);
 
-/**
- * @swagger
- * /messaging/webhook:
- *   post:
- *     summary: WhatsApp webhook callback
- *     description: Receive webhook events from WhatsApp/Meta
- *     tags: [Messaging]
- *     responses:
- *       200:
- *         description: Webhook received
- */
-router.post('/webhook', messagingController.webhook);
-
-// Protected routes
+// All routes below require an authenticated user.
 router.use(protect);
 
-// FLOW-16-F01: POST /messaging/test removed — canonical endpoint is PATCH /events/:id/test-message
+// Schedule a future bulk send.
+router.post(
+  '/schedule',
+  requireSubscription,
+  bulkOperationLimiter,
+  idempotency({ scope: 'messaging.schedule' }),
+  validateZod(scheduleSchema),
+  messagingController.scheduleSend
+);
 
-// Approved templates list (for event creation step 4 dropdown)
-router.get('/templates/approved', messagingController.getApprovedTemplates);
+// Send invitation to a single guest.
+router.post(
+  '/send',
+  requireSubscription,
+  authLimiter,
+  idempotency({ scope: 'messaging.send' }),
+  validateZod(sendMessageSchema),
+  messagingController.sendToGuest
+);
 
-// Template status
-router.get('/template/status/:eventId', validateObjectId('eventId'), messagingController.getTemplateStatus);
+// Send bulk invitations.
+router.post(
+  '/send-bulk',
+  requireSubscription,
+  bulkOperationLimiter,
+  idempotency({ scope: 'messaging.send_bulk' }),
+  validateZod(sendBulkSchema),
+  messagingController.sendBulk
+);
 
-// Schedule bulk send
-router.post('/schedule', requireSubscription, messagingController.scheduleSend);
+// Retry failed invitations.
+router.post(
+  '/retry',
+  requireSubscription,
+  bulkOperationLimiter,
+  idempotency({ scope: 'messaging.retry' }),
+  validateZod(retrySchema),
+  messagingController.retryFailed
+);
 
-// Send invitations
-/**
- * @swagger
- * /messaging/send:
- *   post:
- *     summary: Send message to guest
- *     description: Send a message to a specific guest
- *     tags: [Messaging]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/SendMessageRequest'
- *     responses:
- *       200:
- *         description: Message sent
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.post('/send', requireSubscription, messagingController.sendToGuest);
-
-/**
- * @swagger
- * /messaging/send-bulk:
- *   post:
- *     summary: Send bulk messages
- *     description: Send messages to multiple guests at once
- *     tags: [Messaging]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Bulk messages sent
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.post('/send-bulk', requireSubscription, messagingController.sendBulk);
-
-/**
- * @swagger
- * /messaging/retry:
- *   post:
- *     summary: Retry failed message
- *     description: Retry sending a previously failed message
- *     tags: [Messaging]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Message retried
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.post('/retry', requireSubscription, messagingController.retryFailed);
-
-// Send reminders
-/**
- * @swagger
- * /messaging/send-reminder:
- *   post:
- *     summary: Send event reminder
- *     description: Send a reminder message for an event
- *     tags: [Messaging]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Reminder sent
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.post('/send-reminder', requireSubscription, messagingController.sendReminder);
-
-// Balance check
-/**
- * @swagger
- * /messaging/balance:
- *   get:
- *     summary: Get messaging balance
- *     description: Get current messaging credit balance
- *     tags: [Messaging]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Balance retrieved
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.get('/balance', messagingController.checkBalance);
-
-// Statistics
-/**
- * @swagger
- * /messaging/stats/{eventId}:
- *   get:
- *     summary: Get detailed messaging stats
- *     description: Get detailed messaging statistics for an event
- *     tags: [Messaging]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - $ref: '#/components/parameters/EventIdParam'
- *     responses:
- *       200:
- *         description: Stats retrieved
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.get('/stats/:eventId', validateObjectId('eventId'), messagingController.getDetailedStats);
-
-// Status
-/**
- * @swagger
- * /messaging/status/{eventId}:
- *   get:
- *     summary: Get messaging status
- *     description: Get messaging status for an event
- *     tags: [Messaging]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - $ref: '#/components/parameters/EventIdParam'
- *     responses:
- *       200:
- *         description: Status retrieved
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.get('/status/:eventId', validateObjectId('eventId'), messagingController.getStatus);
+// Send reminders to pending guests.
+router.post(
+  '/send-reminder',
+  requireSubscription,
+  bulkOperationLimiter,
+  idempotency({ scope: 'messaging.reminder' }),
+  validateZod(reminderSchema),
+  messagingController.sendReminder
+);
 
 module.exports = router;

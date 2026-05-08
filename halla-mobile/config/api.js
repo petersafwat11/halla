@@ -210,24 +210,19 @@ export const ENDPOINTS = {
   MESSAGING: {
     SEND: "/messaging/send",
     SEND_BULK: "/messaging/send-bulk",
-    SEND_TEST: "/messaging/test",
     RETRY: "/messaging/retry",
     SEND_REMINDER: "/messaging/send-reminder",
     SCHEDULE: "/messaging/schedule",
-    STATS: (eventId) => `/messaging/stats/${eventId}`,
-    BALANCE: "/messaging/balance",
-    TEMPLATE_SUBMIT: "/messaging/template/submit",
-    TEMPLATE_STATUS: (eventId) => `/messaging/template/status/${eventId}`,
   },
 
-  // Templates endpoints — Phase 4c W2-MOBILE-WIZARD wires these to
-  // the new backend cache. Categories now live at /template-categories.
+  // Templates endpoints — backed by the cached templates table; categories
+  // are served from /template-categories.
   TEMPLATES: {
     LIST: "/templates",
     CATEGORIES: "/template-categories",
   },
 
-  // Phase 4c W2-MOBILE-WIZARD — Taqnyat-template cache for the picker.
+  // Taqnyat-template cache that powers the wizard picker.
   TAQNYAT_TEMPLATES: {
     LIST: "/taqnyat-templates",
   },

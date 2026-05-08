@@ -4,15 +4,20 @@ import { useParams, useRouter } from "next/navigation";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import { useGuestMutation } from "@/hooks/reactQueryHooks/useGuests";
-import messagingService from "@/services/messaging";
+import {
+  useSendBulkInvitations,
+  useSendReminder,
+} from "@/hooks/reactQueryHooks/useMessaging";
 
 export default function useAdminGuestActions({ guests, t }) {
   const router = useRouter();
-  const { id: eventId, lang } = useParams();
+  const { id: eventId } = useParams();
 
   const updateGuestMutation = useGuestMutation("update");
   const deleteGuestMutation = useGuestMutation("delete");
   const exportGuestsMutation = useGuestMutation("export");
+  const sendReminderMutation = useSendReminder();
+  const sendBulkInvitationsMutation = useSendBulkInvitations();
 
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [showReminderPopup, setShowReminderPopup] = useState(false);
@@ -100,7 +105,11 @@ export default function useAdminGuestActions({ guests, t }) {
 
   const handleConfirmReminder = async (message) => {
     try {
-      await messagingService.sendReminder(eventId, "sms", lang || "ar", message);
+      await sendReminderMutation.mutateAsync({
+        eventId,
+        channel: "sms",
+        customMessage: message,
+      });
       toastUtils.success(
         t("reminderPopup.success", "Reminder sent successfully")
       );
@@ -126,13 +135,12 @@ export default function useAdminGuestActions({ guests, t }) {
     if (selectedGuests.length === 0) return;
     setIsSendingInvitation(true);
     try {
-      const result = await messagingService.sendBulkInvitations(
-        selectedGuests,
+      const result = await sendBulkInvitationsMutation.mutateAsync({
+        guestIds: selectedGuests,
         eventId,
         channel,
-        lang || "ar"
-      );
-      if (result.status === "success") {
+      });
+      if (result?.status === "success") {
         toastUtils.success(
           t("messaging.invitationsSent", {
             count: result.data?.successful || selectedGuests.length,
