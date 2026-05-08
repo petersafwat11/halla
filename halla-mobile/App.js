@@ -143,6 +143,11 @@ function AppContent() {
       config: {
         screens: {
           SetupPassword: "setup-password/:token",
+          // Whitelabel guest portal — `halla://invitation/<code>`. The
+          // screen is registered on AuthStack so SMS/WhatsApp taps from
+          // an unauthenticated device land directly without forcing a
+          // login first.
+          Invitation: "invitation/:code",
         },
       },
     }),

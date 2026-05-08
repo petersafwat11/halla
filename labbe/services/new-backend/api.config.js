@@ -59,7 +59,6 @@ export const API_PATHS = {
 
     // Export
     exportEventsAsExcel: '/events/export/events',
-    exportEventGuestsAsExcel: (id) => `/events/export/${id}/guests`,
 
     // CRUD
     createEvent: '/events',
@@ -82,11 +81,6 @@ export const API_PATHS = {
     // Delete
     deleteEvent: (id) => `/events/${id}`,
     bulkDeleteEvents: '/events/bulk-delete',
-
-    // Guest Management
-    addGuestToEvent: (eventId) => `/events/${eventId}/guests`,
-    updateEventGuest: (eventId, guestId) => `/events/${eventId}/guests/${guestId}`,
-    deleteEventGuest: (eventId, guestId) => `/events/${eventId}/guests/${guestId}`,
 
     // Staff Management
     addStaff: (eventId) => `/events/${eventId}/staff`,

@@ -74,9 +74,6 @@ export const useBulkDeleteEvents = () => useEventCrudMutation("bulkDeleteEvents"
 
 // Guest
 export const useUpdateGuestList = () => useEventGuestMutation("updateGuestList");
-export const useAddGuest = () => useEventGuestMutation("addGuest");
-export const useUpdateGuest = () => useEventGuestMutation("updateGuest");
-export const useDeleteGuest = () => useEventGuestMutation("deleteGuest");
 
 // Staff
 export const useUpdateStaffList = () => useEventStaffMutation("updateStaffList");

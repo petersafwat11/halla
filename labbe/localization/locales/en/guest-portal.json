@@ -1,0 +1,41 @@
+{
+  "guestPortal": {
+    "errors": {
+      "title": "Unable to load invitation",
+      "notFound": "Invitation not found. Please check your link.",
+      "forbidden": "This invitation link is no longer valid.",
+      "notAcceptingRsvps": "This event is no longer accepting RSVPs.",
+      "network": "Network error. Please check your connection and try again.",
+      "unknown": "Something went wrong. Please try again."
+    },
+    "confirmed": {
+      "title": "You're confirmed!",
+      "welcome": "Welcome, {{name}}! We can't wait to see you. Show this QR at the door."
+    },
+    "declined": {
+      "title": "Thank you for letting us know",
+      "body": "We'll miss you. Thank you for replying."
+    },
+    "maybe": {
+      "title": "Thank you for your response",
+      "body": "We've noted your response. You can update it later if you change your mind."
+    },
+    "hostedBy": "Hosted by {{host}}",
+    "fields": {
+      "date": "Date",
+      "venue": "Venue",
+      "message": "Message (optional)",
+      "messagePlaceholder": "Add a note for the host",
+      "dietary": "Dietary restrictions (optional)",
+      "plusOnes": "Plus ones (optional)"
+    },
+    "invite": {
+      "greeting": "Hi {{name}}, will you be joining us?"
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "maybe": "Maybe",
+      "decline": "Decline"
+    }
+  }
+}

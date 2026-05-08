@@ -39,6 +39,7 @@ import PostEventScreen from "../screens/host/PostEventScreen";
 import StaffPortalScreen from "../screens/common/StaffPortalScreen";
 import HostPostEventScreen from "../screens/host/HostPostEventScreen";
 import SetupPasswordScreen from "../screens/auth/SetupPasswordScreen";
+import InvitationScreen from "../screens/guest-portal/InvitationScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -241,6 +242,10 @@ function AuthStack() {
       <Stack.Screen name="StaffPortal" component={StaffPortalScreen} />
       {/* Phase 4 W3-WL — also reachable via halla://setup-password/<token> */}
       <Stack.Screen name="SetupPassword" component={SetupPasswordScreen} />
+      {/* Whitelabel guest invitation — public, deep-linkable via
+          halla://invitation/<code>. No auth required; the invitation
+          code itself is the proof of identity. */}
+      <Stack.Screen name="Invitation" component={InvitationScreen} />
     </Stack.Navigator>
   );
 }
@@ -260,6 +265,7 @@ function HostStack() {
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
       <Stack.Screen name="HostPostEvent" component={HostPostEventScreen} />
+      <Stack.Screen name="Invitation" component={InvitationScreen} />
     </Stack.Navigator>
   );
 }
@@ -277,6 +283,7 @@ function VendorStack() {
 
       <Stack.Screen name="VendorSettings" component={VendorSettingsScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen name="Invitation" component={InvitationScreen} />
     </Stack.Navigator>
   );
 }
@@ -291,6 +298,7 @@ function AdminStack() {
     >
       <Stack.Screen name="MainTabs" component={AdminNavigator} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen name="Invitation" component={InvitationScreen} />
     </Stack.Navigator>
   );
 }

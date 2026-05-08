@@ -120,27 +120,6 @@ exports.exportEventsAsExcel = catchAsync(async (req, res) => {
   res.send(buffer);
 });
 
-/**
- * Export event guests as Excel
- * GET /api/v2/events/export/:id/guests
- */
-exports.exportEventGuestsAsExcel = catchAsync(async (req, res) => {
-  const buffer = await eventsService.exportEventGuestsAsExcel(
-    req.params.id,
-    req.user._id
-  );
-
-  res.setHeader(
-    "Content-Type",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  );
-  res.setHeader(
-    "Content-Disposition",
-    `attachment; filename=event-${req.params.id}-guests.xlsx`
-  );
-  res.send(buffer);
-});
-
 // ============================================
 // CRUD OPERATIONS
 // ============================================
@@ -316,48 +295,6 @@ exports.sendTestMessage = catchAsync(async (req, res) => {
     req.user
   );
   sendSuccess(res, result, "Test message sent");
-});
-
-// ============================================
-// GUEST MANAGEMENT
-// ============================================
-
-/**
- * Add guest to event
- * POST /api/v2/events/:eventId/guests
- */
-exports.addGuestToEvent = catchAsync(async (req, res) => {
-  const result = await eventsService.addGuestToEvent(
-    req.params.eventId,
-    req.body,
-    req.user._id
-  );
-  sendCreated(res, result, "Guest added successfully");
-});
-
-/**
- * Update event guest
- * PUT /api/v2/events/:eventId/guests/:guestId
- */
-exports.updateEventGuest = catchAsync(async (req, res) => {
-  const { eventId, guestId } = req.params;
-  const result = await eventsService.updateEventGuest(
-    eventId,
-    guestId,
-    req.body,
-    req.user._id
-  );
-  sendSuccess(res, result, "Guest updated successfully");
-});
-
-/**
- * Delete event guest
- * DELETE /api/v2/events/:eventId/guests/:guestId
- */
-exports.deleteEventGuest = catchAsync(async (req, res) => {
-  const { eventId, guestId } = req.params;
-  await eventsService.deleteEventGuest(eventId, guestId, req.user._id);
-  sendDeleted(res, "Guest deleted successfully");
 });
 
 // ============================================

@@ -77,6 +77,25 @@ const guestSchema = new mongoose.Schema(
       respondedAt: {
         type: Date,
       },
+      response: {
+        type: String,
+        enum: Object.values(RSVP_STATUS),
+      },
+      message: {
+        type: String,
+        trim: true,
+        maxlength: 500,
+      },
+      dietaryRestrictions: {
+        type: String,
+        trim: true,
+        maxlength: 200,
+      },
+      plusOnes: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
     },
 
     // Check-in Information
@@ -88,12 +107,9 @@ const guestSchema = new mongoose.Schema(
       checkedInAt: {
         type: Date,
       },
-      // H-21: record who performed the check-in. Could be a Host (event
-      // owner self-checkin), a Staff token (no User ref — `checkedInByStaff`
-      // captures the StaffAccessToken `_id` and staff name in that case),
-      // or an admin. The User ref handles the first and third; staff is
-      // captured separately because the staff scanner authenticates with a
-      // StaffAccessToken, not a User.
+      // Records who checked in the guest: a User (host or admin) on
+      // `checkedInBy`, or a staff scanner (StaffAccessToken) on
+      // `checkedInByStaff` since staff don't have User accounts.
       checkedInBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -175,10 +191,10 @@ const guestSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
-      // FLOW-15-F06: true when Taqnyat returned 429 — guest is transient, not permanently failed
+      // True when Taqnyat returned 429 — transient, not permanently failed
       rateLimited: { type: Boolean, default: false },
     },
-    // FLOW-13-F02: soft-delete tombstone — set instead of deleteMany on guest removal
+    // Soft-delete tombstone — set instead of deleteMany on guest removal
     deleted: { type: Boolean, default: false },
     deletedAt: { type: Date },
   },
@@ -284,13 +300,6 @@ guestSchema.statics.getEventStats = async function (eventId) {
 
   return result;
 };
-
-// M-25: removed dead `performCheckIn` instance method. It set
-// `status = 'attended'` which is NOT a value in GUEST_STATUS — any caller
-// would have thrown on save. Check-in now goes exclusively through
-// `staffService._performIdempotentCheckIn` which uses the atomic CAS on
-// `status` and records the actor in `checkIn.checkedInBy` /
-// `checkIn.checkedInByStaff` (H-21).
 
 // Instance method to send invitation
 guestSchema.methods.sendInvitation = function (method = "email") {

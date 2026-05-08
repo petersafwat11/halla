@@ -98,17 +98,12 @@ export const ENDPOINTS = {
     TEST_MESSAGE: (id) => `/events/${id}/test-message`,
     DELETE: (id) => `/events/${id}`,
     BULK_DELETE: "/events/bulk-delete",
-    // Guest management
-    ADD_GUEST: (eventId) => `/events/${eventId}/guests`,
-    UPDATE_GUEST: (eventId, guestId) => `/events/${eventId}/guests/${guestId}`,
-    DELETE_GUEST: (eventId, guestId) => `/events/${eventId}/guests/${guestId}`,
     // Staff management
     ADD_STAFF: (eventId) => `/events/${eventId}/staff`,
     UPDATE_STAFF: (eventId, staffId) => `/events/${eventId}/staff/${staffId}`,
     DELETE_STAFF: (eventId, staffId) => `/events/${eventId}/staff/${staffId}`,
     // Export
     EXPORT_EVENTS: "/events/export/events",
-    EXPORT_GUESTS: (id) => `/events/export/${id}/guests`,
     // Staff notification
     NOTIFY_STAFF: (eventId) => `/events/${eventId}/notify-staff`,
     // Manual launch retry

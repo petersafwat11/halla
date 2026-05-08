@@ -42,7 +42,7 @@ export default function EventDetailsContent({ eventId }) {
         <EventStats data={eventData} />
 
         <div className={styles.membersData}>
-          <AdminGuestTable data={eventData} />
+          <AdminGuestTable />
         </div>
       </div>
     </>
