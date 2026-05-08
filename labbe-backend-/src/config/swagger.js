@@ -564,69 +564,306 @@ const swaggerOptions = {
 
         Plan: {
           type: 'object',
+          description:
+            'Subscription plan as returned by `_formatPlan` in plans.service.js. ' +
+            '`pricing.oneTime` is in SAR major units (e.g. 29 = 29.00 SAR).',
           properties: {
-            _id: {
+            id: { type: 'string' },
+            code: { type: 'string', example: 'host_basic_monthly' },
+            planType: {
               type: 'string',
+              enum: [
+                'trial',
+                'basic_event', 'basic_monthly',
+                'premium_event', 'premium_monthly',
+                'business_event', 'business_quarterly', 'business_annual',
+                'unlimited',
+              ],
             },
-            code: {
+            planFamily: {
               type: 'string',
-              example: 'host_basic_monthly',
+              nullable: true,
+              enum: ['basic', 'premium', 'business', null],
+            },
+            billingType: {
+              type: 'string',
+              nullable: true,
+              enum: ['event', 'monthly', 'quarterly', 'annual', null],
+            },
+            availableFor: {
+              type: 'string',
+              enum: ['host', 'whitelabel', 'platform_admin'],
             },
             name: {
               type: 'object',
               properties: {
-                en: {
-                  type: 'string',
-                },
-                ar: {
-                  type: 'string',
-                },
+                ar: { type: 'string' },
+                en: { type: 'string' },
               },
             },
+            nameAr: { type: 'string' },
+            nameEn: { type: 'string' },
             description: {
               type: 'object',
               properties: {
-                en: {
-                  type: 'string',
-                },
-                ar: {
-                  type: 'string',
-                },
+                ar: { type: 'string' },
+                en: { type: 'string' },
               },
             },
-            type: {
-              type: 'string',
-              enum: ['single_event', 'monthly', 'enterprise'],
+            descriptionAr: { type: 'string' },
+            descriptionEn: { type: 'string' },
+            pricing: {
+              type: 'object',
+              properties: {
+                oneTime: {
+                  type: 'number',
+                  description:
+                    'Price in SAR major units (Saudi Riyals). E.g. 29 = 29.00 SAR. ' +
+                    'Max 2 decimal places. Conversion to halalas happens inside the payment provider.',
+                  example: 29,
+                },
+              },
             },
             price: {
               type: 'number',
+              description: 'Convenience alias for `pricing.oneTime` (SAR major units).',
             },
             currency: {
               type: 'string',
+              enum: ['SAR', 'USD', 'EUR', 'AED', 'KWD', 'BHD', 'QAR', 'OMR'],
               example: 'SAR',
-            },
-            features: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
             },
             limits: {
               type: 'object',
               properties: {
-                eventsPerMonth: {
-                  type: 'integer',
-                },
-                guestsPerEvent: {
-                  type: 'integer',
-                },
-                messagesPerMonth: {
-                  type: 'integer',
+                maxEvents: { type: 'integer', description: '-1 = unlimited' },
+                maxInvitesPerEvent: { type: 'integer', nullable: true },
+                invitePool: { type: 'integer', nullable: true },
+                durationDays: { type: 'integer' },
+                maxHosts: { type: 'integer', nullable: true },
+              },
+            },
+            invites: {
+              type: 'integer',
+              nullable: true,
+              description: 'Per-event invite ceiling (null for pool plans).',
+            },
+            invitePool: {
+              type: 'integer',
+              nullable: true,
+              description: 'Total pool size for pool plans (null for per-event plans).',
+            },
+            compensationPool: {
+              type: 'integer',
+              nullable: true,
+              description: 'Compensation invites granted (pool plans only); = floor(invitePool * compensationPercentage / 100).',
+            },
+            compensationPercentage: {
+              type: 'number',
+              description: 'Percentage of invites granted as compensation (default per plan; see PlanModel).',
+            },
+            features: {
+              type: 'object',
+              description: 'Feature toggles + numerics (see PlanModel.featuresSchema).',
+              additionalProperties: true,
+            },
+            featuresArray: {
+              type: 'array',
+              description: 'Pre-built feature labels for UI rendering.',
+              items: { type: 'object' },
+            },
+            isActive: { type: 'boolean' },
+            sortOrder: { type: 'integer' },
+          },
+        },
+
+        PlanCreate: {
+          type: 'object',
+          description: 'Body for `POST /plans/admin`. See `plans.schemas.js`.',
+          required: [
+            'code', 'planType', 'nameAr', 'nameEn',
+            'pricing', 'limits', 'features',
+          ],
+          properties: {
+            code: {
+              type: 'string',
+              description: 'Lowercase snake_case unique identifier.',
+              example: 'host_basic_monthly',
+            },
+            planType: {
+              type: 'string',
+              enum: [
+                'trial',
+                'basic_event', 'basic_monthly',
+                'premium_event', 'premium_monthly',
+                'business_event', 'business_quarterly', 'business_annual',
+                'unlimited',
+              ],
+            },
+            nameAr: { type: 'string' },
+            nameEn: { type: 'string' },
+            descriptionAr: { type: 'string' },
+            descriptionEn: { type: 'string' },
+            pricing: {
+              type: 'object',
+              required: ['oneTime'],
+              properties: {
+                oneTime: {
+                  type: 'number',
+                  description: 'SAR major units, max 2 decimals.',
+                  example: 99,
                 },
               },
             },
-            isActive: {
-              type: 'boolean',
+            currency: {
+              type: 'string',
+              enum: ['SAR', 'USD', 'EUR', 'AED', 'KWD', 'BHD', 'QAR', 'OMR'],
+            },
+            availableFor: {
+              type: 'string',
+              enum: ['host', 'whitelabel', 'platform_admin'],
+            },
+            planFamily: {
+              type: 'string',
+              nullable: true,
+              enum: ['basic', 'premium', 'business', null],
+            },
+            billingType: {
+              type: 'string',
+              nullable: true,
+              enum: ['event', 'monthly', 'quarterly', 'annual', null],
+            },
+            limits: {
+              type: 'object',
+              required: ['maxEvents'],
+              properties: {
+                maxEvents: { type: 'integer', description: '≥ 1 or -1 = unlimited' },
+                maxInvitesPerEvent: { type: 'integer', nullable: true },
+                invitePool: { type: 'integer', nullable: true },
+                durationDays: { type: 'integer' },
+                maxHosts: { type: 'integer', nullable: true },
+              },
+            },
+            features: {
+              type: 'object',
+              description: 'See PlanModel.featuresSchema for the full list of toggles + numerics.',
+              additionalProperties: true,
+            },
+            sortOrder: { type: 'integer' },
+            isPopular: { type: 'boolean' },
+            isActive: { type: 'boolean' },
+            isPublic: { type: 'boolean' },
+          },
+        },
+
+        PlanUpdate: {
+          type: 'object',
+          description:
+            'Body for `PATCH /plans/admin/:code`. All fields optional; ' +
+            '`code` and `planType` are immutable and rejected if present.',
+          properties: {
+            nameAr: { type: 'string' },
+            nameEn: { type: 'string' },
+            descriptionAr: { type: 'string' },
+            descriptionEn: { type: 'string' },
+            pricing: {
+              type: 'object',
+              properties: {
+                oneTime: { type: 'number', example: 99 },
+              },
+            },
+            currency: {
+              type: 'string',
+              enum: ['SAR', 'USD', 'EUR', 'AED', 'KWD', 'BHD', 'QAR', 'OMR'],
+            },
+            availableFor: {
+              type: 'string',
+              enum: ['host', 'whitelabel', 'platform_admin'],
+            },
+            planFamily: {
+              type: 'string',
+              nullable: true,
+              enum: ['basic', 'premium', 'business', null],
+            },
+            billingType: {
+              type: 'string',
+              nullable: true,
+              enum: ['event', 'monthly', 'quarterly', 'annual', null],
+            },
+            limits: {
+              type: 'object',
+              properties: {
+                maxEvents: { type: 'integer' },
+                maxInvitesPerEvent: { type: 'integer', nullable: true },
+                invitePool: { type: 'integer', nullable: true },
+                durationDays: { type: 'integer' },
+                maxHosts: { type: 'integer', nullable: true },
+              },
+            },
+            features: {
+              type: 'object',
+              additionalProperties: true,
+            },
+            sortOrder: { type: 'integer' },
+            isPopular: { type: 'boolean' },
+            isActive: { type: 'boolean' },
+            isPublic: { type: 'boolean' },
+          },
+        },
+
+        BusinessPlansResponse: {
+          type: 'object',
+          description: 'Shape returned by `GET /plans/business`.',
+          properties: {
+            event: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Plan' },
+            },
+            quarterly: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Plan' },
+            },
+            annual: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Plan' },
+            },
+            setupFeeRequired: { type: 'boolean' },
+            setupFeeAmount: {
+              type: 'number',
+              description: 'One-time business setup fee in SAR major units.',
+            },
+          },
+        },
+
+        HostPlansResponse: {
+          type: 'object',
+          description: 'Shape returned by `GET /plans/host`.',
+          properties: {
+            basic: {
+              type: 'object',
+              properties: {
+                event: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Plan' },
+                },
+                monthly: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Plan' },
+                },
+              },
+            },
+            premium: {
+              type: 'object',
+              properties: {
+                event: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Plan' },
+                },
+                monthly: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Plan' },
+                },
+              },
             },
           },
         },

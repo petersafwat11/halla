@@ -5,37 +5,30 @@ import SummarySection from "./SummarySection";
 import { useTranslation } from "react-i18next";
 import { useFormContext } from "react-hook-form";
 import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
+import { getLocalized } from "@/utils/locale";
 
 const StepSix = ({ goToPreviousStep }) => {
   const { t, i18n } = useTranslation("signup");
   const { watch } = useFormContext();
   const whiteLabelData = watch();
-  const isArabic = i18n.language === "ar";
 
   // Fetch plans from API (cached from StepFive)
   const { data: plansData } = useBusinessPlans();
-  const eventPlans = plansData?.data?.event || plansData?.event || [];
-  const quarterlyPlans = plansData?.data?.quarterly || plansData?.quarterly || [];
-  const annualPlans = plansData?.data?.annual || plansData?.annual || [];
-  const allPlans = [...eventPlans, ...quarterlyPlans, ...annualPlans];
-  const info = plansData?.data?.info;
+  const businessData = plansData?.data || {};
+  const allPlans = [
+    ...(businessData.event || []),
+    ...(businessData.quarterly || []),
+    ...(businessData.annual || []),
+  ];
 
   const selectedPlanCode = whiteLabelData.planSelection?.planCode;
-  const needsBranding = whiteLabelData.planSelection?.needsCustomBranding;
   const selectedPlan = allPlans.find((p) => p.code === selectedPlanCode);
 
-  const getPlanPrice = () => {
-    if (!selectedPlan) return 0;
-    return selectedPlan.pricing?.oneTime || 0;
-  };
-
-  const getTotalPrice = () => {
-    const planPrice = getPlanPrice();
-    const brandingPrice = needsBranding
-      ? plansData?.data?.customBranding?.price || 0
-      : 0;
-    return planPrice + brandingPrice;
-  };
+  const planPrice = selectedPlan?.pricing?.oneTime || 0;
+  const setupFee = businessData.setupFeeRequired
+    ? businessData.setupFeeAmount || 0
+    : 0;
+  const totalPrice = planPrice + setupFee;
 
   return (
     <div className={styles.container}>
@@ -48,7 +41,7 @@ const StepSix = ({ goToPreviousStep }) => {
       <div className={styles.sections}>
         {/* Contact Information Summary */}
         <SummarySection
-          title={isArabic ? "معلومات التواصل" : "Contact Information"}
+          title={t("signupForm.whiteLabel.summary.contactInfo")}
           data={whiteLabelData.loginData}
           fields={[
             {
@@ -58,7 +51,7 @@ const StepSix = ({ goToPreviousStep }) => {
             },
             {
               key: "phoneNumber",
-              label: isArabic ? "رقم الجوال" : "Phone Number",
+              label: t("signupForm.whiteLabel.summary.phoneNumber"),
               type: "text",
             },
           ]}
@@ -172,36 +165,37 @@ const StepSix = ({ goToPreviousStep }) => {
         {selectedPlan && (
           <div className={styles.priceSummary}>
             <h4 className={styles.summaryTitle}>
-              {isArabic ? "ملخص الطلب" : "Order Summary"}
+              {t("signupForm.whiteLabel.summary.orderSummary")}
             </h4>
             <div className={styles.summaryRow}>
               <span>
-                {isArabic
-                  ? `باقة ${selectedPlan.nameAr}`
-                  : `${selectedPlan.nameEn} Plan`}
+                {t("signupForm.whiteLabel.summary.planLine", {
+                  name: getLocalized(selectedPlan, "name", i18n.language),
+                })}
               </span>
               <span>
-                {getPlanPrice().toLocaleString()}{" "}
-                {isArabic ? "ر.س" : "SAR"}
+                {planPrice.toLocaleString()}{" "}
+                {t("signupForm.whiteLabel.summary.currency")}
               </span>
             </div>
-            {needsBranding && (
+            {setupFee > 0 && (
               <div className={styles.summaryRow}>
                 <span>
-                  {isArabic ? "تخصيص العلامة التجارية" : "Custom Branding"}
+                  {t("signupForm.whiteLabel.summary.setupFee")}
                 </span>
                 <span>
-                  {(plansData?.data?.customBranding?.price || 0).toLocaleString()}{" "}
-                  {isArabic ? "ر.س" : "SAR"}
+                  {setupFee.toLocaleString()}{" "}
+                  {t("signupForm.whiteLabel.summary.currency")}
                 </span>
               </div>
             )}
             <div className={`${styles.summaryRow} ${styles.totalRow}`}>
               <span>
-                {isArabic ? "الإجمالي" : "Total"}
+                {t("signupForm.whiteLabel.summary.total")}
               </span>
               <span className={styles.totalPrice}>
-                {getTotalPrice().toLocaleString()} {isArabic ? "ر.س" : "SAR"}
+                {totalPrice.toLocaleString()}{" "}
+                {t("signupForm.whiteLabel.summary.currency")}
               </span>
             </div>
           </div>
@@ -210,11 +204,7 @@ const StepSix = ({ goToPreviousStep }) => {
         {/* Info Note */}
         <div className={styles.infoNote}>
           <span className={styles.infoIcon}>💡</span>
-          <p>
-            {isArabic
-              ? info?.billingNoteAr || "سيتواصل معك فريقنا بعد التسجيل لإتمام عملية الدفع ومناقشة احتياجاتك."
-              : info?.billingNoteEn || "Our team will contact you after registration to complete payment and discuss your needs."}
-          </p>
+          <p>{t("signupForm.whiteLabel.summary.billingNote")}</p>
         </div>
       </div>
     </div>

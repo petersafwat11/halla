@@ -700,57 +700,6 @@ export const eventsAPI = {
 };
 
 /**
- * Plans Management API
- */
-export const plansAPI = {
-  getAll: async (token = null) => {
-    return apiClient.get("/plans", { token });
-  },
-
-  getEnterprisePlans: async (token = null) => {
-    return apiClient.get("/plans/enterprise", { token });
-  },
-
-  getHostPlans: async (token = null) => {
-    return apiClient.get("/plans/host", { token });
-  },
-
-  // Super Admin Only - Plan Management
-  getAllForAdmin: async (token = null) => {
-    return apiClient.get("/plans/admin/all", { token });
-  },
-
-  getByCode: async (code, token = null) => {
-    if (!code) throw new Error("Plan code is required");
-    return apiClient.get(`/plans/admin/${code}`, { token });
-  },
-
-  updatePlan: async (code, data, token = null) => {
-    if (!code) throw new Error("Plan code is required");
-    return apiClient.patch(`/plans/admin/${code}`, data, { token });
-  },
-
-  bulkUpdate: async (updates, token = null) => {
-    if (!updates || updates.length === 0)
-      throw new Error("Updates array is required");
-    return apiClient.patch("/plans/admin/bulk-update", { updates }, { token });
-  },
-
-  // H-14: Phase 2 admin plan endpoints — were defined backend-only and
-  // unreachable from the dashboard. Wire them up so SUPER_ADMIN can
-  // create/delete plans without curl.
-  createPlan: async (data, token = null) => {
-    if (!data) throw new Error("Plan payload is required");
-    return apiClient.post("/plans/admin", data, { token });
-  },
-
-  deletePlan: async (code, token = null) => {
-    if (!code) throw new Error("Plan code is required");
-    return apiClient.delete(`/plans/admin/${code}`, { token });
-  },
-};
-
-/**
  * SUPER_ADMIN can assign a subscription to a host directly (e.g. comp /
  * migration). Audit log is wired server-side.
  */
@@ -807,7 +756,6 @@ const adminDashboardAPI = {
   whitelabels: whitelabelAPI, // Alias for backward compatibility
   vendors: vendorsAPI,
   events: eventsAPI,
-  plans: plansAPI,
 };
 
 // Alias for backward compatibility with old lib/admin.js imports

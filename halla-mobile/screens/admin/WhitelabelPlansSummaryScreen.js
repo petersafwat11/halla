@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,6 +17,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useSubscribe, useValidateDiscount } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
 import { PlanSummaryCard, DiscountCodeCard, PaymentSummaryCard } from "../../components/plans/SummaryCards";
+import { getLocalized } from "../../utils/locale";
 
 const WhitelabelPlansSummaryScreen = () => {
   const { t, currentLanguage } = useTranslation("plans");
@@ -24,7 +26,6 @@ const WhitelabelPlansSummaryScreen = () => {
   const toast = useToast();
   const subscribeMutation = useSubscribe();
   const validateDiscount = useValidateDiscount();
-  const isArabic = currentLanguage === "ar";
 
   const { selectedPlan } = route.params || {};
 
@@ -33,33 +34,28 @@ const WhitelabelPlansSummaryScreen = () => {
   const [discountApplied, setDiscountApplied] = useState(false);
   const validating = validateDiscount.isPending;
 
-  const planPrice = parseFloat(selectedPlan?.price) || 0;
+  const planPrice = parseFloat(selectedPlan?.pricing?.oneTime) || 0;
   const discountAmt = discountData?.discountAmount || 0;
   const finalTotal = Math.max(0, planPrice - discountAmt);
 
-  const getPlanDisplayName = useCallback(() =>
-    isArabic
-      ? selectedPlan?.nameAr || selectedPlan?.nameEn || ""
-      : selectedPlan?.nameEn || selectedPlan?.nameAr || "",
-    [isArabic, selectedPlan],
+  const getPlanDisplayName = useCallback(
+    () => getLocalized(selectedPlan, "name", currentLanguage),
+    [currentLanguage, selectedPlan],
   );
 
   const getBillingPeriod = useCallback(() => {
     const days = selectedPlan?.limits?.durationDays;
-    if (days === 365) return isArabic ? "summary.periods.yearly" : "summary.periods.yearly";
-    if (days === 90) return isArabic ? "summary.periods.quarterly" : "summary.periods.quarterly";
-    if (days === 30) return isArabic ? "summary.periods.monthly" : "summary.periods.monthly";
+    if (days === 365) return "summary.periods.yearly";
+    if (days === 90) return "summary.periods.quarterly";
+    if (days === 30) return "summary.periods.monthly";
     return "summary.periods.custom";
-  }, [isArabic, selectedPlan]);
+  }, [selectedPlan]);
 
   const handleApplyDiscount = useCallback(async () => {
     if (!discountCode.trim() || validating) return;
     try {
-      // Why: whitelabel plans don't map cleanly onto the host PLAN_TYPES
-      // enum. Pass the plan's planType when present, otherwise null — the
-      // backend treats null as "no plan-restriction", letting platform-wide
-      // codes apply without forcing us to invent a fake enum value
-      // (the previous "enterprise" literal would now fail Zod validation).
+      // Pass the plan's planType when present, otherwise null — backend
+      // treats null as "no plan-restriction" so platform-wide codes apply.
       const planTypeKey = selectedPlan?.planType || null;
       const body = await validateDiscount.mutateAsync({
         code: discountCode.trim().toUpperCase(),
@@ -72,7 +68,8 @@ const WhitelabelPlansSummaryScreen = () => {
         setDiscountData(result);
         setDiscountApplied(true);
         toast.success(
-          t("summary.discountCode.success", {
+          t("summary.discount.success", {
+            code: discountCode.trim().toUpperCase(),
             amount: result.discountAmount?.toFixed(0) ?? 0,
           }),
         );
@@ -153,7 +150,7 @@ const WhitelabelPlansSummaryScreen = () => {
                 <Ionicons name="time-outline" size={18} color="#C28E5C" />
                 <Text style={styles.featureText}>
                   {t("summary.validFor")}{" "}
-                  {selectedPlan?.limits?.durationDays || 90}{" "}
+                  {selectedPlan?.limits?.durationDays ?? 0}{" "}
                   {t("summary.days")}
                 </Text>
               </View>
@@ -163,15 +160,15 @@ const WhitelabelPlansSummaryScreen = () => {
           />
 
           <DiscountCodeCard
-            title={t("summary.discountCode.title")}
+            title={t("summary.discount.title")}
             discountCode={discountCode}
             onCodeChange={setDiscountCode}
             onApply={handleApplyDiscount}
             discountApplied={discountApplied}
             validating={validating}
-            applyText={t("summary.discountCode.apply")}
-            appliedText={t("summary.discountCode.applied")}
-            placeholder={t("summary.discountCode.placeholder")}
+            applyText={t("summary.discount.apply")}
+            appliedText={t("summary.discount.applied")}
+            placeholder={t("summary.discount.placeholder")}
           />
 
           <PaymentSummaryCard
@@ -212,7 +209,7 @@ const WhitelabelPlansSummaryScreen = () => {
                   {t("summary.proceedButton")}
                 </Text>
                 <Ionicons
-                  name={isArabic ? "chevron-back" : "chevron-forward"}
+                  name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
                   size={20}
                   color="#FFF"
                 />

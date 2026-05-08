@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";
@@ -17,6 +18,7 @@ import CurrentPlanCard from "../../components/plans/CurrentPlanCard";
 import HostPlanCard from "../../components/plans/HostPlanCard";
 import AddonsSection from "../../components/plans/AddonsSection";
 import { useHostPlans, useSubscription } from "../../hooks";
+import { DEFAULT_COMPENSATION_PERCENTAGE } from "../../utils/constants/plans";
 import {
   colors,
   spacing,
@@ -39,7 +41,7 @@ const PlansScreen = () => {
   const [addonItems, setAddonItems] = useState([]);
   const [addonTotal, setAddonTotal] = useState(0);
 
-  const { data: response, isLoading: loading, error } = useHostPlans();
+  const { data: response, isLoading: loading, error, refetch } = useHostPlans();
   const { data: subscriptionData } = useSubscription();
   const subscription = subscriptionData?.data?.subscription || null;
   const usage = subscription?.usage || null;
@@ -67,12 +69,19 @@ const PlansScreen = () => {
     if (error) {
       toast.error(t("errors.loadFailed"));
     }
-  }, [error]);
+  }, [error, toast, t]);
+
+
+  // Use the matched plan's compensationPercentage from the API; default to
+  // the basic plan's value if any, else fall back to the model default (10).
+  const referencePlan = basicPlans[0] || premiumPlans[0];
+  const compensationPct =
+    (referencePlan?.compensationPercentage ?? DEFAULT_COMPENSATION_PERCENTAGE) / 100;
 
   const compensationInvites = useMemo(() => {
     if (!selectedInvites) return 0;
-    return Math.floor(selectedInvites * 0.15);
-  }, [selectedInvites]);
+    return Math.floor(selectedInvites * compensationPct);
+  }, [selectedInvites, compensationPct]);
 
   const handleAddonsChange = (items, total) => {
     setAddonItems(items);
@@ -88,7 +97,7 @@ const PlansScreen = () => {
     navigation.navigate("PlansSummary", {
       selectedPlan: {
         ...plan,
-        price: plan?.pricing?.oneTime || plan?.price,
+        price: plan?.pricing?.oneTime,
         planFamily,
         billingType,
       },
@@ -104,6 +113,25 @@ const PlansScreen = () => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary[500]} />
           <Text style={styles.loadingText}>{t("loading")}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <TopBar title={t("pageTitle")} showBack={true} />
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error[500]} />
+          <Text style={styles.errorText}>{t("errors.loadFailed")}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => refetch()}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.retryButtonText}>{t("errors.retry")}</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -203,6 +231,32 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_600SemiBold",
     fontSize: typography.fontSize.body.medium,
     color: colors.natural[450],
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.primary[50],
+    gap: spacing[12],
+    paddingHorizontal: spacing[20],
+  },
+  errorText: {
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.body.medium,
+    color: colors.natural[700],
+    textAlign: "center",
+  },
+  retryButton: {
+    marginTop: spacing[4],
+    paddingVertical: spacing[12],
+    paddingHorizontal: spacing[24],
+    backgroundColor: colors.primary[500],
+    borderRadius: borderRadius[12],
+  },
+  retryButtonText: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.body.medium,
+    color: colors.natural[50],
   },
   content: {
     flex: 1,

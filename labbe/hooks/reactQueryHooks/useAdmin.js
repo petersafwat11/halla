@@ -615,6 +615,7 @@ export const useAdminPlanMutation = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "plans"] });
+      queryClient.invalidateQueries({ queryKey: ["plans"] });
     },
   });
 };
@@ -724,23 +725,6 @@ export const useAdminPaymentsExport = () => {
       window.URL.revokeObjectURL(url);
       return { ok: true };
     },
-  });
-};
-
-// ============================================
-// HOST PLANS QUERY
-// ============================================
-
-export const useHostPlans = (options = {}) => {
-  return useQuery({
-    queryKey: ["plans", "host"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.plans.getHostPlans,
-      }),
-    staleTime: 10 * 60 * 1000,
-    ...options,
   });
 };
 

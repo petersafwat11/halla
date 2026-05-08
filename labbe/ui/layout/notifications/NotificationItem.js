@@ -92,16 +92,11 @@ const getIconComponent = (type) => {
 
 const NotificationItem = ({ notification, onRead, onDelete, onClick }) => {
   const { t, i18n } = useTranslation("common");
-  const isArabic = i18n.language === "ar";
 
   const { id, type, isRead, priority, timeAgo, actionUrl } = notification;
-  // Use Arabic content when available and language is Arabic
-  const title =
-    isArabic && notification.titleAr ? notification.titleAr : notification.title;
-  const message =
-    isArabic && notification.messageAr
-      ? notification.messageAr
-      : notification.message;
+  const isAr = i18n.language === "ar";
+  const title = (isAr && notification.titleAr) || notification.title;
+  const message = (isAr && notification.messageAr) || notification.message;
 
   const IconComponent = getIconComponent(type);
 

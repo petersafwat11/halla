@@ -97,7 +97,7 @@ const PlansPage = () => {
               queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
             }}
           >
-            {t("loading")}
+            {t("buttons.retry")}
           </button>
         </div>
       ) : (
@@ -143,7 +143,7 @@ const PlansPage = () => {
 
           <div className={styles.infoNote}>
             <span className={styles.infoIcon}>💡</span>
-            <p>{String(t("infoNote") || "")}</p>
+            <p>{t("infoNote")}</p>
           </div>
         </div>
       )}

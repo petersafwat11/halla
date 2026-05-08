@@ -9,7 +9,7 @@ const {
   SUBSCRIPTION_STATUS,
   isUnlimited,
 } = require("../src/shared/constants");
-const { isPerEventPlan, isPoolPlan, isManagedPlan, COMPENSATION_PERCENTAGE } = require('../src/shared/constants/plans');
+const { isPerEventPlan, isPoolPlan, isManagedPlan } = require('../src/shared/constants/plans');
 
 // ============================================
 // SUB-SCHEMAS (Subscription-specific only)
@@ -568,8 +568,9 @@ subscriptionSchema.statics.createForUser = async function (userId, plan, options
     : null;
 
   const invitePool = plan.limits?.invitePool ?? null;
+  const compensationPercentage = plan.features?.compensationPercentage ?? 10;
   const compensationPool = invitePool !== null
-    ? Math.floor(invitePool * COMPENSATION_PERCENTAGE / 100)
+    ? Math.floor(invitePool * compensationPercentage / 100)
     : null;
 
   return this.create({

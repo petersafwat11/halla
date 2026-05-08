@@ -1,78 +1,104 @@
 "use client";
 import React, { useState } from "react";
-import { useForm, Controller, FormProvider } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
+import Image from "next/image";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
-import Image from "next/image";
-import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
-import ToggleInput from "@/ui/commen/inputs/toggelInput/ToggelInput";
 import { editPlanSchema } from "@/utils/schemas/planSchema";
-import { plansAPI } from "@/services/adminDashboard";
+import { useAdminPlanMutation } from "@/hooks/reactQueryHooks/useAdmin";
 import styles from "./EditPlanPopup.module.css";
 
-const EditPlanPopup = ({ plan, onClose, onSuccess, planType }) => {
-  const { t, i18n } = useTranslation("admin");
-  const [isLoading, setIsLoading] = useState(false);
-  const isArabic = i18n.language === "ar";
+import PlanIdentityChips from "./edit-plan/PlanIdentityChips";
+import PlanNamingSection from "./edit-plan/PlanNamingSection";
+import PlanDescriptionSection from "./edit-plan/PlanDescriptionSection";
+import PlanPricingSection from "./edit-plan/PlanPricingSection";
+import PlanLimitsSection from "./edit-plan/PlanLimitsSection";
+import PlanFeatureTogglesSection from "./edit-plan/PlanFeatureTogglesSection";
+import PlanFeatureNumericsSection from "./edit-plan/PlanFeatureNumericsSection";
+import PlanDisplaySection from "./edit-plan/PlanDisplaySection";
+import PlanVisibilitySection from "./edit-plan/PlanVisibilitySection";
 
-  const showOneTime = planType === "single_event" || planType === "trial";
-  const showMonthlyYearly =
-    planType === "subscription" || planType === "enterprise";
+const buildDefaults = (plan) => ({
+  nameAr: plan?.nameAr ?? "",
+  nameEn: plan?.nameEn ?? "",
+  descriptionAr: plan?.descriptionAr ?? "",
+  descriptionEn: plan?.descriptionEn ?? "",
+  pricing: { oneTime: plan?.pricing?.oneTime ?? 0 },
+  limits: {
+    maxEvents: plan?.limits?.maxEvents ?? 1,
+    maxInvitesPerEvent: plan?.limits?.maxInvitesPerEvent ?? null,
+    invitePool: plan?.limits?.invitePool ?? null,
+    durationDays: plan?.limits?.durationDays ?? 90,
+    maxHosts: plan?.limits?.maxHosts ?? null,
+  },
+  features: {
+    hasInAppInvites: plan?.features?.hasInAppInvites ?? false,
+    hasWhatsAppInvites: plan?.features?.hasWhatsAppInvites ?? false,
+    hasSMSInvites: plan?.features?.hasSMSInvites ?? false,
+    hasQRCode: plan?.features?.hasQRCode ?? false,
+    hasQRScanning: plan?.features?.hasQRScanning ?? false,
+    hasFlexibleEntryMode: plan?.features?.hasFlexibleEntryMode ?? false,
+    hasStaffCheckIn: plan?.features?.hasStaffCheckIn ?? false,
+    hasStaffAssignment: plan?.features?.hasStaffAssignment ?? false,
+    hasRSVPTracking: plan?.features?.hasRSVPTracking ?? false,
+    hasAutoReminders: plan?.features?.hasAutoReminders ?? false,
+    hasEmailNotifications: plan?.features?.hasEmailNotifications ?? false,
+    hasCustomWhatsAppNumber: plan?.features?.hasCustomWhatsAppNumber ?? false,
+    hasCompensationInvites: plan?.features?.hasCompensationInvites ?? false,
+    compensationPercentage: plan?.features?.compensationPercentage ?? 10,
+    hasBasicTemplates: plan?.features?.hasBasicTemplates ?? false,
+    hasPremiumTemplates: plan?.features?.hasPremiumTemplates ?? false,
+    hasPostEventPage: plan?.features?.hasPostEventPage ?? false,
+    hasCustomReports: plan?.features?.hasCustomReports ?? false,
+    priorityPoints: plan?.features?.priorityPoints ?? 1,
+    hasWhatsAppSupport: plan?.features?.hasWhatsAppSupport ?? false,
+  },
+  isPopular: plan?.isPopular ?? false,
+  sortOrder: plan?.sortOrder ?? 0,
+  isActive: plan?.isActive !== false,
+  isPublic: plan?.isPublic !== false,
+});
+
+// Strip undefined values so they don't reach the wire as `null`/strict errors.
+const stripUndefined = (obj) => {
+  if (Array.isArray(obj) || obj === null || typeof obj !== "object") return obj;
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined) continue;
+    out[k] = v && typeof v === "object" ? stripUndefined(v) : v;
+  }
+  return out;
+};
+
+const EditPlanPopup = ({ plan, onClose, onSuccess }) => {
+  const { t } = useTranslation("admin");
+  const [isLoading, setIsLoading] = useState(false);
+  const updatePlan = useAdminPlanMutation();
 
   const methods = useForm({
     resolver: zodResolver(editPlanSchema),
-    defaultValues: {
-      nameAr: plan?.nameAr || "",
-      nameEn: plan?.nameEn || "",
-      pricing: {
-        direct: {
-          oneTime: plan?.pricing?.direct?.oneTime || 0,
-          monthly: plan?.pricing?.direct?.monthly || 0,
-          yearly: plan?.pricing?.direct?.yearly || 0,
-        },
-        managed: {
-          oneTime: plan?.pricing?.managed?.oneTime || 0,
-          monthly: plan?.pricing?.managed?.monthly || 0,
-          yearly: plan?.pricing?.managed?.yearly || 0,
-        },
-      },
-      limits: {
-        maxEvents: plan?.limits?.maxEvents || 1,
-        maxEventsPerMonth: plan?.limits?.maxEventsPerMonth ?? -1,
-        maxGuestsPerEvent: plan?.limits?.maxGuestsPerEvent || 50,
-      },
-      isActive: plan?.isActive !== false,
-    },
+    defaultValues: buildDefaults(plan),
+    mode: "onBlur",
   });
 
   const {
-    control,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { isDirty },
   } = methods;
 
   const onSubmit = async (data) => {
+    if (!plan?.code) return;
     setIsLoading(true);
     try {
-      const payload = {
-        nameAr: data.nameAr,
-        nameEn: data.nameEn,
-        pricing: {
-          oneTime: data.pricing.direct.oneTime,
-          monthly: data.pricing.direct.monthly,
-          yearly: data.pricing.direct.yearly,
-        },
-        limits: data.limits,
-        isActive: data.isActive,
-      };
-      await plansAPI.updatePlan(plan.code, payload);
-      toastUtils.success(t("adminPlans.saveSuccess", "Changes saved successfully"));
+      const payload = stripUndefined(data);
+      await updatePlan.mutateAsync({ code: plan.code, data: payload });
+      toastUtils.success(t("managePlans.editPopup.saveSuccess"));
       onSuccess?.();
       onClose?.();
     } catch (error) {
-      handleError(error, null);
+      handleError(error, t);
     } finally {
       setIsLoading(false);
     }
@@ -83,11 +109,11 @@ const EditPlanPopup = ({ plan, onClose, onSuccess, planType }) => {
       <div className={styles.header}>
         <div className={styles.headerInfo}>
           <h2 className={styles.headerTitle}>
-            {isArabic ? "تعديل الباقة" : "Edit Plan"}
+            {t("managePlans.editPopup.title")}
           </h2>
           <span className={styles.planCode}>{plan?.code}</span>
         </div>
-        <button onClick={onClose} className={styles.closeButton}>
+        <button onClick={onClose} className={styles.closeButton} type="button">
           <Image
             width={24}
             height={24}
@@ -99,200 +125,15 @@ const EditPlanPopup = ({ plan, onClose, onSuccess, planType }) => {
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className={styles.body}>
-          {/* Plan Names */}
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>
-              {isArabic ? "معلومات الباقة" : "Plan Information"}
-            </h3>
-            <div className={styles.row}>
-              <Controller
-                name="nameAr"
-                control={control}
-                render={({ field }) => (
-                  <InputGroup
-                    label={isArabic ? "الاسم بالعربية" : "Arabic Name"}
-                    placeholder={
-                      isArabic ? "ادخل الاسم بالعربية" : "Enter Arabic name"
-                    }
-                    type="text"
-                    name="nameAr"
-                    hintMessage={errors.nameAr?.message}
-                    required={true}
-                    error={!!errors.nameAr}
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
-              <Controller
-                name="nameEn"
-                control={control}
-                render={({ field }) => (
-                  <InputGroup
-                    label={isArabic ? "الاسم بالإنجليزية" : "English Name"}
-                    placeholder={
-                      isArabic ? "ادخل الاسم بالإنجليزية" : "Enter English name"
-                    }
-                    type="text"
-                    name="nameEn"
-                    hintMessage={errors.nameEn?.message}
-                    required={true}
-                    error={!!errors.nameEn}
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
-            </div>
-          </div>
-
-          {/* Pricing Section */}
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>
-              {isArabic ? "التسعير (مباشر)" : "Pricing (Direct)"}
-            </h3>
-            <div className={styles.row}>
-              {showOneTime && (
-                <Controller
-                  name="pricing.direct.oneTime"
-                  control={control}
-                  render={({ field }) => (
-                    <InputGroup
-                      label={
-                        isArabic ? "سعر المناسبة الواحدة" : "One-time Price"
-                      }
-                      placeholder="0"
-                      type="number"
-                      name="pricing.direct.oneTime"
-                      hintMessage={errors.pricing?.direct?.oneTime?.message}
-                      error={!!errors.pricing?.direct?.oneTime}
-                      value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      prefixText="SAR"
-                    />
-                  )}
-                />
-              )}
-              {showMonthlyYearly && (
-                <>
-                  <Controller
-                    name="pricing.direct.monthly"
-                    control={control}
-                    render={({ field }) => (
-                      <InputGroup
-                        label={isArabic ? "السعر الشهري" : "Monthly Price"}
-                        placeholder="0"
-                        type="number"
-                        name="pricing.direct.monthly"
-                        hintMessage={errors.pricing?.direct?.monthly?.message}
-                        error={!!errors.pricing?.direct?.monthly}
-                        value={field.value}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        prefixText="SAR"
-                      />
-                    )}
-                  />
-                  <Controller
-                    name="pricing.direct.yearly"
-                    control={control}
-                    render={({ field }) => (
-                      <InputGroup
-                        label={isArabic ? "السعر السنوي" : "Yearly Price"}
-                        placeholder="0"
-                        type="number"
-                        name="pricing.direct.yearly"
-                        hintMessage={errors.pricing?.direct?.yearly?.message}
-                        error={!!errors.pricing?.direct?.yearly}
-                        value={field.value}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        prefixText="SAR"
-                      />
-                    )}
-                  />
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Limits Section */}
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>
-              {isArabic ? "الحدود" : "Limits"}
-            </h3>
-            <div className={styles.row}>
-              <Controller
-                name="limits.maxGuestsPerEvent"
-                control={control}
-                render={({ field }) => (
-                  <InputGroup
-                    label={
-                      isArabic ? "الحد الأقصى للضيوف" : "Max Guests per Event"
-                    }
-                    placeholder="50"
-                    type="number"
-                    name="limits.maxGuestsPerEvent"
-                    hintMessage={errors.limits?.maxGuestsPerEvent?.message}
-                    error={!!errors.limits?.maxGuestsPerEvent}
-                    value={field.value}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                )}
-              />
-              {showOneTime && (
-                <Controller
-                  name="limits.maxEvents"
-                  control={control}
-                  render={({ field }) => (
-                    <InputGroup
-                      label={isArabic ? "عدد المناسبات" : "Max Events"}
-                      placeholder="1"
-                      type="number"
-                      name="limits.maxEvents"
-                      hintMessage={errors.limits?.maxEvents?.message}
-                      error={!!errors.limits?.maxEvents}
-                      value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  )}
-                />
-              )}
-              {showMonthlyYearly && (
-                <Controller
-                  name="limits.maxEventsPerMonth"
-                  control={control}
-                  render={({ field }) => (
-                    <InputGroup
-                      label={
-                        isArabic
-                          ? "المناسبات شهرياً (-1 = غير محدود)"
-                          : "Events per Month (-1 = unlimited)"
-                      }
-                      placeholder="-1"
-                      type="number"
-                      name="limits.maxEventsPerMonth"
-                      hintMessage={errors.limits?.maxEventsPerMonth?.message}
-                      error={!!errors.limits?.maxEventsPerMonth}
-                      value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  )}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Active Status */}
-          <div className={styles.section}>
-            <ToggleInput
-              name="isActive"
-              label={isArabic ? "الباقة نشطة" : "Plan Active"}
-              description={
-                isArabic
-                  ? "عند التعطيل، لن تظهر الباقة للمستخدمين الجدد"
-                  : "When disabled, the plan won't be visible to new users"
-              }
-            />
-          </div>
+          <PlanIdentityChips code={plan?.code} planType={plan?.planType} />
+          <PlanNamingSection />
+          <PlanDescriptionSection />
+          <PlanPricingSection />
+          <PlanLimitsSection />
+          <PlanFeatureTogglesSection />
+          <PlanFeatureNumericsSection />
+          <PlanDisplaySection />
+          <PlanVisibilitySection />
 
           <div className={styles.footer}>
             <button
@@ -301,7 +142,7 @@ const EditPlanPopup = ({ plan, onClose, onSuccess, planType }) => {
               onClick={onClose}
               disabled={isLoading}
             >
-              {isArabic ? "إلغاء" : "Cancel"}
+              {t("managePlans.editPopup.cancel")}
             </button>
             <button
               type="submit"
@@ -309,12 +150,8 @@ const EditPlanPopup = ({ plan, onClose, onSuccess, planType }) => {
               disabled={isLoading || !isDirty}
             >
               {isLoading
-                ? isArabic
-                  ? "جاري الحفظ..."
-                  : "Saving..."
-                : isArabic
-                  ? "حفظ التغييرات"
-                  : "Save Changes"}
+                ? t("managePlans.editPopup.saving")
+                : t("managePlans.editPopup.save")}
             </button>
           </div>
         </form>

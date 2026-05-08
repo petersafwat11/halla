@@ -128,7 +128,7 @@ const WhitelabelDetailsScreen = () => {
           <InfoRow icon="ellipse-outline" label={t("whitelabelDetails.status")} value={null} badge={<StatusBadge status={sub.status} size="small" />} />
           <InfoRow icon="time-outline" label={t("whitelabelDetails.expires")} value={formatDate(sub.endDate || sub.currentPeriodEnd)} />
           {sub.limits?.maxTeamMembers != null && <InfoRow icon="people-outline" label={t("whitelabelDetails.teamLimit")} value={String(sub.limits.maxTeamMembers)} />}
-          <InfoRow icon="calendar-number-outline" label={t("whitelabelDetails.eventsPerMonth")} value={sub.limits?.maxEventsPerMonth != null ? String(sub.limits.maxEventsPerMonth) : "—"} last />
+          <InfoRow icon="calendar-number-outline" label={t("whitelabelDetails.eventsPerMonth")} value={sub.limits?.maxEvents != null ? String(sub.limits.maxEvents) : "—"} last />
         </SectionCard>)}
 
         {hasPlanSelection && (<SectionCard title={t("whitelabelDetails.planPreferences")} icon="options-outline">

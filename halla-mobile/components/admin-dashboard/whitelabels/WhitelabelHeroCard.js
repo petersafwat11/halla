@@ -4,17 +4,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import StatusBadge from "../../admin-dashboard/common/StatusBadge";
 import { backgrounds, colors, spacing, borderRadius, typography, textStyles } from "../../../styles/tokens";
-
-const planLabels = {
-  ENTERPRISE_BASIC: "plans.ENTERPRISE_BASIC",
-  ENTERPRISE_PRO: "plans.ENTERPRISE_PRO",
-  ENTERPRISE_ULTIMATE: "plans.ENTERPRISE_ULTIMATE",
-};
+import { getLocalized } from "../../../utils/locale";
 
 const WhitelabelHeroCard = ({ whitelabel }) => {
-  const { t } = useTranslation("admin");
-  const planCode = whitelabel.subscription?.planId?.code || whitelabel.subscription?.planCode;
-  const planName = whitelabel.subscription?.planId?.nameEn || t(planLabels[planCode] || planCode) || planCode;
+  const { t, currentLanguage } = useTranslation("admin");
+  const sub = whitelabel.subscription || {};
+  const planCode = sub.planId?.code || sub.planCode;
+  const planName =
+    getLocalized(sub.planId, "name", currentLanguage) ||
+    (planCode ? t(`plans.${planCode}`, { defaultValue: planCode }) : null);
 
   return (
     <View style={styles.card}>

@@ -1,13 +1,31 @@
 import React from "react";
 import { useTranslation } from "../../../localization";
 import { colors } from "../../../styles/tokens";
+import { getLocalized } from "../../../utils/locale";
+import { isPoolPlan } from "../../../utils/constants/plans";
 import AdminListItem from "../common/AdminListItem";
 
-const PLAN_TYPE_CONFIG = {
-  single_event: { color: colors.warning[500],   bg: colors.warning[50],   labelKey: "plans.types.single_event" },
-  subscription:  { color: colors.primary[500],  bg: colors.primary[50],   labelKey: "plans.types.subscription" },
-  enterprise:    { color: colors.secondary[500], bg: colors.secondary[50], labelKey: "plans.types.enterprise" },
-  trial:         { color: colors.natural[400],  bg: colors.natural[150],  labelKey: "plans.types.trial" },
+/**
+ * Map a `planType` value to a colour tag + label key. Tabs are now
+ * keyed by family (`host_event`, `host_monthly`, `business`, `trial`)
+ * — this lookup mirrors that grouping. See `AdminPlansScreen` /
+ * `PlanTabs` for the canonical mapping.
+ */
+const familyOf = (planType) => {
+  if (!planType) return "trial";
+  if (planType === "trial") return "trial";
+  if (planType.startsWith("business_")) return "business";
+  if (planType.endsWith("_event")) return "host_event";
+  if (planType.endsWith("_monthly")) return "host_monthly";
+  if (planType.endsWith("_quarterly") || planType.endsWith("_annual")) return "business";
+  return "trial";
+};
+
+const FAMILY_CONFIG = {
+  host_event:   { color: colors.warning[500],   bg: colors.warning[50],   labelKey: "plans.types.host_event" },
+  host_monthly: { color: colors.primary[500],   bg: colors.primary[50],   labelKey: "plans.types.host_monthly" },
+  business:     { color: colors.secondary[500], bg: colors.secondary[50], labelKey: "plans.types.business" },
+  trial:        { color: colors.natural[400],   bg: colors.natural[150],  labelKey: "plans.types.trial" },
 };
 
 const formatPrice = (amount) => {
@@ -16,66 +34,57 @@ const formatPrice = (amount) => {
 };
 
 const PlanListItem = ({ plan, canEdit, onEdit }) => {
-  const { t } = useTranslation("admin");
+  const { t, i18n } = useTranslation("admin");
   if (!plan) return null;
 
-  const typeConfig  = PLAN_TYPE_CONFIG[plan.planType] || PLAN_TYPE_CONFIG.trial;
-  const typeLabel   = t(typeConfig.labelKey);
+  const family = familyOf(plan.planType);
+  const typeConfig = FAMILY_CONFIG[family];
+  const typeLabel = t(typeConfig.labelKey);
 
-  const isSingleOrTrial   = plan.planType === "single_event" || plan.planType === "trial";
-  const isSubOrEnterprise = plan.planType === "subscription" || plan.planType === "enterprise";
+  const isMonthly = plan.planType?.endsWith("_monthly");
+  const isPool = isPoolPlan(plan.planType);
 
-  const oneTimePrice      = plan.pricing?.direct?.oneTime ?? 0;
-  const monthlyPrice      = plan.pricing?.direct?.monthly ?? 0;
-  const yearlyPrice       = plan.pricing?.direct?.yearly ?? 0;
-  const maxGuests         = plan.limits?.maxGuestsPerEvent ?? "—";
-  const maxEvents         = plan.limits?.maxEvents ?? null;
-  const maxEventsPerMonth = plan.limits?.maxEventsPerMonth ?? null;
+  const oneTimePrice = plan.pricing?.oneTime ?? 0;
+  const maxEvents = plan.limits?.maxEvents;
+  const maxInvitesPerEvent = plan.limits?.maxInvitesPerEvent;
+  const invitePool = plan.limits?.invitePool;
 
-  const eventsLimitLabel = isSubOrEnterprise
-    ? maxEventsPerMonth === -1
-      ? `${t("plans.labels.unlimited")} ${t("plans.labels.eventsPerMonth")}`
-      : `${maxEventsPerMonth} ${t("plans.labels.eventsPerMonth")}`
-    : maxEvents != null
-    ? `${t("plans.labels.max")} ${maxEvents} ${maxEvents !== 1 ? t("plans.labels.events") : t("plans.labels.event")}`
-    : t("plans.labels.oneEvent");
+  // Events line — pool plans share an invite pool across unlimited
+  // events; per-event plans use `maxEvents` (with `-1` rendered as
+  // "unlimited"). The pool size itself is shown in the invites row.
+  const eventsLimitLabel =
+    isPool || maxEvents === -1
+      ? `${t("plans.labels.unlimited")} ${t("plans.labels.events")}`
+      : maxEvents != null
+      ? `${t("plans.labels.max")} ${maxEvents} ${maxEvents === 1 ? t("plans.labels.event") : t("plans.labels.events")}`
+      : t("plans.labels.oneEvent");
+
+  const invitesLabel = isPool
+    ? `${t("plans.fields.invitePool")}: ${invitePool ?? t("plans.labels.unlimited")}`
+    : `${t("plans.fields.maxInvitesPerEvent")}: ${maxInvitesPerEvent ?? t("plans.labels.unlimited")}`;
 
   // ── Chips: type tag + pricing ──
   const chips = [
+    { label: typeLabel, color: typeConfig.color, bg: typeConfig.bg },
     {
-      label: typeLabel,
+      label: oneTimePrice > 0 ? formatPrice(oneTimePrice) : t("plans.labels.free"),
       color: typeConfig.color,
-      bg: typeConfig.bg,
+      bg: colors.natural[150],
+      icon: "pricetag-outline",
     },
-    isSingleOrTrial
+    isMonthly
       ? {
-          label: oneTimePrice > 0 ? formatPrice(oneTimePrice) : t("plans.labels.free"),
-          color: typeConfig.color,
-          bg: colors.natural[150],
-          icon: "pricetag-outline",
-        }
-      : null,
-    isSubOrEnterprise
-      ? {
-          label: `${formatPrice(monthlyPrice)} / ${t("plans.labels.perMonth")}`,
+          label: `${formatPrice(oneTimePrice)} / ${t("plans.labels.perMonth")}`,
           color: colors.primary[500],
           bg: colors.primary[50],
           icon: "calendar-outline",
-        }
-      : null,
-    isSubOrEnterprise && yearlyPrice > 0
-      ? {
-          label: `${formatPrice(yearlyPrice)} / ${t("plans.labels.perYear")}`,
-          color: colors.natural[500],
-          bg: colors.natural[150],
-          icon: "star-outline",
         }
       : null,
   ].filter(Boolean);
 
   // ── Details: limits ──
   const details = [
-    { icon: "people-outline", text: `${t("plans.details.maxGuests")}: ${maxGuests}` },
+    { icon: "people-outline", text: invitesLabel },
     { icon: "ticket-outline", text: eventsLimitLabel },
   ];
 
@@ -92,9 +101,11 @@ const PlanListItem = ({ plan, canEdit, onEdit }) => {
       ]
     : [];
 
+  const displayName = getLocalized(plan, "name", i18n.language) || plan.nameEn;
+
   return (
     <AdminListItem
-      title={plan.nameEn}
+      title={displayName}
       subtitle={plan.code}
       avatarColor={typeConfig.color}
       status={plan.isActive ? "active" : "inactive"}

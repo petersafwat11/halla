@@ -1,16 +1,21 @@
 "use client";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { FaCalendarAlt, FaUsers, FaGift } from "react-icons/fa";
+import { getLocalized } from "@/utils/locale";
 import styles from "../summary.module.css";
 
-const PlanSummaryCard = ({ selectedPlan, planFamily, billingType, planPrice, t }) => {
+const PlanSummaryCard = ({ selectedPlan, planFamily, billingType, planPrice, t: tProp }) => {
+  const { t: tHook, i18n } = useTranslation("plans");
+  const t = tProp || tHook;
   const isMonthly = billingType === "monthly";
   const inviteCount = isMonthly
     ? selectedPlan?.invitePool || 0
-    : selectedPlan?.invites || 25;
+    : selectedPlan?.invites ?? 0;
+  const compensationPercent = (selectedPlan?.compensationPercentage ?? 10) / 100;
   const compensationCount = isMonthly
     ? selectedPlan?.compensationPool || 0
-    : Math.floor((selectedPlan?.invites || 25) * 0.15);
+    : Math.floor((selectedPlan?.invites ?? 0) * compensationPercent);
 
   const planDisplayName = (() => {
     const familyKey = planFamily === "premium" ? "premium" : "basic";
@@ -39,7 +44,7 @@ const PlanSummaryCard = ({ selectedPlan, planFamily, billingType, planPrice, t }
           </div>
           <div className={styles.planDetails}>
             <h3 className={styles.planName}>
-              {selectedPlan?.nameAr || selectedPlan?.nameEn || planDisplayName}
+              {getLocalized(selectedPlan, "name", i18n.language) || planDisplayName}
             </h3>
             <p className={styles.planType}>
               {isMonthly

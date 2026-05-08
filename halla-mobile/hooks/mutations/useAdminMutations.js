@@ -28,8 +28,11 @@ export function useUpdateHostSubscription() {
   const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);
   return useMutation({
-    mutationFn: async ({ hostId, subscriptionData }) => {
-      const response = await adminDashboardService.hosts.updateSubscription(token, hostId, subscriptionData);
+    mutationFn: async ({ hostId, planCode, status, billingCycle }) => {
+      const body = { planCode };
+      if (status !== undefined) body.status = status;
+      if (billingCycle !== undefined) body.billingCycle = billingCycle;
+      const response = await adminDashboardService.hosts.updateSubscription(token, hostId, body);
       return assertOk(response);
     },
     onSuccess: async () => {
@@ -364,8 +367,11 @@ export function useUpdateWhitelabelSubscription() {
   const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);
   return useMutation({
-    mutationFn: async ({ whitelabelId, subscriptionData }) => {
-      const response = await adminDashboardService.whitelabels.updateSubscription(token, whitelabelId, subscriptionData);
+    mutationFn: async ({ whitelabelId, planCode, status, billingCycle }) => {
+      const body = { planCode };
+      if (status !== undefined) body.status = status;
+      if (billingCycle !== undefined) body.billingCycle = billingCycle;
+      const response = await adminDashboardService.whitelabels.updateSubscription(token, whitelabelId, body);
       return assertOk(response);
     },
     onSuccess: async () => {

@@ -7,8 +7,7 @@ import { toast } from "react-toastify";
 import { cookieUtils } from "@/utils/cookieUtils";
 import { useRouter, useParams } from "next/navigation";
 import adminDashboardAPI from "@/services/adminDashboard";
-import PopupLayout from "@/ui/commen/popup/PopupLayout";
-import SubscriptionPopup from "../subscriptionPopup/SubscriptionPopup";
+import HostSubscriptionPopup from "../HostSubscriptionPopup";
 import {
   FaCrown,
   FaUserSlash,
@@ -224,7 +223,7 @@ const HostCard = ({ data }) => {
                 {t("subscription.eventsLimit", "حد المناسبات")}:
               </span>
               <span className={styles.subscriptionValue}>
-                {subscription?.limits?.maxEvents || 5}
+                {subscription?.limits?.maxEvents ?? 0}
               </span>
             </div>
             <div className={styles.subscriptionItem}>
@@ -232,7 +231,7 @@ const HostCard = ({ data }) => {
                 {t("subscription.guestsLimit", "حد الضيوف")}:
               </span>
               <span className={styles.subscriptionValue}>
-                {subscription?.limits?.maxGuestsPerEvent || 50}
+                {subscription?.limits?.maxInvitesPerEvent ?? subscription?.limits?.invitePool ?? 0}
               </span>
             </div>
             {subscription?.expiresAt && (
@@ -250,20 +249,15 @@ const HostCard = ({ data }) => {
           </div>
         </div>
       </div>
-      <PopupLayout
-        isOpen={isSubscriptionPopupOpen}
-        onClose={() => setIsSubscriptionPopupOpen(false)}
-      >
-        <SubscriptionPopup
+      {isSubscriptionPopupOpen && (
+        <HostSubscriptionPopup
           host={host}
-          currentSubscription={subscription}
-          onClose={() => setIsSubscriptionPopupOpen(false)}
-          onSuccess={() => {
+          onClose={() => {
             setIsSubscriptionPopupOpen(false);
             router.refresh();
           }}
         />
-      </PopupLayout>
+      )}
     </>
   );
 };

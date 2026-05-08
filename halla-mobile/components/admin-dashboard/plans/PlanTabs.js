@@ -4,11 +4,11 @@ import { useTranslation } from "../../../localization";
 import { colors, spacing, borderRadius, textStyles, backgrounds } from "../../../styles/tokens";
 
 const TABS = [
-  { key: "all",          labelKey: "plans.tabs.all" },
-  { key: "single_event", labelKey: "plans.types.single_event" },
-  { key: "subscription", labelKey: "plans.types.subscription" },
-  { key: "enterprise",   labelKey: "plans.types.enterprise" },
-  { key: "trial",        labelKey: "plans.types.trial" },
+  { key: "all",         labelKey: "plans.tabs.all" },
+  { key: "host_event",  labelKey: "plans.types.host_event" },
+  { key: "host_monthly", labelKey: "plans.types.host_monthly" },
+  { key: "business",    labelKey: "plans.types.business" },
+  { key: "trial",       labelKey: "plans.types.trial" },
 ];
 
 const PlanTabs = ({ activeTab, onTabChange }) => {

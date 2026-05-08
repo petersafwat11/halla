@@ -111,6 +111,8 @@
       "selectStatus": "اختر الحالة",
       "billingCycle": "دورة الفوترة",
       "loadingPlans": "جاري تحميل الخطط...",
+      "errorLoadingPlans": "فشل تحميل الباقات",
+      "retry": "إعادة المحاولة",
       "updated": "تم تحديث الاشتراك",
       "updateFailed": "فشل تحديث الاشتراك",
       "validation": "يرجى تحديد الخطة والحالة",
@@ -837,7 +839,7 @@
     "loadingFeatures": "جاري تحميل المميزات…",
     "adminActions": "إجراءات المسؤول",
     "manageSubscription": "إدارة الاشتراك",
-    "manageSubscriptionSublabel": "تغيير خطة المؤسسة أو الحالة",
+    "manageSubscriptionSublabel": "تغيير خطة الأعمال أو الحالة",
     "suspendWhitelabel": "إيقاف الوايت ليبل",
     "activateWhitelabel": "تفعيل الوايت ليبل",
     "suspendSublabel": "تقييد الوصول إلى هذا الوايت ليبل",
@@ -864,9 +866,8 @@
     "monthly": "شهري",
     "yearly": "سنوي",
     "plans": {
-      "ENTERPRISE_BASIC": "أساسي",
-      "ENTERPRISE_PRO": "احترافي",
-      "ENTERPRISE_ULTIMATE": "نهائي"
+      "business_quarterly": "ربع سنوي",
+      "business_annual": "سنوي"
     },
     "planSelection": {
       "pro": "احترافي",
@@ -902,11 +903,11 @@
     },
     "subscription": {
       "manageTitle": "إدارة الاشتراك",
-      "enterprisePlan": "خطة المؤسسة",
+      "businessPlan": "خطة الأعمال",
       "statusLabel": "الحالة",
       "loadingPlans": "جاري تحميل الخطط...",
       "noPlansAvailable": "لا توجد خطط متاحة",
-      "noPlanSelected": "الرجاء اختيار خطة مؤسسية",
+      "noPlanSelected": "الرجاء اختيار خطة أعمال",
       "updated": "تم تحديث الاشتراك بنجاح",
       "updateFailed": "فشل تحديث الاشتراك",
       "update": "تحديث",
@@ -914,7 +915,12 @@
       "cancel": "إلغاء",
       "statusActive": "نشط",
       "statusExpired": "منتهي",
-      "statusCancelled": "ملغي"
+      "statusCancelled": "ملغي",
+      "sections": {
+        "event": "خطط لكل مناسبة",
+        "quarterly": "رصيد ربع سنوي",
+        "annual": "رصيد سنوي"
+      }
     },
     "empty": {
       "title": "لا يوجد وايت ليبل",
@@ -929,25 +935,68 @@
       "all": "الكل"
     },
     "sections": {
+      "identity": "التعريف",
+      "naming": "الأسماء",
+      "description": "الوصف",
       "pricing": "التسعير",
-      "limits": "الحدود"
+      "limits": "الحدود",
+      "featureToggles": "المميزات",
+      "featureNumerics": "التعويض والأولوية",
+      "display": "العرض",
+      "visibility": "الظهور"
     },
     "fields": {
+      "code": "الرمز",
+      "planType": "نوع الخطة",
       "nameEn": "الاسم بالإنجليزية",
       "nameAr": "الاسم بالعربية",
+      "descriptionEn": "الوصف (إنجليزي)",
+      "descriptionAr": "الوصف (عربي)",
       "oneTimePrice": "سعر المرة الواحدة (ر.س)",
-      "monthlyPrice": "السعر الشهري (ر.س)",
-      "yearlyPrice": "السعر السنوي (ر.س)",
-      "maxEventsPerMonth": "الحد الأقصى للفعاليات شهرياً",
+      "maxEvents": "الحد الأقصى للمناسبات",
+      "maxEventsHint": "-1 لغير محدود",
+      "maxInvitesPerEvent": "الحد الأقصى للدعوات لكل مناسبة",
+      "invitePool": "رصيد الدعوات",
+      "durationDays": "المدة (أيام)",
+      "maxHosts": "الحد الأقصى للمضيفين",
+      "compensationPercentage": "نسبة التعويض %",
+      "compensationHint": "٠–١٠٠",
+      "priorityPoints": "نقاط الأولوية",
+      "priorityHint": "١–١٠",
+      "isPopular": "تمييز كشائعة",
+      "sortOrder": "ترتيب العرض",
+      "isActive": "نشطة",
+      "isPublic": "عامة (مرئية للمستخدمين)",
+      "unlimited": "غير محدود",
       "hintFree": "أدخل 0 للخطط المجانية",
       "hintUnlimited": "أدخل -1 لغير محدود",
       "saveChanges": "حفظ التغييرات",
       "disabled": "معطل"
     },
+    "features": {
+      "hasInAppInvites": "دعوات داخل التطبيق",
+      "hasWhatsAppInvites": "دعوات واتساب",
+      "hasSMSInvites": "دعوات رسائل نصية",
+      "hasQRCode": "دخول برمز QR",
+      "hasQRScanning": "مسح رمز QR",
+      "hasFlexibleEntryMode": "وضع دخول مرن",
+      "hasStaffCheckIn": "تسجيل دخول الطاقم",
+      "hasStaffAssignment": "تعيين الطاقم",
+      "hasRSVPTracking": "تتبع تأكيدات الحضور",
+      "hasAutoReminders": "تذكيرات تلقائية",
+      "hasEmailNotifications": "إشعارات بريد إلكتروني",
+      "hasCustomWhatsAppNumber": "رقم واتساب مخصص",
+      "hasCompensationInvites": "دعوات تعويضية",
+      "hasBasicTemplates": "قوالب أساسية",
+      "hasPremiumTemplates": "قوالب متميزة",
+      "hasPostEventPage": "صفحة ما بعد المناسبة",
+      "hasCustomReports": "تقارير مخصصة",
+      "hasWhatsAppSupport": "دعم واتساب"
+    },
     "types": {
-      "single_event": "مناسبة واحدة",
-      "subscription": "اشتراك",
-      "enterprise": "مؤسسي",
+      "host_event": "مضيف — لكل مناسبة",
+      "host_monthly": "مضيف — شهري",
+      "business": "أعمال",
       "trial": "تجريبي"
     },
     "labels": {
@@ -1165,37 +1214,6 @@
       "codeRequired": "الكود مطلوب",
       "valueRequired": "القيمة مطلوبة",
       "valueInvalid": "يجب أن تكون القيمة أكبر من 0"
-    }
-  },
-  "whitelabelPlans": {
-    "title": "باقاتي",
-    "subtitle": "إدارة اشتراكك المؤسسي",
-    "currentPlan": "الباقة الحالية",
-    "noActivePlan": "لا يوجد اشتراك نشط",
-    "noActivePlanDesc": "اختر باقة أدناه للبدء",
-    "availablePlans": "الباقات المتاحة",
-    "billing": {
-      "monthly": "شهري",
-      "yearly": "سنوي",
-      "save": "وفر 20%",
-      "perMonth": "/شهر",
-      "perYear": "/سنة"
-    },
-    "planCard": {
-      "currentPlan": "باقتك الحالية",
-      "subscribe": "اشترك الآن",
-      "subscribing": "جاري الاشتراك..."
-    },
-    "limits": {
-      "eventsPerMonth": "مناسبة/شهر",
-      "guestsPerEvent": "ضيف/مناسبة",
-      "unlimited": "غير محدود"
-    },
-    "validUntil": "صالح حتى",
-    "active": "نشط",
-    "empty": {
-      "title": "لا توجد باقات",
-      "message": "لا توجد باقات مؤسسية متاحة حالياً"
     }
   },
   "templates": {

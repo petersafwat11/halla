@@ -1,0 +1,35 @@
+{
+  "plansPage": {
+    "title": "باقات الاشتراك",
+    "subtitle": "عرض وإدارة باقة اشتراكك",
+    "currentPlan": {
+      "title": "باقتك الحالية",
+      "badge": "نشط",
+      "validUntil": "صالح حتى",
+      "unlimited": "غير محدود"
+    },
+    "availablePlans": {
+      "title": "الباقات المتاحة",
+      "subtitle": "قارن بين الباقات والمميزات"
+    },
+    "planCard": {
+      "currentPlan": "الباقة الحالية",
+      "features": "المميزات",
+      "events": "مناسبة",
+      "invitesPool": "دعوة (رصيد)",
+      "invitesPerEvent": "دعوة/مناسبة",
+      "unlimited": "غير محدود",
+      "subscribing": "جاري الاشتراك...",
+      "subscribeNow": "اشترك الآن"
+    },
+    "subscriptionStatus": "حالة الاشتراك",
+    "noSubscription": {
+      "title": "لا يوجد اشتراك نشط",
+      "text": "اختر إحدى الباقات أدناه للبدء في استخدام جميع المميزات"
+    },
+    "successMessage": "تم الاشتراك بنجاح!",
+    "failedMessage": "فشل في الاشتراك",
+    "loading": "جاري تحميل الباقات...",
+    "error": "فشل في تحميل الباقات. يرجى المحاولة مرة أخرى."
+  }
+}

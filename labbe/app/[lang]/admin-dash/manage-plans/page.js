@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import ManagePlansContent from "./_components/ManagePlansContent";
 import styles from "./page.module.css";
 
@@ -25,7 +26,9 @@ export default async function AdminManagePlansPage({ params }) {
   return (
     <QueryClientServerProvider queryClient={queryClient}>
       <div className={styles.container}>
-        <ManagePlansContent />
+        <ErrorBoundary>
+          <ManagePlansContent />
+        </ErrorBoundary>
       </div>
     </QueryClientServerProvider>
   );

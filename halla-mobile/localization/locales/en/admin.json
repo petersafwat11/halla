@@ -111,6 +111,8 @@
       "selectStatus": "Select Status",
       "billingCycle": "Billing Cycle",
       "loadingPlans": "Loading Plans...",
+      "errorLoadingPlans": "Failed to load plans",
+      "retry": "Retry",
       "updated": "Subscription updated",
       "updateFailed": "Failed to update subscription",
       "validation": "Please select both Plan and Status",
@@ -837,7 +839,7 @@
     "loadingFeatures": "Loading features…",
     "adminActions": "Admin Actions",
     "manageSubscription": "Manage Subscription",
-    "manageSubscriptionSublabel": "Change enterprise plan or status",
+    "manageSubscriptionSublabel": "Change business plan or status",
     "suspendWhitelabel": "Suspend Whitelabel",
     "activateWhitelabel": "Activate Whitelabel",
     "suspendSublabel": "Restrict access to this whitelabel",
@@ -864,9 +866,8 @@
     "monthly": "Monthly",
     "yearly": "Yearly",
     "plans": {
-      "ENTERPRISE_BASIC": "Basic",
-      "ENTERPRISE_PRO": "Pro",
-      "ENTERPRISE_ULTIMATE": "Ultimate"
+      "business_quarterly": "Quarterly",
+      "business_annual": "Annual"
     },
     "planSelection": {
       "pro": "Pro",
@@ -902,11 +903,11 @@
     },
     "subscription": {
       "manageTitle": "Manage Subscription",
-      "enterprisePlan": "Enterprise Plan",
+      "businessPlan": "Business Plan",
       "statusLabel": "Status",
       "loadingPlans": "Loading Plans...",
       "noPlansAvailable": "No plans available",
-      "noPlanSelected": "Please select an enterprise plan",
+      "noPlanSelected": "Please select a business plan",
       "updated": "Subscription updated successfully",
       "updateFailed": "Failed to update subscription",
       "update": "Update",
@@ -914,7 +915,12 @@
       "cancel": "Cancel",
       "statusActive": "Active",
       "statusExpired": "Expired",
-      "statusCancelled": "Cancelled"
+      "statusCancelled": "Cancelled",
+      "sections": {
+        "event": "Event Plans",
+        "quarterly": "Quarterly Pool",
+        "annual": "Annual Pool"
+      }
     },
     "empty": {
       "title": "No Whitelabels Found",
@@ -929,25 +935,68 @@
       "all": "All"
     },
     "sections": {
+      "identity": "Identity",
+      "naming": "Naming",
+      "description": "Description",
       "pricing": "Pricing",
-      "limits": "Limits"
+      "limits": "Limits",
+      "featureToggles": "Feature Toggles",
+      "featureNumerics": "Compensation & Priority",
+      "display": "Display",
+      "visibility": "Visibility"
     },
     "fields": {
+      "code": "Code",
+      "planType": "Plan Type",
       "nameEn": "English Name",
       "nameAr": "Arabic Name",
+      "descriptionEn": "Description (English)",
+      "descriptionAr": "Description (Arabic)",
       "oneTimePrice": "One-time Price (SAR)",
-      "monthlyPrice": "Monthly Price (SAR)",
-      "yearlyPrice": "Yearly Price (SAR)",
-      "maxEventsPerMonth": "Max Events per Month",
+      "maxEvents": "Max Events",
+      "maxEventsHint": "-1 for unlimited",
+      "maxInvitesPerEvent": "Max Invites per Event",
+      "invitePool": "Invite Pool",
+      "durationDays": "Duration (days)",
+      "maxHosts": "Max Hosts",
+      "compensationPercentage": "Compensation %",
+      "compensationHint": "0–100",
+      "priorityPoints": "Priority Points",
+      "priorityHint": "1–10",
+      "isPopular": "Mark as Popular",
+      "sortOrder": "Sort Order",
+      "isActive": "Active",
+      "isPublic": "Public (visible to users)",
+      "unlimited": "Unlimited",
       "hintFree": "Enter 0 for free plans",
       "hintUnlimited": "Enter -1 for unlimited",
       "saveChanges": "Save Changes",
       "disabled": "Disabled"
     },
+    "features": {
+      "hasInAppInvites": "In-App Invites",
+      "hasWhatsAppInvites": "WhatsApp Invites",
+      "hasSMSInvites": "SMS Invites",
+      "hasQRCode": "QR Code Entry",
+      "hasQRScanning": "QR Scanning",
+      "hasFlexibleEntryMode": "Flexible Entry Mode",
+      "hasStaffCheckIn": "Staff Check-in",
+      "hasStaffAssignment": "Staff Assignment",
+      "hasRSVPTracking": "RSVP Tracking",
+      "hasAutoReminders": "Auto Reminders",
+      "hasEmailNotifications": "Email Notifications",
+      "hasCustomWhatsAppNumber": "Custom WhatsApp Number",
+      "hasCompensationInvites": "Compensation Invites",
+      "hasBasicTemplates": "Basic Templates",
+      "hasPremiumTemplates": "Premium Templates",
+      "hasPostEventPage": "Post-Event Page",
+      "hasCustomReports": "Custom Reports",
+      "hasWhatsAppSupport": "WhatsApp Support"
+    },
     "types": {
-      "single_event": "Single Event",
-      "subscription": "Subscription",
-      "enterprise": "Enterprise",
+      "host_event": "Host — Per Event",
+      "host_monthly": "Host — Monthly",
+      "business": "Business",
       "trial": "Trial"
     },
     "labels": {
@@ -1165,37 +1214,6 @@
       "codeRequired": "Code is required",
       "valueRequired": "Value is required",
       "valueInvalid": "Value must be greater than 0"
-    }
-  },
-  "whitelabelPlans": {
-    "title": "My Plans",
-    "subtitle": "Manage your enterprise subscription",
-    "currentPlan": "Current Plan",
-    "noActivePlan": "No Active Plan",
-    "noActivePlanDesc": "Choose a plan below to get started",
-    "availablePlans": "Available Plans",
-    "billing": {
-      "monthly": "Monthly",
-      "yearly": "Yearly",
-      "save": "Save 20%",
-      "perMonth": "/mo",
-      "perYear": "/yr"
-    },
-    "planCard": {
-      "currentPlan": "Current Plan",
-      "subscribe": "Subscribe Now",
-      "subscribing": "Subscribing..."
-    },
-    "limits": {
-      "eventsPerMonth": "events/mo",
-      "guestsPerEvent": "guests/event",
-      "unlimited": "Unlimited"
-    },
-    "validUntil": "Valid Until",
-    "active": "Active",
-    "empty": {
-      "title": "No Plans Available",
-      "message": "No enterprise plans are available at the moment"
     }
   },
   "templates": {

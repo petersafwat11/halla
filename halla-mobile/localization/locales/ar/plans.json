@@ -26,7 +26,7 @@
   },
   "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة تعويضية (١٥٪)" },
   "buttons": { "subscribeNow": "تواصل معنا", "subscribeAction": "اشترك الآن" },
-  "errors": { "loadFailed": "فشل في تحميل الباقات", "selectPlan": "الرجاء اختيار باقة.", "noPlansAvailable": "لا توجد باقات متاحة" },
+  "errors": { "loadFailed": "فشل في تحميل الباقات", "selectPlan": "الرجاء اختيار باقة.", "noPlansAvailable": "لا توجد باقات متاحة", "retry": "إعادة المحاولة" },
   "eventTab": {
     "hint": "باقة واحدة لكل مناسبة — صالحة ٩٠ يوماً · رسوم إعداد ١٢٠٠ ر.س (مرة واحدة)",
     "validity": "صالحة ٩٠ يوماً",
@@ -89,7 +89,7 @@
     "activateButton": "تفعيل الاشتراك",
     "activating": "جار التفعيل...",
     "total": "الإجمالي",
-    "enterprisePlan": "باقة مؤسسية",
+    "businessPlan": "باقة أعمال",
     "validFor": "صالحة لمدة",
     "addonsTitle": "الإضافات المختارة",
     "addonItems": {
@@ -112,13 +112,6 @@
       "success": "✓ كود \"{{code}}\" — خصم {{amount}} ر.س",
       "invalidDefault": "كود الخصم غير صالح",
       "networkError": "تعذر التحقق من الكود. حاول مرة أخرى"
-    },
-    "discountCode": {
-      "title": "كود الخصم",
-      "placeholder": "أدخل كود الخصم",
-      "apply": "تطبيق",
-      "applied": "تم التطبيق",
-      "success": "تم تطبيق خصم {{amount}} ر.س"
     },
     "paymentSummary": {
       "title": "ملخص الدفع",
@@ -162,7 +155,20 @@
     "gateKeeper": "تعيين حارس بوابة أو مدير قائمة",
     "rsvpResponses": "استلام ردود الحضور",
     "autoReminders": "تذكيرات تلقائية",
-    "staffManagement": "إدارة الطاقم"
+    "staffManagement": "إدارة الطاقم",
+    "hasInAppInvites":         { "label": "إرسال الدعوات من التطبيق" },
+    "hasWhatsAppInvites":      { "label": "دعوات واتساب" },
+    "hasSMSInvites":           { "label": "دعوات رسائل نصية" },
+    "hasQRCode":               { "label": "رمز QR للدخول" },
+    "hasQRScanning":           { "label": "مسح QR" },
+    "hasFlexibleEntryMode":    { "label": "وضع دخول مرن" },
+    "hasStaffCheckIn":         { "label": "إدارة الموظفين" },
+    "hasStaffAssignment":      { "label": "تعيين فريق العمل" },
+    "hasRSVPTracking":         { "label": "تتبع الحضور" },
+    "hasAutoReminders":        { "label": "تذكيرات تلقائية" },
+    "hasEmailNotifications":   { "label": "إشعارات بريد إلكتروني" },
+    "hasCompensationInvites":  { "label": "دعوات تعويضية" },
+    "hasBasicTemplates":       { "label": "قوالب أساسية" }
   },
   "badges": { "selected": "تم الاختيار" },
   "monthlyPlan": { "durationNote": "30 يوم — مناسبات غير محدودة" }

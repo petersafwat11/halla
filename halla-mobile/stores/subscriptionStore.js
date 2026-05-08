@@ -164,7 +164,7 @@ export const useSubscriptionStore = create((set, get) => ({
       return { allowed: true, remaining: -1 };
     }
 
-    const maxEvents = limits.maxEventsPerMonth || limits.maxEvents;
+    const maxEvents = limits.maxEvents;
     if (maxEvents === -1) {
       return { allowed: true, remaining: -1 };
     }
@@ -201,7 +201,7 @@ export const useSubscriptionStore = create((set, get) => ({
       return { allowed: true, limit: -1 };
     }
 
-    const maxGuests = limits.maxGuestsPerEvent || limits.totalGuestLimit;
+    const maxGuests = limits.invitePool ?? limits.maxInvitesPerEvent;
     if (maxGuests === -1) {
       return { allowed: true, limit: -1 };
     }

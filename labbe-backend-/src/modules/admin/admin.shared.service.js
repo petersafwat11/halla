@@ -54,7 +54,8 @@ function formatUserResponse(user) {
       billingCycle: user.subscription.billingCycle,
       limits: {
         maxEvents: user.subscription.planId?.limits?.maxEvents ?? null,
-        maxGuestsPerEvent: user.subscription.planId?.limits?.maxInvitesPerEvent ?? null,
+        maxInvitesPerEvent: user.subscription.planId?.limits?.maxInvitesPerEvent ?? null,
+        invitePool: user.subscription.planId?.limits?.invitePool ?? null,
       },
     } : null,
     createdAt: user.createdAt,

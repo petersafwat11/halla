@@ -1,6 +1,7 @@
 "use client";
 import { useTranslation } from "react-i18next";
 import { FaCalendarAlt, FaUsers, FaClock, FaRegCalendarTimes } from "react-icons/fa";
+import { getLocalized } from "@/utils/locale";
 import styles from "./CurrentPlanCard.module.css";
 
 /**
@@ -8,7 +9,6 @@ import styles from "./CurrentPlanCard.module.css";
  */
 const CurrentPlanCard = ({ subscription, usage }) => {
   const { t, i18n } = useTranslation("plans");
-  const isArabic = i18n.language === "ar";
 
   if (!subscription) {
     return (
@@ -24,14 +24,14 @@ const CurrentPlanCard = ({ subscription, usage }) => {
     );
   }
 
-  const planName = isArabic
-    ? subscription.planNameAr || subscription.planName
-    : subscription.planNameEn || subscription.planName;
+  const planName =
+    getLocalized(subscription, "planName", i18n.language) ||
+    subscription.planName;
 
   const eventsUsed = usage?.eventsUsed || 0;
-  const eventsLimit = usage?.eventsLimit || subscription.limits?.maxEventsPerMonth || 0;
+  const eventsLimit = usage?.eventsLimit || subscription.limits?.maxEvents || 0;
   const guestsUsed = usage?.guestsUsed || 0;
-  const guestsLimit = usage?.guestsLimit || subscription.limits?.maxInvitesPerEvent || subscription.limits?.maxGuestsPerEvent || 0;
+  const guestsLimit = usage?.guestsLimit || subscription.limits?.maxInvitesPerEvent || 0;
   const daysRemaining = subscription.daysRemaining || 0;
 
   const eventsPercent = eventsLimit > 0 ? (eventsUsed / eventsLimit) * 100 : 0;

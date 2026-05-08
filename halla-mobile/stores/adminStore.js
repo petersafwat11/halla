@@ -532,47 +532,6 @@ export const useAdminStore = create((set, get) => ({
   },
 
   /**
-   * Fetch host plans
-   */
-  fetchHostPlans: async (token) => {
-    set({ loading: true, error: null });
-    try {
-      const result = await adminDashboardService.plans.getHostPlans(token);
-      if (result.success) {
-        set({ loading: false });
-        return result.data;
-      } else {
-        set({ error: result.error, loading: false });
-        return [];
-      }
-    } catch (error) {
-      set({ error: error.message, loading: false });
-      return [];
-    }
-  },
-
-  /**
-   * Fetch enterprise plans
-   */
-  fetchEnterprisePlans: async (token) => {
-    set({ loading: true, error: null });
-    try {
-      const result =
-        await adminDashboardService.plans.getEnterprisePlans(token);
-      if (result.success) {
-        set({ loading: false });
-        return result.data;
-      } else {
-        set({ error: result.error, loading: false });
-        return [];
-      }
-    } catch (error) {
-      set({ error: error.message, loading: false });
-      return [];
-    }
-  },
-
-  /**
    * Reset store to initial state
    */
   reset: () => set(initialState),

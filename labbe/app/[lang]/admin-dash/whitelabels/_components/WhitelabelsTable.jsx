@@ -5,13 +5,14 @@ import { useAdminWhitelabels } from "@/hooks/reactQueryHooks/useAdmin";
 import { useTranslation } from "react-i18next";
 import { FiEye, FiCheckCircle, FiSlash, FiCreditCard, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
-import WhitelabelSubscriptionPopup from "./WhitelabelSubscriptionPopup";
+import WhitelabelSubscriptionPopup from "./whitelabelSubscriptionPopup/WhitelabelSubscriptionPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { useWhitelabelTableActions } from "./useWhitelabelTableActions";
+import { getLocalized } from "@/utils/locale";
 import styles from "./WhitelabelsTable.module.css";
 
 export default function WhitelabelsTable() {
-  const { t } = useTranslation("adminWhitelabels");
+  const { t, i18n } = useTranslation("adminWhitelabels");
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
   const [selectedWhitelabel, setSelectedWhitelabel] = useState(null);
 
@@ -124,7 +125,7 @@ export default function WhitelabelsTable() {
     phone: wl.phoneNumber || wl.phone || "-",
     domain: wl.domain || "-",
     status: wl.status || "active",
-    subscription: wl.subscription?.plan?.name || wl.subscription?.planCode || "-",
+    subscription: getLocalized(wl.subscription?.plan, "name", i18n.language) || wl.subscription?.planCode || "-",
     createdAt: wl.createdAt || wl.created_at,
   }));
 
@@ -170,7 +171,9 @@ export default function WhitelabelsTable() {
       {showSubscriptionPopup && selectedWhitelabel && (
         <WhitelabelSubscriptionPopup
           whitelabel={selectedWhitelabel}
+          currentSubscription={selectedWhitelabel?.subscription}
           onClose={handleCloseSubscriptionPopup}
+          onSuccess={handleCloseSubscriptionPopup}
         />
       )}
     </>

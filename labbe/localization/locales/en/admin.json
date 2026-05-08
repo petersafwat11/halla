@@ -153,5 +153,87 @@
       "newFieldLabelEn": "New field",
       "newFieldLabelAr": "New field"
     }
+  },
+  "managePlans": {
+    "title": "Manage Plans & Pricing",
+    "subtitle": "Edit plan pricing, guest limits, and event limits",
+    "stats": {
+      "total": "Total Plans",
+      "active": "Active Plans",
+      "host": "Host Plans",
+      "business": "Business"
+    },
+    "filters": {
+      "all": "All Plans"
+    },
+    "planTypes": {
+      "all": "All Plans",
+      "trial": "Trial",
+      "basic_event": "Basic — Per Event",
+      "basic_monthly": "Basic — Monthly",
+      "premium_event": "Premium — Per Event",
+      "premium_monthly": "Premium — Monthly",
+      "business_event": "Business — Per Event",
+      "business_quarterly": "Business — Quarterly",
+      "business_annual": "Business — Annual",
+      "unlimited": "Unlimited",
+      "direct": "Direct"
+    },
+    "empty": {
+      "title": "No plans found"
+    },
+    "errors": {
+      "loadFailed": "Failed to load plans"
+    },
+    "cards": {
+      "editButton": "Edit Plan",
+      "statusActive": "Active",
+      "statusDisabled": "Disabled",
+      "invites": "invites",
+      "events": "events"
+    },
+    "priceCurrency": "SAR",
+    "pricePeriod": {
+      "event": "/ event"
+    },
+    "editPopup": {
+      "title": "Edit Plan",
+      "sections": {
+        "identity": "Identity",
+        "naming": "Plan Names",
+        "description": "Description",
+        "pricing": "Pricing",
+        "limits": "Limits",
+        "featureToggles": "Features",
+        "featureNumerics": "Feature Settings",
+        "display": "Display",
+        "visibility": "Visibility"
+      },
+      "fields": {
+        "code": { "label": "Code", "help": "Read-only — code is immutable" },
+        "planType": { "label": "Plan Type", "help": "Read-only — plan type is immutable" },
+        "nameAr": { "label": "Arabic Name", "placeholder": "Enter Arabic name" },
+        "nameEn": { "label": "English Name", "placeholder": "Enter English name" },
+        "descriptionAr": { "label": "Arabic Description", "placeholder": "Optional description in Arabic" },
+        "descriptionEn": { "label": "English Description", "placeholder": "Optional description in English" },
+        "pricingOneTime": { "label": "One-time Price", "placeholder": "0", "help": "Amount in SAR (max 2 decimals)" },
+        "maxEvents": { "label": "Max Events", "placeholder": "1", "help": "Use the toggle to mark unlimited" },
+        "maxInvitesPerEvent": { "label": "Max Invites per Event", "placeholder": "0", "help": "Toggle to leave uncapped" },
+        "invitePool": { "label": "Invite Pool", "placeholder": "0", "help": "Toggle to leave uncapped" },
+        "durationDays": { "label": "Duration (days)", "placeholder": "90" },
+        "maxHosts": { "label": "Max Hosts", "placeholder": "1", "help": "Toggle to leave uncapped" },
+        "compensationPercentage": { "label": "Compensation %", "placeholder": "10", "help": "0-100" },
+        "priorityPoints": { "label": "Priority Points", "placeholder": "1", "help": "1-10 (support priority)" },
+        "isPopular": { "label": "Mark as Popular", "description": "Highlight this plan in customer-facing lists" },
+        "sortOrder": { "label": "Sort Order", "placeholder": "0" },
+        "isActive": { "label": "Plan Active", "description": "When disabled, the plan won't be visible to new users" },
+        "isPublic": { "label": "Plan Public", "description": "When disabled, the plan is hidden from public catalogs" }
+      },
+      "unlimited": "Unlimited",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "saveSuccess": "Plan updated successfully"
+    }
   }
 }

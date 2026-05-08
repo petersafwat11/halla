@@ -4,19 +4,25 @@
  * @module modules/plans/plans.service
  */
 
+const mongoose = require('mongoose');
+
 const { NotFoundError, ValidationError, ConflictError } = require('../../shared/errors');
 const { isPoolPlan, buildFeaturesArray, BUSINESS_SETUP_FEE } = require('../../shared/constants/plans');
+const logger = require('../../shared/utils/logger');
 
 const Plan = require('../../../models/PlanModel');
 const Subscription = require('../../../models/SubscriptionModel');
 
 class PlansService {
   /**
-   * Get all active plans
+   * Get all active plans (public). Excludes platform-only plans.
    * @returns {Promise<Object>}
    */
   async getActivePlans() {
-    const plans = await Plan.find({ isActive: true }).sort({ tier: 1, createdAt: 1 });
+    const plans = await Plan.find({
+      isActive: true,
+      availableFor: { $ne: 'platform_admin' },
+    }).sort({ sortOrder: 1, createdAt: 1 });
     return { plans: plans.map((p) => this._formatPlan(p)) };
   }
 
@@ -47,14 +53,6 @@ class PlansService {
     }
 
     return result;
-  }
-
-  /**
-   * Alias for backward compatibility
-   * @returns {Promise<Object>}
-   */
-  async getEnterprisePlans() {
-    return this.getBusinessPlans();
   }
 
   /**
@@ -114,19 +112,18 @@ class PlansService {
    * Get all plans (admin - includes inactive)
    */
   async getAllPlansAdmin() {
-    const plans = await Plan.find({}).sort({ sortOrder: 1, tier: 1, createdAt: 1 });
+    const plans = await Plan.find({}).sort({ sortOrder: 1, createdAt: 1 });
     return { plans: plans.map((p) => this._formatPlan(p)) };
   }
 
   /**
-   * Create a new plan (FLOW-08-F01).
-   * SUPER_ADMIN-only at the route layer. Hard-rejects duplicate `code`
-   * because the schema's unique index would otherwise raise a less-clear
-   * E11000 error.
+   * Create a new plan. SUPER_ADMIN-only at the route layer (now via
+   * `requirePageAccess(MANAGE_PLANS, 'create')`). Hard-rejects duplicate
+   * `code` so callers get a clean ConflictError instead of E11000.
    *
    * @param {Object} data
-   * @returns {Promise<{ plan, before: null }>} `before: null` shape mirrors
-   *          updatePlanByCode so the audit middleware can read it uniformly.
+   * @returns {Promise<{ plan }>} Audit middleware reads `before: null`
+   *          implicitly (mirrors updatePlanByCode shape).
    */
   async createPlan(data) {
     if (!data?.code) throw new ValidationError('Plan code is required');
@@ -147,17 +144,17 @@ class PlansService {
 
     const plan = await Plan.create({
       ...data,
-      isActive: data.isActive !== false,
-      isPublic: data.isPublic !== false,
+      isActive: data.isActive ?? true,
+      isPublic: data.isPublic ?? true,
     });
 
     return { plan: this._formatPlan(plan) };
   }
 
   /**
-   * Soft-delete a plan (FLOW-08-F01). Hard delete is intentionally
-   * blocked to preserve historical subscriptions.
-   * Returns 409 (ConflictError) when active subscribers exist.
+   * Soft-delete a plan. Hard delete is intentionally blocked to preserve
+   * historical subscriptions. Returns 409 (ConflictError) when active
+   * subscribers exist.
    *
    * @param {string} code
    * @returns {Promise<{ plan, activeSubscribers }>}
@@ -187,22 +184,25 @@ class PlansService {
   }
 
   /**
-   * Update plan by code (admin)
+   * Update plan by code (admin).
    *
-   * FLOW-08-F02 / FLOW-08-F03: rejects destructive limit reductions
-   * when active subscribers would breach the new ceiling, and returns
-   * before/after snapshots so the route-level audit middleware can
-   * record the diff (FLOW-08-F03).
+   * Rejects destructive limit reductions when active subscribers would
+   * breach the new ceiling, and returns before/after snapshots so the
+   * route-level audit middleware can record the diff.
+   *
+   * The read-then-write (existence check, breach guard, write) is wrapped
+   * in a single Mongo transaction so a concurrent subscription create
+   * cannot slip past the breach check between the read and the update.
    *
    * @param {string} code
    * @param {Object} updateData
    * @returns {Promise<{ plan, before, after }>}
    */
   async updatePlanByCode(code, updateData) {
-    // Whitelist allowed update fields
+    // Whitelist allowed update fields (kept in sync with PlanModel).
     const allowedFields = [
       'nameAr', 'nameEn', 'descriptionAr', 'descriptionEn',
-      'isActive', 'isPublic', 'pricing', 'limits', 'features', 'tier',
+      'isActive', 'isPublic', 'pricing', 'limits', 'features',
       'sortOrder', 'isPopular',
     ];
     const safeUpdate = {};
@@ -212,49 +212,65 @@ class PlansService {
       }
     }
 
-    const existing = await Plan.findOne({ code });
-    if (!existing) throw new NotFoundError('Plan');
+    let result;
+    const session = await mongoose.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const existing = await Plan.findOne({ code }).session(session);
+        if (!existing) throw new NotFoundError('Plan');
 
-    // FLOW-08-F02: block destructive limit reductions when at least one
-    // active subscriber would exceed the new ceiling.
-    if (safeUpdate.limits) {
-      await this._guardLimitReductions(existing, safeUpdate.limits);
+        // Block destructive limit reductions when at least one active
+        // subscriber would exceed the new ceiling. Reads inside the same
+        // transaction so a concurrent write can't sneak past.
+        if (safeUpdate.limits) {
+          await this._guardLimitReductions(existing, safeUpdate.limits, session);
+        }
+
+        const before = {
+          pricing: existing.pricing?.toObject ? existing.pricing.toObject() : existing.pricing,
+          limits: existing.limits?.toObject ? existing.limits.toObject() : existing.limits,
+          features: existing.features?.toObject ? existing.features.toObject() : existing.features,
+          isActive: existing.isActive,
+          isPublic: existing.isPublic,
+          nameAr: existing.nameAr,
+          nameEn: existing.nameEn,
+        };
+
+        const plan = await Plan.findOneAndUpdate({ code }, safeUpdate, {
+          new: true,
+          runValidators: true,
+          session,
+        });
+
+        const after = {
+          pricing: plan.pricing?.toObject ? plan.pricing.toObject() : plan.pricing,
+          limits: plan.limits?.toObject ? plan.limits.toObject() : plan.limits,
+          features: plan.features?.toObject ? plan.features.toObject() : plan.features,
+          isActive: plan.isActive,
+          isPublic: plan.isPublic,
+          nameAr: plan.nameAr,
+          nameEn: plan.nameEn,
+        };
+
+        result = { plan: this._formatPlan(plan), before, after };
+      });
+    } finally {
+      session.endSession();
     }
 
-    const before = {
-      pricing: existing.pricing?.toObject ? existing.pricing.toObject() : existing.pricing,
-      limits: existing.limits?.toObject ? existing.limits.toObject() : existing.limits,
-      features: existing.features?.toObject ? existing.features.toObject() : existing.features,
-      isActive: existing.isActive,
-      isPublic: existing.isPublic,
-      nameAr: existing.nameAr,
-      nameEn: existing.nameEn,
-    };
-
-    const plan = await Plan.findOneAndUpdate({ code }, safeUpdate, {
-      new: true,
-      runValidators: true,
-    });
-
-    const after = {
-      pricing: plan.pricing?.toObject ? plan.pricing.toObject() : plan.pricing,
-      limits: plan.limits?.toObject ? plan.limits.toObject() : plan.limits,
-      features: plan.features?.toObject ? plan.features.toObject() : plan.features,
-      isActive: plan.isActive,
-      isPublic: plan.isPublic,
-      nameAr: plan.nameAr,
-      nameEn: plan.nameEn,
-    };
-
-    return { plan: this._formatPlan(plan), before, after };
+    return result;
   }
 
   /**
    * Internal: reject limit reductions that would orphan existing
    * subscribers above the new ceiling.
+   *
+   * @param {Object} existingPlan
+   * @param {Object} newLimits
+   * @param {import('mongoose').ClientSession} [session] — caller's transaction session.
    * @private
    */
-  async _guardLimitReductions(existingPlan, newLimits) {
+  async _guardLimitReductions(existingPlan, newLimits, session) {
     const oldLimits = existingPlan.limits || {};
     const reduces = (key) =>
       newLimits[key] !== undefined
@@ -269,10 +285,12 @@ class PlansService {
 
     if (reducedKeys.length === 0) return;
 
-    const activeSubscribers = await Subscription.find({
+    const subQuery = Subscription.find({
       planId: existingPlan._id,
       status: { $in: ['active', 'trial'] },
     }).select('_id userId usage invitePool invitesConsumed compensationPool');
+    if (session) subQuery.session(session);
+    const activeSubscribers = await subQuery;
 
     if (activeSubscribers.length === 0) return;
 
@@ -289,25 +307,22 @@ class PlansService {
           const consumed = sub.invitesConsumed || 0;
           if (consumed > newLimit) affected.push({ id: sub._id, key, used: consumed, newLimit });
         } else if (key === 'maxInvitesPerEvent') {
-          // M-18: previously this branch blocked unconditionally for
-          // every active subscriber, so admins could never reduce
-          // per-event ceilings even when no live event would breach the
-          // new value. The actual breach check is whether any of the
-          // subscriber's live/scheduled events has a guestLimit greater
-          // than the new ceiling. Look it up directly.
-          //
-          // We only check live + scheduled events — completed/cancelled
-          // events keep their snapshotted limit and don't matter.
+          // Breach check: any of the subscriber's live/scheduled events
+          // with a guestLimit greater than the new ceiling. Completed /
+          // cancelled events keep their snapshotted limit and don't
+          // matter.
           try {
             // Lazy require to avoid circular import (plans → events).
             const Event = require('../../../models/EventModel');
-            const breaching = await Event.find({
+            const eventQuery = Event.find({
               host: sub.userId,
               status: { $in: ['live', 'scheduled'] },
               guestLimit: { $gt: newLimit },
             })
               .select('_id guestLimit')
               .limit(1);
+            if (session) eventQuery.session(session);
+            const breaching = await eventQuery;
             if (breaching && breaching.length > 0) {
               affected.push({
                 id: sub._id,
@@ -320,10 +335,9 @@ class PlansService {
           } catch (eventErr) {
             // If the lookup fails, fall back to the conservative block
             // rather than silently allowing a destructive reduction.
-            // eslint-disable-next-line no-console
-            console.warn(
-              "[plans.update] event-breach lookup failed; falling back to conservative block:",
-              eventErr?.message
+            logger.warn(
+              '[plans.update] event-breach lookup failed; falling back to conservative block',
+              { error: eventErr?.message }
             );
             affected.push({ id: sub._id, key, used: oldLimits[key], newLimit });
           }
@@ -346,6 +360,7 @@ class PlansService {
   _formatPlan(plan) {
     const isPool = isPoolPlan(plan.planType);
     const invitePool = plan.limits?.invitePool ?? null;
+    const compensationPercentage = plan.features?.compensationPercentage ?? 10;
     return {
       id: plan._id, code: plan.code,
       name: plan.name, nameAr: plan.nameAr, nameEn: plan.nameEn,
@@ -358,8 +373,10 @@ class PlansService {
       limits: plan.limits,
       invites: isPool ? null : (plan.limits?.maxInvitesPerEvent || 0),
       invitePool: isPool ? invitePool : null,
-      compensationPool: isPool && invitePool !== null ? Math.floor(invitePool * 0.15) : null,
-      compensationPercentage: plan.features?.compensationPercentage || 15,
+      compensationPool: isPool && invitePool !== null
+        ? Math.floor(invitePool * (compensationPercentage / 100))
+        : null,
+      compensationPercentage,
       features: plan.features,
       featuresArray: buildFeaturesArray(plan.features),
       isActive: plan.isActive, sortOrder: plan.sortOrder,

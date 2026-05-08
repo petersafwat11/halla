@@ -3,7 +3,9 @@
 import { useState, useMemo } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAdminHostMutation, useHostPlans } from "@/hooks/reactQueryHooks/useAdmin";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAdminHostMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminPlans } from "@/hooks/reactQueryHooks/useAdmin";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
@@ -11,53 +13,47 @@ import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
 import { hostSubscriptionSchema } from "@/utils/schemas/adminPopupSchemas";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
+import { getLocalized } from "@/utils/locale";
 import styles from "./AddHostPopup.module.css";
+
+const isMonthlyPlanType = (planType) =>
+  typeof planType === "string"
+  && (planType.endsWith("_monthly")
+    || planType.endsWith("_quarterly")
+    || planType.endsWith("_annual"));
 
 export default function HostSubscriptionPopup({ host, onClose }) {
   const { t, i18n } = useTranslation("adminDashboard");
-  const isArabic = i18n.language === "ar";
+  const queryClient = useQueryClient();
   const updateSubscription = useAdminHostMutation("updateSubscription");
   const [billingCycle, setBillingCycle] = useState(
     host?.subscription?.billingCycle || "monthly",
   );
 
-  const { data: plansData, isLoading: isLoadingPlans } = useHostPlans();
-
-  const hostPlans = useMemo(() => {
-    const data = plansData?.data || plansData || {};
-    return {
-      basic: { event: data.basic?.event || [], monthly: data.basic?.monthly || [] },
-      premium: { event: data.premium?.event || [], monthly: data.premium?.monthly || [] },
-    };
-  }, [plansData]);
+  const {
+    data: plansData,
+    isLoading: isLoadingPlans,
+    error: plansError,
+  } = useAdminPlans();
 
   const planOptions = useMemo(() => {
-    const eventPlans = hostPlans.basic.event.concat(hostPlans.premium.event).map((p) => ({
-      label: isArabic ? (p.nameAr || p.nameEn || p.code) : (p.nameEn || p.code),
+    const plans = plansData?.data?.plans || [];
+    return plans.map((p) => ({
+      label: getLocalized(p, "name", i18n.language),
       value: p.code,
-      isMonthly: false,
+      planType: p.planType,
     }));
-    const monthly = hostPlans.basic.monthly.concat(hostPlans.premium.monthly).map((p) => ({
-      label: `${isArabic ? (p.nameAr || p.nameEn || p.code) : (p.nameEn || p.code)} (${isArabic ? "اشتراك" : "Sub"})`,
-      value: p.code,
-      isMonthly: true,
-    }));
-    return [
-      { label: isArabic ? "تجريبي" : "Trial", value: "trial", isMonthly: false },
-      ...eventPlans,
-      ...monthly,
-    ];
-  }, [hostPlans, isArabic]);
+  }, [plansData, i18n.language]);
 
   const statusOptions = [
-    { label: isArabic ? "نشط" : "Active",     value: "active" },
-    { label: isArabic ? "منتهي" : "Expired",  value: "expired" },
-    { label: isArabic ? "ملغي" : "Cancelled", value: "cancelled" },
+    { label: t("subscription.statusActive"),    value: "active" },
+    { label: t("subscription.statusExpired"),   value: "expired" },
+    { label: t("subscription.statusCancelled"), value: "cancelled" },
   ];
 
   const billingCycleOptions = [
-    { label: isArabic ? "شهري" : "Monthly", value: "monthly" },
-    { label: isArabic ? "سنوي" : "Yearly",  value: "yearly" },
+    { label: t("subscription.monthly"), value: "monthly" },
+    { label: t("subscription.yearly"),  value: "yearly" },
   ];
 
   const methods = useForm({
@@ -70,34 +66,38 @@ export default function HostSubscriptionPopup({ host, onClose }) {
 
   const watchedPlanCode = methods.watch("planCode");
   const selectedPlanObj = planOptions.find((p) => p.value === watchedPlanCode);
-  const showBillingCycle = selectedPlanObj?.isMonthly;
+  const showBillingCycle = isMonthlyPlanType(selectedPlanObj?.planType);
 
   const onSubmit = async (data) => {
     try {
       await updateSubscription.mutateAsync({
-        hostId: host.id || host._id,
+        hostId: host.id,
         planCode: data.planCode,
         status: data.status,
         ...(showBillingCycle && { billingCycle }),
       });
-      toastUtils.success(isArabic ? "تم تحديث الاشتراك بنجاح" : "Subscription updated successfully");
+      toastUtils.success(t("subscription.updateSuccess"));
       onClose();
     } catch (error) {
-      handleError(error, null);
+      handleError(error, t);
     }
+  };
+
+  const handleRetryPlans = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin", "plans"] });
   };
 
   return (
     <PopupLayout isOpen={true} onClose={onClose}>
       <div className={styles.popup}>
         <div className={styles.header}>
-          <h2>{isArabic ? "تحديث الاشتراك" : "Update Subscription"}</h2>
+          <h2>{t("subscription.title")}</h2>
           <button className={styles.closeBtn} onClick={onClose}>×</button>
         </div>
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.form}>
             <div className={styles.formGroup}>
-              <label>{isArabic ? "اسم المضيف" : "Host Name"}</label>
+              <label>{t("subscription.hostName")}</label>
               <input
                 type="text"
                 value={host?.name || host?.username || ""}
@@ -107,12 +107,21 @@ export default function HostSubscriptionPopup({ host, onClose }) {
 
             {isLoadingPlans ? (
               <div className={styles.formGroup}>
-                <p>{isArabic ? "جاري تحميل الخطط..." : "Loading plans..."}</p>
+                <p>{t("subscription.loadingPlans")}</p>
+              </div>
+            ) : plansError ? (
+              <div className={styles.formGroup}>
+                <p>{t("subscription.errorLoadingPlans")}</p>
+                <Button
+                  variant="secondary"
+                  title={t("subscription.retry")}
+                  onClick={handleRetryPlans}
+                />
               </div>
             ) : (
               <InputSelect
-                label={isArabic ? "الخطة" : "Plan"}
-                placeholder={isArabic ? "اختر خطة" : "Select a plan"}
+                label={t("subscription.plan")}
+                placeholder={t("subscription.selectPlan")}
                 name="planCode"
                 options={planOptions}
                 required
@@ -120,8 +129,8 @@ export default function HostSubscriptionPopup({ host, onClose }) {
             )}
 
             <InputSelect
-              label={isArabic ? "الحالة" : "Status"}
-              placeholder={isArabic ? "اختر الحالة" : "Select status"}
+              label={t("subscription.status")}
+              placeholder={t("subscription.selectStatus")}
               name="status"
               options={statusOptions}
               required
@@ -129,7 +138,7 @@ export default function HostSubscriptionPopup({ host, onClose }) {
 
             {showBillingCycle && (
               <div className={styles.formGroup}>
-                <label>{isArabic ? "دورة الفوترة" : "Billing Cycle"}</label>
+                <label>{t("subscription.billingCycle")}</label>
                 <div className={styles.billingToggle}>
                   {billingCycleOptions.map((opt) => (
                     <button
@@ -148,17 +157,17 @@ export default function HostSubscriptionPopup({ host, onClose }) {
             <div className={styles.actions}>
               <Button
                 variant="secondary"
-                title={isArabic ? "إلغاء" : "Cancel"}
+                title={t("subscription.cancel")}
                 onClick={onClose}
                 disabled={updateSubscription.isPending}
               />
               <Button
                 variant="primary"
                 title={updateSubscription.isPending
-                  ? isArabic ? "جاري التحديث..." : "Updating..."
-                  : isArabic ? "تحديث" : "Update"}
+                  ? t("subscription.updating")
+                  : t("subscription.update")}
                 type="submit"
-                disabled={updateSubscription.isPending}
+                disabled={updateSubscription.isPending || isLoadingPlans || !!plansError}
               />
             </div>
           </form>

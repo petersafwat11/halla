@@ -157,7 +157,7 @@ export function useAdminPlans() {
   return useQuery({
     queryKey: ['admin', 'plans'],
     queryFn: async () => {
-      const response = await adminDashboardService.plans.getAll(token);
+      const response = await adminDashboardService.plans.getAllForAdmin(token);
       return response.data;
     },
     enabled: !!token,
@@ -171,19 +171,6 @@ export function useAdminHostPlans() {
     queryKey: ['admin', 'plans', 'host'],
     queryFn: async () => {
       const response = await adminDashboardService.plans.getHostPlans(token);
-      return response.data;
-    },
-    enabled: !!token,
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-export function useAdminEnterprisePlans() {
-  const token = useAuthStore((state) => state.token);
-  return useQuery({
-    queryKey: ['admin', 'plans', 'enterprise'],
-    queryFn: async () => {
-      const response = await adminDashboardService.plans.getEnterprisePlans(token);
       return response.data;
     },
     enabled: !!token,

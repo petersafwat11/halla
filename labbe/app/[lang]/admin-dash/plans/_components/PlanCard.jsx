@@ -1,38 +1,50 @@
 "use client";
 import { FaCalendarAlt, FaUsers, FaCheckCircle } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import { getLocalized } from "@/utils/locale";
 import styles from "../page.module.css";
 
-export default function PlanCard({ plan, isCurrent, isSubscribing, onSubscribe }) {
-  const { t, i18n } = useTranslation("whitelabelPlans");
-  const isArabic = i18n.language === "ar";
+const POOL_PLAN_TYPES = new Set([
+  "business_quarterly",
+  "business_annual",
+  "basic_monthly",
+  "premium_monthly",
+  "unlimited",
+]);
 
-  const price =
-    plan.pricing?.oneTime?.amount ?? plan.pricing?.oneTime ?? null;
+const isPoolPlan = (planType) => POOL_PLAN_TYPES.has(planType);
+
+export default function PlanCard({ plan, isCurrent, isSubscribing, onSubscribe }) {
+  const { t, i18n } = useTranslation("businessPlans");
+
+  const price = plan.pricing?.oneTime ?? null;
+  const currency = plan.currency || "SAR";
+  const featuresArray = plan.featuresArray || [];
 
   const formatPrice = (val) =>
-    new Intl.NumberFormat("ar-SA", {
+    new Intl.NumberFormat(i18n.language === "ar" ? "ar-SA" : "en-US", {
       style: "currency",
-      currency: "SAR",
+      currency,
       minimumFractionDigits: 0,
     }).format(val || 0);
+
+  const pool = isPoolPlan(plan.planType);
+  const inviteValue = pool
+    ? plan.limits?.invitePool
+    : plan.limits?.maxInvitesPerEvent;
+  const eventValue = plan.limits?.maxEvents;
+  const unlimited = t("plansPage.currentPlan.unlimited");
 
   return (
     <div
       className={`${styles.planCard} ${isCurrent ? styles.currentPlanHighlight : ""} ${plan.isPopular ? styles.popularPlan : ""}`}
     >
-      {plan.badge && (
-        <div className={styles.popularBadge}>
-          {isArabic ? plan.badge.labelAr : plan.badge.labelEn}
-        </div>
-      )}
-
       <div className={styles.planCardHeader}>
         <h3 className={styles.planCardName}>
-          {isArabic ? plan.nameAr : plan.nameEn}
+          {getLocalized(plan, "name", i18n.language)}
         </h3>
         <p className={styles.planCardDescription}>
-          {isArabic ? plan.descriptionAr : plan.descriptionEn}
+          {getLocalized(plan, "description", i18n.language)}
         </p>
       </div>
 
@@ -44,30 +56,28 @@ export default function PlanCard({ plan, isCurrent, isSubscribing, onSubscribe }
         <div className={styles.limitItem}>
           <FaCalendarAlt className={styles.limitIcon} />
           <span>
-            {plan.limits?.maxEventsPerMonth === -1
-              ? "∞"
-              : plan.limits?.maxEventsPerMonth}{" "}
-            {t("plansPage.currentPlan.eventsPerMonth")}
+            {eventValue === -1 ? unlimited : eventValue ?? 0}{" "}
+            {t("plansPage.planCard.events")}
           </span>
         </div>
         <div className={styles.limitItem}>
           <FaUsers className={styles.limitIcon} />
           <span>
-            {plan.limits?.maxGuestsPerEvent === -1
-              ? "∞"
-              : plan.limits?.maxGuestsPerEvent}{" "}
-            {t("plansPage.currentPlan.guestsPerEvent")}
+            {inviteValue === -1 ? unlimited : (inviteValue ?? 0).toLocaleString()}{" "}
+            {pool
+              ? t("plansPage.planCard.invitesPool")
+              : t("plansPage.planCard.invitesPerEvent")}
           </span>
         </div>
       </div>
 
-      {plan.features && plan.features.length > 0 && (
+      {featuresArray.length > 0 && (
         <div className={styles.planCardFeatures}>
           <ul className={styles.featuresList}>
-            {plan.features.map((feature, index) => (
+            {featuresArray.map((feature, index) => (
               <li key={index} className={styles.featureItem}>
                 <FaCheckCircle className={styles.featureIcon} />
-                <span>{isArabic ? feature.labelAr : feature.labelEn}</span>
+                <span>{getLocalized(feature, "label", i18n.language)}</span>
               </li>
             ))}
           </ul>

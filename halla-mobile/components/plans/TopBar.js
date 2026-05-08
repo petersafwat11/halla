@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
+  I18nManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -38,7 +39,7 @@ const TopBar = ({
           hitSlop={{ top: spacing[8], bottom: spacing[8], left: spacing[8], right: spacing[8] }}
         >
           <Ionicons
-            style={{ transform: [{ rotate: "180deg" }] }}
+            style={I18nManager.isRTL ? { transform: [{ rotate: "180deg" }] } : null}
             name="chevron-back"
             size={24}
             color={colors.primary[50]}

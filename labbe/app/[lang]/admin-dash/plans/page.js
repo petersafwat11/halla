@@ -2,19 +2,19 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import styles from "./page.module.css";
 import useAuthStore from "@/stores/authStore";
-import plansService from "@/services/plansService";
+import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
 import subscriptionService from "@/services/subscriptionService";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import Summary from "@/app/[lang]/host/plans/summary/Summary";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import CurrentPlanCard from "./_components/CurrentPlanCard";
 import PlanCard from "./_components/PlanCard";
 
-const PlansPage = () => {
-  const { t } = useTranslation("whitelabelPlans");
+const PlansPageInner = () => {
+  const { t } = useTranslation("businessPlans");
   const { user, subscription, setSubscription, isWhitelabel } = useAuthStore();
   const router = useRouter();
   const { lang } = useParams();
@@ -30,28 +30,21 @@ const PlansPage = () => {
     }
   }, [user, isWhitelabel, router, lang]);
 
-  const { data: plans = [], isLoading, error } = useQuery({
-    queryKey: ["admin", "enterprise-plans"],
-    queryFn: async () => {
-      const res = await plansService.getEnterprisePlans();
-      return [
-        ...(res?.event || []),
-        ...(res?.quarterly || []),
-        ...(res?.annual || []),
-      ];
-    },
+  const { data: businessPlansResponse, isLoading, error } = useBusinessPlans({
     enabled: !!user && isWhitelabel(),
   });
+  const businessPlansData =
+    businessPlansResponse?.data || businessPlansResponse || {};
+  const plans = [
+    ...(businessPlansData?.event || []),
+    ...(businessPlansData?.quarterly || []),
+    ...(businessPlansData?.annual || []),
+  ];
 
   const handleSubscribe = (plan) => {
-    const price = plan.pricing?.oneTime?.amount ?? plan.pricing?.oneTime ?? null;
     setSelectedPlanForSummary({
       ...plan,
-      price,
-      planType: "enterprise",
-      nameAr: plan.nameAr,
-      nameEn: plan.nameEn,
-      limits: plan.limits,
+      price: plan.pricing?.oneTime ?? null,
     });
     setShowSummary(true);
   };
@@ -146,5 +139,11 @@ const PlansPage = () => {
     </div>
   );
 };
+
+const PlansPage = () => (
+  <ErrorBoundary>
+    <PlansPageInner />
+  </ErrorBoundary>
+);
 
 export default PlansPage;

@@ -168,6 +168,27 @@
       }
     }
   },
+  "subscription": {
+    "title": "تحديث الاشتراك",
+    "hostName": "اسم المضيف",
+    "plan": "الخطة",
+    "selectPlan": "اختر خطة",
+    "loadingPlans": "جاري تحميل الخطط...",
+    "errorLoadingPlans": "فشل في تحميل الخطط. حاول مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "status": "الحالة",
+    "selectStatus": "اختر الحالة",
+    "billingCycle": "دورة الفوترة",
+    "monthly": "شهري",
+    "yearly": "سنوي",
+    "cancel": "إلغاء",
+    "update": "تحديث",
+    "updating": "جاري التحديث...",
+    "updateSuccess": "تم تحديث الاشتراك بنجاح",
+    "statusActive": "نشط",
+    "statusExpired": "منتهي",
+    "statusCancelled": "ملغي"
+  },
   "discounts": {
     "planTypes": {
       "trial": "تجريبي",

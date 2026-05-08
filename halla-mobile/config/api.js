@@ -46,7 +46,7 @@ export const ENDPOINTS = {
   PLANS: {
     ALL: "/plans",
     HOST_PLANS: "/plans/host",
-    ENTERPRISE: "/plans/enterprise",
+    BUSINESS: "/plans/business",
     BY_CODE: (code) => `/plans/code/${code}`,
     BY_ID: (id) => `/plans/${id}`,
   },

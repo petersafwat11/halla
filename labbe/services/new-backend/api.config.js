@@ -338,13 +338,13 @@ export const API_PATHS = {
     getPlans: '/plans',
     getHostPlans: '/plans/host',
     getBusinessPlans: '/plans/business',
-    getEnterprisePlans: '/plans/enterprise',
     getPlanById: (id) => `/plans/${id}`,
     getPlanByCode: (code) => `/plans/code/${code}`,
     // Admin-only plan management
     adminGetAll: '/plans/admin/all',
-    adminGetByCode: (code) => `/plans/admin/${code}`,
+    adminCreate: '/plans/admin',
     adminUpdate: (code) => `/plans/admin/${code}`,
+    adminDelete: (code) => `/plans/admin/${code}`,
   },
 
   // ============================================

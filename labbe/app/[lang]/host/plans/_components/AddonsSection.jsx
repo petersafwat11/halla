@@ -121,7 +121,7 @@ const AddonsSection = ({ onAddonsChange }) => {
             >
               +{tier.quantity}
               <span className={styles.tierPrice}>
-                {tier.price} {t("common.currency.sar", { defaultValue: isAr ? "ر.س" : "SAR" })}
+                {tier.price} {t("common.currency.sar")}
               </span>
             </button>
           ))}
@@ -147,7 +147,7 @@ const AddonsSection = ({ onAddonsChange }) => {
             >
               +{tier.quantity}
               <span className={styles.tierPrice}>
-                {tier.price} {t("common.currency.sar", { defaultValue: isAr ? "ر.س" : "SAR" })}
+                {tier.price} {t("common.currency.sar")}
               </span>
             </button>
           ))}
@@ -173,7 +173,7 @@ const AddonsSection = ({ onAddonsChange }) => {
             >
               <span>{designLabel(tier)}</span>
               <span className={styles.tierPrice}>
-                {tier.price} {t("common.currency.sar", { defaultValue: isAr ? "ر.س" : "SAR" })}
+                {tier.price} {t("common.currency.sar")}
               </span>
               {designTemplate?.type === tier.type && (
                 <FaCheck className={styles.checkIcon} />

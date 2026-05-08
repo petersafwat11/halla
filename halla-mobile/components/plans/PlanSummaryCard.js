@@ -1,42 +1,43 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { getLocalized } from "../../utils/locale";
+import { DEFAULT_COMPENSATION_PERCENTAGE } from "../../utils/constants/plans";
+
+const isMonthly = (billingType) =>
+  billingType === "monthly" ||
+  (typeof billingType === "string" && billingType.endsWith("_monthly"));
 
 const PlanSummaryCard = ({
   selectedPlan,
   billingType,
-  isArabic,
+  locale,
   planPrice,
   t,
 }) => {
-  const getPlanDisplayName = () => {
-    if (isArabic) {
-      return (
-        selectedPlan?.nameAr ||
-        (billingType === "monthly" ? "باقة شهرية" : "باقة مناسبة")
-      );
-    }
-    return (
-      selectedPlan?.nameEn ||
-      (billingType === "monthly" ? "Monthly Plan" : "Event Plan")
-    );
-  };
+  const getPlanDisplayName = () =>
+    getLocalized(selectedPlan, "name", locale) || t("summary.planDetails");
 
   const getBillingTypeLabel = () => {
-    if (billingType === "monthly") return t("summary.unlimitedEvents");
+    if (isMonthly(billingType)) return t("summary.unlimitedEvents");
     return t("summary.oneEvent");
   };
 
+  const getPlanTypeSubtitle = () =>
+    isMonthly(billingType) ? t("summary.unlimitedEvents") : t("summary.singleEvent");
+
   const getCompensationInvites = () => {
-    if (billingType === "monthly") {
+    const pct =
+      (selectedPlan?.compensationPercentage ?? DEFAULT_COMPENSATION_PERCENTAGE) / 100;
+    if (isMonthly(billingType)) {
       return (
-        selectedPlan?.compensationPool ||
-        Math.floor((selectedPlan?.invitePool || 0) * 0.15)
+        selectedPlan?.compensationPool ??
+        Math.floor((selectedPlan?.invitePool || 0) * pct)
       );
     }
     const invites =
-      selectedPlan?.invites ?? selectedPlan?.limits?.maxInvitesPerEvent ?? 25;
-    return Math.floor(invites * 0.15);
+      selectedPlan?.invites ?? selectedPlan?.limits?.maxInvitesPerEvent ?? 0;
+    return Math.floor(invites * pct);
   };
 
   return (
@@ -52,7 +53,7 @@ const PlanSummaryCard = ({
           </View>
           <View style={styles.planDetails}>
             <Text style={styles.planName}>{getPlanDisplayName()}</Text>
-            <Text style={styles.planType}>{t("summary.singleEvent")}</Text>
+            <Text style={styles.planType}>{getPlanTypeSubtitle()}</Text>
           </View>
           <View style={styles.planPrice}>
             <Text style={styles.priceAmount}>{planPrice}</Text>
@@ -61,7 +62,7 @@ const PlanSummaryCard = ({
         </View>
 
         <View style={styles.featuresSummary}>
-          {billingType === "monthly" ? (
+          {isMonthly(billingType) ? (
             <View style={styles.featureItem}>
               <Ionicons name="people-outline" size={18} color="#C28E5C" />
               <Text style={styles.featureText}>
@@ -72,7 +73,7 @@ const PlanSummaryCard = ({
             <View style={styles.featureItem}>
               <Ionicons name="people-outline" size={18} color="#C28E5C" />
               <Text style={styles.featureText}>
-                {`${selectedPlan?.invites ?? selectedPlan?.limits?.maxInvitesPerEvent ?? 25} ${t("summary.invitesLabel")}`}
+                {`${selectedPlan?.invites ?? selectedPlan?.limits?.maxInvitesPerEvent ?? 0} ${t("summary.invitesLabel")}`}
               </Text>
             </View>
           )}

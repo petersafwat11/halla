@@ -29,8 +29,8 @@ const ROLES = [
   {
     id: "whitelabel",
     icon: "business-outline",
-    titleKey: "signup.enterpriseRole",
-    descKey: "signup.enterpriseRoleDescription",
+    titleKey: "signup.businessRole",
+    descKey: "signup.businessRoleDescription",
     accentColor: "#3d6fcc",
     bgColor: "#eaf0fb",
   },

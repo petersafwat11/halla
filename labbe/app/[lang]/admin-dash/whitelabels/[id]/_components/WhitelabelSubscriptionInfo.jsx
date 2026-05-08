@@ -60,7 +60,7 @@ export default function WhitelabelSubscriptionInfo({ sub, onAssignPlan, t }) {
         </div>
         <div className={styles.subItem}>
           <span className={styles.subLabel}>{t("subscription.eventsPerMonthLimit", "Events / Month Limit")}</span>
-          <span className={styles.subValue}>{limitLabel(sub?.limits?.maxEventsPerMonth, t)}</span>
+          <span className={styles.subValue}>{limitLabel(sub?.limits?.maxEvents, t)}</span>
         </div>
         {sub?.currentPeriodEnd && (
           <div className={styles.subItem}>

@@ -7,7 +7,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAdminPlans } from "../../../hooks";
-import { useUpdatePlan } from "../../../hooks/mutations/useAdminMutations";
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
@@ -24,7 +23,16 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 
-const SUBSCRIPTION_TYPES = ["subscription", "lite", "monthly", "pro", "elite"];
+// Match planType prefixes for the tabs:
+//   "host_event"   → per-event host plans (basic_event, premium_event)
+//   "host_monthly" → recurring host plans (basic_monthly, premium_monthly)
+//   "business"     → whitelabel plans     (business_event, business_quarterly, business_annual)
+//   "trial"        → exact match on planType === "trial" (handled below)
+const TYPE_PREFIX_BY_TAB = {
+  host_event: ["basic_event", "premium_event"],
+  host_monthly: ["basic_monthly", "premium_monthly"],
+  business: ["business_"],
+};
 
 const AdminPlansScreen = () => {
   const toast = useToast();
@@ -42,8 +50,6 @@ const AdminPlansScreen = () => {
     refetch,
   } = useAdminPlans();
 
-  const updatePlan = useUpdatePlan();
-
   useEffect(() => {
     if (error) {
       toast.error(t("common.error"));
@@ -57,8 +63,9 @@ const AdminPlansScreen = () => {
 
   const currentPlans = useMemo(() => {
     if (activeTab === "all") return allPlans;
-    if (activeTab === "subscription") {
-      return allPlans.filter((p) => SUBSCRIPTION_TYPES.includes(p.planType));
+    const prefixes = TYPE_PREFIX_BY_TAB[activeTab];
+    if (prefixes) {
+      return allPlans.filter((p) => prefixes.some((pref) => p.planType?.startsWith(pref)));
     }
     return allPlans.filter((p) => p.planType === activeTab);
   }, [allPlans, activeTab]);
@@ -67,16 +74,12 @@ const AdminPlansScreen = () => {
     setEditModal({ visible: true, plan });
   }, []);
 
-  const handleEditSave = useCallback(async () => {
+  // The modal owns the mutation (`useUpdatePlan` already invalidates
+  // ['admin','plans'] on success, so we don't need to refetch here).
+  // This handler just closes the sheet.
+  const handleEditSave = useCallback(() => {
     setEditModal({ visible: false, plan: null });
-    try {
-      await updatePlan.mutateAsync({ code: editModal.plan.code, data: editModal.plan });
-      toast.success(t("common.success"));
-    } catch {
-      toast.error(t("common.error"));
-    }
-    refetch();
-  }, [updatePlan, editModal.plan, toast, t, refetch]);
+  }, []);
 
   const handleEditClose = useCallback(() => {
     setEditModal({ visible: false, plan: null });
