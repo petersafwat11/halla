@@ -698,6 +698,35 @@ export const useAdminPaymentVoid = () => {
   });
 };
 
+/**
+ * Trigger an Excel export of admin payments. The blob is fetched via
+ * apiRequest({ isExport: true }) and a download is triggered in the
+ * browser; the mutation resolves once the download URL is revoked.
+ */
+export const useAdminPaymentsExport = () => {
+  return useMutation({
+    mutationFn: async (filters = {}) => {
+      const blob = await apiRequest({
+        method: "GET",
+        path: API_PATHS.payments.export,
+        params: filters,
+        isExport: true,
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `payments_export_${new Date()
+        .toISOString()
+        .split("T")[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      return { ok: true };
+    },
+  });
+};
+
 // ============================================
 // HOST PLANS QUERY
 // ============================================
@@ -810,20 +839,3 @@ export const useAdminWhitelabelFeatureMutation = (whitelabelId) => {
   });
 };
 
-// ============================================
-// ADMIN PAYMENT SUMMARY QUERY
-// ============================================
-
-export const useAdminPaymentSummary = (filters = {}, options = {}) => {
-  return useQuery({
-    queryKey: ["admin", "payments", "summary", filters],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.payments.getSummary,
-        params: filters,
-      }),
-    staleTime: 2 * 60 * 1000,
-    ...options,
-  });
-};

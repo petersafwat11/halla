@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import AdminPaymentsClient from "./_components/AdminPaymentsClient";
 
 export default async function PaymentsPage({ params }) {
@@ -24,7 +25,9 @@ export default async function PaymentsPage({ params }) {
 
   return (
     <QueryClientServerProvider queryClient={queryClient}>
-      <AdminPaymentsClient />
+      <ErrorBoundary>
+        <AdminPaymentsClient />
+      </ErrorBoundary>
     </QueryClientServerProvider>
   );
 }

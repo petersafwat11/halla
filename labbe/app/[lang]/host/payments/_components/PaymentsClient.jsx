@@ -1,27 +1,51 @@
 "use client";
-import React, { useState } from "react";
+import React, { useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import styles from "../page.module.css";
 import PaymentsHeader from "./PaymentsHeader";
 import Table from "@/ui/commen/new-table/Table";
 import StatusBadge from "./StatusBadge";
-import { MdDelete } from "react-icons/md";
-import { useTranslation } from "react-i18next";
 import { useMyPayments } from "@/hooks/reactQueryHooks/useSubscriptions";
+import { useMyPaymentsExport } from "@/hooks/reactQueryHooks/usePayments";
+import { handleError } from "@/services/errorHandlingService";
+import { toastUtils } from "@/utils/toastUtils";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
 const PaymentsClient = () => {
   const { t } = useTranslation("hostPayments");
-  const [filter, setFilter] = useState("all");
-  const [page, setPage] = useState(1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const filter = searchParams.get("status") || "all";
+  const page = parseInt(searchParams.get("page") || "1");
   const limit = 20;
 
-  const { data: paymentsData, isLoading } = useMyPayments(
+  const updateParams = useCallback(
+    (updates) => {
+      const params = new URLSearchParams(searchParams);
+      Object.entries(updates).forEach(([k, v]) => {
+        if (v) params.set(k, v);
+        else params.delete(k);
+      });
+      if (!Object.keys(updates).includes("page")) params.set("page", "1");
+      router.push(`?${params.toString()}`);
+    },
+    [searchParams, router]
+  );
+
+  const { data: paymentsData, isLoading, error } = useMyPayments(
     { page, limit, status: filter },
     { staleTime: 1 * 60 * 1000 }
   );
+  const exportMutation = useMyPaymentsExport();
 
   const payments = paymentsData?.data?.payments || [];
-  const pagination = paymentsData?.data?.pagination || { page: 1, pages: 1, total: 0 };
+  const pagination = paymentsData?.data?.pagination || {
+    page: 1,
+    pages: 1,
+    total: 0,
+  };
 
   const headers = [
     t("table.columns.service"),
@@ -53,31 +77,19 @@ const PaymentsClient = () => {
   const filterOptions = [
     {
       text: t("table.filter.all"),
-      onClick: () => {
-        setFilter("all");
-        setPage(1);
-      },
+      onClick: () => updateParams({ status: "all" }),
     },
     {
       text: t("table.filter.success"),
-      onClick: () => {
-        setFilter("completed");
-        setPage(1);
-      },
+      onClick: () => updateParams({ status: "completed" }),
     },
     {
       text: t("table.filter.pending"),
-      onClick: () => {
-        setFilter("pending");
-        setPage(1);
-      },
+      onClick: () => updateParams({ status: "pending" }),
     },
     {
       text: t("table.filter.cancelled"),
-      onClick: () => {
-        setFilter("failed");
-        setPage(1);
-      },
+      onClick: () => updateParams({ status: "failed" }),
     },
   ];
 
@@ -88,8 +100,15 @@ const PaymentsClient = () => {
     return value;
   };
 
-  const handleExport = () => {
-    console.log("Export payments data", payments);
+  const handleExport = async () => {
+    try {
+      await exportMutation.mutateAsync({
+        ...(filter !== "all" && { status: filter }),
+      });
+      toastUtils.success(t("export.success", "Payments exported"));
+    } catch (err) {
+      handleError(err, t);
+    }
   };
 
   if (isLoading) {
@@ -97,6 +116,18 @@ const PaymentsClient = () => {
       <div className={styles.page}>
         <PaymentsHeader />
         <SimpleLoading message={t("loading")} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <PaymentsHeader />
+        <div className={styles.error}>
+          {error.message ||
+            t("errors.loadFailed", "Failed to load your payments")}
+        </div>
       </div>
     );
   }
@@ -118,7 +149,7 @@ const PaymentsClient = () => {
           currentPage: pagination.page,
           totalPages: pagination.pages,
           totalItems: pagination.total,
-          onPageChange: setPage,
+          onPageChange: (newPage) => updateParams({ page: String(newPage) }),
         }}
       />
     </div>

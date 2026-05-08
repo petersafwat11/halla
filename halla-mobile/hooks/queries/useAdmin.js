@@ -117,19 +117,6 @@ export function useAdminTicketById(id) {
   });
 }
 
-export function useAdminPayments(params = {}) {
-  const token = useAuthStore((state) => state.token);
-  return useQuery({
-    queryKey: ['admin', 'payments', params],
-    queryFn: async () => {
-      const response = await adminDashboardService.payments.getAll(token, params);
-      return response.data;
-    },
-    enabled: !!token,
-    staleTime: 2 * 60 * 1000,
-  });
-}
-
 /**
  * @param {Object} [params] - server filter params
  * @param {Object} [opts]
@@ -217,16 +204,84 @@ export function useAdminEventById(id) {
   });
 }
 
-export function useAdminPaymentSummary(params = {}) {
+export function useAdminPaymentById(paymentId) {
   const token = useAuthStore((state) => state.token);
   return useQuery({
-    queryKey: ['admin', 'payments', 'summary', params],
+    queryKey: ['admin', 'payments', paymentId],
     queryFn: async () => {
-      const response = await adminDashboardService.payments.getSummary(token, params);
+      const response = await adminDashboardService.payments.getById(token, paymentId);
+      if (!response.success) throw new Error(response.error);
       return response.data;
     },
-    enabled: !!token,
-    staleTime: 3 * 60 * 1000,
+    enabled: !!token && !!paymentId,
+    staleTime: 30 * 1000,
+  });
+}
+
+// Refund / capture / void all hit the canonical /payments/:id/* mounts.
+// Idempotency-Key is minted once per modal session by the caller and
+// passed in so retries on a flaky network land on the same operation.
+export function useAdminPaymentRefund() {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+  return useMutation({
+    mutationFn: async ({ id, amount, reason, idempotencyKey }) => {
+      const response = await adminDashboardService.payments.refund(
+        token,
+        id,
+        { amount, reason },
+        idempotencyKey,
+      );
+      if (!response.success) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payments'] });
+      if (variables?.id) {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'payments', variables.id] });
+      }
+    },
+  });
+}
+
+export function useAdminPaymentCapture() {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+  return useMutation({
+    mutationFn: async ({ id, amount, idempotencyKey }) => {
+      const response = await adminDashboardService.payments.capture(
+        token,
+        id,
+        { amount },
+        idempotencyKey,
+      );
+      if (!response.success) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payments'] });
+      if (variables?.id) {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'payments', variables.id] });
+      }
+    },
+  });
+}
+
+export function useAdminPaymentVoid() {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+  return useMutation({
+    mutationFn: async ({ id, idempotencyKey }) => {
+      const response = await adminDashboardService.payments.void(token, id, idempotencyKey);
+      if (!response.success) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payments'] });
+      if (variables?.id) {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'payments', variables.id] });
+      }
+    },
   });
 }
 

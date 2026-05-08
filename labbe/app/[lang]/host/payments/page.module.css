@@ -8,6 +8,16 @@
   /* background: #f9f4ef; */
 }
 
+.error {
+  width: 100%;
+  text-align: center;
+  padding: 4rem;
+  color: #c62828;
+  background: #ffebee;
+  border-radius: 1.2rem;
+  font-size: 1.6rem;
+}
+
 @media screen and (max-width: 768px) {
   .page {
     padding: 2.4rem 1.6rem;

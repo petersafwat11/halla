@@ -22,7 +22,7 @@ const PaymentsHeader = () => {
             fontSize: "2.4rem",
           }}
         />
-        {t("title") || "المدفوعات"}
+        {t("title", "Payments")}
       </h1>
     </div>
   );

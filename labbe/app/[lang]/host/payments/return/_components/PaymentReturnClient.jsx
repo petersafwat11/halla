@@ -1,84 +1,108 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { usePoll3DS } from "@/hooks/reactQueryHooks/usePayments";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import styles from "./PaymentReturnClient.module.css";
 
-const TERMINAL = new Set([
-  "paid",
-  "captured",
-  "failed",
-  "refunded",
-  "voided",
-  "partially_refunded",
-]);
+const PURPOSE_REDIRECT = (lang, purpose) => {
+  switch (purpose) {
+    case "subscription":
+      return `/${lang}/host/subscription`;
+    case "addon":
+      return `/${lang}/host/events`;
+    case "checkout":
+      return `/${lang}/host/create-event`;
+    default:
+      return `/${lang}/host`;
+  }
+};
+
+const SUCCESS_STATUSES = new Set(["paid", "captured"]);
 
 export default function PaymentReturnClient() {
   const { t } = useTranslation("hostPayments");
   const router = useRouter();
   const { lang } = useParams();
   const searchParams = useSearchParams();
-  const pollRef = useRef(null);
-
-  // Moyasar appends `id` and `status` to the callback URL; we accept either.
   const moyasarId = searchParams.get("id");
-  const [status, setStatus] = useState("pending_3ds");
-  const [error, setError] = useState(null);
+
+  const {
+    payment,
+    status,
+    isTerminal,
+    reachedMaxAttempts,
+    isError,
+    error,
+  } = usePoll3DS(moyasarId);
 
   useEffect(() => {
-    if (!moyasarId) {
-      setError(t("return.missingId", "Payment reference missing"));
-      return undefined;
+    if (!isTerminal || !payment) return;
+    if (SUCCESS_STATUSES.has(status)) {
+      const target = PURPOSE_REDIRECT(lang, payment.metadata?.purpose);
+      router.replace(target);
     }
-    let cancelled = false;
-    let attempts = 0;
+  }, [isTerminal, status, payment, lang, router]);
 
-    const poll = async () => {
-      try {
-        const res = await apiRequest({
-          method: "GET",
-          path: API_PATHS.hostPayments.poll3ds(moyasarId),
-        });
-        const payment = res?.data?.data || res?.data || res;
-        if (cancelled) return;
-        setStatus(payment.status);
-        if (TERMINAL.has(payment.status)) {
-          if (payment.status === "paid" || payment.status === "captured") {
-            router.replace(`/${lang}/host/create-event`);
-          }
-          return;
-        }
-        if (++attempts < 30) {
-          pollRef.current = setTimeout(poll, 2000);
-        } else {
-          setError(
-            t(
-              "return.timeout",
-              "Still confirming your payment. We'll email you once it lands."
-            )
-          );
-        }
-      } catch (err) {
-        setError(err?.message || t("return.error", "Failed to confirm payment"));
-      }
-    };
-    poll();
-
-    return () => {
-      cancelled = true;
-      if (pollRef.current) clearTimeout(pollRef.current);
-    };
-  }, [moyasarId, lang, router, t]);
-
-  if (error) {
+  if (!moyasarId) {
     return (
-      <div style={{ padding: 32, textAlign: "center" }}>
-        <h1>{t("return.title", "Payment status")}</h1>
-        <p style={{ color: "#c62828" }}>{error}</p>
-        <button onClick={() => router.push(`/${lang}/host`)}>
+      <div className={styles.container}>
+        <h1 className={styles.title}>
+          {t("return.title", "Payment status")}
+        </h1>
+        <p className={styles.error}>
+          {t("return.missingId", "Payment reference missing")}
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push(`/${lang}/host`)}
+          className={styles.backBtn}
+        >
+          {t("return.backHome", "Back to dashboard")}
+        </button>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className={styles.container}>
+        <h1 className={styles.title}>
+          {t("return.title", "Payment status")}
+        </h1>
+        <p className={styles.error}>
+          {error?.message || t("return.error", "Failed to confirm payment")}
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push(`/${lang}/host`)}
+          className={styles.backBtn}
+        >
+          {t("return.backHome", "Back to dashboard")}
+        </button>
+      </div>
+    );
+  }
+
+  if (reachedMaxAttempts) {
+    return (
+      <div className={styles.container}>
+        <h1 className={styles.title}>
+          {t("return.title", "Payment status")}
+        </h1>
+        <p className={styles.statusLine}>
+          {t(
+            "return.timeout",
+            "Still confirming your payment. We'll email you once it lands."
+          )}
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push(`/${lang}/host`)}
+          className={styles.backBtn}
+        >
           {t("return.backHome", "Back to dashboard")}
         </button>
       </div>
@@ -86,10 +110,16 @@ export default function PaymentReturnClient() {
   }
 
   return (
-    <div style={{ padding: 32, textAlign: "center" }}>
-      <h1>{t("return.title", "Payment status")}</h1>
-      <p>{t(`return.status.${status}`, status)}</p>
-      <SimpleLoading message={t("return.confirming", "Confirming with the bank…")} />
+    <div className={styles.container}>
+      <h1 className={styles.title}>{t("return.title", "Payment status")}</h1>
+      <p className={styles.statusLine}>
+        {status
+          ? t(`return.status.${status}`, status)
+          : t("return.confirming", "Confirming with the bank…")}
+      </p>
+      <SimpleLoading
+        message={t("return.confirming", "Confirming with the bank…")}
+      />
     </div>
   );
 }

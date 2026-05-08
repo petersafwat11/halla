@@ -14,6 +14,7 @@
     "searchPlaceholder": "البحث في المعاملات...",
     "filter": "التصفية",
     "export": "تصدير",
+    "exporting": "جارٍ التصدير…",
     "refundedTag": "مسترد",
     "columns": {
       "id": "رقم المعاملة",
@@ -60,7 +61,10 @@
     "confirmVoid": "هل تريد إلغاء هذه الدفعة المفوضة؟",
     "refundAmountPlaceholder": "المبلغ (فارغ = استرداد كامل)",
     "captureAmountPlaceholder": "المبلغ (فارغ = قبض كامل)",
-    "reasonPlaceholder": "السبب"
+    "reasonPlaceholder": "السبب",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "close": "إغلاق"
   },
   "dateRange": {
     "all": "الكل",
@@ -70,7 +74,44 @@
     "lastWeek": "الأسبوع الماضي",
     "thisMonth": "هذا الشهر",
     "lastMonth": "الشهر الماضي",
+    "from": "من",
+    "to": "إلى",
     "confirm": "تأكيد",
     "cancel": "إلغاء"
+  },
+  "pagination": {
+    "prev": "السابق",
+    "next": "التالي"
+  },
+  "errors": {
+    "loadFailed": "فشل تحميل المدفوعات"
+  },
+  "empty": {
+    "title": "لا توجد مدفوعات"
+  },
+  "export": {
+    "success": "تم تصدير المدفوعات"
+  },
+  "refund": {
+    "success": "تم الاسترداد"
+  },
+  "capture": {
+    "success": "تم القبض"
+  },
+  "void": {
+    "success": "تم الإلغاء"
+  },
+  "detail": {
+    "title": "تفاصيل الدفعة",
+    "id": "رقم الدفعة",
+    "status": "الحالة",
+    "amount": "المبلغ",
+    "method": "طريقة الدفع",
+    "moyasarId": "معرّف ميسر",
+    "createdAt": "تاريخ الإنشاء",
+    "capturedAt": "تاريخ القبض",
+    "voidedAt": "تاريخ الإلغاء",
+    "refundedAt": "تاريخ الاسترداد",
+    "refunds": "المسترجعات"
   }
 }

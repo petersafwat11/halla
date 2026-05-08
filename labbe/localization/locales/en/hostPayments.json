@@ -1,4 +1,12 @@
 {
+  "title": "Payments",
+  "loading": "Loading…",
+  "errors": {
+    "loadFailed": "Failed to load your payments"
+  },
+  "export": {
+    "success": "Payments exported"
+  },
   "table": {
     "title": "Payments List",
     "columns": {

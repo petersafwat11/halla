@@ -53,7 +53,7 @@ exports.restrictTo = (...allowedRoles) => {
 /**
  * Require access to a specific admin page
  * @param {string} page - Page from ADMIN_PAGES
- * @param {string} action - 'view' | 'create' | 'update' | 'delete' | 'export'
+ * @param {string} action - 'view' | 'create' | 'update' | 'delete' | 'export' | 'manage'
  * @returns {Function} Express middleware
  */
 exports.requirePageAccess = (page, action = "view") => {
@@ -70,6 +70,7 @@ exports.requirePageAccess = (page, action = "view") => {
         delete: "delete",
         export: "export",
         edit: "modify",
+        manage: "manage",
       };
       const actionText = actionMessages[action] || action;
       return next(

@@ -14,6 +14,7 @@
     "searchPlaceholder": "Search transactions...",
     "filter": "Filter",
     "export": "Export",
+    "exporting": "Exporting…",
     "refundedTag": "refunded",
     "columns": {
       "id": "Transaction ID",
@@ -60,7 +61,10 @@
     "confirmVoid": "Void this authorized payment?",
     "refundAmountPlaceholder": "Amount (blank = full refund)",
     "captureAmountPlaceholder": "Amount (blank = full capture)",
-    "reasonPlaceholder": "Reason"
+    "reasonPlaceholder": "Reason",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close"
   },
   "dateRange": {
     "all": "All",
@@ -70,7 +74,44 @@
     "lastWeek": "Last week",
     "thisMonth": "This month",
     "lastMonth": "Last month",
+    "from": "From",
+    "to": "To",
     "confirm": "Confirm",
     "cancel": "Cancel"
+  },
+  "pagination": {
+    "prev": "Previous",
+    "next": "Next"
+  },
+  "errors": {
+    "loadFailed": "Failed to load payments"
+  },
+  "empty": {
+    "title": "No payments found"
+  },
+  "export": {
+    "success": "Payments exported"
+  },
+  "refund": {
+    "success": "Refund issued"
+  },
+  "capture": {
+    "success": "Payment captured"
+  },
+  "void": {
+    "success": "Payment voided"
+  },
+  "detail": {
+    "title": "Payment details",
+    "id": "Payment ID",
+    "status": "Status",
+    "amount": "Amount",
+    "method": "Payment method",
+    "moyasarId": "Moyasar ID",
+    "createdAt": "Created at",
+    "capturedAt": "Captured at",
+    "voidedAt": "Voided at",
+    "refundedAt": "Refunded at",
+    "refunds": "Refunds"
   }
 }

@@ -748,6 +748,53 @@
       "message": "لا توجد مدفوعات للعرض"
     }
   },
+  "paymentDetail": {
+    "title": "تفاصيل الدفعة",
+    "notFound": "لم يتم العثور على الدفعة",
+    "id": "رقم الدفعة",
+    "status": "الحالة",
+    "method": "طريقة الدفع",
+    "moyasarId": "معرّف ميسر",
+    "createdAt": "تاريخ الإنشاء",
+    "capturedAt": "تاريخ التحصيل",
+    "voidedAt": "تاريخ الإلغاء",
+    "refundedAt": "تاريخ الاسترداد",
+    "subscription": "الاشتراك",
+    "addon": "الإضافة",
+    "refunds": "الاستردادات",
+    "refundedTag": "مسترد",
+    "amountLabel": "المبلغ",
+    "amountPlaceholder": "اتركه فارغاً للمبلغ الكامل",
+    "reasonLabel": "السبب (اختياري)",
+    "reasonPlaceholder": "سبب الاسترداد",
+    "voidConfirmMessage": "لا يمكن التراجع عن الإلغاء.",
+    "actions": {
+      "title": "إجراءات المسؤول",
+      "refund": "استرداد",
+      "capture": "تحصيل",
+      "void": "إلغاء"
+    },
+    "refund": { "success": "تم إصدار الاسترداد" },
+    "capture": { "success": "تم تحصيل الدفعة" },
+    "void": { "success": "تم إلغاء الدفعة" }
+  },
+  "paymentReturn": {
+    "title": "حالة الدفع",
+    "confirming": "جاري التأكيد مع البنك…",
+    "error": "فشل تأكيد الدفع.",
+    "timeout": "لا يزال التأكيد جارياً. سنرسل لك بريداً إلكترونياً عند الانتهاء.",
+    "missingId": "مرجع الدفع مفقود.",
+    "backHome": "العودة إلى لوحة التحكم",
+    "status": {
+      "pending_3ds": "جاري التحقق مع البنك…",
+      "paid": "تم استلام الدفعة",
+      "captured": "تم تحصيل الدفعة",
+      "failed": "فشلت الدفعة",
+      "voided": "تم إلغاء الدفعة",
+      "refunded": "تم استرداد الدفعة",
+      "partially_refunded": "مسترد جزئياً"
+    }
+  },
   "whitelabelDetails": {
     "title": "تفاصيل الوايت ليبل",
     "loading": "جاري تحميل تفاصيل الوايت ليبل…",

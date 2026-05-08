@@ -748,6 +748,53 @@
       "message": "There are no payments to display"
     }
   },
+  "paymentDetail": {
+    "title": "Payment details",
+    "notFound": "Payment not found",
+    "id": "Payment ID",
+    "status": "Status",
+    "method": "Payment method",
+    "moyasarId": "Moyasar ID",
+    "createdAt": "Created at",
+    "capturedAt": "Captured at",
+    "voidedAt": "Voided at",
+    "refundedAt": "Refunded at",
+    "subscription": "Subscription",
+    "addon": "Add-on",
+    "refunds": "Refunds",
+    "refundedTag": "Refunded",
+    "amountLabel": "Amount",
+    "amountPlaceholder": "Leave empty for full amount",
+    "reasonLabel": "Reason (optional)",
+    "reasonPlaceholder": "Reason for refund",
+    "voidConfirmMessage": "Voiding cannot be reversed.",
+    "actions": {
+      "title": "Admin actions",
+      "refund": "Refund",
+      "capture": "Capture",
+      "void": "Void"
+    },
+    "refund": { "success": "Refund issued" },
+    "capture": { "success": "Payment captured" },
+    "void": { "success": "Payment voided" }
+  },
+  "paymentReturn": {
+    "title": "Payment status",
+    "confirming": "Confirming with the bank…",
+    "error": "Failed to confirm payment.",
+    "timeout": "Still confirming. We'll email you once it lands.",
+    "missingId": "Payment reference missing.",
+    "backHome": "Back to dashboard",
+    "status": {
+      "pending_3ds": "Verifying with your bank…",
+      "paid": "Payment received",
+      "captured": "Payment captured",
+      "failed": "Payment failed",
+      "voided": "Payment voided",
+      "refunded": "Payment refunded",
+      "partially_refunded": "Partially refunded"
+    }
+  },
   "whitelabelDetails": {
     "title": "Whitelabel Details",
     "loading": "Loading whitelabel details…",

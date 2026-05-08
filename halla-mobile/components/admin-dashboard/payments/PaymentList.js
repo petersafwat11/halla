@@ -10,6 +10,7 @@ const PaymentList = ({
   hasMore = false,
   onLoadMore,
   loadingMore = false,
+  onPressPayment,
 }) => {
   const { t } = useTranslation("admin");
 
@@ -17,7 +18,9 @@ const PaymentList = ({
     <AdminFlatList
       data={payments || []}
       keyExtractor={(item, index) => item._id || item.id || `payment-${index}`}
-      renderItem={({ item }) => <PaymentListItem payment={item} />}
+      renderItem={({ item }) => (
+        <PaymentListItem payment={item} onPress={onPressPayment} />
+      )}
       loading={loading}
       onRefresh={onRefresh}
       hasMore={hasMore}

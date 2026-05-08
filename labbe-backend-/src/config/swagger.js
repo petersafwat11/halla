@@ -1682,6 +1682,99 @@ const swaggerOptions = {
           },
         },
 
+        // ---- Payment Models ----
+        PaymentMethod: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', example: 'creditcard' },
+            last4: { type: 'string', example: '4242' },
+            brand: { type: 'string', example: 'visa' },
+          },
+        },
+        PaymentRefund: {
+          type: 'object',
+          properties: {
+            amount: { type: 'number' },
+            reason: { type: 'string', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
+            createdBy: { type: 'string', nullable: true },
+            moyasarRefundResponseStatus: { type: 'string' },
+          },
+        },
+        Payment: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            userId: { type: 'string' },
+            whitelabelId: { type: 'string', nullable: true },
+            subscriptionId: { type: 'string', nullable: true },
+            addonId: { type: 'string', nullable: true },
+            amount: { type: 'number' },
+            currency: { type: 'string', example: 'SAR' },
+            status: {
+              type: 'string',
+              enum: [
+                'pending', 'pending_3ds', 'authorized', 'paid', 'captured',
+                'failed', 'voided', 'refunded', 'partially_refunded',
+              ],
+            },
+            providerStatus: { type: 'string' },
+            paymentMethod: { $ref: '#/components/schemas/PaymentMethod' },
+            moyasarPaymentId: { type: 'string', nullable: true },
+            description: { type: 'string', nullable: true },
+            refundedAmount: { type: 'number' },
+            refunds: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/PaymentRefund' },
+            },
+            capturedAmount: { type: 'number', nullable: true },
+            capturedAt: { type: 'string', format: 'date-time', nullable: true },
+            authorizedAt: { type: 'string', format: 'date-time', nullable: true },
+            paidAt: { type: 'string', format: 'date-time', nullable: true },
+            voidedAt: { type: 'string', format: 'date-time', nullable: true },
+            refundedAt: { type: 'string', format: 'date-time', nullable: true },
+            initiatedAt: { type: 'string', format: 'date-time' },
+            metadata: { type: 'object', additionalProperties: true },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        PaymentResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            status: { type: 'string', example: 'success' },
+            data: { $ref: '#/components/schemas/Payment' },
+          },
+        },
+        MoyasarWebhookPayload: {
+          type: 'object',
+          required: ['type', 'data'],
+          properties: {
+            id: { type: 'string', description: 'Moyasar event UUID' },
+            type: {
+              type: 'string',
+              enum: [
+                'payment_paid', 'payment_failed', 'payment_refunded',
+                'payment_captured', 'payment_authorized', 'payment_voided',
+                'payment_updated', 'invoice_paid', 'invoice_failed',
+              ],
+            },
+            account_name: { type: 'string' },
+            live: { type: 'boolean' },
+            created_at: { type: 'string', format: 'date-time' },
+            secret_token: {
+              type: 'string',
+              description: 'Constant per-webhook secret; alternatively sent as X-Moyasar-Auth header',
+            },
+            data: {
+              type: 'object',
+              description: 'Provider Payment object — same shape as GET /payments/:id',
+              additionalProperties: true,
+            },
+          },
+        },
+
         // ---- Discount Models ----
         Discount: {
           type: 'object',

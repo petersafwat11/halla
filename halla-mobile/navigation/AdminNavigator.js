@@ -37,6 +37,7 @@ import UpdateEventScreen from "../screens/common/update-event/UpdateEventScreen"
 import AdminTicketsScreen from "../screens/admin/admin-dashboard/AdminTicketsScreen";
 import TicketDetailsScreen from "../screens/admin/admin-dashboard/TicketDetailsScreen";
 import AdminPaymentsScreen from "../screens/admin/admin-dashboard/AdminPaymentsScreen";
+import PaymentDetailScreen from "../screens/admin/admin-dashboard/PaymentDetailScreen";
 import AdminPlansScreen from "../screens/admin/admin-dashboard/AdminPlansScreen";
 import AdminSettingsScreen from "../screens/admin/admin-dashboard/AdminSettingsScreen";
 import AdminAccountSettingsScreen from "../screens/admin/admin-dashboard/AdminAccountSettingsScreen";
@@ -194,6 +195,13 @@ function MoreStackNavigator() {
         <MoreStack.Screen
           name="AdminPayments"
           component={AdminPaymentsScreen}
+          options={{ headerShown: false }}
+        />
+      )}
+      {canViewPage(userRole, PAGES.PAYMENTS) && (
+        <MoreStack.Screen
+          name="PaymentDetail"
+          component={PaymentDetailScreen}
           options={{ headerShown: false }}
         />
       )}

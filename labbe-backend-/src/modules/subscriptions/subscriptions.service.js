@@ -1266,6 +1266,48 @@ class SubscriptionsService {
   }
 
   /**
+   * Export the current user's payments as a flat array of rows suitable
+   * for `generateExcel`. Mirrors the shape of `admin.payments.service.exportPayments`
+   * minus the host columns (the user is the host).
+   */
+  async exportMyPayments(userId, options = {}) {
+    const { status = 'all', from, to } = options;
+    const match = { userId };
+    if (status && status !== 'all') {
+      const statusMap = {
+        completed: { $in: ['paid', 'captured', 'partially_refunded'] },
+        pending: { $in: ['pending', 'pending_3ds', 'authorized'] },
+        failed: { $in: ['failed', 'voided'] },
+        refunded: { $in: ['refunded', 'partially_refunded'] },
+      };
+      if (statusMap[status]) match.status = statusMap[status];
+    }
+    if (from || to) {
+      match.createdAt = {};
+      if (from) match.createdAt.$gte = new Date(from);
+      if (to) match.createdAt.$lte = new Date(to);
+    }
+    const rows = await Payment.find(match)
+      .populate('subscriptionId', 'planId pricePaid')
+      .populate('addonId', 'addonType price')
+      .sort({ createdAt: -1 })
+      .lean();
+    return rows.map((p) => ({
+      Service:
+        p.metadata?.purpose === 'addon'
+          ? `Addon: ${p.metadata?.addonType || p.addonId?.addonType || ''}`
+          : `Subscription: ${p.metadata?.planCode || ''}`,
+      Amount: `${p.amount || 0} ${p.currency || 'SAR'}`,
+      'Refunded Amount': `${p.refundedAmount || 0} ${p.currency || 'SAR'}`,
+      Status: p.status,
+      'Payment Method': p.paymentMethod?.type || '-',
+      Last4: p.paymentMethod?.last4 || '-',
+      'Transaction ID': p.moyasarPaymentId || '-',
+      'Created At': p.createdAt ? new Date(p.createdAt).toISOString().split('T')[0] : '-',
+    }));
+  }
+
+  /**
    * HIGH-6 review: subscription parallel of `addons.service._recordPendingRefund`.
    *
    * Called when a charge succeeded but the subsequent

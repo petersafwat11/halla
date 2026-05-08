@@ -351,4 +351,29 @@ router.get('/plans/:code', subscriptionsController.getPlanByCode);
  */
 router.get('/payments', subscriptionsController.getMyPayments);
 
+/**
+ * @swagger
+ * /subscriptions/payments/export:
+ *   get:
+ *     summary: Export my payment history as Excel
+ *     description: Streams an .xlsx of the calling user's payments (filtered by status/date range).
+ *     tags: [Subscriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string, enum: [all, completed, pending, failed, refunded] }
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200: { description: Excel file stream }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ */
+router.get('/payments/export', subscriptionsController.exportMyPayments);
+
 module.exports = router;
