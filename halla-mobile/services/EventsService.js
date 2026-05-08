@@ -8,7 +8,10 @@
 // ============================================================================
 
 /**
- * Validates a guest or moderator item
+ * Validates a guest or moderator item. Errors are returned as i18n keys
+ * (e.g. `events:validation.guestNameRequired`); the caller translates
+ * them via `t(key)`.
+ *
  * @param {Object} item - The item to validate
  * @param {string} item.name - Name of the person
  * @param {string} item.phone - Phone number (mobile)
@@ -21,26 +24,26 @@ export const validateListItem = (item, type = "guest", existingList = []) => {
   const name = (item.name || "").trim();
   const phone = (item.phone || item.mobile || "").trim();
 
-  // Validate name
   if (!name) {
-    errors.name = type === "guest" ? "اسم الضيف مطلوب" : "اسم المشرف مط��وب";
+    errors.name =
+      type === "guest"
+        ? "events:validation.guestNameRequired"
+        : "events:validation.staffNameRequired";
   }
 
-  // Validate phone
   if (!phone) {
-    errors.phone = "رقم الجوال مطلوب";
+    errors.phone = "events:validation.phoneRequired";
   } else if (!/^5[0-9]{8}$/.test(phone)) {
-    errors.phone = "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5";
+    errors.phone = "events:validation.phoneInvalid";
   }
 
-  // Check for duplicate phone (exclude current item when editing)
   if (phone && !item.id) {
     const phoneExists = existingList.some(
       (existingItem) =>
         existingItem.phone === phone || existingItem.mobile === phone
     );
     if (phoneExists) {
-      errors.phone = "هذا الرقم موجود بالفعل في القائمة";
+      errors.phone = "events:validation.phoneDuplicate";
     }
   }
 
@@ -51,22 +54,23 @@ export const validateListItem = (item, type = "guest", existingList = []) => {
 };
 
 /**
- * Validates a row from CSV import
+ * Validates a row from CSV import. Errors are returned as i18n keys; the
+ * caller translates them via `t(key)`.
  * @param {Object} row - Row data from CSV
  * @param {number} index - Row index
- * @returns {Object} - { valid: boolean, errors: Array }
+ * @returns {Object} - { valid: boolean, errors: Array<string> }
  */
 export const validateCSVRow = (row, index) => {
   const errors = [];
 
   if (!row.name || !row.name.trim()) {
-    errors.push("الاسم مطلوب");
+    errors.push("events:validation.nameRequired");
   }
 
   if (!row.mobile || !row.mobile.trim()) {
-    errors.push("رقم الجوال مطلوب");
+    errors.push("events:validation.phoneRequired");
   } else if (!/^5[0-9]{8}$/.test(row.mobile)) {
-    errors.push("رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5");
+    errors.push("events:validation.phoneInvalid");
   }
 
   return { valid: errors.length === 0, errors };
@@ -182,9 +186,16 @@ export const bulkRemoveListItems = (ids = [], currentList = []) => {
  * @returns {Object} - { headers: Array, sampleData: Array, fileName: string }
  */
 export const generateCSVTemplate = (type = "guest") => {
+  // Header labels are returned as i18n keys; callers translate via `t(key)`.
   const headers = [
-    { key: "name", label: type === "guest" ? "اسم الضيف" : "اسم المشرف" },
-    { key: "mobile", label: "رقم الجوال" },
+    {
+      key: "name",
+      label:
+        type === "guest"
+          ? "events:csv.headers.guestName"
+          : "events:csv.headers.staffName",
+    },
+    { key: "mobile", label: "events:csv.headers.phone" },
   ];
 
   const sampleData = [
@@ -221,7 +232,7 @@ export const processImportedCSV = (
     if (existingPhones.includes(phone)) {
       duplicates.push({
         row: index + 2, // +2 because of header row and 0-index
-        errors: ["هذا الرقم موجود بالفعل في القائمة"],
+        errors: ["events:validation.phoneDuplicate"],
       });
       return;
     }

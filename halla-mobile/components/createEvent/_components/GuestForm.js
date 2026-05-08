@@ -43,7 +43,7 @@ export default function GuestForm({ isLimitReached }) {
           onChangeText={setGuestName}
           editable={!isLimitReached}
         />
-        {guestErrors.name && <Text style={styles.errorText}>{guestErrors.name}</Text>}
+        {guestErrors.name && <Text style={styles.errorText}>{t(guestErrors.name)}</Text>}
       </View>
       <View style={styles.inputWrapper}>
         <Text style={styles.inputLabel}>{t("events.guest.phoneLabel")}</Text>
@@ -56,7 +56,7 @@ export default function GuestForm({ isLimitReached }) {
           keyboardType="phone-pad"
           editable={!isLimitReached}
         />
-        {guestErrors.phone && <Text style={styles.errorText}>{guestErrors.phone}</Text>}
+        {guestErrors.phone && <Text style={styles.errorText}>{t(guestErrors.phone)}</Text>}
       </View>
       <Button
         text={t("events.guest.addGuest")}

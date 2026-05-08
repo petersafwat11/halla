@@ -113,5 +113,20 @@
       "timeRequired": "Time is required",
       "minDate": "Date must be at least 2 days from today"
     }
+  },
+  "validation": {
+    "guestNameRequired": "Guest name is required",
+    "staffNameRequired": "Staff name is required",
+    "nameRequired": "Name is required",
+    "phoneRequired": "Phone number is required",
+    "phoneInvalid": "Phone must be 9 digits and start with 5",
+    "phoneDuplicate": "This phone is already in the list"
+  },
+  "csv": {
+    "headers": {
+      "guestName": "Guest name",
+      "staffName": "Staff name",
+      "phone": "Phone"
+    }
   }
 }
