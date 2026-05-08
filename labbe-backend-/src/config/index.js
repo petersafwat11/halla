@@ -67,6 +67,8 @@ const config = {
     senderName: process.env.TAQNYAT_SENDER_NAME || 'HalaaApp',
     waBaseUrl: process.env.TAQNYAT_WA_BASE_URL || 'https://api.taqnyat.sa/wa/v2',
     webhookVerifyToken: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN,
+    reminderTemplateName:
+      process.env.TAQNYAT_REMINDER_TEMPLATE_NAME || 'halaa_event_reminder_v2',
   },
 
   frontend: {

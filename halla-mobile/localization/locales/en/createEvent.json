@@ -178,6 +178,28 @@
     "maybe": "Maybe",
     "timestamp": "10:30 AM"
   },
+  "stepFive": {
+    "invitationLabel": "Invitation Text",
+    "invitationPlaceholder": "Write the invitation text (optional)",
+    "repliesLabel": "Auto Replies",
+    "repliesHint": "Sent automatically to the guest the moment they respond — you can edit the text",
+    "replyPlaceholder": "Write the auto-reply here",
+    "hostNoteLabel": "Host Note",
+    "hostNotePlaceholder": "Write your note here",
+    "optional": "(optional)"
+  },
+  "guestReplies": {
+    "tabs": {
+      "onAttend": "Attending",
+      "onExpected": "Maybe",
+      "onAbsent": "Declining"
+    },
+    "defaults": {
+      "onAttend": "Thank you for confirming your attendance! We're delighted to have you with us at this event. Your entry code will reach you shortly. 🎉",
+      "onExpected": "Thank you for replying! We hope you'll be able to attend and look forward to seeing you. 🤍",
+      "onAbsent": "Thank you for letting us know. We understand your circumstances and wish you continued health and happiness. 🌹"
+    }
+  },
   "stepOne": {
     "eventName": "Event Name",
     "eventNamePlaceholder": "Enter event name",

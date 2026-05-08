@@ -95,6 +95,10 @@
       "phoneFormat": "Must start with 5 and be 9 digits"
     }
   },
+  "partialFailure": {
+    "title": "Partial invitation send",
+    "message": "{{failed}} of {{total}} invitations failed to send. {{sent}} delivered successfully."
+  },
   "scheduleSend": {
     "title": "Schedule Send",
     "description": "Set a date and time to send event invitations to guests",

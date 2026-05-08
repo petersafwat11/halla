@@ -288,19 +288,11 @@ export const API_PATHS = {
   invitations: {
     send: '/messaging/send',
     sendBulk: '/messaging/send-bulk',
-    sendTest: '/messaging/test',
     retry: '/messaging/retry',
     sendReminder: '/messaging/send-reminder',
-    getStats: (eventId) => `/messaging/stats/${eventId}`,
-    checkBalance: '/messaging/balance',
 
     // Schedule
     schedule: '/messaging/schedule',
-
-    // WhatsApp Template
-    submitTemplate: '/messaging/template/submit',
-    getTemplateStatus: (eventId) => `/messaging/template/status/${eventId}`,
-    getApprovedTemplates: '/messaging/templates/approved',
   },
 
   // ============================================

@@ -1,8 +1,6 @@
 /**
- * StepFive (mobile) — Phase 4c W2-MOBILE-WIZARD
- *
- * Per D4c-1: messaging + auto-replies + host note. Mirrors the web
- * StepFive (`labbe/.../stepFive/StepFive.js`).
+ * StepFive (mobile) — messaging + auto-replies + host note. Mirrors the
+ * web StepFive (`labbe/.../stepFive/StepFive.js`).
  *
  * Dual-writes legacy + canonical keys:
  *   guestReplies.{onAttend,onAbsent,onExpected}  ⇄ {attendance,absence,
@@ -10,7 +8,7 @@
  *   hostNote                                      ⇄ note
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -20,23 +18,33 @@ import {
   ScrollView,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
-
-const AUTO_REPLIES_DEFAULTS = {
-  onAttend:
-    "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
-  onExpected: "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
-  onAbsent: "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹",
-};
-
-const REPLY_TABS = [
-  { key: "onAttend", label: "الحضور", legacy: "attendanceAutoReply" },
-  { key: "onExpected", label: "ربما", legacy: "expectedAttendanceAutoReply" },
-  { key: "onAbsent", label: "الاعتذار", legacy: "absenceAutoReply" },
-];
+import { useTranslation } from "../../localization";
 
 const StepFive = () => {
+  const { t } = useTranslation("createEvent");
   const { setValue, watch } = useFormContext();
   const [activeTab, setActiveTab] = useState("onAttend");
+
+  // Defaults must match `messaging.service.handleButtonResponse`'s
+  // fallback strings (server side) so the host preview lines up with
+  // what guests would receive if no override is saved.
+  const AUTO_REPLIES_DEFAULTS = useMemo(
+    () => ({
+      onAttend: t("guestReplies.defaults.onAttend"),
+      onExpected: t("guestReplies.defaults.onExpected"),
+      onAbsent: t("guestReplies.defaults.onAbsent"),
+    }),
+    [t]
+  );
+
+  const REPLY_TABS = useMemo(
+    () => [
+      { key: "onAttend", label: t("guestReplies.tabs.onAttend"), legacy: "attendanceAutoReply" },
+      { key: "onExpected", label: t("guestReplies.tabs.onExpected"), legacy: "expectedAttendanceAutoReply" },
+      { key: "onAbsent", label: t("guestReplies.tabs.onAbsent"), legacy: "absenceAutoReply" },
+    ],
+    [t]
+  );
 
   const guestReplies = watch("guestReplies") || {};
   const invitationMessage = watch("invitationMessage") || "";
@@ -79,11 +87,11 @@ const StepFive = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.sectionLabel}>نص الدعوة</Text>
+      <Text style={styles.sectionLabel}>{t("stepFive.invitationLabel")}</Text>
       <TextInput
         value={invitationMessage}
         onChangeText={handleInvitationChange}
-        placeholder="اكتب نص الدعوة (اختياري)"
+        placeholder={t("stepFive.invitationPlaceholder")}
         placeholderTextColor="#999"
         multiline
         numberOfLines={3}
@@ -91,10 +99,8 @@ const StepFive = () => {
         style={[styles.textArea, { writingDirection: "rtl" }]}
       />
 
-      <Text style={[styles.sectionLabel, { marginTop: 24 }]}>الردود التلقائية</Text>
-      <Text style={styles.hint}>
-        تُرسل تلقائياً للضيف فور اختياره — يمكنك تعديل النص
-      </Text>
+      <Text style={[styles.sectionLabel, { marginTop: 24 }]}>{t("stepFive.repliesLabel")}</Text>
+      <Text style={styles.hint}>{t("stepFive.repliesHint")}</Text>
 
       <View style={styles.tabsRow}>
         {REPLY_TABS.map((tab) => (
@@ -114,7 +120,7 @@ const StepFive = () => {
       <TextInput
         value={activeReplyValue}
         onChangeText={handleReplyChange}
-        placeholder="اكتب الرد التلقائي هنا"
+        placeholder={t("stepFive.replyPlaceholder")}
         placeholderTextColor="#999"
         multiline
         numberOfLines={4}
@@ -123,12 +129,12 @@ const StepFive = () => {
       />
 
       <Text style={[styles.sectionLabel, { marginTop: 24 }]}>
-        ملاحظة المضيف <Text style={styles.optional}>(اختياري)</Text>
+        {t("stepFive.hostNoteLabel")} <Text style={styles.optional}>{t("stepFive.optional")}</Text>
       </Text>
       <TextInput
         value={hostNote}
         onChangeText={handleNoteChange}
-        placeholder="اكتب ملاحظتك هنا"
+        placeholder={t("stepFive.hostNotePlaceholder")}
         placeholderTextColor="#999"
         maxLength={300}
         style={[styles.textInput, { writingDirection: "rtl" }]}

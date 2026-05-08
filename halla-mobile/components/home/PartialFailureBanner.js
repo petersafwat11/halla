@@ -1,20 +1,18 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import useEventActionGate from "../../hooks/useEventActionGate";
 
 /**
- * PartialFailureBanner — Phase 4b W2-POLL-FAIL.
- *
- * Mobile mirror of `labbe/app/[lang]/host/events/[id]/_components/PartialFailureBanner.jsx`.
+ * PartialFailureBanner — mobile mirror of
+ * `labbe/app/[lang]/host/events/[id]/_components/PartialFailureBanner.jsx`.
  * Sibling of `EventFailureBanner`. Shown when an event went live (or
  * completed) but `messagingStatus.failedCount > 0` — i.e. the bulk
  * send didn't deliver to every guest.
- *
- * D9: any failed → show. Strings hardcoded inline (matches the existing
- * mobile `EventFailureBanner` pattern).
  */
 const PartialFailureBanner = ({ event, currentUser = null }) => {
+  const { t } = useTranslation("events");
   const { hasFailedSends, failedCount } = useEventActionGate({
     event,
     currentUser,
@@ -29,9 +27,9 @@ const PartialFailureBanner = ({ event, currentUser = null }) => {
     <View style={styles.banner} testID="partial-failure-banner">
       <Ionicons name="alert-circle-outline" size={20} color="#7A4F01" />
       <View style={styles.body}>
-        <Text style={styles.title}>إرسال جزئي للدعوات</Text>
+        <Text style={styles.title}>{t("partialFailure.title")}</Text>
         <Text style={styles.message}>
-          {`لم يتم إرسال ${failedCount} من أصل ${total} دعوة. ${sent} وصلت بنجاح.`}
+          {t("partialFailure.message", { failed: failedCount, total, sent })}
         </Text>
       </View>
     </View>

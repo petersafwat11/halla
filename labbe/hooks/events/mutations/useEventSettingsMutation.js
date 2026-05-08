@@ -11,10 +11,7 @@ export const SETTINGS_ACTIONS = [
   "updateEventStep2",
   "updateInvitationSettings",
   "updateLaunchSettings",
-  "sendTestMessage",
-  "scheduleSend",
   "retryLaunch",
-  "submitTemplate",
 ];
 
 const buildMutations = (queryClient) => ({
@@ -90,34 +87,6 @@ const buildMutations = (queryClient) => ({
     },
   },
 
-  // Send Test Message (via messaging module)
-  sendTestMessage: {
-    mutationFn: ({ eventId, data }) =>
-      apiRequest({
-        method: "POST",
-        path: API_PATHS.invitations.sendTest,
-        data: { eventId, ...data },
-      }),
-    onSuccess: (_, { eventId }) => {
-      queryClient.invalidateQueries({ queryKey: ["events", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "host"] });
-    },
-  },
-
-  // Schedule bulk send (via messaging module)
-  scheduleSend: {
-    mutationFn: ({ eventId, scheduledDate, scheduledTime, channel }) =>
-      apiRequest({
-        method: "POST",
-        path: API_PATHS.invitations.schedule,
-        data: { eventId, scheduledDate, scheduledTime, channel },
-      }),
-    onSuccess: (_, { eventId }) => {
-      queryClient.invalidateQueries({ queryKey: ["events", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "host"] });
-    },
-  },
-
   // Manual launch retry — for failed events. Sends a per-click
   // Idempotency-Key so a fast double-click is deduped at the middleware
   // layer instead of relying solely on the server-side eventLock. The
@@ -139,20 +108,6 @@ const buildMutations = (queryClient) => ({
     onSuccess: (_, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: ["events", eventId] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
-    },
-  },
-
-  // Submit WhatsApp template for approval
-  submitTemplate: {
-    mutationFn: ({ eventId }) =>
-      apiRequest({
-        method: "POST",
-        path: API_PATHS.invitations.submitTemplate,
-        data: { eventId },
-      }),
-    onSuccess: (_, { eventId }) => {
-      queryClient.invalidateQueries({ queryKey: ["events", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "host"] });
     },
   },
 });

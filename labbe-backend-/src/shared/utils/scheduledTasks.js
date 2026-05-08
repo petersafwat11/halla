@@ -307,27 +307,6 @@ async function runEventLaunch(event, workerId) {
       channel: finalChannel,
     });
 
-    if (!sendResult || sendResult.success === false) {
-      const errMsg = sendResult?.error || sendResult?.message || "send_failed";
-      fresh.failureReason = errMsg;
-      await fresh.save();
-      await logAudit({
-        action: "event.launch_failed",
-        actor: { _id: null, role: "system" },
-        targetType: "event",
-        targetId: fresh._id,
-        whitelabelId: fresh.whitelabelId || null,
-        metadata: {
-          attemptCount: fresh.attemptCount,
-          reason: errMsg,
-          workerId,
-        },
-        status: "failure",
-      });
-      console.warn(`[Cron] Event ${eventId} send returned failure (attempt ${fresh.attemptCount}): ${errMsg}`);
-      return { launched: false, reason: errMsg };
-    }
-
     // Send succeeded (possibly with partial per-guest failures handled
     // by the retry-failed flow downstream). Flip to live now.
     fresh.status = "live";
@@ -356,14 +335,17 @@ async function runEventLaunch(event, workerId) {
     return { launched: true };
   } catch (err) {
     console.error(`[Cron] Event ${eventId} launch threw:`, err);
+    // sendBulk now throws AppError with `.code` (e.g. ALL_SENDS_FAILED,
+    // EVENT_NOT_FOUND, FORBIDDEN). Prefer the code for `failureReason`
+    // so the stored value stays a stable identifier; fall back to the
+    // human message for unexpected exceptions.
+    const reason = err.code || err.message || "exception";
     try {
-      // Only overwrite `failureReason` if the inner save didn't already set
-      // a more specific one — `$set` here would otherwise clobber e.g. the
-      // detailed `sendBulk` error string with the generic exception
-      // message.
+      // Only overwrite `failureReason` if a more specific one isn't
+      // already set — defense in depth against future inner saves.
       await Event.updateOne(
         { _id: eventId, $or: [{ failureReason: null }, { failureReason: { $exists: false } }] },
-        { $set: { failureReason: err.message || "exception" } }
+        { $set: { failureReason: reason } }
       );
       await logAudit({
         action: "event.launch_failed",
@@ -371,13 +353,13 @@ async function runEventLaunch(event, workerId) {
         targetType: "event",
         targetId: event._id,
         whitelabelId: event.whitelabelId || null,
-        metadata: { reason: err.message, workerId },
+        metadata: { reason, message: err.message, workerId },
         status: "failure",
       });
     } catch (_) {
       /* swallow audit failures */
     }
-    return { launched: false, reason: err.message || "exception" };
+    return { launched: false, reason };
   } finally {
     // The lock release MUST NOT throw out of `finally` — that would mask
     // the original error from the try/catch. _safeReleaseLock swallows.

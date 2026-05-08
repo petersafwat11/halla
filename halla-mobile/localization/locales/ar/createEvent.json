@@ -178,6 +178,28 @@
     "maybe": "ربما",
     "timestamp": "10:30 صباحًا"
   },
+  "stepFive": {
+    "invitationLabel": "نص الدعوة",
+    "invitationPlaceholder": "اكتب نص الدعوة (اختياري)",
+    "repliesLabel": "الردود التلقائية",
+    "repliesHint": "تُرسل تلقائياً للضيف فور اختياره — يمكنك تعديل النص",
+    "replyPlaceholder": "اكتب الرد التلقائي هنا",
+    "hostNoteLabel": "ملاحظة المضيف",
+    "hostNotePlaceholder": "اكتب ملاحظتك هنا",
+    "optional": "(اختياري)"
+  },
+  "guestReplies": {
+    "tabs": {
+      "onAttend": "الحضور",
+      "onExpected": "ربما",
+      "onAbsent": "الاعتذار"
+    },
+    "defaults": {
+      "onAttend": "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
+      "onExpected": "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
+      "onAbsent": "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹"
+    }
+  },
   "stepOne": {
     "eventName": "اسم المناسبة",
     "eventNamePlaceholder": "أدخل اسم المناسبة",

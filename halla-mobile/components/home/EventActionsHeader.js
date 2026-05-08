@@ -5,7 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
-import { useSubmitTemplate, useNotifyStaff } from "../../hooks/mutations/useEventMutations";
+import { useNotifyStaff } from "../../hooks/mutations/useEventMutations";
 import { useToast } from "../../contexts/ToastContext";
 import useEventActionGate from "../../hooks/useEventActionGate";
 
@@ -17,34 +17,17 @@ const EventActionsHeader = ({ event, isAdmin = false }) => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [testMessageSent, setTestMessageSent] = useState(event?.testMessageSent || false);
 
-  const submitTemplateMutation = useSubmitTemplate();
   const notifyStaffMutation = useNotifyStaff();
 
-  // Phase 4b W2-POLL-FAIL: gate logic now lives in `useEventActionGate`
-  // (mobile companion of the web hook). Mobile previously branched on
-  // `event.whatsappTemplateStatus?.status` for canSendTest / canSchedule
-  // — the new hook uses the same `invitationSettings.selectedTemplate`
-  // shape that the web header / dashboard widget read, keeping all
-  // surfaces in lock-step. The Submit-for-approval branch is mobile-only
-  // and stays inlined.
-  const templateStatus = event?.whatsappTemplateStatus?.status || 'not_submitted';
-  const canSubmitTemplate = templateStatus === 'not_submitted' || templateStatus === 'rejected';
+  // Gate logic lives in `useEventActionGate` (mobile companion of the
+  // web hook). Both surfaces read from `invitationSettings.selectedTemplate`
+  // so the web header, dashboard widget, and this header stay in lock-step.
   const { canSendTest, canSchedule, hasStaff: hasSupervisors, isCompleted } =
     useEventActionGate({ event, testMessageSent });
 
   const handleManagePress = () => {
     const screen = isAdmin ? "AdminUpdateEvent" : "UpdateEvent";
     navigation.navigate(screen, { eventId: event?.id });
-  };
-
-  const handleSubmitTemplate = async () => {
-    if (!event?.id) return;
-    try {
-      await submitTemplateMutation.mutateAsync({ eventId: event.id });
-      toast.success(t("template.submitSuccess", "Template submitted for approval"));
-    } catch (error) {
-      toast.error(error?.message || t("template.submitError", "Failed to submit template"));
-    }
   };
 
   const handleNotifyStaff = async () => {
@@ -70,18 +53,6 @@ const EventActionsHeader = ({ event, isAdmin = false }) => {
     <>
       <View style={styles.container}>
         <View style={styles.actionButtonsRow}>
-          {canSubmitTemplate && (
-            <TouchableOpacity
-              style={styles.outlineButton}
-              onPress={handleSubmitTemplate}
-              activeOpacity={0.7}
-              disabled={submitTemplateMutation.isPending}
-            >
-              <Text style={styles.outlineButtonText}>
-                {submitTemplateMutation.isPending ? t("template.submitting", "Submitting...") : t("template.submitForApproval", "Submit for Approval")}
-              </Text>
-            </TouchableOpacity>
-          )}
           {canSendTest && (
             <TouchableOpacity
               style={styles.outlineButton}

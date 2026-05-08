@@ -1,10 +1,10 @@
 "use client";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
-import messagingService from "@/services/messaging";
 import { handleError } from "@/services/errorHandlingService";
 import { downloadExportFile } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
+import { useSendReminder } from "@/hooks/reactQueryHooks/useMessaging";
 
 export default function useGuestTableActions({
   t,
@@ -23,6 +23,7 @@ export default function useGuestTableActions({
   setSelectedGuests,
 }) {
   const queryClient = useQueryClient();
+  const sendReminderMutation = useSendReminder();
 
   const handleExportGuests = async () => {
     try {
@@ -114,7 +115,11 @@ export default function useGuestTableActions({
 
   const handleConfirmReminder = async (message) => {
     try {
-      await messagingService.sendReminder(eventId, "sms", message);
+      await sendReminderMutation.mutateAsync({
+        eventId,
+        channel: "sms",
+        customMessage: message,
+      });
       toast.success(t("reminderPopup.success"));
       setShowReminderPopup(false);
     } catch (error) {
