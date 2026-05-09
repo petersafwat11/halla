@@ -12,13 +12,13 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as staffService from "../../../services/staffService";
+import { useVerifyStaffAccess } from "../../../hooks/mutations/useStaffMutations";
 
 const LoginView = ({ onVerified, t }) => {
   const [phone, setPhone] = useState("");
   const [eventId, setEventId] = useState("");
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const verifyMutation = useVerifyStaffAccess();
 
   const validate = () => {
     const newErrors = {};
@@ -30,20 +30,29 @@ const LoginView = ({ onVerified, t }) => {
 
   const handleVerify = async () => {
     if (!validate()) return;
-    setLoading(true);
     try {
-      const result = await staffService.verifyByPhone(phone.trim(), eventId.trim());
+      const result = await verifyMutation.mutateAsync({
+        phone: phone.trim(),
+        eventId: eventId.trim(),
+      });
       if (result?.staff && result?.event) {
         onVerified(result);
       } else {
         Alert.alert("", t("login.errors.invalidCredentials"));
       }
     } catch (err) {
-      Alert.alert("", err.message || t("login.errors.verificationFailed"));
-    } finally {
-      setLoading(false);
+      const reason = err?.reason;
+      if (reason === "staff_revoked") {
+        Alert.alert("", t("errors.staffRevoked"));
+      } else if (reason === "staff_expired") {
+        Alert.alert("", t("errors.staffExpired"));
+      } else {
+        Alert.alert("", err.message || t("login.errors.verificationFailed"));
+      }
     }
   };
+
+  const loading = verifyMutation.isLoading;
 
   return (
     <KeyboardAvoidingView

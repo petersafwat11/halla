@@ -1,36 +1,61 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm, FormProvider } from "react-hook-form";
-import { toast } from "react-toastify";
+import { zodResolver } from "@hookform/resolvers/zod";
 import styles from "./addServicePopup.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
 import UploadFile from "@/ui/commen/inputs/uploadFile/UploadFile";
 import {
   addServiceSchema,
+  addServiceDefaultValues,
   SERVICE_TYPES,
   PREDEFINED_TAGS,
-  validateAddService,
 } from "@/utils/schemas/addServiceSchema";
 import { useServiceMutation } from "@/hooks/reactQueryHooks/useServices";
+import { handleError } from "@/services/errorHandlingService";
+import { toastUtils } from "@/utils/toastUtils";
 
-const AddServicePopup = ({ onClose, onSuccess }) => {
-  const { t, i18n } = useTranslation("vendorServices");
+const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
+  const { t } = useTranslation("vendorServices");
+  const isEditing = !!editingService;
   const [selectedTags, setSelectedTags] = useState([]);
-  const [validationErrors, setValidationErrors] = useState({});
 
   const createServiceMutation = useServiceMutation("createService");
+  const updateServiceMutation = useServiceMutation("updateService");
+  const isPending =
+    createServiceMutation.isPending || updateServiceMutation.isPending;
 
   const methods = useForm({
     mode: "onChange",
-    defaultValues: addServiceSchema.defaultValues,
+    resolver: zodResolver(addServiceSchema),
+    defaultValues: addServiceDefaultValues,
   });
 
-  const {
-    handleSubmit,
-    formState: { errors },
-  } = methods;
+  const { handleSubmit, reset } = methods;
+
+  useEffect(() => {
+    if (editingService?._raw) {
+      reset({
+        serviceName: editingService.title || editingService.name || "",
+        serviceType: editingService._raw.serviceType || editingService.category || "",
+        description: editingService._raw.description || "",
+        price:
+          editingService._raw.price != null ? String(editingService._raw.price) : "",
+        image: undefined,
+      });
+      setSelectedTags(
+        (editingService._raw.tags || []).map((value) => {
+          const match = PREDEFINED_TAGS.find((p) => p.value === value);
+          return match || { value, labelKey: "", labelAr: value };
+        })
+      );
+    } else {
+      reset(addServiceDefaultValues);
+      setSelectedTags([]);
+    }
+  }, [editingService, reset]);
 
   const serviceTypeOptions = SERVICE_TYPES.map((type) => ({
     label: t(type.labelKey, type.labelAr),
@@ -43,62 +68,54 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
   }));
 
   const handleTagClick = (tag) => {
-    if (selectedTags.find((t) => t.value === tag.value)) {
-      setSelectedTags(selectedTags.filter((t) => t.value !== tag.value));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
-    }
-    if (validationErrors.tags) {
-      setValidationErrors((prev) => ({ ...prev, tags: null }));
-    }
+    setSelectedTags((prev) =>
+      prev.find((t) => t.value === tag.value)
+        ? prev.filter((t) => t.value !== tag.value)
+        : [...prev, tag]
+    );
   };
 
-  const getTagsDisplayText = () => {
-    if (selectedTags.length === 0) {
-      return "";
-    }
-    return selectedTags.map((tag) => tag.label).join("، ");
-  };
+  const getTagsDisplayText = () =>
+    selectedTags.length === 0 ? "" : selectedTags.map((tag) => tag.label).join("، ");
 
   const onSubmit = async (data) => {
-    const validation = validateAddService(data);
-    if (!validation.isValid) {
-      setValidationErrors(validation.errors);
-      return;
+    const formData = new FormData();
+    formData.append("name", data.serviceName);
+    formData.append("category", data.serviceType);
+    formData.append("description", data.description);
+    formData.append("price", String(data.price));
+    formData.append("tags", JSON.stringify(selectedTags.map((t) => t.value)));
+
+    if (data.image && data.image.length > 0) {
+      formData.append("image", data.image[0]);
     }
 
     try {
-      const formData = new FormData();
-      formData.append("name", data.serviceName);
-      formData.append("type", data.serviceType);
-      formData.append("description", data.description);
-      formData.append("price", data.price);
-      formData.append("tags", JSON.stringify(selectedTags.map((t) => t.value)));
-
-      if (data.image && data.image.length > 0) {
-        formData.append("image", data.image[0]);
+      if (isEditing) {
+        await updateServiceMutation.mutateAsync({
+          serviceId: editingService.id,
+          data: formData,
+        });
+        toastUtils.success(t("success.updated"));
+      } else {
+        await createServiceMutation.mutateAsync(formData);
+        toastUtils.success(t("addServicePopup.success"));
       }
 
-      await createServiceMutation.mutateAsync(formData);
-
-      toast.success(t("addServicePopup.success", "تم إضافة الخدمة بنجاح"));
-
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess?.();
       onClose();
     } catch (error) {
-      console.error("Error adding service:", error);
-      toast.error(
-        error.message || t("addServicePopup.error", "فشل في إضافة الخدمة")
-      );
+      handleError(error, t, {
+        fallbackMessage: isEditing
+          ? "errors.update_failed"
+          : "addServicePopup.error",
+      });
     }
   };
 
   return (
     <FormProvider {...methods}>
       <div className={styles.container}>
-        {/* Header */}
         <div className={styles.header}>
           <button
             onClick={onClose}
@@ -106,121 +123,82 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
             type="button"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M2 22L22 2"
-                stroke="#292D32"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M22 22L2 2"
-                stroke="#292D32"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <path d="M2 22L22 2" stroke="#292D32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M22 22L2 2" stroke="#292D32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
 
           <h2 className={styles.title}>
-            {t("addServicePopup.title", "إضافة خدمة جديدة")}
+            {isEditing
+              ? t("addServicePopup.editTitle")
+              : t("addServicePopup.title")}
           </h2>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-          {/* Image Upload Section */}
           <div className={styles.section}>
             <label className={styles.label}>
-              {t("addServicePopup.imageUpload.label", "صورة الخدمة")}
+              {t("addServicePopup.imageUpload.label")}
             </label>
             <UploadFile name="image" acceptImages={true} multiple={false} />
           </div>
 
-          {/* Service Name (text input) */}
           <div className={styles.section}>
             <InputGroup
-              label={t("addServicePopup.serviceName.label", "اسم الخدمة")}
-              placeholder={t(
-                "addServicePopup.serviceName.placeholder",
-                "ادخل اسم الخدمة"
-              )}
+              label={t("addServicePopup.serviceName.label")}
+              placeholder={t("addServicePopup.serviceName.placeholder")}
               name="serviceName"
               type="text"
               required
             />
           </div>
 
-          {/* Service Type (dropdown) */}
           <div className={styles.section}>
             <InputSelect
-              label={t("addServicePopup.serviceType.label", "نوع الخدمة")}
-              placeholder={t(
-                "addServicePopup.serviceType.placeholder",
-                "اختر نوع الخدمة"
-              )}
+              label={t("addServicePopup.serviceType.label")}
+              placeholder={t("addServicePopup.serviceType.placeholder")}
               name="serviceType"
               options={serviceTypeOptions}
               required
             />
           </div>
 
-          {/* Description (Required) */}
           <div className={styles.section}>
             <InputGroup
-              label={t("addServicePopup.description.label", "وصف الخدمة")}
-              placeholder={t(
-                "addServicePopup.description.placeholder",
-                "ادخل وصف الخدمة"
-              )}
+              label={t("addServicePopup.description.label")}
+              placeholder={t("addServicePopup.description.placeholder")}
               name="description"
               type="textarea"
               required
             />
-            {validationErrors.description && (
-              <span className={styles.errorText}>
-                {validationErrors.description}
-              </span>
-            )}
           </div>
 
-          {/* Price Input */}
           <div className={styles.section}>
             <InputGroup
-              label={t("addServicePopup.price.label", "سعر الخدمة")}
-              placeholder={t(
-                "addServicePopup.price.placeholder",
-                "ادخل سعر الخدمة"
-              )}
+              label={t("addServicePopup.price.label")}
+              placeholder={t("addServicePopup.price.placeholder")}
               name="price"
               type="number"
               required
             />
           </div>
 
-          {/* Category with Tags - Unified Input */}
           <div className={styles.section}>
             <label className={styles.label}>
-              {t("addServicePopup.category.label", "اختر التصنيف")}
+              {t("addServicePopup.category.label")}
             </label>
 
-            {/* Display input showing selected tags (read-only) */}
             <div className={styles.tagsInputWrapper}>
               <input
                 type="text"
                 className={styles.tagsInput}
                 value={getTagsDisplayText()}
-                placeholder={t(
-                  "addServicePopup.category.placeholder",
-                  "اختر من التصنيفات أدناه"
-                )}
+                placeholder={t("addServicePopup.category.placeholder")}
                 readOnly
                 disabled
               />
             </div>
 
-            {/* Tags selection */}
             <div className={styles.tagsContainer}>
               {predefinedTags.map((tag) => (
                 <button
@@ -239,24 +217,27 @@ const AddServicePopup = ({ onClose, onSuccess }) => {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className={styles.footer}>
             <button
               type="submit"
               className={styles.submitButton}
-              disabled={createServiceMutation.isPending}
+              disabled={isPending}
             >
-              {createServiceMutation.isPending
-                ? t("addServicePopup.submitting", "جاري الإنشاء...")
-                : t("addServicePopup.submit", "إنشاء")}
+              {isPending
+                ? isEditing
+                  ? t("addServicePopup.updating")
+                  : t("addServicePopup.submitting")
+                : isEditing
+                  ? t("addServicePopup.update")
+                  : t("addServicePopup.submit")}
             </button>
             <button
               type="button"
               className={styles.cancelButton}
               onClick={onClose}
-              disabled={createServiceMutation.isPending}
+              disabled={isPending}
             >
-              {t("addServicePopup.cancel", "الغاء")}
+              {t("addServicePopup.cancel")}
             </button>
           </div>
         </form>

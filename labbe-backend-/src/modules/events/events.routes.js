@@ -806,10 +806,11 @@ router.delete(
  *   post:
  *     summary: Revoke a staff access token
  *     description: |
- *       Revokes a StaffAccessToken so the staff portal link stops working
- *       immediately. The `:staffId` path param is the
- *       StaffAccessToken document `_id` (not the embedded staffList entry id).
- *       Idempotent — re-revoking returns 200 with the same final state.
+ *       Revokes every active StaffAccessToken for the staff member so the
+ *       staff portal link stops working immediately. The `:staffId` path
+ *       param is the staff member sub-document `_id` from
+ *       `event.staffList`. Idempotent — re-revoking returns 200 with
+ *       `wasAlreadyRevoked: true`.
  *     tags: [Events]
  *     security:
  *       - bearerAuth: []
@@ -824,6 +825,10 @@ router.delete(
  *     responses:
  *       200:
  *         description: Token revoked (or already revoked)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StaffRevokeResponse'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -857,6 +862,12 @@ router.post(
  *     responses:
  *       200:
  *         description: Tokens retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StaffTokensListResponse'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       403:
  *         description: Caller is not authorized to view staff tokens for this event
  *       404:

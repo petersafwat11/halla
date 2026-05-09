@@ -52,7 +52,7 @@ const VendorHomeScreen = ({ navigation }) => {
       id: s.id,
       name: s.name,
       imageUri: getImageUrl(s.image),
-      guestCount: s.bookingCount || null,
+      guestCount: null,
       photoCount: s.viewCount || null,
       categories: s.tags || [],
       price: s.price?.toLocaleString() || "0",
@@ -93,7 +93,7 @@ const VendorHomeScreen = ({ navigation }) => {
     (formData) => {
       const payload = {
         name: formData.serviceName,
-        type: formData.serviceType,
+        category: formData.serviceType,
         description: formData.description,
         price: formData.price,
         tags: formData.tags,

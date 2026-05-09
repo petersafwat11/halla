@@ -7,7 +7,8 @@
     "promoteProfile": "Promote Profile",
     "available": "Available",
     "unavailable": "Unavailable",
-    "delete": "Delete"
+    "delete": "Delete",
+    "edit": "Edit"
   },
   "search": {
     "placeholder": "Search for service"
@@ -26,9 +27,20 @@
   },
   "errors": {
     "loadFailed": "Failed to load services",
-    "boundary": "Failed to load vendor dashboard"
+    "boundary": "Failed to load vendor dashboard",
+    "update_failed": "Failed to update service",
+    "delete_failed": "Failed to delete service"
   },
-  "confirmDelete": "Are you sure you want to delete this service?",
+  "success": {
+    "updated": "Service updated successfully",
+    "deleted": "Service deleted successfully"
+  },
+  "confirmDelete": {
+    "title": "Delete service",
+    "message": "Are you sure you want to delete this service? This action cannot be undone.",
+    "confirm": "Delete",
+    "cancel": "Cancel"
+  },
   "noSearchResults": "No services match your search",
   "noServices": "No services available",
   "filters": {

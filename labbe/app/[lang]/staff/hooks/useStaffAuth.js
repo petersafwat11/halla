@@ -6,11 +6,11 @@ import { staffService } from "@/services/staff";
 
 /**
  * Hook that handles staff portal authentication.
- * Reads token / phone / eventId from URL search params,
- * calls the appropriate verification endpoint and stores
- * the result in local state.
+ * Reads token / phone / eventId from URL search params, calls the
+ * appropriate verification endpoint and stores the result in local state.
  *
- * Returns: { isAuthenticated, isLoading, authError, staffInfo, eventInfo, eventId }
+ * Surfaces 410 GONE reasons (`staff_revoked` / `staff_expired`) as distinct
+ * error messages.
  */
 export function useStaffAuth() {
   const { t } = useTranslation("staff");
@@ -54,7 +54,15 @@ export function useStaffAuth() {
           setAuthError(t("errors.accessDenied"));
         }
       } catch (error) {
-        setAuthError(t("errors.verificationFailed"));
+        const reason =
+          error?.data?.reason || error?.response?.data?.reason || null;
+        if (reason === "staff_revoked") {
+          setAuthError(t("errors.staffRevoked"));
+        } else if (reason === "staff_expired") {
+          setAuthError(t("errors.staffExpired"));
+        } else {
+          setAuthError(t("errors.verificationFailed"));
+        }
       } finally {
         setIsLoading(false);
       }

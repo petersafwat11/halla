@@ -42,7 +42,15 @@
   align-self: stretch;
 }
 
-.deleteButton {
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.deleteButton,
+.editButton {
   background: none;
   border: none;
   cursor: pointer;
@@ -57,6 +65,10 @@
 
 .deleteButton:hover {
   background: #fef2f2;
+}
+
+.editButton:hover {
+  background: #f4ece2;
 }
 
 .title {

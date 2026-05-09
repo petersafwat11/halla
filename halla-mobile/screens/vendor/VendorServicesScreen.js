@@ -112,7 +112,7 @@ const VendorServicesScreen = ({ navigation }) => {
     (formData) => {
       const payload = {
         name: formData.serviceName,
-        type: formData.serviceType,
+        category: formData.serviceType,
         description: formData.description,
         price: formData.price,
         image: formData.serviceImage,

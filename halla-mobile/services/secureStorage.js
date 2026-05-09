@@ -27,6 +27,7 @@ const isSecureStoreAvailable = !!(SecureStore && Platform.OS !== "web");
 
 const REFRESH_TOKEN_KEY = "halla.refreshToken";
 const USER_KEY = "halla.user";
+const STAFF_TOKEN_KEY = "halla.staffSessionToken";
 
 const setItem = async (key, value) => {
   if (isSecureStoreAvailable) {
@@ -78,5 +79,14 @@ export const loadUserShadow = async () => {
 };
 
 export const clearUserShadow = () => deleteItem(USER_KEY);
+
+export const saveStaffToken = (token) => {
+  if (!token) return deleteItem(STAFF_TOKEN_KEY);
+  return setItem(STAFF_TOKEN_KEY, token);
+};
+
+export const loadStaffToken = () => getItem(STAFF_TOKEN_KEY);
+
+export const clearStaffToken = () => deleteItem(STAFF_TOKEN_KEY);
 
 export const STORAGE_BACKEND = isSecureStoreAvailable ? "secure-store" : "async-storage-fallback";

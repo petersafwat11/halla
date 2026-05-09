@@ -1,5 +1,11 @@
 /**
  * Staff Routes
+ *
+ * NOTE: two staff endpoints (`POST /events/:eventId/staff/:staffId/revoke`
+ * and `GET /events/:eventId/staff-tokens`) are mounted on the events router
+ * for URL-shape consistency. Their handlers ship from this module
+ * (`staff.controller.js`).
+ *
  * @module modules/staff/staff.routes
  */
 
@@ -15,8 +21,16 @@ const router = express.Router();
 
 const staffController = require("./staff.controller");
 const { staffAuth } = require("../../shared/middleware/staffAuth");
-const { validateObjectId } = require("../../shared/middleware/validation");
+const {
+  validateObjectId,
+  validateZod,
+} = require("../../shared/middleware/validation");
 const { apiLimiter } = require("../../shared/middleware/rateLimiter");
+const {
+  verifyStaffAccessQuerySchema,
+  checkInBodySchema,
+  getEventGuestsQuerySchema,
+} = require("./staff.validation");
 
 // ============================================
 // PUBLIC ROUTES (No auth required)
@@ -27,7 +41,10 @@ const { apiLimiter } = require("../../shared/middleware/rateLimiter");
  * /staff/verify:
  *   get:
  *     summary: Verify staff access
- *     description: Public endpoint to verify staff access via phone+eventId or token. No authentication required.
+ *     description: |
+ *       Public endpoint to verify staff access via either `token` OR
+ *       `phone`+`eventId` (mutually exclusive). Returns a 24h staff
+ *       session JWT on success.
  *     tags: [Staff]
  *     security: []
  *     parameters:
@@ -35,12 +52,12 @@ const { apiLimiter } = require("../../shared/middleware/rateLimiter");
  *         name: phone
  *         schema:
  *           type: string
- *         description: Staff phone number
+ *         description: Staff phone number (required together with eventId)
  *       - in: query
  *         name: eventId
  *         schema:
  *           type: string
- *         description: Event ID to verify access for
+ *         description: Event ID (required together with phone)
  *       - in: query
  *         name: token
  *         schema:
@@ -52,13 +69,26 @@ const { apiLimiter } = require("../../shared/middleware/rateLimiter");
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
+ *               $ref: '#/components/schemas/StaffVerifyResponse'
  *       400:
  *         $ref: '#/components/responses/BadRequest'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
  *       404:
  *         $ref: '#/components/responses/NotFound'
+ *       410:
+ *         description: Token revoked or expired
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StaffGoneResponse'
  */
-router.get("/verify", apiLimiter, staffController.verifyStaffAccess);
+router.get(
+  "/verify",
+  apiLimiter,
+  validateZod(verifyStaffAccessQuerySchema, "query"),
+  staffController.verifyStaffAccess
+);
 
 // ============================================
 // PROTECTED ROUTES (Staff token required)
@@ -70,7 +100,9 @@ router.use(staffAuth);
  * /staff/events/{eventId}/guests:
  *   get:
  *     summary: Get guest list for event
- *     description: Get paginated guest list for a specific event. Uses staffAuth token (not bearerAuth).
+ *     description: |
+ *       Paginated guest list for a specific event. Uses staffAuth token.
+ *       Returned `stats` includes the `lastCheckIn` timestamp.
  *     tags: [Staff]
  *     parameters:
  *       - $ref: '#/components/parameters/EventIdParam'
@@ -78,11 +110,12 @@ router.use(staffAuth);
  *         name: search
  *         schema:
  *           type: string
- *         description: Search guests by name or phone
+ *         description: Search guests by name, phone, or email
  *       - in: query
  *         name: status
  *         schema:
  *           type: string
+ *           enum: [invited, confirmed, declined, checked_in, maybe]
  *         description: Filter by guest status
  *       - $ref: '#/components/parameters/PageParam'
  *       - $ref: '#/components/parameters/LimitParam'
@@ -92,15 +125,22 @@ router.use(staffAuth);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
+ *               $ref: '#/components/schemas/StaffGuestListResponse'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         $ref: '#/components/responses/NotFound'
+ *       410:
+ *         description: Staff token revoked or expired
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StaffGoneResponse'
  */
 router.get(
   "/events/:eventId/guests",
   validateObjectId("eventId"),
+  validateZod(getEventGuestsQuerySchema, "query"),
   staffController.getEventGuests
 );
 
@@ -109,7 +149,10 @@ router.get(
  * /staff/events/{eventId}/check-in:
  *   post:
  *     summary: Check in guest
- *     description: Check in a guest via QR code, guest ID, or phone number. Uses staffAuth token (not bearerAuth).
+ *     description: |
+ *       Check in a guest. Body must contain exactly one of `qrCode`,
+ *       `guestId`, or `phone`. Idempotent at the DB level — replays
+ *       return `alreadyCheckedIn: true` with the original `checkedInAt`.
  *     tags: [Staff]
  *     parameters:
  *       - $ref: '#/components/parameters/EventIdParam'
@@ -119,102 +162,48 @@ router.get(
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               qrCode:
- *                 type: string
- *               guestId:
- *                 type: string
- *               phone:
- *                 type: string
+ *             oneOf:
+ *               - required: [qrCode]
+ *                 properties:
+ *                   qrCode:
+ *                     type: string
+ *               - required: [guestId]
+ *                 properties:
+ *                   guestId:
+ *                     type: string
+ *                     pattern: '^[0-9a-fA-F]{24}$'
+ *               - required: [phone]
+ *                 properties:
+ *                   phone:
+ *                     type: string
  *     responses:
  *       200:
- *         description: Guest checked in successfully
+ *         description: Guest checked in (or was already checked in)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
+ *               $ref: '#/components/schemas/StaffCheckInResponse'
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         $ref: '#/components/responses/NotFound'
+ *       410:
+ *         description: Staff token revoked or expired
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StaffGoneResponse'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
  */
 router.post(
   "/events/:eventId/check-in",
+  apiLimiter,
   validateObjectId("eventId"),
+  validateZod(checkInBodySchema, "body"),
   staffController.checkInGuest
-);
-
-/**
- * @swagger
- * /staff/events/{eventId}/manual-check-in:
- *   post:
- *     summary: Manual check-in
- *     description: Manually check in a guest with optional notes and override. Uses staffAuth token (not bearerAuth).
- *     tags: [Staff]
- *     parameters:
- *       - $ref: '#/components/parameters/EventIdParam'
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - guestId
- *             properties:
- *               guestId:
- *                 type: string
- *               note:
- *                 type: string
- *               overrideDeclined:
- *                 type: boolean
- *     responses:
- *       200:
- *         description: Guest manually checked in successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       400:
- *         $ref: '#/components/responses/BadRequest'
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- */
-router.post(
-  "/events/:eventId/manual-check-in",
-  validateObjectId("eventId"),
-  staffController.manualCheckIn
-);
-
-/**
- * @swagger
- * /staff/events/{eventId}/stats:
- *   get:
- *     summary: Get real-time event stats
- *     description: Get real-time check-in statistics for an event. Uses staffAuth token (not bearerAuth).
- *     tags: [Staff]
- *     parameters:
- *       - $ref: '#/components/parameters/EventIdParam'
- *     responses:
- *       200:
- *         description: Event stats retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- */
-router.get(
-  "/events/:eventId/stats",
-  validateObjectId("eventId"),
-  staffController.getEventStats
 );
 
 module.exports = router;

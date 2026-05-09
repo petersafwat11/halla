@@ -7,23 +7,23 @@
 const Service = require('../../../models/ServiceModel');
 const User = require('../../../models/UserModel');
 const mongoose = require('mongoose');
-const { NotFoundError, ForbiddenError } = require('../../shared/errors');
+const { NotFoundError } = require('../../shared/errors');
 const { SERVICE_STATUS, VENDOR_STATUS } = require('../../shared/constants');
 const { getFileUrl } = require('../../shared/utils/s3Upload');
+const logger = require('../../shared/utils/logger');
+const { logAudit } = require('../../shared/utils/auditLog');
 const locationsService = require('../locations/locations.service');
 
 class ServicesService {
   /**
    * Get public services (marketplace)
-   * @param {Object} filters
-   * @param {Object} options
-   * @returns {Promise<Object>}
+   * Intentionally cross-tenant: no whitelabelId filter — the marketplace is
+   * a single global directory of approved vendors regardless of tenant.
    */
   async getPublicServices(filters = {}, options = {}) {
     const { page = 1, limit = 20 } = options;
     const skip = (page - 1) * limit;
 
-    // FLOW-26-F02 + FLOW-24-F04: filter to approved vendors with completed profiles only
     const approvedVendorIds = await User.distinct('_id', {
       role: 'vendor',
       'profile.vendorData.vendorStatus': VENDOR_STATUS.APPROVED,
@@ -36,7 +36,7 @@ class ServicesService {
       vendorId: { $in: approvedVendorIds },
     };
 
-    if (filters.category) query.type = filters.category;
+    if (filters.category) query.category = filters.category;
     if (filters.vendorId) query.vendorId = filters.vendorId;
     if (filters.search) {
       const escaped = filters.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -58,7 +58,6 @@ class ServicesService {
     }
     if (filters.minRating) query.rating = { $gte: parseFloat(filters.minRating) };
 
-    // FLOW-26-F01: include vendor rating in marketplace populate
     const vendorPopulateFields = 'name avatar email mobile phoneNumber profile.vendorData.brandName profile.vendorData.businessLogo profile.vendorData.socialLinks profile.vendorData.serviceDescription profile.vendorData.rating profile.vendorData.numberOfRatings';
 
     const [services, total] = await Promise.all([
@@ -79,9 +78,6 @@ class ServicesService {
 
   /**
    * Get my services (vendor)
-   * @param {string} vendorId
-   * @param {Object} options
-   * @returns {Promise<Object>}
    */
   async getMyServices(vendorId, options = {}) {
     const { page = 1, limit = 20 } = options;
@@ -104,8 +100,6 @@ class ServicesService {
 
   /**
    * Get my stats (vendor)
-   * @param {string} vendorId
-   * @returns {Promise<Object>}
    */
   async getMyStats(vendorId) {
     const objectId = new mongoose.Types.ObjectId(vendorId);
@@ -114,7 +108,7 @@ class ServicesService {
       Service.countDocuments({ vendorId, status: 'active' }),
       Service.aggregate([
         { $match: { vendorId: objectId } },
-        { $group: { _id: null, totalViews: { $sum: '$viewCount' }, totalBookings: { $sum: '$bookingCount' }, avgRating: { $avg: '$rating' } } },
+        { $group: { _id: null, totalViews: { $sum: '$viewCount' }, avgRating: { $avg: '$rating' } } },
       ]),
     ]);
 
@@ -124,7 +118,6 @@ class ServicesService {
         totalServices: total,
         activeServices: active,
         totalViews: stats.totalViews || 0,
-        totalBookings: stats.totalBookings || 0,
         avgRating: stats.avgRating || 0,
       },
     };
@@ -132,13 +125,17 @@ class ServicesService {
 
   /**
    * Get service by ID
-   * @param {string} serviceId
-   * @param {string} [vendorId]
-   * @returns {Promise<Object>}
+   * Vendors are scoped to their own services; non-vendors only see public+active
+   * services and trigger a best-effort view counter increment.
    */
   async getServiceById(serviceId, vendorId = null, trackView = false) {
     const query = { _id: serviceId };
-    if (vendorId) query.vendorId = vendorId;
+    if (vendorId) {
+      query.vendorId = vendorId;
+    } else {
+      query.isPublic = true;
+      query.status = SERVICE_STATUS.ACTIVE;
+    }
 
     const service = await Service.findOne(query)
       .populate('vendorId', 'name avatar email mobile phoneNumber profile.vendorData.brandName profile.vendorData.businessLogo profile.vendorData.socialLinks profile.vendorData.serviceDescription profile.vendorData.rating profile.vendorData.numberOfRatings');
@@ -147,8 +144,8 @@ class ServicesService {
       throw new NotFoundError('Service');
     }
 
-    // FLOW-26-F05: increment numberOfClicks on public vendor profile view
     if (trackView) {
+      // Best-effort analytics counters — fire-and-forget, no transaction.
       Service.findByIdAndUpdate(serviceId, { $inc: { viewCount: 1 } }).exec();
       if (service.vendorId?._id) {
         User.findByIdAndUpdate(service.vendorId._id, {
@@ -161,50 +158,10 @@ class ServicesService {
   }
 
   /**
-   * Record an inquiry on a service (FLOW-25-F04)
-   * Increments both the Service-level counter and the vendor User-level counter.
-   */
-  async recordInquiry(serviceId) {
-    const service = await Service.findByIdAndUpdate(
-      serviceId,
-      { $inc: { inquiryCount: 1 } },
-      { new: true, select: 'vendorId' }
-    );
-    if (service?.vendorId) {
-      User.findByIdAndUpdate(
-        service.vendorId,
-        { $inc: { 'profile.vendorData.inquiryCount': 1 } }
-      ).exec();
-    }
-  }
-
-  /**
-   * Record a booking on a service (FLOW-25-F04)
-   * Increments both the Service-level counter and the vendor User-level counter.
-   */
-  async recordBooking(serviceId) {
-    const service = await Service.findByIdAndUpdate(
-      serviceId,
-      { $inc: { bookingCount: 1 } },
-      { new: true, select: 'vendorId' }
-    );
-    if (service?.vendorId) {
-      User.findByIdAndUpdate(
-        service.vendorId,
-        { $inc: { 'profile.vendorData.bookingCount': 1 } }
-      ).exec();
-    }
-  }
-
-  /**
    * Create service
-   * @param {string} vendorId
-   * @param {Object} data
-   * @param {Object} [file]
-   * @returns {Promise<Object>}
    */
   async createService(vendorId, data, file = null) {
-    // FLOW-25-F01: new services default to isPublic:false; vendor must publish explicitly.
+    // New services start unpublished — vendor must explicitly publish.
     const serviceData = {
       ...data,
       vendorId,
@@ -212,7 +169,6 @@ class ServicesService {
       isPublic: false,
     };
 
-    // Auto-resolve location names if only IDs were provided
     if (serviceData.serviceLocation) {
       serviceData.serviceLocation = await this._resolveLocationNames(serviceData.serviceLocation);
     }
@@ -222,16 +178,20 @@ class ServicesService {
     }
 
     const service = await Service.create(serviceData);
+
+    logAudit({
+      action: 'service.created',
+      actor: { _id: vendorId, role: 'vendor' },
+      targetType: 'service',
+      targetId: service._id,
+      metadata: { name: service.name, category: service.category, price: service.price },
+    }).catch(() => {});
+
     return { service: this._formatService(service) };
   }
 
   /**
    * Update service
-   * @param {string} serviceId
-   * @param {string} vendorId
-   * @param {Object} data
-   * @param {Object} [file]
-   * @returns {Promise<Object>}
    */
   async updateService(serviceId, vendorId, data, file = null) {
     const service = await Service.findOne({ _id: serviceId, vendorId });
@@ -240,7 +200,6 @@ class ServicesService {
       throw new NotFoundError('Service');
     }
 
-    // Auto-resolve location names if only IDs were provided
     if (data.serviceLocation) {
       data.serviceLocation = await this._resolveLocationNames(data.serviceLocation);
     }
@@ -251,14 +210,20 @@ class ServicesService {
     }
 
     await service.save();
+
+    logAudit({
+      action: 'service.updated',
+      actor: { _id: vendorId, role: 'vendor' },
+      targetType: 'service',
+      targetId: service._id,
+      metadata: { changes: Object.keys(data), imageUpdated: !!file },
+    }).catch(() => {});
+
     return { service: this._formatService(service) };
   }
 
   /**
    * Toggle service status
-   * @param {string} serviceId
-   * @param {string} vendorId
-   * @returns {Promise<Object>}
    */
   async toggleServiceStatus(serviceId, vendorId) {
     const service = await Service.findOne({ _id: serviceId, vendorId });
@@ -267,17 +232,23 @@ class ServicesService {
       throw new NotFoundError('Service');
     }
 
+    const previousStatus = service.status;
     service.status = service.status === SERVICE_STATUS.ACTIVE ? SERVICE_STATUS.DISABLED : SERVICE_STATUS.ACTIVE;
     await service.save();
+
+    logAudit({
+      action: 'service.status_toggled',
+      actor: { _id: vendorId, role: 'vendor' },
+      targetType: 'service',
+      targetId: service._id,
+      metadata: { previousStatus, newStatus: service.status },
+    }).catch(() => {});
 
     return { service: this._formatService(service) };
   }
 
   /**
    * Delete service
-   * @param {string} serviceId
-   * @param {string} vendorId
-   * @returns {Promise<void>}
    */
   async deleteService(serviceId, vendorId) {
     const service = await Service.findOneAndDelete({ _id: serviceId, vendorId });
@@ -285,6 +256,14 @@ class ServicesService {
     if (!service) {
       throw new NotFoundError('Service');
     }
+
+    logAudit({
+      action: 'service.deleted',
+      actor: { _id: vendorId, role: 'vendor' },
+      targetType: 'service',
+      targetId: service._id,
+      metadata: { name: service.name, category: service.category },
+    }).catch(() => {});
   }
 
   /**
@@ -298,7 +277,7 @@ class ServicesService {
       nameAr: service.nameAr,
       description: service.description,
       descriptionAr: service.descriptionAr,
-      category: service.type,
+      category: service.category,
       price: service.price,
       priceUnit: service.priceUnit || service.currency,
       image: this._sanitizeImagePath(service.image),
@@ -308,7 +287,6 @@ class ServicesService {
       rating: service.rating || 0,
       reviewsCount: service.reviewCount || 0,
       viewCount: service.viewCount || 0,
-      inquiryCount: service.inquiryCount || 0,
       serviceLocation: service.serviceLocation || null,
       vendor: service.vendorId
         ? {
@@ -364,7 +342,7 @@ class ServicesService {
           .map((d) => ({ nameAr: d.name_ar, nameEn: d.name_en }));
       }
     } catch (err) {
-      // Non-critical: proceed without names if resolution fails
+      logger.warn('Service location name resolution failed', { error: err.message });
     }
 
     return resolved;
@@ -379,7 +357,6 @@ class ServicesService {
     if (imagePath.startsWith('http')) return imagePath;
     if (imagePath.startsWith('/uploads')) return imagePath;
 
-    // Handle absolute filesystem paths (e.g. E:\...\public\uploads\services\file.jpg)
     const publicIndex = imagePath.indexOf('public');
     if (publicIndex !== -1) {
       return imagePath.substring(publicIndex + 6).replace(/\\/g, '/');

@@ -1,15 +1,17 @@
 /**
  * Staff Portal Service
- * API calls for staff portal - guest check-in and event management
+ * API calls for staff portal — guest check-in and event management.
+ *
+ * The staff session token is stored in a JS-readable cookie. This is
+ * intentional and consistent with the main app token (`Cookies.get("token")`
+ * in apiClient). A future cookie-hardening pass should switch both to
+ * HttpOnly, backend-issued cookies.
  */
 
 import apiClient from "./apiClient";
 import Cookies from "js-cookie";
 import { API_PATHS } from "./new-backend/api.config";
 
-/**
- * Get staff token from cookies (separate from main auth token)
- */
 const getStaffToken = () => {
   if (typeof window !== "undefined") {
     return Cookies.get("staffToken") || null;
@@ -17,9 +19,6 @@ const getStaffToken = () => {
   return null;
 };
 
-/**
- * Set staff session token in cookie
- */
 const setStaffToken = (token) => {
   if (typeof window !== "undefined") {
     Cookies.set("staffToken", token, {
@@ -30,69 +29,43 @@ const setStaffToken = (token) => {
   }
 };
 
-/**
- * Clear staff session token
- */
 const clearStaffToken = () => {
   if (typeof window !== "undefined") {
     Cookies.remove("staffToken", { path: "/" });
   }
 };
 
-/**
- * Staff Portal Service API
- */
 export const staffService = {
   // ============================================
   // AUTHENTICATION
   // ============================================
 
-  /**
-   * Verify staff access via token
-   * @param {string} token - Access token from URL
-   */
   verifyByToken: async (token) => {
+    const qs = apiClient.buildQueryString({ token });
     const response = await apiClient.get(
-      `${API_PATHS.staff.verifyStaffAccess}?token=${encodeURIComponent(token)}`
+      `${API_PATHS.staff.verifyStaffAccess}${qs}`
     );
-
-    // Store session token if verification successful
     if (response.data?.sessionToken) {
       setStaffToken(response.data.sessionToken);
     }
-
     return response;
   },
 
-  /**
-   * Verify staff access via phone and eventId
-   * @param {string} phone - Staff phone number
-   * @param {string} eventId - Event ID
-   */
   verifyByPhone: async (phone, eventId) => {
+    const qs = apiClient.buildQueryString({ phone, eventId });
     const response = await apiClient.get(
-      `${API_PATHS.staff.verifyStaffAccess}?phone=${encodeURIComponent(
-        phone
-      )}&eventId=${encodeURIComponent(eventId)}`
+      `${API_PATHS.staff.verifyStaffAccess}${qs}`
     );
-
     if (response.data?.sessionToken) {
       setStaffToken(response.data.sessionToken);
     }
-
     return response;
   },
 
-  /**
-   * Logout - clear staff session
-   */
   logout: () => {
     clearStaffToken();
   },
 
-  /**
-   * Check if staff is authenticated
-   */
   isAuthenticated: () => {
     return !!getStaffToken();
   },
@@ -102,22 +75,18 @@ export const staffService = {
   // ============================================
 
   /**
-   * Get guest list for event
-   * @param {string} eventId - Event ID
-   * @param {Object} options - { search, status, page, limit }
+   * Get guest list for event.
+   * @param {string} eventId
+   * @param {{search?: string, status?: string, page?: number, limit?: number}} options
    */
   getGuests: async (eventId, options = {}) => {
     const queryString = apiClient.buildQueryString(options);
-    return apiClient.get(`${API_PATHS.staff.getEventGuests(eventId)}${queryString}`, {
-      token: getStaffToken(),
-    });
+    return apiClient.get(
+      `${API_PATHS.staff.getEventGuests(eventId)}${queryString}`,
+      { token: getStaffToken() }
+    );
   },
 
-  /**
-   * Check in guest via QR code
-   * @param {string} eventId - Event ID
-   * @param {string} qrCode - QR code data
-   */
   checkInByQR: async (eventId, qrCode) => {
     return apiClient.post(
       API_PATHS.staff.checkInGuest(eventId),
@@ -126,11 +95,6 @@ export const staffService = {
     );
   },
 
-  /**
-   * Check in guest by ID
-   * @param {string} eventId - Event ID
-   * @param {string} guestId - Guest ID
-   */
   checkInById: async (eventId, guestId) => {
     return apiClient.post(
       API_PATHS.staff.checkInGuest(eventId),
@@ -139,11 +103,6 @@ export const staffService = {
     );
   },
 
-  /**
-   * Check in guest by phone
-   * @param {string} eventId - Event ID
-   * @param {string} phone - Guest phone number
-   */
   checkInByPhone: async (eventId, phone) => {
     return apiClient.post(
       API_PATHS.staff.checkInGuest(eventId),
@@ -151,43 +110,8 @@ export const staffService = {
       { token: getStaffToken() }
     );
   },
-
-  /**
-   * Manual check-in with note
-   * @param {string} eventId - Event ID
-   * @param {string} guestId - Guest ID
-   * @param {string} note - Optional note
-   * @param {boolean} overrideDeclined - Override if guest declined
-   */
-  manualCheckIn: async (
-    eventId,
-    guestId,
-    note = null,
-    overrideDeclined = false
-  ) => {
-    return apiClient.post(
-      API_PATHS.staff.manualCheckIn(eventId),
-      { guestId, note, overrideDeclined },
-      { token: getStaffToken() }
-    );
-  },
-
-  // ============================================
-  // STATISTICS
-  // ============================================
-
-  /**
-   * Get real-time event stats
-   * @param {string} eventId - Event ID
-   */
-  getStats: async (eventId) => {
-    return apiClient.get(API_PATHS.staff.getEventStats(eventId), {
-      token: getStaffToken(),
-    });
-  },
 };
 
-// Export token utilities for external use
 export const staffTokenUtils = {
   getToken: getStaffToken,
   setToken: setStaffToken,

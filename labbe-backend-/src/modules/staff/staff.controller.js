@@ -1,14 +1,15 @@
 /**
  * Staff Controller
- * HTTP request handling for staff portal
+ *
+ * NOTE: `revokeStaffToken` and `listStaffTokens` exports below are mounted
+ * by the events router (see `events.routes.js`) under
+ * `/events/:eventId/staff/:staffId/revoke` and `/events/:eventId/staff-tokens`.
+ *
  * @module modules/staff/staff.controller
  */
 
 const catchAsync = require("../../shared/utils/catchAsync");
-const {
-  sendSuccess,
-  sendPaginated,
-} = require("../../shared/utils/responseHelper");
+const { sendSuccess } = require("../../shared/utils/responseHelper");
 const staffService = require("./staff.service");
 
 /**
@@ -31,26 +32,23 @@ exports.verifyStaffAccess = catchAsync(async (req, res) => {
  */
 exports.getEventGuests = catchAsync(async (req, res) => {
   const { eventId } = req.params;
-  const { page, limit, ...filters } = req.query;
-  const options = { page: parseInt(page) || 1, limit: parseInt(limit) || 50 };
+  const { page, limit, search, status } = req.query;
+  const options = { page: page || 1, limit: limit || 50 };
+  const filters = { search, status };
 
   const result = await staffService.getEventGuests(eventId, filters, options);
 
-  res.status(200).json({
-    status: "success",
-    results: result.data.length,
-    data: {
-      guests: result.data,
-      stats: result.stats,
-      pagination: result.pagination,
-    },
+  sendSuccess(res, {
+    guests: result.data,
+    stats: result.stats,
+    pagination: result.pagination,
   });
 });
 
 /**
  * Check in guest via QR or by identifier
  * POST /api/v2/staff/events/:eventId/check-in
- * Body: { qrCode } or { guestId } or { phone }
+ * Body: { qrCode } XOR { guestId } XOR { phone } — enforced by Zod schema.
  */
 exports.checkInGuest = catchAsync(async (req, res) => {
   const { eventId } = req.params;
@@ -59,64 +57,29 @@ exports.checkInGuest = catchAsync(async (req, res) => {
   let result;
   if (qrCode) {
     result = await staffService.checkInByQR(eventId, qrCode, req.staffUser);
-  } else if (guestId || phone) {
+  } else {
     result = await staffService.checkInByIdentifier(
       eventId,
       { guestId, phone },
       req.staffUser
     );
-  } else {
-    const { ValidationError } = require("../../shared/errors");
-    throw new ValidationError("qrCode, guestId, or phone is required");
   }
 
   sendSuccess(res, result, result.message || "Guest checked in");
 });
 
 /**
- * Manual check in with notes
- * POST /api/v2/staff/events/:eventId/manual-check-in
- * Body: { guestId, note?, overrideDeclined? }
- */
-exports.manualCheckIn = catchAsync(async (req, res) => {
-  const { eventId } = req.params;
-  const { guestId, note, overrideDeclined } = req.body;
-
-  const result = await staffService.manualCheckIn(
-    eventId,
-    guestId,
-    req.staffUser,
-    {
-      note,
-      overrideDeclined,
-    }
-  );
-
-  sendSuccess(res, result, "Guest checked in successfully");
-});
-
-/**
- * Get event stats
- * GET /api/v2/staff/events/:eventId/stats
- */
-exports.getEventStats = catchAsync(async (req, res) => {
-  const { eventId } = req.params;
-  const stats = await staffService.getEventStats(eventId);
-  sendSuccess(res, { stats });
-});
-
-/**
- * Revoke a staff access token (Phase 3e.1 / FLOW-20-F01).
+ * Revoke a staff access token.
  * POST /api/v2/events/:eventId/staff/:staffId/revoke
  */
 exports.revokeStaffToken = catchAsync(async (req, res) => {
   const { eventId, staffId } = req.params;
   const result = await staffService.revokeStaffToken(eventId, staffId, req.user);
-  sendSuccess(res, result, 'Staff token revoked');
+  sendSuccess(res, result, "Staff token revoked");
 });
 
 /**
- * List staff access tokens for an event (Phase 4b W0-STAFF).
+ * List staff access tokens for an event.
  * GET /api/v2/events/:eventId/staff-tokens
  */
 exports.listStaffTokens = catchAsync(async (req, res) => {

@@ -88,6 +88,11 @@ export const API_PATHS = {
     updateStaffStatus: (eventId, staffId) => `/events/${eventId}/staff/${staffId}/status`,
     deleteStaff: (eventId, staffId) => `/events/${eventId}/staff/${staffId}`,
 
+    // Staff Access Tokens (host-facing)
+    listStaffTokens: (eventId) => `/events/${eventId}/staff-tokens`,
+    revokeStaffAccess: (eventId, staffId) =>
+      `/events/${eventId}/staff/${staffId}/revoke`,
+
     // Staff Notification
     notifyStaff: (eventId) => `/events/${eventId}/notify-staff`,
 
@@ -222,8 +227,6 @@ export const API_PATHS = {
     verifyStaffAccess: '/staff/verify',
     getEventGuests: (eventId) => `/staff/events/${eventId}/guests`,
     checkInGuest: (eventId) => `/staff/events/${eventId}/check-in`,
-    manualCheckIn: (eventId) => `/staff/events/${eventId}/manual-check-in`,
-    getEventStats: (eventId) => `/staff/events/${eventId}/stats`,
   },
 
   // ============================================

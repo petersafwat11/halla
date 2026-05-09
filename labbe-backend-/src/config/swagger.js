@@ -98,6 +98,165 @@ const swaggerOptions = {
           },
         },
 
+        // Staff schemas
+        StaffVerifyResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            status: { type: 'string', example: 'success' },
+            data: {
+              type: 'object',
+              properties: {
+                verified: { type: 'boolean', example: true },
+                staff: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string', nullable: true },
+                    name: { type: 'string' },
+                    phone: { type: 'string' },
+                    role: { type: 'string', example: 'staff' },
+                  },
+                },
+                event: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string' },
+                    title: { type: 'string' },
+                    date: { type: 'string' },
+                    time: { type: 'string' },
+                    location: { type: 'object' },
+                    status: { type: 'string' },
+                  },
+                },
+                sessionToken: { type: 'string' },
+              },
+            },
+          },
+        },
+        StaffGoneResponse: {
+          type: 'object',
+          properties: {
+            reason: {
+              type: 'string',
+              enum: ['staff_revoked', 'staff_expired'],
+            },
+            message: { type: 'string' },
+            expiresAt: { type: 'string', format: 'date-time', nullable: true },
+            revokedAt: { type: 'string', format: 'date-time', nullable: true },
+          },
+        },
+        StaffGuestStats: {
+          type: 'object',
+          properties: {
+            total: { type: 'integer' },
+            confirmed: { type: 'integer' },
+            checkedIn: { type: 'integer' },
+            declined: { type: 'integer' },
+            pending: { type: 'integer' },
+            lastCheckIn: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+            },
+          },
+        },
+        StaffGuestListResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            status: { type: 'string', example: 'success' },
+            data: {
+              type: 'object',
+              properties: {
+                guests: {
+                  type: 'array',
+                  items: { type: 'object' },
+                },
+                stats: { $ref: '#/components/schemas/StaffGuestStats' },
+                pagination: {
+                  type: 'object',
+                  properties: {
+                    page: { type: 'integer' },
+                    limit: { type: 'integer' },
+                    total: { type: 'integer' },
+                    pages: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+        },
+        StaffCheckInResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            status: { type: 'string', example: 'success' },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                guest: { type: 'object' },
+                alreadyCheckedIn: { type: 'boolean' },
+                checkedInAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                },
+                checkedInBy: { type: 'string', nullable: true },
+                message: { type: 'string' },
+              },
+            },
+          },
+        },
+        StaffTokenItem: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            phone: { type: 'string' },
+            staffName: { type: 'string' },
+            isRevoked: { type: 'boolean' },
+            revokedAt: { type: 'string', format: 'date-time', nullable: true },
+            revokedBy: { type: 'string', nullable: true },
+            expiresAt: { type: 'string', format: 'date-time', nullable: true },
+            isExpired: { type: 'boolean' },
+            lastUsedAt: { type: 'string', format: 'date-time', nullable: true },
+            useCount: { type: 'integer' },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        StaffTokensListResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            status: { type: 'string', example: 'success' },
+            data: {
+              type: 'object',
+              properties: {
+                tokens: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/StaffTokenItem' },
+                },
+              },
+            },
+          },
+        },
+        StaffRevokeResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            status: { type: 'string', example: 'success' },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                revoked: { type: 'boolean' },
+                affected: { type: 'integer' },
+                wasAlreadyRevoked: { type: 'boolean' },
+              },
+            },
+          },
+        },
+
         // Dashboard schemas
         StatsCard: {
           type: 'object',
@@ -1116,34 +1275,47 @@ const swaggerOptions = {
         Service: {
           type: 'object',
           properties: {
-            _id: {
-              type: 'string',
-            },
-            name: {
-              type: 'string',
-            },
-            description: {
-              type: 'string',
-            },
-            category: {
-              type: 'string',
-            },
-            price: {
-              type: 'number',
-            },
-            priceType: {
-              type: 'string',
-              enum: ['fixed', 'hourly', 'per_person'],
-            },
-            images: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            nameAr: { type: 'string' },
+            description: { type: 'string' },
+            descriptionAr: { type: 'string' },
+            category: { type: 'string' },
+            price: { type: 'number' },
+            priceUnit: { type: 'string' },
+            currency: { type: 'string' },
+            image: { type: 'string', nullable: true },
+            tags: {
               type: 'array',
-              items: {
-                type: 'string',
+              items: { type: 'string' },
+            },
+            status: { type: 'string', enum: ['active', 'disabled'] },
+            isPublic: { type: 'boolean' },
+            rating: { type: 'number' },
+            reviewsCount: { type: 'integer' },
+            viewCount: { type: 'integer' },
+            serviceLocation: {
+              type: 'object',
+              nullable: true,
+            },
+            vendor: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                brandName: { type: 'string' },
+                logo: { type: 'string', nullable: true },
+                avatar: { type: 'string', nullable: true },
+                email: { type: 'string', nullable: true },
+                phone: { type: 'string', nullable: true },
+                website: { type: 'string', nullable: true },
+                rating: { type: 'number', nullable: true },
+                numberOfRatings: { type: 'integer' },
               },
             },
-            isActive: {
-              type: 'boolean',
-            },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
           },
         },
 

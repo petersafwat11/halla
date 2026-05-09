@@ -7,36 +7,43 @@
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const config = require('../../config');
-const { NotFoundError, ForbiddenError, ValidationError } = require('../../shared/errors');
+const {
+  NotFoundError,
+  ForbiddenError,
+  ValidationError,
+} = require('../../shared/errors');
+const AppError = require('../../shared/errors/AppError');
+const logger = require('../../shared/utils/logger');
+const { ROLES } = require('../../shared/constants/roles');
 
-// Import existing models during migration
+// Existing models
 const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
 const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 
-// Import existing services
+// Existing services
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
+
+const STAFF_TOKEN_RBAC_ROLES = [ROLES.ADMIN, ROLES.SUPER_ADMIN];
+
+const escapeRegex = (s) =>
+  String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 class StaffService {
   /**
    * Verify staff access via token or phone+eventId
-   * @param {Object} params - { token, phone, eventId }
-   * @returns {Promise<Object>}
    */
   async verifyStaffAccess({ token, phone, eventId }) {
-    // Token-based verification
     if (token) {
       const validation = await StaffAccessToken.validateToken(token);
 
       if (!validation.valid) {
-        // H-20: revoked / expired tokens surface as 410 Gone with the
-        // structured reason in the body so the scanner can render distinct
-        // UX. Lookup miss (`staff_invalid`) stays 403 — it's a credential
-        // error, not a "the access is gone" condition.
+        // 410 vs 403 disambiguation: revoked / expired tokens surface as
+        // 410 Gone with structured reason so the scanner can render
+        // distinct UX. A lookup miss stays 403 — credential error.
         const goneReasons = ['staff_revoked', 'staff_expired'];
         if (goneReasons.includes(validation.reason)) {
-          const AppError = require('../../shared/errors/AppError');
           const err = new AppError(
             validation.message || validation.reason,
             410,
@@ -45,12 +52,18 @@ class StaffService {
           err.body = {
             reason: validation.reason,
             message: validation.message,
-            ...(validation.expiresAt ? { expiresAt: validation.expiresAt } : {}),
-            ...(validation.revokedAt ? { revokedAt: validation.revokedAt } : {}),
+            ...(validation.expiresAt
+              ? { expiresAt: validation.expiresAt }
+              : {}),
+            ...(validation.revokedAt
+              ? { revokedAt: validation.revokedAt }
+              : {}),
           };
           throw err;
         }
-        throw new ForbiddenError(validation.message || validation.reason || 'Invalid access token');
+        throw new ForbiddenError(
+          validation.message || validation.reason || 'Invalid access token'
+        );
       }
 
       const event = validation.event;
@@ -72,7 +85,6 @@ class StaffService {
       };
     }
 
-    // Phone + EventId verification
     if (!phone || !eventId) {
       throw new ValidationError('Phone and event ID are required');
     }
@@ -113,9 +125,6 @@ class StaffService {
 
   /**
    * Get event guests for staff portal
-   * @param {string} eventId
-   * @param {Object} filters
-   * @param {Object} options
    * @returns {Promise<{data: Array, stats: Object, pagination: Object}>}
    */
   async getEventGuests(eventId, filters = {}, options = {}) {
@@ -128,10 +137,10 @@ class StaffService {
       throw new NotFoundError('Event');
     }
 
-    let query = { event: eventId };
+    const query = { event: eventId };
 
     if (search) {
-      const searchRegex = new RegExp(search, 'i');
+      const searchRegex = new RegExp(escapeRegex(search), 'i');
       query.$or = [
         { name: searchRegex },
         { phone: searchRegex },
@@ -143,7 +152,7 @@ class StaffService {
       query.status = status;
     }
 
-    const [guests, total] = await Promise.all([
+    const [guests, total, stats, lastCheckedIn] = await Promise.all([
       Guest.find(query)
         .select('name phone email status checkIn qrCode rsvp createdAt')
         .sort({ name: 1 })
@@ -151,30 +160,30 @@ class StaffService {
         .limit(limit)
         .lean(),
       Guest.countDocuments(query),
+      // counts via aggregation; full collection load was OOM-class at >10K guests
+      this._computeGuestStats(eventId),
+      Guest.findOne({
+        event: eventId,
+        'checkIn.checkedInAt': { $exists: true, $ne: null },
+      })
+        .sort({ 'checkIn.checkedInAt': -1 })
+        .select('checkIn.checkedInAt')
+        .lean(),
     ]);
-
-    // H-22: stats via aggregation. Previously we loaded every guest doc
-    // into memory and counted in JS — at 10K guests × 30s polling that's
-    // 200MB+/min into the working set and a non-trivial CPU cost. The
-    // aggregation runs entirely in the index / on the server.
-    const stats = await this._computeGuestStats(eventId);
 
     return {
       data: guests,
-      stats,
+      stats: {
+        ...stats,
+        lastCheckIn: lastCheckedIn?.checkIn?.checkedInAt || null,
+      },
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }
 
   /**
-   * Check in guest via QR code.
-   *
-   * Phase 3e.2 (FLOW-20-F03 / decision D6): the actual idempotency
-   * primitive is the atomic compare-and-swap inside
-   * `_performIdempotentCheckIn` — see that helper for the rationale.
-   * The scanner UI reads `alreadyCheckedIn` + `checkedInAt` from the
-   * response to render either "Checked in" or "Already checked in at
-   * HH:MM".
+   * Check in guest via QR code. Idempotency is enforced by the atomic CAS in
+   * `_performIdempotentCheckIn` (see helper for rationale).
    */
   async checkInByQR(eventId, qrCode, staffUser) {
     const guest = await Guest.findOne({ event: eventId, qrcode: qrCode });
@@ -187,28 +196,7 @@ class StaffService {
   }
 
   /**
-   * Manual check in guest
-   * @param {string} eventId
-   * @param {string} guestId
-   * @param {Object} staffUser
-   * @returns {Promise<Object>}
-   */
-  async manualCheckIn(eventId, guestId, staffUser) {
-    const guest = await Guest.findOne({ _id: guestId, event: eventId });
-
-    if (!guest) {
-      throw new NotFoundError('Guest');
-    }
-
-    return this._performIdempotentCheckIn(eventId, guest, staffUser);
-  }
-
-  /**
    * Check in guest by identifier (guestId or phone)
-   * @param {string} eventId
-   * @param {Object} identifier - { guestId, phone }
-   * @param {Object} staffUser
-   * @returns {Promise<Object>}
    */
   async checkInByIdentifier(eventId, { guestId, phone }, staffUser) {
     let guest;
@@ -230,46 +218,9 @@ class StaffService {
   }
 
   /**
-   * Get event stats for staff
-   * @param {string} eventId
-   * @returns {Promise<Object>}
-   */
-  async getEventStats(eventId) {
-    const event = await Event.findById(eventId);
-    if (!event) {
-      throw new NotFoundError('Event');
-    }
-
-    // H-22: aggregation instead of full collection load + JS reduce.
-    // `_computeGuestStats` returns the {total,confirmed,checkedIn,...}
-    // bucket. We additionally need `lastCheckIn` which is a single doc
-    // lookup sorted by `checkIn.checkedInAt`.
-    const [stats, lastCheckedIn] = await Promise.all([
-      this._computeGuestStats(eventId),
-      Guest.findOne({
-        event: eventId,
-        'checkIn.checkedInAt': { $exists: true, $ne: null },
-      })
-        .sort({ 'checkIn.checkedInAt': -1 })
-        .select('checkIn.checkedInAt')
-        .lean(),
-    ]);
-
-    return {
-      ...stats,
-      lastCheckIn: lastCheckedIn?.checkIn?.checkedInAt || null,
-    };
-  }
-
-  /**
    * Compute guest count breakdown via Mongo aggregation.
-   *
-   * H-22: previously the staff stats endpoints loaded every guest into
-   * memory and counted via `Array#filter`. Aggregating in the database is
-   * O(index-scan) and never builds the full result set in Node.
-   *
-   * @param {string|ObjectId} eventId
-   * @returns {Promise<{total:number, confirmed:number, checkedIn:number, declined:number, pending:number}>}
+   * Aggregating in the DB is O(index-scan) and never builds the full
+   * result set in Node.
    */
   async _computeGuestStats(eventId) {
     const buckets = await Guest.aggregate([
@@ -290,43 +241,43 @@ class StaffService {
   }
 
   /**
-   * List staff access tokens for an event (Phase 4b W0-STAFF).
-   *
-   * The Phase 4 mobile staff revoke flow walked `event.staffList` and
-   * passed the staff member sub-doc _id directly into the existing
-   * revoke endpoint, which works but doesn't surface the actual token
-   * lifecycle (active / revoked / expired). Peter asked for an explicit
-   * "active staff tokens" list so the UI can render token status next
-   * to the staff name.
-   *
-   * RBAC mirrors revokeStaffToken: event host, owning whitelabel admin,
-   * platform admin, super_admin.
-   *
-   * @param {string} eventId
-   * @param {Object} actor — req.user
-   * @returns {Promise<{tokens: Array}>}
+   * RBAC check shared by `listStaffTokens` and `revokeStaffToken`.
+   * Allowed: event host, owning whitelabel admin, platform admin, super_admin.
    */
-  async listStaffTokens(eventId, actor) {
-    const event = await Event.findById(eventId);
-    if (!event) throw new NotFoundError('Event');
-
+  _assertStaffTokensRBAC(event, actor) {
     const actorId = actor?._id?.toString?.() || actor?._id;
     const role = actor?.role;
 
     const isHost = event.host?.toString() === actorId;
-    const isAdmin = ['admin', 'super_admin'].includes(role);
+    const isAdmin = STAFF_TOKEN_RBAC_ROLES.includes(role);
     const isWhitelabelAdmin =
-      role === 'whitelabel_admin' &&
+      role === ROLES.WHITELABEL_ADMIN &&
       event.whitelabelId &&
       actor?.whitelabelId &&
       event.whitelabelId.toString() === actor.whitelabelId.toString();
 
     if (!isHost && !isAdmin && !isWhitelabelAdmin) {
-      throw new ForbiddenError('Not authorized to view staff tokens for this event');
+      throw new ForbiddenError(
+        'Not authorized to manage staff tokens for this event'
+      );
     }
+  }
+
+  /**
+   * List staff access tokens for an event. Returns active and revoked tokens
+   * with lifecycle metadata so the host UI can render token status alongside
+   * the staff member list.
+   */
+  async listStaffTokens(eventId, actor) {
+    const event = await Event.findById(eventId);
+    if (!event) throw new NotFoundError('Event');
+
+    this._assertStaffTokensRBAC(event, actor);
 
     const tokens = await StaffAccessToken.find({ event: eventId })
-      .select('phone staffName isRevoked revokedAt revokedBy expiresAt lastUsedAt useCount createdAt')
+      .select(
+        'phone staffName isRevoked revokedAt revokedBy expiresAt lastUsedAt useCount createdAt'
+      )
       .sort({ createdAt: -1 })
       .lean();
 
@@ -339,7 +290,9 @@ class StaffService {
         revokedAt: t.revokedAt || null,
         revokedBy: t.revokedBy || null,
         expiresAt: t.expiresAt || null,
-        isExpired: t.expiresAt ? t.expiresAt.getTime() <= Date.now() : false,
+        isExpired: t.expiresAt
+          ? t.expiresAt.getTime() <= Date.now()
+          : false,
         lastUsedAt: t.lastUsedAt || null,
         useCount: t.useCount || 0,
         createdAt: t.createdAt,
@@ -348,52 +301,27 @@ class StaffService {
   }
 
   /**
-   * Revoke a staff member's access tokens (Phase 3e.1 / FLOW-20-F01 / D5).
+   * Revoke a staff member's access tokens.
    *
-   * The path parameter `:staffId` is the **staff member sub-document _id**
-   * (from `event.staffList[i]._id`) — that's what the host UI exposes.
-   * We look up the staff member in the event, then revoke every active
-   * `StaffAccessToken` for that event+phone. Multiple tokens can exist
-   * if the host re-issued (e.g. after expiry); the host's intent is
-   * "this staff member can no longer access the portal", which means
-   * all tokens.
+   * `:staffId` is the staff member sub-document _id from `event.staffList`.
+   * Multiple tokens may exist for one staff phone (re-issued after expiry);
+   * the host's intent is "this staff member can no longer access the
+   * portal", so we revoke them all.
    *
-   * RBAC: event host or whitelabel-admin (admin / super_admin allowed
-   * via `restrictTo` at the router head).
-   *
-   * Idempotent at the action level: if no active tokens remain (already
-   * revoked or never issued), returns 200 with `revoked: false,
-   * affected: 0` — same final state.
-   *
-   * @param {string} eventId
-   * @param {string} staffMemberId — staff sub-document _id from event.staffList
-   * @param {Object} actor — req.user
+   * Idempotent: if no active tokens remain, returns `revoked: false,
+   * affected: 0, wasAlreadyRevoked: true` — same final state.
    */
   async revokeStaffToken(eventId, staffMemberId, actor) {
     const event = await Event.findById(eventId);
     if (!event) throw new NotFoundError('Event');
 
-    const actorId = actor?._id?.toString?.() || actor?._id;
-    const role = actor?.role;
-
-    const isHost = event.host?.toString() === actorId;
-    const isAdmin = ['admin', 'super_admin'].includes(role);
-    const isWhitelabelAdmin =
-      role === 'whitelabel_admin' &&
-      event.whitelabelId &&
-      actor?.whitelabelId &&
-      event.whitelabelId.toString() === actor.whitelabelId.toString();
-
-    if (!isHost && !isAdmin && !isWhitelabelAdmin) {
-      throw new ForbiddenError('Not authorized to revoke this staff token');
-    }
+    this._assertStaffTokensRBAC(event, actor);
 
     const staffMember = (event.staffList || []).find(
       (s) => s._id?.toString() === staffMemberId
     );
     if (!staffMember) throw new NotFoundError('Staff member');
 
-    // Revoke every active token for this staff phone on this event.
     const result = await StaffAccessToken.updateMany(
       { event: eventId, phone: staffMember.phone, isRevoked: false },
       {
@@ -425,9 +353,6 @@ class StaffService {
     return {
       revoked: affected > 0,
       affected,
-      // True when the staff member already had no active tokens — same
-      // final state as a fresh revoke. Useful for the UI to render
-      // "already revoked" vs "just revoked".
       wasAlreadyRevoked: affected === 0,
     };
   }
@@ -437,30 +362,25 @@ class StaffService {
   // ============================================
 
   /**
-   * Idempotent check-in core (Phase 3e.2 / FLOW-20-F03 / D6).
+   * Idempotent check-in core.
    *
-   * The DB row IS the idempotency cache here. We use an atomic
-   * `findOneAndUpdate` with `status: { $ne: 'checked_in' }` as the guard
-   * — at most one concurrent caller's update lands; everyone else falls
-   * through to "already checked in" with the original `checkedInAt`.
+   * The DB row IS the idempotency cache. An atomic `findOneAndUpdate` with
+   * `status: { $ne: 'checked_in' }` as the guard means at most one concurrent
+   * caller's update lands; everyone else falls through to "already checked
+   * in" with the original `checkedInAt`.
    *
-   * Why DB-level instead of the HTTP idempotency cache: the spec wants
-   * the scanner UI to see `alreadyCheckedIn: true` on replay (so it can
-   * render "checked in at HH:MM"). The HTTP cache would return the
-   * first call's body verbatim — `alreadyCheckedIn: false` — on every
-   * replay, defeating the UX. Compare-and-swap on the guest doc gives
-   * us correct first-vs-replay semantics naturally and is also safe
-   * against concurrent scans of the same QR.
+   * DB-level instead of HTTP cache: the scanner UI needs `alreadyCheckedIn:
+   * true` on replay (to render "checked in at HH:MM"). The HTTP cache would
+   * return the first call's body verbatim — `alreadyCheckedIn: false` — on
+   * every replay, defeating the UX.
    */
   async _performIdempotentCheckIn(eventId, guest, staffUser) {
     const now = new Date();
 
-    // H-21: capture WHO performed the check-in. `staffUser` may be:
-    //   - a User document (host self-check-in / admin)
-    //   - a session payload from the staff scanner (no `_id`, has
-    //     `phone`, `staffName`, optional `staffTokenId`)
-    // Build the audit fields accordingly so a re-scan can tell staff B who
-    // originally checked the guest in.
+    // staffUser may be a User document (host self-check-in / admin) OR a
+    // session payload from the staff scanner (no `_id`, has `phone`,
+    // `staffName`, optional `staffTokenId`). Capture both shapes so a
+    // re-scan can tell staff B who originally checked the guest in.
     const checkedInByUserId =
       staffUser && staffUser._id ? staffUser._id : null;
     const checkedInByStaff =
@@ -491,12 +411,10 @@ class StaffService {
     );
 
     if (updated) {
-      // First successful check-in (CAS won).
-      this._notifyHostCheckIn(eventId, updated).catch(console.error);
-      // M-10 / Phase 5 hand-off groundwork: emit an audit-log entry so
-      // there's a forensic trail of every check-in.
+      this._notifyHostCheckIn(eventId, updated).catch((err) =>
+        logger.warn('staff.notifyHost failed', { error: err?.message })
+      );
       try {
-        const { logAudit } = require('../../shared/utils/auditLog');
         await logAudit({
           action: 'guest.check_in',
           actor: staffUser && staffUser._id ? staffUser : null,
@@ -512,8 +430,9 @@ class StaffService {
           },
         });
       } catch (auditErr) {
-        // eslint-disable-next-line no-console
-        console.warn('[staff.checkIn] audit log failed:', auditErr?.message);
+        logger.warn('staff.checkIn audit log failed', {
+          error: auditErr?.message,
+        });
       }
       return {
         guest: this._formatGuest(updated),
@@ -523,9 +442,7 @@ class StaffService {
       };
     }
 
-    // CAS lost — guest was already checked in (possibly by a concurrent
-    // scan). Fetch the persisted record to return the original
-    // `checkedInAt` AND the original actor so the scanner UI can render
+    // CAS lost — fetch the persisted record so the scanner can render
     // "checked in at HH:MM by <staffName>".
     const existing = await Guest.findOne({ _id: guest._id, event: eventId })
       .populate('checkIn.checkedInBy', 'name email');
@@ -574,17 +491,22 @@ class StaffService {
   }
 
   async _notifyHostCheckIn(eventId, guest) {
-    const event = await Event.findById(eventId).select('host eventDetails');
+    const event = await Event.findById(eventId)
+      .select('host eventDetails')
+      .populate('host', 'preferredLanguage');
     if (!event?.host) return;
 
+    const lang = event.host.preferredLanguage || 'ar';
+    const hostId = event.host._id || event.host;
     const frontendUrl = config.frontend.url;
-    await notificationService.sendToUser(event.host, {
+
+    await notificationService.sendToUser(hostId, {
       type: 'guest_checked_in',
       title: 'Guest Checked In',
       titleAr: 'تسجيل حضور ضيف',
       message: `${guest.name} has checked in to your event`,
       messageAr: `${guest.name} سجل حضوره في مناسبتك`,
-      actionUrl: `${frontendUrl}/ar/host/events/${eventId}`,
+      actionUrl: `${frontendUrl}/${lang}/host/events/${eventId}`,
       data: { entityType: 'guest', entityId: guest._id },
     });
   }

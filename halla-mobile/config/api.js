@@ -154,6 +154,9 @@ export const ENDPOINTS = {
   SERVICES: {
     BASE: "/services",
     PUBLIC: "/services/public",
+    STATS: "/services/stats",
+    BY_ID: (id) => `/services/${id}`,
+    TOGGLE_STATUS: (id) => `/services/${id}/toggle-status`,
   },
 
   // Tickets endpoints
@@ -172,8 +175,6 @@ export const ENDPOINTS = {
     VERIFY: "/staff/verify",
     EVENT_GUESTS: (eventId) => `/staff/events/${eventId}/guests`,
     CHECK_IN: (eventId) => `/staff/events/${eventId}/check-in`,
-    MANUAL_CHECK_IN: (eventId) => `/staff/events/${eventId}/manual-check-in`,
-    EVENT_STATS: (eventId) => `/staff/events/${eventId}/stats`,
   },
 
   // Locations endpoints — mounted at /api/v2/locations/*

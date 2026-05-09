@@ -214,6 +214,16 @@
       "noStaff": "No Staff",
       "addStaff": "Add Staff"
     },
+    "staffTokens": {
+      "revoke": "Revoke",
+      "lastUsedAt": "Last used",
+      "useCount": "Uses",
+      "status": {
+        "active": "Active",
+        "revoked": "Revoked",
+        "expired": "Expired"
+      }
+    },
     "guestTable": {
       "title": "Guest List",
       "exportData": "Export Data",

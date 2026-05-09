@@ -219,6 +219,16 @@
       "noStaff": "لا يوجد فريق عمل",
       "addStaff": "إضافة فريق عمل"
     },
+    "staffTokens": {
+      "revoke": "إلغاء الصلاحية",
+      "lastUsedAt": "آخر استخدام",
+      "useCount": "عدد المرات",
+      "status": {
+        "active": "نشط",
+        "revoked": "ملغى",
+        "expired": "منتهي"
+      }
+    },
     "guestTable": {
       "title": "قائمة الضيوف",
       "exportData": "تصدير البيانات",

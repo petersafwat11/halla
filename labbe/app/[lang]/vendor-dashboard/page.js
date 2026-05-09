@@ -1,22 +1,27 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import styles from "./page.module.css";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
 
-// UI Components
 import VendorStatsCards from "@/ui/vendor/statsCards/VendorStatsCards";
 import ServiceCard from "@/ui/vendor/serviceCard/ServiceCard";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import AddServicePopup from "@/ui/vendor/addServicePopup/AddServicePopup";
+import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
-// Hooks
-import { useMyServices, useServiceStats, useServiceMutation } from "@/hooks/reactQueryHooks/useServices";
+import {
+  useMyServices,
+  useServiceStats,
+  useServiceMutation,
+} from "@/hooks/reactQueryHooks/useServices";
 import { useQueryClient } from "@tanstack/react-query";
+import { handleError } from "@/services/errorHandlingService";
+import { toastUtils } from "@/utils/toastUtils";
 
 const VendorServicesPage = () => {
   const { t } = useTranslation("vendorServices");
@@ -24,24 +29,23 @@ const VendorServicesPage = () => {
   const { currentLocale } = UseLanguageChange();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddServicePopupOpen, setIsAddServicePopupOpen] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [editingService, setEditingService] = useState(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
 
-  // React Query hooks
-  const { data: servicesData, isLoading: servicesLoading, error: servicesError } = useMyServices();
+  const {
+    data: servicesData,
+    isLoading: servicesLoading,
+    error: servicesError,
+  } = useMyServices();
   const { data: statsData, isLoading: statsLoading } = useServiceStats();
   const toggleStatusMutation = useServiceMutation("toggleStatus");
   const deleteServiceMutation = useServiceMutation("deleteService");
 
-  // Memoized stats
   const stats = useMemo(() => {
     const data = statsData?.data?.stats;
     if (!data) {
-      return {
-        rating: "0",
-        inactiveServices: 0,
-        activeServices: 0,
-        totalServices: 0,
-      };
+      return { rating: "0", inactiveServices: 0, activeServices: 0, totalServices: 0 };
     }
     return {
       rating: data.avgRating?.toFixed(1) || "0",
@@ -51,10 +55,10 @@ const VendorServicesPage = () => {
     };
   }, [statsData]);
 
-  // Memoized services with mapping
   const services = useMemo(() => {
-    if (!servicesData?.data?.services) return [];
-    return servicesData.data.services.map((service) => ({
+    const list = servicesData?.data;
+    if (!Array.isArray(list)) return [];
+    return list.map((service) => ({
       id: service.id,
       title: service.name,
       tags: service.tags || [],
@@ -63,78 +67,98 @@ const VendorServicesPage = () => {
       image: service.image || "/images/placeholder-service.jpg",
       rating: service.rating || 0,
       category: service.category,
+      _raw: {
+        description: service.description || "",
+        serviceType: service.category || "",
+        price: service.price != null ? String(service.price) : "",
+        tags: service.tags || [],
+        image: service.image,
+      },
     }));
   }, [servicesData]);
 
-  // Filtered services based on search
   const filteredServices = useMemo(() => {
     if (!searchQuery.trim()) return services;
     const query = searchQuery.toLowerCase();
-    return services.filter((service) =>
-      service.title.toLowerCase().includes(query) ||
-      service.tags.some((tag) => tag.toLowerCase().includes(query))
+    return services.filter(
+      (service) =>
+        service.title.toLowerCase().includes(query) ||
+        service.tags.some((tag) => tag.toLowerCase().includes(query))
     );
   }, [services, searchQuery]);
 
-  // Handlers
-  const handleToggleStatus = async (serviceId) => {
+  const handleToggleStatus = useCallback(
+    async (serviceId) => {
+      try {
+        await toggleStatusMutation.mutateAsync(serviceId);
+        toastUtils.success(t("success.updated"));
+      } catch (error) {
+        handleError(error, t, { fallbackMessage: "errors.update_failed" });
+      }
+    },
+    [toggleStatusMutation, t]
+  );
+
+  const handleRequestDelete = useCallback((serviceId) => {
+    setPendingDeleteId(serviceId);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!pendingDeleteId) return;
     try {
-      await toggleStatusMutation.mutateAsync(serviceId);
+      await deleteServiceMutation.mutateAsync(pendingDeleteId);
+      toastUtils.success(t("success.deleted"));
     } catch (error) {
-      console.error("Error toggling status:", error);
+      handleError(error, t, { fallbackMessage: "errors.delete_failed" });
+    } finally {
+      setPendingDeleteId(null);
     }
-  };
+  }, [deleteServiceMutation, pendingDeleteId, t]);
 
-  const handleDeleteService = async (serviceId) => {
-    const confirmed = window.confirm(
-      t("confirmDelete", "Are you sure you want to delete this service?")
-    );
-    if (!confirmed) return;
-    try {
-      await deleteServiceMutation.mutateAsync(serviceId);
-    } catch (error) {
-      console.error("Error deleting service:", error);
-    }
-  };
+  const handleAddService = useCallback(() => {
+    setEditingService(null);
+    setIsPopupOpen(true);
+  }, []);
 
-  const handleAddService = () => {
-    setIsAddServicePopupOpen(true);
-  };
+  const handleEditService = useCallback((service) => {
+    setEditingService(service);
+    setIsPopupOpen(true);
+  }, []);
 
-  const handleAddServiceSuccess = () => {
-    setIsAddServicePopupOpen(false);
+  const handlePopupClose = useCallback(() => {
+    setIsPopupOpen(false);
+    setEditingService(null);
+  }, []);
+
+  const handlePopupSuccess = useCallback(() => {
+    setIsPopupOpen(false);
+    setEditingService(null);
     queryClient.invalidateQueries({ queryKey: ["vendor-services"] });
-  };
+  }, [queryClient]);
 
   const handleComplaints = () => {
     router.push(`/${currentLocale}/vendor-dashboard/tickets`);
   };
 
-  const handlePromoteProfile = () => {
-    // Placeholder for future implementation
-    console.log("Promote profile - coming soon");
-  };
+  const handlePromoteProfile = () => {};
 
-  // Loading state
   if (servicesLoading || statsLoading) {
     return <SimpleLoading />;
   }
 
-  // Error state
   if (servicesError) {
     return (
       <div className={styles.container}>
         <div className={styles.error}>
-          <p>{t("errors.loadFailed", "Failed to load services")}</p>
+          <p>{t("errors.loadFailed")}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <ErrorBoundary fallbackMessage={t("errors.boundary", "Failed to load vendor dashboard")}>
+    <ErrorBoundary fallbackMessage={t("errors.boundary")}>
       <div className={styles.container}>
-        {/* Header Section */}
         <div className={styles.header}>
           <div className={styles.headerContent}>
             <div className={styles.headerRight}>
@@ -145,45 +169,22 @@ const VendorServicesPage = () => {
             <div className={styles.headerLeft}>
               <button className={styles.primaryButton} onClick={handleAddService}>
                 <span>{t("buttons.addService")}</span>
-                <Image
-                  src={"/svg/vendor/add.svg"}
-                  width={16}
-                  height={16}
-                  alt="add"
-                />
+                <Image src={"/svg/vendor/add.svg"} width={16} height={16} alt="add" />
               </button>
-              <button
-                className={styles.secondaryButton}
-                onClick={handleComplaints}
-              >
+              <button className={styles.secondaryButton} onClick={handleComplaints}>
                 <span>{t("buttons.complaints")}</span>
-                <Image
-                  src={"/svg/vendor/tickets.svg"}
-                  width={16}
-                  height={16}
-                  alt="ticket"
-                />
+                <Image src={"/svg/vendor/tickets.svg"} width={16} height={16} alt="ticket" />
               </button>
-              <button
-                className={styles.secondaryButton}
-                onClick={handlePromoteProfile}
-              >
+              <button className={styles.secondaryButton} onClick={handlePromoteProfile}>
                 <span>{t("buttons.promoteProfile")}</span>
-                <Image
-                  src={"/svg/vendor/ads.svg"}
-                  width={16}
-                  height={16}
-                  alt="advertise"
-                />
+                <Image src={"/svg/vendor/ads.svg"} width={16} height={16} alt="advertise" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
         <VendorStatsCards stats={stats} />
 
-        {/* Filters and Search Section */}
         <div className={styles.filtersSection}>
           <div className={styles.filtersSectionContent}>
             <div className={styles.filtersRight}>
@@ -199,27 +200,16 @@ const VendorServicesPage = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={styles.searchInput}
                 />
-                <Image
-                  src="/svg/vendor/Search.svg"
-                  alt="Search"
-                  width={14}
-                  height={14}
-                />
+                <Image src="/svg/vendor/Search.svg" alt="Search" width={14} height={14} />
               </div>
 
               <button className={styles.moreButton}>
-                <Image
-                  src="/svg/vendor/more.svg"
-                  alt="More"
-                  width={24}
-                  height={24}
-                />
+                <Image src="/svg/vendor/more.svg" alt="More" width={24} height={24} />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Services Grid */}
         <div className={styles.servicesGrid}>
           {filteredServices.length > 0 ? (
             filteredServices.map((service) => (
@@ -227,29 +217,35 @@ const VendorServicesPage = () => {
                 key={service.id}
                 service={service}
                 onToggleStatus={handleToggleStatus}
-                onDelete={handleDeleteService}
+                onDelete={handleRequestDelete}
+                onEdit={handleEditService}
               />
             ))
           ) : (
             <div className={styles.noServices}>
-              {searchQuery
-                ? t("noSearchResults", "No services match your search")
-                : t("noServices", "No services available")}
+              {searchQuery ? t("noSearchResults") : t("noServices")}
             </div>
           )}
         </div>
 
-        {/* Add Service Popup */}
-        <PopupLayout
-          isOpen={isAddServicePopupOpen}
-          onClose={() => setIsAddServicePopupOpen(false)}
-          size="auto"
-        >
+        <PopupLayout isOpen={isPopupOpen} onClose={handlePopupClose} size="auto">
           <AddServicePopup
-            onClose={() => setIsAddServicePopupOpen(false)}
-            onSuccess={handleAddServiceSuccess}
+            onClose={handlePopupClose}
+            onSuccess={handlePopupSuccess}
+            editingService={editingService}
           />
         </PopupLayout>
+
+        <DeleteConfirmation
+          isOpen={!!pendingDeleteId}
+          onClose={() => setPendingDeleteId(null)}
+          onConfirm={handleConfirmDelete}
+          title={t("confirmDelete.title")}
+          message={t("confirmDelete.message")}
+          confirmText={t("confirmDelete.confirm")}
+          cancelText={t("confirmDelete.cancel")}
+          isLoading={deleteServiceMutation.isPending}
+        />
       </div>
     </ErrorBoundary>
   );

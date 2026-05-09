@@ -24,9 +24,9 @@ const serviceSchema = new mongoose.Schema(
       trim: true,
       maxlength: [2000, "Description cannot exceed 2000 characters"],
     },
-    type: {
+    category: {
       type: String,
-      required: [true, "Service type is required"],
+      required: [true, "Service category is required"],
       enum: [
         "eventPlanning",
         "mediaProduction",
@@ -116,14 +116,6 @@ const serviceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    bookingCount: {
-      type: Number,
-      default: 0,
-    },
-    inquiryCount: {
-      type: Number,
-      default: 0,
-    },
     rating: {
       type: Number,
       default: 0,
@@ -144,7 +136,7 @@ const serviceSchema = new mongoose.Schema(
 
 // Indexes for efficient querying
 serviceSchema.index({ vendorId: 1, status: 1 });
-serviceSchema.index({ type: 1, status: 1 });
+serviceSchema.index({ category: 1, status: 1 });
 serviceSchema.index({ "serviceLocation.regionId": 1 });
 serviceSchema.index({ "serviceLocation.cityId": 1 });
 serviceSchema.index({ tags: 1 });
@@ -180,7 +172,6 @@ serviceSchema.statics.getVendorStats = async function (vendorId) {
           $sum: { $cond: [{ $eq: ["$status", "disabled"] }, 1, 0] },
         },
         totalViews: { $sum: "$viewCount" },
-        totalBookings: { $sum: "$bookingCount" },
         avgRating: { $avg: "$rating" },
         totalReviews: { $sum: "$reviewCount" },
       },
@@ -193,7 +184,6 @@ serviceSchema.statics.getVendorStats = async function (vendorId) {
       activeServices: 0,
       disabledServices: 0,
       totalViews: 0,
-      totalBookings: 0,
       avgRating: 0,
       totalReviews: 0,
     }

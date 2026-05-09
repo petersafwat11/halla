@@ -22,7 +22,7 @@ const _requestWithQuery = (path, params, init, errorMessage) => {
 const buildServiceFormData = (data) => {
   const formData = new FormData();
   if (data.name) formData.append("name", data.name);
-  if (data.type) formData.append("type", data.type);
+  if (data.category) formData.append("category", data.category);
   if (data.description) formData.append("description", data.description);
   if (data.price != null) formData.append("price", String(data.price));
   if (data.tags?.length) formData.append("tags", JSON.stringify(data.tags));
@@ -41,14 +41,14 @@ export const vendorService = {
     _request(ENDPOINTS.USERS.PROFILE, { method: "GET" }, "Failed to get profile"),
 
   getStats: () =>
-    _request("/services/stats", { method: "GET" }, "Failed to get vendor stats"),
+    _request(ENDPOINTS.SERVICES.STATS, { method: "GET" }, "Failed to get vendor stats"),
 
   getServices: () =>
     _request(ENDPOINTS.SERVICES.BASE, { method: "GET" }, "Failed to get services"),
 
   toggleServiceStatus: (serviceId) =>
     _request(
-      `/services/${serviceId}/toggle-status`,
+      ENDPOINTS.SERVICES.TOGGLE_STATUS(serviceId),
       { method: "PATCH" },
       "Failed to toggle service status"
     ),
@@ -105,24 +105,16 @@ export const vendorService = {
 
   updateService: (serviceId, data) =>
     _request(
-      `/services/${serviceId}`,
+      ENDPOINTS.SERVICES.BY_ID(serviceId),
       { method: "PATCH", body: buildServiceFormData(data), timeoutMs: 60 * 1000 },
       "Failed to update service"
     ),
 
   deleteService: (serviceId) =>
     _request(
-      `/services/${serviceId}`,
+      ENDPOINTS.SERVICES.BY_ID(serviceId),
       { method: "DELETE" },
       "Failed to delete service"
-    ),
-
-  getOrders: (params = {}) =>
-    _requestWithQuery(
-      "/services/orders",
-      params,
-      { method: "GET" },
-      "Failed to get orders"
     ),
 };
 

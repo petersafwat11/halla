@@ -12,8 +12,8 @@ import {
   addStaff,
   updateStaff,
   deleteStaff,
-  revokeStaffAccess,
 } from "../../../services/eventsService2";
+import { useRevokeStaffAccess } from "../../../hooks/mutations/useStaffMutations";
 import { saveBlobAndShare } from "../../../utils/download";
 
 /**
@@ -38,6 +38,7 @@ export const useEventStatsActions = ({
   const deleteGuestMut = useDeleteGuest();
   const rotateGuestQrMut = useRotateGuestQr();
   const revokeGuestAccessMut = useRevokeGuestAccess();
+  const revokeStaffMut = useRevokeStaffAccess();
   const exportGuestsMut = useExportGuests();
 
   const [popupLoading, setPopupLoading] = useState(false);
@@ -244,7 +245,10 @@ export const useEventStatsActions = ({
         [moderator.id]: { ...prev[moderator.id], revoked: true },
       }));
       try {
-        const result = await revokeStaffAccess(eventId, moderator.id);
+        const result = await revokeStaffMut.mutateAsync({
+          eventId,
+          staffId: moderator.id,
+        });
         if (result?.wasAlreadyRevoked) {
           Alert.alert(
             t("guest.alerts.successTitle"),
@@ -267,7 +271,7 @@ export const useEventStatsActions = ({
         );
       }
     },
-    [eventId, onRefresh, refreshStaffTokens, setStaffActions, t]
+    [eventId, onRefresh, refreshStaffTokens, revokeStaffMut, setStaffActions, t]
   );
 
   const handleExportGuests = useCallback(async () => {

@@ -7,7 +7,8 @@
     "promoteProfile": "ترويج الصفحة",
     "available": "متاحة",
     "unavailable": "غير متاحة",
-    "delete": "حذف"
+    "delete": "حذف",
+    "edit": "تعديل"
   },
   "search": {
     "placeholder": "ابحث عن خدمة"
@@ -26,9 +27,20 @@
   },
   "errors": {
     "loadFailed": "فشل في تحميل الخدمات",
-    "boundary": "فشل في تحميل لوحة التحكم"
+    "boundary": "فشل في تحميل لوحة التحكم",
+    "update_failed": "فشل في تحديث الخدمة",
+    "delete_failed": "فشل في حذف الخدمة"
   },
-  "confirmDelete": "هل أنت متأكد من حذف هذه الخدمة؟",
+  "success": {
+    "updated": "تم تحديث الخدمة بنجاح",
+    "deleted": "تم حذف الخدمة بنجاح"
+  },
+  "confirmDelete": {
+    "title": "حذف الخدمة",
+    "message": "هل أنت متأكد من حذف هذه الخدمة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "confirm": "حذف",
+    "cancel": "إلغاء"
+  },
   "noSearchResults": "لا توجد خدمات تطابق البحث",
   "noServices": "لا توجد خدمات متاحة",
   "filters": {

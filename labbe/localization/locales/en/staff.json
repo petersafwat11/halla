@@ -26,7 +26,22 @@
     "accessDenied": "Access denied",
     "verificationFailed": "Verification failed. Please try again.",
     "checkInFailed": "Check-in failed. Please try again.",
+    "checkInRateLimited": "Too many check-in attempts. Please wait a moment.",
+    "staffRevoked": "Your staff access was revoked.",
+    "staffExpired": "Your staff access link has expired.",
     "accessError": "Access Error"
+  },
+  "checkIn": {
+    "alreadyAt": "Already checked in at {{time}}"
+  },
+  "filters": {
+    "searchPlaceholder": "Search by name or phone",
+    "allStatuses": "All statuses",
+    "checkedIn": "Checked in",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "invited": "Invited",
+    "maybe": "Maybe"
   },
   "qr": {
     "scanTitle": "Scan QR Code",

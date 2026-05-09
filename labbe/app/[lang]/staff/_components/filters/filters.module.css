@@ -1,0 +1,35 @@
+.filters {
+  display: flex;
+  width: 100%;
+  gap: 0.8rem;
+  padding: 0 1.6rem;
+  margin-bottom: 1.2rem;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.8rem;
+  border: 1px solid #e5e0d8;
+  font-size: 1.4rem;
+  background: #fff;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: #c28e5c;
+}
+
+.statusSelect {
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.8rem;
+  border: 1px solid #e5e0d8;
+  font-size: 1.4rem;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+}
+
+.statusSelect:focus {
+  border-color: #c28e5c;
+}

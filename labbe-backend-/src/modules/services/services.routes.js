@@ -17,10 +17,18 @@ const router = express.Router();
 const servicesController = require('./services.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { restrictTo } = require('../../shared/middleware/rbac');
-const { validateObjectId } = require('../../shared/middleware/validation');
+const {
+  validateObjectId,
+  validateZod,
+  parseFormDataJsonFields,
+} = require('../../shared/middleware/validation');
 const { ROLES } = require('../../shared/constants');
+const {
+  createServiceSchema,
+  updateServiceSchema,
+  getPublicServicesQuerySchema,
+} = require('./services.validation');
 
-// Use centralized S3 upload utility
 const { uploadServiceImage } = require('../../shared/utils/s3Upload');
 
 /**
@@ -28,7 +36,7 @@ const { uploadServiceImage } = require('../../shared/utils/s3Upload');
  * /services/public:
  *   get:
  *     summary: Get public services
- *     description: Get paginated list of publicly available services
+ *     description: Paginated list of marketplace services from approved vendors. Globally cross-tenant.
  *     tags: [Services]
  *     security: []
  *     parameters:
@@ -36,16 +44,32 @@ const { uploadServiceImage } = require('../../shared/utils/s3Upload');
  *       - $ref: '#/components/parameters/LimitParam'
  *       - in: query
  *         name: search
- *         schema:
- *           type: string
+ *         schema: { type: string }
  *       - in: query
  *         name: category
- *         schema:
- *           type: string
+ *         schema: { type: string }
  *       - in: query
  *         name: vendorId
- *         schema:
- *           type: string
+ *         schema: { type: string }
+ *       - in: query
+ *         name: regionId
+ *         schema: { type: integer }
+ *       - in: query
+ *         name: cityId
+ *         schema: { type: integer }
+ *       - in: query
+ *         name: districtIds
+ *         description: Comma-separated district ids
+ *         schema: { type: string }
+ *       - in: query
+ *         name: minPrice
+ *         schema: { type: number }
+ *       - in: query
+ *         name: maxPrice
+ *         schema: { type: number }
+ *       - in: query
+ *         name: minRating
+ *         schema: { type: number, minimum: 0, maximum: 5 }
  *     responses:
  *       200:
  *         description: Public services retrieved successfully
@@ -54,81 +78,63 @@ const { uploadServiceImage } = require('../../shared/utils/s3Upload');
  *             schema:
  *               type: object
  *               properties:
- *                 status:
- *                   type: string
+ *                 status: { type: string }
+ *                 success: { type: boolean }
  *                 data:
- *                   type: object
- *                   properties:
- *                     services:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Service'
- *                     pagination:
- *                       $ref: '#/components/schemas/Pagination'
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/Service' }
+ *                 pagination: { $ref: '#/components/schemas/Pagination' }
  */
-// Public routes
-router.get('/public', servicesController.getPublicServices);
+router.get(
+  '/public',
+  validateZod(getPublicServicesQuerySchema, 'query'),
+  servicesController.getPublicServices
+);
 
-// FLOW-25-F04: Authenticated routes (any logged-in user — host contacts vendor)
-router.post('/:id/inquire', protect, validateObjectId('id'), servicesController.recordInquiry);
-router.post('/:id/book', protect, validateObjectId('id'), servicesController.recordBooking);
-
-// Protected routes (vendor only)
-router.use(protect);
-router.use(restrictTo(ROLES.VENDOR));
-
-/**
- * @swagger
- * /services:
- *   get:
- *     summary: Get my services
- *     description: Get list of services for the current vendor
- *     tags: [Services]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Services retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     services:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Service'
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- */
-router.get('/', servicesController.getMyServices);
 /**
  * @swagger
  * /services/stats:
  *   get:
  *     summary: Get my service stats
- *     description: Get statistics for the current vendor's services
+ *     description: Aggregated stats for the current vendor's services
  *     tags: [Services]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Service stats retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     stats:
+ *                       type: object
+ *                       properties:
+ *                         totalServices: { type: integer }
+ *                         activeServices: { type: integer }
+ *                         totalViews: { type: integer }
+ *                         avgRating: { type: number }
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.get('/stats', servicesController.getMyStats);
+router.get(
+  '/stats',
+  protect,
+  restrictTo(ROLES.VENDOR),
+  servicesController.getMyStats
+);
+
 /**
  * @swagger
  * /services/{id}:
  *   get:
  *     summary: Get service by ID
- *     description: Get detailed information about a specific service
+ *     description: Vendors get their own service; non-vendor authenticated users get a public+active service and trigger a best-effort view-count increment.
  *     tags: [Services]
  *     security:
  *       - bearerAuth: []
@@ -142,19 +148,50 @@ router.get('/stats', servicesController.getMyStats);
  *             schema:
  *               type: object
  *               properties:
- *                 status:
- *                   type: string
+ *                 status: { type: string }
  *                 data:
  *                   type: object
  *                   properties:
- *                     service:
- *                       $ref: '#/components/schemas/Service'
+ *                     service: { $ref: '#/components/schemas/Service' }
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.get('/:id', validateObjectId('id'), servicesController.getService);
+router.get('/:id', protect, validateObjectId('id'), servicesController.getService);
+
+// Protected routes (vendor only)
+router.use(protect);
+router.use(restrictTo(ROLES.VENDOR));
+
+/**
+ * @swagger
+ * /services:
+ *   get:
+ *     summary: Get my services
+ *     description: List services for the current vendor
+ *     tags: [Services]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Services retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string }
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/Service' }
+ *                 pagination: { $ref: '#/components/schemas/Pagination' }
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.get('/', servicesController.getMyServices);
+
 /**
  * @swagger
  * /services:
@@ -170,16 +207,20 @@ router.get('/:id', validateObjectId('id'), servicesController.getService);
  *         multipart/form-data:
  *           schema:
  *             type: object
- *             required: [name, description, category, price]
+ *             required: [name, category, price]
  *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               category:
- *                 type: string
- *               price:
- *                 type: number
+ *               name: { type: string }
+ *               nameAr: { type: string }
+ *               description: { type: string }
+ *               descriptionAr: { type: string }
+ *               category: { type: string }
+ *               price: { type: number }
+ *               currency: { type: string }
+ *               tags:
+ *                 type: array
+ *                 items: { type: string }
+ *               serviceLocation:
+ *                 type: object
  *               image:
  *                 type: string
  *                 format: binary
@@ -191,7 +232,14 @@ router.get('/:id', validateObjectId('id'), servicesController.getService);
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.post('/', uploadServiceImage, servicesController.createService);
+router.post(
+  '/',
+  uploadServiceImage,
+  parseFormDataJsonFields(['tags', 'serviceLocation']),
+  validateZod(createServiceSchema),
+  servicesController.createService
+);
+
 /**
  * @swagger
  * /services/{id}:
@@ -209,14 +257,18 @@ router.post('/', uploadServiceImage, servicesController.createService);
  *           schema:
  *             type: object
  *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               category:
- *                 type: string
- *               price:
- *                 type: number
+ *               name: { type: string }
+ *               nameAr: { type: string }
+ *               description: { type: string }
+ *               descriptionAr: { type: string }
+ *               category: { type: string }
+ *               price: { type: number }
+ *               currency: { type: string }
+ *               tags:
+ *                 type: array
+ *                 items: { type: string }
+ *               serviceLocation:
+ *                 type: object
  *               image:
  *                 type: string
  *                 format: binary
@@ -228,13 +280,21 @@ router.post('/', uploadServiceImage, servicesController.createService);
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.patch('/:id', validateObjectId('id'), uploadServiceImage, servicesController.updateService);
+router.patch(
+  '/:id',
+  validateObjectId('id'),
+  uploadServiceImage,
+  parseFormDataJsonFields(['tags', 'serviceLocation']),
+  validateZod(updateServiceSchema),
+  servicesController.updateService
+);
+
 /**
  * @swagger
  * /services/{id}/toggle-status:
  *   patch:
  *     summary: Toggle service status
- *     description: Toggle a service between active and inactive
+ *     description: Toggle a service between active and disabled
  *     tags: [Services]
  *     security:
  *       - bearerAuth: []
@@ -249,6 +309,7 @@ router.patch('/:id', validateObjectId('id'), uploadServiceImage, servicesControl
  *         $ref: '#/components/responses/NotFound'
  */
 router.patch('/:id/toggle-status', validateObjectId('id'), servicesController.toggleServiceStatus);
+
 /**
  * @swagger
  * /services/{id}:

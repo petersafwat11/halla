@@ -58,6 +58,18 @@
   },
   "errors": {
     "loadFailed": "فشل تحميل قائمة الضيوف",
-    "checkInFailed": "فشل تسجيل الحضور. يرجى المحاولة مرة أخرى."
+    "checkInFailed": "فشل تسجيل الحضور. يرجى المحاولة مرة أخرى.",
+    "checkInRateLimited": "محاولات كثيرة لتسجيل الحضور، الرجاء الانتظار قليلاً.",
+    "staffRevoked": "تم إلغاء صلاحياتك كموظف.",
+    "staffExpired": "انتهت صلاحية رابط الوصول الخاص بك."
+  },
+  "filters": {
+    "searchPlaceholder": "ابحث بالاسم أو الجوال",
+    "allStatuses": "الكل",
+    "checkedIn": "حضر",
+    "confirmed": "حضور",
+    "declined": "اعتذر",
+    "invited": "مدعو",
+    "maybe": "ربما"
   }
 }

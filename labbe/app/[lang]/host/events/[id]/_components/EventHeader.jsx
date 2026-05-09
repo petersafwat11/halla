@@ -8,6 +8,7 @@ import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import StaffPopup from "@/app/[lang]/host/create-event/_components/staffPopup/StaffPopup";
 import EventActionsHeader from "@/ui/host/events/EventActionsHeader";
 import { useEvent, useEventMutation } from "@/hooks/reactQueryHooks/useEvents";
+import StaffTokensList from "./StaffTokensList";
 import styles from "../singleEvent.module.css";
 
 export default function EventHeader({ eventId }) {
@@ -110,6 +111,7 @@ export default function EventHeader({ eventId }) {
           onDelete={handleDeleteStaff}
           onClose={() => setShowStaffPopup(false)}
         />
+        <StaffTokensList eventId={eventId} staffList={staff} />
       </PopupWrapper>
     </>
   );

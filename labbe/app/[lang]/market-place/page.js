@@ -77,9 +77,9 @@ const MarketPlacePage = () => {
     return Array.isArray(data) ? data : [];
   }, [servicesData]);
 
-  const totalItems = servicesData?.pagination?.total || vendors.length;
+  const totalItems = servicesData?.pagination?.total ?? vendors.length;
   const totalPages =
-    servicesData?.pagination?.pages || Math.ceil(totalItems / ITEMS_PER_PAGE);
+    servicesData?.pagination?.pages ?? Math.ceil(totalItems / ITEMS_PER_PAGE);
 
   const handleCallClick = useCallback((phone) => {
     if (phone) window.location.href = `tel:${phone}`;

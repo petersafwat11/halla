@@ -29,7 +29,6 @@ const VendorDetailsCard = ({ vendor }) => {
     avatar,
     averageRating = 0,
     totalReviews = 0,
-    totalBookings = 0,
     completedBookings = 0,
     totalRevenue = 0,
     createdAt,
@@ -177,7 +176,6 @@ const VendorDetailsCard = ({ vendor }) => {
       {renderSection(
         "Statistics",
         <>
-          {renderInfoRow("calendar-outline", "Total Bookings", totalBookings)}
           {renderInfoRow(
             "checkmark-circle-outline",
             "Completed",
@@ -224,7 +222,6 @@ VendorDetailsCard.propTypes = {
     avatar: PropTypes.string,
     averageRating: PropTypes.number,
     totalReviews: PropTypes.number,
-    totalBookings: PropTypes.number,
     completedBookings: PropTypes.number,
     totalRevenue: PropTypes.number,
     createdAt: PropTypes.string,

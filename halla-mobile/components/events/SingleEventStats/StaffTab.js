@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ModeratorListItem from "../ModeratorListItem";
-import { listStaffTokens } from "../../../services/eventsService2";
+import { useEventStaffTokens } from "../../../hooks/queries/useStaff";
 import styles from "./styles";
 
 /**
@@ -13,30 +13,17 @@ import styles from "./styles";
  * createdAt desc).
  */
 const useStaffTokens = (eventId, active) => {
-  const [staffTokensByPhone, setStaffTokensByPhone] = useState({});
-
-  const refreshStaffTokens = useCallback(async () => {
-    if (!eventId) return;
-    try {
-      const resp = await listStaffTokens(eventId);
-      const tokens = resp?.tokens || [];
-      const byPhone = {};
-      for (const tok of tokens) {
-        const phoneKey = (tok.phone || "").trim();
-        if (!byPhone[phoneKey]) byPhone[phoneKey] = tok;
-      }
-      setStaffTokensByPhone(byPhone);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn("[SingleEventStats] listStaffTokens failed:", e?.message);
+  const query = useEventStaffTokens(eventId, { enabled: !!eventId && !!active });
+  const staffTokensByPhone = useMemo(() => {
+    const tokens = query.data?.tokens || [];
+    const byPhone = {};
+    for (const tok of tokens) {
+      const phoneKey = (tok.phone || "").trim();
+      if (!byPhone[phoneKey]) byPhone[phoneKey] = tok;
     }
-  }, [eventId]);
-
-  useEffect(() => {
-    if (active) refreshStaffTokens();
-  }, [active, refreshStaffTokens]);
-
-  return { staffTokensByPhone, refreshStaffTokens };
+    return byPhone;
+  }, [query.data?.tokens]);
+  return { staffTokensByPhone, refreshStaffTokens: query.refetch };
 };
 
 const StaffTabContent = ({

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -11,62 +11,79 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as staffService from "../../../services/staffService";
 import StatCard from "./StatCard";
 import GuestCard from "./GuestCard";
 import QRModal from "./QRModal";
+import { useStaffEventGuests } from "../../../hooks/queries/useStaff";
+import { useCheckInGuest } from "../../../hooks/mutations/useStaffMutations";
+
+const STATUS_OPTIONS = [
+  { key: "all", value: "" },
+  { key: "invited", value: "invited" },
+  { key: "confirmed", value: "confirmed" },
+  { key: "checked_in", value: "checked_in" },
+  { key: "declined", value: "declined" },
+  { key: "maybe", value: "maybe" },
+];
 
 const PortalView = ({ staffInfo, eventInfo, eventId, onLogout, t }) => {
-  const [guests, setGuests] = useState([]);
-  const [stats, setStats] = useState({ total: 0, confirmed: 0, checkedIn: 0, declined: 0, pending: 0 });
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
   const [showQRModal, setShowQRModal] = useState(false);
   const searchTimer = useRef(null);
 
-  const fetchData = useCallback(async (searchQuery = "") => {
-    try {
-      const result = await staffService.getEventGuests(eventId, {
-        search: searchQuery || undefined,
-        limit: 100,
-      });
-      setGuests(result.guests || []);
-      setStats(result.stats || {});
-    } catch (err) {
-      Alert.alert("", t("errors.loadFailed"));
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [eventId, t]);
+  const guestsQuery = useStaffEventGuests(eventId, {
+    search,
+    status,
+    limit: 100,
+  });
+  const checkInMutation = useCheckInGuest();
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const guests = guestsQuery.data?.guests || [];
+  const stats = guestsQuery.data?.stats || {
+    total: 0,
+    confirmed: 0,
+    checkedIn: 0,
+    declined: 0,
+    pending: 0,
+  };
 
   const handleSearch = (text) => {
-    setSearch(text);
+    setSearchInput(text);
     clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => fetchData(text), 400);
+    searchTimer.current = setTimeout(() => setSearch(text), 400);
   };
 
   const handleRefresh = () => {
-    setRefreshing(true);
-    fetchData(search);
+    guestsQuery.refetch();
   };
 
-  const performCheckIn = useCallback(async (guest) => {
-    try {
-      const result = await staffService.checkInById(eventId, guest._id || guest.id);
-      if (result?.alreadyCheckedIn) {
-        Alert.alert("", t("checkIn.alreadyDone", { name: guest.name }));
-      } else {
-        Alert.alert("", t("checkIn.success"));
+  const performCheckIn = useCallback(
+    async (guest) => {
+      try {
+        const result = await checkInMutation.mutateAsync({
+          eventId,
+          guestId: guest._id || guest.id,
+        });
+        if (result?.alreadyCheckedIn) {
+          Alert.alert("", t("checkIn.alreadyDone", { name: guest.name }));
+        } else {
+          Alert.alert("", t("checkIn.success"));
+        }
+      } catch (err) {
+        const reason = err?.reason;
+        if (reason === "staff_revoked") {
+          Alert.alert("", t("errors.staffRevoked"));
+        } else if (reason === "staff_expired") {
+          Alert.alert("", t("errors.staffExpired"));
+        } else {
+          Alert.alert("", err.message || t("errors.checkInFailed"));
+        }
       }
-      fetchData(search);
-    } catch (err) {
-      Alert.alert("", err.message || t("errors.checkInFailed"));
-    }
-  }, [eventId, search, fetchData, t]);
+    },
+    [checkInMutation, eventId, t]
+  );
 
   const handleGuestCheckIn = (guest) => {
     Alert.alert(
@@ -81,24 +98,26 @@ const PortalView = ({ staffInfo, eventInfo, eventId, onLogout, t }) => {
 
   const handleQRSubmit = async (qrCode) => {
     try {
-      const result = await staffService.checkInByQR(eventId, qrCode);
+      const result = await checkInMutation.mutateAsync({ eventId, qrCode });
       if (result?.alreadyCheckedIn) {
         Alert.alert("", t("checkIn.alreadyDone", { name: result?.guest?.name || "" }));
       } else {
         Alert.alert("", t("checkIn.success"));
       }
-      fetchData(search);
     } catch (err) {
       Alert.alert("", err.message || t("errors.checkInFailed"));
     }
   };
 
-  const statCards = [
-    { key: "pending",   label: t("stats.pending"),   value: stats.pending   || 0, color: "#6B7280", icon: "time-outline" },
-    { key: "confirmed", label: t("stats.confirmed"),  value: stats.confirmed || 0, color: "#2A8C5B", icon: "checkmark-circle-outline" },
-    { key: "declined",  label: t("stats.declined"),   value: stats.declined  || 0, color: "#C0392B", icon: "close-circle-outline" },
-    { key: "checkedIn", label: t("stats.checkedIn"),  value: stats.checkedIn || 0, color: "#4338CA", icon: "checkmark-done-outline" },
-  ];
+  const statCards = useMemo(
+    () => [
+      { key: "pending",   label: t("stats.pending"),   value: stats.pending   || 0, color: "#6B7280", icon: "time-outline" },
+      { key: "confirmed", label: t("stats.confirmed"), value: stats.confirmed || 0, color: "#2A8C5B", icon: "checkmark-circle-outline" },
+      { key: "declined",  label: t("stats.declined"),  value: stats.declined  || 0, color: "#C0392B", icon: "close-circle-outline" },
+      { key: "checkedIn", label: t("stats.checkedIn"), value: stats.checkedIn || 0, color: "#4338CA", icon: "checkmark-done-outline" },
+    ],
+    [stats, t]
+  );
 
   return (
     <View style={styles.portalContainer}>
@@ -126,18 +145,46 @@ const PortalView = ({ staffInfo, eventInfo, eventId, onLogout, t }) => {
           style={styles.searchInput}
           placeholder={t("portal.searchPlaceholder")}
           placeholderTextColor="#9CA3AF"
-          value={search}
+          value={searchInput}
           onChangeText={handleSearch}
           textAlign="right"
         />
-        {search.length > 0 && (
-          <TouchableOpacity onPress={() => { setSearch(""); fetchData(""); }}>
+        {searchInput.length > 0 && (
+          <TouchableOpacity
+            onPress={() => {
+              setSearchInput("");
+              setSearch("");
+            }}
+          >
             <Ionicons name="close-circle" size={18} color="#9CA3AF" />
           </TouchableOpacity>
         )}
       </View>
 
-      {loading ? (
+      <View style={styles.statusFilterRow}>
+        {STATUS_OPTIONS.map((opt) => {
+          const isActive = status === opt.value;
+          return (
+            <TouchableOpacity
+              key={opt.key}
+              style={[styles.statusChip, isActive && styles.statusChipActive]}
+              onPress={() => setStatus(opt.value)}
+              activeOpacity={0.85}
+            >
+              <Text
+                style={[
+                  styles.statusChipText,
+                  isActive && styles.statusChipTextActive,
+                ]}
+              >
+                {t(`filters.${opt.key === "checked_in" ? "checkedIn" : opt.key === "all" ? "allStatuses" : opt.key}`)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {guestsQuery.isLoading ? (
         <View style={styles.centerState}>
           <ActivityIndicator size="large" color="#C28E5C" />
           <Text style={styles.centerStateText}>{t("portal.loadingGuests")}</Text>
@@ -160,7 +207,7 @@ const PortalView = ({ staffInfo, eventInfo, eventId, onLogout, t }) => {
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={guestsQuery.isFetching && !guestsQuery.isLoading}
               onRefresh={handleRefresh}
               colors={["#C28E5C"]}
               tintColor="#C28E5C"
@@ -236,6 +283,31 @@ const styles = StyleSheet.create({
     color: "#2C2C2C",
     paddingVertical: 8,
   },
+  statusFilterRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    gap: 6,
+  },
+  statusChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "#FFF",
+    borderWidth: 1,
+    borderColor: "#DFDFDF",
+  },
+  statusChipActive: {
+    backgroundColor: "#C28E5C",
+    borderColor: "#C28E5C",
+  },
+  statusChipText: {
+    fontSize: 12,
+    fontFamily: "Cairo_500Medium",
+    color: "#656565",
+  },
+  statusChipTextActive: { color: "#FFF" },
   listContent: { paddingHorizontal: 12, paddingBottom: 100 },
   centerState: {
     flex: 1,

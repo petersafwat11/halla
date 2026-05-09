@@ -1,52 +1,85 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 import Header from "./_components/header/Header";
 import Cards from "./_components/cards/Cards";
 import List from "./_components/list/List";
+import Filters from "./_components/filters/Filters";
 import SuccessAndFaild from "./_components/successAndFaild/SuccessAndFaild";
 import QRScanner from "./_components/qrScanner/QRScanner";
 import ScanIcon from "./_components/scanIcon/ScanIcon";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import { useStaffAuth } from "./hooks/useStaffAuth";
-import { useStaffGuests } from "./hooks/useStaffGuests";
-import { staffService } from "@/services/staff";
+import {
+  useStaffEventGuests,
+  useStaffMutation,
+} from "@/hooks/reactQueryHooks/useStaff";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./page.module.css";
 
-export default function StaffPage() {
-  const { t } = useTranslation("staff");
+const EMPTY_STATS = {
+  total: 0,
+  confirmed: 0,
+  checkedIn: 0,
+  declined: 0,
+  pending: 0,
+  lastCheckIn: null,
+};
 
-  // Auth
-  const { isAuthenticated, isLoading, authError, staffInfo, eventInfo, eventId } =
+function StaffPageInner() {
+  const { t } = useTranslation("staff");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const { isAuthenticated, isLoading, authError, eventInfo, eventId } =
     useStaffAuth();
 
-  // Guests (React Query)
-  const { guests, stats, isLoading: guestsLoading, invalidate } = useStaffGuests(
-    eventId,
-    isAuthenticated
-  );
+  const search = searchParams.get("q") || "";
+  const status = searchParams.get("status") || "";
 
-  // Modal / check-in state
+  const guestsQuery = useStaffEventGuests(
+    eventId,
+    { search, status },
+    { enabled: !!eventId && isAuthenticated }
+  );
+  const guests = guestsQuery.data?.guests || [];
+  const stats = guestsQuery.data?.stats || EMPTY_STATS;
+
+  const checkInMutation = useStaffMutation("checkInGuest");
+
   const [showModal, setShowModal] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [checkInResult, setCheckInResult] = useState(null);
-
-  // QR Scanner state
   const [showQRScanner, setShowQRScanner] = useState(false);
 
-  // Handle guest check-in by list click
-  const handleCheckIn = useCallback(
-    async (guest) => {
+  const setFilters = useCallback(
+    ({ search: nextSearch, status: nextStatus }) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (nextSearch) params.set("q", nextSearch);
+      else params.delete("q");
+      if (nextStatus) params.set("status", nextStatus);
+      else params.delete("status");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
+
+  const performCheckIn = useCallback(
+    async (payload) => {
       try {
-        const response = await staffService.checkInById(eventId, guest._id);
+        const response = await checkInMutation.mutateAsync({
+          eventId,
+          ...payload,
+        });
         setCheckInResult({
           success: true,
           guest: response.data.guest,
           alreadyCheckedIn: response.data.alreadyCheckedIn,
         });
-        invalidate();
       } catch (error) {
         handleError(error, t, { fallbackMessage: "errors.checkInFailed" });
         setCheckInResult({ success: false });
@@ -54,43 +87,26 @@ export default function StaffPage() {
         setShowModal(true);
       }
     },
-    [eventId, invalidate, t]
+    [checkInMutation, eventId, t]
   );
 
   const handleGuestClick = useCallback(
     (guest) => {
       setSelectedGuest(guest);
-      handleCheckIn(guest);
+      performCheckIn({ guestId: guest._id });
     },
-    [handleCheckIn]
+    [performCheckIn]
   );
 
-  // Handle QR code scan
   const handleQRScan = useCallback(
-    async (qrData) => {
-      try {
-        const response = await staffService.checkInByQR(eventId, qrData);
-        setCheckInResult({
-          success: true,
-          guest: response.data.guest,
-          alreadyCheckedIn: response.data.alreadyCheckedIn,
-        });
-        invalidate();
-      } catch (error) {
-        handleError(error, t, { fallbackMessage: "errors.checkInFailed" });
-        setCheckInResult({ success: false });
-      } finally {
-        setShowModal(true);
-      }
-    },
-    [eventId, invalidate, t]
+    (qrData) => performCheckIn({ qrCode: qrData }),
+    [performCheckIn]
   );
 
   const handleOpenScanner = useCallback(() => setShowQRScanner(true), []);
   const handleCloseModal = useCallback(() => setShowModal(false), []);
   const handleCloseScanner = useCallback(() => setShowQRScanner(false), []);
 
-  // Loading state
   if (isLoading) {
     return (
       <div className={styles.staffPage}>
@@ -101,7 +117,6 @@ export default function StaffPage() {
     );
   }
 
-  // Error state
   if (authError) {
     return (
       <div className={styles.staffPage}>
@@ -119,11 +134,17 @@ export default function StaffPage() {
       <div className={styles.contentWrapper}>
         <Header eventName={eventInfo?.title || t("defaultEventName")} />
         <Cards stats={stats} t={t} />
+        <Filters
+          search={search}
+          status={status}
+          onChange={setFilters}
+          t={t}
+        />
         <List
           onGuestClick={handleGuestClick}
           guests={guests}
           t={t}
-          loading={guestsLoading}
+          loading={guestsQuery.isLoading}
         />
       </div>
 
@@ -152,5 +173,13 @@ export default function StaffPage() {
         t={t}
       />
     </div>
+  );
+}
+
+export default function StaffPage() {
+  return (
+    <ErrorBoundary>
+      <StaffPageInner />
+    </ErrorBoundary>
   );
 }

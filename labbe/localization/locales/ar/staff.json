@@ -26,7 +26,22 @@
     "accessDenied": "تم رفض الدخول",
     "verificationFailed": "فشل التحقق. يرجى المحاولة مرة أخرى.",
     "checkInFailed": "فشل تسجيل الحضور. يرجى المحاولة مرة أخرى.",
+    "checkInRateLimited": "محاولات كثيرة لتسجيل الحضور، الرجاء الانتظار قليلاً.",
+    "staffRevoked": "تم إلغاء صلاحياتك كموظف.",
+    "staffExpired": "انتهت صلاحية رابط الوصول الخاص بك.",
     "accessError": "خطأ في الدخول"
+  },
+  "checkIn": {
+    "alreadyAt": "تم تسجيل الحضور في {{time}}"
+  },
+  "filters": {
+    "searchPlaceholder": "ابحث بالاسم أو الهاتف",
+    "allStatuses": "كل الحالات",
+    "checkedIn": "حضر",
+    "confirmed": "حضور",
+    "declined": "إعتذر",
+    "invited": "مدعو",
+    "maybe": "ربما"
   },
   "qr": {
     "scanTitle": "مسح رمز QR",

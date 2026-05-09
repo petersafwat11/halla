@@ -1,7 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/services/new-backend/apiClient";
+import { staffService } from "@/services/staff";
+import apiClient from "@/services/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 
 // ============================================
@@ -9,35 +10,23 @@ import { API_PATHS } from "@/services/new-backend/api.config";
 // ============================================
 
 /**
- * Hook to verify staff access
- * @returns {UseQueryResult}
- */
-export const useVerifyStaffAccess = (options = {}) => {
-  return useQuery({
-    queryKey: ["staff", "verify-access"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.staff.verifyStaffAccess,
-      }),
-    staleTime: 5 * 60 * 1000,
-    ...options,
-  });
-};
-
-/**
- * Hook to fetch event guests for staff
+ * Hook to fetch event guests for staff portal.
  * @param {string} eventId
- * @returns {UseQueryResult}
+ * @param {{search?: string, status?: string, page?: number, limit?: number}} [filters]
  */
-export const useStaffEventGuests = (eventId, options = {}) => {
+export const useStaffEventGuests = (eventId, filters = {}, options = {}) => {
+  const { search = "", status = "", page = 1, limit = 50 } = filters;
   return useQuery({
-    queryKey: ["staff", "events", eventId, "guests"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.staff.getEventGuests(eventId),
-      }),
+    queryKey: ["staff", "guests", eventId, { search, status, page, limit }],
+    queryFn: async () => {
+      const response = await staffService.getGuests(eventId, {
+        search,
+        status,
+        page,
+        limit,
+      });
+      return response.data || { guests: [], stats: {}, pagination: {} };
+    },
     enabled: !!eventId,
     staleTime: 30 * 1000,
     ...options,
@@ -45,18 +34,17 @@ export const useStaffEventGuests = (eventId, options = {}) => {
 };
 
 /**
- * Hook to fetch event stats for staff
- * @param {string} eventId
- * @returns {UseQueryResult}
+ * Hook to list staff access tokens for an event (host-facing).
  */
-export const useStaffEventStats = (eventId, options = {}) => {
+export const useEventStaffTokens = (eventId, options = {}) => {
   return useQuery({
-    queryKey: ["staff", "events", eventId, "stats"],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.staff.getEventStats(eventId),
-      }),
+    queryKey: ["events", eventId, "staff-tokens"],
+    queryFn: async () => {
+      const response = await apiClient.get(
+        API_PATHS.events.listStaffTokens(eventId)
+      );
+      return response.data || { tokens: [] };
+    },
     enabled: !!eventId,
     staleTime: 30 * 1000,
     ...options,
@@ -68,51 +56,57 @@ export const useStaffEventStats = (eventId, options = {}) => {
 // ============================================
 
 /**
- * Unified Staff Mutation Hook
- * @param {string} action - The staff action to perform
- * @returns {UseMutationResult}
+ * Unified staff mutation hook.
+ * @param {"checkInGuest"} action
  */
 export const useStaffMutation = (action) => {
   const queryClient = useQueryClient();
 
   const mutations = {
-    // Check-in guest
     checkInGuest: {
-      mutationFn: ({ eventId, qrCode, guestId, phone }) =>
-        apiRequest({
-          method: "POST",
-          path: API_PATHS.staff.checkInGuest(eventId),
-          data: qrCode ? { qrCode } : guestId ? { guestId } : { phone },
-        }),
-      onSuccess: (_, { eventId }) => {
-        queryClient.invalidateQueries({ queryKey: ["staff", "events", eventId] });
+      mutationFn: ({ eventId, qrCode, guestId, phone }) => {
+        if (qrCode) return staffService.checkInByQR(eventId, qrCode);
+        if (guestId) return staffService.checkInById(eventId, guestId);
+        return staffService.checkInByPhone(eventId, phone);
       },
-    },
-
-    // Manual check-in (by code/QR)
-    manualCheckIn: {
-      mutationFn: ({ eventId, guestId, note, overrideDeclined }) =>
-        apiRequest({
-          method: "POST",
-          path: API_PATHS.staff.manualCheckIn(eventId),
-          data: { guestId, note, overrideDeclined },
-        }),
       onSuccess: (_, { eventId }) => {
-        queryClient.invalidateQueries({ queryKey: ["staff", "events", eventId] });
+        queryClient.invalidateQueries({
+          queryKey: ["staff", "guests", eventId],
+        });
       },
     },
   };
 
   const mutationConfig = mutations[action];
-
   if (!mutationConfig) {
     throw new Error(`Unknown staff action: ${action}`);
   }
 
+  return useMutation(mutationConfig);
+};
+
+/**
+ * Mutation hook to revoke a staff member's access tokens (host-facing).
+ */
+export const useRevokeStaffAccess = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    ...mutationConfig,
-    onError: (error) => {
-      console.error(`Staff mutation error (${action}):`, error);
+    mutationFn: async ({ eventId, staffId }) => {
+      const idempotencyKey = `staff-revoke-${eventId}-${staffId}-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 10)}`;
+      const response = await apiClient.post(
+        API_PATHS.events.revokeStaffAccess(eventId, staffId),
+        {},
+        { headers: { "Idempotency-Key": idempotencyKey } }
+      );
+      return response.data || response;
+    },
+    onSuccess: (_, { eventId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["events", eventId, "staff-tokens"],
+      });
     },
   });
 };

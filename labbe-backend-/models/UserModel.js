@@ -129,10 +129,6 @@ const vendorDataSchema = new mongoose.Schema(
     approvedAt: { type: Date, default: null },
     rejectedAt: { type: Date, default: null },
     rejectedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-
-    // FLOW-25-F04: vendor-level engagement counters
-    inquiryCount: { type: Number, default: 0 },
-    bookingCount: { type: Number, default: 0 },
   },
   { _id: false }
 );
