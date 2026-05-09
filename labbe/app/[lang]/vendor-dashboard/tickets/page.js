@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import styles from "@/app/[lang]/host/tickets/page.module.css";
 import TicketsHeader from "@/app/[lang]/host/tickets/_components/TicketsHeader";
 import TicketCard from "@/app/[lang]/host/tickets/_components/TicketCard";
@@ -7,34 +7,20 @@ import SendTicketPopup from "@/app/[lang]/host/tickets/_components/SendTicketPop
 import EmptyState from "@/app/[lang]/host/tickets/_components/EmptyState";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import { ticketService } from "@/services/tickets";
+import { useMyTickets, useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 
 const VendorTicketsPage = () => {
   const { t } = useTranslation("tickets");
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchTickets = React.useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await ticketService.getTickets();
-      setTickets(response.data?.tickets || response.data?.data?.tickets || []);
-    } catch (error) {
-      console.error("Error fetching tickets:", error);
-      toast.error(t("messages.fetchError") || "فشل في تحميل الشكاوى");
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  const { data, isLoading, error, refetch } = useMyTickets();
+  const deleteMutation = useTicketMutation("deleteTicket");
 
-  useEffect(() => {
-    fetchTickets();
-  }, [fetchTickets]);
+  const tickets = data?.data || [];
 
   const filteredTickets = useMemo(() => {
     if (!searchQuery.trim()) return tickets;
@@ -70,17 +56,15 @@ const VendorTicketsPage = () => {
     }
 
     try {
-      await ticketService.deleteTicket(ticketId);
+      await deleteMutation.mutateAsync(ticketId);
       toast.success(t("messages.deleteSuccess") || "تم حذف الشكوى بنجاح");
-      setTickets(tickets.filter((ticket) => ticket.id !== ticketId));
     } catch (error) {
-      console.error("Error deleting ticket:", error);
       toast.error(t("messages.deleteError") || "فشل في حذف الشكوى");
     }
   };
 
   const handlePopupSuccess = () => {
-    fetchTickets();
+    refetch();
   };
 
   const handleClosePopup = () => {
@@ -98,13 +82,18 @@ const VendorTicketsPage = () => {
           t={t}
         />
         <div className={styles.ticketsContainer}>
-          {loading ? (
+          {isLoading ? (
             <SimpleLoading />
+          ) : error ? (
+            <div className={styles.noResults}>
+              <p>{t("errors.loadFailed", "Failed to load tickets")}</p>
+              <button onClick={() => refetch()}>{t("actions.retry", "Retry")}</button>
+            </div>
           ) : tickets.length === 0 ? (
             <EmptyState onCreateTicket={handleCreateTicket} t={t} />
           ) : filteredTickets.length === 0 ? (
             <div className={styles.noResults}>
-              <p>لا توجد نتائج للبحث &quot;{searchQuery}&quot;</p>
+              <p>{t("search.noResults", "No results found")} &quot;{searchQuery}&quot;</p>
             </div>
           ) : (
             <div className={styles.ticketsList}>

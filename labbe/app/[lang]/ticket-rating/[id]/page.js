@@ -5,14 +5,14 @@ import { useTranslation } from "react-i18next";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaCheckCircle, FaTicketAlt, FaStar } from "react-icons/fa";
-import { useTicket, useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { useTicketForRating, useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import StarRating from "@/ui/commen/inputs/starRating/StarRating";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
 import { ticketRatingSchema, defaultTicketRatingValues } from "@/utils/schemas/ticketRatingSchema";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
-import { TICKET_STATUS } from "@/services/tickets";
+import { TICKET_STATUS } from "@/utils/constants/ticketConstants";
 import ErrorBoundary from "@/ui/common/errorBoundary/ErrorBoundary";
 import styles from "./page.module.css";
 
@@ -25,7 +25,7 @@ const TicketRatingContent = () => {
   const [submittedData, setSubmittedData] = useState(null);
 
   // Fetch ticket data with React Query
-  const { data: ticketData, isLoading, error, refetch } = useTicket(ticketId);
+  const { data: ticketData, isLoading, error, refetch } = useTicketForRating(ticketId);
 
   // Rating submission mutation
   const rateMutation = useTicketMutation("rateTicket");
@@ -41,19 +41,19 @@ const TicketRatingContent = () => {
   const { isSubmitting, isDirty } = formState;
 
   // Extract ticket from response
-  const ticket = ticketData?.data?.data || ticketData?.data || ticketData;
+  const ticket = ticketData?.data;
 
   // Initialize form with existing rating
   useEffect(() => {
-    if (ticket?.userRating?.rating) {
+    if (ticket?.currentRating?.rating) {
       reset({
-        rating: ticket.userRating.rating,
-        feedback: ticket.userRating.feedback || "",
+        rating: ticket.currentRating.rating,
+        feedback: ticket.currentRating.feedback || "",
       });
       setSubmitted(true);
       setSubmittedData({
-        rating: ticket.userRating.rating,
-        feedback: ticket.userRating.feedback || "",
+        rating: ticket.currentRating.rating,
+        feedback: ticket.currentRating.feedback || "",
       });
     }
   }, [ticket, reset]);

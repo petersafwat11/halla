@@ -21,6 +21,7 @@ const TicketSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 200,
+      required: true,
     },
     message: {
       type: String,
@@ -106,14 +107,6 @@ const TicketSchema = new mongoose.Schema(
       },
       ratedAt: Date,
     },
-
-    // Conversation replies
-    replies: [{
-      content: { type: String, required: true },
-      author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      authorRole: String,
-      createdAt: { type: Date, default: Date.now },
-    }],
 
     // Closure tracking
     closedAt: Date,

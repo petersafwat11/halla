@@ -600,6 +600,11 @@
   cursor: not-allowed;
 }
 
+.disabledLabel {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
 .editFormTextarea {
   width: 100%;
   padding: 1.2rem 1.6rem;

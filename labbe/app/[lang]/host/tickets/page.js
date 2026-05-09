@@ -154,7 +154,7 @@ const TicketsPage = () => {
           <div className={styles.ticketsList}>
             {filteredTickets.map((ticket) => (
               <TicketCard
-                key={ticket._id || ticket.id}
+                key={ticket.id}
                 ticket={ticket}
                 onDelete={handleDeleteClick}
                 onEdit={handleEditTicket}

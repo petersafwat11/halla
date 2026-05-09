@@ -54,135 +54,6 @@ export const dashboardAPI = {
 };
 
 /**
- * Tickets Management API
- */
-export const ticketsAPI = {
-  getAll: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    return apiClient.get(`/tickets${qs}`, { token });
-  },
-
-  create: async (ticketData, token = null) => {
-    return apiClient.post("/tickets", ticketData, { token });
-  },
-
-  createTicket: async (ticketData, token = null) => {
-    return apiClient.post("/tickets", ticketData, { token });
-  },
-
-  getById: async (ticketId, token = null) => {
-    if (!ticketId) throw new Error("Ticket ID is required");
-    return apiClient.get(`/tickets/${ticketId}`, { token });
-  },
-
-  getAssignees: async (token = null) => {
-    return apiClient.get("/tickets/assignees", { token });
-  },
-
-  update: async (ticketId, data, token = null) => {
-    if (!ticketId) throw new Error("Ticket ID is required");
-    return apiClient.patch(`/tickets/${ticketId}`, data, { token });
-  },
-
-  updateStatus: async (ticketId, status, token = null) => {
-    if (!ticketId) throw new Error("Ticket ID is required");
-    return apiClient.patch(
-      `/tickets/${ticketId}/status`,
-      { status },
-      { token },
-    );
-  },
-
-  updatePriority: async (ticketId, priority, token = null) => {
-    if (!ticketId) throw new Error("Ticket ID is required");
-    return apiClient.patch(
-      `/tickets/${ticketId}`,
-      { priority },
-      { token },
-    );
-  },
-
-  assignTo: async (ticketId, assigneeId, token = null) => {
-    if (!ticketId) throw new Error("Ticket ID is required");
-    return apiClient.patch(
-      `/tickets/${ticketId}/assign`,
-      { assigneeId },
-      { token },
-    );
-  },
-
-  resolveTicket: async (ticketId, resolutionMessage, token = null) => {
-    if (!ticketId) throw new Error("Ticket ID is required");
-    if (!resolutionMessage)
-      throw new Error("Resolution message is required to resolve a ticket");
-    return apiClient.patch(
-      `/tickets/${ticketId}/status`,
-      { status: "resolved", resolution: resolutionMessage },
-      { token },
-    );
-  },
-
-  reopenTicket: async (ticketId, token = null) => {
-    if (!ticketId) throw new Error("Ticket ID is required");
-    return apiClient.patch(
-      `/tickets/${ticketId}/status`,
-      { status: "open" },
-      { token },
-    );
-  },
-
-  respond: async (ticketId, message, token = null) => {
-    if (!ticketId) throw new Error("Ticket ID is required");
-    if (!message) throw new Error("Response message is required");
-    return apiClient.patch(
-      `/tickets/${ticketId}`,
-      { message },
-      { token },
-    );
-  },
-
-  delete: async (ticketId, token = null) => {
-    if (!ticketId) throw new Error("Ticket ID is required");
-    return apiClient.delete(`/tickets/${ticketId}`, { token });
-  },
-
-  bulkDelete: async (ticketIds, token = null) => {
-    if (!ticketIds || ticketIds.length === 0)
-      throw new Error("Ticket IDs are required");
-    if (ticketIds.length > 100)
-      throw new Error("Cannot delete more than 100 items at once");
-    const objectIdRegex = /^[a-fA-F0-9]{24}$/;
-    const invalidIds = ticketIds.filter((id) => !objectIdRegex.test(id));
-    if (invalidIds.length > 0)
-      throw new Error(`Invalid ObjectId format in ids: ${invalidIds[0]}`);
-    return apiClient.post(
-      `/tickets/bulk-delete`,
-      { ids: ticketIds },
-      { token },
-    );
-  },
-
-  bulkResolve: async (ticketIds, token = null) => {
-    if (!ticketIds || ticketIds.length === 0)
-      throw new Error("Ticket IDs are required");
-    return apiClient.post(
-      `/tickets/bulk-resolve`,
-      { ids: ticketIds },
-      { token },
-    );
-  },
-
-  export: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    const blob = await apiClient.get(`/tickets/export${qs}`, { token });
-    return downloadBlob(
-      blob,
-      `tickets_export_${new Date().toISOString().split("T")[0]}.xlsx`,
-    );
-  },
-};
-
-/**
  * Hosts Management API (Extended with subscription management)
  */
 export const hostsAPI = {
@@ -749,7 +620,6 @@ export const addonsAPI = {
  */
 const adminDashboardAPI = {
   dashboard: dashboardAPI,
-  tickets: ticketsAPI,
   hosts: hostsAPI,
   moderators: moderatorsAPI,
   whitelabel: whitelabelAPI,
@@ -762,7 +632,6 @@ const adminDashboardAPI = {
 // Provides adminAPI.hosts.* pattern used by admin components
 export const adminAPI = {
   hosts: hostsAPI,
-  tickets: ticketsAPI,
   moderators: moderatorsAPI,
 };
 

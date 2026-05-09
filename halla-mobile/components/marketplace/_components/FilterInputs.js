@@ -31,7 +31,7 @@ export const DistrictCheckboxes = ({ districts, selectedIds, onToggle, loading }
               <Ionicons name="checkmark" size={16} color="#FFF" />
             )}
           </View>
-          <Text style={checkboxLabel}>{district.name_ar}</Text>
+          <Text style={checkboxLabel}>{district.displayName ?? district.name_ar}</Text>
         </TouchableOpacity>
       ))}
     </View>

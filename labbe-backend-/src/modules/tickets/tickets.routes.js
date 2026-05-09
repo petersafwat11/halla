@@ -17,8 +17,16 @@ const ticketsController = require("./tickets.controller");
 const { protect } = require("../../shared/middleware/auth");
 const { restrictTo, requirePageAccess } = require("../../shared/middleware/rbac");
 const { ADMIN_PAGES } = require("../../shared/constants");
-const { validateObjectId } = require("../../shared/middleware/validation");
+const { validateObjectId, validateZod } = require("../../shared/middleware/validation");
 const { ROLES } = require("../../shared/constants");
+const {
+  createTicketSchema,
+  updateTicketSchema,
+  updateStatusSchema,
+  assignTicketSchema,
+  rateTicketSchema,
+  listTicketsQuerySchema,
+} = require("./tickets.validation");
 
 router.use(protect);
 
@@ -80,14 +88,11 @@ router.get(
  *                 status:
  *                   type: string
  *                 data:
- *                   type: object
- *                   properties:
- *                     tickets:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Ticket'
- *                     pagination:
- *                       $ref: '#/components/schemas/Pagination'
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Ticket'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *   post:
@@ -112,8 +117,8 @@ router.get(
  */
 router
   .route("/")
-  .get(ticketsController.getTickets)
-  .post(ticketsController.createTicket);
+  .get(validateZod(listTicketsQuerySchema, 'query'), ticketsController.getTickets)
+  .post(validateZod(createTicketSchema), ticketsController.createTicket);
 
 /**
  * @swagger
@@ -186,16 +191,61 @@ router
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
+/**
+ * @swagger
+ * /tickets/export:
+ *   get:
+ *     summary: Export tickets to Excel
+ *     description: Export filtered tickets as an Excel file. Admin with export permission only.
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Excel file download
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ */
 router.get(
   "/export",
-  requirePageAccess(ADMIN_PAGES.TICKETS, "view"),
+  requirePageAccess(ADMIN_PAGES.TICKETS, "export"),
   ticketsController.exportTickets
 );
 
 router
   .route("/:id")
   .get(validateObjectId("id"), ticketsController.getTicketById)
-  .patch(validateObjectId("id"), ticketsController.updateTicket)
+  .patch(validateObjectId("id"), validateZod(updateTicketSchema), ticketsController.updateTicket)
   .delete(validateObjectId("id"), ticketsController.deleteTicket);
 
 /**
@@ -229,10 +279,10 @@ router
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-// Ticket assignment (admin/moderator only)
 router.patch(
   "/:id/assign",
   validateObjectId("id"),
+  validateZod(assignTicketSchema),
   requirePageAccess(ADMIN_PAGES.TICKETS, 'update'),
   ticketsController.assignTicket
 );
@@ -270,10 +320,10 @@ router.patch(
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-// Ticket status update (admin/moderator only)
 router.patch(
   "/:id/status",
   validateObjectId("id"),
+  validateZod(updateStatusSchema),
   requirePageAccess(ADMIN_PAGES.TICKETS, 'update'),
   ticketsController.updateStatus
 );
@@ -312,14 +362,13 @@ router.patch(
  *         $ref: '#/components/responses/NotFound'
  */
 // Ticket rating (user submits rating)
-router.patch("/:id/rate", validateObjectId("id"), ticketsController.rateTicket);
+router.patch("/:id/rate", validateObjectId("id"), validateZod(rateTicketSchema), ticketsController.rateTicket);
 
 /**
  * @swagger
  * /tickets/{id}/rating-info:
  *   get:
- *     summary: Get ticket rating info
- *     description: Get ticket details for the rating page
+ *     summary: Get minimal ticket info needed for the rating page
  *     tags: [Tickets]
  *     security:
  *       - bearerAuth: []
@@ -327,24 +376,50 @@ router.patch("/:id/rate", validateObjectId("id"), ticketsController.rateTicket);
  *       - $ref: '#/components/parameters/IdParam'
  *     responses:
  *       200:
- *         description: Ticket rating info retrieved successfully
+ *         description: Rating info retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     ticketNumber:
+ *                       type: string
+ *                     subject:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     canRate:
+ *                       type: boolean
+ *                     hasRated:
+ *                       type: boolean
+ *                     currentRating:
+ *                       type: object
+ *                       nullable: true
+ *                       properties:
+ *                         rating:
+ *                           type: integer
+ *                         feedback:
+ *                           type: string
+ *                         ratedAt:
+ *                           type: string
+ *                           format: date-time
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-// Get ticket for rating page (minimal data)
 router.get(
   "/:id/rating-info",
   validateObjectId("id"),
   ticketsController.getTicketForRating
-);
-
-// FLOW-23-F02: Add reply to ticket
-router.post(
-  "/:id/replies",
-  validateObjectId("id"),
-  ticketsController.addReply
 );
 
 module.exports = router;

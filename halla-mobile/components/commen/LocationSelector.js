@@ -3,12 +3,13 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useFormContext } from 'react-hook-form';
 import { DropdownInput } from './index';
 import CheckboxGroup from './CheckboxGroup';
-import { useRegions, useCitiesByRegion, useDistrictsByCity } from '../../hooks/useLocations';
+import { useRegions, useCitiesByRegion, useDistrictsByCity } from '../../hooks/queries/useLocations';
 import { useTranslation } from '../../localization';
 
 const LocationSelector = () => {
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
   const { watch, setValue } = useFormContext();
+  const pickLabel = (ar, en) => (i18n.language === 'ar' ? ar || en : en || ar);
 
   const regionId = watch('serviceData.serviceLocation.regionId');
   const cityId = watch('serviceData.serviceLocation.cityId');
@@ -17,23 +18,23 @@ const LocationSelector = () => {
   const { data: citiesData, isLoading: citiesLoading } = useCitiesByRegion(regionId);
   const { data: districtsData } = useDistrictsByCity(cityId);
 
-  const regions = (regionsData?.data?.regions || regionsData?.regions || []).map((r) => ({
+  const regions = (regionsData?.data?.regions || []).map((r) => ({
     value: r.region_id,
-    label: r.name_ar || r.name_en,
+    label: pickLabel(r.name_ar, r.name_en),
     nameAr: r.name_ar,
     nameEn: r.name_en,
   }));
 
-  const cities = (citiesData?.data?.cities || citiesData?.cities || []).map((c) => ({
+  const cities = (citiesData?.data?.cities || []).map((c) => ({
     value: c.city_id,
-    label: c.name_ar || c.name_en,
+    label: pickLabel(c.name_ar, c.name_en),
     nameAr: c.name_ar,
     nameEn: c.name_en,
   }));
 
-  const districts = (districtsData?.data?.districts || districtsData?.districts || []).map((d) => ({
+  const districts = (districtsData?.data?.districts || []).map((d) => ({
     value: d.district_id,
-    label: d.name_ar || d.name_en,
+    label: pickLabel(d.name_ar, d.name_en),
     nameAr: d.name_ar,
     nameEn: d.name_en,
   }));
@@ -63,11 +64,11 @@ const LocationSelector = () => {
   };
 
   // Watch district changes to update coverageType
-  const selectedDistrictIds = watch('serviceData.serviceLocation.districtIds') || [];
-  React.useEffect(() => {
-    if (selectedDistrictIds.length > 0) {
+  const handleDistrictsChange = (newIds) => {
+    setValue('serviceData.serviceLocation.districtIds', newIds);
+    if (newIds.length > 0) {
       setValue('serviceData.serviceLocation.coverageType', 'districts');
-      const names = selectedDistrictIds
+      const names = newIds
         .map((id) => {
           const d = districts.find((d) => d.value === id);
           return d ? { nameAr: d.nameAr, nameEn: d.nameEn } : null;
@@ -76,8 +77,9 @@ const LocationSelector = () => {
       setValue('serviceData.serviceLocation.districtNames', names);
     } else if (cityId) {
       setValue('serviceData.serviceLocation.coverageType', 'city');
+      setValue('serviceData.serviceLocation.districtNames', []);
     }
-  }, [selectedDistrictIds.length]);
+  };
 
   return (
     <View style={styles.container}>
@@ -113,6 +115,10 @@ const LocationSelector = () => {
             name="serviceData.serviceLocation.districtIds"
             items={districts}
             columns={2}
+            rules={{ onChange: (e) => {
+              const newIds = e.target?.value ?? e;
+              handleDistrictsChange(Array.isArray(newIds) ? newIds : []);
+            }}}
           />
         </View>
       )}

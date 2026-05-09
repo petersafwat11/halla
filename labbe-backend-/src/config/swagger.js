@@ -979,47 +979,24 @@ const swaggerOptions = {
         },
 
         // Vendor Models
-        Vendor: {
+        VendorCategoriesResponse: {
           type: 'object',
           properties: {
-            _id: {
-              type: 'string',
-            },
-            brandName: {
-              type: 'string',
-            },
-            ownerFullName: {
-              type: 'string',
-            },
-            email: {
-              type: 'string',
-              format: 'email',
-            },
-            phoneNumber: {
-              type: 'string',
-            },
-            category: {
-              type: 'string',
-            },
-            description: {
-              type: 'string',
-            },
-            rating: {
-              type: 'number',
-              minimum: 0,
-              maximum: 5,
-            },
-            status: {
-              type: 'string',
-              enum: ['pending', 'active', 'suspended', 'rejected'],
-            },
-            isVerified: {
-              type: 'boolean',
-            },
-            services: {
-              type: 'array',
-              items: {
-                $ref: '#/components/schemas/Service',
+            status: { type: 'string', example: 'success' },
+            data: {
+              type: 'object',
+              properties: {
+                categories: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      key: { type: 'string', example: 'eventPlanning' },
+                      nameEn: { type: 'string', example: 'Event Planning' },
+                      nameAr: { type: 'string', example: 'تخطيط الفعاليات' },
+                    },
+                  },
+                },
               },
             },
           },
@@ -1063,68 +1040,89 @@ const swaggerOptions = {
         Region: {
           type: 'object',
           properties: {
-            _id: {
-              type: 'string',
-            },
-            name: {
-              type: 'object',
-              properties: {
-                en: {
-                  type: 'string',
-                },
-                ar: {
-                  type: 'string',
-                },
-              },
-            },
-            code: {
-              type: 'string',
-            },
+            region_id: { type: 'integer', example: 1 },
+            capital_city_id: { type: 'integer', example: 3 },
+            code: { type: 'string', example: 'RD' },
+            name_ar: { type: 'string', example: 'منطقة الرياض' },
+            name_en: { type: 'string', example: 'Riyadh' },
+            population: { type: 'integer', example: 6777146 },
           },
         },
 
         City: {
           type: 'object',
           properties: {
-            _id: {
-              type: 'string',
-            },
-            name: {
-              type: 'object',
-              properties: {
-                en: {
-                  type: 'string',
-                },
-                ar: {
-                  type: 'string',
-                },
-              },
-            },
-            region: {
-              type: 'string',
-            },
+            city_id: { type: 'integer', example: 1 },
+            region_id: { type: 'integer', example: 7 },
+            name_ar: { type: 'string', example: 'تبوك' },
+            name_en: { type: 'string', example: 'Tabuk' },
           },
         },
 
         District: {
           type: 'object',
           properties: {
-            _id: {
-              type: 'string',
-            },
-            name: {
+            district_id: { type: 'integer', example: 10100003001 },
+            city_id: { type: 'integer', example: 3 },
+            region_id: { type: 'integer', example: 1 },
+            name_ar: { type: 'string', example: 'حي العمل' },
+            name_en: { type: 'string', example: 'Al Amal Dist.' },
+          },
+        },
+
+        LocationsAllResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'success' },
+            data: {
               type: 'object',
               properties: {
-                en: {
-                  type: 'string',
-                },
-                ar: {
-                  type: 'string',
+                locations: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      region_id: { type: 'integer' },
+                      capital_city_id: { type: 'integer' },
+                      code: { type: 'string' },
+                      name_ar: { type: 'string' },
+                      name_en: { type: 'string' },
+                      population: { type: 'integer' },
+                      cities: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            city_id: { type: 'integer' },
+                            region_id: { type: 'integer' },
+                            name_ar: { type: 'string' },
+                            name_en: { type: 'string' },
+                            districts: {
+                              type: 'array',
+                              items: { $ref: '#/components/schemas/District' },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
               },
             },
-            city: {
-              type: 'string',
+          },
+        },
+
+        LocationsSearchResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'success' },
+            data: {
+              type: 'object',
+              properties: {
+                regions: { type: 'array', items: { $ref: '#/components/schemas/Region' } },
+                cities: { type: 'array', items: { $ref: '#/components/schemas/City' } },
+                districts: { type: 'array', items: { $ref: '#/components/schemas/District' } },
+              },
             },
           },
         },

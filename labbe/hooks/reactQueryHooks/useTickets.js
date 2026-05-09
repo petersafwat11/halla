@@ -45,17 +45,17 @@ export const useTicketAssignees = (options = {}) => {
 };
 
 /**
- * Hook to fetch single ticket
+ * Hook to fetch ticket minimal data for rating page
  * @param {string} ticketId
  * @returns {UseQueryResult}
  */
-export const useTicket = (ticketId, options = {}) => {
+export const useTicketForRating = (ticketId, options = {}) => {
   return useQuery({
-    queryKey: ["tickets", ticketId],
+    queryKey: ["tickets", ticketId, "rating-info"],
     queryFn: () =>
       apiRequest({
         method: "GET",
-        path: API_PATHS.tickets.getTicketById(ticketId),
+        path: API_PATHS.tickets.getTicketForRating(ticketId),
       }),
     enabled: !!ticketId,
     staleTime: 2 * 60 * 1000,
@@ -64,21 +64,28 @@ export const useTicket = (ticketId, options = {}) => {
 };
 
 /**
- * Hook to fetch all tickets (admin)
- * @param {Object} params - Query parameters
- * @returns {UseQueryResult}
+ * Hook to export tickets as an .xlsx file. Triggers a browser download on success.
+ * @returns {UseMutationResult}
  */
-export const useAllTickets = (params = {}, options = {}) => {
-  return useQuery({
-    queryKey: ["tickets", "all", params],
-    queryFn: () =>
-      apiRequest({
+export const useExportTickets = () => {
+  return useMutation({
+    mutationFn: async (filters = {}) => {
+      const blob = await apiRequest({
         method: "GET",
-        path: API_PATHS.tickets.getMyTickets,
-        params,
-      }),
-    staleTime: 2 * 60 * 1000,
-    ...options,
+        path: API_PATHS.tickets.exportTickets,
+        params: filters,
+        isExport: true,
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `tickets_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      return { success: true };
+    },
   });
 };
 
@@ -151,11 +158,11 @@ export const useTicketMutation = (action) => {
 
     // Update Ticket Status
     updateStatus: {
-      mutationFn: ({ ticketId, status }) =>
+      mutationFn: ({ ticketId, status, resolution }) =>
         apiRequest({
           method: "PATCH",
           path: API_PATHS.tickets.updateTicketStatus(ticketId),
-          data: { status },
+          data: { status, ...(resolution !== undefined && { resolution }) },
         }),
       onSuccess: (_, { ticketId }) => {
         queryClient.invalidateQueries({ queryKey: ["tickets", ticketId] });

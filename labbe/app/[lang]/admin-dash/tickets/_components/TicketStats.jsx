@@ -26,8 +26,8 @@ export default function TicketStats() {
   const { data, isLoading, error } = useMyTickets(filters);
 
   const statsCards = useMemo(() => {
-    const tickets = data?.data?.tickets || [];
-    const total = data?.data?.pagination?.total || tickets.length;
+    const tickets = data?.data || [];
+    const total = data?.pagination?.total || tickets.length;
     const open = tickets.filter((ticket) => ticket.status === "open").length;
     const resolved = tickets.filter(
       (ticket) => ticket.status === "resolved" || ticket.status === "closed"

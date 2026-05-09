@@ -15,6 +15,9 @@ const express = require('express');
 const router = express.Router();
 
 const locationsController = require('./locations.controller');
+const { apiLimiter } = require('../../shared/middleware/rateLimiter');
+const { validateZod } = require('../../shared/middleware/validation');
+const { regionIdParam, cityIdParam, searchQuery } = require('./locations.validation');
 
 // All routes are public (no auth required)
 
@@ -37,9 +40,12 @@ const locationsController = require('./locations.controller');
  *                 status:
  *                   type: string
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Region'
+ *                   type: object
+ *                   properties:
+ *                     regions:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Region'
  */
 router.get('/regions', locationsController.getRegions);
 
@@ -56,7 +62,7 @@ router.get('/regions', locationsController.getRegions);
  *         name: regionId
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: Region ID
  *     responses:
  *       200:
@@ -69,13 +75,16 @@ router.get('/regions', locationsController.getRegions);
  *                 status:
  *                   type: string
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/City'
- *       404:
- *         $ref: '#/components/responses/NotFound'
+ *                   type: object
+ *                   properties:
+ *                     cities:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/City'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  */
-router.get('/cities/:regionId', locationsController.getCitiesByRegion);
+router.get('/cities/:regionId', validateZod(regionIdParam, 'params'), locationsController.getCitiesByRegion);
 
 /**
  * @swagger
@@ -90,7 +99,7 @@ router.get('/cities/:regionId', locationsController.getCitiesByRegion);
  *         name: cityId
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: City ID
  *     responses:
  *       200:
@@ -103,13 +112,16 @@ router.get('/cities/:regionId', locationsController.getCitiesByRegion);
  *                 status:
  *                   type: string
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/District'
- *       404:
- *         $ref: '#/components/responses/NotFound'
+ *                   type: object
+ *                   properties:
+ *                     districts:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/District'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  */
-router.get('/districts/:cityId', locationsController.getDistrictsByCity);
+router.get('/districts/:cityId', validateZod(cityIdParam, 'params'), locationsController.getDistrictsByCity);
 
 /**
  * @swagger
@@ -122,15 +134,19 @@ router.get('/districts/:cityId', locationsController.getDistrictsByCity);
  *     responses:
  *       200:
  *         description: All locations retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LocationsAllResponse'
  */
-router.get('/all', locationsController.getAllLocations);
+router.get('/all', apiLimiter, locationsController.getAllLocations);
 
 /**
  * @swagger
  * /locations/search:
  *   get:
  *     summary: Search locations
- *     description: Search across regions, cities, and districts by name
+ *     description: Search across regions, cities, and districts by name (minimum 2 characters)
  *     tags: [Locations]
  *     security: []
  *     parameters:
@@ -139,42 +155,19 @@ router.get('/all', locationsController.getAllLocations);
  *         required: true
  *         schema:
  *           type: string
- *         description: Search query string
+ *           minLength: 2
+ *           maxLength: 100
+ *         description: Search query string (min 2 chars)
  *     responses:
  *       200:
  *         description: Search results retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LocationsSearchResponse'
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  */
-router.get('/search', locationsController.searchLocations);
-
-/**
- * @swagger
- * /locations/resolve:
- *   post:
- *     summary: Resolve location IDs to names
- *     description: Convert location IDs (region, city, district) to their display names
- *     tags: [Locations]
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               regionId:
- *                 type: string
- *               cityId:
- *                 type: string
- *               districtId:
- *                 type: string
- *     responses:
- *       200:
- *         description: Location names resolved successfully
- *       400:
- *         $ref: '#/components/responses/BadRequest'
- */
-router.post('/resolve', locationsController.resolveLocationNames);
+router.get('/search', apiLimiter, validateZod(searchQuery, 'query'), locationsController.searchLocations);
 
 module.exports = router;

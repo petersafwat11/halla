@@ -16,26 +16,22 @@ import adminDashboardService from "../../services/adminDashboardService";
 const DEFAULT_PAGE_SIZE = 20;
 
 /**
- * Internal helper: collapse the nested envelope shapes admin endpoints
- * return into a normalized `{ items, hasMore }` per page.
+ * Internal helper: collapse the two backend envelope shapes
+ * (`sendPaginated` → top-level array; `sendSuccess` → object with `collectionKey`)
+ * into `{ items, hasMore }` per page.
  */
 const _normalizePage = (response, collectionKey, limit) => {
   const inner = response?.data?.data ?? response?.data ?? {};
   const outer = response?.data ?? {};
 
-  // Items: collection key (object envelope), or `data` array, or the
-  // inner itself if it's already an array.
-  let items = [];
-  if (Array.isArray(inner)) {
-    items = inner;
-  } else if (Array.isArray(inner?.[collectionKey])) {
-    items = inner[collectionKey];
-  } else if (Array.isArray(inner?.data)) {
-    items = inner.data;
-  }
+  // Tickets (`sendPaginated`) lands as `outer.data === array`, so `inner` is the array.
+  // Other admin endpoints (`sendSuccess`) land as `inner === { [collectionKey], pagination }`.
+  const items = Array.isArray(inner)
+    ? inner
+    : Array.isArray(inner?.[collectionKey])
+      ? inner[collectionKey]
+      : [];
 
-  // Pagination: prefer the nested envelope's pagination, fall back to
-  // the outer envelope (sendPaginated puts it as a sibling of `data`).
   const pagination = inner?.pagination || outer?.pagination || null;
 
   let hasMore = false;

@@ -340,7 +340,7 @@ class ServicesService {
     try {
       if (resolved.regionId && !resolved.regionNameAr) {
         const { regions } = await locationsService.getRegions();
-        const region = regions.find((r) => r.region_id === parseInt(resolved.regionId) || r.id === parseInt(resolved.regionId));
+        const region = regions.find((r) => r.region_id === parseInt(resolved.regionId));
         if (region) {
           resolved.regionNameAr = region.name_ar;
           resolved.regionNameEn = region.name_en;
@@ -349,7 +349,7 @@ class ServicesService {
 
       if (resolved.cityId && !resolved.cityNameAr) {
         const { cities } = await locationsService.getCitiesByRegion(resolved.regionId);
-        const city = cities.find((c) => c.city_id === parseInt(resolved.cityId) || c.id === parseInt(resolved.cityId));
+        const city = cities.find((c) => c.city_id === parseInt(resolved.cityId));
         if (city) {
           resolved.cityNameAr = city.name_ar;
           resolved.cityNameEn = city.name_en;
@@ -359,7 +359,7 @@ class ServicesService {
       if (resolved.districtIds?.length && !resolved.districtNames?.length && resolved.cityId) {
         const { districts } = await locationsService.getDistrictsByCity(resolved.cityId);
         resolved.districtNames = resolved.districtIds
-          .map((id) => districts.find((d) => d.district_id === parseInt(id) || d.id === parseInt(id)))
+          .map((id) => districts.find((d) => d.district_id === parseInt(id)))
           .filter(Boolean)
           .map((d) => ({ nameAr: d.name_ar, nameEn: d.name_en }));
       }

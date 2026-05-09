@@ -40,7 +40,7 @@ export default function TicketsScreen() {
 
   // Fetch tickets using React Query
   const { data: response, isLoading: loading, error, refetch } = useTickets();
-  const tickets = response?.data?.data || response?.data || [];
+  const tickets = response?.data || [];
 
   // Mutations
   const createTicketMutation = useCreateTicket();
@@ -61,9 +61,9 @@ export default function TicketsScreen() {
   // Show error toast if query fails
   useEffect(() => {
     if (error) {
-      toast.error(error.message || t("messages.loadError"));
+      toast.error(t("messages.loadError"));
     }
-  }, [error]);
+  }, [error, t]);
 
   const handleCreateTicket = async (data) => {
     try {

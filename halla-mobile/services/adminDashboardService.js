@@ -8,6 +8,27 @@ import { Linking } from "react-native";
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
 import { apiFetch } from "./apiClient";
 import { useAuthStore } from "../stores/authStore";
+import {
+  getTicketsAPI as ticketsGetAll,
+  getTicketAPI as ticketsGetById,
+  assignTicketAPI as ticketsAssign,
+  updateTicketStatusAPI as ticketsUpdateStatus,
+  updateTicketAPI as ticketsUpdate,
+  deleteTicketAPI as ticketsDelete,
+  exportTicketsAPI as ticketsExport,
+} from "./ticketsService";
+
+const _envelope = async (promise) => {
+  try {
+    return { success: true, data: await promise, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      data: null,
+      error: err?.message || "An unexpected error occurred",
+    };
+  }
+};
 
 const BASE_URL = API_BASE_URL;
 
@@ -200,32 +221,28 @@ export const events = {
     openExportUrl(ENDPOINTS.ADMIN.EVENTS.EXPORT, filters),
 };
 
+// Tickets shim: re-exports from services/ticketsService.js with the legacy
+// `{ success, data, error }` envelope. Token args are accepted but ignored.
 export const tickets = {
-  getAll: async (token, params = {}) => {
-    const qs = new URLSearchParams(params).toString();
-    return apiRequest(`${ENDPOINTS.TICKETS.BASE}${qs ? `?${qs}` : ""}`);
-  },
+  getAll: (_token, params = {}) => _envelope(ticketsGetAll(params)),
 
-  getById: async (token, ticketId) =>
-    apiRequest(ENDPOINTS.TICKETS.BY_ID(ticketId)),
+  getById: (_token, ticketId) => _envelope(ticketsGetById(ticketId)),
 
-  assignTo: async (token, ticketId, assigneeId) =>
-    apiRequest(`${ENDPOINTS.TICKETS.BY_ID(ticketId)}/assign`, "PATCH", { assigneeId }),
+  assignTo: (_token, ticketId, assigneeId) =>
+    _envelope(ticketsAssign(ticketId, assigneeId)),
 
-  resolve: async (token, ticketId, resolution) =>
-    apiRequest(`${ENDPOINTS.TICKETS.BY_ID(ticketId)}/status`, "PATCH", { status: "resolved", resolution }),
+  resolve: (_token, ticketId, resolution) =>
+    _envelope(ticketsUpdateStatus(ticketId, { status: "resolved", resolution })),
 
-  reopen: async (token, ticketId) =>
-    apiRequest(`${ENDPOINTS.TICKETS.BY_ID(ticketId)}/status`, "PATCH", { status: "in_progress" }),
+  reopen: (_token, ticketId) =>
+    _envelope(ticketsUpdateStatus(ticketId, { status: "in_progress" })),
 
-  respond: async (token, ticketId, message) =>
-    apiRequest(ENDPOINTS.TICKETS.BY_ID(ticketId), "PATCH", { message }),
+  respond: (_token, ticketId, message) =>
+    _envelope(ticketsUpdate(ticketId, { message })),
 
-  delete: async (token, ticketId) =>
-    apiRequest(ENDPOINTS.TICKETS.BY_ID(ticketId), "DELETE"),
+  delete: (_token, ticketId) => _envelope(ticketsDelete(ticketId)),
 
-  export: async (token, filters = {}) =>
-    openExportUrl("/tickets/export", filters),
+  export: (_token, filters = {}) => _envelope(ticketsExport(filters)),
 };
 
 export const payments = {

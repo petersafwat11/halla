@@ -143,8 +143,8 @@ export default function TicketTableContent({
       ]}
       pagination={{
         currentPage: parseInt(filters.page),
-        totalPages: data?.data?.pagination?.pages || data?.data?.pagination?.totalPages || 1,
-        totalItems: data?.data?.pagination?.total || 0,
+        totalPages: data?.pagination?.pages || data?.pagination?.totalPages || 1,
+        totalItems: data?.pagination?.total || 0,
         onPageChange: handlePageChange,
       }}
     />

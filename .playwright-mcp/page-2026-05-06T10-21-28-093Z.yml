@@ -1,0 +1,391 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - img "Logo" [ref=e5]
+      - navigation [ref=e7]:
+        - list [ref=e8]:
+          - listitem [ref=e9] [cursor=pointer]:
+            - link "لوحة التحكم" [ref=e10]:
+              - /url: /admin-dash
+              - img [ref=e11]
+              - generic [ref=e13]: لوحة التحكم
+          - listitem [ref=e14] [cursor=pointer]:
+            - link "المدراء" [ref=e15]:
+              - /url: /admin-dash/moderators
+              - img [ref=e16]
+              - generic [ref=e18]: المدراء
+          - listitem [ref=e19] [cursor=pointer]:
+            - link "العملاء" [ref=e20]:
+              - /url: /admin-dash/hosts
+              - img [ref=e21]
+              - generic [ref=e23]: العملاء
+          - listitem [ref=e24] [cursor=pointer]:
+            - link "التجار" [ref=e25]:
+              - /url: /admin-dash/vendors
+              - img [ref=e26]
+              - generic [ref=e29]: التجار
+          - listitem [ref=e30] [cursor=pointer]:
+            - link "الوايت ليبل" [ref=e31]:
+              - /url: /admin-dash/whitelabels
+              - img [ref=e32]
+              - generic [ref=e34]: الوايت ليبل
+          - listitem [ref=e35] [cursor=pointer]:
+            - link "المناسبات" [ref=e36]:
+              - /url: /admin-dash/events
+              - img [ref=e37]
+              - generic [ref=e39]: المناسبات
+          - listitem [ref=e40] [cursor=pointer]:
+            - link "الشكاوى" [ref=e41]:
+              - /url: /admin-dash/tickets
+              - img [ref=e42]
+              - generic [ref=e44]: الشكاوى
+          - listitem [ref=e45] [cursor=pointer]:
+            - link "المدفوعات" [ref=e46]:
+              - /url: /admin-dash/payments
+              - img [ref=e47]
+              - generic [ref=e49]: المدفوعات
+          - listitem [ref=e55] [cursor=pointer]:
+            - link "إدارة الأسعار" [ref=e56]:
+              - /url: /admin-dash/manage-plans
+              - img [ref=e57]
+              - generic [ref=e59]: إدارة الأسعار
+          - listitem [ref=e60] [cursor=pointer]:
+            - link "الخصومات" [ref=e61]:
+              - /url: /admin-dash/discounts
+              - img [ref=e62]
+              - generic [ref=e65]: الخصومات
+          - listitem [ref=e66] [cursor=pointer]:
+            - link "الإعدادات" [ref=e67]:
+              - /url: /admin-dash/settings
+              - img [ref=e68]
+              - generic [ref=e71]: الإعدادات
+          - listitem [ref=e72] [cursor=pointer]:
+            - link "قوالب الدعوات" [ref=e73]:
+              - /url: /admin-dash/templates
+              - img [ref=e74]
+              - generic [ref=e79]: قوالب الدعوات
+          - listitem [ref=e80] [cursor=pointer]:
+            - link "فئات القوالب" [ref=e81]:
+              - /url: /admin-dash/templates/categories
+              - img [ref=e82]
+              - generic [ref=e86]: فئات القوالب
+          - listitem [ref=e87] [cursor=pointer]:
+            - link "قوالب واتساب" [ref=e88]:
+              - /url: /admin-dash/taqnyat-templates
+              - img [ref=e89]
+              - generic [ref=e92]: قوالب واتساب
+      - button "تسجيل الخروج" [ref=e94]:
+        - img [ref=e95]
+        - generic [ref=e97]: تسجيل الخروج
+    - generic [ref=e98]:
+      - generic [ref=e100]:
+        - button "Notifications" [ref=e102] [cursor=pointer]:
+          - img "notifications" [ref=e103]
+        - img "messages" [ref=e104]
+        - button "مدير النظام" [ref=e106] [cursor=pointer]:
+          - generic [ref=e107]:
+            - img [ref=e109]
+            - generic [ref=e111]: مدير النظام
+          - img [ref=e113]
+      - generic [ref=e283]:
+        - generic [ref=e284]:
+          - heading "تعديل القالب" [level=1] [ref=e285]
+          - generic [ref=e286]:
+            - button "إلغاء" [ref=e287] [cursor=pointer]
+            - button "حفظ" [ref=e288] [cursor=pointer]
+        - generic [ref=e289]:
+          - generic [ref=e291]:
+            - generic [ref=e292]:
+              - img [ref=e294]
+              - img [ref=e298]
+              - generic [ref=e300]: Groom Family
+              - generic [ref=e301]: Bride Family
+              - generic [ref=e302]: Wedding Date
+              - generic [ref=e303]: 20:00
+              - generic [ref=e304]: Venue
+              - generic [ref=e305]: يتشرف بدعوتكم لحضور حفل زفافهما
+            - generic [ref=e306]:
+              - generic [ref=e307]: 720×1280
+              - button "تغيير الصورة" [ref=e308] [cursor=pointer]
+          - generic [ref=e309]:
+            - generic [ref=e310]:
+              - generic [ref=e311]:
+                - img [ref=e313]
+                - heading "إعدادات القالب" [level=3] [ref=e315]
+              - generic [ref=e316]:
+                - generic [ref=e317]:
+                  - generic [ref=e318]: الاسم (إنجليزي)*
+                  - textbox "الاسم (إنجليزي)*" [ref=e320]:
+                    - /placeholder: Template name in English
+                    - text: Royal Wedding
+                - generic [ref=e321]:
+                  - generic [ref=e322]: الاسم (عربي)*
+                  - textbox "الاسم (عربي)*" [ref=e324]:
+                    - /placeholder: اسم القالب بالعربية
+                    - text: زفاف ملكي
+              - generic [ref=e325]:
+                - generic [ref=e326]: الفئات
+                - generic [ref=e327]:
+                  - generic [ref=e328] [cursor=pointer]:
+                    - checkbox "تايب" [ref=e329]
+                    - generic [ref=e330]: تايب
+                  - generic [ref=e331] [cursor=pointer]:
+                    - checkbox "زفاف" [checked] [ref=e332]
+                    - generic [ref=e333]: زفاف
+                  - generic [ref=e334] [cursor=pointer]:
+                    - checkbox "خطوبة" [ref=e335]
+                    - generic [ref=e336]: خطوبة
+                  - generic [ref=e337] [cursor=pointer]:
+                    - checkbox "عيد ميلاد" [ref=e338]
+                    - generic [ref=e339]: عيد ميلاد
+                  - generic [ref=e340] [cursor=pointer]:
+                    - checkbox "استقبال مولود" [ref=e341]
+                    - generic [ref=e342]: استقبال مولود
+                  - generic [ref=e343] [cursor=pointer]:
+                    - checkbox "مناسبة نسائية" [ref=e344]
+                    - generic [ref=e345]: مناسبة نسائية
+              - generic [ref=e346]:
+                - generic [ref=e348]:
+                  - generic [ref=e349]: ترتيب الفرز
+                  - spinbutton "ترتيب الفرز" [ref=e351]: "10"
+                - generic [ref=e354]:
+                  - generic [ref=e355]:
+                    - checkbox "نشط" [checked]
+                    - switch "نشط" [checked] [ref=e356] [cursor=pointer]
+                  - generic [ref=e358]:
+                    - generic [ref=e359] [cursor=pointer]: نشط
+                    - paragraph [ref=e360]: Enable or disable this template
+            - generic [ref=e361]:
+              - generic [ref=e362]:
+                - img [ref=e364]
+                - heading "الحقول" [level=3] [ref=e366]
+              - generic [ref=e367]:
+                - generic [ref=e368]:
+                  - generic [ref=e369]: 8 fields
+                  - button "+ + إضافة حقل" [ref=e370] [cursor=pointer]
+                - generic [ref=e372] [cursor=pointer]:
+                  - generic [ref=e373]:
+                    - generic [ref=e374]: "1"
+                    - generic [ref=e375]:
+                      - generic [ref=e376]: groomFamilyName
+                      - generic [ref=e377]: text
+                  - generic [ref=e378]:
+                    - img [ref=e379]
+                    - button "حذف" [ref=e381]
+                - generic [ref=e383] [cursor=pointer]:
+                  - generic [ref=e384]:
+                    - generic [ref=e385]: "2"
+                    - generic [ref=e386]:
+                      - generic [ref=e387]: brideFamilyName
+                      - generic [ref=e388]: text
+                  - generic [ref=e389]:
+                    - img [ref=e390]
+                    - button "حذف" [ref=e392]
+                - generic [ref=e394] [cursor=pointer]:
+                  - generic [ref=e395]:
+                    - generic [ref=e396]: "3"
+                    - generic [ref=e397]:
+                      - generic [ref=e398]: eventDate
+                      - generic [ref=e399]: date
+                  - generic [ref=e400]:
+                    - img [ref=e401]
+                    - button "حذف" [ref=e403]
+                - generic [ref=e405] [cursor=pointer]:
+                  - generic [ref=e406]:
+                    - generic [ref=e407]: "4"
+                    - generic [ref=e408]:
+                      - generic [ref=e409]: eventTime
+                      - generic [ref=e410]: time
+                  - generic [ref=e411]:
+                    - img [ref=e412]
+                    - button "حذف" [ref=e414]
+                - generic [ref=e416] [cursor=pointer]:
+                  - generic [ref=e417]:
+                    - generic [ref=e418]: "5"
+                    - generic [ref=e419]:
+                      - generic [ref=e420]: venue
+                      - generic [ref=e421]: text
+                  - generic [ref=e422]:
+                    - img [ref=e423]
+                    - button "حذف" [ref=e425]
+                - generic [ref=e427] [cursor=pointer]:
+                  - generic [ref=e428]:
+                    - generic [ref=e429]: "6"
+                    - generic [ref=e430]:
+                      - generic [ref=e431]: invitationMessage
+                      - generic [ref=e432]: textarea
+                  - generic [ref=e433]:
+                    - img [ref=e434]
+                    - button "حذف" [ref=e436]
+                - generic [ref=e438] [cursor=pointer]:
+                  - generic [ref=e439]:
+                    - generic [ref=e440]: "7"
+                    - generic [ref=e441]:
+                      - generic [ref=e442]: primaryColor
+                      - generic [ref=e443]: color
+                  - generic [ref=e444]:
+                    - img [ref=e445]
+                    - button "حذف" [ref=e447]
+                - generic [ref=e449] [cursor=pointer]:
+                  - generic [ref=e450]:
+                    - generic [ref=e451]: "8"
+                    - generic [ref=e452]:
+                      - generic [ref=e453]: fontFamily
+                      - generic [ref=e454]: font
+                  - generic [ref=e455]:
+                    - img [ref=e456]
+                    - button "حذف" [ref=e458]
+            - generic [ref=e459]:
+              - generic [ref=e460]:
+                - img [ref=e462]
+                - heading "المواقع" [level=3] [ref=e465]
+              - generic [ref=e466]:
+                - generic [ref=e467]:
+                  - generic [ref=e468]: 6 overlays
+                  - button "+ + إضافة موقع" [ref=e469] [cursor=pointer]
+                - generic [ref=e471] [cursor=pointer]:
+                  - generic [ref=e472]:
+                    - generic [ref=e473]: "1"
+                    - generic [ref=e474]:
+                      - generic [ref=e475]: groomFamilyName
+                      - generic [ref=e476]: 52% / 50%
+                  - generic [ref=e477]:
+                    - img [ref=e478]
+                    - button "حذف" [ref=e480]
+                - generic [ref=e482] [cursor=pointer]:
+                  - generic [ref=e483]:
+                    - generic [ref=e484]: "2"
+                    - generic [ref=e485]:
+                      - generic [ref=e486]: brideFamilyName
+                      - generic [ref=e487]: 62% / 50%
+                  - generic [ref=e488]:
+                    - img [ref=e489]
+                    - button "حذف" [ref=e491]
+                - generic [ref=e493] [cursor=pointer]:
+                  - generic [ref=e494]:
+                    - generic [ref=e495]: "3"
+                    - generic [ref=e496]:
+                      - generic [ref=e497]: eventDate
+                      - generic [ref=e498]: 75% / 50%
+                  - generic [ref=e499]:
+                    - img [ref=e500]
+                    - button "حذف" [ref=e502]
+                - generic [ref=e504] [cursor=pointer]:
+                  - generic [ref=e505]:
+                    - generic [ref=e506]: "4"
+                    - generic [ref=e507]:
+                      - generic [ref=e508]: eventTime
+                      - generic [ref=e509]: 80% / 50%
+                  - generic [ref=e510]:
+                    - img [ref=e511]
+                    - button "حذف" [ref=e513]
+                - generic [ref=e515] [cursor=pointer]:
+                  - generic [ref=e516]:
+                    - generic [ref=e517]: "5"
+                    - generic [ref=e518]:
+                      - generic [ref=e519]: venue
+                      - generic [ref=e520]: 86% / 50%
+                  - generic [ref=e521]:
+                    - img [ref=e522]
+                    - button "حذف" [ref=e524]
+                - generic [ref=e526] [cursor=pointer]:
+                  - generic [ref=e527]:
+                    - generic [ref=e528]: "6"
+                    - generic [ref=e529]:
+                      - generic [ref=e530]: invitationMessage
+                      - generic [ref=e531]: 92% / 50%
+                  - generic [ref=e532]:
+                    - img [ref=e533]
+                    - button "حذف" [ref=e535]
+            - generic [ref=e536]:
+              - generic [ref=e537]:
+                - img [ref=e539]
+                - generic [ref=e541]:
+                  - heading "الزخارف (2)" [level=3] [ref=e542]
+                  - button "+ إضافة زخرفة" [ref=e543] [cursor=pointer]
+              - generic [ref=e544]:
+                - generic [ref=e545]:
+                  - generic [ref=e546]:
+                    - img [ref=e548]
+                    - generic [ref=e551]: "Decoration #1"
+                  - button "حذف" [ref=e552] [cursor=pointer]
+                - generic [ref=e553]:
+                  - generic [ref=e554]:
+                    - generic [ref=e555]: النوع
+                    - generic [ref=e556]:
+                      - textbox "Select type" [ref=e557]: Icon
+                      - generic:
+                        - generic: Icon ✓
+                        - generic: Image
+                  - generic [ref=e558]:
+                    - generic [ref=e559]: المصدر
+                    - button "Sparkles" [ref=e560] [cursor=pointer]:
+                      - img [ref=e562]
+                      - generic [ref=e565]: Sparkles
+                      - img [ref=e566]
+                - generic [ref=e568]:
+                  - generic [ref=e569]: اللون
+                  - generic [ref=e570]:
+                    - textbox [ref=e571] [cursor=pointer]: "#e8d3a0"
+                    - textbox "#c28e5c" [ref=e572]: "#e8d3a0"
+                - generic [ref=e574]:
+                  - generic [ref=e575]: Icon Size (vh %)
+                  - spinbutton "Icon Size (vh %)" [ref=e577]: "3.2"
+                - generic [ref=e578]:
+                  - generic [ref=e579]:
+                    - generic [ref=e580]: من الأعلى %
+                    - spinbutton "من الأعلى %" [ref=e582]: "47"
+                  - generic [ref=e583]:
+                    - generic [ref=e584]: من اليسار %
+                    - spinbutton "من اليسار %" [ref=e586]: "50"
+                  - generic [ref=e587]:
+                    - generic [ref=e588]: العرض %
+                    - spinbutton "العرض %" [ref=e590]: "6"
+                - generic [ref=e592]:
+                  - generic [ref=e593]: الطبقة
+                  - spinbutton "الطبقة" [ref=e595]: "1"
+              - generic [ref=e596]:
+                - generic [ref=e597]:
+                  - generic [ref=e598]:
+                    - img [ref=e600]
+                    - generic [ref=e602]: "Decoration #2"
+                  - button "حذف" [ref=e603] [cursor=pointer]
+                - generic [ref=e604]:
+                  - generic [ref=e605]:
+                    - generic [ref=e606]: النوع
+                    - generic [ref=e607]:
+                      - textbox "Select type" [ref=e608]: Icon
+                      - generic:
+                        - generic: Icon ✓
+                        - generic: Image
+                  - generic [ref=e609]:
+                    - generic [ref=e610]: المصدر
+                    - button "Crown" [ref=e611] [cursor=pointer]:
+                      - img [ref=e613]
+                      - generic [ref=e615]: Crown
+                      - img [ref=e616]
+                - generic [ref=e618]:
+                  - generic [ref=e619]: اللون
+                  - generic [ref=e620]:
+                    - textbox [ref=e621] [cursor=pointer]: "#e8d3a0"
+                    - textbox "#c28e5c" [ref=e622]: "#e8d3a0"
+                - generic [ref=e624]:
+                  - generic [ref=e625]: Icon Size (vh %)
+                  - spinbutton "Icon Size (vh %)" [ref=e627]: "4.5"
+                - generic [ref=e628]:
+                  - generic [ref=e629]:
+                    - generic [ref=e630]: من الأعلى %
+                    - spinbutton "من الأعلى %" [ref=e632]: "41"
+                  - generic [ref=e633]:
+                    - generic [ref=e634]: من اليسار %
+                    - spinbutton "من اليسار %" [ref=e636]: "50"
+                  - generic [ref=e637]:
+                    - generic [ref=e638]: العرض %
+                    - spinbutton "العرض %" [ref=e640]: "8"
+                - generic [ref=e642]:
+                  - generic [ref=e643]: الطبقة
+                  - spinbutton "الطبقة" [ref=e645]: "1"
+  - button "Open Next.js Dev Tools" [ref=e278] [cursor=pointer]:
+    - img [ref=e279]
+  - alert [ref=e282]

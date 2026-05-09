@@ -1,0 +1,212 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - img "Logo" [ref=e5]
+      - navigation [ref=e7]:
+        - list [ref=e8]:
+          - listitem [ref=e9] [cursor=pointer]:
+            - link "لوحة التحكم" [ref=e10]:
+              - /url: /admin-dash
+              - img [ref=e11]
+              - generic [ref=e13]: لوحة التحكم
+          - listitem [ref=e14] [cursor=pointer]:
+            - link "المدراء" [ref=e15]:
+              - /url: /admin-dash/moderators
+              - img [ref=e16]
+              - generic [ref=e18]: المدراء
+          - listitem [ref=e19] [cursor=pointer]:
+            - link "العملاء" [ref=e20]:
+              - /url: /admin-dash/hosts
+              - img [ref=e21]
+              - generic [ref=e23]: العملاء
+          - listitem [ref=e24] [cursor=pointer]:
+            - link "التجار" [ref=e25]:
+              - /url: /admin-dash/vendors
+              - img [ref=e26]
+              - generic [ref=e29]: التجار
+          - listitem [ref=e30] [cursor=pointer]:
+            - link "الوايت ليبل" [ref=e31]:
+              - /url: /admin-dash/whitelabels
+              - img [ref=e32]
+              - generic [ref=e34]: الوايت ليبل
+          - listitem [ref=e35] [cursor=pointer]:
+            - link "المناسبات" [ref=e36]:
+              - /url: /admin-dash/events
+              - img [ref=e37]
+              - generic [ref=e39]: المناسبات
+          - listitem [ref=e40] [cursor=pointer]:
+            - link "الشكاوى" [ref=e41]:
+              - /url: /admin-dash/tickets
+              - img [ref=e42]
+              - generic [ref=e44]: الشكاوى
+          - listitem [ref=e45] [cursor=pointer]:
+            - link "المدفوعات" [ref=e46]:
+              - /url: /admin-dash/payments
+              - img [ref=e47]
+              - generic [ref=e49]: المدفوعات
+          - listitem [ref=e55] [cursor=pointer]:
+            - link "إدارة الأسعار" [ref=e56]:
+              - /url: /admin-dash/manage-plans
+              - img [ref=e57]
+              - generic [ref=e59]: إدارة الأسعار
+          - listitem [ref=e60] [cursor=pointer]:
+            - link "الخصومات" [ref=e61]:
+              - /url: /admin-dash/discounts
+              - img [ref=e62]
+              - generic [ref=e65]: الخصومات
+          - listitem [ref=e66] [cursor=pointer]:
+            - link "الإعدادات" [ref=e67]:
+              - /url: /admin-dash/settings
+              - img [ref=e68]
+              - generic [ref=e71]: الإعدادات
+          - listitem [ref=e72] [cursor=pointer]:
+            - link "قوالب الدعوات" [ref=e73]:
+              - /url: /admin-dash/templates
+              - img [ref=e74]
+              - generic [ref=e79]: قوالب الدعوات
+          - listitem [ref=e80] [cursor=pointer]:
+            - link "فئات القوالب" [ref=e81]:
+              - /url: /admin-dash/templates/categories
+              - img [ref=e82]
+              - generic [ref=e86]: فئات القوالب
+          - listitem [ref=e87] [cursor=pointer]:
+            - link "قوالب واتساب" [ref=e88]:
+              - /url: /admin-dash/taqnyat-templates
+              - img [ref=e89]
+              - generic [ref=e92]: قوالب واتساب
+      - button "تسجيل الخروج" [ref=e94]:
+        - img [ref=e95]
+        - generic [ref=e97]: تسجيل الخروج
+    - generic [ref=e98]:
+      - generic [ref=e100]:
+        - button "Notifications" [ref=e102] [cursor=pointer]:
+          - img "notifications" [ref=e103]
+        - img "messages" [ref=e104]
+        - button "مدير النظام" [ref=e106] [cursor=pointer]:
+          - generic [ref=e107]:
+            - img [ref=e109]
+            - generic [ref=e111]: مدير النظام
+          - img [ref=e113]
+      - generic [ref=e116]:
+        - banner [ref=e117]:
+          - generic [ref=e118]:
+            - heading "قوالب الدعوات" [level=1] [ref=e119]
+            - paragraph [ref=e120]: إدارة قوالب الدعوات المرئية
+          - generic [ref=e121]:
+            - link "إدارة الفئات" [ref=e122] [cursor=pointer]:
+              - /url: /ar/admin-dash/templates/categories
+              - button "إدارة الفئات" [ref=e123]
+            - link "قالب جديد" [ref=e124] [cursor=pointer]:
+              - /url: /ar/admin-dash/templates/new
+              - button "قالب جديد" [ref=e125]
+        - generic [ref=e126]:
+          - generic [ref=e127]:
+            - img
+            - searchbox "بحث بالاسم" [ref=e128]
+          - button "كل الفئات" [ref=e130] [cursor=pointer]:
+            - generic [ref=e131]: كل الفئات
+            - img [ref=e132]
+          - generic [ref=e134] [cursor=pointer]:
+            - switch [checked] [ref=e135]
+            - generic [ref=e137]: أظهر غير النشطة
+        - generic [ref=e140]:
+          - article [ref=e141]:
+            - link "زفاف ملكي wedding" [ref=e142] [cursor=pointer]:
+              - /url: /ar/admin-dash/templates/69fb132e6554f97d7ed765b6
+              - generic [ref=e144]:
+                - heading "زفاف ملكي" [level=3] [ref=e146]
+                - generic [ref=e148]: wedding
+            - generic [ref=e149]:
+              - generic [ref=e150]:
+                - link "تعديل" [ref=e151] [cursor=pointer]:
+                  - /url: /ar/admin-dash/templates/69fb132e6554f97d7ed765b6
+                  - img [ref=e152]
+                - button "نسخ" [ref=e154] [cursor=pointer]:
+                  - img [ref=e155]
+                - button "حذف" [ref=e158] [cursor=pointer]:
+                  - img [ref=e159]
+              - generic [ref=e162]: نشط
+          - article [ref=e163]:
+            - link "زفاف الحديقة wedding" [ref=e164] [cursor=pointer]:
+              - /url: /ar/admin-dash/templates/69fb132f6554f97d7ed765bb
+              - generic [ref=e166]:
+                - heading "زفاف الحديقة" [level=3] [ref=e168]
+                - generic [ref=e170]: wedding
+            - generic [ref=e171]:
+              - generic [ref=e172]:
+                - link "تعديل" [ref=e173] [cursor=pointer]:
+                  - /url: /ar/admin-dash/templates/69fb132f6554f97d7ed765bb
+                  - img [ref=e174]
+                - button "نسخ" [ref=e176] [cursor=pointer]:
+                  - img [ref=e177]
+                - button "حذف" [ref=e180] [cursor=pointer]:
+                  - img [ref=e181]
+              - generic [ref=e184]: نشط
+          - article [ref=e185]:
+            - link "وعدٌ نقي engagement" [ref=e186] [cursor=pointer]:
+              - /url: /ar/admin-dash/templates/69fb132f6554f97d7ed765c0
+              - generic [ref=e188]:
+                - heading "وعدٌ نقي" [level=3] [ref=e190]
+                - generic [ref=e192]: engagement
+            - generic [ref=e193]:
+              - generic [ref=e194]:
+                - link "تعديل" [ref=e195] [cursor=pointer]:
+                  - /url: /ar/admin-dash/templates/69fb132f6554f97d7ed765c0
+                  - img [ref=e196]
+                - button "نسخ" [ref=e198] [cursor=pointer]:
+                  - img [ref=e199]
+                - button "حذف" [ref=e202] [cursor=pointer]:
+                  - img [ref=e203]
+              - generic [ref=e206]: نشط
+          - article [ref=e207]:
+            - link "احتفال حلو birthday" [ref=e208] [cursor=pointer]:
+              - /url: /ar/admin-dash/templates/69fb13306554f97d7ed765c5
+              - generic [ref=e210]:
+                - heading "احتفال حلو" [level=3] [ref=e212]
+                - generic [ref=e214]: birthday
+            - generic [ref=e215]:
+              - generic [ref=e216]:
+                - link "تعديل" [ref=e217] [cursor=pointer]:
+                  - /url: /ar/admin-dash/templates/69fb13306554f97d7ed765c5
+                  - img [ref=e218]
+                - button "نسخ" [ref=e220] [cursor=pointer]:
+                  - img [ref=e221]
+                - button "حذف" [ref=e224] [cursor=pointer]:
+                  - img [ref=e225]
+              - generic [ref=e228]: نشط
+          - article [ref=e229]:
+            - link "مولود مبارك baby_shower" [ref=e230] [cursor=pointer]:
+              - /url: /ar/admin-dash/templates/69fb13316554f97d7ed765ca
+              - generic [ref=e232]:
+                - heading "مولود مبارك" [level=3] [ref=e234]
+                - generic [ref=e236]: baby_shower
+            - generic [ref=e237]:
+              - generic [ref=e238]:
+                - link "تعديل" [ref=e239] [cursor=pointer]:
+                  - /url: /ar/admin-dash/templates/69fb13316554f97d7ed765ca
+                  - img [ref=e240]
+                - button "نسخ" [ref=e242] [cursor=pointer]:
+                  - img [ref=e243]
+                - button "حذف" [ref=e246] [cursor=pointer]:
+                  - img [ref=e247]
+              - generic [ref=e250]: نشط
+          - article [ref=e251]:
+            - link "ملتقى السيدات ladies_event" [ref=e252] [cursor=pointer]:
+              - /url: /ar/admin-dash/templates/69fb13316554f97d7ed765cf
+              - generic [ref=e254]:
+                - heading "ملتقى السيدات" [level=3] [ref=e256]
+                - generic [ref=e258]: ladies_event
+            - generic [ref=e259]:
+              - generic [ref=e260]:
+                - link "تعديل" [ref=e261] [cursor=pointer]:
+                  - /url: /ar/admin-dash/templates/69fb13316554f97d7ed765cf
+                  - img [ref=e262]
+                - button "نسخ" [ref=e264] [cursor=pointer]:
+                  - img [ref=e265]
+                - button "حذف" [ref=e268] [cursor=pointer]:
+                  - img [ref=e269]
+              - generic [ref=e272]: نشط
+  - button "Open Next.js Dev Tools" [ref=e278] [cursor=pointer]:
+    - img [ref=e279]
+  - alert [ref=e282]

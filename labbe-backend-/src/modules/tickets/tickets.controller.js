@@ -152,19 +152,3 @@ exports.exportTickets = catchAsync(async (req, res) => {
   res.setHeader("Content-Disposition", "attachment; filename=tickets.xlsx");
   res.send(buffer);
 });
-
-/**
- * Add reply to ticket (FLOW-23-F02)
- * POST /api/v2/tickets/:id/replies
- */
-exports.addReply = catchAsync(async (req, res) => {
-  const { message } = req.body;
-  const isAdmin = isAdminRole(req.user.role);
-  const result = await ticketsService.addReply(
-    req.params.id,
-    message,
-    req.user,
-    isAdmin
-  );
-  sendCreated(res, result, "Reply added");
-});

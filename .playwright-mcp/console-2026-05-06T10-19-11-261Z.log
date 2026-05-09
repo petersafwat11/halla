@@ -1,0 +1,41 @@
+[    2499ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[    2613ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3000/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[    2752ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/v2/notifications/unread-count:0
+[    2810ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[    2831ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/v2/admin/templates?includeInactive=true:0
+[    2834ms] [ERROR] [API Error] GET /admin/templates?includeInactive=true - 401 (123ms): Please log in to access this resource @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2359
+[    2837ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/v2/admin/template-categories:0
+[    2837ms] [ERROR] [API Error] GET /admin/template-categories - 401 (128ms): Please log in to access this resource @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2359
+[    2838ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/v2/notifications/unread-count:0
+[    3072ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/v2/auth/refresh:0
+[    3386ms] [ERROR] API request error: TypeError: Failed to fetch
+    at APIClient._doRequest (http://localhost:3000/_next/static/chunks/labbe_80c641aa._.js:2081:16)
+    at APIClient.request (http://localhost:3000/_next/static/chunks/labbe_80c641aa._.js:2099:43)
+    at async Object.fetchUnreadCount (http://localhost:3000/_next/static/chunks/labbe_80c641aa._.js:2521:34) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2359
+[    3386ms] [ERROR] Failed to fetch unread count: APIError: خطأ في الشبكة. يرجى التحقق من اتصالك.
+    at APIClient.request (http://localhost:3000/_next/static/chunks/labbe_80c641aa._.js:2143:19)
+    at async Object.fetchUnreadCount (http://localhost:3000/_next/static/chunks/labbe_80c641aa._.js:2521:34) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2359
+[    3513ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[    3563ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3000/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[    3566ms] [LOG] Current Pathname: /ar/login @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:285
+[    3566ms] [LOG] Should Show Slider: true @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:286
+[    3566ms] [LOG] Current Pathname: /ar/login @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:285
+[    3566ms] [LOG] Should Show Slider: true @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:286
+[    3577ms] [LOG] Current Pathname: /ar/login @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:285
+[    3578ms] [LOG] Should Show Slider: true @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:286
+[    3578ms] [LOG] Current Pathname: /ar/login @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:285
+[    3578ms] [LOG] Should Show Slider: true @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:286
+[    3664ms] [LOG] [API] POST /auth/logout - 200 (43ms) @ http://localhost:3000/_next/static/chunks/labbe_4d7eb481._.js:2150
+[    3770ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5949
+[    3815ms] [LOG] [Fast Refresh] done in 145ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5809
+[    3876ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[    6654ms] [WARNING] Image with src "/login/2.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:968
+[   12671ms] [WARNING] Image with src "/login/4.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:968
+[   27618ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0
+[   33622ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0
+[   39626ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0
+[   51626ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0
+[   54630ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0
+[   75626ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0

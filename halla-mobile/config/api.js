@@ -145,7 +145,6 @@ export const ENDPOINTS = {
 
   // Vendors endpoints
   VENDORS: {
-    BASE: "/vendors",
     CATEGORIES: "/vendors/categories",
   },
 
@@ -161,6 +160,9 @@ export const ENDPOINTS = {
     BY_ID: (id) => `/tickets/${id}`,
     RATE: (id) => `/tickets/${id}/rate`,
     RATING_INFO: (id) => `/tickets/${id}/rating-info`,
+    ASSIGN: (id) => `/tickets/${id}/assign`,
+    STATUS: (id) => `/tickets/${id}/status`,
+    EXPORT: "/tickets/export",
   },
 
   // Staff endpoints
@@ -172,18 +174,13 @@ export const ENDPOINTS = {
     EVENT_STATS: (eventId) => `/staff/events/${eventId}/stats`,
   },
 
-  // Regions / Locations endpoints — mounted at /api/v2/locations/*
-  REGIONS: {
-    ALL: "/locations/regions",
-    CITIES_BY_REGION: (regionId) => `/locations/cities/${regionId}`,
-    DISTRICTS_BY_CITY: (cityId) => `/locations/districts/${cityId}`,
-  },
-
-  // Locations alias (same as REGIONS)
+  // Locations endpoints — mounted at /api/v2/locations/*
   LOCATIONS: {
     REGIONS: "/locations/regions",
     CITIES_BY_REGION: (regionId) => `/locations/cities/${regionId}`,
     DISTRICTS_BY_CITY: (cityId) => `/locations/districts/${cityId}`,
+    ALL: "/locations/all",
+    SEARCH: "/locations/search",
   },
 
   // Post-Event endpoints (guest access + host management)

@@ -19,23 +19,12 @@ import {
   borderRadius,
   backgrounds,
 } from "../../../styles/tokens";
-import { useAdminModerators, useAssignTicket } from "../../../hooks";
+import { useTicketAssignees, useAssignTicket } from "../../../hooks";
 import { useTranslation } from "../../../localization";
 
 /**
- * AssignTicketModal Component
- *
- * Modal for assigning a ticket to a moderator.
- * Uses a radio-style scrollable list to select a moderator.
- * Fetches moderators via useAdminModerators hook.
- * Submits via useAssignTicket hook.
- *
- * @component
- * @param {Object} props - Component props
- * @param {boolean} props.visible - Whether the modal is visible
- * @param {Function} props.onClose - Handler for closing the modal
- * @param {Object} props.ticket - Ticket to be assigned
- * @param {Function} props.onSave - Handler called after successful assignment
+ * Modal for assigning a ticket. Fetches assignees (admins + moderators with
+ * `manage_tickets`) via useTicketAssignees and submits via useAssignTicket.
  */
 const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
   const { t } = useTranslation("admin");
@@ -43,16 +32,9 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
   const [note, setNote] = useState("");
 
   const assignTicket = useAssignTicket();
-  const { data: moderatorsData, isLoading: fetchingModerators } = useAdminModerators(
-    { page: 1, limit: 100, status: "active" },
-    { enabled: visible }
-  );
+  const { data: assigneesData, isLoading: fetchingModerators } = useTicketAssignees();
 
-  const moderators =
-    moderatorsData?.data?.moderators ||
-    moderatorsData?.moderators ||
-    moderatorsData?.data ||
-    [];
+  const moderators = assigneesData?.data || [];
 
   // Reset state when modal closes
   useEffect(() => {

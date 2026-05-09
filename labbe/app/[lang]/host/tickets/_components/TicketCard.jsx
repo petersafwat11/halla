@@ -5,28 +5,12 @@ import styles from "./TicketCard.module.css";
 import { useTranslation } from "react-i18next";
 import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
 
-// Status config with colors
-const statusConfig = {
-  open: {
-    bg: "#DBEAFE",
-    color: "#1E40AF",
-  },
-  pending: {
-    bg: "#DBEAFE",
-    color: "#1E40AF",
-  },
-  in_progress: {
-    bg: "#FEF9C3",
-    color: "#854D0E",
-  },
-  resolved: {
-    bg: "#DCFCE7",
-    color: "#166534",
-  },
-  closed: {
-    bg: "#F3F4F6",
-    color: "#6B7280",
-  },
+const statusClassMap = {
+  open: styles.statusOpen,
+  pending: styles.statusPending,
+  in_progress: styles.statusInProgress,
+  resolved: styles.statusResolved,
+  closed: styles.statusClosed,
 };
 
 const TicketCard = ({ ticket, onDelete, onEdit }) => {
@@ -34,15 +18,13 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
   const { formatDateTime } = useLocalizedDate();
   const queryClient = useQueryClient();
 
-  const statusStyle = statusConfig[ticket.status] || statusConfig.pending;
+  const statusModifier = statusClassMap[ticket.status] || styles.statusPending;
   const title = t(`types.${ticket.type}`) || ticket.type;
   const description = ticket.message;
   const statusText = t(`status.${ticket.status}`) || ticket.status;
 
-  // Use localized date formatting
   const formattedDateTime = formatDateTime(ticket.createdAt);
 
-  // Prefetch ticket details on hover
   const handleMouseEnter = () => {
     queryClient.prefetchQuery({
       queryKey: ["tickets", ticket.id],
@@ -50,7 +32,6 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
     });
   };
 
-  // Status icon
   const getStatusIcon = () => {
     if (ticket.status === "pending") {
       return (
@@ -144,18 +125,13 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
           <div className={styles.header}>
             <h3 className={styles.title}>{title}</h3>
             <div className={styles.icon}>{getStatusIcon()}</div>
-            <div
-              className={styles.statusBadge}
-              style={{
-                background: statusStyle.bg,
-              }}
-            >
-              <span style={{ color: statusStyle.color }}>{statusText}</span>
+            <div className={`${styles.statusBadge} ${statusModifier}`}>
+              <span>{statusText}</span>
             </div>
           </div>
           <p className={styles.description}>{description}</p>
           <div className={styles.timestamp}>
-            <span>{t("createdAt") || "تم الإنشاء:"} </span>
+            <span>{t("createdAt")} </span>
             <span>{formattedDateTime}</span>
           </div>
         </div>
@@ -164,13 +140,13 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
             className={styles.actionButton}
             onClick={() => onDelete(ticket.id)}
           >
-            {t("actions.delete") || "حذف"}
+            {t("actions.delete")}
           </button>
           <button
             className={styles.actionButton}
             onClick={() => onEdit(ticket)}
           >
-            {t("actions.edit") || "تعديل"}
+            {t("actions.edit")}
           </button>
         </div>
       </div>

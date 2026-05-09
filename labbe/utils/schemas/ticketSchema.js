@@ -20,7 +20,6 @@ export const TICKET_TYPES = [
  */
 export const TICKET_STATUS = [
   "open",
-  "pending",
   "in_progress",
   "resolved",
   "closed",
@@ -37,6 +36,18 @@ export const TICKET_PRIORITY = ["low", "medium", "high", "urgent"];
  */
 export const createTicketSchema = (t) =>
   z.object({
+    subject: z
+      .string()
+      .trim()
+      .min(
+        1,
+        t?.("tickets.errors.subjectRequired") || "عنوان الشكوى مطلوب"
+      )
+      .max(
+        200,
+        t?.("tickets.errors.subjectMaxLength") ||
+          "عنوان الشكوى يجب أن لا يتجاوز 200 حرف"
+      ),
     type: z.enum(TICKET_TYPES, {
       errorMap: () => ({
         message: t?.("tickets.errors.typeRequired") || "نوع الشكوى مطلوب",
@@ -44,6 +55,7 @@ export const createTicketSchema = (t) =>
     }),
     message: z
       .string()
+      .trim()
       .min(
         10,
         t?.("tickets.errors.messageMinLength") ||
@@ -139,6 +151,7 @@ export const ticketFilterSchema = z.object({
  * Get default values for create ticket form
  */
 export const getCreateTicketDefaults = () => ({
+  subject: "",
   type: "other",
   message: "",
   priority: "medium",

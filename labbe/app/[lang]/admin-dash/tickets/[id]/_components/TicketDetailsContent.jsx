@@ -25,7 +25,7 @@ export default function TicketDetailsContent({ ticketId }) {
     );
   }
 
-  const ticket = data?.data?.ticket || data?.data || data;
+  const ticket = data?.data?.ticket;
 
   return <TicketDetailView ticket={ticket} />;
 }

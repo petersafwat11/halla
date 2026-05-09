@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,72 +7,40 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useTranslation } from "../../localization";
-import marketplaceService from "../../services/marketplaceService";
+import { useVendorCategories } from "../../hooks/queries/useMarketplace";
 
 const Sections = ({ selectedSection, onSectionChange }) => {
   const { t, i18n } = useTranslation("marketplace");
-  const [serviceTypes, setServiceTypes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: categoriesData, isLoading: loading, error } = useVendorCategories();
 
-  useEffect(() => {
-    fetchServiceTypes();
-  }, [i18n.language]);
-
-  const fetchServiceTypes = async () => {
-    try {
-      setLoading(true);
-      const response = await marketplaceService.getServiceTypes(i18n.language);
-      if (response.status === "success") {
-        const isAr = i18n.language === "ar";
-        const categories = response.data?.categories || response.data || [];
-        const mapped = (Array.isArray(categories) ? categories : []).map((c) => ({
-          id: c.key,
-          key: c.key,
-          name: isAr ? c.nameAr : c.nameEn,
-        }));
-        const allOption = {
-          id: "all",
-          key: "all",
-          name: t("sections.all"),
-        };
-        setServiceTypes([allOption, ...mapped]);
-      }
-    } catch (error) {
-      console.error("Error fetching service types:", error);
-      // Fallback to default sections
-      setServiceTypes([
-        { id: "all", key: "all", name: t("sections.all") },
-        {
-          id: "eventPlanning",
-          key: "eventPlanning",
-          name: t("sections.eventPlanning"),
-        },
-        {
-          id: "mediaProduction",
-          key: "mediaProduction",
-          name: t("sections.mediaProduction"),
-        },
-        {
-          id: "giftsAndGiveaways",
-          key: "giftsAndGiveaways",
-          name: t("sections.giftsAndGiveaways"),
-        },
-        {
-          id: "foodAndBeverages",
-          key: "foodAndBeverages",
-          name: t("sections.foodAndBeverages"),
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+  const categories = categoriesData?.data?.categories || [];
+  const isAr = i18n.language === "ar";
+  const mapped = categories.map((c) => ({
+    id: c.key,
+    key: c.key,
+    name: isAr ? c.nameAr : c.nameEn,
+  }));
+  const allOption = {
+    id: "all",
+    key: "all",
+    name: t("sections.all"),
   };
+  const serviceTypes = [allOption, ...mapped];
 
   if (loading) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>{t("sections.title")}</Text>
         <ActivityIndicator size="small" color="#C28E5C" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>{t("sections.title")}</Text>
+        <Text style={styles.errorText}>{t("errors.categoriesLoadFailed")}</Text>
       </View>
     );
   }
@@ -132,6 +100,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#2C2C2C",
     marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 14,
+    color: "#EF4444",
+    textAlign: "center",
   },
   sectionsContainer: {
     gap: 12,

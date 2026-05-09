@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -10,17 +10,13 @@ import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import {
   createTicketSchema,
   TICKET_TYPES,
-  TICKET_PRIORITY,
 } from "@/utils/schemas/ticketSchema";
-import { ticketsAPI } from "@/services/adminDashboard";
-import { cookieUtils } from "@/utils/cookieUtils";
-import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
+import { useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
 
 const MakeTicketPopup = ({ onClose, onSuccess }) => {
   const { t } = useTranslation("adminDashboard");
-  const [isLoading, setIsLoading] = useState(false);
+  const createMutation = useTicketMutation("createTicket");
 
-  // Type labels for display
   const typeLabels = {
     technical: t("ticketTypes.technical", "تقني"),
     payment: t("ticketTypes.payment", "دفع"),
@@ -36,6 +32,7 @@ const MakeTicketPopup = ({ onClose, onSuccess }) => {
   const methods = useForm({
     resolver: zodResolver(createTicketSchema(t)),
     defaultValues: {
+      subject: "",
       type: "other",
       message: "",
       priority: "medium",
@@ -49,22 +46,13 @@ const MakeTicketPopup = ({ onClose, onSuccess }) => {
   } = methods;
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
     try {
-      const token = cookieUtils.getCookie("token");
-
-      const response = await ticketsAPI.createTicket(data, token);
-
-      console.log(response);
+      await createMutation.mutateAsync(data);
       toast.success(t("createTicket.success", "تم إنشاء الشكوى بنجاح"));
-
-      onSuccess && onSuccess();
-      onClose && onClose();
+      onSuccess?.();
+      onClose?.();
     } catch (error) {
-      console.error("Error creating ticket:", error);
       toast.error(t("createTicket.error", "فشل في إنشاء الشكوى"));
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -88,62 +76,25 @@ const MakeTicketPopup = ({ onClose, onSuccess }) => {
         <form onSubmit={handleSubmit(onSubmit)} className={styles.body}>
           <div className={styles.inputsWrapper}>
             <Controller
-              name="username"
+              name="subject"
               control={control}
               render={({ field }) => (
                 <InputGroup
-                  label={t("createTicket.username", "اسم المستخدم")}
+                  label={t("createTicket.subject", "عنوان الشكوى")}
                   placeholder={t(
-                    "createTicket.usernamePlaceholder",
-                    "ادخل اسم المستخدم"
+                    "createTicket.subjectPlaceholder",
+                    "ادخل عنوان الشكوى"
                   )}
                   type="text"
-                  name="username"
-                  hintMessage={errors.username?.message}
+                  name="subject"
+                  hintMessage={errors.subject?.message}
                   required={true}
-                  error={!!errors.username}
+                  error={!!errors.subject}
                   value={field.value}
                   onChange={field.onChange}
                 />
               )}
             />
-            <Controller
-              name="number"
-              control={control}
-              render={({ field }) => (
-                <MobileInputGroup
-                  label={t("createTicket.number", "رقم الهاتف")}
-                  placeholder={t(
-                    "createTicket.numberPlaceholder",
-                    "5xx xxx xxx"
-                  )}
-                  type="tel"
-                  name="number"
-                  hintMessage={errors.number?.message}
-                  required={true}
-                  error={!!errors.number}
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-
-                //   <InputGroup
-                //     label={t("createTicket.number", "رقم الهاتف")}
-                //     placeholder={t(
-                //       "createTicket.numberPlaceholder",
-                //       "+966 5xx xxx xxx"
-                //     )}
-                //     dir="ltr"
-                //     type="text"
-                //     name="number"
-                //     hintMessage={errors.number?.message}
-                //     required={true}
-                //     error={!!errors.number}
-                //     value={field.value}
-                //     onChange={field.onChange}
-                //   />
-              )}
-            />
-
             <div className={styles.selectGroup}>
               <div className={styles.selectHeader}>
                 <p>{t("createTicket.type", "نوع الشكوى")}</p>
@@ -200,12 +151,12 @@ const MakeTicketPopup = ({ onClose, onSuccess }) => {
               type="button"
               className={styles.cancel}
               onClick={onClose}
-              disabled={isLoading}
+              disabled={createMutation.isPending}
             >
               {t("createTicket.cancel", "إلغاء")}
             </button>
-            <button type="submit" className={styles.save} disabled={isLoading}>
-              {isLoading
+            <button type="submit" className={styles.save} disabled={createMutation.isPending}>
+              {createMutation.isPending
                 ? t("createTicket.creating", "جاري الإنشاء...")
                 : t("createTicket.create", "إنشاء")}
             </button>

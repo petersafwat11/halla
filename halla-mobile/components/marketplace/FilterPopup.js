@@ -21,8 +21,10 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
   const {
     localFilters, setLocalFilters, regions, cities, districts,
     serviceTypes, loadingCities, loadingDistricts,
-    updateFilter, toggleDistrict, resetFilters,
+    regionsError, citiesError, districtsError,
+    updateFilter, toggleDistrict, resetFilters, retryAll,
   } = useFilterData(i18n.language);
+  const hasError = Boolean(regionsError || citiesError || districtsError);
 
   useEffect(() => {
     if (filters) setLocalFilters(filters);
@@ -57,6 +59,19 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
           </View>
 
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {hasError && (
+              <View style={styles.errorBanner}>
+                <Text style={styles.errorText}>
+                  {t("common.errors.locationLoadFailed", "Couldn't load locations")}
+                </Text>
+                <TouchableOpacity onPress={retryAll} activeOpacity={0.7} style={styles.retryButton}>
+                  <Text style={styles.retryButtonText}>
+                    {t("common.actions.retry", "Retry")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             <FilterField label={t("filters.section")}>
               <FilterDropdown
                 value={localFilters.serviceType}
@@ -76,7 +91,7 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
                 placeholder={t("filters.allRegions")}
                 options={[
                   { label: t("filters.allRegions"), value: "" },
-                  ...regions.map((r) => ({ label: r.name_ar, value: r.region_id })),
+                  ...regions.map((r) => ({ label: r.displayName, value: r.region_id })),
                 ]}
               />
             </FilterField>
@@ -94,20 +109,28 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
                   disabled={!localFilters.regionId}
                   options={[
                     { label: t("filters.allCities"), value: "" },
-                    ...cities.map((c) => ({ label: c.name_ar, value: c.city_id })),
+                    ...cities.map((c) => ({ label: c.displayName, value: c.city_id })),
                   ]}
                 />
               )}
             </FilterField>
 
-            {localFilters.cityId && districts.length > 0 && (
+            {localFilters.cityId && (
               <FilterField label={t("filters.districts")}>
-                <DistrictCheckboxes
-                  districts={districts}
-                  selectedIds={localFilters.districtIds}
-                  onToggle={toggleDistrict}
-                  loading={loadingDistricts}
-                />
+                {loadingDistricts ? (
+                  <View style={styles.dropdownTrigger}>
+                    <ActivityIndicator size="small" color={COLORS.primary} />
+                  </View>
+                ) : districts.length > 0 ? (
+                  <DistrictCheckboxes
+                    districts={districts}
+                    selectedIds={localFilters.districtIds}
+                    onToggle={toggleDistrict}
+                    loading={false}
+                  />
+                ) : (
+                  <Text style={styles.noDataText}>{t("filters.noDistricts")}</Text>
+                )}
               </FilterField>
             )}
 
@@ -198,4 +221,26 @@ const styles = StyleSheet.create({
     paddingVertical: 14, alignItems: "center",
   },
   applyButtonText: { fontSize: 16, fontFamily: "Cairo_600SemiBold", color: "#FFF" },
+  noDataText: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#888", textAlign: "center", paddingVertical: 12 },
+  errorBanner: {
+    backgroundColor: "#FEF2F2",
+    borderColor: "#FCA5A5",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  errorText: { flex: 1, fontSize: 13, fontFamily: "Cairo_500Medium", color: "#B91C1C" },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  retryButtonText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#FFF" },
 });

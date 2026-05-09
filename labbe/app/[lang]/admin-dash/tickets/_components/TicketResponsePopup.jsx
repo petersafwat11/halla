@@ -2,12 +2,10 @@
 
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
 import { useTranslation } from "react-i18next";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
+import { useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
 import { ticketResponseSchema } from "@/utils/schemas/adminPopupSchemas";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
@@ -16,13 +14,7 @@ import styles from "./TicketResponsePopup.module.css";
 
 export default function TicketResponsePopup({ ticket, onClose, viewOnly = false, onSuccess }) {
   const { t } = useTranslation("adminTickets");
-  const queryClient = useQueryClient();
-
-  const updateTicket = useMutation({
-    mutationFn: ({ ticketId, data }) =>
-      apiRequest({ method: "PATCH", path: API_PATHS.tickets.updateTicketStatus(ticketId), data }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tickets"] }),
-  });
+  const updateTicket = useTicketMutation("updateStatus");
 
   const methods = useForm({
     resolver: zodResolver(ticketResponseSchema),
@@ -32,8 +24,9 @@ export default function TicketResponsePopup({ ticket, onClose, viewOnly = false,
   const onSubmit = async (data) => {
     try {
       await updateTicket.mutateAsync({
-        ticketId: ticket.id || ticket._id,
-        data: { resolution: data.response, status: "resolved" },
+        ticketId: ticket.id,
+        status: "resolved",
+        resolution: data.response,
       });
       toastUtils.success(t("close.success"));
       if (onSuccess) onSuccess();

@@ -1,0 +1,11 @@
+[     137ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5949
+[     168ms] [LOG] [Fast Refresh] done in 135ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5809
+[     363ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[     415ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3000/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[     439ms] [WARNING] Image with src "/logo.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:968
+[     677ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[     695ms] [LOG] [API] GET /fonts - 200 (155ms) @ http://localhost:3000/_next/static/chunks/labbe_9997054c._.js:668
+[    1232ms] [LOG] [API] GET /admin/templates/69fb132e6554f97d7ed765b6 - 200 (693ms) @ http://localhost:3000/_next/static/chunks/labbe_9997054c._.js:668
+[    1233ms] [LOG] [API] GET /admin/template-categories - 200 (693ms) @ http://localhost:3000/_next/static/chunks/labbe_9997054c._.js:668
+[    4756ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/admin-dash/templates/69fb132e6554f97d7ed765b6:0

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import marketplaceService from "../services/marketplaceService";
+import { useState } from "react";
+import { useRegions, useCitiesByRegion, useDistrictsByCity } from "./queries/useLocations";
+import { useVendorCategories } from "./queries/useMarketplace";
 
 const DEFAULT_FILTERS = {
   serviceType: "all",
@@ -11,14 +12,41 @@ const DEFAULT_FILTERS = {
   minRating: "",
 };
 
+const pickLabel = (lang, ar, en) => (lang === "ar" ? ar || en : en || ar);
+
 export const useFilterData = (i18nLanguage) => {
   const [localFilters, setLocalFilters] = useState(DEFAULT_FILTERS);
-  const [regions, setRegions] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [serviceTypes, setServiceTypes] = useState([]);
-  const [loadingCities, setLoadingCities] = useState(false);
-  const [loadingDistricts, setLoadingDistricts] = useState(false);
+
+  const {
+    data: regionsData, isLoading: loadingRegions, error: regionsError, refetch: refetchRegions,
+  } = useRegions();
+  const {
+    data: citiesData, isLoading: loadingCities, error: citiesError, refetch: refetchCities,
+  } = useCitiesByRegion(localFilters.regionId || undefined);
+  const {
+    data: districtsData, isLoading: loadingDistricts, error: districtsError, refetch: refetchDistricts,
+  } = useDistrictsByCity(localFilters.cityId || undefined);
+  const { data: categoriesData } = useVendorCategories();
+
+  const regions = (regionsData?.data?.regions || []).map((r) => ({
+    ...r,
+    displayName: pickLabel(i18nLanguage, r.name_ar, r.name_en),
+  }));
+  const cities = (citiesData?.data?.cities || []).map((c) => ({
+    ...c,
+    displayName: pickLabel(i18nLanguage, c.name_ar, c.name_en),
+  }));
+  const districts = (districtsData?.data?.districts || []).map((d) => ({
+    ...d,
+    displayName: pickLabel(i18nLanguage, d.name_ar, d.name_en),
+  }));
+
+  const serviceTypes = categoriesData?.data?.categories
+    ? (Array.isArray(categoriesData.data.categories) ? categoriesData.data.categories : []).map((c) => ({
+        key: c.key,
+        name: pickLabel(i18nLanguage, c.nameAr, c.nameEn),
+      }))
+    : [];
 
   const updateFilter = (key, value) => {
     setLocalFilters((prev) => {
@@ -41,90 +69,16 @@ export const useFilterData = (i18nLanguage) => {
 
   const resetFilters = () => setLocalFilters(DEFAULT_FILTERS);
 
-  const fetchRegions = async () => {
-    try {
-      const response = await marketplaceService.getRegions();
-      if (response.status === "success") {
-        const data = response.data?.regions || response.data || [];
-        setRegions(Array.isArray(data) ? data : []);
-      }
-    } catch (error) {
-      console.error("Error fetching regions:", error);
-    }
+  const retryAll = () => {
+    if (regionsError) refetchRegions();
+    if (citiesError) refetchCities();
+    if (districtsError) refetchDistricts();
   };
-
-  const fetchServiceTypes = async () => {
-    try {
-      const response = await marketplaceService.getServiceTypes(i18nLanguage);
-      if (response.status === "success") {
-        const isAr = i18nLanguage === "ar";
-        const cats = response.data?.categories || response.data || [];
-        setServiceTypes(
-          (Array.isArray(cats) ? cats : []).map((c) => ({
-            key: c.key, name: isAr ? c.nameAr : c.nameEn,
-          }))
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching service types:", error);
-    }
-  };
-
-  const fetchCities = async (regionId) => {
-    try {
-      setLoadingCities(true);
-      const response = await marketplaceService.getCities(regionId);
-      if (response.status === "success") {
-        const data = response.data?.cities || response.data || [];
-        setCities(Array.isArray(data) ? data : []);
-      }
-    } catch (error) {
-      console.error("Error fetching cities:", error);
-    } finally {
-      setLoadingCities(false);
-    }
-  };
-
-  const fetchDistricts = async (cityId) => {
-    try {
-      setLoadingDistricts(true);
-      const response = await marketplaceService.getDistricts(cityId);
-      if (response.status === "success") {
-        const data = response.data?.districts || response.data || [];
-        setDistricts(Array.isArray(data) ? data : []);
-      }
-    } catch (error) {
-      console.error("Error fetching districts:", error);
-    } finally {
-      setLoadingDistricts(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRegions();
-    fetchServiceTypes();
-  }, []);
-
-  useEffect(() => {
-    if (localFilters.regionId) {
-      fetchCities(localFilters.regionId);
-    } else {
-      setCities([]);
-      setDistricts([]);
-    }
-  }, [localFilters.regionId]);
-
-  useEffect(() => {
-    if (localFilters.cityId) {
-      fetchDistricts(localFilters.cityId);
-    } else {
-      setDistricts([]);
-    }
-  }, [localFilters.cityId]);
 
   return {
     localFilters, setLocalFilters, regions, cities, districts,
-    serviceTypes, loadingCities, loadingDistricts,
-    updateFilter, toggleDistrict, resetFilters,
+    serviceTypes, loadingRegions, loadingCities, loadingDistricts,
+    regionsError, citiesError, districtsError,
+    updateFilter, toggleDistrict, resetFilters, retryAll,
   };
 };

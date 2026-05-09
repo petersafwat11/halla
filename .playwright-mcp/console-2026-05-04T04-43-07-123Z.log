@@ -1,0 +1,21 @@
+[     290ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[     341ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3000/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[     344ms] [LOG] Current Pathname: /ar/login @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:285
+[     345ms] [LOG] Should Show Slider: true @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:286
+[     345ms] [LOG] Current Pathname: /ar/login @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:285
+[     345ms] [LOG] Should Show Slider: true @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:286
+[     372ms] [LOG] Current Pathname: /ar/login @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:285
+[     372ms] [LOG] Should Show Slider: true @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:286
+[     372ms] [LOG] Current Pathname: /ar/login @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:285
+[     372ms] [LOG] Should Show Slider: true @ http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__cf9c1c4e._.js:286
+[     438ms] [WARNING] Image with src "/login/1.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:968
+[     458ms] [LOG] [API] POST /auth/logout - 200 (28ms) @ http://localhost:3000/_next/static/chunks/labbe_4d7eb481._.js:2150
+[     594ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[    3464ms] [WARNING] Image with src "/login/2.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:968
+[    9464ms] [WARNING] Image with src "/login/4.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:968
+[   15425ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0
+[   27420ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0
+[   30429ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0

@@ -11,7 +11,7 @@ import FilterPopup from "../../components/marketplace/FilterPopup";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import marketplaceService from "../../services/marketplaceService";
-import { useVendors } from "../../hooks";
+import { useMarketplaceServices } from "../../hooks";
 
 const DEFAULT_FILTERS = {
   serviceType: "all",
@@ -47,7 +47,7 @@ const Marketplace = ({ navigation }) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useVendors(queryParams);
+  } = useMarketplaceServices(queryParams);
 
   useEffect(() => {
     if (error) {

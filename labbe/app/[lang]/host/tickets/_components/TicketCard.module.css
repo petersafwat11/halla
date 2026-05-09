@@ -79,6 +79,33 @@
   line-height: 1.6rem;
 }
 
+.statusOpen,
+.statusPending {
+  background: #DBEAFE;
+}
+.statusOpen span,
+.statusPending span {
+  color: #1E40AF;
+}
+.statusInProgress {
+  background: #FEF9C3;
+}
+.statusInProgress span {
+  color: #854D0E;
+}
+.statusResolved {
+  background: #DCFCE7;
+}
+.statusResolved span {
+  color: #166534;
+}
+.statusClosed {
+  background: #F3F4F6;
+}
+.statusClosed span {
+  color: #6B7280;
+}
+
 .title {
   color: #2c2c2c;
   text-align: right;

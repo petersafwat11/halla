@@ -9,6 +9,8 @@ const {
   ROLES,
   TICKET_STATUS,
   TICKET_PRIORITY,
+  PERMISSIONS,
+  USER_STATUS,
 } = require("../../shared/constants");
 const {
   NotFoundError,
@@ -23,6 +25,7 @@ const User = require("../../../models/UserModel");
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
+const logger = require('../../shared/utils/logger');
 
 // Ticket source constants
 const TICKET_SOURCE = {
@@ -34,7 +37,7 @@ const TICKET_SOURCE = {
   OTHER: "other",
 };
 
-// FLOW-23-F01: valid status transitions matrix
+// Valid status transitions matrix
 const VALID_TRANSITIONS = {
   [TICKET_STATUS.OPEN]: [TICKET_STATUS.IN_PROGRESS, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
   [TICKET_STATUS.IN_PROGRESS]: [TICKET_STATUS.WAITING_RESPONSE, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
@@ -82,9 +85,9 @@ class TicketsService {
     const assignees = await User.find({
       $or: [
         { role: { $in: [ROLES.ADMIN, ROLES.SUPER_ADMIN] } },
-        { role: ROLES.MODERATOR, permissions: "manage_tickets" },
+        { role: ROLES.MODERATOR, permissions: PERMISSIONS.MANAGE_TICKETS },
       ],
-      status: { $ne: "suspended" },
+      status: { $ne: USER_STATUS.SUSPENDED },
     })
       .select("_id username name email role")
       .sort({ role: 1, username: 1 });
@@ -111,7 +114,7 @@ class TicketsService {
       query.user = userId;
     }
 
-    // TENANT-F02: whitelabel admin/moderator sees only their tenant's tickets
+    // Whitelabel admins see only their tenant's tickets
     if (isAdmin && requestingUser?.whitelabelId &&
         [ROLES.WHITELABEL_ADMIN, ROLES.WHITELABEL_MODERATOR].includes(requestingUser.role)) {
       query.whitelabelId = requestingUser.whitelabelId;
@@ -135,7 +138,8 @@ class TicketsService {
         .skip(skip)
         .limit(limit)
         .populate("user", "username phoneNumber email")
-        .populate("assignedTo", "username email"),
+        .populate("assignedTo", "username email")
+        .lean(),
       Ticket.countDocuments(query),
     ]);
 
@@ -156,7 +160,7 @@ class TicketsService {
     const ticket = await Ticket.findById(ticketId)
       .populate("user", "username phoneNumber email")
       .populate("assignedTo", "username email")
-      .populate("replies.user", "username email role");
+      .lean();
 
     if (!ticket) {
       throw new NotFoundError("Ticket");
@@ -166,7 +170,7 @@ class TicketsService {
       throw new ForbiddenError("You do not have access to this ticket");
     }
 
-    return { ticket: this._formatTicket(ticket, true) };
+    return { ticket: this._formatTicket(ticket) };
   }
 
   /**
@@ -187,58 +191,15 @@ class TicketsService {
     });
 
     // Notify user
-    this._notifyTicketCreated(ticket, user).catch(console.error);
+    this._notifyTicketCreated(ticket, user).catch((err) => logger.error('ticket creation notification failed', err));
 
     // Notify admins
-    this._notifyAdminsNewTicket(ticket, user).catch(console.error);
+    this._notifyAdminsNewTicket(ticket, user).catch((err) => logger.error('ticket creation admin notification failed', err));
+
+    // Audit: ticket created
+    logAudit({ action: 'ticket.created', actor: { _id: user._id, role: user.role }, targetType: 'ticket', targetId: ticket._id, metadata: { source, priority: ticket.priority } }).catch((err) => logger.error('ticket creation audit log failed', err));
 
     return { ticket: this._formatTicket(ticket) };
-  }
-
-  /**
-   * Add reply to ticket
-   * @param {string} ticketId
-   * @param {string} message
-   * @param {Object} user
-   * @param {boolean} isAdmin
-   * @returns {Promise<Object>}
-   */
-  async addReply(ticketId, message, user, isAdmin) {
-    const ticket = await Ticket.findById(ticketId);
-
-    if (!ticket) {
-      throw new NotFoundError("Ticket");
-    }
-
-    if (!isAdmin && ticket.user.toString() !== user._id.toString()) {
-      throw new ForbiddenError("You do not have access to this ticket");
-    }
-
-    ticket.replies.push({
-      user: user._id,
-      message,
-      isStaff: isAdmin,
-      createdAt: new Date(),
-    });
-
-    // Update status if admin replies
-    if (isAdmin && ticket.status === TICKET_STATUS.OPEN) {
-      ticket.status = TICKET_STATUS.IN_PROGRESS;
-    }
-
-    await ticket.save();
-
-    // Audit: reply added
-    logAudit({ action: 'ticket.reply_added', actor: { _id: user._id, role: user.role }, targetType: 'ticket', targetId: ticket._id, metadata: { isStaff: isAdmin, newStatus: ticket.status } }).catch(() => {});
-
-    // Notify other party
-    if (isAdmin) {
-      this._notifyUserTicketReply(ticket, message).catch(console.error);
-    } else {
-      this._notifyAdminsTicketReply(ticket, user, message).catch(console.error);
-    }
-
-    return { ticket: this._formatTicket(ticket, true) };
   }
 
   /**
@@ -253,7 +214,7 @@ class TicketsService {
       throw new ValidationError("Invalid status");
     }
 
-    // FLOW-23-F01: enforce state machine — fetch current status first
+    // Enforce state machine — fetch current status first
     const existing = await Ticket.findById(ticketId).select("status");
     if (existing) {
       const allowed = VALID_TRANSITIONS[existing.status] || [];
@@ -289,10 +250,10 @@ class TicketsService {
     }
 
     // Audit: ticket status changed
-    logAudit({ action: 'ticket.status_updated', actor: { _id: resolvedById }, targetType: 'ticket', targetId: ticket._id, metadata: { previousStatus: existing?.status, newStatus: status, resolution } }).catch(() => {});
+    logAudit({ action: 'ticket.status_updated', actor: { _id: resolvedById }, targetType: 'ticket', targetId: ticket._id, metadata: { previousStatus: existing?.status, newStatus: status, resolution } }).catch((err) => logger.error('ticket status audit log failed', err));
 
     // Notify user of status change
-    this._notifyTicketStatusChange(ticket, status).catch(console.error);
+    this._notifyTicketStatusChange(ticket, status).catch((err) => logger.error('ticket status notification failed', err));
 
     return { ticket: this._formatTicket(ticket) };
   }
@@ -315,7 +276,7 @@ class TicketsService {
     }
 
     // Notify assigned admin (non-blocking)
-    this._notifyTicketAssigned(ticket, assigneeId).catch(console.error);
+    this._notifyTicketAssigned(ticket, assigneeId).catch((err) => logger.error('ticket assignment notification failed', err));
 
     return { ticket: this._formatTicket(ticket) };
   }
@@ -468,7 +429,7 @@ class TicketsService {
   // PRIVATE HELPERS
   // ============================================
 
-  _formatTicket(ticket, includeReplies = false) {
+  _formatTicket(ticket) {
     const formatted = {
       id: ticket._id,
       ticketNumber: ticket._id.toString().slice(-6),
@@ -512,16 +473,6 @@ class TicketsService {
       closedAt: ticket.closedAt,
     };
 
-    if (includeReplies && ticket.replies) {
-      formatted.replies = ticket.replies.map((r) => ({
-        id: r._id,
-        message: r.message,
-        isStaff: r.isStaff,
-        user: r.user ? { id: r.user._id, username: r.user.username } : null,
-        createdAt: r.createdAt,
-      }));
-    }
-
     return formatted;
   }
 
@@ -545,28 +496,6 @@ class TicketsService {
       message: `New ticket #${ticket._id.toString().slice(-6)} from ${user.username || user.phoneNumber}`,
       messageAr: `شكوى جديدة #${ticket._id.toString().slice(-6)}`,
       actionUrl: `${frontendUrl}/ar/admin-dash/tickets`,
-      data: { entityType: "ticket", entityId: ticket._id },
-    });
-  }
-
-  async _notifyUserTicketReply(ticket, message) {
-    await notificationService.sendToUser(ticket.user, {
-      type: "ticket_reply",
-      title: "Ticket Reply",
-      titleAr: "رد على الشكوى",
-      message: `Support team replied to your ticket #${ticket._id.toString().slice(-6)}`,
-      messageAr: `رد فريق الدعم على شكواك #${ticket._id.toString().slice(-6)}`,
-      data: { entityType: "ticket", entityId: ticket._id },
-    });
-  }
-
-  async _notifyAdminsTicketReply(ticket, user, message) {
-    await notificationService.sendToAdmins({
-      type: "ticket_reply",
-      title: "Ticket Reply",
-      titleAr: "رد على الشكوى",
-      message: `${user.username || "User"} replied to ticket #${ticket._id.toString().slice(-6)}`,
-      messageAr: `رد المستخدم على الشكوى #${ticket._id.toString().slice(-6)}`,
       data: { entityType: "ticket", entityId: ticket._id },
     });
   }

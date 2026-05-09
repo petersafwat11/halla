@@ -65,11 +65,11 @@ const TicketDetailsScreen = () => {
 
   if (error) toast.error(t("ticketDetails.loadFailed"));
 
-  const raw = resp?.data?.ticket || resp?.data;
+  const raw = resp?.data?.ticket;
   const ticket = raw ? {
-    id: raw.id || raw._id, ticketNumber: raw.ticketNumber, subject: raw.subject || raw.title,
-    message: raw.message || raw.description, status: raw.status || "open", priority: raw.priority || "medium",
-    category: raw.category, submittedBy: raw.submittedBy || raw.user, assignedTo: raw.assignedTo,
+    id: raw.id, ticketNumber: raw.ticketNumber, subject: raw.subject,
+    message: raw.message, status: raw.status || "open", priority: raw.priority || "medium",
+    category: raw.category, submittedBy: raw.user, assignedTo: raw.assignedTo,
     resolution: raw.resolution, createdAt: raw.createdAt, updatedAt: raw.updatedAt,
   } : null;
 

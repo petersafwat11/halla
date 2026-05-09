@@ -52,7 +52,6 @@ const TicketListItem = ({ ticket, onPress, onResolve, onAssign, selected = false
 
   const subject =
     ticket.subject ||
-    ticket.title ||
     (ticket.message
       ? `${ticket.message.slice(0, 55)}${ticket.message.length > 55 ? "…" : ""}`
       : t("tickets.noSubject"));

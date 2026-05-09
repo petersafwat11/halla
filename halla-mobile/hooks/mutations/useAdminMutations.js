@@ -274,7 +274,10 @@ export function useAssignTicket() {
       return assertOk(response);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] }),
+        queryClient.invalidateQueries({ queryKey: ['tickets'] }),
+      ]);
     },
   });
 }
@@ -288,7 +291,10 @@ export function useResolveTicket() {
       return assertOk(response);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] }),
+        queryClient.invalidateQueries({ queryKey: ['tickets'] }),
+      ]);
     },
   });
 }
@@ -302,7 +308,10 @@ export function useReopenTicket() {
       return assertOk(response);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] }),
+        queryClient.invalidateQueries({ queryKey: ['tickets'] }),
+      ]);
     },
   });
 }
@@ -316,7 +325,10 @@ export function useDeleteAdminTicket() {
       return assertOk(response);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] }),
+        queryClient.invalidateQueries({ queryKey: ['tickets'] }),
+      ]);
     },
   });
 }

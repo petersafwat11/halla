@@ -41,7 +41,7 @@ const TicketDetailView = ({ ticket }) => {
   const handleReopen = useCallback(async () => {
     try {
       await reopenMutation.mutateAsync({
-        ticketId: ticket.id || ticket._id,
+        ticketId: ticket.id,
         status: "open",
       });
       toastUtils.success(t("messages.reopenSuccess", "Ticket reopened successfully"));

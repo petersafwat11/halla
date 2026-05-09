@@ -205,6 +205,7 @@ export const API_PATHS = {
     // Admin Actions
     assignTicket: (id) => `/tickets/${id}/assign`,
     updateTicketStatus: (id) => `/tickets/${id}/status`,
+    exportTickets: '/tickets/export',
 
     // Rating
     rateTicket: (id) => `/tickets/${id}/rate`,
@@ -250,7 +251,6 @@ export const API_PATHS = {
     getDistrictsByCity: (cityId) => `/locations/districts/${cityId}`,
     getAllLocations: '/locations/all',
     searchLocations: '/locations/search',
-    resolveLocationNames: '/locations/resolve',
   },
 
   // ============================================
@@ -258,8 +258,6 @@ export const API_PATHS = {
   // ============================================
   vendors: {
     getCategories: '/vendors/categories',
-    getVendors: '/vendors',
-    getVendorById: (id) => `/vendors/${id}`,
   },
 
   // ============================================

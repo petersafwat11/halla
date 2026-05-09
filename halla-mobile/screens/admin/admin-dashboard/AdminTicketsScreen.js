@@ -45,7 +45,7 @@ const AdminTicketsScreen = () => {
 
   const debouncedSearch = useDebouncedValue(searchQuery, 350);
   const ticketsFilters = useMemo(
-    () => ({ search: debouncedSearch, status: activeFilter }),
+    () => ({ search: debouncedSearch, ...(activeFilter !== "all" && { status: activeFilter }) }),
     [debouncedSearch, activeFilter]
   );
 
@@ -68,14 +68,14 @@ const AdminTicketsScreen = () => {
 
   const tickets = useMemo(() =>
     rawTickets.map((tk) => ({
-      id:           tk.id || tk._id,
+      id:           tk.id,
       ticketNumber: tk.ticketNumber,
-      subject:      tk.subject || tk.title,
-      message:      tk.message || tk.description,
+      subject:      tk.subject,
+      message:      tk.message,
       status:       tk.status || "open",
       priority:     tk.priority || "medium",
       category:     tk.category,
-      submittedBy:  tk.submittedBy || tk.user,
+      submittedBy:  tk.user,
       assignedTo:   tk.assignedTo,
       resolution:   tk.resolution,
       createdAt:    tk.createdAt,

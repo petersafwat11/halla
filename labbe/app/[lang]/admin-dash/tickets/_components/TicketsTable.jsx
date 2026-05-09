@@ -4,11 +4,10 @@ import { useMemo, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { usePageAccess } from "@/hooks/usePageAccess";
-import { useMyTickets, useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { useMyTickets, useTicketMutation, useExportTickets } from "@/hooks/reactQueryHooks/useTickets";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import Table from "@/ui/commen/new-table/Table";
-import { ticketsAPI } from "@/services/adminDashboard";
 import AssignTicketPopup from "./AssignTicketPopup";
 import TicketResponsePopup from "./TicketResponsePopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -39,6 +38,7 @@ export default function TicketsTable() {
   const deleteMutation = useTicketMutation("deleteTicket");
   const statusMutation = useTicketMutation("updateStatus");
   const updateMutation = useTicketMutation("updateTicket");
+  const exportMutation = useExportTickets();
 
   const handleDelete = useCallback(async (ticketId) => {
     if (!confirm(t("messages.confirmDelete"))) return;
@@ -87,14 +87,14 @@ export default function TicketsTable() {
 
   const handleExport = useCallback(async () => {
     try {
-      await ticketsAPI.export({
+      await exportMutation.mutateAsync({
         search: filters.search, status: filters.status,
         priority: filters.priority, from: filters.from, to: filters.to,
       });
     } catch (err) {
       handleError(err, t, { fallbackMessage: "messages.updateError" });
     }
-  }, [filters, t]);
+  }, [exportMutation, filters, t]);
 
   const handlePageChange = useCallback((page) => {
     const params = new URLSearchParams(searchParams);
@@ -102,7 +102,7 @@ export default function TicketsTable() {
     router.push(`?${params.toString()}`, { scroll: false });
   }, [router, searchParams]);
 
-  const tableData = useMemo(() => (data?.data?.tickets || []).map((ticket) => ({
+  const tableData = useMemo(() => (data?.data || []).map((ticket) => ({
     id: ticket.id || ticket._id,
     subject: ticket.subject || ticket.type || "-",
     user: ticket.user?.username || ticket.user?.name || ticket.userName || "-",

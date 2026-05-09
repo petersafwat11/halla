@@ -6,8 +6,8 @@ import { useVendorCategories } from "@/hooks/reactQueryHooks/useVendors";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
 const Sections = ({ selectedSection, onSectionChange }) => {
-  const { t } = useTranslation("marketplace");
-  const { data: categoriesData, isLoading: loading } = useVendorCategories();
+  const { t, i18n } = useTranslation("marketplace");
+  const { data: categoriesData, isLoading: loading, error } = useVendorCategories();
 
   const serviceTypes = useMemo(() => {
     const allOption = { id: "all", key: "all", name: t("sections.all") };
@@ -15,16 +15,25 @@ const Sections = ({ selectedSection, onSectionChange }) => {
     const mapped = categories.map((cat) => ({
       id: cat.key,
       key: cat.key,
-      name: cat.nameAr || cat.nameEn,
+      name: i18n.language === "ar" ? cat.nameAr : cat.nameEn,
     }));
     return [allOption, ...mapped];
-  }, [categoriesData, t]);
+  }, [categoriesData, t, i18n.language]);
 
   if (loading) {
     return (
       <div className={styles.container}>
         <h3 className={styles.title}>{t("sections.title")}</h3>
         <SimpleLoading />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <h3 className={styles.title}>{t("sections.title")}</h3>
+        <p className={styles.error}>{t("errors.categoriesLoadFailed")}</p>
       </div>
     );
   }

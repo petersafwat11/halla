@@ -35,7 +35,7 @@ const VendorTicketsScreen = ({ navigation }) => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTicket, setEditingTicket] = useState(null);
-  const [formData, setFormData] = useState({ type: "other", message: "" });
+  const [formData, setFormData] = useState({ subject: "", type: "other", message: "" });
 
   const tickets = useMemo(() => response?.data || [], [response]);
 
@@ -57,14 +57,14 @@ const VendorTicketsScreen = ({ navigation }) => {
 
   const handleCreateTicket = useCallback(() => {
     setEditingTicket(null);
-    setFormData({ type: "other", message: "" });
+    setFormData({ subject: "", type: "other", message: "" });
     setModalVisible(true);
   }, []);
 
   const handleEditTicket = useCallback((ticket) => {
     if (ticket.status !== "open") return;
     setEditingTicket(ticket);
-    setFormData({ type: ticket.type, message: ticket.message });
+    setFormData({ subject: ticket.subject || "", type: ticket.type, message: ticket.message });
     setModalVisible(true);
   }, []);
 
@@ -78,6 +78,10 @@ const VendorTicketsScreen = ({ navigation }) => {
   }, [deleteMutation, toast, t]);
 
   const handleSubmitTicket = useCallback(async () => {
+    if (!formData.subject?.trim()) {
+      toast.error(t("validation.ticketSubjectRequired"));
+      return;
+    }
     if (!formData.message?.trim() || formData.message.trim().length < 10) {
       toast.error(t("validation.ticketMessageMin"));
       return;
@@ -85,7 +89,7 @@ const VendorTicketsScreen = ({ navigation }) => {
 
     try {
       if (editingTicket) {
-        await updateMutation.mutateAsync({ ticketId: editingTicket.id || editingTicket._id, data: formData });
+        await updateMutation.mutateAsync({ ticketId: editingTicket.id, data: formData });
         toast.success(t("messages.updateSuccess"));
       } else {
         await createMutation.mutateAsync(formData);
@@ -176,6 +180,13 @@ const VendorTicketsScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
               <ScrollView style={styles.modalBody}>
+                <TextAreaInput
+                  label={t("form.subjectLabel")}
+                  value={formData.subject}
+                  onChangeText={(text) => setFormData({ ...formData, subject: text })}
+                  placeholder={t("form.subjectPlaceholder")}
+                  minHeight={60}
+                />
                 <DropdownInput
                   label={t("form.typeLabel")}
                   value={formData.type}
