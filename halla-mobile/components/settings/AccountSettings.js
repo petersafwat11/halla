@@ -18,10 +18,12 @@ import EmailVerificationSection from "./_components/EmailVerificationSection";
 const AccountSettings = ({
   onProfileUpdate,
   onPasswordChange,
+  initialUser,
 }) => {
   const { t } = useTranslation("settings");
   const toast = useToast();
-  const { user } = useAuthStore();
+  const { user: authUser } = useAuthStore();
+  const user = initialUser || authUser;
 
   const [loading, setLoading] = useState(false);
 
@@ -58,7 +60,11 @@ const AccountSettings = ({
       }
 
       if (data.currentPassword && data.newPassword) {
-        await onPasswordChange(data.currentPassword, data.newPassword);
+        await onPasswordChange({
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+          confirmPassword: data.confirmPassword,
+        });
       }
 
       toast.success(t("account.updateSuccess"));

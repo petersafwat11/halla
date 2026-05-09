@@ -1,58 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { View, Text, Switch, StyleSheet, ActivityIndicator } from "react-native";
-import { useAuthStore } from "../../../stores/authStore";
-import { getNotificationPreferencesAPI, updateNotificationPreferencesAPI } from "../../../services/settingsService";
+import { useNotificationSettings, useUpdateNotificationSettings } from "../../../hooks";
+import { useTranslation } from "../../../localization";
 import { colors, spacing, borderRadius, textStyles, backgrounds } from "../../../styles/tokens";
 
+const APP_KEYS = [
+  "newUsers",
+  "vendorApprovals",
+  "supportTickets",
+  "systemAlerts",
+  "paymentAlerts",
+  "subscriptionAlerts",
+];
+
+const EMAIL_KEYS = [
+  "dailyReport",
+  "weeklyReport",
+  "vendorApprovals",
+  "supportTickets",
+  "criticalAlerts",
+];
+
 const SettingsNotifications = () => {
-  const token = useAuthStore((state) => state.token);
-  const [prefs, setPrefs] = useState({
-    appNotifications: { eventUpdates: true, subscriptionAlerts: true, systemUpdates: true },
-    emailNotifications: { weeklyReport: true, criticalAlerts: true },
-  });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { t } = useTranslation("settings");
+  const { data: prefs, isLoading } = useNotificationSettings();
+  const updateMutation = useUpdateNotificationSettings();
 
-  useEffect(() => {
-    const fetchPrefs = async () => {
-      try {
-        const data = await getNotificationPreferencesAPI();
-        const p = data?.data?.preferences || data?.preferences;
-        if (p?.appNotifications || p?.emailNotifications) {
-          setPrefs({
-            appNotifications: p.appNotifications || {},
-            emailNotifications: p.emailNotifications || {},
-          });
-        }
-      } catch (error) {
-        // silent — UI shows nothing rather than crashing
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (token) fetchPrefs();
-  }, [token]);
+  const appNotifications = prefs?.appNotifications || {};
+  const emailNotifications = prefs?.emailNotifications || {};
 
-  const handleToggle = async (section, key, value) => {
-    const updated = {
-      ...prefs,
-      [section]: { ...prefs[section], [key]: value },
+  const handleToggle = (section, key, value) => {
+    const next = {
+      appNotifications,
+      emailNotifications,
+      [section]: { ...(prefs?.[section] || {}), [key]: value },
     };
-    setPrefs(updated);
-    setSaving(true);
-    try {
-      await updateNotificationPreferencesAPI(updated);
-    } catch (error) {
-      setPrefs(prefs);
-    } finally {
-      setSaving(false);
-    }
+    updateMutation.mutate(next);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.section}>
-        <Text style={styles.title}>Notifications</Text>
+        <Text style={styles.title}>{t("adminNotifications.title")}</Text>
         <ActivityIndicator color={colors.primary[500]} />
       </View>
     );
@@ -61,29 +50,33 @@ const SettingsNotifications = () => {
   return (
     <View style={styles.section}>
       <View style={styles.titleRow}>
-        <Text style={styles.title}>Notifications</Text>
-        {saving && <ActivityIndicator size="small" color={colors.primary[500]} />}
+        <Text style={styles.title}>{t("adminNotifications.title")}</Text>
+        {updateMutation.isPending && (
+          <ActivityIndicator size="small" color={colors.primary[500]} />
+        )}
       </View>
 
-      <Text style={styles.groupLabel}>In-App</Text>
+      <Text style={styles.groupLabel}>{t("adminNotifications.inApp")}</Text>
       <View style={styles.card}>
-        {Object.entries(prefs.appNotifications).map(([key, value]) => (
+        {APP_KEYS.map((key) => (
           <ToggleRow
             key={key}
-            label={formatKey(key)}
-            value={!!value}
+            label={t(`adminNotifications.app.${key}`)}
+            value={!!appNotifications[key]}
             onChange={(v) => handleToggle("appNotifications", key, v)}
           />
         ))}
       </View>
 
-      <Text style={[styles.groupLabel, { marginTop: spacing[16] }]}>Email</Text>
+      <Text style={[styles.groupLabel, { marginTop: spacing[16] }]}>
+        {t("adminNotifications.email")}
+      </Text>
       <View style={styles.card}>
-        {Object.entries(prefs.emailNotifications).map(([key, value]) => (
+        {EMAIL_KEYS.map((key) => (
           <ToggleRow
             key={key}
-            label={formatKey(key)}
-            value={!!value}
+            label={t(`adminNotifications.email.${key}`)}
+            value={!!emailNotifications[key]}
             onChange={(v) => handleToggle("emailNotifications", key, v)}
           />
         ))}
@@ -91,9 +84,6 @@ const SettingsNotifications = () => {
     </View>
   );
 };
-
-const formatKey = (key) =>
-  key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
 
 const ToggleRow = ({ label, value, onChange }) => (
   <View style={styles.row}>

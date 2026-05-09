@@ -8,6 +8,7 @@ import Button from "@/ui/commen/button/Button";
 import OtpInput from "@/ui/commen/inputs/optInput/OtpInput";
 import { accountSettingsSchema } from "@/utils/schemas/accountSettingsSchema";
 import { useUserMutation } from "@/hooks/reactQueryHooks/useUsers";
+import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
 import { toastUtils } from "@/utils/toastUtils";
 import styles from "./AccountSettings.module.css";
 
@@ -18,8 +19,8 @@ const AccountSettings = ({ user = {} }) => {
 
   const updateProfileMutation = useUserMutation("updateProfile");
   const updatePasswordMutation = useUserMutation("updatePassword");
-  const sendCodeMutation = useUserMutation("sendVerificationCode");
-  const verifyEmailMutation = useUserMutation("verifyEmail");
+  const sendCodeMutation = useAuthMutation("sendVerificationCode");
+  const verifyEmailMutation = useAuthMutation("verifyEmail");
 
   const methods = useForm({
     resolver: zodResolver(accountSettingsSchema(t)),
@@ -70,7 +71,6 @@ const AccountSettings = ({ user = {} }) => {
         confirmPassword: "",
       });
     } catch (error) {
-      console.error("Error updating account settings:", error);
       toastUtils.error(error.message || t("account_update_failed"));
     }
   };

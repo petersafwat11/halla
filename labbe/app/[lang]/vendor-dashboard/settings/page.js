@@ -4,7 +4,6 @@ import styles from "./page.module.css";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
-// UI Components
 import Button from "@/ui/commen/button/Button";
 import SettingsTabs from "./_components/SettingsTabs/SettingsTabs";
 import PersonalInfoSection from "./_components/PersonalInfoSection/PersonalInfoSection";
@@ -14,33 +13,26 @@ import ImagesAndPricingSection from "./_components/ImagesAndPricingSection/Image
 import AdditionalLinksSection from "./_components/AdditionalLinksSection/AdditionalLinksSection";
 import NotificationPreferences from "@/ui/settings/notificationsPrefrences/NotificationPreferences";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
+import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
-// Hooks
 import { useMyProfile, useNotificationPreferences, useUserMutation } from "@/hooks/reactQueryHooks/useUsers";
-
-// Utils
 import { getImageUrl, extractCategoriesArray } from "@/utils/vendorHelpers";
-
-// Constants
 import { USER_ROLES } from "@/utils/schemas/notificationPreferencesSchemas";
 
 const VendorSettings = () => {
   const { t } = useTranslation("vendorSettings");
   const [activeTab, setActiveTab] = useState("accountSetup");
 
-  // React Query hooks
-  const { data: profileData, isLoading: profileLoading, refetch: refetchProfile } = useMyProfile();
+  const { data: profileData, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useMyProfile();
   const { data: notificationPrefsData, isLoading: notifLoading } = useNotificationPreferences();
   const updateSectionMutation = useUserMutation("updateProfileSection");
   const updateProfileMutation = useUserMutation("updateProfile");
 
   const vendorData = profileData?.data?.user;
 
-  // Handle vendor data save with file support
   const handleSaveVendorData = async (data) => {
     try {
-      // Check if data contains File objects that need FormData
       const hasFiles = Object.values(data).some(
         (v) => v instanceof File || (Array.isArray(v) && v[0] instanceof File)
       );
@@ -63,19 +55,15 @@ const VendorSettings = () => {
       toast.success(t("messages.saveSuccess", "Changes saved successfully"));
       refetchProfile();
     } catch (error) {
-      console.error("Error saving section:", error);
       const errorMessage = error?.response?.data?.message || t("messages.saveError", "Failed to save changes");
       toast.error(errorMessage);
     }
   };
 
-  // Handle personal info save - updates top-level user fields (name, email) + vendor businessLogo
   const handleSavePersonalInfo = async (data) => {
     try {
       const { businessLogo, ...profileFields } = data;
-      // Update top-level user fields (name, email, password)
       await updateProfileMutation.mutateAsync(profileFields);
-      // If businessLogo was uploaded, update vendorData separately
       if (businessLogo) {
         const formData = new FormData();
         formData.append("businessLogo", businessLogo);
@@ -84,7 +72,6 @@ const VendorSettings = () => {
       toast.success(t("messages.saveSuccess", "Changes saved successfully"));
       refetchProfile();
     } catch (error) {
-      console.error("Error saving personal info:", error);
       const errorMessage = error?.response?.data?.message || t("messages.saveError", "Failed to save changes");
       toast.error(errorMessage);
     }
@@ -94,7 +81,6 @@ const VendorSettings = () => {
     refetchProfile();
   };
 
-  // Loading state
   if (profileLoading || (activeTab === "notifications" && notifLoading)) {
     return (
       <div className={styles.container}>
@@ -102,6 +88,20 @@ const VendorSettings = () => {
           <h1 className={styles.pageTitle}>{t("pageTitle")}</h1>
         </div>
         <SimpleLoading />
+      </div>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.pageTitle}>{t("pageTitle")}</h1>
+        </div>
+        <ErrorFallback
+          message={t("errors.loadFailed", "Failed to load settings")}
+          onRetry={refetchProfile}
+        />
       </div>
     );
   }
@@ -156,7 +156,6 @@ const VendorSettings = () => {
                       toast.success(t("messages.saveSuccess", "Changes saved successfully"));
                       refetchProfile();
                     } catch (error) {
-                      console.error("Error saving:", error);
                       toast.error(error?.response?.data?.message || t("messages.saveError", "Failed to save changes"));
                     }
                   }}

@@ -317,6 +317,117 @@ const swaggerOptions = {
           },
         },
 
+        UpdateProfileInput: {
+          type: 'object',
+          description:
+            'Body for `PATCH /users/profile`. Multipart accepts `avatar` and `businessLogo` files plus a JSON-stringified `profile` field. Unknown fields are rejected.',
+          properties: {
+            username: { type: 'string', minLength: 1 },
+            name: { type: 'string', minLength: 1 },
+            email: { type: 'string', format: 'email' },
+            preferredLanguage: { type: 'string', enum: ['ar', 'en'] },
+            profile: {
+              type: 'object',
+              description:
+                'Role-keyed profile data. The server only applies the section matching the caller role (e.g. `hostData` for hosts).',
+              additionalProperties: true,
+            },
+            avatar: {
+              type: 'string',
+              format: 'binary',
+              description: 'Multipart file upload only.',
+            },
+            businessLogo: {
+              type: 'string',
+              format: 'binary',
+              description: 'Multipart file upload only.',
+            },
+          },
+        },
+
+        UpdateProfileSectionInput: {
+          type: 'object',
+          description:
+            'Body for `PATCH /users/profile/{section}`. Section-specific fields. Multipart fields `serviceCategories`, `serviceLocation`, `socialLinks`, `pricePackages`, `portfolioImages` may be JSON-stringified.',
+          additionalProperties: true,
+        },
+
+        UpdatePasswordInput: {
+          type: 'object',
+          required: ['currentPassword', 'newPassword', 'passwordConfirm'],
+          properties: {
+            currentPassword: { type: 'string', minLength: 1 },
+            newPassword: { type: 'string', minLength: 8 },
+            passwordConfirm: {
+              type: 'string',
+              minLength: 1,
+              description: 'Must equal `newPassword`.',
+            },
+          },
+        },
+
+        NotificationPreferencesUpdateInput: {
+          type: 'object',
+          description:
+            'Body for `PATCH /users/notification-preferences`. Each map keys boolean toggles (e.g. `eventUpdates: true`). Unknown top-level keys are rejected.',
+          properties: {
+            appNotifications: {
+              type: 'object',
+              additionalProperties: { type: 'boolean' },
+            },
+            emailNotifications: {
+              type: 'object',
+              additionalProperties: { type: 'boolean' },
+            },
+            smsNotifications: {
+              type: 'object',
+              additionalProperties: { type: 'boolean' },
+            },
+          },
+        },
+
+        NotificationPreferencesEnvelope: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'success' },
+            data: {
+              type: 'object',
+              properties: {
+                preferences: {
+                  type: 'object',
+                  properties: {
+                    appNotifications: {
+                      type: 'object',
+                      additionalProperties: { type: 'boolean' },
+                    },
+                    emailNotifications: {
+                      type: 'object',
+                      additionalProperties: { type: 'boolean' },
+                    },
+                    smsNotifications: {
+                      type: 'object',
+                      additionalProperties: { type: 'boolean' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+
+        UserProfileEnvelope: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'success' },
+            data: {
+              type: 'object',
+              properties: {
+                user: { $ref: '#/components/schemas/User' },
+              },
+            },
+          },
+        },
+
         HostProfile: {
           type: 'object',
           properties: {

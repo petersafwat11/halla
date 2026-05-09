@@ -53,6 +53,16 @@
   gap: 0.5rem;
 }
 
+.backIcon {
+  font-size: 2.4rem;
+  cursor: pointer;
+  transform: rotate(180deg);
+}
+
+.backIconRtl {
+  transform: rotate(0deg);
+}
+
 .content {
   display: flex;
   padding: 0 4rem;

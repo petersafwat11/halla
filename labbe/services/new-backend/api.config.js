@@ -113,22 +113,6 @@ export const API_PATHS = {
     // Notification Preferences
     getNotificationPreferences: '/users/notification-preferences',
     updateNotificationPreferences: '/users/notification-preferences',
-
-    // Host Routes (Admin)
-    getHosts: '/users/hosts',
-    createHost: '/users/hosts',
-    getHostById: (id) => `/users/hosts/${id}`,
-    deleteHost: (id) => `/users/hosts/${id}`,
-    updateHostStatus: (id) => `/users/hosts/${id}/status`,
-
-    // Vendor Routes (Admin)
-    getVendors: '/users/vendors',
-    getVendorById: (id) => `/users/vendors/${id}`,
-    updateVendorStatus: (id) => `/users/vendors/${id}/status`,
-
-    // Moderator Routes (Admin)
-    getModerators: '/users/moderators',
-    createModerator: '/users/moderators',
   },
 
   // ============================================

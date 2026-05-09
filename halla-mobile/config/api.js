@@ -140,6 +140,8 @@ export const ENDPOINTS = {
   USERS: {
     PROFILE: "/users/profile",
     UPDATE_PROFILE: "/users/profile",
+    UPDATE_PASSWORD: "/users/password",
+    UPDATE_PROFILE_SECTION: (section) => `/users/profile/${section}`,
     NOTIFICATION_SETTINGS: "/users/notification-preferences",
   },
 

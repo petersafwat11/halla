@@ -13,8 +13,7 @@ export default function NotificationSettingsScreen({ navigation }) {
   const toast = useToast();
   const { token } = useAuthStore();
 
-  const { data: response, isLoading: loading, error } = useNotificationSettings();
-  const notificationPreferences = response?.preferences;
+  const { data: notificationPreferences, isLoading: loading, error } = useNotificationSettings();
 
   const updateSettingsMutation = useUpdateNotificationSettings();
 

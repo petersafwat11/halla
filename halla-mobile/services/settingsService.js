@@ -1,10 +1,3 @@
-/**
- * Settings service.
- *
- * All requests go through `apiFetch` which attaches Authorization, refreshes
- * on 401, and applies the 30s default timeout. Callers do not pass tokens.
- */
-
 import { ENDPOINTS } from "../config/api";
 import { apiFetch } from "./apiClient";
 
@@ -37,16 +30,12 @@ export const uploadProfileImageAPI = (imageFile) => {
   );
 };
 
-export const changePasswordAPI = ({ oldPassword, currentPassword, newPassword }) =>
+export const changePasswordAPI = ({ currentPassword, newPassword, passwordConfirm }) =>
   _request(
-    ENDPOINTS.AUTH.UPDATE_PASSWORD,
+    ENDPOINTS.USERS.UPDATE_PASSWORD,
     {
       method: "PATCH",
-      body: {
-        currentPassword: currentPassword || oldPassword,
-        newPassword,
-        passwordConfirm: newPassword,
-      },
+      body: { currentPassword, newPassword, passwordConfirm },
     },
     "Failed to change password"
   );

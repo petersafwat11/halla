@@ -1,7 +1,8 @@
-﻿import React from "react";
+import React from "react";
 import { cookies } from "next/headers";
+import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
+import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
-import { settingsService } from "@/services/settings";
 import AdminSettingsClient from "./_components/AdminSettingsClient";
 
 const AdminSettingsPage = async ({ params }) => {
@@ -10,56 +11,29 @@ const AdminSettingsPage = async ({ params }) => {
 
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
-
-  let user = null;
-  let notifications = null;
+  const queryClient = createServerQueryClient();
 
   if (token) {
-    try {
-      const userResponse = await settingsService.getProfile(token);
-      user = userResponse?.data?.user || userResponse?.data || null;
-    } catch (error) {
-      console.error("Error fetching admin profile:", error);
-      try {
-        const userCookie = cookieStore.get("user")?.value;
-        if (userCookie) {
-          user = JSON.parse(userCookie);
-        }
-      } catch (e) {
-        console.error("Error parsing user cookie:", e);
-      }
-    }
-
-    try {
-      const notifResponse = await settingsService.getNotificationPreferences(
-        token
-      );
-      const apiNotifications = notifResponse?.data || null;
-      if (apiNotifications) {
-        notifications = {
-          appNotifications: apiNotifications.appNotifications || {},
-          emailNotifications: apiNotifications.emailNotifications || {},
-        };
-      }
-    } catch (error) {
-      console.error("Error fetching admin notifications:", error);
-      notifications = null;
-    }
+    await Promise.all([
+      prefetchServerData({
+        queryClient,
+        queryKey: ["users", "my-profile"],
+        path: API_PATHS.users.getMyProfile,
+        token,
+      }),
+      prefetchServerData({
+        queryClient,
+        queryKey: ["users", "notification-preferences"],
+        path: API_PATHS.users.getNotificationPreferences,
+        token,
+      }),
+    ]);
   }
 
   return (
-    <AdminSettingsClient
-      user={{
-        emailVerified: user?.emailVerified || false,
-        email: user?.email || "",
-        username: user?.username || user?.name || "",
-        name: user?.name || "",
-        phoneNumber: user?.phoneNumber || "",
-        profile: user?.profile || {},
-      }}
-      initialNotifications={notifications}
-      userRole={user?.role || "admin"}
-    />
+    <QueryClientServerProvider queryClient={queryClient}>
+      <AdminSettingsClient />
+    </QueryClientServerProvider>
   );
 };
 

@@ -1,53 +1,52 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
-import { useToast } from "../../contexts/ToastContext";
 import AccountSettings from "../../components/settings/AccountSettings";
-import { useUpdateProfile, useChangePassword } from "../../hooks";
+import { useProfile, useUpdateProfile, useChangePassword } from "../../hooks";
 import { TopBar } from "../../components/plans";
 
-export default function AccountSettingsScreen({ navigation }) {
+export default function AccountSettingsScreen() {
   const { t } = useTranslation("settings");
-  const toast = useToast();
-  const { user, setUser } = useAuthStore();
+  const { setUser } = useAuthStore();
 
+  const { data: profileResponse, isLoading: profileLoading } = useProfile();
   const updateProfileMutation = useUpdateProfile();
   const changePasswordMutation = useChangePassword();
 
+  const profileUser = profileResponse?.data?.user;
+
   const handleProfileUpdate = async (data) => {
-    try {
-      const response = await updateProfileMutation.mutateAsync(data);
-      if (response?.user) {
-        await setUser(response.user);
-      }
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await updateProfileMutation.mutateAsync(data);
+    if (response?.user) {
+      await setUser(response.user);
     }
+    return response;
   };
 
-  const handlePasswordChange = async (oldPassword, newPassword) => {
-    try {
-      const response = await changePasswordMutation.mutateAsync({
-        oldPassword,
-        newPassword,
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  };
+  const handlePasswordChange = async ({ currentPassword, newPassword, confirmPassword }) =>
+    changePasswordMutation.mutateAsync({
+      currentPassword,
+      newPassword,
+      passwordConfirm: confirmPassword,
+    });
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <TopBar title={t("tabs.account")} showBack={true} />
-        <AccountSettings
-          onProfileUpdate={handleProfileUpdate}
-          onPasswordChange={handlePasswordChange}
-        />
+        {profileLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#c28e5c" />
+          </View>
+        ) : (
+          <AccountSettings
+            initialUser={profileUser}
+            onProfileUpdate={handleProfileUpdate}
+            onPasswordChange={handlePasswordChange}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -61,5 +60,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8f8f8",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

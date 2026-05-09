@@ -88,7 +88,6 @@ const NotificationPreferences = ({
         onSave?.(formData);
       }
     } catch (error) {
-      console.error("Error updating notification settings:", error);
       toastUtils.error(
         error.message || t("notifications.saveError", "فشل في حفظ الإعدادات")
       );
