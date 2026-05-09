@@ -34,7 +34,9 @@ export default function CategoryFormPopup({ onClose, category }) {
   const onSubmit = async (data) => {
     try {
       if (isEdit) {
-        await update.mutateAsync({ id: category._id, body: data });
+        // `code` is immutable on the backend — strip before submit.
+        const { code, ...rest } = data;
+        await update.mutateAsync({ id: category._id, body: rest });
         toastUtils.success(t("templates.categories.edit.success", "تم تحديث الفئة بنجاح"));
       } else {
         await create.mutateAsync(data);
@@ -42,9 +44,6 @@ export default function CategoryFormPopup({ onClose, category }) {
       }
       onClose();
     } catch (error) {
-      console.error("[CategoryFormPopup] raw error:", error);
-      console.error("[CategoryFormPopup] response:", error?.response);
-      console.error("[CategoryFormPopup] response.data:", error?.response?.data);
       handleError(error, t);
     }
   };

@@ -280,6 +280,39 @@
   height: 2rem;
 }
 
+/* Category chips */
+.categoryChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.categoryChip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-size: 1.3rem;
+  color: #2c2c2c;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.categoryChipActive {
+  border: 2px solid #c28e5c;
+  background: #fff7eb;
+}
+
+.emptyMessage {
+  color: #666;
+}
+
+.selectedName {
+  color: #2a8c5b;
+  font-weight: 600;
+}
+
 /* Tablet and below */
 @media (max-width: 1024px) {
   .stepThree {

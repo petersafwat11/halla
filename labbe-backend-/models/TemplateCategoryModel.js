@@ -1,11 +1,7 @@
 /**
- * TemplateCategoryModel — Phase 4c W0-VISUAL-BACKEND
- *
- * Categories for visual templates. Admin curates, hosts pick a single
- * category in StepThree which then drives the StepFour (Taqnyat picker)
+ * Categories for visual templates. Admin curates; hosts pick a single
+ * category in StepThree which then drives the StepFour Taqnyat picker
  * filter via `taqnyat-templates?category=…`.
- *
- * Per v4.1 §A-11.
  */
 
 const mongoose = require("mongoose");

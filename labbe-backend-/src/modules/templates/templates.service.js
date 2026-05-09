@@ -1,30 +1,22 @@
 /**
- * Templates Service — Phase 4c W0-VISUAL-BACKEND
- *
- * Visual template CRUD (admin) + host-facing list. Image storage uses
- * presigned-POST against the project's existing S3 bucket (per
- * `s3Upload.js` env vars). Sharp generates a webp thumbnail at 320px wide
- * after the upload commits.
- *
- * Orphan cleanup (v4.1 §A-7.1):
- *   - inline: every create/update wraps the post-upload work in a
- *     try/catch and `DeleteObjectCommand`s the new key on any throw.
- *   - daily GC: `scripts/gcOrphanTemplateImages.js` walks `templates/*`
- *     and deletes keys with no matching `imageS3Key|thumbnailS3Key` row.
- *
- * @module modules/templates/templates.service
+ * Templates service — visual template CRUD plus host-facing list. Image
+ * storage is via S3 proxy upload; sharp generates a webp thumbnail at
+ * 320 wide on commit. Orphan cleanup runs inline on every create/update
+ * failure; a daily GC job (`scripts/gcOrphanTemplateImages.js`) sweeps
+ * any stragglers.
  */
 
 const Template = require("../../../models/TemplateModel");
 const TemplateCategory = require("../../../models/TemplateCategoryModel");
 const { logAudit } = require("../../shared/utils/auditLog");
+const logger = require("../../shared/utils/logger");
+const { ROLES } = require("../../shared/constants/roles");
 const {
   NotFoundError,
   ValidationError,
   AppError,
 } = require("../../shared/errors");
 
-// AWS SDK v3 — already a project dep via s3Upload.js
 const {
   S3Client,
   PutObjectCommand,
@@ -32,23 +24,13 @@ const {
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
 
-// `sharp` is a NEW dependency added in PHASE_4C_PLAN §1 D4c-5. Loaded
-// lazily so a dev environment without `npm install` still boots; the
-// admin upload path will surface a clear error instead.
+// `sharp` is loaded lazily so a dev environment without `npm install`
+// still boots; the admin upload path surfaces a clear error otherwise.
 let sharp = null;
 try {
   sharp = require("sharp");
 } catch (_) {
   sharp = null;
-}
-
-// `@aws-sdk/s3-presigned-post` is a NEW dep added in D4c-5. Loaded lazily
-// for the same reason.
-let createPresignedPost = null;
-try {
-  createPresignedPost = require("@aws-sdk/s3-presigned-post").createPresignedPost;
-} catch (_) {
-  createPresignedPost = null;
 }
 
 const isS3Configured = () =>
@@ -73,13 +55,7 @@ function getS3() {
   return s3Client;
 }
 
-/**
- * Build the public read URL for an S3 key.
- *
- * Per v4.1 §A-7 imageUrl fallback: prefer CloudFront when provisioned,
- * otherwise fall back to the virtual-hosted bucket URL. Phase 5 will
- * actually provision CloudFront — until then we use the bucket URL.
- */
+// CloudFront when provisioned (Phase 5), otherwise the bucket URL.
 function s3KeyToUrl(key) {
   if (!key) return null;
   if (process.env.CLOUDFRONT_DOMAIN) {
@@ -100,61 +76,13 @@ async function deleteS3Key(key) {
       new DeleteObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: key })
     );
   } catch (err) {
-    console.error("[templates.service] S3 delete failed:", err.message);
+    logger.error("[templates.service] S3 delete failed", { message: err.message });
   }
-}
-
-/**
- * Generate a presigned POST for browser upload.
- *
- * Body shape: { filename, contentType }. Validates contentType against
- * the allowlist and clamps file-size to 5 MB at the policy level so S3
- * rejects oversized uploads before they're stored.
- */
-async function getUploadUrl({ filename, contentType, templateId = "new" }) {
-  if (!createPresignedPost) {
-    throw new AppError(
-      "@aws-sdk/s3-presigned-post is not installed; run `npm install` in labbe-backend-",
-      500,
-      "PRESIGNED_POST_UNAVAILABLE"
-    );
-  }
-  const client = getS3();
-  if (!client) {
-    throw new AppError("S3 is not configured", 500, "S3_NOT_CONFIGURED");
-  }
-  if (!/^image\/(jpeg|png|webp)$/.test(contentType)) {
-    throw new ValidationError("contentType must be image/jpeg, image/png, or image/webp");
-  }
-  if (!filename || filename.length > 200) {
-    throw new ValidationError("filename is required (max 200 chars)");
-  }
-
-  const safeFilename = String(filename).replace(/[^a-zA-Z0-9._-]/g, "-");
-  const key = `templates/${templateId}/original-${Date.now()}-${safeFilename}`;
-
-  const presigned = await createPresignedPost(client, {
-    Bucket: process.env.AWS_S3_BUCKET,
-    Key: key,
-    Conditions: [
-      ["content-length-range", 0, 5 * 1024 * 1024],
-      ["eq", "$Content-Type", contentType],
-    ],
-    Fields: { "Content-Type": contentType },
-    Expires: 3600,
-  });
-
-  return {
-    url: presigned.url,
-    fields: presigned.fields,
-    s3Key: key,
-  };
 }
 
 /**
  * Accept a file buffer from the backend (proxy upload) and PUT it
- * directly to S3. Generates the same key format as getUploadUrl so
- * processImage works unchanged after this step.
+ * directly to S3. Generates the same key format used by processImage.
  */
 async function handleImageUpload({ fileBuffer, filename, contentType, templateId = "new" }) {
   if (!/^image\/(jpeg|png|webp)$/.test(contentType)) {
@@ -183,14 +111,12 @@ async function handleImageUpload({ fileBuffer, filename, contentType, templateId
 
 /**
  * Process the uploaded original — fetch from S3, generate webp
- * thumbnail (320 wide), upload thumbnail, return natural dimensions +
- * thumbnail key.
+ * thumbnail (320 wide), upload thumbnail, return natural dimensions
+ * plus thumbnail key.
  */
 async function processImage(s3Key) {
   if (!sharp) {
-    // Dev-mode fallback: accept the original as-is, no thumbnail. This
-    // lets local contributors run the editor without `sharp` while
-    // production envs always have it installed.
+    // Dev-mode fallback: accept the original as-is, no thumbnail.
     return {
       thumbnailS3Key: null,
       naturalWidth: 1080,
@@ -202,7 +128,6 @@ async function processImage(s3Key) {
     throw new AppError("S3 is not configured", 500, "S3_NOT_CONFIGURED");
   }
 
-  // Fetch original
   const obj = await client.send(
     new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: s3Key })
   );
@@ -219,18 +144,8 @@ async function processImage(s3Key) {
     return `${dir}/thumb-${name}.webp`;
   });
 
-  const { PutObjectCommand } = require("@aws-sdk/client-s3");
-  // Hardening (post-review C-R3): the original presigned-POST upload
-  // does NOT set an ACL — it inherits the bucket's default policy. The
-  // thumbnail must match, otherwise host StepThree would 403 on every
-  // thumbnail when the bucket relies on a public-read prefix policy
-  // (or BucketOwnerEnforced, which rejects per-object ACLs entirely).
-  // CloudFront provisioning is the proper Phase-5 fix; until then the
-  // bucket policy is the source of truth.
-  //
-  // Cache-Control is set so CloudFront / browsers cache aggressively
-  // — the S3 key already includes a Date.now() suffix so changes
-  // produce a new URL (implicit cache-bust).
+  // Cache-Control set so CloudFront/browsers cache aggressively — the S3 key
+  // includes a Date.now() suffix so changes always produce a fresh URL.
   await client.send(
     new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET,
@@ -248,32 +163,40 @@ async function processImage(s3Key) {
 // CRUD
 // ============================================
 
+const LIST_LIMIT = 200;
+
 async function listForHost({ category } = {}) {
   const query = { active: true, deletedAt: null };
   if (category) query.categories = category;
 
-  const docs = await Template.find(query)
+  return Template.find(query)
     .select("-imageS3Key -createdBy -updatedBy -version -__v")
     .sort({ sortOrder: 1, createdAt: -1 })
+    .limit(LIST_LIMIT)
     .lean();
-
-  return docs;
 }
 
-async function listForAdmin({ category, search, includeInactive, includeDeleted, isSuperAdmin } = {}) {
+async function listForAdmin({ query: rawQuery = {}, actor } = {}) {
+  const isSuperAdmin = actor?.role === ROLES.SUPER_ADMIN;
+  const includeInactive = rawQuery.includeInactive !== "false";
+  const includeDeleted = rawQuery.includeDeleted === "true";
+
   const query = {};
   if (!includeDeleted || !isSuperAdmin) query.deletedAt = null;
   if (!includeInactive) query.active = true;
-  if (category) query.categories = category;
-  if (search) {
-    const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (rawQuery.category) query.categories = rawQuery.category;
+  if (rawQuery.search) {
+    const escaped = String(rawQuery.search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     query.$or = [
       { nameEn: { $regex: escaped, $options: "i" } },
       { nameAr: { $regex: escaped, $options: "i" } },
     ];
   }
 
-  return Template.find(query).sort({ sortOrder: 1, createdAt: -1 }).lean();
+  return Template.find(query)
+    .sort({ sortOrder: 1, createdAt: -1 })
+    .limit(LIST_LIMIT)
+    .lean();
 }
 
 async function getById(id) {
@@ -284,7 +207,6 @@ async function getById(id) {
 
 async function createTemplate(payload, actor) {
   const { s3Key, ...templateFields } = payload;
-  if (!s3Key) throw new ValidationError("s3Key is required (call /upload-url first)");
 
   let processed;
   try {
@@ -301,21 +223,16 @@ async function createTemplate(payload, actor) {
       version: 0,
     });
 
-    try {
-      await logAudit({
-        action: "template.create",
-        actor,
-        targetType: "template",
-        targetId: doc._id,
-        metadata: { nameEn: doc.nameEn, categories: doc.categories },
-      });
-    } catch (_) {
-      /* swallow */
-    }
+    await logAudit({
+      action: "template.create",
+      actor,
+      targetType: "template",
+      targetId: doc._id,
+      metadata: { nameEn: doc.nameEn, categories: doc.categories },
+    });
 
     return doc;
   } catch (err) {
-    // Inline orphan cleanup — drop the original + (best-effort) thumbnail
     await deleteS3Key(s3Key).catch(() => {});
     if (processed?.thumbnailS3Key) await deleteS3Key(processed.thumbnailS3Key).catch(() => {});
     throw err;
@@ -328,13 +245,10 @@ async function updateTemplate(id, payload, actor) {
 
   const { s3Key, expectedVersion, ...rest } = payload;
 
-  // Polish (post-review) — optimistic locking via version stamp. The
-  // editor sends the `expectedVersion` it loaded; if another admin
-  // saved in the meantime, the stamp won't match and we 409 instead
-  // of silently overwriting their changes. Back-compat: if the
-  // request omits `expectedVersion` (older clients), we skip the
-  // check — same behaviour as before this hardening landed.
-  if (expectedVersion !== undefined && (doc.version || 0) !== expectedVersion) {
+  // Optimistic locking: editor sends the version it loaded; if another
+  // admin saved in the meantime the stamp won't match and we 409 instead
+  // of silently overwriting their changes.
+  if ((doc.version || 0) !== expectedVersion) {
     throw new AppError(
       "Template was modified by another editor. Reload and re-apply your changes.",
       409,
@@ -379,25 +293,19 @@ async function updateTemplate(id, payload, actor) {
 
     await doc.save();
 
-    // Old image is safe to drop now that the new one is committed.
     if (oldImageKey) await deleteS3Key(oldImageKey).catch(() => {});
     if (oldThumbKey) await deleteS3Key(oldThumbKey).catch(() => {});
 
-    try {
-      await logAudit({
-        action: "template.update",
-        actor,
-        targetType: "template",
-        targetId: doc._id,
-        metadata: { nameEn: doc.nameEn, version: doc.version },
-      });
-    } catch (_) {
-      /* swallow */
-    }
+    await logAudit({
+      action: "template.update",
+      actor,
+      targetType: "template",
+      targetId: doc._id,
+      metadata: { nameEn: doc.nameEn, version: doc.version },
+    });
 
     return doc;
   } catch (err) {
-    // Orphan cleanup: drop the new key(s) we uploaded but didn't commit.
     if (s3Key && s3Key !== oldImageKey) await deleteS3Key(s3Key).catch(() => {});
     if (newProcessed?.thumbnailS3Key) await deleteS3Key(newProcessed.thumbnailS3Key).catch(() => {});
     throw err;
@@ -413,17 +321,13 @@ async function deleteTemplate(id, actor) {
   doc.active = false;
   await doc.save();
 
-  try {
-    await logAudit({
-      action: "template.delete",
-      actor,
-      targetType: "template",
-      targetId: doc._id,
-      metadata: { nameEn: doc.nameEn },
-    });
-  } catch (_) {
-    /* swallow */
-  }
+  await logAudit({
+    action: "template.delete",
+    actor,
+    targetType: "template",
+    targetId: doc._id,
+    metadata: { nameEn: doc.nameEn },
+  });
   return { id: doc._id };
 }
 
@@ -445,9 +349,17 @@ async function duplicateTemplate(id, actor) {
     overlays: src.overlays,
     decorations: src.decorations,
     sortOrder: src.sortOrder + 1,
-    active: false, // duplicate lands as draft
+    active: false,
     createdBy: actor?._id || null,
     version: 0,
+  });
+
+  await logAudit({
+    action: "template.duplicate",
+    actor,
+    targetType: "template",
+    targetId: clone._id,
+    metadata: { sourceId: src._id, nameEn: clone.nameEn },
   });
 
   return clone;
@@ -464,9 +376,6 @@ async function listCategories({ includeInactive = false } = {}) {
 }
 
 async function createCategory(payload, actor) {
-  if (!payload.code || !payload.nameEn || !payload.nameAr) {
-    throw new ValidationError("code, nameEn, nameAr are required");
-  }
   const code = String(payload.code).toLowerCase().replace(/[^a-z0-9_]/g, "_");
   const doc = await TemplateCategory.create({
     code,
@@ -476,17 +385,13 @@ async function createCategory(payload, actor) {
     active: payload.active !== false,
     createdBy: actor?._id || null,
   });
-  try {
-    await logAudit({
-      action: "template_category.create",
-      actor,
-      targetType: "template_category",
-      targetId: doc._id,
-      metadata: { code: doc.code },
-    });
-  } catch (_) {
-    /* swallow */
-  }
+  await logAudit({
+    action: "template_category.create",
+    actor,
+    targetType: "template_category",
+    targetId: doc._id,
+    metadata: { code: doc.code },
+  });
   return doc;
 }
 
@@ -498,16 +403,12 @@ async function updateCategory(id, payload, actor) {
   });
   doc.updatedBy = actor?._id || null;
   await doc.save();
-  try {
-    await logAudit({
-      action: "template_category.update",
-      actor,
-      targetType: "template_category",
-      targetId: doc._id,
-    });
-  } catch (_) {
-    /* swallow */
-  }
+  await logAudit({
+    action: "template_category.update",
+    actor,
+    targetType: "template_category",
+    targetId: doc._id,
+  });
   return doc;
 }
 
@@ -518,16 +419,12 @@ async function deleteCategory(id, actor) {
   doc.active = false;
   doc.updatedBy = actor?._id || null;
   await doc.save();
-  try {
-    await logAudit({
-      action: "template_category.delete",
-      actor,
-      targetType: "template_category",
-      targetId: doc._id,
-    });
-  } catch (_) {
-    /* swallow */
-  }
+  await logAudit({
+    action: "template_category.deactivate",
+    actor,
+    targetType: "template_category",
+    targetId: doc._id,
+  });
   return { id: doc._id };
 }
 
@@ -541,7 +438,6 @@ module.exports = {
   deleteTemplate,
   duplicateTemplate,
   // Upload
-  getUploadUrl,
   handleImageUpload,
   processImage,
   s3KeyToUrl,

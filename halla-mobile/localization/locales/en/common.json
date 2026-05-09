@@ -1,5 +1,10 @@
 {
   "success": "successful",
+  "templates": "Event templates",
+  "templates_categories_error": "Could not load categories",
+  "templates_load_error": "Could not load templates",
+  "no_templates_available": "No templates available",
+  "common": { "all": "All" },
   "buttons": {
     "save": "Save",
     "cancel": "Cancel",

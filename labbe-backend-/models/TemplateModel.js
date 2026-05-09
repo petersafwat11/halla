@@ -1,12 +1,8 @@
 /**
- * TemplateModel — Phase 4c W0-VISUAL-BACKEND
- *
- * Visual invitation card template, customizable by admins via the
- * `/admin-dash/templates` editor and selected by hosts in StepThree.
- *
- * Per v4.1 §C, with the [PATCH 2] field-type enum (adds `email`,
- * `password`). Overlay positions stored as percentages of natural
- * image dimensions (see v4.1 §A-3 — never pixels).
+ * Visual invitation card template — admin-editable, host-selectable.
+ * Overlay positions are stored as percentages of natural image
+ * dimensions (never pixels) so the same template renders correctly
+ * across thumbnail, preview, and final-bake sizes.
  */
 
 const mongoose = require("mongoose");

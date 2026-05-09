@@ -2456,6 +2456,233 @@ const swaggerOptions = {
           },
         },
 
+        // Templates module
+        TemplateFieldDef: {
+          type: 'object',
+          required: ['key', 'type', 'labelEn', 'labelAr'],
+          properties: {
+            key: { type: 'string' },
+            type: {
+              type: 'string',
+              enum: ['text', 'textarea', 'date', 'time', 'color', 'font', 'number', 'email', 'password'],
+            },
+            labelEn: { type: 'string' },
+            labelAr: { type: 'string' },
+            placeholderEn: { type: 'string' },
+            placeholderAr: { type: 'string' },
+            required: { type: 'boolean' },
+            minLength: { type: 'integer' },
+            maxLength: { type: 'integer' },
+            defaultValue: {},
+            rows: { type: 'integer' },
+            inputMode: { type: 'string', enum: ['text', 'numeric', 'decimal', 'tel', 'email', 'url'] },
+            autoCapitalize: { type: 'string', enum: ['none', 'sentences', 'words', 'characters'] },
+            dir: { type: 'string', enum: ['auto', 'ltr', 'rtl'] },
+            min: { type: 'number' },
+            max: { type: 'number' },
+            step: { type: 'number' },
+          },
+        },
+        TemplateOverlay: {
+          type: 'object',
+          required: ['fieldKey', 'topPct', 'leftPct'],
+          properties: {
+            fieldKey: { type: 'string' },
+            topPct: { type: 'number' },
+            leftPct: { type: 'number' },
+            widthPct: { type: 'number' },
+            fontSizeVh: { type: 'number' },
+            fontWeight: { type: 'string' },
+            textAlign: { type: 'string', enum: ['left', 'center', 'right'] },
+            colorBinding: { type: 'string', enum: ['primary', 'custom'] },
+            color: { type: 'string' },
+            fontFamily: { type: 'string' },
+            zIndex: { type: 'integer' },
+          },
+        },
+        TemplateDecoration: {
+          type: 'object',
+          required: ['type', 'source', 'topPct', 'leftPct', 'widthPct'],
+          properties: {
+            type: { type: 'string', enum: ['icon', 'image'] },
+            source: { type: 'string' },
+            color: { type: 'string' },
+            topPct: { type: 'number' },
+            leftPct: { type: 'number' },
+            widthPct: { type: 'number' },
+            iconSizeVh: { type: 'number' },
+            zIndex: { type: 'integer' },
+          },
+        },
+        Template: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            nameEn: { type: 'string' },
+            nameAr: { type: 'string' },
+            categories: { type: 'array', items: { type: 'string' } },
+            imageUrl: { type: 'string' },
+            imageS3Key: { type: 'string' },
+            thumbnailUrl: { type: 'string', nullable: true },
+            thumbnailS3Key: { type: 'string', nullable: true },
+            naturalWidth: { type: 'number' },
+            naturalHeight: { type: 'number' },
+            fields: { type: 'array', items: { $ref: '#/components/schemas/TemplateFieldDef' } },
+            overlays: { type: 'array', items: { $ref: '#/components/schemas/TemplateOverlay' } },
+            decorations: { type: 'array', items: { $ref: '#/components/schemas/TemplateDecoration' } },
+            sortOrder: { type: 'integer' },
+            active: { type: 'boolean' },
+            deletedAt: { type: 'string', format: 'date-time', nullable: true },
+            version: { type: 'integer' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        TemplateEnvelope: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: { template: { $ref: '#/components/schemas/Template' } },
+            },
+          },
+        },
+        TemplateListEnvelope: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: {
+                templates: { type: 'array', items: { $ref: '#/components/schemas/Template' } },
+              },
+            },
+          },
+        },
+        TemplateCreateInput: {
+          type: 'object',
+          required: ['nameEn', 'nameAr', 'categories', 's3Key', 'naturalWidth', 'naturalHeight'],
+          properties: {
+            nameEn: { type: 'string' },
+            nameAr: { type: 'string' },
+            categories: { type: 'array', items: { type: 'string' }, minItems: 1 },
+            s3Key: { type: 'string' },
+            naturalWidth: { type: 'number' },
+            naturalHeight: { type: 'number' },
+            fields: { type: 'array', items: { $ref: '#/components/schemas/TemplateFieldDef' } },
+            overlays: { type: 'array', items: { $ref: '#/components/schemas/TemplateOverlay' } },
+            decorations: { type: 'array', items: { $ref: '#/components/schemas/TemplateDecoration' } },
+            sortOrder: { type: 'integer' },
+            active: { type: 'boolean' },
+          },
+        },
+        TemplateUpdateInput: {
+          type: 'object',
+          required: ['expectedVersion'],
+          properties: {
+            nameEn: { type: 'string' },
+            nameAr: { type: 'string' },
+            categories: { type: 'array', items: { type: 'string' } },
+            s3Key: { type: 'string' },
+            naturalWidth: { type: 'number' },
+            naturalHeight: { type: 'number' },
+            fields: { type: 'array', items: { $ref: '#/components/schemas/TemplateFieldDef' } },
+            overlays: { type: 'array', items: { $ref: '#/components/schemas/TemplateOverlay' } },
+            decorations: { type: 'array', items: { $ref: '#/components/schemas/TemplateDecoration' } },
+            sortOrder: { type: 'integer' },
+            active: { type: 'boolean' },
+            expectedVersion: { type: 'integer' },
+          },
+        },
+        TemplateUploadImageEnvelope: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: { s3Key: { type: 'string' } },
+            },
+          },
+        },
+        TemplateCategory: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            code: { type: 'string' },
+            nameEn: { type: 'string' },
+            nameAr: { type: 'string' },
+            sortOrder: { type: 'integer' },
+            active: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        TemplateCategoryEnvelope: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: { category: { $ref: '#/components/schemas/TemplateCategory' } },
+            },
+          },
+        },
+        TemplateCategoryListEnvelope: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: {
+                categories: { type: 'array', items: { $ref: '#/components/schemas/TemplateCategory' } },
+              },
+            },
+          },
+        },
+        TemplateCategoryCreateInput: {
+          type: 'object',
+          required: ['code', 'nameEn', 'nameAr'],
+          properties: {
+            code: { type: 'string', pattern: '^[a-z0-9_]+$' },
+            nameEn: { type: 'string' },
+            nameAr: { type: 'string' },
+            sortOrder: { type: 'integer' },
+            active: { type: 'boolean' },
+          },
+        },
+        TemplateCategoryUpdateInput: {
+          type: 'object',
+          properties: {
+            nameEn: { type: 'string' },
+            nameAr: { type: 'string' },
+            sortOrder: { type: 'integer' },
+            active: { type: 'boolean' },
+          },
+        },
+        TemplateFontEntry: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            webFamily: { type: 'string' },
+            mobileFamily: { type: 'string' },
+            supportsArabic: { type: 'boolean' },
+            weights: { type: 'array', items: { type: 'string' } },
+          },
+        },
+        TemplateFontListEnvelope: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: {
+                fonts: { type: 'array', items: { $ref: '#/components/schemas/TemplateFontEntry' } },
+              },
+            },
+          },
+        },
+
         // Health Check
         HealthCheck: {
           type: 'object',

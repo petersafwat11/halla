@@ -1,8 +1,7 @@
 /**
- * Admin Template Editor — Phase 4c W1-VISUAL
- *
- * Server-guarded; the actual editor is the client component below.
- * Path param `id` is either an ObjectId or the literal "new".
+ * Admin template editor route. The client-side editor lives in
+ * `_components/TemplateEditorPage`. The `id` param is either an
+ * ObjectId or the literal "new" for creation.
  */
 
 import { requirePageAccess } from "@/services/serverAuth";

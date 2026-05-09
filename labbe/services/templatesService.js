@@ -1,8 +1,6 @@
 /**
- * Visual Templates Service — Phase 4c W1-VISUAL
- *
- * Wraps `apiRequest` with the templates + categories + fonts endpoints
- * registered in `services/new-backend/api.config.js`.
+ * Visual templates service. Wraps `apiRequest` for the templates,
+ * categories, and fonts endpoints in `services/new-backend/api.config.js`.
  */
 
 import { apiRequest } from "@/services/new-backend/apiClient";

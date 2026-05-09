@@ -1,5 +1,10 @@
 {
   "success": "بنجاح",
+  "templates": "قوالب المناسبات",
+  "templates_categories_error": "تعذر تحميل الفئات",
+  "templates_load_error": "تعذر تحميل القوالب",
+  "no_templates_available": "لا توجد قوالب متاحة",
+  "common": { "all": "الكل" },
   "buttons": {
     "save": "حفظ",
     "cancel": "إلغاء",

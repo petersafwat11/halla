@@ -352,3 +352,9 @@
     padding: 14px 16px;
   }
 }
+
+.fieldError {
+  color: var(--error, #e53e3e);
+  font-size: 1.2rem;
+  margin-top: 0.4rem;
+}

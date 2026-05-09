@@ -1,24 +1,15 @@
-/**
- * Templates Controller — Phase 4c W0-VISUAL-BACKEND
- *
- * Two surfaces:
- *   - Host-facing (`exports.list`): GET /api/v2/templates?category=…
- *   - Admin (`exports.adminList` etc.): full CRUD + upload-url + duplicate.
- *
- * Categories live in the same module for cohesion.
- *
- * @module modules/templates/templates.controller
- */
-
 const catchAsync = require("../../shared/utils/catchAsync");
-const { sendSuccess, sendCreated } = require("../../shared/utils/responseHelper");
+const {
+  sendSuccess,
+  sendCreated,
+} = require("../../shared/utils/responseHelper");
+const { ValidationError } = require("../../shared/errors");
 const { FONTS } = require("../../shared/constants/fontRegistry");
 const service = require("./templates.service");
 
 // ── Host-facing ─────────────────────────────────────────────────────────────
 exports.list = catchAsync(async (req, res) => {
-  const { category } = req.query;
-  const templates = await service.listForHost({ category });
+  const templates = await service.listForHost({ category: req.query.category });
   sendSuccess(res, { templates });
 });
 
@@ -29,26 +20,15 @@ exports.getById = catchAsync(async (req, res) => {
 
 // ── Admin ───────────────────────────────────────────────────────────────────
 exports.adminList = catchAsync(async (req, res) => {
-  const { category, search, includeInactive, includeDeleted } = req.query;
   const templates = await service.listForAdmin({
-    category,
-    search,
-    includeInactive: includeInactive !== "false",
-    includeDeleted: includeDeleted === "true",
-    isSuperAdmin: req.user?.role === "super_admin",
+    query: req.query,
+    actor: req.user,
   });
   sendSuccess(res, { templates });
 });
 
-exports.adminGetUploadUrl = catchAsync(async (req, res) => {
-  const { filename, contentType } = req.body;
-  const templateId = req.query.templateId || "new";
-  const result = await service.getUploadUrl({ filename, contentType, templateId });
-  sendSuccess(res, result);
-});
-
 exports.adminUploadImage = catchAsync(async (req, res) => {
-  if (!req.file) throw new (require("../../shared/errors").ValidationError)("image file is required");
+  if (!req.file) throw new ValidationError("image file is required");
   const templateId = req.query.templateId || "new";
   const result = await service.handleImageUpload({
     fileBuffer: req.file.buffer,
@@ -80,12 +60,12 @@ exports.adminDuplicate = catchAsync(async (req, res) => {
 });
 
 // ── Categories ──────────────────────────────────────────────────────────────
-exports.listCategories = catchAsync(async (req, res) => {
+exports.listCategories = catchAsync(async (_req, res) => {
   const categories = await service.listCategories({ includeInactive: false });
   sendSuccess(res, { categories });
 });
 
-exports.adminListCategories = catchAsync(async (req, res) => {
+exports.adminListCategories = catchAsync(async (_req, res) => {
   const categories = await service.listCategories({ includeInactive: true });
   sendSuccess(res, { categories });
 });
@@ -102,7 +82,7 @@ exports.adminUpdateCategory = catchAsync(async (req, res) => {
 
 exports.adminDeleteCategory = catchAsync(async (req, res) => {
   await service.deleteCategory(req.params.id, req.user);
-  sendSuccess(res, null, "Category deleted");
+  sendSuccess(res, null, "Category disabled");
 });
 
 // ── Fonts ───────────────────────────────────────────────────────────────────

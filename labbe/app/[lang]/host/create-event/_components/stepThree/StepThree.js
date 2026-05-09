@@ -1,17 +1,8 @@
 "use client";
 /**
  * StepThree (visual template) — backend-driven thumbnail grid; selecting
- * a thumbnail opens `TemplateForm`, which renders the dynamic fields
- * from `template.fields[]` and bakes the canvas into a baked image at
- * save.
- *
- * Form context contract (canonical / legacy keys are dual-written):
- *   - templateImage:                File (the baked PNG/Blob)
- *   - visualTemplate:               full Template doc + .data (legacy)
- *                                   .fieldValues (canonical)
- *                                   .templateRef (canonical id)
- *   - invitationSettings.visualTemplate: legacy mirror
- *   - invitationSettings.templateImage:  legacy mirror
+ * a thumbnail opens TemplateForm, which renders the dynamic fields and
+ * bakes the canvas into an image at save.
  */
 
 import React, { useState } from "react";
@@ -21,6 +12,7 @@ import styles from "./stepThree.module.css";
 import TemplatesCards from "./templatesCards/TemplatesCards";
 import TemplateForm from "../templateForm/TemplateForm";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { useHostTemplates, useTemplateCategories } from "@/hooks/queries/useTemplates";
 
 const StepThree = () => {
@@ -33,54 +25,60 @@ const StepThree = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const { data: catData } = useTemplateCategories({ admin: false });
-  const { data: tplData, isLoading } = useHostTemplates({ category: selectedCategory });
-  const categories = catData?.data?.categories || catData?.categories || [];
-  const templates = tplData?.data?.templates || tplData?.templates || [];
+  const { data: tplData, isLoading } = useHostTemplates({
+    category: selectedCategory,
+  });
+  const categories = catData?.data?.categories || [];
+  const templates = tplData?.data?.templates || [];
 
-  // templateImage stores the generated File (after TemplateForm) or
-  // thumbnailUrl (before customization)
   const templateImage = watch("templateImage");
   const visualTemplate = watch("visualTemplate");
 
-  // Derive which card is checked: match by templateRef → backend _id.
   const selectedRef =
     visualTemplate?.templateRef || visualTemplate?._id || visualTemplate?.id;
   const checkedTemplate =
     templates.find((tpl) => tpl._id === selectedRef) ||
-    templates.find((tpl) => (tpl.thumbnailUrl || tpl.imageUrl) === templateImage) ||
+    templates.find(
+      (tpl) => (tpl.thumbnailUrl || tpl.imageUrl) === templateImage
+    ) ||
     null;
 
   const handleTemplateSelect = (template) => {
-    // Pass through saved field values when re-selecting the same template.
     const existingValues =
-      visualTemplate && (visualTemplate.templateRef === template._id || visualTemplate._id === template._id)
+      visualTemplate &&
+      (visualTemplate.templateRef === template._id ||
+        visualTemplate._id === template._id)
         ? visualTemplate.fieldValues || visualTemplate.data
         : null;
     setActiveTemplate({
       ...template,
-      // Preserve both naming conventions during dual-write window
       fieldValues: existingValues || {},
       data: existingValues || {},
     });
     setShowTemplateForm(true);
   };
 
-  // setEventValues from TemplateForm — dual-writes legacy + canonical keys
   const handleSetEventValues = (key, value) => {
-    if (key === "selectedTemplate" || key === "invitationSettings.selectedTemplate") {
-      // Save the visual template with both naming conventions
+    if (
+      key === "selectedTemplate" ||
+      key === "invitationSettings.selectedTemplate"
+    ) {
       const next = {
         ...value,
         templateRef: value?._id || value?.templateRef,
         fieldValues: value?.fieldValues || value?.data || {},
       };
       setValue("visualTemplate", next, { shouldValidate: false });
-      setValue("invitationSettings.visualTemplate", next, { shouldValidate: false });
+      setValue("invitationSettings.visualTemplate", next, {
+        shouldValidate: false,
+      });
       return;
     }
     if (key === "invitationSettings.templateImage") {
       setValue("templateImage", value, { shouldValidate: true });
-      setValue("invitationSettings.templateImage", value, { shouldValidate: false });
+      setValue("invitationSettings.templateImage", value, {
+        shouldValidate: false,
+      });
       return;
     }
     setValue(key, value, { shouldValidate: key === "templateImage" });
@@ -92,17 +90,13 @@ const StepThree = () => {
         <label className={styles.sectionLabel}>{t("select_template")}</label>
 
         {categories.length > 0 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+          <div className={styles.categoryChips}>
             <button
               type="button"
               onClick={() => setSelectedCategory("")}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 999,
-                border: selectedCategory === "" ? "2px solid #c28e5c" : "1px solid #ddd",
-                background: selectedCategory === "" ? "#fff7eb" : "#fff",
-                cursor: "pointer",
-              }}
+              className={`${styles.categoryChip} ${
+                selectedCategory === "" ? styles.categoryChipActive : ""
+              }`}
             >
               {t("all_categories", "كل الفئات")}
             </button>
@@ -111,13 +105,9 @@ const StepThree = () => {
                 key={c._id || c.code}
                 type="button"
                 onClick={() => setSelectedCategory(c.code)}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 999,
-                  border: selectedCategory === c.code ? "2px solid #c28e5c" : "1px solid #ddd",
-                  background: selectedCategory === c.code ? "#fff7eb" : "#fff",
-                  cursor: "pointer",
-                }}
+                className={`${styles.categoryChip} ${
+                  selectedCategory === c.code ? styles.categoryChipActive : ""
+                }`}
               >
                 {currentLocale === "ar" ? c.nameAr : c.nameEn}
               </button>
@@ -126,10 +116,13 @@ const StepThree = () => {
         )}
 
         {isLoading ? (
-          <p>{t("loading", "...")}</p>
+          <SimpleLoading />
         ) : templates.length === 0 ? (
-          <p style={{ color: "#666" }}>
-            {t("no_templates_available", "لا توجد قوالب متاحة بعد. تواصل مع الدعم.")}
+          <p className={styles.emptyMessage}>
+            {t(
+              "no_templates_available",
+              "لا توجد قوالب متاحة بعد. تواصل مع الدعم."
+            )}
           </p>
         ) : (
           <TemplatesCards
@@ -147,7 +140,10 @@ const StepThree = () => {
               decorations: tpl.decorations,
               categories: tpl.categories,
               width: 100,
-              height: tpl.naturalHeight && tpl.naturalWidth ? Math.round((tpl.naturalHeight / tpl.naturalWidth) * 100) : 120,
+              height:
+                tpl.naturalHeight && tpl.naturalWidth
+                  ? Math.round((tpl.naturalHeight / tpl.naturalWidth) * 100)
+                  : 120,
             }))}
             selectedTemplate={checkedTemplate}
             onTemplateSelect={handleTemplateSelect}
@@ -156,8 +152,10 @@ const StepThree = () => {
         {checkedTemplate && (
           <p className={styles.selectedLabel}>
             {t("selected_template")}:{" "}
-            <span style={{ color: "#2a8c5b", fontWeight: 600 }}>
-              {currentLocale === "ar" ? checkedTemplate.nameAr : checkedTemplate.nameEn}
+            <span className={styles.selectedName}>
+              {currentLocale === "ar"
+                ? checkedTemplate.nameAr
+                : checkedTemplate.nameEn}
             </span>
           </p>
         )}

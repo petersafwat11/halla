@@ -115,4 +115,6 @@ export const templateSchema = z.object({
   decorations: z.array(decorationSchema),
   sortOrder:   z.preprocess(toOptNum, z.number().default(0)),
   active:      z.boolean().default(true),
+  // populated from the loaded doc when editing; ignored on create
+  version:     z.preprocess(toOptNum, z.number().optional()),
 });

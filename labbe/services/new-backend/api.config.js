@@ -284,7 +284,6 @@ export const API_PATHS = {
     adminUpdate: (id) => `/admin/templates/${id}`,
     adminDelete: (id) => `/admin/templates/${id}`,
     adminDuplicate: (id) => `/admin/templates/${id}/duplicate`,
-    adminUploadUrl: '/admin/templates/upload-url',
     adminUploadImage: '/admin/templates/upload-image',
     // Categories admin
     adminCategories: '/admin/template-categories',

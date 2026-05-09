@@ -1,10 +1,7 @@
 /**
- * Font Registry — Phase 4c W0-VISUAL-BACKEND
- *
- * Per v4.1 §A-6. Display names are NOT stored here — frontend resolves
- * them via `t('fonts.<id>.displayName')`.
- *
- * Exposed via the public `GET /api/v2/fonts` endpoint, no auth required.
+ * Font registry. Display names are NOT stored here — frontend resolves
+ * them via `t('fonts.<id>.displayName')`. Exposed via the public
+ * `GET /api/v2/fonts` endpoint.
  */
 
 const FONTS = [

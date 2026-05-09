@@ -60,3 +60,13 @@
     font-size: 18px;
   }
 }
+
+.errorState {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+  color: #C0392B;
+  font-size: 14px;
+}

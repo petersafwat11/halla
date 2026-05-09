@@ -1,24 +1,26 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { templateSchema } from "./templateSchema";
 import Button from "@/ui/commen/button/Button";
-import { useTemplate, useTemplateCategories, useFonts } from "@/hooks/queries/useTemplates";
+import {
+  useTemplate,
+  useTemplateCategories,
+  useFonts,
+} from "@/hooks/queries/useTemplates";
 import {
   useCreateTemplate,
   useUpdateTemplate,
 } from "@/hooks/mutations/useTemplateMutations";
-import { templatesService } from "@/services/templatesService";
-import { handleError } from "@/services/errorHandlingService";
-import { toastUtils } from "@/utils/toastUtils";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import FieldConfigPanel from "./FieldConfigPanel";
 import ImageUploadPane from "./ImageUploadPane";
+import { useTemplateEditor } from "./useTemplateEditor";
 import styles from "./TemplateEditorPage.module.css";
 
 const FIELD_TYPES = [
@@ -31,6 +33,7 @@ function makeEmptyTemplate() {
     nameEn: "", nameAr: "", categories: [], imageUrl: "", s3Key: "",
     naturalWidth: 1080, naturalHeight: 1350,
     fields: [], overlays: [], decorations: [], sortOrder: 0, active: true,
+    version: 0,
   };
 }
 
@@ -51,6 +54,7 @@ function normalize(tpl) {
     decorations: tpl.decorations || [],
     sortOrder: tpl.sortOrder || 0,
     active: tpl.active !== false,
+    version: tpl.version ?? 0,
   };
 }
 
@@ -59,14 +63,14 @@ export default function TemplateEditorPage({ id, lang }) {
   const router = useRouter();
   const { t } = useTranslation("admin");
 
-  const { data: tplData, isLoading } = useTemplate(isNew ? null : id);
+  const { data: tplData, isLoading, error: tplError } = useTemplate(isNew ? null : id);
   const { data: catData } = useTemplateCategories({ admin: true });
   const { data: fontsData } = useFonts();
 
   const create = useCreateTemplate();
   const update = useUpdateTemplate(isNew ? null : id);
 
-  const remoteTpl = tplData?.data?.template || tplData?.template;
+  const remoteTpl = tplData?.data?.template;
 
   const methods = useForm({
     resolver: zodResolver(templateSchema),
@@ -75,7 +79,6 @@ export default function TemplateEditorPage({ id, lang }) {
     defaultValues: makeEmptyTemplate(),
   });
   const { handleSubmit, reset, watch, formState } = methods;
-
   const formValues = watch();
 
   useEffect(() => {
@@ -83,9 +86,11 @@ export default function TemplateEditorPage({ id, lang }) {
     if (isNew) reset(makeEmptyTemplate());
   }, [isNew, remoteTpl, reset]);
 
-  const { clearGuard } = useUnsavedChanges(formState.isDirty, t("templates.editor.unsavedChangesWarning"));
+  const { clearGuard } = useUnsavedChanges(
+    formState.isDirty,
+    t("templates.editor.unsavedChangesWarning")
+  );
 
-  // Must be before early return to satisfy rules-of-hooks
   const sampleData = useMemo(() => {
     const map = {};
     (formValues.fields || []).forEach((f) => {
@@ -95,80 +100,36 @@ export default function TemplateEditorPage({ id, lang }) {
   }, [formValues.fields]);
 
   const fileInputRef = useRef(null);
-  const [uploading, setUploading] = useState(false);
-  const [pendingImageFile, setPendingImageFile] = useState(null);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toastUtils.error(t("templates.editor.fileTooLarge"));
-      return;
-    }
-    const localUrl = URL.createObjectURL(file);
-    setPendingImageFile(file);
-    methods.setValue("imageUrl", localUrl, { shouldDirty: true });
-    methods.setValue("s3Key", "", { shouldDirty: true });
-    const img = new Image();
-    img.onload = () => {
-      methods.setValue("naturalWidth", img.naturalWidth, { shouldDirty: true });
-      methods.setValue("naturalHeight", img.naturalHeight, { shouldDirty: true });
-    };
-    img.src = localUrl;
-  };
+  const { uploading, handleImageChange, submit } = useTemplateEditor({
+    isNew,
+    id,
+    lang,
+    methods,
+    reset,
+    clearGuard,
+    create,
+    update,
+    normalize,
+    t,
+  });
 
-  const onSubmit = async (data) => {
-    try {
-      let s3Key = data.s3Key;
+  const categories = catData?.data?.categories || [];
+  const fonts = fontsData?.data?.fonts || [];
 
-      if (pendingImageFile) {
-        setUploading(true);
-        const result = await templatesService.adminUploadImage(pendingImageFile, {
-          templateId: isNew ? "new" : id,
-        });
-        s3Key = result.s3Key;
-        setUploading(false);
-      }
-
-      const payload = {
-        nameEn: data.nameEn, nameAr: data.nameAr,
-        categories: data.categories, fields: data.fields,
-        overlays: data.overlays, decorations: data.decorations,
-        sortOrder: data.sortOrder, active: data.active,
-      };
-      if (isNew) {
-        if (!s3Key) {
-          toastUtils.error(t("templates.editor.imageRequired"));
-          return;
-        }
-        const res = await create.mutateAsync({
-          ...payload, s3Key,
-          naturalWidth: data.naturalWidth, naturalHeight: data.naturalHeight,
-        });
-        const newId = res?.data?.template?._id || res?.template?._id;
-        toastUtils.success(t("templates.editor.created"));
-        if (newId) {
-          clearGuard();
-          router.push(`/${lang}/admin-dash/templates/${newId}`);
-        }
-      } else {
-        if (s3Key) payload.s3Key = s3Key;
-        await update.mutateAsync(payload);
-        toastUtils.success(t("templates.editor.saved"));
-        setPendingImageFile(null);
-        reset({ ...data }, { keepValues: true });
-      }
-    } catch (err) {
-      setUploading(false);
-      handleError(err, t, { fallbackMessage: "errors.generic" });
-    }
-  };
-
-  const categories = catData?.data?.categories || catData?.categories || [];
-  const fonts = fontsData?.data?.fonts || fontsData?.fonts || [];
-
-  if (!isNew && isLoading) {
-    return <SimpleLoading />;
+  if (!isNew && isLoading) return <SimpleLoading />;
+  if (!isNew && tplError) {
+    return (
+      <div className={styles.errorState}>
+        <p>{t("templates.editor.loadError", "تعذر تحميل القالب.")}</p>
+        <Button
+          variant="secondary"
+          type="button"
+          title={t("templates.editor.backToList", "العودة إلى القائمة")}
+          onClick={() => router.push(`/${lang}/admin-dash/templates`)}
+        />
+      </div>
+    );
   }
 
   const previewTemplate = {
@@ -182,7 +143,7 @@ export default function TemplateEditorPage({ id, lang }) {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(submit)}>
         <div className={styles.editorHeader}>
           <h1 className={styles.editorTitle}>
             {isNew ? t("templates.editor.titleNew") : t("templates.editor.titleEdit")}

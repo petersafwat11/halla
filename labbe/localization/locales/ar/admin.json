@@ -95,7 +95,10 @@
       "saved": "تم الحفظ",
       "uploadPrompt": "ارفع صورة الخلفية أولاً",
       "uploadBtn": "اختر صورة",
-      "changeImage": "تغيير الصورة"
+      "changeImage": "تغيير الصورة",
+      "loadError": "تعذر تحميل القالب.",
+      "backToList": "العودة إلى القائمة",
+      "versionConflict": "قام محرر آخر بحفظ هذا القالب. أعد التحميل وطبق تغييراتك."
     },
     "panel": {
       "settings": "إعدادات القالب",
@@ -151,7 +154,16 @@
       "decorationType": "النوع",
       "inherit": "— موروث",
       "newFieldLabelEn": "حقل جديد",
-      "newFieldLabelAr": "حقل جديد"
+      "newFieldLabelAr": "حقل جديد",
+      "nameEnPlaceholder": "اسم القالب بالإنجليزية",
+      "nameArPlaceholder": "اسم القالب بالعربية",
+      "activeDescription": "تفعيل أو تعطيل هذا القالب",
+      "decorationNumber": "زخرفة #{{number}}",
+      "chooseIcon": "اختر أيقونة...",
+      "imageUrlPlaceholder": "مثال: رابط الصورة",
+      "iconSizeVh": "حجم الأيقونة (vh %)",
+      "noDecorations": "لم تضف أي زخارف بعد",
+      "addDecorationHint": "انقر على \"إضافة زخرفة\" للبدء"
     }
   },
   "managePlans": {

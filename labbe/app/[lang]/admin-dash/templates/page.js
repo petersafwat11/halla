@@ -1,9 +1,6 @@
 /**
- * Admin Templates List — Phase 4c W1-VISUAL
- *
- * Server-side guard via `requirePageAccess('templates', lang)` (v4.1
- * §A-1). Renders the client-side list page that lets admins search,
- * filter by category, and pick a template to edit.
+ * Admin templates list page. The client component handles search,
+ * category filter, and selection.
  */
 
 import { requirePageAccess } from "@/services/serverAuth";

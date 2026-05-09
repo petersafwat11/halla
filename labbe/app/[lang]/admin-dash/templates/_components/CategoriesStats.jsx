@@ -9,10 +9,10 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
 export default function CategoriesStats() {
   const { t } = useTranslation("admin");
-  const { data, isLoading } = useTemplateCategories({ admin: true });
+  const { data, isLoading, error } = useTemplateCategories({ admin: true });
 
   const statsCards = useMemo(() => {
-    const cats = data?.data?.categories || data?.categories || [];
+    const cats = data?.data?.categories || [];
     const total = cats.length;
     const active = cats.filter((c) => c.active !== false).length;
     const inactive = total - active;
@@ -43,6 +43,13 @@ export default function CategoriesStats() {
   }, [data, t]);
 
   if (isLoading) return <SimpleLoading />;
+  if (error) {
+    return (
+      <p style={{ color: "#C0392B", fontSize: "1.4rem" }}>
+        {t("templates.categories.stats.error", "تعذر تحميل إحصاءات الفئات")}
+      </p>
+    );
+  }
 
   return <StatsCards cards={statsCards} />;
 }

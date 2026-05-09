@@ -95,7 +95,10 @@
       "saved": "Saved",
       "uploadPrompt": "Upload a background image first",
       "uploadBtn": "Choose Image",
-      "changeImage": "Change Image"
+      "changeImage": "Change Image",
+      "loadError": "Could not load this template.",
+      "backToList": "Back to list",
+      "versionConflict": "Another editor saved this template. Reload and re-apply your changes."
     },
     "panel": {
       "settings": "Template Settings",
@@ -151,7 +154,16 @@
       "decorationType": "Type",
       "inherit": "— inherit",
       "newFieldLabelEn": "New field",
-      "newFieldLabelAr": "New field"
+      "newFieldLabelAr": "New field",
+      "nameEnPlaceholder": "Template name in English",
+      "nameArPlaceholder": "Template name in Arabic",
+      "activeDescription": "Enable or disable this template",
+      "decorationNumber": "Decoration #{{number}}",
+      "chooseIcon": "Choose icon...",
+      "imageUrlPlaceholder": "e.g. image URL",
+      "iconSizeVh": "Icon Size (vh %)",
+      "noDecorations": "No decorations added yet",
+      "addDecorationHint": "Click \"Add Decoration\" to get started"
     }
   },
   "managePlans": {
