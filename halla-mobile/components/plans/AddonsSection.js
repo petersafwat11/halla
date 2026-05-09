@@ -1,6 +1,13 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "../../localization";
 import { useAvailableAddons } from "../../hooks";
 import {
@@ -34,8 +41,16 @@ const AddonsSection = ({ onAddonsChange }) => {
   const [extraReminders, setExtraReminders] = useState(null);
   const [designTemplate, setDesignTemplate] = useState(null);
 
+  const selectedCount =
+    (extraInvites ? 1 : 0) +
+    (extraReminders ? 1 : 0) +
+    (designTemplate ? 1 : 0);
+  const total =
+    (extraInvites?.price || 0) +
+    (extraReminders?.price || 0) +
+    (designTemplate?.price || 0);
+
   const notify = (inv, rem, des) => {
-    const total = (inv?.price || 0) + (rem?.price || 0) + (des?.price || 0);
     const items = [];
     if (inv) {
       items.push({
@@ -62,32 +77,40 @@ const AddonsSection = ({ onAddonsChange }) => {
         price: des.price,
       });
     }
-    onAddonsChange?.(items, total);
+    const sum = (inv?.price || 0) + (rem?.price || 0) + (des?.price || 0);
+    onAddonsChange?.(items, sum);
   };
 
-  const setInv = (tier) => {
+  const toggleInv = (tier) => {
     const next = extraInvites?.quantity === tier.quantity ? null : tier;
     setExtraInvites(next);
     notify(next, extraReminders, designTemplate);
   };
-  const setRem = (tier) => {
+  const toggleRem = (tier) => {
     const next = extraReminders?.quantity === tier.quantity ? null : tier;
     setExtraReminders(next);
     notify(extraInvites, next, designTemplate);
   };
-  const setDes = (tier) => {
+  const toggleDes = (tier) => {
     const next = designTemplate?.type === tier.type ? null : tier;
     setDesignTemplate(next);
     notify(extraInvites, extraReminders, next);
   };
 
+  const clearAll = () => {
+    setExtraInvites(null);
+    setExtraReminders(null);
+    setDesignTemplate(null);
+    onAddonsChange?.([], 0);
+  };
+
   if (isLoading) {
     return (
       <View style={styles.section}>
-        <View style={styles.heading}>
-          <Text style={styles.title}>{t("addons.title")}</Text>
+        <SectionHeader t={t} selectedCount={0} total={0} />
+        <View style={styles.loadingCard}>
+          <ActivityIndicator color={colors.primary[500]} />
         </View>
-        <ActivityIndicator color={colors.primary[500]} />
       </View>
     );
   }
@@ -95,9 +118,10 @@ const AddonsSection = ({ onAddonsChange }) => {
   if (error || !catalog) {
     return (
       <View style={styles.section}>
-        <View style={styles.heading}>
-          <Text style={styles.title}>{t("addons.title")}</Text>
-          <Text style={styles.subtitle}>
+        <SectionHeader t={t} selectedCount={0} total={0} />
+        <View style={styles.errorState}>
+          <Ionicons name="alert-circle" size={18} color="#B91C1C" />
+          <Text style={styles.errorText}>
             {t("addons.loadFailed", { defaultValue: "Could not load add-ons." })}
           </Text>
         </View>
@@ -107,110 +131,246 @@ const AddonsSection = ({ onAddonsChange }) => {
 
   return (
     <View style={styles.section}>
-      <View style={styles.heading}>
-        <Text style={styles.title}>{t("addons.title")}</Text>
-        <Text style={styles.subtitle}>{t("addons.subtitle")}</Text>
-      </View>
+      <SectionHeader
+        t={t}
+        selectedCount={selectedCount}
+        total={total}
+        onClear={clearAll}
+      />
 
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardName}>{t("addons.extraInvites.title")}</Text>
-          <Text style={styles.cardDesc}>
-            {t("addons.extraInvites.description")}
-          </Text>
-        </View>
+      <AddonCard
+        icon="paper-plane-outline"
+        iconBgGradient={[colors.primary[100], colors.primary[200]]}
+        iconColor={colors.primary[700]}
+        title={t("addons.extraInvites.title")}
+        description={t("addons.extraInvites.description")}
+        isActive={!!extraInvites}
+        activePrice={extraInvites?.price}
+        t={t}
+      >
         <View style={styles.tierRow}>
-          {tiers.extraInvites.map((tier) => {
-            const active = extraInvites?.quantity === tier.quantity;
-            return (
-              <TouchableOpacity
-                key={tier.quantity}
-                style={[styles.tierBtn, active && styles.tierBtnActive]}
-                onPress={() => setInv(tier)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.tierQty, active && styles.tierQtyActive]}>
-                  +{tier.quantity}
-                </Text>
-                <Text style={[styles.tierPrice, active && styles.tierPriceActive]}>
-                  {tier.price} {t("common.currency.sar")}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+          {tiers.extraInvites.map((tier) => (
+            <TierTile
+              key={tier.quantity}
+              active={extraInvites?.quantity === tier.quantity}
+              onPress={() => toggleInv(tier)}
+              quantity={tier.quantity}
+              price={tier.price}
+              t={t}
+            />
+          ))}
         </View>
-      </View>
+      </AddonCard>
 
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardName}>{t("addons.extraReminders.title")}</Text>
-          <Text style={styles.cardDesc}>
-            {t("addons.extraReminders.description")}
-          </Text>
-        </View>
+      <AddonCard
+        icon="notifications-outline"
+        iconBgGradient={[colors.primary[50], colors.primary[300]]}
+        iconColor={colors.primary[800]}
+        title={t("addons.extraReminders.title")}
+        description={t("addons.extraReminders.description")}
+        isActive={!!extraReminders}
+        activePrice={extraReminders?.price}
+        t={t}
+      >
         <View style={styles.tierRow}>
-          {tiers.extraReminders.map((tier) => {
-            const active = extraReminders?.quantity === tier.quantity;
-            return (
-              <TouchableOpacity
-                key={tier.quantity}
-                style={[styles.tierBtn, active && styles.tierBtnActive]}
-                onPress={() => setRem(tier)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.tierQty, active && styles.tierQtyActive]}>
-                  +{tier.quantity}
-                </Text>
-                <Text style={[styles.tierPrice, active && styles.tierPriceActive]}>
-                  {tier.price} {t("common.currency.sar")}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+          {tiers.extraReminders.map((tier) => (
+            <TierTile
+              key={tier.quantity}
+              active={extraReminders?.quantity === tier.quantity}
+              onPress={() => toggleRem(tier)}
+              quantity={tier.quantity}
+              price={tier.price}
+              t={t}
+            />
+          ))}
         </View>
-      </View>
+      </AddonCard>
 
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardName}>{t("addons.designTemplate.title")}</Text>
-          <Text style={styles.cardDesc}>
-            {t("addons.designTemplate.description")}
-          </Text>
-        </View>
-        <View style={styles.templateList}>
+      <AddonCard
+        icon="color-palette-outline"
+        iconBgGradient={[colors.accent[100], colors.primary[200]]}
+        iconColor={colors.secondary[700]}
+        title={t("addons.designTemplate.title")}
+        description={t("addons.designTemplate.description")}
+        isActive={!!designTemplate}
+        activePrice={designTemplate?.price}
+        t={t}
+      >
+        <View style={styles.designList}>
           {tiers.designTemplate.map((tier) => {
             const active = designTemplate?.type === tier.type;
             return (
               <TouchableOpacity
                 key={tier.type}
-                style={[styles.templateBtn, active && styles.templateBtnActive]}
-                onPress={() => setDes(tier)}
-                activeOpacity={0.7}
+                style={[styles.designRow, active && styles.designRowActive]}
+                onPress={() => toggleDes(tier)}
+                activeOpacity={0.85}
               >
+                <View
+                  style={[
+                    styles.designRadio,
+                    active && styles.designRadioActive,
+                  ]}
+                >
+                  {active ? (
+                    <Ionicons name="checkmark" size={12} color={colors.natural[50]} />
+                  ) : null}
+                </View>
                 <Text
-                  style={[styles.templateName, active && styles.templateNameActive]}
+                  style={[styles.designName, active && styles.designNameActive]}
                   numberOfLines={2}
                 >
                   {t(`addons.designTypes.${tier.type}`)}
                 </Text>
-                <View style={styles.templateRight}>
-                  <Text style={[styles.tierPrice, active && styles.tierPriceActive]}>
-                    {tier.price} {t("common.currency.sar")}
+                <Text style={styles.designPrice}>
+                  {tier.price}
+                  <Text style={styles.designPriceUnit}>
+                    {" "}
+                    {t("common.currency.sar")}
                   </Text>
-                  {active ? (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={18}
-                      color={colors.primary[700]}
-                    />
-                  ) : null}
-                </View>
+                </Text>
               </TouchableOpacity>
             );
           })}
         </View>
-      </View>
+      </AddonCard>
     </View>
+  );
+};
+
+const SectionHeader = ({ t, selectedCount, total, onClear }) => (
+  <View style={styles.sectionHead}>
+    <View style={styles.sectionHeadText}>
+      <Text style={styles.sectionTitle}>{t("addons.title")}</Text>
+      <Text style={styles.sectionSubtitle}>{t("addons.subtitle")}</Text>
+    </View>
+    {selectedCount > 0 ? (
+      <LinearGradient
+        colors={[colors.primary[100], colors.primary[50]]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.summaryChip}
+      >
+        <Text style={styles.summaryCount}>
+          {t("addons.selectedCount", {
+            count: selectedCount,
+            defaultValue: `${selectedCount} selected`,
+          })}
+        </Text>
+        <View style={styles.summaryDivider} />
+        <Text style={styles.summaryTotal}>
+          {total}
+          <Text style={styles.summaryTotalUnit}>
+            {" "}
+            {t("common.currency.sar")}
+          </Text>
+        </Text>
+        {onClear ? (
+          <TouchableOpacity
+            onPress={onClear}
+            style={styles.summaryClear}
+            accessibilityLabel={t("addons.clearAll", { defaultValue: "Clear all" })}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+          >
+            <Ionicons name="close" size={12} color={colors.secondary[700]} />
+          </TouchableOpacity>
+        ) : null}
+      </LinearGradient>
+    ) : null}
+  </View>
+);
+
+const AddonCard = ({
+  icon,
+  iconBgGradient,
+  iconColor,
+  title,
+  description,
+  isActive,
+  activePrice,
+  children,
+  t,
+}) => (
+  <View style={[styles.card, isActive && styles.cardActive]}>
+    <View style={styles.cardHead}>
+      <LinearGradient
+        colors={iconBgGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.iconBadge}
+      >
+        <Ionicons name={icon} size={20} color={iconColor} />
+      </LinearGradient>
+      <View style={styles.cardHeadText}>
+        <Text style={styles.cardTitle}>{title}</Text>
+        <Text style={styles.cardDesc}>{description}</Text>
+      </View>
+      {isActive && activePrice != null ? (
+        <LinearGradient
+          colors={[colors.primary[500], colors.primary[600]]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.selectedChip}
+        >
+          <Ionicons
+            name="checkmark"
+            size={12}
+            color={colors.natural[50]}
+            style={styles.selectedChipIcon}
+          />
+          <Text style={styles.selectedChipText}>
+            {activePrice}
+            <Text style={styles.selectedChipUnit}>
+              {" "}
+              {t("common.currency.sar")}
+            </Text>
+          </Text>
+        </LinearGradient>
+      ) : null}
+    </View>
+    {children}
+  </View>
+);
+
+const TierTile = ({ active, onPress, quantity, price, t }) => {
+  if (active) {
+    return (
+      <TouchableOpacity
+        style={styles.tileWrap}
+        onPress={onPress}
+        activeOpacity={0.85}
+      >
+        <LinearGradient
+          colors={[colors.primary[100], colors.primary[50]]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={[styles.tile, styles.tileActive]}
+        >
+          <Text style={[styles.tileQty, styles.tileQtyActive]}>+{quantity}</Text>
+          <Text style={[styles.tilePrice, styles.tilePriceActive]}>
+            {price}
+            <Text style={styles.tilePriceUnit}>
+              {" "}
+              {t("common.currency.sar")}
+            </Text>
+          </Text>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <TouchableOpacity
+      style={[styles.tileWrap, styles.tile]}
+      onPress={onPress}
+      activeOpacity={0.85}
+    >
+      <Text style={styles.tileQty}>+{quantity}</Text>
+      <Text style={styles.tilePrice}>
+        {price}
+        <Text style={styles.tilePriceUnit}> {t("common.currency.sar")}</Text>
+      </Text>
+    </TouchableOpacity>
   );
 };
 
@@ -219,39 +379,119 @@ const styles = StyleSheet.create({
     marginTop: spacing[16],
     gap: spacing[12],
   },
-  heading: {
-    gap: 4,
+
+  // Section header
+  sectionHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing[8],
+    flexWrap: "wrap",
   },
-  title: {
+  sectionHeadText: {
+    flex: 1,
+    minWidth: 180,
+    gap: 2,
+  },
+  sectionTitle: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.title.medium,
     color: colors.secondary[700],
   },
-  subtitle: {
+  sectionSubtitle: {
     fontFamily: "Cairo_400Regular",
     fontSize: typography.fontSize.body.small,
     color: colors.natural[400],
   },
+
+  summaryChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingLeft: 14,
+    borderRadius: 9999,
+    borderWidth: 1,
+    borderColor: colors.primary[200],
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  summaryCount: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.caption.large,
+    color: colors.secondary[700],
+  },
+  summaryDivider: {
+    width: 1,
+    height: 14,
+    backgroundColor: colors.primary[300],
+  },
+  summaryTotal: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.body.medium,
+    color: colors.primary[700],
+  },
+  summaryTotalUnit: {
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.caption.small,
+    opacity: 0.75,
+  },
+  summaryClear: {
+    width: 22,
+    height: 22,
+    borderRadius: 9999,
+    backgroundColor: colors.natural[50],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // Card
   card: {
     backgroundColor: colors.natural[50],
     borderWidth: 1,
-    borderColor: colors.primary[200],
-    borderRadius: borderRadius[16],
+    borderColor: colors.primary[100],
+    borderRadius: borderRadius[20],
     padding: spacing[16],
-    shadowColor: colors.black[100],
+    gap: spacing[12],
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
     elevation: 1,
   },
-  cardHeader: {
-    paddingBottom: spacing[8],
-    marginBottom: spacing[12],
+  cardActive: {
+    borderColor: colors.primary[400],
+    shadowColor: colors.primary[500],
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+  },
+  cardHead: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing[8],
+    paddingBottom: spacing[12],
     borderBottomWidth: 1,
     borderBottomColor: colors.primary[100],
-    gap: 4,
   },
-  cardName: {
+  iconBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: borderRadius[12],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardHeadText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  cardTitle: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.title.small,
     color: colors.secondary[700],
@@ -260,78 +500,164 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     fontSize: typography.fontSize.body.small,
     color: colors.natural[400],
+    lineHeight: 18,
   },
+
+  selectedChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 9999,
+    gap: 4,
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  selectedChipIcon: {
+    marginEnd: 2,
+  },
+  selectedChipText: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.caption.large,
+    color: colors.natural[50],
+  },
+  selectedChipUnit: {
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.caption.small,
+    opacity: 0.85,
+  },
+
+  // Tier tiles
   tierRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing[8],
   },
-  tierBtn: {
-    flexBasis: "18%",
+  tileWrap: {
+    flexBasis: "22%",
     flexGrow: 1,
-    minWidth: 64,
+    minWidth: 78,
+    borderRadius: borderRadius[12],
+  },
+  tile: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: spacing[8],
+    paddingVertical: spacing[12],
     paddingHorizontal: spacing[4],
     borderWidth: 2,
-    borderColor: colors.primary[200],
+    borderColor: colors.primary[100],
     borderRadius: borderRadius[12],
     backgroundColor: colors.natural[50],
+    gap: 2,
   },
-  tierBtnActive: {
+  tileActive: {
     borderColor: colors.primary[500],
-    backgroundColor: colors.primary[100],
+    backgroundColor: "transparent",
   },
-  tierQty: {
+  tileQty: {
     fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.body.medium,
-    color: colors.primary[500],
+    fontSize: typography.fontSize.title.small,
+    color: colors.primary[600],
+    lineHeight: 22,
   },
-  tierQtyActive: {
+  tileQtyActive: {
     color: colors.primary[700],
   },
-  tierPrice: {
+  tilePrice: {
     fontFamily: "Cairo_500Medium",
-    fontSize: typography.fontSize.caption.small,
+    fontSize: typography.fontSize.caption.large,
     color: colors.accent[500],
-    marginTop: 2,
   },
-  tierPriceActive: {
+  tilePriceActive: {
     color: colors.primary[700],
   },
-  templateList: {
+  tilePriceUnit: {
+    fontFamily: "Cairo_400Regular",
+    fontSize: typography.fontSize.caption.small,
+    opacity: 0.75,
+  },
+
+  // Design list
+  designList: {
     gap: spacing[8],
   },
-  templateBtn: {
+  designRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: spacing[8],
+    gap: spacing[12],
     paddingVertical: spacing[12],
     paddingHorizontal: spacing[12],
     borderWidth: 2,
-    borderColor: colors.primary[200],
+    borderColor: colors.primary[100],
     borderRadius: borderRadius[12],
     backgroundColor: colors.natural[50],
   },
-  templateBtnActive: {
+  designRowActive: {
     borderColor: colors.primary[500],
-    backgroundColor: colors.primary[100],
+    backgroundColor: colors.primary[50],
   },
-  templateName: {
+  designRadio: {
+    width: 22,
+    height: 22,
+    borderRadius: 9999,
+    borderWidth: 2,
+    borderColor: colors.primary[300],
+    backgroundColor: colors.natural[50],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  designRadioActive: {
+    borderColor: colors.primary[600],
+    backgroundColor: colors.primary[600],
+  },
+  designName: {
     flex: 1,
     fontFamily: "Cairo_600SemiBold",
     fontSize: typography.fontSize.body.small,
     color: colors.secondary[700],
   },
-  templateNameActive: {
+  designNameActive: {
     color: colors.primary[700],
   },
-  templateRight: {
+  designPrice: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.body.medium,
+    color: colors.primary[600],
+  },
+  designPriceUnit: {
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.caption.small,
+    opacity: 0.75,
+  },
+
+  // Loading / error states
+  loadingCard: {
+    height: 120,
+    borderRadius: borderRadius[20],
+    borderWidth: 1,
+    borderColor: colors.primary[100],
+    backgroundColor: colors.primary[50],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  errorState: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: spacing[8],
+    padding: spacing[12],
+    borderRadius: borderRadius[12],
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+  errorText: {
+    flex: 1,
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.body.small,
+    color: "#7C2222",
   },
 });
 

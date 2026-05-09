@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const DiscountCodeCard = ({
   discountCode,
@@ -16,114 +17,130 @@ const DiscountCodeCard = ({
   onCodeChange,
   onApply,
   t,
-}) => (
-  <View style={styles.card}>
-    <View style={styles.cardHeader}>
-      <Text style={styles.cardTitle}>
-        <Ionicons name="pricetag-outline" size={16} color="#2C2C2C" />{" "}
-        {t("summary.discount.title")}
-      </Text>
-    </View>
-    <View style={styles.cardContent}>
-      <View style={styles.discountInputWrapper}>
-        <TextInput
-          style={[
-            styles.discountInput,
-            discountApplied && styles.discountInputApplied,
-          ]}
-          placeholder={t("summary.discount.placeholder")}
-          placeholderTextColor="#999"
-          value={discountCode}
-          onChangeText={onCodeChange}
-          autoCapitalize="characters"
-          editable={!discountApplied}
+}) => {
+  const disabled = discountApplied || !discountCode.trim() || validating;
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Ionicons
+          name="pricetag-outline"
+          size={16}
+          color={colors.primary[500]}
         />
-        <TouchableOpacity
-          style={[
-            styles.applyButton,
-            (discountApplied || !discountCode.trim() || validating) &&
-              styles.applyButtonDisabled,
-          ]}
-          onPress={onApply}
-          disabled={discountApplied || !discountCode.trim() || validating}
-          activeOpacity={0.7}
-        >
-          {validating ? (
-            <ActivityIndicator size="small" color="#FFF" />
-          ) : discountApplied ? (
-            <>
-              <Ionicons name="checkmark" size={16} color="#FFF" />
+        <Text style={styles.cardTitle}>{t("summary.discount.title")}</Text>
+      </View>
+
+      <View style={styles.cardContent}>
+        <View style={styles.discountInputWrapper}>
+          <TextInput
+            style={[
+              styles.discountInput,
+              discountApplied && styles.discountInputApplied,
+            ]}
+            placeholder={t("summary.discount.placeholder")}
+            placeholderTextColor={colors.natural[350]}
+            value={discountCode}
+            onChangeText={onCodeChange}
+            autoCapitalize="characters"
+            editable={!discountApplied}
+          />
+          <TouchableOpacity
+            style={[styles.applyButton, disabled && styles.applyButtonDisabled]}
+            onPress={onApply}
+            disabled={disabled}
+            activeOpacity={0.85}
+          >
+            {validating ? (
+              <ActivityIndicator size="small" color={colors.natural[50]} />
+            ) : discountApplied ? (
+              <>
+                <Ionicons
+                  name="checkmark"
+                  size={16}
+                  color={colors.natural[50]}
+                />
+                <Text style={styles.applyButtonText}>
+                  {t("summary.discount.applied")}
+                </Text>
+              </>
+            ) : (
               <Text style={styles.applyButtonText}>
-                {t("summary.discount.applied")}
+                {t("summary.discount.apply")}
               </Text>
-            </>
-          ) : (
-            <Text style={styles.applyButtonText}>
-              {t("summary.discount.apply")}
-            </Text>
-          )}
-        </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FFF",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: colors.natural[50],
+    borderRadius: borderRadius[16],
+    borderWidth: 1,
+    borderColor: colors.natural[200],
+    marginBottom: spacing[12],
+    overflow: "hidden",
   },
   cardHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    gap: spacing[8],
+    paddingHorizontal: spacing[16],
+    paddingVertical: spacing[12],
+    borderBottomWidth: 1,
+    borderBottomColor: colors.natural[200],
   },
   cardTitle: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 16,
-    color: "#2C2C2C",
+    fontSize: typography.fontSize.title.medium,
+    color: colors.secondary[900],
   },
-  cardContent: { gap: 16 },
-  discountInputWrapper: { flexDirection: "row", gap: 8 },
+  cardContent: {
+    padding: spacing[16],
+  },
+  discountInputWrapper: {
+    flexDirection: "row",
+    gap: spacing[8],
+  },
   discountInput: {
     flex: 1,
     height: 48,
-    borderWidth: 1.5,
-    borderColor: "#E5E7EA",
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: colors.natural[250],
+    borderRadius: borderRadius[12],
+    paddingHorizontal: spacing[16],
     fontFamily: "Cairo_400Regular",
-    fontSize: 14,
-    color: "#2C2C2C",
-    backgroundColor: "#FFF",
+    fontSize: typography.fontSize.body.medium,
+    color: colors.natural[900],
+    backgroundColor: colors.natural[50],
   },
   discountInputApplied: {
-    backgroundColor: "#F5ECE4",
-    borderColor: "#C28E5C",
+    backgroundColor: colors.success[50],
+    borderColor: colors.success[300],
+    color: colors.success[800],
   },
   applyButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    backgroundColor: "#C28E5C",
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    minWidth: 100,
+    gap: spacing[4],
+    backgroundColor: colors.primary[500],
+    paddingHorizontal: spacing[20],
+    borderRadius: borderRadius[12],
+    minWidth: 96,
+    height: 48,
   },
-  applyButtonDisabled: { backgroundColor: "#E5E7EA" },
+  applyButtonDisabled: {
+    backgroundColor: colors.primary[200],
+  },
   applyButtonText: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 13,
-    color: "#FFF",
+    fontSize: typography.fontSize.body.small,
+    color: colors.natural[50],
   },
 });
 

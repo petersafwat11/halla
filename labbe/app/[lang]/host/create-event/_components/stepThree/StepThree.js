@@ -59,26 +59,13 @@ const StepThree = () => {
   };
 
   const handleSetEventValues = (key, value) => {
-    if (
-      key === "selectedTemplate" ||
-      key === "invitationSettings.selectedTemplate"
-    ) {
+    if (key === "selectedTemplate") {
       const next = {
         ...value,
         templateRef: value?._id || value?.templateRef,
         fieldValues: value?.fieldValues || value?.data || {},
       };
       setValue("visualTemplate", next, { shouldValidate: false });
-      setValue("invitationSettings.visualTemplate", next, {
-        shouldValidate: false,
-      });
-      return;
-    }
-    if (key === "invitationSettings.templateImage") {
-      setValue("templateImage", value, { shouldValidate: true });
-      setValue("invitationSettings.templateImage", value, {
-        shouldValidate: false,
-      });
       return;
     }
     setValue(key, value, { shouldValidate: key === "templateImage" });

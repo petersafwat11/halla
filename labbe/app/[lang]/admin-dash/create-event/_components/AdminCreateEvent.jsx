@@ -155,7 +155,12 @@ export default function AdminCreateEvent() {
       fd.append("eventDetails", JSON.stringify(payload.eventDetails));
       fd.append("guestList", JSON.stringify(payload.guestList));
       fd.append("staffList", JSON.stringify(payload.staffList));
-      fd.append("invitationSettings", JSON.stringify(payload.invitationSettings));
+      if (payload.visualTemplate)
+        fd.append("visualTemplate", JSON.stringify(payload.visualTemplate));
+      if (payload.taqnyatTemplate)
+        fd.append("taqnyatTemplate", JSON.stringify(payload.taqnyatTemplate));
+      if (payload.guestReplies)
+        fd.append("guestReplies", JSON.stringify(payload.guestReplies));
       fd.append("launchSettings", JSON.stringify(payload.launchSettings));
 
       if (selectedHost?.createForSelf) {

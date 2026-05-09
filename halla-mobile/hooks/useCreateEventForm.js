@@ -94,17 +94,22 @@ export function useCreateEventHandlers({
           formDataObj.append("staffList", JSON.stringify(payload.staffList));
         }
 
-        if (payload.invitationSettings) {
-          const { templateImage, ...restInvitationSettings } = payload.invitationSettings;
-          formDataObj.append("invitationSettings", JSON.stringify(restInvitationSettings));
+        if (payload.visualTemplate) {
+          formDataObj.append("visualTemplate", JSON.stringify(payload.visualTemplate));
+        }
+        if (payload.taqnyatTemplate) {
+          formDataObj.append("taqnyatTemplate", JSON.stringify(payload.taqnyatTemplate));
+        }
+        if (payload.guestReplies) {
+          formDataObj.append("guestReplies", JSON.stringify(payload.guestReplies));
+        }
 
-          if (templateImage && typeof templateImage === "object" && templateImage.uri) {
-            formDataObj.append("templateImage", {
-              uri: templateImage.uri,
-              type: templateImage.type || "image/jpeg",
-              name: templateImage.fileName || "template.jpg",
-            });
-          }
+        if (payload.templateImage && typeof payload.templateImage === "object" && payload.templateImage.uri) {
+          formDataObj.append("templateImage", {
+            uri: payload.templateImage.uri,
+            type: payload.templateImage.type || "image/jpeg",
+            name: payload.templateImage.fileName || "template.jpg",
+          });
         }
 
         if (payload.launchSettings) {

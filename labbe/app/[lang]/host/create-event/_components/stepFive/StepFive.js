@@ -26,9 +26,9 @@ const AUTO_REPLIES_DEFAULTS = {
 };
 
 const REPLY_TABS = [
-  { key: "attending", label: "الحضور", canonical: "onAttend", legacy: "attendanceAutoReply" },
-  { key: "maybe", label: "ربما", canonical: "onExpected", legacy: "expectedAttendanceAutoReply" },
-  { key: "absence", label: "الاعتذار", canonical: "onAbsent", legacy: "absenceAutoReply" },
+  { key: "attending", label: "الحضور", canonical: "onAttend" },
+  { key: "maybe", label: "ربما", canonical: "onExpected" },
+  { key: "absence", label: "الاعتذار", canonical: "onAbsent" },
 ];
 
 const StepFive = () => {
@@ -38,20 +38,16 @@ const StepFive = () => {
 
   const guestReplies = watch("guestReplies") || {};
 
-  // Seed the canonical + legacy reply fields once (mirrors prior
-  // behaviour where StepFour seeded these on mount).
+  // Seed canonical reply fields once.
   useEffect(() => {
     if (!watch("guestReplies.onAttend")) {
       setValue("guestReplies.onAttend", AUTO_REPLIES_DEFAULTS.attending, { shouldDirty: false });
-      setValue("attendanceAutoReply", AUTO_REPLIES_DEFAULTS.attending, { shouldDirty: false });
     }
     if (!watch("guestReplies.onAbsent")) {
       setValue("guestReplies.onAbsent", AUTO_REPLIES_DEFAULTS.absence, { shouldDirty: false });
-      setValue("absenceAutoReply", AUTO_REPLIES_DEFAULTS.absence, { shouldDirty: false });
     }
     if (!watch("guestReplies.onExpected")) {
       setValue("guestReplies.onExpected", AUTO_REPLIES_DEFAULTS.maybe, { shouldDirty: false });
-      setValue("expectedAttendanceAutoReply", AUTO_REPLIES_DEFAULTS.maybe, { shouldDirty: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -63,7 +59,6 @@ const StepFive = () => {
     const value = e.target.value;
     if (!activeReply) return;
     setValue(`guestReplies.${activeReply.canonical}`, value, { shouldDirty: true });
-    setValue(activeReply.legacy, value, { shouldDirty: true });
   };
 
   const handleNoteChange = (e) => {

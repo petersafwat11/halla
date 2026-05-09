@@ -105,8 +105,8 @@ const WhatsappPreview = ({
                   <Image
                     src={displayImage}
                     alt="invitation"
-                    width={240}
-                    height={160}
+                    fill
+                    sizes="(max-width: 900px) 90vw, 320px"
                     className={styles.msgImage}
                     unoptimized={
                       displayImage.startsWith("blob:") ||

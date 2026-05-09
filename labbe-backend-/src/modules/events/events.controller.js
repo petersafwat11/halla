@@ -143,8 +143,23 @@ exports.getEventById = catchAsync(async (req, res) => {
 exports.createEvent = catchAsync(async (req, res) => {
   // parseFormDataJsonFields + validateZod have already coerced these into
   // their object/array shapes — no manual parsing here.
-  const { guestList = [], eventDetails, staffList, invitationSettings, launchSettings } = req.body;
-  const eventData = { eventDetails, staffList, invitationSettings, launchSettings };
+  const {
+    guestList = [],
+    eventDetails,
+    staffList,
+    visualTemplate,
+    taqnyatTemplate,
+    guestReplies,
+    launchSettings,
+  } = req.body;
+  const eventData = {
+    eventDetails,
+    staffList,
+    visualTemplate,
+    taqnyatTemplate,
+    guestReplies,
+    launchSettings,
+  };
 
   const context = {
     userId: req.user._id,

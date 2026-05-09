@@ -64,7 +64,24 @@
     "deleteBtn": "حذف من Taqnyat",
     "deleteConfirm": "سيتم حذف القالب \"{{name}}\" نهائياً من Taqnyat ومن الواجهة. الفعاليات التي تستخدمه قد تفشل عند الإرسال. هل أنت متأكد؟",
     "deleted": "تم حذف القالب",
-    "deleteFailed": "فشل حذف القالب"
+    "deleteFailed": "فشل حذف القالب",
+    "syncFailed": "فشلت المزامنة",
+    "saveFailed": "فشل الحفظ",
+    "loadFailed": "تعذّر تحميل القوالب — حاول لاحقاً",
+    "assignLookupFailed": "تعذّر فتح نافذة التعيين",
+    "syncing": "جاري المزامنة...",
+    "tableTitle": "قوالب Taqnyat",
+    "selectCategory": "اختر الفئة",
+    "sourceKeys": {
+      "guest_name": "اسم الضيف",
+      "event_title": "عنوان الحدث",
+      "event_dateFormatted": "تاريخ الحدث (منسّق)",
+      "event_time": "وقت الحدث",
+      "event_location": "عنوان الحدث (الموقع)",
+      "host_name": "اسم المضيف",
+      "hostNote": "ملاحظة المضيف",
+      "invitationMessage": "رسالة الدعوة"
+    }
   },
   "templates": {
     "title": "قوالب الدعوات",

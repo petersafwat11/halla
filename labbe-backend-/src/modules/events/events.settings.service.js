@@ -23,13 +23,6 @@ const { getFileUrl } = require('../../shared/utils/fileUpload');
 // Lazily-required at the call site to keep boot-time cycles minimal.
 const Template = require('../../../models/TemplateModel');
 const { validateTemplateData } = require('./templateDataValidator');
-// Resolves legacy `inv.selectedTemplate.id` (Meta taqnyatId string)
-// and `inv.visualTemplate.id` (legacy Number) into canonical ObjectId
-// refs without throwing CastError on dual-write.
-const {
-  resolveTaqnyatTemplateRef,
-  resolveVisualTemplateRef,
-} = require('./templateRefResolver');
 // Post-review polish — extracted error codes shared between
 // updateGuestList and updateEventStep2 so they can't drift.
 const { EVENT_EDIT_LOCKED } = require('../../shared/constants/events');
@@ -86,16 +79,23 @@ module.exports = {
       throw new ValidationError(`Cannot update event when status is '${event.status}'`);
     }
 
-    // Update allowed fields
+    // Update allowed fields (canonical shape only)
     const allowedFields = [
       "eventDetails",
-      "invitationSettings",
+      "visualTemplate",
+      "taqnyatTemplate",
+      "guestReplies",
+      "templateImage",
       "launchSettings",
       "staffList",
     ];
     allowedFields.forEach((field) => {
-      if (updateData[field]) {
-        event[field] = { ...event[field], ...updateData[field] };
+      if (updateData[field] !== undefined) {
+        if (field === "templateImage" || typeof updateData[field] !== "object") {
+          event[field] = updateData[field];
+        } else {
+          event[field] = { ...event[field], ...updateData[field] };
+        }
       }
     });
 
@@ -172,112 +172,50 @@ module.exports = {
 
     if (file) {
       const templateImagePath = getFileUrl(file);
-      if (templateImagePath) settings.templateImage = templateImagePath;
+      if (templateImagePath) {
+        settings.templateImage = templateImagePath;
+        // Mirror onto the canonical visualTemplate.bakedImagePath so
+        // messaging readers find it in a single place.
+        settings.visualTemplate = {
+          ...(settings.visualTemplate || {}),
+          bakedImagePath: templateImagePath,
+        };
+      }
     }
 
-    // DUAL WRITE.
-    //
-    // The wizard may submit either the legacy `invitationSettings.*`
-    // shape (older clients) or the canonical top-level shape (new
-    // clients), or a mix during the dual-write window. We accept both
-    // and write both so reads from either shape resolve correctly until
-    // the legacy field is dropped.
-    //
-    // Canonical → legacy projections (read-back compatibility):
-    //   visualTemplate.templateRef     → invitationSettings.visualTemplate.id
-    //   visualTemplate.bakedImagePath  → invitationSettings.templateImage
-    //   visualTemplate.fieldValues     → invitationSettings.visualTemplate.data
-    //   taqnyatTemplate.templateRef    → invitationSettings.selectedTemplate (resolved)
-    //   guestReplies.onAttend          → invitationSettings.attendanceAutoReply
-    //   guestReplies.onAbsent          → invitationSettings.absenceAutoReply
-    //   guestReplies.onExpected        → invitationSettings.expectedAttendanceAutoReply
-    //
-    // Legacy → canonical projections work in reverse during the same write.
-    const legacyMerge = { ...(event.invitationSettings?.toObject?.() || event.invitationSettings || {}) };
-    const canonicalVisual = { ...(event.visualTemplate?.toObject?.() || event.visualTemplate || {}) };
-    const canonicalTaqnyat = { ...(event.taqnyatTemplate?.toObject?.() || event.taqnyatTemplate || {}) };
-    const canonicalReplies = { ...(event.guestReplies?.toObject?.() || event.guestReplies || {}) };
-
-    // Apply incoming legacy keys — back-fill the canonical side too.
-    //
-    // Hardening: legacy ids are not ObjectIds. Resolve them via
-    // `templateRefResolver` so the canonical write doesn't CastError.
+    // Canonical-only writes. The legacy `invitationSettings.*`
+    // dual-write was removed when the wizard moved to the canonical
+    // shape; clients now send `visualTemplate / taqnyatTemplate /
+    // guestReplies / templateImage` directly.
     if (settings.visualTemplate !== undefined) {
-      legacyMerge.visualTemplate = settings.visualTemplate;
-      if (settings.visualTemplate?.id) {
-        const resolvedVisualRef = resolveVisualTemplateRef(settings.visualTemplate.id);
-        if (resolvedVisualRef) canonicalVisual.templateRef = resolvedVisualRef;
+      const next = {
+        ...(event.visualTemplate?.toObject?.() || event.visualTemplate || {}),
+        ...settings.visualTemplate,
+      };
+      // Validate fieldValues against Template.fields[] BEFORE save.
+      if (next.templateRef && next.fieldValues) {
+        await this._validateVisualTemplateFieldValues(
+          next.templateRef,
+          next.fieldValues
+        );
       }
-      if (settings.visualTemplate?.src) canonicalVisual.bakedImagePath = settings.visualTemplate.src;
-      if (settings.visualTemplate?.data) canonicalVisual.fieldValues = settings.visualTemplate.data;
+      event.visualTemplate = next;
     }
-    if (settings.selectedTemplate !== undefined) {
-      legacyMerge.selectedTemplate = settings.selectedTemplate;
-      if (settings.selectedTemplate?.id) {
-        const resolvedTaqnyatRef = await resolveTaqnyatTemplateRef(settings.selectedTemplate.id);
-        if (resolvedTaqnyatRef) canonicalTaqnyat.templateRef = resolvedTaqnyatRef;
-      }
+    if (settings.taqnyatTemplate !== undefined) {
+      event.taqnyatTemplate = {
+        ...(event.taqnyatTemplate?.toObject?.() || event.taqnyatTemplate || {}),
+        ...settings.taqnyatTemplate,
+      };
+    }
+    if (settings.guestReplies !== undefined) {
+      event.guestReplies = {
+        ...(event.guestReplies?.toObject?.() || event.guestReplies || {}),
+        ...settings.guestReplies,
+      };
     }
     if (settings.templateImage !== undefined) {
-      legacyMerge.templateImage = settings.templateImage;
-      canonicalVisual.bakedImagePath = settings.templateImage;
+      event.templateImage = settings.templateImage;
     }
-    if (settings.attendanceAutoReply !== undefined) {
-      legacyMerge.attendanceAutoReply = settings.attendanceAutoReply;
-      canonicalReplies.onAttend = settings.attendanceAutoReply;
-    }
-    if (settings.absenceAutoReply !== undefined) {
-      legacyMerge.absenceAutoReply = settings.absenceAutoReply;
-      canonicalReplies.onAbsent = settings.absenceAutoReply;
-    }
-    if (settings.expectedAttendanceAutoReply !== undefined) {
-      legacyMerge.expectedAttendanceAutoReply = settings.expectedAttendanceAutoReply;
-      canonicalReplies.onExpected = settings.expectedAttendanceAutoReply;
-    }
-
-    // Apply incoming canonical keys — back-fill the legacy side too.
-    // Defensively resolve in case a client sends a non-ObjectId value.
-    if (settings.visualTemplateRef !== undefined || settings.fieldValues !== undefined || settings.bakedImagePath !== undefined) {
-      if (settings.visualTemplateRef !== undefined) {
-        const resolvedVisualRef = resolveVisualTemplateRef(settings.visualTemplateRef);
-        if (resolvedVisualRef) canonicalVisual.templateRef = resolvedVisualRef;
-      }
-      if (settings.fieldValues !== undefined) canonicalVisual.fieldValues = settings.fieldValues;
-      if (settings.bakedImagePath !== undefined) canonicalVisual.bakedImagePath = settings.bakedImagePath;
-      legacyMerge.visualTemplate = {
-        ...(legacyMerge.visualTemplate || {}),
-        id: canonicalVisual.templateRef,
-        src: canonicalVisual.bakedImagePath,
-        data: canonicalVisual.fieldValues,
-      };
-      if (canonicalVisual.bakedImagePath) legacyMerge.templateImage = canonicalVisual.bakedImagePath;
-    }
-    if (settings.taqnyatTemplateRef !== undefined) {
-      const resolvedTaqnyatRef = await resolveTaqnyatTemplateRef(settings.taqnyatTemplateRef);
-      if (resolvedTaqnyatRef) {
-        canonicalTaqnyat.templateRef = resolvedTaqnyatRef;
-        legacyMerge.selectedTemplate = { ...(legacyMerge.selectedTemplate || {}), id: settings.taqnyatTemplateRef };
-      }
-    }
-    if (settings.guestReplies && typeof settings.guestReplies === "object") {
-      Object.assign(canonicalReplies, settings.guestReplies);
-      if (settings.guestReplies.onAttend !== undefined) legacyMerge.attendanceAutoReply = settings.guestReplies.onAttend;
-      if (settings.guestReplies.onAbsent !== undefined) legacyMerge.absenceAutoReply = settings.guestReplies.onAbsent;
-      if (settings.guestReplies.onExpected !== undefined) legacyMerge.expectedAttendanceAutoReply = settings.guestReplies.onExpected;
-    }
-
-    // Validate fieldValues against Template.fields[] BEFORE the save commits.
-    if (canonicalVisual.templateRef && canonicalVisual.fieldValues) {
-      await this._validateVisualTemplateFieldValues(
-        canonicalVisual.templateRef,
-        canonicalVisual.fieldValues
-      );
-    }
-
-    event.invitationSettings = legacyMerge;
-    event.visualTemplate = canonicalVisual;
-    event.taqnyatTemplate = canonicalTaqnyat;
-    event.guestReplies = canonicalReplies;
 
     await event.save();
 
@@ -367,8 +305,15 @@ module.exports = {
       targetId: eventId,
       metadata: {
         phoneNumber: messageData.phoneNumber || messageData.phone,
-        channel: messageData.channel || 'sms',
+        channel: result.channel || messageData.channel || 'sms',
+        templateName: result.templateName || null,
+        imageUrl: result.imageUrl || null,
+        success: !!result.success,
+        messageId: result.messageId || null,
+        ...(result.error && { error: result.error }),
+        ...(result.code && { code: result.code }),
       },
+      status: result.success ? 'success' : 'failure',
     }).catch(() => {});
 
     return result;

@@ -144,22 +144,14 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
     logger.error('[Messaging] Failed to notify host of RSVP', { error: notifErr.message });
   }
 
-  // Auto-reply text. Prefer canonical `guestReplies.{onAttend,onAbsent,onExpected}`
-  // and fall back to legacy `invitationSettings.*AutoReply` during the dual-write
-  // window.
+  // Auto-reply text from canonical `guestReplies.*`.
   const autoReplyMap = {
     'confirmed':
-      event.guestReplies?.onAttend ||
-      event.invitationSettings?.attendanceAutoReply ||
-      'شكراً لتأكيد حضورك! نتطلع لرؤيتك.',
+      event.guestReplies?.onAttend || 'شكراً لتأكيد حضورك! نتطلع لرؤيتك.',
     'declined':
-      event.guestReplies?.onAbsent ||
-      event.invitationSettings?.absenceAutoReply ||
-      'شكراً لإعلامنا. نتمنى لك يوماً سعيداً.',
+      event.guestReplies?.onAbsent || 'شكراً لإعلامنا. نتمنى لك يوماً سعيداً.',
     'maybe':
-      event.guestReplies?.onExpected ||
-      event.invitationSettings?.expectedAttendanceAutoReply ||
-      'شكراً. نأمل أن نراك بيننا!',
+      event.guestReplies?.onExpected || 'شكراً. نأمل أن نراك بيننا!',
   };
   const replyMessage = autoReplyMap[rsvpStatus];
 

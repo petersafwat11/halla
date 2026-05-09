@@ -1,22 +1,9 @@
 /**
- * TaqnyatTemplateModel — Phase 4c W0-MODEL
- *
- * Backend cache for the Taqnyat WhatsApp templates list. The previous
- * flow had StepFour on web hit `GET /messaging/approved-templates`,
- * which is a thin passthrough to Taqnyat's `/templates/` endpoint. That
- * has three problems:
- *   1. No backend canonical record we can attach a category / var-mapping
- *      to. Hosts can't pick "wedding" templates without admin-side
- *      curation.
- *   2. Every host wizard load hits Taqnyat live, which means rate-limit
- *      and latency exposure.
- *   3. There's no way to prefer one template over another via sort
- *      order, or to soft-deactivate a template that's still APPROVED on
- *      Meta but unwanted in our UI.
- *
- * This model holds the synced list. The daily cron + admin "Sync" button
- * upsert per `taqnyatId` (Meta-level template identifier). Admins assign
- * `category` + `varMapping[]` (one entry per `{{N}}` slot in the body).
+ * Local cache of Taqnyat WhatsApp templates. The host wizard reads from
+ * here instead of hitting Taqnyat live; admins curate `category` +
+ * `varMapping[]` (one entry per `{{N}}` slot in the body) so the wizard
+ * can filter the catalogue and the messaging service can resolve
+ * placeholders against event data.
  *
  * @module models/TaqnyatTemplateModel
  */
@@ -26,16 +13,11 @@ const mongoose = require("mongoose");
 /**
  * Per-`{{N}}` mapping from a Taqnyat template body slot to an event-data
  * source key. The source key is a dotted-path resolved at send time
- * against the Event document (see `messaging.service._getEventBodyParams`
- * dynamic resolution).
+ * against the Event document (see `messaging.service._getEventBodyParams`).
  *
- * Phase 4c canonical source keys (extend in Phase 5 as new fields land):
- *   - guest.name                 → guest's name (filled at per-send time)
- *   - eventDetails.title         → event title
- *   - eventDetails.dateFormatted → Riyadh-localized date string
- *   - eventDetails.time          → "HH:MM:AM" event time
- *   - eventDetails.location.address
- *   - host.name
+ * Canonical source keys: `guest.name`, `eventDetails.title`,
+ * `eventDetails.dateFormatted`, `eventDetails.time`,
+ * `eventDetails.location.address`, `host.name`.
  */
 const varMappingSchema = new mongoose.Schema(
   {
@@ -48,8 +30,8 @@ const varMappingSchema = new mongoose.Schema(
 
 const taqnyatTemplateSchema = new mongoose.Schema(
   {
-    /** Meta-level template id from Taqnyat `/templates/` */
-    taqnyatId: { type: String, required: true, index: true },
+    /** Meta-level template id from Taqnyat `/templates/`. Unique index declared below. */
+    taqnyatId: { type: String, required: true },
 
     /** Template name as registered on Meta (immutable per Meta) */
     templateName: { type: String, required: true, index: true },
@@ -64,13 +46,10 @@ const taqnyatTemplateSchema = new mongoose.Schema(
     metaCategory: { type: String },
 
     /**
-     * Halla-side category, set by admin via Assign dialog. Drives the
-     * filtered host StepFour view per D4c-1 (Taqnyat picker filters by
-     * the visual-template category chosen in step 3).
-     *
-     * Expected values mirror TemplateCategory codes (e.g. "wedding",
-     * "engagement", "birthday"). Empty/null = "uncategorized" — won't
-     * surface to hosts until admin assigns.
+     * Halla-side category, set by admin via the Assign dialog. Drives the
+     * host wizard's filtered list (category locked in step 3 → this
+     * filter). Mirrors TemplateCategory codes (e.g. "wedding"). Null =
+     * uncategorized → hidden from hosts until admin assigns.
      */
     category: { type: String, index: true, default: null },
 
@@ -81,10 +60,9 @@ const taqnyatTemplateSchema = new mongoose.Schema(
     hasImageHeader: { type: Boolean, default: false },
 
     /**
-     * Per-`{{N}}` mapping. Empty means use legacy 5-param fallback at
-     * send time (see W0-DYNAMIC). Length should match the number of
-     * `{{N}}` placeholders in `bodyText`; admin curates this in the
-     * Assign dialog.
+     * Per-`{{N}}` mapping. Empty means use the legacy 5-param fallback
+     * at send time. Length should match the number of `{{N}}` placeholders
+     * in `bodyText`; admin curates this in the Assign dialog.
      */
     varMapping: { type: [varMappingSchema], default: [] },
 
@@ -92,11 +70,10 @@ const taqnyatTemplateSchema = new mongoose.Schema(
     active: { type: Boolean, default: true, index: true },
 
     /**
-     * True when the last sync did not return this taqnyatId from upstream
-     * (Meta deletion or status change that strips it from the list). Kept
-     * orthogonal from `active` so admin intent and upstream availability
-     * don't fight each other; the host filter excludes any row with this
-     * flag set. Reset to false on the next sync that sees the row again.
+     * True when the last sync did not return this taqnyatId from upstream.
+     * Kept orthogonal from `active` so admin intent and upstream
+     * availability don't fight each other; the host filter excludes any
+     * row with this flag set. Reset to false on the next sync that sees it.
      */
     removedFromMeta: { type: Boolean, default: false, index: true },
 

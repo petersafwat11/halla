@@ -82,17 +82,19 @@ const PreviewInvitation = ({
             {/* Chat Bubble */}
             <View style={styles.chatBubble}>
               {/* Template Image */}
-              <Image
-                source={
-                  templateImage && typeof templateImage === "string"
-                    ? { uri: templateImage }
-                    : require("../../assets/invetation.png")
-                }
-                style={styles.templateImage}
-                resizeMode="cover"
-                defaultSource={require("../../assets/invetation.png")}
-                onError={() => {}}
-              />
+              <View style={styles.templateImageWrap}>
+                <Image
+                  source={
+                    templateImage && typeof templateImage === "string"
+                      ? { uri: templateImage }
+                      : require("../../assets/invetation.png")
+                  }
+                  style={styles.templateImage}
+                  resizeMode="contain"
+                  defaultSource={require("../../assets/invetation.png")}
+                  onError={() => {}}
+                />
+              </View>
 
               {/* Event Details */}
               <View style={styles.eventDetails}>
@@ -242,10 +244,17 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  templateImageWrap: {
+    width: "100%",
+    aspectRatio: 4 / 5,
+    backgroundColor: "#F5F1EA",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
   templateImage: {
     width: "100%",
-    height: 250,
-    backgroundColor: "#F5F5F5",
+    height: "100%",
   },
   placeholderImage: {
     width: "100%",

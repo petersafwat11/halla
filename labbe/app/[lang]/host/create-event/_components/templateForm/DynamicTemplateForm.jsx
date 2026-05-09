@@ -15,6 +15,7 @@ import { useFonts } from "@/hooks/queries/useTemplates";
 import TemplatePreviewCanvas from "@/components/shared/TemplatePreviewCanvas";
 import { renderField } from "./renderField";
 import { bakeTemplateImage } from "./useTemplateBake";
+import { toastUtils } from "@/utils/toastUtils";
 import styles from "./templateForm.module.css";
 
 const FALLBACK_FONT_OPTIONS = [
@@ -72,12 +73,21 @@ export default function DynamicTemplateForm({
         backgroundUrl: template?.imageUrl,
       });
       setEventValues("templateImage", file);
-      setEventValues("invitationSettings.templateImage", file);
-      onClose();
     } catch (err) {
-      alert(err.message || t("template_bake_failed", "Failed to generate template image"));
+      // Bake failure is non-fatal: visualTemplate is already saved
+      // above, so the backend can render the header from the
+      // template ref + fieldValues. Warn the host but let them
+      // continue rather than trapping them in the popup.
+      console.warn("[StepThree] template bake skipped:", err);
+      toastUtils.warning(
+        t(
+          "template_bake_failed",
+          "تعذر إنشاء صورة القالب. سيتم استخدام تصميم القالب الأصلي."
+        )
+      );
     } finally {
       setIsGenerating(false);
+      onClose();
     }
   };
 

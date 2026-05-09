@@ -140,11 +140,6 @@ const PlansPage = () => {
           </div>
 
           <AddonsSection onAddonsChange={handleAddonsChange} />
-
-          <div className={styles.infoNote}>
-            <span className={styles.infoIcon}>💡</span>
-            <p>{t("infoNote")}</p>
-          </div>
         </div>
       )}
     </div>

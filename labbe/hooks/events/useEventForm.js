@@ -29,9 +29,7 @@ const DEFAULT_FORM_VALUES = {
   visualTemplate: null,
   // Step 4 - Taqnyat template + auto-replies
   selectedTemplate: null,
-  attendanceAutoReply: "",
-  absenceAutoReply: "",
-  expectedAttendanceAutoReply: "",
+  taqnyatTemplate: null,
   guestReplies: {
     onAttend: "",
     onAbsent: "",
@@ -60,6 +58,47 @@ export const transformStaffList = (staff = []) =>
     mobile: s.phone || "",
   }));
 
+// `event.visualTemplate.templateRef` and `event.taqnyatTemplate.templateRef`
+// are populated by the backend (events.crud.service findById path) so the
+// step-3 picker / step-4 picker can highlight the saved selection and
+// preview body text without a follow-up fetch.
+const populatedVisualTemplate = (event) => {
+  const ref = event.visualTemplate?.templateRef;
+  if (!ref) return null;
+  // Populated docs are objects with _id; raw ObjectId strings are bare
+  // strings. Both shapes carry the canonical templateRef forward.
+  if (typeof ref === "object" && ref !== null) {
+    return {
+      ...ref,
+      templateRef: ref._id,
+      fieldValues: event.visualTemplate.fieldValues || {},
+      bakedImagePath: event.visualTemplate.bakedImagePath || null,
+    };
+  }
+  return {
+    templateRef: ref,
+    fieldValues: event.visualTemplate.fieldValues || {},
+    bakedImagePath: event.visualTemplate.bakedImagePath || null,
+  };
+};
+
+const populatedSelectedTemplate = (event) => {
+  const ref = event.taqnyatTemplate?.templateRef;
+  if (!ref) return null;
+  if (typeof ref === "object" && ref !== null) {
+    return {
+      _id: ref._id,
+      id: ref._id,
+      name: ref.templateName || ref.name,
+      templateName: ref.templateName,
+      bodyText: ref.bodyText,
+      hasImageHeader: ref.hasImageHeader || false,
+      language: ref.language || "ar",
+    };
+  }
+  return { _id: ref, id: ref };
+};
+
 export const mapEventToFormValues = (event) => ({
   eventType: event.eventDetails?.type || "",
   eventName: event.eventDetails?.title || "",
@@ -68,43 +107,14 @@ export const mapEventToFormValues = (event) => ({
   address: event.eventDetails?.location || DEFAULT_ADDRESS,
   guestList: transformGuestList(event.guestList),
   staffList: transformStaffList(event.staffList),
-  // Read canonical top-level fields first; fall back to
-  // `invitationSettings.*` for events stored before the rename.
-  templateImage:
-    event.visualTemplate?.bakedImagePath ||
-    event.invitationSettings?.templateImage ||
-    "",
-  visualTemplate:
-    event.visualTemplate?.templateRef
-      ? {
-          ...(event.invitationSettings?.visualTemplate || {}),
-          templateRef: event.visualTemplate.templateRef,
-          fieldValues: event.visualTemplate.fieldValues,
-          bakedImagePath: event.visualTemplate.bakedImagePath,
-          // legacy mirrors so existing consumers still work
-          id: event.visualTemplate.templateRef,
-          data: event.visualTemplate.fieldValues,
-          src: event.visualTemplate.bakedImagePath,
-        }
-      : event.invitationSettings?.visualTemplate || null,
-  selectedTemplate: event.invitationSettings?.selectedTemplate || null,
+  templateImage: event.visualTemplate?.bakedImagePath || "",
+  visualTemplate: populatedVisualTemplate(event),
+  selectedTemplate: populatedSelectedTemplate(event),
   taqnyatTemplate: event.taqnyatTemplate || null,
-  attendanceAutoReply:
-    event.guestReplies?.onAttend ||
-    event.invitationSettings?.attendanceAutoReply ||
-    "",
-  absenceAutoReply:
-    event.guestReplies?.onAbsent ||
-    event.invitationSettings?.absenceAutoReply ||
-    "",
-  expectedAttendanceAutoReply:
-    event.guestReplies?.onExpected ||
-    event.invitationSettings?.expectedAttendanceAutoReply ||
-    "",
-  guestReplies: event.guestReplies || {
-    onAttend: event.invitationSettings?.attendanceAutoReply || "",
-    onAbsent: event.invitationSettings?.absenceAutoReply || "",
-    onExpected: event.invitationSettings?.expectedAttendanceAutoReply || "",
+  guestReplies: {
+    onAttend: event.guestReplies?.onAttend || "",
+    onAbsent: event.guestReplies?.onAbsent || "",
+    onExpected: event.guestReplies?.onExpected || "",
   },
   sendSchedule: "now",
   scheduleDate: "",
@@ -129,47 +139,31 @@ export const buildEventPayload = (data) => ({
     name: s.name,
     phone: s.mobile || s.phone,
   })),
-  // Dual-write: legacy `invitationSettings.*` for existing consumers and
-  // canonical top-level fields for new reads.
-  invitationSettings: {
-    // selectedTemplate.name is the Taqnyat templateName used when sending
-    selectedTemplate: data.selectedTemplate
-      ? {
-          id: data.selectedTemplate.id,
-          name: data.selectedTemplate.name,
-          bodyText: data.selectedTemplate.bodyText,
-          image: data.selectedTemplate.image,
-          hasImageHeader: data.selectedTemplate.hasImageHeader ?? false,
-        }
-      : undefined,
-    // visualTemplate stores the Step 3 card design data
-    visualTemplate: data.visualTemplate || undefined,
-    attendanceAutoReply:
-      data.guestReplies?.onAttend || data.attendanceAutoReply,
-    absenceAutoReply:
-      data.guestReplies?.onAbsent || data.absenceAutoReply,
-    expectedAttendanceAutoReply:
-      data.guestReplies?.onExpected || data.expectedAttendanceAutoReply,
-    templateImage: data.templateImage,
+  // Canonical top-level keys (no legacy invitationSettings mirror).
+  visualTemplate: data.visualTemplate
+    ? {
+        templateRef:
+          data.visualTemplate.templateRef ||
+          data.visualTemplate._id ||
+          data.visualTemplate.id,
+        fieldValues:
+          data.visualTemplate.fieldValues || data.visualTemplate.data || {},
+      }
+    : undefined,
+  taqnyatTemplate: data.selectedTemplate
+    ? {
+        templateRef:
+          data.taqnyatTemplate?.templateRef ||
+          data.selectedTemplate._id ||
+          data.selectedTemplate.id,
+      }
+    : undefined,
+  guestReplies: {
+    onAttend: data.guestReplies?.onAttend || "",
+    onAbsent: data.guestReplies?.onAbsent || "",
+    onExpected: data.guestReplies?.onExpected || "",
   },
-  // Canonical top-level keys; backend dual-writes alongside
-  // `invitationSettings.*`.
-  taqnyatTemplateRef:
-    data.taqnyatTemplate?.templateRef ||
-    data.taqnyatTemplateRef ||
-    data.selectedTemplate?._id ||
-    data.selectedTemplate?.id,
-  fieldValues:
-    data.visualTemplate?.fieldValues || data.visualTemplate?.data,
-  visualTemplateRef:
-    data.visualTemplate?.templateRef ||
-    data.visualTemplate?._id ||
-    data.visualTemplate?.id,
-  guestReplies: data.guestReplies || {
-    onAttend: data.attendanceAutoReply,
-    onAbsent: data.absenceAutoReply,
-    onExpected: data.expectedAttendanceAutoReply,
-  },
+  templateImage: data.templateImage,
   launchSettings: {
     sendSchedule: data.sendSchedule || "now",
     scheduledDate: data.scheduleDate,
@@ -358,7 +352,18 @@ export const useEventForm = (options = {}) => {
           return {
             type: "invitationSettings",
             data: {
-              visualTemplate: formData.visualTemplate || undefined,
+              visualTemplate: formData.visualTemplate
+                ? {
+                    templateRef:
+                      formData.visualTemplate.templateRef ||
+                      formData.visualTemplate._id ||
+                      formData.visualTemplate.id,
+                    fieldValues:
+                      formData.visualTemplate.fieldValues ||
+                      formData.visualTemplate.data ||
+                      {},
+                  }
+                : undefined,
               ...(formData.templateImage instanceof File && {
                 templateImage: formData.templateImage,
               }),
@@ -369,24 +374,19 @@ export const useEventForm = (options = {}) => {
           return {
             type: "invitationSettings",
             data: {
-              selectedTemplate: formData.selectedTemplate
+              taqnyatTemplate: formData.selectedTemplate
                 ? {
-                    ...formData.selectedTemplate,
-                    hasImageHeader: formData.selectedTemplate.hasImageHeader ?? false,
+                    templateRef:
+                      formData.taqnyatTemplate?.templateRef ||
+                      formData.selectedTemplate._id ||
+                      formData.selectedTemplate.id,
                   }
-                : formData.selectedTemplate,
-              taqnyatTemplateRef:
-                formData.taqnyatTemplate?.templateRef ||
-                formData.taqnyatTemplateRef ||
-                formData.selectedTemplate?._id ||
-                formData.selectedTemplate?.id,
-              attendanceAutoReply:
-                formData.guestReplies?.onAttend || formData.attendanceAutoReply,
-              absenceAutoReply:
-                formData.guestReplies?.onAbsent || formData.absenceAutoReply,
-              expectedAttendanceAutoReply:
-                formData.guestReplies?.onExpected || formData.expectedAttendanceAutoReply,
-              guestReplies: formData.guestReplies,
+                : undefined,
+              guestReplies: {
+                onAttend: formData.guestReplies?.onAttend || "",
+                onAbsent: formData.guestReplies?.onAbsent || "",
+                onExpected: formData.guestReplies?.onExpected || "",
+              },
             },
             successMessage: t("success.template_selected"),
           };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import TaqnyatTemplatesHeader from "./TaqnyatTemplatesHeader";
 import TaqnyatTemplatesStats from "./TaqnyatTemplatesStats";
 import TaqnyatTemplatesTable from "./TaqnyatTemplatesTable";
@@ -16,7 +17,7 @@ export default function TaqnyatTemplatesPageContent({ lang }) {
   };
 
   return (
-    <>
+    <ErrorBoundary>
       <TaqnyatTemplatesHeader />
       <TaqnyatTemplatesStats />
       <TaqnyatTemplatesTable
@@ -29,6 +30,6 @@ export default function TaqnyatTemplatesPageContent({ lang }) {
         setShowCreatePopup={setShowCreatePopup}
         lang={lang}
       />
-    </>
+    </ErrorBoundary>
   );
 }

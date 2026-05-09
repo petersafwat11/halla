@@ -8,10 +8,10 @@ import useEventActionGate from "../../../hooks/useEventActionGate";
 
 /**
  * Maps the event API response onto the form-state shape that the
- * create-event step components consume. Canonical-first dual-write
- * contract (`visualTemplate.fieldValues`, `guestReplies.*`,
- * `taqnyatTemplate.templateRef`, top-level `invitationMessage` /
- * `hostNote`); legacy `invitationSettings.*` is the fallback.
+ * create-event step components consume. Canonical shape only:
+ * `visualTemplate.{templateRef,fieldValues,bakedImagePath}`,
+ * `taqnyatTemplate.templateRef` (populated server-side),
+ * `guestReplies.{onAttend,onAbsent,onExpected}`.
  */
 const mapApiToFormValues = (eventData) => {
   if (!eventData) return EventsService.getDefaultFormValues();
@@ -29,25 +29,44 @@ const mapApiToFormValues = (eventData) => {
     phone: m.phone || m.mobile || "",
   }));
 
-  const inv = eventData.invitationSettings || {};
-  const canonicalVisual = eventData.visualTemplate || {};
-  const canonicalTaqnyat = eventData.taqnyatTemplate || {};
-  const canonicalReplies = eventData.guestReplies || {};
+  const cv = eventData.visualTemplate || {};
+  const ct = eventData.taqnyatTemplate || {};
+  const replies = eventData.guestReplies || {};
 
-  // Visual template — prefer canonical templateRef + fieldValues.
-  const visualTemplate = canonicalVisual?.templateRef
-    ? {
-        ...(inv.visualTemplate || {}),
-        templateRef: canonicalVisual.templateRef,
-        fieldValues: canonicalVisual.fieldValues,
-        bakedImagePath: canonicalVisual.bakedImagePath,
-        // Legacy mirrors so existing UI consumers still resolve.
-        id: canonicalVisual.templateRef,
-        _id: canonicalVisual.templateRef,
-        data: canonicalVisual.fieldValues || inv.visualTemplate?.data,
-        src: canonicalVisual.bakedImagePath || inv.visualTemplate?.src,
-      }
-    : inv.visualTemplate || null;
+  const visualRef = cv.templateRef;
+  const visualTemplate = visualRef
+    ? typeof visualRef === "object" && visualRef !== null
+      ? {
+          ...visualRef,
+          templateRef: visualRef._id,
+          _id: visualRef._id,
+          id: visualRef._id,
+          fieldValues: cv.fieldValues || {},
+          bakedImagePath: cv.bakedImagePath || null,
+        }
+      : {
+          templateRef: visualRef,
+          _id: visualRef,
+          id: visualRef,
+          fieldValues: cv.fieldValues || {},
+          bakedImagePath: cv.bakedImagePath || null,
+        }
+    : null;
+
+  const taqnyatRef = ct.templateRef;
+  const selectedTemplate = taqnyatRef
+    ? typeof taqnyatRef === "object" && taqnyatRef !== null
+      ? {
+          _id: taqnyatRef._id,
+          id: taqnyatRef._id,
+          name: taqnyatRef.templateName || taqnyatRef.name,
+          templateName: taqnyatRef.templateName,
+          bodyText: taqnyatRef.bodyText,
+          hasImageHeader: taqnyatRef.hasImageHeader || false,
+          language: taqnyatRef.language || "ar",
+        }
+      : { _id: taqnyatRef, id: taqnyatRef }
+    : null;
 
   return {
     ...EventsService.getDefaultFormValues(),
@@ -66,16 +85,13 @@ const mapApiToFormValues = (eventData) => {
     guestList,
     staffList,
     visualTemplate,
-    selectedTemplate: inv.selectedTemplate || null,
-    taqnyatTemplate: canonicalTaqnyat?.templateRef ? canonicalTaqnyat : null,
-    attendanceAutoReply: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
-    absenceAutoReply: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
-    expectedAttendanceAutoReply:
-      canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
+    selectedTemplate,
+    taqnyatTemplate: taqnyatRef ? ct : null,
+    templateImage: cv.bakedImagePath || eventData.templateImage || "",
     guestReplies: {
-      onAttend: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
-      onAbsent: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
-      onExpected: canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
+      onAttend: replies.onAttend || "",
+      onAbsent: replies.onAbsent || "",
+      onExpected: replies.onExpected || "",
     },
   };
 };

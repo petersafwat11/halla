@@ -1,10 +1,4 @@
-/**
- * Taqnyat Templates Service (mobile) — Phase 4c W2-MOBILE-WIZARD
- *
- * Public host endpoint — backend cache filtered by category. The
- * mobile app does NOT call any admin endpoints (admin Taqnyat
- * management is web-only per D4c-3).
- */
+// Mobile Taqnyat templates client — host-facing list only (admin is web-only).
 
 import { ENDPOINTS } from "../config/api";
 import { apiFetch } from "./apiClient";

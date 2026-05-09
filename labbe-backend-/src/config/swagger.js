@@ -2595,6 +2595,64 @@ const swaggerOptions = {
             expectedVersion: { type: 'integer' },
           },
         },
+        VarMappingEntry: {
+          type: 'object',
+          required: ['placeholder', 'sourceKey'],
+          properties: {
+            placeholder: { type: 'string', example: '{{1}}' },
+            sourceKey: { type: 'string', example: 'guest.name' },
+            fallback: { type: 'string', example: '' },
+          },
+        },
+        TaqnyatTemplate: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            taqnyatId: { type: 'string' },
+            templateName: { type: 'string' },
+            language: { type: 'string', example: 'ar' },
+            status: { type: 'string', enum: ['APPROVED', 'PENDING', 'REJECTED'] },
+            metaCategory: { type: 'string', nullable: true },
+            category: { type: 'string', nullable: true },
+            bodyText: { type: 'string' },
+            hasImageHeader: { type: 'boolean' },
+            varMapping: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/VarMappingEntry' },
+            },
+            active: { type: 'boolean' },
+            removedFromMeta: { type: 'boolean' },
+            lastSyncedAt: { type: 'string', format: 'date-time', nullable: true },
+            sortOrder: { type: 'integer' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        TaqnyatTemplateCreateRequest: {
+          type: 'object',
+          required: ['name', 'category', 'bodyText'],
+          properties: {
+            name: { type: 'string', pattern: '^[a-z][a-z0-9_]{0,511}$' },
+            category: { type: 'string', enum: ['UTILITY', 'MARKETING', 'AUTHENTICATION'] },
+            language: { type: 'string', enum: ['ar', 'en'], default: 'ar' },
+            headerText: { type: 'string', maxLength: 60 },
+            bodyText: { type: 'string', maxLength: 1024 },
+            bodyExamples: { type: 'array', items: { type: 'string', maxLength: 60 } },
+            footerText: { type: 'string', maxLength: 60 },
+          },
+        },
+        TaqnyatTemplateAssignRequest: {
+          type: 'object',
+          properties: {
+            category: { type: 'string', nullable: true },
+            varMapping: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/VarMappingEntry' },
+            },
+            active: { type: 'boolean' },
+            sortOrder: { type: 'integer', minimum: 0 },
+          },
+        },
         TemplateUploadImageEnvelope: {
           type: 'object',
           properties: {

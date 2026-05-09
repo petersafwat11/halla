@@ -13,10 +13,6 @@ const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
 const { guardExportMaxRows } = require('../../shared/utils/excelExport');
-const {
-  resolveTaqnyatTemplateRef,
-  resolveVisualTemplateRef,
-} = require('../events/templateRefResolver');
 const { buildDateRangeQuery, formatTargetSubscription } = require('./admin.shared.service');
 
 /**
@@ -56,16 +52,19 @@ async function updateEventFull(eventId, updateData, context = {}) {
 
   const allowedFields = [
     'eventDetails',
-    'invitationSettings',
     'staffList',
     'visualTemplate',
     'taqnyatTemplate',
     'guestReplies',
+    'templateImage',
   ];
   allowedFields.forEach((field) => {
     if (updateData[field] !== undefined) {
-      if (field === 'invitationSettings' || field === 'visualTemplate' ||
-          field === 'taqnyatTemplate' || field === 'guestReplies') {
+      if (
+        field === 'visualTemplate' ||
+        field === 'taqnyatTemplate' ||
+        field === 'guestReplies'
+      ) {
         // Sub-doc merge so partial updates don't blow away unrelated keys.
         event[field] = {
           ...((event[field]?.toObject?.() || event[field]) || {}),
@@ -76,51 +75,6 @@ async function updateEventFull(eventId, updateData, context = {}) {
       }
     }
   });
-
-  // Cross-shape sync: if admin sent legacy keys, project them into
-  // canonical fields too. If admin sent canonical keys, project them
-  // back. Mirrors `events.service.updateInvitationSettings` so the
-  // two writers behave identically.
-  const inv = event.invitationSettings || {};
-  if (updateData.invitationSettings) {
-    const legacy = updateData.invitationSettings;
-    if (legacy.visualTemplate) {
-      const resolvedVisualRef = resolveVisualTemplateRef(
-        legacy.visualTemplate.id || event.visualTemplate?.templateRef
-      );
-      const visualMerged = {
-        ...((event.visualTemplate?.toObject?.() || event.visualTemplate) || {}),
-        fieldValues: legacy.visualTemplate.data || event.visualTemplate?.fieldValues,
-        bakedImagePath:
-          legacy.visualTemplate.src ||
-          legacy.templateImage ||
-          event.visualTemplate?.bakedImagePath,
-      };
-      if (resolvedVisualRef) visualMerged.templateRef = resolvedVisualRef;
-      event.visualTemplate = visualMerged;
-    }
-    if (legacy.selectedTemplate?.id) {
-      const resolvedTaqnyatRef = await resolveTaqnyatTemplateRef(legacy.selectedTemplate.id);
-      if (resolvedTaqnyatRef) {
-        event.taqnyatTemplate = {
-          ...((event.taqnyatTemplate?.toObject?.() || event.taqnyatTemplate) || {}),
-          templateRef: resolvedTaqnyatRef,
-        };
-      }
-    }
-    const replies = event.guestReplies?.toObject?.() || event.guestReplies || {};
-    if (legacy.attendanceAutoReply !== undefined) replies.onAttend = legacy.attendanceAutoReply;
-    if (legacy.absenceAutoReply !== undefined) replies.onAbsent = legacy.absenceAutoReply;
-    if (legacy.expectedAttendanceAutoReply !== undefined) replies.onExpected = legacy.expectedAttendanceAutoReply;
-    event.guestReplies = replies;
-  }
-  if (updateData.guestReplies) {
-    const merged = { ...inv };
-    if (updateData.guestReplies.onAttend !== undefined) merged.attendanceAutoReply = updateData.guestReplies.onAttend;
-    if (updateData.guestReplies.onAbsent !== undefined) merged.absenceAutoReply = updateData.guestReplies.onAbsent;
-    if (updateData.guestReplies.onExpected !== undefined) merged.expectedAttendanceAutoReply = updateData.guestReplies.onExpected;
-    event.invitationSettings = merged;
-  }
 
   // Handle guest list update inside a transaction so deleteMany + insertMany are atomic
   if (updateData.guestList) {
@@ -150,8 +104,7 @@ async function updateEventFull(eventId, updateData, context = {}) {
 
   if (context.file) {
     const templateImagePath = `/uploads/templates/${context.file.filename}`;
-    event.invitationSettings = event.invitationSettings || {};
-    event.invitationSettings.templateImage = templateImagePath;
+    event.templateImage = templateImagePath;
     event.visualTemplate = {
       ...((event.visualTemplate?.toObject?.() || event.visualTemplate) || {}),
       bakedImagePath: templateImagePath,

@@ -64,6 +64,7 @@
     "extraReminders": { "title": "Extra Reminders", "description": "Send additional reminder messages" },
     "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
     "addButton": "Add", "removeButton": "Remove", "addedBadge": "Added",
+    "selectedCount_one": "1 selected", "selectedCount_other": "{{count}} selected", "clearAll": "Clear all",
     "loading": "Loading add-ons...",
     "loadFailed": "Could not load add-ons.",
     "purchase": {

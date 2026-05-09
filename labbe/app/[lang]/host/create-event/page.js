@@ -66,10 +66,12 @@ const CreateEventV2 = () => {
   const onSubmit = useCallback(
     async (data) => {
       try {
-        if (!data.templateImage) {
-          toastUtils.error(t("errors.template_image_missing"));
-          return;
-        }
+        // No client-side guard for templateImage — visualTemplate
+        // selection is enforced by validateStep(3), and the backend
+        // accepts submissions with `visualTemplateRef + fieldValues`
+        // alone (no baked File required). Reference `data` so the
+        // closure tracks it for hot-reload correctness.
+        void data;
 
         const eventPayload = buildEventPayload();
         await createEvent.mutateAsync(eventPayload);
@@ -208,7 +210,7 @@ const CreateEventV2 = () => {
             >
               <form
                 className={styles.form_card}
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={(e) => e.preventDefault()}
               >
                 {renderStepContent()}
                 <Buttons

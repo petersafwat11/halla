@@ -28,13 +28,30 @@ const CurrentPlanCard = ({ subscription, usage }) => {
     getLocalized(subscription, "planName", i18n.language) ||
     subscription.planName;
 
-  const eventsUsed = usage?.eventsUsed || 0;
-  const eventsLimit = usage?.eventsLimit || subscription.limits?.maxEvents || 0;
-  const guestsUsed = usage?.guestsUsed || 0;
-  const guestsLimit = usage?.guestsLimit || subscription.limits?.maxInvitesPerEvent || 0;
+  // Pool plans (basic_monthly, premium_monthly, business_*) report `maxEvents: -1`
+  // (unlimited events) and `maxInvitesPerEvent: null`; capacity is tracked on the
+  // subscription itself via `invitePool` / `invitesConsumed`. Per-event plans use
+  // `usage.guestsUsed` against the plan's `maxInvitesPerEvent`.
+  const isPool = subscription.isPoolSubscription === true;
+
+  const eventsUsed = usage?.eventsCreated || 0;
+  const eventsLimit = subscription.limits?.maxEvents ?? 0;
+  const eventsUnlimited = eventsLimit === -1;
+
+  const guestsUsed = isPool
+    ? (subscription.invitesConsumed ?? 0)
+    : (usage?.guestsUsed ?? 0);
+  const guestsLimit = isPool
+    ? (subscription.invitePool ?? 0)
+    : (subscription.limits?.maxInvitesPerEvent ?? 0);
+
   const daysRemaining = subscription.daysRemaining || 0;
 
-  const eventsPercent = eventsLimit > 0 ? (eventsUsed / eventsLimit) * 100 : 0;
+  const eventsPercent = eventsUnlimited
+    ? 0
+    : eventsLimit > 0
+      ? (eventsUsed / eventsLimit) * 100
+      : 0;
   const guestsPercent = guestsLimit > 0 ? (guestsUsed / guestsLimit) * 100 : 0;
 
   return (
@@ -51,6 +68,7 @@ const CurrentPlanCard = ({ subscription, usage }) => {
           used={eventsUsed}
           limit={eventsLimit}
           percent={eventsPercent}
+          isUnlimited={eventsUnlimited}
         />
         <UsageItem
           icon={<FaUsers />}
@@ -73,9 +91,9 @@ const CurrentPlanCard = ({ subscription, usage }) => {
   );
 };
 
-const UsageItem = ({ icon, label, used, limit, percent }) => {
-  const isNearLimit = percent >= 80;
-  const isAtLimit = percent >= 100;
+const UsageItem = ({ icon, label, used, limit, percent, isUnlimited = false }) => {
+  const isNearLimit = !isUnlimited && percent >= 80;
+  const isAtLimit = !isUnlimited && percent >= 100;
 
   return (
     <div className={styles.usageItem}>
@@ -83,14 +101,16 @@ const UsageItem = ({ icon, label, used, limit, percent }) => {
       <div className={styles.usageInfo}>
         <span className={styles.usageLabel}>{label}</span>
         <span className={`${styles.usageValue} ${isAtLimit ? styles.atLimit : isNearLimit ? styles.nearLimit : ""}`}>
-          {used} / {limit}
+          {isUnlimited ? `${used} / ∞` : `${used} / ${limit}`}
         </span>
-        <div className={styles.progressBar}>
-          <div
-            className={`${styles.progressFill} ${isAtLimit ? styles.atLimit : isNearLimit ? styles.nearLimit : ""}`}
-            style={{ width: `${Math.min(percent, 100)}%` }}
-          />
-        </div>
+        {!isUnlimited && (
+          <div className={styles.progressBar}>
+            <div
+              className={`${styles.progressFill} ${isAtLimit ? styles.atLimit : isNearLimit ? styles.nearLimit : ""}`}
+              style={{ width: `${Math.min(percent, 100)}%` }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

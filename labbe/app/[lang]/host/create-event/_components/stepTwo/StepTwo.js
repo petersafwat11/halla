@@ -35,10 +35,18 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
   const watchedGuestList = watch("guestList");
   const guestList = useMemo(() => watchedGuestList || [], [watchedGuestList]);
 
-  // Calculate remaining guests based on normalized subscription
-  // Backend returns: { guestLimit, isGuestUnlimited, invitePool, invitesRemaining }
-  const guestLimit = subscription?.guestLimit ?? 0;
-  const isUnlimited = subscription?.isGuestUnlimited ?? false;
+  // Backend shape: { guestLimit, isGuestUnlimited, isPoolPlan, invitePool, invitesRemaining }
+  // Pool plans report `isGuestUnlimited: true` (no per-event cap) but the global
+  // pool is still the effective constraint for THIS event — surface it so users
+  // don't sail past their pool and get a 403 at submit.
+  const isPoolPlan = subscription?.isPoolPlan === true;
+  const invitesRemaining = Number.isFinite(subscription?.invitesRemaining)
+    ? subscription.invitesRemaining
+    : null;
+  const isUnlimited = (subscription?.isGuestUnlimited ?? false) && !isPoolPlan;
+  const guestLimit = isPoolPlan
+    ? (invitesRemaining ?? 0)
+    : (subscription?.guestLimit ?? 0);
   const isLimitReached = !isUnlimited && guestList.length >= guestLimit;
 
   const resetCurrentItem = useCallback(() => {

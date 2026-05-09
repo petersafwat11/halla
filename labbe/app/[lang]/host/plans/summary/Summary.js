@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaLock } from "react-icons/fa";
 import { useValidateDiscount } from "@/hooks/reactQueryHooks/useDiscounts";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import PaymentMethodSelector from "../_components/PaymentMethodSelector";
@@ -94,13 +94,12 @@ const Summary = ({
 
   return (
     <ErrorBoundary fallbackMessage={t("errors.summaryBoundary", { defaultValue: "" })}>
-      <div className={styles.container} style={{ position: "relative" }}>
-        <button className={styles.backButton} onClick={onBack} type="button">
-          {isRtl ? <FaArrowRight /> : <FaArrowLeft />}
-          <span>{t("summary.back")}</span>
-        </button>
-
+      <div className={styles.container}>
         <div className={styles.header}>
+          <button className={styles.backButton} onClick={onBack} type="button">
+            {isRtl ? <FaArrowRight /> : <FaArrowLeft />}
+            <span>{t("summary.back")}</span>
+          </button>
           <div className={styles.headerContent}>
             <h1 className={styles.title}>{t("summary.title")}</h1>
             <p className={styles.subtitle}>{t("summary.subtitle")}</p>
@@ -108,65 +107,74 @@ const Summary = ({
         </div>
 
         <div className={styles.content}>
-          <div className={styles.mainSection}>
-            <PlanSummaryCard
-              selectedPlan={selectedPlan}
-              planFamily={planFamily}
-              billingType={billingType}
-              planPrice={planPrice}
-              t={t}
-            />
+          <div className={styles.layout}>
+            <div className={styles.leftCol}>
+              <PlanSummaryCard
+                selectedPlan={selectedPlan}
+                planFamily={planFamily}
+                billingType={billingType}
+                planPrice={planPrice}
+                t={t}
+              />
 
-            <DiscountCodeCard
-              discountCode={discountCode}
-              onCodeChange={(value) => {
-                setDiscountCode(value);
-                setDiscountError("");
-              }}
-              onApply={handleApplyDiscount}
-              onRemove={handleRemoveDiscount}
-              applied={discountApplied}
-              loading={discountLoading}
-              amount={discountAmount}
-              appliedCode={appliedCode}
-              errorMessage={discountError}
-              t={t}
-            />
+              <DiscountCodeCard
+                discountCode={discountCode}
+                onCodeChange={(value) => {
+                  setDiscountCode(value);
+                  setDiscountError("");
+                }}
+                onApply={handleApplyDiscount}
+                onRemove={handleRemoveDiscount}
+                applied={discountApplied}
+                loading={discountLoading}
+                amount={discountAmount}
+                appliedCode={appliedCode}
+                errorMessage={discountError}
+                t={t}
+              />
 
-            <PaymentSummaryCard
-              planPrice={planPrice}
-              addonItems={addonItems}
-              discountAmount={discountAmount}
-              finalTotal={finalTotal}
-              t={t}
-            />
-
-            {onPaymentMethodChange && (
-              <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <h2 className={styles.cardTitle}>
-                    {t("summary.payment.method")}
-                  </h2>
+              {onPaymentMethodChange && (
+                <div className={styles.card}>
+                  <div className={styles.cardHeader}>
+                    <h2 className={styles.cardTitle}>
+                      {t("summary.payment.method")}
+                    </h2>
+                  </div>
+                  <div className={styles.cardContent}>
+                    <PaymentMethodSelector
+                      value={paymentMethod || "creditcard"}
+                      onChange={onPaymentMethodChange}
+                      onCardChange={onCardChange}
+                      onMobileChange={onMobileChange}
+                    />
+                  </div>
                 </div>
-                <div className={styles.cardContent}>
-                  <PaymentMethodSelector
-                    value={paymentMethod || "creditcard"}
-                    onChange={onPaymentMethodChange}
-                    onCardChange={onCardChange}
-                    onMobileChange={onMobileChange}
-                  />
-                </div>
+              )}
+            </div>
+
+            <div className={styles.rightCol}>
+              <PaymentSummaryCard
+                planPrice={planPrice}
+                addonItems={addonItems}
+                discountAmount={discountAmount}
+                finalTotal={finalTotal}
+                t={t}
+              />
+
+              <ProceedButton
+                onClick={handlePayment}
+                processing={isProcessing}
+                finalTotal={finalTotal}
+                t={t}
+              />
+
+              <div className={styles.securityNotice}>
+                <FaLock className={styles.securityIcon} />
+                <span>{t("summary.secureCheckout", { defaultValue: t("summary.terms") })}</span>
               </div>
-            )}
 
-            <ProceedButton
-              onClick={handlePayment}
-              processing={isProcessing}
-              finalTotal={finalTotal}
-              t={t}
-            />
-
-            <p className={styles.termsNotice}>{t("summary.terms")}</p>
+              <p className={styles.termsNotice}>{t("summary.terms")}</p>
+            </div>
           </div>
         </div>
       </div>

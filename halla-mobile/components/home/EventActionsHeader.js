@@ -20,7 +20,7 @@ const EventActionsHeader = ({ event, isAdmin = false }) => {
   const notifyStaffMutation = useNotifyStaff();
 
   // Gate logic lives in `useEventActionGate` (mobile companion of the
-  // web hook). Both surfaces read from `invitationSettings.selectedTemplate`
+  // web hook). Both surfaces read from `taqnyatTemplate.templateRef`
   // so the web header, dashboard widget, and this header stay in lock-step.
   const { canSendTest, canSchedule, hasStaff: hasSupervisors, isCompleted } =
     useEventActionGate({ event, testMessageSent });

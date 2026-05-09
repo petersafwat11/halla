@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getLocalized } from "../../utils/locale";
 import { DEFAULT_COMPENSATION_PERCENTAGE } from "../../utils/constants/plans";
+import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const isMonthly = (billingType) =>
   billingType === "monthly" ||
@@ -15,30 +16,39 @@ const PlanSummaryCard = ({
   planPrice,
   t,
 }) => {
-  const getPlanDisplayName = () =>
+  const monthly = isMonthly(billingType);
+
+  const planName =
     getLocalized(selectedPlan, "name", locale) || t("summary.planDetails");
 
-  const getBillingTypeLabel = () => {
-    if (isMonthly(billingType)) return t("summary.unlimitedEvents");
-    return t("summary.oneEvent");
-  };
+  const planSubtitle = monthly
+    ? t("summary.unlimitedEvents")
+    : t("summary.singleEvent");
 
-  const getPlanTypeSubtitle = () =>
-    isMonthly(billingType) ? t("summary.unlimitedEvents") : t("summary.singleEvent");
+  const inviteCount = monthly
+    ? selectedPlan?.invitePool || 0
+    : selectedPlan?.invites ?? selectedPlan?.limits?.maxInvitesPerEvent ?? 0;
 
-  const getCompensationInvites = () => {
+  const inviteLabel = monthly
+    ? `${inviteCount} ${t("summary.invitePool") || t("inviteSelector.poolLabel")}`
+    : `${inviteCount} ${t("summary.invitesLabel")}`;
+
+  const eventLabel = monthly
+    ? t("summary.unlimitedEvents")
+    : t("summary.oneEvent");
+
+  const compensationCount = (() => {
     const pct =
-      (selectedPlan?.compensationPercentage ?? DEFAULT_COMPENSATION_PERCENTAGE) / 100;
-    if (isMonthly(billingType)) {
+      (selectedPlan?.compensationPercentage ?? DEFAULT_COMPENSATION_PERCENTAGE) /
+      100;
+    if (monthly) {
       return (
         selectedPlan?.compensationPool ??
         Math.floor((selectedPlan?.invitePool || 0) * pct)
       );
     }
-    const invites =
-      selectedPlan?.invites ?? selectedPlan?.limits?.maxInvitesPerEvent ?? 0;
-    return Math.floor(invites * pct);
-  };
+    return Math.floor(inviteCount * pct);
+  })();
 
   return (
     <View style={styles.card}>
@@ -49,11 +59,17 @@ const PlanSummaryCard = ({
       <View style={styles.cardContent}>
         <View style={styles.planInfo}>
           <View style={styles.planIcon}>
-            <Ionicons name="calendar-outline" size={24} color="#C28E5C" />
+            <Ionicons
+              name="calendar-outline"
+              size={22}
+              color={colors.primary[600]}
+            />
           </View>
           <View style={styles.planDetails}>
-            <Text style={styles.planName}>{getPlanDisplayName()}</Text>
-            <Text style={styles.planType}>{getPlanTypeSubtitle()}</Text>
+            <Text style={styles.planName} numberOfLines={2}>
+              {planName}
+            </Text>
+            <Text style={styles.planType}>{planSubtitle}</Text>
           </View>
           <View style={styles.planPrice}>
             <Text style={styles.priceAmount}>{planPrice}</Text>
@@ -62,105 +78,123 @@ const PlanSummaryCard = ({
         </View>
 
         <View style={styles.featuresSummary}>
-          {isMonthly(billingType) ? (
-            <View style={styles.featureItem}>
-              <Ionicons name="people-outline" size={18} color="#C28E5C" />
-              <Text style={styles.featureText}>
-                {`${selectedPlan?.invitePool || 0} ${t("summary.invitePool") || t("inviteSelector.poolLabel")}`}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.featureItem}>
-              <Ionicons name="people-outline" size={18} color="#C28E5C" />
-              <Text style={styles.featureText}>
-                {`${selectedPlan?.invites ?? selectedPlan?.limits?.maxInvitesPerEvent ?? 0} ${t("summary.invitesLabel")}`}
-              </Text>
-            </View>
-          )}
-          <View style={styles.featureItem}>
-            <Ionicons name="calendar-outline" size={18} color="#C28E5C" />
-            <Text style={styles.featureText}>{getBillingTypeLabel()}</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Ionicons name="gift-outline" size={18} color="#C28E5C" />
-            <Text style={styles.featureText}>
-              {getCompensationInvites()} {t("summary.compensationInvites")}
-            </Text>
-          </View>
+          <FeatureRow
+            iconName="people-outline"
+            text={inviteLabel}
+          />
+          <FeatureRow
+            iconName="calendar-outline"
+            text={eventLabel}
+          />
+          <FeatureRow
+            iconName="gift-outline"
+            text={`${compensationCount} ${t("summary.compensationInvites")}`}
+          />
         </View>
       </View>
     </View>
   );
 };
 
+const FeatureRow = ({ iconName, text }) => (
+  <View style={styles.featureItem}>
+    <Ionicons name={iconName} size={16} color={colors.primary[600]} />
+    <Text style={styles.featureText}>{text}</Text>
+  </View>
+);
+
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FFF",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: colors.natural[50],
+    borderRadius: borderRadius[16],
+    borderWidth: 1,
+    borderColor: colors.natural[200],
+    marginBottom: spacing[12],
+    overflow: "hidden",
   },
   cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    paddingHorizontal: spacing[16],
+    paddingVertical: spacing[12],
+    borderBottomWidth: 1,
+    borderBottomColor: colors.natural[200],
+    backgroundColor: colors.natural[50],
   },
   cardTitle: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 16,
-    color: "#2C2C2C",
+    fontSize: typography.fontSize.title.medium,
+    color: colors.secondary[900],
   },
-  cardContent: { gap: 16 },
-  planInfo: { flexDirection: "row", alignItems: "center", gap: 12 },
+  cardContent: {
+    padding: spacing[16],
+    gap: spacing[16],
+  },
+  planInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[12],
+    padding: spacing[12],
+    backgroundColor: colors.primary[50],
+    borderRadius: borderRadius[12],
+    borderWidth: 1,
+    borderColor: colors.primary[100],
+  },
   planIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#F5ECE4",
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius[12],
+    backgroundColor: colors.natural[50],
+    borderWidth: 1,
+    borderColor: colors.primary[200],
     justifyContent: "center",
     alignItems: "center",
   },
-  planDetails: { flex: 1 },
+  planDetails: {
+    flex: 1,
+    minWidth: 0,
+  },
   planName: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 15,
-    color: "#2C2C2C",
+    fontSize: typography.fontSize.body.medium,
+    color: colors.secondary[900],
     marginBottom: 2,
   },
   planType: {
     fontFamily: "Cairo_400Regular",
-    fontSize: 12,
-    color: "#656565",
+    fontSize: typography.fontSize.label.medium,
+    color: colors.natural[450],
   },
-  planPrice: { alignItems: "flex-end" },
+  planPrice: {
+    alignItems: "flex-end",
+  },
   priceAmount: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 20,
-    color: "#C28E5C",
+    fontSize: 22,
+    color: colors.primary[700],
+    letterSpacing: -0.3,
+    lineHeight: 24,
   },
   priceCurrency: {
     fontFamily: "Cairo_600SemiBold",
-    fontSize: 12,
-    color: "#8A6541",
+    fontSize: typography.fontSize.label.small,
+    color: colors.primary[600],
   },
   featuresSummary: {
-    gap: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: "#F5ECE4",
-    borderRadius: 8,
+    gap: spacing[8],
   },
-  featureItem: { flexDirection: "row", alignItems: "center", gap: 10 },
+  featureItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
+    paddingVertical: spacing[8],
+    paddingHorizontal: spacing[12],
+    backgroundColor: colors.natural[150],
+    borderRadius: borderRadius[8],
+  },
   featureText: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: 12,
-    color: "#6B4E33",
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.body.small,
+    color: colors.secondary[700],
+    flex: 1,
   },
 });
 

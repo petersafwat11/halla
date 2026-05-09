@@ -53,7 +53,9 @@ const createEventSchema = z.object({
   eventDetails: eventDetailsSchema,
   guestList: z.array(guestEntry).optional().default([]),
   staffList: z.array(staffEntry).optional().default([]),
-  invitationSettings: z.object({}).passthrough().optional(),
+  visualTemplate: z.object({}).passthrough().optional(),
+  taqnyatTemplate: z.object({}).passthrough().optional(),
+  guestReplies: z.object({}).passthrough().optional(),
   launchSettings: z.object({}).passthrough().optional(),
   whitelabelId: objectId.nullable().optional(),
 }).passthrough();

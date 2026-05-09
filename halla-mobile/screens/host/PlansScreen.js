@@ -205,11 +205,6 @@ const PlansScreen = () => {
         )}
 
         <AddonsSection onAddonsChange={handleAddonsChange} />
-
-        <View style={styles.infoNote}>
-          <Text style={styles.infoIcon}>💡</Text>
-          <Text style={styles.infoText}>{t("infoNote")}</Text>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );

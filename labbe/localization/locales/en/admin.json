@@ -64,7 +64,24 @@
     "deleteBtn": "Delete from Taqnyat",
     "deleteConfirm": "Template \"{{name}}\" will be deleted permanently from Taqnyat and the dashboard. Events using it will fail to send. Continue?",
     "deleted": "Template deleted",
-    "deleteFailed": "Failed to delete template"
+    "deleteFailed": "Failed to delete template",
+    "syncFailed": "Sync failed",
+    "saveFailed": "Save failed",
+    "loadFailed": "Failed to load templates — please try again",
+    "assignLookupFailed": "Could not open the assign dialog",
+    "syncing": "Syncing…",
+    "tableTitle": "Taqnyat Templates",
+    "selectCategory": "Select a category",
+    "sourceKeys": {
+      "guest_name": "Guest name",
+      "event_title": "Event title",
+      "event_dateFormatted": "Event date (formatted)",
+      "event_time": "Event time",
+      "event_location": "Event address",
+      "host_name": "Host name",
+      "hostNote": "Host note",
+      "invitationMessage": "Invitation message"
+    }
   },
   "templates": {
     "title": "Invitation Templates",

@@ -24,17 +24,43 @@ const CheckIcon = () => (
   </svg>
 );
 
-const AUTO_REPLIES_DEFAULTS = {
-  attending:
-    "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
-  maybe: "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
-  absence: "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹",
-};
+const EnvelopeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M3 7.5L10.7 12.6C11.5 13.1 12.5 13.1 13.3 12.6L21 7.5M5 19H19C20.1 19 21 18.1 21 17V7C21 5.9 20.1 5 19 5H5C3.9 5 3 5.9 3 7V17C3 18.1 3.9 19 5 19Z"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 const REPLY_TABS = [
-  { key: "attending", label: "الحضور", canonical: "onAttend", legacy: "attendanceAutoReply" },
-  { key: "maybe", label: "ربما", canonical: "onExpected", legacy: "expectedAttendanceAutoReply" },
-  { key: "absence", label: "الاعتذار", canonical: "onAbsent", legacy: "absenceAutoReply" },
+  {
+    key: "attending",
+    labelKey: "auto_replies_tab_attending",
+    fallback: "الحضور",
+    canonical: "onAttend",
+    defaultKey: "auto_replies_default_attending",
+    defaultText: "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
+  },
+  {
+    key: "maybe",
+    labelKey: "auto_replies_tab_maybe",
+    fallback: "ربما",
+    canonical: "onExpected",
+    defaultKey: "auto_replies_default_maybe",
+    defaultText: "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
+  },
+  {
+    key: "absence",
+    labelKey: "auto_replies_tab_absence",
+    fallback: "الاعتذار",
+    canonical: "onAbsent",
+    defaultKey: "auto_replies_default_absence",
+    defaultText: "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹",
+  },
 ];
 
 const StepFour = () => {
@@ -48,25 +74,19 @@ const StepFour = () => {
 
   const category = visualTemplate?.categories?.[0] || "";
 
-  const { data, isLoading } = useHostTaqnyatTemplates(
+  const { data, isLoading, error } = useHostTaqnyatTemplates(
     { category: category || undefined },
     { enabled: true }
   );
-  const templates = data?.data?.templates || data?.templates || [];
+  const templates = data?.data?.templates || [];
 
   useEffect(() => {
-    if (!watch("guestReplies.onAttend")) {
-      setValue("guestReplies.onAttend", AUTO_REPLIES_DEFAULTS.attending, { shouldDirty: false });
-      setValue("attendanceAutoReply", AUTO_REPLIES_DEFAULTS.attending, { shouldDirty: false });
-    }
-    if (!watch("guestReplies.onAbsent")) {
-      setValue("guestReplies.onAbsent", AUTO_REPLIES_DEFAULTS.absence, { shouldDirty: false });
-      setValue("absenceAutoReply", AUTO_REPLIES_DEFAULTS.absence, { shouldDirty: false });
-    }
-    if (!watch("guestReplies.onExpected")) {
-      setValue("guestReplies.onExpected", AUTO_REPLIES_DEFAULTS.maybe, { shouldDirty: false });
-      setValue("expectedAttendanceAutoReply", AUTO_REPLIES_DEFAULTS.maybe, { shouldDirty: false });
-    }
+    REPLY_TABS.forEach((tab) => {
+      const path = `guestReplies.${tab.canonical}`;
+      if (!watch(path)) {
+        setValue(path, t(tab.defaultKey, tab.defaultText), { shouldDirty: false });
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -81,9 +101,7 @@ const StepFour = () => {
       bodyText: template.bodyText,
     };
     setValue("selectedTemplate", enriched, { shouldValidate: true });
-    setValue("invitationSettings.selectedTemplate", enriched, { shouldValidate: false });
     setValue("taqnyatTemplate", { templateRef: template._id }, { shouldValidate: false });
-    setValue("taqnyatTemplateRef", template._id, { shouldValidate: false });
   };
 
   const activeReply = REPLY_TABS.find((tab) => tab.key === activeTab);
@@ -93,7 +111,6 @@ const StepFour = () => {
     const value = e.target.value;
     if (!activeReply) return;
     setValue(`guestReplies.${activeReply.canonical}`, value, { shouldDirty: true });
-    setValue(activeReply.legacy, value, { shouldDirty: true });
   };
 
   return (
@@ -106,8 +123,11 @@ const StepFour = () => {
               {t("select_taqnyat_template", "اختر قالب الواتساب")}
             </label>
             {category && (
-              <small style={{ color: "#666" }}>
-                {t("filtered_by_category", "تم الفلترة حسب الفئة")}: {category}
+              <small className={styles.filterHint}>
+                {t("filtered_by_category", "تم الفلترة حسب الفئة")}:{" "}
+                <span className={styles.filterCategoryName}>
+                  {t(`event_types.${category}`, category)}
+                </span>
               </small>
             )}
           </div>
@@ -124,6 +144,16 @@ const StepFour = () => {
                   <div className={`${styles.skeletonPulse} ${styles.skeletonBodyShort}`} />
                 </div>
               ))}
+            </div>
+          ) : error ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>⚠</div>
+              <p className={styles.emptyTitle}>
+                {t("taqnyat_load_failed", "تعذّر تحميل القوالب")}
+              </p>
+              <p className={styles.emptyHint}>
+                {t("try_again_later", "حاول مرة أخرى لاحقاً")}
+              </p>
             </div>
           ) : templates.length === 0 ? (
             <div className={styles.emptyState}>
@@ -142,6 +172,7 @@ const StepFour = () => {
                   selectedTemplate?._id === template._id ||
                   selectedTemplate?.id === template._id ||
                   selectedTemplate?.name === template.templateName;
+                const tplCategory = template.category || category;
                 return (
                   <button
                     key={template._id}
@@ -153,7 +184,16 @@ const StepFour = () => {
                     <span className={`${styles.cardAccent} ${isSelected ? styles.cardAccentActive : ""}`} />
                     <div className={styles.cardBody}>
                       <div className={styles.cardTopRow}>
-                        <span className={styles.templateName}>{template.templateName}</span>
+                        <span className={styles.cardLabel}>
+                          <span className={styles.cardLabelIcon} aria-hidden="true">
+                            <EnvelopeIcon />
+                          </span>
+                          <span className={styles.cardLabelText}>
+                            {tplCategory
+                              ? t(`event_types.${tplCategory}`, tplCategory)
+                              : t("invitation_message", "نص الدعوة")}
+                          </span>
+                        </span>
                         <span className={`${styles.radioRing} ${isSelected ? styles.radioRingSelected : ""}`}>
                           {isSelected && <span className={styles.radioDot} />}
                         </span>
@@ -162,11 +202,6 @@ const StepFour = () => {
                         <div className={styles.bubbleWrap}>
                           <p className={styles.bubbleText}>{template.bodyText}</p>
                         </div>
-                      )}
-                      {template.varMapping?.length > 0 && (
-                        <small style={{ color: "#666", marginTop: 6, display: "block" }}>
-                          {t("vars_count", "متغيرات")}: {template.varMapping.length}
-                        </small>
                       )}
                     </div>
                     {isSelected && (
@@ -203,7 +238,7 @@ const StepFour = () => {
                 className={`${styles.tabBtn} ${activeTab === tab.key ? styles.tabBtnActive : ""}`}
                 onClick={() => setActiveTab(tab.key)}
               >
-                {tab.label}
+                {t(tab.labelKey, tab.fallback)}
               </button>
             ))}
           </div>

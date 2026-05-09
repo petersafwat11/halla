@@ -39,22 +39,32 @@ const CurrentPlanCard = ({ subscription, usage }) => {
 
   const planName = getLocalized(subscription, "planName", i18n.language);
 
+  // Pool plans (basic_monthly, premium_monthly, business_*) report `maxEvents: -1`
+  // (unlimited events) and `maxInvitesPerEvent: null`; capacity is tracked on the
+  // subscription itself via `invitePool` / `invitesConsumed`. Per-event plans use
+  // `usage.guestsUsed` against the plan's `maxInvitesPerEvent`.
   const planType = subscription.planType;
-  const isPool = isPoolPlan(planType);
+  const isPool =
+    subscription.isPoolSubscription === true || isPoolPlan(planType);
 
-  const eventsUsed = usage?.eventsUsed || 0;
-  const eventsLimit =
-    usage?.eventsLimit ?? subscription.limits?.maxEvents ?? 0;
-  const guestsUsed = usage?.guestsUsed || 0;
-  const guestsLimit =
-    usage?.guestsLimit ??
-    (isPool
-      ? subscription.limits?.invitePool
-      : subscription.limits?.maxInvitesPerEvent) ??
-    0;
+  const eventsUsed = usage?.eventsCreated || 0;
+  const eventsLimit = subscription.limits?.maxEvents ?? 0;
+  const eventsUnlimited = eventsLimit === -1;
+
+  const guestsUsed = isPool
+    ? (subscription.invitesConsumed ?? 0)
+    : (usage?.guestsUsed ?? 0);
+  const guestsLimit = isPool
+    ? (subscription.invitePool ?? 0)
+    : (subscription.limits?.maxInvitesPerEvent ?? 0);
+
   const daysRemaining = subscription.daysRemaining || 0;
 
-  const eventsPercent = eventsLimit > 0 ? (eventsUsed / eventsLimit) * 100 : 0;
+  const eventsPercent = eventsUnlimited
+    ? 0
+    : eventsLimit > 0
+      ? (eventsUsed / eventsLimit) * 100
+      : 0;
   const guestsPercent = guestsLimit > 0 ? (guestsUsed / guestsLimit) * 100 : 0;
 
   return (
@@ -72,6 +82,7 @@ const CurrentPlanCard = ({ subscription, usage }) => {
           used={eventsUsed}
           limit={eventsLimit}
           percent={eventsPercent}
+          isUnlimited={eventsUnlimited}
           showProgress
         />
         <UsageItem
@@ -92,9 +103,9 @@ const CurrentPlanCard = ({ subscription, usage }) => {
   );
 };
 
-const UsageItem = ({ icon, label, used, limit, percent, singleValue, showProgress }) => {
-  const isNearLimit = percent >= 80;
-  const isAtLimit = percent >= 100;
+const UsageItem = ({ icon, label, used, limit, percent, singleValue, showProgress, isUnlimited = false }) => {
+  const isNearLimit = !isUnlimited && percent >= 80;
+  const isAtLimit = !isUnlimited && percent >= 100;
   const valueColor = isAtLimit
     ? colors.error[500]
     : isNearLimit
@@ -106,6 +117,12 @@ const UsageItem = ({ icon, label, used, limit, percent, singleValue, showProgres
       ? colors.warning[500]
       : colors.primary[500];
 
+  const valueText = singleValue !== undefined
+    ? singleValue
+    : isUnlimited
+      ? `${used} / ∞`
+      : `${used} / ${limit}`;
+
   return (
     <View style={styles.usageItem}>
       <View style={styles.usageIcon}>
@@ -116,9 +133,9 @@ const UsageItem = ({ icon, label, used, limit, percent, singleValue, showProgres
           {label}
         </Text>
         <Text style={[styles.usageValue, { color: valueColor }]}>
-          {singleValue !== undefined ? singleValue : `${used} / ${limit}`}
+          {valueText}
         </Text>
-        {showProgress ? (
+        {showProgress && !isUnlimited ? (
           <View style={styles.progressBar}>
             <View
               style={[

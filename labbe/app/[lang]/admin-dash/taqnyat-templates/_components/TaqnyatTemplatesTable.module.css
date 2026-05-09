@@ -106,3 +106,12 @@
     transform: rotate(360deg);
   }
 }
+
+.errorState {
+  padding: 24px;
+  text-align: center;
+  color: #c0392b;
+  background: #fdecea;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+}

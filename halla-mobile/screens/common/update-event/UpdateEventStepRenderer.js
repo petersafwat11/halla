@@ -40,6 +40,12 @@ const UpdateEventStepRenderer = ({
               eventData?.guestLimit === -1 ||
               subscription?.isGuestUnlimited === true ||
               false,
+            // Pool-plan effective cap is the *current* invitesRemaining on the
+            // subscription. Forwarded so StepTwo shows the real ceiling instead
+            // of ∞ when editing a pool-plan event.
+            isPoolPlan: subscription?.isPoolPlan === true,
+            invitePool: subscription?.invitePool ?? null,
+            invitesRemaining: subscription?.invitesRemaining ?? null,
           }}
         />
       );

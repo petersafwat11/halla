@@ -1,27 +1,10 @@
 /**
  * templateRefResolver.
  *
- * Resolves legacy `Event.invitationSettings.{selectedTemplate.id, visualTemplate.id}`
- * values to canonical ObjectId refs without throwing CastError when the
- * legacy value is incompatible with the canonical schema:
- *
- *   - `inv.selectedTemplate.id` was the Meta `taqnyatId` (string) on
- *     legacy events. Canonical `taqnyatTemplate.templateRef` is an
- *     ObjectId pointing at `TaqnyatTemplateModel`. We resolve via
- *     `TaqnyatTemplate.findOne({ taqnyatId })` and return its `_id`,
- *     or null when the cache has not yet been synced.
- *
- *   - `inv.visualTemplate.id` was a Number (the index from the old
- *     hardcoded 3-template array in StepThree). It does NOT map onto
- *     the new `TemplateModel` (whose `_id` is an ObjectId). We return
- *     null and let the messaging path fall back to the legacy 5-param
- *     shape via `_resolveTaqnyatTemplate` / `bakedImagePath`.
- *
- * Without this resolver the dual-write code paths in
- * `events.service.createEvent`, `events.service.updateInvitationSettings`,
- * `admin.service.adminUpdateEvent`, and `scripts/migrate-event-shape.js`
- * would write a String/Number into an ObjectId-typed field, causing
- * Mongoose to throw `CastError` on save.
+ * Defensive helper that accepts either a canonical ObjectId or a Meta
+ * `taqnyatId` string and returns the canonical TaqnyatTemplate `_id`.
+ * Used by the post-event flow where a client may submit either form;
+ * the main events flow passes ObjectIds directly.
  */
 
 const mongoose = require("mongoose");
@@ -68,19 +51,7 @@ async function resolveTaqnyatTemplateRef(value) {
   }
 }
 
-/**
- * Resolve a visual-template selection. Legacy events used a Number id
- * pointing into a hardcoded array; that has no equivalent in the new
- * TemplateModel. Returns the value when it's already a valid ObjectId,
- * null otherwise.
- */
-function resolveVisualTemplateRef(value) {
-  if (isCastableObjectId(value)) return value;
-  return null;
-}
-
 module.exports = {
   isCastableObjectId,
   resolveTaqnyatTemplateRef,
-  resolveVisualTemplateRef,
 };

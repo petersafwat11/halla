@@ -64,6 +64,7 @@
     "extraReminders": { "title": "تذكيرات إضافية", "description": "أرسل رسائل تذكير إضافية" },
     "designTemplate": { "title": "قالب تصميم", "description": "تصميم دعوة احترافي من فريقنا" },
     "addButton": "إضافة", "removeButton": "إزالة", "addedBadge": "مُضاف",
+    "selectedCount_one": "إضافة واحدة", "selectedCount_other": "{{count}} إضافات", "clearAll": "إزالة الكل",
     "loading": "جارِ تحميل الإضافات...",
     "loadFailed": "تعذّر تحميل الإضافات.",
     "purchase": {

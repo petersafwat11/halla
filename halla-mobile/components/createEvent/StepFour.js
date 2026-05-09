@@ -21,58 +21,74 @@ import {
   TextInput,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
-import { taqnyatTemplatesService } from "../../services/taqnyatTemplatesService";
+import { useHostTaqnyatTemplates } from "../../hooks/queries/useTaqnyatTemplates";
+import { useTranslation } from "../../localization";
 
-const AUTO_REPLIES_DEFAULTS = {
-  onAttend:
-    "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
-  onExpected: "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
-  onAbsent: "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹",
+const CATEGORY_LABELS_AR = {
+  wedding: "حفل زفاف",
+  birthday: "عيد ميلاد",
+  graduation: "حفل تخرج",
+  engagement: "خطوبة",
+  conference: "مؤتمر",
+  meeting: "اجتماع",
+  other: "أخرى",
 };
 
 const REPLY_TABS = [
-  { key: "onAttend", label: "الحضور", legacy: "attendanceAutoReply" },
-  { key: "onExpected", label: "ربما", legacy: "expectedAttendanceAutoReply" },
-  { key: "onAbsent", label: "الاعتذار", legacy: "absenceAutoReply" },
+  {
+    key: "onAttend",
+    labelKey: "auto_replies_tab_attending",
+    fallback: "الحضور",
+    defaultKey: "auto_replies_default_attending",
+    defaultText: "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
+  },
+  {
+    key: "onExpected",
+    labelKey: "auto_replies_tab_maybe",
+    fallback: "ربما",
+    defaultKey: "auto_replies_default_maybe",
+    defaultText: "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
+  },
+  {
+    key: "onAbsent",
+    labelKey: "auto_replies_tab_absence",
+    fallback: "الاعتذار",
+    defaultKey: "auto_replies_default_absence",
+    defaultText: "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹",
+  },
 ];
 
 const StepFour = () => {
   const { setValue, watch } = useFormContext();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [activeTab, setActiveTab] = useState("onAttend");
+  const { t } = useTranslation("createEvent");
+
+  const categoryLabel = (cat) =>
+    cat ? t(`event_types.${cat}`, CATEGORY_LABELS_AR[cat] || cat) : "";
 
   const visualTemplate = watch("visualTemplate");
   const selectedTemplate = watch("selectedTemplate");
   const category = visualTemplate?.categories?.[0] || "";
   const guestReplies = watch("guestReplies") || {};
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["taqnyat-templates", "host", category || "all"],
-    queryFn: () => taqnyatTemplatesService.getTemplates({ category: category || undefined }),
-    staleTime: 5 * 60 * 1000,
+  const { data, isLoading, error } = useHostTaqnyatTemplates({
+    category: category || undefined,
   });
 
-  const templates = data?.data?.templates || data?.templates || [];
+  const templates = data?.data?.templates || [];
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
   }, [fadeAnim]);
 
   useEffect(() => {
-    if (!guestReplies?.onAttend) {
-      setValue("guestReplies.onAttend", AUTO_REPLIES_DEFAULTS.onAttend, { shouldDirty: false });
-      setValue("attendanceAutoReply", AUTO_REPLIES_DEFAULTS.onAttend, { shouldDirty: false });
-    }
-    if (!guestReplies?.onAbsent) {
-      setValue("guestReplies.onAbsent", AUTO_REPLIES_DEFAULTS.onAbsent, { shouldDirty: false });
-      setValue("absenceAutoReply", AUTO_REPLIES_DEFAULTS.onAbsent, { shouldDirty: false });
-    }
-    if (!guestReplies?.onExpected) {
-      setValue("guestReplies.onExpected", AUTO_REPLIES_DEFAULTS.onExpected, { shouldDirty: false });
-      setValue("expectedAttendanceAutoReply", AUTO_REPLIES_DEFAULTS.onExpected, { shouldDirty: false });
-    }
+    REPLY_TABS.forEach((tab) => {
+      if (!guestReplies?.[tab.key]) {
+        setValue(`guestReplies.${tab.key}`, t(tab.defaultKey, tab.defaultText), { shouldDirty: false });
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -87,9 +103,7 @@ const StepFour = () => {
       bodyText: template.bodyText,
     };
     setValue("selectedTemplate", enriched, { shouldValidate: true });
-    setValue("invitationSettings.selectedTemplate", enriched, { shouldValidate: false });
     setValue("taqnyatTemplate", { templateRef: template._id }, { shouldValidate: false });
-    setValue("taqnyatTemplateRef", template._id, { shouldValidate: false });
   };
 
   const activeReplyMeta = REPLY_TABS.find((tab) => tab.key === activeTab);
@@ -98,7 +112,6 @@ const StepFour = () => {
   const handleReplyChange = (text) => {
     if (!activeReplyMeta) return;
     setValue(`guestReplies.${activeReplyMeta.key}`, text, { shouldDirty: true });
-    setValue(activeReplyMeta.legacy, text, { shouldDirty: true });
   };
 
   return (
@@ -108,7 +121,14 @@ const StepFour = () => {
         <View style={styles.header}>
           <Text style={styles.sectionTitle}>اختر قالب الواتساب</Text>
           {category ? (
-            <Text style={styles.subtitle}>تم الفلترة حسب الفئة: {category}</Text>
+            <View style={styles.filterRow}>
+              <Text style={styles.subtitle}>تم الفلترة حسب الفئة:</Text>
+              <View style={styles.categoryChip}>
+                <Text style={styles.categoryChipText}>
+                  {categoryLabel(category)}
+                </Text>
+              </View>
+            </View>
           ) : (
             <Text style={styles.subtitle}>اختر قالباً معتمداً من Meta</Text>
           )}
@@ -118,12 +138,18 @@ const StepFour = () => {
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color="#C28E5C" />
           </View>
+        ) : error ? (
+          <View style={styles.emptyBox}>
+            <Ionicons name="alert-circle-outline" size={36} color="#C0392B" />
+            <Text style={styles.emptyTitle}>{t("taqnyat_load_failed", "تعذّر تحميل القوالب")}</Text>
+            <Text style={styles.emptyHint}>{t("try_again_later", "حاول مرة أخرى لاحقاً")}</Text>
+          </View>
         ) : templates.length === 0 ? (
           <View style={styles.emptyBox}>
             <Ionicons name="mail-outline" size={36} color="#999" />
-            <Text style={styles.emptyTitle}>لا توجد قوالب لهذه الفئة</Text>
+            <Text style={styles.emptyTitle}>{t("no_taqnyat_templates", "لا توجد قوالب لهذه الفئة")}</Text>
             <Text style={styles.emptyHint}>
-              تواصل مع الإدارة لتعيين قوالب لفئتك
+              {t("no_taqnyat_templates_hint", "تواصل مع الإدارة لتعيين قوالب لفئتك")}
             </Text>
           </View>
         ) : (
@@ -133,6 +159,7 @@ const StepFour = () => {
                 selectedTemplate?._id === tpl._id ||
                 selectedTemplate?.id === tpl._id ||
                 selectedTemplate?.name === tpl.templateName;
+              const tplCategory = tpl.category || category;
               return (
                 <TouchableOpacity
                   key={tpl._id}
@@ -140,19 +167,38 @@ const StepFour = () => {
                   onPress={() => handleTemplateSelect(tpl)}
                   activeOpacity={0.85}
                 >
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.cardTitle}>{tpl.templateName}</Text>
-                    <View style={[styles.radio, isSelected && styles.radioSelected]}>
-                      {isSelected && <View style={styles.radioDot} />}
+                  <View
+                    style={[
+                      styles.cardAccent,
+                      isSelected && styles.cardAccentActive,
+                    ]}
+                  />
+                  <View style={styles.cardContent}>
+                    <View style={styles.cardHeader}>
+                      <View style={styles.cardLabel}>
+                        <View style={styles.cardLabelIcon}>
+                          <Ionicons name="mail-outline" size={14} color="#A87040" />
+                        </View>
+                        <Text style={styles.cardLabelText} numberOfLines={1}>
+                          {tplCategory ? categoryLabel(tplCategory) : "نص الدعوة"}
+                        </Text>
+                      </View>
+                      <View style={[styles.radio, isSelected && styles.radioSelected]}>
+                        {isSelected && <View style={styles.radioDot} />}
+                      </View>
                     </View>
+                    {tpl.bodyText ? (
+                      <View style={styles.bubble}>
+                        <Text style={styles.bubbleText} numberOfLines={6}>
+                          {tpl.bodyText}
+                        </Text>
+                      </View>
+                    ) : null}
                   </View>
-                  {tpl.bodyText ? (
-                    <Text style={styles.cardBody} numberOfLines={4}>
-                      {tpl.bodyText}
-                    </Text>
-                  ) : null}
-                  {tpl.varMapping?.length > 0 && (
-                    <Text style={styles.cardMeta}>متغيرات: {tpl.varMapping.length}</Text>
+                  {isSelected && (
+                    <View style={styles.checkBadge}>
+                      <Ionicons name="checkmark" size={12} color="#FFF" />
+                    </View>
                   )}
                 </TouchableOpacity>
               );
@@ -176,7 +222,7 @@ const StepFour = () => {
                 activeOpacity={0.85}
               >
                 <Text style={[styles.tabBtnText, activeTab === tab.key && styles.tabBtnTextActive]}>
-                  {tab.label}
+                  {t(tab.labelKey, tab.fallback)}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -228,40 +274,113 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   emptyHint: { fontSize: 12, color: "#999", marginTop: 4, textAlign: "center" },
+  filterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 6,
+    flexWrap: "wrap",
+  },
+  categoryChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: "#F5E9D8",
+  },
+  categoryChipText: {
+    fontSize: 12,
+    fontFamily: "Cairo_700Bold",
+    color: "#6B4E33",
+    letterSpacing: 0.2,
+  },
   templateList: { marginBottom: 24 },
   card: {
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#EEE",
+    flexDirection: "row",
+    overflow: "hidden",
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#E8E2DA",
     backgroundColor: "#FFF",
-    marginBottom: 10,
+    marginBottom: 12,
+    position: "relative",
   },
   cardSelected: {
     borderColor: "#C28E5C",
-    backgroundColor: "#FFF7EB",
+    backgroundColor: "#FDF9F4",
+    shadowColor: "#C28E5C",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  cardAccent: {
+    width: 4,
+    backgroundColor: "#E8E2DA",
+  },
+  cardAccentActive: {
+    backgroundColor: "#C28E5C",
+  },
+  cardContent: {
+    flex: 1,
+    padding: 14,
+    gap: 10,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 6,
   },
-  cardTitle: {
-    fontSize: 15,
+  cardLabel: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  cardLabelIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: "#F9EFDE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardLabelText: {
+    fontSize: 14,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     flex: 1,
   },
-  cardBody: {
-    fontSize: 13,
-    color: "#555",
-    lineHeight: 20,
+  bubble: {
+    backgroundColor: "#FAF6EF",
+    borderRadius: 10,
+    borderTopRightRadius: 4,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#EFE6D6",
   },
-  cardMeta: {
-    fontSize: 11,
-    color: "#888",
-    marginTop: 6,
+  bubbleText: {
+    fontSize: 13,
+    color: "#4A3D33",
+    lineHeight: 22,
+    fontFamily: "Cairo_400Regular",
+    textAlign: "right",
+    writingDirection: "rtl",
+  },
+  checkBadge: {
+    position: "absolute",
+    bottom: 10,
+    left: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#C28E5C",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#C28E5C",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 3,
   },
   radio: {
     width: 18,

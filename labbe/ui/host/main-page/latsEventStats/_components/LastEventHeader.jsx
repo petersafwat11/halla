@@ -36,7 +36,7 @@ export default function LastEventHeader({ event, isMobile, currentLocale }) {
     classKey: "statusPublished",
   };
   const formattedDateTime = formatDateTime(event.date, event.time, currentLocale);
-  const location = event.locationName || event.location || "";
+  const location = event.locationName || "";
 
   return (
     <div className={styles.container}>

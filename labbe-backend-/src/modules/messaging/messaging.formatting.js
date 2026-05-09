@@ -22,22 +22,16 @@ function formatDate(date, lang = 'ar') {
 }
 
 /**
- * Resolve the cached TaqnyatTemplate for an event.
- * Prefers `event.taqnyatTemplate.templateRef`; falls back to legacy
- * `event.invitationSettings.selectedTemplate.name`. Returns `null` when
- * neither is set (caller falls back to the 5-param shape).
+ * Resolve the cached TaqnyatTemplate for an event from
+ * `event.taqnyatTemplate.templateRef`. Returns `null` when no template
+ * is selected (caller falls back to the 5-param shape).
  */
 async function resolveTaqnyatTemplate(event) {
   try {
     const ref = event.taqnyatTemplate?.templateRef;
-    if (ref) {
-      const doc = await TaqnyatTemplate.findById(ref).lean();
-      if (doc) return doc;
-    }
-    const legacyName = event.invitationSettings?.selectedTemplate?.name;
-    if (legacyName) {
-      return TaqnyatTemplate.findOne({ templateName: legacyName }).lean();
-    }
+    if (!ref) return null;
+    const doc = await TaqnyatTemplate.findById(ref).lean();
+    if (doc) return doc;
   } catch (err) {
     logger.warn('[messaging] resolveTaqnyatTemplate failed', { error: err.message });
   }
@@ -73,12 +67,13 @@ function getEventBodyParams(event, guestName, taqnyatTemplate = null) {
     return fallback();
   }
 
+  // Mongoose subdocs lose their data on `...` spread (fields live behind a
+  // proxy, not as own enumerable properties). Unwrap with `.toObject()` so
+  // varMapping resolution sees real values, not undefined.
+  const ed = event.eventDetails?.toObject?.() || event.eventDetails || {};
   const ctx = {
     guest: { name: guestName || 'ضيفنا الكريم' },
-    eventDetails: {
-      ...(event.eventDetails || {}),
-      dateFormatted: formatDate(event.eventDetails?.date),
-    },
+    eventDetails: { ...ed, dateFormatted: formatDate(ed.date) },
     host:
       event.host && typeof event.host === 'object'
         ? { name: event.host.name || event.host.username || '' }
@@ -122,14 +117,12 @@ function buildSmsBody(event, guestName, rsvpLink) {
  * Sending a header component for a template that has none triggers
  * Taqnyat error code 100 ("Invalid or missing parameter").
  */
-function getEventImageUrl(event) {
-  const hasImageHeader =
-    event.invitationSettings?.selectedTemplate?.hasImageHeader === true;
+function getEventImageUrl(event, taqnyatTemplate = null) {
+  const hasImageHeader = taqnyatTemplate?.hasImageHeader === true;
   if (!hasImageHeader) return null;
 
   const imagePath =
-    event.visualTemplate?.bakedImagePath ||
-    event.invitationSettings?.templateImage;
+    event.visualTemplate?.bakedImagePath || event.templateImage;
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
   return null;
@@ -158,12 +151,11 @@ function getPostEventBodyParams(event, guestName, taqnyatTemplate, accessCtx = {
     return fallback();
   }
 
+  // See note in getEventBodyParams — Mongoose subdocs need .toObject() before spread.
+  const ed = event.eventDetails?.toObject?.() || event.eventDetails || {};
   const ctx = {
     guest: { name: guestName || 'ضيفنا الكريم' },
-    eventDetails: {
-      ...(event.eventDetails || {}),
-      dateFormatted: formatDate(event.eventDetails?.date),
-    },
+    eventDetails: { ...ed, dateFormatted: formatDate(ed.date) },
     host:
       event.host && typeof event.host === 'object'
         ? { name: event.host.name || event.host.username || '' }

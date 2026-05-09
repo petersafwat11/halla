@@ -9,9 +9,9 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
 export default function TaqnyatTemplatesStats() {
   const { t } = useTranslation("admin");
-  const { data, isLoading } = useAdminTaqnyatTemplates();
+  const { data, isLoading, error } = useAdminTaqnyatTemplates();
 
-  const templates = data?.data?.templates || data?.templates || [];
+  const templates = data?.data?.templates || [];
 
   const statsCards = useMemo(() => {
     const total = templates.length;
@@ -52,6 +52,7 @@ export default function TaqnyatTemplatesStats() {
   }, [templates, t]);
 
   if (isLoading) return <SimpleLoading />;
+  if (error) return null;
 
   return <StatsCards cards={statsCards} />;
 }

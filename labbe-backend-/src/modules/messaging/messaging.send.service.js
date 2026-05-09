@@ -50,10 +50,12 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'sms', isAdmin 
   const rsvpLink = `${frontendUrl}/rsvp/preview?event=${eventId}`;
 
   const cached = await resolveTaqnyatTemplate(event);
-  const templateName =
-    cached?.templateName || event.invitationSettings?.selectedTemplate?.name;
+  const templateName = cached?.templateName;
 
   let result;
+  let imageUrl = null;
+  let bodyParams = null;
+  let smsBody = null;
   if (channel === 'whatsapp') {
     if (!templateName) {
       throw new AppError(
@@ -62,8 +64,14 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'sms', isAdmin 
         'NO_TEMPLATE_SELECTED'
       );
     }
-    const imageUrl = getEventImageUrl(event);
-    const bodyParams = getEventBodyParams(event, 'ضيف تجريبي', cached);
+    imageUrl = getEventImageUrl(event, cached);
+    bodyParams = getEventBodyParams(event, 'ضيف تجريبي', cached);
+
+    // Native SMS failover: Taqnyat dispatches SMS automatically when the
+    // recipient has no WhatsApp capability. Mirror the per-guest path so
+    // the test send behaves like a real send.
+    smsBody = buildSmsBody(event, 'ضيف تجريبي', rsvpLink);
+    const smsFallback = { sender: TAQNYAT_SENDER, body: smsBody };
 
     result = imageUrl
       ? await taqnyat.sendWhatsAppTemplateWithImage(
@@ -71,17 +79,39 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'sms', isAdmin 
           templateName,
           'ar',
           imageUrl,
-          bodyParams
+          bodyParams,
+          smsFallback
         )
-      : await taqnyat.sendWhatsAppTemplate(phoneNumber, templateName, 'ar', [
-          {
-            type: 'body',
-            parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
-          },
-        ]);
+      : await taqnyat.sendWhatsAppTemplate(
+          phoneNumber,
+          templateName,
+          'ar',
+          [
+            {
+              type: 'body',
+              parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
+            },
+          ],
+          smsFallback
+        );
   } else {
-    result = await sendSMS(phoneNumber, buildSmsBody(event, 'ضيف تجريبي', rsvpLink));
+    smsBody = buildSmsBody(event, 'ضيف تجريبي', rsvpLink);
+    result = await sendSMS(phoneNumber, smsBody);
   }
+
+  logger.info('[sendTestMessage] result', {
+    eventId,
+    channel,
+    phoneNumber,
+    templateName: templateName || null,
+    imageUrl,
+    bodyParams,
+    smsBodyPreview: smsBody ? smsBody.slice(0, 80) : null,
+    success: !!result.success,
+    messageId: result.messageId || null,
+    error: result.error || null,
+    code: result.code || null,
+  });
 
   // Always update the throttle timestamp; success-only fields stay gated.
   await Event.findByIdAndUpdate(eventId, {
@@ -92,7 +122,8 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'sms', isAdmin 
     }),
   });
 
-  return result;
+  // Expose template/image so the caller can include them in audit metadata.
+  return { ...result, templateName: templateName || null, imageUrl, channel };
 }
 
 /**
@@ -123,10 +154,12 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
   const rsvpLink = `${config.frontend?.url || 'https://halaa.sa'}/rsvp/${eventId}/${guestId}`;
 
   const cached = await resolveTaqnyatTemplate(event);
-  const templateName =
-    cached?.templateName || event.invitationSettings?.selectedTemplate?.name;
+  const templateName = cached?.templateName;
 
   let result;
+  let imageUrl = null;
+  let bodyParams = null;
+  let smsBody = null;
   if (channel === 'whatsapp') {
     if (!templateName) {
       throw new AppError(
@@ -136,8 +169,8 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
       );
     }
 
-    const imageUrl = getEventImageUrl(event);
-    const bodyParams = getEventBodyParams(event, guest.name, cached);
+    imageUrl = getEventImageUrl(event, cached);
+    bodyParams = getEventBodyParams(event, guest.name, cached);
 
     // SMS fallback automatically dispatched by Taqnyat when the guest
     // has no WhatsApp capability.
@@ -168,8 +201,24 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
           smsFallback
         );
   } else {
-    result = await sendSMS(guest.phone, buildSmsBody(event, guest.name, rsvpLink));
+    smsBody = buildSmsBody(event, guest.name, rsvpLink);
+    result = await sendSMS(guest.phone, smsBody);
   }
+
+  logger.info('[sendToGuest] result', {
+    eventId,
+    guestId,
+    channel,
+    phone: guest.phone,
+    templateName: templateName || null,
+    imageUrl,
+    bodyParams,
+    smsBodyPreview: smsBody ? smsBody.slice(0, 80) : null,
+    success: !!result.success,
+    messageId: result.messageId || null,
+    error: result.error || null,
+    code: result.code || null,
+  });
 
   // 429 → transient. Do NOT mark as failed or increment failedAttempts so
   // the guest stays eligible for the next retry window. The rate-limit
@@ -214,8 +263,12 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
       metadata: {
         eventId,
         channel,
+        templateName: templateName || null,
+        imageUrl,
         success: !!result.success,
+        messageId: result.messageId || null,
         ...(result.error && { error: result.error }),
+        ...(result.code && { code: result.code }),
       },
       status: result.success ? 'success' : 'failure',
     });
@@ -280,6 +333,14 @@ async function sendBulk({
     'messagingStatus.preferredChannel': channel,
   });
 
+  logger.info('[sendBulk] start', {
+    eventId,
+    channel,
+    scope,
+    total: effectiveGuestIds.length,
+    attemptId: attemptId || null,
+  });
+
   // Attempt fingerprint priority:
   //   1. explicit `attemptId` (e.g. retryFailed)
   //   2. `event.lastAttemptAt.getTime()` set by runEventLaunch
@@ -330,6 +391,15 @@ async function sendBulk({
     'messagingStatus.pendingCount':
       effectiveGuestIds.length - successful - failed,
     'messagingStatus.bulkSendCompletedAt': new Date(),
+  });
+
+  logger.info('[sendBulk] complete', {
+    eventId,
+    channel,
+    scope,
+    total: effectiveGuestIds.length,
+    successful,
+    failed,
   });
 
   try {

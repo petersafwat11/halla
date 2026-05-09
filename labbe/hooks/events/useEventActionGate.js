@@ -40,11 +40,7 @@ export function useEventActionGate({
     }
 
     const status = event.status;
-    // Accept canonical `taqnyatTemplate.templateRef` or legacy
-    // `invitationSettings.selectedTemplate.name`; mirrors the mobile gate.
-    const hasTemplate =
-      !!event.taqnyatTemplate?.templateRef ||
-      !!event.invitationSettings?.selectedTemplate?.name;
+    const hasTemplate = !!event.taqnyatTemplate?.templateRef;
     const hasStaff = (event.staffList?.length || event.staffCount || 0) > 0;
 
     const isCompleted = status === "completed";

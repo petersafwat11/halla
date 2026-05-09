@@ -2,8 +2,21 @@
 
 **Module:** taqnyat-templates
 **Generated:** 2026-05-07
+**Decisions locked:** 2026-05-09
 **Prompt:** docs/implementation/MODULE_FULLSTACK_REVIEW_PROMPT.md
-**Status:** Awaiting green light · NOT IMPLEMENTED YET
+**Status:** Decisions locked · ready to implement
+
+---
+
+## Locked decisions (2026-05-09)
+
+1. **Validation library:** Zod only — never Joi. Use `validateZod` middleware (already in place). All §2.6 / A.1–A.3 references rewritten in Zod terms below.
+2. **§6.2 / A.8 RBAC:** Option (b) — relax routes to `requirePageAccess(TAQNYAT_TEMPLATES, "create"/"delete")`. Drop `superAdminOnly` on routes #3 (sync), #4 (create), #6 (delete). Regular admins may hit Meta upstream.
+3. **§6.6 sync orphan-deletion safety:** Add defensive guard — skip the orphan soft-delete pass when `upstream.length === 0`. New task A.11.
+4. **§2.3 / A.9 rate limiter:** Skipped — A.9 removed from plan.
+5. **§3.4 / B.1 categories fallback (`TaqnyatTemplatesTable.jsx:38`):** Verified still present. Fix in this pass.
+6. **§4.2 mobile `UpdateEventScreen.js`:** Verified now 325 lines (under 350 cap) — already fixed. Remove from scope.
+7. **§8 locale keys:** All proposed keys approved.
 
 ---
 
@@ -17,10 +30,10 @@
 - **0 mobile file-size violations** (mobile StepFour 319 lines under 350 cap; UpdateEventScreen 597 is out of scope of this module)
 - **1 web/mobile API consumption mismatch** — mobile uses an inline `useQuery` instead of a canonical hook; otherwise paths/methods/query-params/response shape are identical
 - **8 data mapping bugs** — fallback chains hiding the canonical backend shape (`data?.data?.templates || data?.templates || []`) in 4 web files + 1 mobile file, and `data?.data?.categories || data?.categories || []` in 1 web file
-- **2 missing/incorrect safeguards** — no rate limiter on `POST /sync` and `POST /` (both make external Meta API calls); no Joi validation file exists for non-trivial PATCH/POST bodies
+- **1 missing safeguard** — no Zod validation file exists for non-trivial PATCH/POST bodies (rate-limiter gap acknowledged but explicitly deferred per locked decision #4)
 - **3 plain-`Error` throws** instead of typed `AppError` in service (sync/create/delete failure paths)
 - **~12 comment-hygiene blocks to remove** — `Phase 4c W0-MODEL`, `W1-TAQNYAT-ADMIN`, `W2-MOBILE-WIZARD`, `D4c-1/2/3` markers across backend + web + mobile files
-- **Estimated effort:** **M** (medium — mostly Swagger + Joi + fallback-chain + canonical-hook work; no large refactors required)
+- **Estimated effort:** **M** (medium — mostly Swagger + Zod + fallback-chain + canonical-hook work; no large refactors required)
 
 ---
 
@@ -66,11 +79,9 @@ Required Swagger work:
 
 ### 2.3 Missing middleware / safeguards
 
-- **POST /admin/taqnyat-templates/sync** (`taqnyat-templates.routes.js:46-50`) — calls Meta upstream every time; **no rate limiter**. Recommend `authLimiter` or a dedicated `metaWriteLimiter` with low ceiling (e.g. 5/hour) since the underlying upstream is rate-limited and an accidental retry storm is realistic from a mis-clicked button.
-- **POST /admin/taqnyat-templates** (`taqnyat-templates.routes.js:53-57`) — same; no rate limiter, also calls Meta upstream.
-- **DELETE /admin/taqnyat-templates/:id** (`taqnyat-templates.routes.js:66-71`) — same; no rate limiter, also calls Meta upstream.
+- **Rate limiter on Meta-write routes (sync/create/delete):** Acknowledged as a real gap, but **explicitly deferred per locked decision #4**. Routes will continue without a dedicated limiter. Re-open in a future pass if a retry storm is observed.
 - **GET /taqnyat-templates** (host-facing list) — no whitelabel filter is applied. The catalogue is intentionally global per the model header (it's a Meta-account-wide resource), so this is **not a finding** — but it's worth noting in the plan as an explicit "verified intentional" item so future readers don't try to add isolation here.
-- **Idempotency:** `POST /sync` and `POST /` (create) are not idempotency-keyed. They are super-admin-only, low-frequency button-driven actions, so a missing key is acceptable; flagged here for completeness only.
+- **Idempotency:** `POST /sync` and `POST /` (create) are not idempotency-keyed. They are admin-only, low-frequency button-driven actions, so a missing key is acceptable; flagged here for completeness only.
 
 ### 2.4 Duplicate / dead endpoints
 
@@ -89,36 +100,38 @@ None. The pre-W0 host endpoint `GET /messaging/approved-templates` referenced in
 
 The module has **no `taqnyat-templates.validation.js` file**. PATCH and POST bodies are validated inline inside the service (regex on name, enum check on category, array-shape check on varMapping). This violates A5.1.
 
-Schemas to add (`taqnyat-templates.validation.js`):
+Per locked decision #1 — use **Zod** with the existing `validateZod` middleware. Schemas to add (`taqnyat-templates.validation.js`):
 
 ```js
-const Joi = require('joi');
+const { z } = require('zod');
 
-const varMappingEntry = Joi.object({
-  placeholder: Joi.string().pattern(/^\{\{\d+\}\}$/).required(),
-  sourceKey: Joi.string().min(1).max(120).required(),
-  fallback: Joi.string().allow('').max(200),
+const varMappingEntry = z.object({
+  placeholder: z.string().regex(/^\{\{\d+\}\}$/),
+  sourceKey: z.string().min(1).max(120),
+  fallback: z.string().max(200).optional().default(''),
 });
 
-exports.createTemplateSchema = Joi.object({
-  name: Joi.string().pattern(/^[a-z][a-z0-9_]{0,511}$/).required(),
-  category: Joi.string().valid('UTILITY','MARKETING','AUTHENTICATION').required(),
-  language: Joi.string().valid('ar','en').default('ar'),
-  headerText: Joi.string().max(60).allow(''),
-  bodyText: Joi.string().min(1).max(1024).required(),
-  bodyExamples: Joi.array().items(Joi.string().max(60)),
-  footerText: Joi.string().max(60).allow(''),
-}).unknown(false);
+const createTemplateSchema = z.object({
+  name: z.string().regex(/^[a-z][a-z0-9_]{0,511}$/),
+  category: z.enum(['UTILITY', 'MARKETING', 'AUTHENTICATION']),
+  language: z.enum(['ar', 'en']).default('ar'),
+  headerText: z.string().max(60).optional(),
+  bodyText: z.string().min(1).max(1024),
+  bodyExamples: z.array(z.string().max(60)).optional(),
+  footerText: z.string().max(60).optional(),
+}).strict();
 
-exports.assignMappingSchema = Joi.object({
-  category: Joi.string().allow(null, ''),
-  varMapping: Joi.array().items(varMappingEntry),
-  active: Joi.boolean(),
-  sortOrder: Joi.number().integer().min(0),
-}).unknown(false);
+const assignMappingSchema = z.object({
+  category: z.string().nullable().optional(),
+  varMapping: z.array(varMappingEntry).optional(),
+  active: z.boolean().optional(),
+  sortOrder: z.number().int().min(0).optional(),
+}).strict();
+
+module.exports = { createTemplateSchema, assignMappingSchema };
 ```
 
-Mount via `validate(schema)` middleware on routes #4 (`POST /`) and #5 (`PATCH /:id`). Once Joi runs, the inline `ValidationError` throws inside the service can be removed (kept only for invariants Joi can't express, which in this case is none).
+Mount via `validateZod(schema)` middleware on routes #4 (`POST /`) and #5 (`PATCH /:id`). Once Zod runs, the inline `ValidationError` throws inside the service can be removed (kept only for invariants Zod can't express — in this case the placeholder-vs-bodyExamples count invariant in `buildComponents`).
 
 ### 2.7 Comment hygiene (backend)
 
@@ -221,7 +234,7 @@ Backend canonical shape (verified in `taqnyat-templates.controller.js:20, 29, 46
 
 ### 4.1 Screen → component tree
 
-- `screens/common/update-event/UpdateEventScreen.js` (597 lines — out of cap, but most of the file deals with all 5 wizard steps; the taqnyat-templates portion is ~25 lines around lines 305-320 + the import on line 46. **Not in this module's refactor scope** but flagged for the events-module review.)
+- `screens/common/update-event/UpdateEventScreen.js` — **verified 2026-05-09 at 325 lines (under the 350 cap). Already fixed.** No work required in this module.
   - imports `useUpdateTaqnyatTemplate` from `hooks/mutations/useEventMutations.js` — that mutation lives in the events module and is correctly typed (transforms `taqnyatTemplate.templateRef` → `invitationSettings.taqnyatTemplateRef` body). **Out of scope** for this module.
 - `components/createEvent/StepFour.js` (319 lines, under 350 cap)
   - imports `taqnyatTemplatesService` directly
@@ -233,7 +246,7 @@ Backend canonical shape (verified in `taqnyat-templates.controller.js:20, 29, 46
 
 ### 4.2 File-size violations
 
-- **`screens/common/update-event/UpdateEventScreen.js`** — 597 / 350. Out of scope of this module (multi-step screen owned by the events module), flagged for that review.
+- None in module surface. (`UpdateEventScreen.js` was previously over cap but is now 325/350 — verified 2026-05-09.)
 
 ### 4.3 Service / hook violations
 
@@ -294,11 +307,11 @@ Backend canonical shape (verified in `taqnyat-templates.controller.js:20, 29, 46
 (Things that look broken but the agent cannot confirm without running the app.)
 
 1. **`TaqnyatTemplatesTable.jsx:46`** — `handleError(err, t, { fallbackMessage: 'taqnyat.synced' })`. The fallback message key for a sync FAILURE is the SUCCESS key. Likely copy-paste; the user sees a misleading toast on failure. Same pattern at `TaqnyatTemplatesTable.jsx:59` (`fallbackMessage: 'taqnyat.saved'` on a delete failure) and `AssignTaqnyatTemplatePopup.jsx:143` (`fallbackMessage: 'taqnyat.saved'` on a save failure). **Verify and fix to `taqnyat.syncFailed` / `taqnyat.deleteFailed` / `taqnyat.saveFailed`.**
-2. **RBAC inconsistency between `permissions.js` matrix and route gates** — `permissions.js:114, 130` grants `ADMIN` and `SUPER_ADMIN` `FULL` on `taqnyat_templates`, but `routes.js:46, 53, 66` apply `superAdminOnly` (not `requirePageAccess(..., "create"/"delete")`). An `ADMIN` (non-super) would be blocked from create/sync/delete despite having FULL in the matrix. **The route-file comment at line 14-19 documents this as intentional ("super-admin only — Meta upstream call" / "strips template from every host's wizard immediately") — but the matrix should reflect this so usePageAccess on the frontend doesn't show the buttons enabled for ADMIN.** Either tighten the matrix entries to `EDIT` for ADMIN and update RBAC tests, or relax the routes to `requirePageAccess` and accept the regular-admin can hit Meta. Pick one and align both sides.
+2. **RBAC inconsistency between `permissions.js` matrix and route gates** — `permissions.js:114, 130` grants `ADMIN` and `SUPER_ADMIN` `FULL` on `taqnyat_templates`, but `routes.js:46, 53, 66` apply `superAdminOnly`. **Resolution (locked decision #2 — option b):** relax routes to `requirePageAccess(TAQNYAT_TEMPLATES, "create"/"delete")` so the matrix becomes the single source of truth. Regular admins gain the ability to hit Meta upstream — accepted trade-off. Implementation in A.8.
 3. **`TaqnyatTemplatesTable.jsx:67-70`** — `handleAssignFromRow` does `templates.find((tpl) => tpl._id === row.id)`. If the `Table` component were ever to mutate `id` (e.g. changing the `tableData.id` shape), the popup would receive the row's flattened shape (which lacks `varMapping`, `_id`, `sortOrder`) and the Assign form would silently drop those fields. Add a runtime assertion: if the lookup returns undefined, show a toast and bail out, instead of falling back to `row` which is the lossy shape.
 4. **`taqnyat-templates.service.js:317-323`** — `isAlreadyGone` regex matches against `result.error` strings — string-matching upstream errors is fragile. The list of phrases (`/not[\s_]?found|already[\s_]?deleted|does\s?not\s?exist/i`) covers what's been observed in practice but Meta wording can drift. Consider also matching upstream HTTP status code (`result.errorCode === 404`) when the infrastructure layer surfaces it.
 5. **Mobile `StepFour.js` query has no `enabled: !!token` gate** — the create-event flow is auth-gated upstream, so this is unlikely to fire unauth, but the rest of the mobile codebase uniformly gates queries on token. After §4.3's hook extraction, gate the new hook explicitly.
-6. **`syncFromTaqnyat`** — orphan soft-delete uses `removedFromMeta: true`. If Meta returns an empty list due to an upstream outage, this would soft-delete every cached template in one shot and the host wizard would go empty until the next successful sync. Worth a defensive check: skip the orphan pass when `upstream.length === 0` (could mean "really empty" or "outage" — but soft-deleting all in the second case is destructive). Discuss with team before changing.
+6. **`syncFromTaqnyat`** — orphan soft-delete uses `removedFromMeta: true`. If Meta returns an empty list due to an upstream outage, this would soft-delete every cached template. **Resolution (locked decision #3):** add a defensive guard — skip the orphan pass when `upstream.length === 0`. Implementation in A.11.
 
 ---
 
@@ -307,16 +320,17 @@ Backend canonical shape (verified in `taqnyat-templates.controller.js:20, 29, 46
 Apply changes in this order. Each item ends with a checkbox the agent will tick during Phase 2.
 
 ### 7.A Backend
-- [ ] **A.1** Create `labbe-backend-/src/modules/taqnyat-templates/taqnyat-templates.validation.js` with `createTemplateSchema` and `assignMappingSchema` per §2.6.
-- [ ] **A.2** Wire `validate(createTemplateSchema)` on `POST /admin/taqnyat-templates` (routes.js:53-57) and `validate(assignMappingSchema)` on `PATCH /admin/taqnyat-templates/:id` (routes.js:58-63).
-- [ ] **A.3** In `taqnyat-templates.service.js:232-296` (`createUpstreamTemplate`), remove the inline name/category/bodyText validation now that Joi enforces it. Keep only `buildComponents`'s placeholder-vs-bodyExamples invariant (Joi can't express "examples count must equal unique placeholder count").
-- [ ] **A.4** Replace `throw new Error(...)` in `service.js:28, 253, 322` with `throw new AppError(message, 502, 'TAQNYAT_UPSTREAM_FAILED')` (import from `shared/errors`). (file:line)
+- [ ] **A.1** Create `labbe-backend-/src/modules/taqnyat-templates/taqnyat-templates.validation.js` with **Zod** `createTemplateSchema` and `assignMappingSchema` per §2.6.
+- [ ] **A.2** Wire `validateZod(createTemplateSchema)` on `POST /admin/taqnyat-templates` (routes.js:53-57) and `validateZod(assignMappingSchema)` on `PATCH /admin/taqnyat-templates/:id` (routes.js:58-63). Import `validateZod` from `src/modules/events/events.validation.js:373` (or wherever the canonical export lives — verify path before wiring).
+- [ ] **A.3** In `taqnyat-templates.service.js:232-296` (`createUpstreamTemplate`), remove the inline name/category/bodyText validation now that Zod enforces it. Keep only `buildComponents`'s placeholder-vs-bodyExamples count invariant (Zod can't express "examples count must equal unique placeholder count").
+- [ ] **A.4** Replace `throw new Error(...)` in `service.js:28, 253, 322` with `throw new AppError(message, 502, 'TAQNYAT_UPSTREAM_FAILED')` (import from `shared/errors`).
 - [ ] **A.5** Replace the three `try { logAudit(...) } catch (_) {}` blocks (`service.js:96-98, 180-182, 291-293, 327-341`) with calls that route the failure to `logger.warn('taqnyat audit log failed', { err })` from `shared/utils/logger`.
 - [ ] **A.6** Add `@swagger` JSDoc blocks above each route in `taqnyat-templates.routes.js`. Tag: `TaqnyatTemplates`. Reference component schemas added in A.7.
 - [ ] **A.7** Add `TaqnyatTemplate`, `VarMappingEntry`, `TaqnyatTemplateCreateRequest`, `TaqnyatTemplateAssignRequest` to `config/swagger.js` `components.schemas`.
-- [ ] **A.8** (Optional, after team sign-off on §6.2) — choose and apply the RBAC alignment: either tighten the matrix in `permissions.js` so non-super ADMIN doesn't see create/delete buttons, or relax `superAdminOnly` to `requirePageAccess(TAQNYAT_TEMPLATES, "create"/"delete")` on routes #3, #4, #6. Update `usePageAccess` consumers on web accordingly.
-- [ ] **A.9** Add a rate limiter to the three Meta-write routes (#3 sync, #4 create, #6 delete). Reuse `authLimiter` or introduce `metaWriteLimiter` (5/hour per user) in `shared/middleware/rateLimiter.js`.
+- [ ] **A.8** **RBAC alignment (locked option b):** Replace `superAdminOnly` with `requirePageAccess(TAQNYAT_TEMPLATES, "create")` on routes #3 (sync), #4 (create), and `requirePageAccess(TAQNYAT_TEMPLATES, "delete")` on route #6 (delete). Update the route-file header comment to reflect that admin-with-FULL can now hit Meta upstream. Verify `usePageAccess('taqnyat_templates')` on web already gates the buttons correctly (no matrix change needed since matrix already grants ADMIN FULL).
+- [ ] **A.9** ~~Rate limiter~~ — **skipped per locked decision #4**.
 - [ ] **A.10** Comment hygiene pass on backend: 12 markers to remove per §2.7. Preserve "why" comments in service (preserve-admin-fields, soft-delete invariant, isAlreadyGone matrix) and model.
+- [ ] **A.11** **Sync orphan-deletion safety (locked decision #3):** In `taqnyat-templates.service.js` `syncFromTaqnyat`, before the orphan-soft-delete pass, add `if (upstream.length === 0) { logger.warn('taqnyat sync returned empty list — skipping orphan pass to avoid mass soft-delete'); return { ... }; }`. Return the same shape callers expect, with a clear count of `0` orphaned. Add a one-line comment explaining the *why* (outage protection).
 
 ### 7.B Web
 - [ ] **B.1** Replace fallback chains in `useTaqnyatTemplates`-consuming files:
@@ -324,7 +338,7 @@ Apply changes in this order. Each item ends with a checkbox the agent will tick 
   - `TaqnyatTemplatesTable.jsx:37` → `data?.data?.templates || []`
   - `TaqnyatTemplatesTable.jsx:43` → `res?.data?.count || 0`
   - `StepFour.js:55` → `data?.data?.templates || []`
-  - `TaqnyatTemplatesTable.jsx:38` → `catData?.data?.categories || []` (ONLY after verifying the templates-module hook returns this shape).
+  - `TaqnyatTemplatesTable.jsx:38` → `catData?.data?.categories || []` (locked decision #5 — verified still present 2026-05-09; before changing, grep `useTemplateCategories` to confirm response shape is `data.data.categories`. If it isn't, fix the source hook instead of patching the consumer.)
 - [ ] **B.2** Add error branches:
   - `TaqnyatTemplatesStats.jsx` after isLoading check
   - `TaqnyatTemplatesTable.jsx` after isLoading check
@@ -408,7 +422,7 @@ For each implementation item, the rollback is a `git revert` of its commit. The 
 - One new web util file (`_utils/detectPlaceholders.js`).
 - Edits to existing routes/controller/service/model/page/component/hook/service files.
 
-No DB schema changes. No migration risk. Reverting the validation-middleware mount immediately restores the old inline validation path because the inline service-level checks remain (per A.3 we trim those AFTER A.2 is verified — keep them until then to enable easy rollback).
+No DB schema changes. No migration risk. Reverting the `validateZod` middleware mount immediately restores the old inline validation path because the inline service-level checks remain (per A.3 we trim those AFTER A.2 is verified — keep them until then to enable easy rollback).
 
 ---
 

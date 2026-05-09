@@ -39,9 +39,9 @@ const StepFive = () => {
 
   const REPLY_TABS = useMemo(
     () => [
-      { key: "onAttend", label: t("guestReplies.tabs.onAttend"), legacy: "attendanceAutoReply" },
-      { key: "onExpected", label: t("guestReplies.tabs.onExpected"), legacy: "expectedAttendanceAutoReply" },
-      { key: "onAbsent", label: t("guestReplies.tabs.onAbsent"), legacy: "absenceAutoReply" },
+      { key: "onAttend", label: t("guestReplies.tabs.onAttend") },
+      { key: "onExpected", label: t("guestReplies.tabs.onExpected") },
+      { key: "onAbsent", label: t("guestReplies.tabs.onAbsent") },
     ],
     [t]
   );
@@ -54,15 +54,12 @@ const StepFive = () => {
   useEffect(() => {
     if (!guestReplies?.onAttend) {
       setValue("guestReplies.onAttend", AUTO_REPLIES_DEFAULTS.onAttend, { shouldDirty: false });
-      setValue("attendanceAutoReply", AUTO_REPLIES_DEFAULTS.onAttend, { shouldDirty: false });
     }
     if (!guestReplies?.onAbsent) {
       setValue("guestReplies.onAbsent", AUTO_REPLIES_DEFAULTS.onAbsent, { shouldDirty: false });
-      setValue("absenceAutoReply", AUTO_REPLIES_DEFAULTS.onAbsent, { shouldDirty: false });
     }
     if (!guestReplies?.onExpected) {
       setValue("guestReplies.onExpected", AUTO_REPLIES_DEFAULTS.onExpected, { shouldDirty: false });
-      setValue("expectedAttendanceAutoReply", AUTO_REPLIES_DEFAULTS.onExpected, { shouldDirty: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -73,7 +70,6 @@ const StepFive = () => {
   const handleReplyChange = (text) => {
     if (!activeReplyMeta) return;
     setValue(`guestReplies.${activeReplyMeta.key}`, text, { shouldDirty: true });
-    setValue(activeReplyMeta.legacy, text, { shouldDirty: true });
   };
 
   const handleInvitationChange = (text) => {

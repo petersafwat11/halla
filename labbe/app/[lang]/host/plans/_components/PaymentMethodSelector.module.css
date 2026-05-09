@@ -1,74 +1,168 @@
 .wrap {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 1.4rem;
   width: 100%;
 }
 
+/* ---------- Tabs ---------- */
 .tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
 }
 
 .tab {
-  flex: 1 1 30%;
-  min-width: 110px;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fff;
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
   justify-content: center;
-  font-size: 14px;
-  color: #333;
-  transition: border-color 120ms, background 120ms;
+  gap: 0.4rem;
+  padding: 1rem 0.8rem;
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-12);
+  background: var(--color-natural-50);
+  cursor: pointer;
+  font-family: var(--font-ar);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-natural-500);
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
 
 .tab:hover {
-  border-color: #888;
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-700);
 }
 
 .tabActive {
-  border-color: #2e7d32;
-  background: #e8f5e9;
-  color: #1b5e20;
-  font-weight: 600;
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50);
+  color: var(--color-primary-800);
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.12);
 }
 
 .icon {
-  font-size: 18px;
+  font-size: 2rem;
+  color: var(--color-primary-600);
 }
 
+.tab:not(.tabActive) .icon {
+  color: var(--color-natural-400);
+}
+
+.tabLabel {
+  white-space: nowrap;
+}
+
+/* ---------- Fields ---------- */
 .fields {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-family: var(--font-ar);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-natural-500);
 }
 
 .row {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
 }
 
+.fieldGrow { min-width: 0; }
+
 .input {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
+  width: 100%;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--form-border);
+  border-radius: var(--radius-12);
+  background: var(--form-bg);
+  font-family: var(--font-ar);
+  font-size: 1.3rem;
+  color: var(--form-fg-filled);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.input::placeholder {
+  color: var(--form-fg);
 }
 
 .input:focus {
-  border-color: #2e7d32;
   outline: none;
+  border-color: var(--form-border-focused);
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.12);
 }
 
+/* Card number with leading icon */
+.inputWithIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1.1rem;
+  font-size: 1.4rem;
+  color: var(--color-natural-350);
+  pointer-events: none;
+}
+
+[dir="rtl"] .inputIcon {
+  left: auto;
+  right: 1.1rem;
+}
+
+.inputWithIconField {
+  padding-left: 3.4rem;
+}
+
+[dir="rtl"] .inputWithIconField {
+  padding-left: 1.1rem;
+  padding-right: 3.4rem;
+}
+
+/* Inline note */
 .note {
-  margin: 0;
-  font-size: 13px;
-  color: #555;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.2rem 0 0;
+  padding: 0.7rem 1rem;
+  background: var(--color-natural-150);
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-8);
+  font-family: var(--font-ar);
+  font-size: 1.15rem;
+  color: var(--color-natural-450);
+  line-height: 1.5;
+}
+
+.noteIcon {
+  font-size: 1.2rem;
+  color: var(--color-primary-500);
+  flex-shrink: 0;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 480px) {
+  .tab {
+    padding: 0.85rem 0.5rem;
+    font-size: 1.1rem;
+  }
+  .icon { font-size: 1.7rem; }
+  .row { grid-template-columns: 1fr 1fr; }
+  .row .field:first-child { grid-column: 1 / -1; }
 }

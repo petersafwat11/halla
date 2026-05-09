@@ -19,6 +19,7 @@ import PlanSummaryCard from "../../components/plans/PlanSummaryCard";
 import DiscountCodeCard from "../../components/plans/DiscountCodeCard";
 import PaymentSummaryCard from "../../components/plans/PaymentSummaryCard";
 import AddonsSummaryCard from "../../components/plans/AddonsSummaryCard";
+import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const buildCheckoutAddons = (items = []) =>
   items.map((item) => {
@@ -126,6 +127,8 @@ const PlansSummaryScreen = () => {
     }
   };
 
+  const isProcessing = checkoutMutation.isPending;
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
@@ -136,6 +139,10 @@ const PlansSummaryScreen = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
+          <View style={styles.subtitleWrap}>
+            <Text style={styles.subtitle}>{t("summary.subtitle")}</Text>
+          </View>
+
           <PlanSummaryCard
             selectedPlan={selectedPlan}
             billingType={billingType}
@@ -163,40 +170,63 @@ const PlansSummaryScreen = () => {
             addonTotal={addonTotal}
           />
 
-          <Text style={styles.termsNotice}>{t("summary.termsNotice")}</Text>
+          <View style={styles.secureRow}>
+            <Ionicons
+              name="lock-closed"
+              size={14}
+              color={colors.primary[500]}
+            />
+            <Text style={styles.termsNotice}>{t("summary.termsNotice")}</Text>
+          </View>
         </ScrollView>
 
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity
-            style={[
-              styles.proceedButton,
-              checkoutMutation.isPending && styles.proceedButtonDisabled,
-            ]}
-            onPress={handlePayment}
-            disabled={checkoutMutation.isPending}
-            activeOpacity={0.8}
-          >
-            {checkoutMutation.isPending ? (
-              <>
-                <ActivityIndicator size="small" color="#FFF" />
-                <Text style={styles.proceedButtonText}>
-                  {t("summary.activating")}
+        <SafeAreaView edges={["bottom"]} style={styles.footerSafe}>
+          <View style={styles.footer}>
+            <View style={styles.footerTotal}>
+              <Text style={styles.footerTotalLabel}>
+                {t("summary.paymentSummary.total")}
+              </Text>
+              <View style={styles.footerTotalAmountRow}>
+                <Text style={styles.footerTotalAmount}>
+                  {finalTotal.toFixed(0)}
                 </Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.proceedButtonText}>
-                  {t("summary.activateButton")}
+                <Text style={styles.footerTotalCurrency}>
+                  {t("summary.currency")}
                 </Text>
-                <Ionicons
-                  name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
-                  size={20}
-                  color="#FFF"
-                />
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.proceedButton,
+                isProcessing && styles.proceedButtonDisabled,
+              ]}
+              onPress={handlePayment}
+              disabled={isProcessing}
+              activeOpacity={0.85}
+            >
+              {isProcessing ? (
+                <>
+                  <ActivityIndicator size="small" color={colors.natural[50]} />
+                  <Text style={styles.proceedButtonText}>
+                    {t("summary.activating")}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.proceedButtonText}>
+                    {t("summary.activateButton")}
+                  </Text>
+                  <Ionicons
+                    name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
+                    size={18}
+                    color={colors.natural[50]}
+                  />
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </View>
     </SafeAreaView>
   );
@@ -205,58 +235,115 @@ const PlansSummaryScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#C28E5C",
+    backgroundColor: colors.primary[500],
   },
   container: {
     flex: 1,
-    backgroundColor: "#F9F4EF",
+    backgroundColor: colors.primary[50],
   },
   content: {
     flex: 1,
-    backgroundColor: "#F9F4EF",
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 100,
+    padding: spacing[20],
+    paddingBottom: spacing[100] + spacing[16],
+  },
+  subtitleWrap: {
+    alignItems: "center",
+    marginBottom: spacing[16],
+  },
+  subtitle: {
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.body.small,
+    color: colors.natural[450],
+    textAlign: "center",
+  },
+  secureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing[4],
+    marginTop: spacing[8],
+    paddingHorizontal: spacing[12],
   },
   termsNotice: {
     fontFamily: "Cairo_400Regular",
-    fontSize: 11,
-    color: "#656565",
+    fontSize: typography.fontSize.label.small,
+    color: colors.natural[450],
     textAlign: "center",
     lineHeight: 18,
-    paddingHorizontal: 20,
+    flexShrink: 1,
   },
-  bottomContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#FFF",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+
+  /* ---------- Footer ---------- */
+  footerSafe: {
+    backgroundColor: colors.natural[50],
+  },
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing[12],
+    paddingHorizontal: spacing[20],
+    paddingVertical: spacing[12],
+    backgroundColor: colors.natural[50],
     borderTopWidth: 1,
-    borderTopColor: "#E5E7EA",
+    borderTopColor: colors.natural[200],
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  footerTotal: {
+    flexShrink: 1,
+  },
+  footerTotalLabel: {
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.label.small,
+    color: colors.natural[450],
+  },
+  footerTotalAmountRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: spacing[4],
+  },
+  footerTotalAmount: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 22,
+    color: colors.primary[700],
+    letterSpacing: -0.3,
+  },
+  footerTotalCurrency: {
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.body.small,
+    color: colors.primary[600],
   },
   proceedButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    backgroundColor: "#C28E5C",
-    paddingVertical: 14,
-    borderRadius: 10,
+    gap: spacing[8],
+    backgroundColor: colors.primary[500],
+    paddingVertical: spacing[12] + 2,
+    paddingHorizontal: spacing[20],
+    borderRadius: borderRadius[12],
+    minWidth: 160,
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  proceedButtonDisabled: { backgroundColor: "#E5E7EA" },
+  proceedButtonDisabled: {
+    backgroundColor: colors.primary[200],
+    shadowOpacity: 0,
+    elevation: 0,
+  },
   proceedButtonText: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 16,
-    color: "#FFF",
+    fontSize: typography.fontSize.body.medium,
+    color: colors.natural[50],
   },
 });
 

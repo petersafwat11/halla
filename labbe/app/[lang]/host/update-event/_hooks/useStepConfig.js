@@ -32,6 +32,12 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
               eventRaw?.guestLimit === -1 ||
               subscriptionInfo?.isGuestUnlimited === true ||
               false,
+            // Pool-plan effective cap is the *current* invitesRemaining on the
+            // subscription. Forwarded so StepTwo can show the real ceiling
+            // instead of ∞ when editing a pool-plan event.
+            isPoolPlan: subscriptionInfo?.isPoolPlan === true,
+            invitePool: subscriptionInfo?.invitePool ?? null,
+            invitesRemaining: subscriptionInfo?.invitesRemaining ?? null,
           },
           allowAddOnly: isEventLive,
         },

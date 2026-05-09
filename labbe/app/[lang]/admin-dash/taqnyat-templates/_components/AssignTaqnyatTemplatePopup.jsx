@@ -13,25 +13,30 @@ import Button from "@/ui/commen/button/Button";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import ToggelInput from "@/ui/commen/inputs/toggelInput/ToggelInput";
 import SearchableSelect from "@/ui/commen/inputs/SearchableSelect/SearchableSelect";
+import { detectPlaceholders } from "../_utils/detectPlaceholders";
 import styles from "./AssignTaqnyatTemplatePopup.module.css";
 
-const SOURCE_KEY_OPTIONS = [
-  { value: "guest.name", label: "guest.name (الضيف)" },
-  { value: "eventDetails.title", label: "eventDetails.title (عنوان الحدث)" },
-  { value: "eventDetails.dateFormatted", label: "eventDetails.dateFormatted (التاريخ)" },
-  { value: "eventDetails.time", label: "eventDetails.time (الوقت)" },
-  { value: "eventDetails.location.address", label: "eventDetails.location.address (العنوان)" },
-  { value: "host.name", label: "host.name (المضيف)" },
-  { value: "hostNote", label: "hostNote (ملاحظة المضيف)" },
-  { value: "invitationMessage", label: "invitationMessage (رسالة الدعوة)" },
+const SOURCE_KEYS = [
+  "guest.name",
+  "eventDetails.title",
+  "eventDetails.dateFormatted",
+  "eventDetails.time",
+  "eventDetails.location.address",
+  "host.name",
+  "hostNote",
+  "invitationMessage",
 ];
 
-function detectPlaceholders(bodyText) {
-  if (!bodyText) return [];
-  const matches = bodyText.match(/\{\{\d+\}\}/g) || [];
-  const seen = new Set();
-  return matches.filter((m) => (seen.has(m) ? false : seen.add(m)));
-}
+const SOURCE_KEY_LABEL_KEY = {
+  "guest.name": "taqnyat.sourceKeys.guest_name",
+  "eventDetails.title": "taqnyat.sourceKeys.event_title",
+  "eventDetails.dateFormatted": "taqnyat.sourceKeys.event_dateFormatted",
+  "eventDetails.time": "taqnyat.sourceKeys.event_time",
+  "eventDetails.location.address": "taqnyat.sourceKeys.event_location",
+  "host.name": "taqnyat.sourceKeys.host_name",
+  hostNote: "taqnyat.sourceKeys.hostNote",
+  invitationMessage: "taqnyat.sourceKeys.invitationMessage",
+};
 
 function VarMappingField({ name, index, control }) {
   const { t } = useTranslation("admin");
@@ -49,9 +54,9 @@ function VarMappingField({ name, index, control }) {
           className={styles.mappingSelect}
         >
           <option value="">— {t("taqnyat.pickSource", "اختر المصدر")} —</option>
-          {SOURCE_KEY_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
+          {SOURCE_KEYS.map((key) => (
+            <option key={key} value={key}>
+              {key} — {t(SOURCE_KEY_LABEL_KEY[key], key)}
             </option>
           ))}
         </select>
@@ -140,7 +145,7 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
       toastUtils.success(t("taqnyat.saved", "تم الحفظ بنجاح"));
       onClose();
     } catch (err) {
-      handleError(err, t, { fallbackMessage: "taqnyat.saved" });
+      handleError(err, t, { fallbackMessage: "taqnyat.saveFailed" });
     }
   };
 

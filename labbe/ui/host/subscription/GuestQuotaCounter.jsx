@@ -14,16 +14,25 @@ function GuestQuotaCounter({ currentGuests = 0, subscription }) {
   const isArabic = i18n.language === "ar" || currentLocale === "ar";
 
   // Normalized subscription shape from backend:
-  // { guestLimit, isGuestUnlimited, invitePool, invitesRemaining }
-  const guestLimit = subscription?.guestLimit ?? 0;
-  const isUnlimited = subscription?.isGuestUnlimited ?? false;
+  // { guestLimit, isGuestUnlimited, isPoolPlan, invitePool, invitesRemaining }
+  // For pool plans the effective per-event cap is `invitesRemaining` — pool plans
+  // have no per-event cap but the global pool constrains how many guests can be
+  // added to THIS event right now. ∞ is reserved for the platform-admin / unlimited
+  // plan bypass where there is no cap at all.
+  const isPoolPlan = subscription?.isPoolPlan === true;
+  const invitesRemaining = Number.isFinite(subscription?.invitesRemaining)
+    ? subscription.invitesRemaining
+    : null;
+  const rawGuestLimit = subscription?.guestLimit ?? 0;
+  const isUnlimited = (subscription?.isGuestUnlimited ?? false) && !isPoolPlan;
+  const effectiveLimit = isPoolPlan ? (invitesRemaining ?? 0) : rawGuestLimit;
   const hasSubscription = !!subscription;
 
   // Calculate percentage for progress bar
   const percentage = isUnlimited
     ? 0
-    : guestLimit > 0
-    ? Math.min(100, Math.round((currentGuests / guestLimit) * 100))
+    : effectiveLimit > 0
+    ? Math.min(100, Math.round((currentGuests / effectiveLimit) * 100))
     : 0;
 
   // Determine status color
@@ -35,8 +44,8 @@ function GuestQuotaCounter({ currentGuests = 0, subscription }) {
   };
 
   const statusColor = getStatusColor();
-  const remaining = isUnlimited ? "∞" : Math.max(0, guestLimit - currentGuests);
-  const isLimitReached = !isUnlimited && currentGuests >= guestLimit;
+  const remaining = isUnlimited ? "∞" : Math.max(0, effectiveLimit - currentGuests);
+  const isLimitReached = !isUnlimited && currentGuests >= effectiveLimit;
 
   if (!hasSubscription) {
     return (
@@ -78,7 +87,7 @@ function GuestQuotaCounter({ currentGuests = 0, subscription }) {
             <span>∞</span>
           ) : (
             <span>
-              {currentGuests}/{guestLimit}
+              {currentGuests}/{effectiveLimit}
             </span>
           )}
         </div>

@@ -12,14 +12,8 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
+import { detectPlaceholders } from "../_utils/detectPlaceholders";
 import styles from "./CreateTaqnyatTemplatePopup.module.css";
-
-function detectPlaceholders(bodyText) {
-  if (!bodyText) return [];
-  const matches = bodyText.match(/\{\{\d+\}\}/g) || [];
-  const seen = new Set();
-  return matches.filter((m) => (seen.has(m) ? false : seen.add(m)));
-}
 
 export default function CreateTaqnyatTemplatePopup({ onClose }) {
   const { t } = useTranslation("admin");

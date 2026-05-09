@@ -7,9 +7,18 @@ import { Svg, Path } from "react-native-svg";
  * Shows guest usage against subscription limits with progress bar
  */
 const GuestQuotaCounter = ({ currentGuests = 0, subscription }) => {
-  // Backend /subscription-info shape: { guestLimit, isGuestUnlimited, ... }
-  const guestLimit = subscription?.guestLimit ?? 0;
-  const isUnlimited = subscription?.isGuestUnlimited === true;
+  // Backend shape: { guestLimit, isGuestUnlimited, isPoolPlan, invitePool, invitesRemaining }
+  // For pool plans the effective per-event cap is `invitesRemaining` — pool plans
+  // have no per-event cap but the global pool constrains how many guests can be
+  // added to THIS event right now. ∞ is reserved for the platform-admin / unlimited
+  // plan bypass.
+  const isPoolPlan = subscription?.isPoolPlan === true;
+  const invitesRemaining = Number.isFinite(subscription?.invitesRemaining)
+    ? subscription.invitesRemaining
+    : null;
+  const rawGuestLimit = subscription?.guestLimit ?? 0;
+  const isUnlimited = subscription?.isGuestUnlimited === true && !isPoolPlan;
+  const guestLimit = isPoolPlan ? (invitesRemaining ?? 0) : rawGuestLimit;
   const hasSubscription = !!subscription;
 
   // Calculate percentage for progress bar

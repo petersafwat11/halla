@@ -1,15 +1,26 @@
 /**
- * Taqnyat API Client
- * Transport layer for Taqnyat SMS & WhatsApp APIs
+ * Taqnyat API client.
+ * Transport for SMS (`/v1/messages`) and WhatsApp (`/wa/v2`) per the
+ * upstream Postman collection (taqnyat-sa/taqnyat-sms · y0s9qd0).
+ *
+ * Response shapes the WA endpoints return (verified against dev.taqnyat.sa):
+ *   - Template send → { type: "whatsapp", statuses: [{ message_id, recipient }] }
+ *   - Free-form text/image send → { type, statuses: { message_id, recipient } }  // singleton object, NOT array
+ *   - Templates list (sync=1) → { waba_templates: [...] }
+ *   - Create template → { id, category, statuses: "PENDING" }                    // statuses is a string here
+ *   - Upload media → { id }
+ *   - Delete → { message: "201", reason: "success" }                              // sometimes HTTP 400 with same body
+ *
+ * Any 200 response that does NOT yield a `message_id` is treated as a
+ * failure — Taqnyat occasionally returns 200 with an unfamiliar error
+ * code that the legacy success path swallowed silently.
+ *
  * @module infrastructure/taqnyat
  */
 
 const axios = require('axios');
 const { normalizePhoneNumber } = require('../shared/utils/phone');
-
-// ============================================
-// CONFIGURATION
-// ============================================
+const logger = require('../shared/utils/logger');
 
 const TAQNYAT_CONFIG = {
   baseUrl: process.env.TAQNYAT_BASE_URL || 'https://api.taqnyat.sa',
@@ -18,7 +29,6 @@ const TAQNYAT_CONFIG = {
   senderName: process.env.TAQNYAT_SENDER_NAME || 'HalaaApp',
 };
 
-// SMS client
 const smsClient = axios.create({
   baseURL: TAQNYAT_CONFIG.baseUrl,
   headers: {
@@ -28,7 +38,6 @@ const smsClient = axios.create({
   timeout: 30000,
 });
 
-// WhatsApp client (separate base URL, same API key)
 // 60s timeout because Meta-backed create calls regularly take >30s.
 const waClient = axios.create({
   baseURL: TAQNYAT_CONFIG.waBaseUrl,
@@ -39,15 +48,12 @@ const waClient = axios.create({
   timeout: 60000,
 });
 
-// ============================================
-// ERROR HANDLING
-// ============================================
-
 const TAQNYAT_ERRORS = {
   100: 'Invalid or missing parameter',
   401: 'Invalid API token',
   402: 'Invalid recipient or not allowed to send',
   429: 'Rate limit exceeded',
+  132001: 'Template name does not exist',
 };
 
 const handleWaError = (error) => {
@@ -63,15 +69,21 @@ const handleWaError = (error) => {
 
 /**
  * Taqnyat sometimes returns HTTP 200 with an error body like:
- * { "message": "402", "reason": "Invalid recipient" }
- * This helper detects that and returns a proper error object.
+ *   { "message": "402", "reason": "Invalid recipient" }
+ * Anything where `message` is a non-2xx numeric string is treated as an
+ * error — the spec only documents 2xx success codes inline-with-payload,
+ * so any unrecognised numeric `message` is upstream telling us it failed.
  */
 const checkWaResponseForError = (data) => {
   const code = data?.message;
-  if (code && TAQNYAT_ERRORS[code]) {
+  if (!code) return null;
+  if (TAQNYAT_ERRORS[code]) {
+    return { success: false, error: TAQNYAT_ERRORS[code], code, details: data.reason };
+  }
+  if (/^\d+$/.test(String(code)) && !/^2\d\d$/.test(String(code))) {
     return {
       success: false,
-      error: TAQNYAT_ERRORS[code],
+      error: data.reason || `Taqnyat error code ${code}`,
       code,
       details: data.reason,
     };
@@ -79,8 +91,42 @@ const checkWaResponseForError = (data) => {
   return null;
 };
 
+/**
+ * Pull the `message_id` out of the WA send response. The spec returns
+ * `statuses` as an array for template sends and as a singleton object
+ * for free-form text/image sends.
+ */
+const extractWaMessageId = (data) => {
+  if (!data) return null;
+  if (Array.isArray(data.statuses)) return data.statuses[0]?.message_id || null;
+  if (data.statuses && typeof data.statuses === 'object') return data.statuses.message_id || null;
+  return data.messages?.[0]?.id || null;
+};
+
+/**
+ * After a 200 response, require either a recognized error envelope or a
+ * concrete `message_id`. A 200 with neither is "soft failure" — Taqnyat
+ * accepted the request but Meta did not queue a message.
+ */
+const finalizeWaResult = (data, context) => {
+  const err = checkWaResponseForError(data);
+  if (err) return err;
+
+  const messageId = extractWaMessageId(data);
+  if (!messageId) {
+    logger.warn('[taqnyat] WA 200 response had no message_id', { context, raw: data });
+    return {
+      success: false,
+      error: 'Taqnyat accepted the request but returned no message_id',
+      code: 'NO_MESSAGE_ID',
+      details: data,
+    };
+  }
+  return { success: true, messageId, status: 'sent' };
+};
+
 // ============================================
-// SMS METHODS
+// SMS
 // ============================================
 
 const sendSMS = async (recipient, body, options = {}) => {
@@ -94,10 +140,19 @@ const sendSMS = async (recipient, body, options = {}) => {
   };
 
   const response = await smsClient.post('/v1/messages', payload);
+  // Spec: `{ statusCode, messageId, cost, currency, totalCount, msgLength, accepted, rejected }`
+  const data = response.data || {};
+  if (!data.messageId) {
+    logger.warn('[taqnyat] SMS response had no messageId', { raw: data });
+    return { success: false, error: 'Taqnyat returned no messageId', code: 'NO_MESSAGE_ID', details: data };
+  }
   return {
     success: true,
-    messageId: response.data.messageId,
-    status: response.data.status || 'sent',
+    messageId: data.messageId,
+    status: 'sent',
+    statusCode: data.statusCode,
+    cost: data.cost,
+    currency: data.currency,
   };
 };
 
@@ -113,73 +168,66 @@ const sendBulkSMS = async (recipients, body, options = {}) => {
   };
 
   const response = await smsClient.post('/v1/messages', payload);
+  const data = response.data || {};
+  if (!data.messageId) {
+    logger.warn('[taqnyat] bulk SMS response had no messageId', { raw: data });
+    return { success: false, error: 'Taqnyat returned no messageId', code: 'NO_MESSAGE_ID', details: data };
+  }
   return {
     success: true,
-    messageId: response.data.messageId,
+    messageId: data.messageId,
     recipientCount: normalizedRecipients.length,
-    status: response.data.status || 'sent',
+    status: 'sent',
+    statusCode: data.statusCode,
+    cost: data.cost,
+    currency: data.currency,
   };
 };
 
 // ============================================
-// WHATSAPP METHODS
+// WHATSAPP
 // ============================================
 
 /**
- * Send WhatsApp template message (text only, no image header)
- * components: top-level array of { type, parameters } objects
+ * Send a WhatsApp template (text-only / no image header).
+ * `components` is the top-level array required by the Taqnyat spec —
+ * `[{ type: "body", parameters: [...] }]`.
  */
 const sendWhatsAppTemplate = async (recipient, templateName, language, components, smsFallback = null) => {
-  if (!TAQNYAT_CONFIG.apiKey) {
-    throw new Error('Taqnyat API key is not configured');
-  }
+  if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
     const payload = {
       to: normalizePhoneNumber(recipient),
       type: 'template',
-      template: {
-        name: templateName,
-        language: { code: language },
-      },
+      template: { name: templateName, language: { code: language } },
     };
-    // Components go at top level (not inside template) per Taqnyat API spec
-    if (components && components.length > 0) {
-      payload.components = components;
-    }
-    // Native SMS failover: if the number has no WhatsApp, Taqnyat sends SMS automatically
-    if (smsFallback) {
-      payload.sms = smsFallback;
-    }
+    if (components && components.length > 0) payload.components = components;
+    // Native SMS failover — Taqnyat dispatches SMS automatically when
+    // the recipient has no WhatsApp capability.
+    if (smsFallback) payload.sms = smsFallback;
 
     const response = await waClient.post('/messages/', payload);
-    const err = checkWaResponseForError(response.data);
-    if (err) return err;
-    return {
-      success: true,
-      messageId: response.data.statuses?.[0]?.message_id || response.data.messages?.[0]?.id,
-      status: 'sent',
-    };
+    return finalizeWaResult(response.data, { templateName, recipient });
   } catch (error) {
     return handleWaError(error);
   }
 };
 
 /**
- * Send WhatsApp template with image header + body params
- * Used for event invitations with the card image.
- * smsFallback: { sender, body } — Taqnyat sends SMS automatically if recipient has no WhatsApp
+ * Send a WhatsApp template with an image header + body params.
  */
-const sendWhatsAppTemplateWithImage = async (recipient, templateName, language, imageUrl, bodyParams, smsFallback = null) => {
-  if (!TAQNYAT_CONFIG.apiKey) {
-    throw new Error('Taqnyat API key is not configured');
-  }
+const sendWhatsAppTemplateWithImage = async (
+  recipient,
+  templateName,
+  language,
+  imageUrl,
+  bodyParams,
+  smsFallback = null
+) => {
+  if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
-    // Build top-level components array per Taqnyat API spec
     const components = [
-      {
-        type: 'header',
-        parameters: [{ type: 'image', image: { link: imageUrl } }],
-      },
+      { type: 'header', parameters: [{ type: 'image', image: { link: imageUrl } }] },
     ];
     if (bodyParams && bodyParams.length > 0) {
       components.push({
@@ -191,40 +239,21 @@ const sendWhatsAppTemplateWithImage = async (recipient, templateName, language, 
     const payload = {
       to: normalizePhoneNumber(recipient),
       type: 'template',
-      template: {
-        name: templateName,
-        language: { code: language },
-      },
-      // components at top level — NOT inside template{}
+      template: { name: templateName, language: { code: language } },
       components,
     };
-
-    // Native SMS failover: Taqnyat sends SMS automatically if recipient has no WhatsApp.
-    // The delivery webhook will return status: 'no_capability' for the WA leg.
-    if (smsFallback) {
-      payload.sms = smsFallback;
-    }
+    if (smsFallback) payload.sms = smsFallback;
 
     const response = await waClient.post('/messages/', payload);
-    const err = checkWaResponseForError(response.data);
-    if (err) return err;
-    return {
-      success: true,
-      messageId: response.data.statuses?.[0]?.message_id || response.data.messages?.[0]?.id,
-      status: 'sent',
-    };
+    return finalizeWaResult(response.data, { templateName, recipient, imageUrl });
   } catch (error) {
     return handleWaError(error);
   }
 };
 
-/**
- * Send WhatsApp plain text message (conversation/session message, 24hr window only)
- */
+/** Free-form WhatsApp text (24-hr session window only). */
 const sendWhatsAppText = async (recipient, text) => {
-  if (!TAQNYAT_CONFIG.apiKey) {
-    throw new Error('Taqnyat API key is not configured');
-  }
+  if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
     const payload = {
       to: normalizePhoneNumber(recipient),
@@ -232,54 +261,34 @@ const sendWhatsAppText = async (recipient, text) => {
       text: { body: text },
     };
     const response = await waClient.post('/messages/', payload);
-    const err = checkWaResponseForError(response.data);
-    if (err) return err;
-    return {
-      success: true,
-      messageId: response.data.messages?.[0]?.id,
-      status: 'sent',
-    };
+    return finalizeWaResult(response.data, { type: 'text', recipient });
   } catch (error) {
     return handleWaError(error);
   }
 };
 
-/**
- * Send WhatsApp image with caption (conversation message, 24hr window only)
- */
+/** Free-form WhatsApp image with caption (24-hr session window only). */
 const sendWhatsAppImage = async (recipient, imageUrl, caption) => {
-  if (!TAQNYAT_CONFIG.apiKey) {
-    throw new Error('Taqnyat API key is not configured');
-  }
+  if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
     const payload = {
       to: normalizePhoneNumber(recipient),
       type: 'image',
       image: { link: imageUrl, caption },
     };
-
     const response = await waClient.post('/messages/', payload);
-    const err = checkWaResponseForError(response.data);
-    if (err) return err;
-    return {
-      success: true,
-      messageId: response.data.messages?.[0]?.id,
-      status: 'sent',
-    };
+    return finalizeWaResult(response.data, { type: 'image', recipient, imageUrl });
   } catch (error) {
     return handleWaError(error);
   }
 };
 
 /**
- * Upload an image to Taqnyat media store for use as a template header example.
- * Returns { success, mediaId } — mediaId goes into header_handle when creating the template.
- * imageBuffer: Buffer | stream, mimeType: 'image/jpeg' | 'image/png', filename: string
+ * Upload an image to Taqnyat's template-media store.
+ * Returns the media id used as `header_handle` when creating a template.
  */
 const uploadTemplateMedia = async (imageBuffer, mimeType = 'image/jpeg', filename = 'header.jpg') => {
-  if (!TAQNYAT_CONFIG.apiKey) {
-    throw new Error('Taqnyat API key is not configured');
-  }
+  if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
     const FormData = require('form-data');
     const form = new FormData();
@@ -289,40 +298,48 @@ const uploadTemplateMedia = async (imageBuffer, mimeType = 'image/jpeg', filenam
       headers: { ...form.getHeaders() },
     });
 
-    // Taqnyat may return the ID under different keys — check all possibilities
-    const mediaId = response.data.id || response.data.mediaId || response.data.media_id
-      || (Array.isArray(response.data) ? response.data[0]?.id : null);
+    const data = response.data || {};
+    // Spec: `{ id }`. Defensive fallbacks for any provider quirks.
+    const mediaId =
+      data.id ||
+      data.mediaId ||
+      data.media_id ||
+      (Array.isArray(data) ? data[0]?.id : null);
 
-    return {
-      success: true,
-      mediaId,
-      raw: response.data, // expose raw for debugging
-    };
+    if (!mediaId) {
+      logger.warn('[taqnyat] uploadTemplateMedia returned no id', { raw: data });
+      return { success: false, error: 'No media id returned', code: 'NO_MEDIA_ID', raw: data };
+    }
+    return { success: true, mediaId, raw: data };
   } catch (error) {
     return handleWaError(error);
   }
 };
 
 /**
- * Create WhatsApp template and submit to Meta for approval
+ * Submit a WhatsApp template to Meta for approval.
+ * Spec response: `{ id, category, statuses: "PENDING" }`.
  */
 const createTemplate = async (name, category, language, components, options = {}) => {
-  if (!TAQNYAT_CONFIG.apiKey) {
-    throw new Error('Taqnyat API key is not configured');
-  }
+  if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
     const payload = {
       name,
       category,
       language,
-      allow_category_change: options.allowCategoryChange !== false, // default true
+      allow_category_change: options.allowCategoryChange !== false,
       components,
     };
     const response = await waClient.post('/templates/', payload);
+    const data = response.data || {};
+    const err = checkWaResponseForError(data);
+    if (err) return err;
     return {
       success: true,
-      templateId: response.data.id,
-      status: response.data.statuses || response.data.status || 'PENDING',
+      templateId: data.id,
+      // `statuses` is a string here (not an array). Older clients may
+      // also send `status`; preserve both fallbacks.
+      status: (typeof data.statuses === 'string' ? data.statuses : data.status) || 'PENDING',
     };
   } catch (error) {
     return handleWaError(error);
@@ -330,56 +347,37 @@ const createTemplate = async (name, category, language, components, options = {}
 };
 
 /**
- * Get all templates (to check approval status).
- *
- * Taqnyat's GET /wa/v2/templates/ requires a JSON body { sync: 1 } — without
- * it the API returns { message: "401", reason: "No Data" } and silently yields
- * zero templates. `sync: 1` forces a refresh from Meta; `sync: 0` returns the
- * cached list. We use 1 so callers always see the freshest status.
+ * Fetch all templates from Meta via Taqnyat. Without `sync: 1` the API
+ * returns `{ message: "401", reason: "No Data" }` and silently yields no
+ * templates — `sync: 1` forces a fresh pull from Meta.
  */
 const getTemplates = async () => {
-  if (!TAQNYAT_CONFIG.apiKey) {
-    throw new Error('Taqnyat API key is not configured');
-  }
+  if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
     const response = await waClient.request({
       method: 'GET',
       url: '/templates/',
       data: { sync: 1 },
     });
-    const data = response.data;
+    const data = response.data || {};
     const err = checkWaResponseForError(data);
     if (err) return err;
-    // Taqnyat API returns templates under waba_templates
     const templates = data.waba_templates || data.data || (Array.isArray(data) ? data : []);
-    return {
-      success: true,
-      templates,
-    };
+    return { success: true, templates };
   } catch (error) {
     return handleWaError(error);
   }
 };
 
 /**
- * Delete a WhatsApp template upstream on Meta via Taqnyat.
- * Per Taqnyat docs the DELETE accepts a JSON body { name, id }.
- *
- * Quirk: Taqnyat's delete is inconsistent about the HTTP status code —
- * we have observed both `200 { message: "201", reason: "success" }` and
- * `400 { message: "200", reason: "template = ... was deleted" }` on
- * a clean delete. We override validateStatus so axios doesn't throw on
- * those 4xx-success cases and inspect the body ourselves: any `message`
- * in the 2xx range, or a `reason` containing "deleted"/"success", is
- * treated as success.
+ * Hard-delete a template upstream. Taqnyat is inconsistent about HTTP
+ * status on success — we have observed both `200 { message: "201" }` and
+ * `400 { message: "200", reason: "template = ... was deleted" }`. The
+ * `validateStatus: () => true` lets us inspect the body ourselves.
  */
 const deleteTemplate = async (name, id) => {
-  if (!TAQNYAT_CONFIG.apiKey) {
-    throw new Error('Taqnyat API key is not configured');
-  }
-  if (!name && !id) {
-    throw new Error('deleteTemplate requires at least name or id');
-  }
+  if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
+  if (!name && !id) throw new Error('deleteTemplate requires at least name or id');
   try {
     const response = await waClient.request({
       method: 'DELETE',
@@ -390,13 +388,8 @@ const deleteTemplate = async (name, id) => {
     const data = response.data || {};
     const code = String(data.message || response.status);
     const reason = String(data.reason || '');
-    const isSuccess =
-      /^2\d\d$/.test(code) ||
-      /deleted|success/i.test(reason);
-    if (isSuccess) {
-      return { success: true, raw: data };
-    }
-    // Real error — surface it through the same channel as the other helpers.
+    const isSuccess = /^2\d\d$/.test(code) || /deleted|success/i.test(reason);
+    if (isSuccess) return { success: true, raw: data };
     return {
       success: false,
       error: TAQNYAT_ERRORS[code] || reason || `Delete failed (status ${response.status})`,
@@ -408,17 +401,16 @@ const deleteTemplate = async (name, id) => {
   }
 };
 
-/**
- * Check account balance
- */
 const checkBalance = async () => {
   if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key not configured');
-
   const response = await smsClient.get('/account/balance');
+  const data = response.data || {};
   return {
     success: true,
-    balance: response.data.balance,
-    currency: response.data.currency || 'SAR',
+    balance: data.balance,
+    currency: data.currency || 'SAR',
+    accountStatus: data.accountStatus,
+    points: data.points,
   };
 };
 

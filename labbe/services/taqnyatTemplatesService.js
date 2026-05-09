@@ -1,9 +1,4 @@
-/**
- * Taqnyat Templates Service — Phase 4c W1-TAQNYAT-ADMIN
- *
- * Public host endpoint (filtered by category) + admin endpoints
- * (sync + assign category + var mapping).
- */
+// Taqnyat templates API client — host list + admin sync/create/assign/delete.
 
 import { apiRequest } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";

@@ -18,6 +18,7 @@ const Subscription = require('../../../models/SubscriptionModel');
 const Ticket = require('../../../models/TicketModel');
 const Guest = require('../../../models/GuestModel');
 const Service = require('../../../models/ServiceModel');
+const { isPoolPlan, isPerEventPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
 
 class DashboardService {
   /**
@@ -314,9 +315,10 @@ class DashboardService {
       Event.countDocuments({ host: userId, status: EVENT_STATUS.DRAFT }),
       Subscription.findOne({ userId, status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } }).populate('planId').lean(),
       Event.findOne({ host: userId })
-        .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings invitationSettings testMessageSent visualTemplate taqnyatTemplate guestReplies')
+        .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings testMessageSent templateImage visualTemplate taqnyatTemplate guestReplies')
         .sort({ createdAt: -1 })
         .populate('guestList')
+        .populate({ path: 'taqnyatTemplate.templateRef' })
         .lean(),
     ]);
 
@@ -336,18 +338,45 @@ class DashboardService {
         ? Math.round(((guestStats.confirmed + guestStats.declined) / guestStats.total) * 100)
         : 0;
 
-      // Plan schema field is `maxInvitesPerEvent`. `null` means unlimited.
+      // Quota mirrors the create-event surface (events.stats-export.service.js):
+      // pool plans → use the shared pool counters; per-event plans → use the
+      // per-event cap minus already-added guests. `null` remainingGuests means
+      // unlimited (admin/super-admin plans where invitePool is null).
+      const planType = subscription?.planId?.planType;
       const planLimits = subscription?.planId?.limits || {};
       const planFeatures = subscription?.planId?.features || {};
-      const maxInvitesPerEvent = planLimits.maxInvitesPerEvent ?? null;
-      const remainingGuests =
-        maxInvitesPerEvent == null
-          ? null
-          : Math.max(0, maxInvitesPerEvent - guests.length);
-      const compensationMessages =
-        planFeatures.hasCompensationInvites && maxInvitesPerEvent != null
-          ? Math.floor(((planFeatures.compensationPercentage ?? 10) / 100) * maxInvitesPerEvent)
-          : 0;
+
+      let remainingGuests;
+      let compensationMessages;
+      if (subscription && isPoolPlan(planType)) {
+        // Pool plans: invitesRemaining = invitePool + compensationPool - invitesConsumed.
+        // compensationMessages surfaces the compensation slice of that pool.
+        remainingGuests =
+          subscription.invitePool == null
+            ? null
+            : Math.max(
+                0,
+                (subscription.invitePool || 0) +
+                  (subscription.compensationPool || 0) -
+                  (subscription.invitesConsumed || 0)
+              );
+        compensationMessages = subscription.compensationPool ?? 0;
+      } else {
+        const maxInvitesPerEvent = planLimits.maxInvitesPerEvent ?? null;
+        remainingGuests =
+          maxInvitesPerEvent == null || maxInvitesPerEvent === -1
+            ? null
+            : Math.max(0, maxInvitesPerEvent - guests.length);
+        compensationMessages =
+          planFeatures.hasCompensationInvites &&
+          maxInvitesPerEvent != null &&
+          maxInvitesPerEvent !== -1
+            ? Math.floor(
+                ((planFeatures.compensationPercentage ?? COMPENSATION_PERCENTAGE) / 100) *
+                  maxInvitesPerEvent
+              )
+            : 0;
+      }
 
       lastEventData = {
         id: lastEvent._id,
@@ -355,7 +384,7 @@ class DashboardService {
         date: lastEvent.eventDetails?.date,
         time: lastEvent.eventDetails?.time,
         location: lastEvent.eventDetails?.location,
-        locationName: lastEvent.eventDetails?.locationName || '',
+        locationName: lastEvent.eventDetails?.location?.address || '',
         status: lastEvent.status,
         createdAt: lastEvent.createdAt,
         guestCount: guests.length,
@@ -367,14 +396,10 @@ class DashboardService {
         },
         testMessageSent: lastEvent.testMessageSent || false,
         launchSettings: lastEvent.launchSettings || null,
-        // Emits both legacy and canonical template fields during the consumer-migration window.
-        invitationSettings: {
-          selectedTemplate: lastEvent.invitationSettings?.selectedTemplate || null,
-          templateImage:
-            lastEvent.visualTemplate?.bakedImagePath ||
-            lastEvent.invitationSettings?.templateImage ||
-            null,
-        },
+        templateImage:
+          lastEvent.visualTemplate?.bakedImagePath ||
+          lastEvent.templateImage ||
+          null,
         visualTemplate: lastEvent.visualTemplate || null,
         taqnyatTemplate: lastEvent.taqnyatTemplate || null,
       };

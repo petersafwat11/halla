@@ -18,10 +18,13 @@ const buildMutations = (queryClient) => ({
       if (eventData.eventDetails) formData.append("eventDetails", JSON.stringify(eventData.eventDetails));
       if (eventData.guestList) formData.append("guestList", JSON.stringify(eventData.guestList));
       if (eventData.staffList) formData.append("staffList", JSON.stringify(eventData.staffList));
+      if (eventData.visualTemplate) formData.append("visualTemplate", JSON.stringify(eventData.visualTemplate));
+      if (eventData.taqnyatTemplate) formData.append("taqnyatTemplate", JSON.stringify(eventData.taqnyatTemplate));
+      if (eventData.guestReplies) formData.append("guestReplies", JSON.stringify(eventData.guestReplies));
       if (eventData.launchSettings) formData.append("launchSettings", JSON.stringify(eventData.launchSettings));
-      const { templateImage, ...restInvitation } = eventData.invitationSettings || {};
-      if (Object.keys(restInvitation).length) formData.append("invitationSettings", JSON.stringify(restInvitation));
-      if (templateImage instanceof File) formData.append("templateImage", templateImage);
+      if (eventData.templateImage instanceof File) {
+        formData.append("templateImage", eventData.templateImage);
+      }
 
       return apiRequest({
         method: "POST",

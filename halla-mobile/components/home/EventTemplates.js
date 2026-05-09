@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Animated,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { useTranslation } from "../../localization";
 import {
@@ -16,13 +17,16 @@ import TemplateCard from "./_components/TemplateCard";
 
 const CARD_WIDTH = 123;
 const CARD_SPACING = 12;
+const STEP = CARD_WIDTH + CARD_SPACING;
 
 const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
-  const { t, currentLanguage } = useTranslation("common");
+  const { t, currentLanguage, isRTL } = useTranslation("common");
   const locale = currentLanguage;
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [scrollX] = useState(new Animated.Value(0));
+  const [activeIdx, setActiveIdx] = useState(0);
+  const scrollRef = useRef(null);
 
   const {
     data: catData,
@@ -38,10 +42,31 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
 
   const categories = catData?.data?.categories || [];
   const templates = tplData?.data?.templates || [];
+  const maxIdx = Math.max(0, templates.length - 1);
 
   const handleTemplatePress = (template) => {
     if (onSelectTemplate) onSelectTemplate(template);
   };
+
+  const scrollToIdx = (i) => {
+    const clamped = Math.min(Math.max(0, i), maxIdx);
+    setActiveIdx(clamped);
+    scrollRef.current?.scrollTo({ x: clamped * STEP, animated: true });
+  };
+
+  const handleMomentumEnd = (e) => {
+    const x = e.nativeEvent.contentOffset.x;
+    const i = Math.round(x / STEP);
+    setActiveIdx(Math.min(Math.max(0, i), maxIdx));
+  };
+
+  const onScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    { useNativeDriver: false }
+  );
+
+  const goPrev = () => scrollToIdx(activeIdx - 1);
+  const goNext = () => scrollToIdx(activeIdx + 1);
 
   return (
     <View style={styles.container}>
@@ -61,7 +86,11 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
         <TemplateCategoryChips
           categories={categories}
           selectedCategory={selectedCategory}
-          onSelect={setSelectedCategory}
+          onSelect={(cat) => {
+            setSelectedCategory(cat);
+            setActiveIdx(0);
+            scrollRef.current?.scrollTo({ x: 0, animated: false });
+          }}
           locale={locale}
           allLabel={t("common.all", "الكل")}
         />
@@ -79,34 +108,82 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
             {t("no_templates_available", "لا توجد قوالب متاحة")}
           </Text>
         ) : (
-          <Animated.ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            snapToInterval={CARD_WIDTH + CARD_SPACING}
-            decelerationRate="fast"
-            contentContainerStyle={styles.templatesContent}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false }
+          <>
+            <Animated.ScrollView
+              ref={scrollRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={STEP}
+              decelerationRate="fast"
+              contentContainerStyle={styles.templatesContent}
+              onScroll={onScroll}
+              onMomentumScrollEnd={handleMomentumEnd}
+              scrollEventThrottle={16}
+            >
+              {templates.map((template, index) => {
+                const templateId = template._id;
+                const isSelected = selectedTemplateId === templateId;
+                return (
+                  <TemplateCard
+                    key={templateId}
+                    template={template}
+                    index={index}
+                    scrollX={scrollX}
+                    cardSpacing={CARD_SPACING}
+                    isSelected={isSelected}
+                    onPress={handleTemplatePress}
+                  />
+                );
+              })}
+            </Animated.ScrollView>
+
+            {templates.length > 1 && (
+              <View style={styles.controls}>
+                <TouchableOpacity
+                  style={[
+                    styles.ctrlBtn,
+                    (isRTL ? activeIdx >= maxIdx : activeIdx <= 0) &&
+                      styles.ctrlBtnDisabled,
+                  ]}
+                  onPress={isRTL ? goNext : goPrev}
+                  disabled={isRTL ? activeIdx >= maxIdx : activeIdx <= 0}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.ctrlIcon}>
+                    {isRTL ? "›" : "‹"}
+                  </Text>
+                </TouchableOpacity>
+
+                <View style={styles.dots}>
+                  {templates.map((_, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      style={[
+                        styles.dot,
+                        i === activeIdx && styles.dotActive,
+                      ]}
+                      onPress={() => scrollToIdx(i)}
+                    />
+                  ))}
+                </View>
+
+                <TouchableOpacity
+                  style={[
+                    styles.ctrlBtn,
+                    (isRTL ? activeIdx <= 0 : activeIdx >= maxIdx) &&
+                      styles.ctrlBtnDisabled,
+                  ]}
+                  onPress={isRTL ? goPrev : goNext}
+                  disabled={isRTL ? activeIdx <= 0 : activeIdx >= maxIdx}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.ctrlIcon}>
+                    {isRTL ? "‹" : "›"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             )}
-            scrollEventThrottle={16}
-          >
-            {templates.map((template, index) => {
-              const templateId = template._id;
-              const isSelected = selectedTemplateId === templateId;
-              return (
-                <TemplateCard
-                  key={templateId}
-                  template={template}
-                  index={index}
-                  scrollX={scrollX}
-                  cardSpacing={CARD_SPACING}
-                  isSelected={isSelected}
-                  onPress={handleTemplatePress}
-                />
-              );
-            })}
-          </Animated.ScrollView>
+          </>
         )}
       </View>
     </View>
@@ -158,6 +235,52 @@ const styles = StyleSheet.create({
     color: "#656565",
     fontFamily: "Cairo_500Medium",
     paddingVertical: 8,
+  },
+  controls: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 14,
+    marginTop: 12,
+    width: "100%",
+  },
+  ctrlBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: "#E8D7C2",
+    backgroundColor: "#FFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ctrlBtnDisabled: {
+    opacity: 0.3,
+  },
+  ctrlIcon: {
+    fontSize: 20,
+    color: "#6B4E33",
+    lineHeight: 22,
+    fontWeight: "600",
+  },
+  dots: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flexShrink: 1,
+    flexWrap: "nowrap",
+    overflow: "hidden",
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: "#E8D7C2",
+  },
+  dotActive: {
+    width: 18,
+    borderRadius: 3,
+    backgroundColor: "#C28E5C",
   },
 });
 

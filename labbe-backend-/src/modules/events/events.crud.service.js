@@ -21,14 +21,6 @@ const { isPoolPlan, isPerEventPlan } = require('../../shared/constants/plans');
 
 // File upload helper
 const { getFileUrl } = require('../../shared/utils/fileUpload');
-// Resolves legacy `inv.selectedTemplate.id` (Meta taqnyatId string)
-// and `inv.visualTemplate.id` (legacy Number) into canonical ObjectId
-// refs without throwing CastError on dual-write.
-const {
-  resolveTaqnyatTemplateRef,
-  resolveVisualTemplateRef,
-} = require('./templateRefResolver');
-
 // Import existing services
 const notificationService = require('../notifications/notifications.service');
 const SubscriptionsService = require('../subscriptions/subscriptions.service');
@@ -209,6 +201,18 @@ module.exports = {
     const event = await Event.findOne(query)
       .populate("guestList", "name email phone status")
       .populate("host", "username email phoneNumber")
+      // Populate the canonical refs so the wizard can highlight the
+      // saved template (Step 3) and show body text (Step 4) on edit.
+      .populate({
+        path: "visualTemplate.templateRef",
+        select:
+          "nameAr nameEn imageUrl thumbnailUrl naturalWidth naturalHeight fields overlays decorations categories",
+      })
+      .populate({
+        path: "taqnyatTemplate.templateRef",
+        select:
+          "templateName bodyText hasImageHeader language category varMapping",
+      })
       .lean();
 
     if (!event) {
@@ -391,63 +395,25 @@ module.exports = {
       }
 
       // Handle file upload — resolves correctly for both S3 (file.location) and local (file.path/filename)
-      //
-      // Dual-write the baked header image into both the legacy
-      // `invitationSettings.templateImage` AND the canonical
-      // `visualTemplate.bakedImagePath` so reads from either shape
-      // resolve correctly during the dual-write window.
+      // Stored on the canonical `visualTemplate.bakedImagePath`. The
+      // top-level `templateImage` field is kept as an optional
+      // fallback for legacy reads.
       if (file) {
         const templateImagePath = getFileUrl(file);
         if (templateImagePath) {
-          if (eventData.invitationSettings) {
-            eventData.invitationSettings.templateImage = templateImagePath;
-          } else {
-            eventData.invitationSettings = { templateImage: templateImagePath };
-          }
           eventData.visualTemplate = {
             ...(eventData.visualTemplate || {}),
             bakedImagePath: templateImagePath,
           };
+          eventData.templateImage = templateImagePath;
         }
       }
 
-      // Project legacy keys submitted by older clients into the canonical
-      // fields, and vice versa.
-      //
-      // Legacy ids are not ObjectIds — Number for visualTemplate,
-      // Meta taqnyatId for selectedTemplate. `templateRefResolver`
-      // resolves them safely; missing/unresolvable ids leave the
-      // canonical ref empty (read paths fall back to legacy).
-      if (eventData.invitationSettings) {
-        const inv = eventData.invitationSettings;
-        if (inv.visualTemplate) {
-          const resolvedVisualRef = resolveVisualTemplateRef(
-            inv.visualTemplate.id ?? eventData.visualTemplate?.templateRef
-          );
-          eventData.visualTemplate = {
-            ...(resolvedVisualRef ? { templateRef: resolvedVisualRef } : {}),
-            fieldValues: inv.visualTemplate.data ?? eventData.visualTemplate?.fieldValues ?? {},
-            bakedImagePath:
-              inv.visualTemplate.src ??
-              eventData.visualTemplate?.bakedImagePath ??
-              inv.templateImage ??
-              null,
-          };
-        }
-        if (inv.selectedTemplate) {
-          const resolvedTaqnyatRef = await resolveTaqnyatTemplateRef(
-            inv.selectedTemplate.id ?? eventData.taqnyatTemplate?.templateRef
-          );
-          if (resolvedTaqnyatRef) {
-            eventData.taqnyatTemplate = { templateRef: resolvedTaqnyatRef };
-          }
-        }
-        eventData.guestReplies = {
-          onAttend: inv.attendanceAutoReply ?? eventData.guestReplies?.onAttend,
-          onAbsent: inv.absenceAutoReply ?? eventData.guestReplies?.onAbsent,
-          onExpected: inv.expectedAttendanceAutoReply ?? eventData.guestReplies?.onExpected,
-        };
-      }
+      // Drop any client-side `invitationSettings` mirror that may
+      // sneak in from older builds — the schema no longer carries it
+      // and Mongoose would silently ignore unknown keys, but stripping
+      // here keeps payload logging clean.
+      if (eventData.invitationSettings) delete eventData.invitationSettings;
 
       // Set host and tracking info
       eventData.host = userId;

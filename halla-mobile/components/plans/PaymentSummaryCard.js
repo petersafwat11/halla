@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const PaymentSummaryCard = ({
   planPrice,
@@ -12,121 +13,140 @@ const PaymentSummaryCard = ({
     <View style={styles.cardHeader}>
       <Text style={styles.cardTitle}>{t("summary.paymentSummary.title")}</Text>
     </View>
+
     <View style={styles.cardContent}>
-      <View style={styles.summaryBreakdown}>
-        <View style={styles.summaryRow}>
+      <Row
+        label={t("summary.paymentSummary.planPrice")}
+        value={`${planPrice} ${t("summary.currency")}`}
+      />
+
+      {addonTotal > 0 && (
+        <Row
+          label={t("summary.paymentSummary.addons")}
+          value={`${addonTotal} ${t("summary.currency")}`}
+        />
+      )}
+
+      {discountAmount > 0 && (
+        <View style={styles.discountRow}>
           <Text style={styles.summaryLabel}>
-            {t("summary.paymentSummary.planPrice")}
+            {t("summary.paymentSummary.discount")}
           </Text>
-          <Text style={styles.summaryValue}>
-            {planPrice} {t("summary.currency")}
+          <Text style={styles.summaryValueDiscount}>
+            -{discountAmount.toFixed(0)} {t("summary.currency")}
           </Text>
         </View>
+      )}
 
-        {addonTotal > 0 && (
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>
-              {t("summary.paymentSummary.addons")}
-            </Text>
-            <Text style={styles.summaryValue}>
-              {addonTotal} {t("summary.currency")}
-            </Text>
-          </View>
-        )}
+      <View style={styles.summaryDivider} />
 
-        {discountAmount > 0 && (
-          <View style={[styles.summaryRow, styles.discountRow]}>
-            <Text style={styles.summaryLabel}>
-              {t("summary.paymentSummary.discount")}
-            </Text>
-            <Text style={styles.summaryValueDiscount}>
-              -{discountAmount.toFixed(0)} {t("summary.currency")}
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.summaryDivider} />
-
-        <View style={[styles.summaryRow, styles.totalRow]}>
-          <Text style={styles.totalLabel}>
-            {t("summary.paymentSummary.total")}
-          </Text>
-          <Text style={styles.totalValue}>
-            {finalTotal.toFixed(0)} {t("summary.currency")}
-          </Text>
+      <View style={styles.totalRow}>
+        <Text style={styles.totalLabel}>
+          {t("summary.paymentSummary.total")}
+        </Text>
+        <View style={styles.totalValueWrap}>
+          <Text style={styles.totalValue}>{finalTotal.toFixed(0)}</Text>
+          <Text style={styles.totalCurrency}>{t("summary.currency")}</Text>
         </View>
       </View>
     </View>
   </View>
 );
 
+const Row = ({ label, value }) => (
+  <View style={styles.summaryRow}>
+    <Text style={styles.summaryLabel}>{label}</Text>
+    <Text style={styles.summaryValue}>{value}</Text>
+  </View>
+);
+
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FFF",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: colors.natural[50],
+    borderRadius: borderRadius[16],
+    borderWidth: 1,
+    borderColor: colors.natural[200],
+    marginBottom: spacing[12],
+    overflow: "hidden",
   },
   cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    paddingHorizontal: spacing[16],
+    paddingVertical: spacing[12],
+    borderBottomWidth: 1,
+    borderBottomColor: colors.natural[200],
   },
   cardTitle: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 16,
-    color: "#2C2C2C",
+    fontSize: typography.fontSize.title.medium,
+    color: colors.secondary[900],
   },
-  cardContent: { gap: 16 },
-  summaryBreakdown: { gap: 12 },
+  cardContent: {
+    padding: spacing[16],
+    gap: spacing[12],
+  },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: spacing[12],
   },
   summaryLabel: {
     fontFamily: "Cairo_400Regular",
-    fontSize: 13,
-    color: "#656565",
+    fontSize: typography.fontSize.body.small,
+    color: colors.natural[450],
   },
   summaryValue: {
     fontFamily: "Cairo_600SemiBold",
-    fontSize: 13,
-    color: "#2C2C2C",
+    fontSize: typography.fontSize.body.small,
+    color: colors.secondary[900],
   },
   discountRow: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#F0FFF4",
-    borderRadius: 6,
-    marginVertical: 4,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: spacing[12],
+    paddingVertical: spacing[8],
+    paddingHorizontal: spacing[12],
+    backgroundColor: colors.success[50],
+    borderRadius: borderRadius[8],
   },
   summaryValueDiscount: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 13,
-    color: "#10B981",
+    fontSize: typography.fontSize.body.small,
+    color: colors.success[600],
   },
   summaryDivider: {
     height: 1,
-    backgroundColor: "#E5E7EA",
-    marginVertical: 8,
+    backgroundColor: colors.natural[200],
+    marginVertical: spacing[4],
   },
-  totalRow: { paddingTop: 8 },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    gap: spacing[12],
+    paddingTop: spacing[4],
+  },
   totalLabel: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 16,
-    color: "#2C2C2C",
+    fontSize: typography.fontSize.title.medium,
+    color: colors.secondary[900],
+  },
+  totalValueWrap: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: spacing[4],
   },
   totalValue: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 20,
-    color: "#C28E5C",
+    fontSize: 22,
+    color: colors.primary[700],
+    letterSpacing: -0.3,
+  },
+  totalCurrency: {
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.label.medium,
+    color: colors.primary[600],
   },
 });
 

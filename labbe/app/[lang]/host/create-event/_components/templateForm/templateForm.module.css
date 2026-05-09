@@ -3,14 +3,15 @@
 ======================================== */
 .wrapper {
   width: 80rem;
-  /* height: 50rem; */
 }
+
 @media screen and (max-width: 900px) {
   .wrapper {
     width: 90vw;
     height: 90vh;
   }
 }
+
 .header {
   padding: 2.4rem 2.4rem 0;
   display: flex;
@@ -28,7 +29,7 @@
   flex: 1;
 }
 
-.header button {
+.closeButton {
   background: none;
   border: none;
   cursor: pointer;
@@ -36,8 +37,13 @@
   transition: opacity 0.2s;
 }
 
-.header button:hover {
+.closeButton:hover {
   opacity: 0.7;
+}
+
+.closeButton img {
+  width: 2.4rem;
+  height: 2.4rem;
 }
 
 /* ========================================
@@ -57,6 +63,7 @@
   align-items: flex-start;
   box-sizing: border-box;
 }
+
 /* ========================================
    FORM SECTION
 ======================================== */
@@ -100,126 +107,6 @@
 }
 
 /* ========================================
-   TEMPLATE PREVIEW
-======================================== */
-.templatePreview {
-  position: relative;
-  width: 100%;
-  height: 50rem;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.invitationBackground {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-}
-
-.templateContent {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10rem 3rem 7rem;
-}
-
-.messageTemplateText,
-.guestMessage,
-.address,
-.endMessage {
-  text-align: center;
-  word-wrap: break-word;
-  max-width: 100%;
-  line-height: 1.5;
-}
-
-.messageTemplateText {
-  font-size: 1.6rem;
-  font-weight: 400;
-}
-
-.brideAndGroomName {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.brideName,
-.groomName {
-  font-size: 2.3rem;
-  font-weight: 400;
-}
-
-.and {
-  font-size: 2.3rem;
-  font-weight: 400;
-}
-
-.guestMessage {
-  font-size: 1.2rem;
-}
-
-.entryDate {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-}
-
-.monthName,
-.dayInfo,
-.yearInfo {
-  padding: 0 2rem;
-}
-
-.dayInfo {
-  border-left: 1px solid #5a4a42;
-  border-right: 1px solid #5a4a42;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-
-.monthName {
-  font-size: 1.6rem;
-  font-weight: 600;
-}
-
-.yearInfo {
-  font-size: 1.4rem;
-  font-weight: 500;
-}
-
-.entryTime {
-  font-size: 1.2rem;
-  font-weight: 400;
-}
-
-.address {
-  font-size: 1.2rem;
-}
-
-.endMessage {
-  font-size: 1.6rem;
-}
-
-/* ========================================
    BUTTONS
 ======================================== */
 .buttonContainer {
@@ -232,87 +119,6 @@
 .buttonContainer button {
   flex: 1;
   max-width: 20rem;
-}
-
-.previewButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  width: 100%;
-  padding: 1.2rem;
-  background: #f5ece4;
-  color: #6b4e33;
-  border: 1px solid #d6b392;
-  border-radius: 8px;
-  font-size: 1.4rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.previewButton:hover {
-  background: #ead9c8;
-}
-
-.previewButton img {
-  width: 2rem;
-  height: 2rem;
-}
-
-/* ========================================
-   MOBILE PREVIEW POPUP
-======================================== */
-.previewPopupOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  padding: 2rem;
-}
-
-.previewPopupContent {
-  position: relative;
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  width: 85%;
-  max-width: 45rem;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.previewPopupClose {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: #f5ece4;
-  border: none;
-  border-radius: 50%;
-  width: 4rem;
-  height: 4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1;
-  transition: background 0.2s;
-}
-
-.previewPopupClose:hover {
-  background: #ead9c8;
-}
-
-.previewPopupClose img {
-  width: 2.4rem;
-  height: 2.4rem;
 }
 
 /* ========================================
@@ -365,8 +171,6 @@
   .formGrid {
     grid-template-columns: 1fr;
     gap: 1.4rem;
-    max-height: none;
-    overflow-y: visible;
   }
 
   .fullWidth {
@@ -385,10 +189,6 @@
   .buttonContainer button {
     max-width: none;
     flex: 1;
-  }
-
-  .previewPopupContent .templatePreview {
-    height: 45rem;
   }
 }
 
@@ -424,64 +224,6 @@
     gap: 1rem;
     margin-top: 1.2rem;
   }
-
-  .previewPopupContent {
-    padding: 1.2rem;
-    width: 95%;
-    max-width: 40rem;
-  }
-
-  .previewPopupContent .templatePreview {
-    height: 40rem;
-  }
-
-  .previewButton {
-    font-size: 1.3rem;
-    padding: 1rem;
-  }
-
-  .templatePreview {
-    height: 40rem;
-  }
-
-  .templateContent {
-    padding: 8rem 2rem 5rem;
-  }
-
-  .messageTemplateText {
-    font-size: 1.4rem;
-  }
-
-  .brideName,
-  .groomName,
-  .and {
-    font-size: 1.8rem;
-  }
-
-  .guestMessage {
-    font-size: 1.1rem;
-  }
-
-  .monthName {
-    font-size: 1.4rem;
-  }
-
-  .dayInfo {
-    font-size: 1.6rem;
-  }
-
-  .yearInfo {
-    font-size: 1.2rem;
-  }
-
-  .entryTime,
-  .address {
-    font-size: 1.1rem;
-  }
-
-  .endMessage {
-    font-size: 1.4rem;
-  }
 }
 
 @media (max-width: 480px) {
@@ -506,7 +248,7 @@
     line-height: 1.3;
   }
 
-  .header button img {
+  .closeButton img {
     width: 2rem;
     height: 2rem;
   }
@@ -519,38 +261,4 @@
   .formGrid {
     gap: 1rem;
   }
-
-  .previewPopupOverlay {
-    padding: 1rem;
-  }
-
-  .previewPopupContent {
-    padding: 1rem;
-    width: 100%;
-    max-width: none;
-    border-radius: 12px;
-  }
-
-  .previewPopupContent .templatePreview {
-    height: 35rem;
-  }
-}
-
-.closeButton {
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  padding: 0;
-}
-
-.hiddenBakeContainer {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 400px;
-  height: 500px;
-  opacity: 0;
-  pointer-events: none;
-  z-index: -1;
-  overflow: hidden;
 }

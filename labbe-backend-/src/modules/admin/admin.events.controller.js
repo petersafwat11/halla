@@ -19,7 +19,9 @@ exports.createEventForHost = catchAsync(async (req, res) => {
     if (req.body.guestList) guestList = JSON.parse(req.body.guestList);
     if (req.body.eventDetails) eventData.eventDetails = JSON.parse(req.body.eventDetails);
     if (req.body.staffList) eventData.staffList = JSON.parse(req.body.staffList);
-    if (req.body.invitationSettings) eventData.invitationSettings = JSON.parse(req.body.invitationSettings);
+    if (req.body.visualTemplate) eventData.visualTemplate = JSON.parse(req.body.visualTemplate);
+    if (req.body.taqnyatTemplate) eventData.taqnyatTemplate = JSON.parse(req.body.taqnyatTemplate);
+    if (req.body.guestReplies) eventData.guestReplies = JSON.parse(req.body.guestReplies);
     if (req.body.launchSettings) eventData.launchSettings = JSON.parse(req.body.launchSettings);
   } catch (error) {
     throw new ValidationError(`Invalid JSON format: ${error.message}`);
@@ -102,7 +104,9 @@ exports.updateEventFull = catchAsync(async (req, res) => {
     if (req.body.eventDetails) updateData.eventDetails = JSON.parse(req.body.eventDetails);
     if (req.body.guestList) updateData.guestList = JSON.parse(req.body.guestList);
     if (req.body.staffList) updateData.staffList = JSON.parse(req.body.staffList);
-    if (req.body.invitationSettings) updateData.invitationSettings = JSON.parse(req.body.invitationSettings);
+    if (req.body.visualTemplate) updateData.visualTemplate = JSON.parse(req.body.visualTemplate);
+    if (req.body.taqnyatTemplate) updateData.taqnyatTemplate = JSON.parse(req.body.taqnyatTemplate);
+    if (req.body.guestReplies) updateData.guestReplies = JSON.parse(req.body.guestReplies);
   } catch (error) {
     throw new ValidationError(`Invalid JSON format: ${error.message}`);
   }

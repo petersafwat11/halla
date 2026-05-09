@@ -34,7 +34,7 @@ export default function LastEventHeader({ event, locale = "ar-SA" }) {
   const { t } = useTranslation("home");
   const title = event.title || t("lastEvent.untitled");
   const guestCount = event.guestCount || 0;
-  const location = event.locationName || event.location || "";
+  const location = event.locationName || "";
   const status = STATUS_STYLE[event.status] || DEFAULT_STATUS;
 
   return (

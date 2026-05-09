@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import {
@@ -12,6 +13,7 @@ import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import Table from "@/ui/commen/new-table/Table";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import { FiRefreshCw, FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
 import AssignTaqnyatTemplatePopup from "./AssignTaqnyatTemplatePopup";
 import CreateTaqnyatTemplatePopup from "./CreateTaqnyatTemplatePopup";
@@ -29,44 +31,46 @@ export default function TaqnyatTemplatesTable({
 }) {
   const { t } = useTranslation("admin");
   const { canUpdate } = usePageAccess("taqnyat_templates");
-  const { data, isLoading } = useAdminTaqnyatTemplates();
+  const { data, isLoading, error } = useAdminTaqnyatTemplates();
   const { data: catData } = useTemplateCategories({ admin: true });
   const sync = useSyncTaqnyat();
   const deleteTpl = useDeleteTaqnyatTemplate();
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const templates = data?.data?.templates || data?.templates || [];
-  const categories = catData?.data?.categories || catData?.categories || [];
+  const templates = data?.data?.templates || [];
+  const categories = catData?.data?.categories || [];
 
   const handleSync = async () => {
     try {
       const res = await sync.mutateAsync();
-      const count = res?.data?.count || res?.count || 0;
+      const count = res?.data?.count || 0;
       toastUtils.success(`${t("taqnyat.synced")}: ${count}`);
     } catch (err) {
-      handleError(err, t, { fallbackMessage: "taqnyat.synced" });
+      handleError(err, t, { fallbackMessage: "taqnyat.syncFailed" });
     }
   };
 
-  const handleDelete = async (row) => {
-    const confirmed = window.confirm(
-      t("taqnyat.deleteConfirm", { name: row.templateName })
-    );
-    if (!confirmed) return;
+  const performDelete = async (id) => {
     try {
-      await deleteTpl.mutateAsync(row.id);
+      await deleteTpl.mutateAsync(id);
       toastUtils.success(t("taqnyat.deleted", "تم حذف القالب"));
     } catch (err) {
       handleError(err, t, { fallbackMessage: "taqnyat.deleteFailed" });
     }
   };
 
-  // The Table component hands the row's flattened tableData object back to
-  // action handlers. The Assign popup needs the full Mongo doc (it reads
-  // _id, varMapping, sortOrder — none of which are in tableData), so we
-  // look the original template up by id before opening the popup.
+  // The Table component hands the row's flattened tableData object back
+  // to action handlers. The Assign popup needs the full Mongo doc (it
+  // reads _id, varMapping, sortOrder), so we look up the original
+  // template by id before opening — and bail loudly if it's missing
+  // rather than silently feeding the lossy row shape forward.
   const handleAssignFromRow = (row) => {
     const original = templates.find((tpl) => tpl._id === row.id);
-    onAssignClick(original || row);
+    if (!original) {
+      toastUtils.error(t("taqnyat.assignLookupFailed", "تعذّر فتح نافذة التعيين"));
+      return;
+    }
+    onAssignClick(original);
   };
 
   const getRowActions = (row) => {
@@ -83,7 +87,7 @@ export default function TaqnyatTemplatesTable({
         icon: <FiTrash2 size={16} />,
         text: t("taqnyat.deleteBtn", "حذف من Taqnyat"),
         danger: true,
-        onClick: (r) => handleDelete(r),
+        onClick: (r) => setDeleteTarget(r),
       });
     }
     return actions;
@@ -149,6 +153,13 @@ export default function TaqnyatTemplatesTable({
   }));
 
   if (isLoading) return <SimpleLoading />;
+  if (error) {
+    return (
+      <div className={styles.errorState}>
+        {t("taqnyat.loadFailed", "تعذّر تحميل القوالب — حاول لاحقاً")}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -209,6 +220,24 @@ export default function TaqnyatTemplatesTable({
           onClose={() => setShowCreatePopup(false)}
         />
       )}
+
+      <DeleteConfirmation
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          const id = deleteTarget?.id;
+          setDeleteTarget(null);
+          if (id) await performDelete(id);
+        }}
+        title={t("taqnyat.deleteBtn", "حذف من Taqnyat")}
+        message={t("taqnyat.deleteConfirm", {
+          name: deleteTarget?.templateName,
+        })}
+        itemName={deleteTarget?.templateName}
+        confirmText={t("taqnyat.deleteBtn", "حذف من Taqnyat")}
+        cancelText={t("common.cancel", "إلغاء")}
+        isLoading={deleteTpl.isPending}
+      />
     </>
   );
 }

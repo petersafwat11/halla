@@ -383,43 +383,33 @@ export const transformFormDataToPayload = (formData) => {
       name: moderator.name,
       phone: moderator.phone || moderator.mobile,
     })),
-    // DUAL-WRITE both legacy `invitationSettings.*` (existing
-    // consumers) AND canonical top-level keys so backend reads from
-    // either shape.
-    invitationSettings: {
-      selectedTemplate: formData.selectedTemplate,
-      visualTemplate: formData.visualTemplate
-        ? {
-            ...formData.visualTemplate,
-            data: formData.visualTemplate?.fieldValues || formData.visualTemplate?.data || {},
-          }
-        : null,
-      attendanceAutoReply:
-        formData.guestReplies?.onAttend || formData.attendanceAutoReply,
-      absenceAutoReply:
-        formData.guestReplies?.onAbsent || formData.absenceAutoReply,
-      expectedAttendanceAutoReply:
-        formData.guestReplies?.onExpected || formData.expectedAttendanceAutoReply,
-      templateImage: formData.templateImage,
-      guestReplies: formData.guestReplies,
+    // Canonical top-level keys only.
+    visualTemplate: formData.visualTemplate
+      ? {
+          templateRef:
+            formData.visualTemplate.templateRef ||
+            formData.visualTemplate._id ||
+            formData.visualTemplate.id,
+          fieldValues:
+            formData.visualTemplate.fieldValues ||
+            formData.visualTemplate.data ||
+            {},
+        }
+      : undefined,
+    taqnyatTemplate: formData.selectedTemplate
+      ? {
+          templateRef:
+            formData.taqnyatTemplate?.templateRef ||
+            formData.selectedTemplate._id ||
+            formData.selectedTemplate.id,
+        }
+      : undefined,
+    guestReplies: {
+      onAttend: formData.guestReplies?.onAttend || "",
+      onAbsent: formData.guestReplies?.onAbsent || "",
+      onExpected: formData.guestReplies?.onExpected || "",
     },
-    // Canonical top-level keys (backend prefers these on read)
-    taqnyatTemplateRef:
-      formData.taqnyatTemplate?.templateRef ||
-      formData.taqnyatTemplateRef ||
-      formData.selectedTemplate?._id ||
-      formData.selectedTemplate?.id,
-    visualTemplateRef:
-      formData.visualTemplate?.templateRef ||
-      formData.visualTemplate?._id ||
-      formData.visualTemplate?.id,
-    fieldValues:
-      formData.visualTemplate?.fieldValues || formData.visualTemplate?.data,
-    guestReplies: formData.guestReplies || {
-      onAttend: formData.attendanceAutoReply,
-      onAbsent: formData.absenceAutoReply,
-      onExpected: formData.expectedAttendanceAutoReply,
-    },
+    templateImage: formData.templateImage,
     launchSettings: {
       sendSchedule: formData.sendSchedule || "now",
       scheduledDate: formData.scheduleDate,
@@ -462,10 +452,6 @@ export const getDefaultFormValues = () => ({
   // Step 4 - Taqnyat WhatsApp Template + auto-replies
   selectedTemplate: null,
   taqnyatTemplate: null,
-  taqnyatTemplateRef: null,
-  attendanceAutoReply: "",
-  absenceAutoReply: "",
-  expectedAttendanceAutoReply: "",
   guestReplies: { onAttend: "", onAbsent: "", onExpected: "" },
 
   // Launch Settings
