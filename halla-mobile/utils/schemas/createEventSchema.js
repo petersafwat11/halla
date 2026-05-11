@@ -41,21 +41,11 @@ const emailSchema = z
 
 const requiredStringSchema = z.string().min(1, "This field is required");
 
-const guestSchema = z
-  .object({
-    id: z.number().optional(),
-    name: requiredStringSchema,
-    phone: phoneSchema,
-    email: emailSchema,
-  })
-  .refine(
-    (data) =>
-      (data.phone && data.phone.trim()) || (data.email && data.email.trim()),
-    {
-      message: "Either phone number or email address is required",
-      path: ["contact"],
-    }
-  );
+const guestSchema = z.object({
+  id: z.number().optional(),
+  name: requiredStringSchema,
+  phone: requiredPhoneSchema,
+});
 
 const staffSchema = z.object({
   id: z.number().optional(),

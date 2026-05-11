@@ -41,7 +41,11 @@
     "users": "Users",
     "callNow": "Call Now"
   },
-  "title": "Marketplace",
+  "title": "Halla Marketplace",
+  "noResults": {
+    "title": "No results found",
+    "description": "Try adjusting your filters or search terms"
+  },
   "services": {
     "defaultName": "Service"
   }

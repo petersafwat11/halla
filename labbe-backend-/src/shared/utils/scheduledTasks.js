@@ -14,7 +14,7 @@ const emailService = require("./emailService");
 const messagingService = require("../../modules/messaging/messaging.service");
 const taqnyat = require("../../infrastructure/taqnyat");
 const { runBatched } = require("./runBatched");
-const { withIdempotency } = require("./idempotency");
+const { withIdempotency, sha256 } = require("./idempotency");
 const { runReconcileTick } = require("../../modules/payments/payments.reconcile");
 const {
   generateDailyReportPDF,
@@ -682,6 +682,12 @@ const scheduleGuestReminders = () => {
               ? "confirmed"
               : guest.status === "declined" ? "declined" : "nudge";
             const key = `reminder:${event._id}:${guest._id}:${reminderType}:24h`;
+            const requestHash = sha256({
+              eventId: String(event._id),
+              guestId: String(guest._id),
+              reminderType,
+              window: "24h",
+            });
             return withIdempotency(key, async () => {
               const msg = buildMessage(guest);
               const waTemplateName =
@@ -709,7 +715,7 @@ const scheduleGuestReminders = () => {
                 }
               }
               return { delivered };
-            }, { scope: "guest_reminder" });
+            }, { scope: "guest_reminder", requestHash });
           },
           { concurrency: 5, ratePerSecond: 10 }
         );
@@ -925,7 +931,8 @@ const _markFailedAndNotify = async (event, reason) => {
   // sendToUser call so the in-app notification still lands. Either path
   // failing logs but does not throw.
   const notifyKey = `event_failed_notify:${eventId}`;
-  await require("./idempotency").withIdempotency(notifyKey, async () => {
+  const notifyRequestHash = sha256({ eventId: String(eventId) });
+  await withIdempotency(notifyKey, async () => {
     if (event.host) {
       // (a) in-app notification (sendEmail=false because we send the
       //     dedicated template explicitly below).
@@ -983,7 +990,7 @@ const _markFailedAndNotify = async (event, reason) => {
     }).catch((err) => console.error("[retry-cron] notify admins failed:", err.message));
 
     return { notified: true };
-  }, { scope: "event_launch_failed_notify" });
+  }, { scope: "event_launch_failed_notify", requestHash: notifyRequestHash });
 };
 
 const scheduleEventRetry = () => {

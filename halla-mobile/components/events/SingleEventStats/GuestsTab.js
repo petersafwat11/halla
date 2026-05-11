@@ -35,7 +35,6 @@ const GuestsTab = ({
           id,
           name: guest.name || t("home.guest"),
           phone: guest.phone || "",
-          email: guest.email || "",
           status: guest.status || "invited",
           responseDate: formatResponseDate(
             guest.respondAt || guest.respondedAt,

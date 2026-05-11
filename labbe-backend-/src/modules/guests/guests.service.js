@@ -126,7 +126,6 @@ class GuestsService {
       query.$or = [
         { name: searchRegex },
         { phone: searchRegex },
-        { email: searchRegex },
       ];
     }
 
@@ -136,8 +135,8 @@ class GuestsService {
 
     const [guests, total] = await Promise.all([
       Guest.find(query)
-        .select('name phone email status rsvp checkIn invitation addedBy createdAt')
-        .populate('addedBy', 'username email')
+        .select('name phone status rsvp checkIn invitation addedBy createdAt')
+        .populate('addedBy', 'username')
         .sort({ name: 1 })
         .skip(skip)
         .limit(limit),
@@ -216,7 +215,7 @@ class GuestsService {
       throw new NotFoundError('Guest');
     }
 
-    const allowedFields = ['name', 'email', 'phone', 'status'];
+    const allowedFields = ['name', 'phone', 'status'];
     const updateObj = {};
     allowedFields.forEach((field) => {
       if (updateData[field] !== undefined) {
@@ -291,8 +290,8 @@ class GuestsService {
     const event = await Event.findOne({ _id: eventId, host: userId })
       .populate({
         path: 'guestList',
-        select: 'name email phone status rsvp checkIn invitation addedBy',
-        populate: { path: 'addedBy', select: 'username email' },
+        select: 'name phone status rsvp checkIn invitation addedBy',
+        populate: { path: 'addedBy', select: 'username' },
       });
 
     if (!event) {
@@ -305,7 +304,6 @@ class GuestsService {
     const guestsForExport = (event.guestList || []).map((guest) => ({
       Name: guest.name || '',
       Phone: guest.phone || '',
-      Email: guest.email || '',
       Status: guest.status || 'invited',
       'Response Date': guest.rsvp?.respondedAt
         ? formatRiyadh(guest.rsvp.respondedAt)
@@ -314,7 +312,7 @@ class GuestsService {
         ? formatRiyadh(guest.checkIn.checkedInAt)
         : '',
       'Invitation Sent': guest.invitation?.sent ? 'Yes' : 'No',
-      'Added By': guest.addedBy?.username || guest.addedBy?.email || 'Unknown',
+      'Added By': guest.addedBy?.username || 'Unknown',
     }));
 
     const buffer = await generateExcel(guestsForExport, `event-${eventId}-guests`);
@@ -507,13 +505,18 @@ class GuestsService {
       id: guest._id,
       name: guest.name,
       phone: guest.phone,
-      email: guest.email,
       status: guest.status,
       rsvp: guest.rsvp,
       checkIn: guest.checkIn,
       invitation: guest.invitation ? {
         sent: guest.invitation.sent,
         sentAt: guest.invitation.sentAt,
+        method: guest.invitation.method,
+        effectiveChannel: guest.invitation.effectiveChannel,
+        smsFallback: guest.invitation.smsFallback,
+        status: guest.invitation.status,
+        deliveredAt: guest.invitation.deliveredAt,
+        readAt: guest.invitation.readAt,
       } : null,
       addedBy: guest.addedBy ? {
         id: guest.addedBy._id,

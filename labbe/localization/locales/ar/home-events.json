@@ -68,10 +68,13 @@
     "remainingEvents": "المناسبات المتبقية",
     "plan": "الباقة",
     "status": {
+      "draft": "مسودة",
+      "scheduled": "مجدول",
       "published": "منشور",
       "pending": "معلق للموافقة",
       "suspended": "موقوفة بواسطة المدراء",
       "active": "نشطة",
+      "completed": "مكتمل",
       "templatePending": "قيد المراجعة",
       "templateRejected": "مرفوض",
       "templateNotSubmitted": "غير مرسل"
@@ -164,7 +167,6 @@
       "addedBy": "إضافة بواسطة",
       "name": "الاسم",
       "phone": "الهاتف",
-      "email": "البريد الإلكتروني",
       "status": "الحالة",
       "respondAt": "تاريخ الرد",
       "actions": "الإجراءات"
@@ -212,7 +214,8 @@
       "declined": "تم الرفض",
       "confirmed": "تم التأكيد",
       "noResponse": "لم يرد",
-      "maybe": "ربما"
+      "maybe": "ربما",
+      "checkedIn": "حضر"
     },
     "staff": {
       "title": "فريق العمل",
@@ -243,8 +246,6 @@
       "title": "إضافة ضيف",
       "name": "الاسم",
       "namePlaceholder": "أدخل اسم الضيف",
-      "email": "البريد الإلكتروني",
-      "emailPlaceholder": "أدخل البريد الإلكتروني",
       "phone": "رقم الهاتف",
       "phonePlaceholder": "أدخل رقم الهاتف",
       "success": "تم إضافة الضيف بنجاح",
@@ -333,6 +334,8 @@
     "title": "إرسال رسالة تجريبية",
     "description": "أرسل رسالة تجريبية واحدة لاختبار الوظيفة والتحقق من الشكل النهائي للدعوة",
     "phoneLabel": "رقم الجوال",
+    "success": "تم إرسال الرسالة التجريبية بنجاح",
+    "error": "فشل في إرسال الرسالة التجريبية",
     "validation": {
       "phoneRequired": "رقم الجوال مطلوب",
       "phoneFormat": "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5"

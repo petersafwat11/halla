@@ -121,11 +121,11 @@ const VendorSettings = () => {
               <PersonalInfoSection
                 data={{
                   name:
-                    vendorData?.profile.vendorData?.ownerFullName ||
+                    vendorData?.roleData?.ownerFullName ||
                     vendorData?.name ||
                     "",
                   email: vendorData?.email || "",
-                  avatar: getImageUrl(vendorData?.profile.vendorData?.businessLogo),
+                  avatar: getImageUrl(vendorData?.roleData?.businessLogo),
                 }}
                 onSave={handleSavePersonalInfo}
               />
@@ -133,8 +133,8 @@ const VendorSettings = () => {
               <div className={styles.dataSection}>
                 <BasicAccountInfo
                   data={{
-                    ownerFullName: vendorData?.profile.vendorData?.ownerFullName || "",
-                    brandName: vendorData?.profile.vendorData?.brandName || "",
+                    ownerFullName: vendorData?.roleData?.ownerFullName || "",
+                    brandName: vendorData?.roleData?.brandName || "",
                     email: vendorData?.email || "",
                     phoneNumber: vendorData?.phoneNumber || "",
                   }}
@@ -164,18 +164,18 @@ const VendorSettings = () => {
                 <ServiceDetailsSection
                   data={{
                     serviceDescription:
-                      vendorData?.profile.vendorData?.serviceDescription || "",
-                    nationalId: vendorData?.profile.vendorData?.nationalId || "",
+                      vendorData?.roleData?.serviceDescription || "",
+                    nationalId: vendorData?.roleData?.nationalId || "",
                     nationalIdImage: getImageUrl(
-                      vendorData?.profile.vendorData?.nationalIdImage
+                      vendorData?.roleData?.nationalIdImage
                     ),
                     commercialRecordImage: getImageUrl(
-                      vendorData?.profile.vendorData?.commercialRecordImage
+                      vendorData?.roleData?.commercialRecordImage
                     ),
                     serviceLocation:
-                      vendorData?.profile.vendorData?.serviceLocation || {},
+                      vendorData?.roleData?.serviceLocation || {},
                     serviceCategories: extractCategoriesArray(
-                      vendorData?.profile.vendorData?.serviceCategories
+                      vendorData?.roleData?.serviceCategories
                     ),
                   }}
                   onSave={handleSaveVendorData}
@@ -185,11 +185,11 @@ const VendorSettings = () => {
               <ImagesAndPricingSection
                 data={{
                   portfolioImages: (
-                    vendorData?.profile.vendorData?.portfolioImages || []
+                    vendorData?.roleData?.portfolioImages || []
                   )
                     .map((img) => getImageUrl(img))
                     .filter(Boolean),
-                  pricePackages: (vendorData?.profile.vendorData?.pricePackages || [])
+                  pricePackages: (vendorData?.roleData?.pricePackages || [])
                     .map((img) => getImageUrl(img))
                     .filter(Boolean),
                 }}
@@ -198,12 +198,12 @@ const VendorSettings = () => {
 
               <AdditionalLinksSection
                 data={{
-                  website: vendorData?.profile.vendorData?.socialLinks?.website || "",
+                  website: vendorData?.roleData?.socialLinks?.website || "",
                   instagram:
-                    vendorData?.profile.vendorData?.socialLinks?.instagram || "",
-                  facebook: vendorData?.profile.vendorData?.socialLinks?.facebook || "",
-                  twitter: vendorData?.profile.vendorData?.socialLinks?.twitter || "",
-                  tiktok: vendorData?.profile.vendorData?.socialLinks?.tiktok || "",
+                    vendorData?.roleData?.socialLinks?.instagram || "",
+                  facebook: vendorData?.roleData?.socialLinks?.facebook || "",
+                  twitter: vendorData?.roleData?.socialLinks?.twitter || "",
+                  tiktok: vendorData?.roleData?.socialLinks?.tiktok || "",
                 }}
                 onSave={handleSaveVendorData}
               />

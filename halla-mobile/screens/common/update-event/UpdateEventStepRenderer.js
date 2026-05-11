@@ -22,33 +22,42 @@ const UpdateEventStepRenderer = ({
   switch (currentStep) {
     case 1:
       return <StepOne disabled={lockoutActive} />;
-    case 2:
+    case 2: {
+      // Pool-plan events are saved with `guestLimit: -1` (no per-event
+      // cap; the cap is the global invitePool). Inferring "unlimited"
+      // from `eventData.guestLimit === -1` is wrong for pool plans and
+      // also wrong if the host changed plans between create and edit.
+      // Trust subscription-info as the single source of truth.
+      const isPool = subscription?.isPoolPlan === true;
+      const subUnlimited = subscription?.isGuestUnlimited === true;
+      const eventFrozenLimit =
+        !isPool &&
+        Number.isInteger(eventData?.guestLimit) &&
+        eventData.guestLimit > 0
+          ? eventData.guestLimit
+          : null;
+
       return (
         <StepTwo
           guestList={formData.guestList}
           staffList={formData.staffList}
           allowAddOnly={allowAddOnlyOnStep2}
           subscription={{
-            guestLimit:
-              eventData?.guestLimit ??
-              subscription?.guestLimit ??
-              subscription?.guests?.limitPerEvent ??
-              subscription?.limits?.invitePool ??
-              subscription?.limits?.maxInvitesPerEvent ??
-              0,
-            isGuestUnlimited:
-              eventData?.guestLimit === -1 ||
-              subscription?.isGuestUnlimited === true ||
-              false,
-            // Pool-plan effective cap is the *current* invitesRemaining on the
-            // subscription. Forwarded so StepTwo shows the real ceiling instead
-            // of ∞ when editing a pool-plan event.
-            isPoolPlan: subscription?.isPoolPlan === true,
+            guestLimit: isPool
+              ? (subscription?.invitesRemaining ?? 0)
+              : (eventFrozenLimit ??
+                  subscription?.guestLimit ??
+                  subscription?.guests?.limitPerEvent ??
+                  subscription?.limits?.maxInvitesPerEvent ??
+                  0),
+            isGuestUnlimited: subUnlimited && !isPool,
+            isPoolPlan: isPool,
             invitePool: subscription?.invitePool ?? null,
             invitesRemaining: subscription?.invitesRemaining ?? null,
           }}
         />
       );
+    }
     case 3:
       return <StepThree disabled={lockoutActive} />;
     case 4:

@@ -88,35 +88,37 @@ export default function PaymentMethodSelector({
           </label>
 
           <div className={styles.row}>
-            <label className={`${styles.field} ${styles.fieldGrow}`}>
-              <span className={styles.label}>
-                {t("checkout.card.month", "MM")}
-              </span>
-              <input
-                className={styles.input}
-                placeholder="MM"
-                maxLength={2}
-                inputMode="numeric"
-                value={card.month}
-                onChange={(e) => updateCard("month", e.target.value.replace(/\D/g, ""))}
-                autoComplete="cc-exp-month"
-              />
-            </label>
-            <label className={`${styles.field} ${styles.fieldGrow}`}>
-              <span className={styles.label}>
-                {t("checkout.card.year", "YYYY")}
-              </span>
-              <input
-                className={styles.input}
-                placeholder="YYYY"
-                maxLength={4}
-                inputMode="numeric"
-                value={card.year}
-                onChange={(e) => updateCard("year", e.target.value.replace(/\D/g, ""))}
-                autoComplete="cc-exp-year"
-              />
-            </label>
-            <label className={`${styles.field} ${styles.fieldGrow}`}>
+            <div className={styles.expiryGroup}>
+              <label className={`${styles.field} ${styles.fieldMonth}`}>
+                <span className={styles.label}>
+                  {t("checkout.card.month", "MM")}
+                </span>
+                <input
+                  className={styles.input}
+                  placeholder="MM"
+                  maxLength={2}
+                  inputMode="numeric"
+                  value={card.month}
+                  onChange={(e) => updateCard("month", e.target.value.replace(/\D/g, ""))}
+                  autoComplete="cc-exp-month"
+                />
+              </label>
+              <label className={`${styles.field} ${styles.fieldYear}`}>
+                <span className={styles.label}>
+                  {t("checkout.card.year", "YYYY")}
+                </span>
+                <input
+                  className={styles.input}
+                  placeholder="YYYY"
+                  maxLength={4}
+                  inputMode="numeric"
+                  value={card.year}
+                  onChange={(e) => updateCard("year", e.target.value.replace(/\D/g, ""))}
+                  autoComplete="cc-exp-year"
+                />
+              </label>
+            </div>
+            <label className={`${styles.field} ${styles.fieldCvc}`}>
               <span className={styles.label}>
                 {t("checkout.card.cvc", "CVC")}
               </span>

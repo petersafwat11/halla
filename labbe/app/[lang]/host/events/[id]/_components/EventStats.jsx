@@ -20,7 +20,10 @@ export default function EventStats({ eventId }) {
   // Extract stats from response
   const data = statsData?.data || statsData;
 
-  // Backend getSingleEventStats returns: { confirmed, declined, pending, checkedIn, totalGuests }
+  // Backend getSingleEventStats returns:
+  //   { confirmed, declined, maybe, pending, checkedIn, totalGuests }
+  // `pending` = invited only (no response yet); `maybe` is its own bucket
+  // so guests who replied "ربما" don't get counted under "didn't reply".
   const stats = [
     {
       label: t("singleEvent.stats.declined"),
@@ -37,6 +40,13 @@ export default function EventStats({ eventId }) {
       icon: "/svg/events/right.svg",
     },
     {
+      label: t("singleEvent.stats.maybe", "ربما"),
+      value: data?.maybe || 0,
+      color: "#FEFCE8",
+      textColor: "#CA8A04",
+      icon: "/svg/events/maybe.svg",
+    },
+    {
       label: t("singleEvent.stats.noResponse"),
       value: data?.pending || 0,
       color: "#FFFBEB",
@@ -48,7 +58,7 @@ export default function EventStats({ eventId }) {
       value: data?.checkedIn || 0,
       color: "#F8FAFC",
       textColor: "#64748B",
-      icon: "/svg/events/maybe.svg",
+      icon: "/svg/events/right.svg",
     },
   ];
 

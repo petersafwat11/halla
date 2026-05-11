@@ -120,40 +120,40 @@ const VendorAccountSetupScreen = () => {
         >
           <PersonalInfoForm
             data={{
-              name: vendorData?.profile?.vendorData?.ownerFullName || vendorData?.name || "",
+              name: vendorData?.roleData?.ownerFullName || vendorData?.name || "",
               email: vendorData?.email || "",
-              avatar: vendorData?.profile?.vendorData?.businessLogo || vendorData?.avatar,
+              avatar: vendorData?.roleData?.businessLogo || vendorData?.avatar,
             }}
             onSave={(data) => handleSaveSection("vendorData", data)}
             loading={isSaving}
           />
           <ServiceDetailsForm
             data={{
-              serviceDescription: vendorData?.profile?.vendorData?.serviceDescription || "",
-              nationalId: vendorData?.profile?.vendorData?.nationalId || "",
-              nationalIdImage: vendorData?.profile?.vendorData?.nationalIdImage,
-              commercialRecordImage: vendorData?.profile?.vendorData?.commercialRecordImage,
-              serviceLocation: vendorData?.profile?.vendorData?.serviceLocation || {},
-              serviceCategories: vendorData?.profile?.vendorData?.serviceCategories || [],
+              serviceDescription: vendorData?.roleData?.serviceDescription || "",
+              nationalId: vendorData?.roleData?.nationalId || "",
+              nationalIdImage: vendorData?.roleData?.nationalIdImage,
+              commercialRecordImage: vendorData?.roleData?.commercialRecordImage,
+              serviceLocation: vendorData?.roleData?.serviceLocation || {},
+              serviceCategories: vendorData?.roleData?.serviceCategories || [],
             }}
             onSave={(data) => handleSaveSection("vendorData", data)}
             loading={isSaving}
           />
           <ImagesAndPricingForm
             data={{
-              portfolioImages: vendorData?.profile?.vendorData?.portfolioImages || [],
-              pricePackages: vendorData?.profile?.vendorData?.pricePackages || [],
+              portfolioImages: vendorData?.roleData?.portfolioImages || [],
+              pricePackages: vendorData?.roleData?.pricePackages || [],
             }}
             onSave={(data) => handleSaveSection("vendorData", data)}
             loading={isSaving}
           />
           <AdditionalLinksForm
             data={{
-              website: vendorData?.profile?.vendorData?.socialLinks?.website || "",
-              instagram: vendorData?.profile?.vendorData?.socialLinks?.instagram || "",
-              facebook: vendorData?.profile?.vendorData?.socialLinks?.facebook || "",
-              twitter: vendorData?.profile?.vendorData?.socialLinks?.twitter || "",
-              tiktok: vendorData?.profile?.vendorData?.socialLinks?.tiktok || "",
+              website: vendorData?.roleData?.socialLinks?.website || "",
+              instagram: vendorData?.roleData?.socialLinks?.instagram || "",
+              facebook: vendorData?.roleData?.socialLinks?.facebook || "",
+              twitter: vendorData?.roleData?.socialLinks?.twitter || "",
+              tiktok: vendorData?.roleData?.socialLinks?.tiktok || "",
             }}
             onSave={(data) => handleSaveSection("vendorData", data)}
             loading={isSaving}

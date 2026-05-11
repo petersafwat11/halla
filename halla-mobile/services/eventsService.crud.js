@@ -107,7 +107,6 @@ export const getSingleEventStats = async (eventId, token) => {
     guestId: guest._id || guest.id,
     name: guest.name || "ضيف",
     phone: guest.phone || "",
-    email: guest.email || "",
     status: guest.status || "invited",
     respondedAt: guest.rsvp?.respondedAt || guest.respondedAt || null,
     addedBy: guest.addedBy || "",
@@ -119,8 +118,10 @@ export const getSingleEventStats = async (eventId, token) => {
     staff: staffList,
     confirmed: stats.confirmed || 0,
     declined: stats.declined || 0,
-    noResponse: stats.pending || 0,
-    maybe: 0,
+    pending: stats.pending || 0,
+    maybe: stats.maybe || 0,
+    checkedIn: stats.checkedIn || 0,
+    totalGuests: stats.totalGuests || 0,
   };
 };
 
@@ -247,7 +248,6 @@ export const formatGuestForDisplay = (guest) => {
     id: guest._id || guest.guestId,
     name: guest.name || "",
     phone: guest.phone || "",
-    email: guest.email || "not provided",
     status: guest.status || "invited",
     respondedAt: guest.rsvp?.respondedAt || guest.respondedAt || null,
     addedBy: guest.addedBy || "Unknown",

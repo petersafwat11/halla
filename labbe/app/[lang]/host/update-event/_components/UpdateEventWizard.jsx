@@ -4,6 +4,7 @@ import { FormProvider } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../../create-event/page.module.css";
 import Header from "../../create-event/_components/header/Header";
+import Stepper from "../../create-event/_components/stepper/Stepper";
 import StepTitleAndDesc from "../../create-event/_components/stepTitleAndDesc/StepTitleAndDesc";
 import UpdateButtons from "./UpdateButtons";
 import WhatsappPreview from "../../create-event/_components/whatsappPreview/WhatsappPreview";
@@ -131,6 +132,10 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
               description={t("update_page_description")}
               buttonText={t("promo_button")}
             />
+          </div>
+
+          <div className={styles.stepper_wrapper}>
+            <Stepper currentStep={currentStep} totalSteps={4} />
           </div>
 
           {isEventLive && <LiveEventBanner currentStep={currentStep} />}

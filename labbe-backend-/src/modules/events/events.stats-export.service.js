@@ -179,7 +179,6 @@ module.exports = {
           guestId: guestObj._id,
           name: guestObj.name || "",
           phone: guestObj.phone || "",
-          email: guestObj.email || "",
           status: guestObj.status || "invited",
           addedBy: guestObj.addedBy || "",
           respondAt: guestObj.rsvp?.respondedAt || null,
@@ -192,9 +191,8 @@ module.exports = {
       totalGuests: guests.length,
       confirmed: guests.filter((g) => g.status === "confirmed").length,
       declined: guests.filter((g) => g.status === "declined").length,
-      pending: guests.filter(
-        (g) => g.status === "invited" || g.status === "maybe"
-      ).length,
+      maybe: guests.filter((g) => g.status === "maybe").length,
+      pending: guests.filter((g) => g.status === "invited").length,
       checkedIn: guests.filter((g) => g.status === "checked_in").length,
     };
   },

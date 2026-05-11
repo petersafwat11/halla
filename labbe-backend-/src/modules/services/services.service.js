@@ -9,7 +9,7 @@ const User = require('../../../models/UserModel');
 const mongoose = require('mongoose');
 const { NotFoundError } = require('../../shared/errors');
 const { SERVICE_STATUS, VENDOR_STATUS } = require('../../shared/constants');
-const { getFileUrl } = require('../../shared/utils/s3Upload');
+const { getFileUrl, getSignedUrlForKey, getKeyFromUrl, isS3Url } = require('../../shared/utils/s3Upload');
 const logger = require('../../shared/utils/logger');
 const { logAudit } = require('../../shared/utils/auditLog');
 const locationsService = require('../locations/locations.service');
@@ -27,7 +27,6 @@ class ServicesService {
     const approvedVendorIds = await User.distinct('_id', {
       role: 'vendor',
       'profile.vendorData.vendorStatus': VENDOR_STATUS.APPROVED,
-      'profile.vendorData.profileCompleted': true,
     });
 
     let query = {
@@ -71,7 +70,7 @@ class ServicesService {
     ]);
 
     return {
-      data: services.map((s) => this._formatService(s)),
+      data: await Promise.all(services.map((s) => this._formatService(s))),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }
@@ -93,7 +92,7 @@ class ServicesService {
     ]);
 
     return {
-      data: services.map((s) => this._formatService(s)),
+      data: await Promise.all(services.map((s) => this._formatService(s))),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }
@@ -154,19 +153,18 @@ class ServicesService {
       }
     }
 
-    return { service: this._formatService(service) };
+    return { service: await this._formatService(service) };
   }
 
   /**
    * Create service
    */
   async createService(vendorId, data, file = null) {
-    // New services start unpublished — vendor must explicitly publish.
     const serviceData = {
       ...data,
       vendorId,
       status: 'active',
-      isPublic: false,
+      isPublic: true,
     };
 
     if (serviceData.serviceLocation) {
@@ -187,7 +185,7 @@ class ServicesService {
       metadata: { name: service.name, category: service.category, price: service.price },
     }).catch(() => {});
 
-    return { service: this._formatService(service) };
+    return { service: await this._formatService(service) };
   }
 
   /**
@@ -219,7 +217,7 @@ class ServicesService {
       metadata: { changes: Object.keys(data), imageUpdated: !!file },
     }).catch(() => {});
 
-    return { service: this._formatService(service) };
+    return { service: await this._formatService(service) };
   }
 
   /**
@@ -233,7 +231,9 @@ class ServicesService {
     }
 
     const previousStatus = service.status;
-    service.status = service.status === SERVICE_STATUS.ACTIVE ? SERVICE_STATUS.DISABLED : SERVICE_STATUS.ACTIVE;
+    const newStatus = service.status === SERVICE_STATUS.ACTIVE ? SERVICE_STATUS.DISABLED : SERVICE_STATUS.ACTIVE;
+    service.status = newStatus;
+    service.isPublic = newStatus === SERVICE_STATUS.ACTIVE;
     await service.save();
 
     logAudit({
@@ -244,7 +244,7 @@ class ServicesService {
       metadata: { previousStatus, newStatus: service.status },
     }).catch(() => {});
 
-    return { service: this._formatService(service) };
+    return { service: await this._formatService(service) };
   }
 
   /**
@@ -270,7 +270,7 @@ class ServicesService {
    * Format service for response
    * @private
    */
-  _formatService(service) {
+  async _formatService(service) {
     return {
       id: service._id,
       name: service.name,
@@ -280,7 +280,7 @@ class ServicesService {
       category: service.category,
       price: service.price,
       priceUnit: service.priceUnit || service.currency,
-      image: this._sanitizeImagePath(service.image),
+      image: await this._getImageUrl(service.image),
       tags: service.tags || [],
       status: service.status,
       isPublic: service.isPublic,
@@ -305,6 +305,27 @@ class ServicesService {
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
     };
+  }
+
+  /**
+   * Return a publicly accessible URL for a stored service image.
+   * For private S3 objects, generates a 1-hour pre-signed GET URL.
+   * @private
+   */
+  async _getImageUrl(storedImage) {
+    if (!storedImage) return null;
+    if (isS3Url(storedImage)) {
+      const key = getKeyFromUrl(storedImage);
+      if (key) {
+        try {
+          return await getSignedUrlForKey(key);
+        } catch (err) {
+          logger.warn('Failed to sign S3 URL for service image', { error: err.message });
+          return null;
+        }
+      }
+    }
+    return this._sanitizeImagePath(storedImage);
   }
 
   /**

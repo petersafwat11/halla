@@ -12,14 +12,14 @@ const STEP_DEFAULTS = [
   { id: 5, key: "step5_title", fallback: "مراجعة وإطلاق" },
 ];
 
-const Stepper = ({ currentStep = 1 }) => {
+const Stepper = ({ currentStep = 1, totalSteps = 5 }) => {
   let t;
   try {
     ({ t } = useTranslation("createEvent"));
   } catch (_) {
     t = (_k, fb) => fb;
   }
-  const steps = STEP_DEFAULTS.map((s) => ({ id: s.id, label: t(s.key, s.fallback) }));
+  const steps = STEP_DEFAULTS.slice(0, totalSteps).map((s) => ({ id: s.id, label: t(s.key, s.fallback) }));
   return (
     <>
       {/* Desktop Stepper */}

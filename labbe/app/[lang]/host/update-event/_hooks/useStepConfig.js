@@ -14,7 +14,24 @@ import StepFour from "../../create-event/_components/stepFour/StepFour";
  */
 const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
   useMemo(
-    () => ({
+    () => {
+      // Pool-plan events are saved with `guestLimit: -1` (no per-event
+      // cap; the cap is the global invitePool). Inferring "unlimited"
+      // from `eventRaw.guestLimit === -1` is wrong for pool plans and
+      // also wrong if the host changed plans between create and edit.
+      // Trust subscription-info as the single source of truth.
+      const isPool = subscriptionInfo?.isPoolPlan === true;
+      const subUnlimited = subscriptionInfo?.isGuestUnlimited === true;
+      // Frozen per-event cap only applies to non-pool plans where the
+      // event was created with a positive numeric ceiling.
+      const eventFrozenLimit =
+        !isPool &&
+        Number.isInteger(eventRaw?.guestLimit) &&
+        eventRaw.guestLimit > 0
+          ? eventRaw.guestLimit
+          : null;
+
+      return {
       1: {
         title: t("step1_title"),
         description: t("step1_description"),
@@ -26,16 +43,11 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
         Component: StepTwo,
         props: {
           subscription: {
-            // For live events, use the event's frozen guestLimit; otherwise use subscription
-            guestLimit: eventRaw?.guestLimit ?? subscriptionInfo?.guestLimit ?? 0,
-            isGuestUnlimited:
-              eventRaw?.guestLimit === -1 ||
-              subscriptionInfo?.isGuestUnlimited === true ||
-              false,
-            // Pool-plan effective cap is the *current* invitesRemaining on the
-            // subscription. Forwarded so StepTwo can show the real ceiling
-            // instead of ∞ when editing a pool-plan event.
-            isPoolPlan: subscriptionInfo?.isPoolPlan === true,
+            guestLimit: isPool
+              ? (subscriptionInfo?.invitesRemaining ?? 0)
+              : (eventFrozenLimit ?? subscriptionInfo?.guestLimit ?? 0),
+            isGuestUnlimited: subUnlimited && !isPool,
+            isPoolPlan: isPool,
             invitePool: subscriptionInfo?.invitePool ?? null,
             invitesRemaining: subscriptionInfo?.invitesRemaining ?? null,
           },
@@ -52,7 +64,8 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
         description: t("step4_description"),
         Component: StepFour,
       },
-    }),
+    };
+    },
     [subscriptionInfo, t, eventRaw, isEventLive]
   );
 

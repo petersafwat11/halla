@@ -38,15 +38,25 @@ const buildSchema = (t) =>
       path: ["scheduledDate"],
     });
 
+// Backend Zod schema for /messaging/schedule expects 24h "HH:mm".
 const formatTimeForAPI = (date) => {
   if (!date) return null;
   const d = new Date(date);
-  const hours = d.getHours();
-  const minutes = d.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  const h = hours % 12 || 12;
-  const m = minutes < 10 ? `0${minutes}` : String(minutes);
-  return `${h}:${m}:${ampm}`;
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+};
+
+// Backend reads `getUTCDate()` from `scheduledDate`, so a local-midnight
+// Date serialized via `.toISOString()` shifts the calendar day back one
+// in any UTC+ zone (e.g. Riyadh +3). Build UTC-midnight of the picked
+// Y/M/D so the backend sees the day the user actually selected.
+const toUtcMidnightIso = (date) => {
+  if (!date) return null;
+  const d = new Date(date);
+  return new Date(
+    Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
+  ).toISOString();
 };
 
 const ScheduleSendingModal = ({
@@ -86,7 +96,7 @@ const ScheduleSendingModal = ({
     try {
       await scheduleSend.mutateAsync({
         eventId,
-        scheduledDate: data.scheduledDate.toISOString(),
+        scheduledDate: toUtcMidnightIso(data.scheduledDate),
         scheduledTime: formatTimeForAPI(data.scheduledTime),
         channel: data.channel,
       });

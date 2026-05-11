@@ -12,7 +12,7 @@ import useGuestTableActions from "./useGuestTableActions";
 
 export default function GuestTable({ eventId }) {
   const { t } = useTranslation("home-events");
-  const { formatDate } = useLocalizedDate();
+  const { formatDate, formatDateTime } = useLocalizedDate();
 
   const { data: eventData } = useEvent(eventId);
   const { data: guestsData } = useEventGuests(eventId);
@@ -54,6 +54,7 @@ export default function GuestTable({ eventId }) {
           guests={guests}
           t={t}
           formatDate={formatDate}
+          formatDateTime={formatDateTime}
           onEditGuest={actions.handleEditGuest}
           onDeleteGuest={actions.handleDeleteGuest}
           onSendInvitation={actions.handleSendInvitation}

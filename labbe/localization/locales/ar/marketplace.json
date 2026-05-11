@@ -41,7 +41,11 @@
     "users": "مستخدمين",
     "callNow": "اتصل الآن"
   },
-  "title": "السوق",
+  "title": "متجر هلا",
+  "noResults": {
+    "title": "لا توجد نتائج",
+    "description": "حاول تعديل التصفيات أو مصطلحات البحث"
+  },
   "services": {
     "defaultName": "خدمة"
   }

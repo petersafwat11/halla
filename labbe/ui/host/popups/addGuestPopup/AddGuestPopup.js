@@ -21,7 +21,6 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
     resolver: zodResolver(guestSchema),
     defaultValues: {
       name: editGuest?.name || "",
-      email: editGuest?.email || "",
       phone: editGuest?.phone || "",
     },
   });
@@ -109,19 +108,6 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
 
             <div className={styles.formGroup}>
               <InputGroup
-                label={t("singleEvent.addGuest.email") || "Email"}
-                type="email"
-                name="email"
-                error={errors.email?.message}
-                placeholder={
-                  t("singleEvent.addGuest.emailPlaceholder") ||
-                  "Enter email address"
-                }
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <InputGroup
                 label={t("singleEvent.addGuest.phone") || "Phone"}
                 type="tel"
                 name="phone"
@@ -130,14 +116,9 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
                   t("singleEvent.addGuest.phonePlaceholder") ||
                   "Enter phone number"
                 }
+                required
               />
             </div>
-
-            {errors.contact && (
-              <div className={styles.contactError}>
-                {errors.contact.message}
-              </div>
-            )}
           </div>
 
           <div className={styles.footer}>

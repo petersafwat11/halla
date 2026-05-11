@@ -82,7 +82,6 @@ export default function AdminGuestRows({
       headers={[
         t("table.columns.guestName", "اسم العميل"),
         t("table.columns.mobile", "رقم الجوال"),
-        t("table.columns.email", "البريد الإلكتروني"),
         t("table.columns.addedBy", "إضافة بواسطة"),
         t("table.columns.status", "الحالة"),
         t("table.columns.responseTime", "توقيت الرد"),
@@ -91,7 +90,6 @@ export default function AdminGuestRows({
         id: guest.id,
         name: guest.name || "-",
         phone: guest.phone || "-",
-        email: guest.email || "-",
         addedBy: guest.addedBy?.username || guest.addedBy?.name || "-",
         status: guest.status || "invited",
         responseTime: guest.rsvp?.respondedAt,

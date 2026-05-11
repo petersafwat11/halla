@@ -377,7 +377,6 @@ export const transformFormDataToPayload = (formData) => {
     guestList: (formData.guestList || []).map((guest) => ({
       name: guest.name,
       phone: guest.phone || guest.mobile,
-      email: guest.email || "",
     })),
     staffList: (formData.staffList || []).map((moderator) => ({
       name: moderator.name,

@@ -68,10 +68,13 @@
     "remainingEvents": "Remaining Events",
     "plan": "Plan",
     "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
       "published": "Published",
       "pending": "Pending Approval",
       "suspended": "Suspended by Admins",
-      "active": "Active"
+      "active": "Active",
+      "completed": "Completed"
     },
     "dropdown": {
       "eventDetails": "Event Details",
@@ -161,7 +164,6 @@
       "addedBy": "Added By",
       "name": "Name",
       "phone": "Phone",
-      "email": "Email",
       "status": "Status",
       "respondAt": "Response Date"
     },
@@ -207,7 +209,8 @@
       "declined": "Declined",
       "confirmed": "Confirmed",
       "noResponse": "No Response",
-      "maybe": "Maybe"
+      "maybe": "Maybe",
+      "checkedIn": "Checked In"
     },
     "staff": {
       "title": "Staff",
@@ -238,8 +241,6 @@
       "title": "Add Guest",
       "name": "Name",
       "namePlaceholder": "Enter guest name",
-      "email": "Email",
-      "emailPlaceholder": "Enter email address",
       "phone": "Phone",
       "phonePlaceholder": "Enter phone number",
       "success": "Guest added successfully",
@@ -328,6 +329,8 @@
     "title": "Send Test Message",
     "description": "Send one test message to verify the functionality and preview the final invitation appearance",
     "phoneLabel": "Mobile Number",
+    "success": "Test message sent successfully",
+    "error": "Failed to send test message",
     "validation": {
       "phoneRequired": "Phone number is required",
       "phoneFormat": "Phone number must be 9 digits starting with 5"

@@ -16,27 +16,12 @@ const guestSchema = new mongoose.Schema(
       maxlength: [100, "Guest name cannot exceed 100 characters"],
     },
 
-    // Contact Information - At least one of phone or email must be provided
+    // Contact Information — phone is the only contact channel.
     phone: {
       type: String,
+      required: [true, "Phone number is required"],
       trim: true,
       length: [9, "Phone number must be 9 digits"],
-    },
-
-    email: {
-      type: String,
-      trim: true,
-      lowercase: true,
-      validate: {
-        validator: function (value) {
-          // If email is provided, validate format
-          if (value) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-          }
-          return true; // Allow empty if phone is provided
-        },
-        message: "Please provide a valid email address",
-      },
     },
 
     // Event Reference
@@ -204,16 +189,6 @@ const guestSchema = new mongoose.Schema(
   }
 );
 
-// Custom validation to ensure at least one of phone or email is provided
-guestSchema.pre("validate", function (next) {
-  if (!this.phone && !this.email) {
-    const error = new Error("Either phone number or email address is required");
-    error.path = "contact";
-    return next(error);
-  }
-  next();
-});
-
 // Generate QR code before saving if not provided
 guestSchema.pre("save", function (next) {
   if (!this.qrcode && this.isNew) {
@@ -237,7 +212,6 @@ guestSchema.pre("save", function (next) {
 // Indexes for better performance
 guestSchema.index({ event: 1 });
 guestSchema.index({ status: 1 });
-guestSchema.index({ email: 1 });
 guestSchema.index({ phone: 1 });
 // Note: qrcode has unique: true in schema, no separate index needed
 guestSchema.index({ "checkIn.checkedIn": 1 });
@@ -249,10 +223,7 @@ guestSchema.index({ event: 1, "checkIn.checkedIn": 1 });
 
 // Virtual for full contact info
 guestSchema.virtual("contactInfo").get(function () {
-  const contact = [];
-  if (this.email) contact.push(`Email: ${this.email}`);
-  if (this.phone) contact.push(`Phone: ${this.phone}`);
-  return contact.join(" | ");
+  return this.phone ? `Phone: ${this.phone}` : "";
 });
 
 // Virtual for checking if guest has responded
@@ -302,7 +273,7 @@ guestSchema.statics.getEventStats = async function (eventId) {
 };
 
 // Instance method to send invitation
-guestSchema.methods.sendInvitation = function (method = "email") {
+guestSchema.methods.sendInvitation = function (method = "whatsapp") {
   this.invitation.sent = true;
   this.invitation.sentAt = new Date();
   this.invitation.method = method;

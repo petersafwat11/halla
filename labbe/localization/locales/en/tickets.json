@@ -11,6 +11,8 @@
   "popup": {
     "createTitle": "Submit Ticket",
     "editTitle": "Edit Ticket",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "Enter ticket subject",
     "typeLabel": "Ticket Type",
     "typePlaceholder": "Select ticket type",
     "messageLabel": "Message",

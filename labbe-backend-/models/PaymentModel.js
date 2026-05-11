@@ -27,9 +27,17 @@
  *   when refundedAmount >= amount; `partially_refunded` otherwise.
  *
  * UNIQUENESS
- *   moyasarPaymentId is unique (sparse, because dev/stub IDs are
- *   `stub-...` strings and we want to catch duplicate inserts). It
- *   is the join key with Moyasar webhooks.
+ *   moyasarPaymentId is unique among rows whose value is a string
+ *   (`stub-...` in stub mode, UUID/`pay_...` from Moyasar). The index
+ *   uses a partialFilterExpression on `$type: "string"` instead of
+ *   `sparse: true` because the field has `default: null` — sparse only
+ *   excludes *missing* fields, so two rows with explicit null would
+ *   still collide on the unique constraint and break concurrent
+ *   first-time checkouts. The partial filter excludes nulls properly.
+ *   It is the join key with Moyasar webhooks.
+ *   Schema migrations: scripts/migrate-payment-moyasar-id-index.js
+ *   drops the legacy `sparse` index and creates the partial one;
+ *   Mongoose will not rewrite an index whose options changed.
  */
 
 const mongoose = require("mongoose");
@@ -160,7 +168,13 @@ const paymentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-paymentSchema.index({ moyasarPaymentId: 1 }, { unique: true, sparse: true });
+paymentSchema.index(
+  { moyasarPaymentId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { moyasarPaymentId: { $type: "string" } },
+  }
+);
 paymentSchema.index({ userId: 1, status: 1, createdAt: -1 });
 paymentSchema.index({ status: 1, createdAt: -1 });
 paymentSchema.index({ whitelabelId: 1, status: 1, createdAt: -1 });

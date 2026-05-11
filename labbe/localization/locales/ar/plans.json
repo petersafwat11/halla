@@ -18,7 +18,7 @@
   "pageTitle": "اختر باقتك",
   "pageSubtitle": "اختر الباقة المناسبة لمناسبتك",
   "loading": "جار التحميل...",
-  "planFamilies": { "basic": "هلا بيسك", "premium": "هلا بريميوم" },
+  "planFamilies": { "basic": "هلا اساسى", "premium": "هلا مميز" },
   "planFamilyDescriptions": {
     "basic": "تدير كل شيء بنفسك — نحن نتولى الجانب التقني",
     "premium": "فريقنا يدير كل شيء عنك"
@@ -104,7 +104,7 @@
     "subtitle": "راجع طلبك قبل إتمام الدفع",
     "back": "رجوع",
     "planDetails": "تفاصيل الباقة",
-    "planFamilyBadges": { "basic": "بيسك", "premium": "بريميوم" },
+    "planFamilyBadges": { "basic": "اساسى", "premium": "مميز" },
     "singleEvent": "مناسبة واحدة",
     "invitePoolLabel": "{{count}} دعوة (شهري)",
     "invitesLabel": "{{count}} دعوة",

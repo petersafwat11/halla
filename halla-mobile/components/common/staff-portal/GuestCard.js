@@ -20,7 +20,6 @@ const GuestCard = ({ guest, onCheckIn, t }) => {
       <View style={styles.guestInfo}>
         <Text style={styles.guestName}>{guest.name}</Text>
         <Text style={styles.guestPhone}>{guest.phone}</Text>
-        {guest.email ? <Text style={styles.guestEmail}>{guest.email}</Text> : null}
       </View>
       <View style={styles.guestRight}>
         <View style={[styles.statusBadge, { backgroundColor: statusColor.bg }]}>

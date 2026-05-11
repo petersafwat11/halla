@@ -10,6 +10,7 @@ export default function GuestRows({
   guests,
   t,
   formatDate,
+  formatDateTime,
   onEditGuest,
   onDeleteGuest,
   onSendInvitation,
@@ -18,23 +19,36 @@ export default function GuestRows({
 }) {
   const guestsList = guests || [];
 
+  // Column keys must match `headers` 1:1 in the same order. The Table
+  // component falls back to `Object.keys(row)` when `headerKeys` isn't
+  // passed, which would render every property as a column — including
+  // side-channel fields like `smsFallback` that the renderer reads from
+  // `row` but should never be its own cell. Pass keys explicitly.
+  const columnKeys = [
+    "name",
+    "phone",
+    "addedBy",
+    "status",
+    "sentVia",
+    "responseTime",
+  ];
+
   return (
     <Table
       title={t("singleEvent.guestTable.title", "قائمة الضيوف")}
       headers={[
         t("table.columns.guestName", "اسم الضيف"),
         t("table.columns.mobile", "رقم الجوال"),
-        t("table.columns.email", "البريد الإلكتروني"),
         t("table.columns.addedBy", "أضافه"),
         t("table.columns.status", "الحالة"),
         t("table.columns.sentVia", "أُرسل عبر"),
         t("table.columns.responseTime", "وقت الرد"),
       ]}
+      headerKeys={columnKeys}
       data={guestsList.map((guest) => ({
         id: guest.id,
         name: guest.name || "-",
         phone: guest.phone || "-",
-        email: guest.email || "-",
         addedBy: guest.addedBy?.username || guest.addedBy?.name || "-",
         status: guest.status || "invited",
         sentVia:
@@ -75,7 +89,11 @@ export default function GuestRows({
       renderCell={(key, value, row) => {
         if (key === "sentVia") return renderSentViaBadge(value, row, t);
         if (key === "status") return renderStatusBadge(value, t);
-        if (key === "responseTime" && value) return formatDate(value);
+        if (key === "responseTime" && value) {
+          // Show full date+time so the host can see exactly when the
+          // guest replied — date alone is ambiguous after 24h.
+          return (formatDateTime || formatDate)(value);
+        }
         return value;
       }}
       showSearch={true}

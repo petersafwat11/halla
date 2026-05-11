@@ -20,20 +20,14 @@ const saudiPhone = z
 const addGuestSchema = z
   .object({
     name: z.string().trim().min(1, 'name is required').max(120),
-    phone: saudiPhone.optional(),
-    email: z.string().email().optional(),
+    phone: saudiPhone,
   })
-  .strict()
-  .refine((v) => !!v.phone || !!v.email, {
-    path: ['phone'],
-    message: 'Either phone or email is required',
-  });
+  .strict();
 
 const updateGuestSchema = z
   .object({
     name: z.string().trim().min(1).max(120).optional(),
     phone: saudiPhone.optional(),
-    email: z.string().email().optional(),
     status: z.enum(Object.values(GUEST_STATUS)).optional(),
   })
   .strict()

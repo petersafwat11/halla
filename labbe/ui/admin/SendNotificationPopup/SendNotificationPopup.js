@@ -20,7 +20,7 @@ const SendNotificationPopup = ({
   onClose,
   onSuccess,
 }) => {
-  const { t, i18n } = useTranslation("adminCommon");
+  const { t, i18n } = useTranslation("admin");
   const isRTL = i18n.language === "ar";
 
   const roleLabels = {
@@ -61,15 +61,11 @@ const SendNotificationPopup = ({
         });
       }
 
-      toast.success(
-        isRTL
-          ? isBulk ? "تم إرسال الإشعار لجميع المستخدمين" : "تم إرسال الإشعار بنجاح"
-          : isBulk ? "Notification sent to all users" : "Notification sent successfully"
-      );
+      toast.success(isBulk ? t("sendNotification.sentToAll") : t("sendNotification.sentSuccess"));
       onSuccess?.();
       onClose();
     } catch (error) {
-      toast.error(isRTL ? "فشل في إرسال الإشعار" : "Failed to send notification");
+      toast.error(t("sendNotification.sendFailed"));
     }
   };
 

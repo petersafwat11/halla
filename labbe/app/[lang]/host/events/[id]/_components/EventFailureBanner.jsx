@@ -98,23 +98,65 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
 
     return (
       <div className={`${styles.banner} ${styles.retrying}`} dir={dir}>
-        <div className={styles.title}>
-          {t(
-            "failureBanner.retrying.title",
-            isRtl ? "نُعيد محاولة إطلاق مناسبتك..." : "Retrying your event launch..."
-          )}
+        <div className={styles.titleRow}>
+          <span className={styles.iconWrap} aria-hidden="true">
+            <svg
+              className={styles.spinner}
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                strokeOpacity="0.25"
+                strokeWidth="2.5"
+              />
+              <path
+                d="M21 12a9 9 0 0 0-9-9"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
+          <h3 className={styles.title}>
+            {t(
+              "failureBanner.retrying.title",
+              isRtl ? "نُعيد محاولة إطلاق مناسبتك" : "Retrying your event launch"
+            )}
+          </h3>
         </div>
-        <div className={styles.message}>
+
+        <p className={styles.message}>
           {isRtl
             ? `محاولة ${attemptCount} من ${MAX_VISIBLE_ATTEMPTS}. سنحاول مجدداً تلقائياً.`
             : `Attempt ${attemptCount} of ${MAX_VISIBLE_ATTEMPTS}. We'll try again automatically.`}
-          {countdownStr && countdownMs > 0 ? (
-            <span className={styles.countdown}>
-              {" "}
+        </p>
+
+        <div className={styles.progress} aria-label={`${attemptCount}/${MAX_VISIBLE_ATTEMPTS}`}>
+          {Array.from({ length: MAX_VISIBLE_ATTEMPTS }).map((_, i) => {
+            const idx = i + 1;
+            const cls =
+              idx < attemptCount
+                ? `${styles.dot} ${styles.dotActive}`
+                : idx === attemptCount
+                  ? `${styles.dot} ${styles.dotCurrent}`
+                  : styles.dot;
+            return <span key={i} className={cls} />;
+          })}
+        </div>
+
+        {countdownStr && countdownMs > 0 ? (
+          <div className={styles.countdownPill}>
+            <span className={styles.countdownDot} aria-hidden="true" />
+            <span>
               {isRtl ? `المحاولة التالية خلال ${countdownStr}` : `Next attempt in ${countdownStr}`}
             </span>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -150,20 +192,39 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
 
   return (
     <div className={`${styles.banner} ${styles.failed}`} dir={dir}>
-      <div className={styles.title}>
-        {t(
-          "failureBanner.failed.title",
-          isRtl ? "نعتذر — تعذّر إطلاق مناسبتك" : "We're sorry — your event couldn't launch"
-        )}
+      <div className={styles.titleRow}>
+        <span className={styles.iconWrap} aria-hidden="true">
+          <svg
+            className={styles.icon}
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" />
+            <path
+              d="M12 7.5v5.5"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+            <circle cx="12" cy="16.2" r="1.1" fill="currentColor" />
+          </svg>
+        </span>
+        <h3 className={styles.title}>
+          {t(
+            "failureBanner.failed.title",
+            isRtl ? "نعتذر — تعذّر إطلاق مناسبتك" : "We're sorry — your event couldn't launch"
+          )}
+        </h3>
       </div>
-      <div className={styles.message}>
+      <p className={styles.message}>
         {t(
           "failureBanner.failed.message",
           isRtl
             ? "لم نتمكن من إرسال الدعوات لمناسبتك. سنبذل كل جهد لمساعدتك على إطلاقها."
             : "We couldn't send your invitations. We'll do our best to help you launch."
         )}
-      </div>
+      </p>
       {failureReason ? (
         <div className={styles.reason} data-testid="failure-reason">
           <span>{isRtl ? "سبب الفشل: " : "Reason: "}</span>

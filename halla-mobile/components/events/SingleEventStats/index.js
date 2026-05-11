@@ -64,7 +64,9 @@ const SingleEventStats = ({ event, stats, onBack, onRefresh }) => {
     confirmed: stats?.confirmed || 0,
     declined: stats?.declined || 0,
     maybe: stats?.maybe || 0,
-    pending: stats?.noResponse || 0,
+    // Backend returns `pending` (invited-only); older code aliased it as
+    // `noResponse`. Read both so UI keeps working through any cache rev.
+    pending: stats?.pending ?? stats?.noResponse ?? 0,
   };
 
   const handleAddPress = useCallback(() => {

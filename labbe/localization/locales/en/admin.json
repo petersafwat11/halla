@@ -183,6 +183,11 @@
       "addDecorationHint": "Click \"Add Decoration\" to get started"
     }
   },
+  "sendNotification": {
+    "sentToAll": "Notification sent to all users",
+    "sentSuccess": "Notification sent successfully",
+    "sendFailed": "Failed to send notification"
+  },
   "managePlans": {
     "title": "Manage Plans & Pricing",
     "subtitle": "Edit plan pricing, guest limits, and event limits",

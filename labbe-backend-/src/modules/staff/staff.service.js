@@ -484,7 +484,6 @@ class StaffService {
       id: guest._id,
       name: guest.name,
       phone: guest.phone,
-      email: guest.email,
       status: guest.status,
       checkIn: guest.checkIn,
     };

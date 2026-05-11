@@ -20,7 +20,7 @@ const PostEventContent = require('../../../models/PostEventContentModel');
 const notificationService = require('../notifications/notifications.service');
 const taqnyat = require('../../infrastructure/taqnyat');
 const { runBatched } = require('../../shared/utils/runBatched');
-const { withIdempotency } = require('../../shared/utils/idempotency');
+const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { GUEST_STATUS } = require('../../shared/constants');
@@ -138,6 +138,11 @@ async function sendBulkAccessLinks(
     reachable,
     (t) => {
       const key = `post_event_access:${eventId}:${t.guest._id}`;
+      const requestHash = sha256({
+        eventId: String(eventId),
+        guestId: String(t.guest._id),
+        templateName: template?.templateName || null,
+      });
       return withIdempotency(
         key,
         async () => {
@@ -157,7 +162,7 @@ async function sendBulkAccessLinks(
             smsFallback
           );
         },
-        { scope: 'post_event_access', userId }
+        { scope: 'post_event_access', userId, requestHash }
       );
     },
     { concurrency: 5, ratePerSecond: 10 }
@@ -261,8 +266,13 @@ async function autoNotifyAfterPublish(event, content) {
 
   await runBatched(
     guests,
-    (guest) =>
-      withIdempotency(
+    (guest) => {
+      const requestHash = sha256({
+        eventId: String(event._id),
+        guestId: String(guest._id),
+        templateName: template?.templateName || null,
+      });
+      return withIdempotency(
         `post_event_publish:${event._id}:${guest._id}`,
         async () => {
           const tokenDoc = await GuestAccessToken.createForGuest(
@@ -287,7 +297,7 @@ async function autoNotifyAfterPublish(event, content) {
             smsFallback
           );
         },
-        { scope: 'post_event_publish' }
+        { scope: 'post_event_publish', requestHash }
       ).catch((err) => {
         logger.error('[post-event] notify guest failed', {
           eventId: event._id?.toString(),
@@ -295,7 +305,8 @@ async function autoNotifyAfterPublish(event, content) {
           error: err.message,
         });
         return { ok: false };
-      }),
+      });
+    },
     { concurrency: 5, ratePerSecond: 10 }
   );
 

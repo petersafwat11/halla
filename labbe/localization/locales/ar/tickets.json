@@ -11,6 +11,8 @@
   "popup": {
     "createTitle": "انشئ شكوى",
     "editTitle": "تعديل الشكوى",
+    "subjectLabel": "موضوع الشكوى",
+    "subjectPlaceholder": "ادخل موضوع الشكوى",
     "typeLabel": "نوع الشكوى",
     "typePlaceholder": "اختر نوع الشكوى",
     "messageLabel": "نص الشكوى ",

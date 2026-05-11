@@ -46,7 +46,6 @@ module.exports = {
     const docs = Array.from(seen.values()).map(guest => ({
       name: guest.name,
       phone: guest.phone,
-      email: guest.email,
       event: eventId,
       status: "invited",
       invitedBy: guest.invitedBy || null,

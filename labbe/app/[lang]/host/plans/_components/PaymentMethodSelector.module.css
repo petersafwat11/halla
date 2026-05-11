@@ -76,12 +76,32 @@
 }
 
 .row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.8rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.6rem;
 }
 
-.fieldGrow { min-width: 0; }
+.expiryGroup {
+  display: flex;
+  gap: 0.8rem;
+  flex: 0 0 auto;
+}
+
+.fieldMonth {
+  flex: 0 0 7rem;
+  min-width: 0;
+}
+
+.fieldYear {
+  flex: 0 0 9.5rem;
+  min-width: 0;
+}
+
+.fieldCvc {
+  flex: 0 0 9.5rem;
+  min-width: 0;
+}
 
 .input {
   width: 100%;
@@ -163,6 +183,9 @@
     font-size: 1.1rem;
   }
   .icon { font-size: 1.7rem; }
-  .row { grid-template-columns: 1fr 1fr; }
-  .row .field:first-child { grid-column: 1 / -1; }
+  .row { gap: 0.8rem; }
+  .expiryGroup { gap: 0.5rem; }
+  .fieldMonth { flex: 0 0 5.5rem; }
+  .fieldYear  { flex: 0 0 7.5rem; }
+  .fieldCvc   { flex: 0 0 7.5rem; }
 }

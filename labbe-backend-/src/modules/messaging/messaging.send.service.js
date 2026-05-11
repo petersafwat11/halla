@@ -8,7 +8,7 @@ const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
 const config = require('../../config');
 const { runBatched } = require('../../shared/utils/runBatched');
-const { withIdempotency } = require('../../shared/utils/idempotency');
+const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { AppError, NotFoundError, ForbiddenError } = require('../../shared/errors');
@@ -358,10 +358,13 @@ async function sendBulk({
     effectiveGuestIds,
     async (guestId) => {
       const key = `${scope}:${eventId}:${guestId}:${fingerprint}`;
+      const requestHash = sha256(
+        JSON.stringify({ eventId: String(eventId), guestId: String(guestId), channel })
+      );
       const result = await withIdempotency(
         key,
         () => sendToGuest({ guestId, eventId, channel }),
-        { scope, userId }
+        { scope, userId, requestHash }
       );
       // Persist stats incrementally so a crash mid-loop doesn't lose progress.
       const inc = result?.success

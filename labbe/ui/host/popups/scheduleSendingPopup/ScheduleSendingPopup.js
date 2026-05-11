@@ -15,18 +15,63 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
   const { t } = useTranslation("common");
   const scheduleSend = useScheduleSend();
 
-  // Calculate minimum date (2 days from now)
+  // Picker hint: minimum allowed day is two days out (00:00). The
+  // authoritative 48h lead-time check lives on the backend; if the
+  // combined date+time still falls under it, the API returns
+  // SCHEDULE_TOO_SOON and the toast surfaces that message.
   const getTwoDaysFromNow = () => {
     const date = new Date();
     date.setDate(date.getDate() + 2);
+    date.setHours(0, 0, 0, 0);
     return date;
+  };
+
+  // Build a UTC-midnight ISO string from a Date's local Y/M/D
+  // components. The DatePicker emits a Date at local 00:00; calling
+  // `.toISOString()` directly shifts it back a day in any UTC+ zone,
+  // which makes the backend (which reads `getUTCDate()`) think the
+  // host meant the previous calendar day.
+  const toUtcMidnightIso = (d) => {
+    const date = d instanceof Date ? d : new Date(d);
+    return new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    ).toISOString();
+  };
+
+  // Backend stores `scheduledTime` as 24h "HH:mm"; the picker speaks
+  // "HH:MM:AM/PM". Convert in both directions at this boundary.
+  const to24h = (ampmTime) => {
+    if (!ampmTime || typeof ampmTime !== "string") return null;
+    const m = ampmTime.match(/^(\d{1,2}):(\d{2}):(AM|PM)$/i);
+    if (!m) return null;
+    let h = parseInt(m[1], 10);
+    const mm = parseInt(m[2], 10);
+    if (h < 1 || h > 12 || mm < 0 || mm > 59) return null;
+    const ampm = m[3].toUpperCase();
+    if (ampm === "AM" && h === 12) h = 0;
+    else if (ampm === "PM" && h !== 12) h += 12;
+    return `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  };
+
+  const fromHHmm = (hhmm) => {
+    if (!hhmm || typeof hhmm !== "string") return "12:00:AM";
+    const m = hhmm.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return "12:00:AM";
+    const h24 = parseInt(m[1], 10);
+    const mm = parseInt(m[2], 10);
+    if (h24 < 0 || h24 > 23 || mm < 0 || mm > 59) return "12:00:AM";
+    const ampm = h24 >= 12 ? "PM" : "AM";
+    const h12 = h24 % 12 || 12;
+    return `${String(h12).padStart(2, "0")}:${String(mm).padStart(2, "0")}:${ampm}`;
   };
 
   const methods = useForm({
     defaultValues: {
-      date: existingSchedule?.scheduledDate || null,
-      time: existingSchedule?.scheduledTime || "12:00:AM",
-      channel: "whatsapp",
+      date: existingSchedule?.scheduledDate
+        ? new Date(existingSchedule.scheduledDate)
+        : null,
+      time: fromHHmm(existingSchedule?.scheduledTime),
+      channel: existingSchedule?.preferredChannel || "whatsapp",
     },
   });
 
@@ -34,34 +79,38 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
 
   const onSubmit = async (data) => {
     if (!data.date || !data.time) {
-      toast.error("Please select both date and time");
+      toast.error(t("schedule_date_time_required"));
       return;
     }
 
-    // Validate that date is at least 2 days from now
     const selectedDate = new Date(data.date);
     const minDate = getTwoDaysFromNow();
-
     if (selectedDate < minDate) {
-      toast.error("Scheduled date must be at least 2 days from now");
+      toast.error(t("schedule_min_days_error"));
+      return;
+    }
+
+    const time24 = to24h(data.time);
+    if (!time24) {
+      toast.error(t("schedule_invalid_time"));
       return;
     }
 
     try {
       await scheduleSend.mutateAsync({
         eventId,
-        scheduledDate: data.date,
-        scheduledTime: data.time,
+        scheduledDate: toUtcMidnightIso(selectedDate),
+        scheduledTime: time24,
         channel: data.channel,
       });
 
-      toast.success("Message scheduled successfully!");
+      toast.success(t("schedule_message_success"));
       if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
       console.error("Error scheduling message:", error);
       toast.error(
-        error?.response?.data?.message || "Failed to schedule message"
+        error?.response?.data?.message || t("schedule_message_failed")
       );
     }
   };

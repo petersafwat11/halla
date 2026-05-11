@@ -115,6 +115,72 @@ class CheckoutService {
       idempotencyKey
       || `checkout:${userId}:${plan.code}:${total}:${resolvedAddons.length}`;
 
+    // Checkout-level idempotency. The charge() call is wrapped by
+    // withIdempotency, which replays the cached transactionId on retry.
+    // Moyasar also dedupes server-side on `given_id`, which moyasar.js
+    // derives via SHA-256 of the idempotency key — so the same
+    // (user, plan, total, addonCount) tuple maps to the same Moyasar
+    // payment id permanently, not just for the IdempotencyKey TTL. If
+    // we don't short-circuit here, every retry inserts a fresh Payment
+    // row and tries to attach the same moyasarPaymentId to it,
+    // colliding with the prior row's unique index. No createdAt filter
+    // for this reason: a stale match is still better than a 409.
+    const existingCheckout = await Payment.findOne({
+      userId,
+      'metadata.checkoutKey': derivedKey,
+      status: {
+        $in: [
+          Payment.PAYMENT_STATUS.PENDING_3DS,
+          Payment.PAYMENT_STATUS.AUTHORIZED,
+          Payment.PAYMENT_STATUS.PAID,
+          Payment.PAYMENT_STATUS.CAPTURED,
+        ],
+      },
+    }).sort({ createdAt: -1 });
+
+    if (existingCheckout) {
+      if (existingCheckout.status === Payment.PAYMENT_STATUS.PENDING_3DS) {
+        return {
+          requiresAction: true,
+          redirectUrl: existingCheckout.redirectUrl,
+          paymentId: existingCheckout._id,
+          totals: { planPrice, addonsTotal, discountAmount, total },
+        };
+      }
+      // PAID/AUTHORIZED/CAPTURED — return the bundle that was already
+      // activated by the first call. Never re-run _fulfillBundle on a
+      // payment whose subscription is already attached: that would
+      // create a duplicate subscription and auto-cancel the old one.
+      if (existingCheckout.subscriptionId) {
+        const subscription = await Subscription.findById(
+          existingCheckout.subscriptionId
+        ).populate('planId');
+        return {
+          subscription,
+          addons: [],
+          failedAddons: existingCheckout.metadata?.checkoutFailedAddons || [],
+          alreadyFinalized: true,
+          paymentId: existingCheckout._id,
+          totals: { planPrice, addonsTotal, discountAmount, total },
+        };
+      }
+      // Paid but no subscription yet — finalize now (idempotent via
+      // metadata.checkoutFinalizedAt). Used when the 3DS callback or a
+      // crash interrupted the first attempt between charge and fulfill.
+      if (existingCheckout.metadata?.pendingCheckoutIntent) {
+        return this.finalizePending3ds(existingCheckout._id);
+      }
+      return this._fulfillBundle({
+        userId,
+        plan,
+        planCode,
+        discountCode: validatedDiscountCode,
+        paymentRecord: existingCheckout,
+        addons: resolvedAddons,
+        totals: { planPrice, addonsTotal, discountAmount, total },
+      });
+    }
+
     const paymentRecord = await Payment.create({
       userId,
       whitelabelId: user.whitelabelId || null,
@@ -125,7 +191,8 @@ class CheckoutService {
       callbackUrl: finalCallbackUrl,
       description: this._describeCheckout(planCode, resolvedAddons.length),
       // `purpose: 'checkout'` is the dispatch key used by webhook/poll3ds to
-      // route this payment through finalizePending3ds.
+      // route this payment through finalizePending3ds. `checkoutKey` is the
+      // lookup field for the replay short-circuit above.
       metadata: {
         purpose: 'checkout',
         planCode,
@@ -134,6 +201,7 @@ class CheckoutService {
         discountAmount,
         addonCount: resolvedAddons.length,
         userId: String(userId),
+        checkoutKey: derivedKey,
       },
     });
 

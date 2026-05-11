@@ -134,7 +134,7 @@ const GuestImporter = ({
           } else if (!/^5[0-9]{8}$/.test(row.mobile)) {
             errors.push(t("validation.mobile_format_import"));
           }
-          return { valid: errors.length === 0, errors };
+          return { isValid: errors.length === 0, errors };
         };
         const result = await importFromXLSX(file, headers, validateRow);
         if (result.success) {

@@ -90,7 +90,7 @@ const MarketPlacePage = () => {
       <div className={styles.mainContent}>
         <div className={styles.header}>
           <h1 className={styles.title}>
-            {t("title")} ({totalItems})
+            {t("title")}
           </h1>
         </div>
 

@@ -8,7 +8,7 @@ const crypto = require('crypto');
 const messagingService = require('./messaging.service');
 const catchAsync = require('../../shared/utils/catchAsync');
 const logger = require('../../shared/utils/logger');
-const { withIdempotency } = require('../../shared/utils/idempotency');
+const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 
 /**
  * Verify the Meta/WhatsApp HMAC signature on the incoming webhook payload.
@@ -157,6 +157,11 @@ exports.webhook = catchAsync(async (req, res) => {
                     .digest('hex')
                     .slice(0, 32)}`;
 
+              const requestHash = sha256({
+                phoneNumber: String(message.from),
+                buttonText: String(message.button.text),
+                messageId: messageId || null,
+              });
               await withIdempotency(
                 dedupKey,
                 () =>
@@ -165,7 +170,7 @@ exports.webhook = catchAsync(async (req, res) => {
                     buttonText: message.button.text,
                     messageId,
                   }),
-                { scope: 'webhook_dedup' }
+                { scope: 'webhook_dedup', requestHash }
               );
             } catch (buttonErr) {
               logger.error('[webhook] button-response handler failed', {
