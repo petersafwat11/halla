@@ -19,6 +19,17 @@ const _requestWithQuery = (path, params, init, errorMessage) => {
   return _request(qs ? `${path}?${qs}` : path, init, errorMessage);
 };
 
+const _resolveMimeType = (image) => {
+  if (image.mimeType) return image.mimeType;
+  if (image.type && image.type !== "image") return image.type;
+  const uri = (image.uri || "").toLowerCase();
+  if (uri.endsWith(".png")) return "image/png";
+  if (uri.endsWith(".gif")) return "image/gif";
+  if (uri.endsWith(".webp")) return "image/webp";
+  if (uri.endsWith(".jpg") || uri.endsWith(".jpeg")) return "image/jpeg";
+  return "image/jpeg";
+};
+
 const buildServiceFormData = (data) => {
   const formData = new FormData();
   if (data.name) formData.append("name", data.name);
@@ -29,8 +40,8 @@ const buildServiceFormData = (data) => {
   if (data.image?.uri) {
     formData.append("image", {
       uri: data.image.uri,
-      type: data.image.mimeType || data.image.type || "image/jpeg",
-      name: data.image.fileName || "service.jpg",
+      type: _resolveMimeType(data.image),
+      name: data.image.fileName || data.image.name || "service.jpg",
     });
   }
   return formData;

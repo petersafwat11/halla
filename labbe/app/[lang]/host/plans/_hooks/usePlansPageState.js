@@ -8,33 +8,9 @@ import { useHostPlans } from "@/hooks/reactQueryHooks/usePlans";
 import { useMySubscription } from "@/hooks/reactQueryHooks/useSubscriptions";
 import { useCheckout } from "@/hooks/reactQueryHooks/useCheckout";
 
-const FEATURE_MAP = {
-  hasInAppInvites: { icon: "mobile", labelAr: "إرسال الدعوات من التطبيق", labelEn: "In-App Invites" },
-  hasWhatsAppInvites: { icon: "whatsapp", labelAr: "دعوات واتساب", labelEn: "WhatsApp Invites" },
-  hasSMSInvites: { icon: "sms", labelAr: "دعوات رسائل نصية", labelEn: "SMS Invites" },
-  hasQRCode: { icon: "qrcode", labelAr: "رمز QR للدخول", labelEn: "QR Code Entry" },
-  hasQRScanning: { icon: "scan", labelAr: "مسح QR", labelEn: "QR Scanning" },
-  hasFlexibleEntryMode: { icon: "flexible", labelAr: "وضع دخول مرن", labelEn: "Flexible Entry Mode" },
-  hasStaffCheckIn: { icon: "staff", labelAr: "إدارة الموظفين", labelEn: "Staff Check-in" },
-  hasStaffAssignment: { icon: "gate", labelAr: "تعيين فريق العمل", labelEn: "Staff Assignment" },
-  hasRSVPTracking: { icon: "rsvp", labelAr: "تتبع الحضور", labelEn: "RSVP Tracking" },
-  hasAutoReminders: { icon: "reminder", labelAr: "تذكيرات تلقائية", labelEn: "Auto Reminders" },
-  hasEmailNotifications: { icon: "email", labelAr: "إشعارات بريد إلكتروني", labelEn: "Email Notifications" },
-  hasCompensationInvites: { icon: "gift", labelAr: "دعوات تعويضية", labelEn: "Compensation Invites" },
-  hasBasicTemplates: { icon: "template", labelAr: "قوالب أساسية", labelEn: "Basic Templates" },
-};
-
 const getInviteValue = (plan, billingType) => {
   if (billingType === "monthly") return plan.invitePool ?? 0;
   return plan.invites ?? 0;
-};
-
-const computeFeatures = (plan) => {
-  const featuresObj = plan?.features;
-  if (!featuresObj || Array.isArray(featuresObj)) return featuresObj || [];
-  return Object.entries(FEATURE_MAP)
-    .filter(([key]) => featuresObj[key])
-    .map(([, val]) => val);
 };
 
 export const usePlansPageState = () => {
@@ -99,24 +75,22 @@ export const usePlansPageState = () => {
       premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
       basicPlans[0] ||
       premiumPlans[0];
-    const percent = plan?.compensationPercentage ?? 10;
+    const percent = plan?.compensationPercentage ?? 15;
     return Math.floor((selectedInvites * percent) / 100);
   }, [selectedInvites, basicPlans, premiumPlans, billingType]);
 
   const basicFeatures = useMemo(
-    () =>
-      computeFeatures(
-        basicPlans.find((p) => getInviteValue(p, billingType) === selectedInvites)
-        || basicPlans[0]
-      ),
+    () => {
+      const plan = basicPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) || basicPlans[0];
+      return plan?.featuresArray || [];
+    },
     [basicPlans, billingType, selectedInvites]
   );
   const premiumFeatures = useMemo(
-    () =>
-      computeFeatures(
-        premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites)
-        || premiumPlans[0]
-      ),
+    () => {
+      const plan = premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) || premiumPlans[0];
+      return plan?.featuresArray || [];
+    },
     [premiumPlans, billingType, selectedInvites]
   );
 

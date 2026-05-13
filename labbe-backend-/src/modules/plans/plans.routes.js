@@ -338,6 +338,20 @@ router.get('/host', plansController.getHostPlans);
 
 /**
  * @swagger
+ * /plans/landing:
+ *   get:
+ *     summary: Get landing page plans
+ *     description: Returns both host and business plans for the public landing page in a single call
+ *     tags: [Plans]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Landing plans retrieved successfully
+ */
+router.get('/landing', plansController.getLandingPlans);
+
+/**
+ * @swagger
  * /plans/code/{code}:
  *   get:
  *     summary: Get plan by code

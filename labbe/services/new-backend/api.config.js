@@ -307,6 +307,7 @@ export const API_PATHS = {
   // ============================================
   plans: {
     getPlans: '/plans',
+    getLandingPlans: '/plans/landing',
     getHostPlans: '/plans/host',
     getBusinessPlans: '/plans/business',
     getPlanById: (id) => `/plans/${id}`,

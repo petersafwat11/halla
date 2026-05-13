@@ -53,7 +53,7 @@ const PLAN_AVAILABILITY = {
   PLATFORM_ADMIN: 'platform_admin',
 };
 
-const COMPENSATION_PERCENTAGE = 10;
+const COMPENSATION_PERCENTAGE = 15;
 const BUSINESS_SETUP_FEE = 1200;
 
 const FEATURE_LABELS = {
@@ -72,6 +72,7 @@ const FEATURE_LABELS = {
   hasBasicTemplates:       { labelAr: 'قوالب دعوات أساسية',           labelEn: 'Basic invitation templates',    icon: 'template' },
   hasPremiumTemplates:     { labelAr: 'قوالب دعوات مميزة',             labelEn: 'Premium invitation templates',  icon: 'premium'  },
   hasCustomReports:        { labelAr: 'تقارير مخصصة',                  labelEn: 'Custom reports',                icon: 'report'   },
+  hasPostEventPage:        { labelAr: 'صفحة ما بعد المناسبة',          labelEn: 'Post-event page',               icon: 'event'    },
   hasWhatsAppSupport:      { labelAr: 'دعم فني عبر واتساب',            labelEn: 'WhatsApp support',              icon: 'support'  },
   hasCustomWhatsAppNumber: { labelAr: 'رقم واتساب مخصص',               labelEn: 'Custom WhatsApp number',        icon: 'phone'    },
   hasOfficialSenderNumber: { labelAr: 'رقم مرسل رسمي',                 labelEn: 'Official sender number',        icon: 'verified' },

@@ -37,7 +37,7 @@ const featuresSchema = new mongoose.Schema(
 
     // Compensation Invites (دعوات تعويضية)
     hasCompensationInvites: { type: Boolean, default: true }, // رصيد دعوات تعويضية
-    compensationPercentage: { type: Number, default: 10 }, // 10% من رصيدك من عدد الدعوات
+    compensationPercentage: { type: Number, default: 15 }, // 15% من رصيدك من عدد الدعوات
 
     // Templates
     hasBasicTemplates: { type: Boolean, default: true },

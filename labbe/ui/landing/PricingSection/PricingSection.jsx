@@ -1,67 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import styles from "./pricingSection.module.css";
 import { useTranslation } from "react-i18next";
+import { useLandingPlans } from "@/hooks/reactQueryHooks/usePlans";
+import { getLocalized } from "@/utils/locale";
 
 const WA_LINK = "https://wa.me/966500000000";
-const COMPENSATION_PCT = 15;
 
-// ─── Host — Per Event ────────────────────────────────────────────────────────
-const BASIC_EVENT_TIERS = [
-  { invites: 25,  price: 95   },
-  { invites: 50,  price: 185  },
-  { invites: 75,  price: 270  },
-  { invites: 100, price: 350  },
-  { invites: 150, price: 525  },
-  { invites: 200, price: 700  },
-  { invites: 250, price: 875  },
-  { invites: 300, price: 1050 },
-];
+const formatPrice = (n) => (n || 0).toLocaleString();
 
-const PREMIUM_EVENT_TIERS = [
-  { invites: 25,  price: 120  },
-  { invites: 50,  price: 235  },
-  { invites: 75,  price: 345  },
-  { invites: 100, price: 450  },
-  { invites: 150, price: 675  },
-  { invites: 200, price: 900  },
-  { invites: 250, price: 1125 },
-  { invites: 300, price: 1350 },
-];
-
-// ─── Host — Monthly Pool ─────────────────────────────────────────────────────
-const BASIC_MONTHLY_TIERS = [
-  { pool: 100, price: 450  },
-  { pool: 150, price: 675  },
-  { pool: 200, price: 900  },
-  { pool: 250, price: 1125 },
-  { pool: 300, price: 1350 },
-];
-
-const PREMIUM_MONTHLY_TIERS = [
-  { pool: 100, price: 540  },
-  { pool: 150, price: 810  },
-  { pool: 200, price: 1080 },
-  { pool: 250, price: 1350 },
-  { pool: 300, price: 1620 },
-];
-
-// ─── Business — Per Event ────────────────────────────────────────────────────
-const BUSINESS_EVENT_TIERS = [
-  { invites: 100, price: 370  },
-  { invites: 150, price: 540  },
-  { invites: 200, price: 700  },
-  { invites: 300, price: 1050 },
-  { invites: 400, price: 1400 },
-  { invites: 500, price: 1750 },
-];
-
-// ─── Business — Pool Plans ───────────────────────────────────────────────────
-const BUSINESS_QUARTERLY = { pool: 500,  price: 3500,  days: 90,  templates: 3 };
-const BUSINESS_ANNUAL    = { pool: 2000, price: 10000, days: 365, templates: 5 };
-
-// ─── WhatsApp SVG ─────────────────────────────────────────────────────────────
 const WaIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
     style={{ display: "inline", verticalAlign: "middle", marginInlineEnd: "0.4rem" }}>
@@ -69,147 +17,243 @@ const WaIcon = () => (
   </svg>
 );
 
-// ─── Reusable feature list ────────────────────────────────────────────────────
-function FeatureList({ features }) {
-  if (!Array.isArray(features)) return null;
+function FeatureList({ features, i18n }) {
+  if (!Array.isArray(features) || features.length === 0) return null;
   return (
     <div className={styles.prFeatGrid}>
       {features.map((f, i) => (
         <div key={i} className={styles.prFeatItem}>
           <span className={styles.prFeatCheck}>✓</span>
-          <span>{f}</span>
+          <span>{getLocalized(f, "label", i18n.language)}</span>
         </div>
       ))}
     </div>
   );
 }
 
-// ─── Compensation row ─────────────────────────────────────────────────────────
-function CompRow({ count, t }) {
+function CompRow({ count, pct, t }) {
+  if (!count) return null;
   return (
     <div className={styles.prComp}>
       <span className={styles.prCompIcon}>🎁</span>
       <div>
         <span className={styles.prCompLabel}>{t("pricing.compensationTitle")}</span>
-        <span className={styles.prCompVal}>{t("pricing.compensationSingle", { count })}</span>
+        <span className={styles.prCompVal}>{t("pricing.compensationSingle", { count, pct: pct ?? 15 })}</span>
       </div>
     </div>
   );
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const getInviteValue = (plan, billingType) => {
+  if (billingType === "monthly") return plan.invitePool ?? 0;
+  return plan.invites ?? 0;
+};
+
+const calcCompensation = (plan, selectedValue, billingType) => {
+  const pct = (plan?.compensationPercentage ?? 15) / 100;
+  return Math.floor(selectedValue * pct);
+};
+
 export default function PricingSection({ lang = "ar" }) {
-  const { t } = useTranslation("landing");
+  const { t, i18n } = useTranslation("landing");
 
-  const basicFeatures   = t("pricing.basicFeatures",   { returnObjects: true });
-  const premiumFeatures = t("pricing.premiumFeatures",  { returnObjects: true });
-  const bizFeatures     = t("pricing.businessFeatures", { returnObjects: true });
+  const { data: landingData, isLoading, error } = useLandingPlans();
+  const plans = landingData?.data ?? null;
+  const hostPlans = plans?.host ?? null;
+  const businessPlans = plans?.business ?? null;
 
-  // ── State ──
-  const [audience,      setAudience]      = useState("host");
-  const [billingType,   setBillingType]   = useState("event");     // event | monthly
-  const [selInvites,    setSelInvites]    = useState(50);
-  const [selPool,       setSelPool]       = useState(100);
-  const [bizType,       setBizType]       = useState("event");     // event | quarterly | annual
-  const [selBizInvites, setSelBizInvites] = useState(100);
+  const basicEvent = hostPlans?.basic?.event ?? [];
+  const basicMonthly = hostPlans?.basic?.monthly ?? [];
+  const premiumEvent = hostPlans?.premium?.event ?? [];
+  const premiumMonthly = hostPlans?.premium?.monthly ?? [];
+  const bizEventPlans = businessPlans?.event ?? [];
+  const bizQuarterlyPlans = businessPlans?.quarterly ?? [];
+  const bizAnnualPlans = businessPlans?.annual ?? [];
 
-  const resetToHost     = (next) => { setAudience(next); setBillingType("event"); setBizType("event"); };
+  const hasHost = basicEvent.length > 0 || premiumEvent.length > 0;
+  const hasBusiness = bizEventPlans.length > 0 || bizQuarterlyPlans.length > 0 || bizAnnualPlans.length > 0;
 
-  // ── Derived ──
-  const currentEventTier    = BASIC_EVENT_TIERS.find(x => x.invites === selInvites)   || BASIC_EVENT_TIERS[1];
-  const currentPremiumEvent = PREMIUM_EVENT_TIERS.find(x => x.invites === selInvites) || PREMIUM_EVENT_TIERS[1];
-  const currentMonthlyTier  = BASIC_MONTHLY_TIERS.find(x => x.pool === selPool)       || BASIC_MONTHLY_TIERS[0];
-  const currentPremiumMonthly = PREMIUM_MONTHLY_TIERS.find(x => x.pool === selPool)   || PREMIUM_MONTHLY_TIERS[0];
-  const currentBizEventTier = BUSINESS_EVENT_TIERS.find(x => x.invites === selBizInvites) || BUSINESS_EVENT_TIERS[0];
+  const [audience, setAudience] = useState("host");
+  const [billingType, setBillingType] = useState("event");
+  const [selInvites, setSelInvites] = useState(null);
+  const [selPool, setSelPool] = useState(null);
+  const [bizType, setBizType] = useState("event");
+  const [selBizInvites, setSelBizInvites] = useState(null);
 
-  const eventComp     = Math.floor(currentEventTier.invites         * COMPENSATION_PCT / 100);
-  const premiumEventComp = Math.floor(currentPremiumEvent.invites   * COMPENSATION_PCT / 100);
-  const monthlyComp   = Math.floor(currentMonthlyTier.pool          * COMPENSATION_PCT / 100);
-  const premiumMonthlyComp = Math.floor(currentPremiumMonthly.pool  * COMPENSATION_PCT / 100);
-  const bizEventComp  = Math.floor(currentBizEventTier.invites      * COMPENSATION_PCT / 100);
-  const quarterlyComp = Math.floor(BUSINESS_QUARTERLY.pool          * COMPENSATION_PCT / 100);
-  const annualComp    = Math.floor(BUSINESS_ANNUAL.pool             * COMPENSATION_PCT / 100);
+  const resetToHost = (next) => { setAudience(next); };
+
+  useEffect(() => {
+    if (!hasHost && hasBusiness) setAudience("business");
+    else if (hasHost) setAudience("host");
+  }, [hasHost, hasBusiness]);
+
+  useEffect(() => {
+    const ref = basicEvent[0];
+    if (ref && selInvites === null) setSelInvites(getInviteValue(ref, "event"));
+  }, [basicEvent]);
+
+  useEffect(() => {
+    const ref = basicMonthly[0];
+    if (ref && selPool === null) setSelPool(getInviteValue(ref, "monthly"));
+  }, [basicMonthly]);
+
+  useEffect(() => {
+    const ref = bizEventPlans[0];
+    if (ref && selBizInvites === null) setSelBizInvites(getInviteValue(ref, "event"));
+  }, [bizEventPlans]);
+
+  const currentHostEventPlan = useMemo(() =>
+    basicEvent.find((p) => getInviteValue(p, "event") === selInvites) || basicEvent[0] || null,
+    [basicEvent, selInvites]
+  );
+  const currentPremiumEventPlan = useMemo(() =>
+    premiumEvent.find((p) => getInviteValue(p, "event") === selInvites) || premiumEvent[0] || null,
+    [premiumEvent, selInvites]
+  );
+  const currentHostMonthlyPlan = useMemo(() =>
+    basicMonthly.find((p) => getInviteValue(p, "monthly") === selPool) || basicMonthly[0] || null,
+    [basicMonthly, selPool]
+  );
+  const currentPremiumMonthlyPlan = useMemo(() =>
+    premiumMonthly.find((p) => getInviteValue(p, "monthly") === selPool) || premiumMonthly[0] || null,
+    [premiumMonthly, selPool]
+  );
+  const currentBizEventPlan = useMemo(() =>
+    bizEventPlans.find((p) => getInviteValue(p, "event") === selBizInvites) || bizEventPlans[0] || null,
+    [bizEventPlans, selBizInvites]
+  );
+
+  const hostEventComp = currentHostEventPlan ? calcCompensation(currentHostEventPlan, selInvites, "event") : 0;
+  const hostEventPct = currentHostEventPlan?.compensationPercentage ?? 15;
+  const premiumEventComp = currentPremiumEventPlan ? calcCompensation(currentPremiumEventPlan, selInvites, "event") : 0;
+  const premiumEventPct = currentPremiumEventPlan?.compensationPercentage ?? 15;
+  const hostMonthlyComp = currentHostMonthlyPlan ? calcCompensation(currentHostMonthlyPlan, selPool, "monthly") : 0;
+  const hostMonthlyPct = currentHostMonthlyPlan?.compensationPercentage ?? 15;
+  const premiumMonthlyComp = currentPremiumMonthlyPlan ? calcCompensation(currentPremiumMonthlyPlan, selPool, "monthly") : 0;
+  const premiumMonthlyPct = currentPremiumMonthlyPlan?.compensationPercentage ?? 15;
+  const bizEventComp = currentBizEventPlan ? calcCompensation(currentBizEventPlan, selBizInvites, "event") : 0;
+  const bizEventPct = currentBizEventPlan?.compensationPercentage ?? 15;
+  const bizQuarterlyPlan = bizQuarterlyPlans[0] || null;
+  const bizAnnualPlan = bizAnnualPlans[0] || null;
+  const quarterlyComp = bizQuarterlyPlan?.compensationPool ?? 0;
+  const quarterlyPct = bizQuarterlyPlan?.compensationPercentage ?? 15;
+  const annualComp = bizAnnualPlan?.compensationPool ?? 0;
+  const annualPct = bizAnnualPlan?.compensationPercentage ?? 15;
+
+  if (isLoading) {
+    return (
+      <section id="pricing" className={styles.prRoot}>
+        <div className={styles.prInner}>
+          <div className={styles.prHdr}>
+            <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
+            <p className={styles.prSub}>{t("pricing.sub")}</p>
+          </div>
+          <div style={{ textAlign: "center", padding: "2rem" }}>
+            <p>{t("pricing.loading", "Loading plans...")}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || (!hasHost && !hasBusiness)) {
+    return (
+      <section id="pricing" className={styles.prRoot}>
+        <div className={styles.prInner}>
+          <div className={styles.prHdr}>
+            <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
+            <p className={styles.prSub}>{t("pricing.sub")}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="pricing" className={styles.prRoot}>
       <div className={styles.prInner}>
 
-        {/* ── Header ── */}
         <div className={styles.prHdr}>
           <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
           <p className={styles.prSub}>{t("pricing.sub")}</p>
         </div>
 
-        {/* ── Selector card ── */}
         <div className={styles.prSelector}>
 
-          {/* Row 1 — audience */}
           <div className={styles.prSegWrap}>
             <div className={styles.prSegTrack}>
-              <button
-                className={`${styles.prSegBtn}${audience === "host" ? ` ${styles.active}` : ""}`}
-                onClick={() => resetToHost("host")}
-              >
-                <span className={styles.prSegIcon}>{t("pricing.tabHostIcon")}</span>
-                <span className={styles.prSegBody}>
-                  <span className={styles.prSegLabel}>{t("pricing.tabHost")}</span>
-                  <span className={styles.prSegSub}>{t("pricing.tabHostSub")}</span>
-                </span>
-              </button>
-              <button
-                className={`${styles.prSegBtn}${audience === "business" ? ` ${styles.active}` : ""}`}
-                onClick={() => resetToHost("business")}
-              >
-                <span className={styles.prSegIcon}>{t("pricing.tabEnterpriseIcon")}</span>
-                <span className={styles.prSegBody}>
-                  <span className={styles.prSegLabel}>{t("pricing.tabEnterprise")}</span>
-                  <span className={styles.prSegSub}>{t("pricing.tabEnterpriseSub")}</span>
-                </span>
-              </button>
+              {hasHost && (
+                <button
+                  className={`${styles.prSegBtn}${audience === "host" ? ` ${styles.active}` : ""}`}
+                  onClick={() => resetToHost("host")}
+                >
+                  <span className={styles.prSegIcon}>{t("pricing.tabHostIcon")}</span>
+                  <span className={styles.prSegBody}>
+                    <span className={styles.prSegLabel}>{t("pricing.tabHost")}</span>
+                    <span className={styles.prSegSub}>{t("pricing.tabHostSub")}</span>
+                  </span>
+                </button>
+              )}
+              {hasBusiness && (
+                <button
+                  className={`${styles.prSegBtn}${audience === "business" ? ` ${styles.active}` : ""}`}
+                  onClick={() => resetToHost("business")}
+                >
+                  <span className={styles.prSegIcon}>{t("pricing.tabEnterpriseIcon")}</span>
+                  <span className={styles.prSegBody}>
+                    <span className={styles.prSegLabel}>{t("pricing.tabEnterprise")}</span>
+                    <span className={styles.prSegSub}>{t("pricing.tabEnterpriseSub")}</span>
+                  </span>
+                </button>
+              )}
             </div>
           </div>
 
           <div className={styles.prSep} />
 
-          {/* Row 2 — biz type (business only) */}
           {audience === "business" && (
             <div className={styles.prBillRow}>
               <div className={styles.prBillTrack}>
-                <button
-                  className={`${styles.prBillBtn}${bizType === "event" ? ` ${styles.active}` : ""}`}
-                  onClick={() => { setBizType("event"); setSelBizInvites(100); }}
-                >
-                  {t("pricing.bizEventTab")}
-                </button>
-                <button
-                  className={`${styles.prBillBtn}${bizType === "quarterly" ? ` ${styles.active}` : ""}`}
-                  onClick={() => setBizType("quarterly")}
-                >
-                  {t("pricing.bizQuarterlyTab")}
-                </button>
-                <button
-                  className={`${styles.prBillBtn}${bizType === "annual" ? ` ${styles.active}` : ""}`}
-                  onClick={() => setBizType("annual")}
-                >
-                  {t("pricing.bizAnnualTab")}
-                </button>
+                {bizEventPlans.length > 0 && (
+                  <button
+                    className={`${styles.prBillBtn}${bizType === "event" ? ` ${styles.active}` : ""}`}
+                    onClick={() => setBizType("event")}
+                  >
+                    {t("pricing.bizEventTab")}
+                  </button>
+                )}
+                {bizQuarterlyPlans.length > 0 && (
+                  <button
+                    className={`${styles.prBillBtn}${bizType === "quarterly" ? ` ${styles.active}` : ""}`}
+                    onClick={() => setBizType("quarterly")}
+                  >
+                    {t("pricing.bizQuarterlyTab")}
+                  </button>
+                )}
+                {bizAnnualPlans.length > 0 && (
+                  <button
+                    className={`${styles.prBillBtn}${bizType === "annual" ? ` ${styles.active}` : ""}`}
+                    onClick={() => setBizType("annual")}
+                  >
+                    {t("pricing.bizAnnualTab")}
+                  </button>
+                )}
               </div>
             </div>
           )}
 
-          {/* Row 3 — billing type (host only) */}
           {audience === "host" && (
             <div className={styles.prBillRow}>
               <div className={styles.prBillTrack}>
                 <button
                   className={`${styles.prBillBtn}${billingType === "event" ? ` ${styles.active}` : ""}`}
-                  onClick={() => { setBillingType("event"); setSelInvites(50); }}
+                  onClick={() => setBillingType("event")}
                 >
                   {t("pricing.perEventTab")}
                 </button>
                 <button
                   className={`${styles.prBillBtn}${billingType === "monthly" ? ` ${styles.active}` : ""}`}
-                  onClick={() => { setBillingType("monthly"); setSelPool(100); }}
+                  onClick={() => setBillingType("monthly")}
                 >
                   {t("pricing.monthlyTab")}
                 </button>
@@ -218,9 +262,7 @@ export default function PricingSection({ lang = "ar" }) {
           )}
         </div>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            HOST — PER EVENT (Basic + Premium side-by-side)
-        ══════════════════════════════════════════════════════════════════════ */}
+        {/* ═══ HOST — PER EVENT (Basic + Premium side-by-side) ═══ */}
         {audience === "host" && billingType === "event" && (
           <div className={styles.prGrid}>
             {/* Basic Card */}
@@ -231,7 +273,7 @@ export default function PricingSection({ lang = "ar" }) {
                 </div>
                 <div className={styles.prPrice}>
                   <div className={styles.prPriceRow}>
-                    <span className={styles.prPriceNum}>{currentEventTier.price.toLocaleString()}</span>
+                    <span className={styles.prPriceNum}>{formatPrice(currentHostEventPlan?.pricing?.oneTime)}</span>
                     <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
                   </div>
                   <span className={styles.prPricePer}>{t("pricing.pricePerEvent")}</span>
@@ -241,16 +283,19 @@ export default function PricingSection({ lang = "ar" }) {
               <div>
                 <div className={styles.prGuestLabel}>{t("pricing.selectInvites")}</div>
                 <div className={styles.prGuestTrack}>
-                  {BASIC_EVENT_TIERS.map(item => (
-                    <button
-                      key={item.invites}
-                      className={`${styles.prGuestBtn}${selInvites === item.invites ? ` ${styles.active}` : ""}`}
-                      onClick={() => setSelInvites(item.invites)}
-                    >
-                      <span className={styles.prGuestNum}>{item.invites}</span>
-                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                    </button>
-                  ))}
+                  {basicEvent.map((plan) => {
+                    const v = getInviteValue(plan, "event");
+                    return (
+                      <button
+                        key={plan.code}
+                        className={`${styles.prGuestBtn}${selInvites === v ? ` ${styles.active}` : ""}`}
+                        onClick={() => setSelInvites(v)}
+                      >
+                        <span className={styles.prGuestNum}>{v}</span>
+                        <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -262,11 +307,11 @@ export default function PricingSection({ lang = "ar" }) {
 
               <div className={styles.prFeatSection}>
                 <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-                <FeatureList features={basicFeatures} />
+                <FeatureList features={currentHostEventPlan?.featuresArray} i18n={i18n} />
               </div>
 
               <div className={styles.prCardFooter}>
-                <CompRow count={eventComp} t={t} />
+                <CompRow count={hostEventComp} pct={hostEventPct} t={t} />
                 <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
@@ -280,7 +325,7 @@ export default function PricingSection({ lang = "ar" }) {
                 </div>
                 <div className={styles.prPrice}>
                   <div className={styles.prPriceRow}>
-                    <span className={styles.prPriceNum}>{currentPremiumEvent.price.toLocaleString()}</span>
+                    <span className={styles.prPriceNum}>{formatPrice(currentPremiumEventPlan?.pricing?.oneTime)}</span>
                     <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
                   </div>
                   <span className={styles.prPricePer}>{t("pricing.pricePerEvent")}</span>
@@ -290,16 +335,19 @@ export default function PricingSection({ lang = "ar" }) {
               <div>
                 <div className={styles.prGuestLabel}>{t("pricing.selectInvites")}</div>
                 <div className={styles.prGuestTrack}>
-                  {PREMIUM_EVENT_TIERS.map(item => (
-                    <button
-                      key={item.invites}
-                      className={`${styles.prGuestBtn}${selInvites === item.invites ? ` ${styles.active}` : ""}`}
-                      onClick={() => setSelInvites(item.invites)}
-                    >
-                      <span className={styles.prGuestNum}>{item.invites}</span>
-                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                    </button>
-                  ))}
+                  {premiumEvent.map((plan) => {
+                    const v = getInviteValue(plan, "event");
+                    return (
+                      <button
+                        key={plan.code}
+                        className={`${styles.prGuestBtn}${selInvites === v ? ` ${styles.active}` : ""}`}
+                        onClick={() => setSelInvites(v)}
+                      >
+                        <span className={styles.prGuestNum}>{v}</span>
+                        <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -311,20 +359,18 @@ export default function PricingSection({ lang = "ar" }) {
 
               <div className={styles.prFeatSection}>
                 <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-                <FeatureList features={premiumFeatures} />
+                <FeatureList features={currentPremiumEventPlan?.featuresArray} i18n={i18n} />
               </div>
 
               <div className={styles.prCardFooter}>
-                <CompRow count={premiumEventComp} t={t} />
+                <CompRow count={premiumEventComp} pct={premiumEventPct} t={t} />
                 <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
           </div>
         )}
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            HOST — MONTHLY POOL (Basic + Premium side-by-side)
-        ══════════════════════════════════════════════════════════════════════ */}
+        {/* ═══ HOST — MONTHLY POOL (Basic + Premium side-by-side) ═══ */}
         {audience === "host" && billingType === "monthly" && (
           <div className={styles.prGrid}>
             {/* Basic Card */}
@@ -335,7 +381,7 @@ export default function PricingSection({ lang = "ar" }) {
                 </div>
                 <div className={styles.prPrice}>
                   <div className={styles.prPriceRow}>
-                    <span className={styles.prPriceNum}>{currentMonthlyTier.price.toLocaleString()}</span>
+                    <span className={styles.prPriceNum}>{formatPrice(currentHostMonthlyPlan?.pricing?.oneTime)}</span>
                     <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
                   </div>
                   <span className={styles.prPricePer}>{t("pricing.pricePerMonth")}</span>
@@ -345,16 +391,19 @@ export default function PricingSection({ lang = "ar" }) {
               <div>
                 <div className={styles.prGuestLabel}>{t("pricing.selectPool")}</div>
                 <div className={styles.prGuestTrack}>
-                  {BASIC_MONTHLY_TIERS.map(item => (
-                    <button
-                      key={item.pool}
-                      className={`${styles.prGuestBtn}${selPool === item.pool ? ` ${styles.active}` : ""}`}
-                      onClick={() => setSelPool(item.pool)}
-                    >
-                      <span className={styles.prGuestNum}>{item.pool}</span>
-                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                    </button>
-                  ))}
+                  {basicMonthly.map((plan) => {
+                    const v = getInviteValue(plan, "monthly");
+                    return (
+                      <button
+                        key={plan.code}
+                        className={`${styles.prGuestBtn}${selPool === v ? ` ${styles.active}` : ""}`}
+                        onClick={() => setSelPool(v)}
+                      >
+                        <span className={styles.prGuestNum}>{v}</span>
+                        <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -368,11 +417,11 @@ export default function PricingSection({ lang = "ar" }) {
 
               <div className={styles.prFeatSection}>
                 <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-                <FeatureList features={basicFeatures} />
+                <FeatureList features={currentHostMonthlyPlan?.featuresArray} i18n={i18n} />
               </div>
 
               <div className={styles.prCardFooter}>
-                <CompRow count={monthlyComp} t={t} />
+                <CompRow count={hostMonthlyComp} pct={hostMonthlyPct} t={t} />
                 <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
@@ -386,7 +435,7 @@ export default function PricingSection({ lang = "ar" }) {
                 </div>
                 <div className={styles.prPrice}>
                   <div className={styles.prPriceRow}>
-                    <span className={styles.prPriceNum}>{currentPremiumMonthly.price.toLocaleString()}</span>
+                    <span className={styles.prPriceNum}>{formatPrice(currentPremiumMonthlyPlan?.pricing?.oneTime)}</span>
                     <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
                   </div>
                   <span className={styles.prPricePer}>{t("pricing.pricePerMonth")}</span>
@@ -396,16 +445,19 @@ export default function PricingSection({ lang = "ar" }) {
               <div>
                 <div className={styles.prGuestLabel}>{t("pricing.selectPool")}</div>
                 <div className={styles.prGuestTrack}>
-                  {PREMIUM_MONTHLY_TIERS.map(item => (
-                    <button
-                      key={item.pool}
-                      className={`${styles.prGuestBtn}${selPool === item.pool ? ` ${styles.active}` : ""}`}
-                      onClick={() => setSelPool(item.pool)}
-                    >
-                      <span className={styles.prGuestNum}>{item.pool}</span>
-                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                    </button>
-                  ))}
+                  {premiumMonthly.map((plan) => {
+                    const v = getInviteValue(plan, "monthly");
+                    return (
+                      <button
+                        key={plan.code}
+                        className={`${styles.prGuestBtn}${selPool === v ? ` ${styles.active}` : ""}`}
+                        onClick={() => setSelPool(v)}
+                      >
+                        <span className={styles.prGuestNum}>{v}</span>
+                        <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -419,40 +471,41 @@ export default function PricingSection({ lang = "ar" }) {
 
               <div className={styles.prFeatSection}>
                 <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-                <FeatureList features={premiumFeatures} />
+                <FeatureList features={currentPremiumMonthlyPlan?.featuresArray} i18n={i18n} />
               </div>
 
               <div className={styles.prCardFooter}>
-                <CompRow count={premiumMonthlyComp} t={t} />
+                <CompRow count={premiumMonthlyComp} pct={premiumMonthlyPct} t={t} />
                 <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
           </div>
         )}
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            BUSINESS — PER EVENT
-        ══════════════════════════════════════════════════════════════════════ */}
-        {audience === "business" && bizType === "event" && (
+        {/* ═══ BUSINESS — PER EVENT ═══ */}
+        {audience === "business" && bizType === "event" && currentBizEventPlan && (
           <div className={styles.prHostCard}>
             <div>
               <div className={styles.prGuestLabel}>{t("pricing.selectInvites")}</div>
               <div className={styles.prGuestTrack}>
-                {BUSINESS_EVENT_TIERS.map(item => (
-                  <button
-                    key={item.invites}
-                    className={`${styles.prGuestBtn}${selBizInvites === item.invites ? ` ${styles.active}` : ""}`}
-                    onClick={() => setSelBizInvites(item.invites)}
-                  >
-                    <span className={styles.prGuestNum}>{item.invites}</span>
-                    <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                  </button>
-                ))}
+                {bizEventPlans.map((plan) => {
+                  const v = getInviteValue(plan, "event");
+                  return (
+                    <button
+                      key={plan.code}
+                      className={`${styles.prGuestBtn}${selBizInvites === v ? ` ${styles.active}` : ""}`}
+                      onClick={() => setSelBizInvites(v)}
+                    >
+                      <span className={styles.prGuestNum}>{v}</span>
+                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <div className={styles.prHostPrice}>
-              <span className={styles.prHostPriceNum}>{currentBizEventTier.price.toLocaleString()}</span>
+              <span className={styles.prHostPriceNum}>{formatPrice(currentBizEventPlan.pricing?.oneTime)}</span>
               <span className={styles.prHostPriceCur}>{t("pricing.sar")}</span>
               <span className={styles.prHostPricePer}>{t("pricing.pricePerEvent")}</span>
             </div>
@@ -465,11 +518,11 @@ export default function PricingSection({ lang = "ar" }) {
 
             <div className={styles.prFeatSection}>
               <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-              <FeatureList features={bizFeatures} />
+              <FeatureList features={currentBizEventPlan.featuresArray} i18n={i18n} />
             </div>
 
             <div className={styles.prCardFooter}>
-              <CompRow count={bizEventComp} t={t} />
+              <CompRow count={bizEventComp} pct={bizEventPct} t={t} />
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={`${styles.prBtn} ${styles.prBtnDark}`}>
                 <WaIcon />{t("pricing.contact")}
               </a>
@@ -477,13 +530,11 @@ export default function PricingSection({ lang = "ar" }) {
           </div>
         )}
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            BUSINESS — QUARTERLY (500 pool, 90 days, 3500 SAR)
-        ══════════════════════════════════════════════════════════════════════ */}
-        {audience === "business" && bizType === "quarterly" && (
+        {/* ═══ BUSINESS — QUARTERLY ═══ */}
+        {audience === "business" && bizType === "quarterly" && bizQuarterlyPlan && (
           <div className={styles.prHostCard}>
             <div className={styles.prHostPrice}>
-              <span className={styles.prHostPriceNum}>{BUSINESS_QUARTERLY.price.toLocaleString()}</span>
+              <span className={styles.prHostPriceNum}>{formatPrice(bizQuarterlyPlan.pricing?.oneTime)}</span>
               <span className={styles.prHostPriceCur}>{t("pricing.sar")}</span>
               <span className={styles.prHostPricePer}>{t("pricing.pricePerQuarter")}</span>
             </div>
@@ -491,9 +542,11 @@ export default function PricingSection({ lang = "ar" }) {
             <div className={styles.prManaged}>
               <div className={styles.prManagedTextWrap}>
                 <span className={styles.prManagedTitle}>
-                  {t("pricing.poolLabel")}: {BUSINESS_QUARTERLY.pool.toLocaleString()} {t("pricing.inviteUnit")}
+                  {t("pricing.poolLabel")}: {(bizQuarterlyPlan.invitePool || 0).toLocaleString()} {t("pricing.inviteUnit")}
                   {" · "}{t("pricing.validDays90")}
-                  {" · "}{t("pricing.whatsappTemplates", { count: BUSINESS_QUARTERLY.templates })}
+                  {bizQuarterlyPlan.features?.whatsAppTemplates ? (
+                    <>{" · "}{t("pricing.whatsappTemplates", { count: bizQuarterlyPlan.features.whatsAppTemplates })}</>
+                  ) : null}
                   {" · "}{t("pricing.setupFeeIncluded")}
                 </span>
               </div>
@@ -501,11 +554,11 @@ export default function PricingSection({ lang = "ar" }) {
 
             <div className={styles.prFeatSection}>
               <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-              <FeatureList features={bizFeatures} />
+              <FeatureList features={bizQuarterlyPlan.featuresArray} i18n={i18n} />
             </div>
 
             <div className={styles.prCardFooter}>
-              <CompRow count={quarterlyComp} t={t} />
+              <CompRow count={quarterlyComp} pct={quarterlyPct} t={t} />
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={`${styles.prBtn} ${styles.prBtnDark}`}>
                 <WaIcon />{t("pricing.contact")}
               </a>
@@ -519,13 +572,11 @@ export default function PricingSection({ lang = "ar" }) {
           </div>
         )}
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            BUSINESS — ANNUAL (2000 pool, 365 days, 10000 SAR)
-        ══════════════════════════════════════════════════════════════════════ */}
-        {audience === "business" && bizType === "annual" && (
+        {/* ═══ BUSINESS — ANNUAL ═══ */}
+        {audience === "business" && bizType === "annual" && bizAnnualPlan && (
           <div className={styles.prHostCard}>
             <div className={styles.prHostPrice}>
-              <span className={styles.prHostPriceNum}>{BUSINESS_ANNUAL.price.toLocaleString()}</span>
+              <span className={styles.prHostPriceNum}>{formatPrice(bizAnnualPlan.pricing?.oneTime)}</span>
               <span className={styles.prHostPriceCur}>{t("pricing.sar")}</span>
               <span className={styles.prHostPricePer}>{t("pricing.pricePerYear")}</span>
             </div>
@@ -533,9 +584,11 @@ export default function PricingSection({ lang = "ar" }) {
             <div className={styles.prManaged}>
               <div className={styles.prManagedTextWrap}>
                 <span className={styles.prManagedTitle}>
-                  {t("pricing.poolLabel")}: {BUSINESS_ANNUAL.pool.toLocaleString()} {t("pricing.inviteUnit")}
+                  {t("pricing.poolLabel")}: {(bizAnnualPlan.invitePool || 0).toLocaleString()} {t("pricing.inviteUnit")}
                   {" · "}{t("pricing.validDays365")}
-                  {" · "}{t("pricing.whatsappTemplates", { count: BUSINESS_ANNUAL.templates })}
+                  {bizAnnualPlan.features?.whatsAppTemplates ? (
+                    <>{" · "}{t("pricing.whatsappTemplates", { count: bizAnnualPlan.features.whatsAppTemplates })}</>
+                  ) : null}
                   {" · "}{t("pricing.setupFeeIncluded")}
                 </span>
               </div>
@@ -543,11 +596,11 @@ export default function PricingSection({ lang = "ar" }) {
 
             <div className={styles.prFeatSection}>
               <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-              <FeatureList features={bizFeatures} />
+              <FeatureList features={bizAnnualPlan.featuresArray} i18n={i18n} />
             </div>
 
             <div className={styles.prCardFooter}>
-              <CompRow count={annualComp} t={t} />
+              <CompRow count={annualComp} pct={annualPct} t={t} />
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={`${styles.prBtn} ${styles.prBtnDark}`}>
                 <WaIcon />{t("pricing.contact")}
               </a>

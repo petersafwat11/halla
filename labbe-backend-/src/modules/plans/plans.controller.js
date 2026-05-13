@@ -18,6 +18,15 @@ exports.getPlans = catchAsync(async (req, res) => {
 });
 
 /**
+ * Get landing plans (host + business combined)
+ * GET /api/v2/plans/landing
+ */
+exports.getLandingPlans = catchAsync(async (req, res) => {
+  const result = await plansService.getLandingPlans();
+  sendSuccess(res, result);
+});
+
+/**
  * Get business plans
  * GET /api/v2/plans/business
  */

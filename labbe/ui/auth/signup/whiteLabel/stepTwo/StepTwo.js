@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./stepTwo.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
+import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
 import { StepTitle } from "../../../../commen/title/SectionTitle";
 import SectionTitle from "../../../../commen/title/SectionTitle";
 import { useTranslation } from "react-i18next";
@@ -36,7 +37,7 @@ const StepTwo = ({ goToPreviousStep }) => {
               name="loginData.email"
               iconPath="auth/email.svg"
             />
-            <InputGroup
+            <MobileInputGroup
               label={t("signupForm.whiteLabel.login.fields.phoneNumber.label")}
               type="tel"
               placeholder={t(
@@ -44,7 +45,6 @@ const StepTwo = ({ goToPreviousStep }) => {
               )}
               required
               name="loginData.phoneNumber"
-              iconPath="auth/phone.svg"
             />
           </div>
         </div>

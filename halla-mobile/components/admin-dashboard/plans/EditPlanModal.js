@@ -72,7 +72,7 @@ const buildState = (plan) => ({
     (acc, key) => ({ ...acc, [key]: plan?.features?.[key] ?? false }),
     {},
   ),
-  compensationPercentage: plan?.features?.compensationPercentage ?? 10,
+  compensationPercentage: plan?.features?.compensationPercentage ?? 15,
   priorityPoints: plan?.features?.priorityPoints ?? 1,
   isPopular: plan?.isPopular ?? false,
   sortOrder: plan?.sortOrder ?? 0,
@@ -344,8 +344,8 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
                 label={t("plans.fields.compensationPercentage")}
                 value={form.compensationPercentage}
                 onChangeText={(txt) => setField("compensationPercentage", toNum(txt) ?? 0)}
-                placeholder="10"
-                hint={t("plans.fields.compensationHint")}
+                placeholder="15"
+                  hint={t("plans.fields.compensationHint")}
               />
               <NumberField
                 label={t("plans.fields.priorityPoints")}

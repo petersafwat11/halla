@@ -14,7 +14,14 @@ const ImageInput = ({ name, label, placeholder, rules }) => {
       quality: 0.8,
     });
     if (!result.canceled && result.assets?.[0]) {
-      onChange(result.assets[0]);
+      const asset = result.assets[0];
+      onChange({
+        uri: asset.uri,
+        type: asset.mimeType || asset.type || null,
+        fileName: asset.fileName || asset.uri?.split("/").pop() || null,
+        width: asset.width,
+        height: asset.height,
+      });
     }
   };
 

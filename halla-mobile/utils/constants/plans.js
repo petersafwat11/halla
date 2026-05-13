@@ -27,9 +27,9 @@ export const planHasBillingCycle = (planType) =>
 
 /**
  * Default compensation percentage — mirrors the backend
- * `PlanModel.featuresSchema.compensationPercentage` default of 10.
+ * `PlanModel.featuresSchema.compensationPercentage` default of 15.
  *
  * Use this as the fallback when a plan record doesn't include
  * `compensationPercentage` (e.g. older subscriptions, hand-built test data).
  */
-export const DEFAULT_COMPENSATION_PERCENTAGE = 10;
+export const DEFAULT_COMPENSATION_PERCENTAGE = 15;

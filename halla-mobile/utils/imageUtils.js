@@ -1,5 +1,5 @@
 const API_BASE =
-  process.env.EXPO_PUBLIC_API_URL?.replace(/\/api\/?$/, "") ||
+  process.env.EXPO_PUBLIC_API_URL?.replace(/\/api\/v2\/?$/, "").replace(/\/api\/?$/, "") ||
   "https://labbe-backend-production.up.railway.app";
 
 export const getImageUrl = (image) => {

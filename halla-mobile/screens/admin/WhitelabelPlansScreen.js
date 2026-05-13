@@ -188,7 +188,7 @@ const WhitelabelPlansScreen = () => {
                   priceSuffix={t("quarterlyTab.priceSuffix")}
                   invitesSuffix={t("quarterlyTab.invitesSuffix")}
                   compSuffix={t("compensation.invites")}
-                  whatsappLabel={t("quarterlyTab.whatsappTemplates", { count: 3 })}
+                  whatsappLabel={quarterlyPlan.features?.whatsAppTemplates ? t("quarterlyTab.whatsappTemplates", { count: quarterlyPlan.features.whatsAppTemplates }) : null}
                   setupIncluded={t("quarterlyTab.setupIncluded")}
                   onSubscribe={handleSubscribe}
                 />
@@ -215,7 +215,7 @@ const WhitelabelPlansScreen = () => {
                   priceSuffix={t("annualTab.priceSuffix")}
                   invitesSuffix={t("annualTab.invitesSuffix")}
                   compSuffix={t("compensation.invites")}
-                  whatsappLabel={t("annualTab.whatsappTemplates", { count: 5 })}
+                  whatsappLabel={annualPlan.features?.whatsAppTemplates ? t("annualTab.whatsappTemplates", { count: annualPlan.features.whatsAppTemplates }) : null}
                   setupIncluded={t("annualTab.setupIncluded")}
                   onSubscribe={handleSubscribe}
                 />

@@ -66,7 +66,7 @@ const HostPlanCard = ({
         </Text>
       </View>
 
-      <PlanFeatureRow features={matchedPlan?.features} />
+      <PlanFeatureRow features={matchedPlan?.featuresArray} />
 
       {/* Compensation */}
       <View style={styles.compensation}>

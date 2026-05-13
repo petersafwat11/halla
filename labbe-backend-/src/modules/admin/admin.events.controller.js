@@ -50,11 +50,22 @@ exports.createEventForHost = catchAsync(async (req, res) => {
 
   if (!targetUserId) throw new ValidationError('Target user is required');
 
+  // Resolve whitelabelId from target user when not provided (e.g. platform admin
+  // creating for a whitelabel target where the frontend sends targetType=whitelabel)
+  let resolvedWhitelabelId = req.body.whitelabelId || getWhitelabelIdFromFilter(req);
+  if (resolvedWhitelabelId === null && targetUserId && targetUserId !== req.user._id) {
+    const User = require('../../../models/UserModel');
+    const targetUser = await User.findById(targetUserId).select('whitelabelId role').lean();
+    if (targetUser?.whitelabelId) {
+      resolvedWhitelabelId = targetUser.whitelabelId;
+    }
+  }
+
   const context = {
     userId: targetUserId,
     userRole: req.user.role,
     file: req.file,
-    whitelabelId: req.body.whitelabelId || getWhitelabelIdFromFilter(req),
+    whitelabelId: resolvedWhitelabelId,
     skipSubscriptionCheck,
     adminId: req.user._id,
   };

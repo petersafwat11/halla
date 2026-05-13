@@ -3,38 +3,27 @@ import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import { colors, spacing, borderRadius, typography } from "../../../styles/tokens";
-import { FEATURE_MAP } from "./featuresMap";
 import { getLocalized } from "../../../utils/locale";
 
 /**
- * Renders the "Included Features" grid for a host plan card.
+ * Renders the "Included Features" grid for a plan card.
  *
- * Accepts either a feature flags object (PlanModel.features shape — keys map
- * to FEATURE_MAP) or a pre-built array of `{ icon, labelAr, labelEn }`
- * objects (legacy whitelabel plans). When given the array form the labels
- * are rendered verbatim — no i18n lookup.
+ * Accepts `plan.featuresArray` — a pre-built array of `{ icon, labelAr, labelEn }`
+ * objects from the backend's `FEATURE_LABELS` constant. Labels are resolved
+ * via `getLocalized()` so they stay consistent across all screens.
  */
 const PlanFeatureRow = ({ features }) => {
   const { t, i18n } = useTranslation("plans");
   const locale = i18n.language;
 
   const rendered = useMemo(() => {
-    if (!features) return [];
-    if (Array.isArray(features)) {
-      return features.map((f, i) => ({
-        icon: f.icon,
-        label: getLocalized(f, "label", locale),
-        key: `legacy-${i}`,
-      }));
-    }
-    return Object.entries(FEATURE_MAP)
-      .filter(([k]) => features[k])
-      .map(([k, val]) => ({
-        icon: val.icon,
-        label: t(`features.${k}.label`),
-        key: k,
-      }));
-  }, [features, t, locale]);
+    if (!features || !Array.isArray(features)) return [];
+    return features.map((f, i) => ({
+      icon: f.icon,
+      label: getLocalized(f, "label", locale),
+      key: `feat-${i}`,
+    }));
+  }, [features, locale]);
 
   if (rendered.length === 0) return null;
 

@@ -24,7 +24,7 @@
   "common": {
     "currency": { "sar": "SAR" }
   },
-  "compensation": { "title": "Free Compensation Invites", "invites": "compensation invites (15%)" },
+  "compensation": { "title": "Free Compensation Invites", "invites": "compensation invites" },
   "buttons": { "subscribeNow": "Contact Us", "subscribeAction": "Subscribe Now" },
   "errors": { "loadFailed": "Failed to load plans", "selectPlan": "Please select a plan.", "noPlansAvailable": "No plans available", "retry": "Retry" },
   "eventTab": {
@@ -150,28 +150,7 @@
     "subscriptionPartial": "Subscription activated; {{count}} add-on(s) need follow-up — our team will reach out."
   },
   "features": {
-    "title": "Included Features",
-    "sendInvites": "Send invites through the app",
-    "receiveInvites": "Receive invites via WhatsApp or SMS",
-    "scanEntry": "Scan entry and upload name & number",
-    "flexibleEntry": "Flexible entry mode without special device",
-    "gateKeeper": "Assign gate keeper or list manager",
-    "rsvpResponses": "Receive RSVP responses",
-    "autoReminders": "Auto reminders",
-    "staffManagement": "Staff management",
-    "hasInAppInvites":         { "label": "In-App Invites" },
-    "hasWhatsAppInvites":      { "label": "WhatsApp Invites" },
-    "hasSMSInvites":           { "label": "SMS Invites" },
-    "hasQRCode":               { "label": "QR Code Entry" },
-    "hasQRScanning":           { "label": "QR Scanning" },
-    "hasFlexibleEntryMode":    { "label": "Flexible Entry Mode" },
-    "hasStaffCheckIn":         { "label": "Staff Check-in" },
-    "hasStaffAssignment":      { "label": "Staff Assignment" },
-    "hasRSVPTracking":         { "label": "RSVP Tracking" },
-    "hasAutoReminders":        { "label": "Auto Reminders" },
-    "hasEmailNotifications":   { "label": "Email Notifications" },
-    "hasCompensationInvites":  { "label": "Compensation Invites" },
-    "hasBasicTemplates":       { "label": "Basic Templates" }
+    "title": "Included Features"
   },
   "badges": { "selected": "Selected" },
   "monthlyPlan": { "durationNote": "Valid 30 days — unlimited events" }

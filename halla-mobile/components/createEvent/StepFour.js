@@ -179,12 +179,9 @@ const StepFour = () => {
                         <View style={styles.cardLabelIcon}>
                           <Ionicons name="mail-outline" size={14} color="#A87040" />
                         </View>
-                        <Text style={styles.cardLabelText} numberOfLines={1}>
+                        <Text style={styles.cardLabelText}>
                           {tplCategory ? categoryLabel(tplCategory) : "نص الدعوة"}
                         </Text>
-                      </View>
-                      <View style={[styles.radio, isSelected && styles.radioSelected]}>
-                        {isSelected && <View style={styles.radioDot} />}
                       </View>
                     </View>
                     {tpl.bodyText ? (
@@ -368,7 +365,7 @@ const styles = StyleSheet.create({
   },
   checkBadge: {
     position: "absolute",
-    bottom: 10,
+    top: 10,
     left: 10,
     width: 22,
     height: 22,
@@ -381,22 +378,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 4,
     elevation: 3,
-  },
-  radio: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 2,
-    borderColor: "#DDD",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  radioSelected: { borderColor: "#C28E5C" },
-  radioDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#C28E5C",
   },
   repliesSection: {
     marginTop: 8,

@@ -24,7 +24,7 @@
   "common": {
     "currency": { "sar": "ر.س" }
   },
-  "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة تعويضية (١٥٪)" },
+  "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة تعويضية" },
   "buttons": { "subscribeNow": "تواصل معنا", "subscribeAction": "اشترك الآن" },
   "errors": { "loadFailed": "فشل في تحميل الباقات", "selectPlan": "الرجاء اختيار باقة.", "noPlansAvailable": "لا توجد باقات متاحة", "retry": "إعادة المحاولة" },
   "eventTab": {
@@ -150,28 +150,7 @@
     "subscriptionPartial": "تم تفعيل الاشتراك؛ {{count}} إضافة بحاجة إلى متابعة — سيتواصل معك فريقنا."
   },
   "features": {
-    "title": "المميزات المشمولة",
-    "sendInvites": "إرسال الدعوات عبر التطبيق",
-    "receiveInvites": "استلام الدعوات عبر واتساب أو رسائل نصية",
-    "scanEntry": "مسح الدخول ورفع الاسم والرقم",
-    "flexibleEntry": "وضع دخول مرن بدون جهاز خاص",
-    "gateKeeper": "تعيين حارس بوابة أو مدير قائمة",
-    "rsvpResponses": "استلام ردود الحضور",
-    "autoReminders": "تذكيرات تلقائية",
-    "staffManagement": "إدارة الطاقم",
-    "hasInAppInvites":         { "label": "إرسال الدعوات من التطبيق" },
-    "hasWhatsAppInvites":      { "label": "دعوات واتساب" },
-    "hasSMSInvites":           { "label": "دعوات رسائل نصية" },
-    "hasQRCode":               { "label": "رمز QR للدخول" },
-    "hasQRScanning":           { "label": "مسح QR" },
-    "hasFlexibleEntryMode":    { "label": "وضع دخول مرن" },
-    "hasStaffCheckIn":         { "label": "إدارة الموظفين" },
-    "hasStaffAssignment":      { "label": "تعيين فريق العمل" },
-    "hasRSVPTracking":         { "label": "تتبع الحضور" },
-    "hasAutoReminders":        { "label": "تذكيرات تلقائية" },
-    "hasEmailNotifications":   { "label": "إشعارات بريد إلكتروني" },
-    "hasCompensationInvites":  { "label": "دعوات تعويضية" },
-    "hasBasicTemplates":       { "label": "قوالب أساسية" }
+    "title": "المميزات المشمولة"
   },
   "badges": { "selected": "تم الاختيار" },
   "monthlyPlan": { "durationNote": "30 يوم — مناسبات غير محدودة" }

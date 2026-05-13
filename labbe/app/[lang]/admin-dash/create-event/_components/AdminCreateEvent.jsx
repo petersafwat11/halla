@@ -45,6 +45,8 @@ function normalizeSubscription(sub) {
       isUnlimited: true,
       guestLimit: -1,
       isGuestUnlimited: true,
+      isPoolPlan: false,
+      isSingleEvent: false,
       invitePool: null,
       invitesRemaining: null,
       eventsRemaining: -1,
@@ -57,6 +59,8 @@ function normalizeSubscription(sub) {
       isUnlimited: false,
       guestLimit: sub.guestLimit,
       isGuestUnlimited: sub.isGuestUnlimited,
+      isPoolPlan: sub.isPoolPlan ?? false,
+      isSingleEvent: sub.isSingleEvent ?? false,
       invitePool: sub.invitePool ?? null,
       invitesRemaining: sub.invitesRemaining ?? null,
       eventsRemaining: sub.eventsRemaining ?? 0,
@@ -90,6 +94,8 @@ function normalizeSubscription(sub) {
     isUnlimited: false,
     guestLimit,
     isGuestUnlimited,
+    isPoolPlan: isPool,
+    isSingleEvent: isPerEvent,
     invitePool,
     invitesRemaining,
     eventsRemaining: sub.eventsRemaining ?? 0,
@@ -167,6 +173,7 @@ export default function AdminCreateEvent() {
         fd.append("createForSelf", "true");
       } else {
         fd.append("targetUserId", selectedHost?._id || selectedHost?.id);
+        fd.append("targetType", selectedHost?.targetType || "host");
       }
 
       if (formData.templateImage instanceof File) {

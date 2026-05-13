@@ -18,8 +18,8 @@ const UploadFileStandalone = ({
   const [fileError, setFileError] = useState("");
   const fileInputRef = useRef(null);
 
-  const acceptedImageTypes = ["image/jpeg", "image/jpg", "image/png"];
-  const acceptedExtensions = "JPEG, PNG";
+  const acceptedImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+  const acceptedExtensions = "JPEG, PNG, GIF, WebP";
 
   const handleFileChange = useCallback(
     (newFiles) => {
@@ -120,7 +120,7 @@ const UploadFileStandalone = ({
           ref={fileInputRef}
           onChange={handleInputChange}
           multiple={multiple}
-          accept={acceptImages ? "image/jpeg,image/jpg,image/png" : undefined}
+          accept={acceptImages ? "image/jpeg,image/jpg,image/png,image/gif,image/webp" : undefined}
           style={{ display: "none" }}
         />
         <div className={styles.placeholder}>

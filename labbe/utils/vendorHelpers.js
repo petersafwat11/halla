@@ -18,12 +18,16 @@ export const getImageUrl = (imagePath) => {
   if (imagePath.includes("\\") || imagePath.match(/^[A-Z]:/i)) {
     const uploadsMatch = imagePath.match(/uploads[\\/](.+)$/);
     if (uploadsMatch) {
-      return `${BACKEND_URL}/api/uploads/${uploadsMatch[1].replace(/\\/g, "/")}`;
+      return `${BACKEND_URL}/uploads/${uploadsMatch[1].replace(/\\/g, "/")}`;
     }
     const publicMatch = imagePath.match(/public[\\/]uploads[\\/](.+)$/);
     if (publicMatch) {
-      return `${BACKEND_URL}/api/uploads/${publicMatch[1].replace(/\\/g, "/")}`;
+      return `${BACKEND_URL}/uploads/${publicMatch[1].replace(/\\/g, "/")}`;
     }
+  }
+
+  if (imagePath.startsWith("/uploads")) {
+    return `${BACKEND_URL}${imagePath}`;
   }
 
   const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;

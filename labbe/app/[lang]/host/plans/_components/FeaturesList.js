@@ -27,10 +27,19 @@ const FEATURE_ICONS = {
   staff: FaUsers,
   gate: FaUserShield,
   rsvp: FaComments,
+  reply: FaComments,
   reminder: FaBell,
   email: FaEnvelope,
   gift: FaGift,
   template: FaCalendarAlt,
+  premium: FaGift,
+  report: FaCalendarAlt,
+  event: FaCalendarAlt,
+  support: FaComments,
+  phone: FaMobile,
+  verified: FaCheck,
+  web: FaQrcode,
+  tracking: FaBell,
 };
 
 /**

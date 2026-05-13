@@ -155,7 +155,7 @@
       "subscriptionRequired": "Subscription required",
       "eventsRemaining": "remaining",
       "whitelabelAdmin": "Whitelabel Admin",
-      "whitelabelDescription": "Create an event using your whitelabel subscription",
+      "whitelabelDescription": "Create an event using your organization subscription",
       "createEventAsWhitelabel": "Create event as whitelabel"
     },
     "steps": {

@@ -310,22 +310,39 @@ class ServicesService {
   /**
    * Return a publicly accessible URL for a stored service image.
    * For private S3 objects, generates a 1-hour pre-signed GET URL.
+   * Falls back to the raw URL if signing fails.
    * @private
    */
   async _getImageUrl(storedImage) {
     if (!storedImage) return null;
-    if (isS3Url(storedImage)) {
-      const key = getKeyFromUrl(storedImage);
+
+    const isS3 = isS3Url(storedImage) || /\.amazonaws\.com\//.test(storedImage);
+    if (isS3) {
+      const key = getKeyFromUrl(storedImage) || this._extractS3Key(storedImage);
       if (key) {
         try {
           return await getSignedUrlForKey(key);
         } catch (err) {
           logger.warn('Failed to sign S3 URL for service image', { error: err.message });
-          return null;
+          return storedImage;
         }
       }
     }
     return this._sanitizeImagePath(storedImage);
+  }
+
+  /**
+   * Extract S3 key from a URL when getKeyFromUrl fails (e.g. AWS_S3_BASE_URL mismatch).
+   * @private
+   */
+  _extractS3Key(url) {
+    try {
+      const u = new URL(url);
+      const path = u.pathname.startsWith('/') ? u.pathname.slice(1) : u.pathname;
+      return path || null;
+    } catch {
+      return null;
+    }
   }
 
   /**

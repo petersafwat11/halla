@@ -84,7 +84,12 @@
     "thisperiod": "هذه الفترة",
     "previousperiod": "الفترة السابقة",
     "change": "التغيير",
-    "currency": "العملة"
+    "currency": "العملة",
+    "whitelabel": {
+      "monthlyEvents": "المناسبات الشهرية",
+      "eventsByStatus": "المناسبات حسب الحالة",
+      "events": "مناسبة"
+    }
   },
   "bottom": {
     "topVendors": "التجار الأكثر تميزاً",

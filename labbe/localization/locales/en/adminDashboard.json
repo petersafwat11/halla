@@ -84,7 +84,12 @@
     "thisperiod": "This Period",
     "previousperiod": "Previous Period",
     "change": "Change",
-    "currency": "Currency"
+    "currency": "Currency",
+    "whitelabel": {
+      "monthlyEvents": "Monthly Events",
+      "eventsByStatus": "Events by Status",
+      "events": "Events"
+    }
   },
   "bottom": {
     "topVendors": "Top Vendors",

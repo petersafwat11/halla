@@ -155,7 +155,7 @@
       "subscriptionRequired": "الاشتراك مطلوب",
       "eventsRemaining": "مناسبة متبقية",
       "whitelabelAdmin": "مسؤول علامة بيضاء",
-      "whitelabelDescription": "أنشئ مناسبة باستخدام اشتراك العلامة البيضاء الخاص بك",
+      "whitelabelDescription": "أنشئ مناسبة باستخدام اشتراك المؤسسة الخاصة بك",
       "createEventAsWhitelabel": "إنشاء مناسبة كعلامة بيضاء"
     },
     "steps": {

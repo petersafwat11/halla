@@ -194,9 +194,6 @@ const StepFour = () => {
                               : t("invitation_message", "نص الدعوة")}
                           </span>
                         </span>
-                        <span className={`${styles.radioRing} ${isSelected ? styles.radioRingSelected : ""}`}>
-                          {isSelected && <span className={styles.radioDot} />}
-                        </span>
                       </div>
                       {template.bodyText && (
                         <div className={styles.bubbleWrap}>

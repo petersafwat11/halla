@@ -3,20 +3,14 @@ import React from "react";
 import Image from "next/image";
 import styles from "./serviceCard.module.css";
 import { useTranslation } from "react-i18next";
+import { getImageUrl as resolveImageUrl } from "@/utils/vendorHelpers";
 
 const PLACEHOLDER_IMAGE = "/images/placeholder-service.jpg";
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || "http://localhost:8000";
 
 const getImageUrl = (image) => {
   if (!image) return PLACEHOLDER_IMAGE;
-  if (image.startsWith("http")) return image;
-  if (image.startsWith("/uploads")) return `${API_BASE}${image}`;
-  const publicIdx = image.indexOf("public");
-  if (publicIdx !== -1) {
-    const relative = image.substring(publicIdx + 6).replace(/\\/g, "/");
-    return `${API_BASE}${relative}`;
-  }
-  return PLACEHOLDER_IMAGE;
+  const resolved = resolveImageUrl(image);
+  return resolved || PLACEHOLDER_IMAGE;
 };
 
 const ServiceCard = ({ service, onToggleStatus, onDelete, onEdit }) => {

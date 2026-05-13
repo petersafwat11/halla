@@ -42,6 +42,20 @@ export const useHostPlans = (options = {}) => {
   });
 };
 
+/**
+ * Hook to fetch landing page plans (host + business combined)
+ * Public — no auth required
+ * @returns {UseQueryResult}
+ */
+export const useLandingPlans = (options = {}) => {
+  return useQuery({
+    queryKey: ['plans', 'landing'],
+    queryFn: () => apiRequest({ method: 'GET', path: API_PATHS.plans.getLandingPlans }),
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
 export const useBusinessPlans = (options = {}) => {
   return useQuery({
     queryKey: ['plans', 'business'],

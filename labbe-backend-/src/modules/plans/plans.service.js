@@ -356,6 +356,18 @@ class PlansService {
   }
 
   /**
+   * Get landing plans — returns host + business plans for the landing page
+   * @returns {Promise<Object>}
+   */
+  async getLandingPlans() {
+    const [hostResult, businessResult] = await Promise.all([
+      this.getHostPlans(),
+      this.getBusinessPlans(),
+    ]);
+    return { host: hostResult, business: businessResult };
+  }
+
+  /**
    * Format plan for response
    * @private
    */
