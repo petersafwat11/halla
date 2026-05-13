@@ -34,9 +34,17 @@
     "moderators": "Moderators",
     "hosts": "Hosts",
     "vendors": "Vendors",
+    "whitelabels": "Whitelabels",
     "events": "Events",
+    "tickets": "Tickets",
     "payments": "Payments",
+    "plans": "Plans",
+    "managePlans": "Manage Plans",
+    "discounts": "Discounts",
     "settings": "Settings",
+    "templates": "Templates",
+    "templateCategories": "Template Categories",
+    "taqnyatTemplates": "WhatsApp Templates",
     "logout": "Logout"
   },
   "table": {

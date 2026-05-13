@@ -16,7 +16,12 @@
     "allTime": "All time",
     "activeNow": "Active now",
     "awaitingActivation": "Awaiting activation",
-    "temporarilySuspended": "Temporarily suspended"
+    "temporarilySuspended": "Temporarily suspended",
+    "title": "Statistics",
+    "hosts": "Hosts",
+    "events": "Events",
+    "moderators": "Moderators",
+    "subscriptionPlan": "Subscription Plan"
   },
   "table": {
     "title": "Whitelabels List",
@@ -37,7 +42,12 @@
     "active": "Active",
     "suspended": "Suspended",
     "pending": "Pending",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "trial": "Trial",
+    "expired": "Expired",
+    "cancelled": "Cancelled"
   },
   "actions": {
     "viewDetails": "View Details",
@@ -53,7 +63,12 @@
     "suspendError": "Failed to suspend whitelabel",
     "activateSuccess": "Whitelabel activated successfully",
     "activateError": "Failed to activate whitelabel",
-    "assignPlanFirst": "Please assign a subscription plan before activating"
+    "assignPlanFirst": "Please assign a subscription plan before activating",
+    "back": "Back",
+    "backToList": "Back to Whitelabels List",
+    "manageSubscription": "Manage Subscription",
+    "activateAccount": "Activate Account",
+    "suspendAccount": "Suspend Account"
   },
   "approveWhitelabelDialog": {
     "title": "Confirm approval",
@@ -103,6 +118,14 @@
     "noWhitelabelId": "Whitelabel ID not found",
     "noPlanSelected": "Please select a plan",
     "loadingPlans": "Loading plans...",
+    "errorLoadingPlans": "Failed to load plans",
+    "retry": "Retry",
+    "selectPlan": "Select Plan",
+    "selectStatus": "Select Status",
+    "statusActive": "Active",
+    "statusExpired": "Expired",
+    "statusCancelled": "Cancelled",
+    "update": "Update",
     "currency": "SAR",
     "invitesPool": "invites (pool)",
     "invitesEvent": "invites/event",
@@ -110,7 +133,12 @@
     "quarterlyPlan": "Quarterly Plan",
     "annualPlan": "Annual Plan",
     "subscriptionUpdateSuccess": "Subscription updated successfully",
-    "subscriptionUpdateError": "Failed to update subscription"
+    "subscriptionUpdateError": "Failed to update subscription",
+    "detailsTitle": "Subscription Details",
+    "noPlanSet": "No subscription plan set yet",
+    "teamMembersLimit": "Team Members Limit",
+    "eventsPerMonthLimit": "Events / Month Limit",
+    "expiresOn": "Expires On"
   },
   "form": {
     "name": "Whitelabel Name",
@@ -125,26 +153,8 @@
     "month": "month",
     "year": "year",
     "recommended": "Recommended",
-    "pro": {
-      "events": "Unlimited events",
-      "guests": "Up to 500 guests per event",
-      "users": "Team management"
-    },
-    "elite": {
-      "events": "Unlimited events",
-      "guests": "Unlimited guests",
-      "users": "Unlimited team",
-      "branding": "Free custom branding",
-      "whatsapp": "Custom WhatsApp number",
-      "support": "24/7 support",
-      "manager": "Dedicated account manager"
-    }
-  },
-  "stats": {
-    "title": "Statistics",
-    "hosts": "Hosts",
-    "events": "Events",
-    "moderators": "Moderators"
+    "pro": "Pro",
+    "elite": "Elite"
   },
   "hostsTable": {
     "title": "Recent Hosts",
@@ -169,7 +179,8 @@
       "status": "Status",
       "createdAt": "Join Date",
       "actions": "Actions"
-    }
+    },
+    "registeredHosts": "Registered Hosts"
   },
   "bulkActions": {
     "delete": "Delete Selected"
@@ -188,7 +199,10 @@
     "noSubscription": "None",
     "phone": "Phone",
     "domain": "Domain",
-    "subscription": "Subscription"
+    "subscription": "Subscription",
+    "noAddress": "No address specified",
+    "noFeatures": "No features available",
+    "noRequirements": "No requirements specified"
   },
   "noData": "No data available",
   "dateRange": {
@@ -201,5 +215,70 @@
     "lastMonth": "Last month",
     "confirm": "Confirm",
     "cancel": "Cancel"
+  },
+  "errors": {
+    "loadFailed": "Failed to load data",
+    "featureToggleFailed": "Failed to toggle feature"
+  },
+  "loading": {
+    "noData": "No whitelabel data found"
+  },
+  "defaults": {
+    "whitelabelName": "Whitelabel"
+  },
+  "limits": {
+    "unlimited": "Unlimited"
+  },
+  "info": {
+    "contactInfo": "Contact Information",
+    "phoneNumber": "Phone Number",
+    "email": "Email",
+    "joinDate": "Join Date"
+  },
+  "plan": {
+    "pro": "Pro",
+    "elite": "Elite",
+    "none": "None"
+  },
+  "sections": {
+    "address": "Address",
+    "brandIdentity": "Brand Identity",
+    "contactInfo": "Contact Information",
+    "featureManagement": "Feature Management",
+    "licenseTax": "License & Tax",
+    "planSelection": "Selected Plan",
+    "requirements": "System Requirements"
+  },
+  "fields": {
+    "city": "City",
+    "neighborhood": "Neighborhood",
+    "street": "Street",
+    "buildingNumber": "Building Number",
+    "additionalNumber": "Additional Number",
+    "arabicName": "Arabic Name",
+    "englishName": "English Name",
+    "companyName": "Company Name",
+    "platformName": "Platform Name",
+    "email": "Email",
+    "phoneNumber": "Phone Number",
+    "username": "Username",
+    "registeredAt": "Registration Date",
+    "plan": "Plan",
+    "billingCycle": "Billing Cycle",
+    "customBranding": "Custom Branding",
+    "monthlyEvents": "Monthly Events",
+    "monthlyGuests": "Monthly Guests",
+    "eventTypes": "Event Types",
+    "otherTypes": "Other Types",
+    "commercialRegistration": "Commercial Registration",
+    "taxNumber": "Tax Number"
+  },
+  "billing": {
+    "yearly": "Yearly",
+    "monthly": "Monthly"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No"
   }
 }

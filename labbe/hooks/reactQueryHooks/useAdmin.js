@@ -153,11 +153,11 @@ export const useAdminHostMutation = (action) => {
       },
     },
     updateSubscription: {
-      mutationFn: ({ hostId, planCode, status, billingCycle }) =>
+      mutationFn: ({ hostId, planCode, status }) =>
         apiRequest({
           method: "PATCH",
           path: API_PATHS.admin.hosts.updateSubscription(hostId),
-          data: { planCode, status, ...(billingCycle && { billingCycle }) },
+          data: { planCode, status },
         }),
       onSuccess: (_, { hostId }) => {
         queryClient.invalidateQueries({ queryKey: ["admin", "hosts", hostId] });
@@ -591,13 +591,14 @@ export const useAdminEventMutation = (action) => {
 // ADMIN PLANS QUERIES & MUTATIONS
 // ============================================
 
-export const useAdminPlans = (options = {}) => {
+export const useAdminPlans = (filters = {}, options = {}) => {
   return useQuery({
-    queryKey: ["admin", "plans"],
+    queryKey: ["admin", "plans", filters],
     queryFn: () =>
       apiRequest({
         method: "GET",
         path: API_PATHS.plans.adminGetAll,
+        params: filters,
       }),
     staleTime: 5 * 60 * 1000,
     ...options,

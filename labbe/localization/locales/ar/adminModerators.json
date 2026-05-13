@@ -31,7 +31,8 @@
     "cancel": "الغاء",
     "saving": "جاري الحفظ...",
     "success": "تم إضافة المشرف بنجاح",
-    "error": "فشل في إضافة المشرف"
+    "error": "فشل في إضافة المشرف",
+    "whitelabelRequired": "اختيار العلامة البيضاء مطلوب"
   },
   "editModerator": {
     "title": "تعديل مشرف",
@@ -58,6 +59,8 @@
     "searchPlaceholder": "ابحث عن مدير",
     "filter": "التصفية",
     "export": "تصدير",
+    "selectRows": "يرجى اختيار المشرفين للحذف",
+    "statusUpdated": "تم تحديث الحالة بنجاح",
     "columns": {
       "username": "اسم المستخدم",
       "phoneNumber": "رقم الهاتف",
@@ -65,17 +68,74 @@
       "title": "المسمى الوظيفي",
       "status": "الحالة",
       "createdAt": "تاريخ الانضمام",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "name": "الاسم",
+      "phone": "الهاتف",
+      "role": "الدور"
     },
     "status": {
       "active": "نشط",
       "suspended": "موقوف",
-      "inactive": "غير نشط"
+      "inactive": "غير نشط",
+      "pending": "قيد الانتظار"
     },
     "actions": {
       "suspend": "ايقاف",
       "delete": "حذف",
       "edit": "تعديل"
+    }
+  },
+  "moderators": {
+    "stats": {
+      "total": "إجمالي المشرفين",
+      "allTime": "جميع الأوقات",
+      "active": "المشرفين النشطين",
+      "activeNow": "نشط الآن",
+      "pending": "قيد الانتظار",
+      "awaitingActivation": "في انتظار التفعيل",
+      "inactive": "غير نشط",
+      "deactivated": "معطل"
+    },
+    "edit": "تعديل",
+    "suspend": "إيقاف",
+    "activate": "تفعيل",
+    "delete": "حذف",
+    "bulkDelete": "حذف المحدد",
+    "title": "إدارة المشرفين",
+    "addModerator": "إضافة مشرف جديد",
+    "editModerator": "تعديل المشرف",
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "role": "الدور",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإضافة"
+    },
+    "filter": {
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "roles": {
+      "whitelabelModerator": "مشرف علامة بيضاء",
+      "whitelabelAdmin": "مدير علامة بيضاء",
+      "moderator": "مشرف",
+      "admin": "مدير"
+    },
+    "form": {
+      "name": "الاسم",
+      "namePlaceholder": "أدخل اسم المشرف",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "example@email.com",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "05xxxxxxxx",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "اتركه فارغاً للإنشاء التلقائي",
+      "role": "الدور",
+      "selectRole": "اختر الدور",
+      "whitelabel": "العلامة البيضاء",
+      "selectWhitelabel": "اختر العلامة البيضاء"
     }
   }
 }

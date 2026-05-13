@@ -6,6 +6,7 @@
     "payments": "المدفوعات",
     "tickets": "الشكاوى",
     "plans": "الخدمات",
+    "shop": "المتجر",
     "freePlan": "الخطة المجانية",
     "freePlanDesc": "اشترك لإرسال دعوات غير محدودة",
     "upgradeNow": "الترقية الآن",
@@ -14,6 +15,9 @@
   "header": {
     "userName": "أحمد جمال الدين",
     "userRole": "إدارة المناسبات",
+    "adminRole": "مدير النظام",
+    "vendorRole": "تاجر",
+    "whitelabelRole": "مدير المنصة",
     "searchPlaceholder": "بحث"
   },
   "toolbar": {

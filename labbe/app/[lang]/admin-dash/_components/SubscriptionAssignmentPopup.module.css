@@ -1,0 +1,65 @@
+.popup {
+  background: white;
+  border-radius: 1.2rem;
+  padding: 2.4rem;
+  width: 48rem;
+  max-width: 90vw;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 2.4rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.formGroup label {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.formGroup input[type="text"] {
+  padding: 1.2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.8rem;
+  font-size: 1.4rem;
+  background: var(--bg-disabled);
+  color: var(--text-primary);
+}
+
+.actions {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+.actions button {
+  flex: 1;
+}

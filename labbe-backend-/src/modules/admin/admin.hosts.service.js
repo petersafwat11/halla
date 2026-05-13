@@ -295,7 +295,7 @@ async function updateHostStatus(hostId, status, whitelabelId) {
 /**
  * Update host subscription
  */
-async function updateHostSubscription(hostId, { planCode, status: subscriptionStatus, billingCycle }, whitelabelId) {
+async function updateHostSubscription(hostId, { planCode, status: subscriptionStatus }, whitelabelId) {
   const query = { _id: hostId, role: ROLES.HOST };
   if (whitelabelId !== undefined) {
     query.whitelabelId = whitelabelId;
@@ -314,9 +314,6 @@ async function updateHostSubscription(hostId, { planCode, status: subscriptionSt
   const activeSubs = await Subscription.findActiveForUser(hostId);
   const subscription = activeSubs[0] || null;
 
-  // Validate and use fallback billing cycle
-  const finalBillingCycle = billingCycle || (plan.planType === 'single_event' ? 'once' : 'monthly');
-
   if (!subscription) {
     const session = await mongoose.startSession();
     try {
@@ -325,7 +322,6 @@ async function updateHostSubscription(hostId, { planCode, status: subscriptionSt
           userId: hostId,
           planId: plan._id,
           status: subscriptionStatus || SUBSCRIPTION_STATUS.ACTIVE,
-          billingCycle: finalBillingCycle,
           startDate: new Date(),
         }], { session });
         await User.findByIdAndUpdate(hostId, { subscription: newSub._id }, { session });
@@ -338,21 +334,6 @@ async function updateHostSubscription(hostId, { planCode, status: subscriptionSt
     subscription.planId = plan._id;
     if (subscriptionStatus) {
       subscription.status = subscriptionStatus;
-    }
-    subscription.billingCycle = finalBillingCycle;
-
-    // Also reset end date based on new billing cycle
-    const start = subscription.startDate || new Date();
-    if (finalBillingCycle === 'yearly') {
-      const end = new Date(start);
-      end.setMonth(end.getMonth() + 12);
-      subscription.endDate = end;
-    } else if (finalBillingCycle === 'monthly') {
-      const end = new Date(start);
-      end.setMonth(end.getMonth() + 1);
-      subscription.endDate = end;
-    } else {
-      subscription.endDate = null;
     }
 
     await subscription.save();

@@ -28,6 +28,7 @@
   "status": {
     "open": "مفتوحة",
     "inProgress": "قيد المعالجة",
+    "in_progress": "قيد المعالجة",
     "resolved": "محلولة",
     "closed": "مغلقة",
     "pending": "قيد الانتظار"
@@ -35,6 +36,7 @@
   "priority": {
     "low": "منخفضة",
     "normal": "عادية",
+    "medium": "متوسطة",
     "high": "عالية",
     "urgent": "عاجلة"
   },
@@ -56,7 +58,8 @@
     "reopen": "إعادة فتح",
     "markUrgent": "تحديد كعاجل",
     "delete": "حذف",
-    "viewResolution": "عرض الحل"
+    "viewResolution": "عرض الحل",
+    "back": "رجوع"
   },
   "assign": {
     "title": "تعيين التذكرة",
@@ -104,6 +107,9 @@
     "resolve": "حل المحدد",
     "delete": "حذف المحدد"
   },
+  "errors": {
+    "loadFailed": "فشل في تحميل التذاكر"
+  },
   "messages": {
     "confirmDelete": "هل أنت متأكد من حذف هذه التذكرة؟",
     "confirmBulkDelete": "هل أنت متأكد من حذف التذاكر المحددة؟",
@@ -112,6 +118,10 @@
     "bulkDeleteSuccess": "تم حذف التذاكر بنجاح",
     "bulkDeleteError": "فشل في حذف التذاكر",
     "markUrgentSuccess": "تم تحديد التذكرة كعاجلة",
+    "statusUpdateSuccess": "تم تحديث الحالة بنجاح",
+    "selectRows": "يرجى تحديد الصفوف",
+    "reopenSuccess": "تم إعادة فتح التذكرة بنجاح",
+    "reopenError": "فشل في إعادة فتح التذكرة",
     "updateError": "فشل في تحديث التذكرة"
   },
   "dateRange": {

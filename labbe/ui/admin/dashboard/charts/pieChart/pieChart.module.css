@@ -58,13 +58,6 @@
   height: 12px;
   flex-shrink: 0;
   border-radius: 3px;
-  background: #c28e5c;
-}
-.item:nth-child(2) span {
-  background: #d6b392;
-}
-.item:nth-child(3) span {
-  background: #f5ece4;
 }
 
 .statText {

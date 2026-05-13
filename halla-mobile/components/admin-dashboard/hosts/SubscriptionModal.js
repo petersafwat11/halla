@@ -21,7 +21,7 @@ import {
 import { useAdminPlans, useUpdateHostSubscription } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { planHasBillingCycle } from "../../../utils/constants/plans";
+
 import { getLocalized } from "../../../utils/locale";
 
 const PickDropdown = ({ label, options, selectedValue, onSelect }) => (
@@ -59,25 +59,19 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
   const locale = i18n.language;
   const [selectedPlan, setSelectedPlan] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("active");
-  const [selectedBillingCycle, setSelectedBillingCycle] = useState("monthly");
   const updateSubscription = useUpdateHostSubscription();
   const {
     data: plansData,
     isLoading: isLoadingPlans,
     error: plansError,
     refetch: refetchPlans,
-  } = useAdminPlans();
+  } = useAdminPlans({ availableFor: "host" });
   const toast = useToast();
 
   const statusOptions = [
     { label: t("hosts.status.active"),                  value: "active" },
     { label: t("hosts.subscription.statusExpired"),     value: "expired" },
     { label: t("hosts.subscription.statusCancelled"),   value: "cancelled" },
-  ];
-
-  const billingCycleOptions = [
-    { label: t("hosts.subscription.monthly"),  value: "monthly" },
-    { label: t("hosts.subscription.yearly"),   value: "yearly" },
   ];
 
   const planOptions = useMemo(() => {
@@ -89,18 +83,10 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
     }));
   }, [plansData, locale]);
 
-  const selectedPlanType = useMemo(
-    () => planOptions.find((opt) => opt.value === selectedPlan)?.planType,
-    [planOptions, selectedPlan]
-  );
-
-  const showBillingCyclePicker = planHasBillingCycle(selectedPlanType);
-
   useEffect(() => {
     if (visible && host) {
       setSelectedPlan(host.subscription?.planId?.code || "");
       setSelectedStatus(host.subscription?.status || "active");
-      setSelectedBillingCycle(host.subscription?.billingCycle || "monthly");
     }
   }, [visible, host]);
 
@@ -115,7 +101,6 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
         hostId: host.id,
         planCode: selectedPlan,
         status: selectedStatus,
-        ...(showBillingCyclePicker ? { billingCycle: selectedBillingCycle } : {}),
       });
       toast.success(t("hosts.subscription.updated"));
       onClose();
@@ -187,14 +172,7 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
               onSelect={setSelectedStatus}
             />
 
-            {showBillingCyclePicker && (
-              <PickDropdown
-                label={t("hosts.subscription.billingCycle")}
-                options={billingCycleOptions}
-                selectedValue={selectedBillingCycle}
-                onSelect={setSelectedBillingCycle}
-              />
-            )}
+
           </View>
 
           <View style={styles.footer}>

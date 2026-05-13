@@ -2,10 +2,12 @@ import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
-import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
-import AdminPaymentsClient from "./_components/AdminPaymentsClient";
+import PaymentsPageHeader from "./_components/PaymentsPageHeader";
+import PaymentStats from "./_components/PaymentStats";
+import PaymentsTable from "./_components/PaymentsTable";
+import styles from "./page.module.css";
 
-export default async function PaymentsPage({ params }) {
+export default async function PaymentsPage({ params, searchParams }) {
   const { lang } = await params;
   await requirePageAccess("payments", lang);
 
@@ -13,21 +15,32 @@ export default async function PaymentsPage({ params }) {
   const token = cookieStore.get("access_token")?.value;
   const queryClient = createServerQueryClient();
 
+  const urlParams = await searchParams;
+  const filters = {
+    page: urlParams?.page || 1,
+    limit: urlParams?.limit || 20,
+    status: urlParams?.status,
+    from: urlParams?.from,
+    to: urlParams?.to,
+  };
+
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["admin", "payments", { page: 1, limit: 20 }],
+      queryKey: ["admin", "payments", filters],
       path: API_PATHS.payments.getAll,
-      params: { page: 1, limit: 20 },
+      params: filters,
       token,
     });
   }
 
   return (
     <QueryClientServerProvider queryClient={queryClient}>
-      <ErrorBoundary>
-        <AdminPaymentsClient />
-      </ErrorBoundary>
+      <div className={styles.container}>
+        <PaymentsPageHeader />
+        <PaymentStats />
+        <PaymentsTable />
+      </div>
     </QueryClientServerProvider>
   );
 }

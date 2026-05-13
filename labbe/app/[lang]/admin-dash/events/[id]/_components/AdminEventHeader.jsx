@@ -33,13 +33,13 @@ export default function AdminEventHeader({ data }) {
   const event = {
     id: eventId,
     title: eventTitle,
-    testMessageSent: data.event.testMessageSent,
-    whatsappTemplateStatus: data.event.whatsappTemplateStatus,
-    launchSettings: data.event.launchSettings,
-    staffCount: (data.staff || []).length,
+    testMessageSent: data?.event?.testMessageSent,
+    whatsappTemplateStatus: data?.event?.whatsappTemplateStatus,
+    launchSettings: data?.event?.launchSettings,
+    staffCount: (data?.staff || []).length,
   };
 
-  const staffList = (data.staff || []).map(
+  const staffList = (data?.staff || []).map(
     (s) => ({
       id: s._id || s.id,
       name: s.name,

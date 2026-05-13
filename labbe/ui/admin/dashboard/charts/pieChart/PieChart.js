@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 
 const RADIAN = Math.PI / 180;
 const COLORS = ["#C28E5C", "#D6B392"];
+const STATUS_COLORS = ["#D38200", "#3498DB", "#2A8C5B", "#9B59B6"]; // draft, scheduled, live, completed
+const STATUS_KEYS = ["draft", "scheduled", "live", "completed"];
 
 const renderCustomizedLabel = ({
   cx,
@@ -13,6 +15,8 @@ const renderCustomizedLabel = ({
   outerRadius,
   percent,
 }) => {
+  if ((percent ?? 0) < 0.08) return null;
+
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-(midAngle ?? 0) * RADIAN);
   const y = cy + radius * Math.sin(-(midAngle ?? 0) * RADIAN);
@@ -22,18 +26,18 @@ const renderCustomizedLabel = ({
       x={x}
       y={y}
       fill="white"
-      textAnchor={x > cx ? "start" : "end"}
+      textAnchor="middle"
       dominantBaseline="central"
-      fontSize={20}
-      // fontWeight={700}
-      // fontFamily="Cairo"
+      fontSize={13}
+      fontWeight={700}
+      fontFamily="Cairo, sans-serif"
     >
-      {`${((percent ?? 1) * 100).toFixed(0)}%`}
+      {`${((percent ?? 0) * 100).toFixed(0)}%`}
     </text>
   );
 };
 
-export default function PieChartComponent({ data, title, type = "revenue" }) {
+export default function PieChartComponent({ data, title, type = "revenue", colors }) {
   const { t } = useTranslation("adminDashboard");
 
   // Transform data based on type
@@ -102,7 +106,22 @@ export default function PieChartComponent({ data, title, type = "revenue" }) {
       value,
       colorIndex: index,
     }));
+  } else if (type === "eventsByStatus" && data) {
+    chartData = STATUS_KEYS.map((key) => ({
+      name: key,
+      value: data[key] || 0,
+    })).filter((item) => item.value > 0);
+
+    total = chartData.reduce((sum, item) => sum + item.value, 0);
+
+    statsItems = STATUS_KEYS.map((key, index) => ({
+      label: t(`tables.recentEvents.status.${key}`, key),
+      value: data[key] || 0,
+      colorIndex: index,
+    }));
   }
+
+  const activeColors = colors || (type === "eventsByStatus" ? STATUS_COLORS : COLORS);
 
   return (
     <div className={styles.container}>
@@ -114,7 +133,7 @@ export default function PieChartComponent({ data, title, type = "revenue" }) {
         <div className={styles.stats}>
           {statsItems.map((item, index) => (
             <div className={styles.item} key={index}>
-              <span></span>
+              <span style={{ background: activeColors[index % activeColors.length] }}></span>
               <p className={styles.statText}>
                 {item.label}: {item.value}
               </p>
@@ -138,7 +157,7 @@ export default function PieChartComponent({ data, title, type = "revenue" }) {
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${entry.name}`}
-                  fill={COLORS[index % COLORS.length]}
+                  fill={activeColors[index % activeColors.length]}
                 />
               ))}
             </Pie>

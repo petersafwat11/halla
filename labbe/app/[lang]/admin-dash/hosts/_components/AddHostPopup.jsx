@@ -13,7 +13,7 @@ import Button from "@/ui/commen/button/Button";
 import styles from "./AddHostPopup.module.css";
 
 export default function AddHostPopup({ onClose }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminHosts");
   const createHost = useAdminHostMutation("create");
 
   const methods = useForm({

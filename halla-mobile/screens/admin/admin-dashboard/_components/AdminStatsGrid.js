@@ -7,8 +7,10 @@ const ICON_MAP = {
   users: { name: "people-outline", color: colors.primary[500] },
   store: { name: "storefront-outline", color: "#C28E5C" },
   calendar: { name: "calendar-outline", color: "#3498DB" },
+  "calendar-check": { name: "checkmark-circle-outline", color: "#2A8C5B" },
   "credit-card": { name: "card-outline", color: "#9B59B6" },
   ticket: { name: "ticket-outline", color: colors.warning[500] },
+  guests: { name: "people-outline", color: "#9B59B6" },
 };
 
 const StatChip = ({ item }) => {

@@ -8,6 +8,7 @@ const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
 const { auditLog } = require('../../shared/middleware/auditLog');
 const { bulkOperationLimiter } = require('../../shared/middleware/rateLimiter');
 const adminValidation = require('./admin.validation');
+const { uploadTemplateImage } = require('../../shared/utils/fileUpload');
 
 // ============================================
 // EVENT MANAGEMENT (ADMIN)
@@ -43,6 +44,7 @@ const adminValidation = require('./admin.validation');
 router.post('/events/create-for-host',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'create'),
   filterByWhitelabel,
+  uploadTemplateImage,
   adminController.createEventForHost
 );
 
@@ -361,6 +363,7 @@ router.patch('/events/:id',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'update'),
   validateObjectId('id'),
   filterByWhitelabel,
+  uploadTemplateImage,
   auditLog({
     action: 'event.update',
     targetType: 'event',

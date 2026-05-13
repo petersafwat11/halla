@@ -37,7 +37,13 @@ import styles from "./SetupPassword.module.css";
 const buildSchema = (t) =>
   z
     .object({
-      password: z.string().min(8, t("errors.password_too_short")),
+      password: z
+        .string()
+        .min(8, t("errors.password_too_short"))
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+          t("setupPasswordForm.errors.passwordComplexity")
+        ),
       passwordConfirm: z.string().min(1, t("errors.password_mismatch")),
     })
     .refine((data) => data.password === data.passwordConfirm, {

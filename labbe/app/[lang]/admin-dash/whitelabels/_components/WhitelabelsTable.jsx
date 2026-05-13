@@ -5,7 +5,7 @@ import { useAdminWhitelabels } from "@/hooks/reactQueryHooks/useAdmin";
 import { useTranslation } from "react-i18next";
 import { FiEye, FiCheckCircle, FiSlash, FiCreditCard, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
-import WhitelabelSubscriptionPopup from "./whitelabelSubscriptionPopup/WhitelabelSubscriptionPopup";
+import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { useWhitelabelTableActions } from "./useWhitelabelTableActions";
 import { getLocalized } from "@/utils/locale";
@@ -169,11 +169,10 @@ export default function WhitelabelsTable() {
       </div>
 
       {showSubscriptionPopup && selectedWhitelabel && (
-        <WhitelabelSubscriptionPopup
-          whitelabel={selectedWhitelabel}
-          currentSubscription={selectedWhitelabel?.subscription}
+        <SubscriptionAssignmentPopup
+          entity={selectedWhitelabel}
+          entityType="whitelabel"
           onClose={handleCloseSubscriptionPopup}
-          onSuccess={handleCloseSubscriptionPopup}
         />
       )}
     </>

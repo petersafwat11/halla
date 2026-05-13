@@ -8,7 +8,7 @@ import { handleError } from "@/services/errorHandlingService";
 import { useAdminWhitelabelMutation } from "@/hooks/reactQueryHooks/useAdmin";
 import { useRouter } from "next/navigation";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
-import WhitelabelSubscriptionPopup from "../whitelabelSubscriptionPopup/WhitelabelSubscriptionPopup";
+import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import {
   FaBuilding,
   FaUsers,
@@ -281,17 +281,13 @@ const WhitelabelCard = ({ data }) => {
       </div>
 
       {/* Subscription Popup */}
-      <PopupLayout
-        isOpen={isSubscriptionPopupOpen}
-        onClose={handleClosePopup}
-      >
-        <WhitelabelSubscriptionPopup
-          whitelabel={whitelabel}
-          currentSubscription={subscription}
+      {isSubscriptionPopupOpen && (
+        <SubscriptionAssignmentPopup
+          entity={whitelabel}
+          entityType="whitelabel"
           onClose={handleClosePopup}
-          onSuccess={handleSubscriptionSuccess}
         />
-      </PopupLayout>
+      )}
     </div>
   );
 };

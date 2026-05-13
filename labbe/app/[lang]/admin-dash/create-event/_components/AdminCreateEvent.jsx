@@ -177,7 +177,7 @@ export default function AdminCreateEvent() {
       const token = cookieUtils.getCookie("token");
       await adminDashboardAPI.events.createForHost(fd, token);
 
-      toastUtils.success(tAdmin("createEvent.success") || "Event created successfully");
+      toastUtils.success(tAdmin("createEvent.success.created") || "Event created successfully");
       router.push(`/${locale}/admin-dash/events`);
     } catch (error) {
       handleError(error, t, { fallbackMessage: "errors.create_failed" });

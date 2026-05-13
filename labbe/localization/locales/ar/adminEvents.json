@@ -5,6 +5,59 @@
     "dateRange": "نطاق التاريخ",
     "createEvent": "انشئ مناسبة"
   },
+  "events": {
+    "title": "إدارة المناسبات",
+    "subtitle": "عرض وإدارة جميع المناسبات",
+    "createEvent": "إنشاء مناسبة",
+    "confirmDelete": "هل أنت متأكد من حذف هذه المناسبة؟",
+    "deleteSuccess": "تم حذف المناسبة بنجاح",
+    "deleteError": "فشل حذف المناسبة",
+    "selectRows": "الرجاء تحديد مناسبات للحذف",
+    "confirmBulkDelete": "هل أنت متأكد من حذف {{count}} مناسبة؟",
+    "bulkDeleteSuccess": "تم حذف المناسبات بنجاح",
+    "bulkDeleteError": "فشل حذف المناسبات",
+    "statusUpdateSuccess": "تم تحديث الحالة بنجاح",
+    "statusUpdateError": "فشل تحديث الحالة",
+    "exportError": "فشل تصدير البيانات",
+    "viewDetails": "عرض التفاصيل",
+    "activate": "تفعيل",
+    "suspend": "إيقاف",
+    "delete": "حذف",
+    "status": {
+      "scheduled": "مجدول",
+      "live": "مباشر",
+      "completed": "منتهي",
+      "draft": "مسودة",
+      "cancelled": "ملغي"
+    },
+    "loadError": "فشل في تحميل المناسبات",
+    "columns": {
+      "title": "العنوان",
+      "host": "المضيف",
+      "date": "التاريخ",
+      "guests": "الضيوف",
+      "status": "الحالة"
+    },
+    "filter": {
+      "all": "الكل",
+      "draft": "مسودة",
+      "scheduled": "مجدول",
+      "live": "مباشر",
+      "completed": "منتهي",
+      "cancelled": "ملغي"
+    },
+    "bulkDelete": "حذف المحدد",
+    "stats": {
+      "total": "إجمالي المناسبات",
+      "allTime": "جميع الأوقات",
+      "active": "المناسبات النشطة",
+      "liveNow": "مباشر الآن",
+      "scheduled": "مجدولة",
+      "upcoming": "قادمة",
+      "completed": "منتهية",
+      "finished": "انتهت"
+    }
+  },
   "stats": {
     "totalEvents": "إجمالي المناسبات",
     "totalActiveEvents": "مناسبات نشطة",
@@ -29,13 +82,28 @@
       "type": "النوع",
       "guestList": "عدد الضيوف",
       "datetime": "التاريخ والوقت",
-      "status": "الحالة"
+      "status": "الحالة",
+      "guestName": "اسم العميل",
+      "mobile": "رقم الجوال",
+      "addedBy": "إضافة بواسطة",
+      "responseTime": "توقيت الرد"
     },
     "status": {
       "active": "نشطة",
       "ended": "منتهية",
       "suspended": "موقوفة",
-      "draft": "مسودة"
+      "draft": "مسودة",
+      "accepted": "مؤكد",
+      "confirmed": "مؤكد",
+      "declined": "معتذر",
+      "invited": "لم يرد",
+      "noResponse": "لم يرد",
+      "maybe": "ربما",
+      "tentative": "ربما"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "delete": "حذف"
     },
     "eventTypes": {
       "wedding": "زفاف",
@@ -66,8 +134,8 @@
       "title": "اختر الهدف",
       "description": "اختر لمن تريد إنشاء هذه المناسبة",
       "createForSelf": "إنشاء لنفسي",
-      "createForHost": "إنشاء لمضيف",
-      "createForWhitelabel": "إنشاء لعلامة بيضاء",
+      "createForHost": "إنشاء لعميل",
+      "createForWhitelabel": "إنشاء لمؤسسة",
       "createForYourself": "إنشاء مناسبة لنفسك",
       "unlimitedDescription": "كمسؤول منصة، لديك مناسبات وضيوف غير محدودة",
       "unlimited": "غير محدود",
@@ -75,11 +143,11 @@
       "selectFromList": "اختر من القائمة",
       "phonePlaceholder": "+966 XX XXX XXXX",
       "enterPhone": "يرجى إدخال رقم الهاتف",
-      "hostNotFound": "لم يتم العثور على المضيف",
+      "hostNotFound": "لم يتم العثور على العميل",
       "searchError": "فشل البحث",
-      "noHostsFound": "لم يتم العثور على مضيفين",
-      "noWhitelabelsFound": "لم يتم العثور على علامات بيضاء",
-      "selectedHost": "المضيف المختار:",
+      "noHostsFound": "لم يتم العثور على عملاء",
+      "noWhitelabelsFound": "لم يتم العثور على مؤسسات",
+      "selectedHost": "العميل المختار:",
       "selectedTarget": "الهدف المختار:",
       "creatingForSelf": "إنشاء لنفسك",
       "noSubscription": "لا يوجد اشتراك",
@@ -165,7 +233,27 @@
       "testMessage": "رسالة تجريبية",
       "schedule": "جدولة الإرسال",
       "viewStats": "عرض الإحصائيات",
-      "moderators": "المشرفين"
+      "moderators": "المشرفين",
+      "staff": "الطاقم"
+    },
+    "header": {
+      "sendReminder": "إرسال تذكير"
+    },
+    "editSteps": {
+      "details": "تفاصيل المناسبة",
+      "guestList": "قائمة الضيوف",
+      "design": "تصميم الدعوة",
+      "customization": "تخصيص الرسالة"
+    },
+    "guestTable": {
+      "title": "قائمة الضيوف",
+      "exportSuccess": "تم تصدير الضيوف بنجاح",
+      "exportError": "فشل تصدير الضيوف",
+      "confirmDelete": "هل أنت متأكد من حذف هذا الضيف؟",
+      "deleteSuccess": "تم حذف الضيف بنجاح",
+      "deleteError": "فشل حذف الضيف",
+      "updateSuccess": "تم تحديث الضيف بنجاح",
+      "updateError": "فشل تحديث الضيف"
     },
     "stats": {
       "totalGuests": "إجمالي الضيوف",
@@ -193,5 +281,22 @@
       "unlimited": "غير محدود"
     }
   },
-  "loading": "جاري التحميل..."
+  "loading": "جاري التحميل...",
+  "messaging": {
+    "sendInvitations": "إرسال الدعوات",
+    "noGuestsWithPhone": "لا يوجد ضيوف لديهم أرقام هواتف",
+    "invitationsSent": "تم إرسال {{count}} دعوة بنجاح",
+    "sendError": "فشل إرسال الدعوات"
+  },
+  "reminderPopup": {
+    "success": "تم إرسال التذكير بنجاح",
+    "error": "فشل إرسال التذكير"
+  },
+  "errors": {
+    "loadingEvent": "خطأ في تحميل المناسبة",
+    "noGuestId": "معرف الضيف غير موجود"
+  },
+  "buttons": {
+    "goBack": "رجوع"
+  }
 }

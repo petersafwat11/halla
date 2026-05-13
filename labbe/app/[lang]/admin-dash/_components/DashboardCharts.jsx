@@ -14,16 +14,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import PieChartComponent from "@/ui/admin/dashboard/charts/pieChart/PieChart";
+import CustomPieChart from "@/ui/admin/dashboard/charts/customPieChart/CustomPieChart";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import useAuthStore from "@/stores/authStore";
 import styles from "./DashboardCharts.module.css";
-
-const STATUS_CONFIG = [
-  { key: "scheduled", labelKey: "tables.recentEvents.status.scheduled", color: "#3498DB" },
-  { key: "live", labelKey: "tables.recentEvents.status.live", color: "#2A8C5B" },
-  { key: "completed", labelKey: "tables.recentEvents.status.completed", color: "#9B59B6" },
-  { key: "draft", labelKey: "tables.recentEvents.status.draft", color: "#D38200" },
-];
 
 const chartColors = {
   barFill: "#C28E5C",
@@ -72,7 +66,6 @@ export default function DashboardCharts() {
     const monthlyEvents = analytics.monthlyEvents || [];
     const eventsByStatus = analytics.eventsByStatus || {};
     const monthlyTotal = monthlyEvents.reduce((sum, d) => sum + d.count, 0);
-    const statusTotal = Object.values(eventsByStatus).reduce((a, b) => a + b, 0);
 
     return (
       <div className={`${styles.chartsGrid} ${styles.whitelabelGrid}`}>
@@ -106,32 +99,11 @@ export default function DashboardCharts() {
         </div>
 
         <div className={styles.chartBox}>
-          <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>{t("charts.whitelabel.eventsByStatus", "Events by Status")}</h3>
-            <p className={styles.chartTotal}>{statusTotal}</p>
-          </div>
-          <div className={styles.statusList}>
-            {STATUS_CONFIG.map((item) => {
-              const count = eventsByStatus[item.key] || 0;
-              const pct = statusTotal > 0 ? Math.round((count / statusTotal) * 100) : 0;
-              return (
-                <div key={item.key} className={styles.statusItem}>
-                  <span
-                    className={styles.statusDot}
-                    style={{ background: item.color }}
-                  />
-                  <span className={styles.statusLabel}>{t(item.labelKey)}</span>
-                  <div className={styles.statusBar}>
-                    <div
-                      className={styles.statusBarFill}
-                      style={{ width: `${pct}%`, background: item.color }}
-                    />
-                  </div>
-                  <span className={styles.statusValue}>{count}</span>
-                </div>
-              );
-            })}
-          </div>
+          <PieChartComponent
+            data={eventsByStatus}
+            type="eventsByStatus"
+            title={t("charts.whitelabel.eventsByStatus", "Events by Status")}
+          />
         </div>
       </div>
     );
@@ -146,6 +118,16 @@ export default function DashboardCharts() {
           data={chartsData.subscriptionsByPlan || {}}
           type="subscriptions"
           title={t("charts.subscriptions", "Subscriptions")}
+        />
+      </div>
+      <div className={styles.chartBox}>
+        <CustomPieChart data={chartsData.guestStats} />
+      </div>
+      <div className={styles.chartBox}>
+        <PieChartComponent
+          data={chartsData.tickets || {}}
+          type="tickets"
+          title={t("charts.tickets", "Tickets")}
         />
       </div>
     </div>

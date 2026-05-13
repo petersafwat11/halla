@@ -55,10 +55,10 @@ exports.updateHostStatus = catchAsync(async (req, res) => {
 
 exports.updateHostSubscription = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { planCode, status, billingCycle } = req.body;
+  const { planCode, status } = req.body;
   const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  const result = await adminService.updateHostSubscription(id, { planCode, status, billingCycle }, whitelabelId);
+  const result = await adminService.updateHostSubscription(id, { planCode, status }, whitelabelId);
   sendSuccess(res, result, result.message);
 });
 

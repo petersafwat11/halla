@@ -16,7 +16,12 @@
     "allTime": "جميع الأوقات",
     "activeNow": "نشط الآن",
     "awaitingActivation": "في انتظار التفعيل",
-    "temporarilySuspended": "موقوف مؤقتاً"
+    "temporarilySuspended": "موقوف مؤقتاً",
+    "title": "الإحصائيات",
+    "hosts": "المضيفين",
+    "events": "المناسبات",
+    "moderators": "المشرفين",
+    "subscriptionPlan": "خطة الاشتراك"
   },
   "table": {
     "title": "قائمة الوايت ليبل",
@@ -37,7 +42,12 @@
     "active": "نشط",
     "suspended": "موقوف",
     "pending": "قيد المراجعة",
-    "inactive": "غير نشط"
+    "inactive": "غير نشط",
+    "approved": "تمت الموافقة",
+    "rejected": "مرفوض",
+    "trial": "تجريبي",
+    "expired": "منتهي",
+    "cancelled": "ملغي"
   },
   "actions": {
     "viewDetails": "عرض التفاصيل",
@@ -53,7 +63,12 @@
     "suspendError": "فشل في إيقاف الوايت ليبل",
     "activateSuccess": "تم تنشيط الوايت ليبل بنجاح",
     "activateError": "فشل في تنشيط الوايت ليبل",
-    "assignPlanFirst": "يجب تعيين خطة اشتراك قبل تنشيط الوايت ليبل"
+    "assignPlanFirst": "يجب تعيين خطة اشتراك قبل تنشيط الوايت ليبل",
+    "back": "رجوع",
+    "backToList": "العودة إلى قائمة الوايت ليبل",
+    "manageSubscription": "إدارة الاشتراك",
+    "activateAccount": "تفعيل الحساب",
+    "suspendAccount": "إيقاف الحساب"
   },
   "approveWhitelabelDialog": {
     "title": "تأكيد الموافقة",
@@ -103,6 +118,14 @@
     "noWhitelabelId": "معرف الوايت ليبل غير موجود",
     "noPlanSelected": "الرجاء اختيار باقة",
     "loadingPlans": "جاري تحميل الخطط...",
+    "errorLoadingPlans": "فشل تحميل الخطط",
+    "retry": "إعادة المحاولة",
+    "selectPlan": "اختر الباقة",
+    "selectStatus": "اختر الحالة",
+    "statusActive": "نشط",
+    "statusExpired": "منتهي",
+    "statusCancelled": "ملغي",
+    "update": "تحديث",
     "currency": "ر.س",
     "invitesPool": "دعوة (رصيد)",
     "invitesEvent": "دعوة/مناسبة",
@@ -110,7 +133,12 @@
     "quarterlyPlan": "باقة ربع سنوية",
     "annualPlan": "باقة سنوية",
     "subscriptionUpdateSuccess": "تم تحديث الاشتراك بنجاح",
-    "subscriptionUpdateError": "فشل تحديث الاشتراك"
+    "subscriptionUpdateError": "فشل تحديث الاشتراك",
+    "detailsTitle": "تفاصيل الاشتراك",
+    "noPlanSet": "لم يتم تعيين خطة اشتراك بعد",
+    "teamMembersLimit": "حد أعضاء الفريق",
+    "eventsPerMonthLimit": "حد المناسبات / الشهر",
+    "expiresOn": "ينتهي في"
   },
   "form": {
     "name": "اسم الوايت ليبل",
@@ -125,26 +153,8 @@
     "month": "شهر",
     "year": "سنة",
     "recommended": "موصى به",
-    "pro": {
-      "events": "مناسبات غير محدودة",
-      "guests": "حتى 500 ضيف لكل مناسبة",
-      "users": "إدارة الموظفين"
-    },
-    "elite": {
-      "events": "مناسبات غير محدودة",
-      "guests": "ضيوف غير محدودين",
-      "users": "فريق غير محدود",
-      "branding": "علامة تجارية مخصصة مجانية",
-      "whatsapp": "رقم واتساب مخصص",
-      "support": "دعم فني على مدار الساعة",
-      "manager": "مدير حساب مخصص"
-    }
-  },
-  "stats": {
-    "title": "الإحصائيات",
-    "hosts": "المضيفين",
-    "events": "المناسبات",
-    "moderators": "المشرفين"
+    "pro": "احترافي",
+    "elite": "نخبة"
   },
   "hostsTable": {
     "title": "المضيفين الأخيرين",
@@ -175,7 +185,10 @@
     "noSubscription": "لا يوجد",
     "phone": "الهاتف",
     "domain": "النطاق",
-    "subscription": "الاشتراك"
+    "subscription": "الاشتراك",
+    "noAddress": "لم يتم تحديد عنوان",
+    "noFeatures": "لا توجد مميزات متاحة",
+    "noRequirements": "لم يتم تحديد متطلبات"
   },
   "noData": "لا توجد بيانات",
   "dateRange": {
@@ -188,5 +201,84 @@
     "lastMonth": "الشهر الماضي",
     "confirm": "تأكيد",
     "cancel": "إلغاء"
+  },
+  "errors": {
+    "loadFailed": "فشل تحميل البيانات",
+    "featureToggleFailed": "فشل تبديل الميزة"
+  },
+  "loading": {
+    "noData": "لم يتم العثور على بيانات الوايت ليبل"
+  },
+  "defaults": {
+    "whitelabelName": "وايت ليبل"
+  },
+  "limits": {
+    "unlimited": "غير محدود"
+  },
+  "info": {
+    "contactInfo": "معلومات الاتصال",
+    "phoneNumber": "رقم الهاتف",
+    "email": "البريد الإلكتروني",
+    "joinDate": "تاريخ الانضمام"
+  },
+  "plan": {
+    "pro": "احترافي",
+    "elite": "نخبة",
+    "none": "لا يوجد"
+  },
+  "hosts": {
+    "registeredHosts": "المضيفون المسجلون",
+    "title": "المضيفون",
+    "noHosts": "لا يوجد مضيفون مسجلون بعد",
+    "viewDetails": "عرض",
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "رقم الهاتف",
+      "status": "الحالة",
+      "createdAt": "تاريخ الانضمام",
+      "actions": "الإجراءات"
+    }
+  },
+  "sections": {
+    "address": "العنوان",
+    "brandIdentity": "الهوية التجارية",
+    "contactInfo": "معلومات الاتصال",
+    "featureManagement": "إدارة المميزات",
+    "licenseTax": "الترخيص والضرائب",
+    "planSelection": "الخطة المختارة",
+    "requirements": "متطلبات النظام"
+  },
+  "fields": {
+    "city": "المدينة",
+    "neighborhood": "الحي",
+    "street": "الشارع",
+    "buildingNumber": "رقم المبنى",
+    "additionalNumber": "الرقم الإضافي",
+    "arabicName": "الاسم بالعربية",
+    "englishName": "الاسم بالإنجليزية",
+    "companyName": "اسم الشركة",
+    "platformName": "اسم المنصة",
+    "email": "البريد الإلكتروني",
+    "phoneNumber": "رقم الهاتف",
+    "username": "اسم المستخدم",
+    "registeredAt": "تاريخ التسجيل",
+    "plan": "الخطة",
+    "billingCycle": "دورة الفوترة",
+    "customBranding": "علامة تجارية مخصصة",
+    "monthlyEvents": "المناسبات الشهرية",
+    "monthlyGuests": "الضيوف الشهريون",
+    "eventTypes": "أنواع المناسبات",
+    "otherTypes": "أنواع أخرى",
+    "commercialRegistration": "السجل التجاري",
+    "taxNumber": "الرقم الضريبي"
+  },
+  "billing": {
+    "yearly": "سنوي",
+    "monthly": "شهري"
+  },
+  "common": {
+    "yes": "نعم",
+    "no": "لا"
   }
 }

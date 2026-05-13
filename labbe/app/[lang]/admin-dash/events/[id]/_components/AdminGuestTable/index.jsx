@@ -8,16 +8,18 @@ import AdminGuestRows from "./AdminGuestRows";
 import AdminGuestPopups from "./AdminGuestPopups";
 import useAdminGuestActions from "./useAdminGuestActions";
 
-export default function AdminGuestTable() {
+export default function AdminGuestTable({ eventId: propEventId, guests: propGuests }) {
   const { t, i18n } = useTranslation("adminEvents");
   const isArabic = i18n.language === "ar";
-  const { id: eventId } = useParams();
+  const params = useParams();
+  const eventId = propEventId || params?.id;
 
-  const { data: guestsData } = useEventGuests(eventId);
-  const guests = guestsData?.data || [];
+  const { data: guestsData } = useEventGuests(eventId, {
+    enabled: !!eventId && !propGuests,
+  });
+  const guests = propGuests || guestsData?.data || [];
 
   const {
-    eventId,
     showEditPopup,
     showReminderPopup,
     showInvitationPopup,

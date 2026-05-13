@@ -15,6 +15,10 @@ import { useToast } from "../../../contexts/ToastContext";
 import TopBar from "../../../components/plans/TopBar";
 import AdminStatsGrid from "./_components/AdminStatsGrid";
 import AdminSubscriptionsChart from "./_components/AdminSubscriptionsChart";
+import AdminMonthlyEventsChart from "./_components/AdminMonthlyEventsChart";
+import AdminEventsStatusChart from "./_components/AdminEventsStatusChart";
+import AdminGuestStatsChart from "./_components/AdminGuestStatsChart";
+import AdminTicketsChart from "./_components/AdminTicketsChart";
 import AdminRecentHosts from "./_components/AdminRecentHosts";
 import AdminRecentEvents from "./_components/AdminRecentEvents";
 import AdminTopVendors from "./_components/AdminTopVendors";
@@ -36,9 +40,52 @@ const AdminDashboardScreen = () => {
     if (error) toast.error(t("common.error"));
   }, [error]);
 
+  const isWhitelabelRole =
+    role === "whitelabel_admin" || role === "whitelabel_moderator";
+
   const backendCards = data?.statsCards?.length ? data.statsCards : null;
-  const statsCards = backendCards
-    ? backendCards.map((card) => ({
+
+  const statsCards = (() => {
+    if (isWhitelabelRole) {
+      const eventsCard = backendCards?.find((c) => c.id === "events") || {};
+      const hostsCard = backendCards?.find((c) => c.id === "hosts") || {};
+      const analytics = data?.analytics || {};
+      return [
+        {
+          id: "total-events",
+          icon: "calendar",
+          title: t("stats.whitelabel.totalEvents", "Total Events"),
+          value: eventsCard.value ?? 0,
+          subtitle: t("stats.whitelabel.activeEventsCount", "{{count}} active", { count: analytics.activeEvents ?? 0 }),
+        },
+        {
+          id: "active-events",
+          icon: "calendar-check",
+          title: t("stats.whitelabel.activeEvents", "Active Events"),
+          value: analytics.activeEvents ?? 0,
+          subtitle: t("stats.whitelabel.scheduledCount", "{{count}} scheduled", { count: analytics.eventsByStatus?.scheduled ?? 0 }),
+        },
+        {
+          id: "total-hosts",
+          icon: "users",
+          title: t("stats.whitelabel.totalClients", "Total Clients"),
+          value: hostsCard.value ?? 0,
+          subtitle: hostsCard.subtitle
+            ? t(hostsCard.subtitle.labelKey, { count: hostsCard.subtitle.count })
+            : "",
+        },
+        {
+          id: "total-guests",
+          icon: "guests",
+          title: t("stats.whitelabel.totalGuests", "Total Guests"),
+          value: analytics.totalGuests ?? 0,
+          subtitle: "",
+        },
+      ];
+    }
+
+    if (backendCards) {
+      return backendCards.map((card) => ({
         id: card.id,
         icon: card.icon,
         title: card.titleKey ? t(card.titleKey) : card.title,
@@ -46,15 +93,19 @@ const AdminDashboardScreen = () => {
         subtitle: card.subtitle?.labelKey
           ? t(card.subtitle.labelKey, { count: card.subtitle.count })
           : null,
-      }))
-    : [
-        { id: "hosts", icon: "users", title: t("stats.hosts.title"), value: "—", subtitle: null },
-        { id: "events", icon: "calendar", title: t("stats.events.title"), value: "—", subtitle: null },
-        { id: "vendors", icon: "store", title: t("stats.vendors.title"), value: "—", subtitle: null },
-        { id: "tickets", icon: "ticket", title: t("stats.tickets.title"), value: "—", subtitle: null },
-      ];
+      }));
+    }
 
-  const subscriptionsByPlan = data?.charts?.subscriptionsByPlan ?? {};
+    return [
+      { id: "hosts", icon: "users", title: t("stats.hosts.title"), value: "—", subtitle: null },
+      { id: "events", icon: "calendar", title: t("stats.events.title"), value: "—", subtitle: null },
+      { id: "vendors", icon: "store", title: t("stats.vendors.title"), value: "—", subtitle: null },
+      { id: "tickets", icon: "ticket", title: t("stats.tickets.title"), value: "—", subtitle: null },
+    ];
+  })();
+
+  const chartsData = data?.charts || {};
+  const analytics = data?.analytics || {};
   const recentHosts = (data?.recentActivity?.hosts ?? []).slice(0, 5);
   const recentEvents = (data?.recentActivity?.events ?? []).slice(0, 5);
   const topVendors = (data?.bestVendors ?? []).slice(0, 5);
@@ -82,13 +133,39 @@ const AdminDashboardScreen = () => {
         >
           <AdminStatsGrid statsCards={statsCards} />
 
-          <AdminSubscriptionsChart subscriptionsByPlan={subscriptionsByPlan} t={t} />
+          {isWhitelabelRole ? (
+            <>
+              <AdminMonthlyEventsChart
+                monthlyEvents={analytics.monthlyEvents || []}
+                t={t}
+              />
+              <AdminEventsStatusChart
+                eventsByStatus={analytics.eventsByStatus || {}}
+                t={t}
+              />
+            </>
+          ) : (
+            <>
+              <AdminSubscriptionsChart
+                subscriptionsByPlan={chartsData.subscriptionsByPlan || {}}
+                t={t}
+              />
+              <AdminGuestStatsChart
+                guestStats={chartsData.guestStats}
+                t={t}
+              />
+              <AdminTicketsChart
+                tickets={chartsData.tickets || {}}
+                t={t}
+              />
+            </>
+          )}
 
           <AdminRecentHosts hosts={recentHosts} t={t} onViewAll={() => navigation.navigate("Hosts")} />
 
           <AdminRecentEvents events={recentEvents} t={t} onViewAll={() => navigation.navigate("Events")} />
 
-          {role !== "whitelabel_admin" && (
+          {!isWhitelabelRole && (
             <AdminTopVendors vendors={topVendors} t={t} onViewAll={() => navigation.navigate("AdminVendorsList")} />
           )}
         </ScrollView>

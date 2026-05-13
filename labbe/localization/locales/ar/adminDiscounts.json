@@ -1,0 +1,97 @@
+{
+  "discounts": {
+    "title": "إدارة الخصومات والكوبونات",
+    "subtitle": "إنشاء وإدارة أكواد الخصم للباقات",
+    "newCode": "كود جديد",
+    "deactivated": "تم تعطيل الكود",
+    "activated": "تم تفعيل الكود",
+    "toggleError": "فشل تغيير الحالة",
+    "confirmDelete": "هل تريد حذف هذا الكود؟",
+    "deleteSuccess": "تم حذف الكود",
+    "deleteError": "فشل الحذف",
+    "copied": "تم نسخ الكود",
+    "copy": "نسخ",
+    "loadError": "تعذر تحميل أكواد الخصم",
+    "tableTitle": "أكواد الخصم",
+    "noExpiry": "بلا تاريخ",
+    "deactivate": "تعطيل",
+    "activate": "تفعيل",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "editTitle": "تعديل كود الخصم",
+    "createTitle": "إنشاء كود خصم جديد",
+    "cancel": "إلغاء",
+    "saving": "جاري الحفظ...",
+    "saveChanges": "حفظ التعديلات",
+    "create": "إنشاء الكود",
+    "sar": "ر.س",
+    "updateSuccess": "تم تحديث الكود بنجاح",
+    "updateError": "فشل تحديث الكود",
+    "createSuccess": "تم إنشاء الكود بنجاح",
+    "createError": "فشل إنشاء الكود",
+    "filter": {
+      "all": "الكل",
+      "active": "نشطة",
+      "inactive": "معطلة"
+    },
+    "type": {
+      "percentage": "نسبة مئوية",
+      "fixed": "مبلغ ثابت"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "معطل",
+      "expired": "منتهي",
+      "exhausted": "مستنفد"
+    },
+    "columns": {
+      "code": "الكود",
+      "type": "النوع",
+      "value": "القيمة",
+      "usage": "الاستخدام",
+      "status": "الحالة",
+      "expires": "تاريخ الانتهاء"
+    },
+    "stats": {
+      "total": "إجمالي الأكواد",
+      "active": "نشطة",
+      "expired": "منتهية الصلاحية",
+      "uses": "إجمالي الاستخدامات"
+    },
+    "fields": {
+      "code": "كود الخصم *",
+      "codePlaceholder": "مثال: SAVE20",
+      "descEn": "الوصف (إنجليزي)",
+      "descEnPlaceholder": "مثال: خصم 20% للمستخدمين الجدد",
+      "descAr": "الوصف (عربي)",
+      "descArPlaceholder": "مثال: خصم 20% للمستخدمين الجدد",
+      "type": "نوع الخصم *",
+      "percent": "النسبة (%) *",
+      "amount": "المبلغ (ر.س) *",
+      "maxUses": "الحد الأقصى للاستخدام (0 = غير محدود)",
+      "minAmount": "الحد الأدنى للمبلغ (ر.س)",
+      "validFrom": "صالح من",
+      "validUntil": "صالح حتى",
+      "status": "الحالة",
+      "planTypes": "الباقات المطبقة (فارغ = جميع الباقات)"
+    },
+    "planTypes": {
+      "trial": "تجريبي",
+      "basic_event": "أساسي — لكل مناسبة",
+      "basic_monthly": "أساسي — شهري",
+      "premium_event": "مميّز — لكل مناسبة",
+      "premium_monthly": "مميّز — شهري",
+      "business_event": "أعمال — لكل مناسبة",
+      "business_quarterly": "أعمال — ربع سنوي",
+      "business_annual": "أعمال — سنوي",
+      "unlimited": "غير محدود"
+    },
+    "validation": {
+      "codeRequired": "الكود مطلوب",
+      "valueRequired": "القيمة مطلوبة",
+      "valuePositive": "القيمة يجب أن تكون موجبة",
+      "maxPercent": "النسبة لا تتجاوز 100%",
+      "dateRange": "تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء"
+    }
+  }
+}

@@ -402,8 +402,12 @@ userSchema.index({ email: 1, role: 1 });
 userSchema.index({ mobile: 1, role: 1 });
 userSchema.index({ phoneNumber: 1, role: 1 }); // Legacy support
 
-// FLOW-04-F04: unique sparse index for whitelabel subdomain
-userSchema.index({ "domain.subdomain": 1 }, { unique: true, sparse: true });
+// FLOW-04-F04: unique partial index for whitelabel subdomain
+// Only enforces uniqueness when subdomain is a non-null string value
+userSchema.index(
+  { "domain.subdomain": 1 },
+  { unique: true, partialFilterExpression: { "domain.subdomain": { $type: "string" } } }
+);
 
 // Unique compound indexes for better duplicate detection
 userSchema.index(

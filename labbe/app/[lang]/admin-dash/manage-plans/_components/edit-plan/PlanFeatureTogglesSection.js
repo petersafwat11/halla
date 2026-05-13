@@ -1,29 +1,65 @@
 "use client";
 import React, { useState } from "react";
+import { useController, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import ToggleInput from "@/ui/commen/inputs/toggelInput/ToggelInput";
 import styles from "../EditPlanPopup.module.css";
 
-const FEATURE_TOGGLE_KEYS = [
-  "hasInAppInvites",
-  "hasWhatsAppInvites",
-  "hasSMSInvites",
-  "hasQRCode",
-  "hasQRScanning",
-  "hasFlexibleEntryMode",
-  "hasStaffCheckIn",
-  "hasStaffAssignment",
-  "hasRSVPTracking",
-  "hasAutoReminders",
-  "hasEmailNotifications",
-  "hasCustomWhatsAppNumber",
-  "hasCompensationInvites",
-  "hasBasicTemplates",
-  "hasPremiumTemplates",
-  "hasPostEventPage",
-  "hasCustomReports",
-  "hasWhatsAppSupport",
+const FEATURE_GROUPS = [
+  {
+    key: "invitations",
+    keys: [
+      "hasInAppInvites",
+      "hasWhatsAppInvites",
+      "hasSMSInvites",
+      "hasCompensationInvites",
+    ],
+  },
+  {
+    key: "entry",
+    keys: [
+      "hasQRCode",
+      "hasQRScanning",
+      "hasFlexibleEntryMode",
+      "hasStaffCheckIn",
+      "hasStaffAssignment",
+    ],
+  },
+  {
+    key: "communication",
+    keys: [
+      "hasRSVPTracking",
+      "hasAutoReminders",
+      "hasEmailNotifications",
+      "hasCustomWhatsAppNumber",
+      "hasWhatsAppSupport",
+    ],
+  },
+  {
+    key: "content",
+    keys: [
+      "hasBasicTemplates",
+      "hasPremiumTemplates",
+      "hasPostEventPage",
+      "hasCustomReports",
+    ],
+  },
 ];
+
+const FeatureCheckbox = ({ name, label }) => {
+  const { control } = useFormContext();
+  const { field } = useController({ name, control });
+
+  return (
+    <label className={styles.checkboxCard}>
+      <input
+        type="checkbox"
+        checked={!!field.value}
+        onChange={(e) => field.onChange(e.target.checked)}
+      />
+      <span>{label}</span>
+    </label>
+  );
+};
 
 const PlanFeatureTogglesSection = () => {
   const { t } = useTranslation(["admin", "plans"]);
@@ -50,15 +86,26 @@ const PlanFeatureTogglesSection = () => {
         </span>
       </button>
       {open && (
-        <div className={styles.togglesGrid}>
-          {FEATURE_TOGGLE_KEYS.map((key) => (
-            <ToggleInput
-              key={key}
-              name={`features.${key}`}
-              label={t(`plans:features.${key}.label`, { defaultValue: key })}
-            />
+        <>
+          {FEATURE_GROUPS.map((group) => (
+            <div key={group.key} className={styles.featureGroup}>
+              <h4 className={styles.sectionSubtitle}>
+                {t(`admin:managePlans.editPopup.featureGroups.${group.key}`, {
+                  defaultValue: group.key,
+                })}
+              </h4>
+              <div className={styles.checkboxGrid}>
+                {group.keys.map((key) => (
+                  <FeatureCheckbox
+                    key={key}
+                    name={`features.${key}`}
+                    label={t(`plans:features.${key}.label`, { defaultValue: key })}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
-        </div>
+        </>
       )}
     </div>
   );

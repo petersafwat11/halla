@@ -31,7 +31,7 @@ const CheckBoxItems = ({ items, name, columns = 2, singleMode = false, style }) 
   return (
     <div
       className={styles.container}
-      style={{ gridTemplateColumns: `repeat(${columns}, 1fr)`, ...style }}
+      style={{ "--columns": columns, ...style }}
     >
       {items.map((item, index) => (
         <div className={styles.checkbox_item} key={index}>

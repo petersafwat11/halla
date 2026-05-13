@@ -79,6 +79,16 @@
     "failed": "Failed",
     "pending": "Pending"
   },
+  "staff": {
+    "notifySuccess": "Sent to {{sent}}/{{total}} staff",
+    "notifyError": "Failed to notify staff",
+    "notifying": "Sending...",
+    "notifyStaff": "Notify Staff"
+  },
+  "postEvent": {
+    "share": "Share Post-Event"
+  },
+  "manageEvent": "Manage Event",
   "testMessage": {
     "title": "Test Message",
     "description": "Send a test message to verify the invitation before launch",

@@ -26,7 +26,7 @@ const SummarySection = ({ title, icon, data, fields }) => {
   return (
     <div className={styles.section}>
       <SectionTitle title={title} icon={icon} height={24} width={24} />
-      <div className={styles.summary_content}>
+      <div className={styles.summaryGrid}>
         {fields.map((field) => {
           const fieldValue = field.key
             .split(".")
@@ -58,9 +58,9 @@ const SummarySection = ({ title, icon, data, fields }) => {
           }
 
           return (
-            <div key={field.key} className={styles.summary_item}>
-              <span className={styles.summary_label}>{field.label}:</span>
-              <span className={styles.summary_value}>
+            <div key={field.key} className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>{field.label}</span>
+              <span className={styles.summaryValue}>
                 {field.type === "file" || field.type === "logo"
                   ? (Array.isArray(fieldValue) ? fieldValue : [fieldValue]).map(
                       (file, index) =>

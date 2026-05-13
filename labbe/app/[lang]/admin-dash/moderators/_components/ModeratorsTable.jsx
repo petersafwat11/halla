@@ -16,7 +16,7 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./ModeratorsTable.module.css";
 
 export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShowAddPopup: externalSetShowAdd }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminModerators");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { canCreate, canUpdate, canDelete } = usePageAccess("moderators");
@@ -97,7 +97,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
         icon: <FiEdit2 size={16} />,
         text: t("moderators.edit", "تعديل"),
         onClick: (r) => {
-          const mod = (data?.moderators || []).find(m => (m.id || m._id) === r.id);
+          const mod = (data?.data?.moderators || []).find(m => (m.id || m._id) === r.id);
           if (mod) handleEditClick(mod);
         },
       });
@@ -169,7 +169,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
     return value;
   };
 
-  const tableData = (data?.moderators || []).map((moderator) => ({
+  const tableData = (data?.data?.moderators || []).map((moderator) => ({
     id: moderator.id || moderator._id,
     name: moderator.name || moderator.username || "-",
     email: moderator.email || "-",
@@ -208,8 +208,8 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
           ]}
           pagination={{
             currentPage: parseInt(filters.page),
-            totalPages: data?.pagination?.pages || 1,
-            totalItems: data?.pagination?.total || 0,
+            totalPages: data?.data?.pagination?.pages || 1,
+            totalItems: data?.data?.pagination?.total || 0,
             onPageChange: (page) => {
               const params = new URLSearchParams(searchParams);
               params.set("page", page);

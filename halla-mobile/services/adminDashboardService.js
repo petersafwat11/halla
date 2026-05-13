@@ -283,7 +283,7 @@ export const plans = {
   getAll: async (token) => apiRequest(ENDPOINTS.PLANS.ALL),
   getHostPlans: async (token) => apiRequest(ENDPOINTS.PLANS.HOST_PLANS),
   getBusinessPlans: async (token) => apiRequest(ENDPOINTS.PLANS.BUSINESS),
-  getAllForAdmin: async (token) => apiRequest(ENDPOINTS.ADMIN.PLANS.ALL),
+  getAllForAdmin: async (token, filters = {}) => apiRequest(ENDPOINTS.ADMIN.PLANS.ALL, "GET", null, { params: filters }),
   updatePlan: async (token, code, data) => apiRequest(ENDPOINTS.ADMIN.PLANS.BY_CODE(code), "PATCH", data),
   createPlan: async (token, data) => apiRequest(ENDPOINTS.ADMIN.PLANS.CREATE, "POST", data),
   deletePlan: async (token, code) => apiRequest(ENDPOINTS.ADMIN.PLANS.BY_CODE(code), "DELETE"),

@@ -23,12 +23,17 @@ const StepSix = ({ goToPreviousStep }) => {
 
   const selectedPlanCode = whiteLabelData.planSelection?.planCode;
   const selectedPlan = allPlans.find((p) => p.code === selectedPlanCode);
+  const selectedPlanType = whiteLabelData.planSelection?.planType;
 
   const planPrice = selectedPlan?.pricing?.oneTime || 0;
   const setupFee = businessData.setupFeeRequired
     ? businessData.setupFeeAmount || 0
     : 0;
-  const totalPrice = planPrice + setupFee;
+
+  // For quarterly & annual plans, setup fee is INCLUDED in the plan price
+  const isPoolPlan = selectedPlanType === "quarterly" || selectedPlanType === "annual";
+  const showSetupFee = !isPoolPlan && setupFee > 0;
+  const totalPrice = planPrice + (showSetupFee ? setupFee : 0);
 
   return (
     <div className={styles.container}>
@@ -39,9 +44,76 @@ const StepSix = ({ goToPreviousStep }) => {
       />
 
       <div className={styles.sections}>
+        {/* Plan Selection Summary */}
+        {selectedPlan && (
+          <div className={styles.pricingCard}>
+            <div className={styles.pricingCardHeader}>
+              <h4 className={styles.pricingCardTitle}>
+                {t("signupForm.whiteLabel.summary.orderSummary")}
+              </h4>
+              <span className={styles.planBadge}>
+                {getLocalized(selectedPlan, "name", i18n.language)}
+              </span>
+            </div>
+
+            <div className={styles.pricingBody}>
+              <div className={styles.pricingRow}>
+                <span className={styles.pricingLabel}>
+                  {t("signupForm.whiteLabel.summary.planLine", {
+                    name: getLocalized(selectedPlan, "name", i18n.language),
+                  })}
+                </span>
+                <span className={styles.pricingValue}>
+                  {planPrice.toLocaleString()}{" "}
+                  {t("signupForm.whiteLabel.summary.currency")}
+                </span>
+              </div>
+
+              {isPoolPlan && setupFee > 0 && (
+                <div className={styles.pricingRow}>
+                  <span className={styles.pricingLabel}>
+                    {t("signupForm.whiteLabel.summary.setupFee")}
+                  </span>
+                  <span className={`${styles.pricingValue} ${styles.includedFee}`}>
+                    {t("signupForm.whiteLabel.summary.included", "مشمول")}
+                  </span>
+                </div>
+              )}
+
+              {showSetupFee && (
+                <div className={styles.pricingRow}>
+                  <span className={styles.pricingLabel}>
+                    {t("signupForm.whiteLabel.summary.setupFee")}
+                  </span>
+                  <span className={styles.pricingValue}>
+                    {setupFee.toLocaleString()}{" "}
+                    {t("signupForm.whiteLabel.summary.currency")}
+                  </span>
+                </div>
+              )}
+
+              <div className={`${styles.pricingRow} ${styles.totalRow}`}>
+                <span className={styles.totalLabel}>
+                  {t("signupForm.whiteLabel.summary.total")}
+                </span>
+                <span className={styles.totalValue}>
+                  {totalPrice.toLocaleString()}{" "}
+                  {t("signupForm.whiteLabel.summary.currency")}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.infoNote}>
+              <span className={styles.infoIcon}>💡</span>
+              <p>{t("signupForm.whiteLabel.summary.billingNote")}</p>
+            </div>
+          </div>
+        )}
+
         {/* Contact Information Summary */}
         <SummarySection
           title={t("signupForm.whiteLabel.summary.contactInfo")}
+          icon="/svg/auth/call-calling.svg"
           data={whiteLabelData.loginData}
           fields={[
             {
@@ -60,6 +132,7 @@ const StepSix = ({ goToPreviousStep }) => {
         {/* Identity & Organization Summary */}
         <SummarySection
           title={t("signupForm.whiteLabel.identity.title")}
+          icon="/svg/auth/building.svg"
           data={whiteLabelData.identity}
           fields={[
             {
@@ -99,6 +172,7 @@ const StepSix = ({ goToPreviousStep }) => {
         {/* Address Summary */}
         <SummarySection
           title={t("signupForm.whiteLabel.payment.address.title")}
+          icon="/svg/auth/location.svg"
           data={whiteLabelData.identity?.address}
           fields={[
             {
@@ -129,12 +203,20 @@ const StepSix = ({ goToPreviousStep }) => {
               ),
               type: "text",
             },
+            {
+              key: "additionalNumber",
+              label: t(
+                "signupForm.whiteLabel.payment.address.fields.additionalNumber.label"
+              ),
+              type: "text",
+            },
           ]}
         />
 
         {/* System Requirements Summary */}
         <SummarySection
           title={t("signupForm.whiteLabel.requirements.title")}
+          icon="/svg/auth/usage.svg"
           data={whiteLabelData.systemRequirements}
           fields={[
             {
@@ -160,52 +242,6 @@ const StepSix = ({ goToPreviousStep }) => {
             },
           ]}
         />
-
-        {/* Plan Selection Summary */}
-        {selectedPlan && (
-          <div className={styles.priceSummary}>
-            <h4 className={styles.summaryTitle}>
-              {t("signupForm.whiteLabel.summary.orderSummary")}
-            </h4>
-            <div className={styles.summaryRow}>
-              <span>
-                {t("signupForm.whiteLabel.summary.planLine", {
-                  name: getLocalized(selectedPlan, "name", i18n.language),
-                })}
-              </span>
-              <span>
-                {planPrice.toLocaleString()}{" "}
-                {t("signupForm.whiteLabel.summary.currency")}
-              </span>
-            </div>
-            {setupFee > 0 && (
-              <div className={styles.summaryRow}>
-                <span>
-                  {t("signupForm.whiteLabel.summary.setupFee")}
-                </span>
-                <span>
-                  {setupFee.toLocaleString()}{" "}
-                  {t("signupForm.whiteLabel.summary.currency")}
-                </span>
-              </div>
-            )}
-            <div className={`${styles.summaryRow} ${styles.totalRow}`}>
-              <span>
-                {t("signupForm.whiteLabel.summary.total")}
-              </span>
-              <span className={styles.totalPrice}>
-                {totalPrice.toLocaleString()}{" "}
-                {t("signupForm.whiteLabel.summary.currency")}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Info Note */}
-        <div className={styles.infoNote}>
-          <span className={styles.infoIcon}>💡</span>
-          <p>{t("signupForm.whiteLabel.summary.billingNote")}</p>
-        </div>
       </div>
     </div>
   );

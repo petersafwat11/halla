@@ -41,44 +41,14 @@
   font-family: var(--font-ar, "Cairo", sans-serif);
 }
 
-/* ── Filter Tabs — mirrors host PlanTypeSelector ── */
-.filterTabs {
-  display: flex;
-  gap: 0;
-  background: var(--c-n50, #ffffff);
-  padding: 6px;
-  border-radius: var(--r-xl, 1.25rem);
-  box-shadow: 0 2px 12px rgba(82, 68, 56, 0.06);
-  border: 1px solid var(--c-n250, #dfdfdf);
+/* ── Filter Dropdown ── */
+.filterDropdownWrapper {
   margin-bottom: 2rem;
-  flex-wrap: wrap;
+  max-width: 320px;
 }
 
-.filterTab {
-  flex: 1;
-  min-width: 8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem 1.5rem;
-  border: none;
-  background: transparent;
-  font-size: 1.4rem;
-  font-weight: 600;
-  font-family: var(--font-ar, "Cairo", sans-serif);
-  color: var(--c-n400, #767676);
-  cursor: pointer;
-  border-radius: var(--r-lg, 1rem);
-  transition: all var(--t, 250ms ease);
-  white-space: nowrap;
-}
-
-.filterTab:hover { color: var(--c-p500, #c28e5c); }
-
-.filterTab.activeTab {
-  background: linear-gradient(135deg, var(--c-p500, #c28e5c) 0%, var(--c-p600, #b18154) 100%);
-  color: var(--c-n50, #ffffff);
-  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.3);
+.filterDropdown {
+  width: 100%;
 }
 
 /* ── Plans Grid ── */
@@ -299,7 +269,6 @@
 /* Responsive */
 @media (max-width: 768px) {
   .container { padding: 1rem; }
-  .filterTabs { flex-wrap: wrap; gap: 0.5rem; }
-  .filterTab { flex: none; padding: 0.75rem 1rem; font-size: 1.2rem; }
+  .filterDropdownWrapper { max-width: 100%; }
   .plansGrid { grid-template-columns: 1fr; }
 }

@@ -87,12 +87,18 @@ export default function AdminGuestRows({
         t("table.columns.responseTime", "توقيت الرد"),
       ]}
       data={guests.map((guest) => ({
-        id: guest.id,
+        id: guest.id || guest.guestId || guest._id,
         name: guest.name || "-",
         phone: guest.phone || "-",
-        addedBy: guest.addedBy?.username || guest.addedBy?.name || "-",
+        addedBy:
+          typeof guest.addedBy === "object" && guest.addedBy !== null
+            ? (guest.addedBy.username || guest.addedBy.name || "-")
+            : typeof guest.addedBy === "string" && guest.addedBy.length > 0
+            ? guest.addedBy
+            : "-",
         status: guest.status || "invited",
-        responseTime: guest.rsvp?.respondedAt,
+        responseTime:
+          guest.respondAt || guest.responseTime || guest.rsvp?.respondedAt || null,
       }))}
       actions={[
         {

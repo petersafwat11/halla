@@ -25,13 +25,12 @@ export function useUpdateHostStatus() {
 }
 
 export function useUpdateHostSubscription() {
-  const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ hostId, planCode, status, billingCycle }) => {
+    mutationFn: async ({ hostId, planCode, status }) => {
       const body = { planCode };
       if (status !== undefined) body.status = status;
-      if (billingCycle !== undefined) body.billingCycle = billingCycle;
       const response = await adminDashboardService.hosts.updateSubscription(token, hostId, body);
       return assertOk(response);
     },
@@ -376,13 +375,12 @@ export function useUpdateModeratorStatus() {
 }
 
 export function useUpdateWhitelabelSubscription() {
-  const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ whitelabelId, planCode, status, billingCycle }) => {
+    mutationFn: async ({ whitelabelId, planCode, status }) => {
       const body = { planCode };
       if (status !== undefined) body.status = status;
-      if (billingCycle !== undefined) body.billingCycle = billingCycle;
       const response = await adminDashboardService.whitelabels.updateSubscription(token, whitelabelId, body);
       return assertOk(response);
     },

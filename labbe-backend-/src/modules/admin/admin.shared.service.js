@@ -51,7 +51,7 @@ function formatUserResponse(user) {
       planId: user.subscription.planId,
       status: user.subscription.status,
       currentPeriodEnd: user.subscription.endDate || user.subscription.currentPeriodEnd,
-      billingCycle: user.subscription.billingCycle,
+      billingType: user.subscription.planId?.billingType || null,
       limits: {
         maxEvents: user.subscription.planId?.limits?.maxEvents ?? null,
         maxInvitesPerEvent: user.subscription.planId?.limits?.maxInvitesPerEvent ?? null,

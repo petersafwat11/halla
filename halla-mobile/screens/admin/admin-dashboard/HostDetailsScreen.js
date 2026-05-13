@@ -42,7 +42,7 @@ const HostDetailsScreen = () => {
 
   if (error) toast.error(t("hostDetails.loadFailed"));
 
-  const host = hostResp?.data?.host || null;
+  const host = hostResp?.data?.data?.host || hostResp?.data?.data || null;
 
   const handleToggleStatus = () => {
     const isActive = host?.status === "active";

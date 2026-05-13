@@ -31,7 +31,6 @@ const updateHostStatusSchema = z.object({
 const updateHostSubscriptionSchema = z.object({
   planCode: z.string().min(1),
   status: z.string().optional(),
-  billingCycle: z.enum(['monthly', 'annual', 'yearly', 'once']).optional(),
 });
 
 const bulkDeleteHostsSchema = z.object({
@@ -102,7 +101,6 @@ const updateWhitelabelStatusSchema = z.object({
 const updateWhitelabelSubscriptionSchema = z.object({
   planCode: z.string().min(1),
   status: z.string().optional(),
-  billingCycle: z.enum(['monthly', 'annual', 'yearly', 'once']).optional(),
 });
 
 const updateWhitelabelFeatureSchema = z.object({

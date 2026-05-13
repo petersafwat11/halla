@@ -21,8 +21,6 @@ const newUuid = () =>
 export default function usePaymentActions() {
   const { t } = useTranslation("adminPayments");
   const [actionPayment, setActionPayment] = useState(null);
-  const [amount, setAmount] = useState("");
-  const [reason, setReason] = useState("");
 
   // Stable per-modal idempotency key. Re-mounting the modal mints a new
   // UUID; submitting twice from the same modal (double-click) reuses it.
@@ -37,30 +35,24 @@ export default function usePaymentActions() {
 
   const close = () => {
     setActionPayment(null);
-    setAmount("");
-    setReason("");
   };
 
-  const submit = async () => {
+  const submit = async ({ amount, reason } = {}) => {
     if (!actionPayment) return;
     const { payment, type } = actionPayment;
     try {
       if (type === "refund") {
-        const amt = amount ? Number(amount) : undefined;
         await refundMutation.mutateAsync({
           id: payment._id,
-          amount:
-            typeof amt === "number" && !Number.isNaN(amt) ? amt : undefined,
+          amount,
           reason: reason || undefined,
           idempotencyKey,
         });
         toastUtils.success(t("refund.success", "Refund issued"));
       } else if (type === "capture") {
-        const amt = amount ? Number(amount) : undefined;
         await captureMutation.mutateAsync({
           id: payment._id,
-          amount:
-            typeof amt === "number" && !Number.isNaN(amt) ? amt : undefined,
+          amount,
           idempotencyKey,
         });
         toastUtils.success(t("capture.success", "Payment captured"));
@@ -77,15 +69,11 @@ export default function usePaymentActions() {
   return {
     actionPayment,
     setActionPayment,
-    amount,
-    setAmount,
-    reason,
-    setReason,
     submit,
     close,
     busy:
-      refundMutation.isLoading ||
-      captureMutation.isLoading ||
-      voidMutation.isLoading,
+      refundMutation.isPending ||
+      captureMutation.isPending ||
+      voidMutation.isPending,
   };
 }

@@ -42,12 +42,6 @@ export default function CurrentPlanCard({ subscription, plans }) {
 
   return (
     <div className={styles.currentPlanSection}>
-      <h2 className={styles.sectionTitle}>
-        {hasActiveSubscription
-          ? t("plansPage.currentPlan.title")
-          : t("plansPage.subscriptionStatus")}
-      </h2>
-
       {hasActiveSubscription ? (
         <div className={styles.currentPlanCard}>
           <div className={styles.currentPlanHeader}>

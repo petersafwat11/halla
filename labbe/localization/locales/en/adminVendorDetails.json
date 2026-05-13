@@ -1,0 +1,118 @@
+{
+  "loading": {
+    "vendorData": "Loading vendor data..."
+  },
+  "errors": {
+    "loadFailed": "Failed to load vendor data"
+  },
+  "actions": {
+    "backToList": "Back to list",
+    "approve": "Approve",
+    "suspend": "Suspend",
+    "activate": "Activate",
+    "confirmSuspend": "Are you sure you want to suspend this vendor?"
+  },
+  "defaults": {
+    "vendor": "Vendor",
+    "noDescription": "No description available",
+    "notAvailable": "N/A"
+  },
+  "rating": {
+    "display": "{{rating}} / 5"
+  },
+  "sections": {
+    "identity": "Identity Information",
+    "serviceDescription": "Service Description",
+    "serviceLocation": "Service Location",
+    "commercialVerification": "Commercial Verification",
+    "socialLinks": "Social Links",
+    "selectedServices": "Selected Services",
+    "gallery": "Gallery"
+  },
+  "identity": {
+    "brandName": "Brand Name",
+    "ownerName": "Owner Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "registrationDate": "Registration Date",
+    "additionalInfo": "Additional Information"
+  },
+  "location": {
+    "region": "Region",
+    "city": "City",
+    "coverageType": "Coverage Type",
+    "noLocation": "No location information available"
+  },
+  "verification": {
+    "commercialRecordNumber": "Commercial Record Number",
+    "nationalIdNumber": "National ID Number"
+  },
+  "status": {
+    "active": "Active",
+    "underReview": "Under Review",
+    "approved": "Approved",
+    "suspended": "Suspended",
+    "rejected": "Rejected"
+  },
+  "messages": {
+    "approveSuccess": "Vendor approved successfully",
+    "approveError": "Failed to approve vendor",
+    "suspendSuccess": "Vendor suspended successfully",
+    "suspendError": "Failed to suspend vendor",
+    "activateSuccess": "Vendor activated successfully",
+    "activateError": "Failed to activate vendor"
+  },
+  "gallery": {
+    "businessLogo": "Business Logo",
+    "businessLogoTitle": "Business Logo",
+    "portfolioAlt": "Portfolio image {{index}}",
+    "portfolioTitle": "Portfolio {{index}}",
+    "packageAlt": "Package image {{index}}",
+    "packageTitle": "Package {{index}}",
+    "commercialRecord": "Commercial Record",
+    "commercialRecordTitle": "Commercial Record",
+    "nationalId": "National ID",
+    "nationalIdTitle": "National ID",
+    "profileFile": "Profile File",
+    "profileFileTitle": "Profile File",
+    "noFiles": "No files available",
+    "closeImage": "Close image preview",
+    "previewAlt": "Image preview"
+  },
+  "categories": {
+    "eventPlanning": "Event Planning",
+    "mediaProduction": "Media Production",
+    "giftsAndGiveaways": "Gifts & Giveaways",
+    "foodAndBeverages": "Food & Beverages",
+    "beautyAndFashion": "Beauty & Fashion",
+    "logisticsAndDelivery": "Logistics & Delivery",
+    "corporateServices": "Corporate Services",
+    "supportServices": "Support Services",
+    "technicalServices": "Technical Services",
+    "soundLightingEntertainment": "Sound, Lighting & Entertainment",
+    "hallsAndVenues": "Halls & Venues"
+  },
+  "services": {
+    "eventCoordination": "Event Coordination",
+    "weddingPlanning": "Wedding Planning",
+    "corporateEventPlanning": "Corporate Event Planning",
+    "birthdayPartyPlanning": "Birthday Party Planning",
+    "hallAndLoungeRentals": "Hall & Lounge Rentals",
+    "outdoorEventSetup": "Outdoor Event Setup",
+    "photography": "Photography",
+    "videography": "Videography",
+    "liveStreaming": "Live Streaming",
+    "dronePhotography": "Drone Photography",
+    "photoBooths": "Photo Booths",
+    "videoEditing": "Video Editing",
+    "noServices": "No services selected"
+  },
+  "socialLinks": {
+    "noLinks": "No social links available",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "tiktok": "TikTok",
+    "twitter": "Twitter",
+    "website": "Website"
+  }
+}

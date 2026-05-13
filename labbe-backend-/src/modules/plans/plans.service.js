@@ -111,8 +111,10 @@ class PlansService {
   /**
    * Get all plans (admin - includes inactive)
    */
-  async getAllPlansAdmin() {
-    const plans = await Plan.find({}).sort({ sortOrder: 1, createdAt: 1 });
+  async getAllPlansAdmin(filters = {}) {
+    const query = {};
+    if (filters.availableFor) query.availableFor = filters.availableFor;
+    const plans = await Plan.find(query).sort({ sortOrder: 1, createdAt: 1 });
     return { plans: plans.map((p) => this._formatPlan(p)) };
   }
 

@@ -19,7 +19,7 @@ function buildFilters(searchParams) {
 }
 
 export default function DiscountsStats() {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminDiscounts");
   const searchParams = useSearchParams();
   const filters = buildFilters(searchParams);
 

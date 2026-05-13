@@ -15,6 +15,8 @@ const AdminSubscriptionsChart = ({ subscriptionsByPlan, t }) => {
   const planEntries = Object.entries(subscriptionsByPlan);
   const totalSubs = planEntries.reduce((sum, [, count]) => sum + count, 0);
 
+  const planLabel = (key) => t(`dashboard.charts.${key.toLowerCase()}`, key);
+
   return (
     <View style={styles.card}>
       <View style={styles.sectionHeader}>
@@ -43,7 +45,7 @@ const AdminSubscriptionsChart = ({ subscriptionsByPlan, t }) => {
           {planEntries.map(([plan, count], idx) => (
             <View key={plan} style={styles.legendRow}>
               <View style={[styles.legendDot, { backgroundColor: PLAN_COLORS[idx % PLAN_COLORS.length] }]} />
-              <Text style={styles.legendName}>{plan}</Text>
+              <Text style={styles.legendName}>{planLabel(plan)}</Text>
               <Text style={styles.legendCount}>{count}</Text>
             </View>
           ))}

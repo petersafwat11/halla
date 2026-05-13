@@ -79,6 +79,16 @@
     "failed": "فاشلة",
     "pending": "في الانتظار"
   },
+  "staff": {
+    "notifySuccess": "تم الإرسال إلى {{sent}} من {{total}} من الطاقم",
+    "notifyError": "فشل إشعار الطاقم",
+    "notifying": "جاري الإرسال...",
+    "notifyStaff": "إشعار الطاقم"
+  },
+  "postEvent": {
+    "share": "مشاركة ما بعد المناسبة"
+  },
+  "manageEvent": "إدارة المناسبة",
   "testMessage": {
     "title": "رسالة تجريبية",
     "description": "أرسل رسالة تجريبية للتحقق من محتوى الدعوة قبل الإطلاق",

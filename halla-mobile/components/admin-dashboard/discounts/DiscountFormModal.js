@@ -1,42 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
-  StyleSheet,
   Modal,
+  StyleSheet,
   ScrollView,
-  ActivityIndicator,
+  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "../../../localization";
 import { useCreateDiscount, useUpdateDiscount } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
+import { Button } from "../../../components/commen";
 import DiscountFormFields from "./_components/DiscountFormFields";
+import { discountSchema } from "../../../utils/schemas/discountSchema";
+import { buildPayload } from "./discountsFormUtils";
 import {
   colors,
   spacing,
   borderRadius,
   typography,
-  textStyles,
   backgrounds,
 } from "../../../styles/tokens";
-
-const EMPTY_FORM = {
-  code: "",
-  descriptionEn: "",
-  descriptionAr: "",
-  discountType: "percentage",
-  value: "",
-  maxUses: "0",
-  validFrom: "",
-  validUntil: "",
-  minimumAmount: "0",
-  isActive: true,
-  applicablePlanTypes: [],
-};
 
 const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
   const { t } = useTranslation("admin");
@@ -44,82 +33,72 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
   const createDiscount = useCreateDiscount();
   const updateDiscount = useUpdateDiscount();
 
-  const [form, setForm] = useState(EMPTY_FORM);
-
   const isEdit = !!discount;
   const isPending = createDiscount.isPending || updateDiscount.isPending;
+
+  const methods = useForm({
+    resolver: zodResolver(discountSchema),
+    defaultValues: {
+      code: "",
+      descriptionEn: "",
+      descriptionAr: "",
+      discountType: "percentage",
+      value: "",
+      maxUses: "",
+      validFrom: null,
+      validUntil: null,
+      minimumAmount: "",
+      isActive: true,
+      applicablePlanTypes: [],
+    },
+  });
+
+  const { reset, handleSubmit } = methods;
 
   useEffect(() => {
     if (visible) {
       if (discount) {
-        setForm({
+        reset({
           code: discount.code || "",
           descriptionEn: discount.descriptionEn || "",
           descriptionAr: discount.descriptionAr || "",
           discountType: discount.discountType || "percentage",
-          value: String(discount.value || ""),
-          maxUses: String(discount.maxUses ?? 0),
-          validFrom: discount.validFrom
-            ? new Date(discount.validFrom).toISOString().split("T")[0]
-            : "",
-          validUntil: discount.validUntil
-            ? new Date(discount.validUntil).toISOString().split("T")[0]
-            : "",
-          minimumAmount: String(discount.minimumAmount ?? 0),
+          value: String(discount.value ?? ""),
+          maxUses: String(discount.maxUses ?? ""),
+          validFrom: discount.validFrom ? new Date(discount.validFrom) : null,
+          validUntil: discount.validUntil ? new Date(discount.validUntil) : null,
+          minimumAmount: String(discount.minimumAmount ?? ""),
           isActive: discount.isActive !== false,
           applicablePlanTypes: discount.applicablePlanTypes || [],
         });
       } else {
-        setForm(EMPTY_FORM);
+        reset({
+          code: "",
+          descriptionEn: "",
+          descriptionAr: "",
+          discountType: "percentage",
+          value: "",
+          maxUses: "",
+          validFrom: null,
+          validUntil: null,
+          minimumAmount: "",
+          isActive: true,
+          applicablePlanTypes: [],
+        });
       }
     }
-  }, [visible, discount]);
+  }, [visible, discount, reset]);
 
-  const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
-
-  const validate = () => {
-    if (!form.code.trim()) {
-      toast.error(t("discounts.errors.codeRequired"));
-      return false;
-    }
-    if (!form.value.trim()) {
-      toast.error(t("discounts.errors.valueRequired"));
-      return false;
-    }
-    if (isNaN(parseFloat(form.value)) || parseFloat(form.value) <= 0) {
-      toast.error(t("discounts.errors.valueInvalid"));
-      return false;
-    }
-    return true;
-  };
-
-  const handleSave = async () => {
-    if (!validate()) return;
-
-    const basePayload = {
-      descriptionEn: form.descriptionEn.trim(),
-      descriptionAr: form.descriptionAr.trim(),
-      discountType: form.discountType,
-      value: parseFloat(form.value),
-      maxUses: parseInt(form.maxUses) || 0,
-      validFrom: form.validFrom || undefined,
-      validUntil: form.validUntil || undefined,
-      minimumAmount: parseFloat(form.minimumAmount) || 0,
-      isActive: form.isActive,
-      applicablePlanTypes: form.applicablePlanTypes || [],
-    };
+  const handleSave = async (data) => {
+    const payload = buildPayload(data);
 
     try {
       if (isEdit) {
-        // Why: `code` is immutable post-create; the strict Zod update schema
-        // rejects unknown fields, so we must not include it in PATCH bodies.
-        await updateDiscount.mutateAsync({ id: discount.id, data: basePayload });
+        const { code: _ignored, ...updateData } = payload;
+        await updateDiscount.mutateAsync({ id: discount.id, data: updateData });
         toast.success(t("discounts.success.updated"));
       } else {
-        await createDiscount.mutateAsync({
-          code: form.code.trim().toUpperCase(),
-          ...basePayload,
-        });
+        await createDiscount.mutateAsync(payload);
         toast.success(t("discounts.success.created"));
       }
       onSave?.();
@@ -133,12 +112,17 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
     }
   };
 
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
       transparent
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
         style={styles.overlay}
@@ -149,43 +133,43 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
             <Text style={styles.title}>
               {isEdit ? t("discounts.form.editTitle") : t("discounts.form.createTitle")}
             </Text>
-            <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
+            <TouchableOpacity onPress={handleClose} activeOpacity={0.7}>
               <Ionicons name="close" size={22} color={colors.natural[600]} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView
-            style={styles.body}
-            contentContainerStyle={styles.bodyContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <DiscountFormFields form={form} isEdit={isEdit} set={set} t={t} />
-          </ScrollView>
-
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={onClose}
-              activeOpacity={0.7}
+          <FormProvider {...methods}>
+            <ScrollView
+              style={styles.body}
+              contentContainerStyle={styles.bodyContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
             >
-              <Text style={styles.cancelBtnText}>{t("discounts.form.cancel")}</Text>
-            </TouchableOpacity>
+              <DiscountFormFields isEdit={isEdit} />
+              <View style={styles.spacingHelper} />
+            </ScrollView>
 
-            <TouchableOpacity
-              style={[styles.saveBtn, isPending && styles.saveBtnDisabled]}
-              onPress={handleSave}
-              disabled={isPending}
-              activeOpacity={0.8}
-            >
-              {isPending ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : null}
-              <Text style={styles.saveBtnText}>
-                {isPending ? t("discounts.form.saving") : t("discounts.form.save")}
-              </Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.footer}>
+              <View style={styles.buttonWrapper}>
+                <Button
+                  text={t("discounts.form.cancel")}
+                  onPress={handleClose}
+                  variant="outline"
+                  size="small"
+                  disabled={isPending}
+                />
+              </View>
+              <View style={styles.buttonWrapper}>
+                <Button
+                  text={isPending ? t("discounts.form.saving") : t("discounts.form.save")}
+                  onPress={handleSubmit(handleSave)}
+                  variant="primary"
+                  size="small"
+                  loading={isPending}
+                />
+              </View>
+            </View>
+          </FormProvider>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -225,6 +209,9 @@ const styles = StyleSheet.create({
     padding: spacing[20],
     gap: spacing[4],
   },
+  spacingHelper: {
+    height: spacing[40],
+  },
   footer: {
     flexDirection: "row",
     gap: spacing[12],
@@ -233,36 +220,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.natural[100],
   },
-  cancelBtn: {
+  buttonWrapper: {
     flex: 1,
-    paddingVertical: spacing[14],
-    borderRadius: borderRadius[10],
-    borderWidth: 1.5,
-    borderColor: colors.natural[200],
-    alignItems: "center",
-  },
-  cancelBtnText: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.body.small,
-    color: colors.natural[600],
-  },
-  saveBtn: {
-    flex: 2,
-    flexDirection: "row",
-    gap: spacing[6],
-    paddingVertical: spacing[14],
-    borderRadius: borderRadius[10],
-    backgroundColor: colors.primary[500],
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveBtnDisabled: {
-    backgroundColor: colors.natural[300],
-  },
-  saveBtnText: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.body.small,
-    color: "#FFF",
   },
 });
 

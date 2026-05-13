@@ -1,68 +1,86 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
+import Button from "@/ui/commen/button/Button";
 import { useCreateDiscount, useUpdateDiscount } from "@/hooks/reactQueryHooks/useDiscounts";
 import DiscountsFormFields from "./DiscountsFormFields";
-import { EMPTY_FORM, validateForm, buildPayload } from "./discountsFormUtils";
+import { buildPayload } from "./discountsFormUtils";
+import { discountSchema } from "@/utils/schemas/adminPopupSchemas";
 import styles from "./DiscountsFormPopup.module.css";
 
 export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminDiscounts");
 
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState({});
+  const methods = useForm({
+    resolver: zodResolver(discountSchema),
+    defaultValues: {
+      code: "",
+      descriptionEn: "",
+      descriptionAr: "",
+      discountType: "percentage",
+      value: "",
+      maxUses: "",
+      validFrom: null,
+      validUntil: null,
+      isActive: true,
+      applicablePlanTypes: [],
+      minimumAmount: "",
+    },
+  });
+
+  const { reset, handleSubmit } = methods;
 
   useEffect(() => {
-    if (editingDiscount) {
-      setForm({
-        code: editingDiscount.code || "",
-        descriptionEn: editingDiscount.descriptionEn || "",
-        descriptionAr: editingDiscount.descriptionAr || "",
-        discountType: editingDiscount.discountType || "percentage",
-        value: editingDiscount.value ?? "",
-        maxUses: editingDiscount.maxUses ?? "",
-        validFrom: editingDiscount.validFrom
-          ? new Date(editingDiscount.validFrom).toISOString().slice(0, 10)
-          : "",
-        validUntil: editingDiscount.validUntil
-          ? new Date(editingDiscount.validUntil).toISOString().slice(0, 10)
-          : "",
-        isActive: editingDiscount.isActive ?? true,
-        applicablePlanTypes: editingDiscount.applicablePlanTypes || [],
-        minimumAmount: editingDiscount.minimumAmount ?? "",
-      });
-    } else {
-      setForm(EMPTY_FORM);
+    if (isOpen) {
+      if (editingDiscount) {
+        reset({
+          code: editingDiscount.code || "",
+          descriptionEn: editingDiscount.descriptionEn || "",
+          descriptionAr: editingDiscount.descriptionAr || "",
+          discountType: editingDiscount.discountType || "percentage",
+          value: editingDiscount.value ?? "",
+          maxUses: editingDiscount.maxUses ?? "",
+          validFrom: editingDiscount.validFrom
+            ? new Date(editingDiscount.validFrom)
+            : null,
+          validUntil: editingDiscount.validUntil
+            ? new Date(editingDiscount.validUntil)
+            : null,
+          isActive: editingDiscount.isActive ?? true,
+          applicablePlanTypes: editingDiscount.applicablePlanTypes || [],
+          minimumAmount: editingDiscount.minimumAmount ?? "",
+        });
+      } else {
+        reset({
+          code: "",
+          descriptionEn: "",
+          descriptionAr: "",
+          discountType: "percentage",
+          value: "",
+          maxUses: "",
+          validFrom: null,
+          validUntil: null,
+          isActive: true,
+          applicablePlanTypes: [],
+          minimumAmount: "",
+        });
+      }
     }
-    setErrors({});
-  }, [editingDiscount, isOpen]);
+  }, [editingDiscount, isOpen, reset]);
 
   const createMutation = useCreateDiscount();
   const updateMutation = useUpdateDiscount();
 
   const saving = createMutation.isPending || updateMutation.isPending;
 
-  const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
-
-  const togglePlanType = (type) =>
-    setForm((prev) => ({
-      ...prev,
-      applicablePlanTypes: prev.applicablePlanTypes.includes(type)
-        ? prev.applicablePlanTypes.filter((x) => x !== type)
-        : [...prev.applicablePlanTypes, type],
-    }));
-
-  const handleSubmit = () => {
-    const e = validateForm(form, t);
-    if (Object.keys(e).length > 0) {
-      setErrors(e);
-      return;
-    }
-    const payload = buildPayload(form);
+  const onSubmit = async (data) => {
+    const payload = buildPayload(data);
 
     const onSuccess = (msgKey, fallback) => {
       toastUtils.success(t(msgKey, fallback));
@@ -70,8 +88,6 @@ export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount })
     };
 
     if (editingDiscount) {
-      // Update payload: drop the immutable `code` so the strict Zod schema
-      // doesn't reject it.
       const { code: _ignored, ...updateData } = payload;
       updateMutation.mutate(
         { id: editingDiscount.id, data: updateData },
@@ -99,26 +115,33 @@ export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount })
             : t("discounts.createTitle", "إنشاء كود خصم جديد")}
         </h2>
 
-        <DiscountsFormFields
-          form={form}
-          errors={errors}
-          set={set}
-          togglePlanType={togglePlanType}
-          editingDiscount={editingDiscount}
-        />
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            <DiscountsFormFields editingDiscount={editingDiscount} />
 
-        <div className={styles.actions}>
-          <button className={styles.cancelBtn} onClick={onClose} disabled={saving}>
-            {t("discounts.cancel", "إلغاء")}
-          </button>
-          <button className={styles.saveBtn} onClick={handleSubmit} disabled={saving}>
-            {saving
-              ? t("discounts.saving", "جاري الحفظ...")
-              : editingDiscount
-              ? t("discounts.saveChanges", "حفظ التعديلات")
-              : t("discounts.create", "إنشاء الكود")}
-          </button>
-        </div>
+            <div className={styles.actions}>
+              <Button
+                variant="secondary"
+                title={t("discounts.cancel", "إلغاء")}
+                onClick={onClose}
+                disabled={saving}
+                type="button"
+              />
+              <Button
+                variant="primary"
+                title={
+                  saving
+                    ? t("discounts.saving", "جاري الحفظ...")
+                    : editingDiscount
+                    ? t("discounts.saveChanges", "حفظ التعديلات")
+                    : t("discounts.create", "إنشاء الكود")
+                }
+                type="submit"
+                disabled={saving}
+              />
+            </div>
+          </form>
+        </FormProvider>
       </div>
     </PopupLayout>
   );

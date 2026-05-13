@@ -64,10 +64,12 @@
 /* Mobile styles */
 @media (max-width: 600px) {
   .button_primary {
-    width: 14.3rem;
+    flex: 1;
+    width: auto;
   }
 
   .button_secondary {
-    width: 8rem;
+    flex: 1;
+    width: auto;
   }
 }

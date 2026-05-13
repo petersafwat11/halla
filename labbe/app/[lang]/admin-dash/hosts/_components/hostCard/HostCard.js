@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { cookieUtils } from "@/utils/cookieUtils";
 import { useRouter, useParams } from "next/navigation";
 import adminDashboardAPI from "@/services/adminDashboard";
-import HostSubscriptionPopup from "../HostSubscriptionPopup";
+import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import {
   FaCrown,
   FaUserSlash,
@@ -250,12 +250,10 @@ const HostCard = ({ data }) => {
         </div>
       </div>
       {isSubscriptionPopupOpen && (
-        <HostSubscriptionPopup
-          host={host}
-          onClose={() => {
-            setIsSubscriptionPopupOpen(false);
-            router.refresh();
-          }}
+        <SubscriptionAssignmentPopup
+          entity={data}
+          entityType="host"
+          onClose={() => setIsSubscriptionPopupOpen(false)}
         />
       )}
     </>

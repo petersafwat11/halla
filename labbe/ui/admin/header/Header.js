@@ -94,7 +94,7 @@ const Header = ({
               width={24}
               height={24}
               src="/svg/admin/date.svg"
-              alt="calendar"
+              alt=""
             />
             <p className={styles.dateRangeText}>{formatDateRangeText()}</p>
           </button>

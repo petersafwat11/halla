@@ -240,8 +240,13 @@
         "limits": "الحدود",
         "featureToggles": "المميزات",
         "featureNumerics": "إعدادات المميزات",
-        "display": "العرض",
-        "visibility": "الظهور"
+        "publication": "النشر والظهور"
+      },
+      "featureGroups": {
+        "invitations": "الدعوات",
+        "entry": "الدخول والتسجيل",
+        "communication": "التواصل",
+        "content": "القوالب والمحتوى"
       },
       "fields": {
         "code": { "label": "الرمز", "help": "للقراءة فقط — لا يمكن تعديل الرمز" },

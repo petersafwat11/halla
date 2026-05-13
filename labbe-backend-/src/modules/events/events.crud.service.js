@@ -236,12 +236,17 @@ module.exports = {
 
     let query = { status: { $ne: 'deleted' } };
 
-    if (whitelabelFilter) {
-      // Will need to join with host's whitelabelId
+    if (
+      whitelabelFilter &&
+      whitelabelFilter.whitelabelId !== undefined &&
+      whitelabelFilter.whitelabelId !== null
+    ) {
+      // Restrict to events hosted by users of this whitelabel
       query["host"] = {
         $in: await this._getWhitelabelHostIds(whitelabelFilter),
       };
     }
+    // whitelabelId === null means platform admin → show ALL events (no host filter)
 
     if (search) {
       const searchQuery = this.buildSearchQuery(search, [
@@ -329,7 +334,7 @@ module.exports = {
    * @returns {Promise<Object>}
    */
   async createEvent(eventData, guestList, context) {
-    const { userId, userRole, subscription, file } = context;
+    const { userId, userRole, subscription, file, skipSubscriptionCheck, whitelabelId, adminId } = context;
 
     // Validate event data
     if (!eventData.eventDetails) {
@@ -340,56 +345,80 @@ module.exports = {
       throw new ValidationError("At least one guest is required");
     }
 
-    // Validate subscription limits (async — dynamic event counting)
-    if (subscription) {
-      const validation = await SubscriptionsService.validateEventCreation(
-        subscription,
-        guestList.length,
-        userId
-      );
-      if (!validation.allowed) {
+    const guestCount = guestList.length;
+    let poolConsumed = false;
+    let capacitySub = null;
+
+    if (!skipSubscriptionCheck) {
+      // Whitelabel contexts with per-event plans: enforce the event limit
+      // across ALL hosts under the whitelabel umbrella, not per-host.
+      if (whitelabelId && subscription && isPerEventPlan(subscription.planId?.planType)) {
+        const periodStart = subscription.getBillingPeriodStart
+          ? subscription.getBillingPeriodStart()
+          : subscription.activatedAt || subscription.createdAt;
+        const whitelabelEventCount = await Event.countDocuments({
+          whitelabelId,
+          createdAt: { $gte: periodStart },
+          status: { $nin: ['cancelled', 'draft'] },
+        });
+        if (whitelabelEventCount >= (subscription.limits?.maxEvents || 1)) {
+          throw new PackageLimitError(
+            'events',
+            subscription.limits?.maxEvents || 1,
+            'This whitelabel has reached its event limit for the current period'
+          );
+        }
+      }
+
+      // Validate subscription limits (async — dynamic event counting)
+      if (subscription) {
+        const validation = await SubscriptionsService.validateEventCreation(
+          subscription,
+          guestList.length,
+          userId
+        );
+        if (!validation.allowed) {
+          throw new PackageLimitError(
+            "events",
+            validation.limits?.maxEvents || 0
+          );
+        }
+      }
+
+      // Capacity check: handle pool vs per-event plans
+      capacitySub = subscription
+        ? (subscription.planId?.planType ? subscription : await Subscription.findById(subscription._id).populate('planId'))
+        : await Subscription.getCapacityForEvent(userId, guestCount);
+
+      if (!capacitySub) {
         throw new PackageLimitError(
-          "events",
-          validation.limits?.maxEvents || 0
+          'subscription',
+          0,
+          'No active subscription with sufficient capacity'
         );
       }
-    }
 
-    // Capacity check: handle pool vs per-event plans
-    const guestCount = guestList.length;
-    const capacitySub = subscription
-      ? await Subscription.findById(subscription._id).populate('planId')
-      : await Subscription.getCapacityForEvent(userId, guestCount);
-
-    if (!capacitySub) {
-      throw new PackageLimitError(
-        'subscription',
-        0,
-        'No active subscription with sufficient capacity'
-      );
-    }
-
-    // Consume invites and create the event with a compensating return on
-    // failure. We track whether we consumed (poolConsumed) and how much; if
-    // anything between consumption and the final save throws, we release
-    // the invites and rethrow.
-    let poolConsumed = false;
-    if (isPoolPlan(capacitySub.planId?.planType)) {
-      await Subscription.consumeInvites(capacitySub._id, guestCount);
-      poolConsumed = true;
-    } else if (isPerEventPlan(capacitySub.planId?.planType)) {
-      const maxInvites = capacitySub.planId?.limits?.maxInvitesPerEvent;
-      if (maxInvites !== null && maxInvites !== undefined && guestCount > maxInvites) {
-        throw new PackageLimitError(
-          'guests',
-          maxInvites,
-          `Guest count exceeds plan limit of ${maxInvites}`
-        );
+      // Consume invites and create the event with a compensating return on
+      // failure. We track whether we consumed (poolConsumed) and how much; if
+      // anything between consumption and the final save throws, we release
+      // the invites and rethrow.
+      if (isPoolPlan(capacitySub.planId?.planType)) {
+        await Subscription.consumeInvites(capacitySub._id, guestCount);
+        poolConsumed = true;
+      } else if (isPerEventPlan(capacitySub.planId?.planType)) {
+        const maxInvites = capacitySub.planId?.limits?.maxInvitesPerEvent;
+        if (maxInvites !== null && maxInvites !== undefined && guestCount > maxInvites) {
+          throw new PackageLimitError(
+            'guests',
+            maxInvites,
+            `Guest count exceeds plan limit of ${maxInvites}`
+          );
+        }
       }
     }
 
     try {
-      if (!subscription) {
+      if (!subscription && !skipSubscriptionCheck) {
         // Attach capacity subscription to eventData for tracking
         if (!eventData.subscriptionId) eventData.subscriptionId = capacitySub._id;
       }
@@ -418,9 +447,9 @@ module.exports = {
       // Set host and tracking info
       eventData.host = userId;
       eventData.createdBy = {
-        user: userId,
+        user: adminId || userId,
         role: userRole || "host",
-        onBehalfOf: false,
+        onBehalfOf: !!adminId && String(adminId) !== String(userId),
         createdAt: new Date(),
       };
       eventData.createdFor = {
@@ -428,6 +457,11 @@ module.exports = {
         role: userRole || "host",
         isSelf: true,
       };
+
+      // Set whitelabelId from context when provided (admin/whitelabel creation)
+      if (whitelabelId !== undefined) {
+        eventData.whitelabelId = whitelabelId;
+      }
 
       // Set subscription reference and freeze guest limit (Bugs 4, 7)
       if (subscription) {
@@ -442,6 +476,8 @@ module.exports = {
           // Per-event plans: use the plan's maxInvitesPerEvent directly (no addon or compensation added here)
           eventData.guestLimit = plan?.limits?.maxInvitesPerEvent ?? null;
         }
+      } else if (skipSubscriptionCheck) {
+        eventData.guestLimit = -1;
       }
 
       // Validate host-supplied fieldValues against Template.fields[]
@@ -772,9 +808,17 @@ module.exports = {
    */
   async _getWhitelabelHostIds(whitelabelFilter) {
     const User = require("../../../models/UserModel");
-    const hosts = await User.find({ ...whitelabelFilter, role: "host" }).select(
-      "_id"
-    );
+    const { whitelabelId, ...rest } = whitelabelFilter;
+
+    let roleFilter;
+    if (whitelabelId === null) {
+      const { PLATFORM_ADMIN_ROLES } = require("../../shared/constants/roles");
+      roleFilter = { $in: [...PLATFORM_ADMIN_ROLES, "host"] };
+    } else {
+      roleFilter = "host";
+    }
+
+    const hosts = await User.find({ whitelabelId, ...rest, role: roleFilter }).select("_id");
     return hosts.map((h) => h._id);
   },
 };

@@ -10,6 +10,7 @@ import { useAdminPlans } from "@/hooks/reactQueryHooks/useAdmin";
 import Header from "@/ui/admin/header/Header";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
+import SearchableSelect from "@/ui/commen/inputs/SearchableSelect/SearchableSelect";
 import EditPlanPopup from "./EditPlanPopup";
 import { getLocalized } from "@/utils/locale";
 import styles from "./ManagePlansContent.module.css";
@@ -86,18 +87,18 @@ export default function ManagePlansContent() {
         <StatsCards cards={statsCards} />
       </div>
 
-      {/* Filter Tabs */}
-      <div className={styles.filterTabs}>
-        {PLAN_TYPE_KEYS.map((key) => (
-          <button
-            key={key}
-            type="button"
-            className={`${styles.filterTab} ${activeFilter === key ? styles.activeTab : ""}`}
-            onClick={() => setActiveFilter(key)}
-          >
-            {t(`managePlans.planTypes.${key}`)}
-          </button>
-        ))}
+      {/* Filter Dropdown */}
+      <div className={styles.filterDropdownWrapper}>
+        <SearchableSelect
+          options={PLAN_TYPE_KEYS.map((key) => ({
+            value: key,
+            label: t(`managePlans.planTypes.${key}`),
+          }))}
+          value={activeFilter}
+          onChange={(val) => setActiveFilter(val)}
+          placeholder={t("managePlans.planTypes.all")}
+          className={styles.filterDropdown}
+        />
       </div>
 
       {/* Plan Cards */}

@@ -336,7 +336,7 @@ const Table = ({
           >
             <Image
               src="/svg/events/more.svg"
-              alt="more"
+              alt=""
               width={24}
               height={24}
             />
@@ -374,7 +374,7 @@ const Table = ({
                       (typeof actionIcon === "string" ? (
                         <Image
                           src={actionIcon}
-                          alt={actionText || "action"}
+                          alt=""
                           width={16}
                           height={16}
                         />
@@ -432,7 +432,7 @@ const Table = ({
                 <div className={styles.searchContainer}>
                   <Image
                     src="/svg/events/search.svg"
-                    alt="search"
+                    alt=""
                     width={12}
                     height={12}
                     className={styles.searchIcon}
@@ -456,7 +456,7 @@ const Table = ({
                   >
                     <Image
                       src="/svg/events/filter.svg"
-                      alt="filter"
+                      alt=""
                       width={12}
                       height={12}
                     />
@@ -504,7 +504,7 @@ const Table = ({
                 >
                   <Image
                     src="/svg/events/export.svg"
-                    alt="export"
+                    alt=""
                     width={12}
                     height={12}
                   />
@@ -529,7 +529,7 @@ const Table = ({
                     >
                       <Image
                         src="/svg/events/more.svg"
-                        alt="bulk actions"
+                        alt=""
                         width={24}
                         height={24}
                       />

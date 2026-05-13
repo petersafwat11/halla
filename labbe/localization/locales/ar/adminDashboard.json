@@ -1,7 +1,9 @@
 {
   "header": {
     "welcome": "مرحباً بك، {{name}}! 👋",
-    "subtitle": "إليك نظرة سريعة على فعالياتك ودعواتك"
+    "subtitle": "إليك نظرة سريعة على فعالياتك ودعواتك",
+    "pageTitle": "لوحة التحكم",
+    "pageSubtitle": "نظرة عامة على أداء منصتك"
   },
   "stats": {
     "totalHosts": "إجمالي المضيفين",
@@ -50,6 +52,14 @@
     "tickets": {
       "title": "الشكاوى المفتوحة",
       "subtitle": "{{count}} محلولة هذه الفترة"
+    },
+    "whitelabel": {
+      "totalEvents": "إجمالي المناسبات",
+      "activeEventsCount": "{{count}} نشطة",
+      "activeEvents": "المناسبات النشطة",
+      "scheduledCount": "{{count}} مجدولة",
+      "totalClients": "إجمالي العملاء",
+      "totalGuests": "إجمالي الضيوف"
     }
   },
   "errors": {
@@ -58,6 +68,7 @@
   "charts": {
     "guestResponse": "استجابة الضيوف",
     "revenue": "الإيرادات",
+    "subscriptions": "الاشتراكات",
     "tickets": "الشكاوى",
     "confirmed": "موافق",
     "declined": "معتذر",
@@ -67,6 +78,7 @@
     "lite": "لايت",
     "pro": "برو",
     "elite": "إليت",
+    "other": "أخرى",
     "resolved": "محلولة",
     "open": "مفتوحة",
     "thisperiod": "هذه الفترة",

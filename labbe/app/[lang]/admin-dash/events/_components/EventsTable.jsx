@@ -13,7 +13,7 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./EventsTable.module.css";
 
 export default function EventsTable() {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminEvents");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { canCreate, canUpdate, canDelete } = usePageAccess("events");

@@ -31,7 +31,8 @@
     "cancel": "Cancel",
     "saving": "Saving...",
     "success": "Moderator added successfully",
-    "error": "Failed to add moderator"
+    "error": "Failed to add moderator",
+    "whitelabelRequired": "Whitelabel selection required"
   },
   "editModerator": {
     "title": "Edit Moderator",
@@ -58,6 +59,8 @@
     "searchPlaceholder": "Search for moderator",
     "filter": "Filter",
     "export": "Export",
+    "selectRows": "Please select moderators to delete",
+    "statusUpdated": "Status updated successfully",
     "columns": {
       "username": "Username",
       "phoneNumber": "Phone Number",
@@ -65,17 +68,74 @@
       "title": "Title",
       "status": "Status",
       "createdAt": "Join Date",
-      "actions": "Actions"
+      "actions": "Actions",
+      "name": "Name",
+      "phone": "Phone",
+      "role": "Role"
     },
     "status": {
       "active": "Active",
       "suspended": "Suspended",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "pending": "Pending"
     },
     "actions": {
       "suspend": "Suspend",
       "delete": "Delete",
       "edit": "Edit"
+    }
+  },
+  "moderators": {
+    "stats": {
+      "total": "Total Moderators",
+      "allTime": "All Time",
+      "active": "Active Moderators",
+      "activeNow": "Active Now",
+      "pending": "Pending Moderators",
+      "awaitingActivation": "Awaiting Activation",
+      "inactive": "Inactive Moderators",
+      "deactivated": "Deactivated"
+    },
+    "edit": "Edit",
+    "suspend": "Suspend",
+    "activate": "Activate",
+    "delete": "Delete",
+    "bulkDelete": "Delete Selected",
+    "title": "Moderators Management",
+    "addModerator": "Add New Moderator",
+    "editModerator": "Edit Moderator",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "role": "Role",
+      "status": "Status",
+      "createdAt": "Date Added"
+    },
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "roles": {
+      "whitelabelModerator": "Whitelabel Moderator",
+      "whitelabelAdmin": "Whitelabel Admin",
+      "moderator": "Moderator",
+      "admin": "Admin"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Enter moderator name",
+      "email": "Email",
+      "emailPlaceholder": "example@email.com",
+      "phone": "Phone Number",
+      "phonePlaceholder": "05xxxxxxxx",
+      "password": "Password",
+      "passwordPlaceholder": "Leave empty for auto-generation",
+      "role": "Role",
+      "selectRole": "Select role",
+      "whitelabel": "Whitelabel",
+      "selectWhitelabel": "Select whitelabel"
     }
   }
 }

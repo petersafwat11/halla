@@ -1,6 +1,7 @@
 {
   "signupForm": {
     "step": "  خطوة",
+    "submitting": "جاري الإرسال...",
     "personalInfo": {
       "title": "المعلومات الشخصية",
       "name": {
@@ -124,6 +125,7 @@
           "emailRequired": "البريد الإلكتروني مطلوب",
           "emailInvalid": "يرجى إدخال عنوان بريد إلكتروني صحيح",
           "passwordRequired": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+          "passwordComplexity": "كلمة المرور يجب أن تحتوي على حرف كبير وصغير ورقم",
           "passwordConfirmRequired": "يرجى تأكيد كلمة المرور",
           "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
         }
@@ -368,11 +370,27 @@
           "placeholder": "أدخل اسم المدينة"
         },
         "coverageArea": {
+          "title": "منطقة التغطية",
           "options": [
             { "value": "local", "label": "محلي داخل المملكة" },
             { "value": "regional", "label": "إقليمي" },
             { "value": "specificAreas", "label": "مناطق محددة" }
           ]
+        },
+        "location": {
+          "allCities": "جميع المدن",
+          "region": "المنطقة",
+          "loading": "جاري التحميل...",
+          "selectRegion": "اختر المنطقة",
+          "city": "المدينة",
+          "districts": "الأحياء",
+          "coverageLabel": "نطاق التغطية:",
+          "entireRegion": "المنطقة بالكامل",
+          "entireCity": "المدينة بالكامل",
+          "selectedDistricts": "{{count}} حي محدد",
+          "allDistricts": "جميع الأحياء",
+          "districtsSelected": "{{count}} حي محدد",
+          "searchDistrict": "بحث في الأحياء..."
         },
         "otherInfo": {
           "title": "معلومات إضافية"
@@ -560,6 +578,16 @@
       "otherLinksAndData": {
         "title": "روابط وبيانات إضافية",
         "description": "شارك روابط وسائل التواصل الاجتماعي ومعلومات إضافية.",
+        "socialLinksTitle": "روابط التواصل الاجتماعي",
+        "filesAndDocumentsTitle": "الملفات والمستندات",
+        "facebookLink": {
+          "label": "رابط فيسبوك",
+          "placeholder": "أدخل رابط حساب فيسبوك"
+        },
+        "tiktokLink": {
+          "label": "رابط تيك توك",
+          "placeholder": "أدخل رابط حساب تيك توك"
+        },
         "instagramLink": {
           "label": "رابط إنستغرام",
           "placeholder": "أدخل رابط حساب إنستغرام"
@@ -593,7 +621,10 @@
         "title": "ملخص الطلب",
         "description": "يرجى مراجعة جميع المعلومات التي قدمتها قبل إرسال طلبك",
         "submit": "إرسال الطلب"
-      }
+      },
+      "submitting": "جاري الإرسال...",
+      "successMessage": "تم إنشاء الحساب بنجاح",
+      "errorMessage": "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى."
     },
     "whiteLabel": {
       "title": "أنشئ منصتك بهويتك الخاصة",
@@ -602,6 +633,7 @@
         "identity": "معلومات المنشأة",
         "login": "بيانات الدخول والتخصص",
         "requirements": "تفاصيل الاستخدام ونوع النشاط",
+        "choosePlan": "اختيار الباقة",
         "services": "خدمات إضافية",
         "payment": "معلومات المنشأة والدفع",
         "summary": "ملخص الطلب"
@@ -609,6 +641,7 @@
       "identity": {
         "title": "معلومات المنشأة",
         "description": "أدخل معلوماتك المنشأة لبدء إنشاء حسابك كمقدم خدمة.",
+        "facilityInfo": "معلومات المنشأة",
 
         "arabicName": {
           "label": "اسم الجهة أو العلامة التجارية (بالعربية)",
@@ -701,7 +734,7 @@
         "description": "قم بتخصيص وصول منصتك وتحديد تفضيلات النطاق واللغة.",
         "fields": {
           "email": {
-            "label": "البريد الإلكتروني الرسمي لحساب المسؤول",
+            "label": "البريد الإلكتروني",
             "placeholder": "أدخل عنوان البريد الإلكتروني",
             "required": "البريد الإلكتروني مطلوب",
             "invalid": "يرجى إدخال عنوان بريد إلكتروني صحيح"
@@ -891,6 +924,7 @@
         "orderSummary": "ملخص الطلب",
         "planLine": "باقة {{name}}",
         "setupFee": "رسوم الإعداد لمرة واحدة",
+        "included": "مشمولة",
         "total": "الإجمالي",
         "currency": "ر.س",
         "billingNote": "سيتواصل معك فريقنا بعد التسجيل لإتمام عملية الدفع ومناقشة احتياجاتك."
@@ -1013,8 +1047,22 @@
         "selectPlan": "اختر هذه الباقة",
         "selected": "✓ تم الاختيار",
         "features": "المميزات المشتركة",
-        "compensationMessages": "رسائل تعويضية"
-      }
+        "compensationMessages": "رسائل تعويضية",
+        "perEventLimit": "{{invites}} دعوة / مناسبة · صالحة ٩٠ يوماً",
+        "poolLimit": "{{pool}} دعوة (رصيد) · مناسبات غير محدودة · {{days}} يوماً",
+        "selectInvites": "اختر عدد الدعوات",
+        "inviteUnit": "دعوة",
+        "pricePerEvent": "لكل مناسبة",
+        "pricePerQuarter": "لكل ربع سنة",
+        "pricePerYear": "لسنة كاملة",
+        "validDays90": "صالحة ٩٠ يوماً",
+        "validDays365": "صالحة ٣٦٥ يوماً",
+        "poolLabel": "رصيد الدعوات",
+        "featuresTitle": "المميزات",
+        "setupFeeIncluded": "رسوم الإعداد مشمولة"
+      },
+      "success": "تم إنشاء منصتك المخصصة بنجاح",
+      "errorMessage": "حدث خطأ أثناء إنشاء المنصة. يرجى المحاولة مرة أخرى."
     },
     "host": {
       "account": {

@@ -194,7 +194,24 @@ async function getEventTargets(type = 'host', requestingUser = null) {
  * Create event for host (admin action) - rewritten to use eventsService pattern
  */
 async function createEventForHost(eventData, guestList, context) {
-  const activeSubs = await Subscription.findActiveForUser(context.userId);
+  let subscriptionOwnerId = context.userId;
+
+  // Whitelabel contexts: hosts and whitelabel moderators share the
+  // whitelabel admin's subscription.  Resolve the real subscription owner.
+  if (context.whitelabelId) {
+    const targetUser = await User.findById(context.userId)
+      .select('role whitelabelId')
+      .lean();
+
+    if (
+      (targetUser?.role === ROLES.HOST && targetUser.whitelabelId) ||
+      (targetUser?.role === ROLES.WHITELABEL_MODERATOR && targetUser.whitelabelId)
+    ) {
+      subscriptionOwnerId = targetUser.whitelabelId;
+    }
+  }
+
+  const activeSubs = await Subscription.findActiveForUser(subscriptionOwnerId);
   const subscription = activeSubs[0] || null;
   const eventsService = require('../events/events.service');
   return eventsService.createEvent(eventData, guestList, { ...context, subscription });

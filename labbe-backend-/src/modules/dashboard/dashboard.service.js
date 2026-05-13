@@ -10,6 +10,7 @@ const {
   EVENT_STATUS,
   TICKET_STATUS,
   SUBSCRIPTION_STATUS,
+  GUEST_STATUS,
 } = require('../../shared/constants');
 
 const User = require('../../../models/UserModel');
@@ -112,6 +113,9 @@ class DashboardService {
       recentHosts,
       recentEvents,
       topVendorsByViews,
+      guestStatsAgg,
+      totalTickets,
+      resolvedTicketsTotal,
     ] = await Promise.all([
       User.countDocuments({ role: ROLES.HOST, ...whitelabelFilter }),
       User.countDocuments({ role: ROLES.HOST, status: USER_STATUS.ACTIVE, ...whitelabelFilter }),
@@ -127,7 +131,9 @@ class DashboardService {
       Subscription.countDocuments({ status: SUBSCRIPTION_STATUS.ACTIVE, ...whitelabelFilter }),
       Subscription.aggregate([
         { $match: { status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] }, ...whitelabelFilter } },
-        { $group: { _id: '$planType', count: { $sum: 1 } } },
+        { $lookup: { from: 'plans', localField: 'planId', foreignField: '_id', as: 'plan' } },
+        { $unwind: { path: '$plan', preserveNullAndEmptyArrays: true } },
+        { $group: { _id: '$plan.planType', count: { $sum: 1 } } },
       ]),
       Ticket.countDocuments({ status: { $in: [TICKET_STATUS.OPEN, TICKET_STATUS.IN_PROGRESS] }, ...whitelabelFilter }),
       Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED, updatedAt: { $gte: startDate, $lte: endDate }, ...whitelabelFilter }),
@@ -151,11 +157,23 @@ class DashboardService {
           },
         },
       ]),
+      (async () => {
+        const matchStage = whitelabelFilter?.whitelabelId
+          ? { event: { $in: await Event.find(whitelabelFilter).distinct('_id') } }
+          : {};
+        return Guest.aggregate([
+          { $match: matchStage },
+          { $group: { _id: '$status', count: { $sum: 1 } } },
+        ]);
+      })(),
+      Ticket.countDocuments({ ...whitelabelFilter }),
+      Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED, ...whitelabelFilter }),
     ]);
 
     const subscriptionsByPlanFormatted = {};
     subscriptionsByPlan.forEach((item) => {
-      subscriptionsByPlanFormatted[item._id || 'unknown'] = item.count;
+      const key = item._id || 'other';
+      subscriptionsByPlanFormatted[key] = (subscriptionsByPlanFormatted[key] || 0) + item.count;
     });
 
     // Only runs for whitelabel tenants (whitelabelId is a real ObjectId, not null).
@@ -213,6 +231,21 @@ class DashboardService {
 
     const totalSubscriptionsByPlan = Object.values(subscriptionsByPlanFormatted).reduce((a, b) => a + b, 0);
 
+    const guestStatsMap = {};
+    guestStatsAgg.forEach((item) => { guestStatsMap[item._id] = item.count; });
+
+    const guestStats = {
+      totalConfirmed: guestStatsMap[GUEST_STATUS.CONFIRMED] || 0,
+      totalDeclined: guestStatsMap[GUEST_STATUS.DECLINED] || 0,
+      totalPending: (guestStatsMap[GUEST_STATUS.INVITED] || 0) + (guestStatsMap[GUEST_STATUS.MAYBE] || 0),
+    };
+
+    const ticketsData = {
+      resolved: resolvedTicketsTotal || 0,
+      totalPending: openTickets || 0,
+      allTickets: totalTickets || 0,
+    };
+
     return {
       // statsCards items use translation keys; clients render via t(titleKey) and
       // t(subtitle.labelKey, { count: subtitle.count }). highlight is null when
@@ -268,6 +301,8 @@ class DashboardService {
       ],
       charts: {
         subscriptionsByPlan: subscriptionsByPlanFormatted,
+        guestStats,
+        tickets: ticketsData,
         period,
       },
       recentActivity: {

@@ -15,7 +15,7 @@ import Button from "@/ui/commen/button/Button";
 import styles from "./AddModeratorPopup.module.css";
 
 export default function EditModeratorPopup({ moderator, onClose }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminModerators");
   const updateModerator = useAdminModeratorMutation("update");
   const { user } = useAuthStore();
   const isWhitelabel = ["whitelabel_admin", "whitelabel_moderator"].includes(user?.role);

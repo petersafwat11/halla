@@ -240,8 +240,13 @@
         "limits": "Limits",
         "featureToggles": "Features",
         "featureNumerics": "Feature Settings",
-        "display": "Display",
-        "visibility": "Visibility"
+        "publication": "Publication & Visibility"
+      },
+      "featureGroups": {
+        "invitations": "Invitations",
+        "entry": "Entry & Check-in",
+        "communication": "Communication",
+        "content": "Templates & Content"
       },
       "fields": {
         "code": { "label": "Code", "help": "Read-only — code is immutable" },

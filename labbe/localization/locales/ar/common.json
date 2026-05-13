@@ -34,9 +34,17 @@
     "moderators": "المدراء",
     "hosts": "العملاء",
     "vendors": "التجار",
+    "whitelabels": "الوايت ليبل",
     "events": "المناسبات",
+    "tickets": "الشكاوى",
     "payments": "المدفوعات",
+    "plans": "الباقات",
+    "managePlans": "إدارة الأسعار",
+    "discounts": "الخصومات",
     "settings": "الإعدادات",
+    "templates": "قوالب الدعوات",
+    "templateCategories": "فئات القوالب",
+    "taqnyatTemplates": "قوالب واتساب",
     "logout": "تسجيل خروج"
   },
   "table": {

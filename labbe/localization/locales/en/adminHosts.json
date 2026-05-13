@@ -10,6 +10,7 @@
     "searchPlaceholder": "Search hosts...",
     "filter": "Filter",
     "export": "Export",
+    "selectRows": "Please select hosts to delete",
     "columns": {
       "username": "Username",
       "email": "Email",
@@ -73,7 +74,9 @@
     "ended": "Ended",
     "suspended": "Suspended",
     "viewStats": "View Statistics",
-    "noLocation": "Not specified"
+    "noLocation": "Not specified",
+    "contactInfo": "Contact Info",
+    "joinDate": "Join Date"
   },
   "actions": {
     "createEvent": "Create Event",
@@ -82,6 +85,7 @@
     "suspend": "Suspend",
     "noHostId": "Host ID not found",
     "confirmSuspend": "Are you sure you want to suspend this host?",
+    "confirmActivate": "Are you sure you want to activate this host?",
     "suspendSuccess": "Host suspended successfully",
     "suspendError": "Failed to suspend host",
     "activateSuccess": "Host activated successfully",
@@ -94,6 +98,7 @@
   },
   "subscription": {
     "title": "Subscription Info",
+    "manageTitle": "Manage Host Subscription",
     "plan": "Plan",
     "status": "Subscription Status",
     "active": "Active",
@@ -102,19 +107,21 @@
     "eventsLimit": "Events Limit",
     "guestsLimit": "Guests Limit",
     "expiresAt": "Expires At",
-    "manageTitle": "Manage Host Subscription",
     "host": "Host",
+    "hostName": "Host Name",
     "currentPlan": "Current Plan",
     "currentPlanSelected": "Current Plan",
     "loadingPlans": "Loading plans...",
     "noPlansAvailable": "No plans available",
     "selectPlan": "Select Plan",
+    "selectStatus": "Select Status",
     "noPlanSelected": "Please select a plan",
     "noHostId": "Host ID not found",
     "samePlan": "Host is already on this plan",
     "updateSuccess": "Subscription updated successfully",
     "updateError": "Failed to update subscription",
     "updating": "Updating...",
+    "update": "Update",
     "updatePlan": "Update Subscription",
     "cancel": "Cancel",
     "planFamily": "Plan Family",
@@ -123,11 +130,74 @@
     "billingTypeLabel": "Billing Type",
     "billingPerEvent": "Per Event",
     "billingMonthly": "Monthly",
+    "billingCycle": "Billing Cycle",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
     "currency": "SAR",
     "invites": "invites",
     "guests": "guests",
     "events": "events",
     "unlimited": "Unlimited",
-    "free": "Free"
+    "free": "Free",
+    "retry": "Retry",
+    "errorLoadingPlans": "Failed to load plans. Please try again.",
+    "statusActive": "Active",
+    "statusExpired": "Expired",
+    "statusCancelled": "Cancelled"
+  },
+  "hosts": {
+    "viewDetails": "View Details",
+    "activate": "Activate",
+    "suspend": "Suspend",
+    "subscription": "Subscription",
+    "delete": "Delete",
+    "bulkDelete": "Bulk Delete",
+    "title": "Manage Hosts",
+    "addHost": "Add New Host",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "status": "Status",
+      "subscription": "Subscription",
+      "createdAt": "Created At"
+    },
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "suspended": "Suspended"
+    },
+    "stats": {
+      "total": "Total Hosts",
+      "allTime": "All Time",
+      "active": "Active Hosts",
+      "activeNow": "Active Now",
+      "pending": "Pending",
+      "awaitingApproval": "Awaiting Approval",
+      "suspended": "Suspended",
+      "temporarilySuspended": "Temporarily Suspended"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Enter host name",
+      "email": "Email",
+      "emailPlaceholder": "example@email.com",
+      "phone": "Phone Number",
+      "phonePlaceholder": "05xxxxxxxx",
+      "password": "Password",
+      "passwordPlaceholder": "Leave empty for auto generation"
+    }
+  },
+  "eventStatus": {
+    "scheduled": "Scheduled",
+    "live": "Live",
+    "completed": "Completed",
+    "draft": "Draft",
+    "untitled": "Untitled"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "add": "Add"
   }
 }

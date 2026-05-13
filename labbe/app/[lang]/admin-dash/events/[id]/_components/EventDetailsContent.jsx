@@ -28,7 +28,8 @@ export default function EventDetailsContent({ eventId }) {
     );
   }
 
-  const eventData = data.data;
+  const eventData = data?.data || data;
+  const guests = eventData?.guests || [];
 
   return (
     <>
@@ -39,10 +40,10 @@ export default function EventDetailsContent({ eventId }) {
           <SubscriptionInfo subscription={eventData.subscription} />
         )}
 
-        <EventStats data={eventData} />
+        <EventStats eventId={eventId} />
 
         <div className={styles.membersData}>
-          <AdminGuestTable />
+          <AdminGuestTable eventId={eventId} guests={guests} />
         </div>
       </div>
     </>

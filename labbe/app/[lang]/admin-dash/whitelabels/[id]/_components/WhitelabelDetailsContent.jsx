@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
-import WhitelabelSubscriptionPopup from "../../_components/whitelabelSubscriptionPopup/WhitelabelSubscriptionPopup";
+import SubscriptionAssignmentPopup from "../../../_components/SubscriptionAssignmentPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import ApproveWhitelabelDialog from "@/ui/admin/whitelabels/ApproveWhitelabelDialog";
 import WhitelabelHero from "./WhitelabelHero";
@@ -138,14 +138,13 @@ export default function WhitelabelDetailsContent({ whitelabelId }) {
         />
       </div>
 
-      <PopupLayout isOpen={subOpen} onClose={() => setSubOpen(false)}>
-        <WhitelabelSubscriptionPopup
-          whitelabel={wl}
-          currentSubscription={sub}
-          onClose={() => setSubOpen(false)}
-          onSuccess={() => { setSubOpen(false); router.refresh(); }}
+      {subOpen && (
+        <SubscriptionAssignmentPopup
+          entity={wl}
+          entityType="whitelabel"
+          onClose={() => { setSubOpen(false); router.refresh(); }}
         />
-      </PopupLayout>
+      )}
 
       <ApproveWhitelabelDialog
         isOpen={approveOpen}

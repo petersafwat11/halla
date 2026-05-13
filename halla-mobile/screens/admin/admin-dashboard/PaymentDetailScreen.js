@@ -105,6 +105,10 @@ const PaymentDetailScreen = () => {
   // sendSuccess wraps the controller payload again.
   const payment = data?.data || data || null;
 
+  const remainingAmount = payment
+    ? payment.amount - (payment.refundedAmount || 0)
+    : 0;
+
   const status = payment?.status;
   const showRefund = canWrite && REFUNDABLE.has(status);
   const showCapture = canWrite && CAPTURABLE.has(status);

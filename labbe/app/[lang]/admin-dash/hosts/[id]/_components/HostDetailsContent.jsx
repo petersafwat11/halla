@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
-import HostSubscriptionPopup from "../../_components/HostSubscriptionPopup";
+import SubscriptionAssignmentPopup from "../../../_components/SubscriptionAssignmentPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { FiMail, FiPhone, FiCalendar, FiClock, FiShield, FiUsers, FiCreditCard, FiAlertCircle } from "react-icons/fi";
 import { FaCrown } from "react-icons/fa";
@@ -50,7 +50,7 @@ export default function HostDetailsContent({ hostId }) {
     </div>
   );
 
-  const host = data?.host || data;
+  const host = data?.data?.host || data?.data || data;
   const sub = host?.subscription;
   const events = host?.events || [];
   const plan = planMeta(sub?.planType);
@@ -174,9 +174,10 @@ export default function HostDetailsContent({ hostId }) {
       </div>
 
       {subOpen && (
-        <HostSubscriptionPopup
-          host={host}
-          onClose={() => { setSubOpen(false); router.refresh(); }}
+        <SubscriptionAssignmentPopup
+          entity={host}
+          entityType="host"
+          onClose={() => setSubOpen(false)}
         />
       )}
     </>

@@ -101,19 +101,46 @@ class GuestsService {
   }
 
   /**
-   * Get event guests for host
+   * Get event guests for host / admin / whitelabel tier.
+   *
    * @param {string} eventId
-   * @param {string} userId
+   * @param {Object} userContext - req.user shape: { _id, role, whitelabelId }
    * @param {Object} filters
    * @param {Object} options
    * @returns {Promise<{data: Array, pagination: Object}>}
    */
-  async getEventGuests(eventId, userId, filters = {}, options = {}) {
+  async getEventGuests(eventId, userContext, filters = {}, options = {}) {
     const { search, status } = filters;
     const { page = 1, limit = 50 } = options;
     const skip = (page - 1) * limit;
 
-    const event = await Event.findOne({ _id: eventId, host: userId });
+    const role = userContext?.role;
+    const userId = userContext?._id?.toString?.() || userContext?._id;
+    const whitelabelId = userContext?.whitelabelId
+      ? userContext.whitelabelId.toString?.() || userContext.whitelabelId
+      : null;
+
+    let eventQuery = { _id: eventId };
+
+    if (role === ROLES.SUPER_ADMIN) {
+      // no additional scope filter
+    } else if (
+      role === ROLES.ADMIN ||
+      role === ROLES.MODERATOR ||
+      role === ROLES.WHITELABEL_ADMIN ||
+      role === ROLES.WHITELABEL_MODERATOR
+    ) {
+      if (!whitelabelId) {
+        throw new ForbiddenError(
+          "Tenant configuration error. Contact a super admin to assign a whitelabel."
+        );
+      }
+      eventQuery.whitelabelId = whitelabelId;
+    } else {
+      eventQuery.host = userId;
+    }
+
+    const event = await Event.findOne(eventQuery);
     if (!event) {
       throw new NotFoundError('Event');
     }

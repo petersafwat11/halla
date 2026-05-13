@@ -8,28 +8,36 @@ const Buttons = ({
   onPrevious,
   isNextDisabled = false,
   showPrevious = true,
+  hidePrevious = false,
   isLoading = false,
   currentStep = 1,
   totalSteps = 5,
+  previousLabel,
+  nextLabel,
+  saveLabel,
+  savingLabel,
+  className = "",
 }) => {
   const { t } = useTranslation("createEvent");
 
   const getNextButtonText = () => {
-    if (isLoading) return t("saving");
-    if (currentStep === totalSteps) return t("save");
-    return t("next");
+    if (isLoading) return savingLabel || t("saving");
+    if (currentStep === totalSteps) return saveLabel || t("save");
+    return nextLabel || t("next");
   };
 
   return (
-    <div className={styles.buttons_container}>
-      <button
-        type="button"
-        className={`${styles.button} ${styles.button_secondary}`}
-        onClick={onPrevious}
-        disabled={!showPrevious}
-      >
-        {t("previous")}
-      </button>
+    <div className={`${styles.buttons_container} ${className}`.trim()}>
+      {!hidePrevious && (
+        <button
+          type="button"
+          className={`${styles.button} ${styles.button_secondary}`}
+          onClick={onPrevious}
+          disabled={!showPrevious}
+        >
+          {previousLabel || t("previous")}
+        </button>
+      )}
 
       <button
         type="button"

@@ -152,12 +152,12 @@ export function useAdminWhitelabelById(id) {
   });
 }
 
-export function useAdminPlans() {
+export function useAdminPlans(filters = {}) {
   const token = useAuthStore((state) => state.token);
   return useQuery({
-    queryKey: ['admin', 'plans'],
+    queryKey: ['admin', 'plans', filters],
     queryFn: async () => {
-      const response = await adminDashboardService.plans.getAllForAdmin(token);
+      const response = await adminDashboardService.plans.getAllForAdmin(token, filters);
       return response.data;
     },
     enabled: !!token,

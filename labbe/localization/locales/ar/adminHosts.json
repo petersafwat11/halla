@@ -10,6 +10,7 @@
     "searchPlaceholder": "البحث في المضيفين...",
     "filter": "التصفية",
     "export": "تصدير",
+    "selectRows": "الرجاء تحديد المضيفين للحذف",
     "columns": {
       "username": "اسم المستخدم",
       "email": "البريد الإلكتروني",
@@ -73,7 +74,9 @@
     "ended": "منتهي",
     "suspended": "معلق",
     "viewStats": "عرض الإحصائيات",
-    "noLocation": "غير محدد"
+    "noLocation": "غير محدد",
+    "contactInfo": "معلومات التواصل",
+    "joinDate": "تاريخ الانضمام"
   },
   "actions": {
     "createEvent": "إنشاء مناسبة",
@@ -82,6 +85,7 @@
     "suspend": "إيقاف",
     "noHostId": "معرف المضيف غير موجود",
     "confirmSuspend": "هل أنت متأكد من إيقاف هذا المضيف؟",
+    "confirmActivate": "هل أنت متأكد من تنشيط هذا المضيف؟",
     "suspendSuccess": "تم إيقاف المضيف بنجاح",
     "suspendError": "فشل في إيقاف المضيف",
     "activateSuccess": "تم تنشيط المضيف بنجاح",
@@ -94,6 +98,7 @@
   },
   "subscription": {
     "title": "معلومات الاشتراك",
+    "manageTitle": "إدارة اشتراك المضيف",
     "plan": "الخطة",
     "status": "حالة الاشتراك",
     "active": "نشط",
@@ -102,19 +107,21 @@
     "eventsLimit": "حد المناسبات",
     "guestsLimit": "حد الضيوف",
     "expiresAt": "ينتهي في",
-    "manageTitle": "إدارة اشتراك المضيف",
     "host": "المضيف",
+    "hostName": "اسم المضيف",
     "currentPlan": "الباقة الحالية",
     "currentPlanSelected": "الباقة الحالية",
     "loadingPlans": "جاري تحميل الباقات...",
     "noPlansAvailable": "لا توجد باقات",
     "selectPlan": "اختر الباقة",
+    "selectStatus": "اختر الحالة",
     "noPlanSelected": "الرجاء اختيار باقة",
     "noHostId": "معرف المضيف غير موجود",
     "samePlan": "المضيف على هذه الباقة بالفعل",
     "updateSuccess": "تم تحديث الاشتراك بنجاح",
     "updateError": "فشل في تحديث الاشتراك",
     "updating": "جاري التحديث...",
+    "update": "تحديث",
     "updatePlan": "تحديث الاشتراك",
     "cancel": "إلغاء",
     "planFamily": "نوع الباقة",
@@ -123,11 +130,74 @@
     "billingTypeLabel": "نوع الفوترة",
     "billingPerEvent": "لكل مناسبة",
     "billingMonthly": "شهري",
+    "billingCycle": "دورة الفوترة",
+    "monthly": "شهري",
+    "yearly": "سنوي",
     "currency": "ر.س",
     "invites": "دعوة",
     "guests": "ضيف",
     "events": "مناسبة",
     "unlimited": "غير محدود",
-    "free": "مجاني"
+    "free": "مجاني",
+    "retry": "إعادة المحاولة",
+    "errorLoadingPlans": "فشل في تحميل الباقات. حاول مرة أخرى.",
+    "statusActive": "نشط",
+    "statusExpired": "منتهي",
+    "statusCancelled": "ملغي"
+  },
+  "hosts": {
+    "viewDetails": "عرض التفاصيل",
+    "activate": "تنشيط",
+    "suspend": "إيقاف",
+    "subscription": "الاشتراك",
+    "delete": "حذف",
+    "bulkDelete": "حذف المحدد",
+    "title": "إدارة المضيفين",
+    "addHost": "إضافة مضيف جديد",
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "status": "الحالة",
+      "subscription": "الاشتراك",
+      "createdAt": "تاريخ التسجيل"
+    },
+    "filter": {
+      "all": "الكل",
+      "active": "نشط",
+      "suspended": "موقوف"
+    },
+    "stats": {
+      "total": "إجمالي المضيفين",
+      "allTime": "جميع الأوقات",
+      "active": "المضيفين النشطين",
+      "activeNow": "نشط الآن",
+      "pending": "قيد الانتظار",
+      "awaitingApproval": "في انتظار الموافقة",
+      "suspended": "موقوف",
+      "temporarilySuspended": "موقوف مؤقتاً"
+    },
+    "form": {
+      "name": "الاسم",
+      "namePlaceholder": "أدخل اسم المضيف",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "example@email.com",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "05xxxxxxxx",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "اتركه فارغاً للإنشاء التلقائي"
+    }
+  },
+  "eventStatus": {
+    "scheduled": "مجدول",
+    "live": "مباشر",
+    "completed": "منتهي",
+    "draft": "مسودة",
+    "untitled": "بلا عنوان"
+  },
+  "common": {
+    "cancel": "إلغاء",
+    "loading": "جاري التحميل...",
+    "add": "إضافة"
   }
 }

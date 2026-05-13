@@ -67,8 +67,8 @@ const LimitField = ({
                 type="checkbox"
                 checked={isUnlimited}
                 onChange={handleToggle}
-              />{" "}
-              {t("managePlans.editPopup.unlimited")}
+              />
+              <span>{t("managePlans.editPopup.unlimited")}</span>
             </label>
           </div>
         );

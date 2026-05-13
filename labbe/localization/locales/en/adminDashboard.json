@@ -1,7 +1,9 @@
 {
   "header": {
     "welcome": "Welcome, {{name}}! 👋",
-    "subtitle": "Here's a quick overview of your events and invitations"
+    "subtitle": "Here's a quick overview of your events and invitations",
+    "pageTitle": "Admin Dashboard",
+    "pageSubtitle": "Overview of your platform performance"
   },
   "stats": {
     "totalHosts": "Total Hosts",
@@ -50,6 +52,14 @@
     "tickets": {
       "title": "Open Tickets",
       "subtitle": "{{count}} resolved this period"
+    },
+    "whitelabel": {
+      "totalEvents": "Total Events",
+      "activeEventsCount": "{{count}} active",
+      "activeEvents": "Active Events",
+      "scheduledCount": "{{count}} scheduled",
+      "totalClients": "Total Clients",
+      "totalGuests": "Total Guests"
     }
   },
   "errors": {
@@ -58,6 +68,7 @@
   "charts": {
     "guestResponse": "Guest Response",
     "revenue": "Revenue",
+    "subscriptions": "Subscriptions",
     "tickets": "Tickets",
     "confirmed": "Confirmed",
     "declined": "Declined",
@@ -67,6 +78,7 @@
     "lite": "Lite",
     "pro": "Pro",
     "elite": "Elite",
+    "other": "Other",
     "resolved": "Resolved",
     "open": "Open",
     "thisperiod": "This Period",

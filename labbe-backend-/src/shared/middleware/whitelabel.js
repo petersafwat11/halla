@@ -46,23 +46,17 @@ exports.filterByWhitelabel = catchAsync(async (req, res, next) => {
     return next();
   }
 
-  // Platform ADMIN and MODERATOR are scoped to their assigned whitelabel,
-  // identical to WHITELABEL_ADMIN/WHITELABEL_MODERATOR. Cross-tenant access
-  // is reserved for SUPER_ADMIN. A missing whitelabelId is a configuration
-  // error and must fail closed, not silently downgrade to a null filter
-  // (which previously matched every platform-level document — TENANT-F01).
+  // Platform ADMIN and MODERATOR — if assigned to a whitelabel they are
+  // scoped to it. Without a whitelabelId they are platform-wide and see
+  // all data (same as SUPER_ADMIN with whitelabelId: null, which signals
+  // "no tenant filter" to downstream consumers like getAllEvents).
   if ([ROLES.ADMIN, ROLES.MODERATOR].includes(userRole)) {
-    if (!userWhitelabelId) {
-      return next(
-        new AppError(
-          "Admin tenant configuration error. Contact a super admin to assign a whitelabel.",
-          500
-        )
-      );
+    if (userWhitelabelId) {
+      req.whitelabelFilter = { whitelabelId: userWhitelabelId };
+      req.currentWhitelabelId = userWhitelabelId;
+    } else {
+      req.whitelabelFilter = { whitelabelId: null };
     }
-
-    req.whitelabelFilter = { whitelabelId: userWhitelabelId };
-    req.currentWhitelabelId = userWhitelabelId;
     return next();
   }
 

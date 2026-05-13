@@ -1,6 +1,7 @@
 {
   "signupForm": {
     "step": "Step",
+    "submitting": "Submitting...",
     "personalInfo": {
       "title": "Personal Information",
       "name": {
@@ -122,6 +123,7 @@
           "emailRequired": "Email is required",
           "emailInvalid": "Please enter a valid email address",
           "passwordRequired": "Password must be at least 8 characters",
+          "passwordComplexity": "Password must contain uppercase, lowercase, and number",
           "passwordConfirmRequired": "Please confirm your password",
           "passwordsDoNotMatch": "Passwords do not match"
         }
@@ -369,11 +371,27 @@
           "placeholder": "Enter city name"
         },
         "coverageArea": {
+          "title": "Coverage Area",
           "options": [
             { "value": "local", "label": "Local in Saudi Arabia" },
             { "value": "regional", "label": "Regional" },
             { "value": "specificAreas", "label": "Specific Areas" }
           ]
+        },
+        "location": {
+          "allCities": "All Cities",
+          "region": "Region",
+          "loading": "Loading...",
+          "selectRegion": "Select Region",
+          "city": "City",
+          "districts": "Districts",
+          "coverageLabel": "Coverage:",
+          "entireRegion": "Entire Region",
+          "entireCity": "Entire City",
+          "selectedDistricts": "{{count}} district selected",
+          "allDistricts": "All Districts",
+          "districtsSelected": "{{count}} districts selected",
+          "searchDistrict": "Search districts..."
         },
         "otherInfo": {
           "title": "Additional Information"
@@ -561,6 +579,16 @@
       "otherLinksAndData": {
         "title": "Additional Links & Data",
         "description": "Share your social media links and additional information.",
+        "socialLinksTitle": "Social Media Links",
+        "filesAndDocumentsTitle": "Files and Documents",
+        "facebookLink": {
+          "label": "Facebook Link",
+          "placeholder": "Enter Facebook profile link"
+        },
+        "tiktokLink": {
+          "label": "TikTok Link",
+          "placeholder": "Enter TikTok profile link"
+        },
         "instagramLink": {
           "label": "Instagram Link",
           "placeholder": "Enter Instagram profile link"
@@ -594,7 +622,10 @@
         "title": "Application Summary",
         "description": "Please review all the information you've provided before submitting your application.",
         "submit": "Submit Application"
-      }
+      },
+      "submitting": "Submitting...",
+      "successMessage": "Account created successfully",
+      "errorMessage": "An error occurred while creating your account. Please try again."
     },
     "whiteLabel": {
       "title": "Create Your Platform with Your Identity",
@@ -611,6 +642,7 @@
       "identity": {
         "title": "Visual Identity",
         "description": "Enter your brand details accurately to be displayed on your platform.",
+        "facilityInfo": "Facility Information",
         "arabicName": {
           "label": "Organization or Brand Name (in Arabic)",
           "placeholder": "Enter organization name in Arabic"
@@ -688,7 +720,7 @@
         "description": "Customize your platform access and specify domain and language preferences.",
         "fields": {
           "email": {
-            "label": "Official Email for Admin Account",
+            "label": "Email",
             "placeholder": "Enter email address",
             "required": "Email is required",
             "invalid": "Please enter a valid email address"
@@ -878,6 +910,7 @@
         "orderSummary": "Order Summary",
         "planLine": "{{name}} Plan",
         "setupFee": "One-time Setup Fee",
+        "included": "Included",
         "total": "Total",
         "currency": "SAR",
         "billingNote": "Our team will contact you after registration to complete payment and discuss your needs."
@@ -1001,8 +1034,22 @@
         "selectPlan": "Select Plan",
         "selected": "✓ Selected",
         "features": "Features",
-        "compensationMessages": "compensation messages"
-      }
+        "compensationMessages": "compensation messages",
+        "perEventLimit": "{{invites}} invites / event · valid 90 days",
+        "poolLimit": "{{pool}} invite pool · unlimited events · {{days}} days",
+        "selectInvites": "Select Invites",
+        "inviteUnit": "invite",
+        "pricePerEvent": "per event",
+        "pricePerQuarter": "per quarter",
+        "pricePerYear": "per year",
+        "validDays90": "Valid 90 days",
+        "validDays365": "Valid 365 days",
+        "poolLabel": "Invite pool",
+        "featuresTitle": "Features",
+        "setupFeeIncluded": "Setup fee included"
+      },
+      "success": "Your white-label platform has been created successfully",
+      "errorMessage": "An error occurred while creating your platform. Please try again."
     },
     "host": {
       "account": {

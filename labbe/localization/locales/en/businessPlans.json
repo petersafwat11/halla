@@ -30,6 +30,23 @@
     "successMessage": "Subscribed successfully!",
     "failedMessage": "Failed to subscribe",
     "loading": "Loading plans...",
-    "error": "Failed to load plans. Please try again."
+    "error": "Failed to load plans. Please try again.",
+    "retry": "Retry",
+    "perEventPlans": "Per Event",
+    "quarterlyPlans": "3-Month Pool",
+    "annualPlans": "Annual Pool",
+    "selectInvites": "Select number of invites",
+    "inviteUnit": "Invites",
+    "currency": "SAR",
+    "pricePerEvent": "/event",
+    "pricePerQuarter": "/quarter",
+    "pricePerYear": "/year",
+    "validDays90": "Valid for 90 days",
+    "validDays365": "Valid for 365 days",
+    "poolLabel": "Pool",
+    "setupFeeIncluded": "Setup fee included",
+    "featuresTitle": "Features",
+    "selectPlan": "Select Plan",
+    "selected": "Selected"
   }
 }

@@ -11,12 +11,12 @@ import { FiEye, FiCheckCircle, FiSlash, FiCreditCard, FiTrash2 } from "react-ico
 import Table from "@/ui/commen/new-table/Table";
 import { hostsAPI } from "@/services/adminDashboard";
 import AddHostPopup from "./AddHostPopup";
-import HostSubscriptionPopup from "./HostSubscriptionPopup";
+import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./HostsTable.module.css";
 
 export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPopup: externalSetShowAdd }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminHosts");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { canCreate, canUpdate, canDelete } = usePageAccess("hosts");
@@ -107,7 +107,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
         icon: <FiCreditCard size={16} />,
         text: t("hosts.subscription", "الاشتراك"),
         onClick: (r) => {
-          const host = (data?.hosts || []).find(h => (h.id || h._id) === r.id);
+          const host = (data?.data?.hosts || []).find(h => (h.id || h._id) === r.id);
           if (host) handleSubscriptionClick({ ...r, ...host });
         },
       });
@@ -177,7 +177,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
     return value;
   };
 
-  const tableData = (data?.hosts || []).map((host) => ({
+  const tableData = (data?.data?.hosts || []).map((host) => ({
     id: host.id || host._id,
     name: host.name || host.username || "-",
     email: host.email || "-",
@@ -216,8 +216,8 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
           ]}
           pagination={{
             currentPage: parseInt(filters.page),
-            totalPages: data?.pagination?.pages || 1,
-            totalItems: data?.pagination?.total || 0,
+            totalPages: data?.data?.pagination?.pages || 1,
+            totalItems: data?.data?.pagination?.total || 0,
             onPageChange: (page) => {
               const params = new URLSearchParams(searchParams);
               params.set("page", page);
@@ -232,8 +232,9 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
       )}
 
       {showSubscriptionPopup && selectedHost && (
-        <HostSubscriptionPopup
-          host={selectedHost}
+        <SubscriptionAssignmentPopup
+          entity={selectedHost}
+          entityType="host"
           onClose={() => {
             setShowSubscriptionPopup(false);
             setSelectedHost(null);

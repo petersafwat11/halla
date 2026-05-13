@@ -37,6 +37,16 @@
     },
     "charts": {
       "subscriptions": "Subscriptions by Plan",
+      "monthlyEvents": "Monthly Events",
+      "eventsByStatus": "Events by Status",
+      "guestResponse": "Guest Response",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "open": "Open",
+      "tickets": "Tickets",
+      "other": "Other",
       "noData": "No data available"
     },
     "recentHosts": {
@@ -75,6 +85,14 @@
     "tickets": {
       "title": "Open Tickets",
       "subtitle": "{{count}} resolved this period"
+    },
+    "whitelabel": {
+      "totalEvents": "Total Events",
+      "activeEvents": "Active Events",
+      "totalClients": "Total Clients",
+      "totalGuests": "Total Guests",
+      "activeEventsCount": "{{count}} active",
+      "scheduledCount": "{{count}} scheduled"
     }
   },
   "hosts": {
@@ -592,11 +610,26 @@
       "preview": "Preview",
       "successOk": "OK",
       "steps": {
-        "1": { "title": "Event Details", "description": "Enter the event details" },
-        "2": { "title": "Guests & Supervisors", "description": "Add the guest list and supervisors" },
-        "3": { "title": "Invitation Design", "description": "Customize the invitation template" },
-        "4": { "title": "WhatsApp Template", "description": "Choose a Meta-approved WhatsApp template" },
-        "5": { "title": "Message & Replies", "description": "Write the invitation copy and auto-replies" }
+        "1": {
+          "title": "Event Details",
+          "description": "Enter the event details"
+        },
+        "2": {
+          "title": "Guests & Supervisors",
+          "description": "Add the guest list and supervisors"
+        },
+        "3": {
+          "title": "Invitation Design",
+          "description": "Customize the invitation template"
+        },
+        "4": {
+          "title": "WhatsApp Template",
+          "description": "Choose a Meta-approved WhatsApp template"
+        },
+        "5": {
+          "title": "Message & Replies",
+          "description": "Write the invitation copy and auto-replies"
+        }
       }
     }
   },
@@ -776,9 +809,15 @@
       "capture": "Capture",
       "void": "Void"
     },
-    "refund": { "success": "Refund issued" },
-    "capture": { "success": "Payment captured" },
-    "void": { "success": "Payment voided" }
+    "refund": {
+      "success": "Refund issued"
+    },
+    "capture": {
+      "success": "Payment captured"
+    },
+    "void": {
+      "success": "Payment voided"
+    }
   },
   "paymentReturn": {
     "title": "Payment status",
@@ -872,7 +911,8 @@
     "planSelection": {
       "pro": "Pro",
       "elite": "Elite"
-    }
+    },
+    "city": "City"
   },
   "whitelabels": {
     "title": "Whitelabels",
@@ -906,6 +946,10 @@
       "businessPlan": "Business Plan",
       "statusLabel": "Status",
       "loadingPlans": "Loading Plans...",
+      "errorLoadingPlans": "Failed to load plans",
+      "retry": "Retry",
+      "selectPlan": "Select Business Plan",
+      "validation": "Please select both a plan and status",
       "noPlansAvailable": "No plans available",
       "noPlanSelected": "Please select a business plan",
       "updated": "Subscription updated successfully",
@@ -920,7 +964,9 @@
         "event": "Event Plans",
         "quarterly": "Quarterly Pool",
         "annual": "Annual Pool"
-      }
+      },
+      "invitesPool": "{{count}} invites (pool)",
+      "invitesPerEvent": "{{count}} invites/event"
     },
     "empty": {
       "title": "No Whitelabels Found",

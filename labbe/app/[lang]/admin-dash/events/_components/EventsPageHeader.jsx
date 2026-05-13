@@ -8,7 +8,7 @@ import AdminPageHeader from "../../_components/AdminPageHeader";
 export default function EventsPageHeader() {
   const router = useRouter();
   const { lang } = useParams();
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminEvents");
   const { canCreate } = usePageAccess("events");
 
   return (

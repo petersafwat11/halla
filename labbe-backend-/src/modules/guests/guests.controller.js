@@ -50,7 +50,7 @@ exports.getEventGuests = catchAsync(async (req, res) => {
 
   const result = await guestsService.getEventGuests(
     req.params.eventId,
-    req.user._id,
+    req.user,
     filters,
     options
   );

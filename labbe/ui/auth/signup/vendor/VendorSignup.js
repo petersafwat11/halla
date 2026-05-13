@@ -26,6 +26,7 @@ import { toastUtils } from "@/utils/toastUtils";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 import ErrorDisplay from "@/ui/commen/ErrorDisplay";
 import { getAuthErrorMessage, handleError } from "@/services/errorHandlingService";
+import Buttons from "@/app/[lang]/host/create-event/_components/buttons/Buttons";
 
 const VendorSignup = () => {
   const { t } = useTranslation("signup");
@@ -224,30 +225,20 @@ const VendorSignup = () => {
                     />
                   )}
                   <div className={styles.buttons}>
-                    {step > 1 && (
-                      <button
-                        className={styles.back_button}
-                        type="button"
-                        onClick={goToPreviousStep}
-                        disabled={isSubmitting}
-                      >
-                        {t("signupForm.initialForm.buttons.backButton")}
-                      </button>
-                    )}
-                    <button
-                      className={`${styles.confirm_button} ${styles.active}`}
-                      type="button"
-                      onClick={
-                        step === steps.length ? onFinalSubmit : handleNext
-                      }
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting
-                        ? t("signupForm.vendor.submitting")
-                        : step === steps.length
-                          ? t("signupForm.vendor.summary.submit")
-                          : t("signupForm.initialForm.buttons.continueButton")}
-                    </button>
+                    <Buttons
+                      onNext={step === steps.length ? onFinalSubmit : handleNext}
+                      onPrevious={goToPreviousStep}
+                      isNextDisabled={isSubmitting}
+                      showPrevious={step > 1}
+                      hidePrevious={step === 1}
+                      isLoading={isSubmitting}
+                      currentStep={step}
+                      totalSteps={steps.length}
+                      previousLabel={t("signupForm.initialForm.buttons.backButton")}
+                      nextLabel={t("signupForm.initialForm.buttons.continueButton")}
+                      saveLabel={t("signupForm.vendor.summary.submit")}
+                      savingLabel={t("signupForm.vendor.submitting")}
+                    />
                   </div>
                 </div>
               </div>

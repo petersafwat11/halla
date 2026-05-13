@@ -17,8 +17,7 @@ import PlanPricingSection from "./edit-plan/PlanPricingSection";
 import PlanLimitsSection from "./edit-plan/PlanLimitsSection";
 import PlanFeatureTogglesSection from "./edit-plan/PlanFeatureTogglesSection";
 import PlanFeatureNumericsSection from "./edit-plan/PlanFeatureNumericsSection";
-import PlanDisplaySection from "./edit-plan/PlanDisplaySection";
-import PlanVisibilitySection from "./edit-plan/PlanVisibilitySection";
+import PlanPublicationSection from "./edit-plan/PlanPublicationSection";
 
 const buildDefaults = (plan) => ({
   nameAr: plan?.nameAr ?? "",
@@ -132,8 +131,7 @@ const EditPlanPopup = ({ plan, onClose, onSuccess }) => {
           <PlanLimitsSection />
           <PlanFeatureTogglesSection />
           <PlanFeatureNumericsSection />
-          <PlanDisplaySection />
-          <PlanVisibilitySection />
+          <PlanPublicationSection />
 
           <div className={styles.footer}>
             <button

@@ -11,7 +11,7 @@ import { FaCalendarAlt, FaCheckCircle, FaClock, FaTimesCircle } from "react-icon
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
 export default function EventStats() {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminEvents");
   const searchParams = useSearchParams();
 
   const filters = useMemo(() => ({

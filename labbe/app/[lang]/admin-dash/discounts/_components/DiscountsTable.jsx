@@ -42,7 +42,7 @@ const STATUS_CLASS = {
 };
 
 export default function DiscountsTable({ onEdit }) {
-  const { t, i18n } = useTranslation("adminDashboard");
+  const { t, i18n } = useTranslation("adminDiscounts");
   const router = useRouter();
   const searchParams = useSearchParams();
   const filters = buildFilters(searchParams);

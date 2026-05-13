@@ -1,115 +1,132 @@
-.container,
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  background: #fff;
+  padding: 2.4rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.6rem;
+    gap: 1.6rem;
+  }
+}
+
 .sections {
   display: flex;
   flex-direction: column;
-  gap: 3.2rem;
-  background: #fff;
-  padding: 2.4rem;
+  gap: 2.4rem;
 }
 
-@media screen and (max-width: 768px) {
-  .container,
+@media (max-width: 768px) {
   .sections {
-    gap: 2.4rem;
-    padding: 2rem;
+    gap: 1.6rem;
   }
 }
 
-@media screen and (max-width: 480px) {
-  .container,
-  .sections {
-    gap: 2rem;
-    padding: 1.6rem;
-  }
-}
-
+/* ─── Summary Card ───────────────────────────────────────────────────────── */
 .section {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  padding: 2.4rem;
+  gap: 1.6rem;
+  padding: 2rem;
   border-radius: 1.2rem;
   border: 1px solid #f0f0f0;
   background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-@media screen and (max-width: 768px) {
-  .section {
-    padding: 2rem;
-    gap: 1.6rem;
-  }
-}
-
-@media screen and (max-width: 480px) {
+@media (max-width: 768px) {
   .section {
     padding: 1.6rem;
+    gap: 1.2rem;
   }
 }
 
-.options {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-@media screen and (max-width: 768px) {
-  .options {
-    gap: 1.6rem;
+@media (max-width: 480px) {
+  .section {
+    padding: 1.2rem;
   }
 }
 
-.row {
+/* ─── Summary Grid ───────────────────────────────────────────────────────── */
+.summaryGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
 }
 
-@media screen and (max-width: 768px) {
-  .row {
-    gap: 1.6rem;
-  }
-}
-
-@media screen and (max-width: 600px) {
-  .row {
+@media (max-width: 640px) {
+  .summaryGrid {
     grid-template-columns: 1fr;
   }
 }
 
-.summary_content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.6rem;
-}
-
-.summary_item {
+.summaryRow {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 1.2rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  gap: 1.2rem;
+  padding: 1.2rem 1.6rem;
+  border-bottom: 1px solid #f5f5f5;
 }
 
-.summary_item:last-child {
+.summaryGrid .summaryRow:nth-child(odd) {
+  border-inline-end: 1px solid #f5f5f5;
+}
+
+@media (max-width: 640px) {
+  .summaryGrid .summaryRow:nth-child(odd) {
+    border-inline-end: none;
+  }
+}
+
+.summaryRow:last-child,
+.summaryGrid .summaryRow:nth-last-child(-n+2):nth-child(odd) ~ .summaryRow:nth-last-child(-n+2) {
   border-bottom: none;
 }
 
-.summary_label {
+.summaryLabel {
   font-weight: 600;
-  color: #333;
-  min-width: min(200px, 40%);
-  margin-right: 1.6rem;
-  font-size: clamp(1.4rem, 2.8vw, 1.6rem);
+  color: #555;
+  font-size: 1.35rem;
+  line-height: 1.5;
+  flex-shrink: 0;
+  min-width: 12rem;
 }
 
-.summary_value {
+.summaryValue {
   flex: 1;
-  color: #666;
-  text-align: right;
+  color: #222;
+  text-align: end;
   word-break: break-word;
-  font-size: clamp(1.4rem, 2.8vw, 1.6rem);
+  font-size: 1.35rem;
+  line-height: 1.5;
 }
 
+@media (max-width: 640px) {
+  .summaryRow {
+    padding: 1rem 0.8rem;
+  }
+  .summaryLabel {
+    min-width: auto;
+    font-size: 1.25rem;
+  }
+  .summaryValue {
+    font-size: 1.25rem;
+  }
+}
+
+/* ─── File / Logo preview ────────────────────────────────────────────────── */
+.logo_preview {
+  max-width: 8rem;
+  max-height: 4rem;
+  object-fit: contain;
+  border-radius: 0.4rem;
+}
+
+/* ─── Color preview ──────────────────────────────────────────────────────── */
 .color_preview {
   display: flex;
   align-items: center;
@@ -122,44 +139,4 @@
   height: 2rem;
   border-radius: 0.4rem;
   border: 1px solid #ddd;
-}
-
-.logo_preview {
-  max-width: 8rem;
-  max-height: 4rem;
-  object-fit: contain;
-  border-radius: 0.4rem;
-}
-
-@media screen and (max-width: 768px) {
-  .summary_item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.8rem;
-  }
-
-  .summary_label {
-    min-width: auto;
-    margin-right: 0;
-  }
-
-  .summary_value {
-    text-align: left;
-    width: 100%;
-  }
-
-  .color_preview {
-    justify-content: flex-start;
-  }
-}
-
-@media screen and (max-width: 899px) {
-  .sections {
-    padding: 2rem 1.6rem;
-  }
-  
-  .section {
-    border-radius: 1.2rem;
-    border: 1px solid #f0f0f0;
-  }
 }

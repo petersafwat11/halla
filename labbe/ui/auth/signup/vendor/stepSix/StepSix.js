@@ -21,7 +21,7 @@ const StepSix = ({ goToPreviousStep }) => {
       <div className={styles.sections}>
         <SummarySection
           title={t("signupForm.vendor.identity.title")}
-          icon="/svg/auth/user.svg"
+            icon="/svg/auth/info-circle.svg"
           data={vendorData.identity}
           fields={[
             {
@@ -57,7 +57,7 @@ const StepSix = ({ goToPreviousStep }) => {
 
         <SummarySection
           title={t("signupForm.vendor.serviceData.title")}
-          icon="/svg/auth/direct-send.svg"
+          icon="/svg/auth/setting-2.svg"
           data={vendorData.serviceData}
           fields={[
             {
@@ -86,9 +86,7 @@ const StepSix = ({ goToPreviousStep }) => {
               type: "array",
               options: t(
                 "signupForm.vendor.serviceData.eventPlanning.options",
-                {
-                  returnObjects: true,
-                }
+                { returnObjects: true }
               ),
             },
             {
@@ -97,9 +95,7 @@ const StepSix = ({ goToPreviousStep }) => {
               type: "array",
               options: t(
                 "signupForm.vendor.serviceData.mediaProduction.options",
-                {
-                  returnObjects: true,
-                }
+                { returnObjects: true }
               ),
             },
             {
@@ -108,9 +104,7 @@ const StepSix = ({ goToPreviousStep }) => {
               type: "array",
               options: t(
                 "signupForm.vendor.serviceData.giftsAndGiveaways.options",
-                {
-                  returnObjects: true,
-                }
+                { returnObjects: true }
               ),
             },
             {
@@ -119,9 +113,7 @@ const StepSix = ({ goToPreviousStep }) => {
               type: "array",
               options: t(
                 "signupForm.vendor.serviceData.foodAndBeverages.options",
-                {
-                  returnObjects: true,
-                }
+                { returnObjects: true }
               ),
             },
             {
@@ -130,9 +122,7 @@ const StepSix = ({ goToPreviousStep }) => {
               type: "array",
               options: t(
                 "signupForm.vendor.serviceData.beautyAndFashion.options",
-                {
-                  returnObjects: true,
-                }
+                { returnObjects: true }
               ),
             },
             {
@@ -143,9 +133,7 @@ const StepSix = ({ goToPreviousStep }) => {
               type: "array",
               options: t(
                 "signupForm.vendor.serviceData.logisticsAndDelivery.options",
-                {
-                  returnObjects: true,
-                }
+                { returnObjects: true }
               ),
             },
             {
@@ -154,9 +142,7 @@ const StepSix = ({ goToPreviousStep }) => {
               type: "array",
               options: t(
                 "signupForm.vendor.serviceData.corporateServices.options",
-                {
-                  returnObjects: true,
-                }
+                { returnObjects: true }
               ),
             },
           ]}
@@ -164,7 +150,7 @@ const StepSix = ({ goToPreviousStep }) => {
 
         <SummarySection
           title={t("signupForm.vendor.samplesAndPackages.title")}
-          icon="/svg/auth/gallery.svg"
+          icon="/svg/auth/document-copy.svg"
           data={vendorData.samplesAndPackages}
           fields={[
             {
@@ -192,102 +178,23 @@ const StepSix = ({ goToPreviousStep }) => {
         />
 
         <SummarySection
-          title={t("signupForm.vendor.paymentData.title")}
-          icon="/svg/auth/card-2.svg"
-          data={vendorData.paymentData}
-          fields={[
-            {
-              key: "payment_type",
-              label: t(
-                "signupForm.vendor.paymentData.refundPolicy.options.fullRefund.label"
-              ),
-              type: "text",
-            },
-            {
-              key: "paymentOptions",
-              label: t("signupForm.vendor.paymentData.paymentMethods.title"),
-              type: "array",
-            },
-            {
-              key: "termsForRefund",
-              label: t(
-                "signupForm.vendor.paymentData.refundPolicy.terms.label"
-              ),
-              type: "text",
-            },
-          ]}
-        />
-
-        <SummarySection
           title={t("signupForm.vendor.commercialVerification.title")}
-          icon="/svg/auth/verify.svg"
+          icon="/svg/auth/building-1.svg"
           data={vendorData.commercialVerification}
           fields={[
             {
-              key: "company.name",
+              key: "commercialRecordNumber",
               label: t(
-                "signupForm.vendor.paymentData.company.fields.name.label"
+                "signupForm.vendor.commercialVerification.commercialRecord.label"
               ),
               type: "text",
             },
             {
-              key: "company.license",
-              label: t("z.vendor.paymentData.company.fields.license.label"),
-              type: "text",
-            },
-            {
-              key: "company.tax",
+              key: "nationalId",
               label: t(
-                "signupForm.vendor.paymentData.company.fields.tax.label"
+                "signupForm.vendor.commercialVerification.nationalId.label"
               ),
               type: "text",
-            },
-            {
-              key: "address.city",
-              label: t(
-                "signupForm.vendor.paymentData.address.fields.city.label"
-              ),
-              type: "text",
-            },
-            {
-              key: "address.neighborhood",
-              label: t(
-                "signupForm.vendor.paymentData.address.fields.neighborhood.label"
-              ),
-              type: "text",
-            },
-            {
-              key: "address.street",
-              label: t(
-                "signupForm.vendor.paymentData.address.fields.street.label"
-              ),
-              type: "text",
-            },
-            {
-              key: "address.buildingNumber",
-              label: t(
-                "signupForm.vendor.paymentData.address.fields.buildingNumber.label"
-              ),
-              type: "text",
-            },
-            {
-              key: "address.additionalNumber",
-              label: t(
-                "signupForm.vendor.paymentData.address.fields.additionalNumber.label"
-              ),
-              type: "text",
-            },
-            {
-              key: "address.postalCode",
-              label: t(
-                "signupForm.vendor.paymentData.address.fields.postalCode.label"
-              ),
-              type: "text",
-            },
-            {
-              key: "paymentMethods",
-              label: t("signupForm.vendor.paymentData.paymentMethods.title"),
-              type: "array",
             },
           ]}
         />
@@ -305,25 +212,31 @@ const StepSix = ({ goToPreviousStep }) => {
               type: "text",
             },
             {
-              key: "linkedinLink",
+              key: "facebookLink",
               label: t(
-                "signupForm.vendor.otherLinksAndData.linkedinLink.label"
+                "signupForm.vendor.otherLinksAndData.facebookLink.label"
+              ),
+              type: "text",
+            },
+            {
+              key: "tiktokLink",
+              label: t(
+                "signupForm.vendor.otherLinksAndData.tiktokLink.label"
               ),
               type: "text",
             },
             {
               key: "websiteLink",
-              label: t("signupForm.vendor.otherLinksAndData.websiteLink.label"),
+              label: t(
+                "signupForm.vendor.otherLinksAndData.websiteLink.label"
+              ),
               type: "text",
             },
             {
-              key: "cv",
-              label: t("signupForm.vendor.otherLinksAndData.cv.label"),
-              type: "file",
-            },
-            {
               key: "profileFile",
-              label: t("signupForm.vendor.otherLinksAndData.profileFile.label"),
+              label: t(
+                "signupForm.vendor.otherLinksAndData.profileFile.label"
+              ),
               type: "file",
             },
           ]}

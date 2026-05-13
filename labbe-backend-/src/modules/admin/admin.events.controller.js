@@ -9,6 +9,7 @@ const { sendSuccess } = require('../../shared/utils/responseHelper');
 const { ValidationError } = require('../../shared/errors');
 const { generateExcel } = require('../../shared/utils/excelExport');
 const { getWhitelabelIdFromFilter } = require('./admin.controller.shared');
+const { PLATFORM_ADMIN_ROLES } = require('../../shared/constants/roles');
 
 exports.createEventForHost = catchAsync(async (req, res) => {
   // Parse FormData JSON fields (same pattern as events.controller.createEvent)
@@ -30,9 +31,14 @@ exports.createEventForHost = catchAsync(async (req, res) => {
   // Resolve target user
   let targetUserId = req.body.targetUserId;
   const createForSelf = req.body.createForSelf === 'true' || req.body.createForSelf === true;
+  let skipSubscriptionCheck = false;
 
   if (createForSelf) {
     targetUserId = req.user._id;
+    // Platform admins creating for themselves have unlimited access
+    if (PLATFORM_ADMIN_ROLES.includes(req.user.role) && !req.user.whitelabelId) {
+      skipSubscriptionCheck = true;
+    }
   } else if (req.body.phoneNumber && !targetUserId) {
     const result = await adminService.findOrCreateHost({
       phoneNumber: req.body.phoneNumber,
@@ -49,6 +55,8 @@ exports.createEventForHost = catchAsync(async (req, res) => {
     userRole: req.user.role,
     file: req.file,
     whitelabelId: req.body.whitelabelId || getWhitelabelIdFromFilter(req),
+    skipSubscriptionCheck,
+    adminId: req.user._id,
   };
 
   const result = await adminService.createEventForHost(eventData, guestList, context);

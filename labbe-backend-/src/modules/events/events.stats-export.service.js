@@ -149,7 +149,9 @@ module.exports = {
     const event = await Event.findOne(query).populate("host", "username email phoneNumber name");
     if (!event) throw new NotFoundError("Event");
 
-    const guests = await Guest.find({ event: eventId });
+    const guests = await Guest.find({ event: eventId })
+      .populate("addedBy", "username name")
+      .lean();
 
     const eventObj = event.toObject ? event.toObject() : event;
     const host = eventObj.host || null;
@@ -174,14 +176,14 @@ module.exports = {
           }
         : null,
       guests: guests.map((g) => {
-        const guestObj = g.toObject ? g.toObject() : g;
+        const guestObj = g;
         return {
-          guestId: guestObj._id,
+          id: guestObj._id,
           name: guestObj.name || "",
           phone: guestObj.phone || "",
           status: guestObj.status || "invited",
           addedBy: guestObj.addedBy || "",
-          respondAt: guestObj.rsvp?.respondedAt || null,
+          responseTime: guestObj.rsvp?.respondedAt || null,
         };
       }),
       staff: eventObj.staffList || [],

@@ -29,7 +29,7 @@ const ROLES_THAT_NEED_TENANT = new Set([
 ]);
 
 export default function AddModeratorPopup({ onClose }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t } = useTranslation("adminModerators");
   const createModerator = useAdminModeratorMutation("create");
   const { user } = useAuthStore();
   const isSuperAdmin = user?.role === "super_admin";

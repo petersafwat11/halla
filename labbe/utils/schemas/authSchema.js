@@ -170,6 +170,10 @@ export const hostProfileCompletionSchema = (t) =>
         .min(
           8,
           t("signupForm.hostSignup.errors.passwordMinLength")
+        )
+        .regex(
+          passwordRegex,
+          t("signupForm.hostSignup.errors.passwordComplexity")
         ),
       passwordConfirm: z
         .string()
@@ -231,7 +235,11 @@ export const vendorSignupSchema = (t) =>
           .email(t("signupForm.vendor.identity.errors.emailInvalid")),
         password: z
           .string()
-          .min(8, t("signupForm.vendor.identity.errors.passwordRequired")),
+          .min(8, t("signupForm.vendor.identity.errors.passwordRequired"))
+          .regex(
+            passwordRegex,
+            t("signupForm.vendor.identity.errors.passwordComplexity")
+          ),
         passwordConfirm: z
           .string()
           .min(

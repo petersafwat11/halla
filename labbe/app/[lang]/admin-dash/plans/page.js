@@ -1,21 +1,174 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { FaSpinner, FaExclamationTriangle, FaCheck } from "react-icons/fa";
 import styles from "./page.module.css";
 import useAuthStore from "@/stores/authStore";
 import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
 import { useCheckout } from "@/hooks/reactQueryHooks/useCheckout";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
+import { getLocalized } from "@/utils/locale";
 import Summary from "@/app/[lang]/host/plans/summary/Summary";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import CurrentPlanCard from "./_components/CurrentPlanCard";
-import PlanCard from "./_components/PlanCard";
+
+const formatPrice = (n) => (n || 0).toLocaleString();
+
+function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSelect, onSubscribe, t, i18n }) {
+  const selectedPlan = plans.find((p) => p.code === selectedCode) || plans[0];
+  const features = selectedPlan?.featuresArray || [];
+
+  return (
+    <div className={styles.hostCard}>
+      <div>
+        <div className={styles.guestLabel}>{t("plansPage.selectInvites")}</div>
+        <div className={styles.guestTrack}>
+          {plans.map((plan) => (
+            <button
+              key={plan.code}
+              type="button"
+              className={`${styles.guestBtn} ${selectedCode === plan.code ? styles.guestBtnActive : ""}`}
+              onClick={() => onSelect(plan.code)}
+            >
+              <span className={styles.guestNum}>
+                {plan.limits?.maxInvitesPerEvent || 0}
+              </span>
+              <span className={styles.guestUnit}>{t("plansPage.inviteUnit")}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.hostPrice}>
+        <span className={styles.hostPriceNum}>
+          {formatPrice(selectedPlan?.pricing?.oneTime)}
+        </span>
+        <span className={styles.hostPriceCur}>{t("plansPage.currency")}</span>
+        <span className={styles.hostPricePer}>{t("plansPage.pricePerEvent")}</span>
+      </div>
+
+      <div className={styles.managedBox}>
+        <span className={styles.managedTitle}>{t("plansPage.validDays90")}</span>
+      </div>
+
+      {features.length > 0 && (
+        <div className={styles.featSection}>
+          <div className={styles.featTitle}>{t("plansPage.featuresTitle")}</div>
+          <div className={styles.featGrid}>
+            {features.map((f, idx) => (
+              <div key={idx} className={styles.featItem}>
+                <span className={styles.featCheck}>✓</span>
+                <span>{getLocalized(f, "label", i18n.language)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        className={`${styles.ctaBtn} ${isCurrent ? styles.ctaBtnDisabled : styles.ctaBtnActive}`}
+        onClick={() => !isCurrent && onSubscribe && onSubscribe()}
+        disabled={isCurrent || isSubscribing}
+      >
+        {isSubscribing
+          ? t("plansPage.planCard.subscribing")
+          : isCurrent
+            ? t("plansPage.planCard.currentPlan")
+            : t("plansPage.planCard.subscribeNow")}
+      </button>
+    </div>
+  );
+}
+
+function PoolPlanCard({ plan, type, isSelected, isCurrent, isSubscribing, onSelect, onSubscribe, t, i18n }) {
+  const features = plan?.featuresArray || [];
+  const pool = plan.limits?.invitePool || 0;
+
+  return (
+    <div
+      className={`${styles.planCard} ${isSelected ? styles.planCardSelected : ""}`}
+      onClick={() => !isCurrent && onSelect(plan.code)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if ((e.key === "Enter" || e.key === " ") && !isCurrent) onSelect(plan.code);
+      }}
+    >
+      {isSelected && (
+        <div className={styles.selectedBadge}>
+          <FaCheck />
+          <span>{t("plansPage.selected")}</span>
+        </div>
+      )}
+
+      <div className={styles.planCardTop}>
+        <div>
+          <h3 className={styles.planCardName}>
+            {getLocalized(plan, "name", i18n.language)}
+          </h3>
+        </div>
+        <div className={styles.planPriceBox}>
+          <div className={styles.planPriceRow}>
+            <span className={styles.planPriceNum}>
+              {formatPrice(plan.pricing?.oneTime)}
+            </span>
+            <span className={styles.planPriceCur}>{t("plansPage.currency")}</span>
+          </div>
+          <span className={styles.planPricePer}>
+            {type === "quarterly" ? t("plansPage.pricePerQuarter") : t("plansPage.pricePerYear")}
+          </span>
+        </div>
+      </div>
+
+      <div className={styles.managedBox}>
+        <span className={styles.managedTitle}>
+          {t("plansPage.poolLabel")}: {pool.toLocaleString()} {t("plansPage.inviteUnit")}
+          {" · "}
+          {t(type === "quarterly" ? "plansPage.validDays90" : "plansPage.validDays365")}
+          {" · "}
+          {t("plansPage.setupFeeIncluded")}
+        </span>
+      </div>
+
+      {features.length > 0 && (
+        <div className={styles.featSection}>
+          <div className={styles.featTitle}>{t("plansPage.featuresTitle")}</div>
+          <div className={styles.featGrid}>
+            {features.map((f, idx) => (
+              <div key={idx} className={styles.featItem}>
+                <span className={styles.featCheck}>✓</span>
+                <span>{getLocalized(f, "label", i18n.language)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        className={`${styles.ctaBtn} ${isCurrent ? styles.ctaBtnDisabled : styles.ctaBtnActive}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!isCurrent) onSubscribe(plan);
+        }}
+        disabled={isCurrent || isSubscribing}
+      >
+        {isSubscribing
+          ? t("plansPage.planCard.subscribing")
+          : isCurrent
+            ? t("plansPage.planCard.currentPlan")
+            : t("plansPage.planCard.subscribeNow")}
+      </button>
+    </div>
+  );
+}
 
 const PlansPageInner = () => {
-  const { t } = useTranslation("businessPlans");
+  const { t, i18n } = useTranslation("businessPlans");
   const { user, subscription, isWhitelabel } = useAuthStore();
   const router = useRouter();
   const { lang } = useParams();
@@ -39,11 +192,55 @@ const PlansPageInner = () => {
     enabled: !!user && isWhitelabel(),
   });
   const businessPlansData = businessPlansResponse?.data ?? {};
-  const plans = [
-    ...(businessPlansData?.event || []),
-    ...(businessPlansData?.quarterly || []),
-    ...(businessPlansData?.annual || []),
-  ];
+
+  const eventPlans = useMemo(
+    () =>
+      [...(businessPlansData?.event || [])].sort(
+        (a, b) =>
+          (a.limits?.maxInvitesPerEvent || 0) -
+          (b.limits?.maxInvitesPerEvent || 0)
+      ),
+    [businessPlansData]
+  );
+  const quarterlyPlans = businessPlansData?.quarterly || [];
+  const annualPlans = businessPlansData?.annual || [];
+
+  const hasEvent = eventPlans.length > 0;
+  const hasQuarterly = quarterlyPlans.length > 0;
+  const hasAnnual = annualPlans.length > 0;
+
+  const [activeType, setActiveType] = useState("event");
+
+  useEffect(() => {
+    if (hasEvent) setActiveType("event");
+    else if (hasQuarterly) setActiveType("quarterly");
+    else if (hasAnnual) setActiveType("annual");
+  }, [hasEvent, hasQuarterly, hasAnnual]);
+
+  const visiblePlans = useMemo(() => {
+    if (activeType === "event") return eventPlans;
+    if (activeType === "quarterly") return quarterlyPlans;
+    return annualPlans;
+  }, [activeType, eventPlans, quarterlyPlans, annualPlans]);
+
+  const [selectedPlanCode, setSelectedPlanCode] = useState(null);
+
+  useEffect(() => {
+    if (visiblePlans.length > 0 && !visiblePlans.some((p) => p.code === selectedPlanCode)) {
+      setSelectedPlanCode(visiblePlans[0].code);
+    }
+  }, [visiblePlans, selectedPlanCode]);
+
+  const allPlans = useMemo(
+    () => [...eventPlans, ...quarterlyPlans, ...annualPlans],
+    [eventPlans, quarterlyPlans, annualPlans]
+  );
+
+  const currentPlanCode = subscription?.plan?.code;
+
+  const handleSelect = (code) => {
+    setSelectedPlanCode(code);
+  };
 
   const handleSubscribe = (plan) => {
     setSelectedPlanForSummary({
@@ -83,7 +280,6 @@ const PlansPageInner = () => {
         source: buildSource(),
       });
       if (result?.requiresAction) {
-        // useCheckout already redirected via window.location; skip the toast.
         return;
       }
       queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
@@ -110,8 +306,8 @@ const PlansPageInner = () => {
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>
-          <div className={styles.spinner}></div>
+        <div className={styles.stateBox}>
+          <FaSpinner className={styles.spinner} />
           <p>{t("plansPage.loading")}</p>
         </div>
       </div>
@@ -121,8 +317,18 @@ const PlansPageInner = () => {
   if (error) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>
+        <div className={styles.stateBox}>
+          <FaExclamationTriangle className={styles.errorIcon} />
           <p>{t("plansPage.error")}</p>
+          <button
+            type="button"
+            onClick={() =>
+              queryClient.invalidateQueries({ queryKey: ["plans", "business"] })
+            }
+            className={styles.retryBtn}
+          >
+            {t("plansPage.retry")}
+          </button>
         </div>
       </div>
     );
@@ -145,35 +351,124 @@ const PlansPageInner = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>{t("plansPage.title")}</h1>
-        <p className={styles.subtitle}>{t("plansPage.subtitle")}</p>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>{t("plansPage.title")}</h1>
+        <p className={styles.pageSubtitle}>{t("plansPage.subtitle")}</p>
       </div>
 
-      <CurrentPlanCard subscription={subscription} plans={plans} />
+      <CurrentPlanCard subscription={subscription} plans={allPlans} />
 
-      <div className={styles.plansSection}>
-        <h2 className={styles.sectionTitle}>
-          {t("plansPage.availablePlans.title")}
-        </h2>
-        <p className={styles.sectionSubtitle}>
-          {t("plansPage.availablePlans.subtitle")}
-        </p>
-
-        <div className={styles.plansGrid}>
-          {plans.map((plan) => (
-            <PlanCard
-              key={plan.code}
-              plan={plan}
-              isCurrent={plan.code === subscription?.plan?.code}
-              isSubscribing={
-                checkoutMutation.isPending &&
-                selectedPlanForSummary?.code === plan.code
-              }
-              onSubscribe={handleSubscribe}
-            />
-          ))}
+      <div className={styles.selectorBox}>
+        <div className={styles.toggleRow}>
+          {hasEvent && (
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${activeType === "event" ? styles.toggleActive : ""}`}
+              onClick={() => setActiveType("event")}
+            >
+              {t("plansPage.perEventPlans")}
+            </button>
+          )}
+          {hasQuarterly && (
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${activeType === "quarterly" ? styles.toggleActive : ""}`}
+              onClick={() => setActiveType("quarterly")}
+            >
+              {t("plansPage.quarterlyPlans")}
+            </button>
+          )}
+          {hasAnnual && (
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${activeType === "annual" ? styles.toggleActive : ""}`}
+              onClick={() => setActiveType("annual")}
+            >
+              {t("plansPage.annualPlans")}
+            </button>
+          )}
         </div>
+      </div>
+
+      <div className={styles.plansArea}>
+        {activeType === "event" && (
+          <EventPlanSelector
+            plans={eventPlans}
+            selectedCode={selectedPlanCode}
+            isCurrent={
+              eventPlans.some(
+                (p) => p.code === currentPlanCode && selectedPlanCode === p.code
+              )
+            }
+            isSubscribing={
+              checkoutMutation.isPending &&
+              selectedPlanForSummary?.code === selectedPlanCode
+            }
+            onSelect={handleSelect}
+            onSubscribe={() => {
+              const plan = eventPlans.find((p) => p.code === selectedPlanCode);
+              if (plan && plan.code !== currentPlanCode) handleSubscribe(plan);
+            }}
+            t={t}
+            i18n={i18n}
+          />
+        )}
+
+        {activeType === "quarterly" && (
+          <div
+            className={
+              quarterlyPlans.length === 1 ? styles.singlePlanWrap : styles.planGrid
+            }
+          >
+            {quarterlyPlans.map((plan) => (
+              <PoolPlanCard
+                key={plan.code}
+                plan={plan}
+                type="quarterly"
+                isSelected={selectedPlanCode === plan.code}
+                isCurrent={plan.code === currentPlanCode}
+                isSubscribing={
+                  checkoutMutation.isPending &&
+                  selectedPlanForSummary?.code === plan.code
+                }
+                onSelect={handleSelect}
+                onSubscribe={(p) => {
+                  if (p.code !== currentPlanCode) handleSubscribe(p);
+                }}
+                t={t}
+                i18n={i18n}
+              />
+            ))}
+          </div>
+        )}
+
+        {activeType === "annual" && (
+          <div
+            className={
+              annualPlans.length === 1 ? styles.singlePlanWrap : styles.planGrid
+            }
+          >
+            {annualPlans.map((plan) => (
+              <PoolPlanCard
+                key={plan.code}
+                plan={plan}
+                type="annual"
+                isSelected={selectedPlanCode === plan.code}
+                isCurrent={plan.code === currentPlanCode}
+                isSubscribing={
+                  checkoutMutation.isPending &&
+                  selectedPlanForSummary?.code === plan.code
+                }
+                onSelect={handleSelect}
+                onSubscribe={(p) => {
+                  if (p.code !== currentPlanCode) handleSubscribe(p);
+                }}
+                t={t}
+                i18n={i18n}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

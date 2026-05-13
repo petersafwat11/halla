@@ -1,183 +1,118 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Switch,
-} from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import { useFormContext } from "react-hook-form";
+import { useTranslation } from "../../../../localization";
 import {
   colors,
   spacing,
-  borderRadius,
   typography,
-  textStyles,
-  backgrounds,
 } from "../../../../styles/tokens";
 import { PLAN_TYPES } from "../discountsFormUtils";
+import { TextInput, DropdownInput, ToggleInput } from "../../../../components/commen";
+import DatePicker from "../../../../components/commen/DatePicker";
+import CheckboxGroup from "../../../../components/commen/CheckboxGroup";
 
-const DiscountFormFields = ({ form, isEdit, set, t }) => {
-  const setField = (key, value) => set(key, value);
+const DiscountFormFields = ({ isEdit }) => {
+  const { t } = useTranslation("admin");
+  const { watch } = useFormContext();
+  const discountType = watch("discountType");
+  const validFrom = watch("validFrom");
 
-  const togglePlanType = (type) =>
-    set(
-      "applicablePlanTypes",
-      (form.applicablePlanTypes || []).includes(type)
-        ? (form.applicablePlanTypes || []).filter((x) => x !== type)
-        : [...(form.applicablePlanTypes || []), type],
-    );
+  const discountTypeOptions = [
+    { value: "percentage", label: t("discounts.form.percentage") },
+    { value: "fixed", label: t("discounts.form.fixed") },
+  ];
+
+  const planTypeOptions = PLAN_TYPES.map((value) => ({
+    value,
+    label: t(`discounts.planTypes.${value}`, value),
+  }));
 
   return (
     <>
-      <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.code")}</Text>
-        <TextInput
-          style={[styles.input, isEdit && styles.inputDisabled]}
-          value={form.code}
-          onChangeText={(v) => setField("code", v.toUpperCase())}
-          placeholder={t("discounts.form.codePlaceholder")}
-          placeholderTextColor={colors.natural[300]}
-          autoCapitalize="characters"
-          editable={!isEdit}
-        />
-      </View>
+      <TextInput
+        name="code"
+        label={`${t("discounts.form.code")} *`}
+        placeholder={t("discounts.form.codePlaceholder")}
+        autoCapitalize="characters"
+        editable={!isEdit}
+        disabled={isEdit}
+      />
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.discountType")}</Text>
-        <View style={styles.typeRow}>
-          {["percentage", "fixed"].map((type) => (
-            <TouchableOpacity
-              key={type}
-              style={[styles.typeBtn, form.discountType === type && styles.typeBtnActive]}
-              onPress={() => setField("discountType", type)}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={[styles.typeBtnText, form.discountType === type && styles.typeBtnTextActive]}
-              >
-                {t(`discounts.form.${type}`)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+      <DropdownInput
+        name="discountType"
+        label={`${t("discounts.form.discountType")} *`}
+        placeholder={t("discounts.form.discountType")}
+        options={discountTypeOptions}
+      />
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.value")}</Text>
-        <TextInput
-          style={styles.input}
-          value={form.value}
-          onChangeText={(v) => setField("value", v)}
-          placeholder={t("discounts.form.valuePlaceholder")}
-          placeholderTextColor={colors.natural[300]}
-          keyboardType="decimal-pad"
-        />
-      </View>
+      <TextInput
+        name="value"
+        label={
+          discountType === "percentage"
+            ? `${t("discounts.form.percent")} *`
+            : `${t("discounts.form.amount")} *`
+        }
+        placeholder={t("discounts.form.valuePlaceholder")}
+        keyboardType="decimal-pad"
+      />
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.maxUses")}</Text>
-        <TextInput
-          style={styles.input}
-          value={form.maxUses}
-          onChangeText={(v) => setField("maxUses", v)}
-          placeholder={t("discounts.form.maxUsesPlaceholder")}
-          placeholderTextColor={colors.natural[300]}
-          keyboardType="number-pad"
-        />
-      </View>
+      <TextInput
+        name="maxUses"
+        label={t("discounts.form.maxUses")}
+        placeholder={t("discounts.form.maxUsesPlaceholder")}
+        keyboardType="number-pad"
+      />
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.minimumAmount")}</Text>
-        <TextInput
-          style={styles.input}
-          value={form.minimumAmount}
-          onChangeText={(v) => setField("minimumAmount", v)}
-          placeholder={t("discounts.form.minimumAmountPlaceholder")}
-          placeholderTextColor={colors.natural[300]}
-          keyboardType="decimal-pad"
-        />
-      </View>
+      <TextInput
+        name="minimumAmount"
+        label={t("discounts.form.minimumAmount")}
+        placeholder={t("discounts.form.minimumAmountPlaceholder")}
+        keyboardType="decimal-pad"
+      />
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.validFrom")}</Text>
-        <TextInput
-          style={styles.input}
-          value={form.validFrom}
-          onChangeText={(v) => setField("validFrom", v)}
-          placeholder={t("discounts.form.datePlaceholder")}
-          placeholderTextColor={colors.natural[300]}
-        />
-      </View>
+      <DatePicker
+        name="validFrom"
+        label={t("discounts.form.validFrom")}
+        placeholder={t("discounts.form.datePlaceholder")}
+      />
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.validUntil")}</Text>
-        <TextInput
-          style={styles.input}
-          value={form.validUntil}
-          onChangeText={(v) => setField("validUntil", v)}
-          placeholder={t("discounts.form.datePlaceholder")}
-          placeholderTextColor={colors.natural[300]}
-        />
-      </View>
+      <DatePicker
+        name="validUntil"
+        label={t("discounts.form.validUntil")}
+        placeholder={t("discounts.form.datePlaceholder")}
+        minimumDate={validFrom}
+      />
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.descriptionEn")}</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={form.descriptionEn}
-          onChangeText={(v) => setField("descriptionEn", v)}
-          placeholder={t("discounts.form.descriptionEnPlaceholder")}
-          placeholderTextColor={colors.natural[300]}
-          multiline
-          numberOfLines={2}
-        />
-      </View>
+      <TextInput
+        name="descriptionEn"
+        label={t("discounts.form.descriptionEn")}
+        placeholder={t("discounts.form.descriptionEnPlaceholder")}
+        multiline
+        numberOfLines={2}
+      />
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.descriptionAr")}</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={form.descriptionAr}
-          onChangeText={(v) => setField("descriptionAr", v)}
-          placeholder={t("discounts.form.descriptionArPlaceholder")}
-          placeholderTextColor={colors.natural[300]}
-          multiline
-          numberOfLines={2}
-          textAlign="right"
-        />
-      </View>
+      <TextInput
+        name="descriptionAr"
+        label={t("discounts.form.descriptionAr")}
+        placeholder={t("discounts.form.descriptionArPlaceholder")}
+        multiline
+        numberOfLines={2}
+      />
 
       <View style={styles.field}>
         <Text style={styles.label}>{t("discounts.form.planTypes")}</Text>
-        <View style={styles.chips}>
-          {PLAN_TYPES.map((value) => {
-            const active = (form.applicablePlanTypes || []).includes(value);
-            return (
-              <TouchableOpacity
-                key={value}
-                style={[styles.chip, active && styles.chipActive]}
-                onPress={() => togglePlanType(value)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                  {t(`discounts.planTypes.${value}`, value)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-
-      <View style={styles.toggleRow}>
-        <Text style={styles.label}>{t("discounts.form.isActive")}</Text>
-        <Switch
-          value={form.isActive}
-          onValueChange={(v) => setField("isActive", v)}
-          trackColor={{ false: colors.natural[200], true: colors.primary[400] }}
-          thumbColor={form.isActive ? colors.primary[500] : colors.natural[300]}
+        <CheckboxGroup
+          name="applicablePlanTypes"
+          items={planTypeOptions}
+          columns={2}
         />
       </View>
+
+      <ToggleInput
+        name="isActive"
+        label={t("discounts.form.isActive")}
+      />
     </>
   );
 };
@@ -191,81 +126,6 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.label.large,
     color: colors.natural[600],
     marginBottom: spacing[6],
-  },
-  input: {
-    borderWidth: 1.5,
-    borderColor: colors.natural[200],
-    borderRadius: borderRadius[8],
-    paddingHorizontal: spacing[14],
-    paddingVertical: spacing[12],
-    fontFamily: "Cairo_400Regular",
-    fontSize: typography.fontSize.body.small,
-    color: colors.natural[900],
-    backgroundColor: "#FFF",
-  },
-  inputDisabled: {
-    backgroundColor: colors.natural[50],
-    color: colors.natural[400],
-  },
-  textArea: {
-    minHeight: 64,
-    textAlignVertical: "top",
-  },
-  typeRow: {
-    flexDirection: "row",
-    gap: spacing[10],
-  },
-  typeBtn: {
-    flex: 1,
-    paddingVertical: spacing[10],
-    borderRadius: borderRadius[8],
-    borderWidth: 1.5,
-    borderColor: colors.natural[200],
-    alignItems: "center",
-    backgroundColor: "#FFF",
-  },
-  typeBtnActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
-  },
-  typeBtnText: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: typography.fontSize.label.large,
-    color: colors.natural[600],
-  },
-  typeBtnTextActive: {
-    color: "#FFF",
-  },
-  chips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing[8],
-  },
-  chip: {
-    paddingHorizontal: spacing[12],
-    paddingVertical: spacing[8],
-    borderRadius: borderRadius[20],
-    borderWidth: 1.5,
-    borderColor: colors.natural[200],
-    backgroundColor: "#FFF",
-  },
-  chipActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
-  },
-  chipText: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: typography.fontSize.label.large,
-    color: colors.natural[600],
-  },
-  chipTextActive: {
-    color: "#FFF",
-  },
-  toggleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing[16],
   },
 });
 

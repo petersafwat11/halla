@@ -58,7 +58,7 @@ exports.getPlanByCode = catchAsync(async (req, res) => {
  * GET /api/v2/plans/admin/all
  */
 exports.getAllPlansAdmin = catchAsync(async (req, res) => {
-  const result = await plansService.getAllPlansAdmin();
+  const result = await plansService.getAllPlansAdmin(req.query);
   sendSuccess(res, result);
 });
 

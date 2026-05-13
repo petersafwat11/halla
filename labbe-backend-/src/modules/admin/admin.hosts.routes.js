@@ -303,7 +303,7 @@ router.patch('/hosts/:id/subscription',
     action: 'host.subscription_change',
     targetType: 'user',
     targetIdFrom: (req) => req.params.id,
-    changesFrom: (req) => ({ after: { planCode: req.body?.planCode, billingCycle: req.body?.billingCycle } }),
+    changesFrom: (req) => ({ after: { planCode: req.body?.planCode } }),
   }),
   adminController.updateHostSubscription
 );
