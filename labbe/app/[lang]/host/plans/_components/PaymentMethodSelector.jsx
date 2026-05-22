@@ -88,49 +88,50 @@ export default function PaymentMethodSelector({
           </label>
 
           <div className={styles.row}>
-            <div className={styles.expiryGroup}>
-              <label className={`${styles.field} ${styles.fieldMonth}`}>
-                <span className={styles.label}>
-                  {t("checkout.card.month", "MM")}
-                </span>
+            <div className={`${styles.field} ${styles.fieldExpiry}`}>
+              <span className={styles.label}>
+                {t("checkout.card.expiry", "Expiry date")}
+              </span>
+              <div className={styles.expiryBox}>
                 <input
-                  className={styles.input}
+                  className={`${styles.expiryInput} ${styles.expiryMonth}`}
                   placeholder="MM"
                   maxLength={2}
                   inputMode="numeric"
                   value={card.month}
                   onChange={(e) => updateCard("month", e.target.value.replace(/\D/g, ""))}
                   autoComplete="cc-exp-month"
+                  aria-label={t("checkout.card.month", "MM")}
                 />
-              </label>
-              <label className={`${styles.field} ${styles.fieldYear}`}>
-                <span className={styles.label}>
-                  {t("checkout.card.year", "YYYY")}
-                </span>
+                <span className={styles.expirySeparator} aria-hidden="true">/</span>
                 <input
-                  className={styles.input}
+                  className={`${styles.expiryInput} ${styles.expiryYear}`}
                   placeholder="YYYY"
                   maxLength={4}
                   inputMode="numeric"
                   value={card.year}
                   onChange={(e) => updateCard("year", e.target.value.replace(/\D/g, ""))}
                   autoComplete="cc-exp-year"
+                  aria-label={t("checkout.card.year", "YYYY")}
                 />
-              </label>
+              </div>
             </div>
             <label className={`${styles.field} ${styles.fieldCvc}`}>
               <span className={styles.label}>
                 {t("checkout.card.cvc", "CVC")}
               </span>
-              <input
-                className={styles.input}
-                placeholder="CVC"
-                maxLength={4}
-                inputMode="numeric"
-                value={card.cvc}
-                onChange={(e) => updateCard("cvc", e.target.value.replace(/\D/g, ""))}
-                autoComplete="cc-csc"
-              />
+              <div className={styles.inputWithIcon}>
+                <FaLock className={styles.inputIcon} aria-hidden="true" />
+                <input
+                  className={`${styles.input} ${styles.inputWithIconField}`}
+                  placeholder="•••"
+                  maxLength={4}
+                  inputMode="numeric"
+                  value={card.cvc}
+                  onChange={(e) => updateCard("cvc", e.target.value.replace(/\D/g, ""))}
+                  autoComplete="cc-csc"
+                />
+              </div>
             </label>
           </div>
 

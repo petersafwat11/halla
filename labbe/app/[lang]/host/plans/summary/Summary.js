@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FaArrowLeft, FaArrowRight, FaLock } from "react-icons/fa";
+import { FaLock } from "react-icons/fa";
+import { IoIosArrowForward } from "react-icons/io";
 import { useValidateDiscount } from "@/hooks/reactQueryHooks/useDiscounts";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import PaymentMethodSelector from "../_components/PaymentMethodSelector";
@@ -25,8 +26,7 @@ const Summary = ({
   onCardChange,
   onMobileChange,
 }) => {
-  const { t, i18n } = useTranslation("plans");
-  const isRtl = i18n.language === "ar";
+  const { t } = useTranslation("plans");
 
   const [discountCode, setDiscountCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -96,14 +96,14 @@ const Summary = ({
     <ErrorBoundary fallbackMessage={t("errors.summaryBoundary", { defaultValue: "" })}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <button className={styles.backButton} onClick={onBack} type="button">
-            {isRtl ? <FaArrowRight /> : <FaArrowLeft />}
-            <span>{t("summary.back")}</span>
-          </button>
-          <div className={styles.headerContent}>
-            <h1 className={styles.title}>{t("summary.title")}</h1>
-            <p className={styles.subtitle}>{t("summary.subtitle")}</p>
-          </div>
+          <h1 className={styles.title}>
+            <IoIosArrowForward
+              onClick={onBack}
+              className={styles.backArrow}
+            />
+            {t("summary.title")}
+          </h1>
+          <p className={styles.subtitle}>{t("summary.subtitle")}</p>
         </div>
 
         <div className={styles.content}>

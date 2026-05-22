@@ -1,5 +1,7 @@
 .container {
   margin-top: 3rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .tables {
@@ -7,6 +9,17 @@
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 2rem;
   margin-bottom: 3rem;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .container { margin-top: 1.6rem; }
+  .tables {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+    margin-bottom: 1.6rem;
+  }
 }
 
 /* Status badge base */

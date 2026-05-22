@@ -27,7 +27,7 @@ import NotificationSettingsScreen from "../screens/common/NotificationSettingsSc
 import TicketsScreen from "../screens/common/TicketsScreen";
 import Marketplace from "../screens/common/Marketplace";
 import EventsScreen from "../screens/host/EventsScreen";
-import CreateEventScreen from "../screens/host/CreateEventScreen";
+import CreateEventScreen from "../screens/common/CreateEventScreen";
 import EventDetailsScreen from "../screens/common/EventDetailsScreen";
 // Phase 4d W1-MOBILE-UPDATE: single unified update wizard for every
 // role. The legacy `screens/host/UpdateEventScreen.js` is now a thin

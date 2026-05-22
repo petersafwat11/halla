@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -25,17 +25,11 @@ const { width } = Dimensions.get("window");
 export default function LoginScreen({ navigation }) {
   const { t } = useTranslation("auth");
   const toast = useToast();
-  const { loginWithEmail, sendOTP, verifyOTP, resendOTP, status, getTempMobile, error: authError } =
+  const { loginWithEmail, sendOTP, verifyOTP, resendOTP, status, getTempMobile } =
     useAuthStore();
   const [step, setStep] = useState("input");
   const [loginMethod, setLoginMethod] = useState("mobile");
   const loading = status === "loading";
-
-  useEffect(() => {
-    if (authError) {
-      toast.error(authError);
-    }
-  }, [authError, toast]);
 
   const handleEmailLogin = useCallback(async (data) => {
     const result = await loginWithEmail(data);

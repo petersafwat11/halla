@@ -103,6 +103,7 @@
   align-items: flex-end;
   gap: 24px;
   align-self: stretch;
+  flex-wrap: wrap;
 }
 
 .fieldGroup {
@@ -111,6 +112,7 @@
   align-items: flex-start;
   gap: 8px;
   flex: 1;
+  min-width: 0;
   max-width: 60rem;
 }
 
@@ -153,16 +155,19 @@
   border-radius: 12px;
   border: 1.5px solid var(--Formfields-Border-active, #dfdfdf);
   background: var(--Formfields-bg-active, #fff);
+  min-width: 0;
 }
 
 .inputValue {
   flex: 1;
+  min-width: 0;
   color: var(--Formfields-foreground-active, #767676);
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
   line-height: 24px;
   letter-spacing: 0.08px;
+  word-break: break-word;
 }
 
 /* Input styles for edit mode */

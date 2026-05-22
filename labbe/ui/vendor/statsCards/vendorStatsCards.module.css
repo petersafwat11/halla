@@ -1,13 +1,16 @@
 .statsContainer {
   margin-bottom: 24px;
   width: 100%;
+  padding: 0 24px;
+  box-sizing: border-box;
 }
 
 .statsGrid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   align-items: stretch;
   gap: 24px;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
 .statCard {
@@ -15,11 +18,10 @@
   padding: 16px;
   justify-content: space-between;
   align-items: flex-start;
-  flex: 1 0 0;
   border-radius: 8px;
   background: var(--Content-bg-Card-bg-1, #fff);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  min-width: 220px;
+  min-width: 0;
 }
 
 .cardIcon {
@@ -78,12 +80,13 @@
 }
 
 @media (max-width: 1024px) {
-  .statsGrid {
-    gap: 16px;
+  .statsContainer {
+    padding: 0 20px;
   }
 
-  .statCard {
-    min-width: 200px;
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
   }
 }
 
@@ -94,7 +97,6 @@
 
   .statCard {
     padding: 12px;
-    min-width: 180px;
   }
 
   .cardTitle {
@@ -113,17 +115,18 @@
 }
 
 @media (max-width: 550px) {
+  .statsContainer {
+    padding: 0 12px;
+  }
+
   .statsGrid {
-    overflow-x: auto;
-    flex-wrap: nowrap;
+    grid-template-columns: 1fr;
     gap: 12px;
-    padding-bottom: 8px;
   }
 
   .statCard {
-    min-width: 160px;
-    flex-shrink: 0;
-    padding: 12px;
+    width: 100%;
+    padding: 12px 14px;
   }
 
   .cardIcon {

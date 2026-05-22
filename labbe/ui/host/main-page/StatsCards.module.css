@@ -65,8 +65,9 @@
   }
 
   .statCard {
-    padding: 1.2rem 1.6rem;
-    min-width: 200px;
+    padding: 1.4rem 1.6rem;
+    flex: 1 1 100%;
+    min-width: 100%;
   }
 
   .cardValue {
@@ -80,9 +81,9 @@
     margin-bottom: 0;
   }
   .statCard {
-    min-width: 200px;
-    flex-shrink: 0;
-    padding: 1.6rem 1.2rem;
+    flex: 1 1 100%;
+    min-width: 100%;
+    padding: 1.4rem 1.4rem;
   }
 
   .cardIcon {

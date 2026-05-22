@@ -18,7 +18,6 @@
   gap: 10px;
   align-self: stretch;
   border-radius: 12px 12px 0 0;
-  border-bottom: 1px solid var(--Content-Border-Border-Gray200, #f2f2f2);
   background: var(--Content-bg-Card-bg-1, #fff);
 }
 

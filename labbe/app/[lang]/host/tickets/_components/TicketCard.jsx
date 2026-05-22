@@ -123,35 +123,37 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
     <div className={styles.card} onMouseEnter={handleMouseEnter}>
       <div className={styles.cardContent}>
         <div className={styles.mainContent}>
-          <div className={styles.header}>
-            <h3 className={styles.title}>{title}</h3>
-            <div className={styles.icon}>{getStatusIcon()}</div>
-            <div className={`${styles.statusBadge} ${statusModifier}`}>
-              <span>{statusText}</span>
-            </div>
-          </div>
+          <h3 className={styles.title}>{title}</h3>
           <p className={styles.description}>{description}</p>
           <div className={styles.timestamp}>
             <span>{t("createdAt")} </span>
             <span>{formattedDateTime}</span>
           </div>
         </div>
-        {canEdit && (
-          <div className={styles.actions}>
-            <button
-              className={styles.actionButton}
-              onClick={() => onDelete(ticket.id)}
-            >
-              {t("actions.delete")}
-            </button>
-            <button
-              className={styles.actionButton}
-              onClick={() => onEdit(ticket)}
-            >
-              {t("actions.edit")}
-            </button>
+        <div className={styles.sideContent}>
+          <div className={styles.statusGroup}>
+            <div className={styles.icon}>{getStatusIcon()}</div>
+            <div className={`${styles.statusBadge} ${statusModifier}`}>
+              <span>{statusText}</span>
+            </div>
           </div>
-        )}
+          {canEdit && (
+            <div className={styles.actions}>
+              <button
+                className={styles.actionButton}
+                onClick={() => onDelete(ticket.id)}
+              >
+                {t("actions.delete")}
+              </button>
+              <button
+                className={styles.actionButton}
+                onClick={() => onEdit(ticket)}
+              >
+                {t("actions.edit")}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

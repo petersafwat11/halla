@@ -1,12 +1,12 @@
 /* HostDetailsContent — uses design tokens from tokens.web.js */
 
 .page {
-  padding: 2.4rem 2.8rem;
+  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2.4rem;
+  gap: 2rem;
 }
 
 /* ── Back ── */
@@ -428,8 +428,8 @@
 }
 
 @media (max-width: 768px) {
-  .page { padding: 1.6rem; gap: 1.6rem; }
-  .hero { flex-direction: column; align-items: flex-start; padding: 2rem; }
+  .page { padding: 0; gap: 1.4rem; }
+  .hero { flex-direction: column; align-items: flex-start; padding: 1.4rem; gap: 1.4rem; }
   .heroActions { width: 100%; }
   .btnPrimary, .btnDanger, .btnSuccess { flex: 1; justify-content: center; }
   .twoCol { grid-template-columns: 1fr; }
@@ -437,7 +437,8 @@
 }
 
 @media (max-width: 480px) {
-  .statsRow { grid-template-columns: 1fr 1fr; }
+  .statsRow { grid-template-columns: 1fr 1fr; gap: 1rem; }
   .eventsGrid { grid-template-columns: 1fr; }
   .subGrid { grid-template-columns: 1fr; }
+  .hero { padding: 1.2rem; }
 }

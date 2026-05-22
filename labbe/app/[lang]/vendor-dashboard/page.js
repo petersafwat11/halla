@@ -142,8 +142,6 @@ const VendorServicesPage = () => {
     router.push(`/${currentLocale}/vendor-dashboard/tickets`);
   };
 
-  const handlePromoteProfile = () => {};
-
   if (servicesLoading || statsLoading) {
     return <SimpleLoading />;
   }
@@ -176,10 +174,6 @@ const VendorServicesPage = () => {
               <button className={styles.secondaryButton} onClick={handleComplaints}>
                 <span>{t("buttons.complaints")}</span>
                 <Image src={"/svg/vendor/tickets.svg"} width={16} height={16} alt="ticket" />
-              </button>
-              <button className={styles.secondaryButton} onClick={handlePromoteProfile}>
-                <span>{t("buttons.promoteProfile")}</span>
-                <Image src={"/svg/vendor/ads.svg"} width={16} height={16} alt="advertise" />
               </button>
             </div>
           </div>

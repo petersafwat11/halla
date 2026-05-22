@@ -1305,6 +1305,17 @@
       }
     }
   },
+  "more": {
+    "title": "More",
+    "payments": "Payments",
+    "moderators": "Moderators",
+    "vendors": "Vendors",
+    "whitelabels": "Whitelabels",
+    "plans": "Plans",
+    "myPlans": "My Plans",
+    "discounts": "Discount Codes",
+    "settings": "Settings"
+  },
   "sendNotification": {
     "sendTitle": "Send Notification",
     "broadcastTitle": "Broadcast Notification",

@@ -499,8 +499,10 @@ const Table = ({
               {showExport && (
                 <button
                   type="button"
-                  className={styles.actionButton}
+                  className={`${styles.actionButton} ${styles.exportButton}`}
                   onClick={onExportClick}
+                  aria-label={labels.export}
+                  title={labels.export}
                 >
                   <Image
                     src="/svg/events/export.svg"

@@ -1305,6 +1305,17 @@
       }
     }
   },
+  "more": {
+    "title": "المزيد",
+    "payments": "المدفوعات",
+    "moderators": "المشرفون",
+    "vendors": "مزودو الخدمات",
+    "whitelabels": "الوايت ليبل",
+    "plans": "الباقات",
+    "myPlans": "باقاتي",
+    "discounts": "أكواد الخصم",
+    "settings": "الإعدادات"
+  },
   "sendNotification": {
     "sendTitle": "إرسال إشعار",
     "broadcastTitle": "بث إشعار عام",

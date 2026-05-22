@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import { IoIosArrowForward } from "react-icons/io";
 import styles from "./TicketsHeader.module.css";
 import Button from "@/ui/commen/button/Button";
@@ -16,14 +16,21 @@ const TicketsHeader = ({
   const { t: tLocal, i18n } = useTranslation("tickets");
   const router = useRouter();
   const { lang } = useParams();
+  const pathname = usePathname() || "";
   const isArabic = i18n.language === "ar";
   const t = tProp || tLocal;
+
+  const dashboardBase = pathname.includes("/vendor-dashboard")
+    ? `/${lang}/vendor-dashboard`
+    : pathname.includes("/admin-dash")
+    ? `/${lang}/admin-dash`
+    : `/${lang}/host`;
 
   return (
     <div className={styles.header}>
       <div className={styles.page_title}>
         <IoIosArrowForward
-          onClick={() => router.push(`/${lang}/host`)}
+          onClick={() => router.push(dashboardBase)}
           style={{
             transform: isArabic ? "rotate(0deg)" : "rotate(180deg)",
             cursor: "pointer",

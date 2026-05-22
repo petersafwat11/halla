@@ -24,9 +24,62 @@ const { runBatched } = require('../../shared/utils/runBatched');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { GUEST_STATUS } = require('../../shared/constants');
+const { ROLES } = require('../../shared/constants/roles');
 const { resolveTaqnyatTemplateRef } = require('../events/templateRefResolver');
 
 const dispatchService = require('./post-event.dispatch.service');
+
+// ============================================
+// SCOPED QUERY HELPER
+// ============================================
+
+/**
+ * Build a tenant/role-scoped query for an event. Mirrors
+ * `events.crud.service._buildScopedEventQuery` so post-event endpoints
+ * accept the same set of authorized roles (host owner, super_admin,
+ * tenant-scoped admin/moderator/whitelabel_admin/whitelabel_moderator).
+ *
+ * Centralized here so every host-facing post-event method opts into the
+ * same authorization model rather than the bare `host: userId` check
+ * which silently 404s for any role that isn't the event owner.
+ *
+ * @param {string} eventId
+ * @param {Object} user - req.user shape: { _id, role, whitelabelId }
+ * @returns {Object} Mongo query
+ */
+const buildScopedEventQuery = (eventId, user) => {
+  const role = user?.role;
+  const userId = user?._id?.toString?.() || user?._id;
+  const whitelabelId = user?.whitelabelId
+    ? user.whitelabelId.toString?.() || user.whitelabelId
+    : null;
+
+  if (!role && !userId) {
+    throw new ForbiddenError('Authentication context is required');
+  }
+
+  if (role === ROLES.SUPER_ADMIN) {
+    return { _id: eventId };
+  }
+
+  const tenantScoped = [
+    ROLES.ADMIN,
+    ROLES.MODERATOR,
+    ROLES.WHITELABEL_ADMIN,
+    ROLES.WHITELABEL_MODERATOR,
+  ];
+  if (tenantScoped.includes(role)) {
+    if (!whitelabelId) {
+      throw new ForbiddenError(
+        'Tenant configuration error. Contact a super admin to assign a whitelabel.'
+      );
+    }
+    return { _id: eventId, whitelabelId };
+  }
+
+  // Default: host (and any other authenticated role) sees only their own.
+  return { _id: eventId, host: userId };
+};
 
 // ============================================
 // HELPERS
@@ -54,11 +107,13 @@ class PostEventService {
 
   /**
    * Get post-event content for an event (host or guest view).
-   * Reads event + content in parallel.
+   * Reads event + content in parallel. Authorization is scoped via
+   * `buildScopedEventQuery` so admins / whitelabel managers can view the
+   * content for events under their scope, not just the event owner.
    */
-  async getPostEventContent(eventId, userId) {
+  async getPostEventContent(eventId, user) {
     const [event, content] = await Promise.all([
-      Event.findOne({ _id: eventId, host: userId })
+      Event.findOne(buildScopedEventQuery(eventId, user))
         .select('eventDetails status visualTemplate host')
         .populate('host', 'name username'),
       PostEventContent.findOne({ event: eventId })
@@ -93,16 +148,21 @@ class PostEventService {
   /**
    * Upload one or more media files (photos and/or videos) to post-event
    * content. Distinguishes type by MIME prefix.
+   *
+   * The PostEventContent `host` field captures the canonical event owner
+   * (not the actor) so admins acting on behalf of a host don't overwrite
+   * ownership.
    */
-  async uploadMedia(eventId, files, userId) {
+  async uploadMedia(eventId, files, user) {
     if (!files?.length) throw new ValidationError('No files uploaded');
 
-    const event = await Event.findOne({ _id: eventId, host: userId });
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
 
+    const actorId = user?._id?.toString?.() || user?._id;
     let content = await PostEventContent.findOne({ event: eventId });
     if (!content) {
-      content = await PostEventContent.createForEvent(eventId, userId);
+      content = await PostEventContent.createForEvent(eventId, event.host);
     }
 
     const added = [];
@@ -123,7 +183,7 @@ class PostEventService {
 
     logAudit({
       action: 'post_event.media_uploaded',
-      actor: { _id: userId },
+      actor: { _id: actorId },
       targetType: 'event',
       targetId: event._id,
       metadata: {
@@ -140,8 +200,8 @@ class PostEventService {
   /**
    * Delete a media item (photo or video) by id.
    */
-  async deleteMedia(eventId, mediaId, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async deleteMedia(eventId, mediaId, user) {
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
 
     const content = await PostEventContent.findOne({ event: eventId });
@@ -154,9 +214,10 @@ class PostEventService {
     const removed = await content.removeMedia(mediaId);
     if (!removed) throw new NotFoundError('Media');
 
+    const actorId = user?._id?.toString?.() || user?._id;
     logAudit({
       action: 'post_event.media_deleted',
-      actor: { _id: userId },
+      actor: { _id: actorId },
       targetType: 'event',
       targetId: event._id,
       metadata: { contentId: content._id, mediaId, type },
@@ -167,13 +228,14 @@ class PostEventService {
   // HOST: THANK-YOU MESSAGE
   // ============================================
 
-  async updateThankYouMessage(eventId, messageData, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateThankYouMessage(eventId, messageData, user) {
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
 
+    const actorId = user?._id?.toString?.() || user?._id;
     let content = await PostEventContent.findOne({ event: eventId });
     if (!content) {
-      content = await PostEventContent.createForEvent(eventId, userId);
+      content = await PostEventContent.createForEvent(eventId, event.host);
     }
 
     if (messageData.text !== undefined) content.title = messageData.text;
@@ -184,7 +246,7 @@ class PostEventService {
 
     logAudit({
       action: 'post_event.thank_you_updated',
-      actor: { _id: userId },
+      actor: { _id: actorId },
       targetType: 'event',
       targetId: event._id,
       metadata: { contentId: content._id },
@@ -206,8 +268,8 @@ class PostEventService {
    * dispatch. Mirrors `events.settings.service.updateInvitationSettings`
    * for the canonical-only path.
    */
-  async updateMessagingTemplate(eventId, { taqnyatTemplateRef }, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateMessagingTemplate(eventId, { taqnyatTemplateRef }, user) {
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
 
     const resolvedRef = await resolveTaqnyatTemplateRef(taqnyatTemplateRef);
@@ -215,9 +277,10 @@ class PostEventService {
       throw new ValidationError('Taqnyat template not found in cache');
     }
 
+    const actorId = user?._id?.toString?.() || user?._id;
     let content = await PostEventContent.findOne({ event: eventId });
     if (!content) {
-      content = await PostEventContent.createForEvent(eventId, userId);
+      content = await PostEventContent.createForEvent(eventId, event.host);
     }
 
     content.taqnyatTemplate = { templateRef: resolvedRef };
@@ -225,7 +288,7 @@ class PostEventService {
 
     logAudit({
       action: 'post_event.messaging_template_updated',
-      actor: { _id: userId },
+      actor: { _id: actorId },
       targetType: 'event',
       targetId: event._id,
       metadata: { contentId: content._id, templateRef: resolvedRef },
@@ -240,12 +303,14 @@ class PostEventService {
   // HOST: PUBLISH / UNPUBLISH
   // ============================================
 
-  async publishContent(eventId, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId })
+  async publishContent(eventId, user) {
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user))
       .populate('guestList', 'name phone status')
       .populate('host', 'name username');
 
     if (!event) throw new NotFoundError('Event');
+
+    const actorId = user?._id?.toString?.() || user?._id;
 
     const content = await PostEventContent.findOne({ event: eventId })
       .populate('taqnyatTemplate.templateRef');
@@ -266,7 +331,7 @@ class PostEventService {
 
     logAudit({
       action: 'post_event.published',
-      actor: { _id: userId },
+      actor: { _id: actorId },
       targetType: 'event',
       targetId: event._id,
       metadata: { contentId: content._id },
@@ -279,8 +344,8 @@ class PostEventService {
     };
   }
 
-  async unpublishContent(eventId, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId }).select('_id');
+  async unpublishContent(eventId, user) {
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user)).select('_id');
     if (!event) throw new NotFoundError('Event');
 
     const content = await PostEventContent.findOne({ event: eventId });
@@ -290,9 +355,10 @@ class PostEventService {
     content.settings.isPublished = false;
     await content.save();
 
+    const actorId = user?._id?.toString?.() || user?._id;
     logAudit({
       action: 'post_event.content_revoked',
-      actor: { _id: userId },
+      actor: { _id: actorId },
       targetType: 'event',
       targetId: event._id,
       metadata: { contentId: content._id },
@@ -444,9 +510,11 @@ class PostEventService {
   // HOST: BULK TOKEN GENERATION
   // ============================================
 
-  async generateBulkTokens(eventId, userId, { guestIds, filter = 'attended' }) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async generateBulkTokens(eventId, user, { guestIds, filter = 'attended' }) {
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
+
+    const actorId = user?._id?.toString?.() || user?._id;
 
     let guests;
     if (guestIds?.length) {
@@ -494,7 +562,7 @@ class PostEventService {
 
     logAudit({
       action: 'post_event.tokens_generated',
-      actor: { _id: userId },
+      actor: { _id: actorId },
       targetType: 'event',
       targetId: event._id,
       metadata: { count: tokens.length, filter, failed: errors.length },
@@ -515,9 +583,14 @@ class PostEventService {
   // HOST: BULK ACCESS-LINK DISPATCH (delegates to dispatchService)
   // ============================================
 
-  async sendBulkAccessLinks(eventId, userId, body) {
-    return dispatchService.sendBulkAccessLinks(eventId, userId, body);
+  async sendBulkAccessLinks(eventId, user, body) {
+    return dispatchService.sendBulkAccessLinks(eventId, user, body);
   }
 }
 
-module.exports = new PostEventService();
+const postEventService = new PostEventService();
+// Expose the helper on the singleton so callers (e.g.
+// `post-event.dispatch.service`) can reuse the exact scope rules
+// without recreating their own role map.
+postEventService.buildScopedEventQuery = buildScopedEventQuery;
+module.exports = postEventService;

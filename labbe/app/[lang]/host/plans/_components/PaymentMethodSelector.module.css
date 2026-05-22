@@ -78,34 +78,77 @@
 .row {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.6rem;
+  gap: 1.2rem;
 }
 
-.expiryGroup {
-  display: flex;
-  gap: 0.8rem;
-  flex: 0 0 auto;
-}
-
-.fieldMonth {
-  flex: 0 0 7rem;
-  min-width: 0;
-}
-
-.fieldYear {
-  flex: 0 0 9.5rem;
+.fieldExpiry {
+  flex: 1 1 0;
   min-width: 0;
 }
 
 .fieldCvc {
-  flex: 0 0 9.5rem;
+  flex: 0 0 12rem;
   min-width: 0;
+}
+
+/* Expiry combo: MM / YYYY as a single visual field */
+.expiryBox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.6rem;
+  height: 4.4rem;
+  border: 1px solid var(--form-border);
+  border-radius: var(--radius-12);
+  background: var(--form-bg);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.expiryBox:hover {
+  border-color: var(--color-primary-300);
+}
+
+.expiryBox:focus-within {
+  border-color: var(--form-border-focused);
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.12);
+}
+
+.expiryInput {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-ar);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--form-fg-filled);
+  text-align: center;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  padding: 0;
+  min-width: 0;
+}
+
+.expiryInput::placeholder {
+  color: var(--form-fg);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.expiryMonth { width: 3.2rem; }
+.expiryYear  { width: 5rem; }
+
+.expirySeparator {
+  color: var(--color-natural-350);
+  font-size: 1.6rem;
+  font-weight: 500;
+  user-select: none;
+  line-height: 1;
 }
 
 .input {
   width: 100%;
-  padding: 0.95rem 1.1rem;
+  height: 4.4rem;
+  padding: 0 1.1rem;
   border: 1px solid var(--form-border);
   border-radius: var(--radius-12);
   background: var(--form-bg);
@@ -117,6 +160,10 @@
 
 .input::placeholder {
   color: var(--form-fg);
+}
+
+.input:hover {
+  border-color: var(--color-primary-300);
 }
 
 .input:focus {
@@ -183,9 +230,33 @@
     font-size: 1.1rem;
   }
   .icon { font-size: 1.7rem; }
+
   .row { gap: 0.8rem; }
-  .expiryGroup { gap: 0.5rem; }
-  .fieldMonth { flex: 0 0 5.5rem; }
-  .fieldYear  { flex: 0 0 7.5rem; }
-  .fieldCvc   { flex: 0 0 7.5rem; }
+
+  .fieldCvc { flex: 0 0 9.5rem; }
+
+  .expiryBox {
+    height: 4.2rem;
+    padding: 0 0.5rem;
+    gap: 0.3rem;
+  }
+
+  .expiryInput { font-size: 1.3rem; }
+  .expiryMonth { width: 2.8rem; }
+  .expiryYear  { width: 4.4rem; }
+  .expirySeparator { font-size: 1.4rem; }
+
+  .input {
+    height: 4.2rem;
+    font-size: 1.25rem;
+  }
+
+  .inputWithIconField {
+    padding-left: 3rem;
+  }
+
+  [dir="rtl"] .inputWithIconField {
+    padding-left: 1.1rem;
+    padding-right: 3rem;
+  }
 }

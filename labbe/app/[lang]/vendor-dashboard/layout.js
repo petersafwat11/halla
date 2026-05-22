@@ -13,7 +13,7 @@ function Layout({ children }) {
       <ResponsiveSidebar dashboardType={DASHBOARD_TYPES.VENDOR} />
       <div className={styles.contentWithHeader}>
         <Header dashboardType={DASHBOARD_TYPES.VENDOR} />
-        <div className="w-full p-2">{children}</div>
+        {children}
       </div>
     </div>
   );

@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-// NOTE: `TestMessageModal` and `ScheduleSendingModal` each render their
-// own RN `<Modal>` internally and accept a `visible` prop. Wrapping them
-// in another `<Modal>` (as the original file did) double-stacks them,
-// hides the inner modal because we never forward `visible`, and breaks
-// keyboard focus on the phone input. We now mount the modal components
-// directly and forward `visible` through.
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import TestMessageModal from "./TestMessageModal";
@@ -15,18 +9,6 @@ import { useNotifyStaff } from "../../hooks/mutations/useEventMutations";
 import { useDeleteEvent } from "../../hooks/mutations/useEventCrudMutations";
 import { useToast } from "../../contexts/ToastContext";
 
-/**
- * Action bar shown on the single-event detail screen. Mirrors the web
- * `ui/host/events/EventActionsHeader.jsx` — same buttons, same gates,
- * same "Manage Event" dropdown with 4 edit steps. `isAdmin` toggles the
- * destructive Delete action and chooses the right stack route.
- *
- * Routes — host pushes "UpdateEventScreen" (registered in AppNavigator);
- * admin pushes "UpdateEvent" (registered in AdminNavigator). The legacy
- * "AdminUpdateEvent" name in this file was never registered, which is
- * why the Manage button silently no-op'd on admin and pushed the wrong
- * route on host.
- */
 const EVENT_EDIT_STEPS = [
   { step: 1, labelKey: "lastEvent.dropdown.eventDetails", fallback: "تفاصيل المناسبة" },
   { step: 2, labelKey: "lastEvent.dropdown.guestList", fallback: "قائمة الضيوف" },
@@ -49,12 +31,6 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
   const eventId = event?.id || event?._id;
   const updateRoute = isAdmin ? "UpdateEvent" : "UpdateEventScreen";
 
-  // Compute gates locally (not via `useEventActionGate`) because that hook
-  // requires `event.taqnyatTemplate?.templateRef` for both canSendTest and
-  // canSchedule — and the host-side mobile payload doesn't always carry
-  // that field, which silently disabled every button. We keep the
-  // dependency order the user asked for (test first → schedule next) and
-  // delegate template validation to the backend on submit.
   const status = event?.status;
   const isCompleted = status === "completed";
   const isFailed = status === "failed";
@@ -209,7 +185,6 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
         </View>
       </View>
 
-      {/* Manage Event dropdown (modal sheet — same 4 steps as the web header) */}
       <Modal
         visible={showManageMenu}
         transparent

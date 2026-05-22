@@ -38,7 +38,7 @@ exports.getContent = catchAsync(async (req, res) => {
 exports.getHostContent = catchAsync(async (req, res) => {
   const result = await postEventService.getPostEventContent(
     req.params.eventId,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result);
 });
@@ -51,7 +51,7 @@ exports.uploadMedia = catchAsync(async (req, res) => {
   const result = await postEventService.uploadMedia(
     req.params.eventId,
     req.files,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Media uploaded successfully");
 });
@@ -64,7 +64,7 @@ exports.deleteMedia = catchAsync(async (req, res) => {
   await postEventService.deleteMedia(
     req.params.eventId,
     req.params.mediaId,
-    req.user._id
+    req.user
   );
   sendDeleted(res, "Media deleted");
 });
@@ -77,7 +77,7 @@ exports.updateThankYouMessage = catchAsync(async (req, res) => {
   const result = await postEventService.updateThankYouMessage(
     req.params.eventId,
     req.body,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Thank you message updated");
 });
@@ -91,7 +91,7 @@ exports.updateMessagingTemplate = catchAsync(async (req, res) => {
   const result = await postEventService.updateMessagingTemplate(
     req.params.eventId,
     req.body,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Messaging template updated");
 });
@@ -103,7 +103,7 @@ exports.updateMessagingTemplate = catchAsync(async (req, res) => {
 exports.publishContent = catchAsync(async (req, res) => {
   const result = await postEventService.publishContent(
     req.params.eventId,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Content published successfully");
 });
@@ -115,7 +115,7 @@ exports.publishContent = catchAsync(async (req, res) => {
 exports.unpublishContent = catchAsync(async (req, res) => {
   const result = await postEventService.unpublishContent(
     req.params.eventId,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Content unpublished successfully");
 });
@@ -168,7 +168,7 @@ exports.getComments = catchAsync(async (req, res) => {
 exports.generateBulkTokens = catchAsync(async (req, res) => {
   const result = await postEventService.generateBulkTokens(
     req.params.eventId,
-    req.user._id,
+    req.user,
     req.body
   );
   sendSuccess(res, result, "Tokens generated");
@@ -182,7 +182,7 @@ exports.generateBulkTokens = catchAsync(async (req, res) => {
 exports.sendBulkAccessLinks = catchAsync(async (req, res) => {
   const result = await postEventService.sendBulkAccessLinks(
     req.params.eventId,
-    req.user._id,
+    req.user,
     req.body
   );
   sendSuccess(res, result, "Access links sent");

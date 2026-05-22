@@ -84,10 +84,13 @@ const buildSendArgs = (event, guest, template, accessLink, expiresAt) => {
  */
 async function sendBulkAccessLinks(
   eventId,
-  userId,
+  user,
   { guestIds, filter = 'attended', taqnyatTemplateRef } = {}
 ) {
-  const event = await Event.findOne({ _id: eventId, host: userId })
+  // Import here to avoid a circular require with post-event.service.
+  const { buildScopedEventQuery } = require('./post-event.service');
+  const actorId = user?._id?.toString?.() || user?._id;
+  const event = await Event.findOne(buildScopedEventQuery(eventId, user))
     .populate('host', 'name username');
   if (!event) throw new NotFoundError('Event');
 
@@ -162,7 +165,7 @@ async function sendBulkAccessLinks(
             smsFallback
           );
         },
-        { scope: 'post_event_access', userId, requestHash }
+        { scope: 'post_event_access', userId: actorId, requestHash }
       );
     },
     { concurrency: 5, ratePerSecond: 10 }
@@ -194,7 +197,7 @@ async function sendBulkAccessLinks(
 
   logAudit({
     action: 'post_event.access_links_sent',
-    actor: { _id: userId },
+    actor: { _id: actorId },
     targetType: 'event',
     targetId: event._id,
     metadata: {

@@ -13,7 +13,7 @@
 
 .editButton {
   position: absolute;
-  left: 17px;
+  inset-inline-start: 17px;
   top: 17px;
   display: flex;
   padding: 10px;
@@ -59,7 +59,7 @@
   }
 
   .editButton {
-    right: 12px;
+    inset-inline-start: 12px;
     top: 12px;
     padding: 8px;
   }

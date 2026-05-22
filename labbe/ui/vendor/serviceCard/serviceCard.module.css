@@ -4,11 +4,12 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 10px;
-  flex: 1 0 0;
+  width: 100%;
   border-radius: 12px;
   background: var(--Content-bg-Card-bg-1, #fff);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  min-width: 360px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .cardContent {
@@ -214,17 +215,7 @@
   pointer-events: none;
 }
 
-@media (max-width: 1024px) {
-  .card {
-    min-width: 250px;
-  }
-}
-
 @media (max-width: 768px) {
-  .card {
-    min-width: 100%;
-  }
-
   .title {
     font-size: 16px;
     line-height: 24px;

@@ -3,6 +3,8 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   margin: 2rem 0;
+  width: 100%;
+  min-width: 0;
 }
 
 .whitelabelGrid {
@@ -13,6 +15,8 @@
   .chartsGrid,
   .whitelabelGrid {
     grid-template-columns: 1fr;
+    gap: 1.4rem;
+    margin: 1.4rem 0;
   }
 }
 
@@ -21,6 +25,22 @@
   border-radius: 1.2rem;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .chartBox {
+    padding: 1.4rem 1.2rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chartBox {
+    padding: 1.2rem 0.8rem;
+  }
 }
 
 /* Whitelabel analytics styles */

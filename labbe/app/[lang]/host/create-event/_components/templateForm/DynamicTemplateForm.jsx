@@ -34,6 +34,7 @@ export default function DynamicTemplateForm({
   const { t } = useTranslation("createEvent");
   const previewRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   const parentFormContext = useFormContext();
   const parentEventDate = parentFormContext?.watch("eventDate");
@@ -92,7 +93,7 @@ export default function DynamicTemplateForm({
   };
 
   return (
-    <div className={styles.wrapper}>
+    <>
       <PopupLayout isOpen={isOpen} onClose={onClose} size="full">
         <div className={styles.header}>
           <h2>{t("edit_design_template")}</h2>
@@ -117,6 +118,14 @@ export default function DynamicTemplateForm({
                   </div>
                 ))}
               </div>
+              <button
+                type="button"
+                className={styles.mobilePreviewBtn}
+                onClick={() => setShowMobilePreview(true)}
+              >
+                <img src="/svg/events/eye.svg" alt="preview" />
+                <span>{t("preview_invitation", "معاينة الدعوة")}</span>
+              </button>
               <div className={styles.buttonContainer}>
                 <Button
                   variant="secondary"
@@ -145,6 +154,29 @@ export default function DynamicTemplateForm({
           </FormProvider>
         </CardLayout>
       </PopupLayout>
-    </div>
+
+      <PopupLayout
+        isOpen={showMobilePreview}
+        onClose={() => setShowMobilePreview(false)}
+        size="auto"
+      >
+        <div className={styles.mobilePreviewModal}>
+          <button
+            type="button"
+            className={styles.mobilePreviewClose}
+            onClick={() => setShowMobilePreview(false)}
+            aria-label="close"
+          >
+            ×
+          </button>
+          <TemplatePreviewCanvas
+            template={template}
+            data={formData}
+            primaryColor={primaryColor}
+            fontFamilyOverride={fontFamilyOverride}
+          />
+        </div>
+      </PopupLayout>
+    </>
   );
 }

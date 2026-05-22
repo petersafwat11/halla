@@ -29,7 +29,7 @@ import VendorDetailsScreen from "../screens/admin/admin-dashboard/VendorDetailsS
 import WhitelabelDetailsScreen from "../screens/admin/admin-dashboard/WhitelabelDetailsScreen";
 import AdminEventsScreen from "../screens/admin/admin-dashboard/AdminEventsScreen";
 import EventDetailsScreen from "../screens/common/EventDetailsScreen";
-import CreateEventScreen from "../screens/admin/admin-dashboard/CreateEventScreen";
+import CreateEventScreen from "../screens/common/CreateEventScreen";
 // Phase 4d W1-MOBILE-UPDATE: admin route now resolves to the unified
 // update wizard (D2 — single update-event page used by all roles). The
 // admin-dashboard path stays as a re-export shim.
