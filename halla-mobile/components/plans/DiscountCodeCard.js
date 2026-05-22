@@ -12,13 +12,17 @@ import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const DiscountCodeCard = ({
   discountCode,
-  discountApplied,
-  validating,
+  applied,
+  loading,
+  amount,
+  appliedCode,
+  errorMessage,
   onCodeChange,
   onApply,
+  onRemove,
   t,
 }) => {
-  const disabled = discountApplied || !discountCode.trim() || validating;
+  const applyDisabled = !discountCode.trim() || loading;
 
   return (
     <View style={styles.card}>
@@ -36,41 +40,60 @@ const DiscountCodeCard = ({
           <TextInput
             style={[
               styles.discountInput,
-              discountApplied && styles.discountInputApplied,
+              applied && styles.discountInputApplied,
+              !!errorMessage && !applied && styles.discountInputError,
             ]}
             placeholder={t("summary.discount.placeholder")}
             placeholderTextColor={colors.natural[350]}
             value={discountCode}
             onChangeText={onCodeChange}
             autoCapitalize="characters"
-            editable={!discountApplied}
+            editable={!applied && !loading}
           />
-          <TouchableOpacity
-            style={[styles.applyButton, disabled && styles.applyButtonDisabled]}
-            onPress={onApply}
-            disabled={disabled}
-            activeOpacity={0.85}
-          >
-            {validating ? (
-              <ActivityIndicator size="small" color={colors.natural[50]} />
-            ) : discountApplied ? (
-              <>
-                <Ionicons
-                  name="checkmark"
-                  size={16}
-                  color={colors.natural[50]}
-                />
-                <Text style={styles.applyButtonText}>
-                  {t("summary.discount.applied")}
-                </Text>
-              </>
-            ) : (
+          {applied ? (
+            <TouchableOpacity
+              style={[styles.applyButton, styles.removeButton]}
+              onPress={onRemove}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="close" size={16} color={colors.natural[50]} />
               <Text style={styles.applyButtonText}>
-                {t("summary.discount.apply")}
+                {t("summary.discount.remove")}
               </Text>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.applyButton,
+                applyDisabled && styles.applyButtonDisabled,
+              ]}
+              onPress={onApply}
+              disabled={applyDisabled}
+              activeOpacity={0.85}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color={colors.natural[50]} />
+              ) : (
+                <Text style={styles.applyButtonText}>
+                  {t("summary.discount.apply")}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
+
+        {applied ? (
+          <Text style={styles.discountSuccess}>
+            {t("summary.discount.success", {
+              code: appliedCode,
+              amount: (amount || 0).toFixed(0),
+            })}
+          </Text>
+        ) : null}
+
+        {errorMessage && !applied ? (
+          <Text style={styles.discountErrorMsg}>{errorMessage}</Text>
+        ) : null}
       </View>
     </View>
   );
@@ -123,6 +146,9 @@ const styles = StyleSheet.create({
     borderColor: colors.success[300],
     color: colors.success[800],
   },
+  discountInputError: {
+    borderColor: colors.error[400],
+  },
   applyButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -137,10 +163,25 @@ const styles = StyleSheet.create({
   applyButtonDisabled: {
     backgroundColor: colors.primary[200],
   },
+  removeButton: {
+    backgroundColor: colors.error[500],
+  },
   applyButtonText: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.body.small,
     color: colors.natural[50],
+  },
+  discountSuccess: {
+    marginTop: spacing[8],
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.body.small,
+    color: colors.success[700],
+  },
+  discountErrorMsg: {
+    marginTop: spacing[8],
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.body.small,
+    color: colors.error[600],
   },
 });
 

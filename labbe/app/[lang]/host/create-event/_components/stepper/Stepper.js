@@ -13,12 +13,7 @@ const STEP_DEFAULTS = [
 ];
 
 const Stepper = ({ currentStep = 1, totalSteps = 5 }) => {
-  let t;
-  try {
-    ({ t } = useTranslation("createEvent"));
-  } catch (_) {
-    t = (_k, fb) => fb;
-  }
+  const { t } = useTranslation("createEvent");
   const steps = STEP_DEFAULTS.slice(0, totalSteps).map((s) => ({ id: s.id, label: t(s.key, s.fallback) }));
   return (
     <>

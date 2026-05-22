@@ -37,10 +37,9 @@ export const getEventStats = async (token) => {
   ]);
 
   const stats = statsData?.data || {};
-  // Backend `getMyEvents` returns `{ status, data: { events, pagination } }`
-  // via the events service formatter — read the single canonical path.
-  const events = Array.isArray(eventsData?.data?.events)
-    ? eventsData.data.events
+  // Backend `sendPaginated` returns `{ status, data: [...], pagination }`
+  const events = Array.isArray(eventsData?.data)
+    ? eventsData.data
     : [];
 
   const totalGuests = stats.totalGuests || 0;

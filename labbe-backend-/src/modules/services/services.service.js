@@ -9,7 +9,7 @@ const User = require('../../../models/UserModel');
 const mongoose = require('mongoose');
 const { NotFoundError } = require('../../shared/errors');
 const { SERVICE_STATUS, VENDOR_STATUS } = require('../../shared/constants');
-const { getFileUrl, getSignedUrlForKey, getKeyFromUrl, isS3Url } = require('../../shared/utils/s3Upload');
+const { getFileUrl, getSignedUrlForKey, getKeyFromUrl, isS3Url, signStoredImage } = require('../../shared/utils/s3Upload');
 const logger = require('../../shared/utils/logger');
 const { logAudit } = require('../../shared/utils/auditLog');
 const locationsService = require('../locations/locations.service');
@@ -282,6 +282,8 @@ class ServicesService {
       priceUnit: service.priceUnit || service.currency,
       image: await this._getImageUrl(service.image),
       tags: service.tags || [],
+      duration: service.duration || null,
+      included: service.included || [],
       status: service.status,
       isPublic: service.isPublic,
       rating: service.rating || 0,
@@ -293,8 +295,8 @@ class ServicesService {
             id: service.vendorId._id || service.vendorId,
             name: service.vendorId.name,
             brandName: service.vendorId.profile?.vendorData?.brandName,
-            logo: service.vendorId.profile?.vendorData?.businessLogo || null,
-            avatar: service.vendorId.avatar,
+            logo: await signStoredImage(service.vendorId.profile?.vendorData?.businessLogo),
+            avatar: await signStoredImage(service.vendorId.avatar),
             email: service.vendorId.email || null,
             phone: service.vendorId.mobile || service.vendorId.phoneNumber || null,
             website: service.vendorId.profile?.vendorData?.socialLinks?.website || null,

@@ -69,6 +69,15 @@
       "label": "سعر الخدمة",
       "placeholder": "ادخل سعر الخدمة"
     },
+    "duration": {
+      "label": "مدة تنفيذ الخدمة",
+      "placeholder": "مثال: 8-12 ساعة"
+    },
+    "included": {
+      "label": "ما الذي يتضمنه",
+      "placeholder": "اكتب عنصرًا ثم اضغط Enter",
+      "removeHint": "اضغط للحذف"
+    },
     "category": {
       "label": "اختر التصنيف",
       "placeholder": "اختر من التصنيفات أدناه"

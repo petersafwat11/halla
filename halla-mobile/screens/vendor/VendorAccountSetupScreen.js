@@ -8,22 +8,78 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
+
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import { useToast } from "../../contexts/ToastContext";
-import { useVendorProfile, useUpdateVendorProfile, useUpdateVendorProfileWithFiles } from "../../hooks";
+import {
+  useVendorProfile,
+  useUpdateVendorProfile,
+  useUpdateVendorProfileWithFiles,
+} from "../../hooks";
+import { vendorService } from "../../services/vendorService";
 import TopBar from "../../components/plans/TopBar";
 import PersonalInfoForm from "../../components/vendor/PersonalInfoForm";
+import BasicAccountInfoForm from "../../components/vendor/BasicAccountInfoForm";
 import ServiceDetailsForm from "../../components/vendor/ServiceDetailsForm";
 import ImagesAndPricingForm from "../../components/vendor/ImagesAndPricingForm";
 import AdditionalLinksForm from "../../components/vendor/AdditionalLinksForm";
 
+const isFileObj = (v) => v && typeof v === "object" && v.uri;
+const hasAnyFile = (obj) =>
+  Object.values(obj).some((v) =>
+    Array.isArray(v) ? v.some(isFileObj) : isFileObj(v)
+  );
+
+/**
+ * Build a FormData from a {fieldName: value} map where values may be
+ * react-native asset descriptors ({uri, mimeType, fileName}), arrays of
+ * those, plain scalars, or nested objects.
+ */
+const toFormData = (obj) => {
+  const fd = new FormData();
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value === null || value === undefined) return;
+    if (Array.isArray(value)) {
+      const hasFiles = value.some(isFileObj);
+      if (hasFiles) {
+        value.forEach((item, i) => {
+          if (!isFileObj(item)) return;
+          fd.append(key, {
+            uri: item.uri,
+            type: item.mimeType || "image/jpeg",
+            name: item.fileName || `${key}-${i}.jpg`,
+          });
+        });
+      } else {
+        fd.append(key, JSON.stringify(value));
+      }
+    } else if (isFileObj(value)) {
+      fd.append(key, {
+        uri: value.uri,
+        type: value.mimeType || "image/jpeg",
+        name: value.fileName || `${key}.jpg`,
+      });
+    } else if (typeof value === "object") {
+      fd.append(key, JSON.stringify(value));
+    } else {
+      fd.append(key, String(value));
+    }
+  });
+  return fd;
+};
+
 const VendorAccountSetupScreen = () => {
   const { t } = useTranslation("vendor");
   const toast = useToast();
+  const queryClient = useQueryClient();
+
   const { data: vendorData, isLoading, error, refetch } = useVendorProfile();
-  const updateMutation = useUpdateVendorProfile();
-  const updateWithFilesMutation = useUpdateVendorProfileWithFiles();
+  const updateSectionMutation = useUpdateVendorProfile();
+  const updateSectionWithFilesMutation = useUpdateVendorProfileWithFiles();
+
   const [refreshing, setRefreshing] = useState(false);
+  const [savingMain, setSavingMain] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -31,55 +87,71 @@ const VendorAccountSetupScreen = () => {
     setRefreshing(false);
   };
 
-  const handleSaveSection = async (section, data) => {
-    try {
-      const isFileObj = (v) => v && typeof v === "object" && v.uri;
-      const hasFiles = Object.values(data).some((value) =>
-        Array.isArray(value) ? value.some(isFileObj) : isFileObj(value),
-      );
+  const refetchProfile = () => {
+    queryClient.invalidateQueries({ queryKey: ["vendor", "profile"] });
+    refetch();
+  };
 
-      if (hasFiles) {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-          if (value === null || value === undefined) return;
-          if (Array.isArray(value)) {
-            const hasFileItems = value.some(isFileObj);
-            if (hasFileItems) {
-              value.forEach((item, i) => {
-                if (isFileObj(item)) {
-                  formData.append(key, {
-                    uri: item.uri,
-                    type: item.mimeType || "image/jpeg",
-                    name: item.fileName || `${key}-${i}.jpg`,
-                  });
-                }
-              });
-            } else {
-              formData.append(key, JSON.stringify(value));
-            }
-          } else if (isFileObj(value)) {
-            formData.append(key, {
-              uri: value.uri,
-              type: value.mimeType || "image/jpeg",
-              name: value.fileName || `${key}.jpg`,
-            });
-          } else if (typeof value === "object") {
-            formData.append(key, JSON.stringify(value));
-          } else {
-            formData.append(key, String(value));
-          }
+  // ---- Send a vendorData section update (JSON or multipart) ----------------
+  const saveVendorSection = async (sectionData) => {
+    if (!sectionData || Object.keys(sectionData).length === 0) return;
+    try {
+      if (hasAnyFile(sectionData)) {
+        await updateSectionWithFilesMutation.mutateAsync({
+          section: "vendorData",
+          formData: toFormData(sectionData),
         });
-        await updateWithFilesMutation.mutateAsync({ section, formData });
       } else {
-        await updateMutation.mutateAsync({ section, data });
+        await updateSectionMutation.mutateAsync({
+          section: "vendorData",
+          data: sectionData,
+        });
       }
       toast.success(t("settings.saveSuccess"));
-    } catch (error) {
-      toast.error(t("settings.saveError"));
+      refetchProfile();
+    } catch (err) {
+      toast.error(err.message || t("settings.saveError"));
     }
   };
 
-  const isSaving = updateMutation.isPending || updateWithFilesMutation.isPending;
+  // ---- Send a top-level user update (name/email/avatar) ---------------------
+  const saveMainProfile = async (mainData) => {
+    if (!mainData || Object.keys(mainData).length === 0) return;
+    setSavingMain(true);
+    try {
+      if (hasAnyFile(mainData)) {
+        await vendorService.updateProfileWithFiles(toFormData(mainData));
+      } else {
+        await vendorService.updateProfile(mainData);
+      }
+      refetchProfile();
+    } catch (err) {
+      toast.error(err.message || t("settings.saveError"));
+      throw err;
+    } finally {
+      setSavingMain(false);
+    }
+  };
+
+  // ---- Adapter for PersonalInfoForm / BasicAccountInfoForm ------------------
+  const savePersonalInfo = async ({ main, vendor }) => {
+    try {
+      if (main && Object.keys(main).length > 0) {
+        await saveMainProfile(main);
+      }
+      if (vendor && Object.keys(vendor).length > 0) {
+        await saveVendorSection(vendor);
+      }
+      toast.success(t("settings.saveSuccess"));
+    } catch (_e) {
+      // saveMainProfile already toasted
+    }
+  };
+
+  const isSaving =
+    updateSectionMutation.isPending ||
+    updateSectionWithFilesMutation.isPending ||
+    savingMain;
 
   if (isLoading) {
     return (
@@ -120,13 +192,29 @@ const VendorAccountSetupScreen = () => {
         >
           <PersonalInfoForm
             data={{
-              name: vendorData?.roleData?.ownerFullName || vendorData?.name || "",
+              name:
+                vendorData?.roleData?.ownerFullName ||
+                vendorData?.name ||
+                "",
               email: vendorData?.email || "",
               avatar: vendorData?.roleData?.businessLogo || vendorData?.avatar,
             }}
-            onSave={(data) => handleSaveSection("vendorData", data)}
+            onSave={savePersonalInfo}
             loading={isSaving}
           />
+
+          <BasicAccountInfoForm
+            data={{
+              ownerFullName: vendorData?.roleData?.ownerFullName || "",
+              brandName: vendorData?.roleData?.brandName || "",
+              email: vendorData?.email || "",
+              phoneNumber: vendorData?.mobile || vendorData?.phoneNumber || "",
+            }}
+            onSave={savePersonalInfo}
+            onPhoneChanged={refetchProfile}
+            loading={isSaving}
+          />
+
           <ServiceDetailsForm
             data={{
               serviceDescription: vendorData?.roleData?.serviceDescription || "",
@@ -136,17 +224,20 @@ const VendorAccountSetupScreen = () => {
               serviceLocation: vendorData?.roleData?.serviceLocation || {},
               serviceCategories: vendorData?.roleData?.serviceCategories || [],
             }}
-            onSave={(data) => handleSaveSection("vendorData", data)}
+            onSave={saveVendorSection}
             loading={isSaving}
           />
+
           <ImagesAndPricingForm
             data={{
               portfolioImages: vendorData?.roleData?.portfolioImages || [],
               pricePackages: vendorData?.roleData?.pricePackages || [],
             }}
-            onSave={(data) => handleSaveSection("vendorData", data)}
+            onSave={saveVendorSection}
+            onRefetch={refetchProfile}
             loading={isSaving}
           />
+
           <AdditionalLinksForm
             data={{
               website: vendorData?.roleData?.socialLinks?.website || "",
@@ -155,7 +246,7 @@ const VendorAccountSetupScreen = () => {
               twitter: vendorData?.roleData?.socialLinks?.twitter || "",
               tiktok: vendorData?.roleData?.socialLinks?.tiktok || "",
             }}
-            onSave={(data) => handleSaveSection("vendorData", data)}
+            onSave={(data) => saveVendorSection(data)}
             loading={isSaving}
           />
         </ScrollView>
@@ -169,10 +260,16 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F9F4EF" },
   content: { flex: 1 },
   loadingContainer: {
-    flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 60,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
   },
   errorContainer: {
-    flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 60,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
   },
   errorText: {
     fontSize: 16,

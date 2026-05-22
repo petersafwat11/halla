@@ -36,7 +36,7 @@ const ROLES = [
   },
 ];
 
-function RoleCard({ role, index, onPress }) {
+function RoleCard({ role, index, onPress, isRTL }) {
   const { t } = useTranslation("auth");
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(28)).current;
@@ -62,35 +62,41 @@ function RoleCard({ role, index, onPress }) {
   return (
     <Animated.View style={{ opacity, transform: [{ translateY }] }}>
       <TouchableOpacity
-        style={styles.card}
+        style={[
+          styles.card,
+          isRTL ? styles.cardRTL : styles.cardLTR,
+          isRTL
+            ? { borderRightWidth: 3, borderRightColor: role.accentColor }
+            : { borderLeftWidth: 3, borderLeftColor: role.accentColor },
+        ]}
         onPress={() => onPress(role.id)}
         activeOpacity={0.72}
       >
-        {/* Left accent bar */}
-        <View
-          style={[styles.accentBar, { backgroundColor: role.accentColor }]}
-        />
-
-        {/* Icon box */}
-        <View style={[styles.iconBox, { backgroundColor: role.bgColor }]}>
+        <View style={[styles.iconBox, { backgroundColor: role.bgColor }, isRTL ? styles.iconBoxRTL : styles.iconBoxLTR]}>
           <Ionicons name={role.icon} size={26} color={role.accentColor} />
         </View>
-
-        {/* Text */}
         <View style={styles.cardText}>
-          <Text style={styles.cardTitle}>{t(role.titleKey)}</Text>
-          <Text style={styles.cardDesc}>{t(role.descKey)}</Text>
+          <Text style={[styles.cardTitle, isRTL && styles.cardTitleRTL]}>
+            {t(role.titleKey)}
+          </Text>
+          <Text style={[styles.cardDesc, isRTL && styles.cardDescRTL]}>
+            {t(role.descKey)}
+          </Text>
         </View>
-
-        {/* Arrow */}
-        <Ionicons name="chevron-forward" size={18} color="#a0a0a0" />
+        <View style={styles.spacer} />
+        <Ionicons
+          name={isRTL ? "chevron-back" : "chevron-forward"}
+          size={18}
+          color="#a0a0a0"
+          style={isRTL ? styles.chevronRTL : styles.chevronLTR}
+        />
       </TouchableOpacity>
     </Animated.View>
   );
 }
 
 export default function RoleSelectionView({ onSelectRole, onLogin }) {
-  const { t } = useTranslation("auth");
+  const { t, isRTL } = useTranslation("auth");
 
   const headerOpacity = useRef(new Animated.Value(0)).current;
   const headerY = useRef(new Animated.Value(-18)).current;
@@ -113,7 +119,6 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <Animated.View
         style={[
           styles.header,
@@ -127,7 +132,6 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
         <Text style={styles.subtitle}>{t("signup.selectRoleDescription")}</Text>
       </Animated.View>
 
-      {/* Role cards */}
       <View style={styles.cards}>
         {ROLES.map((role, i) => (
           <RoleCard
@@ -135,12 +139,12 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
             role={role}
             index={i}
             onPress={onSelectRole}
+            isRTL={isRTL}
           />
         ))}
       </View>
 
-      {/* Login link */}
-      <View style={styles.loginRow}>
+      <View style={[styles.loginRow, isRTL && { flexDirection: "row-reverse" }]}>
         <Text style={styles.loginText}>{t("signup.hasAccount")} </Text>
         <TouchableOpacity onPress={onLogin}>
           <Text style={styles.loginLink}>{t("signup.signIn")}</Text>
@@ -195,19 +199,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 16,
     overflow: "hidden",
-    paddingVertical: 18,
-    paddingRight: 18,
+    paddingVertical: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 10,
     elevation: 3,
   },
-  accentBar: {
-    width: 4,
-    alignSelf: "stretch",
-    borderRadius: 2,
-    marginRight: 16,
+  spacer: {
+    flexGrow: 1,
+    flexShrink: 0,
+  },
+  cardLTR: {
+    paddingLeft: 17,
+    paddingRight: 18,
+  },
+  cardRTL: {
+    paddingLeft: 18,
+    paddingRight: 17,
   },
   iconBox: {
     width: 52,
@@ -215,10 +224,15 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 14,
+  },
+  iconBoxLTR: {
+    marginRight: 10,
+  },
+  iconBoxRTL: {
+    marginLeft: 10,
   },
   cardText: {
-    flex: 1,
+    flexShrink: 1,
   },
   cardTitle: {
     fontSize: 16,
@@ -226,11 +240,23 @@ const styles = StyleSheet.create({
     color: "#2c2c2c",
     marginBottom: 3,
   },
+  cardTitleRTL: {
+    textAlign: "right",
+  },
   cardDesc: {
     fontSize: 13,
     fontFamily: "Cairo_400Regular",
     color: "#a0a0a0",
     lineHeight: 20,
+  },
+  cardDescRTL: {
+    textAlign: "right",
+  },
+  chevronLTR: {
+    marginLeft: 4,
+  },
+  chevronRTL: {
+    marginRight: 4,
   },
   loginRow: {
     flexDirection: "row",

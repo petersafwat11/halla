@@ -38,6 +38,33 @@ exports.updateMyProfileSection = catchAsync(async (req, res) => {
   sendSuccess(res, result, `${section} updated successfully`);
 });
 
+exports.sendPhoneChangeOtp = catchAsync(async (req, res) => {
+  const { phoneNumber } = req.body;
+  const lang = req.user?.preferredLanguage || "ar";
+  const result = await usersService.sendPhoneChangeOtp(
+    req.user._id,
+    phoneNumber,
+    lang
+  );
+  sendSuccess(res, result, "OTP sent to the new phone number");
+});
+
+exports.updatePhone = catchAsync(async (req, res) => {
+  const { phoneNumber, otp } = req.body;
+  const result = await usersService.updatePhone(req.user._id, phoneNumber, otp);
+  sendSuccess(res, result, "Phone number updated successfully");
+});
+
+exports.deleteVendorImage = catchAsync(async (req, res) => {
+  const { field, key } = req.body;
+  const result = await usersService.deleteVendorImage(
+    req.user._id,
+    field,
+    key
+  );
+  sendSuccess(res, result, "Image deleted successfully");
+});
+
 exports.getNotificationPreferences = catchAsync(async (req, res) => {
   const result = await usersService.getNotificationPreferences(req.user._id);
   sendSuccess(res, result);

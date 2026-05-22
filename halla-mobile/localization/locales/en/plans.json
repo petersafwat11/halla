@@ -25,7 +25,7 @@
     "currency": { "sar": "SAR" }
   },
   "compensation": { "title": "Free Compensation Invites", "invites": "compensation invites" },
-  "buttons": { "subscribeNow": "Contact Us", "subscribeAction": "Subscribe Now" },
+  "buttons": { "subscribeNow": "Contact Us", "subscribeAction": "Subscribe Now", "continueToSummary": "Continue to Summary" },
   "errors": { "loadFailed": "Failed to load plans", "selectPlan": "Please select a plan.", "noPlansAvailable": "No plans available", "retry": "Retry" },
   "eventTab": {
     "hint": "1 event per plan — valid 90 days · 1,200 SAR one-time setup fee",
@@ -112,6 +112,7 @@
       "placeholder": "Enter discount code",
       "apply": "Apply",
       "applied": "Applied",
+      "remove": "Remove",
       "success": "✓ Code \"{{code}}\" — {{amount}} SAR off",
       "invalidDefault": "Invalid discount code",
       "networkError": "Could not verify code. Please try again"
@@ -145,9 +146,40 @@
     "proceedButton": "Proceed to Payment"
   },
   "toasts": {
-    "success": "Subscription activated!",
-    "failed": "Failed to activate. Please try again.",
-    "subscriptionPartial": "Subscription activated; {{count}} add-on(s) need follow-up — our team will reach out."
+    "subscriptionCreated": "Subscription activated successfully!",
+    "subscriptionFailed": "Failed to activate subscription. Please try again.",
+    "subscriptionPartial": "Subscription activated; {{count}} add-on(s) need follow-up — our team will reach out.",
+    "alreadyActive": "You have an active subscription."
+  },
+  "checkout": {
+    "method": {
+      "card": "Card",
+      "applepay": "Apple Pay",
+      "stcpay": "STC Pay"
+    },
+    "card": {
+      "name": "Cardholder name",
+      "number": "Card number",
+      "month": "MM",
+      "year": "YYYY",
+      "cvc": "CVC",
+      "secureNote": "Your card details are encrypted and processed securely."
+    },
+    "stcpay": {
+      "mobile": "Mobile number",
+      "note": "You'll receive a confirmation prompt in your STC Pay app."
+    },
+    "applepay": {
+      "note": "You'll be prompted by Apple Pay on the next step."
+    },
+    "errors": {
+      "cardIncomplete": "Please fill in all card details.",
+      "cardNumberInvalid": "Card number looks invalid.",
+      "expiryInvalid": "Expiry date looks invalid.",
+      "cvcInvalid": "CVC looks invalid.",
+      "stcMobileInvalid": "Enter a valid Saudi mobile number (starts with 05).",
+      "applepayUnavailable": "Apple Pay is not yet available on mobile. Please choose another method."
+    }
   },
   "features": {
     "title": "Included Features"

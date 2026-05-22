@@ -11,6 +11,7 @@ import styles from "./TicketsTable.module.css";
 const STATUS_CLASS_MAP = {
   open: styles.statusOpen,
   in_progress: styles.statusInProgress,
+  waiting_response: styles.statusWaitingResponse,
   resolved: styles.statusResolved,
   closed: styles.statusClosed,
 };
@@ -138,6 +139,7 @@ export default function TicketTableContent({
         { label: i18nT("dateRange.all"), value: "" },
         { label: i18nT("status.open"), value: "open" },
         { label: i18nT("status.inProgress"), value: "in_progress" },
+        { label: i18nT("status.waitingResponse"), value: "waiting_response" },
         { label: i18nT("status.resolved"), value: "resolved" },
         { label: i18nT("status.closed"), value: "closed" },
       ]}

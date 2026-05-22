@@ -6,7 +6,7 @@ import EventsService from "../../../services/EventsService";
 import Button from "../../commen/Button";
 
 export default function GuestForm({ isLimitReached }) {
-  const { t } = useTranslation("admin");
+  const { t } = useTranslation("createEvent");
   const { setValue, watch } = useFormContext();
   const formData = watch();
 
@@ -16,7 +16,7 @@ export default function GuestForm({ isLimitReached }) {
 
   const handleAddGuest = useCallback(() => {
     if (isLimitReached) {
-      Alert.alert(t("events.guestLimit.title"), t("events.guestLimit.message"), [{ text: t("common.ok") }]);
+      Alert.alert(t("guest_limit_reached"), t("upgrade_hint"), [{ text: t("close") }]);
       return;
     }
     const guest = { name: guestName, phone: guestPhone };
@@ -34,10 +34,10 @@ export default function GuestForm({ isLimitReached }) {
   return (
     <View style={styles.form}>
       <View style={styles.inputWrapper}>
-        <Text style={styles.inputLabel}>{t("events.guest.nameLabel")}</Text>
+        <Text style={styles.inputLabel}>{t("guest_name")}</Text>
         <TextInput
           style={[styles.textInput, guestErrors.name && styles.textInputError, isLimitReached && styles.textInputDisabled]}
-          placeholder={t("events.guest.namePlaceholder")}
+          placeholder={t("guest_name_placeholder")}
           placeholderTextColor="#999"
           value={guestName}
           onChangeText={setGuestName}
@@ -46,10 +46,10 @@ export default function GuestForm({ isLimitReached }) {
         {guestErrors.name && <Text style={styles.errorText}>{t(guestErrors.name)}</Text>}
       </View>
       <View style={styles.inputWrapper}>
-        <Text style={styles.inputLabel}>{t("events.guest.phoneLabel")}</Text>
+        <Text style={styles.inputLabel}>{t("guest_phone")}</Text>
         <TextInput
           style={[styles.textInput, guestErrors.phone && styles.textInputError, isLimitReached && styles.textInputDisabled]}
-          placeholder={t("events.guest.phonePlaceholder")}
+          placeholder={t("guest_phone_placeholder")}
           placeholderTextColor="#999"
           value={guestPhone}
           onChangeText={setGuestPhone}
@@ -59,7 +59,7 @@ export default function GuestForm({ isLimitReached }) {
         {guestErrors.phone && <Text style={styles.errorText}>{t(guestErrors.phone)}</Text>}
       </View>
       <Button
-        text={t("events.guest.addGuest")}
+        text={t("add_guest")}
         onPress={handleAddGuest}
         disabled={!guestName.trim() || !guestPhone.trim() || isLimitReached}
       />

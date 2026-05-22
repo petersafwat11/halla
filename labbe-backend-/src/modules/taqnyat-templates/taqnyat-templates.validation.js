@@ -38,13 +38,45 @@ const createTemplateSchema = z
     }
   });
 
+const TEMPLATE_TYPES = [
+  'invite',
+  'reminder_confirmed',
+  'reminder_pending',
+  'post_event',
+  'staff_access',
+];
+
 const assignMappingSchema = z
   .object({
     category: z.string().nullable().optional(),
+    type: z.enum(TEMPLATE_TYPES).nullable().optional(),
     varMapping: z.array(varMappingEntry).optional(),
     active: z.boolean().optional(),
     sortOrder: z.number().int().min(0).optional(),
   })
+  .strict()
+  .superRefine((data, ctx) => {
+    // staff_access is global (no category required); all other typed
+    // assignments require a category so cron lookups by (category,type) work.
+    if (data.type && data.type !== 'staff_access' && data.category === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['category'],
+        message: 'category is required for this template type',
+      });
+    }
+  });
+
+const listForHostQuerySchema = z
+  .object({
+    category: z.string().optional(),
+    type: z.enum(TEMPLATE_TYPES).optional(),
+  })
   .strict();
 
-module.exports = { createTemplateSchema, assignMappingSchema };
+module.exports = {
+  createTemplateSchema,
+  assignMappingSchema,
+  listForHostQuerySchema,
+  TEMPLATE_TYPES,
+};

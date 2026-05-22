@@ -21,7 +21,7 @@ const STEP_FIELDS = {
   1: ['identity.arabicName', 'identity.englishName', 'identity.companyName', 'identity.licenseNumber', 'identity.address.city', 'identity.address.neighborhood', 'identity.address.street', 'identity.address.buildingNumber', 'identity.address.additionalNumber'],
   2: ['loginData.email', 'loginData.phoneNumber'],
   3: ['systemRequirements.numberOfEventsMonthly', 'systemRequirements.numberOfGuestsMonthly', 'systemRequirements.eventTypes'],
-  4: [],
+  4: ['planSelection.planCode'],
   5: [],
 };
 
@@ -37,14 +37,15 @@ export default function WhitelabelSignupScreen({ navigation }) {
       identity: { arabicName: '', englishName: '', companyName: '', licenseNumber: '', taxNumber: '', address: { city: '', neighborhood: '', street: '', buildingNumber: '', additionalNumber: '', placeType: '', placeNumber: '' } },
       loginData: { email: '', phoneNumber: '' },
       systemRequirements: { numberOfEventsMonthly: '', numberOfGuestsMonthly: '', eventTypes: [], eventsTypesOther: '' },
-      planSelection: { billingCycle: 'monthly', needsCustomBranding: false },
+      planSelection: { billingCycle: 'yearly', needsCustomBranding: false },
     },
   });
 
   const { trigger, handleSubmit, formState: { isSubmitting } } = methods;
   const { mutateAsync: signupWhitelabel, isPending } = useWhitelabelSignup();
 
-  const STEPS = Array.from({ length: TOTAL_STEPS }, (_, i) => ({ id: i + 1, desc: t('signupForm.whiteLabel.steps.' + i + '.label') }));
+  const STEP_KEYS = ['identity', 'login', 'requirements', 'choosePlan', 'summary'];
+  const STEPS = STEP_KEYS.map((key, i) => ({ id: i + 1, desc: t(`signupForm.whiteLabel.steps.${key}`) }));
 
   const handleNext = useCallback(async () => {
     const fields = STEP_FIELDS[currentStep];

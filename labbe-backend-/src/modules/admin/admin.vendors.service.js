@@ -86,9 +86,23 @@ async function getVendorById(vendorId, whitelabelId) {
     throw new NotFoundError('Vendor');
   }
 
+  const { signStoredImage, signStoredImages } = require('../../shared/utils/s3Upload');
+  const vd = vendor.profile?.vendorData || {};
+  const signedVendorData = {
+    ...vd,
+    businessLogo: await signStoredImage(vd.businessLogo),
+    nationalIdImage: await signStoredImage(vd.nationalIdImage),
+    commercialRecordImage: await signStoredImage(vd.commercialRecordImage),
+    profileFile: await signStoredImage(vd.profileFile),
+    cv: await signStoredImage(vd.cv),
+    portfolioImages: await signStoredImages(vd.portfolioImages),
+    pricePackages: await signStoredImages(vd.pricePackages),
+  };
+
   return {
     ...formatUserResponse(vendor),
-    vendorData: vendor.profile?.vendorData || {},
+    avatar: await signStoredImage(vendor.avatar),
+    vendorData: signedVendorData,
   };
 }
 

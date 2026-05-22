@@ -2,10 +2,14 @@
 import styles from "./singleEvent.module.css";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
-import EventHeader from "./_components/EventHeader";
-import EventStats from "./_components/EventStats";
-import GuestTable from "./_components/GuestTable";
-import EventFailureBannerClient from "./_components/EventFailureBannerClient";
+import {
+  HostEventHeader,
+  EventStats,
+  GuestTable,
+  EventFailureBannerClient,
+  AutoReminderInfoText,
+  ScheduleReminderSection,
+} from "@/components/event-detail";
 
 export default async function SingleEventPage({ params }) {
   const { id } = await params;
@@ -38,8 +42,10 @@ export default async function SingleEventPage({ params }) {
   return (
     <QueryClientServerProvider queryClient={queryClient}>
       <div className={styles.page}>
-        <EventHeader eventId={id} />
+        <HostEventHeader eventId={id} />
         <EventFailureBannerClient eventId={id} />
+        <AutoReminderInfoText />
+        <ScheduleReminderSection eventId={id} />
         <div>
           <div className={styles.statsData}>
             <EventStats eventId={id} />

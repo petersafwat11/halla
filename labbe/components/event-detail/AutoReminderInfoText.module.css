@@ -1,0 +1,21 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.4rem;
+  border-radius: 0.8rem;
+  background: #eef6ff;
+  color: #1f3a5f;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  margin-bottom: 1.2rem;
+}
+
+.dot {
+  color: #3b82f6;
+  font-size: 0.8rem;
+}
+
+.text {
+  flex: 1;
+}

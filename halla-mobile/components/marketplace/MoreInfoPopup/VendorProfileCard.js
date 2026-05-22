@@ -4,28 +4,32 @@ import { useTranslation } from "../../../localization";
 
 const VendorProfileCard = ({ vendor }) => {
   const { t } = useTranslation("marketplace");
+  const companyName = vendor.companyName || vendor.name || t("vendor.defaultName");
+  const hasRating = vendor.rating != null && Number(vendor.rating) > 0;
+  const reviewCount = Number(vendor.reviewCount) || 0;
+
+  if (!companyName && !vendor.logo && !hasRating) return null;
 
   return (
     <View style={styles.vendorCard}>
       <View style={styles.vendorHeader}>
         <View style={styles.vendorInfo}>
           <View style={styles.vendorDetails}>
-            <Text style={styles.vendorName}>
-              {vendor.companyName || t("vendor.defaultName")}
-            </Text>
-            <View style={styles.vendorStats}>
-              <View style={styles.stat}>
-                <Text style={styles.statValue}>
-                  ({vendor.reviewCount || "127"} {t("vendor.users")})
-                </Text>
-                <Text style={styles.statLabel}>{vendor.rating || "4.9"}</Text>
+            <Text style={styles.vendorName}>{companyName}</Text>
+            {(hasRating || reviewCount > 0) && (
+              <View style={styles.vendorStats}>
+                <View style={styles.stat}>
+                  {reviewCount > 0 && (
+                    <Text style={styles.statValue}>
+                      ({reviewCount} {t("vendor.users")})
+                    </Text>
+                  )}
+                  {hasRating && (
+                    <Text style={styles.statLabel}>{Number(vendor.rating).toFixed(1)}</Text>
+                  )}
+                </View>
               </View>
-              <View style={styles.stat}>
-                <Text style={styles.statValue}>
-                  {vendor.experience || "10"} {t("vendor.years")}
-                </Text>
-              </View>
-            </View>
+            )}
           </View>
           {vendor.logo && (
             <Image source={{ uri: vendor.logo }} style={styles.vendorLogo} resizeMode="contain" />

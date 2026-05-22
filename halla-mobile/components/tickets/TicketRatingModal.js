@@ -16,10 +16,11 @@ import { useTranslation } from "../../localization";
 import { useRateTicket } from "../../hooks";
 import { useToast } from "../../contexts/ToastContext";
 
-const RATING_LABELS = ["veryPoor", "poor", "average", "good", "excellent"];
+const RATING_LABEL_KEYS = ["veryPoor", "poor", "average", "good", "excellent"];
 
 const TicketRatingModal = ({ visible, onClose, ticket }) => {
-  const { t } = useTranslation("tickets");
+  const { t } = useTranslation("ticketRating");
+  const { t: tTickets } = useTranslation("tickets");
   const toast = useToast();
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -60,10 +61,10 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
     const ticketId = ticket?._id || ticket?.id;
     try {
       await rateTicketMutation.mutateAsync({ ticketId, rating, feedback: feedback.trim() });
-      toast.success(t("rating.success"));
+      toast.success(t("success.title"));
       handleClose();
     } catch (error) {
-      toast.error(t("rating.error"));
+      toast.error(t("errors.submitFailed"));
     }
   };
 
@@ -108,7 +109,7 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>{t("rating.title")}</Text>
+            <Text style={styles.title}>{t("title")}</Text>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={handleClose}
@@ -129,7 +130,7 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
               <View style={styles.ticketInfo}>
                 <Ionicons name="ticket-outline" size={20} color="#c28e5c" />
                 <Text style={styles.ticketType} numberOfLines={1}>
-                  {t(`types.${ticket.type}`)}
+                  {tTickets(`types.${ticket.type}`)}
                 </Text>
               </View>
             )}
@@ -140,7 +141,7 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
               <View style={styles.starsContainer}>{renderStars()}</View>
               {rating > 0 && (
                 <Text style={styles.ratingLabel}>
-                  {t(`rating.labels.${rating}`)}
+                  {t(`rating.${RATING_LABEL_KEYS[rating - 1]}`)}
                 </Text>
               )}
               {!!ratingError && (
@@ -150,12 +151,12 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
 
             {/* Feedback */}
             <View style={styles.section}>
-              <Text style={styles.label}>{t("rating.feedback")}</Text>
+              <Text style={styles.label}>{t("feedback.label")}</Text>
               <TextInput
                 style={styles.textArea}
                 value={feedback}
                 onChangeText={setFeedback}
-                placeholder={t("rating.feedbackPlaceholder")}
+                placeholder={t("feedback.placeholder")}
                 placeholderTextColor="#a0a0a0"
                 multiline
                 numberOfLines={4}
@@ -174,7 +175,7 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
               disabled={rateTicketMutation.isPending}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>{t("rating.cancel")}</Text>
+              <Text style={styles.cancelButtonText}>{t("buttons.cancel")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -188,8 +189,8 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
             >
               <Text style={styles.submitButtonText}>
                 {rateTicketMutation.isPending
-                  ? t("rating.submitting")
-                  : t("rating.submit")}
+                  ? t("buttons.submitting")
+                  : t("buttons.submit")}
               </Text>
             </TouchableOpacity>
           </View>

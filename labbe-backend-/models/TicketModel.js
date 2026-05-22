@@ -20,6 +20,7 @@ const TicketSchema = new mongoose.Schema(
     subject: {
       type: String,
       trim: true,
+      minlength: 5,
       maxlength: 200,
       required: true,
     },
@@ -27,6 +28,7 @@ const TicketSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      minlength: 10,
       maxlength: 5000,
     },
     type: {

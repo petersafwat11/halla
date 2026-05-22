@@ -44,11 +44,11 @@ const PersonalInfoSection = ({ data, onSave }) => {
           name: formData.name,
           email: formData.email,
         };
-        // Only include password if provided
         if (formData.newPassword) {
+          updateData.currentPassword = formData.currentPassword;
           updateData.newPassword = formData.newPassword;
+          updateData.passwordConfirm = formData.confirmPassword;
         }
-        // Handle avatar file upload
         if (formData.avatar?.files && formData.avatar.files.length > 0) {
           updateData.businessLogo = formData.avatar.files[0];
         }

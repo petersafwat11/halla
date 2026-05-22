@@ -9,8 +9,8 @@ const VendorStep3SamplesPackages = () => {
   const { t } = useTranslation('auth');
   return (
     <View style={styles.container}>
-      <Text style={styles.stepTitle}>{t('signupForm.vendor.samplesAndPackages.sectionTitle')}</Text>
-      <Text style={styles.stepDesc}>{t('signupForm.vendor.samplesAndPackages.sectionDesc')}</Text>
+      <Text style={styles.stepTitle}>{t('signupForm.vendor.samplesAndPackages.title')}</Text>
+      <Text style={styles.stepDesc}>{t('signupForm.vendor.samplesAndPackages.description')}</Text>
 
       <SectionCard title={t('signupForm.vendor.samplesAndPackages.portfolioSection')} icon="images-outline">
         <MultiImageInput
@@ -35,6 +35,14 @@ const VendorStep3SamplesPackages = () => {
           label={t('signupForm.vendor.samplesAndPackages.packagesLabel')}
           placeholder={t('signupForm.vendor.samplesAndPackages.packagesPlaceholder')}
           multiple={true}
+        />
+      </SectionCard>
+
+      <SectionCard title={t('signupForm.vendor.samplesAndPackages.profileFileLabel')} icon="document-attach-outline">
+        <ImageInput
+          name="samplesAndPackages.profileFile"
+          label={t('signupForm.vendor.samplesAndPackages.profileFileLabel')}
+          placeholder={t('signupForm.vendor.samplesAndPackages.profileFilePlaceholder')}
         />
       </SectionCard>
     </View>

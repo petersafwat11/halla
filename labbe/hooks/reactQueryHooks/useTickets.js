@@ -45,6 +45,25 @@ export const useTicketAssignees = (options = {}) => {
 };
 
 /**
+ * Hook to fetch a single ticket by ID
+ * @param {string} ticketId
+ * @returns {UseQueryResult}
+ */
+export const useTicket = (ticketId, options = {}) => {
+  return useQuery({
+    queryKey: ["tickets", ticketId],
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.tickets.getTicketById(ticketId),
+      }),
+    enabled: !!ticketId,
+    staleTime: 2 * 60 * 1000,
+    ...options,
+  });
+};
+
+/**
  * Hook to fetch ticket minimal data for rating page
  * @param {string} ticketId
  * @returns {UseQueryResult}

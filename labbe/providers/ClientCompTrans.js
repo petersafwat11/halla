@@ -1,6 +1,6 @@
 "use client";
 
-import { I18nextProvider } from "react-i18next";
+import { I18nextProvider, initReactI18next } from "react-i18next";
 import { createInstance } from "i18next";
 import React, { useEffect, useMemo } from "react";
 
@@ -10,10 +10,13 @@ export default function ClientComponentsTranslationsProvider({
   namespaces,
   resources,
 }) {
-  // Create i18n instance synchronously with resources from server
+  // Create i18n instance synchronously with resources from server.
+  // initImmediate: false makes init() complete synchronously when resources
+  // are pre-loaded — required so SSR-rendered client components can call
+  // t(..., { returnObjects: true }) and get the array back, not the key string.
   const i18n = useMemo(() => {
     const instance = createInstance();
-    instance.init({
+    instance.use(initReactI18next).init({
       lng: locale,
       fallbackLng: locale,
       supportedLngs: ["en", "ar"],
@@ -21,6 +24,7 @@ export default function ClientComponentsTranslationsProvider({
       fallbackNS: namespaces[0],
       ns: namespaces,
       resources: resources || {},
+      initImmediate: false,
       interpolation: {
         escapeValue: false,
       },

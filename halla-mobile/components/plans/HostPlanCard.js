@@ -19,6 +19,7 @@ const HostPlanCard = ({
   billingType,
   selectedInvites,
   onInviteChange,
+  features,
   compensationCount = 0,
   onSubscribe,
 }) => {
@@ -32,7 +33,8 @@ const HostPlanCard = ({
     [plans, billingType, selectedInvites]
   );
 
-  const price = matchedPlan?.pricing?.oneTime || 0;
+  const price = matchedPlan?.price || 0;
+  const effectiveFeatures = features ?? matchedPlan?.featuresArray;
 
   return (
     <View style={[styles.card, isPopular && styles.cardPopular]}>
@@ -66,7 +68,7 @@ const HostPlanCard = ({
         </Text>
       </View>
 
-      <PlanFeatureRow features={matchedPlan?.featuresArray} />
+      <PlanFeatureRow features={effectiveFeatures} />
 
       {/* Compensation */}
       <View style={styles.compensation}>

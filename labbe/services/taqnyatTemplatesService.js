@@ -13,10 +13,10 @@ const buildQuery = (params = {}) => {
 
 export const taqnyatTemplatesService = {
   /** Host-facing — used by wizard StepFour after the category in step 3 is locked. */
-  getTemplates: ({ category } = {}) =>
+  getTemplates: ({ category, type } = {}) =>
     apiRequest({
       method: "GET",
-      path: `${API_PATHS.taqnyatTemplates.list}${buildQuery({ category })}`,
+      path: `${API_PATHS.taqnyatTemplates.list}${buildQuery({ category, type })}`,
     }),
 
   // Admin

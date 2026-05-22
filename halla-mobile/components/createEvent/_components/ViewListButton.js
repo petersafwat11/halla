@@ -12,7 +12,9 @@ export default function ViewListButton({ count, onPress, t }) {
   return (
     <TouchableOpacity style={styles.viewListButton} onPress={onPress} activeOpacity={0.7}>
       <ListIcon />
-      <Text style={styles.viewListButtonText}>{t("events.viewList", { count })}</Text>
+      <Text style={styles.viewListButtonText}>
+        {t("guest_list_title")} ({count})
+      </Text>
     </TouchableOpacity>
   );
 }

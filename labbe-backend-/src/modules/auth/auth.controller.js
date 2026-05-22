@@ -187,7 +187,7 @@ exports.refresh = catchAsync(async (req, res) => {
   setAuthCookies(res, result);
 
   sendAuthResponse(res, {
-    user: authService.sanitizeUser(result.user),
+    user: await authService.sanitizeUser(result.user),
     accessToken: result.accessToken,
     refreshToken: result.refreshToken,
     statusCode: 200,
@@ -548,7 +548,7 @@ exports.setupPassword = catchAsync(async (req, res) => {
   setAuthCookies(res, tokens);
 
   sendAuthResponse(res, {
-    user: user.toPublicJSON ? user.toPublicJSON() : user,
+    user: user.toPublicJSON ? await user.toPublicJSON() : user,
     accessToken: tokens.accessToken,
     refreshToken: tokens.refreshToken,
     statusCode: 200,

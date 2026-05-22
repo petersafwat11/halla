@@ -18,11 +18,30 @@ import TopBar from '../../components/plans/TopBar';
 
 const TOTAL_STEPS = 6;
 
+const CATEGORY_KEYS = [
+  'eventPlanning',
+  'mediaProduction',
+  'giftsAndGiveaways',
+  'foodAndBeverages',
+  'beautyAndFashion',
+  'logisticsAndDelivery',
+  'corporateServices',
+  'supportServices',
+  'technicalServices',
+  'soundLightingEntertainment',
+  'hallsAndVenues',
+];
+
 const STEP_FIELDS = {
-  1: ['identity.brandName', 'identity.ownerFullName', 'identity.phoneNumber', 'identity.email', 'identity.password', 'identity.passwordConfirm'],
-  2: ['serviceData.serviceDescription', 'serviceData.serviceCategories'],
-  3: [],
-  4: [],
+   1: ['identity.brandName', 'identity.ownerFullName', 'identity.phoneNumber', 'identity.email', 'identity.password', 'identity.passwordConfirm'],
+  2: [
+    'serviceData.serviceDescription',
+    ...CATEGORY_KEYS.map((k) => `serviceData.${k}`),
+    'serviceData.serviceLocation',
+    'serviceData.otherData',
+  ],
+  3: ['samplesAndPackages.portfolioImages', 'samplesAndPackages.pricePackages'],
+  4: ['commercialVerification.commercialRecordNumber', 'commercialVerification.nationalId'],
   5: [],
   6: [],
 };
@@ -32,26 +51,45 @@ export default function VendorSignupScreen({ navigation }) {
   const toast = useToast();
   const [currentStep, setCurrentStep] = useState(1);
 
+  const categoryDefaults = {};
+  CATEGORY_KEYS.forEach((k) => { categoryDefaults[k] = []; });
+
   const methods = useForm({
     resolver: zodResolver(vendorSignupSchema),
     mode: 'onTouched',
     defaultValues: {
       identity: { brandName: '', ownerFullName: '', phoneNumber: '', email: '', password: '', passwordConfirm: '' },
-      serviceData: { serviceDescription: '', serviceCategories: { eventPlanning: [], mediaProduction: [], giftsAndGiveaways: [] } },
-      samplesAndPackages: { portfolioImages: [], pricePackages: [] },
-      commercialVerification: { nationalId: '', nationalIdImage: null, commercialRecordImage: null },
-      socialLinks: { website: '', instagram: '', facebook: '', twitter: '', tiktok: '' },
+      serviceData: {
+        serviceDescription: '',
+        eventPlanning: [],
+        mediaProduction: [],
+        giftsAndGiveaways: [],
+        foodAndBeverages: [],
+        beautyAndFashion: [],
+        logisticsAndDelivery: [],
+        corporateServices: [],
+        supportServices: [],
+        technicalServices: [],
+        soundLightingEntertainment: [],
+        hallsAndVenues: [],
+        serviceLocation: { regionId: 0, regionNameAr: '', regionNameEn: '', cityId: null, cityNameAr: '', cityNameEn: '', districtIds: [], districtNames: [], coverageType: 'city' },
+        otherData: '',
+      },
+      samplesAndPackages: { portfolioImages: [], businessLogo: null, pricePackages: [], profileFile: null },
+      commercialVerification: { commercialRecordNumber: '', commercialRecordImage: null, nationalId: '', nationalIdImage: null },
+      socialLinks: { instagram: '', facebook: '', tiktok: '', twitter: '', website: '' },
     },
   });
 
   const { trigger, handleSubmit, formState: { isSubmitting } } = methods;
   const { mutateAsync: signupVendor, isPending } = useVendorSignup();
 
-  const STEPS = Array.from({ length: TOTAL_STEPS }, (_, i) => ({ id: i + 1, desc: t('signupForm.vendor.steps.' + i + '.label') }));
+  const STEP_KEYS = ['identity', 'serviceData', 'samplesAndPackages', 'commercialVerification', 'socialLinks', 'summary'];
+  const STEPS = STEP_KEYS.map((key, i) => ({ id: i + 1, desc: t(`signupForm.vendor.steps.${key}`) }));
 
   const handleNext = async () => {
     const fields = STEP_FIELDS[currentStep];
-    if (fields.length > 0) { const valid = await trigger(fields); if (!valid) return; }
+    if (fields && fields.length > 0) { const valid = await trigger(fields); if (!valid) return; }
     setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS));
   };
 

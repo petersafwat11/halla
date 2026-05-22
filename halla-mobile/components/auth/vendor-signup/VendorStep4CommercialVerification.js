@@ -8,8 +8,8 @@ const VendorStep4CommercialVerification = () => {
   const { t } = useTranslation('auth');
   return (
     <View style={styles.container}>
-      <Text style={styles.stepTitle}>{t('signupForm.vendor.commercialVerification.sectionTitle')}</Text>
-      <Text style={styles.stepDesc}>{t('signupForm.vendor.commercialVerification.sectionDesc')}</Text>
+      <Text style={styles.stepTitle}>{t('signupForm.vendor.commercialVerification.title')}</Text>
+      <Text style={styles.stepDesc}>{t('signupForm.vendor.commercialVerification.description')}</Text>
 
       <SectionCard title={t('signupForm.vendor.commercialVerification.commercialRecordSection')} icon="document-outline">
         <TextInput
@@ -17,6 +17,7 @@ const VendorStep4CommercialVerification = () => {
           label={t('signupForm.vendor.commercialVerification.commercialRecordNumber')}
           placeholder={t('signupForm.vendor.commercialVerification.commercialRecordNumberPlaceholder')}
           keyboardType="numeric"
+          maxLength={10}
         />
         <ImageInput
           name="commercialVerification.commercialRecordImage"

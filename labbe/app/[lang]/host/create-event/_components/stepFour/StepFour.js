@@ -75,7 +75,7 @@ const StepFour = () => {
   const category = visualTemplate?.categories?.[0] || "";
 
   const { data, isLoading, error } = useHostTaqnyatTemplates(
-    { category: category || undefined },
+    { category: category || undefined, type: "invite" },
     { enabled: true }
   );
   const templates = data?.data?.templates || [];

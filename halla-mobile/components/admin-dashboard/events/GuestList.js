@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../../localization";
 import {
   colors,
   spacing,
@@ -31,6 +32,7 @@ const FILTERS = [
 ];
 
 const GuestList = ({ guests = [], onRefresh, loading }) => {
+  const { t } = useTranslation("events");
   const [activeFilter, setActiveFilter] = useState("all");
 
   const filtered = useMemo(() => {
@@ -42,6 +44,14 @@ const GuestList = ({ guests = [], onRefresh, loading }) => {
     const rsvpKey = item.rsvpStatus?.toLowerCase();
     const rsvpCfg = RSVP_CONFIG[rsvpKey] || { color: "#666", bg: "#F5F5F5", label: item.rsvpStatus || "—" };
 
+    // Read straight from the embedded invitation sub-doc that
+    // `getEventGuests` returns (see guests.service._formatGuest). When
+    // the data comes from `getEventById` we still get the same shape.
+    const inv = item.invitation || {};
+    const autoSent = inv.autoReminderSent;
+    const extraSent = inv.extraReminderSent;
+    const extraScheduled = inv.extraReminderScheduled;
+
     return (
       <View style={styles.guestRow}>
         <View style={styles.guestInfo}>
@@ -52,6 +62,36 @@ const GuestList = ({ guests = [], onRefresh, loading }) => {
             <Text style={styles.guestEmail} numberOfLines={1}>
               {item.email || item.user?.email}
             </Text>
+          ) : null}
+          {(autoSent || extraSent || extraScheduled) ? (
+            <View style={styles.reminderBadgesRow}>
+              {autoSent ? (
+                <View style={[styles.reminderBadge, styles.reminderBadgeSent]}>
+                  <Ionicons name="time-outline" size={10} color="#2A8C5B" />
+                  <Text style={styles.reminderBadgeText}>
+                    {t("guestTableExtras.autoReminder", "Auto reminder")} ·{" "}
+                    {t("guestTableExtras.sent", "Sent")}
+                  </Text>
+                </View>
+              ) : null}
+              {extraSent ? (
+                <View style={[styles.reminderBadge, styles.reminderBadgeSent]}>
+                  <Ionicons name="alarm-outline" size={10} color="#2A8C5B" />
+                  <Text style={styles.reminderBadgeText}>
+                    {t("guestTableExtras.extraReminder", "Extra reminder")} ·{" "}
+                    {t("guestTableExtras.sent", "Sent")}
+                  </Text>
+                </View>
+              ) : extraScheduled ? (
+                <View style={[styles.reminderBadge, styles.reminderBadgeScheduled]}>
+                  <Ionicons name="alarm-outline" size={10} color="#1F6FB6" />
+                  <Text style={[styles.reminderBadgeText, { color: "#1F6FB6" }]}>
+                    {t("guestTableExtras.extraReminder", "Extra reminder")} ·{" "}
+                    {t("guestTableExtras.scheduled", "Scheduled")}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
           ) : null}
         </View>
         <View style={styles.guestRight}>
@@ -227,6 +267,24 @@ const styles = StyleSheet.create({
     gap: spacing[8],
   },
   emptyText: { ...textStyles.bodyMedium, color: colors.natural[400] },
+
+  reminderBadgesRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing[4],
+    marginTop: spacing[4],
+  },
+  reminderBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: spacing[8],
+    paddingVertical: 2,
+    borderRadius: borderRadius[20],
+  },
+  reminderBadgeSent: { backgroundColor: "#EAF4EF" },
+  reminderBadgeScheduled: { backgroundColor: "#E8F4FD" },
+  reminderBadgeText: { fontSize: 10, fontWeight: "600", color: "#2A8C5B" },
 });
 
 export default GuestList;

@@ -34,6 +34,13 @@ const VendorStep5SocialLinks = () => {
           keyboardType="url"
         />
         <TextInput
+          name="socialLinks.twitter"
+          label={t('signupForm.vendor.socialLinks.twitter')}
+          placeholder={t('signupForm.vendor.socialLinks.twitterPlaceholder')}
+          autoCapitalize="none"
+          keyboardType="url"
+        />
+        <TextInput
           name="socialLinks.website"
           label={t('signupForm.vendor.socialLinks.website')}
           placeholder={t('signupForm.vendor.socialLinks.websitePlaceholder')}

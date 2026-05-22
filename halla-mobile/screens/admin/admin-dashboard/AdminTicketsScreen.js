@@ -25,7 +25,7 @@ import ExportButton from "../../../components/admin-dashboard/common/ExportButto
 import BulkActionsBar from "../../../components/admin-dashboard/common/BulkActionsBar";
 import { backgrounds, colors } from "../../../styles/tokens";
 
-const STATUS_FILTER_IDS = ["all", "open", "in_progress", "resolved", "closed"];
+const STATUS_FILTER_IDS = ["all", "open", "in_progress", "waiting_response", "resolved", "closed"];
 
 const AdminTicketsScreen = () => {
   const navigation = useNavigation();
@@ -84,17 +84,20 @@ const AdminTicketsScreen = () => {
     [rawTickets],
   );
 
-  const filterOptions = useMemo(
-    () =>
-      STATUS_FILTER_IDS.map((id) => ({
-        id,
-        label:
-          id === "all"
-            ? t("tickets.filters.all")
-            : t(`tickets.filters.${id === "in_progress" ? "inProgress" : id}`),
-      })),
-    [t]
-  );
+  const filterOptions = useMemo(() => {
+    const filterKey = {
+      all: "all",
+      open: "open",
+      in_progress: "inProgress",
+      waiting_response: "waitingResponse",
+      resolved: "resolved",
+      closed: "closed",
+    };
+    return STATUS_FILTER_IDS.map((id) => ({
+      id,
+      label: t(`tickets.filters.${filterKey[id]}`),
+    }));
+  }, [t]);
 
   const filtered = useMemo(() => {
     let result = tickets;

@@ -75,6 +75,7 @@ const StepFour = () => {
 
   const { data, isLoading, error } = useHostTaqnyatTemplates({
     category: category || undefined,
+    type: "invite",
   });
 
   const templates = data?.data?.templates || [];
@@ -119,10 +120,10 @@ const StepFour = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ── Taqnyat template picker ──────────────────────────── */}
         <View style={styles.header}>
-          <Text style={styles.sectionTitle}>اختر قالب الواتساب</Text>
+          <Text style={styles.sectionTitle}>{t("step4_title")}</Text>
           {category ? (
             <View style={styles.filterRow}>
-              <Text style={styles.subtitle}>تم الفلترة حسب الفئة:</Text>
+              <Text style={styles.subtitle}>{t("step4_description")}</Text>
               <View style={styles.categoryChip}>
                 <Text style={styles.categoryChipText}>
                   {categoryLabel(category)}
@@ -130,7 +131,7 @@ const StepFour = () => {
               </View>
             </View>
           ) : (
-            <Text style={styles.subtitle}>اختر قالباً معتمداً من Meta</Text>
+            <Text style={styles.subtitle}>{t("step4_description")}</Text>
           )}
         </View>
 
@@ -180,7 +181,7 @@ const StepFour = () => {
                           <Ionicons name="mail-outline" size={14} color="#A87040" />
                         </View>
                         <Text style={styles.cardLabelText}>
-                          {tplCategory ? categoryLabel(tplCategory) : "نص الدعوة"}
+                          {tplCategory ? categoryLabel(tplCategory) : t("invitation_message_label")}
                         </Text>
                       </View>
                     </View>
@@ -205,10 +206,8 @@ const StepFour = () => {
 
         {/* ── Auto-replies ─────────────────────────────────────── */}
         <View style={styles.repliesSection}>
-          <Text style={styles.sectionTitle}>الردود التلقائية</Text>
-          <Text style={styles.hint}>
-            تُرسل تلقائياً للضيف فور اختياره — يمكنك تعديل النص
-          </Text>
+          <Text style={styles.sectionTitle}>{t("auto_replies")}</Text>
+          <Text style={styles.hint}>{t("auto_replies_hint")}</Text>
 
           <View style={styles.tabsRow}>
             {REPLY_TABS.map((tab) => (
@@ -228,7 +227,7 @@ const StepFour = () => {
           <TextInput
             value={activeReplyValue}
             onChangeText={handleReplyChange}
-            placeholder="اكتب الرد التلقائي هنا"
+            placeholder={t("auto_reply_placeholder")}
             placeholderTextColor="#999"
             multiline
             numberOfLines={4}

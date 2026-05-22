@@ -92,6 +92,15 @@ const subscriptionSchema = new mongoose.Schema(
     invitePool:       { type: Number, default: null },
     compensationPool: { type: Number, default: null },
     invitesConsumed:  { type: Number, default: 0 },
+
+    // Extra-reminder quota — fed by purchased EXTRA_REMINDERS addons.
+    // 1 reminder = 1 message to 1 guest. `remindersReserved` is the count
+    // currently held by pending scheduled-extra-reminder docs; consume on
+    // successful send moves Reserved → Consumed, failure refunds Reserved.
+    remindersPool:     { type: Number, default: 0 },
+    remindersConsumed: { type: Number, default: 0 },
+    remindersReserved: { type: Number, default: 0 },
+
     activatedAt:      { type: Date, default: null },
     expiresAt:        { type: Date, default: null },
 
@@ -192,6 +201,10 @@ subscriptionSchema.virtual("isPoolSubscription").get(function () {
 subscriptionSchema.virtual("invitesRemaining").get(function () {
   if (this.invitePool === null) return null;
   return (this.invitePool || 0) + (this.compensationPool || 0) - (this.invitesConsumed || 0);
+});
+
+subscriptionSchema.virtual("remindersRemaining").get(function () {
+  return (this.remindersPool || 0) - (this.remindersConsumed || 0) - (this.remindersReserved || 0);
 });
 
 // Days remaining in current period
@@ -484,6 +497,10 @@ subscriptionSchema.methods.getSummary = function () {
     compensationPool: this.compensationPool,
     invitesConsumed: this.invitesConsumed,
     invitesRemaining: this.invitesRemaining,
+    remindersPool: this.remindersPool || 0,
+    remindersConsumed: this.remindersConsumed || 0,
+    remindersReserved: this.remindersReserved || 0,
+    remindersRemaining: this.remindersRemaining,
     activatedAt: this.activatedAt,
     expiresAt: this.expiresAt,
     pricePaid: this.pricePaid,
@@ -610,6 +627,66 @@ subscriptionSchema.statics.releaseInvites = async function (subscriptionId, coun
   return this.findByIdAndUpdate(
     subscriptionId,
     { $inc: { invitesConsumed: -count } },
+    { new: true }
+  );
+};
+
+/**
+ * Reserve N extra reminders. Atomic — throws INSUFFICIENT_REMINDER_QUOTA
+ * when remindersPool - consumed - reserved < count. Used at schedule time.
+ */
+subscriptionSchema.statics.reserveReminders = async function (subscriptionId, count) {
+  const res = await this.findOneAndUpdate(
+    {
+      _id: subscriptionId,
+      $expr: {
+        $gte: [
+          {
+            $subtract: [
+              {
+                $subtract: [
+                  { $ifNull: ['$remindersPool', 0] },
+                  { $ifNull: ['$remindersConsumed', 0] },
+                ],
+              },
+              { $ifNull: ['$remindersReserved', 0] },
+            ],
+          },
+          count,
+        ],
+      },
+    },
+    { $inc: { remindersReserved: count } },
+    { new: true }
+  );
+  if (!res) {
+    const err = new Error('INSUFFICIENT_REMINDER_QUOTA');
+    err.code = 'INSUFFICIENT_REMINDER_QUOTA';
+    throw err;
+  }
+  return res;
+};
+
+/**
+ * Release N previously-reserved extra reminders (cancel or send-failed).
+ */
+subscriptionSchema.statics.releaseReservedReminders = async function (subscriptionId, count) {
+  if (!count) return null;
+  return this.findByIdAndUpdate(
+    subscriptionId,
+    { $inc: { remindersReserved: -count } },
+    { new: true }
+  );
+};
+
+/**
+ * Move N from reserved → consumed (successful send).
+ */
+subscriptionSchema.statics.consumeReservedReminders = async function (subscriptionId, count) {
+  if (!count) return null;
+  return this.findByIdAndUpdate(
+    subscriptionId,
+    { $inc: { remindersReserved: -count, remindersConsumed: count } },
     { new: true }
   );
 };

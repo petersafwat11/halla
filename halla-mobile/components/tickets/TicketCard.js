@@ -27,10 +27,8 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case "open":
-      case "pending":
         return "#f39c12";
       case "in_progress":
-      case "inProgress":
         return "#3498db";
       case "waiting_response":
         return "#9b59b6";
@@ -82,9 +80,9 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
               activeOpacity={0.7}
             >
               <Ionicons name="create-outline" size={16} color="#3498db" />
-              <Text style={[styles.actionText, styles.editText]}>
-                {t("card.edit")}
-              </Text>
+                  <Text style={[styles.actionText, styles.editText]}>
+                    {t("actions.edit")}
+                  </Text>
             </TouchableOpacity>
           )}
 
@@ -97,7 +95,7 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
               >
                 <Ionicons name="star-outline" size={16} color="#f39c12" />
                 <Text style={[styles.actionText, styles.rateText]}>
-                  {t("rating.rateButton")}
+                  {t("ratingInline.rateButton")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -109,7 +107,7 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
           >
             <Ionicons name="trash-outline" size={16} color="#e74c3c" />
             <Text style={[styles.actionText, styles.deleteText]}>
-              {t("card.delete")}
+              {t("actions.delete")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -124,7 +122,7 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
       <View style={styles.bottom}>
         <View style={styles.dateContainer}>
           <Text style={styles.createdLabel}>
-            {t("card.created")}
+            {t("createdAt")}
           </Text>
           <Text style={styles.date}>{date}</Text>
           <Text style={styles.time}>{time}</Text>
@@ -151,7 +149,7 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
               />
             ))}
           </View>
-          <Text style={styles.ratedLabel}>{t("rating.alreadyRated")}</Text>
+          <Text style={styles.ratedLabel}>{t("ratingInline.alreadyRated")}</Text>
         </View>
       )}
     </Animated.View>

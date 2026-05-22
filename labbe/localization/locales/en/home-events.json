@@ -169,7 +169,13 @@
       "name": "Name",
       "phone": "Phone",
       "status": "Status",
-      "respondAt": "Response Date"
+      "respondAt": "Response Date",
+      "autoReminder": "Auto reminder",
+      "extraReminder": "Extra reminder"
+    },
+    "cell": {
+      "sent": "Sent",
+      "scheduled": "Scheduled"
     },
     "channel": {
       "whatsapp": "WhatsApp",
@@ -199,6 +205,46 @@
     }
   },
   "singleEvent": {
+    "autoReminderInfo": "We automatically send a reminder to your guests 24 hours before the event.",
+    "scheduleReminder": {
+      "heading": "Extra reminders",
+      "button": "Schedule extra reminder",
+      "modalTitle": "Schedule extra reminder",
+      "typeLabel": "Reminder type",
+      "typeConfirmed": "For guests who confirmed",
+      "typePending": "For guests who did not respond or chose maybe",
+      "type": {
+        "reminder_confirmed": "Confirmed guests",
+        "reminder_pending": "No-response / maybe"
+      },
+      "guestsLabel": "Select guests",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "noEligibleGuests": "No eligible guests for this reminder type.",
+      "dateLabel": "Send at",
+      "dateMin": "Earliest: in 5 minutes",
+      "dateMax": "Latest: 24 hours before the event",
+      "quotaLabel": "Quota",
+      "quotaValue": "{{used}} of {{remaining}} available",
+      "guestCount": "{{count}} guest(s)",
+      "submit": "Schedule",
+      "cancel": "Cancel",
+      "cancelAction": "Cancel reminder",
+      "cancelConfirm": "Cancel this scheduled reminder? Quota will be refunded.",
+      "scheduledList": "Scheduled reminders",
+      "noScheduled": "No scheduled extra reminders",
+      "scheduledFor": "Scheduled for {{when}}",
+      "scheduledOk": "Reminder scheduled",
+      "cancelledOk": "Reminder cancelled",
+      "errors": {
+        "dateOutOfRange": "Date must be between 5 minutes from now and 24 hours before the event",
+        "noGuests": "Select at least one guest",
+        "insufficientQuota": "You don't have enough reminder quota",
+        "noTemplate": "No reminder template is configured for this category. Contact support.",
+        "generic": "Could not schedule the reminder",
+        "cancelFailed": "Could not cancel the reminder"
+      }
+    },
     "header": {
       "eventDetails": "Event Details",
       "ourInvitation": "Our Invitation",

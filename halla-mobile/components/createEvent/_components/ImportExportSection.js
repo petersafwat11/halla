@@ -18,7 +18,7 @@ const DownloadIcon = () => (
 );
 
 export default function ImportExportSection({ isLimitReached, isUnlimited, guestLimit }) {
-  const { t } = useTranslation("admin");
+  const { t } = useTranslation("createEvent");
   const { setValue, watch } = useFormContext();
   const formData = watch();
 
@@ -27,30 +27,30 @@ export default function ImportExportSection({ isLimitReached, isUnlimited, guest
   const [showImportErrors, setShowImportErrors] = useState(false);
 
   const GUEST_HEADERS = [
-    { key: "name", label: t("events.import.nameHeader") },
-    { key: "phone", label: t("events.import.phoneHeader") },
+    { key: "name", label: t("excel_guest_name") },
+    { key: "phone", label: t("excel_phone_number") },
   ];
 
   const validateImportRow = useCallback((rowData) => {
     const errors = [];
-    if (!rowData.name || !rowData.name.trim()) errors.push(t("events.import.nameRequired"));
+    if (!rowData.name || !rowData.name.trim()) errors.push(t("validation.name_required"));
     if (!rowData.phone || !rowData.phone.trim()) {
-      errors.push(t("events.import.phoneRequired"));
+      errors.push(t("validation.mobile_required"));
     } else if (!/^5[0-9]{8}$/.test(rowData.phone.trim())) {
-      errors.push(t("events.import.phoneInvalid"));
+      errors.push(t("validation.mobile_format_import"));
     }
     return { isValid: errors.length === 0, errors };
   }, [t]);
 
   const handleExportTemplate = useCallback(async () => {
-    const sampleData = [{ name: t("events.import.sampleName"), phone: "512345678" }];
-    const result = await exportTemplateXLSX(GUEST_HEADERS, sampleData, t("events.import.templateName"));
-    if (!result.success) Alert.alert(t("common.error"), result.message);
+    const sampleData = [{ name: t("excel_sample_name"), phone: "512345678" }];
+    const result = await exportTemplateXLSX(GUEST_HEADERS, sampleData, t("excel_template_filename"));
+    if (!result.success) Alert.alert(t("errors.boundary"), result.message);
   }, [t]);
 
   const handleImportGuests = useCallback(async () => {
     if (isLimitReached) {
-      Alert.alert(t("events.guestLimit.title"), t("events.guestLimit.message"), [{ text: t("common.ok") }]);
+      Alert.alert(t("guest_limit_reached"), t("upgrade_hint"), [{ text: t("close") }]);
       return;
     }
 
@@ -62,7 +62,7 @@ export default function ImportExportSection({ isLimitReached, isUnlimited, guest
       const result = await importFromXLSX(GUEST_HEADERS, validateImportRow);
       if (result.canceled) return;
       if (!result.success) {
-        Alert.alert(t("events.import.errorTitle"), result.message);
+        Alert.alert(t("import_errors"), result.message);
         return;
       }
 
@@ -89,19 +89,16 @@ export default function ImportExportSection({ isLimitReached, isUnlimited, guest
         setShowImportErrors(true);
       }
 
-      const skippedMsg = skipped > 0 ? `\n${t("events.import.skipped", { count: skipped })}` : "";
-      const dupMsg = uniqueGuests.length < result.data.length
-        ? `\n${t("events.import.duplicates", { count: result.data.length - uniqueGuests.length })}`
-        : "";
+      const message =
+        skipped > 0 || toInsert.length === 0
+          ? toInsert.length === 0
+            ? t("import_limit_full")
+            : t("import_limit_partial", { inserted: toInsert.length, skipped })
+          : t("success.guest_list_updated");
 
-      Alert.alert(
-        t("events.import.successTitle"),
-        `${t("events.import.successMessage", { count: toInsert.length })}.${dupMsg}${skippedMsg}${
-          result.errors.length > 0 ? `\n${t("events.import.rowsWithErrors", { count: result.errors.length })}` : ""
-        }`,
-      );
+      Alert.alert(t("bulk_import"), message);
     } catch (error) {
-      Alert.alert(t("common.error"), t("events.import.importError"));
+      Alert.alert(t("errors.boundary"), t("errors.create_failed"));
     } finally {
       setIsImporting(false);
     }
@@ -122,27 +119,27 @@ export default function ImportExportSection({ isLimitReached, isUnlimited, guest
             <UploadIcon disabled={isLimitReached} />
           )}
           <Text style={[styles.importExportBtnText, isLimitReached && styles.importExportBtnTextDisabled]}>
-            {t("events.import.importExcel")}
+            {t("bulk_import")}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.importExportBtn} onPress={handleExportTemplate} activeOpacity={0.7}>
           <DownloadIcon />
-          <Text style={styles.importExportBtnText}>{t("events.import.downloadTemplate")}</Text>
+          <Text style={styles.importExportBtnText}>{t("download_template")}</Text>
         </TouchableOpacity>
       </View>
 
       {showImportErrors && importErrors.length > 0 && (
         <View style={styles.importErrorsBox}>
           <View style={styles.importErrorsHeader}>
-            <Text style={styles.importErrorsTitle}>{t("events.import.errorsTitle", { count: importErrors.length })}</Text>
+            <Text style={styles.importErrorsTitle}>{t("import_errors")}</Text>
             <TouchableOpacity onPress={() => setShowImportErrors(false)}>
               <Text style={styles.importErrorsClose}>✕</Text>
             </TouchableOpacity>
           </View>
           {importErrors.map((err, idx) => (
             <Text key={idx} style={styles.importErrorItem}>
-              • {t("events.import.row", { row: err.row })}: {err.errors.join("، ")}
+              • {t("row")} {err.row}: {err.errors.join("، ")}
             </Text>
           ))}
         </View>

@@ -1,0 +1,37 @@
+- generic [ref=e1]:
+  - alert [ref=e55]
+  - main [ref=e56]:
+    - generic [ref=e57]:
+      - generic [ref=e58]:
+        - generic [ref=e60]:
+          - img "Yahoo" [ref=e62]
+          - generic [ref=e63]:
+            - link "Help" [ref=e64] [cursor=pointer]:
+              - /url: https://help.yahoo.com/kb/index?locale=en_US&page=product&y=PROD_ACCT
+            - link "Terms" [ref=e65] [cursor=pointer]:
+              - /url: https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html
+            - link "Privacy" [ref=e66] [cursor=pointer]:
+              - /url: https://legal.yahoo.com/us/en/yahoo/privacy/index.html
+        - generic [ref=e68]:
+          - paragraph [ref=e69]: salembamehriz@yahoo.com
+          - heading "Enter your password" [level=1] [ref=e71]
+          - generic [ref=e72]:
+            - generic [ref=e73]:
+              - generic [ref=e74]:
+                - generic [ref=e76]: Password
+                - generic [ref=e78]:
+                  - textbox "Password" [active] [ref=e80]:
+                    - /placeholder: ""
+                  - button "Show password" [ref=e82] [cursor=pointer]:
+                    - img [ref=e84]
+              - link "Forgot password" [ref=e88] [cursor=pointer]
+            - button "Next" [ref=e90] [cursor=pointer]:
+              - generic [ref=e91]: Next
+      - iframe [ref=e95]:
+        - iframe [ref=f26e4]:
+          - generic [ref=f36e1]:
+            - link [ref=f36e2] [cursor=pointer]:
+              - /url: https://googleads.g.doubleclick.net/pcs/click?xai=AKAOjssD77n6iPYAa27Rlu3EVsOio1vW_52pRr48rDiT4J_x9WIzEmKTDaETbRui7meOTYocT6WQ_qbjHI4GqbwswW7MDM_SL5UG-oyQepB2v8ukGeTmiO8DN4MfmHOsnhBI9Upa3bnqJ2wf6WlWieP8ckW2z_sFRIG4C2WhbHpgAQjeyAbtjtp_ilOFHHBhngY85yiztm9E9lINu-lAEOLgFOdksBXG9jUQjFaiKRDAeiDHRwToQsKiOPKES68_Sg_5JQ61E9MH26WqHGsKlBjVXxv2vZfi2NlHKyVaHC41J1gbY4v2-D0CxqrC2XHHYgIvvMy-NNy1hzqvjd0Cpc27MnxkK3A3pr25T7tfZtfT9THZ_yiRwfdzdn0FQJBMqKAh6KUmebgjd4pohQFRKjh69JUYlSjpbOnlFzmWSWD8iz8Jzvabl32AJRQ&sai=AMfl-YQ28Jf3rc0F5SeDYZY9bnAJjdUFa3lreQowVlFlB-HP63Lbsfrhkx3ic8VtV3BvJSrH9s91s_2651IrZYM_rH43GIjmhxkTCYHIjj3pz5vR1UzTZwmFpfYvTQ2XcpKmdZ7KMjU-0N9dyXZy8yfFultyeMOU9af0d15O9nLg3GEXHYxK_Vp8k2yGpRUJk92FA6dHXC1sBZihS2vOYG1OwYAOCh0f7aY5z-x2-dQsNGAvYeBCNrmKlsnJONLCO9wQyVyYNEi9A_B6NABCL65IDBJuwC_hjUP0PF-IxhsHIW2joCKhHxrGVFwon0nxawF7ROWG1YSwk6BRWk9JzUiJKwJ1CEqUjYbubDgz3gOzjDlqI38maAc5INpv5hwRW1dcjtKIxoG5-HpbKdWF&sig=Cg0ArKJSzAM9boNGarum&fbs_aeid=%5Bgw_fbsaeid%5D&adurl=https://finance.yahoo.com%3Fncid%3D100001231
+            - img [ref=f36e6] [cursor=pointer]
+            - button [ref=f36e8] [cursor=pointer]:
+              - img [ref=f36e9]

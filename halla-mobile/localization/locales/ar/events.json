@@ -195,5 +195,45 @@
       "thanksMaybe": "شكراً لردك. يمكنك تحديث ردك في أي وقت من نفس الرابط.",
       "alreadyResponded": "تم تسجيل ردك مسبقاً."
     }
+  },
+  "autoReminderInfo": "نُرسل تذكيراً تلقائياً للضيوف قبل المناسبة بـ 24 ساعة.",
+  "scheduleReminder": {
+    "heading": "تذكيرات إضافية",
+    "button": "جدولة تذكير إضافي",
+    "modalTitle": "جدولة تذكير إضافي",
+    "typeLabel": "نوع التذكير",
+    "typeConfirmed": "للضيوف الذين أكدوا الحضور",
+    "typePending": "للضيوف الذين لم يردّوا أو اختاروا ربما",
+    "guestsLabel": "اختر الضيوف",
+    "selectAll": "تحديد الكل",
+    "deselectAll": "إلغاء التحديد",
+    "noEligibleGuests": "لا يوجد ضيوف مؤهلون لهذا النوع من التذكير.",
+    "dateLabel": "إرسال في",
+    "dateMin": "أقرب موعد: بعد 5 دقائق",
+    "dateMax": "أقصى موعد: قبل 24 ساعة من الحدث",
+    "quotaLabel": "الرصيد",
+    "quotaValue": "{{used}} من {{remaining}} متاح",
+    "guestCount": "{{count}} ضيف",
+    "submit": "جدولة",
+    "cancel": "إلغاء",
+    "cancelAction": "إلغاء التذكير",
+    "cancelConfirm": "هل تريد إلغاء هذا التذكير المجدول؟ سيتم استرجاع الرصيد.",
+    "noScheduled": "لا توجد تذكيرات إضافية مجدولة",
+    "scheduledFor": "مجدول لـ {{when}}",
+    "scheduledOk": "تمت جدولة التذكير",
+    "cancelledOk": "تم إلغاء التذكير",
+    "errors": {
+      "dateOutOfRange": "يجب أن يكون التاريخ بين 5 دقائق من الآن و 24 ساعة قبل الحدث",
+      "noGuests": "اختر ضيفاً واحداً على الأقل",
+      "insufficientQuota": "لا يوجد رصيد كافٍ للتذكيرات",
+      "generic": "تعذّر جدولة التذكير",
+      "cancelFailed": "تعذّر إلغاء التذكير"
+    }
+  },
+  "guestTableExtras": {
+    "autoReminder": "تذكير تلقائي",
+    "extraReminder": "تذكير إضافي",
+    "sent": "تم الإرسال",
+    "scheduled": "مجدول"
   }
 }

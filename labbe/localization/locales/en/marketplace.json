@@ -41,12 +41,22 @@
     "users": "Users",
     "callNow": "Call Now"
   },
+  "vendor": {
+    "defaultName": "Service",
+    "serviceDuration": "Service Duration",
+    "price": "Price",
+    "whatsIncluded": "What's Included",
+    "contactInfo": "Contact Information",
+    "close": "Close"
+  },
+  "currency": "SAR",
   "title": "Halla Marketplace",
   "noResults": {
     "title": "No results found",
     "description": "Try adjusting your filters or search terms"
   },
   "services": {
-    "defaultName": "Service"
+    "defaultName": "Service",
+    "defaultLocation": "Saudi Arabia"
   }
 }

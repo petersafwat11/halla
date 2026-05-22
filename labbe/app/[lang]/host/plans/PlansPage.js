@@ -27,6 +27,7 @@ const PlansPage = () => {
     plansError,
     subError,
     showSummary,
+    showAddons,
     billingType,
     setBillingType,
     selectedPlan,
@@ -48,6 +49,9 @@ const PlansPage = () => {
     handleSubscribe,
     handleProceedToPayment,
     handleBack,
+    handleContinueToSummary,
+    handleBackToAddons,
+    handleBackToPlans,
   } = usePlansPageState();
 
   if (showSummary) {
@@ -64,12 +68,43 @@ const PlansPage = () => {
         addonTotal={addonTotal}
         onDiscountApply={(code) => setAppliedDiscountCode(code)}
         onProceedToPayment={handleProceedToPayment}
-        onBack={handleBack}
+        onBack={handleBackToAddons}
         paymentMethod={paymentMethod}
         onPaymentMethodChange={setPaymentMethod}
         onCardChange={setCardData}
         onMobileChange={setStcMobile}
       />
+    );
+  }
+
+  if (showAddons) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.pageHeader}>
+          <h1 className={styles.pageTitle}>
+            <IoIosArrowForward
+              onClick={handleBackToPlans}
+              className={styles.backArrow}
+            />
+            {t("addons.title")}
+          </h1>
+          <p className={styles.pageSubtitle}>{t("addons.subtitle")}</p>
+        </div>
+
+        <div className={styles.content}>
+          <AddonsSection onAddonsChange={handleAddonsChange} />
+
+          <div className={styles.addonsFooter}>
+            <button
+              type="button"
+              className={styles.continueBtn}
+              onClick={handleContinueToSummary}
+            >
+              {t("buttons.continueToSummary")}
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -138,8 +173,6 @@ const PlansPage = () => {
               onSubscribe={(plan) => handleSubscribe("premium", plan)}
             />
           </div>
-
-          <AddonsSection onAddonsChange={handleAddonsChange} />
         </div>
       )}
     </div>

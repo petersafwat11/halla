@@ -53,6 +53,27 @@ const taqnyatTemplateSchema = new mongoose.Schema(
      */
     category: { type: String, index: true, default: null },
 
+    /**
+     * Template purpose within a category. Drives the cron + create-event picker:
+     *  - 'invite' → many allowed per (category); host picks one in step 4
+     *  - 'reminder_confirmed' → exactly one active per category; 24h cron uses it
+     *  - 'reminder_pending' → exactly one active per category; 24h cron + scheduled
+     *                          extra reminders for {no_response, maybe} segment
+     *  - 'post_event' → one active per category; post-event messaging
+     *  - 'staff_access' → one active GLOBAL (category may be null); staff notify
+     *
+     * Uniqueness for non-`invite` types is enforced at the service layer in
+     * `taqnyat-templates.service.assignMapping` (atomic deactivate-then-flip).
+     * No partial-unique DB index — `$in` is unsupported by partial filters and
+     * four separate indexes add cost without real safety beyond the atomic write.
+     */
+    type: {
+      type: String,
+      enum: ['invite', 'reminder_confirmed', 'reminder_pending', 'post_event', 'staff_access'],
+      default: null,
+      index: true,
+    },
+
     /** Body preview text from Meta — used in admin Assign dialog for context */
     bodyText: { type: String, default: "" },
 
@@ -90,7 +111,8 @@ const taqnyatTemplateSchema = new mongoose.Schema(
 );
 
 taqnyatTemplateSchema.index({ taqnyatId: 1 }, { unique: true });
-taqnyatTemplateSchema.index({ category: 1, active: 1, status: 1 });
+taqnyatTemplateSchema.index({ category: 1, type: 1, active: 1, status: 1 });
+taqnyatTemplateSchema.index({ type: 1, active: 1, status: 1 });
 taqnyatTemplateSchema.index({ sortOrder: 1, createdAt: -1 });
 
 module.exports = mongoose.model("TaqnyatTemplate", taqnyatTemplateSchema);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,17 +9,30 @@ import {
   Alert,
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as ImagePicker from "expo-image-picker";
+
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import TextInput from "../commen/TextInput";
 import EmailInput from "../commen/EmailInput";
 import Button from "../commen/Button";
-import * as ImagePicker from "expo-image-picker";
+import { personalInfoSchema } from "../../utils/schemas/vendorSchemas";
 
+/**
+ * Personal Info form.
+ *
+ * Submits two payloads:
+ *   - `_main`     → top-level user fields (name, email)            via /users/profile
+ *   - `vendorData` → ownerFullName + optional businessLogo upload  via /users/profile/vendorData
+ *
+ * The parent screen splits these and makes the right API calls.
+ */
 const PersonalInfoForm = ({ data, onSave, loading }) => {
   const { t } = useTranslation("vendor");
   const methods = useForm({
+    resolver: zodResolver(personalInfoSchema),
     defaultValues: {
-      ownerFullName: data?.name || "",
+      name: data?.name || "",
       email: data?.email || "",
     },
   });
@@ -28,7 +41,7 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
 
   useEffect(() => {
     methods.reset({
-      ownerFullName: data?.name || "",
+      name: data?.name || "",
       email: data?.email || "",
     });
     setAvatarUri(data?.avatar || null);
@@ -37,37 +50,39 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
 
   const pickImage = async () => {
     try {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
           t("settings.permissions.title"),
-          t("settings.permissions.message"),
+          t("settings.permissions.message")
         );
         return;
       }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
-
       if (!result.canceled && result.assets[0]) {
         setAvatarUri(result.assets[0].uri);
         setAvatarFile(result.assets[0]);
       }
-    } catch (error) {
+    } catch (_e) {
       Alert.alert(t("common.error"), t("settings.imagePickError"));
     }
   };
 
   const onSubmit = (formValues) => {
-    const submitData = { ownerFullName: formValues.ownerFullName, email: formValues.email };
-    if (avatarFile) submitData.businessLogo = avatarFile;
-    onSave(submitData);
+    // PersonalInfo owns top-level `name` + `email` (and the businessLogo
+    // upload on the vendor section). It does NOT write `ownerFullName` —
+    // that field is owned by BasicAccountInfoForm so the two forms never
+    // race-overwrite each other.
+    const vendor = avatarFile ? { businessLogo: avatarFile } : {};
+    onSave({
+      main: { name: formValues.name, email: formValues.email },
+      vendor,
+    });
   };
 
   return (
@@ -81,7 +96,6 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
             {t("settings.personalInfo.description")}
           </Text>
 
-          {/* Avatar Upload */}
           <View style={styles.avatarSection}>
             <Text style={styles.label}>{t("settings.personalInfo.avatar")}</Text>
             <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
@@ -100,27 +114,22 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Name Input */}
           <View style={styles.inputGroup}>
             <TextInput
-              name="ownerFullName"
+              name="name"
               label={t("settings.personalInfo.name")}
               placeholder={t("settings.personalInfo.namePlaceholder")}
-              rules={{ required: t("settings.validation.nameRequired") }}
             />
           </View>
 
-          {/* Email Input */}
           <View style={styles.inputGroup}>
             <EmailInput
               name="email"
               label={t("settings.personalInfo.email")}
               placeholder={t("settings.personalInfo.emailPlaceholder")}
-              rules={{ required: t("settings.validation.emailRequired") }}
             />
           </View>
 
-          {/* Save Button */}
           <View style={styles.buttonContainer}>
             <Button
               text={t("settings.saveChanges")}
@@ -136,9 +145,7 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   section: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -159,20 +166,14 @@ const styles = StyleSheet.create({
     color: "#888",
     marginBottom: 20,
   },
-  avatarSection: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
+  avatarSection: { alignItems: "center", marginBottom: 24 },
   label: {
     fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#2c2c2c",
     marginBottom: 8,
   },
-  avatarContainer: {
-    alignSelf: "center",
-    position: "relative",
-  },
+  avatarContainer: { alignSelf: "center", position: "relative" },
   avatar: {
     width: 100,
     height: 100,
@@ -191,9 +192,7 @@ const styles = StyleSheet.create({
     borderColor: "#e0d5c9",
     borderStyle: "dashed",
   },
-  avatarPlaceholderText: {
-    fontSize: 36,
-  },
+  avatarPlaceholderText: { fontSize: 36 },
   avatarOverlay: {
     position: "absolute",
     bottom: 0,
@@ -210,12 +209,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Cairo_600SemiBold",
   },
-  inputGroup: {
-    marginBottom: 8,
-  },
-  buttonContainer: {
-    marginTop: 16,
-  },
+  inputGroup: { marginBottom: 8 },
+  buttonContainer: { marginTop: 16 },
 });
 
 export default PersonalInfoForm;

@@ -1,13 +1,42 @@
 {
-  "title": "Support Tickets",
-  "emptyState": "No tickets yet",
-  "emptyStateDescription": "Create a ticket to get help from our support team",
-  "createTicket": "Create Ticket",
+  "pageTitle": "Tickets",
+  "createTicket": "Submit Ticket",
+  "searchPlaceholder": "Search tickets...",
+  "loading": "Loading...",
+  "noTickets": {
+    "title": "No Previous Tickets",
+    "message": "If you need to tell us anything, submit a ticket and we'll take care of it right away",
+    "action": "Submit Ticket"
+  },
+  "popup": {
+    "createTitle": "Submit Ticket",
+    "editTitle": "Edit Ticket",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "Enter ticket subject",
+    "typeLabel": "Ticket Type",
+    "typePlaceholder": "Select ticket type",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Enter your message",
+    "submitCreate": "Save & Send",
+    "submitEdit": "Update",
+    "submitting": "Sending...",
+    "updating": "Updating...",
+    "cancel": "Cancel"
+  },
+  "types": {
+    "technical": "Technical Issue",
+    "payment": "Payment Issue",
+    "event": "Event Issue",
+    "user": "User Complaint",
+    "other": "Other",
+    "inquiry": "Inquiry",
+    "issue": "Issue",
+    "request": "Request",
+    "suggestion": "Suggestion"
+  },
   "status": {
     "open": "Open",
-    "pending": "Pending",
     "in_progress": "In Progress",
-    "inProgress": "In Progress",
     "waiting_response": "Waiting Response",
     "resolved": "Resolved",
     "closed": "Closed"
@@ -18,69 +47,43 @@
     "high": "High",
     "urgent": "Urgent"
   },
-  "types": {
-    "technical": "Technical",
-    "payment": "Payment",
-    "event": "Event",
-    "user": "User",
-    "inquiry": "Inquiry",
-    "issue": "Issue",
-    "request": "Request",
-    "suggestion": "Suggestion",
-    "other": "Other"
-  },
-  "form": {
-    "title": "Create Support Ticket",
-    "editTitle": "Edit Ticket",
-    "selectType": "Select Ticket Type",
-    "typeLabel": "Type",
-    "messagePlaceholder": "Describe your issue or question in detail...",
-    "messageLabel": "Message",
-    "cancel": "Cancel",
-    "create": "Create",
-    "update": "Update",
-    "creating": "Creating...",
-    "updating": "Updating..."
-  },
-  "card": {
-    "created": "Created:",
+  "actions": {
     "delete": "Delete",
-    "edit": "Edit"
+    "edit": "Edit",
+    "deleteTitle": "Delete Ticket",
+    "deleteConfirm": "Are you sure you want to delete this ticket?",
+    "confirmDelete": "Delete",
+    "cancelDelete": "Cancel"
   },
   "messages": {
-    "createSuccess": "Ticket created successfully",
-    "createError": "Failed to create ticket",
+    "createSuccess": "Ticket submitted successfully",
     "updateSuccess": "Ticket updated successfully",
-    "updateError": "Failed to update ticket",
     "deleteSuccess": "Ticket deleted successfully",
+    "fetchError": "Failed to load tickets",
     "deleteError": "Failed to delete ticket",
-    "loadError": "Failed to load tickets",
-    "confirmDelete": "Are you sure you want to delete this ticket?"
+    "saveError": "An error occurred while saving the ticket"
   },
-  "validation": {
-    "ticketTypeRequired": "Please select a ticket type",
-    "ticketMessageMin": "Message must be at least 10 characters",
-    "ticketMessageMax": "Message must not exceed 5000 characters"
+  "createdAt": "Created:",
+  "errors": {
+    "subjectMinLength": "Subject must be at least 5 characters",
+    "subjectMaxLength": "Subject must not exceed 200 characters",
+    "typeRequired": "Ticket type is required",
+    "typeInvalid": "Invalid ticket type",
+    "messageMinLength": "Message must be at least 10 characters",
+    "messageMaxLength": "Message must not exceed 5000 characters",
+    "priorityInvalid": "Invalid priority",
+    "statusInvalid": "Invalid status",
+    "resolutionMinLength": "Resolution must be at least 10 characters",
+    "resolutionMaxLength": "Resolution must not exceed 5000 characters",
+    "ratingRequired": "Please select a rating",
+    "ratingMax": "Rating must be between 1 and 5",
+    "ratingInvalid": "Rating must be a whole number",
+    "feedbackMaxLength": "Feedback must not exceed 1000 characters",
+    "boundary": "Failed to load tickets",
+    "loadFailed": "Failed to load tickets"
   },
-  "rating": {
-    "title": "Rate Support",
-    "question": "How satisfied were you with the resolution?",
-    "feedback": "Feedback (Optional)",
-    "feedbackPlaceholder": "Share your experience with this ticket...",
-    "selectRating": "Please select a rating",
-    "submit": "Submit Rating",
-    "submitting": "Submitting...",
-    "cancel": "Cancel",
+  "ratingInline": {
     "rateButton": "Rate",
-    "alreadyRated": "Rated",
-    "success": "Rating submitted successfully",
-    "error": "Failed to submit rating",
-    "labels": {
-      "1": "Very Poor",
-      "2": "Poor",
-      "3": "Average",
-      "4": "Good",
-      "5": "Excellent"
-    }
+    "alreadyRated": "Rated"
   }
 }

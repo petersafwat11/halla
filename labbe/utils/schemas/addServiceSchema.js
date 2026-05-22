@@ -45,6 +45,7 @@ export const addServiceSchema = z.object({
     .union([z.string(), z.number()])
     .refine((v) => v !== "" && v !== null && v !== undefined, "سعر الخدمة مطلوب")
     .refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, "يرجى إدخال سعر صحيح"),
+  duration: z.string().trim().max(100, "مدة الخدمة يجب أن تكون أقل من 100 حرف").optional().or(z.literal("")),
   image: z.any().optional(),
 });
 
@@ -53,6 +54,7 @@ export const addServiceDefaultValues = {
   serviceType: "",
   description: "",
   price: "",
+  duration: "",
   image: undefined,
 };
 

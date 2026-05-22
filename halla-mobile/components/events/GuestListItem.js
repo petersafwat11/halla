@@ -81,33 +81,8 @@ const GuestListItem = ({ guest, onEdit, onDelete, onRotateQr, onRevokeAccess }) 
       onLongPress={handleLongPress}
       delayLongPress={350}
     >
-      {/* Header */}
+      {/* Header — actions on the left, name/phone on the right */}
       <View style={styles.header}>
-        {/* Guest Info */}
-        <View style={styles.guestInfo}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name}>{guest.name || "ضيف"}</Text>
-            {guest?.accessRevoked ? (
-              <View style={[styles.guestBadge, styles.guestBadgeMuted]}>
-                <Text style={styles.guestBadgeText}>صلاحية مُلغاة</Text>
-              </View>
-            ) : guest?.qrRotated ? (
-              <View style={[styles.guestBadge, styles.guestBadgeHighlight]}>
-                <Text style={styles.guestBadgeText}>QR محدّث</Text>
-              </View>
-            ) : null}
-          </View>
-
-          <View style={styles.contactRow}>
-            <View style={styles.contactItem}>
-              <Text style={styles.contactText}>{guest.phone || ""}</Text>
-            </View>
-            <View style={styles.separator}>
-              <Text style={styles.separatorText}>|</Text>
-            </View>
-          </View>
-        </View>
-        {/* Actions */}
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.actionButton}
@@ -127,6 +102,25 @@ const GuestListItem = ({ guest, onEdit, onDelete, onRotateQr, onRevokeAccess }) 
               <Ionicons name="create-outline" size={16} color="#6B4E33" />
             </View>
           </TouchableOpacity>
+        </View>
+
+        <View style={styles.guestInfo}>
+          <View style={styles.nameRow}>
+            {guest?.accessRevoked ? (
+              <View style={[styles.guestBadge, styles.guestBadgeMuted]}>
+                <Text style={styles.guestBadgeText}>صلاحية مُلغاة</Text>
+              </View>
+            ) : guest?.qrRotated ? (
+              <View style={[styles.guestBadge, styles.guestBadgeHighlight]}>
+                <Text style={styles.guestBadgeText}>QR محدّث</Text>
+              </View>
+            ) : null}
+            <Text style={styles.name}>{guest.name || "ضيف"}</Text>
+          </View>
+
+          {!!guest.phone && (
+            <Text style={styles.contactText}>{guest.phone}</Text>
+          )}
         </View>
       </View>
 
@@ -164,13 +158,14 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   header: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   actions: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     gap: 8,
+    alignItems: "center",
   },
   actionButton: {},
   deleteButton: {
@@ -191,48 +186,27 @@ const styles = StyleSheet.create({
   },
   guestInfo: {
     flex: 1,
-    alignItems: "flex-start",
-    gap: 8,
+    alignItems: "flex-end",
+    gap: 4,
   },
   nameRow: {
-    flexDirection: "row-reverse",
-    justifyContent: "flex-start",
+    flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 8,
   },
   name: {
     fontSize: 14,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     lineHeight: 20,
-  },
-  contactRow: {
-    flexDirection: "row-reverse",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    gap: 8,
-  },
-  contactItem: {
-    flexDirection: "row-reverse",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    gap: 4,
+    textAlign: "right",
   },
   contactText: {
     fontSize: 12,
     fontFamily: "Cairo_500Medium",
     color: "#656565",
     lineHeight: 16,
-  },
-  separator: {
-    height: 17,
-    alignItems: "center",
-  },
-  separatorText: {
-    fontSize: 14,
-    fontFamily: "Cairo_500Medium",
-    color: "#656565",
-    lineHeight: 20,
+    textAlign: "right",
   },
   responseCard: {
     backgroundColor: "#FDFDFD",

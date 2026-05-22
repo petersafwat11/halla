@@ -13,7 +13,7 @@ import { ticketRatingSchema, defaultTicketRatingValues } from "@/utils/schemas/t
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import { TICKET_STATUS } from "@/utils/constants/ticketConstants";
-import ErrorBoundary from "@/ui/common/errorBoundary/ErrorBoundary";
+import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import styles from "./page.module.css";
 
 const TicketRatingContent = () => {

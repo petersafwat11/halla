@@ -60,6 +60,16 @@ const serviceSchema = new mongoose.Schema(
         trim: true,
       },
     ],
+    duration: {
+      type: String,
+      trim: true,
+      maxlength: [100, "Duration cannot exceed 100 characters"],
+      default: null,
+    },
+    included: {
+      type: [String],
+      default: [],
+    },
     status: {
       type: String,
       enum: ["active", "disabled"],

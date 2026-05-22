@@ -23,6 +23,7 @@ export const usePlansPageState = () => {
   const checkoutMutation = useCheckout();
 
   const [showSummary, setShowSummary] = useState(false);
+  const [showAddons, setShowAddons] = useState(false);
   const [billingType, setBillingType] = useState("event");
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedFamily, setSelectedFamily] = useState("basic");
@@ -103,7 +104,7 @@ export const usePlansPageState = () => {
     if (!plan) return;
     setSelectedFamily(family);
     setSelectedPlan(plan);
-    setShowSummary(true);
+    setShowAddons(true);
   }, []);
 
   const buildSource = useCallback(() => {
@@ -188,6 +189,19 @@ export const usePlansPageState = () => {
   ]);
 
   const handleBack = useCallback(() => setShowSummary(false), []);
+  const handleContinueToSummary = useCallback(() => {
+    setShowAddons(false);
+    setShowSummary(true);
+  }, []);
+  const handleBackToAddons = useCallback(() => {
+    setShowSummary(false);
+    setShowAddons(true);
+  }, []);
+  const handleBackToPlans = useCallback(() => {
+    setShowAddons(false);
+    setSelectedPlan(null);
+    setSelectedFamily("basic");
+  }, []);
 
   return {
     // i18n + nav
@@ -206,6 +220,7 @@ export const usePlansPageState = () => {
 
     // selection state
     showSummary,
+    showAddons,
     billingType,
     setBillingType,
     selectedPlan,
@@ -232,5 +247,8 @@ export const usePlansPageState = () => {
     handleSubscribe,
     handleProceedToPayment,
     handleBack,
+    handleContinueToSummary,
+    handleBackToAddons,
+    handleBackToPlans,
   };
 };

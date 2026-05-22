@@ -14,7 +14,12 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ticketSchema } from "../../utils/schemas/ticketSchema";
+import {
+  createTicketSchema,
+  updateTicketSchema,
+  TICKET_TYPES,
+  getCreateTicketDefaults,
+} from "../../utils/schemas/ticketSchema";
 import { useLanguage, useTranslation } from "../../localization";
 
 const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
@@ -23,7 +28,8 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   const slideAnim = React.useRef(new Animated.Value(300)).current;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
-  const ticketTypes = ["technical", "payment", "event", "user", "inquiry", "issue", "request", "suggestion", "other"];
+  const isEditMode = !!initialData;
+  const schema = isEditMode ? updateTicketSchema(t) : createTicketSchema(t);
 
   const {
     control,
@@ -32,11 +38,8 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
     reset,
     watch
   } = useForm({
-    resolver: zodResolver(ticketSchema),
-    defaultValues: initialData || {
-      type: "",
-      message: ""
-    }
+    resolver: zodResolver(schema),
+    defaultValues: initialData || getCreateTicketDefaults()
   });
 
   const selectedType = watch("type");
@@ -102,7 +105,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>
-              {initialData ? t("form.editTitle") : t("form.title")}
+              {isEditMode ? t("popup.editTitle") : t("popup.createTitle")}
             </Text>
             <TouchableOpacity
               style={styles.closeButton}
@@ -119,10 +122,40 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
+            {/* Subject Input */}
+            <View style={styles.section}>
+              <Text style={styles.label}>
+                {t("popup.subjectLabel")}
+              </Text>
+              <Controller
+                control={control}
+                name="subject"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={[
+                      styles.textInput,
+                      errors.subject && styles.textInputError
+                    ]}
+                    placeholder={t("popup.subjectPlaceholder")}
+                    placeholderTextColor="#999"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    maxLength={200}
+                  />
+                )}
+              />
+              {errors.subject && (
+                <Text style={styles.errorText}>
+                  {t(errors.subject.message)}
+                </Text>
+              )}
+            </View>
+
             {/* Type Selection */}
             <View style={styles.section}>
               <Text style={styles.label}>
-                {t("form.typeLabel")}
+                  {t("popup.typeLabel")}
               </Text>
               <Controller
                 control={control}
@@ -132,7 +165,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                     style={[
                       styles.typesContainer]}
                   >
-                    {ticketTypes.map((type) => (
+                    {TICKET_TYPES.map((type) => (
                       <TouchableOpacity
                         key={type}
                         style={[
@@ -163,7 +196,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
             {/* Message Input */}
             <View style={styles.section}>
               <Text style={styles.label}>
-                {t("form.messageLabel")}
+                  {t("popup.messageLabel")}
               </Text>
               <Controller
                 control={control}
@@ -173,7 +206,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                     style={[
                       styles.textArea,
                       errors.message && styles.textAreaError]}
-                    placeholder={t("form.messagePlaceholder")}
+                      placeholder={t("popup.messagePlaceholder")}
                     placeholderTextColor="#999"
                     value={value}
                     onChangeText={onChange}
@@ -200,7 +233,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
               disabled={loading}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>{t("form.cancel")}</Text>
+              <Text style={styles.cancelButtonText}>{t("popup.cancel")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -213,12 +246,12 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
             >
               <Text style={styles.submitButtonText}>
                 {loading
-                  ? initialData
-                    ? t("form.updating")
-                    : t("form.creating")
-                  : initialData
-                  ? t("form.update")
-                  : t("form.create")}
+                  ? isEditMode
+                    ? t("popup.updating")
+                    : t("popup.submitting")
+                  : isEditMode
+                  ? t("popup.submitEdit")
+                  : t("popup.submitCreate")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -296,7 +329,20 @@ const styles = StyleSheet.create({
   },
   typeButtonTextActive: {
     color: "#fff"
-  },  textArea: {
+  },  textInput: {
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 15,
+    fontFamily: "Cairo_400Regular",
+    color: "#2c2c2c",
+    minHeight: 48
+  },
+  textInputError: {
+    borderColor: "#e74c3c"
+  },
+  textArea: {
     borderWidth: 1,
     borderColor: "#e0e0e0",
     borderRadius: 12,

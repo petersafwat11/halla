@@ -26,6 +26,11 @@
   color: #3498DB;
 }
 
+.statusWaitingResponse {
+  background: #F3E8FF;
+  color: #6B21A8;
+}
+
 .statusResolved {
   background: #EAF4EF;
   color: #2A8C5B;

@@ -922,6 +922,16 @@ router.post(
 );
 
 // ============================================
+// NESTED: /events/:id/scheduled-reminders
+// ============================================
+// Auth is already enforced by the parent `protect` use; access to the
+// specific event is enforced inside the service via getEventById's
+// _buildScopedEventQuery, which covers super_admin, tenant-scoped admins,
+// whitelabel users, and hosts.
+const scheduledExtraRemindersRoutes = require("../scheduled-extra-reminders/scheduled-extra-reminders.routes");
+router.use("/:id/scheduled-reminders", scheduledExtraRemindersRoutes);
+
+// ============================================
 // ADMIN EVENT ROUTES — extracted to events.admin.routes.js
 // ============================================
 router.use("/admin", adminRouter);

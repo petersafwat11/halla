@@ -30,18 +30,18 @@ const StepFive = () => {
   // what guests would receive if no override is saved.
   const AUTO_REPLIES_DEFAULTS = useMemo(
     () => ({
-      onAttend: t("guestReplies.defaults.onAttend"),
-      onExpected: t("guestReplies.defaults.onExpected"),
-      onAbsent: t("guestReplies.defaults.onAbsent"),
+      onAttend: t("auto_replies_default_attending"),
+      onExpected: t("auto_replies_default_maybe"),
+      onAbsent: t("auto_replies_default_absence"),
     }),
     [t]
   );
 
   const REPLY_TABS = useMemo(
     () => [
-      { key: "onAttend", label: t("guestReplies.tabs.onAttend") },
-      { key: "onExpected", label: t("guestReplies.tabs.onExpected") },
-      { key: "onAbsent", label: t("guestReplies.tabs.onAbsent") },
+      { key: "onAttend", label: t("auto_replies_tab_attending") },
+      { key: "onExpected", label: t("auto_replies_tab_maybe") },
+      { key: "onAbsent", label: t("auto_replies_tab_absence") },
     ],
     [t]
   );
@@ -83,11 +83,11 @@ const StepFive = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.sectionLabel}>{t("stepFive.invitationLabel")}</Text>
+      <Text style={styles.sectionLabel}>{t("invitation_message_label")}</Text>
       <TextInput
         value={invitationMessage}
         onChangeText={handleInvitationChange}
-        placeholder={t("stepFive.invitationPlaceholder")}
+        placeholder={t("invitation_message_placeholder")}
         placeholderTextColor="#999"
         multiline
         numberOfLines={3}
@@ -95,8 +95,8 @@ const StepFive = () => {
         style={[styles.textArea, { writingDirection: "rtl" }]}
       />
 
-      <Text style={[styles.sectionLabel, { marginTop: 24 }]}>{t("stepFive.repliesLabel")}</Text>
-      <Text style={styles.hint}>{t("stepFive.repliesHint")}</Text>
+      <Text style={[styles.sectionLabel, { marginTop: 24 }]}>{t("auto_replies")}</Text>
+      <Text style={styles.hint}>{t("auto_replies_hint")}</Text>
 
       <View style={styles.tabsRow}>
         {REPLY_TABS.map((tab) => (
@@ -116,7 +116,7 @@ const StepFive = () => {
       <TextInput
         value={activeReplyValue}
         onChangeText={handleReplyChange}
-        placeholder={t("stepFive.replyPlaceholder")}
+        placeholder={t("auto_reply_placeholder")}
         placeholderTextColor="#999"
         multiline
         numberOfLines={4}
@@ -125,12 +125,12 @@ const StepFive = () => {
       />
 
       <Text style={[styles.sectionLabel, { marginTop: 24 }]}>
-        {t("stepFive.hostNoteLabel")} <Text style={styles.optional}>{t("stepFive.optional")}</Text>
+        {t("add_note_label")} <Text style={styles.optional}>{t("optional")}</Text>
       </Text>
       <TextInput
         value={hostNote}
         onChangeText={handleNoteChange}
-        placeholder={t("stepFive.hostNotePlaceholder")}
+        placeholder={t("add_note_placeholder")}
         placeholderTextColor="#999"
         maxLength={300}
         style={[styles.textInput, { writingDirection: "rtl" }]}

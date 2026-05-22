@@ -65,7 +65,7 @@ const HomeScreen = ({ navigation }) => {
 
   const handlePostEventPress = () => {
     if (!eventId) return;
-    navigation.navigate("HostPostEvent", { eventId });
+    navigation.navigate("ManagePostEvent", { eventId });
   };
 
   const topBarActions = (

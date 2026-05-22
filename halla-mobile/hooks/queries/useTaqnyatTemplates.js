@@ -9,22 +9,27 @@ import { taqnyatTemplatesService } from "../../services/taqnyatTemplatesService"
  * meaningful: `["taqnyat-templates", "host", category || "all"]`.
  */
 export const TAQNYAT_TEMPLATES_QK = {
-  hostList: (category) => ["taqnyat-templates", "host", category || "all"],
+  hostList: ({ category, type } = {}) => [
+    "taqnyat-templates",
+    "host",
+    category || "all",
+    type || "all",
+  ],
 };
 
 /**
- * Fetch the host-facing Taqnyat templates filtered by category.
+ * Fetch the host-facing Taqnyat templates filtered by (category, type).
  *
- * Endpoint: GET /taqnyat-templates?category={category}
- * Returns the raw response envelope; consumers read `data?.data` for the
- * template array.
+ * Endpoint: GET /taqnyat-templates?category={category}&type={type}
+ * `type` defaults to no filter on the backend; the create-event wizard
+ * passes `type: 'invite'` so the host only sees invitation templates.
  */
-export function useHostTaqnyatTemplates({ category } = {}, opts = {}) {
+export function useHostTaqnyatTemplates({ category, type } = {}, opts = {}) {
   const token = useAuthStore((state) => state.token);
 
   return useQuery({
-    queryKey: TAQNYAT_TEMPLATES_QK.hostList(category),
-    queryFn: () => taqnyatTemplatesService.getTemplates({ category }),
+    queryKey: TAQNYAT_TEMPLATES_QK.hostList({ category, type }),
+    queryFn: () => taqnyatTemplatesService.getTemplates({ category, type }),
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
     ...opts,

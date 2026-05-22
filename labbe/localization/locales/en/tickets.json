@@ -28,16 +28,16 @@
     "payment": "Payment Issue",
     "event": "Event Issue",
     "user": "User Complaint",
+    "other": "Other",
     "inquiry": "Inquiry",
     "issue": "Issue",
     "request": "Request",
-    "suggestion": "Suggestion",
-    "other": "Other"
+    "suggestion": "Suggestion"
   },
   "status": {
     "open": "Open",
-    "pending": "Pending",
     "in_progress": "In Progress",
+    "waiting_response": "Waiting Response",
     "resolved": "Resolved",
     "closed": "Closed"
   },
@@ -64,24 +64,22 @@
     "saveError": "An error occurred while saving the ticket"
   },
   "createdAt": "Created:",
-  "validation": {
-    "typeRequired": "Please select ticket type",
-    "messageRequired": "Please enter message (at least 10 characters)",
-    "messageMinLength": "Message must be at least 10 characters",
-    "messageMaxLength": "Message must not exceed 5000 characters",
-    "priorityInvalid": "Invalid priority",
-    "statusInvalid": "Invalid status",
-    "typeInvalid": "Invalid ticket type"
-  },
   "errors": {
+    "subjectMinLength": "Subject must be at least 5 characters",
+    "subjectMaxLength": "Subject must not exceed 200 characters",
     "typeRequired": "Ticket type is required",
+    "typeInvalid": "Invalid ticket type",
     "messageMinLength": "Message must be at least 10 characters",
     "messageMaxLength": "Message must not exceed 5000 characters",
     "priorityInvalid": "Invalid priority",
     "statusInvalid": "Invalid status",
-    "typeInvalid": "Invalid ticket type",
-    "responseRequired": "Response is required",
-    "responseMaxLength": "Response must not exceed 5000 characters",
-    "boundary": "Failed to load tickets"
+    "resolutionMinLength": "Resolution must be at least 10 characters",
+    "resolutionMaxLength": "Resolution must not exceed 5000 characters",
+    "boundary": "Failed to load tickets",
+    "loadFailed": "Failed to load tickets"
+  },
+  "ratingInline": {
+    "rateButton": "Rate",
+    "alreadyRated": "Rated"
   }
 }

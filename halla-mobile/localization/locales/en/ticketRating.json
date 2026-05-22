@@ -1,0 +1,41 @@
+{
+  "title": "Rate Our Support",
+  "ticketNumber": "Ticket",
+  "loading": "Loading...",
+  "notFound": {
+    "title": "Ticket Not Found",
+    "description": "The requested ticket was not found"
+  },
+  "inProgress": {
+    "title": "Ticket In Progress",
+    "description": "You can only rate a ticket after it has been resolved"
+  },
+  "rating": {
+    "question": "How would you rate your experience?",
+    "veryPoor": "Very Poor",
+    "poor": "Poor",
+    "average": "Average",
+    "good": "Good",
+    "excellent": "Excellent",
+    "selectRating": "Please select a rating"
+  },
+  "feedback": {
+    "label": "Additional feedback (optional)",
+    "placeholder": "Share your thoughts to help us improve..."
+  },
+  "buttons": {
+    "submit": "Submit Rating",
+    "submitting": "Submitting...",
+    "cancel": "Cancel",
+    "backToHome": "Back to Home",
+    "retry": "Retry"
+  },
+  "success": {
+    "title": "Thank You!",
+    "description": "We appreciate your feedback and will use it to improve our services"
+  },
+  "errors": {
+    "loadFailed": "Failed to load ticket data",
+    "submitFailed": "Failed to submit rating"
+  }
+}

@@ -216,6 +216,10 @@ router.get('/', servicesController.getMyServices);
  *               category: { type: string }
  *               price: { type: number }
  *               currency: { type: string }
+ *               duration: { type: string, maxLength: 100 }
+ *               included:
+ *                 type: array
+ *                 items: { type: string }
  *               tags:
  *                 type: array
  *                 items: { type: string }
@@ -235,7 +239,7 @@ router.get('/', servicesController.getMyServices);
 router.post(
   '/',
   uploadServiceImage,
-  parseFormDataJsonFields(['tags', 'serviceLocation']),
+  parseFormDataJsonFields(['tags', 'serviceLocation', 'included']),
   validateZod(createServiceSchema),
   servicesController.createService
 );
@@ -264,6 +268,10 @@ router.post(
  *               category: { type: string }
  *               price: { type: number }
  *               currency: { type: string }
+ *               duration: { type: string, maxLength: 100 }
+ *               included:
+ *                 type: array
+ *                 items: { type: string }
  *               tags:
  *                 type: array
  *                 items: { type: string }
@@ -284,7 +292,7 @@ router.patch(
   '/:id',
   validateObjectId('id'),
   uploadServiceImage,
-  parseFormDataJsonFields(['tags', 'serviceLocation']),
+  parseFormDataJsonFields(['tags', 'serviceLocation', 'included']),
   validateZod(updateServiceSchema),
   servicesController.updateService
 );

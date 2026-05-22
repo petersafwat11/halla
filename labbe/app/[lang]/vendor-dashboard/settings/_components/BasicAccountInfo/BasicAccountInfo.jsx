@@ -1,21 +1,31 @@
 "use client";
 import React, { useState } from "react";
-import styles from "./basicAccountInfo.module.css";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
+import { toast } from "react-toastify";
+
+import styles from "./basicAccountInfo.module.css";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import DynamicForm from "@/ui/vendor/dynamicForm/DynamicForm";
-import {
-  basicAccountInfoSchema,
-  extractFormData,
-} from "@/utils/schemas/vendorSettings";
+import PhoneChangeOtpModal from "../PhoneChangeOtpModal/PhoneChangeOtpModal";
+import { basicAccountInfoSchema } from "@/utils/schemas/vendorSettings";
 
-const BasicAccountInfo = ({ data, onSave }) => {
+/**
+ * Basic Account Info section.
+ *
+ * Phone changes go through an OTP flow: when the user submits a different
+ * phone number we open the OTP modal first. The modal calls the
+ * `/users/profile/phone/...` endpoints itself; once verified, this section
+ * forwards the non-phone fields to the parent's `onSave` (which writes them
+ * via the regular vendorData section update).
+ */
+const BasicAccountInfo = ({ data, onSave, onPhoneVerified }) => {
   const { t } = useTranslation("vendorSettings");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [otpCandidate, setOtpCandidate] = useState(null);
+  const [pendingNonPhoneSave, setPendingNonPhoneSave] = useState(null);
 
-  // Use data directly as passed from parent
   const displayData = {
     ownerFullName: data?.ownerFullName || "",
     brandName: data?.brandName || "",
@@ -23,31 +33,38 @@ const BasicAccountInfo = ({ data, onSave }) => {
     phoneNumber: data?.phoneNumber || "",
   };
 
-  const handleEditClick = () => {
-    setIsPopupOpen(true);
-  };
-
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-  };
-
   const handleFormSubmit = async (formData) => {
     setIsLoading(true);
     try {
-      if (onSave) {
-        await onSave({
-          ownerFullName: formData.ownerFullName,
-          brandName: formData.brandName,
-          email: formData.email,
-          phoneNumber: formData.phoneNumber,
-        });
+      const phoneChanged =
+        (formData.phoneNumber || "") !== (displayData.phoneNumber || "");
+
+      // Always save the non-phone fields immediately — they don't require
+      // OTP. Phone is handled separately via the OTP modal.
+      const nonPhoneFields = {
+        ownerFullName: formData.ownerFullName,
+        brandName: formData.brandName,
+        email: formData.email,
+      };
+      if (onSave) await onSave(nonPhoneFields);
+
+      if (phoneChanged) {
+        setOtpCandidate(formData.phoneNumber);
+      } else {
+        setIsPopupOpen(false);
       }
-      setIsPopupOpen(false);
     } catch (error) {
       console.error("Error saving:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOtpSuccess = () => {
+    setOtpCandidate(null);
+    setIsPopupOpen(false);
+    if (onPhoneVerified) onPhoneVerified();
+    toast.success(t("messages.phoneUpdated", "Phone number updated"));
   };
 
   return (
@@ -58,7 +75,7 @@ const BasicAccountInfo = ({ data, onSave }) => {
           <button
             type="button"
             className={styles.editButton}
-            onClick={handleEditClick}
+            onClick={() => setIsPopupOpen(true)}
           >
             <Image
               src="/svg/vendor/edit.svg"
@@ -102,16 +119,22 @@ const BasicAccountInfo = ({ data, onSave }) => {
         </div>
       </div>
 
-      {/* Edit Popup */}
-      <PopupLayout isOpen={isPopupOpen} onClose={handleClosePopup}>
+      <PopupLayout isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)}>
         <DynamicForm
           schema={basicAccountInfoSchema}
           initialData={displayData}
           onSubmit={handleFormSubmit}
-          onCancel={handleClosePopup}
+          onCancel={() => setIsPopupOpen(false)}
           isLoading={isLoading}
         />
       </PopupLayout>
+
+      <PhoneChangeOtpModal
+        isOpen={!!otpCandidate}
+        phoneNumber={otpCandidate}
+        onClose={() => setOtpCandidate(null)}
+        onSuccess={handleOtpSuccess}
+      />
     </>
   );
 };

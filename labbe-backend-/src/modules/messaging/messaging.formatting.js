@@ -50,7 +50,7 @@ async function resolveTaqnyatTemplate(event) {
  * 100 ("Invalid or missing parameter") on undercount when the template
  * expects five.
  */
-function getEventBodyParams(event, guestName, taqnyatTemplate = null) {
+function getEventBodyParams(event, guestName, taqnyatTemplate = null, extraContext = {}) {
   const fallback = () => [
     guestName || 'ضيفنا الكريم',
     event.eventDetails?.title || 'مناسبة',
@@ -71,13 +71,24 @@ function getEventBodyParams(event, guestName, taqnyatTemplate = null) {
   // proxy, not as own enumerable properties). Unwrap with `.toObject()` so
   // varMapping resolution sees real values, not undefined.
   const ed = event.eventDetails?.toObject?.() || event.eventDetails || {};
+  const loc = ed.location?.toObject?.() || ed.location || {};
+  const mapUrl =
+    loc.latitude != null && loc.longitude != null
+      ? `https://maps.google.com/?q=${loc.latitude},${loc.longitude}`
+      : '';
   const ctx = {
     guest: { name: guestName || 'ضيفنا الكريم' },
-    eventDetails: { ...ed, dateFormatted: formatDate(ed.date) },
+    eventDetails: {
+      ...ed,
+      dateFormatted: formatDate(ed.date),
+      location: { ...loc, mapUrl },
+    },
     host:
       event.host && typeof event.host === 'object'
         ? { name: event.host.name || event.host.username || '' }
         : {},
+    // Caller-supplied branches (e.g. staff.*) merge last so they win.
+    ...extraContext,
   };
 
   const ordered = [...taqnyatTemplate.varMapping].sort((a, b) => {
@@ -136,7 +147,7 @@ function getEventImageUrl(event, taqnyatTemplate = null) {
  * their varMapping. Falls back to a sensible 3-param shape when the
  * template has no varMapping.
  */
-function getPostEventBodyParams(event, guestName, taqnyatTemplate, accessCtx = {}) {
+function getPostEventBodyParams(event, guestName, taqnyatTemplate, accessCtx = {}, extraContext = {}) {
   const fallback = () => [
     guestName || 'ضيفنا الكريم',
     event.eventDetails?.title || 'مناسبة',
@@ -153,9 +164,18 @@ function getPostEventBodyParams(event, guestName, taqnyatTemplate, accessCtx = {
 
   // See note in getEventBodyParams — Mongoose subdocs need .toObject() before spread.
   const ed = event.eventDetails?.toObject?.() || event.eventDetails || {};
+  const loc = ed.location?.toObject?.() || ed.location || {};
+  const mapUrl =
+    loc.latitude != null && loc.longitude != null
+      ? `https://maps.google.com/?q=${loc.latitude},${loc.longitude}`
+      : '';
   const ctx = {
     guest: { name: guestName || 'ضيفنا الكريم' },
-    eventDetails: { ...ed, dateFormatted: formatDate(ed.date) },
+    eventDetails: {
+      ...ed,
+      dateFormatted: formatDate(ed.date),
+      location: { ...loc, mapUrl },
+    },
     host:
       event.host && typeof event.host === 'object'
         ? { name: event.host.name || event.host.username || '' }
@@ -164,6 +184,7 @@ function getPostEventBodyParams(event, guestName, taqnyatTemplate, accessCtx = {
       link: accessCtx.link || '',
       expiresAt: accessCtx.expiresAt || '',
     },
+    ...extraContext,
   };
 
   const ordered = [...taqnyatTemplate.varMapping].sort((a, b) => {

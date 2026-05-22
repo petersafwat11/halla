@@ -28,5 +28,6 @@ export const addServiceSchema = z.object({
   serviceType: z.string().min(1, "نوع الخدمة مطلوب"),
   description: z.string().min(10, "وصف الخدمة يجب أن يكون أكثر من 10 أحرف"),
   price: z.string().min(1, "سعر الخدمة مطلوب"),
+  duration: z.string().max(100, "مدة الخدمة يجب أن تكون أقل من 100 حرف").optional().or(z.literal("")),
   serviceImage: z.any().optional(),
 });

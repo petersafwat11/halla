@@ -1,13 +1,16 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import TextInput from "../commen/TextInput";
 import Button from "../commen/Button";
+import { socialLinksSchema } from "../../utils/schemas/vendorSchemas";
 
 const AdditionalLinksForm = ({ data, onSave, loading }) => {
   const { t } = useTranslation("vendor");
   const methods = useForm({
+    resolver: zodResolver(socialLinksSchema),
     defaultValues: {
       website: data?.website || "",
       instagram: data?.instagram || "",

@@ -18,8 +18,10 @@ async function request(path) {
 }
 
 export const taqnyatTemplatesService = {
-  getTemplates: ({ category } = {}) =>
-    request(`${ENDPOINTS.TAQNYAT_TEMPLATES.LIST}${buildQuery({ category })}`),
+  getTemplates: ({ category, type } = {}) =>
+    request(
+      `${ENDPOINTS.TAQNYAT_TEMPLATES.LIST}${buildQuery({ category, type })}`
+    ),
 };
 
 export default taqnyatTemplatesService;

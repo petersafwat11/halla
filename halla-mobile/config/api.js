@@ -5,8 +5,8 @@
  */
 
 // Base URL for the backend API
-export const API_BASE_URL =
-  "https://labbe-backend-production.up.railway.app/api/v2";
+// Production VPS (Contabo, nginx → labbe-backend on :8000) — see DEPLOYMENT_RECORD_2026-05-14.md
+export const API_BASE_URL = "https://halaa.com.sa/api/v2";
 
 // API Endpoints (all relative to API_BASE_URL which already includes /api/v2)
 export const ENDPOINTS = {
@@ -108,6 +108,11 @@ export const ENDPOINTS = {
     NOTIFY_STAFF: (eventId) => `/events/${eventId}/notify-staff`,
     // Manual launch retry
     RETRY_LAUNCH: (id) => `/events/${id}/retry-launch`,
+    // Scheduled extra reminders
+    SCHEDULED_REMINDERS_LIST: (id) => `/events/${id}/scheduled-reminders`,
+    SCHEDULED_REMINDERS_CREATE: (id) => `/events/${id}/scheduled-reminders`,
+    SCHEDULED_REMINDERS_CANCEL: (id, rid) =>
+      `/events/${id}/scheduled-reminders/${rid}`,
     // Staff access tokens (active + revoked) for an event
     LIST_STAFF_TOKENS: (eventId) => `/events/${eventId}/staff-tokens`,
     // Revoke a single staff access token (resolved by staffList sub-doc id)
@@ -143,6 +148,9 @@ export const ENDPOINTS = {
     UPDATE_PASSWORD: "/users/password",
     UPDATE_PROFILE_SECTION: (section) => `/users/profile/${section}`,
     NOTIFICATION_SETTINGS: "/users/notification-preferences",
+    SEND_PHONE_CHANGE_OTP: "/users/profile/phone/send-otp",
+    UPDATE_PHONE: "/users/profile/phone",
+    DELETE_VENDOR_IMAGE: "/users/profile/vendorData/image",
   },
 
   // Vendors endpoints

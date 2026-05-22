@@ -19,6 +19,11 @@ const tagsSchema = z.preprocess(
   z.array(z.string().trim().min(1))
 );
 
+const includedSchema = z.preprocess(
+  (v) => (Array.isArray(v) ? v.map(String) : []),
+  z.array(z.string().trim().min(1))
+);
+
 const serviceLocationSchema = z
   .object({
     regionId: z.coerce.number().int().nullable().optional(),
@@ -44,6 +49,8 @@ const createServiceSchema = z.object({
   category: z.enum(SERVICE_CATEGORIES, { errorMap: () => ({ message: 'Invalid category' }) }),
   price: z.coerce.number().min(0, 'Price cannot be negative'),
   currency: z.string().trim().optional(),
+  duration: z.string().trim().max(100).optional(),
+  included: includedSchema.optional(),
   tags: tagsSchema.optional(),
   serviceLocation: serviceLocationSchema,
 });
@@ -57,6 +64,8 @@ const updateServiceSchema = z
     category: z.enum(SERVICE_CATEGORIES).optional(),
     price: z.coerce.number().min(0).optional(),
     currency: z.string().trim().optional(),
+    duration: z.string().trim().max(100).optional(),
+    included: includedSchema.optional(),
     tags: tagsSchema.optional(),
     serviceLocation: serviceLocationSchema,
   })

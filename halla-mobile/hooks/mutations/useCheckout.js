@@ -69,6 +69,7 @@ export const useCheckout = () => {
       await clearPendingCheckoutCart();
       queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
       queryClient.invalidateQueries({ queryKey: ["addons"] });
+      queryClient.invalidateQueries({ queryKey: ["events", "subscription-info"] });
     },
   });
 };

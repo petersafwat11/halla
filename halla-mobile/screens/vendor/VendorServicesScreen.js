@@ -56,6 +56,8 @@ const VendorServicesScreen = ({ navigation }) => {
         description: s.description || "",
         serviceType: s.category || "",
         price: s.price != null ? String(s.price) : "",
+        duration: s.duration || "",
+        included: s.included || [],
         tags: s.tags || [],
         image: s.image,
       },
@@ -115,6 +117,8 @@ const VendorServicesScreen = ({ navigation }) => {
         category: formData.serviceType,
         description: formData.description,
         price: formData.price,
+        duration: formData.duration,
+        included: formData.included,
         image: formData.serviceImage,
         tags: formData.tags,
       };

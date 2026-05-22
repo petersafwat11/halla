@@ -692,12 +692,14 @@
       "all": "جميع التذاكر",
       "open": "مفتوحة",
       "inProgress": "قيد المعالجة",
+      "waitingResponse": "بانتظار الرد",
       "resolved": "محلولة",
       "closed": "مغلقة"
     },
     "status": {
       "open": "مفتوحة",
       "inProgress": "قيد المعالجة",
+      "waitingResponse": "بانتظار الرد",
       "resolved": "محلولة",
       "closed": "مغلقة"
     },
@@ -734,6 +736,12 @@
     "resolve": {
       "title": "حل التذكرة",
       "resolution": "الحل",
+      "resolutionPlaceholder": "اكتب ملخصاً واضحاً لكيفية حل التذكرة...",
+      "resolutionHelper": "10 أحرف على الأقل. سيتم إرسال هذه الرسالة للمستخدم.",
+      "characterCount": "{{count}} حرف",
+      "warningText": "حل التذكرة سيغلقها ويرسل إشعاراً للمستخدم.",
+      "validationMessageRequired": "رسالة الحل مطلوبة",
+      "validationMessageMinLength": "الحل يجب أن يكون 10 أحرف على الأقل",
       "notes": "ملاحظات",
       "resolve": "حل",
       "cancel": "إلغاء"

@@ -1,12 +1,14 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Svg, Path } from "react-native-svg";
+import { useTranslation } from "../../localization";
 
 /**
  * GuestQuotaCounter Component
  * Shows guest usage against subscription limits with progress bar
  */
 const GuestQuotaCounter = ({ currentGuests = 0, subscription }) => {
+  const { t } = useTranslation("createEvent");
   // Backend shape: { guestLimit, isGuestUnlimited, isPoolPlan, invitePool, invitesRemaining }
   // For pool plans the effective per-event cap is `invitesRemaining` — pool plans
   // have no per-event cap but the global pool constrains how many guests can be
@@ -58,7 +60,7 @@ const GuestQuotaCounter = ({ currentGuests = 0, subscription }) => {
       <View style={styles.container}>
         <View style={styles.noSubscription}>
           <Text style={styles.warningIcon}>⚠️</Text>
-          <Text style={styles.warningText}>يرجى الاشتراك لإضافة ضيوف</Text>
+          <Text style={styles.warningText}>{t("upgrade_hint")}</Text>
         </View>
       </View>
     );
@@ -74,7 +76,7 @@ const GuestQuotaCounter = ({ currentGuests = 0, subscription }) => {
               fill="#656565"
             />
           </Svg>
-          <Text style={styles.title}>حصة الضيوف</Text>
+          <Text style={styles.title}>{t("guest_list_title")}</Text>
         </View>
         <View
           style={[styles.counter, { backgroundColor: colors[statusColor] }]}
@@ -109,17 +111,17 @@ const GuestQuotaCounter = ({ currentGuests = 0, subscription }) => {
         {isUnlimited ? (
           <View style={styles.unlimitedContainer}>
             <Text style={styles.checkIcon}>✓</Text>
-            <Text style={styles.unlimited}>ضيوف غير محدودين</Text>
+            <Text style={styles.unlimited}>{t("unlimited_guests")}</Text>
           </View>
         ) : isLimitReached ? (
           <View style={styles.limitReachedContainer}>
             <Text style={styles.warningIcon}>⚠️</Text>
             <Text style={styles.limitReachedText}>
-              تم الوصول للحد الأقصى من الضيوف
+              {t("guest_limit_reached")}
             </Text>
           </View>
         ) : (
-          <Text style={styles.remaining}>متبقي {remaining} ضيف</Text>
+          <Text style={styles.remaining}>{t("guests_remaining", { count: remaining })}</Text>
         )}
       </View>
     </View>

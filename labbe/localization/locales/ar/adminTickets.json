@@ -29,9 +29,10 @@
     "open": "مفتوحة",
     "inProgress": "قيد المعالجة",
     "in_progress": "قيد المعالجة",
+    "waitingResponse": "بانتظار الرد",
+    "waiting_response": "بانتظار الرد",
     "resolved": "محلولة",
-    "closed": "مغلقة",
-    "pending": "قيد الانتظار"
+    "closed": "مغلقة"
   },
   "priority": {
     "low": "منخفضة",

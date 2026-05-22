@@ -79,12 +79,10 @@
   line-height: 1.6rem;
 }
 
-.statusOpen,
-.statusPending {
+.statusOpen {
   background: #DBEAFE;
 }
-.statusOpen span,
-.statusPending span {
+.statusOpen span {
   color: #1E40AF;
 }
 .statusInProgress {
@@ -92,6 +90,12 @@
 }
 .statusInProgress span {
   color: #854D0E;
+}
+.statusWaitingResponse {
+  background: #F3E8FF;
+}
+.statusWaitingResponse span {
+  color: #6B21A8;
 }
 .statusResolved {
   background: #DCFCE7;

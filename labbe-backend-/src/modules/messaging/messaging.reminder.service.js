@@ -13,7 +13,12 @@ const { NotFoundError, ForbiddenError } = require('../../shared/errors');
 const {
   TAQNYAT_SENDER,
   formatDate,
+  getEventBodyParams,
+  getEventImageUrl,
+  buildSmsBody,
 } = require('./messaging.formatting');
+const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
+const logger = require('../../shared/utils/logger');
 
 async function sendSMS(phoneNumber, message) {
   return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER });
@@ -146,6 +151,133 @@ async function sendReminder({
   };
 }
 
+/**
+ * Send an auto-reminder batch (24h-before cron) or an extra-reminder batch
+ * (manual schedule). Uses the curated Taqnyat template's varMapping for
+ * body params and an SMS fallback derived from event details. Each per-
+ * guest send runs inside `withIdempotency`. Returns per-guest details so
+ * the caller can write Guest.invitation.{auto,extra}Reminder* fields and
+ * adjust subscription quota counters accordingly.
+ *
+ * Does NOT write to Guest.invitation.reminderSentAt / reminderCount —
+ * those are the manual nudge service's accounting fields.
+ */
+async function sendAutoReminderBatch({
+  event,
+  guests,
+  reminderType,
+  template,
+  scope = 'guest_reminder_auto',
+  idempotencyPrefix = 'reminder_auto',
+  attemptId,
+  attemptKey,
+}) {
+  if (!template) {
+    return { successful: 0, failed: guests.length, rateLimited: 0, details: [] };
+  }
+
+  const rsvpBaseUrl = config.frontend?.url || 'https://halaa.sa';
+
+  const batched = await runBatched(
+    guests,
+    async (guest) => {
+      const rsvpLink = `${rsvpBaseUrl}/rsvp/${event._id}/${guest._id}`;
+      const attemptToken =
+        attemptKey || attemptId || `${event._id}:${reminderType}:24h`;
+      const key = `${idempotencyPrefix}:${event._id}:${guest._id}:${reminderType}:${attemptToken}`;
+      const requestHash = sha256(
+        JSON.stringify({
+          eventId: String(event._id),
+          guestId: String(guest._id),
+          reminderType,
+          template: template.templateName,
+        })
+      );
+
+      return withIdempotency(
+        key,
+        async () => {
+          const bodyParams = getEventBodyParams(event, guest.name, template);
+          const imageUrl = getEventImageUrl(event, template);
+          const smsFallback = {
+            sender: TAQNYAT_SENDER,
+            body: buildSmsBody(event, guest.name, rsvpLink),
+          };
+
+          const wa = imageUrl
+            ? await taqnyat.sendWhatsAppTemplateWithImage(
+                guest.phone,
+                template.templateName,
+                template.language || 'ar',
+                imageUrl,
+                bodyParams,
+                smsFallback
+              )
+            : await taqnyat.sendWhatsAppTemplate(
+                guest.phone,
+                template.templateName,
+                template.language || 'ar',
+                [
+                  {
+                    type: 'body',
+                    parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
+                  },
+                ],
+                smsFallback
+              );
+
+          const isRateLimited =
+            !wa?.success &&
+            (wa?.statusCode === 429 || wa?.error === 'RATE_LIMITED');
+
+          return {
+            guestId: guest._id,
+            success: !!wa?.success,
+            messageId: wa?.messageId || null,
+            error: wa?.error || null,
+            rateLimited: isRateLimited,
+          };
+        },
+        { scope, requestHash }
+      );
+    },
+    { concurrency: 5, ratePerSecond: 10 }
+  );
+
+  // Always attach guestId in every detail entry — the dispatcher relies on
+  // it to do per-guest quota release/consume accounting without double-
+  // refunding via the missing-guest backstop.
+  const details = batched.results.map((r) => {
+    if (r.ok) return r.value;
+    return {
+      guestId: r.item?._id,
+      success: false,
+      error: r.error?.message || 'unknown',
+      rateLimited: false,
+    };
+  });
+  let successful = 0;
+  let failed = 0;
+  let rateLimited = 0;
+  for (const d of details) {
+    if (d?.rateLimited) rateLimited++;
+    else if (d?.success) successful++;
+    else failed++;
+  }
+
+  logger.info('[sendAutoReminderBatch] done', {
+    eventId: String(event._id),
+    reminderType,
+    total: guests.length,
+    successful,
+    failed,
+    rateLimited,
+  });
+
+  return { successful, failed, rateLimited, details };
+}
+
 module.exports = {
   sendReminder,
+  sendAutoReminderBatch,
 };

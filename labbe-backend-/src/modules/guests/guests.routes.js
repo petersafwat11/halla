@@ -375,7 +375,7 @@ router.post(
  *       - $ref: '#/components/parameters/GuestIdParam'
  *     responses:
  *       200:
- *         description: Access revoked (idempotent — succeeds with `wasAlreadyRevoked: true` when no active token exists)
+ *         description: "Access revoked (idempotent — succeeds with `wasAlreadyRevoked: true` when no active token exists)"
  *         content:
  *           application/json:
  *             schema:

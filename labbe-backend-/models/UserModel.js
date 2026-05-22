@@ -16,6 +16,7 @@ const {
   VENDOR_STATUS,
 } = require("../src/shared/constants");
 const { mongoosePhoneValidator } = require("../src/shared/utils/phone");
+const { signStoredImage, signStoredImages } = require("../src/shared/utils/s3Upload");
 
 // ============================================
 // SUB-SCHEMAS
@@ -727,21 +728,31 @@ userSchema.methods.softDelete = async function (deletedBy) {
 };
 
 /**
- * Get public profile (remove sensitive data)
- * @returns {Object}
+ * Get public profile (remove sensitive data, sign S3 image refs).
+ *
+ * Async because every image field stored in the DB is an S3 key — we mint a
+ * 1-hour pre-signed URL for each at serialization. Callers MUST await.
+ *
+ * @returns {Promise<Object>}
  */
-userSchema.methods.toPublicJSON = function () {
+userSchema.methods.toPublicJSON = async function () {
   const obj = this.toObject();
 
   // Remove sensitive fields
   delete obj.password;
   delete obj.passwordResetToken;
   delete obj.passwordResetExpires;
+  delete obj.passwordSetupToken;
+  delete obj.passwordSetupExpires;
   delete obj.emailVerificationCode;
   delete obj.emailVerificationExpires;
   delete obj.__v;
 
-  // Remove role-specific data not relevant to user's role
+  // Sign top-level avatar
+  obj.avatar = await signStoredImage(obj.avatar);
+
+  // Role-data flattening: copy the role-specific subdoc to `roleData` and
+  // drop the rest of `profile` from the response.
   if (obj.profile) {
     const roleDataMap = {
       [ROLES.HOST]: "hostData",
@@ -761,13 +772,27 @@ userSchema.methods.toPublicJSON = function () {
     delete obj.profile;
   }
 
-  // Ensure permissions are included for admin roles
-  // (they should already be in obj, but ensure they're not removed)
+  // Sign role-specific image fields.
+  if (obj.roleData) {
+    const rd = obj.roleData;
+    if (obj.role === ROLES.VENDOR) {
+      rd.businessLogo = await signStoredImage(rd.businessLogo);
+      rd.nationalIdImage = await signStoredImage(rd.nationalIdImage);
+      rd.commercialRecordImage = await signStoredImage(rd.commercialRecordImage);
+      rd.profileFile = await signStoredImage(rd.profileFile);
+      rd.cv = await signStoredImage(rd.cv);
+      rd.portfolioImages = await signStoredImages(rd.portfolioImages);
+      rd.pricePackages = await signStoredImages(rd.pricePackages);
+    } else if (obj.role === ROLES.WHITELABEL_ADMIN || obj.role === ROLES.WHITELABEL_MODERATOR) {
+      rd.logo = await signStoredImage(rd.logo);
+      rd.favicon = await signStoredImage(rd.favicon);
+    }
+  }
+
   if (!obj.permissions) {
     obj.permissions = this.permissions || [];
   }
 
-  // Ensure whitelabelId is included for whitelabel users
   if (this.whitelabelId) {
     obj.whitelabelId = this.whitelabelId;
   }

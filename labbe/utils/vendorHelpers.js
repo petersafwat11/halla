@@ -5,33 +5,43 @@ import { useMemo } from "react";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 /**
- * Constructs a full image URL from a potentially partial path
- * Handles various edge cases including Windows paths, relative paths, etc.
- * @param {string} imagePath - The image path from the API
- * @returns {string|null} - Full URL or null if no path
+ * Recover the S3 key from a backend-signed URL.
+ *
+ * The backend stores images as keys and serializes them as pre-signed
+ * S3 URLs of the shape `https://bucket.s3.region.amazonaws.com/<key>?X-Amz-...`.
+ * The DELETE endpoint needs the key, so we extract it here.
+ */
+export const keyFromSignedUrl = (url) => {
+  if (!url || typeof url !== "string") return null;
+  try {
+    const u = new URL(url);
+    const path = u.pathname.startsWith("/") ? u.pathname.slice(1) : u.pathname;
+    return path ? decodeURIComponent(path) : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Resolve an image value from the API to a renderable URL.
+ *
+ * The backend now signs all S3 image fields at serialization, so the value
+ * the API hands us is already a complete `http(s)://...` URL. The only
+ * other case we handle is the local-disk dev fallback (paths under
+ * `/uploads/...`), which we prefix with `BACKEND_URL`.
  */
 export const getImageUrl = (imagePath) => {
-  if (!imagePath) return null;
-  if (imagePath.startsWith("http")) return imagePath;
-
-  // Handle absolute Windows paths stored in old data
-  if (imagePath.includes("\\") || imagePath.match(/^[A-Z]:/i)) {
-    const uploadsMatch = imagePath.match(/uploads[\\/](.+)$/);
-    if (uploadsMatch) {
-      return `${BACKEND_URL}/uploads/${uploadsMatch[1].replace(/\\/g, "/")}`;
-    }
-    const publicMatch = imagePath.match(/public[\\/]uploads[\\/](.+)$/);
-    if (publicMatch) {
-      return `${BACKEND_URL}/uploads/${publicMatch[1].replace(/\\/g, "/")}`;
-    }
+  if (!imagePath || typeof imagePath !== "string") return null;
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
   }
-
-  if (imagePath.startsWith("/uploads")) {
+  if (imagePath.startsWith("/uploads/")) {
     return `${BACKEND_URL}${imagePath}`;
   }
-
-  const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
-  return `${BACKEND_URL}/api/${cleanPath}`;
+  if (imagePath.startsWith("uploads/")) {
+    return `${BACKEND_URL}/${imagePath}`;
+  }
+  return null;
 };
 
 /**

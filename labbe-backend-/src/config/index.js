@@ -67,8 +67,10 @@ const config = {
     senderName: process.env.TAQNYAT_SENDER_NAME || 'HalaaApp',
     waBaseUrl: process.env.TAQNYAT_WA_BASE_URL || 'https://api.taqnyat.sa/wa/v2',
     webhookVerifyToken: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN,
-    reminderTemplateName:
-      process.env.TAQNYAT_REMINDER_TEMPLATE_NAME || 'halaa_event_reminder_v2',
+    // No hardcoded default — the 24h auto-reminder cron looks up templates
+    // via (category, type) on TaqnyatTemplate. Manual nudge callers may
+    // still pass an explicit template name via the env var.
+    reminderTemplateName: process.env.TAQNYAT_REMINDER_TEMPLATE_NAME || null,
   },
 
   frontend: {

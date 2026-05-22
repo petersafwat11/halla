@@ -103,6 +103,12 @@ export const API_PATHS = {
 
     // Phase 3c.1 — manual launch retry
     retryLaunch: (id) => `/events/${id}/retry-launch`,
+
+    // Scheduled extra reminders (host/admin)
+    scheduledRemindersList: (id) => `/events/${id}/scheduled-reminders`,
+    scheduledRemindersCreate: (id) => `/events/${id}/scheduled-reminders`,
+    scheduledRemindersCancel: (id, rid) =>
+      `/events/${id}/scheduled-reminders/${rid}`,
   },
 
   // ============================================
@@ -114,6 +120,13 @@ export const API_PATHS = {
     updateMyProfile: '/users/profile',
     updateMyPassword: '/users/password',
     updateMyProfileSection: (section) => `/users/profile/${section}`,
+
+    // OTP-gated phone change
+    sendPhoneChangeOtp: '/users/profile/phone/send-otp',
+    updatePhone: '/users/profile/phone',
+
+    // Vendor image delete
+    deleteVendorImage: '/users/profile/vendorData/image',
 
     // Notification Preferences
     getNotificationPreferences: '/users/notification-preferences',

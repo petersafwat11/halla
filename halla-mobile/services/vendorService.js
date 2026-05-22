@@ -36,6 +36,10 @@ const buildServiceFormData = (data) => {
   if (data.category) formData.append("category", data.category);
   if (data.description) formData.append("description", data.description);
   if (data.price != null) formData.append("price", String(data.price));
+  if (data.duration != null) formData.append("duration", String(data.duration));
+  if (Array.isArray(data.included)) {
+    formData.append("included", JSON.stringify(data.included));
+  }
   if (data.tags?.length) formData.append("tags", JSON.stringify(data.tags));
   if (data.image?.uri) {
     formData.append("image", {
@@ -76,6 +80,48 @@ export const vendorService = {
       ENDPOINTS.USERS.UPDATE_PROFILE_SECTION(section),
       { method: "PATCH", body: formData, timeoutMs: 60 * 1000 },
       "Failed to update profile section"
+    ),
+
+  updateProfile: (data) =>
+    _request(
+      ENDPOINTS.USERS.UPDATE_PROFILE,
+      { method: "PATCH", body: data },
+      "Failed to update profile"
+    ),
+
+  updateProfileWithFiles: (formData) =>
+    _request(
+      ENDPOINTS.USERS.UPDATE_PROFILE,
+      { method: "PATCH", body: formData, timeoutMs: 60 * 1000 },
+      "Failed to update profile"
+    ),
+
+  updatePassword: (data) =>
+    _request(
+      ENDPOINTS.USERS.UPDATE_PASSWORD,
+      { method: "PATCH", body: data },
+      "Failed to update password"
+    ),
+
+  sendPhoneChangeOtp: (phoneNumber) =>
+    _request(
+      ENDPOINTS.USERS.SEND_PHONE_CHANGE_OTP,
+      { method: "POST", body: { phoneNumber } },
+      "Failed to send verification code"
+    ),
+
+  updatePhone: (phoneNumber, otp) =>
+    _request(
+      ENDPOINTS.USERS.UPDATE_PHONE,
+      { method: "PATCH", body: { phoneNumber, otp } },
+      "Failed to update phone number"
+    ),
+
+  deleteVendorImage: (field, key) =>
+    _request(
+      ENDPOINTS.USERS.DELETE_VENDOR_IMAGE,
+      { method: "DELETE", body: { field, key } },
+      "Failed to delete image"
     ),
 
   getTickets: (params = {}) =>

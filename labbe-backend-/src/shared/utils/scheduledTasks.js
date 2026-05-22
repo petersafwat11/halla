@@ -12,6 +12,8 @@ const Notification = require("../../../models/NotificationModel");
 const notificationService = require("./notificationService");
 const emailService = require("./emailService");
 const messagingService = require("../../modules/messaging/messaging.service");
+const messagingReminderService = require("../../modules/messaging/messaging.reminder.service");
+const taqnyatTemplatesService = require("../../modules/taqnyat-templates/taqnyat-templates.service");
 const taqnyat = require("../../infrastructure/taqnyat");
 const { runBatched } = require("./runBatched");
 const { withIdempotency, sha256 } = require("./idempotency");
@@ -616,10 +618,20 @@ const _formatDateAr = (date) => {
 };
 
 /**
- * Send 24-hour segmented Arabic reminder messages to all guests — runs every 30 minutes.
- * Targets events whose date falls within the next 23.5–24.5 hours (1-hour detection window).
- * Guests are segmented by RSVP status and each group receives a culturally appropriate message.
- * Sets messagingStatus.reminderSent = true after processing to prevent duplicate sends.
+ * Send 24-hour auto reminders to guests — runs every 30 minutes and only
+ * fires on events whose date falls in the next 23.5–24.5h window and
+ * which have not yet had `messagingStatus.reminderSent` flipped.
+ *
+ * Segments:
+ *   - confirmed → template (category, reminder_confirmed)
+ *   - pending  → template (category, reminder_pending) — covers null/'pending'/'maybe'
+ *                rsvp.response, or any guest with rsvp.responded !== true
+ *
+ * Guests with `rsvp.response === 'declined'` get NOTHING. We don't badger
+ * people who already said no. The hardcoded `halaa_reminder_*` names from
+ * the old implementation are removed entirely; templates are looked up by
+ * `(event.eventDetails.type, reminder_*)`. Missing templates audit and
+ * skip — they do not crash the tick.
  */
 const scheduleGuestReminders = () => {
   cron.schedule("*/30 * * * *", async () => {
@@ -632,106 +644,143 @@ const scheduleGuestReminders = () => {
         status: { $in: ["scheduled", "live"] },
         "eventDetails.date": { $gte: windowStart, $lte: windowEnd },
         "messagingStatus.reminderSent": { $ne: true },
-      });
+      }).populate("host", "name username");
 
       if (events.length === 0) return;
       console.log(`[Cron] Sending 24h reminders for ${events.length} event(s)`);
 
       for (const event of events) {
-        const dateAr = _formatDateAr(event.eventDetails?.date);
-        const location = event.eventDetails?.location?.address || "";
-
-        const guests = await Guest.find({
-          event: event._id,
-          "invitation.sent": true,
-        });
-
-        // Phase 3b.1: replace serial 100ms loop with runBatched
-        // (concurrency 5, 10/sec). Same idempotency contract as the
-        // launch send so a duplicated reminder cron tick within the same
-        // 30-min window is a no-op.
-        const buildMessage = (guest) => {
-          if (guest.status === "confirmed") {
-            return (
-              `صديقي العزيز ${guest.name}،\n` +
-              `نُذكِّركَ بفرحتنا التي لا تكتمل إلا بحضورك 🌹\n` +
-              `غداً — ${dateAr} — ننتظرك بلهفة في ${location}.\n` +
-              `نتمنى أن تصلنا بأحسن حال!`
-            );
-          }
-          if (guest.status === "declined") {
-            return (
-              `أخي الكريم ${guest.name}،\n` +
-              `قلوبنا معكم وإن تعذّر عليك الحضور.\n` +
-              `ما زال الباب مفتوحاً، ويسعدنا كثيراً لو تشرّفتنا بحضورك في ${dateAr} 💛\n` +
-              `نرجو لك السعادة دائماً.`
-            );
-          }
-          const rsvpLink = `${process.env.FRONTEND_URL || "https://halaa.sa"}/rsvp/${event._id}/${guest._id}`;
-          return (
-            `عزيزنا ${guest.name}،\n` +
-            `اقترب موعد مناسبتنا — ${dateAr} — ونتمنى من القلب أن نرى اسمك بين الحضور.\n` +
-            `هل بإمكانك تأكيد حضورك؟ 🤍\n${rsvpLink}`
-          );
-        };
-
-        await runBatched(
-          guests,
-          (guest) => {
-            const reminderType = guest.status === "confirmed"
-              ? "confirmed"
-              : guest.status === "declined" ? "declined" : "nudge";
-            const key = `reminder:${event._id}:${guest._id}:${reminderType}:24h`;
-            const requestHash = sha256({
-              eventId: String(event._id),
-              guestId: String(guest._id),
-              reminderType,
-              window: "24h",
-            });
-            return withIdempotency(key, async () => {
-              const msg = buildMessage(guest);
-              const waTemplateName =
-                reminderType === "confirmed" ? "halaa_reminder_confirmed"
-                : reminderType === "declined" ? "halaa_reminder_declined"
-                : "halaa_reminder_nudge";
-
-              let delivered = false;
-              try {
-                const waResult = await taqnyat.sendWhatsAppTemplate(
-                  guest.phone,
-                  waTemplateName,
-                  "ar",
-                  [{ type: "body", parameters: [{ type: "text", text: msg }] }]
-                );
-                if (waResult.success) delivered = true;
-              } catch (_waErr) { /* fall through to SMS */ }
-
-              if (!delivered) {
-                try {
-                  await taqnyat.sendSMS(guest.phone, msg, { sender: process.env.TAQNYAT_SENDER_NAME || "HalaaApp" });
-                  delivered = true;
-                } catch (smsErr) {
-                  console.error(`[Cron] Reminder failed for guest ${guest._id}:`, smsErr.message);
-                }
-              }
-              return { delivered };
-            }, { scope: "guest_reminder", requestHash });
-          },
-          { concurrency: 5, ratePerSecond: 10 }
-        );
-
-        // Mark reminder as sent for this event to prevent re-processing
-        await Event.findByIdAndUpdate(event._id, {
-          $set: { "messagingStatus.reminderSent": true },
-        });
-
-        console.log(`[Cron] Reminders sent for event ${event._id} (${guests.length} guests)`);
+        await _runAutoReminderForEvent(event);
       }
     } catch (error) {
       console.error("[Cron] Guest reminder job failed:", error);
     }
   });
 };
+
+/**
+ * Process one event's 24h auto reminder. Splits guests into confirmed and
+ * pending segments, looks up the per-category template for each, dispatches
+ * via the messaging helper, and records per-guest tracking. Marks the
+ * event's `messagingStatus.reminderSent` after both segments complete so
+ * the next 30-min tick is a no-op.
+ */
+async function _runAutoReminderForEvent(event) {
+  const category = event.eventDetails?.type || null;
+  const eventId = event._id;
+
+  const allGuests = await Guest.find({
+    event: eventId,
+    "invitation.sent": true,
+    deleted: { $ne: true },
+  });
+
+  const confirmedGuests = [];
+  const pendingGuests = [];
+  for (const guest of allGuests) {
+    const response = guest.rsvp?.response || null;
+    const responded = guest.rsvp?.responded === true;
+    if (response === "declined") continue; // no message to declined guests
+    if (response === "confirmed") {
+      confirmedGuests.push(guest);
+    } else if (!responded || response === "pending" || response === "maybe") {
+      pendingGuests.push(guest);
+    }
+  }
+
+  const segments = [
+    { type: "reminder_confirmed", guests: confirmedGuests },
+    { type: "reminder_pending", guests: pendingGuests },
+  ];
+
+  let totalSuccess = 0;
+  let totalFailed = 0;
+
+  for (const segment of segments) {
+    if (segment.guests.length === 0) continue;
+    const template = await taqnyatTemplatesService
+      .findActiveByCategoryAndType(category, segment.type)
+      .catch(() => null);
+
+    if (!template) {
+      await logAudit({
+        action: "reminder.template_missing",
+        actor: { _id: null, role: "system" },
+        targetType: "event",
+        targetId: eventId,
+        whitelabelId: event.whitelabelId || null,
+        metadata: {
+          category,
+          type: segment.type,
+          skippedGuestCount: segment.guests.length,
+        },
+        status: "failure",
+      }).catch(() => {});
+      continue;
+    }
+
+    const result = await messagingReminderService.sendAutoReminderBatch({
+      event,
+      guests: segment.guests,
+      reminderType: segment.type,
+      template,
+    });
+
+    totalSuccess += result.successful;
+    totalFailed += result.failed;
+
+    // Per-guest tracking writes for successful sends. Failures intentionally
+    // do not flip autoReminderSent so the next 30-min tick (if still in the
+    // 1h detection window AND event hasn't been marked yet) could retry —
+    // though in practice the per-event flag below normally locks future
+    // ticks out.
+    const bulkOps = [];
+    for (const detail of result.details) {
+      if (!detail?.success) continue;
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: detail.guestId },
+          update: {
+            $set: {
+              "invitation.autoReminderSent": true,
+              "invitation.autoReminderSentAt": new Date(),
+              "invitation.autoReminderType": segment.type,
+              "invitation.autoReminderMessageId": detail.messageId || null,
+            },
+          },
+        },
+      });
+    }
+    if (bulkOps.length) await Guest.bulkWrite(bulkOps);
+  }
+
+  await Event.findByIdAndUpdate(eventId, {
+    $set: {
+      "messagingStatus.reminderSent": true,
+      "messagingStatus.reminderSentAt": new Date(),
+    },
+  });
+
+  await logAudit({
+    action: totalFailed === 0 ? "reminder.auto_dispatched" : "reminder.auto_failed",
+    actor: { _id: null, role: "system" },
+    targetType: "event",
+    targetId: eventId,
+    whitelabelId: event.whitelabelId || null,
+    metadata: {
+      category,
+      confirmedCount: confirmedGuests.length,
+      pendingCount: pendingGuests.length,
+      successful: totalSuccess,
+      failed: totalFailed,
+    },
+    status: totalFailed === 0 ? "success" : totalSuccess === 0 ? "failure" : "partial",
+  }).catch(() => {});
+
+  console.log(
+    `[Cron] Reminders sent for event ${eventId} — confirmed:${confirmedGuests.length} pending:${pendingGuests.length} ok:${totalSuccess} fail:${totalFailed}`
+  );
+}
 
 /**
  * Subscription status auto-update — runs daily at 1:00 AM.
@@ -1215,6 +1264,234 @@ const scheduleSubscriptionRenewal = () => {
   });
 };
 
+/**
+ * Dispatcher for ScheduledExtraReminder docs — runs every minute. Claims
+ * `pending` rows whose `scheduledFor` is due via an atomic
+ * `findOneAndUpdate({status:'pending'} → 'running')` flip so a competing
+ * worker that loses the race is a no-op. For each guest in the doc:
+ *   - send via the per-(category,reminderType) template,
+ *   - on success: write Guest.invitation.extraReminder* and consume 1 from
+ *     `Subscription.remindersReserved` → `remindersConsumed`,
+ *   - on failure / 429: refund the reservation (rate-limit means Taqnyat
+ *     did not queue the message — safe to retry next schedule).
+ */
+const ScheduledExtraReminder = require("../../../models/ScheduledExtraReminderModel");
+const _runScheduledExtraReminder = async (reminderDoc) => {
+  const workerId = `${process.pid}:${Date.now()}`;
+  const claimed = await ScheduledExtraReminder.findOneAndUpdate(
+    { _id: reminderDoc._id, status: "pending" },
+    {
+      $set: {
+        status: "running",
+        lockOwner: workerId,
+        lockedAt: new Date(),
+        startedAt: new Date(),
+      },
+      $inc: { attemptCount: 1 },
+    },
+    { new: true }
+  );
+  if (!claimed) return; // another worker took it, or it was cancelled
+
+  let doc = claimed;
+  // Flip to true once the per-guest consume/release loop starts. If we
+  // then crash mid-loop the catch must NOT also refund the whole
+  // `consumedQuota` — that would double-refund every per-guest release
+  // already performed.
+  let perGuestAccountingStarted = false;
+  try {
+    const event = await Event.findById(doc.event).populate("host", "name username");
+    if (!event) {
+      await Subscription.releaseReservedReminders(
+        doc.subscriptionId,
+        doc.consumedQuota
+      ).catch(() => {});
+      await ScheduledExtraReminder.findByIdAndUpdate(doc._id, {
+        $set: {
+          status: "failed",
+          finishedAt: new Date(),
+          lastError: "event_missing",
+        },
+      });
+      return;
+    }
+
+    const category = event.eventDetails?.type || null;
+    const template = await taqnyatTemplatesService
+      .findActiveByCategoryAndType(category, doc.reminderType)
+      .catch(() => null);
+
+    if (!template) {
+      await Subscription.releaseReservedReminders(
+        doc.subscriptionId,
+        doc.consumedQuota
+      ).catch(() => {});
+      await ScheduledExtraReminder.findByIdAndUpdate(doc._id, {
+        $set: {
+          status: "failed",
+          finishedAt: new Date(),
+          lastError: "template_missing",
+        },
+      });
+      await logAudit({
+        action: "scheduled_extra_reminder.failed_template_missing",
+        actor: { _id: null, role: "system" },
+        targetType: "scheduled_extra_reminder",
+        targetId: doc._id,
+        whitelabelId: event.whitelabelId || null,
+        metadata: {
+          eventId: String(event._id),
+          category,
+          reminderType: doc.reminderType,
+          refundedQuota: doc.consumedQuota,
+        },
+        status: "failure",
+      }).catch(() => {});
+      return;
+    }
+
+    const guests = await Guest.find({
+      _id: { $in: doc.guestIds },
+      deleted: { $ne: true },
+    });
+
+    // Attempt key includes the doc id + attemptCount so a retried dispatch
+    // gets a fresh idempotency key and isn't a no-op against the prior
+    // cached failure.
+    const result = await messagingReminderService.sendAutoReminderBatch({
+      event,
+      guests,
+      reminderType: doc.reminderType,
+      template,
+      scope: "extra_reminder",
+      idempotencyPrefix: "extra_reminder",
+      attemptKey: `${doc._id}:${doc.attemptCount}`,
+    });
+
+    perGuestAccountingStarted = true;
+    const bulkOps = [];
+    for (const detail of result.details) {
+      if (detail?.success) {
+        bulkOps.push({
+          updateOne: {
+            filter: { _id: detail.guestId },
+            update: {
+              $set: {
+                "invitation.extraReminderSent": true,
+                "invitation.extraReminderSentAt": new Date(),
+                "invitation.extraReminderType": doc.reminderType,
+                "invitation.extraReminderMessageId": detail.messageId || null,
+              },
+            },
+          },
+        });
+        await Subscription.consumeReservedReminders(doc.subscriptionId, 1).catch(() => {});
+      } else {
+        // Failure or rate-limit — refund the reservation so the host can
+        // re-schedule. Consistent with messaging.send.service's 429 path
+        // which treats rate-limited as "did not send".
+        await Subscription.releaseReservedReminders(doc.subscriptionId, 1).catch(() => {});
+      }
+    }
+    // Guests not in `result.details` (e.g. soft-deleted between schedule
+    // and dispatch so they're not in the `guests` array) — refund those.
+    const accountedGuestIds = new Set(
+      result.details.map((d) => String(d?.guestId)).filter(Boolean)
+    );
+    const missingCount = doc.guestIds.filter(
+      (gid) => !accountedGuestIds.has(String(gid))
+    ).length;
+    if (missingCount > 0) {
+      await Subscription.releaseReservedReminders(
+        doc.subscriptionId,
+        missingCount
+      ).catch(() => {});
+    }
+    if (bulkOps.length) await Guest.bulkWrite(bulkOps);
+
+    const totalAttempted = guests.length;
+    let finalStatus = "sent";
+    if (result.successful === 0) finalStatus = "failed";
+    else if (result.successful < totalAttempted) finalStatus = "partial";
+
+    await ScheduledExtraReminder.findByIdAndUpdate(doc._id, {
+      $set: {
+        status: finalStatus,
+        finishedAt: new Date(),
+        result: {
+          successful: result.successful,
+          failed: result.failed,
+          rateLimited: result.rateLimited,
+          details: result.details.map((d) => ({
+            guestId: d?.guestId,
+            success: !!d?.success,
+            messageId: d?.messageId || null,
+            error: d?.error || null,
+            rateLimited: !!d?.rateLimited,
+          })),
+        },
+      },
+    });
+
+    await logAudit({
+      action: "scheduled_extra_reminder.dispatched",
+      actor: { _id: null, role: "system" },
+      targetType: "scheduled_extra_reminder",
+      targetId: doc._id,
+      whitelabelId: event.whitelabelId || null,
+      metadata: {
+        eventId: String(event._id),
+        reminderType: doc.reminderType,
+        finalStatus,
+        successful: result.successful,
+        failed: result.failed,
+        rateLimited: result.rateLimited,
+      },
+      status:
+        finalStatus === "sent" ? "success" : finalStatus === "failed" ? "failure" : "partial",
+    }).catch(() => {});
+  } catch (err) {
+    console.error("[Cron] scheduled_extra_reminder dispatch error:", err.message);
+    await ScheduledExtraReminder.findByIdAndUpdate(doc._id, {
+      $set: {
+        status: "failed",
+        finishedAt: new Date(),
+        lastError: err.message,
+      },
+    }).catch(() => {});
+    // Only refund the whole reservation if per-guest accounting hadn't
+    // started yet. Once the loop has begun, each iteration has already
+    // consumed-or-released its 1 against the reservation; a blanket refund
+    // here would over-release for everything we already handled and would
+    // permanently inflate `remindersRemaining`.
+    if (!perGuestAccountingStarted) {
+      await Subscription.releaseReservedReminders(
+        doc.subscriptionId,
+        doc.consumedQuota
+      ).catch(() => {});
+    }
+  }
+};
+
+const scheduleExtraReminderDispatcher = () => {
+  cron.schedule("* * * * *", async () => {
+    try {
+      const now = new Date();
+      const due = await ScheduledExtraReminder.find({
+        status: "pending",
+        scheduledFor: { $lte: now },
+      })
+        .limit(50)
+        .lean();
+      for (const doc of due) {
+        await _runScheduledExtraReminder(doc);
+      }
+    } catch (err) {
+      console.error("[Cron] scheduled_extra_reminder dispatcher error:", err.message);
+    }
+  });
+};
+
 const initScheduledTasks = () => {
   console.log("[Cron] Initializing scheduled tasks...");
 
@@ -1227,6 +1504,7 @@ const initScheduledTasks = () => {
   scheduleEventRetry();
   scheduleEventCompletion();
   scheduleGuestReminders();
+  scheduleExtraReminderDispatcher();
   scheduleNotificationDelivery();
   schedulePaymentReconcile();
   scheduleSubscriptionRenewal();
@@ -1242,6 +1520,7 @@ const initScheduledTasks = () => {
   console.log("  - Template status polling: Every 30 minutes");
   console.log("  - Event completion (live → completed): Every hour");
   console.log("  - 24h guest reminder SMS: Every 30 minutes");
+  console.log("  - Scheduled extra reminder dispatcher: Every minute");
   console.log("  - Scheduled notification delivery: Every 5 minutes");
   console.log("  - Payment reconciliation: Every 5 minutes");
   console.log("  - Subscription renewal (Moyasar invoice): Daily at 2:00 AM");

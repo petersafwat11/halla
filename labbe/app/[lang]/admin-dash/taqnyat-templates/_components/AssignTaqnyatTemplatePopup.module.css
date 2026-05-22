@@ -133,3 +133,37 @@
 .actions > * {
   flex: 1;
 }
+
+.typeField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.typeLabel {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.typeSelect {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  border: 1px solid #d6dde2;
+  border-radius: 0.8rem;
+  font-size: 1.3rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.typeSelect:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.typeHint {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #7f8c8d;
+  line-height: 1.5;
+}

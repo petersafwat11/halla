@@ -6,7 +6,7 @@ import EventsService from "../../../services/EventsService";
 import Button from "../../commen/Button";
 
 export default function ModeratorForm() {
-  const { t } = useTranslation("admin");
+  const { t } = useTranslation("createEvent");
   const { setValue, watch } = useFormContext();
   const formData = watch();
 
@@ -30,10 +30,10 @@ export default function ModeratorForm() {
   return (
     <View style={styles.form}>
       <View style={styles.inputWrapper}>
-        <Text style={styles.inputLabel}>{t("events.moderator.nameLabel")}</Text>
+        <Text style={styles.inputLabel}>{t("staff_name")}</Text>
         <TextInput
           style={[styles.textInput, moderatorErrors.name && styles.textInputError]}
-          placeholder={t("events.moderator.namePlaceholder")}
+          placeholder={t("staff_name_placeholder")}
           placeholderTextColor="#999"
           value={moderatorName}
           onChangeText={setModeratorName}
@@ -41,10 +41,10 @@ export default function ModeratorForm() {
         {moderatorErrors.name && <Text style={styles.errorText}>{t(moderatorErrors.name)}</Text>}
       </View>
       <View style={styles.inputWrapper}>
-        <Text style={styles.inputLabel}>{t("events.moderator.phoneLabel")}</Text>
+        <Text style={styles.inputLabel}>{t("staff_phone")}</Text>
         <TextInput
           style={[styles.textInput, moderatorErrors.phone && styles.textInputError]}
-          placeholder={t("events.moderator.phonePlaceholder")}
+          placeholder={t("staff_phone_placeholder")}
           placeholderTextColor="#999"
           value={moderatorPhone}
           onChangeText={setModeratorPhone}
@@ -53,7 +53,7 @@ export default function ModeratorForm() {
         {moderatorErrors.phone && <Text style={styles.errorText}>{t(moderatorErrors.phone)}</Text>}
       </View>
       <Button
-        text={t("events.moderator.addModerator")}
+        text={t("add_staff")}
         onPress={handleAddModerator}
         disabled={!moderatorName.trim() || !moderatorPhone.trim()}
       />

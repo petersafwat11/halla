@@ -8,24 +8,30 @@ import {
   Alert,
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import TextInput from "../commen/TextInput";
 import TextAreaInput from "../commen/TextAreaInput";
-import DropdownInput from "../commen/DropdownInput";
 import Button from "../commen/Button";
 import MapPicker from "../commen/MapPicker";
 import * as ImagePicker from "expo-image-picker";
+import { serviceDetailsSchema } from "../../utils/schemas/vendorSchemas";
 
 const ServiceDetailsForm = ({ data, onSave, loading }) => {
   const { t } = useTranslation("vendor");
   const methods = useForm({
+    resolver: zodResolver(serviceDetailsSchema),
     defaultValues: {
       serviceDescription: data?.serviceDescription || "",
       nationalId: data?.nationalId || "",
-      serviceCategories: data?.serviceCategories || [],
-      serviceLocation: data?.serviceLocation || { address: "", coordinates: null },
     },
   });
+  const [serviceCategories, setServiceCategories] = useState(
+    data?.serviceCategories || []
+  );
+  const [serviceLocation, setServiceLocation] = useState(
+    data?.serviceLocation || { address: "", coordinates: null }
+  );
   const [nationalIdImage, setNationalIdImage] = useState(data?.nationalIdImage || null);
   const [commercialRecordImage, setCommercialRecordImage] = useState(data?.commercialRecordImage || null);
   const [nationalIdFile, setNationalIdFile] = useState(null);
@@ -35,14 +41,23 @@ const ServiceDetailsForm = ({ data, onSave, loading }) => {
     methods.reset({
       serviceDescription: data?.serviceDescription || "",
       nationalId: data?.nationalId || "",
-      serviceCategories: data?.serviceCategories || [],
-      serviceLocation: data?.serviceLocation || { address: "", coordinates: null },
     });
+    setServiceCategories(data?.serviceCategories || []);
+    setServiceLocation(
+      data?.serviceLocation || { address: "", coordinates: null }
+    );
     setNationalIdImage(data?.nationalIdImage || null);
     setCommercialRecordImage(data?.commercialRecordImage || null);
     setNationalIdFile(null);
     setCommercialRecordFile(null);
-  }, [data?.serviceDescription, data?.nationalId]);
+  }, [
+    data?.serviceDescription,
+    data?.nationalId,
+    data?.serviceCategories,
+    data?.serviceLocation,
+    data?.nationalIdImage,
+    data?.commercialRecordImage,
+  ]);
 
   const categoryOptions = [
     { label: t("categories.photography"), value: "photography" },
@@ -87,9 +102,19 @@ const ServiceDetailsForm = ({ data, onSave, loading }) => {
   };
 
   const onSubmit = (formValues) => {
-    const submitData = { ...formValues };
+    const submitData = {
+      serviceDescription: formValues.serviceDescription,
+      nationalId: formValues.nationalId,
+    };
+    if (serviceCategories?.length) {
+      submitData.serviceCategories = serviceCategories;
+    }
+    if (serviceLocation && (serviceLocation.address || serviceLocation.regionId)) {
+      submitData.serviceLocation = serviceLocation;
+    }
     if (nationalIdFile) submitData.nationalIdImage = nationalIdFile;
-    if (commercialRecordFile) submitData.commercialRecordImage = commercialRecordFile;
+    if (commercialRecordFile)
+      submitData.commercialRecordImage = commercialRecordFile;
     onSave(submitData);
   };
 
@@ -114,20 +139,49 @@ const ServiceDetailsForm = ({ data, onSave, loading }) => {
           </View>
 
           <View style={styles.inputGroup}>
-            <DropdownInput
-              name="serviceCategories"
-              label={t("settings.serviceDetails.categories")}
-              options={categoryOptions}
-              placeholder={t("settings.serviceDetails.categoriesPlaceholder")}
-              multiple
-            />
+            <Text style={styles.label}>
+              {t("settings.serviceDetails.categories")}
+            </Text>
+            <View style={styles.categoriesContainer}>
+              {categoryOptions.map((opt) => {
+                const selected = serviceCategories.includes(opt.value);
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={[
+                      styles.categoryChip,
+                      selected && styles.categoryChipSelected,
+                    ]}
+                    onPress={() => {
+                      setServiceCategories((prev) =>
+                        selected
+                          ? prev.filter((v) => v !== opt.value)
+                          : [...prev, opt.value]
+                      );
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryChipText,
+                        selected && styles.categoryChipTextSelected,
+                      ]}
+                    >
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>
               {t("settings.serviceDetails.location")}
             </Text>
-            <MapPicker name="serviceLocation" />
+            <MapPicker
+              value={serviceLocation}
+              onChange={setServiceLocation}
+            />
           </View>
 
           <View style={styles.inputGroup}>
@@ -249,6 +303,29 @@ const styles = StyleSheet.create({
     color: "#4CAF50",
     marginTop: 8,
   },
+  categoriesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  categoryChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#e0d5c9",
+    backgroundColor: "#fff",
+  },
+  categoryChipSelected: {
+    backgroundColor: "#c28e5c",
+    borderColor: "#c28e5c",
+  },
+  categoryChipText: {
+    fontSize: 13,
+    color: "#2c2c2c",
+    fontFamily: "Cairo_600SemiBold",
+  },
+  categoryChipTextSelected: { color: "#fff" },
   buttonContainer: {
     marginTop: 16,
   },

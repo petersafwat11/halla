@@ -69,6 +69,15 @@
       "label": "Service Price",
       "placeholder": "Enter Service Price"
     },
+    "duration": {
+      "label": "Service Duration",
+      "placeholder": "e.g., 8-12 hours"
+    },
+    "included": {
+      "label": "What's Included",
+      "placeholder": "Type an item and press Enter",
+      "removeHint": "Click to remove"
+    },
     "category": {
       "label": "Choose Category",
       "placeholder": "Select from categories below"

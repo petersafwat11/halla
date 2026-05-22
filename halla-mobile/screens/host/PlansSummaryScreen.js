@@ -19,6 +19,7 @@ import PlanSummaryCard from "../../components/plans/PlanSummaryCard";
 import DiscountCodeCard from "../../components/plans/DiscountCodeCard";
 import PaymentSummaryCard from "../../components/plans/PaymentSummaryCard";
 import AddonsSummaryCard from "../../components/plans/AddonsSummaryCard";
+import PaymentMethodSelector from "../../components/plans/PaymentMethodSelector";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const buildCheckoutAddons = (items = []) =>
@@ -52,53 +53,141 @@ const PlansSummaryScreen = () => {
   const [discountCode, setDiscountCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
   const [discountApplied, setDiscountApplied] = useState(false);
+  const [appliedCode, setAppliedCode] = useState("");
+  const [discountError, setDiscountError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("creditcard");
+  const [cardData, setCardData] = useState(null);
+  const [stcMobile, setStcMobile] = useState("");
   const validating = validateDiscount.isPending;
 
-  const planPrice = parseFloat(selectedPlan?.pricing?.oneTime) || 0;
+  // Mirror web's buildSource: { type, ...fields } per payment method.
+  // Card fields stay strings (number/cvc) except month/year which Moyasar
+  // expects as integers. The validation just below catches client-side
+  // misses so we never POST an obviously-invalid source.
+  const buildSource = () => {
+    if (paymentMethod === "creditcard") {
+      return {
+        type: "creditcard",
+        name: cardData?.name,
+        number: cardData?.number,
+        month: Number(cardData?.month),
+        year: Number(cardData?.year),
+        cvc: cardData?.cvc,
+      };
+    }
+    if (paymentMethod === "stcpay") {
+      return { type: "stcpay", mobile: stcMobile };
+    }
+    if (paymentMethod === "applepay") {
+      return { type: "applepay", token: null };
+    }
+    return null;
+  };
+
+  const validateSource = () => {
+    if (paymentMethod === "creditcard") {
+      const name = cardData?.name?.trim();
+      const number = cardData?.number?.trim();
+      const month = cardData?.month?.trim();
+      const year = cardData?.year?.trim();
+      const cvc = cardData?.cvc?.trim();
+      if (!name || !number || !month || !year || !cvc) {
+        return t("checkout.errors.cardIncomplete");
+      }
+      if (number.length < 13 || number.length > 19) {
+        return t("checkout.errors.cardNumberInvalid");
+      }
+      const m = Number(month);
+      const y = Number(year);
+      if (!m || m < 1 || m > 12 || !y || year.length !== 4) {
+        return t("checkout.errors.expiryInvalid");
+      }
+      if (cvc.length < 3 || cvc.length > 4) {
+        return t("checkout.errors.cvcInvalid");
+      }
+      return null;
+    }
+    if (paymentMethod === "stcpay") {
+      // Web sends stcMobile raw with no format check — Moyasar is the
+      // source of truth. We only block empty input here so we don't POST
+      // a guaranteed-bad source to the gateway.
+      if (!stcMobile?.trim()) {
+        return t("checkout.errors.stcMobileInvalid");
+      }
+      return null;
+    }
+    if (paymentMethod === "applepay") {
+      // PassKit wiring isn't shipped yet on mobile. Block the user with a
+      // clear message until that's done, instead of failing silently at
+      // the gateway with token:null.
+      return t("checkout.errors.applepayUnavailable");
+    }
+    return null;
+  };
+
+  const planPrice = parseFloat(selectedPlan?.price) || 0;
   const subtotal = planPrice + (addonTotal || 0);
   const finalTotal = Math.max(0, subtotal - discountAmount);
 
   const checkoutAddons = useMemo(() => buildCheckoutAddons(addonItems), [addonItems]);
 
+  const handleDiscountCodeChange = (value) => {
+    setDiscountCode(value);
+    if (discountError) setDiscountError("");
+  };
+
   const handleApplyDiscount = async () => {
     if (!discountCode.trim() || validating) return;
+    setDiscountError("");
     try {
       // Validate against the bundled subtotal so the preview matches what
-      // backend /payments/checkout charges. Use the plan's canonical
-      // planType (the source of truth in the backend's PLAN_TYPES enum) —
-      // never fall back to `selectedPlan?.code`, which is the granular
-      // PLAN_CODES vocabulary and never matches applicablePlanTypes.
-      const planTypeKey = selectedPlan?.planType || null;
+      // backend /payments/checkout charges. selectedPlan.planType is the
+      // canonical PLAN_TYPES enum value the backend's applicablePlanTypes
+      // matches against. Send the user's input verbatim — backend stores
+      // codes uppercase but matches case-insensitively.
+      const planTypeKey = selectedPlan?.planType || selectedPlan?.type || null;
       const body = await validateDiscount.mutateAsync({
-        code: discountCode.trim().toUpperCase(),
+        code: discountCode.trim(),
         amount: subtotal,
         planType: planTypeKey,
       });
 
       const result = body?.data;
       if (result?.valid) {
-        setDiscountAmount(result.discountAmount || 0);
+        const discount = result.discountAmount || 0;
+        setDiscountAmount(discount);
         setDiscountApplied(true);
-        toast.success(
-          t("summary.discount.success", {
-            code: discountCode.trim().toUpperCase(),
-            amount: (result.discountAmount || 0).toFixed(0),
-          }),
-        );
+        setAppliedCode(discountCode.trim().toUpperCase());
       } else {
         setDiscountApplied(false);
         setDiscountAmount(0);
-        toast.error(result?.reason || t("summary.discount.invalidDefault"));
+        setAppliedCode("");
+        setDiscountError(result?.reason || t("summary.discount.invalidDefault"));
       }
     } catch {
       setDiscountApplied(false);
       setDiscountAmount(0);
-      toast.error(t("summary.discount.networkError"));
+      setAppliedCode("");
+      setDiscountError(t("summary.discount.networkError"));
     }
+  };
+
+  const handleRemoveDiscount = () => {
+    setDiscountCode("");
+    setDiscountAmount(0);
+    setDiscountApplied(false);
+    setAppliedCode("");
+    setDiscountError("");
   };
 
   const handlePayment = async () => {
     if (!selectedPlan) return;
+
+    const sourceError = validateSource();
+    if (sourceError) {
+      toast.error(sourceError);
+      return;
+    }
 
     try {
       const result = await checkoutMutation.mutateAsync({
@@ -107,6 +196,7 @@ const PlansSummaryScreen = () => {
         ...(discountApplied && discountCode
           ? { discountCode: discountCode.trim() }
           : {}),
+        source: buildSource(),
       });
       if (result?.requiresAction) {
         // useCheckout has already opened the redirect URL via Linking; the
@@ -119,11 +209,11 @@ const PlansSummaryScreen = () => {
           t("toasts.subscriptionPartial", { count: failedCount })
         );
       } else {
-        toast.success(t("toasts.success"));
+        toast.success(t("toasts.subscriptionCreated"));
       }
       navigation.navigate("CreateEventScreen");
     } catch (error) {
-      toast.error(error?.message || t("toasts.failed"));
+      toast.error(error?.message || t("toasts.subscriptionFailed"));
     }
   };
 
@@ -155,12 +245,37 @@ const PlansSummaryScreen = () => {
 
           <DiscountCodeCard
             discountCode={discountCode}
-            discountApplied={discountApplied}
-            validating={validating}
-            onCodeChange={setDiscountCode}
+            applied={discountApplied}
+            loading={validating}
+            amount={discountAmount}
+            appliedCode={appliedCode}
+            errorMessage={discountError}
+            onCodeChange={handleDiscountCodeChange}
             onApply={handleApplyDiscount}
+            onRemove={handleRemoveDiscount}
             t={t}
           />
+
+          <View style={styles.methodCard}>
+            <View style={styles.methodCardHeader}>
+              <Ionicons
+                name="wallet-outline"
+                size={16}
+                color={colors.primary[500]}
+              />
+              <Text style={styles.methodCardTitle}>
+                {t("summary.payment.method")}
+              </Text>
+            </View>
+            <View style={styles.methodCardBody}>
+              <PaymentMethodSelector
+                value={paymentMethod}
+                onChange={setPaymentMethod}
+                onCardChange={setCardData}
+                onMobileChange={setStcMobile}
+              />
+            </View>
+          </View>
 
           <PaymentSummaryCard
             planPrice={planPrice}
@@ -273,6 +388,31 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 18,
     flexShrink: 1,
+  },
+  methodCard: {
+    backgroundColor: colors.natural[50],
+    borderRadius: borderRadius[16],
+    borderWidth: 1,
+    borderColor: colors.natural[200],
+    marginBottom: spacing[12],
+    overflow: "hidden",
+  },
+  methodCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
+    paddingHorizontal: spacing[16],
+    paddingVertical: spacing[12],
+    borderBottomWidth: 1,
+    borderBottomColor: colors.natural[200],
+  },
+  methodCardTitle: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.title.medium,
+    color: colors.secondary[900],
+  },
+  methodCardBody: {
+    padding: spacing[16],
   },
 
   /* ---------- Footer ---------- */

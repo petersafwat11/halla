@@ -34,10 +34,21 @@
       "lang": "اللغة",
       "status": "الحالة",
       "category": "الفئة",
+      "type": "النوع",
       "mappingCount": "المتغيرات",
       "active": "نشط"
     },
     "unassigned": "غير معينة",
+    "unassignedType": "غير معيّن",
+    "fieldType": "نوع القالب",
+    "uniquePerCategoryHint": "يُسمح بقالب واحد نشط فقط لكل فئة لهذا النوع. الحفظ سيُلغي تفعيل السابق.",
+    "types": {
+      "invite": "دعوة",
+      "reminder_pending": "تذكير — لم يردّ أو ربما",
+      "reminder_confirmed": "تذكير — مؤكد الحضور",
+      "post_event": "بعد الحدث",
+      "staff_access": "وصول المشرفين"
+    },
     "empty": "لا توجد قوالب — اضغط 'تحديث من Taqnyat' لجلبها",
     "assignBtn": "تعيين",
     "saved": "تم الحفظ",
@@ -78,7 +89,10 @@
       "event_dateFormatted": "تاريخ الحدث (منسّق)",
       "event_time": "وقت الحدث",
       "event_location": "عنوان الحدث (الموقع)",
+      "event_mapUrl": "موقع الحدث (Google Maps)",
       "host_name": "اسم المضيف",
+      "staff_name": "اسم المشرف",
+      "staff_accessUrl": "رابط دخول المشرف",
       "hostNote": "ملاحظة المضيف",
       "invitationMessage": "رسالة الدعوة"
     }

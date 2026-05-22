@@ -35,7 +35,7 @@ const otpService = require('./otp.service');
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
-const { processUploadedFiles, getFileUrl } = require('../../shared/utils/s3Upload');
+const { processUploadedFiles, extractStoredRef } = require('../../shared/utils/s3Upload');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 
@@ -201,9 +201,9 @@ class AuthService {
    * @param {Object} user - User document
    * @returns {Object} Safe user object
    */
-  sanitizeUser(user) {
+  async sanitizeUser(user) {
     if (user.toPublicJSON) {
-      return user.toPublicJSON();
+      return await user.toPublicJSON();
     }
 
     const userObj = user.toObject ? user.toObject() : { ...user };
@@ -303,7 +303,7 @@ class AuthService {
     const subscription = await this.getUserSubscription(user._id);
 
     return {
-      user: this.sanitizeUser(user),
+      user: await this.sanitizeUser(user),
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       subscription,
@@ -470,7 +470,7 @@ class AuthService {
     await subscription.populate('planId');
 
     return {
-      user: this.sanitizeUser(host),
+      user: await this.sanitizeUser(host),
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       subscription: subscription.getSummary ? subscription.getSummary() : subscription,
@@ -580,7 +580,7 @@ class AuthService {
     }).catch((err) => logger.error('vendor signup: audit log failed', err));
 
     return {
-      user: this.sanitizeUser(vendor),
+      user: await this.sanitizeUser(vendor),
       token: null,
       pendingApproval: true,
     };
@@ -605,8 +605,8 @@ class AuthService {
     const address = this._parseJsonField(userData.address);
     const parsedPlanSelection = this._parseJsonField(planSelection);
 
-    // resolve logo URL from S3-uploaded file if provided
-    const logoUrl = logoFile ? getFileUrl(logoFile) : null;
+    // Store the S3 key — toPublicJSON signs it on read.
+    const logoUrl = logoFile ? extractStoredRef(logoFile) : null;
 
     const whitelabelData = {
       englishName,
@@ -668,7 +668,7 @@ class AuthService {
     }).catch((err) => logger.error('whitelabel signup: audit log failed', err));
 
     return {
-      user: this.sanitizeUser(whitelabel),
+      user: await this.sanitizeUser(whitelabel),
       token: null,
       pendingApproval: true,
     };
@@ -857,7 +857,7 @@ class AuthService {
     }).catch((err) => logger.error('signup OTP verify: audit log failed', err));
 
     return {
-      user: this.sanitizeUser(user),
+      user: await this.sanitizeUser(user),
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       subscription: subscription.getSummary ? subscription.getSummary() : subscription,
@@ -899,7 +899,7 @@ class AuthService {
       : user.subscription;
 
     return {
-      user: this.sanitizeUser(user),
+      user: await this.sanitizeUser(user),
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       subscription: subscriptionInfo,
@@ -1022,7 +1022,7 @@ class AuthService {
     logAudit({ action: 'auth.password_reset', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip } }).catch(() => {});
 
     return {
-      user: this.sanitizeUser(user),
+      user: await this.sanitizeUser(user),
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     };
@@ -1067,7 +1067,7 @@ class AuthService {
     logAudit({ action: 'auth.password_changed', actor: { _id: user._id, role: user.role }, targetType: 'user', targetId: user._id, metadata: { ip: context.ip } }).catch(() => {});
 
     return {
-      user: this.sanitizeUser(user),
+      user: await this.sanitizeUser(user),
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     };
@@ -1101,7 +1101,7 @@ class AuthService {
       : null;
 
     return {
-      user: this.sanitizeUser(user),
+      user: await this.sanitizeUser(user),
       subscription: subscriptionInfo,
     };
   }
@@ -1149,7 +1149,7 @@ class AuthService {
       status: 'success',
     }).catch((err) => logger.error('complete profile: audit log failed', err));
 
-    return this.sanitizeUser(user);
+    return await this.sanitizeUser(user);
   }
 
   /**

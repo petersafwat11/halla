@@ -15,7 +15,7 @@
     "subjectPlaceholder": "ادخل موضوع الشكوى",
     "typeLabel": "نوع الشكوى",
     "typePlaceholder": "اختر نوع الشكوى",
-    "messageLabel": "نص الشكوى ",
+    "messageLabel": "نص الشكوى",
     "messagePlaceholder": "ادخل نص الشكوى",
     "submitCreate": "حفظ و ارسال",
     "submitEdit": "تحديث",
@@ -28,16 +28,16 @@
     "payment": "مشكلة في الدفع",
     "event": "مشكلة في الفعالية",
     "user": "شكوى من مستخدم",
+    "other": "أخرى",
     "inquiry": "استفسار",
     "issue": "مشكلة",
     "request": "طلب",
-    "suggestion": "اقتراح",
-    "other": "أخرى"
+    "suggestion": "اقتراح"
   },
   "status": {
     "open": "مفتوحة",
-    "pending": "معلقة",
     "in_progress": "قيد المعالجة",
+    "waiting_response": "بانتظار الرد",
     "resolved": "تم الحل",
     "closed": "مغلقة"
   },
@@ -64,24 +64,22 @@
     "saveError": "حدث خطأ أثناء حفظ الشكوى"
   },
   "createdAt": "تم الإنشاء:",
-  "validation": {
-    "typeRequired": "يجب اختيار نوع الشكوى",
-    "messageRequired": "يجب إدخال نص الشكوى (10 أحرف على الأقل)",
-    "messageMinLength": "الرسالة يجب أن تكون 10 أحرف على الأقل",
-    "messageMaxLength": "الرسالة يجب أن لا تتجاوز 5000 حرف",
-    "priorityInvalid": "أولوية غير صالحة",
-    "statusInvalid": "حالة غير صالحة",
-    "typeInvalid": "نوع الشكوى غير صالح"
-  },
   "errors": {
+    "subjectMinLength": "موضوع الشكوى يجب أن يكون 5 أحرف على الأقل",
+    "subjectMaxLength": "موضوع الشكوى يجب أن لا يتجاوز 200 حرف",
     "typeRequired": "نوع الشكوى مطلوب",
+    "typeInvalid": "نوع الشكوى غير صالح",
     "messageMinLength": "الرسالة يجب أن تكون 10 أحرف على الأقل",
     "messageMaxLength": "الرسالة يجب أن لا تتجاوز 5000 حرف",
     "priorityInvalid": "أولوية غير صالحة",
     "statusInvalid": "حالة غير صالحة",
-    "typeInvalid": "نوع الشكوى غير صالح",
-    "responseRequired": "الرد مطلوب",
-    "responseMaxLength": "الرد يجب أن لا يتجاوز 5000 حرف",
-    "boundary": "فشل في تحميل الشكاوى"
+    "resolutionMinLength": "الرد يجب أن يكون 10 أحرف على الأقل",
+    "resolutionMaxLength": "الرد يجب أن لا يتجاوز 5000 حرف",
+    "boundary": "فشل في تحميل الشكاوى",
+    "loadFailed": "فشل في تحميل الشكاوى"
+  },
+  "ratingInline": {
+    "rateButton": "تقييم",
+    "alreadyRated": "تم التقييم"
   }
 }

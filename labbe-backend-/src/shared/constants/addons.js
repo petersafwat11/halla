@@ -13,12 +13,13 @@ const EXTRA_INVITES_TIERS = [
   { quantity: 50, price: 150 },
 ];
 
+// Mirror EXTRA_INVITES_TIERS exactly. 1 reminder = 1 guest message.
 const EXTRA_REMINDERS_TIERS = [
-  { quantity: 1, price: 25 },
-  { quantity: 2, price: 45 },
-  { quantity: 3, price: 60 },
-  { quantity: 4, price: 70 },
-  { quantity: 5, price: 75 },
+  { quantity: 10, price: 40 },
+  { quantity: 20, price: 75 },
+  { quantity: 30, price: 105 },
+  { quantity: 40, price: 130 },
+  { quantity: 50, price: 150 },
 ];
 
 const DESIGN_TEMPLATE_TIERS = [

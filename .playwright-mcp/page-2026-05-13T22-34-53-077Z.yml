@@ -1,0 +1,273 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "Homepage" [ref=e5] [cursor=pointer]:
+        - /url: /overview
+        - img [ref=e6]
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - button "Connect Gmail" [ref=e20] [cursor=pointer]:
+            - img [ref=e22]
+            - generic [ref=e29]: Connect Gmail
+          - button "Create a Yahoo account" [ref=e30] [cursor=pointer]:
+            - img [ref=e32]
+            - generic [ref=e35]: Create a Yahoo account
+        - button "Sign in button" [active] [ref=e37] [cursor=pointer]:
+          - img [ref=e39]
+  - generic [ref=e42]:
+    - generic [ref=e43] [cursor=pointer]:
+      - generic [ref=e44]: Download the Mail app
+      - figure [ref=e45]:
+        - img "Get the app QR code" [ref=e46]
+    - button "Close Get the app QR code" [ref=e47] [cursor=pointer]:
+      - generic [ref=e48]: Close Get the app QR code
+      - img [ref=e49]
+      - img [ref=e52]
+  - main [ref=e54]:
+    - generic [ref=e56]:
+      - generic [ref=e58]: Cardi B holding a phone displaying the Yahoo Mail Planner interface.
+      - generic [ref=e59]:
+        - heading "Designed to simplify your life" [level=1] [ref=e60]:
+          - generic [ref=e61]: Designed to
+          - generic [ref=e62]: simplify your life
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - paragraph [ref=e65]: Get more from your inbox
+            - paragraph [ref=e66]: with powerful new features
+            - paragraph [ref=e67]: from Yahoo Mail
+          - generic [ref=e69]:
+            - button "Connect Gmail" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: Connect Gmail
+            - button "Create a Yahoo account" [ref=e72] [cursor=pointer]:
+              - generic [ref=e73]: Create a Yahoo account
+    - generic [ref=e75]:
+      - generic [ref=e76]:
+        - paragraph [ref=e77]:
+          - generic [ref=e78]: Efficient
+        - heading "Simplify inbox management" [level=2] [ref=e79]
+        - paragraph [ref=e80]: Time-saving tools help you breeze through emails.
+        - img [ref=e81]
+      - list [ref=e84]:
+        - listitem [ref=e85]:
+          - generic:
+            - img "Yahoo Mail Planner showing a list of upcoming tasks."
+          - generic [ref=e86]:
+            - generic [ref=e87]: New
+            - generic [ref=e88]:
+              - heading "Planner" [level=3] [ref=e89]
+              - paragraph [ref=e90]: Turn emails into tasks and events in seconds.
+        - listitem [ref=e91]:
+          - generic:
+            - img "user catching up on emails"
+          - generic [ref=e93]:
+            - heading "Catch up" [level=3] [ref=e94]
+            - paragraph [ref=e95]: Review unread emails in a fast, fun and simple format.
+        - listitem [ref=e96]:
+          - generic [ref=e98]:
+            - heading "Unified inbox" [level=3] [ref=e99]
+            - paragraph [ref=e100]: View your accounts together by connecting Gmail and more.
+    - generic [ref=e101]:
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - paragraph [ref=e107]:
+            - generic [ref=e108]: Smart
+          - heading "Do more, email less" [level=2] [ref=e109]
+          - paragraph [ref=e110]: Intelligent features make it easy to get stuff done, so you can enjoy life outside of your inbox.
+          - img [ref=e111]
+        - list [ref=e118]:
+          - listitem [ref=e119]:
+            - generic [ref=e120]:
+              - button "View more content for AI compose" [ref=e121] [cursor=pointer]
+              - generic [ref=e122]:
+                - generic [ref=e123]:
+                  - img "AI compose feature in Yahoo Mail showing a drafted message being generated." [ref=e124]
+                  - heading "AI compose" [level=3] [ref=e126]
+                - generic:
+                  - generic:
+                    - img
+                  - paragraph: Let AI help you write better emails and strike the right tone instantly.
+          - listitem [ref=e127]:
+            - generic [ref=e128]:
+              - button "View more content for Primary inbox" [ref=e129] [cursor=pointer]
+              - generic [ref=e130]:
+                - generic [ref=e131]:
+                  - img "Yahoo Mail inbox with tabs like Primary, Offers, and Other." [ref=e132]
+                  - heading "Primary inbox" [level=3] [ref=e134]
+                - generic:
+                  - paragraph: Find your most important emails categorized in the Primary tab.
+          - listitem [ref=e135]:
+            - generic [ref=e136]:
+              - button "View more content for Quick actions" [ref=e137] [cursor=pointer]
+              - generic [ref=e138]:
+                - generic [ref=e139]:
+                  - img "Email with a quick action to check in." [ref=e140]
+                  - heading "Quick actions" [level=3] [ref=e142]
+                - generic:
+                  - paragraph: Get checked in or scheduled in one tap.
+          - listitem [ref=e143]:
+            - generic [ref=e144]:
+              - button "View more content for AI summaries" [ref=e145] [cursor=pointer]
+              - generic [ref=e146]:
+                - generic [ref=e147]:
+                  - img "AI compose feature in Yahoo Mail showing a drafted message being generated." [ref=e148]
+                  - heading "AI summaries" [level=3] [ref=e150]
+                - generic:
+                  - generic:
+                    - img
+                  - paragraph: See key details at a glance, neatly summarized by AI.
+        - navigation [ref=e151]:
+          - button "Previous smart slide" [ref=e152] [cursor=pointer]:
+            - img [ref=e153]
+          - button "Next smart slide" [ref=e155] [cursor=pointer]:
+            - img [ref=e156]
+      - generic [ref=e159]:
+        - generic [ref=e160]:
+          - paragraph [ref=e161]:
+            - generic [ref=e162]: Secure
+          - heading "Know your account is safe" [level=2] [ref=e163]
+          - paragraph [ref=e164]: Top-notch security and tools let you control which emails make it to your inbox.
+          - img [ref=e165]
+        - generic [ref=e169]:
+          - list [ref=e170]:
+            - listitem [ref=e171]:
+              - button "One tap unsubscribe" [ref=e172] [cursor=pointer]
+            - listitem [ref=e173]:
+              - button "Delete by sender" [ref=e174] [cursor=pointer]
+            - listitem [ref=e175]:
+              - button "Spam detection" [ref=e176] [cursor=pointer]
+          - generic [ref=e177]:
+            - list [ref=e178]:
+              - listitem [ref=e179]:
+                - generic [ref=e180]:
+                  - heading "One tap unsubscribe" [level=3] [ref=e181]
+                  - paragraph [ref=e182]: Opt out from unwanted email lists with a single tap.
+              - listitem:
+                - generic:
+                  - heading "Delete by sender" [level=3]
+                  - paragraph: Bulk-delete emails from any sender in an instant.
+                - generic:
+                  - generic:
+                    - img "Option to delete all emails from a sender in Yahoo Mail."
+              - listitem:
+                - generic:
+                  - heading "Spam detection" [level=3]
+                  - paragraph: Stay protected with built-in spam filters that catch unwanted mail.
+                - generic:
+                  - generic:
+                    - img "Warning that disables links in a suspected spam email."
+            - generic [ref=e185]:
+              - button "Simplify Inbox Management 1" [ref=e186] [cursor=pointer]
+              - button "Simplify Inbox Management 2" [ref=e187] [cursor=pointer]
+              - button "Simplify Inbox Management 3" [ref=e188] [cursor=pointer]
+    - generic [ref=e190]:
+      - generic [ref=e192]:
+        - heading "Frequently asked questions" [level=2] [ref=e193]:
+          - text: Frequently
+          - text: asked questions
+        - generic [ref=e194]: Get the answers you’re looking for.
+      - list [ref=e196]:
+        - listitem [ref=e197]:
+          - button "Is Yahoo Mail free?" [ref=e198] [cursor=pointer]:
+            - generic [ref=e199]: Is Yahoo Mail free?
+          - paragraph [ref=e202]: Yes, Yahoo Mail is always free to sign up for and use. We also offer a variety of optional plans with additional features, so you can choose the one that best fits your needs.
+        - listitem [ref=e203]:
+          - button "Can I use Yahoo Mail with my Gmail account?" [ref=e204] [cursor=pointer]:
+            - generic [ref=e205]: Can I use Yahoo Mail with my Gmail account?
+          - paragraph [ref=e208]: Yes! You can absolutely use your Gmail account with Yahoo Mail. You can also use Outlook, AOL and more. Go to Profile icon > Add another mailbox.
+        - listitem [ref=e209]:
+          - button "How do I reset or change my Yahoo password?" [ref=e210] [cursor=pointer]:
+            - generic [ref=e211]: How do I reset or change my Yahoo password?
+          - paragraph [ref=e214]:
+            - text: For detailed steps on how to reset or change your Yahoo Mail password, visit this
+            - link "help page" [ref=e215] [cursor=pointer]:
+              - /url: https://help.yahoo.com/kb/new-yahoo-mail/reset-yahoo-password-sln27051.html
+            - text: .
+        - listitem [ref=e216]:
+          - button "How do I recover lost or deleted emails?" [ref=e217] [cursor=pointer]:
+            - generic [ref=e218]: How do I recover lost or deleted emails?
+          - paragraph [ref=e221]:
+            - text: To recover lost or deleted emails in Yahoo Mail, check out this
+            - link "help article" [ref=e222] [cursor=pointer]:
+              - /url: https://help.yahoo.com/kb/new-yahoo-mail/recover-lost-deleted-emails-sln2552.html
+            - text: .
+        - listitem [ref=e223]:
+          - button "What should I do if emails are not received in Yahoo Mail?" [ref=e224] [cursor=pointer]:
+            - generic [ref=e225]: What should I do if emails are not received in Yahoo Mail?
+          - paragraph [ref=e228]:
+            - text: If you’re not receiving emails in Yahoo Mail, you can troubleshoot this issue by referring to this
+            - link "help article" [ref=e229] [cursor=pointer]:
+              - /url: https://help.yahoo.com/kb/new-yahoo-mail/emails-received-yahoo-mail-sln36739.html
+            - text: .
+    - region "Enjoy an ad-free inbox" [ref=e230]:
+      - generic [ref=e231]:
+        - img "adbox-iphone" [ref=e233]
+        - generic [ref=e236]:
+          - generic [ref=e237]:
+            - heading "Enjoy an ad-free inbox" [level=2] [ref=e238]:
+              - text: Enjoy an
+              - text: ad-free inbox
+            - paragraph [ref=e239]: Cut through the clutter by upgrading to Yahoo Mail Plus.
+          - button "Try 14 days free*" [ref=e241] [cursor=pointer]:
+            - generic [ref=e242]: Try 14 days free*
+          - paragraph [ref=e243]: "*To avoid being charged the recurring subscription fee, cancel before your free trial period ends."
+    - generic [ref=e244]:
+      - img "while resting at home" [ref=e245]
+      - img "Athlete while playing" [ref=e246]
+      - img "Tourist while sailing the boat" [ref=e247]
+      - img "while eating at the restaurants" [ref=e248]
+      - img "when on the beach" [ref=e249]
+      - generic [ref=e250]:
+        - generic [ref=e251]:
+          - heading "More than 1 in 3 Americans use Yahoo Mail*" [level=2] [ref=e252]:
+            - text: More than 1 in 3 Americans
+            - text: use Yahoo Mail*
+          - paragraph [ref=e253]: Get started and experience life, simplified.
+        - generic [ref=e255]:
+          - button "Connect Gmail" [ref=e256] [cursor=pointer]:
+            - img [ref=e258]
+            - generic [ref=e265]: Connect Gmail
+          - button "Create a Yahoo account" [ref=e266] [cursor=pointer]:
+            - img [ref=e268]
+            - generic [ref=e271]: Create a Yahoo account
+  - contentinfo [ref=e272]:
+    - heading "Footer" [level=2] [ref=e273]
+    - generic [ref=e275]:
+      - generic [ref=e276]:
+        - img [ref=e278]
+        - heading "Designed to simplify your life" [level=3] [ref=e290]
+      - generic [ref=e292]:
+        - generic [ref=e293]:
+          - generic [ref=e294]:
+            - heading "Features" [level=3] [ref=e295]
+            - list [ref=e296] [cursor=pointer]:
+              - listitem [ref=e297]:
+                - button "Review faster" [ref=e298]
+              - listitem [ref=e299]:
+                - button "Organize everything" [ref=e300]
+              - listitem [ref=e301]:
+                - button "Plan smarter" [ref=e302]
+              - listitem [ref=e303]:
+                - button "Elevate emails" [ref=e304]
+              - listitem [ref=e305]:
+                - button "Stay protected" [ref=e306]
+          - generic [ref=e307]:
+            - heading "Resources" [level=3] [ref=e308]
+            - list [ref=e309] [cursor=pointer]:
+              - listitem [ref=e310]:
+                - button "Blog" [ref=e311]
+          - generic [ref=e312]:
+            - heading "Legal" [level=3] [ref=e313]
+            - list
+        - generic [ref=e316]:
+          - heading "Follow us" [level=3] [ref=e317]
+          - generic [ref=e318]:
+            - button "Facebook ,opens in a new tab" [ref=e319] [cursor=pointer]:
+              - img [ref=e320]
+            - button "X ,opens in a new tab" [ref=e323] [cursor=pointer]:
+              - img [ref=e324]
+            - button "LinkedIn ,opens in a new tab" [ref=e326] [cursor=pointer]:
+              - img [ref=e327]
+            - button "Instagram ,opens in a new tab" [ref=e329] [cursor=pointer]:
+              - img [ref=e330]
+      - paragraph [ref=e334]: "*Yahoo Internal Data (May '24 - Apr '25)"
+  - text: "if ( !window.BCG || !window.BCG.global || !window.BCG.global.ctx || !window.BCG.global.ctx.geo || window.BCG.global.ctx.geo.isEU === true ) return; window.__uspapi('getUSPData', 1, (r, s) => { if (s && r.uspString.split('')[2] === 'Y') return; const iframe = document.createElement('iframe'); iframe.src = 'https://s.yimg.com/jk/gtm/gtm_ns-1.0.123.html?id=GTM-PL6JGJD7&type=MAIL&cat=OVLPVIEW&enablePostMessaging=true' iframe.height = '0' iframe.width = '0' iframe.style = 'display:none;visibility:hidden' iframe.referrerPolicy = 'origin' iframe.sandbox = 'allow-scripts allow-same-origin' document.body.appendChild(iframe) }) } setTimeout(checkGTM, 2000);"

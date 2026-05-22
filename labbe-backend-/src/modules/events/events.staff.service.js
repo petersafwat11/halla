@@ -21,6 +21,11 @@ const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 const taqnyat = require('../../infrastructure/taqnyat');
+const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
+const {
+  getEventBodyParams,
+  getEventImageUrl,
+} = require('../messaging/messaging.formatting');
 
 module.exports = {
   /**
@@ -284,6 +289,12 @@ module.exports = {
     let failed = 0;
     const results = [];
 
+    // Single global staff_access template (or null if admin hasn't tagged
+    // one yet — we degrade to the plain SMS body in that case).
+    const template = await taqnyatTemplatesService
+      .findActiveByCategoryAndType(null, 'staff_access')
+      .catch(() => null);
+
     for (const staffMember of activeStaff) {
       try {
         const tokenDoc = await StaffAccessToken.createForStaff(
@@ -294,14 +305,43 @@ module.exports = {
 
         const staffUrl = `${frontendUrl}/ar/staff?token=${tokenDoc.token}`;
 
-        const message =
+        // SMS body kept as the fallback that Taqnyat falls through to when
+        // the recipient has no WhatsApp capability or the template send
+        // errors out.
+        const smsFallback =
           `مرحبا ${staffMember.name}!\n\n` +
           `تم تعيينك كمشرف في فعالية "${eventTitle}"\n` +
           (eventDate ? `📅 التاريخ: ${eventDate}\n` : "") +
           (eventLocation ? `📍 المكان: ${eventLocation}\n` : "") +
           `\nللدخول لصفحة المشرفين:\n${staffUrl}`;
 
-        await taqnyat.sendSMS(staffMember.phone, message);
+        if (template) {
+          // Per-iteration local — never mutates the shared event doc.
+          const staffCtx = {
+            staff: { name: staffMember.name, accessUrl: staffUrl },
+          };
+          const bodyParams = getEventBodyParams(event, staffMember.name, template, staffCtx);
+          const imageUrl = getEventImageUrl(event, template);
+          const wa = imageUrl
+            ? await taqnyat.sendWhatsAppTemplateWithImage(
+                staffMember.phone,
+                template.templateName,
+                template.language,
+                imageUrl,
+                bodyParams,
+                smsFallback
+              )
+            : await taqnyat.sendWhatsAppTemplate(
+                staffMember.phone,
+                template.templateName,
+                template.language,
+                bodyParams,
+                smsFallback
+              );
+          if (!wa?.success) throw new Error(wa?.error || 'wa_failed');
+        } else {
+          await taqnyat.sendSMS(staffMember.phone, smsFallback);
+        }
         sent++;
         results.push({ name: staffMember.name, phone: staffMember.phone, status: "sent" });
       } catch (error) {

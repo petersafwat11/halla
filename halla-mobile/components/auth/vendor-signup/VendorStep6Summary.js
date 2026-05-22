@@ -5,14 +5,22 @@ import SectionCard from '../../commen/SectionCard';
 import { useTranslation } from '../../../localization';
 
 const SummaryRow = ({ label, value }) => {
-  if (!value) return null;
+  const displayValue = typeof value === 'object' ? JSON.stringify(value) : value;
+  if (displayValue === undefined || displayValue === null || displayValue === '') return null;
+  if (Array.isArray(value) && value.length === 0) return null;
   return (
     <View style={summaryStyles.row}>
       <Text style={summaryStyles.label}>{label}</Text>
-      <Text style={summaryStyles.value}>{value}</Text>
+      <Text style={summaryStyles.value}>{displayValue}</Text>
     </View>
   );
 };
+
+const CATEGORY_KEYS = [
+  'eventPlanning', 'mediaProduction', 'giftsAndGiveaways', 'foodAndBeverages',
+  'beautyAndFashion', 'logisticsAndDelivery', 'corporateServices',
+  'supportServices', 'technicalServices', 'soundLightingEntertainment', 'hallsAndVenues',
+];
 
 const summaryStyles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
@@ -25,35 +33,68 @@ const VendorStep6Summary = () => {
   const { watch } = useFormContext();
   const values = watch();
 
+  const identity = values.identity || {};
+  const serviceData = values.serviceData || {};
+  const commercial = values.commercialVerification || {};
+  const social = values.socialLinks || {};
+
+  // Collect selected category names
+  const selectedCategories = [];
+  CATEGORY_KEYS.forEach((key) => {
+    const selected = serviceData[key];
+    if (selected && selected.length > 0) {
+      const catTitle = t(`signupForm.vendor.serviceData.${key}.title`);
+      const options = t(`signupForm.vendor.serviceData.${key}.options`, { returnObjects: true });
+      const selectedLabels = (selected || []).map((value) => {
+        if (Array.isArray(options)) {
+          const option = options.find((o) => o.value === value);
+          return option ? option.label : value;
+        }
+        return value;
+      });
+      selectedCategories.push({ title: catTitle, items: selectedLabels.join(', ') });
+    }
+  });
+
   return (
     <View style={styles.container}>
       <Text style={styles.stepTitle}>{t('signupForm.vendor.summary.title')}</Text>
       <Text style={styles.stepDesc}>{t('signupForm.vendor.summary.description')}</Text>
 
       <SectionCard title={t('signupForm.vendor.summary.sections.identity')} icon="person-outline">
-        <SummaryRow label={t('signupForm.vendor.identity.brandName')} value={values.identity?.brandName} />
-        <SummaryRow label={t('signupForm.vendor.identity.ownerFullName')} value={values.identity?.ownerFullName} />
-        <SummaryRow label={t('signupForm.vendor.identity.email')} value={values.identity?.email} />
-        <SummaryRow label={t('signupForm.vendor.identity.phone')} value={values.identity?.phoneNumber} />
+        <SummaryRow label={t('signupForm.vendor.identity.brandName')} value={identity.brandName} />
+        <SummaryRow label={t('signupForm.vendor.identity.ownerFullName')} value={identity.ownerFullName} />
+        <SummaryRow label={t('signupForm.vendor.identity.email')} value={identity.email} />
+        <SummaryRow label={t('signupForm.vendor.identity.phone')} value={identity.phoneNumber} />
       </SectionCard>
 
       <SectionCard title={t('signupForm.vendor.summary.sections.serviceData')} icon="briefcase-outline">
-        <SummaryRow label={t('signupForm.vendor.serviceData.description')} value={values.serviceData?.serviceDescription} />
+        <SummaryRow label={t('signupForm.vendor.serviceData.serviceDescription.label')} value={serviceData.serviceDescription} />
+        {selectedCategories.map((cat, idx) => (
+          <SummaryRow key={idx} label={cat.title} value={cat.items} />
+        ))}
         <SummaryRow
-          label={t('signupForm.vendor.serviceData.locationRegion')}
-          value={values.serviceData?.serviceLocation?.regionNameEn || values.serviceData?.serviceLocation?.regionNameAr}
+          label={t('signupForm.vendor.serviceData.location.region')}
+          value={serviceData.serviceLocation?.regionNameEn || serviceData.serviceLocation?.regionNameAr}
         />
         <SummaryRow
-          label={t('signupForm.vendor.serviceData.locationCity')}
-          value={values.serviceData?.serviceLocation?.cityNameEn || values.serviceData?.serviceLocation?.cityNameAr}
+          label={t('signupForm.vendor.serviceData.location.city')}
+          value={serviceData.serviceLocation?.cityNameEn || serviceData.serviceLocation?.cityNameAr}
         />
+        <SummaryRow label={t('signupForm.vendor.serviceData.otherData.label')} value={serviceData.otherData} />
+      </SectionCard>
+
+      <SectionCard title={t('signupForm.vendor.summary.sections.commercialVerification')} icon="shield-checkmark-outline">
+        <SummaryRow label={t('signupForm.vendor.commercialVerification.commercialRecordNumber')} value={commercial.commercialRecordNumber} />
+        <SummaryRow label={t('signupForm.vendor.commercialVerification.nationalId')} value={commercial.nationalId} />
       </SectionCard>
 
       <SectionCard title={t('signupForm.vendor.summary.sections.socialLinks')} icon="share-social-outline">
-        <SummaryRow label={t('signupForm.vendor.socialLinks.instagram')} value={values.socialLinks?.instagram} />
-        <SummaryRow label={t('signupForm.vendor.socialLinks.facebook')} value={values.socialLinks?.facebook} />
-        <SummaryRow label={t('signupForm.vendor.socialLinks.tiktok')} value={values.socialLinks?.tiktok} />
-        <SummaryRow label={t('signupForm.vendor.socialLinks.website')} value={values.socialLinks?.website} />
+        <SummaryRow label={t('signupForm.vendor.socialLinks.instagram')} value={social.instagram} />
+        <SummaryRow label={t('signupForm.vendor.socialLinks.facebook')} value={social.facebook} />
+        <SummaryRow label={t('signupForm.vendor.socialLinks.tiktok')} value={social.tiktok} />
+        <SummaryRow label={t('signupForm.vendor.socialLinks.twitter')} value={social.twitter} />
+        <SummaryRow label={t('signupForm.vendor.socialLinks.website')} value={social.website} />
       </SectionCard>
     </View>
   );

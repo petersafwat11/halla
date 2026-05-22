@@ -129,6 +129,18 @@ export default function TaqnyatTemplatesTable({
       );
     }
 
+    if (key === "type") {
+      return value ? (
+        <span className={styles.categoryAssigned}>
+          {t(`taqnyat.types.${value}`, value)}
+        </span>
+      ) : (
+        <span className={styles.categoryUnassigned}>
+          {t("taqnyat.unassignedType", "غير معيّن")}
+        </span>
+      );
+    }
+
     if (key === "active") {
       return value ? (
         <span className={styles.activeYes}>✓</span>
@@ -146,6 +158,7 @@ export default function TaqnyatTemplatesTable({
     language: tpl.language || "ar",
     status: tpl.status,
     category: tpl.category,
+    type: tpl.type || null,
     mappingCount: tpl.varMapping?.length || 0,
     active: tpl.active !== false,
     bodyText: tpl.bodyText,
@@ -191,6 +204,7 @@ export default function TaqnyatTemplatesTable({
             t("taqnyat.col.lang", "اللغة"),
             t("taqnyat.col.status", "الحالة"),
             t("taqnyat.col.category", "الفئة"),
+            t("taqnyat.col.type", "النوع"),
             t("taqnyat.col.mappingCount", "المتغيرات"),
             t("taqnyat.col.active", "نشط"),
           ]}

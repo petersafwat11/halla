@@ -57,7 +57,7 @@
     "hasWhatsAppSupport": { "label": "WhatsApp support" }
   },
   "compensation": { "title": "Free Compensation Invites", "invites": "invites" },
-  "buttons": { "subscribeNow": "Subscribe Now", "retry": "Retry" },
+  "buttons": { "subscribeNow": "Subscribe Now", "retry": "Retry", "continueToSummary": "Continue to Summary" },
   "addons": {
     "title": "Add-Ons", "subtitle": "Enhance your plan with optional extras",
     "extraInvites": { "title": "Extra Invites", "description": "Add more invites to your plan" },

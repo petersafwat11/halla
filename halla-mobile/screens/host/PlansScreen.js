@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useToast } from "../../contexts/ToastContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "../../localization";
 
 import TopBar from "../../components/plans/TopBar";
@@ -18,7 +18,7 @@ import CurrentPlanCard from "../../components/plans/CurrentPlanCard";
 import HostPlanCard from "../../components/plans/HostPlanCard";
 import AddonsSection from "../../components/plans/AddonsSection";
 import { useHostPlans, useMySubscription } from "../../hooks";
-import { DEFAULT_COMPENSATION_PERCENTAGE } from "../../utils/constants/plans";
+import { getInviteValue } from "../../components/plans/_components/InviteSelector";
 import {
   colors,
   spacing,
@@ -26,25 +26,34 @@ import {
   typography,
 } from "../../styles/tokens";
 
-const getInviteValue = (plan, billingType) => {
-  if (billingType === "monthly") return plan.invitePool;
-  return plan.invites || plan.limits?.maxInvitesPerEvent;
-};
-
 const PlansScreen = () => {
   const { t } = useTranslation("plans");
   const navigation = useNavigation();
-  const toast = useToast();
+  const queryClient = useQueryClient();
 
   const [billingType, setBillingType] = useState("event");
   const [selectedInvites, setSelectedInvites] = useState(null);
   const [addonItems, setAddonItems] = useState([]);
   const [addonTotal, setAddonTotal] = useState(0);
+  const [showAddons, setShowAddons] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedFamily, setSelectedFamily] = useState("basic");
 
-  const { data: response, isLoading: loading, error, refetch } = useHostPlans();
-  const { data: subscriptionData } = useMySubscription();
+  const {
+    data: response,
+    isLoading: plansLoading,
+    error: plansError,
+  } = useHostPlans();
+  const {
+    data: subscriptionData,
+    isLoading: subLoading,
+    error: subError,
+  } = useMySubscription();
   const subscription = subscriptionData?.data?.subscription || null;
   const usage = subscription?.usage || null;
+
+  const isLoading = plansLoading || subLoading;
+  const loadError = plansError || subError;
 
   const basicPlans = useMemo(
     () => response?.data?.basic?.[billingType] || [],
@@ -65,23 +74,33 @@ const PlansScreen = () => {
     }
   }, [billingType, basicPlans, premiumPlans]);
 
-  useEffect(() => {
-    if (error) {
-      toast.error(t("errors.loadFailed"));
-    }
-  }, [error, toast, t]);
-
-
-  // Use the matched plan's compensationPercentage from the API; default to
-  // the basic plan's value if any, else fall back to the model default (10).
-  const referencePlan = basicPlans[0] || premiumPlans[0];
-  const compensationPct =
-    (referencePlan?.compensationPercentage ?? DEFAULT_COMPENSATION_PERCENTAGE) / 100;
-
+  // Match web: use compensationPercentage of the plan whose invite tier matches
+  // the user's selection (falls back to first plan, then to 15 — the backend
+  // PlanModel default for features.compensationPercentage).
   const compensationInvites = useMemo(() => {
     if (!selectedInvites) return 0;
-    return Math.floor(selectedInvites * compensationPct);
-  }, [selectedInvites, compensationPct]);
+    const plan =
+      basicPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
+      premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
+      basicPlans[0] ||
+      premiumPlans[0];
+    const percent = plan?.compensationPercentage ?? 15;
+    return Math.floor((selectedInvites * percent) / 100);
+  }, [selectedInvites, basicPlans, premiumPlans, billingType]);
+
+  const basicFeatures = useMemo(() => {
+    const plan =
+      basicPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
+      basicPlans[0];
+    return plan?.featuresArray || [];
+  }, [basicPlans, billingType, selectedInvites]);
+
+  const premiumFeatures = useMemo(() => {
+    const plan =
+      premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
+      premiumPlans[0];
+    return plan?.featuresArray || [];
+  }, [premiumPlans, billingType, selectedInvites]);
 
   const handleAddonsChange = (items, total) => {
     setAddonItems(items);
@@ -89,16 +108,19 @@ const PlansScreen = () => {
   };
 
   const handleSubscribe = (planFamily, plan) => {
-    if (!plan) {
-      toast.error(t("errors.selectPlan"));
-      return;
-    }
+    if (!plan) return;
+    setSelectedFamily(planFamily);
+    setSelectedPlan(plan);
+    setShowAddons(true);
+  };
 
+  const handleContinueToSummary = () => {
     navigation.navigate("PlansSummary", {
       selectedPlan: {
-        ...plan,
-        price: plan?.pricing?.oneTime,
-        planFamily,
+        ...selectedPlan,
+        price: selectedPlan?.price || 0,
+        invites: selectedInvites,
+        planFamily: selectedFamily,
         billingType,
       },
       addonItems,
@@ -106,7 +128,18 @@ const PlansScreen = () => {
     });
   };
 
-  if (loading) {
+  const handleBackToPlans = () => {
+    setShowAddons(false);
+    setSelectedPlan(null);
+    setSelectedFamily("basic");
+  };
+
+  const handleRetry = () => {
+    queryClient.invalidateQueries({ queryKey: ["plans"] });
+    queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+  };
+
+  if (isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
         <TopBar title={t("pageTitle")} showBack={true} />
@@ -118,7 +151,7 @@ const PlansScreen = () => {
     );
   }
 
-  if (error) {
+  if (loadError) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
         <TopBar title={t("pageTitle")} showBack={true} />
@@ -127,12 +160,36 @@ const PlansScreen = () => {
           <Text style={styles.errorText}>{t("errors.loadFailed")}</Text>
           <TouchableOpacity
             style={styles.retryButton}
-            onPress={() => refetch()}
+            onPress={handleRetry}
             activeOpacity={0.85}
           >
             <Text style={styles.retryButtonText}>{t("errors.retry")}</Text>
           </TouchableOpacity>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (showAddons) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <TopBar title={t("addons.title")} showBack={true} onBack={handleBackToPlans} />
+
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <AddonsSection onAddonsChange={handleAddonsChange} />
+
+          <TouchableOpacity
+            style={styles.continueBtn}
+            onPress={handleContinueToSummary}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.continueBtnText}>{t("buttons.continueToSummary")}</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -188,6 +245,7 @@ const PlansScreen = () => {
               billingType={billingType}
               selectedInvites={selectedInvites}
               onInviteChange={setSelectedInvites}
+              features={basicFeatures}
               compensationCount={compensationInvites}
               onSubscribe={(plan) => handleSubscribe("basic", plan)}
             />
@@ -198,13 +256,12 @@ const PlansScreen = () => {
               billingType={billingType}
               selectedInvites={selectedInvites}
               onInviteChange={setSelectedInvites}
+              features={premiumFeatures}
               compensationCount={compensationInvites}
               onSubscribe={(plan) => handleSubscribe("premium", plan)}
             />
           </>
         )}
-
-        <AddonsSection onAddonsChange={handleAddonsChange} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -316,6 +373,24 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.body.small,
     color: colors.primary[800],
     lineHeight: 20,
+  },
+  continueBtn: {
+    paddingVertical: spacing[16],
+    borderRadius: borderRadius[12],
+    backgroundColor: colors.primary[500],
+    alignItems: "center",
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 4,
+    marginTop: spacing[24],
+    marginBottom: spacing[20],
+  },
+  continueBtnText: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.body.large,
+    color: colors.natural[50],
   },
 });
 

@@ -8,6 +8,7 @@ import {
   ScrollView,
   Animated,
   ActivityIndicator,
+  TextInput as RNTextInput,
 } from "react-native";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +31,8 @@ const AddServicePopup = ({
   const { t } = useTranslation("vendor");
   const slideAnim = React.useRef(new Animated.Value(1000)).current;
   const [selectedTags, setSelectedTags] = useState([]);
+  const [included, setIncluded] = useState([]);
+  const [includedInput, setIncludedInput] = useState("");
   const isEditing = !!editingService;
 
   const methods = useForm({
@@ -39,6 +42,7 @@ const AddServicePopup = ({
       serviceType: "",
       description: "",
       price: "",
+      duration: "",
       serviceImage: undefined,
     },
   });
@@ -54,12 +58,17 @@ const AddServicePopup = ({
           serviceType: editingService._raw.serviceType || "",
           description: editingService._raw.description || "",
           price: editingService._raw.price || "",
+          duration: editingService._raw.duration || "",
           serviceImage: undefined,
         });
         setSelectedTags(editingService._raw.tags || []);
+        setIncluded(editingService._raw.included || []);
+        setIncludedInput("");
       } else {
         reset();
         setSelectedTags([]);
+        setIncluded([]);
+        setIncludedInput("");
       }
       Animated.spring(slideAnim, {
         toValue: 0,
@@ -84,8 +93,25 @@ const AddServicePopup = ({
     }).start(() => {
       reset();
       setSelectedTags([]);
+      setIncluded([]);
+      setIncludedInput("");
       onClose?.();
     });
+  };
+
+  const handleAddIncluded = () => {
+    const value = includedInput.trim();
+    if (!value) return;
+    if (included.includes(value)) {
+      setIncludedInput("");
+      return;
+    }
+    setIncluded((prev) => [...prev, value]);
+    setIncludedInput("");
+  };
+
+  const handleRemoveIncluded = (item) => {
+    setIncluded((prev) => prev.filter((i) => i !== item));
   };
 
   const handleTagPress = (tag) => {
@@ -106,7 +132,12 @@ const AddServicePopup = ({
   );
 
   const handleFormSubmit = (data) => {
-    onSubmit?.({ ...data, tags: selectedTags });
+    onSubmit?.({
+      ...data,
+      duration: (data.duration || "").trim(),
+      tags: selectedTags,
+      included,
+    });
   };
 
   return (
@@ -183,6 +214,52 @@ const AddServicePopup = ({
                 keyboardType="decimal-pad"
               />
 
+              <TextInput
+                name="duration"
+                label={t("services.durationLabel")}
+                placeholder={t("services.durationPlaceholder")}
+              />
+
+              {/* Included */}
+              <View style={styles.includedSection}>
+                <Text style={styles.includedLabel}>
+                  {t("services.includedLabel")}
+                </Text>
+                <View style={styles.includedRow}>
+                  <RNTextInput
+                    value={includedInput}
+                    onChangeText={setIncludedInput}
+                    onSubmitEditing={handleAddIncluded}
+                    placeholder={t("services.includedPlaceholder")}
+                    placeholderTextColor="#9CA3AF"
+                    style={styles.includedInput}
+                    returnKeyType="done"
+                  />
+                  <TouchableOpacity
+                    onPress={handleAddIncluded}
+                    style={styles.includedAddButton}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialCommunityIcons name="plus" size={20} color="#FFF" />
+                  </TouchableOpacity>
+                </View>
+                {included.length > 0 && (
+                  <View style={styles.includedChips}>
+                    {included.map((item) => (
+                      <TouchableOpacity
+                        key={item}
+                        style={styles.includedChip}
+                        onPress={() => handleRemoveIncluded(item)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.includedChipText}>{item}</Text>
+                        <MaterialCommunityIcons name="close" size={14} color="#6B4E33" />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+
               {/* Tags */}
               <TagsSelector selectedTags={selectedTags} onTagPress={handleTagPress} />
             </FormProvider>
@@ -233,7 +310,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: "95%",
+    height: "92%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
@@ -259,7 +336,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    maxHeight: "80%",
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -308,6 +384,60 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.5,
+  },
+  includedSection: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  includedLabel: {
+    fontFamily: "Cairo_500Medium",
+    fontSize: 14,
+    color: "#2C2C2C",
+    lineHeight: 20,
+  },
+  includedRow: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+  },
+  includedInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: "Cairo_400Regular",
+    fontSize: 14,
+    color: "#2C2C2C",
+    backgroundColor: "#FFF",
+  },
+  includedAddButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: "#C28E5C",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  includedChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  includedChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#F5ECE4",
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  includedChipText: {
+    fontFamily: "Cairo_400Regular",
+    fontSize: 13,
+    color: "#6B4E33",
   },
 });
 

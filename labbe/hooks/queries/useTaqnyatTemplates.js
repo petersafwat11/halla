@@ -3,14 +3,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { taqnyatTemplatesService } from "@/services/taqnyatTemplatesService";
 
 export const TAQNYAT_TEMPLATES_QK = {
-  hostList: (category) => ["taqnyat-templates", "host", category || "all"],
+  hostList: ({ category, type } = {}) => [
+    "taqnyat-templates",
+    "host",
+    category || "all",
+    type || "all",
+  ],
   adminList: ["taqnyat-templates", "admin"],
 };
 
-export function useHostTaqnyatTemplates({ category } = {}, opts = {}) {
+export function useHostTaqnyatTemplates({ category, type } = {}, opts = {}) {
   return useQuery({
-    queryKey: TAQNYAT_TEMPLATES_QK.hostList(category),
-    queryFn: () => taqnyatTemplatesService.getTemplates({ category }),
+    queryKey: TAQNYAT_TEMPLATES_QK.hostList({ category, type }),
+    queryFn: () => taqnyatTemplatesService.getTemplates({ category, type }),
     staleTime: 5 * 60 * 1000,
     ...opts,
   });

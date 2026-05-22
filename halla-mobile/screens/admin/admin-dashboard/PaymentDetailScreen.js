@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     borderColor: colors.natural[200],
   },
   heroAmount: {
-    fontSize: typography.fontSize.heading.medium,
+    fontSize: typography.fontSize.headline.medium,
     fontWeight: typography.fontWeight.bold,
     color: colors.natural[900],
   },

@@ -77,7 +77,7 @@ export const loginWithEmailAPI = async ({ email, password }) => {
  */
 export const signupVendorAPI = async (vendorData) => {
   try {
-    dlog("[AUTH SERVICE] Vendor signup:", vendorData instanceof FormData ? "[FormData]" : vendorData.email);
+    dlog("[AUTH SERVICE] Vendor signup:", vendorData instanceof FormData ? "[FormData]" : vendorData.identity?.email);
 
     let formData;
     if (vendorData instanceof FormData) {
@@ -86,28 +86,91 @@ export const signupVendorAPI = async (vendorData) => {
       formData = new FormData();
       const { identity, serviceData, samplesAndPackages, commercialVerification, socialLinks } = vendorData;
 
+      // Core user fields — flat at root level (matches web buildVendorFormData)
       if (identity?.email) formData.append("email", identity.email);
       if (identity?.phoneNumber) formData.append("phoneNumber", identity.phoneNumber);
       if (identity?.password) formData.append("password", identity.password);
       if (identity?.brandName) formData.append("brandName", identity.brandName);
       if (identity?.ownerFullName) formData.append("ownerFullName", identity.ownerFullName);
 
+      // Service data — flat fields
       if (serviceData?.serviceDescription) formData.append("serviceDescription", serviceData.serviceDescription);
-      if (serviceData?.serviceCategories) formData.append("serviceCategories", JSON.stringify(serviceData.serviceCategories));
+      if (serviceData?.otherData) formData.append("otherData", serviceData.otherData);
 
-      if (commercialVerification?.nationalId) formData.append("nationalId", commercialVerification.nationalId);
-      if (commercialVerification?.nationalIdImage) formData.append("nationalIdImage", commercialVerification.nationalIdImage);
-      if (commercialVerification?.commercialRecordImage) formData.append("commercialRecordImage", commercialVerification.commercialRecordImage);
-
-      if (samplesAndPackages?.portfolioImages?.length) {
-        samplesAndPackages.portfolioImages.forEach((img) => formData.append("portfolioImages", img));
-      }
-      if (samplesAndPackages?.pricePackages?.length) {
-        formData.append("pricePackages", JSON.stringify(samplesAndPackages.pricePackages));
+      // Service location — as JSON
+      if (serviceData?.serviceLocation && serviceData.serviceLocation.regionId) {
+        formData.append("serviceLocation", JSON.stringify(serviceData.serviceLocation));
       }
 
+      // Service categories — build from flat category arrays (matches web pattern)
+      const categoryFields = [
+        "eventPlanning", "mediaProduction", "giftsAndGiveaways", "foodAndBeverages",
+        "beautyAndFashion", "logisticsAndDelivery", "corporateServices",
+        "supportServices", "technicalServices", "soundLightingEntertainment", "hallsAndVenues",
+      ];
+      const serviceCategories = {};
+      categoryFields.forEach((field) => {
+        if (serviceData?.[field] && serviceData[field].length > 0) {
+          serviceCategories[field] = serviceData[field];
+        }
+      });
+      if (Object.keys(serviceCategories).length > 0) {
+        formData.append("serviceCategories", JSON.stringify(serviceCategories));
+      }
+
+      // Commercial verification — flat fields
+      if (commercialVerification?.commercialRecordNumber) {
+        formData.append("commercialRecordNumber", commercialVerification.commercialRecordNumber);
+      }
+      if (commercialVerification?.nationalId) {
+        formData.append("nationalId", commercialVerification.nationalId);
+      }
+
+      // Social links — as JSON
       if (socialLinks) {
-        formData.append("socialLinks", JSON.stringify(socialLinks));
+        const socialLinksData = {
+          instagram: socialLinks.instagram || "",
+          facebook: socialLinks.facebook || "",
+          tiktok: socialLinks.tiktok || "",
+          twitter: socialLinks.twitter || "",
+          website: socialLinks.website || "",
+        };
+        formData.append("socialLinks", JSON.stringify(socialLinksData));
+      }
+
+      // Files
+      const portfolioImages = samplesAndPackages?.portfolioImages || [];
+      portfolioImages.forEach((file) => {
+        if (file) formData.append("portfolioImages", file);
+      });
+
+      const businessLogo = samplesAndPackages?.businessLogo;
+      if (businessLogo) {
+        if (Array.isArray(businessLogo) && businessLogo[0]) {
+          formData.append("businessLogo", businessLogo[0]);
+        } else if (typeof businessLogo === 'object' && businessLogo.uri) {
+          formData.append("businessLogo", businessLogo);
+        }
+      }
+
+      const pricePackages = samplesAndPackages?.pricePackages || [];
+      pricePackages.forEach((file) => {
+        if (file) formData.append("pricePackages", file);
+      });
+
+      const commercialRecordImage = commercialVerification?.commercialRecordImage;
+      if (commercialRecordImage) {
+        formData.append("commercialRecordImage", commercialRecordImage);
+      }
+
+      const nationalIdImage = commercialVerification?.nationalIdImage;
+      if (nationalIdImage) {
+        formData.append("nationalIdImage", nationalIdImage);
+      }
+
+      const profileFile = samplesAndPackages?.profileFile || commercialVerification?.cv;
+      if (profileFile) {
+        formData.append("profileFile", profileFile);
       }
     }
 

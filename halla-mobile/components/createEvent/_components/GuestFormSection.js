@@ -21,7 +21,7 @@ const GuestFormSection = ({
   isUnlimited,
   guestLimit,
 }) => {
-  const { t } = useTranslation("admin");
+  const { t } = useTranslation("createEvent");
   const { setValue, watch } = useFormContext();
   const formData = watch();
 
@@ -43,10 +43,10 @@ const GuestFormSection = ({
 
   const handleRemoveGuest = useCallback(
     (id) => {
-      Alert.alert(t("events.guest.deleteTitle"), t("events.guest.deleteMessage"), [
-        { text: t("common.cancel"), style: "cancel" },
+      Alert.alert(t("remove"), "", [
+        { text: t("cancel"), style: "cancel" },
         {
-          text: t("common.delete"),
+          text: t("delete"),
           style: "destructive",
           onPress: () => {
             const updatedList = EventsService.removeListItem(id, formData.guestList);
@@ -72,10 +72,10 @@ const GuestFormSection = ({
 
   const handleRemoveModerator = useCallback(
     (id) => {
-      Alert.alert(t("events.moderator.deleteTitle"), t("events.moderator.deleteMessage"), [
-        { text: t("common.cancel"), style: "cancel" },
+      Alert.alert(t("remove"), "", [
+        { text: t("cancel"), style: "cancel" },
         {
-          text: t("common.delete"),
+          text: t("delete"),
           style: "destructive",
           onPress: () => {
             const updatedList = EventsService.removeListItem(id, formData.staffList || []);
@@ -133,7 +133,7 @@ const GuestFormSection = ({
       <ListOfGuestsORModerators
         visible={showGuestModal}
         onClose={() => setShowGuestModal(false)}
-        title={t("events.guest.listTitle")}
+        title={t("guest_list")}
         list={guestList}
         type="guest"
         onEdit={handleEditGuest}
@@ -143,7 +143,7 @@ const GuestFormSection = ({
       <ListOfGuestsORModerators
         visible={showModeratorModal}
         onClose={() => setShowModeratorModal(false)}
-        title={t("events.moderator.listTitle")}
+        title={t("staff_list")}
         list={staffList}
         type="moderator"
         onEdit={handleEditModerator}

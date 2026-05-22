@@ -69,7 +69,11 @@ export const assignTicketSchema = z.object({
 });
 
 export const ticketResponseSchema = z.object({
-  response: z.string().min(1, "الرجاء إدخال رد").max(5000),
+  resolution: z
+    .string()
+    .trim()
+    .min(10, "الرد يجب أن يكون 10 أحرف على الأقل")
+    .max(5000, "الرد يجب أن لا يتجاوز 5000 حرف"),
 });
 
 // ============================================
@@ -98,8 +102,22 @@ export const sendNotificationSchema = z.object({
 // TAQNYAT TEMPLATE SCHEMAS
 // ============================================
 
+// Mirrors the backend enum in
+// labbe-backend-/src/modules/taqnyat-templates/taqnyat-templates.validation.js
+export const TAQNYAT_TEMPLATE_TYPES = [
+  "invite",
+  "reminder_confirmed",
+  "reminder_pending",
+  "post_event",
+  "staff_access",
+];
+
 export const assignTaqnyatSchema = z.object({
   category: z.string().optional().or(z.literal("")),
+  type: z
+    .enum(TAQNYAT_TEMPLATE_TYPES)
+    .optional()
+    .or(z.literal("")),
   active: z.boolean().default(true),
   sortOrder: z.coerce.number().min(0).default(0),
   varMapping: z.array(

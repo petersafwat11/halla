@@ -33,6 +33,14 @@ export const useNotificationPreferences = (options = {}) => {
 export const useUserMutation = (action) => {
   const queryClient = useQueryClient();
 
+  const formDataConfig = (data) =>
+    data instanceof FormData
+      ? { headers: { "Content-Type": "multipart/form-data" } }
+      : undefined;
+
+  const invalidateProfile = () =>
+    queryClient.invalidateQueries({ queryKey: ["users", "my-profile"] });
+
   const mutations = {
     updateProfile: {
       mutationFn: (profileData) =>
@@ -40,13 +48,9 @@ export const useUserMutation = (action) => {
           method: "PATCH",
           path: API_PATHS.users.updateMyProfile,
           data: profileData,
-          config: profileData instanceof FormData
-            ? { headers: { "Content-Type": "multipart/form-data" } }
-            : undefined,
+          config: formDataConfig(profileData),
         }),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["users", "my-profile"] });
-      },
+      onSuccess: invalidateProfile,
     },
 
     updateProfileSection: {
@@ -55,13 +59,9 @@ export const useUserMutation = (action) => {
           method: "PATCH",
           path: API_PATHS.users.updateMyProfileSection(section),
           data,
-          config: data instanceof FormData
-            ? { headers: { "Content-Type": "multipart/form-data" } }
-            : undefined,
+          config: formDataConfig(data),
         }),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["users", "my-profile"] });
-      },
+      onSuccess: invalidateProfile,
     },
 
     updatePassword: {
@@ -71,6 +71,35 @@ export const useUserMutation = (action) => {
           path: API_PATHS.users.updateMyPassword,
           data: passwordData,
         }),
+    },
+
+    sendPhoneChangeOtp: {
+      mutationFn: ({ phoneNumber }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.users.sendPhoneChangeOtp,
+          data: { phoneNumber },
+        }),
+    },
+
+    updatePhone: {
+      mutationFn: ({ phoneNumber, otp }) =>
+        apiRequest({
+          method: "PATCH",
+          path: API_PATHS.users.updatePhone,
+          data: { phoneNumber, otp },
+        }),
+      onSuccess: invalidateProfile,
+    },
+
+    deleteVendorImage: {
+      mutationFn: ({ field, key }) =>
+        apiRequest({
+          method: "DELETE",
+          path: API_PATHS.users.deleteVendorImage,
+          data: { field, key },
+        }),
+      onSuccess: invalidateProfile,
     },
 
     updateNotificationPreferences: {

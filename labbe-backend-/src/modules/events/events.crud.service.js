@@ -199,7 +199,11 @@ module.exports = {
   async getEventById(eventId, userContext) {
     const query = this._buildScopedEventQuery(eventId, userContext);
     const event = await Event.findOne(query)
-      .populate("guestList", "name email phone status")
+      // `rsvp` + `invitation` are needed by ScheduleReminderSection (filters
+      // by rsvp.response / rsvp.responded) and by the guest-table reminder
+      // badges. Without them, the picker shows zero eligible guests for the
+      // confirmed bucket and the badges never light up.
+      .populate("guestList", "name email phone status rsvp invitation")
       .populate("host", "username email phoneNumber")
       // Populate the canonical refs so the wizard can highlight the
       // saved template (Step 3) and show body text (Step 4) on edit.
@@ -217,6 +221,47 @@ module.exports = {
 
     if (!event) {
       throw new NotFoundError("Event");
+    }
+
+    // Attach the event-OWNER's subscription summary so the UI gates the
+    // "Schedule extra reminder" button on the host's quota — not on the
+    // viewing admin's own subscription. Critical for admin-on-behalf flows.
+    if (event.subscriptionId) {
+      try {
+        const sub = await Subscription.findById(event.subscriptionId)
+          .select(
+            "remindersPool remindersConsumed remindersReserved invitePool compensationPool invitesConsumed status expiresAt"
+          )
+          .lean();
+        if (sub) {
+          const remindersRemaining =
+            (sub.remindersPool || 0) -
+            (sub.remindersConsumed || 0) -
+            (sub.remindersReserved || 0);
+          const invitesRemaining =
+            sub.invitePool === null
+              ? null
+              : (sub.invitePool || 0) +
+                (sub.compensationPool || 0) -
+                (sub.invitesConsumed || 0);
+          event.subscription = {
+            _id: sub._id,
+            status: sub.status,
+            expiresAt: sub.expiresAt,
+            remindersPool: sub.remindersPool || 0,
+            remindersConsumed: sub.remindersConsumed || 0,
+            remindersReserved: sub.remindersReserved || 0,
+            remindersRemaining,
+            invitesRemaining,
+          };
+        }
+      } catch (err) {
+        // Best-effort enrichment — never break the event read because of it.
+        logger.warn?.("[getEventById] subscription enrichment failed", {
+          eventId: String(eventId),
+          err: err?.message,
+        });
+      }
     }
 
     return { event };

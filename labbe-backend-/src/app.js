@@ -93,21 +93,30 @@ const createApp = () => {
   const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5173',
-    'http://localhost:8081',
-    'http://10.0.2.2:8081',
+    'http://localhost:8081',   // Expo metro / dev web
+    'http://localhost:19006',  // Expo web (legacy webpack)
+    'http://localhost:19000',  // Expo dev tools (legacy)
+    'http://10.0.2.2:8081',    // Android emulator → host loopback
     'https://labbe.vercel.app',
     config.frontend.url,
   ].filter(Boolean);
 
+  // LAN-IP origin for Expo dev when running the app on a physical device
+  // (Metro serves at http://<host-lan-ip>:8081). The RN runtime usually
+  // omits the Origin header on `fetch`, but Expo web preview running in a
+  // browser on the same LAN sends it, so we whitelist private ranges.
+  const lanExpoOrigin = /^http:\/\/(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)\d+\.\d+:(?:8081|19006)$/;
+
   app.use(
     cors({
       origin: function (origin, callback) {
-        // Allow requests with no origin (mobile apps, Postman, etc.)
+        // Allow requests with no origin (native mobile apps, curl, Postman, etc.)
         if (!origin) return callback(null, true);
         if (
           allowedOrigins.includes(origin) ||
-          /\.halaa\.sa$/.test(origin) ||
-          /^https:\/\/labbe(-[a-z0-9]+)?\.vercel\.app$/.test(origin)
+          /\.halaa\.(?:com\.)?sa$/.test(origin) ||
+          /^https:\/\/labbe(-[a-z0-9]+)?\.vercel\.app$/.test(origin) ||
+          lanExpoOrigin.test(origin)
         ) {
           return callback(null, true);
         }

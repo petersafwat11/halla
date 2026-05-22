@@ -322,9 +322,28 @@ const MapPicker = ({
   placeholder = "اختر موقع المناسبة",
   disabled = false,
   rules,
+  value: controlledValue,
+  onChange: controlledOnChange,
 }) => {
-  const { control } = useFormContext();
+  // Two usage modes:
+  //   - RHF mode: parent provides `name`; we register with the form context.
+  //   - Controlled mode: parent passes `value` + `onChange` directly.
+  // The vendor settings forms use controlled mode because their schema
+  // tracks `serviceLocation` outside react-hook-form (the field is too
+  // structured for a flat zod field).
+  if (!name) {
+    return (
+      <MapPickerInner
+        onChange={controlledOnChange}
+        value={controlledValue}
+        label={label}
+        placeholder={placeholder}
+        disabled={disabled}
+      />
+    );
+  }
 
+  const { control } = useFormContext();
   return (
     <Controller
       control={control}

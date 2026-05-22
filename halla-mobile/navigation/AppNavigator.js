@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +7,10 @@ import { useAuthStore } from "../stores/authStore";
 import AdminNavigator from "./AdminNavigator";
 import { useTranslation } from "../localization";
 import { colors, backgrounds } from "../styles/tokens";
+import {
+  loadOnboardingSeen,
+  saveOnboardingSeen,
+} from "../services/secureStorage";
 
 // Import your screen components here
 import WelcomeWrapper from "../components/welcom/WelcomeWrapper";
@@ -19,11 +23,12 @@ import PlansScreen from "../screens/host/PlansScreen";
 import PlansSummaryScreen from "../screens/host/PlansSummaryScreen";
 import SettingsScreen from "../screens/host/SettingsScreen";
 import AccountSettingsScreen from "../screens/host/AccountSettingsScreen";
-import NotificationSettingsScreen from "../screens/host/NotificationSettingsScreen";
+import NotificationSettingsScreen from "../screens/common/NotificationSettingsScreen";
 import TicketsScreen from "../screens/common/TicketsScreen";
-import Marketplace from "../screens/host/Marketplace";
+import Marketplace from "../screens/common/Marketplace";
 import EventsScreen from "../screens/host/EventsScreen";
 import CreateEventScreen from "../screens/host/CreateEventScreen";
+import EventDetailsScreen from "../screens/common/EventDetailsScreen";
 // Phase 4d W1-MOBILE-UPDATE: single unified update wizard for every
 // role. The legacy `screens/host/UpdateEventScreen.js` is now a thin
 // re-export shim for any other import paths still in flight.
@@ -37,7 +42,7 @@ import VendorSignupScreen from "../screens/auth/VendorSignupScreen";
 import WhitelabelSignupScreen from "../screens/auth/WhitelabelSignupScreen";
 import PostEventScreen from "../screens/host/PostEventScreen";
 import StaffPortalScreen from "../screens/common/StaffPortalScreen";
-import HostPostEventScreen from "../screens/host/HostPostEventScreen";
+import ManagePostEventScreen from "../screens/common/ManagePostEventScreen";
 import PaymentReturnScreen from "../screens/host/PaymentReturnScreen";
 import PaymentsScreen from "../screens/host/PaymentsScreen";
 import SetupPasswordScreen from "../screens/auth/SetupPasswordScreen";
@@ -205,9 +210,32 @@ function VendorTabNavigator() {
 
 // Auth Stack Navigator (for unauthenticated users)
 function AuthStack() {
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [skipOnboarding, setSkipOnboarding] = useState(false);
+
+  useEffect(() => {
+    loadOnboardingSeen().then((seen) => {
+      setSkipOnboarding(seen);
+      setOnboardingChecked(true);
+    });
+  }, []);
+
+  const handleOnboardingDone = (navigation) => {
+    saveOnboardingSeen();
+    navigation.navigate("Login");
+  };
+
+  if (!onboardingChecked) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
+      </View>
+    );
+  }
+
   return (
     <Stack.Navigator
-      initialRouteName="Welcome"
+      initialRouteName={skipOnboarding ? "Login" : "Welcome"}
       screenOptions={{
         headerShown: false,
         cardStyleInterpolator: ({ current, layouts }) => {
@@ -229,9 +257,12 @@ function AuthStack() {
       <Stack.Screen name="Welcome">
         {({ navigation }) => (
           <WelcomeWrapper
-            onSkip={() => navigation.navigate("Login")}
-            onLogin={() => navigation.navigate("Login")}
-            onSignup={() => navigation.navigate("Signup")}
+            onSkip={() => handleOnboardingDone(navigation)}
+            onLogin={() => handleOnboardingDone(navigation)}
+            onSignup={() => {
+              saveOnboardingSeen();
+              navigation.navigate("Signup");
+            }}
           />
         )}
       </Stack.Screen>
@@ -262,11 +293,12 @@ function HostStack() {
     >
       <Stack.Screen name="MainTabs" component={HostTabNavigator} />
       <Stack.Screen name="CreateEventScreen" component={CreateEventScreen} />
+      <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
       <Stack.Screen name="UpdateEventScreen" component={UpdateEventScreen} />
       <Stack.Screen name="PlansSummary" component={PlansSummaryScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
-      <Stack.Screen name="HostPostEvent" component={HostPostEventScreen} />
+      <Stack.Screen name="ManagePostEvent" component={ManagePostEventScreen} />
       <Stack.Screen name="Invitation" component={InvitationScreen} />
       <Stack.Screen name="PaymentReturn" component={PaymentReturnScreen} />
       <Stack.Screen name="Payments" component={PaymentsScreen} />

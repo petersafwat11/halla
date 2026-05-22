@@ -16,12 +16,14 @@ import Filters from "./_components/filters/Filters";
 import FiltersPopup from "./_components/filtersPopup/FiltersPopup";
 import Pagination from "./_components/pagination/Pagination";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import VendorInfoPopup from "./_components/vendorInfoPopup/VendorInfoPopup";
 
 const ITEMS_PER_PAGE = 12;
 
 const MarketPlacePage = () => {
   const { t } = useTranslation("marketplace");
   const [isFiltersPopupOpen, setIsFiltersPopupOpen] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState(null);
 
   const {
     category,
@@ -81,8 +83,12 @@ const MarketPlacePage = () => {
   const totalPages =
     servicesData?.pagination?.pages ?? Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-  const handleCallClick = useCallback((phone) => {
-    if (phone) window.location.href = `tel:${phone}`;
+  const handleOpenVendorInfo = useCallback((vendor) => {
+    setSelectedVendor(vendor);
+  }, []);
+
+  const handleCloseVendorInfo = useCallback(() => {
+    setSelectedVendor(null);
   }, []);
 
   return (
@@ -125,32 +131,51 @@ const MarketPlacePage = () => {
             ) : vendors.length > 0 ? (
               <>
                 <div className={styles.servicesGrid}>
-                  {vendors.map((service) => (
-                    <ServiceCard
-                      key={service.id}
-                      service={{
-                        id: service.id,
-                        image:
-                          getImageUrl(service.image || service.vendor?.logo) ||
-                          "/images/placeholder-vendor.jpg",
-                        rating: service.rating || 0,
-                        reviewsCount: service.reviewsCount || 0,
-                        title: service.name || t("services.defaultName"),
-                        location: service.serviceLocation?.regionNameAr
-                          ? `${service.serviceLocation.cityNameAr || ""}, ${service.serviceLocation.regionNameAr}`
-                          : t("services.defaultLocation"),
-                        tags: service.tags || [],
-                        price: service.price
-                          ? `${service.price} ${t("currency")}`
-                          : "",
-                        description: service.description || "",
-                        vendorName: service.vendor?.brandName || "",
-                        onCallClick: service.vendor?.phone
-                          ? () => handleCallClick(service.vendor.phone)
-                          : undefined,
-                      }}
-                    />
-                  ))}
+                  {vendors.map((service) => {
+                    const location = service.serviceLocation?.regionNameAr
+                      ? `${service.serviceLocation.cityNameAr || ""}, ${service.serviceLocation.regionNameAr}`
+                      : "";
+                    const image =
+                      getImageUrl(service.image || service.vendor?.logo) ||
+                      "/images/placeholder-vendor.jpg";
+                    const vendorForPopup = {
+                      id: service.id,
+                      name: service.name || t("services.defaultName"),
+                      image,
+                      logo: getImageUrl(service.vendor?.logo) || null,
+                      companyName: service.vendor?.brandName || "",
+                      rating: service.rating || 0,
+                      reviewCount: service.reviewsCount || 0,
+                      duration: service.duration || "",
+                      price: service.price ? String(service.price) : "",
+                      currency: service.priceUnit || "",
+                      included: service.included || [],
+                      location: location || t("services.defaultLocation"),
+                      website: service.vendor?.website || "",
+                      email: service.vendor?.email || "",
+                      phone: service.vendor?.phone || "",
+                    };
+                    return (
+                      <ServiceCard
+                        key={service.id}
+                        service={{
+                          id: service.id,
+                          image,
+                          rating: service.rating || 0,
+                          reviewsCount: service.reviewsCount || 0,
+                          title: service.name || t("services.defaultName"),
+                          location: location || t("services.defaultLocation"),
+                          tags: service.tags || [],
+                          price: service.price
+                            ? `${service.price} ${t("currency")}`
+                            : "",
+                          description: service.description || "",
+                          vendorName: service.vendor?.brandName || "",
+                          onCallClick: () => handleOpenVendorInfo(vendorForPopup),
+                        }}
+                      />
+                    );
+                  })}
                 </div>
 
                 {totalPages > 1 && (
@@ -194,6 +219,12 @@ const MarketPlacePage = () => {
         activeFilters={activeFilters}
         onRemoveFilter={handleRemoveFilter}
         onReset={handleResetFilters}
+      />
+
+      <VendorInfoPopup
+        isOpen={!!selectedVendor}
+        onClose={handleCloseVendorInfo}
+        vendor={selectedVendor}
       />
     </div>
   );

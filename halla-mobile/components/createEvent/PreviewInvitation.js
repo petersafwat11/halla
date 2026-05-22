@@ -7,13 +7,20 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Dimensions,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
+/**
+ * Invitation preview popup. Renders a WhatsApp-style bubble with the
+ * customised template image (preferred) or, if available, a live
+ * `TemplatePreviewCanvas` rendered from the picked template + overlay data.
+ *
+ * Mirrors the data shape used by the web `WhatsappPreview` so the
+ * call site (`StepThree` / `StepFour`) can pass the same props.
+ */
 const PreviewInvitation = ({
   visible = false,
   onClose,
@@ -21,7 +28,7 @@ const PreviewInvitation = ({
   previewBody = "",
   templateImage = null,
   templateData = {},
-  selectedTemplate = null,
+  template = null,
   eventDate = null,
   eventTime = "",
   location = "",
@@ -31,13 +38,12 @@ const PreviewInvitation = ({
   const formattedDate = useMemo(() => {
     if (!eventDate) return "";
     try {
-      const date = new Date(eventDate);
-      return date.toLocaleDateString("ar-SA", {
+      return new Date(eventDate).toLocaleDateString("ar-SA", {
         year: "numeric",
         month: "long",
         day: "numeric",
       });
-    } catch (error) {
+    } catch {
       return "";
     }
   }, [eventDate]);
@@ -46,258 +52,203 @@ const PreviewInvitation = ({
     const brideName = templateData?.brideName;
     const groomName = templateData?.groomName;
     if (brideName && groomName) {
-      return `${t("preview.weddingTitle", { brideName, groomName })}`;
+      return t("preview_wedding_title", { brideName, groomName });
     }
-    return eventTitle || t("preview.defaultTitle");
+    return eventTitle || t("preview_default_title");
   }, [templateData, eventTitle, t]);
+
+  const bakedImageSource = useMemo(() => {
+    if (!templateImage) return null;
+    if (typeof templateImage === "string") return { uri: templateImage };
+    if (typeof templateImage === "object" && templateImage.uri) {
+      return { uri: templateImage.uri };
+    }
+    return null;
+  }, [templateImage]);
 
   return (
     <Modal
       visible={visible}
-      animationType="fade"
-      transparent
+      animationType="slide"
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>{t("preview.title")}</Text>
-            <TouchableOpacity
-              onPress={onClose}
-              style={styles.closeButton}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="close" size={24} color="#2C2C2C" />
-            </TouchableOpacity>
-          </View>
-
-          {/* WhatsApp Preview */}
-          <ScrollView
-            style={styles.previewContainer}
-            contentContainerStyle={styles.previewContent}
-            showsVerticalScrollIndicator={false}
+      <SafeAreaView style={styles.modalContainer}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{t("preview_title")}</Text>
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.closeButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            activeOpacity={0.7}
           >
-            {/* Chat Bubble */}
-            <View style={styles.chatBubble}>
-              {/* Template Image */}
-              <View style={styles.templateImageWrap}>
+            <Ionicons name="close" size={24} color="#2C2C2C" />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          style={styles.previewContainer}
+          contentContainerStyle={styles.previewContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Chat Bubble */}
+          <View style={styles.chatBubble}>
+            <View style={styles.templateImageWrap}>
+              {bakedImageSource ? (
                 <Image
-                  source={
-                    templateImage && typeof templateImage === "string"
-                      ? { uri: templateImage }
-                      : require("../../assets/invetation.png")
-                  }
+                  source={bakedImageSource}
                   style={styles.templateImage}
                   resizeMode="contain"
-                  defaultSource={require("../../assets/invetation.png")}
                   onError={() => {}}
                 />
-              </View>
-
-              {/* Event Details */}
-              <View style={styles.eventDetails}>
-                {/* Title */}
-                {displayTitle && (
-                  <Text style={styles.eventTitle}>{displayTitle}</Text>
-                )}
-
-                {/* Invitation Message */}
-                {previewBody && (
-                  <Text style={[styles.invitationMessage]}>
-                    {previewBody}
-                  </Text>
-                )}
-
-                {/* Date */}
-                {formattedDate && (
-                  <View style={styles.detailRow}>
-                    <Ionicons
-                      name="calendar-outline"
-                      size={16}
-                      color="#656565"
-                    />
-                    <Text style={styles.detailText}>
-                      {t("preview.datePrefix")} {formattedDate}
-                    </Text>
-                  </View>
-                )}
-
-                {/* Time */}
-                {eventTime && (
-                  <View style={styles.detailRow}>
-                    <Ionicons name="time-outline" size={16} color="#656565" />
-                    <Text style={styles.detailText}>{t("preview.timePrefix")} {eventTime}</Text>
-                  </View>
-                )}
-
-                {/* Location */}
-                {location && (
-                  <View style={styles.detailRow}>
-                    <Ionicons
-                      name="location-outline"
-                      size={16}
-                      color="#656565"
-                    />
-                    <Text style={styles.detailText}>{location}</Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Action Buttons */}
-              <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.actionButtonText}>{t("preview.details")}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.confirmButton]}
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={[styles.actionButtonText, styles.confirmButtonText]}
-                  >
-                    {t("preview.attending")}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.actionButtonText}>{t("preview.declining")}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.actionButtonText}>{t("preview.maybe")}</Text>
-                </TouchableOpacity>
-              </View>
-
-              <Text style={styles.timestamp}>{t("preview.timestamp")}</Text>
+              ) : template ? (
+                <TemplatePreviewCanvas
+                  template={template}
+                  data={templateData}
+                  primaryColor={templateData?.primaryColor}
+                />
+              ) : (
+                <Image
+                  source={require("../../assets/invetation.png")}
+                  style={styles.templateImage}
+                  resizeMode="contain"
+                />
+              )}
             </View>
-          </ScrollView>
-        </View>
-      </View>
+
+            <View style={styles.eventDetails}>
+              {!!displayTitle && (
+                <Text style={styles.eventTitle}>{displayTitle}</Text>
+              )}
+
+              {!!previewBody && (
+                <Text style={styles.invitationMessage}>{previewBody}</Text>
+              )}
+
+              {!!formattedDate && (
+                <View style={styles.detailRow}>
+                  <Ionicons name="calendar-outline" size={16} color="#656565" />
+                  <Text style={styles.detailText}>
+                    {t("preview_date_prefix")} {formattedDate}
+                  </Text>
+                </View>
+              )}
+
+              {!!eventTime && (
+                <View style={styles.detailRow}>
+                  <Ionicons name="time-outline" size={16} color="#656565" />
+                  <Text style={styles.detailText}>
+                    {t("time_prefix")} {eventTime}
+                  </Text>
+                </View>
+              )}
+
+              {!!location && (
+                <View style={styles.detailRow}>
+                  <Ionicons name="location-outline" size={16} color="#656565" />
+                  <Text style={styles.detailText}>{location}</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.actionButtons}>
+              <View style={[styles.actionButton, styles.confirmButton]}>
+                <Text style={[styles.actionButtonText, styles.confirmButtonText]}>
+                  {t("whatsapp_invitation_preview_attending", t("attending"))}
+                </Text>
+              </View>
+              <View style={styles.actionButton}>
+                <Text style={styles.actionButtonText}>
+                  {t("whatsapp_invitation_preview_declining", t("absence"))}
+                </Text>
+              </View>
+              <View style={styles.actionButton}>
+                <Text style={styles.actionButtonText}>
+                  {t("whatsapp_invitation_preview_maybe", t("maybe"))}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.timestamp}>{t("preview_timestamp")}</Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
-  },
-  modalContainer: {
-    backgroundColor: "#FFF",
-    borderRadius: 16,
-    width: "100%",
-    maxWidth: 500,
-    maxHeight: "90%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 8,
-  },
+  modalContainer: { flex: 1, backgroundColor: "#E5DDD5" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
+    backgroundColor: "#FFF",
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     flex: 1,
+    textAlign: "right",
   },
   closeButton: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 20,
+    borderRadius: 18,
   },
-  previewContainer: {
-    flex: 1,
-  },
-  previewContent: {
-    padding: 20,
-    backgroundColor: "#E5DDD5", // WhatsApp background color
-  },
+  previewContainer: { flex: 1 },
+  previewContent: { padding: 16 },
   chatBubble: {
     backgroundColor: "#FFF",
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
     elevation: 2,
   },
   templateImageWrap: {
     width: "100%",
     aspectRatio: 4 / 5,
     backgroundColor: "#F5F1EA",
-    alignItems: "center",
-    justifyContent: "center",
     overflow: "hidden",
   },
-  templateImage: {
-    width: "100%",
-    height: "100%",
-  },
-  placeholderImage: {
-    width: "100%",
-    height: 250,
-    backgroundColor: "#F9F4EF",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  placeholderText: {
-    fontSize: 14,
-    fontFamily: "Cairo_500Medium",
-    color: "#C28E5C",
-  },
-  eventDetails: {
-    padding: 16,
-    gap: 12,
-  },
+  templateImage: { width: "100%", height: "100%" },
+  eventDetails: { padding: 16, gap: 10 },
   eventTitle: {
     fontSize: 18,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     textAlign: "center",
-    marginBottom: 4,
   },
   invitationMessage: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: "Cairo_400Regular",
     color: "#2C2C2C",
-    lineHeight: 24,
+    lineHeight: 22,
     textAlign: "center",
   },
   detailRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   detailText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "Cairo_400Regular",
     color: "#656565",
     flex: 1,
+    textAlign: "right",
   },
   actionButtons: {
     flexDirection: "row",
@@ -309,31 +260,28 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    minWidth: "48%",
+    minWidth: "30%",
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     borderRadius: 6,
     backgroundColor: "#F5F5F5",
     alignItems: "center",
     justifyContent: "center",
   },
-  confirmButton: {
-    backgroundColor: "#C28E5C",
-  },
+  confirmButton: { backgroundColor: "#C28E5C" },
   actionButtonText: {
-    fontSize: 13,
-    fontFamily: "Cairo_500Medium",
+    fontSize: 12,
+    fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
   },
-  confirmButtonText: {
-    color: "#FFF",
-  },
+  confirmButtonText: { color: "#FFF" },
   timestamp: {
     fontSize: 11,
     fontFamily: "Cairo_400Regular",
     color: "#8E8E8E",
     paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingBottom: 10,
+    textAlign: "left",
   },
 });
 

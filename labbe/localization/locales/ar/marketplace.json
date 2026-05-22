@@ -41,12 +41,22 @@
     "users": "مستخدمين",
     "callNow": "اتصل الآن"
   },
+  "vendor": {
+    "defaultName": "خدمة",
+    "serviceDuration": "مدة تنفيذ الخدمة",
+    "price": "السعر",
+    "whatsIncluded": "ما هو مدرج",
+    "contactInfo": "معلومات الاتصال",
+    "close": "إغلاق"
+  },
+  "currency": "ريال",
   "title": "متجر هلا",
   "noResults": {
     "title": "لا توجد نتائج",
     "description": "حاول تعديل التصفيات أو مصطلحات البحث"
   },
   "services": {
-    "defaultName": "خدمة"
+    "defaultName": "خدمة",
+    "defaultLocation": "المملكة العربية السعودية"
   }
 }

@@ -1,13 +1,42 @@
 {
-  "title": "تذاكر الدعم",
-  "emptyState": "لا توجد تذاكر بعد",
-  "emptyStateDescription": "أنشئ تذكرة للحصول على المساعدة من فريق الدعم",
-  "createTicket": "إنشاء تذكرة",
+  "pageTitle": "الشكاوى",
+  "createTicket": "انشئ شكوى",
+  "searchPlaceholder": "ابحث في الشكاوى...",
+  "loading": "جاري التحميل...",
+  "noTickets": {
+    "title": "لا توجد شكاوى سابقة",
+    "message": "إذا كنت بحاجة إلى إخبارنا بأي شيء، أرسل شكوى وسنهتم بها على الفور",
+    "action": "انشئ شكوى"
+  },
+  "popup": {
+    "createTitle": "انشئ شكوى",
+    "editTitle": "تعديل الشكوى",
+    "subjectLabel": "موضوع الشكوى",
+    "subjectPlaceholder": "ادخل موضوع الشكوى",
+    "typeLabel": "نوع الشكوى",
+    "typePlaceholder": "اختر نوع الشكوى",
+    "messageLabel": "نص الشكوى",
+    "messagePlaceholder": "ادخل نص الشكوى",
+    "submitCreate": "حفظ و ارسال",
+    "submitEdit": "تحديث",
+    "submitting": "جاري الإرسال...",
+    "updating": "جاري التحديث...",
+    "cancel": "الغاء"
+  },
+  "types": {
+    "technical": "مشكلة تقنية",
+    "payment": "مشكلة في الدفع",
+    "event": "مشكلة في الفعالية",
+    "user": "شكوى من مستخدم",
+    "other": "أخرى",
+    "inquiry": "استفسار",
+    "issue": "مشكلة",
+    "request": "طلب",
+    "suggestion": "اقتراح"
+  },
   "status": {
     "open": "مفتوحة",
-    "pending": "في انتظار",
     "in_progress": "قيد المعالجة",
-    "inProgress": "قيد المعالجة",
     "waiting_response": "بانتظار الرد",
     "resolved": "تم الحل",
     "closed": "مغلقة"
@@ -18,69 +47,43 @@
     "high": "عالية",
     "urgent": "عاجلة"
   },
-  "types": {
-    "technical": "تقنية",
-    "payment": "دفع",
-    "event": "مناسبة",
-    "user": "مستخدم",
-    "inquiry": "استفسار",
-    "issue": "مشكلة",
-    "request": "طلب",
-    "suggestion": "اقتراح",
-    "other": "أخرى"
-  },
-  "form": {
-    "title": "إنشاء تذكرة دعم",
-    "editTitle": "تعديل التذكرة",
-    "selectType": "اختر نوع التذكرة",
-    "typeLabel": "النوع",
-    "messagePlaceholder": "اكتب وصفاً تفصيلياً للمشكلة أو السؤال...",
-    "messageLabel": "الرسالة",
-    "cancel": "إلغاء",
-    "create": "إنشاء",
-    "update": "تحديث",
-    "creating": "جاري الإنشاء...",
-    "updating": "جاري التحديث..."
-  },
-  "card": {
-    "created": "تم الإنشاء:",
+  "actions": {
     "delete": "حذف",
-    "edit": "تعديل"
+    "edit": "تعديل",
+    "deleteTitle": "حذف الشكوى",
+    "deleteConfirm": "هل أنت متأكد من حذف هذه الشكوى؟",
+    "confirmDelete": "حذف",
+    "cancelDelete": "إلغاء"
   },
   "messages": {
-    "createSuccess": "تم إنشاء التذكرة بنجاح",
-    "createError": "فشل إنشاء التذكرة",
-    "updateSuccess": "تم تحديث التذكرة بنجاح",
-    "updateError": "فشل تحديث التذكرة",
-    "deleteSuccess": "تم حذف التذكرة بنجاح",
-    "deleteError": "فشل حذف التذكرة",
-    "loadError": "فشل تحميل التذاكر",
-    "confirmDelete": "هل أنت متأكد من حذف هذه التذكرة؟"
+    "createSuccess": "تم إرسال الشكوى بنجاح",
+    "updateSuccess": "تم تحديث الشكوى بنجاح",
+    "deleteSuccess": "تم حذف الشكوى بنجاح",
+    "fetchError": "فشل في تحميل الشكاوى",
+    "deleteError": "فشل في حذف الشكوى",
+    "saveError": "حدث خطأ أثناء حفظ الشكوى"
   },
-  "validation": {
-    "ticketTypeRequired": "الرجاء اختيار نوع التذكرة",
-    "ticketMessageMin": "يجب أن تكون الرسالة 10 أحرف على الأقل",
-    "ticketMessageMax": "يجب ألا تتجاوز الرسالة 5000 حرف"
+  "createdAt": "تم الإنشاء:",
+  "errors": {
+    "subjectMinLength": "موضوع الشكوى يجب أن يكون 5 أحرف على الأقل",
+    "subjectMaxLength": "موضوع الشكوى يجب أن لا يتجاوز 200 حرف",
+    "typeRequired": "نوع الشكوى مطلوب",
+    "typeInvalid": "نوع الشكوى غير صالح",
+    "messageMinLength": "الرسالة يجب أن تكون 10 أحرف على الأقل",
+    "messageMaxLength": "الرسالة يجب أن لا تتجاوز 5000 حرف",
+    "priorityInvalid": "أولوية غير صالحة",
+    "statusInvalid": "حالة غير صالحة",
+    "resolutionMinLength": "الرد يجب أن يكون 10 أحرف على الأقل",
+    "resolutionMaxLength": "الرد يجب أن لا يتجاوز 5000 حرف",
+    "ratingRequired": "يرجى اختيار تقييم",
+    "ratingMax": "التقييم يجب أن يكون بين 1 و 5",
+    "ratingInvalid": "التقييم يجب أن يكون رقم صحيح",
+    "feedbackMaxLength": "التعليق يجب أن لا يتجاوز 1000 حرف",
+    "boundary": "فشل في تحميل الشكاوى",
+    "loadFailed": "فشل في تحميل الشكاوى"
   },
-  "rating": {
-    "title": "تقييم الدعم",
-    "question": "ما مدى رضاك عن الحل المقدم؟",
-    "feedback": "ملاحظات (اختياري)",
-    "feedbackPlaceholder": "شارك تجربتك مع هذه التذكرة...",
-    "selectRating": "الرجاء اختيار تقييم",
-    "submit": "إرسال التقييم",
-    "submitting": "جاري الإرسال...",
-    "cancel": "إلغاء",
+  "ratingInline": {
     "rateButton": "تقييم",
-    "alreadyRated": "تم التقييم",
-    "success": "تم إرسال التقييم بنجاح",
-    "error": "فشل إرسال التقييم",
-    "labels": {
-      "1": "سيء جداً",
-      "2": "سيء",
-      "3": "متوسط",
-      "4": "جيد",
-      "5": "ممتاز"
-    }
+    "alreadyRated": "تم التقييم"
   }
 }

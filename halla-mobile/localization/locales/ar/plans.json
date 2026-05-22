@@ -25,7 +25,7 @@
     "currency": { "sar": "ر.س" }
   },
   "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة تعويضية" },
-  "buttons": { "subscribeNow": "تواصل معنا", "subscribeAction": "اشترك الآن" },
+  "buttons": { "subscribeNow": "تواصل معنا", "subscribeAction": "اشترك الآن", "continueToSummary": "متابعة إلى الملخص" },
   "errors": { "loadFailed": "فشل في تحميل الباقات", "selectPlan": "الرجاء اختيار باقة.", "noPlansAvailable": "لا توجد باقات متاحة", "retry": "إعادة المحاولة" },
   "eventTab": {
     "hint": "باقة واحدة لكل مناسبة — صالحة ٩٠ يوماً · رسوم إعداد ١٢٠٠ ر.س (مرة واحدة)",
@@ -112,6 +112,7 @@
       "placeholder": "أدخل كود الخصم",
       "apply": "تطبيق",
       "applied": "تم التطبيق",
+      "remove": "إزالة",
       "success": "✓ كود \"{{code}}\" — خصم {{amount}} ر.س",
       "invalidDefault": "كود الخصم غير صالح",
       "networkError": "تعذر التحقق من الكود. حاول مرة أخرى"
@@ -145,9 +146,40 @@
     "proceedButton": "متابعة للدفع"
   },
   "toasts": {
-    "success": "تم تفعيل الاشتراك!",
-    "failed": "فشل التفعيل. حاول مرة أخرى.",
-    "subscriptionPartial": "تم تفعيل الاشتراك؛ {{count}} إضافة بحاجة إلى متابعة — سيتواصل معك فريقنا."
+    "subscriptionCreated": "تم تفعيل الاشتراك بنجاح!",
+    "subscriptionFailed": "فشل تفعيل الاشتراك. حاول مرة أخرى.",
+    "subscriptionPartial": "تم تفعيل الاشتراك؛ {{count}} إضافة بحاجة إلى متابعة — سيتواصل معك فريقنا.",
+    "alreadyActive": "لديك اشتراك نشط بالفعل."
+  },
+  "checkout": {
+    "method": {
+      "card": "بطاقة",
+      "applepay": "آبل باي",
+      "stcpay": "إس تي سي باي"
+    },
+    "card": {
+      "name": "اسم حامل البطاقة",
+      "number": "رقم البطاقة",
+      "month": "شهر",
+      "year": "سنة",
+      "cvc": "CVC",
+      "secureNote": "بيانات بطاقتك مشفّرة وتُعالج بأمان."
+    },
+    "stcpay": {
+      "mobile": "رقم الجوال",
+      "note": "سيصلك إشعار تأكيد في تطبيق STC Pay."
+    },
+    "applepay": {
+      "note": "سيُطلب منك التأكيد عبر آبل باي في الخطوة التالية."
+    },
+    "errors": {
+      "cardIncomplete": "يرجى تعبئة جميع بيانات البطاقة.",
+      "cardNumberInvalid": "رقم البطاقة غير صحيح.",
+      "expiryInvalid": "تاريخ الانتهاء غير صحيح.",
+      "cvcInvalid": "رمز CVC غير صحيح.",
+      "stcMobileInvalid": "أدخل رقم جوال سعودي صالح (يبدأ بـ 05).",
+      "applepayUnavailable": "آبل باي غير متاح حالياً على الجوال. الرجاء اختيار وسيلة أخرى."
+    }
   },
   "features": {
     "title": "المميزات المشمولة"

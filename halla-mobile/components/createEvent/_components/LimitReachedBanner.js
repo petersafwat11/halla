@@ -6,8 +6,8 @@ export default function LimitReachedBanner({ t }) {
     <View style={styles.limitReachedBanner}>
       <Text style={styles.limitReachedIcon}>⚠️</Text>
       <View style={styles.limitReachedContent}>
-        <Text style={styles.limitReachedText}>{t("events.guestLimit.reached")}</Text>
-        <Text style={styles.upgradeHint}>{t("events.guestLimit.upgradeHint")}</Text>
+        <Text style={styles.limitReachedText}>{t("guest_limit_reached")}</Text>
+        <Text style={styles.upgradeHint}>{t("upgrade_hint")}</Text>
       </View>
     </View>
   );

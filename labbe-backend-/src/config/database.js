@@ -8,8 +8,10 @@ const dns = require('dns');
 const mongoose = require('mongoose');
 const config = require('./index');
 
-// Use Google public DNS — the default router DNS cannot resolve MongoDB Atlas SRV records
-dns.setServers(['8.8.8.8', '8.8.4.4']);
+// Hardcode public DNS for SRV lookups: some host network resolvers
+// fail to return MongoDB Atlas SRV records. Cloudflare first (verified working),
+// Google as fallback. Resolvers are tried in order.
+dns.setServers(['1.1.1.1', '1.0.0.1', '8.8.8.8', '8.8.4.4']);
 
 /**
  * Connect to MongoDB

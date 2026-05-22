@@ -71,6 +71,8 @@ const VendorServicesPage = () => {
         description: service.description || "",
         serviceType: service.category || "",
         price: service.price != null ? String(service.price) : "",
+        duration: service.duration || "",
+        included: service.included || [],
         tags: service.tags || [],
         image: service.image,
       },

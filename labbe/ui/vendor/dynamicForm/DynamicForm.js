@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./dynamicForm.module.css";
-import { FIELD_TYPES, validateField } from "@/utils/schemas/vendorSettings";
+import { FIELD_TYPES, validateForm } from "@/utils/schemas/vendorSettings";
 import UploadFileStandalone from "@/ui/commen/inputs/uploadFile/UploadFileStandalone";
 import {
   FaGlobe,
@@ -78,21 +78,13 @@ const DynamicForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validate all fields
-    const newErrors = {};
-    schema.fields.forEach((field) => {
-      const error = validateField(formData[field.name], field, formData);
-      if (error) {
-        newErrors[field.name] = error;
-      }
-    });
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    const { isValid, errors: zodErrors } = validateForm(formData, schema);
+    if (!isValid) {
+      setErrors(zodErrors);
       return;
     }
 
-    // Combine form data with file data
+    // Combine validated form data with file data
     const submitData = { ...formData };
     Object.keys(fileData).forEach((key) => {
       submitData[key] = fileData[key];

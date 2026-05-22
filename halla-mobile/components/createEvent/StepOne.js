@@ -71,6 +71,15 @@ const ChevronDownIcon = () => (
 
 const EVENT_TYPE_VALUES = ["wedding", "birthday", "graduation", "meeting", "conference", "other"];
 
+const EVENT_TYPE_EMOJIS = {
+  wedding: "💍",
+  birthday: "🎂",
+  graduation: "🎓",
+  meeting: "👥",
+  conference: "🎤",
+  other: "📅",
+};
+
 const StepOne = () => {
   const { control, setValue, watch } = useFormContext();
   const { t } = useTranslation("createEvent");
@@ -88,13 +97,13 @@ const StepOne = () => {
   const eventTypes = useMemo(() =>
     EVENT_TYPE_VALUES.map((value) => ({
       value,
-      label: t(`stepOne.eventTypes.${value}`),
-      emoji: t(`stepOne.eventTypes.${value}.emoji`),
+      label: t(`event_types.${value}`),
+      emoji: EVENT_TYPE_EMOJIS[value] || "",
     })), [t]);
 
   const getEventTypeLabel = () => {
-    const type = eventTypes.find((t) => t.value === eventType);
-    return type ? `${type.emoji} ${type.label}` : t("stepOne.eventTypePlaceholder");
+    const type = eventTypes.find((tp) => tp.value === eventType);
+    return type ? `${type.emoji} ${type.label}` : t("event_type_placeholder");
   };
 
   const formatDate = (date) => {
@@ -133,14 +142,14 @@ const StepOne = () => {
       {/* Event Name */}
       <TextInput
         name="eventName"
-        label={t("stepOne.eventName")}
-        placeholder={t("stepOne.eventNamePlaceholder")}
-        rules={{ required: t("stepOne.eventNameRequired") }}
+        label={t("event_name_label")}
+        placeholder={t("event_name_placeholder")}
+        rules={{ required: t("title_required") }}
       />
 
       {/* Event Type */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>{t("stepOne.eventType")}</Text>
+        <Text style={styles.label}>{t("event_type_label")}</Text>
         <TouchableOpacity
           style={styles.selectButton}
           onPress={() => setShowEventTypeModal(true)}
@@ -160,7 +169,7 @@ const StepOne = () => {
 
       {/* Event Date */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>{t("stepOne.eventDate")}</Text>
+        <Text style={styles.label}>{t("event_date_label")}</Text>
         <TouchableOpacity
           style={styles.selectButton}
           onPress={() => setShowDatePicker(true)}
@@ -174,7 +183,7 @@ const StepOne = () => {
               { flex: 1 },
             ]}
           >
-            {eventDate ? formatDate(eventDate) : t("stepOne.eventDatePlaceholder")}
+            {eventDate ? formatDate(eventDate) : t("event_date_placeholder")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -191,7 +200,7 @@ const StepOne = () => {
 
       {/* Event Time */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>{t("stepOne.eventTime")}</Text>
+        <Text style={styles.label}>{t("event_time_label")}</Text>
         <TouchableOpacity
           style={styles.selectButton}
           onPress={() => setShowTimePicker(true)}
@@ -205,7 +214,7 @@ const StepOne = () => {
               { flex: 1 },
             ]}
           >
-            {eventTime || t("stepOne.eventTimePlaceholder")}
+            {eventTime || t("event_time_placeholder")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -222,13 +231,13 @@ const StepOne = () => {
       {/* Location */}
       <MapPicker
         name="address"
-        label={t("stepOne.location")}
-        placeholder={t("stepOne.locationPlaceholder")}
+        label={t("address_label")}
+        placeholder={t("address_placeholder")}
         rules={{
-          required: t("stepOne.locationRequired"),
+          required: t("location_required"),
           validate: (value) => {
             if (!value || !value.address || value.address.trim() === "") {
-              return t("stepOne.locationInvalid");
+              return t("location_invalid");
             }
             return true;
           },

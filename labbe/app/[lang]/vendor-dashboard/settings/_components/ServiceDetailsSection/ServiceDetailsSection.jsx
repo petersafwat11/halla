@@ -69,7 +69,7 @@ const ServiceDetailsSection = ({ data, onSave }) => {
                     width={80}
                     height={60}
                     className={styles.thumbnailImage}
-                    unoptimized={displayData.nationalIdImage.startsWith("http")}
+                    unoptimized
                   />
                   <span className={styles.viewText}>
                     {t("serviceDetails.clickToView", "اضغط للعرض")}
@@ -100,7 +100,7 @@ const ServiceDetailsSection = ({ data, onSave }) => {
                     width={80}
                     height={60}
                     className={styles.thumbnailImage}
-                    unoptimized={displayData.commercialRecordImage.startsWith("http")}
+                    unoptimized
                   />
                   <span className={styles.viewText}>
                     {t("serviceDetails.clickToView", "اضغط للعرض")}

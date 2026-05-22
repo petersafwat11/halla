@@ -75,8 +75,8 @@ const CurrentPlanCard = ({ subscription, usage }) => {
         {planName ? <Text style={styles.planName}>{planName}</Text> : null}
       </View>
 
-      <View style={styles.usageGrid}>
-        <UsageItem
+      <View style={styles.statsContainer}>
+        <StatItem
           icon="calendar-outline"
           label={t("currentPlan.events")}
           used={eventsUsed}
@@ -85,7 +85,7 @@ const CurrentPlanCard = ({ subscription, usage }) => {
           isUnlimited={eventsUnlimited}
           showProgress
         />
-        <UsageItem
+        <StatItem
           icon="people-outline"
           label={t("currentPlan.invites")}
           used={guestsUsed}
@@ -93,7 +93,7 @@ const CurrentPlanCard = ({ subscription, usage }) => {
           percent={guestsPercent}
           showProgress
         />
-        <UsageItem
+        <StatItem
           icon="time-outline"
           label={t("currentPlan.daysRemaining")}
           singleValue={daysRemaining}
@@ -103,7 +103,7 @@ const CurrentPlanCard = ({ subscription, usage }) => {
   );
 };
 
-const UsageItem = ({ icon, label, used, limit, percent, singleValue, showProgress, isUnlimited = false }) => {
+const StatItem = ({ icon, label, used, limit, percent, singleValue, showProgress, isUnlimited = false }) => {
   const isNearLimit = !isUnlimited && percent >= 80;
   const isAtLimit = !isUnlimited && percent >= 100;
   const valueColor = isAtLimit
@@ -124,17 +124,19 @@ const UsageItem = ({ icon, label, used, limit, percent, singleValue, showProgres
       : `${used} / ${limit}`;
 
   return (
-    <View style={styles.usageItem}>
-      <View style={styles.usageIcon}>
-        <Ionicons name={icon} size={18} color={colors.primary[500]} />
+    <View style={styles.statRow}>
+      <View style={styles.statIcon}>
+        <Ionicons name={icon} size={16} color={colors.primary[500]} />
       </View>
-      <View style={styles.usageInfo}>
-        <Text style={styles.usageLabel} numberOfLines={1}>
-          {label}
-        </Text>
-        <Text style={[styles.usageValue, { color: valueColor }]}>
-          {valueText}
-        </Text>
+      <View style={styles.statContent}>
+        <View style={styles.statInfo}>
+          <Text style={styles.statLabel} numberOfLines={1}>
+            {label}
+          </Text>
+          <Text style={[styles.statValue, { color: valueColor }]}>
+            {valueText}
+          </Text>
+        </View>
         {showProgress && !isUnlimited ? (
           <View style={styles.progressBar}>
             <View
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: spacing[16],
+    marginBottom: spacing[12],
     paddingBottom: spacing[12],
     borderBottomWidth: 1,
     borderBottomColor: colors.primary[100],
@@ -202,51 +204,49 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius[20],
     overflow: "hidden",
   },
-  usageGrid: {
-    flexDirection: "row",
-    gap: spacing[8],
+  statsContainer: {
+    gap: spacing[2],
   },
-  usageItem: {
-    flex: 1,
+  statRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: spacing[8],
-    padding: spacing[12],
-    backgroundColor: colors.natural[50],
-    borderRadius: borderRadius[12],
-    borderWidth: 1,
-    borderColor: colors.primary[100],
+    gap: spacing[12],
+    paddingVertical: spacing[8],
   },
-  usageIcon: {
+  statIcon: {
     width: 32,
     height: 32,
     borderRadius: borderRadius[8],
-    backgroundColor: colors.primary[50],
+    backgroundColor: colors.primary[100],
     justifyContent: "center",
     alignItems: "center",
   },
-  usageInfo: {
+  statContent: {
     flex: 1,
-    gap: 2,
-    minWidth: 0,
+    gap: spacing[6],
   },
-  usageLabel: {
+  statInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+  },
+  statLabel: {
     fontFamily: "Cairo_500Medium",
-    fontSize: typography.fontSize.caption.large,
+    fontSize: typography.fontSize.body.small,
     color: colors.accent[500],
+    flexShrink: 1,
+    marginRight: spacing[8],
   },
-  usageValue: {
+  statValue: {
     fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.title.small,
+    fontSize: typography.fontSize.body.medium,
     color: colors.secondary[700],
-    marginTop: 2,
   },
   progressBar: {
     height: 4,
     backgroundColor: colors.primary[100],
     borderRadius: borderRadius[4],
     overflow: "hidden",
-    marginTop: spacing[8],
   },
   progressFill: {
     height: "100%",

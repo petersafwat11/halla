@@ -6,6 +6,7 @@ import EditFormHeader from "./EditFormHeader";
 import DocumentUploadsRow from "./DocumentUploadsRow";
 import LocationFieldsRow from "./LocationFieldsRow";
 import { useRegions, useCitiesByRegion, useDistrictsByCity } from "@/hooks/reactQueryHooks/useLocations";
+import { validateForm, serviceDetailsSchema } from "@/utils/schemas/vendorSettings";
 
 const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading }) => {
   const { t } = useTranslation("vendorSettings");
@@ -14,6 +15,7 @@ const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading
     description: data?.serviceDescription || "",
     nationalId: data?.nationalId || "",
   });
+  const [errors, setErrors] = useState({});
   const [nationalIdImages, setNationalIdImages] = useState([]);
   const [commercialRecordImages, setCommercialRecordImages] = useState([]);
 
@@ -24,9 +26,9 @@ const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading
   const existingNationalIdImages = data?.nationalIdImage ? [data.nationalIdImage] : [];
   const existingCommercialImages = data?.commercialRecordImage ? [data.commercialRecordImage] : [];
 
-  const { data: regionsData, isLoading: regionsLoading, error: regionsError } = useRegions();
-  const { data: citiesData, isLoading: citiesLoading, error: citiesError } = useCitiesByRegion(selectedRegion);
-  const { data: districtsData, isLoading: districtsLoading, error: districtsError } = useDistrictsByCity(selectedCity);
+  const { data: regionsData, error: regionsError } = useRegions();
+  const { data: citiesData, error: citiesError } = useCitiesByRegion(selectedRegion);
+  const { data: districtsData, error: districtsError } = useDistrictsByCity(selectedCity);
 
   const regions = regionsData?.data?.regions || [];
   const cities = citiesData?.data?.cities || [];
@@ -34,20 +36,42 @@ const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const { isValid, errors: zodErrors } = validateForm(
+      {
+        nationalId: formData.nationalId,
+        serviceDescription: formData.description,
+      },
+      serviceDetailsSchema
+    );
+    if (!isValid) {
+      setErrors(zodErrors);
+      return;
+    }
+    setErrors({});
+
     setIsLoading(true);
     try {
       if (onSave) {
-        await onSave({
+        const payload = {
           serviceDescription: formData.description,
           nationalId: formData.nationalId,
-          nationalIdImage: nationalIdImages,
-          commercialRecordImage: commercialRecordImages,
-          serviceLocation: {
-            regionId: selectedRegion,
-            cityId: selectedCity,
+        };
+        if (nationalIdImages.length > 0) {
+          payload.nationalIdImage = nationalIdImages;
+        }
+        if (commercialRecordImages.length > 0) {
+          payload.commercialRecordImage = commercialRecordImages;
+        }
+        const hasLocation = selectedRegion || selectedCity || selectedDistricts.length;
+        if (hasLocation) {
+          payload.serviceLocation = {
+            regionId: selectedRegion || undefined,
+            cityId: selectedCity || undefined,
             districtIds: selectedDistricts,
-          },
-        });
+          };
+        }
+        await onSave(payload);
       }
       onClose();
     } catch (error) {
@@ -84,7 +108,12 @@ const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading
             value={formData.nationalId}
             onChange={(e) => setFormData({ ...formData, nationalId: e.target.value })}
             placeholder={t("serviceDetails.nationalIdPlaceholder", "Enter national ID")}
+            inputMode="numeric"
+            maxLength={10}
           />
+          {errors.nationalId && (
+            <span className={styles.error}>{errors.nationalId}</span>
+          )}
         </div>
 
         <div className={styles.editFormField}>
@@ -96,6 +125,9 @@ const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading
             placeholder={t("serviceDetails.serviceDescriptionPlaceholder")}
             rows={4}
           />
+          {errors.serviceDescription && (
+            <span className={styles.error}>{errors.serviceDescription}</span>
+          )}
         </div>
 
         <div className={styles.editFormSection}>

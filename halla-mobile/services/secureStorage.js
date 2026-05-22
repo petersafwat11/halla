@@ -89,4 +89,13 @@ export const loadStaffToken = () => getItem(STAFF_TOKEN_KEY);
 
 export const clearStaffToken = () => deleteItem(STAFF_TOKEN_KEY);
 
+const ONBOARDING_KEY = "halla.onboardingSeen";
+
+export const saveOnboardingSeen = () => setItem(ONBOARDING_KEY, "true");
+export const loadOnboardingSeen = async () => {
+  const val = await getItem(ONBOARDING_KEY);
+  return val === "true";
+};
+export const clearOnboardingSeen = () => deleteItem(ONBOARDING_KEY);
+
 export const STORAGE_BACKEND = isSecureStoreAvailable ? "secure-store" : "async-storage-fallback";

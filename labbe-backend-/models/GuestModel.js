@@ -178,6 +178,33 @@ const guestSchema = new mongoose.Schema(
       },
       // True when Taqnyat returned 429 — transient, not permanently failed
       rateLimited: { type: Boolean, default: false },
+
+      // 24h auto-reminder (free, covered by base plan). Written by
+      // scheduledTasks.scheduleGuestReminders after a successful send.
+      autoReminderSent: { type: Boolean, default: false },
+      autoReminderSentAt: { type: Date },
+      autoReminderType: {
+        type: String,
+        enum: ['reminder_confirmed', 'reminder_pending'],
+      },
+      autoReminderMessageId: { type: String },
+
+      // Purchased extra reminder. `extraReminderScheduled` is set when the
+      // user schedules via the ScheduledExtraReminder flow; `extraReminderSent`
+      // when the dispatcher cron actually sends.
+      extraReminderScheduled: { type: Boolean, default: false },
+      extraReminderScheduledFor: { type: Date },
+      extraReminderSent: { type: Boolean, default: false },
+      extraReminderSentAt: { type: Date },
+      extraReminderType: {
+        type: String,
+        enum: ['reminder_confirmed', 'reminder_pending'],
+      },
+      extraReminderMessageId: { type: String },
+      extraReminderDocId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ScheduledExtraReminder',
+      },
     },
     // Soft-delete tombstone — set instead of deleteMany on guest removal
     deleted: { type: Boolean, default: false },

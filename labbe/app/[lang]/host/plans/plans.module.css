@@ -269,3 +269,31 @@
 @media (max-width: 480px) {
   .pageTitle { font-size: 1.8rem; }
 }
+
+/* Addons Footer */
+.addonsFooter {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0;
+  margin-top: 1rem;
+}
+
+.continueBtn {
+  padding: 1.25rem 3rem;
+  border: none;
+  border-radius: var(--radius-12);
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+  color: var(--color-natural-50);
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-family: var(--font-ar);
+  cursor: pointer;
+  transition: all 250ms ease;
+  box-shadow: 0 8px 32px rgba(194, 142, 92, 0.25);
+}
+
+.continueBtn:hover {
+  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-700) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(194, 142, 92, 0.4);
+}

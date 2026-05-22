@@ -4,8 +4,8 @@ import { useTranslation } from "../../../localization";
 import { colors, spacing, borderRadius, typography } from "../../../styles/tokens";
 
 const getInviteValue = (plan, billingType) => {
-  if (billingType === "monthly") return plan.invitePool;
-  return plan.invites || plan.limits?.maxInvitesPerEvent;
+  if (billingType === "monthly") return plan.invitePool ?? 0;
+  return plan.invites ?? 0;
 };
 
 const InviteSelector = ({ plans, billingType, selectedInvites, onInviteChange }) => {

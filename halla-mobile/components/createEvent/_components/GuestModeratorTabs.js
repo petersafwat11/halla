@@ -10,7 +10,7 @@ export default function GuestModeratorTabs({ activeTab, setActiveTab, guestCount
         activeOpacity={0.7}
       >
         <Text style={[styles.tabText, activeTab === "guests" && styles.tabTextActive]}>
-          {t("events.tabs.guests")}
+          {t("event_guests_label")}
         </Text>
         {guestCount > 0 && (
           <View style={styles.badge}><Text style={styles.badgeText}>{guestCount}</Text></View>
@@ -23,7 +23,7 @@ export default function GuestModeratorTabs({ activeTab, setActiveTab, guestCount
         activeOpacity={0.7}
       >
         <Text style={[styles.tabText, activeTab === "moderators" && styles.tabTextActive]}>
-          {t("events.tabs.moderators")}
+          {t("event_moderators_label")}
         </Text>
         {moderatorCount > 0 && (
           <View style={styles.badge}><Text style={styles.badgeText}>{moderatorCount}</Text></View>

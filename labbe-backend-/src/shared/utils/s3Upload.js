@@ -483,9 +483,33 @@ const getFileUrlSigned = async (file, opts = {}) => {
 };
 
 /**
- * Process uploaded files and return URLs
+ * Extract the canonical stored reference for a multer file.
+ *
+ * For S3 uploads we persist the **key** (so we can mint short-lived signed
+ * URLs at read time — the bucket is private). For local-disk dev uploads we
+ * persist the public-relative path so the dev server can serve them
+ * directly.
+ *
+ * @param {Object} file - Multer file object
+ * @returns {string|null}
+ */
+const extractStoredRef = (file) => {
+  if (!file) return null;
+  if (file.key) return file.key; // multer-s3
+  if (file.path) {
+    const publicIndex = file.path.indexOf("public");
+    if (publicIndex !== -1) {
+      return file.path.substring(publicIndex + 6);
+    }
+    return file.filename;
+  }
+  return null;
+};
+
+/**
+ * Process uploaded files and return stored references (S3 keys or local paths).
  * @param {Object} files - Multer files object
- * @returns {Object} Processed files with URLs
+ * @returns {Object<string, string|string[]>}
  */
 const processUploadedFiles = (files) => {
   const processed = {};
@@ -501,14 +525,54 @@ const processUploadedFiles = (files) => {
         "images",
       ];
       if (multipleFields.includes(fieldName)) {
-        processed[fieldName] = files[fieldName].map((file) => getFileUrl(file));
+        processed[fieldName] = files[fieldName].map(extractStoredRef);
       } else {
-        processed[fieldName] = getFileUrl(files[fieldName][0]);
+        processed[fieldName] = extractStoredRef(files[fieldName][0]);
       }
     }
   });
 
   return processed;
+};
+
+/**
+ * Convert a stored image reference into a renderable URL.
+ *
+ * - S3 keys → 1-hour pre-signed URL
+ * - Already-signed URLs → returned unchanged
+ * - Local-disk dev paths → returned unchanged
+ * - null / undefined / non-string → returned as-is
+ *
+ * @param {string|null|undefined} stored
+ * @returns {Promise<string|null>}
+ */
+const signStoredImage = async (stored) => {
+  if (!stored || typeof stored !== "string") return stored ?? null;
+  // Local-disk dev path
+  if (stored.startsWith("/uploads/") || stored.startsWith("uploads/")) {
+    return stored.startsWith("/") ? stored : `/${stored}`;
+  }
+  // Already a signed URL (defensive — should not happen but cheap to check)
+  if (stored.includes("X-Amz-Signature=")) return stored;
+  // S3 key — sign it
+  if (isS3Configured()) {
+    try {
+      return await getSignedUrlForKey(stored);
+    } catch (err) {
+      return stored;
+    }
+  }
+  return stored;
+};
+
+/**
+ * Sign an array of stored image refs in parallel.
+ * @param {Array<string>} refs
+ * @returns {Promise<Array<string>>}
+ */
+const signStoredImages = async (refs) => {
+  if (!Array.isArray(refs)) return [];
+  return Promise.all(refs.map(signStoredImage));
 };
 
 /**
@@ -668,13 +732,18 @@ const uploadVendorFiles = uploadGeneral.fields([
   { name: "profileFile", maxCount: 1 },
 ]);
 
-const uploadUserProfile = uploadImage.fields([
+// Vendors need to attach PDFs/images for the national-ID and commercial-record
+// docs at update time, just like they do at signup. Use the general filter
+// (images + PDFs + office docs) so the contract matches `uploadVendorFiles`.
+const uploadUserProfile = uploadGeneral.fields([
   { name: "businessLogo", maxCount: 1 },
   { name: "avatar", maxCount: 1 },
   { name: "nationalIdImage", maxCount: 1 },
   { name: "commercialRecordImage", maxCount: 1 },
   { name: "portfolioImages", maxCount: 10 },
   { name: "pricePackages", maxCount: 10 },
+  { name: "profileFile", maxCount: 1 },
+  { name: "cv", maxCount: 1 },
 ]);
 
 const uploadPostEventMedia = uploadMedia.fields([
@@ -709,6 +778,9 @@ module.exports = {
   getFileUrl,
   getFileUrlSigned,
   processUploadedFiles,
+  extractStoredRef,
+  signStoredImage,
+  signStoredImages,
   deleteFile,
 
   // File filters

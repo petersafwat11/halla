@@ -118,11 +118,12 @@ async function syncFromTaqnyat({ actor } = {}) {
   };
 }
 
-async function listForHost({ category } = {}) {
+async function listForHost({ category, type = 'invite' } = {}) {
   const query = {
     active: true,
     status: 'APPROVED',
     removedFromMeta: { $ne: true },
+    type,
   };
   if (category) query.category = category;
 
@@ -130,6 +131,25 @@ async function listForHost({ category } = {}) {
     .sort({ sortOrder: 1, createdAt: -1 })
     .select('-createdBy -updatedBy -__v')
     .lean();
+}
+
+/**
+ * Look up the single active template for a (category, type) pair.
+ * `staff_access` is global — category is ignored. Used by the auto-reminder
+ * cron, the scheduled-extra-reminder dispatcher, and the staff notify flow.
+ */
+async function findActiveByCategoryAndType(category, type) {
+  const filter =
+    type === 'staff_access'
+      ? { type: 'staff_access', active: true, status: 'APPROVED', removedFromMeta: { $ne: true } }
+      : {
+          category,
+          type,
+          active: true,
+          status: 'APPROVED',
+          removedFromMeta: { $ne: true },
+        };
+  return TaqnyatTemplate.findOne(filter).lean();
 }
 
 async function listForAdmin({ search, includeInactive = true } = {}) {
@@ -146,14 +166,36 @@ async function listForAdmin({ search, includeInactive = true } = {}) {
   return TaqnyatTemplate.find(query).sort({ sortOrder: 1, createdAt: -1 }).lean();
 }
 
+// Types that allow exactly one active doc per (category) — or globally for
+// staff_access. Enforced atomically in `assignMapping` by deactivating the
+// previous active doc in a single updateMany before flipping the new one.
+const UNIQUE_TYPES = new Set([
+  'reminder_confirmed',
+  'reminder_pending',
+  'post_event',
+  'staff_access',
+]);
+
 async function assignMapping(id, updates, actor) {
   const doc = await TaqnyatTemplate.findById(id);
   if (!doc) throw new NotFoundError('TaqnyatTemplate');
 
   if (updates.varMapping !== undefined) doc.varMapping = updates.varMapping;
   if (updates.category !== undefined) doc.category = updates.category || null;
+  if (updates.type !== undefined) doc.type = updates.type || null;
   if (updates.active !== undefined) doc.active = !!updates.active;
   if (typeof updates.sortOrder === 'number') doc.sortOrder = updates.sortOrder;
+
+  // Singleton-type enforcement: if turning this row active and another active
+  // row already owns the (category, type) slot, deactivate that one first so
+  // the cron's `findOne` lookup is unambiguous.
+  if (doc.active && doc.type && UNIQUE_TYPES.has(doc.type)) {
+    const filter =
+      doc.type === 'staff_access'
+        ? { _id: { $ne: doc._id }, type: 'staff_access', active: true }
+        : { _id: { $ne: doc._id }, category: doc.category, type: doc.type, active: true };
+    await TaqnyatTemplate.updateMany(filter, { $set: { active: false } });
+  }
 
   doc.updatedBy = actor?._id || null;
   await doc.save();
@@ -166,6 +208,7 @@ async function assignMapping(id, updates, actor) {
     metadata: {
       templateName: doc.templateName,
       category: doc.category,
+      type: doc.type,
       varMappingCount: doc.varMapping.length,
     },
   });
@@ -319,6 +362,7 @@ module.exports = {
   listForHost,
   listForAdmin,
   assignMapping,
+  findActiveByCategoryAndType,
   createUpstreamTemplate,
   deleteUpstreamTemplate,
 };

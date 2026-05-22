@@ -5,52 +5,50 @@ import { useTranslation } from "../../../localization";
 
 const VendorMetaInfo = ({ vendor }) => {
   const { t } = useTranslation("marketplace");
+  const hasIncluded = Array.isArray(vendor.included) && vendor.included.length > 0;
+  const hasPrice = vendor.price != null && vendor.price !== "";
 
   return (
     <>
-      <View style={styles.infoCard}>
-        <View style={styles.infoHeader}>
-          <View style={styles.iconBadge}>
-            <Ionicons name="time-outline" size={14} color="#2563EB" />
-          </View>
-          <Text style={styles.infoTitle}>{t("vendor.serviceDuration")}</Text>
-        </View>
-        <Text style={styles.infoValue}>
-          {vendor.duration || t("vendor.defaultDuration")}
-        </Text>
-      </View>
-
-      <View style={styles.infoCard}>
-        <View style={styles.infoHeader}>
-          <View style={[styles.iconBadge, styles.iconBadgeYellow]}>
-            <Ionicons name="cash-outline" size={14} color="#D97706" />
-          </View>
-          <Text style={styles.infoTitle}>{t("vendor.priceRange")}</Text>
-        </View>
-        <Text style={styles.infoValue}>
-          {vendor.priceRange || t("vendor.defaultPriceRange")}
-        </Text>
-      </View>
-
-      <View style={styles.includedCard}>
-        <Text style={styles.includedTitle}>{t("vendor.whatsIncluded")}</Text>
-        <View style={styles.includedList}>
-          {(
-            vendor.included || [
-              t("vendor.engagementSession"),
-              t("vendor.printRightsIncluded"),
-              t("vendor.dronePhotography"),
-              t("vendor.digitalAlbum"),
-              t("vendor.fullDayCoverage"),
-            ]
-          ).map((item, index) => (
-            <View key={index} style={styles.includedItem}>
-              <View style={styles.bullet} />
-              <Text style={styles.includedText}>{item}</Text>
+      {vendor.duration ? (
+        <View style={styles.infoCard}>
+          <View style={styles.infoHeader}>
+            <View style={styles.iconBadge}>
+              <Ionicons name="time-outline" size={14} color="#2563EB" />
             </View>
-          ))}
+            <Text style={styles.infoTitle}>{t("vendor.serviceDuration")}</Text>
+          </View>
+          <Text style={styles.infoValue}>{vendor.duration}</Text>
         </View>
-      </View>
+      ) : null}
+
+      {hasPrice ? (
+        <View style={styles.infoCard}>
+          <View style={styles.infoHeader}>
+            <View style={[styles.iconBadge, styles.iconBadgeYellow]}>
+              <Ionicons name="cash-outline" size={14} color="#D97706" />
+            </View>
+            <Text style={styles.infoTitle}>{t("vendor.price")}</Text>
+          </View>
+          <Text style={styles.infoValue}>
+            {vendor.price} {t("vendor.sar")}
+          </Text>
+        </View>
+      ) : null}
+
+      {hasIncluded ? (
+        <View style={styles.includedCard}>
+          <Text style={styles.includedTitle}>{t("vendor.whatsIncluded")}</Text>
+          <View style={styles.includedList}>
+            {vendor.included.map((item, index) => (
+              <View key={index} style={styles.includedItem}>
+                <View style={styles.bullet} />
+                <Text style={styles.includedText}>{item}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
     </>
   );
 };

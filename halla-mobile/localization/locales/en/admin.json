@@ -692,12 +692,14 @@
       "all": "All Tickets",
       "open": "Open",
       "inProgress": "In Progress",
+      "waitingResponse": "Waiting Response",
       "resolved": "Resolved",
       "closed": "Closed"
     },
     "status": {
       "open": "Open",
       "inProgress": "In Progress",
+      "waitingResponse": "Waiting Response",
       "resolved": "Resolved",
       "closed": "Closed"
     },
@@ -734,6 +736,12 @@
     "resolve": {
       "title": "Resolve Ticket",
       "resolution": "Resolution",
+      "resolutionPlaceholder": "Write a clear summary of how the ticket was resolved...",
+      "resolutionHelper": "Minimum 10 characters. This message will be sent to the user.",
+      "characterCount": "{{count}} characters",
+      "warningText": "Resolving the ticket will close it and notify the user.",
+      "validationMessageRequired": "Resolution message is required",
+      "validationMessageMinLength": "Resolution must be at least 10 characters",
       "notes": "Notes",
       "resolve": "Resolve",
       "cancel": "Cancel"

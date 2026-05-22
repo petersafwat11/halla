@@ -2,6 +2,72 @@ import React from "react";
 import { View, Text, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 
+/**
+ * Inner renderer hoisted out of the Controller `render` prop so the
+ * `useState` hook lives at the top level of a real component. Calling hooks
+ * inside the render prop was a Rules-of-Hooks violation that desynchronised
+ * focus state under heavy parent re-renders (e.g. inside StepThree's template
+ * modal where the live canvas watches every field change), causing the
+ * input to refuse focus.
+ */
+const TextAreaField = ({
+  label,
+  placeholder,
+  isDisabled,
+  numberOfLines,
+  autoCapitalize,
+  maxLength,
+  value,
+  error,
+  onChange,
+  onBlur,
+  extraProps,
+}) => {
+  const [isFocused, setIsFocused] = React.useState(false);
+  const formValue = value ?? "";
+
+  return (
+    <View style={styles.container}>
+      {!!label && <Text style={styles.label}>{label}</Text>}
+      <View
+        style={[
+          styles.inputContainer,
+          isFocused && styles.inputContainerFocused,
+          error && styles.inputContainerError,
+          isDisabled && styles.inputContainerDisabled,
+        ]}
+      >
+        <RNTextInput
+          style={styles.textArea}
+          placeholder={placeholder}
+          placeholderTextColor="#999"
+          value={formValue}
+          onChangeText={onChange}
+          onBlur={() => {
+            setIsFocused(false);
+            onBlur?.();
+          }}
+          onFocus={() => setIsFocused(true)}
+          autoCapitalize={autoCapitalize}
+          editable={!isDisabled}
+          multiline
+          numberOfLines={numberOfLines}
+          textAlign="auto"
+          textAlignVertical="top"
+          maxLength={maxLength}
+          {...extraProps}
+        />
+      </View>
+      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      {maxLength && (
+        <Text style={styles.charCount}>
+          {formValue?.length || 0} / {maxLength}
+        </Text>
+      )}
+    </View>
+  );
+};
+
 const TextAreaInput = ({
   name,
   label,
@@ -24,52 +90,22 @@ const TextAreaInput = ({
       rules={rules}
       render={({
         field: { onChange, onBlur, value },
-        fieldState: { error }
-      }) => {
-        const [isFocused, setIsFocused] = React.useState(false);
-        const formValue = value || "";
-
-        return (
-          <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
-            <View
-              style={[
-                styles.inputContainer,
-                isFocused && styles.inputContainerFocused,
-                error && styles.inputContainerError,
-                isDisabled && styles.inputContainerDisabled,
-              ]}
-            >
-              <RNTextInput
-                style={styles.textArea}
-                placeholder={placeholder}
-                placeholderTextColor="#999"
-                value={formValue}
-                onChangeText={onChange}
-                onBlur={() => {
-                  setIsFocused(false);
-                  onBlur();
-                }}
-                onFocus={() => setIsFocused(true)}
-                autoCapitalize={autoCapitalize}
-                editable={!isDisabled}
-                multiline={true}
-                numberOfLines={numberOfLines}
-                textAlign="auto"
-                textAlignVertical="top"
-                maxLength={maxLength}
-                {...props}
-              />
-            </View>
-            {error && <Text style={styles.errorText}>{error.message}</Text>}
-            {maxLength && (
-              <Text style={styles.charCount}>
-                {formValue?.length || 0} / {maxLength}
-              </Text>
-            )}
-          </View>
-        );
-      }}
+        fieldState: { error },
+      }) => (
+        <TextAreaField
+          label={label}
+          placeholder={placeholder}
+          isDisabled={isDisabled}
+          numberOfLines={numberOfLines}
+          autoCapitalize={autoCapitalize}
+          maxLength={maxLength}
+          value={value}
+          error={error}
+          onChange={onChange}
+          onBlur={onBlur}
+          extraProps={props}
+        />
+      )}
     />
   );
 };
@@ -77,15 +113,17 @@ const TextAreaInput = ({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
-    width: "100%"
-  },  label: {
+    width: "100%",
+  },
+  label: {
     fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#2c2c2c",
     marginBottom: 8,
     textAlign: "left",
-    width: "100%"
-  },  inputContainer: {
+    width: "100%",
+  },
+  inputContainer: {
     borderWidth: 1,
     borderColor: "#e0e0e0",
     borderRadius: 12,
@@ -93,16 +131,17 @@ const styles = StyleSheet.create({
     minHeight: 100,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    width: "100%"
-  },  inputContainerFocused: {
+    width: "100%",
+  },
+  inputContainerFocused: {
     borderColor: "#c28e5c",
-    borderWidth: 2
+    borderWidth: 2,
   },
   inputContainerError: {
-    borderColor: "#e74c3c"
+    borderColor: "#e74c3c",
   },
   inputContainerDisabled: {
-    backgroundColor: "#f5f5f5"
+    backgroundColor: "#f5f5f5",
   },
   textArea: {
     flex: 1,
@@ -110,19 +149,22 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c",
     minHeight: 80,
-    textAlignVertical: "top"
-  },  charCount: {
+    textAlignVertical: "top",
+  },
+  charCount: {
     fontSize: 11,
     fontFamily: "Cairo_400Regular",
     color: "#999",
     marginTop: 4,
-    textAlign: "right"
-  },  errorText: {
+    textAlign: "right",
+  },
+  errorText: {
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",
     marginTop: 4,
-    textAlign: "left"
-  },});
+    textAlign: "left",
+  },
+});
 
 export default TextAreaInput;

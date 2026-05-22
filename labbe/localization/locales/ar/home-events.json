@@ -173,7 +173,13 @@
       "phone": "الهاتف",
       "status": "الحالة",
       "respondAt": "تاريخ الرد",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "autoReminder": "تذكير تلقائي",
+      "extraReminder": "تذكير إضافي"
+    },
+    "cell": {
+      "sent": "تم الإرسال",
+      "scheduled": "مجدول"
     },
     "channel": {
       "whatsapp": "واتساب",
@@ -203,6 +209,46 @@
     }
   },
   "singleEvent": {
+    "autoReminderInfo": "نُرسل تذكيراً تلقائياً للضيوف قبل المناسبة بـ 24 ساعة.",
+    "scheduleReminder": {
+      "heading": "تذكيرات إضافية",
+      "button": "جدولة تذكير إضافي",
+      "modalTitle": "جدولة تذكير إضافي",
+      "typeLabel": "نوع التذكير",
+      "typeConfirmed": "للضيوف الذين أكدوا الحضور",
+      "typePending": "للضيوف الذين لم يردّوا أو اختاروا ربما",
+      "type": {
+        "reminder_confirmed": "مؤكدو الحضور",
+        "reminder_pending": "لم يردّ / ربما"
+      },
+      "guestsLabel": "اختر الضيوف",
+      "selectAll": "تحديد الكل",
+      "deselectAll": "إلغاء التحديد",
+      "noEligibleGuests": "لا يوجد ضيوف مؤهلون لهذا النوع من التذكير.",
+      "dateLabel": "إرسال في",
+      "dateMin": "أقرب موعد: بعد 5 دقائق",
+      "dateMax": "أقصى موعد: قبل 24 ساعة من الحدث",
+      "quotaLabel": "الرصيد",
+      "quotaValue": "{{used}} من {{remaining}} متاح",
+      "guestCount": "{{count}} ضيف",
+      "submit": "جدولة",
+      "cancel": "إلغاء",
+      "cancelAction": "إلغاء التذكير",
+      "cancelConfirm": "هل تريد إلغاء هذا التذكير المجدول؟ سيتم استرجاع الرصيد.",
+      "scheduledList": "التذكيرات المجدولة",
+      "noScheduled": "لا توجد تذكيرات إضافية مجدولة",
+      "scheduledFor": "مجدول لـ {{when}}",
+      "scheduledOk": "تمت جدولة التذكير",
+      "cancelledOk": "تم إلغاء التذكير",
+      "errors": {
+        "dateOutOfRange": "يجب أن يكون التاريخ بين 5 دقائق من الآن و 24 ساعة قبل الحدث",
+        "noGuests": "اختر ضيفاً واحداً على الأقل",
+        "insufficientQuota": "لا يوجد رصيد كافٍ للتذكيرات",
+        "noTemplate": "لا يوجد قالب تذكير مهيأ لهذه الفئة. تواصل مع الدعم.",
+        "generic": "تعذّر جدولة التذكير",
+        "cancelFailed": "تعذّر إلغاء التذكير"
+      }
+    },
     "header": {
       "eventDetails": "تفاصيل المناسبة",
       "editGuests": "تعديل الضيوف",

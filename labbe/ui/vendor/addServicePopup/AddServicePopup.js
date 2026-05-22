@@ -21,6 +21,8 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
   const { t } = useTranslation("vendorServices");
   const isEditing = !!editingService;
   const [selectedTags, setSelectedTags] = useState([]);
+  const [included, setIncluded] = useState([]);
+  const [includedInput, setIncludedInput] = useState("");
 
   const createServiceMutation = useServiceMutation("createService");
   const updateServiceMutation = useServiceMutation("updateService");
@@ -43,6 +45,7 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
         description: editingService._raw.description || "",
         price:
           editingService._raw.price != null ? String(editingService._raw.price) : "",
+        duration: editingService._raw.duration || "",
         image: undefined,
       });
       setSelectedTags(
@@ -51,9 +54,13 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
           return match || { value, labelKey: "", labelAr: value };
         })
       );
+      setIncluded(editingService._raw.included || []);
+      setIncludedInput("");
     } else {
       reset(addServiceDefaultValues);
       setSelectedTags([]);
+      setIncluded([]);
+      setIncludedInput("");
     }
   }, [editingService, reset]);
 
@@ -78,6 +85,28 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
   const getTagsDisplayText = () =>
     selectedTags.length === 0 ? "" : selectedTags.map((tag) => tag.label).join("، ");
 
+  const handleAddIncluded = () => {
+    const value = includedInput.trim();
+    if (!value) return;
+    if (included.includes(value)) {
+      setIncludedInput("");
+      return;
+    }
+    setIncluded((prev) => [...prev, value]);
+    setIncludedInput("");
+  };
+
+  const handleRemoveIncluded = (item) => {
+    setIncluded((prev) => prev.filter((i) => i !== item));
+  };
+
+  const handleIncludedKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddIncluded();
+    }
+  };
+
   const onSubmit = async (data) => {
     const formData = new FormData();
     formData.append("name", data.serviceName);
@@ -85,6 +114,8 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
     formData.append("description", data.description);
     formData.append("price", String(data.price));
     formData.append("tags", JSON.stringify(selectedTags.map((t) => t.value)));
+    formData.append("duration", (data.duration || "").trim());
+    formData.append("included", JSON.stringify(included));
 
     if (data.image && data.image.length > 0) {
       formData.append("image", data.image[0]);
@@ -181,6 +212,49 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
               type="number"
               required
             />
+          </div>
+
+          <div className={styles.section}>
+            <InputGroup
+              label={t("addServicePopup.duration.label")}
+              placeholder={t("addServicePopup.duration.placeholder")}
+              name="duration"
+              type="text"
+            />
+          </div>
+
+          <div className={styles.section}>
+            <label className={styles.label}>
+              {t("addServicePopup.included.label")}
+            </label>
+
+            <div className={styles.tagsInputWrapper}>
+              <input
+                type="text"
+                className={styles.tagsInput}
+                value={includedInput}
+                onChange={(e) => setIncludedInput(e.target.value)}
+                onKeyDown={handleIncludedKeyDown}
+                placeholder={t("addServicePopup.included.placeholder")}
+                style={{ cursor: "text", background: "#fff" }}
+              />
+            </div>
+
+            {included.length > 0 && (
+              <div className={styles.tagsContainer}>
+                {included.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    className={`${styles.tag} ${styles.tagSelected}`}
+                    onClick={() => handleRemoveIncluded(item)}
+                    title={t("addServicePopup.included.removeHint")}
+                  >
+                    {item} ✕
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.section}>

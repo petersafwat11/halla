@@ -22,7 +22,10 @@ const SOURCE_KEYS = [
   "eventDetails.dateFormatted",
   "eventDetails.time",
   "eventDetails.location.address",
+  "eventDetails.location.mapUrl",
   "host.name",
+  "staff.name",
+  "staff.accessUrl",
   "hostNote",
   "invitationMessage",
 ];
@@ -33,10 +36,21 @@ const SOURCE_KEY_LABEL_KEY = {
   "eventDetails.dateFormatted": "taqnyat.sourceKeys.event_dateFormatted",
   "eventDetails.time": "taqnyat.sourceKeys.event_time",
   "eventDetails.location.address": "taqnyat.sourceKeys.event_location",
+  "eventDetails.location.mapUrl": "taqnyat.sourceKeys.event_mapUrl",
   "host.name": "taqnyat.sourceKeys.host_name",
+  "staff.name": "taqnyat.sourceKeys.staff_name",
+  "staff.accessUrl": "taqnyat.sourceKeys.staff_accessUrl",
   hostNote: "taqnyat.sourceKeys.hostNote",
   invitationMessage: "taqnyat.sourceKeys.invitationMessage",
 };
+
+const TEMPLATE_TYPES = [
+  "invite",
+  "reminder_pending",
+  "reminder_confirmed",
+  "post_event",
+  "staff_access",
+];
 
 function VarMappingField({ name, index, control }) {
   const { t } = useTranslation("admin");
@@ -115,15 +129,19 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
     resolver: zodResolver(assignTaqnyatSchema),
     defaultValues: {
       category: template.category || "",
+      type: template.type || "",
       active: template.active !== false,
       sortOrder: template.sortOrder || 0,
       varMapping: initialMapping,
     },
   });
 
+  const selectedType = methods.watch("type");
+
   useEffect(() => {
     methods.reset({
       category: template.category || "",
+      type: template.type || "",
       active: template.active !== false,
       sortOrder: template.sortOrder || 0,
       varMapping: initialMapping,
@@ -137,6 +155,7 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
         id: template._id,
         body: {
           category: data.category || null,
+          type: data.type || null,
           active: data.active,
           sortOrder: data.sortOrder,
           varMapping: cleaned,
@@ -169,6 +188,33 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
               placeholder={t("taqnyat.selectCategory", "اختر الفئة")}
               control={methods.control}
             />
+
+            <div className={styles.typeField}>
+              <label className={styles.typeLabel}>
+                {t("taqnyat.fieldType", "نوع القالب")}
+              </label>
+              <select
+                {...methods.register("type")}
+                className={styles.typeSelect}
+              >
+                <option value="">
+                  {t("taqnyat.unassignedType", "غير معيّن")}
+                </option>
+                {TEMPLATE_TYPES.map((tp) => (
+                  <option key={tp} value={tp}>
+                    {t(`taqnyat.types.${tp}`, tp)}
+                  </option>
+                ))}
+              </select>
+              {selectedType && selectedType !== "invite" && (
+                <p className={styles.typeHint}>
+                  {t(
+                    "taqnyat.uniquePerCategoryHint",
+                    "يُسمح بقالب واحد نشط فقط لكل فئة لهذا النوع. الحفظ سيُلغي تفعيل السابق."
+                  )}
+                </p>
+              )}
+            </div>
 
             <h3 className={styles.varMappingTitle}>{t("taqnyat.varMapping", "تعيين المتغيرات")}</h3>
 

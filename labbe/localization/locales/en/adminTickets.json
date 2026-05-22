@@ -29,9 +29,10 @@
     "open": "Open",
     "inProgress": "In Progress",
     "in_progress": "In Progress",
+    "waitingResponse": "Waiting Response",
+    "waiting_response": "Waiting Response",
     "resolved": "Resolved",
-    "closed": "Closed",
-    "pending": "Pending"
+    "closed": "Closed"
   },
   "priority": {
     "low": "Low",

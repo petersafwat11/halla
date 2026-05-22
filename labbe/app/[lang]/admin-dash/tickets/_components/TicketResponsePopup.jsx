@@ -18,7 +18,7 @@ export default function TicketResponsePopup({ ticket, onClose, viewOnly = false,
 
   const methods = useForm({
     resolver: zodResolver(ticketResponseSchema),
-    defaultValues: { response: "" },
+    defaultValues: { resolution: "" },
   });
 
   const onSubmit = async (data) => {
@@ -26,7 +26,7 @@ export default function TicketResponsePopup({ ticket, onClose, viewOnly = false,
       await updateTicket.mutateAsync({
         ticketId: ticket.id,
         status: "resolved",
-        resolution: data.response,
+        resolution: data.resolution,
       });
       toastUtils.success(t("close.success"));
       if (onSuccess) onSuccess();
@@ -92,7 +92,7 @@ export default function TicketResponsePopup({ ticket, onClose, viewOnly = false,
                 <TextArea
                   label={t("close.resolutionLabel")}
                   placeholder={t("close.resolutionPlaceholder")}
-                  name="response"
+                  name="resolution"
                   required
                   rows={5}
                   maxLength={5000}

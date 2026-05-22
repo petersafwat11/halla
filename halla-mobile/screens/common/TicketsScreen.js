@@ -61,7 +61,7 @@ export default function TicketsScreen() {
   // Show error toast if query fails
   useEffect(() => {
     if (error) {
-      toast.error(t("messages.loadError"));
+      toast.error(t("messages.fetchError"));
     }
   }, [error, t]);
 
@@ -71,7 +71,7 @@ export default function TicketsScreen() {
       toast.success(t("messages.createSuccess"));
       setModalVisible(false);
     } catch (error) {
-      toast.error(error.message || t("messages.createError"));
+      toast.error(error.message || t("messages.saveError"));
     }
   };
 
@@ -85,21 +85,21 @@ export default function TicketsScreen() {
       setModalVisible(false);
       setEditingTicket(null);
     } catch (error) {
-      toast.error(error.message || t("messages.updateError"));
+      toast.error(error.message || t("messages.saveError"));
     }
   };
 
   const handleDeleteTicket = (ticketId) => {
     Alert.alert(
-      t("messages.confirmDelete"),
+      t("actions.deleteConfirm"),
       "",
       [
         {
-          text: t("form.cancel"),
+          text: t("popup.cancel"),
           style: "cancel"
         },
         {
-          text: t("card.delete"),
+          text: t("actions.delete"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -162,12 +162,12 @@ export default function TicketsScreen() {
     <View style={styles.emptyContainer}>
       <Ionicons name="ticket-outline" size={80} color="#e0e0e0" />
       <Text style={styles.emptyTitle}>
-        {t("emptyState")}
+        {t("noTickets.title")}
       </Text>
       <Text
         style={styles.emptyDescription}
       >
-        {t("emptyStateDescription")}
+        {t("noTickets.message")}
       </Text>
     </View>
   );
@@ -177,7 +177,7 @@ export default function TicketsScreen() {
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <View style={styles.container}>
           <TopBar
-            title={t("title")}
+            title={t("pageTitle")}
             showBack={navigation?.canGoBack?.()}
             onBack={handleBack}
           />
@@ -193,7 +193,7 @@ export default function TicketsScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <TopBar
-          title={t("title")}
+          title={t("pageTitle")}
           showBack={navigation?.canGoBack?.()}
           onBack={handleBack}
         />
@@ -237,7 +237,7 @@ export default function TicketsScreen() {
           onSubmit={handleSubmit}
           initialData={
             editingTicket
-              ? { type: editingTicket.type, message: editingTicket.message }
+              ? { subject: editingTicket.subject, type: editingTicket.type, message: editingTicket.message }
               : null
           }
           loading={createTicketMutation.isPending || updateTicketMutation.isPending}

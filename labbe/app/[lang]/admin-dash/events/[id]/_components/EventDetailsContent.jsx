@@ -3,10 +3,14 @@ import { useSingleEventStats } from "@/hooks/events";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import AdminEventHeader from "../_components/AdminEventHeader";
-import EventStats from "@/app/[lang]/host/events/[id]/_components/EventStats";
-import AdminGuestTable from "../_components/AdminGuestTable";
-import SubscriptionInfo from "../_components/SubscriptionInfo";
+import {
+  AdminEventHeader,
+  EventStats,
+  GuestTable,
+  SubscriptionInfo,
+  AutoReminderInfoText,
+  ScheduleReminderSection,
+} from "@/components/event-detail";
 import styles from "./EventDetailsContent.module.css";
 
 export default function EventDetailsContent({ eventId }) {
@@ -40,10 +44,17 @@ export default function EventDetailsContent({ eventId }) {
           <SubscriptionInfo subscription={eventData.subscription} />
         )}
 
+        <AutoReminderInfoText />
+        <ScheduleReminderSection eventId={eventId} />
+
         <EventStats eventId={eventId} />
 
         <div className={styles.membersData}>
-          <AdminGuestTable eventId={eventId} guests={guests} />
+          {/* Shared GuestTable fetches via useEventGuests internally —
+              the `guests` from useSingleEventStats are still loaded by
+              the screen but not threaded through; the cache key match
+              keeps the second request hot. */}
+          <GuestTable eventId={eventId} />
         </div>
       </div>
     </>

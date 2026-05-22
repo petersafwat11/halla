@@ -13,7 +13,11 @@ const { validateZod } = require('../../shared/middleware/validation');
 const { ADMIN_PAGES } = require('../../shared/constants');
 
 const controller = require('./taqnyat-templates.controller');
-const { createTemplateSchema, assignMappingSchema } = require('./taqnyat-templates.validation');
+const {
+  createTemplateSchema,
+  assignMappingSchema,
+  listForHostQuerySchema,
+} = require('./taqnyat-templates.validation');
 
 router.use(protect);
 
@@ -48,7 +52,7 @@ router.use(protect);
  *                       items: { $ref: '#/components/schemas/TaqnyatTemplate' }
  *       401: { description: Unauthorized }
  */
-router.get('/', controller.listForHost);
+router.get('/', validateZod(listForHostQuerySchema, 'query'), controller.listForHost);
 
 const adminRouter = express.Router();
 adminRouter.use(protect);

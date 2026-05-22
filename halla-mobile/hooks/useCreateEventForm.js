@@ -53,7 +53,7 @@ export function useCreateEventHandlers({
 }) {
   const onNext = useCallback(() => {
     if (!isStepValid) {
-      Alert.alert(t("validation.incompleteFields"), t("validation.completeRequiredFields"));
+      Alert.alert(t("incomplete_fields_title"), t("errors.complete_required_fields"));
       return;
     }
 
@@ -74,7 +74,7 @@ export function useCreateEventHandlers({
     async (data) => {
       try {
         if (!token) {
-          Alert.alert(t("auth.loginRequired"), t("auth.mustLoginFirst"));
+          Alert.alert(t("auth_required_title"), t("auth_required_message"));
           return;
         }
 
@@ -118,16 +118,16 @@ export function useCreateEventHandlers({
 
         const result = await createEventMutation.mutateAsync(formDataObj);
 
-        Alert.alert(t("success.eventCreated"), t("success.eventCreatedMessage"), [
+        Alert.alert(t("success.event_created"), t("success.event_created"), [
           {
-            text: t("buttons.next"),
+            text: t("next"),
             onPress: () => {
               navigation.navigate("MainTabs", { screen: "Events" });
             },
           },
         ]);
       } catch (error) {
-        Alert.alert(t("errors.createFailed"), error.message || t("errors.createFailedMessage"));
+        Alert.alert(t("errors.create_failed"), error.message || t("errors.create_failed"));
       }
     },
     [t, token, createEventMutation, navigation],
@@ -135,12 +135,12 @@ export function useCreateEventHandlers({
 
   const handleClose = useCallback(() => {
     Alert.alert(
-      t("cancel.title"),
-      t("cancel.message"),
+      t("cancel_event_title"),
+      t("cancel_event_message"),
       [
-        { text: t("cancel.continue"), style: "cancel" },
+        { text: t("cancel_event_continue"), style: "cancel" },
         {
-          text: t("cancel.cancel"),
+          text: t("cancel"),
           style: "destructive",
           onPress: () => navigation.goBack(),
         },
@@ -150,7 +150,7 @@ export function useCreateEventHandlers({
 
   const handleContactUs = useCallback(() => {
     setShowInfoPopup(false);
-    Alert.alert(t("contact.title"), t("contact.message"));
+    Alert.alert(t("contact_title"), t("contact_message"));
   }, [t, setShowInfoPopup]);
 
   return {

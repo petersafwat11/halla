@@ -45,8 +45,8 @@ const EventTypeModal = ({
           onPress={(e) => e.stopPropagation()}
         >
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>{t("stepOne.eventType")}</Text>
-            <Text style={styles.headerSubtitle}>{t("stepOne.eventTypePlaceholder")}</Text>
+            <Text style={styles.headerTitle}>{t("event_type_label")}</Text>
+            <Text style={styles.headerSubtitle}>{t("event_type_placeholder")}</Text>
           </View>
 
           <ScrollView
@@ -86,7 +86,7 @@ const EventTypeModal = ({
             onPress={onClose}
             activeOpacity={0.7}
           >
-            <Text style={styles.closeButtonText}>{t("common.cancel")}</Text>
+            <Text style={styles.closeButtonText}>{t("cancel")}</Text>
           </TouchableOpacity>
         </Pressable>
       </Pressable>

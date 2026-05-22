@@ -174,15 +174,15 @@ const VendorHomeScreen = ({ navigation }) => {
           <View style={styles.quickActions}>
             <View style={styles.quickActionButton}>
               <Text style={styles.statValue}>{activeServices}</Text>
-              <Text style={styles.quickActionText}>{t("dashboard.activeServices")}</Text>
+              <Text style={styles.quickActionText}>{t("stats.activeServices")}</Text>
             </View>
             <View style={styles.quickActionButton}>
               <Text style={styles.statValue}>{totalServices}</Text>
-              <Text style={styles.quickActionText}>{t("dashboard.totalServices")}</Text>
+              <Text style={styles.quickActionText}>{t("stats.totalServices")}</Text>
             </View>
             <View style={styles.quickActionButton}>
               <Text style={styles.statValue}>{rating}</Text>
-              <Text style={styles.quickActionText}>{t("dashboard.rating")}</Text>
+              <Text style={styles.quickActionText}>{t("stats.rating")}</Text>
             </View>
           </View>
         </View>
