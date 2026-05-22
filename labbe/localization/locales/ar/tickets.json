@@ -81,5 +81,8 @@
   "ratingInline": {
     "rateButton": "تقييم",
     "alreadyRated": "تم التقييم"
+  },
+  "search": {
+    "noResults": "لم يتم العثور على نتائج لـ"
   }
 }

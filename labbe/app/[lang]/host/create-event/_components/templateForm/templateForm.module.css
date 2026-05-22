@@ -79,14 +79,28 @@
 }
 
 /* ========================================
-   PREVIEW SECTION (Desktop only)
+   PREVIEW SECTION
+   Off-screen on mobile so html2canvas can still bake it on save.
+   `display:none`/`visibility:hidden`/`opacity:0` all break the bake
+   (skipped element or transparent output), so we render the canvas
+   fully but push it outside the viewport.
 ======================================== */
 .leftPreview {
-  display: none;
+  position: fixed;
+  left: -99999px;
+  top: 0;
+  width: 42rem;
+  pointer-events: none;
+  z-index: -1;
 }
 
 @media (min-width: 900px) {
   .leftPreview {
+    position: static;
+    left: auto;
+    top: auto;
+    pointer-events: auto;
+    z-index: auto;
     display: flex;
     flex-direction: column;
     gap: 1.6rem;
@@ -117,18 +131,25 @@
   display: none;
 }
 
+/*
+ * Block layout (not flex) so the TemplatePreviewCanvas inside — which
+ * sizes itself off `width: 100%` and `aspect-ratio` — gets a definite
+ * width to anchor to. With the previous `display: flex; align-items:
+ * center` the canvas collapsed to its intrinsic content width on iOS
+ * Safari, so the background image rendered tiny / cut off.
+ */
 .mobilePreviewModal {
   position: relative;
   background: #fff;
   border-radius: 1.2rem;
   padding: 4rem 1.6rem 1.6rem;
-  max-width: 95vw;
+  width: 90vw;
+  max-width: 48rem;
   max-height: 90vh;
   overflow: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-sizing: border-box;
 }
+
 
 .mobilePreviewClose {
   position: absolute;

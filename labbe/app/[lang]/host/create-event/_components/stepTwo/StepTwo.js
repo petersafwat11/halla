@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -24,12 +24,26 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
   const { t } = useTranslation("createEvent");
 
   const [currentItem, setCurrentItem] = useState({ name: "", mobile: "" });
+  // Mirrors `currentItem.id` so the delete callbacks below don't take a
+  // dependency on it. Without this, every keystroke in the importer
+  // inputs would change `currentItem`, change `handleRemove`/`handleBulkDelete`
+  // identities, and re-render the (potentially large) GuestTable — which
+  // is the source of the mobile freeze in the update-event flow.
+  const currentItemIdRef = useRef(undefined);
   const [importErrors, setImportErrors] = useState([]);
   const [showImportLimitPopup, setShowImportLimitPopup] = useState(false);
   const [importLimitInfo, setImportLimitInfo] = useState({
     inserted: 0,
     skipped: 0,
   });
+
+  const setCurrentItemTracked = useCallback((updater) => {
+    setCurrentItem((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      currentItemIdRef.current = next?.id;
+      return next;
+    });
+  }, []);
 
   // Watch guest list from form
   const watchedGuestList = watch("guestList");
@@ -50,19 +64,20 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
   const isLimitReached = !isUnlimited && guestList.length >= guestLimit;
 
   const resetCurrentItem = useCallback(() => {
-    setCurrentItem({ name: "", mobile: "" });
-  }, []);
+    setCurrentItemTracked({ name: "", mobile: "" });
+  }, [setCurrentItemTracked]);
 
-  // Remove handler
+  // Remove handler — reads `currentItem.id` from the ref so it stays
+  // identity-stable across keystrokes (see comment above the ref).
   const handleRemove = useCallback(
     (id) => {
       const updatedList = guestList.filter((item) => item.id !== id);
       setValue("guestList", updatedList, { shouldValidate: true });
-      if (currentItem.id === id) {
+      if (currentItemIdRef.current === id) {
         resetCurrentItem();
       }
     },
-    [guestList, setValue, currentItem.id, resetCurrentItem]
+    [guestList, setValue, resetCurrentItem]
   );
 
   // Bulk delete handler
@@ -73,11 +88,11 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         (item) => !selectedIds.includes(item.id)
       );
       setValue("guestList", updatedList, { shouldValidate: true });
-      if (selectedIds.includes(currentItem.id)) {
+      if (selectedIds.includes(currentItemIdRef.current)) {
         resetCurrentItem();
       }
     },
-    [guestList, setValue, currentItem.id, resetCurrentItem]
+    [guestList, setValue, resetCurrentItem]
   );
 
   // Edit click handler — populates the importer form with the row's values.
@@ -85,14 +100,14 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
     (id) => {
       const item = guestList.find((item) => item.id === id);
       if (item) {
-        setCurrentItem({
+        setCurrentItemTracked({
           name: item.name || "",
           mobile: item.mobile || "",
           id: item.id,
         });
       }
     },
-    [guestList]
+    [guestList, setCurrentItemTracked]
   );
 
   return (
@@ -130,7 +145,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         isUnlimited={isUnlimited}
         guestLimit={guestLimit}
         currentItem={currentItem}
-        setCurrentItem={setCurrentItem}
+        setCurrentItem={setCurrentItemTracked}
         resetCurrentItem={resetCurrentItem}
         setImportErrors={setImportErrors}
         setImportLimitInfo={setImportLimitInfo}

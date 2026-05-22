@@ -326,7 +326,9 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "loading": "Loading...",
-    "required": "This field is required"
+    "required": "This field is required",
+    "send": "Send",
+    "sending": "Sending..."
   },
   "reminderPopup": {
     "title": "Send Reminder",

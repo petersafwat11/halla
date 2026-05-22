@@ -81,5 +81,8 @@
   "ratingInline": {
     "rateButton": "Rate",
     "alreadyRated": "Rated"
+  },
+  "search": {
+    "noResults": "No results found for"
   }
 }

@@ -5,7 +5,7 @@ import styles from "./stepTwo.module.css";
 import Table from "@/ui/commen/new-table/Table";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
-const GuestTable = ({
+const GuestTableImpl = ({
   guestList,
   allowAddOnly,
   handleEditClick,
@@ -62,5 +62,10 @@ const GuestTable = ({
     </div>
   );
 };
+
+// Memoized so keystrokes in the importer form above don't re-render the
+// (potentially large) guest table. StepTwo keeps the callback props
+// identity-stable; see currentItemIdRef there.
+const GuestTable = React.memo(GuestTableImpl);
 
 export default GuestTable;

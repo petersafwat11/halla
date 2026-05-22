@@ -33,7 +33,10 @@ const StepThree = () => {
 
   const isMobile = useMediaQuery("(max-width: 550px)");
   const isTablet = useMediaQuery("(max-width: 768px)");
-  const itemsPerPage = isMobile ? 3 : isTablet ? 4 : 4;
+  // Mobile + tablet use the 3-column grid defined in
+  // stepThree.module.css, so pages must hold 3 cards. Desktop
+  // reverts to 4 per page (single row).
+  const itemsPerPage = isMobile || isTablet ? 3 : 4;
 
   const { data: catData } = useTemplateCategories({ admin: false });
   const { data: tplData, isLoading } = useHostTemplates({

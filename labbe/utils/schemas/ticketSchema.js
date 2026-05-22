@@ -31,31 +31,33 @@ export const TICKET_STATUS = [
 
 export const TICKET_PRIORITY = ["low", "medium", "high", "urgent"];
 
+// Callers bind `t` to the `tickets` namespace via `useTranslation("tickets")`,
+// so the keys here are relative to that namespace — no `tickets.` prefix.
 const subject = (t) =>
   z
     .string()
     .trim()
-    .min(5, t?.("tickets.errors.subjectMinLength") || "Subject must be at least 5 characters")
-    .max(200, t?.("tickets.errors.subjectMaxLength") || "Subject must not exceed 200 characters");
+    .min(5, t?.("errors.subjectMinLength") || "Subject must be at least 5 characters")
+    .max(200, t?.("errors.subjectMaxLength") || "Subject must not exceed 200 characters");
 
 const message = (t) =>
   z
     .string()
     .trim()
-    .min(10, t?.("tickets.errors.messageMinLength") || "Message must be at least 10 characters")
-    .max(5000, t?.("tickets.errors.messageMaxLength") || "Message must not exceed 5000 characters");
+    .min(10, t?.("errors.messageMinLength") || "Message must be at least 10 characters")
+    .max(5000, t?.("errors.messageMaxLength") || "Message must not exceed 5000 characters");
 
 const type = (t) =>
   z.enum(TICKET_TYPES, {
     errorMap: () => ({
-      message: t?.("tickets.errors.typeRequired") || "Ticket type is required",
+      message: t?.("errors.typeRequired") || "Ticket type is required",
     }),
   });
 
 const priority = (t) =>
   z.enum(TICKET_PRIORITY, {
     errorMap: () => ({
-      message: t?.("tickets.errors.priorityInvalid") || "Invalid priority",
+      message: t?.("errors.priorityInvalid") || "Invalid priority",
     }),
   });
 
@@ -91,8 +93,8 @@ export const ticketResolutionSchema = (t) =>
     resolution: z
       .string()
       .trim()
-      .min(10, t?.("tickets.errors.resolutionMinLength") || "Resolution must be at least 10 characters")
-      .max(5000, t?.("tickets.errors.resolutionMaxLength") || "Resolution must not exceed 5000 characters"),
+      .min(10, t?.("errors.resolutionMinLength") || "Resolution must be at least 10 characters")
+      .max(5000, t?.("errors.resolutionMaxLength") || "Resolution must not exceed 5000 characters"),
   });
 
 export const ticketFilterSchema = z.object({

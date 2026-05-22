@@ -363,9 +363,6 @@
             }
           ]
         },
-        "location": {
-          "title": "Main Establishment Location"
-        },
         "city": {
           "label": "City",
           "placeholder": "Enter city name"
@@ -379,6 +376,7 @@
           ]
         },
         "location": {
+          "title": "Main Establishment Location",
           "allCities": "All Cities",
           "region": "Region",
           "loading": "Loading...",

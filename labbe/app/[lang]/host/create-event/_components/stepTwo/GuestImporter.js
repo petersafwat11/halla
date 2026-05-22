@@ -71,7 +71,11 @@ const GuestImporter = ({
       const newItem = {
         name: currentItem.name?.trim() || "",
         mobile: currentItem.mobile?.trim() || "",
-        id: Date.now(),
+        // `Date.now()` alone collides if the user double-taps Add on a
+        // slow mobile (two adds in the same millisecond → same id →
+        // React row key collision). Matches transformGuestList's
+        // fallback shape in useEventForm.js.
+        id: Date.now() + Math.random(),
       };
       setValue("guestList", [...guestList, newItem], { shouldValidate: true });
       resetLocal();
