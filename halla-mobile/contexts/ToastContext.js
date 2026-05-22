@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -80,8 +80,13 @@ export const ToastProvider = ({ children }) => {
     [showToast]
   );
 
+  const value = useMemo(
+    () => ({ success, error, info, warning }),
+    [success, error, info, warning]
+  );
+
   return (
-    <ToastContext.Provider value={{ success, error, info, warning }}>
+    <ToastContext.Provider value={value}>
       {children}
       <View style={styles.container} pointerEvents="box-none">
         {toasts.map((toast) => (

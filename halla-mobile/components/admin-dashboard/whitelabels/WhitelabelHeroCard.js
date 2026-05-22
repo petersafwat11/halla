@@ -1,46 +1,57 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import StatusBadge from "../../admin-dashboard/common/StatusBadge";
 import { backgrounds, colors, spacing, borderRadius, typography, textStyles } from "../../../styles/tokens";
-import { getLocalized } from "../../../utils/locale";
+
+const IMAGE_BASE = "https://labbe-backend-production.up.railway.app";
+const resolveLogo = (path) => {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${IMAGE_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+};
 
 const WhitelabelHeroCard = ({ whitelabel }) => {
-  const { t, currentLanguage } = useTranslation("admin");
-  const sub = whitelabel.subscription || {};
-  const planCode = sub.planId?.code || sub.planCode;
-  const planName =
-    getLocalized(sub.planId, "name", currentLanguage) ||
-    (planCode ? t(`plans.${planCode}`, { defaultValue: planCode }) : null);
+  const { t } = useTranslation("admin");
+
+  const wlData =
+    whitelabel?.profile?.whitelabelData ||
+    whitelabel?.roleData ||
+    whitelabel?.whitelabelData ||
+    {};
+
+  const arabicName = wlData.arabicName;
+  const englishName = wlData.englishName;
+  const displayName = arabicName || englishName || whitelabel?.username || "—";
+  const subtitleName = arabicName && englishName ? englishName : null;
+  const logo = resolveLogo(wlData.logo);
 
   return (
     <View style={styles.card}>
-      <View style={styles.avatarCircle}>
-        <Text style={styles.avatarText}>
-          {(whitelabel.name || whitelabel.username || "?").charAt(0).toUpperCase()}
-        </Text>
+      <View style={styles.avatar}>
+        {logo ? (
+          <Image source={{ uri: logo }} style={styles.avatarImg} />
+        ) : (
+          <Ionicons name="business-outline" size={28} color={colors.primary[500]} />
+        )}
       </View>
-      <Text style={styles.name}>{whitelabel.name || whitelabel.username || "—"}</Text>
-      {whitelabel.username ? (
-        <Text style={styles.username}>@{whitelabel.username}</Text>
-      ) : null}
+
+      <Text style={styles.name}>{displayName}</Text>
+      {subtitleName ? <Text style={styles.subtitle}>{subtitleName}</Text> : null}
+      {whitelabel?.username ? <Text style={styles.username}>@{whitelabel.username}</Text> : null}
+
       <View style={styles.badgeRow}>
-        <StatusBadge status={whitelabel.status} />
-        {planName ? (
-          <View style={styles.planChip}>
-            <Ionicons name="star-outline" size={11} color={colors.primary[500]} />
-            <Text style={styles.planChipText}>{planName}</Text>
-          </View>
-        ) : null}
+        <StatusBadge status={whitelabel?.status || "pending"} size="small" />
       </View>
-      {whitelabel.email ? (
+
+      {whitelabel?.email ? (
         <View style={styles.metaRow}>
           <Ionicons name="mail-outline" size={13} color={colors.natural[400]} />
           <Text style={styles.metaText}>{whitelabel.email}</Text>
         </View>
       ) : null}
-      {whitelabel.phoneNumber ? (
+      {whitelabel?.phoneNumber ? (
         <View style={styles.metaRow}>
           <Ionicons name="call-outline" size={13} color={colors.natural[400]} />
           <Text style={styles.metaText}>{whitelabel.phoneNumber}</Text>
@@ -57,41 +68,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: spacing[24],
     paddingHorizontal: spacing[20],
-    gap: spacing[8],
+    gap: spacing[6],
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 1,
   },
-  avatarCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: `${colors.primary[500]}18`,
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: `${colors.primary[500]}15`,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: spacing[4],
+    overflow: "hidden",
+    marginBottom: spacing[8],
   },
-  avatarText: {
-    fontSize: typography.fontSize.headline.small,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.primary[500],
-  },
-  name: { ...textStyles.titleLarge, color: colors.natural[900] },
+  avatarImg: { width: 72, height: 72, borderRadius: 36 },
+  name: { ...textStyles.titleLarge, color: colors.natural[900], textAlign: "center" },
+  subtitle: { fontSize: typography.fontSize.body.small, color: colors.natural[500], textAlign: "center" },
   username: { fontSize: typography.fontSize.body.small, color: colors.natural[400] },
   badgeRow: { flexDirection: "row", alignItems: "center", gap: spacing[8], marginTop: spacing[4] },
-  planChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing[4],
-    backgroundColor: "#fdf5ec",
-    borderRadius: borderRadius[8],
-    paddingHorizontal: spacing[8],
-    paddingVertical: spacing[4],
-  },
-  planChipText: { fontSize: typography.fontSize.label.small, fontWeight: typography.fontWeight.medium, color: colors.primary[500] },
-  metaRow: { flexDirection: "row", alignItems: "center", gap: spacing[4] },
+  metaRow: { flexDirection: "row", alignItems: "center", gap: spacing[4], marginTop: spacing[4] },
   metaText: { fontSize: typography.fontSize.body.small, color: colors.natural[450] },
 });
 

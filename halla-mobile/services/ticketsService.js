@@ -1,7 +1,6 @@
-import { Linking } from "react-native";
-import { API_BASE_URL, ENDPOINTS } from "../config/api";
+import { ENDPOINTS } from "../config/api";
 import { apiFetch } from "./apiClient";
-import { useAuthStore } from "../stores/authStore";
+import { saveBlobAndShare } from "../utils/download";
 
 const _request = async (path, init, errorMessage) => {
   const response = await apiFetch(path, init);
@@ -10,17 +9,49 @@ const _request = async (path, init, errorMessage) => {
   return data;
 };
 
+const _filenameFromResponse = (response, path) => {
+  const cd = response.headers?.get?.("content-disposition") || "";
+  const match = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(cd);
+  if (match?.[1]) {
+    try {
+      return decodeURIComponent(match[1].replace(/"/g, "").trim());
+    } catch (_) {
+      return match[1].replace(/"/g, "").trim();
+    }
+  }
+  const segments = String(path).split("/").filter(Boolean);
+  const base = segments[segments.length - 2] || segments[segments.length - 1] || "export";
+  return `${base}.xlsx`;
+};
+
+/**
+ * Fetches an XLSX export with the auth-attached `apiFetch`, then hands
+ * the blob to the native share sheet. Replaces the old
+ * `Linking.openURL` flow which can't carry the access token in a
+ * header and so always tripped the backend 401.
+ */
 const _openExportUrl = async (path, filters = {}) => {
-  const token = useAuthStore.getState().token;
   const clean = Object.fromEntries(
-    Object.entries({ token, ...filters }).filter(
+    Object.entries(filters).filter(
       ([, v]) => v !== undefined && v !== null && v !== "",
     ),
   );
-  const params = new URLSearchParams(clean);
-  const url = `${API_BASE_URL}${path}?${params.toString()}`;
-  await Linking.openURL(url);
-  return { success: true };
+  const qs = new URLSearchParams(clean).toString();
+  const fullPath = `${path}${qs ? `?${qs}` : ""}`;
+  const response = await apiFetch(fullPath, { method: "GET" });
+  if (!response.ok) {
+    let message = `HTTP ${response.status}`;
+    try {
+      const body = await response.json();
+      if (body?.message) message = body.message;
+    } catch (_) {
+      // non-JSON body
+    }
+    throw new Error(message);
+  }
+  const blob = await response.blob();
+  const filename = _filenameFromResponse(response, path);
+  return saveBlobAndShare(blob, filename);
 };
 
 export const getTicketsAPI = async (filters = {}) => {

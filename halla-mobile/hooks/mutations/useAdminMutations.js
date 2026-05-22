@@ -336,8 +336,9 @@ export function useUpdateWhitelabelStatus() {
   const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);
   return useMutation({
-    mutationFn: async ({ whitelabelId, status }) => {
-      const response = await adminDashboardService.whitelabels.updateStatus(token, whitelabelId, status);
+    mutationFn: async ({ whitelabelId, status, dispatchSetupEmail }) => {
+      const extras = dispatchSetupEmail !== undefined ? { dispatchSetupEmail } : {};
+      const response = await adminDashboardService.whitelabels.updateStatus(token, whitelabelId, status, extras);
       return assertOk(response);
     },
     onSuccess: async () => {

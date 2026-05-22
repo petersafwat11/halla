@@ -19,3 +19,4 @@ export { default as AdminCheckbox } from "./AdminCheckbox";
 export { default as ExportButton } from "./ExportButton";
 export { default as BulkActionsBar } from "./BulkActionsBar";
 export { default as AdminListItem } from "./AdminListItem";
+export { default as SubscriptionAssignmentModal } from "./SubscriptionAssignmentModal";

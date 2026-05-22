@@ -5,7 +5,8 @@ import { useAdminWhitelabelsInfinite, useDebouncedValue } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import TopBar from "../../../components/plans/TopBar";
-import { WhitelabelList, WhitelabelSubscriptionModal } from "../../../components/admin-dashboard/whitelabels";
+import { WhitelabelList } from "../../../components/admin-dashboard/whitelabels";
+import { SubscriptionAssignmentModal } from "../../../components/admin-dashboard/common";
 import { backgrounds } from "../../../styles/tokens";
 
 const AdminWhitelabelsScreen = ({ navigation }) => {
@@ -67,10 +68,11 @@ const AdminWhitelabelsScreen = ({ navigation }) => {
           }
           onManageSub={handleManageSub}
         />
-        <WhitelabelSubscriptionModal
+        <SubscriptionAssignmentModal
           visible={subModalVisible}
           onClose={handleSubClose}
-          whitelabel={selectedWhitelabel}
+          entity={selectedWhitelabel}
+          entityType="whitelabel"
           onSave={() => refetch()}
         />
       </View>

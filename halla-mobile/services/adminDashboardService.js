@@ -4,10 +4,9 @@
  * apiFetch reads the in-memory access token directly.
  */
 
-import { Linking } from "react-native";
-import { API_BASE_URL, ENDPOINTS } from "../config/api";
+import { ENDPOINTS } from "../config/api";
 import { apiFetch } from "./apiClient";
-import { useAuthStore } from "../stores/authStore";
+import { saveBlobAndShare } from "../utils/download";
 import {
   getTicketsAPI as ticketsGetAll,
   getTicketAPI as ticketsGetById,
@@ -29,8 +28,6 @@ const _envelope = async (promise) => {
     };
   }
 };
-
-const BASE_URL = API_BASE_URL;
 
 /**
  * Helper function to make API requests through `apiFetch`.
@@ -73,20 +70,59 @@ const apiRequest = async (endpoint, method = "GET", data = null, extraHeaders = 
 };
 
 /**
- * Opens an export/download URL in the device browser.
- * Auth token is read from the in-memory store and passed as a query param
- * since Linking.openURL can't set headers.
+ * Fetches a server-generated XLSX export with the in-memory auth token,
+ * then hands the blob to `saveBlobAndShare` so the user gets a native
+ * "save / share" sheet. The previous implementation used
+ * `Linking.openURL` and stuffed the access token into a query param —
+ * the backend's `protect` middleware only reads `Authorization: Bearer`
+ * or `access_token` cookie, so opening the URL in the system browser
+ * always failed with "Please log in to access this resource".
  */
 const openExportUrl = async (path, filters = {}) => {
-  const token = useAuthStore.getState().token;
   const clean = Object.fromEntries(
-    Object.entries({ token, ...filters }).filter(
+    Object.entries(filters).filter(
       ([, v]) => v !== undefined && v !== null && v !== "",
     ),
   );
-  const params = new URLSearchParams(clean);
-  const url = `${BASE_URL}${path}?${params.toString()}`;
-  await Linking.openURL(url);
+  const qs = new URLSearchParams(clean).toString();
+  const fullPath = `${path}${qs ? `?${qs}` : ""}`;
+
+  const response = await apiFetch(fullPath, { method: "GET" });
+  if (!response.ok) {
+    let message = `HTTP ${response.status}`;
+    try {
+      const body = await response.json();
+      if (body?.message) message = body.message;
+    } catch (_) {
+      // non-JSON error body — fall back to status code.
+    }
+    throw new Error(message);
+  }
+
+  const blob = await response.blob();
+  const filename = _filenameFromResponse(response, path);
+  return saveBlobAndShare(blob, filename);
+};
+
+/**
+ * Pull filename from `Content-Disposition: attachment; filename=...`
+ * (the backend sets this on every export). Falls back to the last
+ * non-`export` path segment + `.xlsx` (e.g. `/admin/hosts/export` →
+ * `hosts.xlsx`).
+ */
+const _filenameFromResponse = (response, path) => {
+  const cd = response.headers?.get?.("content-disposition") || "";
+  const match = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(cd);
+  if (match?.[1]) {
+    try {
+      return decodeURIComponent(match[1].replace(/"/g, "").trim());
+    } catch (_) {
+      return match[1].replace(/"/g, "").trim();
+    }
+  }
+  const segments = String(path).split("/").filter(Boolean);
+  const base = segments[segments.length - 2] || segments[segments.length - 1] || "export";
+  return `${base}.xlsx`;
 };
 
 export const hosts = {
@@ -322,8 +358,8 @@ export const whitelabels = {
   getById: async (token, whitelabelId) =>
     apiRequest(ENDPOINTS.ADMIN.WHITELABELS.BY_ID(whitelabelId)),
 
-  updateStatus: async (token, whitelabelId, status) =>
-    apiRequest(ENDPOINTS.ADMIN.WHITELABELS.STATUS(whitelabelId), "PATCH", { status }),
+  updateStatus: async (token, whitelabelId, status, extras = {}) =>
+    apiRequest(ENDPOINTS.ADMIN.WHITELABELS.STATUS(whitelabelId), "PATCH", { status, ...extras }),
 
   updateSubscription: async (token, whitelabelId, subscriptionData) =>
     apiRequest(ENDPOINTS.ADMIN.WHITELABELS.SUBSCRIPTION(whitelabelId), "PATCH", subscriptionData),

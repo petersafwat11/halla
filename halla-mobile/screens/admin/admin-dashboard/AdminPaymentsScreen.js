@@ -8,7 +8,7 @@ import { useToast } from "../../../contexts/ToastContext";
 import { useAuthStore } from "../../../stores/authStore";
 import adminDashboardService from "../../../services/adminDashboardService";
 import TopBar from "../../../components/plans/TopBar";
-import { PaymentStats, PaymentList } from "../../../components/admin-dashboard/payments";
+import { PaymentList } from "../../../components/admin-dashboard/payments";
 import AdminPageHeader from "../../../components/admin-dashboard/common/AdminPageHeader";
 import ExportButton from "../../../components/admin-dashboard/common/ExportButton";
 import { backgrounds } from "../../../styles/tokens";
@@ -37,7 +37,6 @@ const AdminPaymentsScreen = () => {
 
   const {
     items: payments,
-    stats,
     isLoading,
     error,
     refetch,
@@ -88,8 +87,6 @@ const AdminPaymentsScreen = () => {
           activeFilter={filter}
           onFilterChange={setFilter}
         />
-
-        <PaymentStats stats={stats} />
 
         <PaymentList
           payments={payments}

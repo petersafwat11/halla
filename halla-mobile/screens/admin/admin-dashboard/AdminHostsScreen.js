@@ -7,7 +7,8 @@ import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
-import { HostList, AddHostModal, SubscriptionModal } from "../../../components/admin-dashboard/hosts";
+import { HostList, AddHostModal } from "../../../components/admin-dashboard/hosts";
+import { SubscriptionAssignmentModal } from "../../../components/admin-dashboard/common";
 import { backgrounds } from "../../../styles/tokens";
 
 const AdminHostsScreen = ({ navigation }) => {
@@ -72,10 +73,12 @@ const AdminHostsScreen = ({ navigation }) => {
           addLabel={t("hosts.addHost")}
         />
         <AddHostModal visible={addModalVisible} onClose={() => setAddModalVisible(false)} onSuccess={() => refetch()} />
-        <SubscriptionModal
+        <SubscriptionAssignmentModal
           visible={subModalVisible}
           onClose={() => { setSubModalVisible(false); setSelectedHostForSub(null); }}
-          host={selectedHostForSub}
+          entity={selectedHostForSub}
+          entityType="host"
+          onSave={() => refetch()}
         />
       </View>
     </SafeAreaView>
