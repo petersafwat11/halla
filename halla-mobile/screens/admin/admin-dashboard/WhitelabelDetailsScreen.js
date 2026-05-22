@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -140,7 +140,9 @@ const WhitelabelDetailsScreen = () => {
   const [subModalVisible, setSubModalVisible] = useState(false);
   const [approveOpen, setApproveOpen] = useState(false);
 
-  if (error) toast.error(t("whitelabelDetails.loadFailed"));
+  useEffect(() => {
+    if (error) toast.error(t("whitelabelDetails.loadFailed"));
+  }, [error, t, toast]);
 
   const whitelabel = resp?.data?.whitelabel || resp?.data || null;
 
@@ -167,12 +169,10 @@ const WhitelabelDetailsScreen = () => {
   const isSuspended = status === "suspended" || isPending;
   const plan = planMeta(sub?.planType, t);
 
-  const warn = (msg) => (toast.warning ? toast.warning(msg) : toast.info?.(msg) ?? toast.error?.(msg));
-
   const handleToggleStatus = useCallback(() => {
     if (isPending) {
       if (!sub) {
-        warn(t("whitelabelDetails.assignPlanFirst"));
+        toast.warning(t("whitelabelDetails.assignPlanFirst"));
         setSubModalVisible(true);
         return;
       }
@@ -181,7 +181,7 @@ const WhitelabelDetailsScreen = () => {
     }
 
     if (isSuspended && !sub) {
-      warn(t("whitelabelDetails.assignPlanFirst"));
+      toast.warning(t("whitelabelDetails.assignPlanFirst"));
       setSubModalVisible(true);
       return;
     }
@@ -226,11 +226,11 @@ const WhitelabelDetailsScreen = () => {
       if (dispatchSetupEmail && emailSent) {
         toast.success(t("whitelabelDetails.approveDialog.successWithEmail"));
       } else if (dispatchSetupEmail && passwordAlreadySet) {
-        warn(t("whitelabelDetails.approveDialog.successPasswordAlreadySet"));
+        toast.warning(t("whitelabelDetails.approveDialog.successPasswordAlreadySet"));
       } else if (dispatchSetupEmail && noEmailOnFile) {
-        warn(t("whitelabelDetails.approveDialog.successNoEmailOnFile"));
+        toast.warning(t("whitelabelDetails.approveDialog.successNoEmailOnFile"));
       } else if (dispatchSetupEmail && emailDispatch?.attempted && !emailSent) {
-        warn(t("whitelabelDetails.approveDialog.successEmailFailed"));
+        toast.warning(t("whitelabelDetails.approveDialog.successEmailFailed"));
       } else {
         toast.success(t("whitelabelDetails.activated"));
       }

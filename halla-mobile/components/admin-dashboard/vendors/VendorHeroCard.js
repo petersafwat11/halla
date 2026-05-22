@@ -6,9 +6,11 @@ import { colors, spacing, borderRadius, typography, backgrounds } from "../../..
 
 const STATUS_CONFIG = {
   approved: { color: colors.success[500], bg: "#e8f5ee", labelKey: "approved" },
+  active: { color: colors.success[500], bg: "#e8f5ee", labelKey: "approved" },
   pending: { color: colors.warning[500], bg: "#fff4e0", labelKey: "pending" },
   rejected: { color: colors.error[500], bg: "#fdecea", labelKey: "rejected" },
   suspended: { color: colors.error[500], bg: "#fdecea", labelKey: "suspended" },
+  inactive: { color: colors.natural[450], bg: colors.natural[150], labelKey: "suspended" },
 };
 
 const VendorHeroCard = ({ vendor }) => {
@@ -18,10 +20,10 @@ const VendorHeroCard = ({ vendor }) => {
   const statusLabel = t(`vendorDetails.statuses.${statusCfg.labelKey}`, statusCfg.labelKey);
   const roleData = vendor?.roleData || vendor?.vendorData || {};
   const displayName = roleData?.brandName || vendor?.brandName || vendor?.username || "—";
-  const ownerName = roleData?.ownerFullName || roleData?.ownerName || "—";
+  const ownerName = roleData?.ownerFullName || roleData?.ownerName || vendor?.name || "—";
   const email = vendor?.email || roleData?.email || "—";
   const phone = vendor?.phoneNumber || roleData?.phone || "—";
-  const rating = vendor?.averageRating;
+  const rating = roleData?.rating ?? vendor?.averageRating;
 
   return (
     <View style={styles.card}>

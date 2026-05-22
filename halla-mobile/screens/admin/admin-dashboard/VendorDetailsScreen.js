@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image, Modal, Pressable, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -231,9 +231,13 @@ const VendorDetailsScreen = () => {
   const toast = useToast();
   const role = useAuthStore((state) => state.user?.role);
   const { vendorId } = route.params || {};
-  const { data, isLoading, refetch } = useAdminVendorById(vendorId);
+  const { data, isLoading, error, refetch } = useAdminVendorById(vendorId);
   const updateStatus = useUpdateVendorStatus();
   const canEdit = canEditPage(role, PAGES.VENDORS);
+
+  useEffect(() => {
+    if (error) toast.error(t("vendorDetails.loadFailed", "Failed to load vendor details"));
+  }, [error, t, toast]);
 
   const vendor = data?.data?.vendor || data?.data || null;
   const roleData = vendor?.roleData || vendor?.vendorData || {};
@@ -286,46 +290,51 @@ const VendorDetailsScreen = () => {
               <CategoriesSection vendor={vendor} roleData={roleData} t={t} />
               <GallerySection roleData={roleData} t={t} />
 
-              {canEdit && (
-                <SectionCard title={t("vendorDetails.adminActions")} icon="shield-checkmark-outline">
-                  {(status === "pending" || status === "rejected") && (
-                    <ActionRow
-                      icon="checkmark-circle-outline"
-                      iconBg={colors.success[50]}
-                      iconColor={colors.success[500]}
-                      label={t("vendorDetails.approveVendor")}
-                      sublabel={t("vendorDetails.approveConfirmMessage")}
-                      onPress={handleApprove}
-                      loading={updateStatus.isPending}
-                      last
-                    />
-                  )}
-                  {status === "approved" && (
-                    <ActionRow
-                      icon="pause-circle-outline"
-                      iconBg={colors.warning[50]}
-                      iconColor={colors.warning[500]}
-                      label={t("vendorDetails.suspendVendor")}
-                      sublabel={t("vendorDetails.suspendConfirmMessage")}
-                      onPress={handleSuspend}
-                      loading={updateStatus.isPending}
-                      last
-                    />
-                  )}
-                  {status === "suspended" && (
-                    <ActionRow
-                      icon="play-circle-outline"
-                      iconBg={colors.success[50]}
-                      iconColor={colors.success[500]}
-                      label={t("vendorDetails.activateVendor")}
-                      sublabel={t("vendorDetails.activateConfirmMessage")}
-                      onPress={handleActivate}
-                      loading={updateStatus.isPending}
-                      last
-                    />
-                  )}
-                </SectionCard>
-              )}
+              {canEdit && (() => {
+                const isPendingOrRejected = status === "pending" || status === "rejected";
+                const isSuspended = status === "suspended";
+                const showSuspend = !isPendingOrRejected && !isSuspended;
+                return (
+                  <SectionCard title={t("vendorDetails.adminActions")} icon="shield-checkmark-outline">
+                    {isPendingOrRejected && (
+                      <ActionRow
+                        icon="checkmark-circle-outline"
+                        iconBg={colors.success[50]}
+                        iconColor={colors.success[500]}
+                        label={t("vendorDetails.approveVendor")}
+                        sublabel={t("vendorDetails.approveSublabel")}
+                        onPress={handleApprove}
+                        loading={updateStatus.isPending}
+                        last
+                      />
+                    )}
+                    {isSuspended && (
+                      <ActionRow
+                        icon="play-circle-outline"
+                        iconBg={colors.success[50]}
+                        iconColor={colors.success[500]}
+                        label={t("vendorDetails.activateVendor")}
+                        sublabel={t("vendorDetails.activateSublabel")}
+                        onPress={handleActivate}
+                        loading={updateStatus.isPending}
+                        last
+                      />
+                    )}
+                    {showSuspend && (
+                      <ActionRow
+                        icon="pause-circle-outline"
+                        iconBg={colors.warning[50]}
+                        iconColor={colors.warning[500]}
+                        label={t("vendorDetails.suspendVendor")}
+                        sublabel={t("vendorDetails.suspendSublabel")}
+                        onPress={handleSuspend}
+                        loading={updateStatus.isPending}
+                        last
+                      />
+                    )}
+                  </SectionCard>
+                );
+              })()}
             </View>
 
             <View style={styles.bottomSpacer} />

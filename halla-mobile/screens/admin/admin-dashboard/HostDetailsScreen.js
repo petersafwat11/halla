@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -22,6 +22,8 @@ const fmtDate = (d, locale) => {
     year: "numeric", month: "short", day: "numeric",
   });
 };
+
+const capitalize = (s) => (typeof s === "string" && s.length ? s[0].toUpperCase() + s.slice(1) : s);
 
 const planMeta = (planType, t) => {
   if (!planType || planType === "trial") return { label: t("hostDetails.trial", "Trial"), color: colors.natural[450], bg: colors.natural[150] };
@@ -128,7 +130,9 @@ const HostDetailsScreen = () => {
   const updateStatus = useUpdateHostStatus();
   const [subModalVisible, setSubModalVisible] = useState(false);
 
-  if (error) toast.error(t("hostDetails.loadFailed"));
+  useEffect(() => {
+    if (error) toast.error(t("hostDetails.loadFailed"));
+  }, [error, t, toast]);
 
   const host = hostResp?.data?.data?.host || hostResp?.data?.data || null;
 
@@ -201,7 +205,7 @@ const HostDetailsScreen = () => {
           <StatCard
             icon="shield-checkmark-outline"
             label={t("hostDetails.subStatus")}
-            badge={subStatus ? { label: subStatus, ...subStatusMeta(subStatus) } : { label: "—", color: colors.natural[450], bg: colors.natural[150] }}
+            badge={subStatus ? { label: capitalize(subStatus), ...subStatusMeta(subStatus) } : { label: "—", color: colors.natural[450], bg: colors.natural[150] }}
           />
         </View>
 
