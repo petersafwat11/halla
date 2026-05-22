@@ -1,131 +1,132 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import styles from "./EventTemplatesSection.module.css";
 import { useTranslation } from "react-i18next";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import UseLanguageChange from "@/hooks/UseLanguageChange";
+import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import {
+  useHostTemplates,
+  useTemplateCategories,
+} from "@/hooks/queries/useTemplates";
 
 function EventTemplatesSection() {
   const { t } = useTranslation("home-events");
-  const [activeTab, setActiveTab] = useState("wedding");
+  const { currentLocale } = UseLanguageChange();
+  const isAr = currentLocale === "ar";
+
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const isMobile = useMediaQuery("(max-width: 550px)");
   const isTablet = useMediaQuery("(max-width: 768px)");
 
-  // Items per page based on screen size
   const itemsPerPage = isMobile ? 3 : isTablet ? 4 : 4;
 
-  const tabs = [
-    { id: "wedding", label: t("templates.wedding") },
-    { id: "graduation", label: t("templates.graduation") },
-    { id: "diplomatic", label: t("templates.diplomatic") },
-    { id: "birthday", label: t("templates.birthday") },
-    { id: "corporate", label: t("templates.corporate") },
-    { id: "religious", label: t("templates.religious") },
-    { id: "anniversary", label: t("templates.anniversary") },
-    { id: "baby", label: t("templates.baby") },
-  ];
+  const { data: catData } = useTemplateCategories({ admin: false });
+  const { data: tplData, isLoading } = useHostTemplates({
+    category: selectedCategory,
+  });
 
-  const templates = [
-    {
-      id: 1,
-      src: "https://api.builder.io/api/v1/image/assets/TEMP/25805b85ee9b7ab1a9bb9121e0ef8891b372b99b?width=258",
-    },
-    {
-      id: 2,
-      src: "https://api.builder.io/api/v1/image/assets/TEMP/e10f623d23524928d36d61b599d31b0409206b70?width=258",
-    },
-    {
-      id: 3,
-      src: "https://api.builder.io/api/v1/image/assets/TEMP/63263fdc6efb77a2e22e483f73b9e60119da3398?width=258",
-    },
-    {
-      id: 4,
-      src: "https://api.builder.io/api/v1/image/assets/TEMP/20af40954991becead80f36049c2bff642905210?width=258",
-    },
-    {
-      id: 5,
-      src: "https://api.builder.io/api/v1/image/assets/TEMP/94f49e605c068f141cd1dff5032ecf94f7f5cc47?width=258",
-    },
-    {
-      id: 6,
-      src: "https://api.builder.io/api/v1/image/assets/TEMP/20af40954991becead80f36049c2bff642905210?width=258",
-    },
-    {
-      id: 7,
-      src: "https://api.builder.io/api/v1/image/assets/TEMP/63263fdc6efb77a2e22e483f73b9e60119da3398?width=258",
-    },
-    {
-      id: 8,
-      src: "https://api.builder.io/api/v1/image/assets/TEMP/79fc298d2dad702b8fc02fa44bcc27a1c4f682f7?width=258",
-    },
-    {
-      id: 9,
-      src: "https://api.builder.io/api/v1/image/assets/TEMP/ad33659c33381eac40061641b81f19d65a13ad9f?width=258",
-    },
-  ];
+  const categories = catData?.data?.categories || [];
+  const templates = useMemo(
+    () => tplData?.data?.templates || [],
+    [tplData],
+  );
 
-  // Calculate total pages
-  const totalPages = Math.ceil(templates.length / itemsPerPage);
-
-  // Get current page templates
+  const totalPages = Math.max(1, Math.ceil(templates.length / itemsPerPage));
   const startIndex = currentPage * itemsPerPage;
-  const currentTemplates = templates.slice(startIndex, startIndex + itemsPerPage);
+  const currentTemplates = templates.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
 
-  // Reset to first page when screen size changes
   useEffect(() => {
     setCurrentPage(0);
-  }, [isMobile, isTablet]);
-
-  const handleDotClick = (index) => {
-    setCurrentPage(index);
-  };
+  }, [isMobile, isTablet, selectedCategory, templates.length]);
 
   return (
     <div className={styles.templatesContainer}>
       <div className={styles.templatesCard}>
         <div className={styles.header}>
           <h2 className={styles.title}>{t("templates.title")}</h2>
-          <p className={styles.subtitle}>
-            {t("templates.subtitle")}
-          </p>
+          <p className={styles.subtitle}>{t("templates.subtitle")}</p>
         </div>
 
         <div className={styles.content}>
           <div className={styles.tabs}>
-            {tabs.map((tab) => (
+            <button
+              type="button"
+              className={`${styles.tab} ${
+                selectedCategory === "" ? styles.active : ""
+              }`}
+              onClick={() => setSelectedCategory("")}
+            >
+              {t("templates.all", isAr ? "كل الفئات" : "All categories")}
+            </button>
+            {categories.map((c) => (
               <button
-                key={tab.id}
-                className={`${styles.tab} ${activeTab === tab.id ? styles.active : ""
-                  }`}
-                onClick={() => setActiveTab(tab.id)}
+                key={c._id || c.code}
+                type="button"
+                className={`${styles.tab} ${
+                  selectedCategory === c.code ? styles.active : ""
+                }`}
+                onClick={() => setSelectedCategory(c.code)}
               >
-                {tab.label}
+                {isAr ? c.nameAr : c.nameEn}
               </button>
             ))}
           </div>
 
-          <div className={styles.templatesGrid}>
-            {currentTemplates.map((template) => (
-              <div key={template.id} className={styles.templateCard}>
-                <div className={styles.templateCardInner}>
-                  <img
-                    src={template.src}
-                    alt={`Template ${template.id}`}
-                    className={styles.templateImage}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          {isLoading ? (
+            <SimpleLoading />
+          ) : templates.length === 0 ? (
+            <p className={styles.emptyMessage}>
+              {t(
+                "templates.empty",
+                isAr
+                  ? "لا توجد قوالب متاحة بعد."
+                  : "No templates available yet.",
+              )}
+            </p>
+          ) : (
+            <div className={styles.templatesGrid}>
+              {currentTemplates.map((tpl) => {
+                const src = tpl.thumbnailUrl || tpl.imageUrl;
+                const alt = isAr ? tpl.nameAr : tpl.nameEn;
+                return (
+                  <div key={tpl._id} className={styles.templateCard}>
+                    <div className={styles.templateCardInner}>
+                      {src ? (
+                        <Image
+                          src={src}
+                          alt={alt || "template"}
+                          width={129}
+                          height={172}
+                          className={styles.templateImage}
+                          unoptimized={
+                            src.startsWith("blob:") || src.startsWith("data:")
+                          }
+                        />
+                      ) : (
+                        <div className={styles.templateImage} />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {totalPages > 1 && (
             <div className={styles.pagination}>
               {Array.from({ length: totalPages }).map((_, index) => (
                 <div
                   key={index}
-                  className={`${styles.dot} ${index === currentPage ? styles.activeDot : ""
-                    }`}
-                  onClick={() => handleDotClick(index)}
+                  className={`${styles.dot} ${
+                    index === currentPage ? styles.activeDot : ""
+                  }`}
+                  onClick={() => setCurrentPage(index)}
                 />
               ))}
             </div>

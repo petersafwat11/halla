@@ -532,7 +532,8 @@
 
 @media (max-width: 550px) {
   .eventCard {
-    max-width: 357px;
+    width: 100%;
+    max-width: 100%;
     padding: 16px;
   }
 
@@ -567,16 +568,23 @@
   .actionsContainer {
     flex-direction: column;
     gap: 8px;
+    width: 100%;
+    padding: 0 16px;
+  }
+
+  .dropdownWrapper {
+    width: 100%;
   }
 
   .secondaryActions {
     display: flex;
+    flex-direction: column;
     gap: 8px;
     width: 100%;
   }
 
   .secondaryActions .outlineButton {
-    flex: 1;
+    width: 100%;
     padding: 12px 8px;
     font-size: 11px;
   }
