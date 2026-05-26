@@ -120,6 +120,7 @@
     "paymentSummary": {
       "title": "ملخص الدفع",
       "planPrice": "سعر الباقة",
+      "setupFee": "رسوم التأسيس",
       "addons": "الإضافات",
       "discount": "الخصم",
       "total": "الإجمالي"
@@ -199,7 +200,7 @@
   "compensationRow": "{{count}} دعوة تعويضية ({{percent}}٪ من {{base}})",
   "setupFeeRow": "رسوم تأسيس لمرة واحدة: {{amount}} ر.س",
   "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",
-  "whatsappTemplates": "قوالب واتساب مخصصة: {{count}}",
+  "whatsappTemplates": "{{count}} قوالب واتساب مخصصة",
   "badges": { "selected": "تم الاختيار" },
   "monthlyPlan": { "durationNote": "30 يوم — مناسبات غير محدودة" }
 }

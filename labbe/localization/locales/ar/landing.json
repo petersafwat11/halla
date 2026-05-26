@@ -122,7 +122,7 @@
     "validDays30": "صالح لمدة ٣٠ يوماً",
     "validDays90": "صالح لمدة ٩٠ يوماً",
     "validDays365": "صالح لمدة ٣٦٥ يوماً",
-    "whatsappTemplates": "قوالب واتساب مخصصة: {{count}}",
+    "whatsappTemplates": "{{count}} قوالب واتساب مخصصة",
     "setupFeeRow": "رسوم تأسيس لمرة واحدة: {{amount}} ر.س",
     "setupFeeIncluded": "رسوم الإعداد مدرجة",
     "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",

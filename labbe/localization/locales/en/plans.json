@@ -50,7 +50,7 @@
   "compensationRow": "{{count}} compensation invites ({{percent}}% of {{base}})",
   "setupFeeRow": "One-time setup fee: {{amount}} SAR",
   "freeInvitesRow": "Includes {{count}} free invitations during the subscription period",
-  "whatsappTemplates": "Custom WhatsApp templates: {{count}}",
+  "whatsappTemplates": "{{count}} custom WhatsApp templates",
   "compensation": { "title": "Free Compensation Invites", "invites": "invites" },
   "buttons": { "subscribeNow": "Subscribe Now", "retry": "Retry", "continueToSummary": "Continue to Summary" },
   "addons": {

@@ -100,6 +100,9 @@ const whitelabelApprovalEmail = (data, lang = "ar") => {
     ? "تهانينا! تمت الموافقة على طلبك - هلا"
     : "Congratulations! Your Application is Approved - Halla";
 
+  // `data.features` expects an array of localized bullet strings.
+  // TODO: callers should pass `plan.featureBullets[user.preferredLang || 'ar']`
+  // (per docs/plans-rewrite-2026-05.md §14). No live caller wires this up today.
   const featuresHtml =
     data.features && data.features.length > 0
       ? `<ul style="color: ${COLORS.text.secondary}; padding-${isAr ? "right" : "left"}: 20px; margin: 16px 0;">
@@ -351,6 +354,9 @@ const hostSubscriptionAssignedEmail = (data, lang = "ar") => {
     ? `تم تفعيل اشتراكك - ${data.planName}`
     : `Subscription Activated - ${data.planName}`;
 
+  // `data.features` expects an array of localized bullet strings.
+  // TODO: callers should pass `plan.featureBullets[user.preferredLang || 'ar']`
+  // (per docs/plans-rewrite-2026-05.md §14). No live caller wires this up today.
   const featuresHtml =
     data.features && data.features.length > 0
       ? `<ul style="color: ${COLORS.text.secondary}; padding-${isAr ? "right" : "left"}: 20px; margin: 16px 0;">

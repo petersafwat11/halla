@@ -144,6 +144,9 @@ const subscriptionCreatedEmail = (data, lang = "ar") => {
     ? `تم تفعيل اشتراكك في باقة ${data.planName}`
     : `Your ${data.planName} Subscription is Active`;
 
+  // `data.features` expects an array of localized bullet strings.
+  // TODO: callers should pass `plan.featureBullets[user.preferredLang || 'ar']`
+  // (per docs/plans-rewrite-2026-05.md §14). No live caller wires this up today.
   const featuresHtml =
     data.features && data.features.length > 0
       ? `<ul style="color: ${COLORS.text.secondary}; padding-${isAr ? "right" : "left"}: 20px; margin: 16px 0;">

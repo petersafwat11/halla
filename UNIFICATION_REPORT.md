@@ -433,11 +433,13 @@ The previous draft listed four parity fixes; verification reduced this to **one*
 
 - Delete `labbe/staticData/events/data.js` (verified zero importers).
 - Delete `labbe/utils/schemas/phoneValidation.js` (consolidate into `shared/src/schemas/auth.js`).
+- **Delete `halla-mobile/utils/errorHandler.js`** — dead code, zero importers verified. Any unique error codes/messages it defines get harvested into `@halla/shared/errors/errorCodeMap.js`; the rest is duplicate of `services/authErrors.js` patterns.
 - Extract `getStaticAssetBaseUrl()` helper for the `API_BASE_URL.replace("/api/v2", "")` pattern in `halla-mobile/services/marketplaceService.js:71` and any other callers.
 - Extract `userAccountService` (shared between `vendorService` and `settingsService`) on both apps.
+- Apply the cleanup-in-place items from §7 (console.log removal, comment-block cleanup, helper deduplication).
 - Delete any `// removed` / unused exports flagged during the above phases.
 - Run grep for leftover imports from the deleted files; fail the build if any remain.
-- Lint pass: forbid imports from `@/services/apiClient` (web) and from `services/EventsService` (mobile) via ESLint `no-restricted-imports`. Add a rule that forbids literal `/api/v2/` strings anywhere outside `@halla/shared`.
+- Lint pass: forbid imports from `@/services/apiClient` (web) and from `services/EventsService` (mobile) via ESLint `no-restricted-imports`. Add a rule that forbids literal `/api/v2/` strings anywhere outside `@halla/shared`. Add a rule banning `console.log` in production code paths (warn-level on `console.warn`/`console.error`).
 
 ### Phase 9 — Verify & lock in
 
@@ -516,25 +518,451 @@ Backend has zero realtime infrastructure today (no `ws`, no `socket.io`, no `pus
 
 ---
 
+## 7. Cleanup-in-place — kept files that still need work
+
+The deletion lists in Appendix A are aggressive but they leave many files in place. A final read-through of those "stays" files surfaced **specific cleanups required before the refactor declares done**. None block the structural phases; they all fold into Phase 8.
+
+### 7.1 Web (`labbe/`)
+
+**`labbe/utils/index.js`** — NEEDS-CLEANUP
+- Lines 56 and 77: `console.log("formValues", ...)` and `console.log("result", ...)` left from a debug session inside `validateStep`. Remove.
+- `getMediaUrl()` (lines 21-50) is genuinely useful and non-trivial (handles File / Blob / absolute / relative-with-backend-origin). **Promote to `@halla/shared/utils/media.js`** — mobile's `marketplaceService.js:71` strip-`/api/v2` trick is solving the same problem badly.
+- `validateStep`, `createStepHandler`, `setNestedValue` overlap with helpers in `authFormHelpers.js`. Pick one location per helper; delete duplicates.
+
+**`labbe/utils/vendorHelpers.js`** — NEEDS-CLEANUP
+- Overlaps with `utils/index.js` (`getMediaUrl` is defined or re-implemented). Dedupe: keep `vendorHelpers.js` for vendor-specific data shaping; move generic helpers out.
+
+**`labbe/services/notification.js`** — NEEDS-CLEANUP (Phase 3)
+- Still imports legacy `apiClient` (line 6) — Phase 3 migration to axios is mandatory.
+- `formatTimeAgo`, `getNotificationIcon`, `getPriorityColor` (presentation helpers) are duplicated client-side logic. **Move to `@halla/shared/utils/notification.js`** — mobile has the same need.
+- Line 94: raw `console.error`; wrap in `process.env.NODE_ENV === "development"` check or remove.
+
+**`labbe/services/staff.js`** — DEFERRED HARDENING
+- Reads `Cookies.get("staffToken")` (JS-readable) — documented at lines 5-8 as intentional ("future hardening pass"). **Add to a Phase 3b backlog item:** move staff-portal token to HttpOnly cookie like the main auth flow. Not blocking this unification but flag it explicitly.
+
+**`labbe/providers/index.js`** — MINOR
+- Commented-out redirect block at lines 45-47. Decide: delete the dead block, or convert to a real `// TODO` comment with the ticket reference.
+
+**`labbe/hooks/usePageAccess.js`** — UPDATE AFTER PHASE 1
+- Imports `ACCESS_LEVELS` and three permission predicates from `@/ui/layout/navConfig`. The file exists and the hook works today, **but `ACCESS_LEVELS` will move to `@halla/shared/constants/roles.js` in Phase 1.** Update this import as part of Phase 1's re-pointing pass; do not leave a dangling local copy of `ACCESS_LEVELS` in `navConfig.js` after Phase 1.
+
+**`labbe/hooks/UseLanguageChange.js`** — MINOR
+- Commented-out lines (16, 33-40). Clean up or remove.
+
+### 7.2 Mobile (`halla-mobile/`)
+
+**`halla-mobile/utils/errorHandler.js`** — DELETE (moved to Appendix A)
+- Verified zero importers. Hardcoded Arabic/English error messages duplicate what `@halla/shared/errors/errorCodeMap.js` will hold after Phase 2. Harvest any unique codes, then delete.
+
+**`halla-mobile/services/authService.js`** — NEEDS-CLEANUP
+- Lines 265 and 315: raw `console.log` with phone number (`"[AUTH SERVICE] Verifying OTP for login:", mobile`). **PII leak in release builds.** Replace with `dlog` (already used elsewhere in the file at line 42). Audit all `console.log` in service files for similar PII exposure during Phase 8.
+
+**`halla-mobile/services/notificationService.js`** — NEEDS-CLEANUP
+- Audit `console.log` usage; same `dlog` rule.
+- The `_legacyToken` parameter is already on the Phase 8 list (remove after caller audit).
+
+**`halla-mobile/services/marketplaceService.js`** — NEEDS-CLEANUP (already in Phase 8)
+- Line 71 `.replace("/api/v2", "")` → extract to `getStaticAssetBaseUrl()`. The same helper should serve web's `getMediaUrl()` once promoted to shared.
+
+**`halla-mobile/hooks/useDebouncedValue.js`** — UNIFY WITH WEB
+- Web exports `useDebounce` (500 ms default); mobile exports `useDebouncedValue` (350 ms default). **Same code, different name and default.** Resolution: move the hook to `@halla/shared/utils/useDebounce.js` (it's pure React, no platform dependency); both apps re-export under the canonical name `useDebounce` with the same default (pick one — web's 500 ms is the more conservative default for typeahead-style usage). Update consumers.
+
+**`halla-mobile/contexts/QueryProvider.js` vs `halla-mobile/config/queryClient.js`** — GOOD as-is
+- QueryProvider wraps the client; queryClient holds the config. No duplication. Document this split in `ARCHITECTURE.md`.
+
+**`halla-mobile/contexts/ToastContext.js`** — PLATFORM-SPECIFIC, but contract aligns with web (see §8 below)
+
+### 7.3 ESLint additions to lock in
+
+After Phase 8, add these rules so the same problems don't grow back:
+- **No-restricted-imports:** `@/services/apiClient` (web legacy), `services/EventsService` (mobile capital-E), `services/eventsService2` (mobile façade).
+- **No-restricted-syntax:** literal regex `\/api\/v2\/` outside `@halla/shared`.
+- **No-console:** error on `console.log` in `src/**` (mobile services + utils); warn on `console.warn`/`console.error`. Allow inside files explicitly tagged `// eslint-disable-next-line no-console` for known-good logging.
+- **No `useNavigation` / `useRouter` inside `hooks/`** — enforces the hooks-do-data / screens-do-side-effects split from §2.6.
+
+---
+
+## 8. Remaining cross-app pattern divergences — addressed
+
+After Phase 7, four patterns still differ between web and mobile. Three are now unified; one stays divergent by design.
+
+### 8.1 Toast surface — unify the API, not the implementation
+
+- **Web:** `labbe/utils/toastUtils.js` — `react-toastify` wrapper exposing `toast.success`, `toast.error`, `toast.info`, `toast.warning`.
+- **Mobile:** `halla-mobile/contexts/ToastContext.js` — custom RN context with animated stack, exposes `toast.success/error/info/warning` via a hook (`useToast()`).
+
+**Resolution:** the **call site contract is identical** (`toast.success("message")`) — just exposed differently (named import on web, hook on mobile). Codify in `ARCHITECTURE.md` that any code intended to be portable through shared (e.g., shared hooks that happen to need a toast) must accept the toast function as a parameter, not import a global. New rule: hooks in `@halla/shared` never call toast directly.
+
+### 8.2 Debounce hook — move to shared
+
+- See §7.2. Move `useDebounce` to `@halla/shared/utils/useDebounce.js`. Both apps import the same hook with the same default. Delete the two local copies.
+
+### 8.3 Action gate — move to shared
+
+- **Web:** `labbe/hooks/events/useEventActionGate.js` (95 lines).
+- **Mobile:** `halla-mobile/hooks/useEventActionGate.js`.
+- Verified during final review: **the two files are functionally identical** — same RBAC check, same `whitelabelId` scoping, same `_id.toString()` defensive cast.
+- **Resolution:** promote to `@halla/shared/hooks/useEventActionGate.js`. Pure React, no platform deps. Both apps import the canonical version. Delete both local copies in Phase 5/8.
+
+### 8.4 Form-builder pattern — keep divergent, document
+
+- **Web:** `labbe/hooks/events/useEventForm.js` — single-form, react-hook-form based, all 4 steps live in one form context.
+- **Mobile:** `halla-mobile/hooks/useCreateEventForm.js` — step-based, separate validation per step, navigates between screens.
+- **Verdict:** **intentional UX divergence**, not architectural drift. Mobile's step model fits small screens; web's single-form fits desktop. Both consume the same shared schemas, so validation is consistent.
+- **Resolution:** document the split in `ARCHITECTURE.md`. Do not attempt to unify.
+
+### 8.5 Date/time formatting
+
+- Web has `utils/date/useLocalizedDate.js` (Intl.DateTimeFormat hook) and `utils/formatTemplateDate.js`.
+- Mobile has `utils/timeFormat.js` and `utils/formatTemplateDate.js`.
+- **Resolution:** move pure formatters (`formatTemplateDate`, `formatTime`, date utilities) to `@halla/shared/utils/date.js` in Phase 1. Keep `useLocalizedDate` web-only if it does anything Next.js-specific; otherwise also move to shared as a portable hook.
+
+---
+
 ## Appendix A — File-level diff snapshot
 
-**To delete (web):**
-- `labbe/services/apiClient.js` (legacy)
-- `labbe/services/apiResponseHandler.js`
-- `labbe/staticData/events/data.js` *(verified zero importers — safe immediate delete)*
-- `labbe/utils/schemas/phoneValidation.js`
-- `labbe/hooks/reactQueryHooks/useEvents.js`
-- (after Phase 5) entire `labbe/hooks/reactQueryHooks/` and `labbe/hooks/queries/`, `labbe/hooks/mutations/`
-- (after Phase 7) `setInterval` polling logic in `labbe/stores/notificationStore.js`
+> **Counts:** ~52 files deleted from `labbe/` (web) + 5 folders removed. ~37 files deleted from `halla-mobile/` (mobile) + 3 folders removed. Many more files are *modified* (imports re-pointed) but not deleted.
 
-**To delete (mobile):**
-- `halla-mobile/services/EventsService.js` (capital E — validation moves to shared utils)
-- `halla-mobile/services/eventsService.{crud,http,guests,settings,staff,exports}.js`
-- `halla-mobile/services/eventsService2.js`
-- `halla-mobile/services/guestsService.js` (rename to `eventGuestsService` and fold into `eventsService.guests` namespace; do NOT delete outright — backend route shape preserved)
-- `halla-mobile/stores/adminStore.js`
-- `halla-mobile/hooks/mutations/{useEventMutations,useEventCrudMutations,useEventGuestMutations,useEventSettingsMutations,useEventStaffMutations,useEventStaffCrudMutations}.js` (collapse into one factory-driven `useEventMutation.js`)
-- Legacy `addons` block in `halla-mobile/services/adminDashboardService.js` lines ~334-350
+### A.1 Web — files to delete, grouped by phase
+
+**Phase 1 — schemas + utils that migrate to `@halla/shared`:**
+
+Entire folder `labbe/utils/schemas/` removed (all 18 files):
+```
+labbe/utils/schemas/accountSettingsSchema.js
+labbe/utils/schemas/addHostSchema.js
+labbe/utils/schemas/addModeratorSchema.js
+labbe/utils/schemas/addServiceSchema.js
+labbe/utils/schemas/adminPopupSchemas.js
+labbe/utils/schemas/authSchema.js
+labbe/utils/schemas/createEventSchema.js
+labbe/utils/schemas/eventAddintionSchemas.js
+labbe/utils/schemas/notificationPreferencesSchemas.js
+labbe/utils/schemas/phoneValidation.js
+labbe/utils/schemas/planSchema.js
+labbe/utils/schemas/postEventSchemas.js
+labbe/utils/schemas/settingsSchemas.js
+labbe/utils/schemas/staffSchemas.js
+labbe/utils/schemas/ticketRatingSchema.js
+labbe/utils/schemas/ticketSchema.js
+labbe/utils/schemas/updateEventSchema.js
+labbe/utils/schemas/vendorSettings.js
+```
+
+Duplicate phone-validation copy at utils root:
+```
+labbe/utils/phoneValidation.js
+```
+
+Pure-utility files that move into `@halla/shared/utils/` then their local copies are deleted:
+```
+labbe/utils/locale.js              → @halla/shared/utils/locale.js
+labbe/utils/DirectionUtils.js      → @halla/shared/utils/direction.js
+labbe/utils/formatTemplateDate.js  → @halla/shared/utils/date.js
+labbe/utils/xlsxUtils.js           → @halla/shared/utils/xlsx.js
+```
+
+Constants folder also migrates:
+```
+labbe/utils/constants/             → @halla/shared/constants/
+```
+
+**Phase 2 — error mapping merge:**
+```
+labbe/services/errorHandlingService.js     (merged into @halla/shared/errors/)
+labbe/services/new-backend/api.config.js   (already lifted to @halla/shared/api/paths.js in Phase 1)
+```
+
+**Phase 3 — HTTP client collapse:**
+```
+labbe/services/apiClient.js                (legacy fetch client, 381 lines)
+labbe/services/apiResponseHandler.js       (327 lines, superseded)
+labbe/utils/cookieUtils.js                 (audit; remove the JS-readable mirror-token path; keep file if other UI-only uses remain)
+```
+
+**Phase 5 — hook tree consolidation. Three entire folders removed:**
+
+`labbe/hooks/reactQueryHooks/` (20 files):
+```
+labbe/hooks/reactQueryHooks/useAddons.js
+labbe/hooks/reactQueryHooks/useAdmin.js
+labbe/hooks/reactQueryHooks/useAuthMutation.js
+labbe/hooks/reactQueryHooks/useCheckout.js
+labbe/hooks/reactQueryHooks/useDashboard.js
+labbe/hooks/reactQueryHooks/useDiscounts.js
+labbe/hooks/reactQueryHooks/useEvents.js                       (7-line deprecated façade)
+labbe/hooks/reactQueryHooks/useGuests.js
+labbe/hooks/reactQueryHooks/useLocations.js
+labbe/hooks/reactQueryHooks/useMessaging.js
+labbe/hooks/reactQueryHooks/useNotifications.js
+labbe/hooks/reactQueryHooks/usePayments.js
+labbe/hooks/reactQueryHooks/usePlans.js
+labbe/hooks/reactQueryHooks/useServices.js
+labbe/hooks/reactQueryHooks/useStaff.js
+labbe/hooks/reactQueryHooks/useSubscriptions.js
+labbe/hooks/reactQueryHooks/useTickets.js
+labbe/hooks/reactQueryHooks/useUsers.js
+labbe/hooks/reactQueryHooks/useVendors.js
+labbe/hooks/reactQueryHooks/post-event/useGuestPostEvent.js
+labbe/hooks/reactQueryHooks/post-event/useHostPostEvent.js
+```
+(contents relocate to `labbe/hooks/<domain>/{queries,mutations}/`)
+
+`labbe/hooks/queries/` (3 files):
+```
+labbe/hooks/queries/useScheduledExtraReminders.js
+labbe/hooks/queries/useTaqnyatTemplates.js
+labbe/hooks/queries/useTemplates.js
+```
+
+`labbe/hooks/mutations/` (1 file):
+```
+labbe/hooks/mutations/useTemplateMutations.js
+```
+
+**Phase 7 — partial delete in notification store:**
+```
+labbe/stores/notificationStore.js          (data-fetching half: setInterval @ lines ~248-250,
+                                            fetchUnreadCount, fetchNotifications service calls)
+                                            File kept as UI-state-only store.
+```
+
+**Phase 8 — relocations (delete after move to shared):**
+```
+labbe/utils/index.js                       `getMediaUrl` moved to @halla/shared/utils/media.js;
+                                            console.log lines 56/77 removed; helper dedupe with
+                                            authFormHelpers.js (see §7.1)
+labbe/services/notification.js             presentation helpers (formatTimeAgo, getNotificationIcon,
+                                            getPriorityColor) moved to @halla/shared/utils/notification.js
+labbe/hooks/useDebounce.js                 relocated to @halla/shared/utils/useDebounce.js
+labbe/hooks/events/useEventActionGate.js  relocated to @halla/shared/hooks/useEventActionGate.js
+```
+
+**Phase 8 — orphaned dead code:**
+```
+labbe/staticData/events/data.js            (orphaned mock data — zero importers verified)
+labbe/staticData/events/                   (folder removed if empty)
+labbe/staticData/                          (folder removed if empty)
+```
+
+**Web files that explicitly STAY** (platform-specific, no shared analogue):
+```
+labbe/services/serverAuth.js               uses next/headers (SSR)
+labbe/services/guestTokenUtils.js          web-only guest-portal cookie handling
+labbe/services/notification.js             kept (migrated to axios in Phase 3)
+labbe/services/staff.js                    kept (migrated to axios in Phase 3)
+labbe/services/adminDashboard.js           kept (migrated to axios in Phase 3)
+labbe/services/scheduledExtraRemindersService.js
+labbe/services/taqnyatTemplatesService.js
+labbe/services/templatesService.js
+labbe/services/new-backend/apiClient.js    → renamed to labbe/services/http.js in Phase 8
+labbe/stores/authStore.js                  web-specific HttpOnly cookie auth
+labbe/stores/notificationStore.js          retained as UI-state-only store
+labbe/stores/sidebarStore.js
+labbe/providers/*                          SSR i18n + RQ provider
+labbe/utils/authFormHelpers.js
+labbe/utils/toastUtils.js
+labbe/utils/vendorHelpers.js
+labbe/utils/index.js
+labbe/utils/date/                          web's date helpers (kept; shared utils complement, not replace)
+labbe/hooks/events/                        already canonical — populated further in Phase 5
+labbe/hooks/{UseLanguageChange, use-media-query, useDebounce, useDirection, usePageAccess, useUnsavedChanges}.js
+labbe/config/fonts.js                      Next/font config
+```
+
+---
+
+### A.2 Mobile — files to delete, grouped by phase
+
+**Phase 1 — schemas + utils that migrate to `@halla/shared`:**
+
+Entire folder `halla-mobile/utils/schemas/` removed (all 8 files):
+```
+halla-mobile/utils/schemas/authSchemas.js
+halla-mobile/utils/schemas/createEventSchema.js
+halla-mobile/utils/schemas/discountSchema.js
+halla-mobile/utils/schemas/settingsSchema.js
+halla-mobile/utils/schemas/ticketSchema.js
+halla-mobile/utils/schemas/updateEventSchema.js
+halla-mobile/utils/schemas/vendorSchemas.js
+halla-mobile/utils/schemas/vendorServiceSchema.js
+```
+
+Constants folder migrates:
+```
+halla-mobile/utils/constants/eventStatus.js   → @halla/shared/constants/eventStatus.js
+halla-mobile/utils/constants/plans.js         → @halla/shared/constants/plans.js
+```
+(Local `halla-mobile/utils/constants/` folder removed.)
+
+Pure-utility files that move into `@halla/shared/utils/`:
+```
+halla-mobile/utils/locale.js               → @halla/shared/utils/locale.js
+halla-mobile/utils/DirectionUtils.js       → @halla/shared/utils/direction.js
+halla-mobile/utils/formatTemplateDate.js   → @halla/shared/utils/date.js
+halla-mobile/utils/timeFormat.js           → @halla/shared/utils/date.js (merged)
+halla-mobile/utils/xlsxUtils.js            → @halla/shared/utils/xlsx.js
+```
+
+Endpoint registry collapses to a re-export:
+```
+halla-mobile/config/api.js                 (the ENDPOINTS map is removed — file becomes
+                                            a 1-line re-export of @halla/shared/api/paths,
+                                            kept only for `API_BASE_URL` constant)
+```
+
+**Phase 2 — error mapping merge:**
+```
+halla-mobile/services/authErrors.js        (merged into @halla/shared/errors/)
+```
+
+**Phase 4 — events service + event mutation hooks consolidation:**
+
+Service shards collapse to one `services/eventsService.js`:
+```
+halla-mobile/services/EventsService.js                 (capital E — validation moves to shared utils)
+halla-mobile/services/eventsService.crud.js
+halla-mobile/services/eventsService.http.js
+halla-mobile/services/eventsService.guests.js
+halla-mobile/services/eventsService.settings.js
+halla-mobile/services/eventsService.staff.js
+halla-mobile/services/eventsService.exports.js
+halla-mobile/services/eventsService2.js                (façade)
+```
+
+`guestsService.js` is **renamed** to `eventGuestsService.js`, not deleted (backend route shape `/guests/events/:eventId/...` justifies keeping it separate from `eventsService.js`):
+```
+halla-mobile/services/guestsService.js     → renamed to halla-mobile/services/eventGuestsService.js
+```
+
+Six event-mutation hook files collapse into one factory:
+```
+halla-mobile/hooks/mutations/useEventMutations.js          (existing façade)
+halla-mobile/hooks/mutations/useEventCrudMutations.js
+halla-mobile/hooks/mutations/useEventGuestMutations.js
+halla-mobile/hooks/mutations/useEventSettingsMutations.js
+halla-mobile/hooks/mutations/useEventStaffMutations.js
+halla-mobile/hooks/mutations/useEventStaffCrudMutations.js
+```
+(replaced by a single `halla-mobile/hooks/events/mutations/useEventMutation.js` factory)
+
+**Phase 5 — hook tree restructure. Two entire folders removed:**
+
+`halla-mobile/hooks/queries/` (22 files):
+```
+halla-mobile/hooks/queries/useAddons.js
+halla-mobile/hooks/queries/useAdmin.js
+halla-mobile/hooks/queries/useAdminInfinite.js
+halla-mobile/hooks/queries/useDashboard.js
+halla-mobile/hooks/queries/useDiscounts.js
+halla-mobile/hooks/queries/useEvents.js
+halla-mobile/hooks/queries/useGuestPortal.js
+halla-mobile/hooks/queries/useGuests.js
+halla-mobile/hooks/queries/useLocations.js
+halla-mobile/hooks/queries/useMarketplace.js
+halla-mobile/hooks/queries/useNotifications.js
+halla-mobile/hooks/queries/usePaymentPoll.js
+halla-mobile/hooks/queries/usePlans.js
+halla-mobile/hooks/queries/useScheduledExtraReminders.js
+halla-mobile/hooks/queries/useStaff.js
+halla-mobile/hooks/queries/useSubscriptions.js
+halla-mobile/hooks/queries/useTaqnyatTemplates.js
+halla-mobile/hooks/queries/useTemplates.js
+halla-mobile/hooks/queries/useTickets.js
+halla-mobile/hooks/queries/useUser.js
+halla-mobile/hooks/queries/useVendor.js
+halla-mobile/hooks/queries/post-event/useGuestPostEvent.js
+halla-mobile/hooks/queries/post-event/useHostPostEvent.js
+```
+
+`halla-mobile/hooks/mutations/` remaining files (13 after Phase 4 already removed the 6 event ones):
+```
+halla-mobile/hooks/mutations/useAddonMutations.js
+halla-mobile/hooks/mutations/useAdminMutations.js
+halla-mobile/hooks/mutations/useAuthMutations.js
+halla-mobile/hooks/mutations/useCheckout.js
+halla-mobile/hooks/mutations/useDiscountMutations.js
+halla-mobile/hooks/mutations/useGuestMutations.js
+halla-mobile/hooks/mutations/useGuestPortal.js
+halla-mobile/hooks/mutations/useMessagingMutations.js
+halla-mobile/hooks/mutations/useNotificationMutations.js
+halla-mobile/hooks/mutations/useStaffMutations.js
+halla-mobile/hooks/mutations/useTicketMutations.js
+halla-mobile/hooks/mutations/useUserMutations.js
+halla-mobile/hooks/mutations/useVendorMutations.js
+```
+(Contents move to `halla-mobile/hooks/<domain>/{queries,mutations}/` — same code, new home.)
+
+**Phase 7 — duplicate store deletion:**
+```
+halla-mobile/stores/adminStore.js          (full delete — RQ becomes single source of truth)
+```
+
+**Phase 8 — partial deletes / cleanup:**
+```
+halla-mobile/utils/errorHandler.js                FULL DELETE — verified zero importers; surfaced in §7
+halla-mobile/services/adminDashboardService.js   lines ~334-350 (self-marked legacy `addons` block)
+halla-mobile/services/notificationService.js     `_legacyToken` parameter (kept-for-compat, ignored
+                                                  everywhere — remove after callers audited)
+halla-mobile/services/marketplaceService.js:71   `.replace("/api/v2", "")` → extract to
+                                                  `getStaticAssetBaseUrl()` helper (refactor, not delete)
+halla-mobile/hooks/useDebouncedValue.js          relocated to @halla/shared/utils/useDebounce.js;
+                                                  local copy deleted, callers re-pointed (see §7.2, §8.2)
+halla-mobile/hooks/useEventActionGate.js         relocated to @halla/shared/hooks/useEventActionGate.js;
+                                                  local copy deleted (see §8.3)
+```
+
+**Mobile files that explicitly STAY** (platform-specific, no shared analogue):
+```
+halla-mobile/services/apiClient.js            → renamed to halla-mobile/services/http.js in Phase 8
+halla-mobile/services/secureStorage.js        expo-secure-store wrapper (platform-mandated)
+halla-mobile/services/authService.js          kept (uses platform-specific storage)
+halla-mobile/services/addonsService.js
+halla-mobile/services/adminDashboardService.js  kept (clean up legacy block only)
+halla-mobile/services/checkoutService.js
+halla-mobile/services/dashboardService.js
+halla-mobile/services/hostPostEventService.js
+halla-mobile/services/locationsService.js
+halla-mobile/services/marketplaceService.js
+halla-mobile/services/messagingService.js
+halla-mobile/services/notificationService.js
+halla-mobile/services/plansService.js
+halla-mobile/services/postEventService.js
+halla-mobile/services/scheduledExtraRemindersService.js
+halla-mobile/services/settingsService.js      kept (will share /users/profile + /users/password
+                                              logic with vendorService via new userAccountService)
+halla-mobile/services/staffService.js
+halla-mobile/services/subscriptionService.js
+halla-mobile/services/taqnyatTemplatesService.js
+halla-mobile/services/templateService.js
+halla-mobile/services/ticketsService.js
+halla-mobile/services/vendorService.js        kept (same userAccountService pattern)
+halla-mobile/stores/authStore.js              kept (uses secureStorage)
+halla-mobile/utils/adminPermissions.js
+halla-mobile/utils/canvasBake.js              RN-specific
+halla-mobile/utils/download.js                RN-specific
+halla-mobile/utils/errorHandler.js            kept (thin wrapper over shared ApiError)
+halla-mobile/utils/imageUtils.js              RN-specific
+halla-mobile/utils/languageStorage.js         AsyncStorage wrapper
+halla-mobile/hooks/index.js                   barrel — regenerated after Phase 5
+halla-mobile/hooks/useCreateEventForm.js
+halla-mobile/hooks/useDebouncedValue.js
+halla-mobile/hooks/useEventActionGate.js
+halla-mobile/hooks/useFilterData.js
+halla-mobile/hooks/useListManager.js
+halla-mobile/config/queryClient.js            RQ config
+halla-mobile/config/api.js                    retained for API_BASE_URL only after Phase 1
+```
+
+---
+
+### A.3 Summary counts
+
+| Side | Files deleted | Files relocated to shared | Files renamed | Folders removed |
+|---|---|---|---|---|
+| Web (`labbe/`) | ~53 | 4 (`useDebounce`, `useEventActionGate`, `getMediaUrl`, notification presentation helpers) | 1 (`new-backend/apiClient.js` → `http.js`) | 5 |
+| Mobile (`halla-mobile/`) | ~38 (incl. `utils/errorHandler.js`) | 2 (`useDebouncedValue`, `useEventActionGate`) | 2 | 3 |
+| **Total** | **~91 files** | **6 relocations to shared** | **3 renames** | **8 folders** |
 
 **To create:**
 - `D:\halla\shared\package.json`
@@ -543,7 +971,8 @@ Backend has zero realtime infrastructure today (no `ws`, no `socket.io`, no `pus
 - `D:\halla\shared\src\schemas\*` (one file per domain — auth, events, guests, tickets, plans, addons, staff, vendors, post-event, settings, notifications, admin)
 - `D:\halla\shared\src\errors\index.js`
 - `D:\halla\shared\src\constants\index.js`
-- `D:\halla\shared\src\utils\{locale,date,direction,event-form,xlsx}.js`
+- `D:\halla\shared\src\utils\{locale,date,direction,event-form,xlsx,media,notification,useDebounce}.js`
+- `D:\halla\shared\src\hooks\useEventActionGate.js`
 - `D:\halla\labbe\services\http.js` (axios adapter implementing `Transport`)
 - `D:\halla\halla-mobile\services\http.js` (fetch adapter implementing `Transport`)
 - `D:\halla\halla-mobile\screens\auth\ResetPasswordScreen.js` *(Phase 4b)*

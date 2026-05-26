@@ -120,6 +120,7 @@
     "paymentSummary": {
       "title": "Payment Summary",
       "planPrice": "Plan Price",
+      "setupFee": "Setup Fee",
       "addons": "Add-Ons",
       "discount": "Discount",
       "total": "Total"
@@ -199,7 +200,7 @@
   "compensationRow": "{{count}} compensation invites ({{percent}}% of {{base}})",
   "setupFeeRow": "One-time setup fee: {{amount}} SAR",
   "freeInvitesRow": "Includes {{count}} free invitations during the subscription period",
-  "whatsappTemplates": "Custom WhatsApp templates: {{count}}",
+  "whatsappTemplates": "{{count}} custom WhatsApp templates",
   "badges": { "selected": "Selected" },
   "monthlyPlan": { "durationNote": "Valid 30 days — unlimited events" }
 }

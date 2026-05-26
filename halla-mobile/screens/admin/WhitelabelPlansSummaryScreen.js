@@ -178,7 +178,7 @@ const WhitelabelPlansSummaryScreen = () => {
             finalTotal={finalTotal}
             currency={t("summary.currency")}
             planPriceLabel={t("summary.paymentSummary.planPrice")}
-            setupFeeLabel={t("setupFeeRow", { amount: setupFee.toLocaleString() })}
+            setupFeeLabel={t("summary.paymentSummary.setupFee")}
             discountLabel={t("summary.paymentSummary.discount")}
             totalLabel={t("summary.paymentSummary.total")}
           />

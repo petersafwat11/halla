@@ -50,7 +50,7 @@
   "compensationRow": "{{count}} دعوة تعويضية ({{percent}}٪ من {{base}})",
   "setupFeeRow": "رسوم تأسيس لمرة واحدة: {{amount}} ر.س",
   "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",
-  "whatsappTemplates": "قوالب واتساب مخصصة: {{count}}",
+  "whatsappTemplates": "{{count}} قوالب واتساب مخصصة",
   "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة" },
   "buttons": { "subscribeNow": "اشترك الآن", "retry": "إعادة المحاولة", "continueToSummary": "متابعة إلى الملخص" },
   "addons": {

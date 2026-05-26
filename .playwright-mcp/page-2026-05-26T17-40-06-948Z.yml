@@ -1,0 +1,381 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner "Global Navigation Menu" [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - button "Open menu" [ref=e12] [cursor=pointer]:
+            - img [ref=e13]
+          - link "Homepage (g then d)" [ref=e15] [cursor=pointer]:
+            - /url: /
+            - img [ref=e16]
+        - button "Search or jump to…" [ref=e21] [cursor=pointer]:
+          - generic [ref=e22]:
+            - generic:
+              - img
+            - generic [ref=e23]:
+              - generic:
+                - text: Type
+                - generic: /
+                - text: to search
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - generic [ref=e28]:
+              - link "Chat with Copilot" [ref=e30] [cursor=pointer]:
+                - /url: /copilot
+                - img [ref=e31]
+              - button "Open Copilot…" [ref=e35] [cursor=pointer]:
+                - generic:
+                  - img
+            - button "Create new..." [ref=e37] [cursor=pointer]:
+              - generic [ref=e38]:
+                - generic:
+                  - img
+              - generic:
+                - img
+            - generic [ref=e39]:
+              - link "All issues (g then i)" [ref=e40] [cursor=pointer]:
+                - /url: /issues
+                - img [ref=e41]
+              - link "All pull requests (g then p)" [ref=e44] [cursor=pointer]:
+                - /url: /pulls
+                - img [ref=e45]
+              - link "All repositories" [ref=e47] [cursor=pointer]:
+                - /url: /repos
+                - img [ref=e48]
+          - link "You have no unread notifications (g then n)" [ref=e50] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e51]
+          - button "Open user navigation menu" [ref=e54] [cursor=pointer]:
+            - img "User avatar" [ref=e55]
+  - main [ref=e58]:
+    - generic [ref=e59]:
+      - generic "petersafwat11 (petersafwat11) settings" [ref=e60]:
+        - generic [ref=e61]:
+          - img "@petersafwat11" [ref=e62]
+          - generic [ref=e63]:
+            - heading "petersafwat11 (petersafwat11) settings" [level=1] [ref=e64]:
+              - link "petersafwat11 (petersafwat11)" [ref=e65] [cursor=pointer]:
+                - /url: /petersafwat11
+              - generic [ref=e66]: settings
+            - paragraph [ref=e68]: Your personal account
+        - link "Go to your personal profile" [ref=e70] [cursor=pointer]:
+          - /url: /petersafwat11
+      - generic [ref=e71]:
+        - navigation "User settings" [ref=e75]:
+          - list [ref=e77]:
+            - listitem [ref=e78]:
+              - link "Public profile" [ref=e79] [cursor=pointer]:
+                - /url: /settings/profile
+                - generic:
+                  - img
+                - generic [ref=e80]: Public profile
+            - listitem [ref=e81]:
+              - link "Account" [ref=e82] [cursor=pointer]:
+                - /url: /settings/admin
+                - generic:
+                  - img
+                - generic [ref=e83]: Account
+            - listitem [ref=e84]:
+              - link "Appearance" [ref=e85] [cursor=pointer]:
+                - /url: /settings/appearance
+                - generic:
+                  - img
+                - generic [ref=e86]: Appearance
+            - listitem [ref=e87]:
+              - link "Accessibility" [ref=e88] [cursor=pointer]:
+                - /url: /settings/accessibility
+                - generic:
+                  - img
+                - generic [ref=e89]: Accessibility
+            - listitem [ref=e90]:
+              - link "Notifications" [ref=e91] [cursor=pointer]:
+                - /url: /settings/notifications
+                - generic:
+                  - img
+                - generic [ref=e92]: Notifications
+            - listitem [ref=e93]
+            - listitem [ref=e94]:
+              - generic [ref=e97]:
+                - heading "Access" [level=2] [ref=e99]
+                - list "Access" [ref=e100]:
+                  - listitem [ref=e101]:
+                    - button "Billing and licensing" [ref=e102] [cursor=pointer]:
+                      - generic:
+                        - img
+                      - generic [ref=e103]: Billing and licensing
+                      - generic:
+                        - img
+                  - listitem [ref=e104]:
+                    - link "Emails" [ref=e105] [cursor=pointer]:
+                      - /url: /settings/emails
+                      - generic:
+                        - img
+                      - generic [ref=e106]: Emails
+                  - listitem [ref=e107]:
+                    - link "Password and authentication" [ref=e108] [cursor=pointer]:
+                      - /url: /settings/security
+                      - generic:
+                        - img
+                      - generic [ref=e109]: Password and authentication
+                  - listitem [ref=e110]:
+                    - link "Sessions" [ref=e111] [cursor=pointer]:
+                      - /url: /settings/sessions
+                      - generic:
+                        - img
+                      - generic [ref=e112]: Sessions
+                  - listitem [ref=e113]:
+                    - link "SSH and GPG keys" [ref=e114] [cursor=pointer]:
+                      - /url: /settings/keys
+                      - generic:
+                        - img
+                      - generic [ref=e115]: SSH and GPG keys
+                  - listitem [ref=e116]:
+                    - link "Organizations" [ref=e117] [cursor=pointer]:
+                      - /url: /settings/organizations
+                      - generic:
+                        - img
+                      - generic [ref=e118]: Organizations
+                  - listitem [ref=e119]:
+                    - link "Enterprises" [ref=e120] [cursor=pointer]:
+                      - /url: /settings/enterprises
+                      - generic:
+                        - generic:
+                          - img
+                      - generic [ref=e121]: Enterprises
+                  - listitem [ref=e122]:
+                    - button "Moderation" [ref=e123] [cursor=pointer]:
+                      - generic:
+                        - img
+                      - generic [ref=e124]: Moderation
+                      - generic:
+                        - img
+            - listitem [ref=e125]
+            - listitem [ref=e126]:
+              - generic [ref=e129]:
+                - heading "Code, planning, and automation" [level=2] [ref=e131]
+                - list "Code, planning, and automation" [ref=e132]:
+                  - listitem [ref=e133]:
+                    - link "Repositories" [ref=e134] [cursor=pointer]:
+                      - /url: /settings/repositories
+                      - generic:
+                        - img
+                      - generic [ref=e135]: Repositories
+                  - listitem [ref=e136]:
+                    - link "Codespaces" [ref=e137] [cursor=pointer]:
+                      - /url: /settings/codespaces
+                      - generic:
+                        - img
+                      - generic [ref=e138]: Codespaces
+                  - listitem [ref=e139]:
+                    - link "Models Preview feature" [ref=e140] [cursor=pointer]:
+                      - /url: /settings/models
+                      - generic:
+                        - img
+                      - generic [ref=e141]: Models
+                      - generic:
+                        - generic "Preview feature": Preview
+                  - listitem [ref=e142]:
+                    - link "Packages" [ref=e143] [cursor=pointer]:
+                      - /url: /settings/packages
+                      - generic:
+                        - img
+                      - generic [ref=e144]: Packages
+                  - listitem [ref=e145]:
+                    - button "Copilot" [ref=e146] [cursor=pointer]:
+                      - generic:
+                        - img
+                      - generic [ref=e147]: Copilot
+                      - generic:
+                        - img
+                  - listitem [ref=e148]:
+                    - link "Pages" [ref=e149] [cursor=pointer]:
+                      - /url: /settings/pages
+                      - generic:
+                        - img
+                      - generic [ref=e150]: Pages
+                  - listitem [ref=e151]:
+                    - link "Saved replies" [ref=e152] [cursor=pointer]:
+                      - /url: /settings/replies
+                      - generic:
+                        - img
+                      - generic [ref=e153]: Saved replies
+            - listitem [ref=e154]
+            - listitem [ref=e155]:
+              - generic [ref=e158]:
+                - heading "Security" [level=2] [ref=e160]
+                - list "Security" [ref=e161]:
+                  - listitem [ref=e162]:
+                    - link "Code security" [ref=e163] [cursor=pointer]:
+                      - /url: /settings/security_analysis
+                      - generic:
+                        - img
+                      - generic [ref=e164]: Code security
+            - listitem [ref=e165]
+            - listitem [ref=e166]:
+              - generic [ref=e169]:
+                - heading "Integrations" [level=3] [ref=e171]
+                - list "Integrations" [ref=e172]:
+                  - listitem [ref=e173]:
+                    - link "Applications" [ref=e174] [cursor=pointer]:
+                      - /url: /settings/installations
+                      - generic:
+                        - img
+                      - generic [ref=e175]: Applications
+                  - listitem [ref=e176]:
+                    - link "Scheduled reminders" [ref=e177] [cursor=pointer]:
+                      - /url: /settings/reminders
+                      - generic:
+                        - img
+                      - generic [ref=e178]: Scheduled reminders
+            - listitem [ref=e179]
+            - listitem [ref=e180]:
+              - generic [ref=e183]:
+                - heading "Archives" [level=2] [ref=e185]
+                - list "Archives" [ref=e186]:
+                  - listitem [ref=e187]:
+                    - link "Security log" [ref=e188] [cursor=pointer]:
+                      - /url: /settings/security-log
+                      - generic:
+                        - img
+                      - generic [ref=e189]: Security log
+                  - listitem [ref=e190]:
+                    - link "Sponsorship log" [ref=e191] [cursor=pointer]:
+                      - /url: /settings/sponsors-log
+                      - generic:
+                        - img
+                      - generic [ref=e192]: Sponsorship log
+            - listitem [ref=e193]
+            - listitem [ref=e194]:
+              - link "Developer settings" [ref=e195] [cursor=pointer]:
+                - /url: /settings/apps
+                - generic:
+                  - img
+                - generic [ref=e196]: Developer settings
+        - generic [ref=e200]:
+          - generic [ref=e201]:
+            - img "Cyclic.sh" [ref=e203]
+            - generic [ref=e204]:
+              - heading "Cyclic.sh" [level=2] [ref=e205]
+              - generic [ref=e206]:
+                - generic [ref=e207]:
+                  - img [ref=e208]
+                  - text: Installed August 31, 2023 09:033 years ago
+                - generic [ref=e210]:
+                  - img [ref=e211]
+                  - text: Developed by
+                  - link "cyclic-software" [ref=e213] [cursor=pointer]:
+                    - /url: /cyclic-software
+                - generic [ref=e214]:
+                  - img [ref=e215]
+                  - link "https://app.cyclic.sh" [ref=e217] [cursor=pointer]:
+                    - /url: https://app.cyclic.sh
+          - generic [ref=e218]:
+            - paragraph [ref=e219]: Deploy apps on Cyclic.sh. This app allows Cyclic to access your repo and receive webhooks to deploy new versions of your code any time you push.
+            - paragraph [ref=e220]:
+              - text: Email
+              - link "hello@cyclic.sh" [ref=e221] [cursor=pointer]:
+                - /url: mailto:hello@cyclic.sh
+              - text: Discord
+              - link "https://discord.cyclic.sh" [ref=e222] [cursor=pointer]:
+                - /url: https://discord.cyclic.sh
+            - paragraph [ref=e223]: Talk soon! 👋
+          - heading "Permissions" [level=2] [ref=e225]
+          - list [ref=e226]:
+            - listitem [ref=e227]:
+              - img [ref=e228]
+              - strong [ref=e230]: Read
+              - text: access to code and metadata
+            - listitem [ref=e231]:
+              - img [ref=e232]
+              - strong [ref=e234]: Read
+              - text: and
+              - strong [ref=e235]: write
+              - text: access to commit statuses and deployments
+          - heading "Repository access" [level=2] [ref=e237]
+          - generic [ref=e238]:
+            - generic [ref=e241]:
+              - radiogroup [ref=e243]:
+                - generic [ref=e244]:
+                  - generic [ref=e245]:
+                    - radio "All repositories" [ref=e246] [cursor=pointer]
+                    - generic [ref=e247]:
+                      - generic [ref=e248] [cursor=pointer]: All repositories
+                      - generic [ref=e249]: This applies to all current and future repositories owned by the resource owner. Also includes public repositories (read-only).
+                  - generic [ref=e250]:
+                    - radio "Only select repositories" [checked] [ref=e251] [cursor=pointer]
+                    - generic [ref=e252]:
+                      - generic [ref=e253] [cursor=pointer]: Only select repositories
+                      - generic [ref=e254]: Select at least one repository. Also includes public repositories (read-only).
+              - generic [ref=e256]:
+                - group [ref=e257]:
+                  - button "Select repositories" [ref=e258] [cursor=pointer]:
+                    - img [ref=e259]
+                    - text: Select repositories
+                - generic [ref=e261]: Selected 2 repositories.
+                - generic [ref=e262]:
+                  - generic [ref=e264]:
+                    - img [ref=e265]
+                    - button "Remove AJ-backend" [ref=e267] [cursor=pointer]:
+                      - img [ref=e270]
+                    - generic [ref=e272]:
+                      - generic [ref=e273]: petersafwat11
+                      - text: /AJ-backend
+                  - generic [ref=e275]:
+                    - img [ref=e276]
+                    - button "Remove starter-express-api" [ref=e278] [cursor=pointer]:
+                      - img [ref=e281]
+                    - generic [ref=e283]:
+                      - generic [ref=e284]: petersafwat11
+                      - text: /starter-express-api
+            - button "Save" [disabled] [ref=e285]:
+              - generic [ref=e287]: Save
+          - button "Cancel" [disabled] [ref=e288]:
+            - generic [ref=e290]: Cancel
+          - heading "Danger zone" [level=2] [ref=e292]
+          - generic [ref=e293]:
+            - generic [ref=e294]:
+              - button "Suspend" [ref=e296] [cursor=pointer]
+              - strong [ref=e297]: Suspend your installation
+              - generic [ref=e298]: This will block the app access to your resources.
+            - generic [ref=e299]:
+              - button "Uninstall" [ref=e301] [cursor=pointer]
+              - strong [ref=e302]: Uninstall "Cyclic.sh"
+              - generic [ref=e303]: This will remove the app and revoke access to all resources.
+  - contentinfo [ref=e304]:
+    - heading "Footer" [level=2] [ref=e305]
+    - generic [ref=e306]:
+      - generic [ref=e307]:
+        - link "GitHub Homepage" [ref=e308] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e309]
+        - generic [ref=e311]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e312]:
+        - heading "Footer navigation" [level=3] [ref=e313]
+        - list "Footer navigation" [ref=e314]:
+          - listitem [ref=e315]:
+            - link "Terms" [ref=e316] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e317]:
+            - link "Privacy" [ref=e318] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e319]:
+            - link "Security" [ref=e320] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e321]:
+            - link "Status" [ref=e322] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e323]:
+            - link "Community" [ref=e324] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e325]:
+            - link "Docs" [ref=e326] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e327]:
+            - link "Contact" [ref=e328] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e329]:
+            - button "Manage cookies" [ref=e331] [cursor=pointer]
+          - listitem [ref=e332]:
+            - button "Do not share my personal information" [ref=e334] [cursor=pointer]

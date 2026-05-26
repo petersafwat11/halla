@@ -122,7 +122,7 @@
     "validDays30": "Valid for 30 days",
     "validDays90": "Valid for 90 days",
     "validDays365": "Valid for 365 days",
-    "whatsappTemplates": "Custom WhatsApp templates: {{count}}",
+    "whatsappTemplates": "{{count}} custom WhatsApp templates",
     "setupFeeRow": "One-time setup fee: {{amount}} SAR",
     "setupFeeIncluded": "Setup fee included",
     "freeInvitesRow": "Includes {{count}} free invitations during the subscription period",
