@@ -696,8 +696,8 @@ const eventSummaryReportEmail = (data, lang = "ar") => {
     <p style="color: ${COLORS.text.secondary}; font-size: 14px; text-align: center;">
       ${
         isAr
-          ? "شكراً لاستخدامك لبّه! نتطلع لخدمتك في فعالياتك القادمة."
-          : "Thank you for using Labbe! We look forward to serving you in your future events."
+          ? "شكراً لاستخدامك هلا! نتطلع لخدمتك في فعالياتك القادمة."
+          : "Thank you for using Halla! We look forward to serving you in your future events."
       }
     </p>
   `;

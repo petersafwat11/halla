@@ -26,37 +26,17 @@ import {
 } from "../../../styles/tokens";
 
 /**
- * Boolean feature flags persisted on `plan.features.*` (mirrors backend
- * `PlanModel.featuresSchema:13-54` — 18 toggles in canonical order).
+ * Build form state from a plan record. After the rev. 2 cleanup the only
+ * surviving feature numeric is `whatsAppTemplates`; bullet copy lives in
+ * `featureBullets.{ar,en}`. `setupFeeAmount` is a top-level numeric.
  */
-const FEATURE_TOGGLE_KEYS = [
-  "hasInAppInvites",
-  "hasWhatsAppInvites",
-  "hasSMSInvites",
-  "hasQRCode",
-  "hasQRScanning",
-  "hasFlexibleEntryMode",
-  "hasStaffCheckIn",
-  "hasStaffAssignment",
-  "hasRSVPTracking",
-  "hasAutoReminders",
-  "hasEmailNotifications",
-  "hasCustomWhatsAppNumber",
-  "hasCompensationInvites",
-  "hasBasicTemplates",
-  "hasPremiumTemplates",
-  "hasPostEventPage",
-  "hasCustomReports",
-  "hasWhatsAppSupport",
-];
+const bulletsToText = (arr) => (Array.isArray(arr) ? arr.join("\n") : "");
+const bulletsToArr = (text) =>
+  (text || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 
-/**
- * Build form state from a plan record. Reads from the real backend
- * shape (`pricing.oneTime`, `limits.{maxEvents,maxInvitesPerEvent,
- * invitePool,durationDays,maxHosts}`, `features.*` 18 booleans + 2
- * numerics). Numbers stay numeric (or `null` for nullable limits);
- * we never seed string literals like `"100"` / `"299"`.
- */
 const buildState = (plan) => ({
   nameAr: plan?.nameAr ?? "",
   nameEn: plan?.nameEn ?? "",
@@ -68,12 +48,10 @@ const buildState = (plan) => ({
   invitePool: plan?.limits?.invitePool ?? null,
   durationDays: plan?.limits?.durationDays ?? 90,
   maxHosts: plan?.limits?.maxHosts ?? null,
-  features: FEATURE_TOGGLE_KEYS.reduce(
-    (acc, key) => ({ ...acc, [key]: plan?.features?.[key] ?? false }),
-    {},
-  ),
-  compensationPercentage: plan?.features?.compensationPercentage ?? 15,
-  priorityPoints: plan?.features?.priorityPoints ?? 1,
+  whatsAppTemplates: plan?.features?.whatsAppTemplates ?? 0,
+  setupFeeAmount: plan?.setupFeeAmount ?? 0,
+  featureBulletsAr: bulletsToText(plan?.featureBullets?.ar),
+  featureBulletsEn: bulletsToText(plan?.featureBullets?.en),
   isPopular: plan?.isPopular ?? false,
   sortOrder: plan?.sortOrder ?? 0,
   isActive: plan?.isActive !== false,
@@ -148,13 +126,6 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const setFeature = useCallback((key, value) => {
-    setForm((prev) => ({
-      ...prev,
-      features: { ...prev.features, [key]: value },
-    }));
-  }, []);
-
   const handleSave = async () => {
     if (!plan?.code) return;
     if (!form.nameAr.trim() || !form.nameEn.trim()) {
@@ -176,9 +147,12 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
           maxHosts: form.maxHosts,
         },
         features: {
-          ...form.features,
-          compensationPercentage: Number(form.compensationPercentage) || 0,
-          priorityPoints: Number(form.priorityPoints) || 1,
+          whatsAppTemplates: Number(form.whatsAppTemplates) || 0,
+        },
+        setupFeeAmount: Number(form.setupFeeAmount) || 0,
+        featureBullets: {
+          ar: bulletsToArr(form.featureBulletsAr),
+          en: bulletsToArr(form.featureBulletsEn),
         },
         isPopular: !!form.isPopular,
         sortOrder: Number(form.sortOrder) || 0,
@@ -325,34 +299,36 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
                 placeholder={t("plans.fields.unlimited")}
               />
 
-              {/* ── Feature toggles ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.featureToggles")}</Text>
-              <View style={styles.toggleGroup}>
-                {FEATURE_TOGGLE_KEYS.map((key) => (
-                  <SwitchRow
-                    key={key}
-                    label={t(`plans.features.${key}`)}
-                    value={form.features[key]}
-                    onValueChange={(v) => setFeature(key, v)}
-                  />
-                ))}
-              </View>
-
               {/* ── Feature numerics ── */}
               <Text style={styles.sectionLabel}>{t("plans.sections.featureNumerics")}</Text>
               <NumberField
-                label={t("plans.fields.compensationPercentage")}
-                value={form.compensationPercentage}
-                onChangeText={(txt) => setField("compensationPercentage", toNum(txt) ?? 0)}
-                placeholder="15"
-                  hint={t("plans.fields.compensationHint")}
+                label={t("plans.fields.whatsAppTemplates")}
+                value={form.whatsAppTemplates}
+                onChangeText={(txt) => setField("whatsAppTemplates", toNum(txt) ?? 0)}
+                placeholder="0"
+                hint={t("plans.fields.whatsAppTemplatesHint")}
               />
               <NumberField
-                label={t("plans.fields.priorityPoints")}
-                value={form.priorityPoints}
-                onChangeText={(txt) => setField("priorityPoints", toNum(txt) ?? 1)}
-                placeholder="1"
-                hint={t("plans.fields.priorityHint")}
+                label={t("plans.fields.setupFeeAmount")}
+                value={form.setupFeeAmount}
+                onChangeText={(txt) => setField("setupFeeAmount", toNum(txt) ?? 0)}
+                placeholder="0"
+                hint={t("plans.fields.setupFeeHint")}
+              />
+
+              {/* ── Feature bullets ── */}
+              <Text style={styles.sectionLabel}>{t("plans.sections.featureBullets")}</Text>
+              <TextField
+                label={t("plans.fields.featureBulletsAr")}
+                value={form.featureBulletsAr}
+                onChangeText={(v) => setField("featureBulletsAr", v)}
+                multiline
+              />
+              <TextField
+                label={t("plans.fields.featureBulletsEn")}
+                value={form.featureBulletsEn}
+                onChangeText={(v) => setField("featureBulletsEn", v)}
+                multiline
               />
 
               {/* ── Display ── */}

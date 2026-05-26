@@ -3,7 +3,7 @@ import styles from "./CtaBanner.module.css";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 
-const WA_LINK = "https://wa.me/966500000000";
+const WA_LINK = "https://wa.me/966551324939";
 
 export default function CtaBanner({ lang = "ar" }) {
   const { t } = useTranslation("landing");

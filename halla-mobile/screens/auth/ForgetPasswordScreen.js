@@ -15,6 +15,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { ForgetPasswordForm, EmailSentView } from "../../components/auth";
 import TopBar from "../../components/plans/TopBar";
+import { authErrorMessage } from "../../services/authErrors";
 
 const { width } = Dimensions.get("window");
 
@@ -32,8 +33,10 @@ export default function ForgetPasswordScreen({ navigation }) {
       toast.success(t("forgetPassword.emailSentDescription"));
       setStep("sent");
     } else {
-      toast.error(result.error || t("errors.resetFailed"));
-      return { success: false, fieldErrors: { email: result.error } };
+      const resolved = authErrorMessage(result.errorDetail, t);
+      const msg = resolved?.message || result.error || t("errors.resetFailed");
+      toast.error(msg);
+      return { success: false, fieldErrors: { email: msg } };
     }
     return result;
   };

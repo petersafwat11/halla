@@ -1,0 +1,190 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - img "Logo" [ref=e5]
+      - navigation [ref=e7]:
+        - list [ref=e8]:
+          - listitem [ref=e9] [cursor=pointer]:
+            - link "لوحة التحكم" [ref=e10]:
+              - /url: /admin-dash
+              - img [ref=e11]
+              - generic [ref=e13]: لوحة التحكم
+          - listitem [ref=e14] [cursor=pointer]:
+            - link "المدراء" [ref=e15]:
+              - /url: /admin-dash/moderators
+              - img [ref=e16]
+              - generic [ref=e18]: المدراء
+          - listitem [ref=e19] [cursor=pointer]:
+            - link "العملاء" [ref=e20]:
+              - /url: /admin-dash/hosts
+              - img [ref=e21]
+              - generic [ref=e23]: العملاء
+          - listitem [ref=e24] [cursor=pointer]:
+            - link "التجار" [ref=e25]:
+              - /url: /admin-dash/vendors
+              - img [ref=e26]
+              - generic [ref=e29]: التجار
+          - listitem [ref=e30] [cursor=pointer]:
+            - link "الوايت ليبل" [ref=e31]:
+              - /url: /admin-dash/whitelabels
+              - img [ref=e32]
+              - generic [ref=e34]: الوايت ليبل
+          - listitem [ref=e35] [cursor=pointer]:
+            - link "المناسبات" [ref=e36]:
+              - /url: /admin-dash/events
+              - img [ref=e37]
+              - generic [ref=e39]: المناسبات
+          - listitem [ref=e40] [cursor=pointer]:
+            - link "الشكاوى" [ref=e41]:
+              - /url: /admin-dash/tickets
+              - img [ref=e42]
+              - generic [ref=e44]: الشكاوى
+          - listitem [ref=e45] [cursor=pointer]:
+            - link "المدفوعات" [ref=e46]:
+              - /url: /admin-dash/payments
+              - img [ref=e47]
+              - generic [ref=e49]: المدفوعات
+          - listitem [ref=e50] [cursor=pointer]:
+            - link "الباقات" [ref=e51]:
+              - /url: /admin-dash/plans
+              - img [ref=e52]
+              - generic [ref=e54]: الباقات
+          - listitem [ref=e55] [cursor=pointer]:
+            - link "إدارة الأسعار" [ref=e56]:
+              - /url: /admin-dash/manage-plans
+              - img [ref=e57]
+              - generic [ref=e59]: إدارة الأسعار
+          - listitem [ref=e60] [cursor=pointer]:
+            - link "الخصومات" [ref=e61]:
+              - /url: /admin-dash/discounts
+              - img [ref=e62]
+              - generic [ref=e65]: الخصومات
+          - listitem [ref=e66] [cursor=pointer]:
+            - link "الإعدادات" [ref=e67]:
+              - /url: /admin-dash/settings
+              - img [ref=e68]
+              - generic [ref=e71]: الإعدادات
+          - listitem [ref=e72] [cursor=pointer]:
+            - link "قوالب الدعوات" [ref=e73]:
+              - /url: /admin-dash/templates
+              - img [ref=e74]
+              - generic [ref=e79]: قوالب الدعوات
+          - listitem [ref=e80] [cursor=pointer]:
+            - link "فئات القوالب" [ref=e81]:
+              - /url: /admin-dash/templates/categories
+              - img [ref=e82]
+              - generic [ref=e86]: فئات القوالب
+          - listitem [ref=e87] [cursor=pointer]:
+            - link "قوالب واتساب" [ref=e88]:
+              - /url: /admin-dash/taqnyat-templates
+              - img [ref=e89]
+              - generic [ref=e92]: قوالب واتساب
+      - button "تسجيل الخروج" [ref=e94]:
+        - img [ref=e95]
+        - generic [ref=e97]: تسجيل الخروج
+    - generic [ref=e98]:
+      - generic [ref=e100]:
+        - link "Switch language" [ref=e101] [cursor=pointer]:
+          - /url: /en/admin-dash
+          - img [ref=e102]
+          - generic [ref=e105]: EN
+        - button "Notifications" [ref=e107] [cursor=pointer]:
+          - img "notifications" [ref=e108]
+        - img "messages" [ref=e109]
+        - button "مدير النظام" [ref=e111] [cursor=pointer]:
+          - generic [ref=e112]:
+            - img [ref=e114]
+            - generic [ref=e116]: مدير النظام
+          - img [ref=e118]
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - heading "لوحة التحكم" [level=1] [ref=e124]
+            - paragraph [ref=e125]: نظرة عامة على أداء منصتك
+          - button "حدد مدة زمنية" [ref=e127]:
+            - paragraph [ref=e128]: حدد مدة زمنية
+        - generic [ref=e130]:
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]: إجمالي المضيفين
+              - generic [ref=e134]: "1"
+            - img [ref=e136]
+          - generic [ref=e138]:
+            - generic [ref=e139]:
+              - generic [ref=e140]: إجمالي المزودين
+              - generic [ref=e141]: "0"
+            - img [ref=e143]
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - generic [ref=e147]: إجمالي المناسبات
+              - generic [ref=e148]: "1"
+            - img [ref=e150]
+          - generic [ref=e152]:
+            - generic [ref=e153]:
+              - generic [ref=e154]: الاشتراكات النشطة
+              - generic [ref=e155]: "1"
+            - img [ref=e157]
+          - generic [ref=e159]:
+            - generic [ref=e160]:
+              - generic [ref=e161]: الشكاوى المفتوحة
+              - generic [ref=e162]: "0"
+            - img [ref=e164]
+        - generic [ref=e166]:
+          - generic [ref=e169]:
+            - heading "الاشتراكات" [level=3] [ref=e170]
+            - paragraph [ref=e171]: "0"
+          - generic [ref=e176]:
+            - generic [ref=e177]:
+              - heading "استجابة الضيوف" [level=3] [ref=e178]
+              - paragraph [ref=e179]: "3"
+            - generic [ref=e181]:
+              - paragraph [ref=e184]: 33% موافق
+              - paragraph [ref=e187]: 33% معتذر
+              - paragraph [ref=e190]: 33% لم يرد
+          - generic [ref=e194]:
+            - generic [ref=e195]:
+              - heading "الشكاوى" [level=3] [ref=e196]
+              - paragraph [ref=e197]: "0"
+            - generic [ref=e199]:
+              - paragraph [ref=e202]: "محلولة: 0"
+              - paragraph [ref=e205]: "مفتوحة: 0"
+        - generic [ref=e208]:
+          - generic [ref=e209]:
+            - generic [ref=e211]:
+              - heading "العملاء الجدد" [level=2] [ref=e214]
+              - table [ref=e216]:
+                - rowgroup [ref=e217]:
+                  - row "الاسم البريد الإلكتروني الحالة التاريخ" [ref=e218]:
+                    - columnheader "الاسم" [ref=e219]
+                    - columnheader "البريد الإلكتروني" [ref=e220]
+                    - columnheader "الحالة" [ref=e221]
+                    - columnheader "التاريخ" [ref=e222]
+                - rowgroup [ref=e223]:
+                  - row "Host Tenant A verify.host.a@test.local نشط 30 أبريل 2026" [ref=e224]:
+                    - cell "Host Tenant A" [ref=e225]
+                    - cell "verify.host.a@test.local" [ref=e226]
+                    - cell "نشط" [ref=e227]:
+                      - generic [ref=e228]: نشط
+                    - cell "30 أبريل 2026" [ref=e229]
+            - generic [ref=e231]:
+              - heading "المناسبات الأخيرة" [level=2] [ref=e234]
+              - table [ref=e236]:
+                - rowgroup [ref=e237]:
+                  - row "العنوان المضيف التاريخ الحالة" [ref=e238]:
+                    - columnheader "العنوان" [ref=e239]
+                    - columnheader "المضيف" [ref=e240]
+                    - columnheader "التاريخ" [ref=e241]
+                    - columnheader "الحالة" [ref=e242]
+                - rowgroup [ref=e243]:
+                  - row "[SMOKE] WL-Owned Live Event خالد عبدالله العتيبي 14 مايو 2026 منتهي" [ref=e244]:
+                    - cell "[SMOKE] WL-Owned Live Event" [ref=e245]
+                    - cell "خالد عبدالله العتيبي" [ref=e246]
+                    - cell "14 مايو 2026" [ref=e247]
+                    - cell "منتهي" [ref=e248]:
+                      - generic [ref=e249]: منتهي
+          - generic [ref=e251]:
+            - heading "التجار الأكثر تميزاً" [level=1] [ref=e252]
+            - generic [ref=e254]:
+              - heading "Unknown" [level=3] [ref=e255]
+              - paragraph [ref=e256]: 0 نقرات

@@ -4,11 +4,29 @@ import Link from "next/link";
 import styles from "./pricingSection.module.css";
 import { useTranslation } from "react-i18next";
 import { useLandingPlans } from "@/hooks/reactQueryHooks/usePlans";
-import { getLocalized } from "@/utils/locale";
+import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
 
-const WA_LINK = "https://wa.me/966500000000";
+const WA_LINK = "https://wa.me/966551324939";
 
 const formatPrice = (n) => (n || 0).toLocaleString();
+
+const SarSymbol = () => (
+  <svg
+    width="0.85em"
+    height="0.85em"
+    viewBox="0 0 30 22"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    style={{ display: "inline-block", verticalAlign: "middle" }}
+  >
+    <path d="M24 2 C26 4 26 8 22 12 C18 16 13 19 8 19 C5 19 3 17 3 15" strokeWidth="2.2" />
+    <line x1="1" y1="8" x2="26" y2="8" strokeWidth="1.8" />
+    <line x1="1" y1="13" x2="26" y2="13" strokeWidth="1.8" />
+  </svg>
+);
 
 const WaIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
@@ -17,45 +35,13 @@ const WaIcon = () => (
   </svg>
 );
 
-function FeatureList({ features, i18n }) {
-  if (!Array.isArray(features) || features.length === 0) return null;
-  return (
-    <div className={styles.prFeatGrid}>
-      {features.map((f, i) => (
-        <div key={i} className={styles.prFeatItem}>
-          <span className={styles.prFeatCheck}>✓</span>
-          <span>{getLocalized(f, "label", i18n.language)}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function CompRow({ count, pct, t }) {
-  if (!count) return null;
-  return (
-    <div className={styles.prComp}>
-      <span className={styles.prCompIcon}>🎁</span>
-      <div>
-        <span className={styles.prCompLabel}>{t("pricing.compensationTitle")}</span>
-        <span className={styles.prCompVal}>{t("pricing.compensationSingle", { count, pct: pct ?? 15 })}</span>
-      </div>
-    </div>
-  );
-}
-
 const getInviteValue = (plan, billingType) => {
   if (billingType === "monthly") return plan.invitePool ?? 0;
   return plan.invites ?? 0;
 };
 
-const calcCompensation = (plan, selectedValue, billingType) => {
-  const pct = (plan?.compensationPercentage ?? 15) / 100;
-  return Math.floor(selectedValue * pct);
-};
-
 export default function PricingSection({ lang = "ar" }) {
-  const { t, i18n } = useTranslation("landing");
+  const { t } = useTranslation("landing");
 
   const { data: landingData, isLoading, error } = useLandingPlans();
   const plans = landingData?.data ?? null;
@@ -123,22 +109,8 @@ export default function PricingSection({ lang = "ar" }) {
     [bizEventPlans, selBizInvites]
   );
 
-  const hostEventComp = currentHostEventPlan ? calcCompensation(currentHostEventPlan, selInvites, "event") : 0;
-  const hostEventPct = currentHostEventPlan?.compensationPercentage ?? 15;
-  const premiumEventComp = currentPremiumEventPlan ? calcCompensation(currentPremiumEventPlan, selInvites, "event") : 0;
-  const premiumEventPct = currentPremiumEventPlan?.compensationPercentage ?? 15;
-  const hostMonthlyComp = currentHostMonthlyPlan ? calcCompensation(currentHostMonthlyPlan, selPool, "monthly") : 0;
-  const hostMonthlyPct = currentHostMonthlyPlan?.compensationPercentage ?? 15;
-  const premiumMonthlyComp = currentPremiumMonthlyPlan ? calcCompensation(currentPremiumMonthlyPlan, selPool, "monthly") : 0;
-  const premiumMonthlyPct = currentPremiumMonthlyPlan?.compensationPercentage ?? 15;
-  const bizEventComp = currentBizEventPlan ? calcCompensation(currentBizEventPlan, selBizInvites, "event") : 0;
-  const bizEventPct = currentBizEventPlan?.compensationPercentage ?? 15;
   const bizQuarterlyPlan = bizQuarterlyPlans[0] || null;
   const bizAnnualPlan = bizAnnualPlans[0] || null;
-  const quarterlyComp = bizQuarterlyPlan?.compensationPool ?? 0;
-  const quarterlyPct = bizQuarterlyPlan?.compensationPercentage ?? 15;
-  const annualComp = bizAnnualPlan?.compensationPool ?? 0;
-  const annualPct = bizAnnualPlan?.compensationPercentage ?? 15;
 
   if (isLoading) {
     return (
@@ -274,51 +246,39 @@ export default function PricingSection({ lang = "ar" }) {
                 <div className={styles.prPrice}>
                   <div className={styles.prPriceRow}>
                     <span className={styles.prPriceNum}>{formatPrice(currentHostEventPlan?.pricing?.oneTime)}</span>
-                    <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
+                    <SarSymbol />
                   </div>
-                  <span className={styles.prPricePer}>{t("pricing.pricePerEvent")}</span>
                 </div>
               </div>
 
-              <div>
-                <div className={styles.prGuestLabel}>{t("pricing.selectInvites")}</div>
-                <div className={styles.prGuestTrack}>
-                  {basicEvent.map((plan) => {
-                    const v = getInviteValue(plan, "event");
-                    return (
-                      <button
-                        key={plan.code}
-                        className={`${styles.prGuestBtn}${selInvites === v ? ` ${styles.active}` : ""}`}
-                        onClick={() => setSelInvites(v)}
-                      >
-                        <span className={styles.prGuestNum}>{v}</span>
-                        <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className={styles.prManaged}>
-                <div className={styles.prManagedTextWrap}>
-                  <span className={styles.prManagedTitle}>{t("pricing.validDays90")}</span>
-                </div>
+              <div className={styles.prGuestTrack}>
+                {basicEvent.map((plan) => {
+                  const v = getInviteValue(plan, "event");
+                  return (
+                    <button
+                      key={plan.code}
+                      className={`${styles.prGuestBtn}${selInvites === v ? ` ${styles.active}` : ""}`}
+                      onClick={() => setSelInvites(v)}
+                    >
+                      <span className={styles.prGuestNum}>{v}</span>
+                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className={styles.prFeatSection}>
-                <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-                <FeatureList features={currentHostEventPlan?.featuresArray} i18n={i18n} />
+                <PlanDescription plan={currentHostEventPlan} lang={lang} selectedInviteCount={selInvites} />
               </div>
 
               <div className={styles.prCardFooter}>
-                <CompRow count={hostEventComp} pct={hostEventPct} t={t} />
                 <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
 
             {/* Premium Card */}
             <div className={`${styles.prCard} ${styles.popular}`}>
-              <div className={styles.prPopularBadge}>{t("pricing.premium")}</div>
+              <div className={styles.prPopularBadge}>{t("pricing.popular")}</div>
               <div className={styles.prCardTop}>
                 <div>
                   <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
@@ -326,44 +286,32 @@ export default function PricingSection({ lang = "ar" }) {
                 <div className={styles.prPrice}>
                   <div className={styles.prPriceRow}>
                     <span className={styles.prPriceNum}>{formatPrice(currentPremiumEventPlan?.pricing?.oneTime)}</span>
-                    <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
+                    <SarSymbol />
                   </div>
-                  <span className={styles.prPricePer}>{t("pricing.pricePerEvent")}</span>
                 </div>
               </div>
 
-              <div>
-                <div className={styles.prGuestLabel}>{t("pricing.selectInvites")}</div>
-                <div className={styles.prGuestTrack}>
-                  {premiumEvent.map((plan) => {
-                    const v = getInviteValue(plan, "event");
-                    return (
-                      <button
-                        key={plan.code}
-                        className={`${styles.prGuestBtn}${selInvites === v ? ` ${styles.active}` : ""}`}
-                        onClick={() => setSelInvites(v)}
-                      >
-                        <span className={styles.prGuestNum}>{v}</span>
-                        <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className={styles.prManaged}>
-                <div className={styles.prManagedTextWrap}>
-                  <span className={styles.prManagedTitle}>{t("pricing.validDays90")}</span>
-                </div>
+              <div className={styles.prGuestTrack}>
+                {premiumEvent.map((plan) => {
+                  const v = getInviteValue(plan, "event");
+                  return (
+                    <button
+                      key={plan.code}
+                      className={`${styles.prGuestBtn}${selInvites === v ? ` ${styles.active}` : ""}`}
+                      onClick={() => setSelInvites(v)}
+                    >
+                      <span className={styles.prGuestNum}>{v}</span>
+                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className={styles.prFeatSection}>
-                <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-                <FeatureList features={currentPremiumEventPlan?.featuresArray} i18n={i18n} />
+                <PlanDescription plan={currentPremiumEventPlan} lang={lang} selectedInviteCount={selInvites} />
               </div>
 
               <div className={styles.prCardFooter}>
-                <CompRow count={premiumEventComp} pct={premiumEventPct} t={t} />
                 <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
@@ -382,53 +330,39 @@ export default function PricingSection({ lang = "ar" }) {
                 <div className={styles.prPrice}>
                   <div className={styles.prPriceRow}>
                     <span className={styles.prPriceNum}>{formatPrice(currentHostMonthlyPlan?.pricing?.oneTime)}</span>
-                    <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
+                    <SarSymbol />
                   </div>
-                  <span className={styles.prPricePer}>{t("pricing.pricePerMonth")}</span>
                 </div>
               </div>
 
-              <div>
-                <div className={styles.prGuestLabel}>{t("pricing.selectPool")}</div>
-                <div className={styles.prGuestTrack}>
-                  {basicMonthly.map((plan) => {
-                    const v = getInviteValue(plan, "monthly");
-                    return (
-                      <button
-                        key={plan.code}
-                        className={`${styles.prGuestBtn}${selPool === v ? ` ${styles.active}` : ""}`}
-                        onClick={() => setSelPool(v)}
-                      >
-                        <span className={styles.prGuestNum}>{v}</span>
-                        <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className={styles.prManaged}>
-                <div className={styles.prManagedTextWrap}>
-                  <span className={styles.prManagedTitle}>
-                    {t("pricing.unlimitedEvents")} · {t("pricing.validDays30")}
-                  </span>
-                </div>
+              <div className={styles.prGuestTrack}>
+                {basicMonthly.map((plan) => {
+                  const v = getInviteValue(plan, "monthly");
+                  return (
+                    <button
+                      key={plan.code}
+                      className={`${styles.prGuestBtn}${selPool === v ? ` ${styles.active}` : ""}`}
+                      onClick={() => setSelPool(v)}
+                    >
+                      <span className={styles.prGuestNum}>{v}</span>
+                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className={styles.prFeatSection}>
-                <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-                <FeatureList features={currentHostMonthlyPlan?.featuresArray} i18n={i18n} />
+                <PlanDescription plan={currentHostMonthlyPlan} lang={lang} selectedInviteCount={selPool} />
               </div>
 
               <div className={styles.prCardFooter}>
-                <CompRow count={hostMonthlyComp} pct={hostMonthlyPct} t={t} />
                 <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
 
             {/* Premium Card */}
             <div className={`${styles.prCard} ${styles.popular}`}>
-              <div className={styles.prPopularBadge}>{t("pricing.premium")}</div>
+              <div className={styles.prPopularBadge}>{t("pricing.popular")}</div>
               <div className={styles.prCardTop}>
                 <div>
                   <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
@@ -436,46 +370,32 @@ export default function PricingSection({ lang = "ar" }) {
                 <div className={styles.prPrice}>
                   <div className={styles.prPriceRow}>
                     <span className={styles.prPriceNum}>{formatPrice(currentPremiumMonthlyPlan?.pricing?.oneTime)}</span>
-                    <span className={styles.prPriceCur}>{t("pricing.sar")}</span>
+                    <SarSymbol />
                   </div>
-                  <span className={styles.prPricePer}>{t("pricing.pricePerMonth")}</span>
                 </div>
               </div>
 
-              <div>
-                <div className={styles.prGuestLabel}>{t("pricing.selectPool")}</div>
-                <div className={styles.prGuestTrack}>
-                  {premiumMonthly.map((plan) => {
-                    const v = getInviteValue(plan, "monthly");
-                    return (
-                      <button
-                        key={plan.code}
-                        className={`${styles.prGuestBtn}${selPool === v ? ` ${styles.active}` : ""}`}
-                        onClick={() => setSelPool(v)}
-                      >
-                        <span className={styles.prGuestNum}>{v}</span>
-                        <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className={styles.prManaged}>
-                <div className={styles.prManagedTextWrap}>
-                  <span className={styles.prManagedTitle}>
-                    {t("pricing.unlimitedEvents")} · {t("pricing.validDays30")}
-                  </span>
-                </div>
+              <div className={styles.prGuestTrack}>
+                {premiumMonthly.map((plan) => {
+                  const v = getInviteValue(plan, "monthly");
+                  return (
+                    <button
+                      key={plan.code}
+                      className={`${styles.prGuestBtn}${selPool === v ? ` ${styles.active}` : ""}`}
+                      onClick={() => setSelPool(v)}
+                    >
+                      <span className={styles.prGuestNum}>{v}</span>
+                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className={styles.prFeatSection}>
-                <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-                <FeatureList features={currentPremiumMonthlyPlan?.featuresArray} i18n={i18n} />
+                <PlanDescription plan={currentPremiumMonthlyPlan} lang={lang} selectedInviteCount={selPool} />
               </div>
 
               <div className={styles.prCardFooter}>
-                <CompRow count={premiumMonthlyComp} pct={premiumMonthlyPct} t={t} />
                 <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
               </div>
             </div>
@@ -485,44 +405,32 @@ export default function PricingSection({ lang = "ar" }) {
         {/* ═══ BUSINESS — PER EVENT ═══ */}
         {audience === "business" && bizType === "event" && currentBizEventPlan && (
           <div className={styles.prHostCard}>
-            <div>
-              <div className={styles.prGuestLabel}>{t("pricing.selectInvites")}</div>
-              <div className={styles.prGuestTrack}>
-                {bizEventPlans.map((plan) => {
-                  const v = getInviteValue(plan, "event");
-                  return (
-                    <button
-                      key={plan.code}
-                      className={`${styles.prGuestBtn}${selBizInvites === v ? ` ${styles.active}` : ""}`}
-                      onClick={() => setSelBizInvites(v)}
-                    >
-                      <span className={styles.prGuestNum}>{v}</span>
-                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                    </button>
-                  );
-                })}
-              </div>
+            <div className={styles.prGuestTrack}>
+              {bizEventPlans.map((plan) => {
+                const v = getInviteValue(plan, "event");
+                return (
+                  <button
+                    key={plan.code}
+                    className={`${styles.prGuestBtn}${selBizInvites === v ? ` ${styles.active}` : ""}`}
+                    onClick={() => setSelBizInvites(v)}
+                  >
+                    <span className={styles.prGuestNum}>{v}</span>
+                    <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className={styles.prHostPrice}>
               <span className={styles.prHostPriceNum}>{formatPrice(currentBizEventPlan.pricing?.oneTime)}</span>
-              <span className={styles.prHostPriceCur}>{t("pricing.sar")}</span>
-              <span className={styles.prHostPricePer}>{t("pricing.pricePerEvent")}</span>
-            </div>
-
-            <div className={styles.prManaged}>
-              <div className={styles.prManagedTextWrap}>
-                <span className={styles.prManagedTitle}>{t("pricing.setupFeeNote")}</span>
-              </div>
+              <SarSymbol />
             </div>
 
             <div className={styles.prFeatSection}>
-              <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-              <FeatureList features={currentBizEventPlan.featuresArray} i18n={i18n} />
+              <PlanDescription plan={currentBizEventPlan} lang={lang} selectedInviteCount={selBizInvites} />
             </div>
 
             <div className={styles.prCardFooter}>
-              <CompRow count={bizEventComp} pct={bizEventPct} t={t} />
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={`${styles.prBtn} ${styles.prBtnDark}`}>
                 <WaIcon />{t("pricing.contact")}
               </a>
@@ -535,39 +443,17 @@ export default function PricingSection({ lang = "ar" }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostPrice}>
               <span className={styles.prHostPriceNum}>{formatPrice(bizQuarterlyPlan.pricing?.oneTime)}</span>
-              <span className={styles.prHostPriceCur}>{t("pricing.sar")}</span>
-              <span className={styles.prHostPricePer}>{t("pricing.pricePerQuarter")}</span>
-            </div>
-
-            <div className={styles.prManaged}>
-              <div className={styles.prManagedTextWrap}>
-                <span className={styles.prManagedTitle}>
-                  {t("pricing.poolLabel")}: {(bizQuarterlyPlan.invitePool || 0).toLocaleString()} {t("pricing.inviteUnit")}
-                  {" · "}{t("pricing.validDays90")}
-                  {bizQuarterlyPlan.features?.whatsAppTemplates ? (
-                    <>{" · "}{t("pricing.whatsappTemplates", { count: bizQuarterlyPlan.features.whatsAppTemplates })}</>
-                  ) : null}
-                  {" · "}{t("pricing.setupFeeIncluded")}
-                </span>
-              </div>
+              <SarSymbol />
             </div>
 
             <div className={styles.prFeatSection}>
-              <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-              <FeatureList features={bizQuarterlyPlan.featuresArray} i18n={i18n} />
+              <PlanDescription plan={bizQuarterlyPlan} lang={lang} />
             </div>
 
             <div className={styles.prCardFooter}>
-              <CompRow count={quarterlyComp} pct={quarterlyPct} t={t} />
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={`${styles.prBtn} ${styles.prBtnDark}`}>
                 <WaIcon />{t("pricing.contact")}
               </a>
-            </div>
-
-            <div className={styles.prManaged}>
-              <div className={styles.prManagedTextWrap}>
-                <span className={styles.prManagedTitle}>{t("pricing.contactNote")}</span>
-              </div>
             </div>
           </div>
         )}
@@ -577,39 +463,17 @@ export default function PricingSection({ lang = "ar" }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostPrice}>
               <span className={styles.prHostPriceNum}>{formatPrice(bizAnnualPlan.pricing?.oneTime)}</span>
-              <span className={styles.prHostPriceCur}>{t("pricing.sar")}</span>
-              <span className={styles.prHostPricePer}>{t("pricing.pricePerYear")}</span>
-            </div>
-
-            <div className={styles.prManaged}>
-              <div className={styles.prManagedTextWrap}>
-                <span className={styles.prManagedTitle}>
-                  {t("pricing.poolLabel")}: {(bizAnnualPlan.invitePool || 0).toLocaleString()} {t("pricing.inviteUnit")}
-                  {" · "}{t("pricing.validDays365")}
-                  {bizAnnualPlan.features?.whatsAppTemplates ? (
-                    <>{" · "}{t("pricing.whatsappTemplates", { count: bizAnnualPlan.features.whatsAppTemplates })}</>
-                  ) : null}
-                  {" · "}{t("pricing.setupFeeIncluded")}
-                </span>
-              </div>
+              <SarSymbol />
             </div>
 
             <div className={styles.prFeatSection}>
-              <div className={styles.prFeatTitle}>{t("pricing.featuresTitle")}</div>
-              <FeatureList features={bizAnnualPlan.featuresArray} i18n={i18n} />
+              <PlanDescription plan={bizAnnualPlan} lang={lang} />
             </div>
 
             <div className={styles.prCardFooter}>
-              <CompRow count={annualComp} pct={annualPct} t={t} />
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={`${styles.prBtn} ${styles.prBtnDark}`}>
                 <WaIcon />{t("pricing.contact")}
               </a>
-            </div>
-
-            <div className={styles.prManaged}>
-              <div className={styles.prManagedTextWrap}>
-                <span className={styles.prManagedTitle}>{t("pricing.contactNote")}</span>
-              </div>
             </div>
           </div>
         )}

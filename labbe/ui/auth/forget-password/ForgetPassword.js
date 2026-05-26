@@ -8,9 +8,11 @@ import InputGroup from "../../commen/inputs/inputGroup/InputGroup";
 import ConfirmBtn from "../../commen/confirmButton/ConfirmBtn";
 import { useTranslation } from "react-i18next";
 import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { getAuthErrorMessage } from "@/services/errorHandlingService";
 
 const ForgetPassword = () => {
   const { t } = useTranslation("forgetPassword");
+  const { t: tCommon } = useTranslation("common");
   const {
     handleSubmit,
     watch,
@@ -66,7 +68,10 @@ const ForgetPassword = () => {
       setResendCountdown(90);
       setIsResendDisabled(true);
     } catch (error) {
-      setError("email", { message: error.message || t("forgetPasswordForm.errors.generic") });
+      const resolved = getAuthErrorMessage(error.parsedError || null, tCommon);
+      setError("email", {
+        message: resolved?.message || error.message || t("forgetPasswordForm.errors.generic"),
+      });
     }
   };
 

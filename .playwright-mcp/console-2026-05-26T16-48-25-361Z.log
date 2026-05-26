@@ -1,0 +1,24 @@
+[     125ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/5e42e_next_dist_client_a752d0b2._.js:5956
+[     128ms] [LOG] [Fast Refresh] done in 108ms @ http://localhost:3000/_next/static/chunks/5e42e_next_dist_client_a752d0b2._.js:5816
+[     265ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/5e42e_next_dist_compiled_react-dom_effb6805._.js:14537
+[     419ms] [LOG] [API] POST /auth/logout - 200 (36ms) @ http://localhost:3000/_next/static/chunks/labbe_4d7eb481._.js:2236
+[     598ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[    3426ms] [WARNING] Image with src "/login/2.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/5e42e_next_dist_5965b9c7._.js:1014
+[    9425ms] [WARNING] Image with src "/login/4.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/5e42e_next_dist_5965b9c7._.js:1014
+[   13141ms] [WARNING] Form submission canceled because the form is not connected @ http://localhost:3000/ar/login:0
+[   13240ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/ar/login:0
+[   21385ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__61e466ba._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0
+[   27383ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__61e466ba._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/login:0
+[   31109ms] [LOG] [API] POST /auth/login - 200 (507ms) @ http://localhost:3000/_next/static/chunks/labbe_4d7eb481._.js:2236
+[   31240ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/5e42e_next_dist_client_a752d0b2._.js:5956
+[   31251ms] [LOG] [Fast Refresh] done in 113ms @ http://localhost:3000/_next/static/chunks/5e42e_next_dist_client_a752d0b2._.js:5816
+[   31808ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/5e42e_next_dist_compiled_react-dom_effb6805._.js:14537
+[   31828ms] [LOG] %c%s%c [API] GET /dashboard/admin - 200 (435ms) background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ about://React/Server/D:%5Challa%5Clabbe%5C.next%5Cserver%5Cchunks%5Cssr%5C%5Broot-of-the-server%5D__136d09a0._.js?7:595
+[   31961ms] [LOG] chartData [Object, Object, Object] @ http://localhost:3000/_next/static/chunks/labbe_6d2bcf8e._.js:4192
+[   31962ms] [LOG] chartData [Object, Object, Object] @ http://localhost:3000/_next/static/chunks/labbe_6d2bcf8e._.js:4192
+[   32017ms] [LOG] chartData [Object, Object, Object] @ http://localhost:3000/_next/static/chunks/labbe_6d2bcf8e._.js:4192
+[   32019ms] [LOG] chartData [Object, Object, Object] @ http://localhost:3000/_next/static/chunks/labbe_6d2bcf8e._.js:4192
+[   32137ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[   35384ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__61e466ba._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/admin-dash:0

@@ -9,7 +9,7 @@ const {
   SUBSCRIPTION_STATUS,
   isUnlimited,
 } = require("../src/shared/constants");
-const { isPerEventPlan, isPoolPlan, isManagedPlan } = require('../src/shared/constants/plans');
+const { isPerEventPlan, isPoolPlan, isManagedPlan, COMPENSATION_PERCENTAGE } = require('../src/shared/constants/plans');
 
 // ============================================
 // SUB-SCHEMAS (Subscription-specific only)
@@ -361,27 +361,6 @@ subscriptionSchema.methods.trackGuestAddition = async function (count) {
 };
 
 /**
- * Check if a feature is available (requires planId populated)
- * @param {string} featureName
- * @returns {boolean}
- */
-subscriptionSchema.methods.hasFeature = function (featureName) {
-  if (!this.isActive) return false;
-
-  // Check features from plan
-  const featureValue = this.features?.[featureName];
-  if (typeof featureValue === "boolean") return featureValue;
-  if (typeof featureValue === "number") return featureValue > 0;
-
-  // Check limits from plan
-  const limitValue = this.limits?.[featureName];
-  if (typeof limitValue === "boolean") return limitValue;
-  if (typeof limitValue === "number") return limitValue !== 0;
-
-  return false;
-};
-
-/**
  * Increment event usage
  * @param {ObjectId} eventId - For single event plans
  * @returns {Promise}
@@ -580,9 +559,8 @@ subscriptionSchema.statics.createForUser = async function (userId, plan, options
     : null;
 
   const invitePool = plan.limits?.invitePool ?? null;
-  const compensationPercentage = plan.features?.compensationPercentage ?? 10;
   const compensationPool = invitePool !== null
-    ? Math.floor(invitePool * compensationPercentage / 100)
+    ? Math.floor(invitePool * COMPENSATION_PERCENTAGE / 100)
     : null;
 
   return this.create({

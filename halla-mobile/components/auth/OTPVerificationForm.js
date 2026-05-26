@@ -19,7 +19,12 @@ const OTPVerificationForm = ({
   onResend,
   phoneNumber,
   loading = false,
-  resendTimer = 90,
+  // Initial cooldown — used until the parent's onResend reports the
+  // server-side cooldown (`cooldownSeconds`). Default matches the
+  // backend's OTP_CONFIG.cooldownSeconds (30s); previously hardcoded
+  // to 90s here, which let users tap Resend ~60s before the server
+  // would actually accept it.
+  resendTimer = 30,
 }) => {
   const { t } = useTranslation("auth");
   const [timer, setTimer] = useState(resendTimer);
@@ -61,8 +66,15 @@ const OTPVerificationForm = ({
     if (!canResend || isResending) return;
     setIsResending(true);
     try {
-      if (onResend) await onResend();
-      setTimer(resendTimer);
+      let nextCooldown = resendTimer;
+      if (onResend) {
+        const result = await onResend();
+        // Parent may return the server's cooldown for accurate sync.
+        if (result && typeof result.cooldownSeconds === "number" && result.cooldownSeconds > 0) {
+          nextCooldown = result.cooldownSeconds;
+        }
+      }
+      setTimer(nextCooldown);
       setCanResend(false);
     } catch (_e) {
       /* error surfaced by parent */

@@ -1,0 +1,132 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e3]:
+    - generic [ref=e6]:
+      - img "Halla" [ref=e8]
+      - generic [ref=e9]:
+        - paragraph [ref=e10] [cursor=pointer]: العربية
+        - paragraph [ref=e11] [cursor=pointer]: English
+    - generic [ref=e12]:
+      - generic [ref=e15]:
+        - generic [ref=e17]:
+          - paragraph [ref=e18]: "1"
+          - generic [ref=e19]:
+            - paragraph
+            - paragraph [ref=e20]: معلومات المنشأة
+        - generic [ref=e23]:
+          - paragraph [ref=e24]: "2"
+          - generic [ref=e25]:
+            - paragraph
+            - paragraph [ref=e26]: بيانات الدخول والتخصص
+        - generic [ref=e29]:
+          - paragraph [ref=e30]: "3"
+          - generic [ref=e31]:
+            - paragraph
+            - paragraph [ref=e32]: تفاصيل الاستخدام ونوع النشاط
+        - generic [ref=e35]:
+          - paragraph [ref=e36]: "4"
+          - generic [ref=e37]:
+            - paragraph
+            - paragraph [ref=e38]: اختيار الباقة
+        - generic [ref=e41]:
+          - paragraph [ref=e42]: "5"
+          - generic [ref=e43]:
+            - paragraph
+            - paragraph [ref=e44]: ملخص الطلب
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - heading "أنشئ منصتك بهويتك الخاصة" [level=2] [ref=e47]
+          - paragraph [ref=e48]: اتبع الخطوات التالية لتخصيص منصتك ضمن حلول هلا وبدء تفعيلها بالشكل الذي يناسب علامتك التجارية
+        - generic [ref=e51]:
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - heading "معلومات المنشأة" [level=3] [ref=e55]
+              - paragraph [ref=e56]: أدخل معلوماتك المنشأة لبدء إنشاء حسابك كمقدم خدمة.
+            - generic [ref=e58]:
+              - generic [ref=e59]:
+                - heading "معلومات المنشأة" [level=3] [ref=e60]
+                - generic [ref=e61]:
+                  - generic [ref=e62]:
+                    - generic [ref=e63]: اسم الجهة أو العلامة التجارية (بالعربية)*
+                    - generic [ref=e64]:
+                      - textbox "اسم الجهة أو العلامة التجارية (بالعربية)*" [ref=e65]:
+                        - /placeholder: أدخل اسم المنظمة بالعربية
+                      - img "icon" [ref=e66]
+                  - generic [ref=e67]:
+                    - generic [ref=e68]: اسم الجهة أو العلامة التجارية (بالانجليزية)*
+                    - generic [ref=e69]:
+                      - textbox "اسم الجهة أو العلامة التجارية (بالانجليزية)*" [ref=e70]:
+                        - /placeholder: أدخل اسم المنظمة بالانجليزية
+                      - img "icon" [ref=e71]
+              - generic [ref=e72]:
+                - heading "معلومات المنشأة" [level=3] [ref=e73]
+                - generic [ref=e74]:
+                  - generic [ref=e75]:
+                    - generic [ref=e76]: اسم الجهة/المنشأة الرسمية*
+                    - generic [ref=e77]:
+                      - textbox "اسم الجهة/المنشأة الرسمية*" [ref=e78]:
+                        - /placeholder: الاسم الرسمي للشركة
+                      - img "icon" [ref=e79]
+                  - generic [ref=e80]:
+                    - generic [ref=e81]: رقم السجل التجاري*
+                    - generic [ref=e82]:
+                      - textbox "رقم السجل التجاري*" [ref=e83]:
+                        - /placeholder: رقم السجل التجاري
+                      - img "icon" [ref=e84]
+                    - paragraph [ref=e85]: يجب أن يكون 10 أرقام تبدأ بـ 70
+                  - generic [ref=e86]:
+                    - generic [ref=e87]: الرقم الضريبي (اختياري)
+                    - generic [ref=e88]:
+                      - textbox "الرقم الضريبي (اختياري)" [ref=e89]:
+                        - /placeholder: ادخل الرقم الضريبي
+                      - img "icon" [ref=e90]
+                    - paragraph [ref=e91]: يجب أن يكون 15 رقم تبدأ بـ 30
+              - generic [ref=e92]:
+                - heading "العنوان الوطني" [level=3] [ref=e93]
+                - generic [ref=e94]:
+                  - generic [ref=e95]:
+                    - generic [ref=e96]:
+                      - generic [ref=e97]: المدينة*
+                      - generic [ref=e98]:
+                        - textbox "المدينة*" [ref=e99]:
+                          - /placeholder: ادخل اسم المدينة
+                        - img "icon" [ref=e100]
+                    - generic [ref=e101]:
+                      - generic [ref=e102]: الحي*
+                      - generic [ref=e103]:
+                        - textbox "الحي*" [ref=e104]:
+                          - /placeholder: ادخل اسم الحي
+                        - img "icon" [ref=e105]
+                  - generic [ref=e106]:
+                    - generic [ref=e107]: الشارع*
+                    - generic [ref=e108]:
+                      - textbox "الشارع*" [ref=e109]:
+                        - /placeholder: ادخل اسم الشارع
+                      - img "icon" [ref=e110]
+                  - generic [ref=e111]:
+                    - generic [ref=e112]:
+                      - generic [ref=e113]: رقم المبنى*
+                      - generic [ref=e114]:
+                        - spinbutton "رقم المبنى*" [ref=e115]
+                        - img "icon" [ref=e116]
+                      - generic [ref=e117]: 0 / 4
+                    - generic [ref=e118]:
+                      - generic [ref=e119]: الرقم الإضافي*
+                      - generic [ref=e120]:
+                        - spinbutton "الرقم الإضافي*" [ref=e121]
+                        - img "icon" [ref=e122]
+                      - generic [ref=e123]: 0 / 4
+                  - generic [ref=e124]:
+                    - generic [ref=e125]:
+                      - generic [ref=e126]: نوع الوحدة (اختياري)
+                      - generic [ref=e127]:
+                        - textbox "نوع الوحدة (اختياري)" [ref=e128]:
+                          - /placeholder: ادخل نوع الوحدة
+                        - img "icon" [ref=e129]
+                    - generic [ref=e130]:
+                      - generic [ref=e131]: رقم الوحدة (اختياري)
+                      - generic [ref=e132]:
+                        - spinbutton "رقم الوحدة (اختياري)" [ref=e133]
+                        - img "icon" [ref=e134]
+                      - generic [ref=e135]: 0 / 4
+          - button "المتابعة" [ref=e138] [cursor=pointer]

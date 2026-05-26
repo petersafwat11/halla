@@ -1,20 +1,14 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import { getLocalized, formatNumber } from "../../utils/locale";
+import PlanDescription from "./PlanDescription";
 
 const BusinessPlanCard = ({
   plan,
-  compInvites,
   compLabel,
-  validityLabel,
-  currency,
   priceSuffix,
-  invitesSuffix,
-  compSuffix,
-  whatsappLabel,
-  setupIncluded,
+  selectedInviteCount,
   onSubscribe,
 }) => {
   const { i18n } = useTranslation("plans");
@@ -22,7 +16,6 @@ const BusinessPlanCard = ({
 
   const planName = getLocalized(plan, "name", locale);
   const price = plan.pricing?.oneTime || 0;
-  const inviteCount = (plan.limits?.invitePool ?? plan.limits?.maxInvitesPerEvent) || 0;
 
   return (
     <View style={styles.planCard}>
@@ -31,56 +24,19 @@ const BusinessPlanCard = ({
         <Text style={styles.priceAmount}>{formatNumber(price, locale)}</Text>
         <Text style={styles.priceCurrency}>{priceSuffix}</Text>
       </View>
-      <View style={styles.limitsBox}>
-        <View style={styles.limitItem}>
-          <Ionicons name="people-outline" size={16} color="#C28E5C" />
-          <Text style={styles.limitText}>
-            {formatNumber(inviteCount, locale)} {invitesSuffix}
-          </Text>
-        </View>
-        <View style={styles.limitItem}>
-          <Ionicons name="gift-outline" size={16} color="#C28E5C" />
-          <Text style={styles.limitText}>
-            {compInvites} {compSuffix}
-          </Text>
-        </View>
-        <View style={styles.limitItem}>
-          <Ionicons name="time-outline" size={16} color="#C28E5C" />
-          <Text style={styles.limitText}>{validityLabel}</Text>
-        </View>
-        {whatsappLabel && (
-          <View style={styles.limitItem}>
-            <Ionicons name="logo-whatsapp" size={16} color="#C28E5C" />
-            <Text style={styles.limitText}>{whatsappLabel}</Text>
-          </View>
-        )}
-        {setupIncluded && (
-          <View style={styles.limitItem}>
-            <Ionicons name="checkmark-done-outline" size={16} color="#2A8C5B" />
-            <Text style={styles.limitText}>{setupIncluded}</Text>
-          </View>
-        )}
-      </View>
-      {Array.isArray(plan.featuresArray) && plan.featuresArray.length > 0 && (
-        <View style={styles.featuresList}>
-          {plan.featuresArray.map((f, i) => (
-            <View key={i} style={styles.featureItem}>
-              <Ionicons name="checkmark-circle-outline" size={14} color="#2A8C5B" />
-              <Text style={styles.featureText}>
-                {getLocalized(f, "label", locale)}
-              </Text>
-            </View>
-          ))}
-        </View>
-      )}
+
+      <PlanDescription
+        plan={plan}
+        lang={locale}
+        selectedInviteCount={selectedInviteCount}
+      />
+
       <TouchableOpacity
         style={styles.subscribeBtn}
         onPress={() => onSubscribe(plan)}
         activeOpacity={0.8}
       >
-        <Text style={styles.subscribeBtnText}>
-          {compLabel}
-        </Text>
+        <Text style={styles.subscribeBtnText}>{compLabel}</Text>
       </TouchableOpacity>
     </View>
   );

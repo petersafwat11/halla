@@ -1,0 +1,55 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "Switch language" [ref=e6] [cursor=pointer]:
+        - /url: /en/login
+        - img [ref=e7]
+        - generic [ref=e10]: EN
+      - generic [ref=e11]:
+        - generic [ref=e14]:
+          - img "Halla" [ref=e16]
+          - generic [ref=e17]:
+            - paragraph [ref=e18] [cursor=pointer]: العربية
+            - paragraph [ref=e19] [cursor=pointer]: English
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - heading "مرحبًا بك فى هلا" [level=2] [ref=e51]
+            - paragraph [ref=e52]: سجّل دخولك وابدأ رحلتك معنا في تنظيم الدعوات بأسلوب عصري ومميز.
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - generic [ref=e55]:
+                - generic [ref=e56]: البريد اللإلكترونى*
+                - generic [ref=e57]:
+                  - textbox "البريد اللإلكترونى*" [ref=e58]:
+                    - /placeholder: ادخل البريد اللإلكترونى
+                    - text: test.admin@labbe.sa
+                  - img "icon" [ref=e59]
+              - generic [ref=e60]:
+                - generic [ref=e61]: كلمة المرور*
+                - generic [ref=e62]:
+                  - textbox "كلمة المرور*" [ref=e63]:
+                    - /placeholder: ادخل كلمة المرور
+                    - text: password123
+                  - img "icon" [ref=e64]
+                  - button "Show password" [ref=e65] [cursor=pointer]:
+                    - img [ref=e66]
+            - generic [ref=e69]:
+              - button "نسيت كلمة المرور" [ref=e70] [cursor=pointer]
+              - generic [ref=e71]:
+                - paragraph [ref=e72]: تذكرنى
+                - checkbox [ref=e73] [cursor=pointer]
+          - button "تسجيل الدخول" [ref=e74] [cursor=pointer]
+          - generic [ref=e75]:
+            - button "تسجيل الدخول بكلمة مرور مؤقتة arrow" [ref=e76] [cursor=pointer]:
+              - text: تسجيل الدخول بكلمة مرور مؤقتة
+              - img "arrow" [ref=e77]
+            - button "ليس لديك حساب؟ إنشاء حساب" [ref=e78] [cursor=pointer]
+    - generic [ref=e37]:
+      - img "image1" [ref=e39]
+      - generic [ref=e40]:
+        - heading "Halla هلا" [level=1] [ref=e41]
+        - paragraph [ref=e42]: region's most distinguished gatherings.
+  - button "Open Next.js Dev Tools" [ref=e84] [cursor=pointer]:
+    - img [ref=e85]
+  - alert [ref=e88]

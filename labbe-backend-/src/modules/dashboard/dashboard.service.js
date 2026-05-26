@@ -379,7 +379,6 @@ class DashboardService {
       // unlimited (admin/super-admin plans where invitePool is null).
       const planType = subscription?.planId?.planType;
       const planLimits = subscription?.planId?.limits || {};
-      const planFeatures = subscription?.planId?.features || {};
 
       let remainingGuests;
       let compensationMessages;
@@ -403,13 +402,8 @@ class DashboardService {
             ? null
             : Math.max(0, maxInvitesPerEvent - guests.length);
         compensationMessages =
-          planFeatures.hasCompensationInvites &&
-          maxInvitesPerEvent != null &&
-          maxInvitesPerEvent !== -1
-            ? Math.floor(
-                ((planFeatures.compensationPercentage ?? COMPENSATION_PERCENTAGE) / 100) *
-                  maxInvitesPerEvent
-              )
+          maxInvitesPerEvent != null && maxInvitesPerEvent !== -1
+            ? Math.floor((COMPENSATION_PERCENTAGE / 100) * maxInvitesPerEvent)
             : 0;
       }
 

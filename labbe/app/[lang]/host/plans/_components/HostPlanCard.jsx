@@ -1,7 +1,6 @@
 "use client";
-import { FaGift } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
-import FeaturesList from "./FeaturesList";
+import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
 import styles from "./HostPlanCard.module.css";
 
 const getOptionValue = (plan, billingType) => {
@@ -16,11 +15,11 @@ const HostPlanCard = ({
   billingType,
   selectedInvites,
   onInviteChange,
-  features = [],
-  compensationCount = 0,
   onSubscribe,
+  lang = "ar",
 }) => {
-  const { t } = useTranslation("plans");
+  const { t, i18n } = useTranslation("plans");
+  const activeLang = lang || i18n.language || "ar";
 
   const matchedPlan =
     plans.find((p) => getOptionValue(p, billingType) === selectedInvites) ||
@@ -77,27 +76,13 @@ const HostPlanCard = ({
         </div>
       </div>
 
-      <div className={styles.validityNote}>
-        <span>
-          {billingType === "monthly"
-            ? t("billingTypeDescriptions.monthly")
-            : t("billingTypeDescriptions.event")}
-        </span>
-      </div>
-
-      <FeaturesList features={features} title={t("features.title")} />
+      <PlanDescription
+        plan={matchedPlan}
+        lang={activeLang}
+        selectedInviteCount={selectedInvites}
+      />
 
       <div className={styles.cardFooter}>
-        <div className={styles.compensation}>
-          <FaGift className={styles.compensationIcon} />
-          <div className={styles.compensationContent}>
-            <span className={styles.compensationTitle}>{t("compensation.title")}</span>
-            <span className={styles.compensationValue}>
-              {compensationCount} {t("compensation.invites")}
-            </span>
-          </div>
-        </div>
-
         <button
           type="button"
           className={styles.subscribeBtn}

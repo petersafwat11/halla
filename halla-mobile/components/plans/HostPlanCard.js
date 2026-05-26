@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import {
   colors,
@@ -10,7 +9,7 @@ import {
 } from "../../styles/tokens";
 import PlanPriceBlock from "./_components/PlanPriceBlock";
 import InviteSelector, { getInviteValue } from "./_components/InviteSelector";
-import PlanFeatureRow from "./_components/PlanFeatureRow";
+import PlanDescription from "./PlanDescription";
 
 const HostPlanCard = ({
   planFamily,
@@ -19,11 +18,10 @@ const HostPlanCard = ({
   billingType,
   selectedInvites,
   onInviteChange,
-  features,
-  compensationCount = 0,
   onSubscribe,
 }) => {
-  const { t } = useTranslation("plans");
+  const { t, i18n } = useTranslation("plans");
+  const lang = i18n.language || "ar";
 
   const matchedPlan = useMemo(
     () =>
@@ -34,7 +32,6 @@ const HostPlanCard = ({
   );
 
   const price = matchedPlan?.price || 0;
-  const effectiveFeatures = features ?? matchedPlan?.featuresArray;
 
   return (
     <View style={[styles.card, isPopular && styles.cardPopular]}>
@@ -59,35 +56,12 @@ const HostPlanCard = ({
         onInviteChange={onInviteChange}
       />
 
-      {/* Validity note */}
-      <View style={styles.validityNote}>
-        <Text style={styles.validityNoteText}>
-          {billingType === "monthly"
-            ? t("billingTypeDescriptions.monthly")
-            : t("billingTypeDescriptions.event")}
-        </Text>
-      </View>
+      <PlanDescription
+        plan={matchedPlan}
+        lang={lang}
+        selectedInviteCount={selectedInvites}
+      />
 
-      <PlanFeatureRow features={effectiveFeatures} />
-
-      {/* Compensation */}
-      <View style={styles.compensation}>
-        <Ionicons
-          name="gift-outline"
-          size={20}
-          color={colors.primary[500]}
-        />
-        <View style={styles.compensationContent}>
-          <Text style={styles.compensationTitle}>
-            {t("compensation.title")}
-          </Text>
-          <Text style={styles.compensationValue}>
-            {compensationCount} {t("compensation.invites")}
-          </Text>
-        </View>
-      </View>
-
-      {/* Subscribe */}
       <TouchableOpacity
         style={[styles.subscribeBtn, !matchedPlan && styles.subscribeBtnDisabled]}
         onPress={() => matchedPlan && onSubscribe?.(matchedPlan)}

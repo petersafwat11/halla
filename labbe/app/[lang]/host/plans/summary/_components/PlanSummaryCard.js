@@ -8,14 +8,14 @@ import styles from "../summary.module.css";
 const PlanSummaryCard = ({ selectedPlan, planFamily, billingType, planPrice, t: tProp }) => {
   const { t: tHook, i18n } = useTranslation("plans");
   const t = tProp || tHook;
+  const COMPENSATION_PERCENTAGE = 15;
   const isMonthly = billingType === "monthly";
   const inviteCount = isMonthly
     ? selectedPlan?.invitePool || 0
     : selectedPlan?.invites ?? 0;
-  const compensationPercent = (selectedPlan?.compensationPercentage ?? 10) / 100;
   const compensationCount = isMonthly
     ? selectedPlan?.compensationPool || 0
-    : Math.floor((selectedPlan?.invites ?? 0) * compensationPercent);
+    : Math.floor((selectedPlan?.invites ?? 0) * (COMPENSATION_PERCENTAGE / 100));
 
   const planDisplayName = (() => {
     const familyKey = planFamily === "premium" ? "premium" : "basic";

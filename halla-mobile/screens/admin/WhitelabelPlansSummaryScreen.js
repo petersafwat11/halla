@@ -34,8 +34,13 @@ const WhitelabelPlansSummaryScreen = () => {
   const validating = validateDiscount.isPending;
 
   const planPrice = parseFloat(selectedPlan?.pricing?.oneTime) || 0;
+  // setupFeeAmount is non-zero only for business event plans (1,200 SAR).
+  // Quarterly/annual carry 0 because the setup fee is bundled into the
+  // headline price. Mobile previously skipped this — fix per rev. 2 plan.
+  const setupFee = parseFloat(selectedPlan?.setupFeeAmount) || 0;
+  const subtotal = planPrice + setupFee;
   const discountAmt = discountData?.discountAmount || 0;
-  const finalTotal = Math.max(0, planPrice - discountAmt);
+  const finalTotal = Math.max(0, subtotal - discountAmt);
 
   const getPlanDisplayName = useCallback(
     () => getLocalized(selectedPlan, "name", currentLanguage),
@@ -168,10 +173,12 @@ const WhitelabelPlansSummaryScreen = () => {
           <PaymentSummaryCard
             title={t("summary.paymentSummary.title")}
             planPrice={planPrice}
+            setupFee={setupFee}
             discountAmt={discountAmt}
             finalTotal={finalTotal}
             currency={t("summary.currency")}
             planPriceLabel={t("summary.paymentSummary.planPrice")}
+            setupFeeLabel={t("setupFeeRow", { amount: setupFee.toLocaleString() })}
             discountLabel={t("summary.paymentSummary.discount")}
             totalLabel={t("summary.paymentSummary.total")}
           />

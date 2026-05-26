@@ -1,5 +1,5 @@
 /* ── Section ── */
-.prRoot { padding: 5rem 2rem; background: var(--color-primary-50); }
+.prRoot { padding: 6rem 3rem; background: var(--color-primary-50); }
 .prInner { max-width: 1200px; margin: 0 auto; }
 
 /* ── Header ── */
@@ -43,8 +43,8 @@
 
 /* ── Guest selector ── */
 .prGuestLabel { font-size: 1.3rem; font-weight: 700; color: var(--color-secondary-600); font-family: "Cairo", sans-serif; margin-bottom: 1rem; text-align: center; }
-.prGuestTrack { display: flex; gap: 1rem; flex-wrap: wrap; }
-.prGuestBtn { flex: 1; min-width: 90px; display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: 1rem .8rem; border: 2px solid var(--color-primary-200); border-radius: 1rem; background: var(--color-natural-50); cursor: pointer; transition: all 220ms ease; font-family: "Cairo", sans-serif; }
+.prGuestTrack { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; }
+.prGuestBtn { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: .8rem .5rem; border: 2px solid var(--color-primary-200); border-radius: 1rem; background: var(--color-natural-50); cursor: pointer; transition: all 220ms ease; font-family: "Cairo", sans-serif; }
 .prGuestBtn.active { border-color: var(--color-primary-500); background: var(--color-primary-100); }
 .prGuestNum { font-size: 2rem; font-weight: 800; color: var(--color-primary-500); line-height: 1; }
 .prGuestUnit { font-size: 1.1rem; font-weight: 500; color: var(--color-accent-500); }
@@ -73,9 +73,9 @@
 /* ── Features ── */
 .prFeatSection { flex: 1; }
 .prFeatTitle { font-size: 1.3rem; font-weight: 700; color: var(--color-secondary-700); margin: 0 0 .8rem; font-family: "Cairo", sans-serif; text-align: center; }
-.prFeatGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem; justify-content: center; }
-.prFeatItem { display: flex; align-items: center; justify-content: center; gap: .5rem; font-size: 1.15rem; color: var(--color-secondary-600); padding: .5rem .75rem; background: var(--color-primary-50); border-radius: .5rem; font-family: "Cairo", sans-serif; }
-.prFeatCheck { color: var(--color-success-600); font-size: 1rem; flex-shrink: 0; font-weight: 700; }
+.prFeatGrid { display: flex; flex-direction: column; gap: .5rem; align-items: flex-start; }
+.prFeatItem { display: flex; align-items: flex-start; justify-content: flex-start; gap: .6rem; font-size: 1.75rem; color: var(--color-secondary-600); padding: .3rem 0; font-family: "Cairo", sans-serif; white-space: nowrap; }
+.prFeatCheck { color: var(--color-success-600); font-size: 1.2rem; flex-shrink: 0; font-weight: 700; }
 
 /* ── Compensation + CTA footer ── */
 .prCardFooter { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -116,14 +116,14 @@
 /* ── Responsive ── */
 @media (max-width: 860px) { .prGrid { grid-template-columns: 1fr; max-width: 480px; } }
 @media (max-width: 640px) {
-  .prRoot { padding: 3rem 1.6rem; }
+  .prRoot { padding: 4rem 2rem; }
   .prSelector { max-width: 100%; }
   .prSegBtn { padding: .8rem 1rem; gap: .6rem; }
   .prSegLabel { font-size: 1.25rem; }
   .prSegSub { display: none; }
-  .prFeatGrid { grid-template-columns: repeat(2, 1fr); gap: .5rem; }
-  .prGuestTrack { gap: .6rem; }
-  .prGuestBtn { min-width: 70px; padding: .8rem .6rem; }
+  .prFeatGrid { gap: .4rem; }
+  .prGuestTrack { gap: .5rem; }
+  .prGuestBtn { padding: .7rem .4rem; }
   .prGuestNum { font-size: 1.6rem; }
   .prManaged { flex-direction: column; text-align: center; margin-top: 2rem; }
   .prHostPriceNum { font-size: 3.6rem; }

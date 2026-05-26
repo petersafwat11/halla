@@ -156,15 +156,10 @@ class SubscriptionsService {
     const totalGuestLimit = maxGuests === -1 ? -1 : maxGuests + addonExtraGuests;
     const eventsRemaining = maxEvents === -1 ? -1 : Math.max(0, maxEvents - eventsUsed);
 
-    let compensationInvites = 0;
-    if (
-      subscription.features?.hasCompensationInvites &&
-      maxGuests > 0 &&
-      maxGuests !== -1
-    ) {
-      const percentage = subscription.features?.compensationPercentage || COMPENSATION_PERCENTAGE;
-      compensationInvites = Math.floor(maxGuests * (percentage / 100));
-    }
+    const compensationInvites =
+      maxGuests > 0 && maxGuests !== -1
+        ? Math.floor(maxGuests * (COMPENSATION_PERCENTAGE / 100))
+        : 0;
 
     return {
       maxEvents,

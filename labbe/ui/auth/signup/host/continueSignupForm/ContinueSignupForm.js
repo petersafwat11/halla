@@ -54,6 +54,7 @@ const ContinueSignupForm = () => {
   const {
     handleSubmit,
     watch,
+    setError,
     formState: { isValid },
   } = methods;
 
@@ -86,9 +87,21 @@ const ContinueSignupForm = () => {
       });
       router.push(`/${currentLocale}/host`);
     } catch (error) {
+      // Surface duplicate-email / duplicate-username on the field that
+      // caused it instead of dumping a generic toast. The duplicate-key
+      // path returns { code: 'DUPLICATE_FIELD' | 'CONFLICT', field }.
+      const parsed = error?.parsedError;
+      const resolved = getAuthErrorMessage(parsed, tCommon);
+      if (parsed && (parsed.code === "CONFLICT" || parsed.code === "DUPLICATE_FIELD")) {
+        const fieldMap = { email: "email", phoneNumber: "email", username: "username" };
+        const target = fieldMap[parsed.field] || "email";
+        setError(target, { type: "server", message: resolved?.message || error.message });
+        return;
+      }
       setLocalError(
+        resolved?.message ||
         error.message ||
-          t("errors.complete_profile_failed", "Failed to complete profile. Please try again.")
+        t("errors.complete_profile_failed", "Failed to complete profile. Please try again.")
       );
     }
   };

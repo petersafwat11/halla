@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getLocalized } from "../../utils/locale";
-import { DEFAULT_COMPENSATION_PERCENTAGE } from "../../utils/constants/plans";
+import { COMPENSATION_PERCENTAGE } from "../../utils/constants/plans";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const isMonthly = (billingType) =>
@@ -38,9 +38,7 @@ const PlanSummaryCard = ({
     : t("summary.oneEvent");
 
   const compensationCount = (() => {
-    const pct =
-      (selectedPlan?.compensationPercentage ?? DEFAULT_COMPENSATION_PERCENTAGE) /
-      100;
+    const pct = COMPENSATION_PERCENTAGE / 100;
     if (monthly) {
       return (
         selectedPlan?.compensationPool ??

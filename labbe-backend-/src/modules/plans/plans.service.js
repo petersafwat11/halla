@@ -7,7 +7,7 @@
 const mongoose = require('mongoose');
 
 const { NotFoundError, ValidationError, ConflictError } = require('../../shared/errors');
-const { isPoolPlan, buildFeaturesArray, BUSINESS_SETUP_FEE } = require('../../shared/constants/plans');
+const { isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
 const logger = require('../../shared/utils/logger');
 
 const Plan = require('../../../models/PlanModel');
@@ -41,8 +41,6 @@ class PlansService {
       event: [],
       quarterly: [],
       annual: [],
-      setupFeeRequired: true,
-      setupFeeAmount: BUSINESS_SETUP_FEE,
     };
 
     for (const plan of plans) {
@@ -205,6 +203,7 @@ class PlansService {
     const allowedFields = [
       'nameAr', 'nameEn', 'descriptionAr', 'descriptionEn',
       'isActive', 'isPublic', 'pricing', 'limits', 'features',
+      'setupFeeAmount', 'featureBullets',
       'sortOrder', 'isPopular',
     ];
     const safeUpdate = {};
@@ -374,7 +373,10 @@ class PlansService {
   _formatPlan(plan) {
     const isPool = isPoolPlan(plan.planType);
     const invitePool = plan.limits?.invitePool ?? null;
-    const compensationPercentage = plan.features?.compensationPercentage ?? 10;
+    const features = plan.features?.toObject ? plan.features.toObject() : (plan.features || {});
+    const featureBullets = plan.featureBullets?.toObject
+      ? plan.featureBullets.toObject()
+      : (plan.featureBullets || { ar: [], en: [] });
     return {
       id: plan._id, code: plan.code,
       name: plan.name, nameAr: plan.nameAr, nameEn: plan.nameEn,
@@ -388,11 +390,11 @@ class PlansService {
       invites: isPool ? null : (plan.limits?.maxInvitesPerEvent || 0),
       invitePool: isPool ? invitePool : null,
       compensationPool: isPool && invitePool !== null
-        ? Math.floor(invitePool * (compensationPercentage / 100))
+        ? Math.floor(invitePool * (COMPENSATION_PERCENTAGE / 100))
         : null,
-      compensationPercentage,
-      features: plan.features,
-      featuresArray: buildFeaturesArray(plan.features),
+      features,
+      setupFeeAmount: plan.setupFeeAmount || 0,
+      featureBullets: { ar: featureBullets.ar || [], en: featureBullets.en || [] },
       isActive: plan.isActive, sortOrder: plan.sortOrder,
     };
   }

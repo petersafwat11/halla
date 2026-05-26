@@ -24,7 +24,7 @@ const ImageCarousel = () => {
       </div>
       <div className={styles.text_container}>
         <h1 className={styles.title}>
-          Labbe <span className={styles.arabic_title}> لبّى </span>
+          Halla <span className={styles.arabic_title}> هلا </span>
         </h1>
         <p className={styles.description}>
           {`region's most distinguished gatherings.`}

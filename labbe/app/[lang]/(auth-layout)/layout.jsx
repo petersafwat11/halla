@@ -2,15 +2,13 @@
 import React from "react";
 import styles from "./page.module.css";
 import ImageCarousel from "@/ui/commen/imageCarousel/ImageCarousel";
+import LangToggle from "@/ui/common/LangToggle";
 import { usePathname } from "next/navigation";
 
 const Page = ({ children }) => {
   const pathname = usePathname();
 
   const shouldShowSlider = !pathname.includes("/signup/continue-signup");
-
-  console.log("Current Pathname:", pathname);
-  console.log("Should Show Slider:", shouldShowSlider);
 
   return (
     <div className={"page"}>
@@ -21,6 +19,9 @@ const Page = ({ children }) => {
           }}
           className={styles.right}
         >
+          <div className={styles.langBar}>
+            <LangToggle className={styles.langToggle} />
+          </div>
           {children}
         </div>
         {shouldShowSlider && (

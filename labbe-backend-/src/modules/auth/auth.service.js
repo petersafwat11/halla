@@ -435,8 +435,8 @@ class AuthService {
     // Send welcome notification to new host (non-blocking)
     notificationService.sendToUser(host._id, {
       type: 'welcome',
-      title: 'Welcome to Labbe!',
-      titleAr: 'مرحباً بك في لبّي!',
+      title: 'Welcome to Halla!',
+      titleAr: 'مرحباً بك في هلا!',
       message: 'Your account has been created successfully. Start creating your first event!',
       messageAr: 'تم إنشاء حسابك بنجاح. ابدأ في إنشاء أول مناسبة لك!',
       data: { entityType: 'user', entityId: host._id },
@@ -686,12 +686,18 @@ class AuthService {
    */
   async verifyEmailLink(rawToken) {
     if (!rawToken) {
-      throw new ValidationError('Verification token is required');
+      const err = new ValidationError('Verification token is required');
+      err.code = 'VERIFICATION_TOKEN_MISSING';
+      throw err;
     }
 
     const result = await otpService.redeemEmailVerificationToken(rawToken);
     if (!result.success) {
-      throw new ValidationError(result.error);
+      // Surface a stable code so the client can show a "request a new link"
+      // affordance instead of a dead-end error.
+      const err = new ValidationError('Verification link is invalid or has expired.');
+      err.code = 'VERIFICATION_LINK_EXPIRED';
+      throw err;
     }
 
     const user = await User.findById(result.userId);
@@ -713,6 +719,43 @@ class AuthService {
     }).catch(() => {});
 
     return { message: 'Email verified successfully' };
+  }
+
+  /**
+   * Public resend of the email verification link.
+   * Anti-enumeration: always returns the same generic success response,
+   * whether or not the email maps to a real, unverified user. The caller
+   * must rate-limit this endpoint by IP + email.
+   *
+   * @param {string} email
+   * @param {string} [language='ar']
+   * @returns {Promise<{message: string}>}
+   */
+  async resendEmailVerificationLink(email, language = 'ar') {
+    const genericResponse = {
+      message: 'If that email needs verification, a new link has been sent.',
+    };
+
+    if (!email) return genericResponse;
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user || user.emailVerified) return genericResponse;
+
+    const lang = user.preferredLanguage || language;
+
+    try {
+      const rawToken = await otpService.createEmailVerificationToken(user.email, user._id);
+      const verificationUrl = `${config.frontend.url}/${lang}/verify-email?token=${rawToken}`;
+      await emailModule.send.emailVerification(user.email, {
+        name: user.name || user.username,
+        verificationUrl,
+        expiresIn: '24 hours',
+      }, lang);
+    } catch (err) {
+      logger.error('resendEmailVerificationLink: send failed', err);
+    }
+
+    return genericResponse;
   }
 
   // ============================================
@@ -740,19 +783,22 @@ class AuthService {
     const result = await otpService.sendOTP(normalizedPhone);
 
     if (!result.success) {
-      throw new ValidationError(result.error || 'Failed to send OTP');
+      throw new OTPError(result.errorType || 'send_failed', null, result.meta);
     }
 
     return {
       phoneNumber: normalizedPhone,
       expiresIn: otpService.OTP_CONFIG.expiryMinutes * 60,
+      // Resend cooldown — clients sync their UI timer to this so the
+      // "Resend code" button isn't enabled before the backend will allow it.
+      cooldownSeconds: otpService.OTP_CONFIG.cooldownSeconds,
     };
   }
 
   /**
    * Send OTP for login
    * @param {string} phoneNumber
-   * @returns {Promise<{phoneNumber: string, expiresIn: number}>}
+   * @returns {Promise<{phoneNumber: string, expiresIn: number, cooldownSeconds: number}>}
    */
   async sendLoginOTP(phoneNumber) {
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
@@ -766,12 +812,13 @@ class AuthService {
 
     const result = await otpService.sendOTP(normalizedPhone);
     if (!result.success) {
-      throw new ValidationError(result.error || 'Failed to send OTP');
+      throw new OTPError(result.errorType || 'send_failed', null, result.meta);
     }
 
     return {
       phoneNumber: normalizedPhone,
       expiresIn: otpService.OTP_CONFIG.expiryMinutes * 60,
+      cooldownSeconds: otpService.OTP_CONFIG.cooldownSeconds,
     };
   }
 
@@ -787,7 +834,7 @@ class AuthService {
 
     const verifyResult = await otpService.verifyOTP(normalizedPhone, otp);
     if (!verifyResult.success) {
-      throw new OTPError('invalid', verifyResult.error);
+      throw new OTPError(verifyResult.errorType || 'invalid', null, verifyResult.meta);
     }
 
     // Check if user already exists
@@ -834,8 +881,8 @@ class AuthService {
     // Send welcome notification to new user (non-blocking)
     notificationService.sendToUser(user._id, {
       type: 'welcome',
-      title: 'Welcome to Labbe!',
-      titleAr: 'مرحباً بك في لبّي!',
+      title: 'Welcome to Halla!',
+      titleAr: 'مرحباً بك في هلا!',
       message: 'Your account has been created successfully. Start creating your first event!',
       messageAr: 'تم إنشاء حسابك بنجاح. ابدأ في إنشاء أول مناسبة لك!',
       data: { entityType: 'user', entityId: user._id },
@@ -878,7 +925,7 @@ class AuthService {
 
     const verifyResult = await otpService.verifyOTP(normalizedPhone, otp);
     if (!verifyResult.success) {
-      throw new OTPError('invalid', verifyResult.error);
+      throw new OTPError(verifyResult.errorType || 'invalid', null, verifyResult.meta);
     }
 
     const user = await User.findOne({ phoneNumber: normalizedPhone }).populate({
@@ -933,12 +980,13 @@ class AuthService {
 
     const result = await otpService.resendOTP(normalizedPhone);
     if (!result.success) {
-      throw new ValidationError(result.error || 'Failed to resend OTP');
+      throw new OTPError(result.errorType || 'send_failed', null, result.meta);
     }
 
     return {
       phoneNumber: normalizedPhone,
       expiresIn: otpService.OTP_CONFIG.expiryMinutes * 60,
+      cooldownSeconds: otpService.OTP_CONFIG.cooldownSeconds,
     };
   }
 
@@ -1003,7 +1051,9 @@ class AuthService {
     });
 
     if (!user) {
-      throw new ValidationError('Token is invalid or has expired');
+      const err = new ValidationError('Token is invalid or has expired');
+      err.code = 'TOKEN_INVALID_OR_EXPIRED';
+      throw err;
     }
 
     user.password = password;

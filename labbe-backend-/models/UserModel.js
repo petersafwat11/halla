@@ -188,16 +188,11 @@ const whitelabelDataSchema = new mongoose.Schema(
     licenseNumber: String,
     taxNumber: String,
 
-    // Plan selection during signup
+    // Plan selection during signup — accept any plan code; the actual list
+    // is enforced by the Plan collection. Keeping this open avoids
+    // schema churn every time a tier is added or removed.
     planSelection: {
-      planCode: {
-        type: String,
-        enum: [
-          "business_event_100", "business_event_150", "business_event_200",
-          "business_event_300", "business_event_400", "business_event_500",
-          "business_quarterly", "business_annual",
-        ],
-      },
+      planCode: { type: String },
       billingCycle: {
         type: String,
         enum: ["monthly", "yearly", "once"],

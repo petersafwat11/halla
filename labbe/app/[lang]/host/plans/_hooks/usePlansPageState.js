@@ -69,31 +69,9 @@ export const usePlansPageState = () => {
     setSelectedInvites(val);
   }, []);
 
-  const compensationInvites = useMemo(() => {
-    if (!selectedInvites) return 0;
-    const plan =
-      basicPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
-      premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
-      basicPlans[0] ||
-      premiumPlans[0];
-    const percent = plan?.compensationPercentage ?? 15;
-    return Math.floor((selectedInvites * percent) / 100);
-  }, [selectedInvites, basicPlans, premiumPlans, billingType]);
-
-  const basicFeatures = useMemo(
-    () => {
-      const plan = basicPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) || basicPlans[0];
-      return plan?.featuresArray || [];
-    },
-    [basicPlans, billingType, selectedInvites]
-  );
-  const premiumFeatures = useMemo(
-    () => {
-      const plan = premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) || premiumPlans[0];
-      return plan?.featuresArray || [];
-    },
-    [premiumPlans, billingType, selectedInvites]
-  );
+  // Compensation count is computed inside <PlanDescription> via the
+  // COMPENSATION_PERCENTAGE constant (15). The hook no longer derives it.
+  // Features come from each plan's `featureBullets` per language.
 
   const handleAddonsChange = useCallback((items, total) => {
     setAddonItems(items);
@@ -235,11 +213,6 @@ export const usePlansPageState = () => {
     setPaymentMethod,
     setCardData,
     setStcMobile,
-
-    // derived
-    compensationInvites,
-    basicFeatures,
-    premiumFeatures,
 
     // handlers
     handleInviteChange,

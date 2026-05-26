@@ -1,0 +1,73 @@
+[    2718ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[    3131ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[    3342ms] [LOG] [API] GET /plans/landing - 200 (359ms) @ http://localhost:3000/_next/static/chunks/_afe1778d._.js:2362
+[    6353ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__449d1355._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[   28787ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__449d1355._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[   93336ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[   93485ms] [LOG] [Fast Refresh] done in 30ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[   97810ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[   97875ms] [LOG] [Fast Refresh] done in 33ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  102980ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  103017ms] [LOG] [Fast Refresh] done in 19ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  107058ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[  107500ms] [ERROR] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+      <RedirectBoundary>
+        <RedirectErrorBoundary router={{...}}>
+          <InnerLayoutRouter url="/ar" tree={[...]} cacheNode={{lazyData:null, ...}} segmentPath={[...]}>
+            <SegmentViewNode type="page" pagePath="[lang]/pag...">
+              <SegmentTrieNode>
+              <LandingPage>
+                <ErrorBoundary fallbackTitle="خطأ في الت..." fallbackMessage="حدث خطأ أث...">
+                  <div>
+                    <Header>
+                    <main>
+                      <HeroSection>
+                      <CtaBanner>
+                      <FeaturesSection>
+                      <HowItWorks>
+                      <PricingSection>
+                      <InvitationsCarousel>
+                      <VendorSearchSection lang="ar">
+                        <section id="store" className="vendorSear...">
+                          <div className="vendorSear...">
+                            <div>
+                            <div className="vendorSear...">
+                              <div className="vendorSear...">
+                                <img>
+                                <input
+                                  type="text"
+                                  placeholder="ابحث عن مزود خدمة..."
+                                  className="vendorSearchSection-module__Rntksq__searchInput"
+-                                 style={{caret-color:"transparent"}}
+                                >
+                              ...
+                            ...
+                      ...
+                    ...
+            ...
+          ...
+ @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2405
+[  107503ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[  107942ms] [LOG] [API] GET /plans/landing - 200 (419ms) @ http://localhost:3000/_next/static/chunks/_afe1778d._.js:2362
+[  111714ms] [WARNING] The resource http://localhost:3000/_next/static/media/f48d461c03e0a8ec-s.p.4f85faee.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[  111714ms] [WARNING] The resource http://localhost:3000/_next/static/media/18165c2c9bd6a371-s.p.70a6c15c.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[  111714ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__449d1355._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[  111714ms] [WARNING] The resource http://localhost:3000/_next/static/media/e7b64a7fde1a3d32-s.p.c2772084.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[  111714ms] [WARNING] The resource http://localhost:3000/_next/static/media/3c37948f7e3aafda-s.p.8458e040.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[  111714ms] [WARNING] The resource http://localhost:3000/_next/static/media/f0e0669539caf32a-s.p.e7ea314c.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[  111714ms] [WARNING] The resource http://localhost:3000/_next/static/media/1d2cc0c079997359-s.p.3e57c327.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[  111714ms] [WARNING] The resource http://localhost:3000/_next/static/media/3a179c97f46f8d27-s.p.9dba6c5c.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0
+[  111714ms] [WARNING] The resource http://localhost:3000/_next/static/media/a11ec078145f8b0e-s.p.6f712cad.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0

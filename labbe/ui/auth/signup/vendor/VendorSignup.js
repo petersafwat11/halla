@@ -28,6 +28,32 @@ import ErrorDisplay from "@/ui/commen/ErrorDisplay";
 import { getAuthErrorMessage, handleError } from "@/services/errorHandlingService";
 import Buttons from "@/app/[lang]/host/create-event/_components/buttons/Buttons";
 
+/**
+ * Map flat backend Zod field names (vendorSignupSchema) to the nested
+ * react-hook-form paths used in this form. Without this, backend
+ * validation errors silently no-op because `setError("email", ...)`
+ * doesn't match the registered `identity.email`.
+ */
+const VENDOR_FIELD_MAP = {
+  email: "identity.email",
+  phoneNumber: "identity.phoneNumber",
+  password: "identity.password",
+  passwordConfirm: "identity.passwordConfirm",
+  brandName: "identity.brandName",
+  ownerFullName: "identity.ownerFullName",
+  serviceDescription: "serviceData.serviceDescription",
+  serviceCategories: "serviceData.eventPlanning",
+  serviceLocation: "serviceData.serviceLocation",
+  otherData: "serviceData.otherData",
+  socialLinks: "socialLinks.instagram",
+  nationalId: "commercialVerification.nationalId",
+  commercialRecordNumber: "commercialVerification.commercialRecordNumber",
+};
+const mapVendorBackendField = (backendField) => {
+  if (!backendField) return null;
+  return VENDOR_FIELD_MAP[backendField] || backendField;
+};
+
 const VendorSignup = () => {
   const { t } = useTranslation("signup");
   const { t: tCommon } = useTranslation("common");
@@ -133,9 +159,60 @@ const VendorSignup = () => {
       toastUtils.success(t("signupForm.vendor.successMessage"));
       router.push(`/${currentLocale}/login`);
     } catch (error) {
+      // Surface backend Zod validation errors inline on the offending
+      // fields, then jump the stepper to the first step that contains
+      // one. Without this, users only see a single concatenated toast
+      // and can't tell which field to fix.
+      const parsed = error?.parsedError;
+      const fieldErrors = Array.isArray(parsed?.errors) ? parsed.errors : [];
+      if (fieldErrors.length > 0) {
+        fieldErrors.forEach((e) => {
+          const formPath = mapVendorBackendField(e?.field);
+          if (formPath) methods.setError(formPath, { type: "server", message: e.message });
+        });
+        // Backend also sends `field` for ConflictError (single field).
+        if (parsed?.field && parsed.code === "CONFLICT") {
+          const conflictMsg = getAuthErrorMessage(parsed, tCommon)?.message;
+          if (conflictMsg) {
+            if (parsed.field === "email_and_phone") {
+              methods.setError("identity.email", { type: "server", message: conflictMsg });
+              methods.setError("identity.phoneNumber", { type: "server", message: conflictMsg });
+            } else {
+              const formField = parsed.field === "phone" ? "phoneNumber" : parsed.field;
+              methods.setError(`identity.${formField}`, { type: "server", message: conflictMsg });
+            }
+          }
+        }
+        // Find the step containing the first errored field. We compare
+        // against the MAPPED form path (e.g. `identity.email`) because
+        // VENDOR_STEP_FIELDS holds nested prefixes, not flat backend keys.
+        const firstFormPath = mapVendorBackendField(fieldErrors[0].field) || "";
+        for (const [stepNum, fields] of Object.entries(VENDOR_STEP_FIELDS)) {
+          if (fields?.some((f) => firstFormPath.startsWith(f))) {
+            setStep(parseInt(stepNum, 10));
+            break;
+          }
+        }
+        return;
+      }
+      // Single-field conflict (no errors[] array) — still attach inline.
+      if (parsed?.code === "CONFLICT" && parsed?.field) {
+        const conflictMsg = getAuthErrorMessage(parsed, tCommon)?.message;
+        if (conflictMsg) {
+          if (parsed.field === "email_and_phone") {
+            methods.setError("identity.email", { type: "server", message: conflictMsg });
+            methods.setError("identity.phoneNumber", { type: "server", message: conflictMsg });
+          } else {
+            const formField = parsed.field === "phone" ? "phoneNumber" : parsed.field;
+            methods.setError(`identity.${formField}`, { type: "server", message: conflictMsg });
+          }
+          setStep(1);
+          return;
+        }
+      }
       handleError(error, t, { fallbackMessage: "signupForm.vendor.errorMessage" });
     }
-  }, [methods, signupVendor, t, router, currentLocale]);
+  }, [methods, signupVendor, t, router, currentLocale, tCommon]);
 
   const onFinalSubmit = useCallback(
     methods.handleSubmit(() => handleSubmitVendor()),

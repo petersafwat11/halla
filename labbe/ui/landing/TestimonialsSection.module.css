@@ -1,4 +1,4 @@
-.testRoot { padding: 5rem 2rem; background: transparent; overflow: hidden; }
+.testRoot { padding: 6rem 3rem; background: transparent; overflow: hidden; }
 .testInner { max-width: 1200px; margin: 0 auto; }
 .testHdr { text-align: center; margin-bottom: 5.6rem; }
 .testEyebrow { display: inline-block; font-size: 1.3rem; font-weight: 700; color: var(--color-primary-500); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 1.2rem; padding: 0.4rem 1.4rem; background: color-mix(in srgb, var(--color-primary-500) 10%, transparent); border-radius: 9999px; }
@@ -26,6 +26,6 @@
 @media (max-width: 1024px) { .testCard { width: calc((100% - 1.6rem) / 2); } }
 @media (max-width: 640px) {
   .testCard { width: 100%; }
-  .testRoot { padding: 3rem 0; }
-  .testInner { padding: 0 1.6rem; }
+  .testRoot { padding: 4rem 2rem; }
+  .testInner { padding: 0; }
 }

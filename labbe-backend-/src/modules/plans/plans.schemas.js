@@ -4,8 +4,12 @@
  * `shared/middleware/validation`. Joi is forbidden for new code.
  *
  * Field set mirrors the service's `safeUpdate` whitelist in
- * `plans.service.js` (after `tier` was dropped per L16) and the
- * `PlanModel` shape in `models/PlanModel.js`.
+ * `plans.service.js` and the `PlanModel` shape in `models/PlanModel.js`.
+ *
+ * The features schema is intentionally narrow: only `whatsAppTemplates`
+ * survives the rev. 2 cleanup. Bullet copy lives in `featureBullets`,
+ * compensation is universal via `COMPENSATION_PERCENTAGE`, and the
+ * business setup fee is a top-level numeric field per plan.
  */
 
 const { z } = require('zod');
@@ -80,68 +84,33 @@ const limitsSchema = z
   })
   .strict();
 
-// Booleans + numerics from PlanModel.featuresSchema. All optional —
-// the model supplies defaults. Numerics are bounded to sensible ranges.
 const featuresSchema = z
   .object({
-    // Core invitation features
-    hasInAppInvites: z.boolean().optional(),
-    hasWhatsAppInvites: z.boolean().optional(),
-    hasSMSInvites: z.boolean().optional(),
-
-    // Entry & scanning
-    hasQRCode: z.boolean().optional(),
-    hasQRScanning: z.boolean().optional(),
-    hasFlexibleEntryMode: z.boolean().optional(),
-
-    // Staff & management
-    hasStaffCheckIn: z.boolean().optional(),
-    hasStaffAssignment: z.boolean().optional(),
-
-    // Communication
-    hasRSVPTracking: z.boolean().optional(),
-    hasAutoReminders: z.boolean().optional(),
-    hasEmailNotifications: z.boolean().optional(),
-    hasCustomWhatsAppNumber: z.boolean().optional(),
-    hasOfficialSenderNumber: z.boolean().optional(),
-    hasCustomWebPage: z.boolean().optional(),
-    hasMessageTracking: z.boolean().optional(),
     whatsAppTemplates: z.number().int().min(0).max(100).optional(),
+  })
+  .strict();
 
-    // Compensation
-    hasCompensationInvites: z.boolean().optional(),
-    compensationPercentage: z.number().min(0).max(100).optional(),
-
-    // Templates
-    hasBasicTemplates: z.boolean().optional(),
-    hasPremiumTemplates: z.boolean().optional(),
-
-    // Post event
-    hasPostEventPage: z.boolean().optional(),
-
-    // Reports
-    hasCustomReports: z.boolean().optional(),
-
-    // Support
-    priorityPoints: z.number().int().min(1).max(10).optional(),
-    hasWhatsAppSupport: z.boolean().optional(),
+const featureBulletsSchema = z
+  .object({
+    ar: z.array(z.string().min(1).max(500)).max(50).default([]),
+    en: z.array(z.string().min(1).max(500)).max(50).default([]),
   })
   .strict();
 
 const createPlanSchema = z
   .object({
-    // Required identity
     code: planCode,
     planType: planTypeEnum,
     nameAr: z.string().trim().min(1, 'nameAr is required'),
     nameEn: z.string().trim().min(1, 'nameEn is required'),
 
-    // Required pricing / limits / features
     pricing: pricingSchema,
     limits: limitsSchema,
     features: featuresSchema,
 
-    // Optional metadata
+    setupFeeAmount: z.number().min(0).optional(),
+    featureBullets: featureBulletsSchema.optional(),
+
     descriptionAr: z.string().trim().optional(),
     descriptionEn: z.string().trim().optional(),
     currency: currencyEnum.optional(),
@@ -149,7 +118,6 @@ const createPlanSchema = z
     planFamily: planFamilyEnum.nullable().optional(),
     billingType: billingTypeEnum.nullable().optional(),
 
-    // Display + visibility
     sortOrder: z.number().int().optional(),
     isPopular: z.boolean().optional(),
     isActive: z.boolean().optional(),

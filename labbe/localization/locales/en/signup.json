@@ -26,7 +26,7 @@
         },
         "descriptions": {
           "whiteLabel": "Professional solution: Custom dashboard and multiple features.",
-          "hosted": "Labbe team handles everything from design to sending and tracking attendance.",
+          "hosted": "Halla team handles everything from design to sending and tracking attendance.",
           "selfService": "Design and send your invitation easily via WhatsApp with a unique QR code for each guest!"
         },
         "errors": {
@@ -44,7 +44,7 @@
       "welcomeTitle": "Welcome Dear Merchant",
       "welcomeDescription": "Complete Your Profile",
       "title": "Complete Your Profile",
-      "description": "Follow these steps to create your account as a service provider and start displaying your services on the Labbe platform.",
+      "description": "Follow these steps to create your account as a service provider and start displaying your services on the Halla platform.",
       "steps": {
         "identity": "Basic Account Information",
         "serviceData": "Service or Store Details",
@@ -627,7 +627,7 @@
     },
     "whiteLabel": {
       "title": "Create Your Platform with Your Identity",
-      "description": "Follow these steps to customize your platform within Labbe's solutions and start activating it in a way that suits your brand.",
+      "description": "Follow these steps to customize your platform within Halla's solutions and start activating it in a way that suits your brand.",
       "steps": {
         "identity": "Visual Identity",
         "login": "Login Details",
@@ -1112,11 +1112,11 @@
     },
     "hostSignup": {
       "greeting": {
-        "title": "Welcome to Labbe",
+        "title": "Welcome to Halla",
         "subtitle": "Create your account and start your journey with us in organizing events and occasions in a modern and unique way."
       },
       "title": "Create Your Account",
-      "description": "Sign up to start organizing your events with Labbe",
+      "description": "Sign up to start organizing your events with Halla",
       "emailLogin": {
         "email": {
           "label": "Email",
@@ -1203,7 +1203,7 @@
         },
         "onUsInvitation": {
           "title": "Your Invitation is On Us",
-          "description": "Labbe application provides everything from design, sending, and tracking attendance, and serving guests"
+          "description": "Halla application provides everything from design, sending, and tracking attendance, and serving guests"
         },
         "inYourHandsInvitation": {
           "title": "Your Invitation in Your Hands",

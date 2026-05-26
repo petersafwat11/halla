@@ -28,8 +28,8 @@ const whitelabelApplicationPendingEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
 
   const subject = isAr
-    ? "تم استلام طلب منصتك - لبّه"
-    : "Whitelabel Application Received - Labbe";
+    ? "تم استلام طلب منصتك - هلا"
+    : "Whitelabel Application Received - Halla";
 
   const content = `
     ${getGreeting(data.platformName, lang)}
@@ -42,8 +42,8 @@ const whitelabelApplicationPendingEmail = (data, lang = "ar") => {
     
     <p>${
       isAr
-        ? "شكراً لتقديم طلبك للحصول على منصة العلامة البيضاء من لبّه. تم استلام طلبك بنجاح وهو الآن قيد المراجعة."
-        : "Thank you for submitting your whitelabel platform application to Labbe. Your application has been received and is now under review."
+        ? "شكراً لتقديم طلبك للحصول على منصة العلامة البيضاء من هلا. تم استلام طلبك بنجاح وهو الآن قيد المراجعة."
+        : "Thank you for submitting your whitelabel platform application to Halla. Your application has been received and is now under review."
     }
     </p>
     
@@ -97,8 +97,8 @@ const whitelabelApprovalEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
 
   const subject = isAr
-    ? "تهانينا! تمت الموافقة على طلبك - لبّه"
-    : "Congratulations! Your Application is Approved - Labbe";
+    ? "تهانينا! تمت الموافقة على طلبك - هلا"
+    : "Congratulations! Your Application is Approved - Halla";
 
   const featuresHtml =
     data.features && data.features.length > 0
@@ -206,16 +206,16 @@ const whitelabelRejectionEmail = (data, lang = "ar") => {
   const config = getConfig();
 
   const subject = isAr
-    ? "تحديث حالة طلبك - لبّه"
-    : "Application Status Update - Labbe";
+    ? "تحديث حالة طلبك - هلا"
+    : "Application Status Update - Halla";
 
   const content = `
     ${getGreeting(data.platformName, lang)}
     
     <p>${
       isAr
-        ? "شكراً لاهتمامك بالحصول على منصة العلامة البيضاء من لبّه."
-        : "Thank you for your interest in obtaining a whitelabel platform from Labbe."
+        ? "شكراً لاهتمامك بالحصول على منصة العلامة البيضاء من هلا."
+        : "Thank you for your interest in obtaining a whitelabel platform from Halla."
     }
     </p>
     

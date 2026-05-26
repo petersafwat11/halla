@@ -7,19 +7,17 @@ import { FaSpinner, FaExclamationTriangle, FaCheck } from "react-icons/fa";
 import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
 import { StepTitle } from "../../../../commen/title/SectionTitle";
 import { getLocalized } from "@/utils/locale";
+import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
 import styles from "./stepFive.module.css";
 
-/* ─── Helpers ─────────────────────────────────────────────────────────────── */
 const formatPrice = (n) => (n || 0).toLocaleString();
 
-/* ─── Event Plan Selector (single wide card + invite buttons) ─────────────── */
-function EventPlanSelector({ plans, selectedCode, onSelect, tp, i18n }) {
+function EventPlanSelector({ plans, selectedCode, onSelect, tp, lang }) {
   const selectedPlan = plans.find((p) => p.code === selectedCode) || plans[0];
-  const features = selectedPlan?.featuresArray || [];
+  const selectedInvites = selectedPlan?.limits?.maxInvitesPerEvent || 0;
 
   return (
     <div className={styles.hostCard}>
-      {/* Invite count selector */}
       <div>
         <div className={styles.guestLabel}>{tp("selectInvites")}</div>
         <div className={styles.guestTrack}>
@@ -39,7 +37,6 @@ function EventPlanSelector({ plans, selectedCode, onSelect, tp, i18n }) {
         </div>
       </div>
 
-      {/* Price */}
       <div className={styles.hostPrice}>
         <span className={styles.hostPriceNum}>
           {formatPrice(selectedPlan?.pricing?.oneTime)}
@@ -48,27 +45,10 @@ function EventPlanSelector({ plans, selectedCode, onSelect, tp, i18n }) {
         <span className={styles.hostPricePer}>{tp("pricePerEvent")}</span>
       </div>
 
-      {/* Validity */}
-      <div className={styles.managedBox}>
-        <span className={styles.managedTitle}>{tp("validDays90")}</span>
+      <div className={styles.featSection}>
+        <PlanDescription plan={selectedPlan} lang={lang} selectedInviteCount={selectedInvites} />
       </div>
 
-      {/* Features */}
-      {features.length > 0 && (
-        <div className={styles.featSection}>
-          <div className={styles.featTitle}>{tp("featuresTitle")}</div>
-          <div className={styles.featGrid}>
-            {features.map((f, idx) => (
-              <div key={idx} className={styles.featItem}>
-                <span className={styles.featCheck}>✓</span>
-                <span>{getLocalized(f, "label", i18n.language)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Select button */}
       <button
         type="button"
         className={`${styles.ctaBtn} ${styles.ctaBtnActive}`}
@@ -80,12 +60,7 @@ function EventPlanSelector({ plans, selectedCode, onSelect, tp, i18n }) {
   );
 }
 
-/* ─── Pool Plan Card (quarterly / annual) ─────────────────────────────────── */
-function PoolPlanCard({ plan, type, isSelected, onSelect, tp, i18n }) {
-  const features = plan?.featuresArray || [];
-  const pool = plan.limits?.invitePool || 0;
-  const days = type === "quarterly" ? 90 : 365;
-
+function PoolPlanCard({ plan, type, isSelected, onSelect, tp, i18n, lang }) {
   return (
     <div
       className={`${styles.planCard} ${isSelected ? styles.planCardSelected : ""}`}
@@ -122,29 +97,9 @@ function PoolPlanCard({ plan, type, isSelected, onSelect, tp, i18n }) {
         </div>
       </div>
 
-      <div className={styles.managedBox}>
-        <span className={styles.managedTitle}>
-          {tp("poolLabel")}: {pool.toLocaleString()} {tp("inviteUnit")}
-          {" · "}
-          {tp(type === "quarterly" ? "validDays90" : "validDays365")}
-          {" · "}
-          {tp("setupFeeIncluded")}
-        </span>
+      <div className={styles.featSection}>
+        <PlanDescription plan={plan} lang={lang} />
       </div>
-
-      {features.length > 0 && (
-        <div className={styles.featSection}>
-          <div className={styles.featTitle}>{tp("featuresTitle")}</div>
-          <div className={styles.featGrid}>
-            {features.map((f, idx) => (
-              <div key={idx} className={styles.featItem}>
-                <span className={styles.featCheck}>✓</span>
-                <span>{getLocalized(f, "label", i18n.language)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <button
         type="button"
@@ -163,6 +118,7 @@ function PoolPlanCard({ plan, type, isSelected, onSelect, tp, i18n }) {
 /* ─── StepFive ────────────────────────────────────────────────────────────── */
 const StepFive = ({ goToPreviousStep }) => {
   const { t, i18n } = useTranslation("signup");
+  const lang = i18n.language || "ar";
   const queryClient = useQueryClient();
   const { setValue, watch } = useFormContext();
   const tp = (key) => t(`signupForm.whiteLabel.planSelection.${key}`);
@@ -301,7 +257,7 @@ const StepFive = ({ goToPreviousStep }) => {
             selectedCode={selectedPlanCode}
             onSelect={handleSelect}
             tp={tp}
-            i18n={i18n}
+            lang={lang}
           />
         )}
 
@@ -322,6 +278,7 @@ const StepFive = ({ goToPreviousStep }) => {
                 onSelect={handleSelect}
                 tp={tp}
                 i18n={i18n}
+                lang={lang}
               />
             ))}
           </div>
@@ -342,6 +299,7 @@ const StepFive = ({ goToPreviousStep }) => {
                 onSelect={handleSelect}
                 tp={tp}
                 i18n={i18n}
+                lang={lang}
               />
             ))}
           </div>

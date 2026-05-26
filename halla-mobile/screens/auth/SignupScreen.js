@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
+import { authErrorMessage } from "../../services/authErrors";
 import {
   SignupMobileForm,
   OTPVerificationForm,
@@ -52,14 +53,30 @@ export default function SignupScreen({ navigation }) {
     }
   };
 
+  // Map the store's structured `errorDetail` to a localized message and
+  // attach it inline on the field the backend named (e.g. `email` for a
+  // duplicate-email conflict) instead of dumping a generic toast.
+  const resolveError = (result, fallbackKey) => {
+    const resolved = authErrorMessage(result?.errorDetail, t);
+    return resolved?.message || result?.error || t(fallbackKey);
+  };
+
+  const fieldKeyFor = (apiField) => {
+    if (apiField === "email") return "email";
+    if (apiField === "phoneNumber" || apiField === "phone") return "mobile";
+    if (apiField === "username") return "username";
+    return null;
+  };
+
   const handleMobileSubmit = async (data) => {
     const result = await signupWithPhone(data);
     if (result.success) {
       toast.success(t("otp.description"));
       setStep("otp");
     } else {
-      toast.error(result.error || t("errors.signupFailed"));
-      return { success: false, fieldErrors: { mobile: result.error } };
+      const msg = resolveError(result, "errors.signupFailed");
+      toast.error(msg);
+      return { success: false, fieldErrors: { mobile: msg } };
     }
     return result;
   };
@@ -70,8 +87,12 @@ export default function SignupScreen({ navigation }) {
       toast.success(t("otp.verified"));
       setStep("complete");
     } else {
-      toast.error(result.error || t("errors.otpFailed"));
-      return { success: false, fieldErrors: { otp: result.error } };
+      const msg = resolveError(result, "errors.otpFailed");
+      toast.error(msg);
+      // A phone conflict surfaces at OTP verify too; route it back to
+      // the mobile field via fieldErrors so the form highlights correctly.
+      const target = fieldKeyFor(result?.errorDetail?.field) || "otp";
+      return { success: false, fieldErrors: { [target]: msg } };
     }
     return result;
   };
@@ -81,8 +102,10 @@ export default function SignupScreen({ navigation }) {
     if (result.success) {
       toast.success(t("signup.signupButton") + " " + t("common.success"));
     } else {
-      toast.error(result.error || t("errors.signupFailed"));
-      return { success: false, fieldErrors: { email: result.error } };
+      const msg = resolveError(result, "errors.signupFailed");
+      toast.error(msg);
+      const target = fieldKeyFor(result?.errorDetail?.field) || "email";
+      return { success: false, fieldErrors: { [target]: msg } };
     }
     return result;
   };
@@ -92,8 +115,10 @@ export default function SignupScreen({ navigation }) {
     if (result.success) {
       toast.success(t("signup.signupButton") + " " + t("common.success"));
     } else {
-      toast.error(result.error || t("errors.signupFailed"));
-      return { success: false, fieldErrors: { email: result.error } };
+      const msg = resolveError(result, "errors.signupFailed");
+      toast.error(msg);
+      const target = fieldKeyFor(result?.errorDetail?.field) || "email";
+      return { success: false, fieldErrors: { [target]: msg } };
     }
     return result;
   };
@@ -148,9 +173,11 @@ export default function SignupScreen({ navigation }) {
             onResend={async () => {
               const result = await resendOTP({ type: "signup" });
               if (!result.success) {
-                toast.error(result.error || t("errors.otpFailed", "فشل إرسال الرمز"));
-                throw new Error(result.error);
+                const msg = resolveError(result, "errors.otpFailed");
+                toast.error(msg);
+                throw new Error(msg);
               }
+              return { cooldownSeconds: result.cooldownSeconds };
             }}
             phoneNumber={`+966${getTempMobile()}`}
             loading={loading}

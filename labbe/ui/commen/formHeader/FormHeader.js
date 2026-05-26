@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Image from "next/image";
 import styles from "./formHeader.module.css";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
 const FormHeader = () => {
@@ -8,12 +9,13 @@ const FormHeader = () => {
     <div className={styles.form_header}>
       <div className={styles.container}>
         <div className={styles.brand}>
-          <h1 className={styles.title}>
-            <p className={styles.logo}>
-              <span className={styles.logo_text}>L</span>
-            </p>
-            <span className={styles.arabic_title}> لبّى </span> Labbe
-          </h1>
+          <Image
+            src="/logo.png"
+            alt="Halla"
+            width={60}
+            height={60}
+            priority
+          />
         </div>
                 {/* <div className={styles.languages}>
           <p

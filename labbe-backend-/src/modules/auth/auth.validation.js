@@ -182,6 +182,10 @@ const verifyEmailLinkSchema = z.object({
   token: z.string().min(1, 'Token is required'),
 });
 
+const resendEmailVerificationSchema = z.object({
+  email,
+});
+
 module.exports = {
   loginSchema,
   hostSignupSchema,
@@ -198,4 +202,5 @@ module.exports = {
   verifyEmailSchema,
   resendSetupEmailSchema,
   verifyEmailLinkSchema,
+  resendEmailVerificationSchema,
 };

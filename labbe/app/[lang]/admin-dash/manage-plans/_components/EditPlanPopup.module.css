@@ -428,3 +428,40 @@
   .checkboxCard { padding: 1.2rem 1.4rem; min-height: 4.8rem; gap: 1rem; }
   .checkboxCard input { width: 2rem; height: 2rem; }
 }
+
+.bulletField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.bulletLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary, #1f2937);
+}
+
+.bulletTextarea {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  background: #ffffff;
+  color: #111827;
+}
+
+.bulletTextarea:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
+}
+
+.bulletHint {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #6b7280);
+}

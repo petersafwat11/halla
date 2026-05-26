@@ -8,6 +8,7 @@ import { Button } from '../../components/commen';
 import SignupStepper from '../../components/commen/SignupStepper';
 import { vendorSignupSchema } from '../../utils/schemas/authSchemas';
 import { useVendorSignup } from '../../hooks/mutations/useAuthMutations';
+import { authErrorMessage } from '../../services/authErrors';
 import VendorStep1Identity from '../../components/auth/vendor-signup/VendorStep1Identity';
 import VendorStep2ServiceData from '../../components/auth/vendor-signup/VendorStep2ServiceData';
 import VendorStep3SamplesPackages from '../../components/auth/vendor-signup/VendorStep3SamplesPackages';
@@ -46,6 +47,38 @@ const STEP_FIELDS = {
   6: [],
 };
 
+/**
+ * Map backend Zod field names (FLAT — `email`, `brandName`, ...) to the
+ * nested form paths react-hook-form uses (`identity.email`, ...). The
+ * backend's vendorSignupSchema lives in
+ * labbe-backend-/src/modules/auth/auth.validation.js and validates a
+ * flat FormData payload (see buildVendorFormData), so its error paths
+ * are flat. Without this lookup, every backend validation error would
+ * silently no-op when we try to attach it to the form.
+ */
+const VENDOR_FIELD_MAP = {
+  email: 'identity.email',
+  phoneNumber: 'identity.phoneNumber',
+  password: 'identity.password',
+  passwordConfirm: 'identity.passwordConfirm',
+  brandName: 'identity.brandName',
+  ownerFullName: 'identity.ownerFullName',
+  serviceDescription: 'serviceData.serviceDescription',
+  serviceCategories: 'serviceData.eventPlanning',
+  serviceLocation: 'serviceData.serviceLocation',
+  otherData: 'serviceData.otherData',
+  socialLinks: 'socialLinks.instagram',
+  nationalId: 'commercialVerification.nationalId',
+  commercialRecordNumber: 'commercialVerification.commercialRecordNumber',
+};
+
+const mapVendorBackendField = (backendField) => {
+  if (!backendField) return null;
+  if (VENDOR_FIELD_MAP[backendField]) return VENDOR_FIELD_MAP[backendField];
+  // Dotted backend paths (e.g. socialLinks.instagram) match the form layout.
+  return backendField;
+};
+
 export default function VendorSignupScreen({ navigation }) {
   const { t } = useTranslation('auth');
   const toast = useToast();
@@ -81,7 +114,7 @@ export default function VendorSignupScreen({ navigation }) {
     },
   });
 
-  const { trigger, handleSubmit, formState: { isSubmitting } } = methods;
+  const { trigger, handleSubmit, setError, formState: { isSubmitting } } = methods;
   const { mutateAsync: signupVendor, isPending } = useVendorSignup();
 
   const STEP_KEYS = ['identity', 'serviceData', 'samplesAndPackages', 'commercialVerification', 'socialLinks', 'summary'];
@@ -101,7 +134,47 @@ export default function VendorSignupScreen({ navigation }) {
       toast.success(t('common.success'));
       navigation.navigate('Login');
     } catch (error) {
-      toast.error(t('errors.signupFailed'));
+      // Walk the backend's structured errors[] array and attach each one
+      // to the matching form field (paths are dotted, e.g. "identity.email"),
+      // then jump the stepper to the first step that owns one.
+      const fieldErrors = Array.isArray(error?.errors) ? error.errors : [];
+      const resolved = authErrorMessage(error, t);
+      const generic = resolved?.message || error?.message || t('errors.signupFailed');
+
+      if (fieldErrors.length > 0) {
+        fieldErrors.forEach((e) => {
+          const formPath = mapVendorBackendField(e?.field);
+          if (formPath) setError(formPath, { type: 'server', message: e.message });
+        });
+        const firstFormPath = mapVendorBackendField(fieldErrors[0].field) || '';
+        for (const [stepNum, fields] of Object.entries(STEP_FIELDS)) {
+          if (fields?.some((f) => firstFormPath.startsWith(f))) {
+            setCurrentStep(parseInt(stepNum, 10));
+            break;
+          }
+        }
+        toast.error(generic);
+        return;
+      }
+
+      // Single-field conflict (duplicate email/phone) — attach inline.
+      // `email_and_phone` is a compound field that maps to BOTH form
+      // fields; without special-casing, `identity.email_and_phone` would
+      // be a silent no-op.
+      if (error?.code === 'CONFLICT' && error?.field) {
+        if (error.field === 'email_and_phone') {
+          setError('identity.email', { type: 'server', message: generic });
+          setError('identity.phoneNumber', { type: 'server', message: generic });
+        } else {
+          const formField = error.field === 'phone' ? 'phoneNumber' : error.field;
+          setError(`identity.${formField}`, { type: 'server', message: generic });
+        }
+        setCurrentStep(1);
+        toast.error(generic);
+        return;
+      }
+
+      toast.error(generic);
     }
   };
 

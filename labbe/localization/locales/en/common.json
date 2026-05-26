@@ -152,7 +152,11 @@
     "UNAUTHORIZED": "Invalid email or password. Please check your credentials and try again.",
     "INVALID_TOKEN": "Your session is invalid. Please log in again.",
     "TOKEN_EXPIRED": "Your session has expired. Please log in again.",
+    "TOKEN_INVALID_OR_EXPIRED": "This link is invalid or has expired. Please request a new one.",
+    "VERIFICATION_LINK_EXPIRED": "The email verification link has expired. Please request a new one.",
+    "VERIFICATION_TOKEN_MISSING": "Verification token is missing.",
     "ACCOUNT_LOCKED": "Your account is temporarily locked due to too many failed attempts. Please try again later.",
+    "ACCOUNT_LOCKED_WITH_MINUTES": "Your account is temporarily locked. Please try again in {{minutes}} minutes.",
     "ACCOUNT_STATUS_ERROR": {
       "suspended": "Your account has been suspended. Please contact support for assistance.",
       "inactive": "Your account is inactive. Please contact support.",
@@ -163,16 +167,37 @@
     "VALIDATION_ERROR": "Please check your information and try again.",
     "OTP_ERROR": {
       "invalid": "The verification code is incorrect. Please try again.",
+      "invalid_with_attempts": "The verification code is incorrect. {{attemptsLeft}} attempts left.",
       "expired": "The verification code has expired. Please request a new one.",
       "max_attempts": "Too many failed attempts. Please request a new code.",
-      "cooldown": "Please wait before requesting a new code."
+      "cooldown": "Please wait before requesting a new code.",
+      "cooldown_with_seconds": "Please wait {{seconds}} seconds before requesting a new code.",
+      "not_found": "No code found. Please request a new one.",
+      "send_failed": "Couldn't send the verification code. Please try again."
     },
     "RATE_LIMIT_EXCEEDED": "Too many requests. Please wait a moment and try again.",
+    "NETWORK_ERROR": "Unable to connect to the server. Please check your internet connection.",
     "NETWORK": "Unable to connect to the server. Please check your internet connection.",
     "TIMEOUT": "The request timed out. Please try again.",
     "SERVER": "Something went wrong on our end. Please try again later.",
+    "INTERNAL_ERROR": "Something went wrong on our end. Please try again later.",
     "UNKNOWN": "An unexpected error occurred. Please try again.",
-    "loginAction": "Log in here"
+    "loginAction": "Log in here",
+    "requestNewLinkAction": "Request a new link"
+  },
+  "verifyEmail": {
+    "verifyingTitle": "Verifying your email…",
+    "verifyingSubtitle": "Please wait a moment.",
+    "successTitle": "Your email is verified",
+    "successSubtitle": "You can continue using your account.",
+    "goToHome": "Go to my account",
+    "expiredTitle": "This link has expired",
+    "expiredSubtitle": "The link you used is no longer valid. Enter your email below to get a new one.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "resendButton": "Send a new link",
+    "resendSentTitle": "Link sent",
+    "resendSentSubtitle": "If that email needs verification, we've sent a new link."
   },
   "date": {
     "months": {

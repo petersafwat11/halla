@@ -15,7 +15,7 @@ import PlanNamingSection from "./edit-plan/PlanNamingSection";
 import PlanDescriptionSection from "./edit-plan/PlanDescriptionSection";
 import PlanPricingSection from "./edit-plan/PlanPricingSection";
 import PlanLimitsSection from "./edit-plan/PlanLimitsSection";
-import PlanFeatureTogglesSection from "./edit-plan/PlanFeatureTogglesSection";
+import PlanFeatureBulletsSection from "./edit-plan/PlanFeatureBulletsSection";
 import PlanFeatureNumericsSection from "./edit-plan/PlanFeatureNumericsSection";
 import PlanPublicationSection from "./edit-plan/PlanPublicationSection";
 
@@ -33,26 +33,12 @@ const buildDefaults = (plan) => ({
     maxHosts: plan?.limits?.maxHosts ?? null,
   },
   features: {
-    hasInAppInvites: plan?.features?.hasInAppInvites ?? false,
-    hasWhatsAppInvites: plan?.features?.hasWhatsAppInvites ?? false,
-    hasSMSInvites: plan?.features?.hasSMSInvites ?? false,
-    hasQRCode: plan?.features?.hasQRCode ?? false,
-    hasQRScanning: plan?.features?.hasQRScanning ?? false,
-    hasFlexibleEntryMode: plan?.features?.hasFlexibleEntryMode ?? false,
-    hasStaffCheckIn: plan?.features?.hasStaffCheckIn ?? false,
-    hasStaffAssignment: plan?.features?.hasStaffAssignment ?? false,
-    hasRSVPTracking: plan?.features?.hasRSVPTracking ?? false,
-    hasAutoReminders: plan?.features?.hasAutoReminders ?? false,
-    hasEmailNotifications: plan?.features?.hasEmailNotifications ?? false,
-    hasCustomWhatsAppNumber: plan?.features?.hasCustomWhatsAppNumber ?? false,
-    hasCompensationInvites: plan?.features?.hasCompensationInvites ?? false,
-    compensationPercentage: plan?.features?.compensationPercentage ?? 10,
-    hasBasicTemplates: plan?.features?.hasBasicTemplates ?? false,
-    hasPremiumTemplates: plan?.features?.hasPremiumTemplates ?? false,
-    hasPostEventPage: plan?.features?.hasPostEventPage ?? false,
-    hasCustomReports: plan?.features?.hasCustomReports ?? false,
-    priorityPoints: plan?.features?.priorityPoints ?? 1,
-    hasWhatsAppSupport: plan?.features?.hasWhatsAppSupport ?? false,
+    whatsAppTemplates: plan?.features?.whatsAppTemplates ?? 0,
+  },
+  setupFeeAmount: plan?.setupFeeAmount ?? 0,
+  featureBullets: {
+    ar: plan?.featureBullets?.ar ?? [],
+    en: plan?.featureBullets?.en ?? [],
   },
   isPopular: plan?.isPopular ?? false,
   sortOrder: plan?.sortOrder ?? 0,
@@ -129,8 +115,8 @@ const EditPlanPopup = ({ plan, onClose, onSuccess }) => {
           <PlanDescriptionSection />
           <PlanPricingSection />
           <PlanLimitsSection />
-          <PlanFeatureTogglesSection />
           <PlanFeatureNumericsSection />
+          <PlanFeatureBulletsSection />
           <PlanPublicationSection />
 
           <div className={styles.footer}>

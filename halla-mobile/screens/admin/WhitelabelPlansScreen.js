@@ -14,21 +14,6 @@ import { useTranslation } from "../../localization";
 import { useBusinessPlans } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
 import BusinessPlanCard from "../../components/plans/BusinessPlanCard";
-import { DEFAULT_COMPENSATION_PERCENTAGE } from "../../utils/constants/plans";
-
-/**
- * Compensation invites per plan: prefer the backend-pre-computed
- * `compensationPool` (set on pool plans by `_formatPlan`), otherwise
- * derive from the plan's `compensationPercentage` (default 10).
- */
-const planCompensation = (plan) => {
-  if (!plan) return 0;
-  if (plan.compensationPool != null) return plan.compensationPool;
-  const invites =
-    plan.limits?.invitePool ?? plan.limits?.maxInvitesPerEvent ?? 0;
-  const pct = plan.compensationPercentage ?? DEFAULT_COMPENSATION_PERCENTAGE;
-  return Math.floor(invites * (pct / 100));
-};
 
 const WhitelabelPlansScreen = () => {
   const { t } = useTranslation("plans");
@@ -160,13 +145,9 @@ const WhitelabelPlansScreen = () => {
               {selectedEventPlan && (
                 <BusinessPlanCard
                   plan={selectedEventPlan}
-                  compInvites={planCompensation(selectedEventPlan)}
                   compLabel={t("buttons.subscribeNow")}
-                  validityLabel={t("eventTab.validity")}
-                  currency={t("currency")}
                   priceSuffix={t("eventTab.priceSuffix")}
-                  invitesSuffix={t("eventTab.invitesSuffix")}
-                  compSuffix={t("compensation.invites")}
+                  selectedInviteCount={selectedEventInvites}
                   onSubscribe={handleSubscribe}
                 />
               )}
@@ -181,15 +162,8 @@ const WhitelabelPlansScreen = () => {
               {quarterlyPlan ? (
                 <BusinessPlanCard
                   plan={quarterlyPlan}
-                  compInvites={planCompensation(quarterlyPlan)}
                   compLabel={t("buttons.subscribeNow")}
-                  validityLabel={t("quarterlyTab.validity")}
-                  currency={t("currency")}
                   priceSuffix={t("quarterlyTab.priceSuffix")}
-                  invitesSuffix={t("quarterlyTab.invitesSuffix")}
-                  compSuffix={t("compensation.invites")}
-                  whatsappLabel={quarterlyPlan.features?.whatsAppTemplates ? t("quarterlyTab.whatsappTemplates", { count: quarterlyPlan.features.whatsAppTemplates }) : null}
-                  setupIncluded={t("quarterlyTab.setupIncluded")}
                   onSubscribe={handleSubscribe}
                 />
               ) : (
@@ -208,15 +182,8 @@ const WhitelabelPlansScreen = () => {
               {annualPlan ? (
                 <BusinessPlanCard
                   plan={annualPlan}
-                  compInvites={planCompensation(annualPlan)}
                   compLabel={t("buttons.subscribeNow")}
-                  validityLabel={t("annualTab.validity")}
-                  currency={t("currency")}
                   priceSuffix={t("annualTab.priceSuffix")}
-                  invitesSuffix={t("annualTab.invitesSuffix")}
-                  compSuffix={t("compensation.invites")}
-                  whatsappLabel={annualPlan.features?.whatsAppTemplates ? t("annualTab.whatsappTemplates", { count: annualPlan.features.whatsAppTemplates }) : null}
-                  setupIncluded={t("annualTab.setupIncluded")}
                   onSubscribe={handleSubscribe}
                 />
               ) : (

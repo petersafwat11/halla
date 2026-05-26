@@ -22,14 +22,14 @@ const Footer = ({ lang = "ar" }) => {
         <div className={styles.contactSection}>
           <h3 className={styles.sectionTitle}>{t("footer.contactTitle")}</h3>
           <div className={styles.contactInfo}>
-            <a href="tel:+96644556688" className={styles.contactLink}>
+            <a href="tel:+966551324939" className={styles.contactLink}>
               <Image src="/svg/phone.svg" alt="phone" width={18} height={18} className={styles.contactIcon} />
-              <span>+966 44556688</span>
+              <span>+966 55 132 4939</span>
             </a>
 
-            <a href="mailto:admin@labbe.com" className={styles.contactLink}>
+            <a href="mailto:support@halaa.net" className={styles.contactLink}>
               <Image src="/svg/email.svg" alt="email" width={18} height={18} className={styles.contactIcon} />
-              <span>admin@labbe.com</span>
+              <span>support@halaa.net</span>
             </a>
 
             <address className={styles.addressLink}>
@@ -40,10 +40,7 @@ const Footer = ({ lang = "ar" }) => {
                 height={18}
                 className={styles.contactIcon}
               />
-              <span>
-                المنطقة الشرقية، أبها - شارع الأمير محمد بن سلمان - مجمع ستار
-                مول - مكتب 555/555
-              </span>
+              <span>شارع المتحف - جدة - الرمز البريدي 23326</span>
             </address>
 
             <div className={styles.socialLinks}>

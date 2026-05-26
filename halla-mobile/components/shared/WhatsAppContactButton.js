@@ -15,7 +15,7 @@ import { TouchableOpacity, Text, Linking, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
 const WHATSAPP_CONTACT_NUMBER =
-  process.env.EXPO_PUBLIC_HALLA_WHATSAPP_NUMBER || '966500000000';
+  process.env.EXPO_PUBLIC_HALLA_WHATSAPP_NUMBER || '966551324939';
 
 export default function WhatsAppContactButton({
   contextMessage = '',

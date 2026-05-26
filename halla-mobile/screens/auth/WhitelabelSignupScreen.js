@@ -8,6 +8,7 @@ import { Button } from '../../components/commen';
 import SignupStepper from '../../components/commen/SignupStepper';
 import { whitelabelSignupSchema } from '../../utils/schemas/authSchemas';
 import { useWhitelabelSignup } from '../../hooks/mutations/useAuthMutations';
+import { authErrorMessage } from '../../services/authErrors';
 import WhitelabelStep1Identity from '../../components/auth/whitelabel-signup/WhitelabelStep1Identity';
 import WhitelabelStep2Login from '../../components/auth/whitelabel-signup/WhitelabelStep2Login';
 import WhitelabelStep3Requirements from '../../components/auth/whitelabel-signup/WhitelabelStep3Requirements';
@@ -23,6 +24,31 @@ const STEP_FIELDS = {
   3: ['systemRequirements.numberOfEventsMonthly', 'systemRequirements.numberOfGuestsMonthly', 'systemRequirements.eventTypes'],
   4: ['planSelection.planCode'],
   5: [],
+};
+
+/**
+ * Map the FLAT backend Zod field names (whitelabelSignupSchema lives at
+ * labbe-backend-/src/modules/auth/auth.validation.js) to nested
+ * react-hook-form paths. Without this, backend validation errors no-op.
+ */
+const WHITELABEL_FIELD_MAP = {
+  email: 'loginData.email',
+  phoneNumber: 'loginData.phoneNumber',
+  englishName: 'identity.englishName',
+  arabicName: 'identity.arabicName',
+  platformName: 'identity.englishName',
+  companyName: 'identity.companyName',
+  licenseNumber: 'identity.licenseNumber',
+  taxNumber: 'identity.taxNumber',
+  address: 'identity.address.city',
+  requirements: 'systemRequirements.numberOfEventsMonthly',
+  planSelection: 'planSelection.planCode',
+};
+
+const mapWhitelabelBackendField = (backendField) => {
+  if (!backendField) return null;
+  if (WHITELABEL_FIELD_MAP[backendField]) return WHITELABEL_FIELD_MAP[backendField];
+  return backendField;
 };
 
 export default function WhitelabelSignupScreen({ navigation }) {
@@ -41,7 +67,7 @@ export default function WhitelabelSignupScreen({ navigation }) {
     },
   });
 
-  const { trigger, handleSubmit, formState: { isSubmitting } } = methods;
+  const { trigger, handleSubmit, setError, formState: { isSubmitting } } = methods;
   const { mutateAsync: signupWhitelabel, isPending } = useWhitelabelSignup();
 
   const STEP_KEYS = ['identity', 'login', 'requirements', 'choosePlan', 'summary'];
@@ -61,9 +87,42 @@ export default function WhitelabelSignupScreen({ navigation }) {
       toast.success(t('common.success'));
       navigation.navigate('Login');
     } catch (error) {
-      toast.error(t('errors.signupFailed'));
+      const fieldErrors = Array.isArray(error?.errors) ? error.errors : [];
+      const resolved = authErrorMessage(error, t);
+      const generic = resolved?.message || error?.message || t('errors.signupFailed');
+
+      if (fieldErrors.length > 0) {
+        fieldErrors.forEach((e) => {
+          const formPath = mapWhitelabelBackendField(e?.field);
+          if (formPath) setError(formPath, { type: 'server', message: e.message });
+        });
+        const firstFormPath = mapWhitelabelBackendField(fieldErrors[0].field) || '';
+        for (const [stepNum, fields] of Object.entries(STEP_FIELDS)) {
+          if (fields?.some((f) => firstFormPath.startsWith(f))) {
+            setCurrentStep(parseInt(stepNum, 10));
+            break;
+          }
+        }
+        toast.error(generic);
+        return;
+      }
+
+      if (error?.code === 'CONFLICT' && error?.field) {
+        if (error.field === 'email_and_phone') {
+          setError('loginData.email', { type: 'server', message: generic });
+          setError('loginData.phoneNumber', { type: 'server', message: generic });
+        } else {
+          const fieldName = error.field === 'phone' ? 'phoneNumber' : error.field;
+          setError(`loginData.${fieldName}`, { type: 'server', message: generic });
+        }
+        setCurrentStep(2);
+        toast.error(generic);
+        return;
+      }
+
+      toast.error(generic);
     }
-  }, [signupWhitelabel, toast, t, navigation]);
+  }, [signupWhitelabel, toast, t, navigation, setError]);
 
   const renderStep = useCallback(() => {
     switch (currentStep) {

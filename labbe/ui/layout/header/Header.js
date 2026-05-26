@@ -16,6 +16,7 @@ import {
 } from "../navConfig";
 import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/ui/layout/notifications";
+import LangToggle from "@/ui/common/LangToggle";
 
 /**
  * Global Header Component
@@ -91,6 +92,7 @@ function Header({ dashboardType: propDashboardType }) {
         </button>
       </div>
       <div className={styles.iconsRow}>
+        <LangToggle className={styles.langToggle} />
         <NotificationBell />
 
         <img

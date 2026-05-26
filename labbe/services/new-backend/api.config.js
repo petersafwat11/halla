@@ -45,6 +45,8 @@ export const API_PATHS = {
     // Email Verification
     sendVerificationCode: '/auth/send-verification-code',
     verifyEmail: '/auth/verify-email',
+    verifyEmailLink: '/auth/verify-email-link',
+    resendEmailVerification: '/auth/resend-verification-email',
   },
 
   // ============================================

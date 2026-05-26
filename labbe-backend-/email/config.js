@@ -81,7 +81,7 @@ const createTransporter = () => {
  * @returns {string} Formatted sender address
  */
 const getDefaultSender = () => {
-  const senderName = process.env.EMAIL_SENDER_NAME || "Labbe";
+  const senderName = process.env.EMAIL_SENDER_NAME || "Halla";
   const senderEmail = process.env.EMAIL_FROM || process.env.EMAIL_USERNAME;
   return `${senderName} <${senderEmail}>`;
 };
@@ -98,9 +98,9 @@ const getConfig = () => ({
     parseInt(process.env.EMAIL_RETRY_DELAY) || DEFAULT_CONFIG.retryDelay,
   baseUrl:
     process.env.FRONTEND_URL || process.env.BASE_URL || "https://labbe.sa",
-  supportEmail: process.env.SUPPORT_EMAIL || "support@labbe.sa",
-  companyName: process.env.COMPANY_NAME || "Labbe",
-  companyNameAr: process.env.COMPANY_NAME_AR || "لبّه",
+  supportEmail: process.env.SUPPORT_EMAIL || "support@halaa.net",
+  companyName: process.env.COMPANY_NAME || "Halla",
+  companyNameAr: process.env.COMPANY_NAME_AR || "هلا",
 });
 
 // ============================================

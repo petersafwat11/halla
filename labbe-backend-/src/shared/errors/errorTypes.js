@@ -117,11 +117,20 @@ class AccountStatusError extends AppError {
     super(message || messages[status] || 'Account status error', 403, 'ACCOUNT_STATUS_ERROR');
     this.accountStatus = status;
   }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      accountStatus: this.accountStatus,
+    };
+  }
 }
 
 /**
  * Account locked error (423)
- * For accounts locked due to failed login attempts
+ * For accounts locked due to failed login attempts.
+ * Clients use `remainingMinutes` to render a localized message; the
+ * English `message` is only a fallback for non-localized consumers.
  */
 class AccountLockedError extends AppError {
   constructor(remainingMinutes) {
@@ -132,31 +141,59 @@ class AccountLockedError extends AppError {
     );
     this.remainingMinutes = remainingMinutes;
   }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      remainingMinutes: this.remainingMinutes,
+    };
+  }
 }
 
 /**
  * Rate limit exceeded error (429)
  */
 class RateLimitError extends AppError {
-  constructor(message = 'Too many requests. Please try again later.') {
+  constructor(message = 'Too many requests. Please try again later.', retryAfterSeconds = null) {
     super(message, 429, 'RATE_LIMIT_EXCEEDED');
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      retryAfterSeconds: this.retryAfterSeconds,
+    };
   }
 }
 
 /**
- * OTP related errors (400)
+ * OTP related errors (400).
+ * `otpErrorType` lets clients map to a specific i18n key; `meta` carries
+ * any subtype-specific payload (e.g. cooldown seconds, attempts left).
  */
 class OTPError extends AppError {
-  constructor(type = 'invalid', message = null) {
+  constructor(type = 'invalid', message = null, meta = null) {
     const messages = {
       invalid: 'Invalid OTP code',
       expired: 'OTP has expired',
       already_used: 'OTP has already been used',
       max_attempts: 'Maximum OTP attempts exceeded',
       cooldown: 'Please wait before requesting a new OTP',
+      not_found: 'No OTP found. Please request a new code.',
+      send_failed: 'Could not send the verification code. Please try again.',
     };
     super(message || messages[type] || 'OTP error', 400, 'OTP_ERROR');
     this.otpErrorType = type;
+    this.meta = meta || undefined;
+  }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      otpErrorType: this.otpErrorType,
+      ...(this.meta ? { meta: this.meta } : {}),
+    };
   }
 }
 

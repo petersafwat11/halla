@@ -47,13 +47,34 @@ const initialState = {
   tempMobile: null,
 };
 
+/**
+ * Lifted to a stable, code-tagged error so the UI can route it through
+ * i18n (`authErrors.SERVER`) instead of leaking the technical English
+ * string to end-users. The message is kept for log readability.
+ */
 const requireRole = (user) => {
   const role = user?.role;
   if (!role) {
-    throw new Error("Server response is missing user.role");
+    const err = new Error("Server response is missing user.role");
+    err.code = "INTERNAL_ERROR";
+    err.status = 500;
+    throw err;
   }
   return role;
 };
+
+/**
+ * Build the `{ success: false, error, errorDetail }` shape every store
+ * action returns. `error` is the raw message for back-compat with
+ * screens that still read it directly; `errorDetail` carries the full
+ * structured payload (ApiError or generic Error) so screens that have
+ * been migrated can map via `authErrorMessage`.
+ */
+const failure = (err, fallback = "") => ({
+  success: false,
+  error: err?.message || fallback,
+  errorDetail: err || null,
+});
 
 export const useAuthStore = create((set, get) => ({
   ...initialState,
@@ -127,7 +148,7 @@ export const useAuthStore = create((set, get) => ({
       return { success: true };
     } catch (error) {
       set({ status: "unauthenticated", error: error.message || "Login failed" });
-      return { success: false, error: error.message };
+      return failure(error, "Login failed");
     }
   },
 
@@ -139,7 +160,7 @@ export const useAuthStore = create((set, get) => ({
       return { success: true };
     } catch (error) {
       set({ status: "unauthenticated", error: error.message || "Failed to send OTP" });
-      return { success: false, error: error.message };
+      return failure(error, "Failed to send OTP");
     }
   },
 
@@ -147,10 +168,14 @@ export const useAuthStore = create((set, get) => ({
     const { tempMobile } = get();
     if (!tempMobile) return { success: false, error: "Mobile number not found" };
     try {
-      await resendOTPAPI({ mobile: tempMobile, type });
-      return { success: true };
+      const result = await resendOTPAPI({ mobile: tempMobile, type });
+      return {
+        success: true,
+        expiresIn: result.expiresIn,
+        cooldownSeconds: result.cooldownSeconds,
+      };
     } catch (error) {
-      return { success: false, error: error.message || "Failed to resend OTP" };
+      return failure(error, "Failed to resend OTP");
     }
   },
 
@@ -167,7 +192,7 @@ export const useAuthStore = create((set, get) => ({
       return { success: true };
     } catch (error) {
       set({ status: "unauthenticated", error: error.message || "Invalid OTP" });
-      return { success: false, error: error.message };
+      return failure(error, "Invalid OTP");
     }
   },
 
@@ -179,7 +204,7 @@ export const useAuthStore = create((set, get) => ({
       return { success: true };
     } catch (error) {
       set({ status: "unauthenticated", error: error.message || "Signup failed", tempMobile: null });
-      return { success: false, error: error.message };
+      return failure(error, "Signup failed");
     }
   },
 
@@ -214,7 +239,7 @@ export const useAuthStore = create((set, get) => ({
       return { success: true };
     } catch (error) {
       set({ status: "unauthenticated", error: error.message || "Invalid OTP" });
-      return { success: false, error: error.message };
+      return failure(error, "Invalid OTP");
     }
   },
 
@@ -241,7 +266,7 @@ export const useAuthStore = create((set, get) => ({
       return { success: true };
     } catch (error) {
       set({ status: "unauthenticated", error: error.message || "Failed to complete profile" });
-      return { success: false, error: error.message };
+      return failure(error, "Failed to complete profile");
     }
   },
 
@@ -265,7 +290,7 @@ export const useAuthStore = create((set, get) => ({
       return { success: true };
     } catch (error) {
       set({ status: "unauthenticated", error: error.message || "Vendor signup failed" });
-      return { success: false, error: error.message };
+      return failure(error, "Vendor signup failed");
     }
   },
 
@@ -280,7 +305,7 @@ export const useAuthStore = create((set, get) => ({
         status: "unauthenticated",
         error: error.message || "Failed to send reset email",
       });
-      return { success: false, error: error.message };
+      return failure(error, "Failed to send reset email");
     }
   },
 

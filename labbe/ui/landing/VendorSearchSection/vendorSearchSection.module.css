@@ -1,6 +1,6 @@
 .vendorSearchSection {
   width: 100%;
-  padding: 5rem 2rem;
+  padding: 6rem 3rem;
   display: flex;
   justify-content: center;
   background: var(--color-primary-50);
@@ -394,7 +394,7 @@
 
 @media (max-width: 768px) {
   .vendorSearchSection {
-    padding: 3rem 0;
+    padding: 4rem 2rem;
   }
 
   .container {
@@ -403,7 +403,7 @@
   }
 
   .header {
-    padding: 0 1.6rem;
+    padding: 0;
   }
 
   .title {
@@ -484,7 +484,7 @@
   /* ── vendor cards: size reductions at mobile (20% smaller) ── */
   .vendorCards {
     gap: 11px;
-    padding: 4px 1.6rem 8px;
+    padding: 4px 0 8px;
   }
 
   .vendorCard { width: min(76vw, 208px); }
@@ -495,11 +495,11 @@
   .tag { font-size: 9px; padding: 2px 5px; }
   .vendorPrice { font-size: 12px; }
   .callButton { font-size: 10px; height: 24px; padding: 6px 8px; }
-  .controls { margin-top: 1.2rem; padding: 0 1.6rem; }
+  .controls { margin-top: 1.2rem; padding: 0; }
 
   .moreButton {
-    width: calc(100% - 3.2rem);
+    width: 100%;
     max-width: 300px;
-    margin: 0 1.6rem;
+    margin: 0;
   }
 }

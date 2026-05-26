@@ -26,14 +26,12 @@ const StepSix = ({ goToPreviousStep }) => {
   const selectedPlanType = whiteLabelData.planSelection?.planType;
 
   const planPrice = selectedPlan?.pricing?.oneTime || 0;
-  const setupFee = businessData.setupFeeRequired
-    ? businessData.setupFeeAmount || 0
-    : 0;
-
-  // For quarterly & annual plans, setup fee is INCLUDED in the plan price
+  // setupFeeAmount lives on the plan itself (1,200 SAR for business event
+  // tiers, 0 for quarterly/annual — bundled into the headline price).
+  const setupFee = Number(selectedPlan?.setupFeeAmount) || 0;
   const isPoolPlan = selectedPlanType === "quarterly" || selectedPlanType === "annual";
-  const showSetupFee = !isPoolPlan && setupFee > 0;
-  const totalPrice = planPrice + (showSetupFee ? setupFee : 0);
+  const showSetupFee = setupFee > 0;
+  const totalPrice = planPrice + setupFee;
 
   return (
     <div className={styles.container}>
@@ -68,17 +66,6 @@ const StepSix = ({ goToPreviousStep }) => {
                   {t("signupForm.whiteLabel.summary.currency")}
                 </span>
               </div>
-
-              {isPoolPlan && setupFee > 0 && (
-                <div className={styles.pricingRow}>
-                  <span className={styles.pricingLabel}>
-                    {t("signupForm.whiteLabel.summary.setupFee")}
-                  </span>
-                  <span className={`${styles.pricingValue} ${styles.includedFee}`}>
-                    {t("signupForm.whiteLabel.summary.included", "مشمول")}
-                  </span>
-                </div>
-              )}
 
               {showSetupFee && (
                 <div className={styles.pricingRow}>

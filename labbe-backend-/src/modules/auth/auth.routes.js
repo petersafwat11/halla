@@ -48,6 +48,7 @@ const {
   verifyEmailSchema,
   resendSetupEmailSchema,
   verifyEmailLinkSchema,
+  resendEmailVerificationSchema,
 } = require("./auth.validation");
 const {
   authLimiter,
@@ -602,6 +603,39 @@ router.get(
   authLimiter,
   validateZod(verifyEmailLinkSchema, "query"),
   authController.verifyEmailLink
+);
+
+/**
+ * @swagger
+ * /auth/resend-verification-email:
+ *   post:
+ *     summary: Resend email verification link
+ *     description: Public, rate-limited resend of the email verification
+ *       link sent at host signup. Always returns a generic success message
+ *       to prevent account enumeration.
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Generic success response
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post(
+  "/resend-verification-email",
+  passwordResetLimiter,
+  validateZod(resendEmailVerificationSchema),
+  authController.resendEmailVerification
 );
 
 // ============================================

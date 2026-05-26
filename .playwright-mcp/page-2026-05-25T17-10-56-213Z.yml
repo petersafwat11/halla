@@ -1,0 +1,400 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - img "Logo" [ref=e6]
+        - navigation [ref=e7]:
+          - list [ref=e8]:
+            - listitem [ref=e9]:
+              - link "الرئيسية" [ref=e10] [cursor=pointer]:
+                - /url: "#home"
+            - listitem [ref=e11]:
+              - link "المميزات" [ref=e12] [cursor=pointer]:
+                - /url: "#features"
+            - listitem [ref=e13]:
+              - link "الباقات" [ref=e14] [cursor=pointer]:
+                - /url: "#pricing"
+            - listitem [ref=e15]:
+              - link "الدعوات" [ref=e16] [cursor=pointer]:
+                - /url: "#invitations"
+            - listitem [ref=e17]:
+              - link "سوق هلا" [ref=e18] [cursor=pointer]:
+                - /url: "#store"
+        - generic [ref=e19]:
+          - link "EN" [ref=e20] [cursor=pointer]:
+            - /url: /en
+            - img [ref=e21]
+            - generic [ref=e24]: EN
+          - link "سجل دخولك الان" [ref=e25] [cursor=pointer]:
+            - /url: /ar/login
+            - button "سجل دخولك الان" [ref=e26]
+          - link "انشاء حساب" [ref=e27] [cursor=pointer]:
+            - /url: /ar/signup
+            - button "انشاء حساب" [ref=e28]
+    - main [ref=e29]:
+      - generic [ref=e32]:
+        - heading "منصتك الذكية لإدارة الدعوات والمناسبات بسهولة!" [level=1] [ref=e33]
+        - paragraph [ref=e34]: أنشئ مناسباتك، أرسل دعوات رقمية مخصصة عبر واتساب والرسائل النصية، وتابع الحضور في الوقت الفعلي — كل ذلك من مكان واحد.
+        - generic [ref=e35]:
+          - paragraph [ref=e36]: أو حمل التطبيق
+          - generic [ref=e37]:
+            - link "تنزيل من App Store" [ref=e38] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e39]
+              - generic [ref=e41]:
+                - generic [ref=e42]: تنزيل من
+                - generic [ref=e43]: App Store
+            - link "احصل عليه من Google Play" [ref=e44] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e45]
+              - generic [ref=e47]:
+                - generic [ref=e48]: احصل عليه من
+                - generic [ref=e49]: Google Play
+      - generic [ref=e55]:
+        - heading "جاهز لارسال دعواتك؟" [level=2] [ref=e56]
+        - paragraph [ref=e57]: أبدا بإنشاء حسابك المجانى واستمتع بأرسال أول دعوة رقمية
+        - generic [ref=e58]:
+          - link "ابدأ مجاناً الآن" [ref=e59] [cursor=pointer]:
+            - /url: /ar/signup
+            - text: ابدأ مجاناً الآن
+            - img [ref=e60]
+          - link "تواصل معنا عبر واتساب" [ref=e62] [cursor=pointer]:
+            - /url: https://wa.me/966500000000
+            - img [ref=e63]
+            - text: تواصل معنا عبر واتساب
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]: ✓
+            - text: إلغاء في أي وقت
+          - generic [ref=e68]:
+            - generic [ref=e69]: ✓
+            - text: دعم فوري عبر واتساب
+      - generic [ref=e70]:
+        - generic [ref=e71]:
+          - heading "مميزات هلا" [level=2] [ref=e72]
+          - paragraph [ref=e73]: استمتع بحلول رقمية متطورة لتصميم دعواتك وتتبع الحضور وتحليلات الأداء وكل ما تحتاجه لإدارة مناسبتك أسهل من أي وقت مضى
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - img [ref=e78]
+            - heading "إنشاء المناسبات" [level=3] [ref=e80]
+            - paragraph [ref=e81]: حدد نوع المناسبة وأضف الموقع والتوقيت وبيانات الضيوف بكل سهولة ويسر
+          - generic [ref=e82]:
+            - img [ref=e84]
+            - heading "الدعوات الرقمية" [level=3] [ref=e87]
+            - paragraph [ref=e88]: دعوات رقمية فاخرة ترسل تلقائياً عبر واتساب والرسائل النصية فى موعد المحدد لها
+          - generic [ref=e89]:
+            - img [ref=e91]
+            - heading "إشعارات واتساب" [level=3] [ref=e93]
+            - paragraph [ref=e94]: تذكيرات وتأكيدات تلقائية عبر واتساب لضمان أعلى نسبة حضور.
+          - generic [ref=e95]:
+            - img [ref=e97]
+            - heading "إدارة الضيوف" [level=3] [ref=e102]
+            - paragraph [ref=e103]: تتبع الردود، أدر الضيوف، وصدّر إحصائيات الحضور بنقرة واحدة.
+          - generic [ref=e104]:
+            - img [ref=e106]
+            - heading "QR" [level=3] [ref=e112]
+            - paragraph [ref=e113]: اصدار QR كود لكل ضيف لتسجيل حضور سريع عبر مسح ضوئي قبل الدخول
+          - generic [ref=e114]:
+            - img [ref=e116]
+            - heading "إدارة الإستقبال" [level=3] [ref=e120]
+            - paragraph [ref=e121]: يمكنك اضافة موظفي استقبال الحضور وتخصيص صلاحياتهم مع متابعة الاداء بشكل مباشر
+          - generic [ref=e122]:
+            - img [ref=e124]
+            - heading "التحليلات والتقارير" [level=3] [ref=e125]
+            - paragraph [ref=e126]: تقارير تفصيلية عن نسب الحضور وردود الفعل وأداء مناسباتك.
+          - generic [ref=e127]:
+            - img [ref=e129]
+            - heading "الإشعارات الفورية" [level=3] [ref=e132]
+            - paragraph [ref=e133]: إشعارات لحظية لكل تحديث مهم في مناسباتك عبر التطبيق.
+          - generic [ref=e134]:
+            - img [ref=e136]
+            - heading "رصيد تعويضي" [level=3] [ref=e140]
+            - paragraph [ref=e141]: رصيد إضافي كتعويض عن الاعتذارات من إجمالي عدد الدعوات.
+          - generic [ref=e142]:
+            - img [ref=e144]
+            - heading "متجر الخدمات" [level=3] [ref=e147]
+            - paragraph [ref=e148]: تصفح مئات مزودي الخدمات من تصوير وضيافة وديكور وغيرها واحجز مباشرة.
+          - generic [ref=e149]:
+            - img [ref=e151]
+            - heading "حلول الأعمال" [level=3] [ref=e155]
+            - paragraph [ref=e156]: استمتع بإدارة علامتك التجارية عبر تخصيص كامل لواجهة الأعمال الخاصة بك وادارة سهلة للمستخدمين
+      - generic [ref=e158]:
+        - generic [ref=e159]:
+          - generic [ref=e160]: كيف يعمل
+          - heading "أربع خطوات لمناسبة مثالية" [level=2] [ref=e161]
+          - paragraph [ref=e162]: من الإنشاء حتى الحضور — كل شيء في منصة واحدة.
+        - generic [ref=e164]:
+          - generic [ref=e165]:
+            - img [ref=e167]
+            - generic [ref=e169]: أنشئ مناسبتك
+            - generic [ref=e170]: حدد نوع المناسبة وأضف الموقع والتوقيت وبيانات الضيوف بكل سهولة ويسر
+          - generic [ref=e171]:
+            - img [ref=e173]
+            - generic [ref=e176]: أرسل الدعوات
+            - generic [ref=e177]: اختر تصميم الدعوة الأمثل وصيغة الرسالة المناسبة وارسلها لضيوفك عبر الواتساب
+          - generic [ref=e178]:
+            - img [ref=e180]
+            - generic [ref=e183]: تتبع الردود
+            - generic [ref=e184]: تابع ردود الضيوف عبر لوحة التحكم الذكية والمبسطة
+          - generic [ref=e185]:
+            - img [ref=e187]
+            - generic [ref=e193]: استقبل الضيوف
+            - generic [ref=e194]: يمكنك تتبع الحضور يوم المناسبة بسرعة ودقة من خلال مسح ال QR كود قبل الدخول
+      - generic [ref=e196]:
+        - generic [ref=e197]:
+          - heading "اختر الباقة المناسبة لك" [level=2] [ref=e198]
+          - paragraph [ref=e199]: للأفراد والشركات — باقات لكل مناسبة أو اشتراك شهري.
+        - paragraph [ref=e201]: جاري تحميل الباقات...
+      - generic [ref=e203]:
+        - heading "استكشف قوالب دعواتنا المبتكرة" [level=2] [ref=e204]
+        - paragraph [ref=e205]: تصاميم أنيقة وقابلة للتخصيص لحفلات الزفاف، والمناسبات الرسمية، والاحتفالات الخاصة — جميعها ترسل تلقائياً عبر واتساب.
+      - generic [ref=e235]:
+        - generic [ref=e236]:
+          - heading "ابحث عن أفضل مزودي الخدمات" [level=2] [ref=e237]
+          - paragraph [ref=e238]: تواصل مع افضل المتاجر المتخصصة والمعتمدة لدينا واحصل على خدمات مميزة لمناسبتك القادمة
+        - generic [ref=e239]:
+          - generic [ref=e240]:
+            - generic [ref=e241]:
+              - generic [ref=e242]:
+                - img "استوديو ذكريات للتصوير" [ref=e243]
+                - generic [ref=e244]:
+                  - generic [ref=e245]: (127 تقييم)
+                  - generic [ref=e246]: "4.9"
+                  - img "star" [ref=e247]
+              - generic [ref=e248]:
+                - heading "استوديو ذكريات للتصوير" [level=3] [ref=e249]
+                - generic [ref=e250]:
+                  - img "location" [ref=e251]
+                  - generic [ref=e252]: الرياض، المملكة العربية السعودية
+                - generic [ref=e253]:
+                  - generic [ref=e254]: تصوير زفاف
+                  - generic [ref=e255]: جلسات بورتريه
+                  - generic [ref=e256]: فعاليات الشركات
+                - generic [ref=e257]:
+                  - generic [ref=e258]: من 1,500 ريال
+                  - button "تواصل الآن call" [ref=e259] [cursor=pointer]:
+                    - generic [ref=e260]: تواصل الآن
+                    - img "call" [ref=e261]
+            - generic [ref=e262]:
+              - generic [ref=e263]:
+                - img "النخيل للضيافة والمأكولات" [ref=e264]
+                - generic [ref=e265]:
+                  - generic [ref=e266]: (89 تقييم)
+                  - generic [ref=e267]: "4.8"
+                  - img "star" [ref=e268]
+              - generic [ref=e269]:
+                - heading "النخيل للضيافة والمأكولات" [level=3] [ref=e270]
+                - generic [ref=e271]:
+                  - img "location" [ref=e272]
+                  - generic [ref=e273]: جدة، المملكة العربية السعودية
+                - generic [ref=e274]:
+                  - generic [ref=e275]: بوفيه مناسبات
+                  - generic [ref=e276]: حلويات شرقية
+                - generic [ref=e277]:
+                  - generic [ref=e278]: من 3,000 ريال
+                  - button "تواصل الآن call" [ref=e279] [cursor=pointer]:
+                    - generic [ref=e280]: تواصل الآن
+                    - img "call" [ref=e281]
+            - generic [ref=e282]:
+              - generic [ref=e283]:
+                - img "لمسة إبداع للديكور" [ref=e284]
+                - generic [ref=e285]:
+                  - generic [ref=e286]: (64 تقييم)
+                  - generic [ref=e287]: "4.7"
+                  - img "star" [ref=e288]
+              - generic [ref=e289]:
+                - heading "لمسة إبداع للديكور" [level=3] [ref=e290]
+                - generic [ref=e291]:
+                  - img "location" [ref=e292]
+                  - generic [ref=e293]: الدمام، المملكة العربية السعودية
+                - generic [ref=e294]:
+                  - generic [ref=e295]: ديكور قاعات
+                  - generic [ref=e296]: تنسيق زهور
+                  - generic [ref=e297]: إضاءة احترافية
+                - generic [ref=e298]:
+                  - generic [ref=e299]: من 2,000 ريال
+                  - button "تواصل الآن call" [ref=e300] [cursor=pointer]:
+                    - generic [ref=e301]: تواصل الآن
+                    - img "call" [ref=e302]
+          - generic [ref=e303]:
+            - button "التالي" [ref=e304] [cursor=pointer]:
+              - img [ref=e305]
+            - generic [ref=e307]:
+              - button "1" [ref=e308] [cursor=pointer]
+              - button "2" [ref=e309] [cursor=pointer]
+              - button "3" [ref=e310] [cursor=pointer]
+            - button "السابق" [disabled] [ref=e311]:
+              - img [ref=e312]
+        - button "عرض المزيد" [ref=e314] [cursor=pointer]
+      - generic [ref=e316]:
+        - generic [ref=e317]:
+          - generic [ref=e318]:
+            - heading "انضم لسوق هلا الان" [level=2] [ref=e319]
+            - paragraph [ref=e320]: اعرض خدماتك وتواصل مع عملاء محتملين من خلال سوقنا المعتمد
+          - link "سجّل كمزود خدمة" [ref=e321] [cursor=pointer]:
+            - /url: /ar/signup-vendor
+        - img "Vendors collaborating with event planners" [ref=e324]
+      - generic [ref=e326]:
+        - generic [ref=e328]: الأسئلة الشائعة
+        - generic [ref=e329]:
+          - generic [ref=e330]:
+            - button "ما هي هلا؟" [ref=e331] [cursor=pointer]:
+              - generic [ref=e332]: ما هي هلا؟
+              - img [ref=e334]
+            - region:
+              - generic [ref=e336]: هلا منصة ذكية لإدارة المناسبات تُمكّنك من إنشاء الأحداث، إرسال الدعوات الرقمية عبر واتساب والرسائل النصية، وتتبع الحضور في الوقت الفعلي — كل ذلك من مكان واحد.
+          - generic [ref=e337]:
+            - button "كيف يمكنني إنشاء دعوة جديدة؟" [ref=e338] [cursor=pointer]:
+              - generic [ref=e339]: كيف يمكنني إنشاء دعوة جديدة؟
+              - img [ref=e341]
+            - region:
+              - generic [ref=e343]: "إنشاء مناسبتك يمر بأربع خطوات سهلة: الأولى تُضيف فيها تفاصيل المناسبة كالاسم والمكان والتاريخ والوقت مع تحديد الموقع على الخريطة. الثانية تُضيف فيها ضيوفك يدوياً واحداً بواحد أو تستورد قائمتهم كاملاً من ملف CSV بنقرة واحدة. الثالثة تختار فيها صورة الدعوة من مكتبتنا أو ترفع صورتك الخاصة وتكتب ما تريد من نصوص عليها. الرابعة تختار فيها نموذج رسالة الواتساب وتراجع كافة تفاصيل مناسبتك، ترسل رسالة تجريبية لنفسك للاطمئنان على ما سيصله ضيوفك، ثم تحدد وقت الإرسال — وسنرسل الدعوات جميعها في الوقت الذي تختاره مع تذكير تلقائي قبل ٢٤ ساعة من المناسبة."
+          - generic [ref=e344]:
+            - button "هل يتم إرسال الدعوات لكل مدعو باسمه الشخصي؟" [ref=e345] [cursor=pointer]:
+              - generic [ref=e346]: هل يتم إرسال الدعوات لكل مدعو باسمه الشخصي؟
+              - img [ref=e348]
+            - region:
+              - generic [ref=e350]: نعم، كل ضيف يستقبل رسالة شخصية تحمل اسمه مع تفاصيل المناسبة وكود QR فريد خاص به فقط.
+          - generic [ref=e351]:
+            - button "هل تصل جميع الدعوات للمستلمين؟" [ref=e352] [cursor=pointer]:
+              - generic [ref=e353]: هل تصل جميع الدعوات للمستلمين؟
+              - img [ref=e355]
+            - region:
+              - generic [ref=e357]: نعم، هلا يضمن وصول الدعوات عبر واتساب مع إمكانية متابعة حالة التسليم لكل ضيف. في حال عدم الوصول نُبلّغك فوراً.
+          - generic [ref=e358]:
+            - button "هل يمكنني إضافة تصميم خاص بي؟" [ref=e359] [cursor=pointer]:
+              - generic [ref=e360]: هل يمكنني إضافة تصميم خاص بي؟
+              - img [ref=e362]
+            - region:
+              - generic [ref=e364]: بالتأكيد، يمكنك رفع تصاميمك الخاصة أو الاختيار من مكتبة قوالبنا الاحترافية وتخصيصها بالألوان والنصوص التي تريدها.
+          - generic [ref=e365]:
+            - button "هل أستطيع رؤية تفاصيل الاعتذارات والحضور؟" [ref=e366] [cursor=pointer]:
+              - generic [ref=e367]: هل أستطيع رؤية تفاصيل الاعتذارات والحضور؟
+              - img [ref=e369]
+            - region:
+              - generic [ref=e371]: نعم، لوحة التحكم تعرض بشكل لحظي من قبل ومن اعتذر ومن لم يرد بعد، مع تقارير تفصيلية شاملة قابلة للتصدير.
+          - generic [ref=e372]:
+            - button "هل يمكن إرسال تذكيرات للضيوف؟" [ref=e373] [cursor=pointer]:
+              - generic [ref=e374]: هل يمكن إرسال تذكيرات للضيوف؟
+              - img [ref=e376]
+            - region:
+              - generic [ref=e378]: نعم، يُرسل هلا تلقائياً تذكيراً عبر واتساب لكل ضيف قبل ٢٤ ساعة من موعد المناسبة — دون أي جهد منك.
+          - generic [ref=e379]:
+            - button "ماذا عن الضيوف الذين لا يستخدمون الواتساب؟" [ref=e380] [cursor=pointer]:
+              - generic [ref=e381]: ماذا عن الضيوف الذين لا يستخدمون الواتساب؟
+              - img [ref=e383]
+            - region:
+              - generic [ref=e385]: ترسل هلا الدعوات عبر واتساب بشكل افتراضي. في حال لم تصل رسالة الواتساب للضيف لأي سبب، يتحول النظام تلقائياً لإرسال رسالة نصية SMS لضمان وصول الدعوة.
+          - generic [ref=e386]:
+            - button "هل يمكنني دعوة ضيوف من خارج السعودية؟" [ref=e387] [cursor=pointer]:
+              - generic [ref=e388]: هل يمكنني دعوة ضيوف من خارج السعودية؟
+              - img [ref=e390]
+            - region:
+              - generic [ref=e392]: نعم، هلا يدعم إرسال الدعوات لأرقام الجوال في جميع دول الخليج العربي — السعودية، الإمارات، الكويت، قطر، البحرين وعُمان.
+          - generic [ref=e393]:
+            - button "هل يمكنني تعيين أكثر من داعي إضافي؟" [ref=e394] [cursor=pointer]:
+              - generic [ref=e395]: هل يمكنني تعيين أكثر من داعي إضافي؟
+              - img [ref=e397]
+            - region:
+              - generic [ref=e399]: نعم، يمكنك إضافة مُضيف مشارك أو أكثر لمناسبتك، بحيث يتمكنون من إرسال الدعوات ومتابعة ردود الضيوف نيابةً عنك.
+          - generic [ref=e400]:
+            - button "كيف يعمل تسجيل الحضور بـ QR؟" [ref=e401] [cursor=pointer]:
+              - generic [ref=e402]: كيف يعمل تسجيل الحضور بـ QR؟
+              - img [ref=e404]
+            - region:
+              - generic [ref=e406]: كل ضيف يحصل على كود QR فريد في دعوته. يوم المناسبة، يمسح فريقك الكود بكاميرا الهاتف وتظهر بيانات الضيف فوراً دون الحاجة لأي اتصال بالإنترنت.
+          - generic [ref=e407]:
+            - button "ما هو نظام الرصيد التعويضي؟" [ref=e408] [cursor=pointer]:
+              - generic [ref=e409]: ما هو نظام الرصيد التعويضي؟
+              - img [ref=e411]
+            - region:
+              - generic [ref=e413]: الرصيد التعويضي هو دعوات إضافية تُمنح لك فوق عدد ضيوفك المحدد في الباقة. عندما يعتذر أحد ضيوفك عن الحضور، يمكنك استخدام هذا الرصيد لدعوة ضيوف آخرين بدلاً منه وضمان اكتمال حضور مناسبتك.
+          - generic [ref=e414]:
+            - button "هل بياناتي آمنة مع هلا؟" [ref=e415] [cursor=pointer]:
+              - generic [ref=e416]: هل بياناتي آمنة مع هلا؟
+              - img [ref=e418]
+            - region:
+              - generic [ref=e420]: نعم، نستخدم أعلى معايير الأمان والتشفير لحماية بياناتك وبيانات ضيوفك وفقاً لأفضل الممارسات الدولية ولوائح حماية البيانات.
+          - generic [ref=e421]:
+            - button "هل هلا مجاني للتجربة؟" [ref=e422] [cursor=pointer]:
+              - generic [ref=e423]: هل هلا مجاني للتجربة؟
+              - img [ref=e425]
+            - region:
+              - generic [ref=e427]: نعم، يمكنك إنشاء حساب مجاناً وتجربة المنصة. الباقات المدفوعة تبدأ من ٩٩ ريال للمناسبة الواحدة. لا بطاقة ائتمان مطلوبة.
+          - generic [ref=e428]:
+            - button "هل يمكنني إلغاء الاشتراك في أي وقت؟" [ref=e429] [cursor=pointer]:
+              - generic [ref=e430]: هل يمكنني إلغاء الاشتراك في أي وقت؟
+              - img [ref=e432]
+            - region:
+              - generic [ref=e434]: نعم، يمكنك إلغاء اشتراكك في أي وقت بدون أي رسوم إضافية. الاشتراك يستمر حتى نهاية الفترة المدفوعة.
+          - generic [ref=e435]:
+            - button "هل تدعمون الباقات المؤسسية؟" [ref=e436] [cursor=pointer]:
+              - generic [ref=e437]: هل تدعمون الباقات المؤسسية؟
+              - img [ref=e439]
+            - region:
+              - generic [ref=e441]: نعم، لدينا حلول مؤسسية بعلامتك التجارية الخاصة مع مدير حساب مخصص. تواصل معنا عبر واتساب لمعرفة التفاصيل والحصول على عرض سعر.
+    - contentinfo [ref=e442]:
+      - generic [ref=e443]:
+        - generic [ref=e444]:
+          - heading "معلومات التواصل" [level=3] [ref=e445]
+          - generic [ref=e446]:
+            - link "phone +966 44556688" [ref=e447] [cursor=pointer]:
+              - /url: tel:+96644556688
+              - img "phone" [ref=e448]
+              - generic [ref=e449]: +966 44556688
+            - link "email admin@labbe.com" [ref=e450] [cursor=pointer]:
+              - /url: mailto:admin@labbe.com
+              - img "email" [ref=e451]
+              - generic [ref=e452]: admin@labbe.com
+            - generic [ref=e453]:
+              - img "location" [ref=e454]
+              - generic [ref=e455]: المنطقة الشرقية، أبها - شارع الأمير محمد بن سلمان - مجمع ستار مول - مكتب 555/555
+            - generic [ref=e456]:
+              - link "WhatsApp" [ref=e457] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e458]
+              - link "Twitter" [ref=e460] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e461]
+              - link "Instagram" [ref=e463] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e464]
+              - link "YouTube" [ref=e467] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e468]
+              - link "Snapchat" [ref=e470] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e471]
+        - generic [ref=e473]:
+          - heading "الصفحات المهمة" [level=3] [ref=e474]
+          - navigation [ref=e475]:
+            - link "arrow الشروط والأحكام" [ref=e476] [cursor=pointer]:
+              - /url: /ar/terms
+              - img "arrow" [ref=e477]
+              - generic [ref=e478]: الشروط والأحكام
+            - link "arrow سياسة الخصوصية" [ref=e479] [cursor=pointer]:
+              - /url: /ar/privacy
+              - img "arrow" [ref=e480]
+              - generic [ref=e481]: سياسة الخصوصية
+            - link "arrow سياسة الإلغاء والاسترداد" [ref=e482] [cursor=pointer]:
+              - /url: /ar/refund
+              - img "arrow" [ref=e483]
+              - generic [ref=e484]: سياسة الإلغاء والاسترداد
+        - generic [ref=e486]:
+          - heading "حمل التطبيق" [level=3] [ref=e487]
+          - paragraph [ref=e488]: هلا منصة ذكية لإدارة المناسبات — أنشئ فعالياتك، أرسل دعوات رقمية مخصصة عبر واتساب، وتتبع الحضور في الوقت الفعلي.
+          - generic [ref=e490]:
+            - link "تنزيل من App Store" [ref=e491] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e492]
+              - generic [ref=e494]:
+                - generic [ref=e495]: تنزيل من
+                - generic [ref=e496]: App Store
+            - link "احصل عليه من Google Play" [ref=e497] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e498]
+              - generic [ref=e500]:
+                - generic [ref=e501]: احصل عليه من
+                - generic [ref=e502]: Google Play
+      - generic [ref=e504]: جميع الحقوق محفوظة © 2026 هلا

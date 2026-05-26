@@ -4,6 +4,7 @@
  */
 
 const AppError = require("../errors/AppError");
+const { ValidationError } = require("../errors/errorTypes");
 const validator = require("validator");
 
 /**
@@ -402,10 +403,17 @@ exports.validateZod = (schema, source = 'body') => {
   return (req, res, next) => {
     const result = schema.safeParse(req[source]);
     if (!result.success) {
-      const message = result.error.issues
-        .map((i) => `${i.path.join('.') || source}: ${i.message}`)
+      // Produce a structured errors[] so clients can attach inline field
+      // errors. We still build a flat `message` for non-localized consumers.
+      const errors = result.error.issues.map((i) => ({
+        field: i.path.join('.') || source,
+        message: i.message,
+        code: i.code,
+      }));
+      const message = errors
+        .map((e) => `${e.field}: ${e.message}`)
         .join(', ');
-      return next(new AppError(message, 400));
+      return next(new ValidationError(message, errors));
     }
     req[source] = result.data;
     next();

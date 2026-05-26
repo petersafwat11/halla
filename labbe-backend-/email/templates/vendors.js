@@ -28,8 +28,8 @@ const vendorApplicationPendingEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
 
   const subject = isAr
-    ? "تم استلام طلبك كمزود خدمة - لبّه"
-    : "Vendor Application Received - Labbe";
+    ? "تم استلام طلبك كمزود خدمة - هلا"
+    : "Vendor Application Received - Halla";
 
   const content = `
     ${getGreeting(data.vendorName, lang)}
@@ -42,8 +42,8 @@ const vendorApplicationPendingEmail = (data, lang = "ar") => {
     
     <p>${
       isAr
-        ? "شكراً لتقديم طلبك كمزود خدمة في منصة لبّه. تم استلام طلبك بنجاح وهو الآن قيد المراجعة من قبل فريقنا."
-        : "Thank you for submitting your vendor application to Labbe. Your application has been received and is now under review by our team."
+        ? "شكراً لتقديم طلبك كمزود خدمة في منصة هلا. تم استلام طلبك بنجاح وهو الآن قيد المراجعة من قبل فريقنا."
+        : "Thank you for submitting your vendor application to Halla. Your application has been received and is now under review by our team."
     }
     </p>
     
@@ -99,8 +99,8 @@ const vendorApprovalEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
 
   const subject = isAr
-    ? "تهانينا! تمت الموافقة على حسابك - لبّه"
-    : "Congratulations! Your Account is Approved - Labbe";
+    ? "تهانينا! تمت الموافقة على حسابك - هلا"
+    : "Congratulations! Your Account is Approved - Halla";
 
   const content = `
     ${getGreeting(data.vendorName, lang)}
@@ -178,16 +178,16 @@ const vendorRejectionEmail = (data, lang = "ar") => {
   const config = getConfig();
 
   const subject = isAr
-    ? "تحديث حالة طلبك - لبّه"
-    : "Application Status Update - Labbe";
+    ? "تحديث حالة طلبك - هلا"
+    : "Application Status Update - Halla";
 
   const content = `
     ${getGreeting(data.vendorName, lang)}
     
     <p>${
       isAr
-        ? `شكراً لاهتمامك بالانضمام إلى منصة لبّه كمزود خدمة لعلامة "${data.brandName}" التجارية.`
-        : `Thank you for your interest in joining Labbe as a vendor for "${data.brandName}".`
+        ? `شكراً لاهتمامك بالانضمام إلى منصة هلا كمزود خدمة لعلامة "${data.brandName}" التجارية.`
+        : `Thank you for your interest in joining Halla as a vendor for "${data.brandName}".`
     }
     </p>
     
@@ -479,7 +479,7 @@ const vendorAccountSuspendedEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
   const config = getConfig();
 
-  const subject = isAr ? "تم تعليق حسابك - لبّه" : "Account Suspended - Labbe";
+  const subject = isAr ? "تم تعليق حسابك - هلا" : "Account Suspended - Halla";
 
   const content = `
     ${getGreeting(data.vendorName, lang)}

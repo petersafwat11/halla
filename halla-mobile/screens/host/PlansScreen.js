@@ -74,33 +74,9 @@ const PlansScreen = () => {
     }
   }, [billingType, basicPlans, premiumPlans]);
 
-  // Match web: use compensationPercentage of the plan whose invite tier matches
-  // the user's selection (falls back to first plan, then to 15 — the backend
-  // PlanModel default for features.compensationPercentage).
-  const compensationInvites = useMemo(() => {
-    if (!selectedInvites) return 0;
-    const plan =
-      basicPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
-      premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
-      basicPlans[0] ||
-      premiumPlans[0];
-    const percent = plan?.compensationPercentage ?? 15;
-    return Math.floor((selectedInvites * percent) / 100);
-  }, [selectedInvites, basicPlans, premiumPlans, billingType]);
-
-  const basicFeatures = useMemo(() => {
-    const plan =
-      basicPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
-      basicPlans[0];
-    return plan?.featuresArray || [];
-  }, [basicPlans, billingType, selectedInvites]);
-
-  const premiumFeatures = useMemo(() => {
-    const plan =
-      premiumPlans.find((p) => getInviteValue(p, billingType) === selectedInvites) ||
-      premiumPlans[0];
-    return plan?.featuresArray || [];
-  }, [premiumPlans, billingType, selectedInvites]);
+  // Compensation count is rendered inside <PlanDescription> via the
+  // COMPENSATION_PERCENTAGE constant. Feature bullets come from each plan's
+  // `featureBullets` map (Arabic / English).
 
   const handleAddonsChange = (items, total) => {
     setAddonItems(items);
@@ -245,8 +221,6 @@ const PlansScreen = () => {
               billingType={billingType}
               selectedInvites={selectedInvites}
               onInviteChange={setSelectedInvites}
-              features={basicFeatures}
-              compensationCount={compensationInvites}
               onSubscribe={(plan) => handleSubscribe("basic", plan)}
             />
             <HostPlanCard
@@ -256,8 +230,6 @@ const PlansScreen = () => {
               billingType={billingType}
               selectedInvites={selectedInvites}
               onInviteChange={setSelectedInvites}
-              features={premiumFeatures}
-              compensationCount={compensationInvites}
               onSubscribe={(plan) => handleSubscribe("premium", plan)}
             />
           </>

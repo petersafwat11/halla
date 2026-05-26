@@ -38,7 +38,7 @@ const swaggerOptions = {
       version: '2.0.0',
       contact: {
         name: 'API Support',
-        email: 'support@halaa.sa',
+        email: 'support@halaa.net',
       },
       license: {
         name: 'ISC',
@@ -807,26 +807,20 @@ const swaggerOptions = {
               format: 'date-time',
             },
             features: {
-              type: 'array',
-              items: {
-                type: 'string',
+              type: 'object',
+              description: 'Delegated to populated plan; only `whatsAppTemplates` after rev. 2 cleanup.',
+              properties: {
+                whatsAppTemplates: { type: 'integer' },
               },
             },
             limits: {
               type: 'object',
               properties: {
-                eventsPerMonth: {
-                  type: 'integer',
-                },
-                guestsPerEvent: {
-                  type: 'integer',
-                },
-                messagesPerMonth: {
-                  type: 'integer',
-                },
-                storageGB: {
-                  type: 'integer',
-                },
+                maxEvents: { type: 'integer' },
+                maxInvitesPerEvent: { type: 'integer', nullable: true },
+                invitePool: { type: 'integer', nullable: true },
+                durationDays: { type: 'integer' },
+                maxHosts: { type: 'integer', nullable: true },
               },
             },
           },
@@ -926,21 +920,29 @@ const swaggerOptions = {
             compensationPool: {
               type: 'integer',
               nullable: true,
-              description: 'Compensation invites granted (pool plans only); = floor(invitePool * compensationPercentage / 100).',
-            },
-            compensationPercentage: {
-              type: 'number',
-              description: 'Percentage of invites granted as compensation (default per plan; see PlanModel).',
+              description: 'Compensation invites granted (pool plans only); = floor(invitePool * COMPENSATION_PERCENTAGE / 100). Constant is 15.',
             },
             features: {
               type: 'object',
-              description: 'Feature toggles + numerics (see PlanModel.featuresSchema).',
-              additionalProperties: true,
+              description: 'Feature numerics (only `whatsAppTemplates` after rev. 2 cleanup).',
+              properties: {
+                whatsAppTemplates: {
+                  type: 'integer',
+                  description: 'Number of custom WhatsApp templates (Business plans: 1 / 3 / 5).',
+                },
+              },
             },
-            featuresArray: {
-              type: 'array',
-              description: 'Pre-built feature labels for UI rendering.',
-              items: { type: 'object' },
+            setupFeeAmount: {
+              type: 'number',
+              description: 'One-time setup fee in SAR major units. Non-zero only for business event plans (1,200 SAR); 0 for quarterly/annual (bundled).',
+            },
+            featureBullets: {
+              type: 'object',
+              description: 'Localized bullet copy rendered verbatim by <PlanDescription>.',
+              properties: {
+                ar: { type: 'array', items: { type: 'string' } },
+                en: { type: 'array', items: { type: 'string' } },
+              },
             },
             isActive: { type: 'boolean' },
             sortOrder: { type: 'integer' },
@@ -1016,8 +1018,21 @@ const swaggerOptions = {
             },
             features: {
               type: 'object',
-              description: 'See PlanModel.featuresSchema for the full list of toggles + numerics.',
-              additionalProperties: true,
+              properties: {
+                whatsAppTemplates: { type: 'integer', minimum: 0, maximum: 100 },
+              },
+            },
+            setupFeeAmount: {
+              type: 'number',
+              minimum: 0,
+              description: 'One-time setup fee in SAR major units.',
+            },
+            featureBullets: {
+              type: 'object',
+              properties: {
+                ar: { type: 'array', items: { type: 'string' } },
+                en: { type: 'array', items: { type: 'string' } },
+              },
             },
             sortOrder: { type: 'integer' },
             isPopular: { type: 'boolean' },
@@ -1072,7 +1087,17 @@ const swaggerOptions = {
             },
             features: {
               type: 'object',
-              additionalProperties: true,
+              properties: {
+                whatsAppTemplates: { type: 'integer', minimum: 0, maximum: 100 },
+              },
+            },
+            setupFeeAmount: { type: 'number', minimum: 0 },
+            featureBullets: {
+              type: 'object',
+              properties: {
+                ar: { type: 'array', items: { type: 'string' } },
+                en: { type: 'array', items: { type: 'string' } },
+              },
             },
             sortOrder: { type: 'integer' },
             isPopular: { type: 'boolean' },
@@ -1083,7 +1108,9 @@ const swaggerOptions = {
 
         BusinessPlansResponse: {
           type: 'object',
-          description: 'Shape returned by `GET /plans/business`.',
+          description:
+            'Shape returned by `GET /plans/business`. Each Plan carries its own ' +
+            '`setupFeeAmount` (1,200 for event tiers, 0 for quarterly/annual).',
           properties: {
             event: {
               type: 'array',
@@ -1096,11 +1123,6 @@ const swaggerOptions = {
             annual: {
               type: 'array',
               items: { $ref: '#/components/schemas/Plan' },
-            },
-            setupFeeRequired: { type: 'boolean' },
-            setupFeeAmount: {
-              type: 'number',
-              description: 'One-time business setup fee in SAR major units.',
             },
           },
         },

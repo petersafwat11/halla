@@ -35,27 +35,22 @@
   },
   "inviteSelector": { "label": "Select number of invites", "poolLabel": "Invite pool", "invites": "invites" },
   "planLimits": { "invitesPerEvent": "invites/event", "invitePool": "invite pool" },
-  "features": {
-    "title": "Included Features",
-    "hasInAppInvites": { "label": "In-app invitations" },
-    "hasWhatsAppInvites": { "label": "WhatsApp invitations" },
-    "hasSMSInvites": { "label": "SMS invitations" },
-    "hasQRCode": { "label": "QR code entry" },
-    "hasQRScanning": { "label": "QR scanning at the door" },
-    "hasFlexibleEntryMode": { "label": "Flexible entry mode" },
-    "hasStaffCheckIn": { "label": "Staff check-in" },
-    "hasStaffAssignment": { "label": "Staff assignment" },
-    "hasRSVPTracking": { "label": "RSVP tracking" },
-    "hasAutoReminders": { "label": "Automatic reminders" },
-    "hasEmailNotifications": { "label": "Email notifications" },
-    "hasCustomWhatsAppNumber": { "label": "Custom WhatsApp number" },
-    "hasCompensationInvites": { "label": "Compensation invitations" },
-    "hasBasicTemplates": { "label": "Basic templates" },
-    "hasPremiumTemplates": { "label": "Premium templates" },
-    "hasPostEventPage": { "label": "Post-event page" },
-    "hasCustomReports": { "label": "Custom reports" },
-    "hasWhatsAppSupport": { "label": "WhatsApp support" }
+  "taglines": {
+    "basic": "Full control of your event — manage everything yourself with the easiest steps!",
+    "premium": "Your event is on us — we manage everything on your behalf, from the first invitation to the last guest.",
+    "business": "Professional management of invitations and corporate events with the organization's official brand identity through the Halaa team — the ideal choice for companies, organizers of large recurring events, and organizations."
   },
+  "duration": {
+    "event": "Valid for {{days}} days",
+    "monthly": "Monthly subscription — unlimited events",
+    "quarterly": "3-month subscription",
+    "annual": "Annual subscription"
+  },
+  "includes": { "basic": "All Basic features +" },
+  "compensationRow": "{{count}} compensation invites ({{percent}}% of {{base}})",
+  "setupFeeRow": "One-time setup fee: {{amount}} SAR",
+  "freeInvitesRow": "Includes {{count}} free invitations during the subscription period",
+  "whatsappTemplates": "Custom WhatsApp templates: {{count}}",
   "compensation": { "title": "Free Compensation Invites", "invites": "invites" },
   "buttons": { "subscribeNow": "Subscribe Now", "retry": "Retry", "continueToSummary": "Continue to Summary" },
   "addons": {

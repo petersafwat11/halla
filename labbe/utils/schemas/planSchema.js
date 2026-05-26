@@ -90,45 +90,19 @@ const limitsSchema = z
   })
   .strict();
 
+// Compensation is universal (15% via COMPENSATION_PERCENTAGE constant) and
+// differentiators between basic/premium/business live in `planFamily` plus
+// per-plan `featureBullets`. Only `whatsAppTemplates` survives.
 const featuresSchema = z
   .object({
-    // Core invitation features
-    hasInAppInvites: z.boolean().optional(),
-    hasWhatsAppInvites: z.boolean().optional(),
-    hasSMSInvites: z.boolean().optional(),
+    whatsAppTemplates: z.number().int().min(0).max(100).optional(),
+  })
+  .strict();
 
-    // Entry & scanning
-    hasQRCode: z.boolean().optional(),
-    hasQRScanning: z.boolean().optional(),
-    hasFlexibleEntryMode: z.boolean().optional(),
-
-    // Staff & management
-    hasStaffCheckIn: z.boolean().optional(),
-    hasStaffAssignment: z.boolean().optional(),
-
-    // Communication
-    hasRSVPTracking: z.boolean().optional(),
-    hasAutoReminders: z.boolean().optional(),
-    hasEmailNotifications: z.boolean().optional(),
-    hasCustomWhatsAppNumber: z.boolean().optional(),
-
-    // Compensation
-    hasCompensationInvites: z.boolean().optional(),
-    compensationPercentage: z.number().min(0).max(100).optional(),
-
-    // Templates
-    hasBasicTemplates: z.boolean().optional(),
-    hasPremiumTemplates: z.boolean().optional(),
-
-    // Post event
-    hasPostEventPage: z.boolean().optional(),
-
-    // Reports
-    hasCustomReports: z.boolean().optional(),
-
-    // Support
-    priorityPoints: z.number().int().min(1).max(10).optional(),
-    hasWhatsAppSupport: z.boolean().optional(),
+const featureBulletsSchema = z
+  .object({
+    ar: z.array(z.string().min(1).max(500)).max(50).default([]),
+    en: z.array(z.string().min(1).max(500)).max(50).default([]),
   })
   .strict();
 
@@ -142,6 +116,9 @@ export const createPlanSchema = z
     pricing: pricingSchema,
     limits: limitsSchema,
     features: featuresSchema,
+
+    setupFeeAmount: z.number().min(0).optional(),
+    featureBullets: featureBulletsSchema.optional(),
 
     descriptionAr: z.string().trim().optional(),
     descriptionEn: z.string().trim().optional(),

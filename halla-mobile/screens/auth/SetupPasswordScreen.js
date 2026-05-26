@@ -37,6 +37,7 @@ import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { setupPasswordAPI } from "../../services/authService";
+import { authErrorMessage } from "../../services/authErrors";
 import TopBar from "../../components/plans/TopBar";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -90,7 +91,12 @@ const SetupPasswordScreen = () => {
       // Persist via the auth store so the user is logged in immediately.
       const persist = useAuthStore.getState()._persistAuth;
       const role = result?.user?.role;
-      if (!role) throw new Error("Server response is missing user.role");
+      if (!role) {
+        const err = new Error("Server response is missing user.role");
+        err.code = "INTERNAL_ERROR";
+        err.status = 500;
+        throw err;
+      }
       await persist({
         user: result.user,
         accessToken: result.accessToken,
@@ -101,10 +107,27 @@ const SetupPasswordScreen = () => {
       // The root navigator will react to the new authenticated state.
     } catch (error) {
       console.error("[SetupPasswordScreen] setup failed:", error);
-      Alert.alert(
-        t("setupPassword.failureTitle"),
-        error?.message || t("setupPassword.failureFallback")
-      );
+      const resolved = authErrorMessage(error, t);
+      const msg = resolved?.message || error?.message || t("setupPassword.failureFallback");
+      // Token-expired path is a different recovery: the user can't fix
+      // the form, they need a fresh setup email. Toast + offer a navigate
+      // back to forget-password; non-token errors stay as toast on this
+      // screen so the user can fix and retry without losing input.
+      if (resolved?.code === "TOKEN_INVALID_OR_EXPIRED") {
+        Alert.alert(
+          t("setupPassword.failureTitle"),
+          msg,
+          [
+            { text: t("common.back"), style: "cancel" },
+            {
+              text: t("authErrors.requestNewLinkAction"),
+              onPress: () => navigation.navigate("ForgetPassword"),
+            },
+          ],
+        );
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setSubmitting(false);
     }

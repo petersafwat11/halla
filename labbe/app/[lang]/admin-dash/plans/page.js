@@ -13,13 +13,14 @@ import { toastUtils } from "@/utils/toastUtils";
 import { getLocalized } from "@/utils/locale";
 import Summary from "@/app/[lang]/host/plans/summary/Summary";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
+import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
 import CurrentPlanCard from "./_components/CurrentPlanCard";
 
 const formatPrice = (n) => (n || 0).toLocaleString();
 
-function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSelect, onSubscribe, t, i18n }) {
+function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSelect, onSubscribe, t, lang }) {
   const selectedPlan = plans.find((p) => p.code === selectedCode) || plans[0];
-  const features = selectedPlan?.featuresArray || [];
+  const selectedInvites = selectedPlan?.limits?.maxInvitesPerEvent || 0;
 
   return (
     <div className={styles.hostCard}>
@@ -50,23 +51,9 @@ function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSe
         <span className={styles.hostPricePer}>{t("plansPage.pricePerEvent")}</span>
       </div>
 
-      <div className={styles.managedBox}>
-        <span className={styles.managedTitle}>{t("plansPage.validDays90")}</span>
+      <div className={styles.featSection}>
+        <PlanDescription plan={selectedPlan} lang={lang} selectedInviteCount={selectedInvites} />
       </div>
-
-      {features.length > 0 && (
-        <div className={styles.featSection}>
-          <div className={styles.featTitle}>{t("plansPage.featuresTitle")}</div>
-          <div className={styles.featGrid}>
-            {features.map((f, idx) => (
-              <div key={idx} className={styles.featItem}>
-                <span className={styles.featCheck}>✓</span>
-                <span>{getLocalized(f, "label", i18n.language)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <button
         type="button"
@@ -84,10 +71,7 @@ function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSe
   );
 }
 
-function PoolPlanCard({ plan, type, isSelected, isCurrent, isSubscribing, onSelect, onSubscribe, t, i18n }) {
-  const features = plan?.featuresArray || [];
-  const pool = plan.limits?.invitePool || 0;
-
+function PoolPlanCard({ plan, type, isSelected, isCurrent, isSubscribing, onSelect, onSubscribe, t, i18n, lang }) {
   return (
     <div
       className={`${styles.planCard} ${isSelected ? styles.planCardSelected : ""}`}
@@ -124,29 +108,9 @@ function PoolPlanCard({ plan, type, isSelected, isCurrent, isSubscribing, onSele
         </div>
       </div>
 
-      <div className={styles.managedBox}>
-        <span className={styles.managedTitle}>
-          {t("plansPage.poolLabel")}: {pool.toLocaleString()} {t("plansPage.inviteUnit")}
-          {" · "}
-          {t(type === "quarterly" ? "plansPage.validDays90" : "plansPage.validDays365")}
-          {" · "}
-          {t("plansPage.setupFeeIncluded")}
-        </span>
+      <div className={styles.featSection}>
+        <PlanDescription plan={plan} lang={lang} />
       </div>
-
-      {features.length > 0 && (
-        <div className={styles.featSection}>
-          <div className={styles.featTitle}>{t("plansPage.featuresTitle")}</div>
-          <div className={styles.featGrid}>
-            {features.map((f, idx) => (
-              <div key={idx} className={styles.featItem}>
-                <span className={styles.featCheck}>✓</span>
-                <span>{getLocalized(f, "label", i18n.language)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <button
         type="button"
@@ -410,7 +374,7 @@ const PlansPageInner = () => {
               if (plan && plan.code !== currentPlanCode) handleSubscribe(plan);
             }}
             t={t}
-            i18n={i18n}
+            lang={lang}
           />
         )}
 
@@ -437,6 +401,7 @@ const PlansPageInner = () => {
                 }}
                 t={t}
                 i18n={i18n}
+                lang={lang}
               />
             ))}
           </div>
@@ -465,6 +430,7 @@ const PlansPageInner = () => {
                 }}
                 t={t}
                 i18n={i18n}
+                lang={lang}
               />
             ))}
           </div>

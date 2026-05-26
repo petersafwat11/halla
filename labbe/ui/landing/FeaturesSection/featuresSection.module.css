@@ -8,7 +8,7 @@
 
 .featuresSection {
   display: flex;
-  padding: 5rem 2rem;
+  padding: 6rem 3rem;
   flex-direction: column;
   align-items: center;
   gap: 6.4rem;
@@ -152,7 +152,7 @@
 /* ── 900px: switch to horizontal carousel ── */
 @media (max-width: 900px) {
   .featuresSection {
-    padding: 4rem 0;
+    padding: 4rem 2rem;
     gap: 4rem;
   }
 
@@ -162,7 +162,7 @@
   }
 
   .header {
-    padding: 0 2rem;
+    padding: 0;
   }
 
   .title {
@@ -183,7 +183,7 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     gap: 1.2rem;
-    padding: 0.8rem 2rem 1rem;
+    padding: 0.8rem 0 1rem;
     grid-template-columns: unset;
     max-width: none;
   }
@@ -209,24 +209,24 @@
     justify-content: center;
     gap: 2rem;
     margin-top: 1.6rem;
-    padding: 0 2rem;
+    padding: 0;
   }
 }
 
 /* ── 640px: narrower card ── */
 @media (max-width: 640px) {
-  .featuresSection { padding: 3.5rem 0; gap: 3.5rem; }
-  .header { padding: 0 1.6rem; }
+  .featuresSection { padding: 4rem 2rem; gap: 3.5rem; }
+  .header { padding: 0; }
   .title { font-size: 2.6rem; line-height: 3.4rem; }
   .description { font-size: 1.6rem; }
-  .featuresGrid { gap: 1.1rem; padding: 0.6rem 1.6rem 0.8rem; }
+  .featuresGrid { gap: 1.1rem; padding: 0.6rem 0 0.8rem; }
   .featureCard { width: min(72vw, 260px); padding: 1.7rem; gap: 1.7rem; }
-  .controls { padding: 0 1.6rem; margin-top: 1.4rem; }
+  .controls { padding: 0; margin-top: 1.4rem; }
 }
 
 /* ── 480px: single card ── */
 @media (max-width: 480px) {
-  .featuresSection { padding: 3rem 0; gap: 3rem; }
+  .featuresSection { padding: 4rem 2rem; gap: 3rem; }
   .title { font-size: 2.4rem; line-height: 3.2rem; }
   .description { font-size: 1.5rem; }
   .featureCard { width: min(82vw, 240px); padding: 1.6rem; gap: 1.9rem; }

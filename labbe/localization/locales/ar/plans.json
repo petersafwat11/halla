@@ -35,27 +35,22 @@
   },
   "inviteSelector": { "label": "اختر عدد الدعوات", "poolLabel": "رصيد الدعوات", "invites": "دعوة" },
   "planLimits": { "invitesPerEvent": "دعوة/مناسبة", "invitePool": "رصيد الدعوات" },
-  "features": {
-    "title": "المميزات المشمولة",
-    "hasInAppInvites": { "label": "إرسال الدعوات داخل التطبيق" },
-    "hasWhatsAppInvites": { "label": "إرسال الدعوات عبر واتساب" },
-    "hasSMSInvites": { "label": "إرسال الدعوات عبر الرسائل النصية" },
-    "hasQRCode": { "label": "رمز QR للدخول" },
-    "hasQRScanning": { "label": "مسح رمز QR عند الباب" },
-    "hasFlexibleEntryMode": { "label": "وضع دخول مرن" },
-    "hasStaffCheckIn": { "label": "تسجيل دخول فريق العمل" },
-    "hasStaffAssignment": { "label": "تعيين فريق العمل" },
-    "hasRSVPTracking": { "label": "تتبع تأكيد الحضور" },
-    "hasAutoReminders": { "label": "تذكيرات تلقائية" },
-    "hasEmailNotifications": { "label": "إشعارات البريد الإلكتروني" },
-    "hasCustomWhatsAppNumber": { "label": "رقم واتساب مخصص" },
-    "hasCompensationInvites": { "label": "دعوات تعويضية" },
-    "hasBasicTemplates": { "label": "القوالب الأساسية" },
-    "hasPremiumTemplates": { "label": "القوالب المتميزة" },
-    "hasPostEventPage": { "label": "صفحة ما بعد المناسبة" },
-    "hasCustomReports": { "label": "تقارير مخصصة" },
-    "hasWhatsAppSupport": { "label": "دعم عبر واتساب" }
+  "taglines": {
+    "basic": "تحكم كامل بمناسبتك… تدير كل شيء بنفسك وبخطوات غاية في السهولة!",
+    "premium": "مناسبتك علينا .. نحن ندير كل شي بالنيابة عنك من أول دعوة إلى آخر ضيف.",
+    "business": "إدارة احترافية للدعوات والفعاليات المؤسسية بهوية الجهة الرسمية عبر فريق هلا – الخيار الأمثل للشركات وأصحاب الفعاليات الكبرى والمتكررة والمنظمات"
   },
+  "duration": {
+    "event": "مدة الصلاحية {{days}} يومًا",
+    "monthly": "اشتراك شهري — مناسبات غير محدودة",
+    "quarterly": "اشتراك ٣ أشهر",
+    "annual": "اشتراك سنوي"
+  },
+  "includes": { "basic": "جميع مميزات باقة هلا بيسك +" },
+  "compensationRow": "{{count}} دعوة تعويضية ({{percent}}٪ من {{base}})",
+  "setupFeeRow": "رسوم تأسيس لمرة واحدة: {{amount}} ر.س",
+  "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",
+  "whatsappTemplates": "قوالب واتساب مخصصة: {{count}}",
   "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة" },
   "buttons": { "subscribeNow": "اشترك الآن", "retry": "إعادة المحاولة", "continueToSummary": "متابعة إلى الملخص" },
   "addons": {

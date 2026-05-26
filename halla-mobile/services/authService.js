@@ -1,5 +1,6 @@
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
 import { fetchWithTimeout } from "./apiClient";
+import { postJson, postForm, patchJson, requestJson } from "./authErrors";
 
 /**
  * Strip token + refreshToken before logging an auth response. Keeping the
@@ -39,25 +40,8 @@ const dlog = (...args) => {
 export const loginWithEmailAPI = async ({ email, password }) => {
   try {
     dlog("[AUTH SERVICE] Login attempt:", { email });
-    dlog("[AUTH SERVICE] API URL:", `${API_BASE_URL}/login`);
-
-    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.LOGIN}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    dlog("[AUTH SERVICE] Response status:", response.status);
-
-    const data = await response.json();
+    const data = await postJson(ENDPOINTS.AUTH.LOGIN, { email, password });
     dlog("[AUTH SERVICE] Response data:", redactTokens(data));
-
-    if (!response.ok) {
-      throw new Error(data.message || "Login failed");
-    }
-
-    dlog("[AUTH SERVICE] Login successful:", data.user?.email);
-
     return {
       token: data.token,
       refreshToken: data.refreshToken,
@@ -174,20 +158,7 @@ export const signupVendorAPI = async (vendorData) => {
       }
     }
 
-    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.SIGNUP_VENDOR}`, {
-      method: "POST",
-      body: formData,
-    });
-
-    dlog("[AUTH SERVICE] Response status:", response.status);
-
-    const data = await response.json();
-    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
-
-    if (!response.ok) {
-      throw new Error(data.message || "Vendor signup failed");
-    }
-
+    const data = await postForm(ENDPOINTS.AUTH.SIGNUP_VENDOR, formData);
     dlog("[AUTH SERVICE] Vendor signup successful");
 
     return {
@@ -248,20 +219,7 @@ export const signupWhitelabelAPI = async (whitelabelData) => {
       needsCustomBranding: planSelection?.needsCustomBranding || false,
     }));
 
-    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.SIGNUP_WHITELABEL}`, {
-      method: "POST",
-      body: formData,
-    });
-
-    dlog("[AUTH SERVICE] Response status:", response.status);
-
-    const data = await response.json();
-    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
-
-    if (!response.ok) {
-      throw new Error(data.message || "Whitelabel signup failed");
-    }
-
+    const data = await postForm(ENDPOINTS.AUTH.SIGNUP_WHITELABEL, formData);
     dlog("[AUTH SERVICE] Whitelabel signup successful");
 
     return {
@@ -285,20 +243,8 @@ export const sendOTPAPI = async ({ mobile, type = "login" }) => {
     dlog("[AUTH SERVICE] Sending OTP to:", mobile, "Type:", type);
 
     const endpoint = type === "signup" ? ENDPOINTS.AUTH.OTP_SEND_SIGNUP : ENDPOINTS.AUTH.OTP_SEND_LOGIN;
-    const response = await fetchWithTimeout(`${API_BASE_URL}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber: mobile }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to send OTP");
-    }
-
+    const data = await postJson(endpoint, { phoneNumber: mobile });
     dlog("[AUTH SERVICE] OTP sent successfully to:", mobile);
-
     return {
       success: true,
       message: data.message || "OTP sent successfully",
@@ -316,33 +262,12 @@ export const sendOTPAPI = async ({ mobile, type = "login" }) => {
  */
 export const verifyOTPAPI = async ({ mobile, otp }) => {
   try {
-    console.log(
-      "[AUTH SERVICE] Verifying OTP for login:",
-      mobile,
-      "Code:",
+    console.log("[AUTH SERVICE] Verifying OTP for login:", mobile);
+    const data = await postJson(ENDPOINTS.AUTH.OTP_VERIFY_LOGIN, {
+      phoneNumber: mobile,
       otp,
-    );
-
-    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_VERIFY_LOGIN}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber: mobile, otp }),
     });
-
-    dlog("[AUTH SERVICE] Response status:", response.status);
-
-    const data = await response.json();
     dlog("[AUTH SERVICE] Response data:", redactTokens(data));
-
-    if (!response.ok) {
-      throw new Error(data.message || "Invalid OTP code");
-    }
-
-    console.log(
-      "[AUTH SERVICE] OTP verified successfully:",
-      data.user?.phoneNumber,
-    );
-
     return {
       token: data.token,
       refreshToken: data.refreshToken,
@@ -387,30 +312,12 @@ export const signupWithPhoneAPI = async ({ mobile }) => {
  */
 export const verifySignupOTPAPI = async ({ mobile, otp }) => {
   try {
-    console.log(
-      "[AUTH SERVICE] Verifying OTP for signup:",
-      mobile,
-      "Code:",
+    console.log("[AUTH SERVICE] Verifying OTP for signup:", mobile);
+    const data = await postJson(ENDPOINTS.AUTH.OTP_VERIFY_SIGNUP, {
+      phoneNumber: mobile,
       otp,
-    );
-
-    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_VERIFY_SIGNUP}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber: mobile, otp }),
     });
-
-    dlog("[AUTH SERVICE] Response status:", response.status);
-
-    const data = await response.json();
-    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
-
-    if (!response.ok) {
-      throw new Error(data.message || "Invalid OTP code");
-    }
-
     dlog("[AUTH SERVICE] Signup OTP verified successfully");
-
     return {
       token: data.token,
       refreshToken: data.refreshToken,
@@ -437,35 +344,12 @@ export const completeProfileAPI = async ({
 }) => {
   try {
     dlog("[AUTH SERVICE] Complete profile:", { username, email });
-
-    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.COMPLETE_PROFILE}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        username,
-        email,
-        password,
-        passwordConfirm: password,
-      }),
-    });
-
-    dlog("[AUTH SERVICE] Response status:", response.status);
-
-    const data = await response.json();
-    dlog("[AUTH SERVICE] Response data:", redactTokens(data));
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to complete profile");
-    }
-
-    console.log(
-      "[AUTH SERVICE] Profile completed successfully:",
-      data.user?.email,
+    const data = await patchJson(
+      ENDPOINTS.AUTH.COMPLETE_PROFILE,
+      { username, email, password, passwordConfirm: password },
+      { headers: { Authorization: `Bearer ${token}` } }
     );
-
+    dlog("[AUTH SERVICE] Profile completed successfully");
     return {
       token: data.token,
       refreshToken: data.refreshToken,
@@ -485,21 +369,8 @@ export const completeProfileAPI = async ({
 export const forgotPasswordAPI = async ({ email }) => {
   try {
     dlog("[AUTH SERVICE] Forgot password request for:", email);
-
-    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.FORGOT_PASSWORD}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to send reset email");
-    }
-
+    const data = await postJson(ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
     dlog("[AUTH SERVICE] Password reset email sent successfully");
-
     return {
       success: true,
       message: data.message || "Password reset email sent",
@@ -518,24 +389,20 @@ export const forgotPasswordAPI = async ({ email }) => {
 export const resendOTPAPI = async ({ mobile, type = "login" }) => {
   try {
     dlog("[AUTH SERVICE] Resending OTP to:", mobile, "Type:", type);
-
-    const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.OTP_RESEND}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber: mobile, type }),
+    const data = await postJson(ENDPOINTS.AUTH.OTP_RESEND, {
+      phoneNumber: mobile,
+      type,
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to resend OTP");
-    }
-
     dlog("[AUTH SERVICE] OTP resent successfully to:", mobile);
-
     return {
       success: true,
       message: data.message || "OTP resent successfully",
+      // Surface the server's expiry + cooldown so the UI timer matches
+      // exactly what the backend enforces (M7). The previous hardcoded
+      // 90s timer let users tap "Resend" 60s before the 30s server
+      // cooldown window had reset — every such click then errored.
+      expiresIn: data.data?.expiresIn ?? null,
+      cooldownSeconds: data.data?.cooldownSeconds ?? null,
     };
   } catch (error) {
     console.error("[AUTH SERVICE] Resend OTP error:", error);
@@ -585,18 +452,7 @@ export const refreshTokenAPI = async (refreshToken) => {
   if (!refreshToken) {
     throw new Error("No refresh token available");
   }
-
-  const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.REFRESH}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken }),
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Password reset failed");
-  }
-
+  const data = await postJson(ENDPOINTS.AUTH.REFRESH, { refreshToken });
   return {
     accessToken: data.token,
     refreshToken: data.refreshToken,
@@ -608,17 +464,10 @@ export const refreshTokenAPI = async (refreshToken) => {
  * Reset password with a token from the forgot-password email.
  */
 export const resetPasswordAPI = async ({ token, password, passwordConfirm }) => {
-  const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.RESET_PASSWORD(token)}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password, passwordConfirm }),
+  const data = await patchJson(ENDPOINTS.AUTH.RESET_PASSWORD(token), {
+    password,
+    passwordConfirm,
   });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Password reset failed");
-  }
-
   return {
     accessToken: data.token,
     refreshToken: data.refreshToken,
@@ -638,17 +487,11 @@ export const setupPasswordAPI = async ({ token, password, passwordConfirm }) => 
   if (!token || !password) {
     throw new Error("Token and password are required");
   }
-  const response = await fetchWithTimeout(`${API_BASE_URL}${ENDPOINTS.AUTH.SETUP_PASSWORD}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, password, passwordConfirm }),
+  const data = await postJson(ENDPOINTS.AUTH.SETUP_PASSWORD, {
+    token,
+    password,
+    passwordConfirm,
   });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Password setup failed");
-  }
-
   return {
     accessToken: data.token,
     refreshToken: data.refreshToken,

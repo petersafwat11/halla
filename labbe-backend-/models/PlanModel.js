@@ -9,49 +9,23 @@ const mongoose = require("mongoose");
 // ============================================
 // FEATURES SCHEMA
 // ============================================
+// Compensation is universal (15% via COMPENSATION_PERCENTAGE constant).
+// Differentiators between basic/premium/business live in `planFamily`
+// and the per-plan `featureBullets` strings, not boolean flags.
 const featuresSchema = new mongoose.Schema(
   {
-    // Core Invitation Features (from باقات كرت)
-    hasInAppInvites: { type: Boolean, default: true }, // إرسال الدعوات من خلال التطبيق
-    hasWhatsAppInvites: { type: Boolean, default: true }, // وصول الدعوات على الواتساب
-    hasSMSInvites: { type: Boolean, default: true }, // وصول الدعوات على الرسائل النصية
+    whatsAppTemplates: { type: Number, default: 0 }, // Business: 1 / 3 / 5
+  },
+  { _id: false }
+);
 
-    // Entry & Scanning Features
-    hasQRCode: { type: Boolean, default: true }, // رمز QR للدخول
-    hasQRScanning: { type: Boolean, default: true }, // إمكانية تصوير الدخول ورفع الاسم و الرقم
-    hasFlexibleEntryMode: { type: Boolean, default: true }, // إمكانية تغيير اللود الدخول على التطبيق دون جهاز خاص
-
-    // Staff & Management Features
-    hasStaffCheckIn: { type: Boolean, default: true }, // إدارة الموظفين
-    hasStaffAssignment: { type: Boolean, default: true }, // إمكانية تعيين فريق العمل
-
-    // Communication Features
-    hasRSVPTracking: { type: Boolean, default: true }, // استقبال رسائل المدعوين - حضور أو لن يحضر
-    hasAutoReminders: { type: Boolean, default: true }, // تذكيرات تلقائية
-    hasEmailNotifications: { type: Boolean, default: true },
-    hasCustomWhatsAppNumber: { type: Boolean, default: false },
-    hasOfficialSenderNumber: { type: Boolean, default: false },
-    hasCustomWebPage: { type: Boolean, default: false },
-    hasMessageTracking: { type: Boolean, default: false },
-    whatsAppTemplates: { type: Number, default: 0 },
-
-    // Compensation Invites (دعوات تعويضية)
-    hasCompensationInvites: { type: Boolean, default: true }, // رصيد دعوات تعويضية
-    compensationPercentage: { type: Number, default: 15 }, // 15% من رصيدك من عدد الدعوات
-
-    // Templates
-    hasBasicTemplates: { type: Boolean, default: true },
-    hasPremiumTemplates: { type: Boolean, default: false },
-
-    // Post Event
-    hasPostEventPage: { type: Boolean, default: false },
-
-    // Reports & Analytics
-    hasCustomReports: { type: Boolean, default: false },
-
-    // Support
-    priorityPoints: { type: Number, default: 1 }, // 1=Trial, 2=Basic, 3=Premium, 4=Business
-    hasWhatsAppSupport: { type: Boolean, default: true },
+// Localized bullet strings — authored per plan, rendered verbatim by
+// <PlanDescription>. Structural strings (taglines, duration, rows) live
+// in i18n locale files.
+const featureBulletsSchema = new mongoose.Schema(
+  {
+    ar: { type: [String], default: [] },
+    en: { type: [String], default: [] },
   },
   { _id: false }
 );
@@ -159,6 +133,18 @@ const planSchema = new mongoose.Schema(
     features: {
       type: featuresSchema,
       required: true,
+    },
+
+    // Business event plans charge a one-time 1,200 SAR setup fee on top
+    // of the per-tier price. Quarterly/annual plans bundle setup
+    // into the headline price (setupFeeAmount: 0).
+    setupFeeAmount: { type: Number, default: 0, min: 0 },
+
+    // Localized bullet lists rendered by <PlanDescription>. Empty arrays
+    // are valid (trial, unlimited, admin-only plans).
+    featureBullets: {
+      type: featureBulletsSchema,
+      default: () => ({ ar: [], en: [] }),
     },
 
     // ============ DISPLAY ============

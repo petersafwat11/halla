@@ -19,24 +19,19 @@ const PlanFeatureNumericsSection = () => {
       </h3>
       <div className={styles.row}>
         <Controller
-          name="features.compensationPercentage"
+          name="features.whatsAppTemplates"
           control={control}
           render={({ field }) => (
             <InputGroup
-              label={t(
-                "managePlans.editPopup.fields.compensationPercentage.label"
-              )}
-              placeholder={t(
-                "managePlans.editPopup.fields.compensationPercentage.placeholder"
-              )}
+              label={t("managePlans.editPopup.fields.whatsAppTemplates.label")}
+              placeholder={t("managePlans.editPopup.fields.whatsAppTemplates.placeholder")}
               hintMessage={
-                errors.features?.compensationPercentage?.message ||
-                t("managePlans.editPopup.fields.compensationPercentage.help")
+                errors.features?.whatsAppTemplates?.message ||
+                t("managePlans.editPopup.fields.whatsAppTemplates.help")
               }
-              error={!!errors.features?.compensationPercentage}
+              error={!!errors.features?.whatsAppTemplates}
               type="number"
-              name="features.compensationPercentage"
-              prefixText="%"
+              name="features.whatsAppTemplates"
               value={field.value ?? ""}
               onChange={(e) => {
                 const v = e.target.value;
@@ -46,21 +41,19 @@ const PlanFeatureNumericsSection = () => {
           )}
         />
         <Controller
-          name="features.priorityPoints"
+          name="setupFeeAmount"
           control={control}
           render={({ field }) => (
             <InputGroup
-              label={t("managePlans.editPopup.fields.priorityPoints.label")}
-              placeholder={t(
-                "managePlans.editPopup.fields.priorityPoints.placeholder"
-              )}
+              label={t("managePlans.editPopup.fields.setupFeeAmount.label")}
+              placeholder={t("managePlans.editPopup.fields.setupFeeAmount.placeholder")}
               hintMessage={
-                errors.features?.priorityPoints?.message ||
-                t("managePlans.editPopup.fields.priorityPoints.help")
+                errors.setupFeeAmount?.message ||
+                t("managePlans.editPopup.fields.setupFeeAmount.help")
               }
-              error={!!errors.features?.priorityPoints}
+              error={!!errors.setupFeeAmount}
               type="number"
-              name="features.priorityPoints"
+              name="setupFeeAmount"
               value={field.value ?? ""}
               onChange={(e) => {
                 const v = e.target.value;

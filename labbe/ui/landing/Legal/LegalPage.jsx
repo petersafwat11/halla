@@ -8,8 +8,8 @@ import styles from "./LegalPage.module.css";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
 
 /* ─── Contact constants ─── */
-const CONTACT_EMAIL = "mailto:admin@labbe.com";
-const CONTACT_WA = "https://wa.me/966500000000";
+const CONTACT_EMAIL = "mailto:support@halaa.net";
+const CONTACT_WA = "https://wa.me/966551324939";
 
 /* ─── Icons ─── */
 const IconHome = () => (

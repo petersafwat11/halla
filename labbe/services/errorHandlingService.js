@@ -35,7 +35,9 @@ const STATUS_CODE_MESSAGES = {
 /**
  * Parse error and extract useful information
  * @param {Error|Object} error - The error to parse
- * @returns {Object} Parsed error object
+ * @returns {Object} Parsed error object with all structured fields the
+ *   backend returns (code, field, errors[], meta, otpErrorType,
+ *   accountStatus, remainingMinutes, retryAfterSeconds).
  */
 export const parseError = (error) => {
   // Handle axios/fetch response errors
@@ -48,6 +50,12 @@ export const parseError = (error) => {
       field: data?.field || null,
       message: data?.message || data?.error || STATUS_CODE_MESSAGES[status],
       details: data?.details || data?.errors || null,
+      errors: Array.isArray(data?.errors) ? data.errors : null,
+      meta: data?.meta || null,
+      otpErrorType: data?.otpErrorType || null,
+      accountStatus: data?.accountStatus || null,
+      remainingMinutes: data?.remainingMinutes ?? null,
+      retryAfterSeconds: data?.retryAfterSeconds ?? null,
       originalError: error,
     };
   }
@@ -101,42 +109,108 @@ const getErrorType = (status) => {
 };
 
 /**
- * Resolve a parsed auth error to a translated user-friendly message
- * @param {Object} errorObj - Error object with { code, field, status, message }
+ * Resolve a parsed auth error to a translated user-friendly message.
+ *
+ * The lookup walks structured fields the backend exposes (otpErrorType,
+ * accountStatus, remainingMinutes, meta) so the message reflects the
+ * actual scenario in the user's language — even when the backend's
+ * English `message` would otherwise be shown verbatim.
+ *
+ * @param {Object} errorObj - Parsed error from `parseError`
  * @param {Function} t - i18n translation function (common namespace)
- * @returns {{ message: string, type: string, field: string|null, actionLink: boolean }}
+ * @returns {{ message: string, type: string, field: string|null, actionLink: string|boolean, code: string|null }}
  */
 export const getAuthErrorMessage = (errorObj, t) => {
   if (!errorObj) return null;
-  const { code, field, status } = errorObj;
+  const {
+    code,
+    field,
+    status,
+    otpErrorType,
+    accountStatus,
+    remainingMinutes,
+    meta,
+  } = errorObj;
   const prefix = "authErrors";
 
-  // Try code + field first (e.g. authErrors.CONFLICT.email)
+  // 1) OTP subtypes — backend ships `otpErrorType` ∈ {invalid, expired,
+  //    max_attempts, cooldown, not_found, send_failed}. Pick the
+  //    contextual variant when meta carries extra detail.
+  if (code === "OTP_ERROR" && otpErrorType) {
+    let key = `${prefix}.OTP_ERROR.${otpErrorType}`;
+    let interp = {};
+    if (otpErrorType === "cooldown" && meta?.waitSeconds) {
+      key = `${prefix}.OTP_ERROR.cooldown_with_seconds`;
+      interp = { seconds: meta.waitSeconds };
+    } else if (otpErrorType === "invalid" && meta?.attemptsLeft > 0) {
+      key = `${prefix}.OTP_ERROR.invalid_with_attempts`;
+      interp = { attemptsLeft: meta.attemptsLeft };
+    }
+    const msg = t(key, { defaultValue: "", ...interp });
+    if (msg) {
+      return { message: msg, type: "otp", field: null, actionLink: false, code };
+    }
+  }
+
+  // 2) Account status (suspended / pending / rejected / inactive)
+  if (code === "ACCOUNT_STATUS_ERROR" && accountStatus) {
+    const msg = t(`${prefix}.ACCOUNT_STATUS_ERROR.${accountStatus}`, { defaultValue: "" });
+    if (msg) {
+      return { message: msg, type: "account", field: null, actionLink: false, code };
+    }
+  }
+
+  // 3) Account lockout with dynamic minutes
+  if (code === "ACCOUNT_LOCKED" && remainingMinutes) {
+    const msg = t(`${prefix}.ACCOUNT_LOCKED_WITH_MINUTES`, {
+      defaultValue: "",
+      minutes: remainingMinutes,
+    });
+    if (msg) {
+      return { message: msg, type: "account", field: null, actionLink: false, code };
+    }
+  }
+
+  // 4) Code + field (CONFLICT.email, DUPLICATE_FIELD.phoneNumber, ...)
   if (code && field) {
     const key = `${prefix}.${code}.${field}`;
     const msg = t(key, { defaultValue: "" });
     if (msg) {
       const isConflict = code === "CONFLICT" || code === "DUPLICATE_FIELD";
-      return { message: msg, type: isConflict ? "duplicate" : "validation", field, actionLink: isConflict };
+      return { message: msg, type: isConflict ? "duplicate" : "validation", field, actionLink: isConflict ? "login" : false, code };
     }
   }
 
-  // Try code with default subkey
+  // 5) Token-expired family → offer a "request new link" action
+  if (code === "TOKEN_INVALID_OR_EXPIRED" || code === "VERIFICATION_LINK_EXPIRED") {
+    const msg = t(`${prefix}.${code}`, { defaultValue: "" });
+    if (msg) {
+      return { message: msg, type: "token", field: null, actionLink: "requestNewLink", code };
+    }
+  }
+
+  // 6) Code with default subkey
   if (code) {
     const defaultKey = `${prefix}.${code}.default`;
     const directKey = `${prefix}.${code}`;
     const msg = t(defaultKey, { defaultValue: "" }) || t(directKey, { defaultValue: "" });
     if (msg && typeof msg === "string") {
       const isConflict = code === "CONFLICT" || code === "DUPLICATE_FIELD";
-      return { message: msg, type: isConflict ? "duplicate" : "validation", field: field || null, actionLink: isConflict };
+      return {
+        message: msg,
+        type: isConflict ? "duplicate" : "validation",
+        field: field || null,
+        actionLink: isConflict ? "login" : false,
+        code,
+      };
     }
   }
 
-  // Fallback by status
-  if (status >= 500) return { message: t(`${prefix}.SERVER`), type: "general", field: null, actionLink: false };
-  if (status === 0) return { message: t(`${prefix}.NETWORK`), type: "general", field: null, actionLink: false };
+  // 7) Fallback by status
+  if (status >= 500) return { message: t(`${prefix}.SERVER`), type: "general", field: null, actionLink: false, code };
+  if (status === 0) return { message: t(`${prefix}.NETWORK`), type: "general", field: null, actionLink: false, code };
 
-  return { message: t(`${prefix}.UNKNOWN`), type: "general", field: null, actionLink: false };
+  return { message: t(`${prefix}.UNKNOWN`), type: "general", field: null, actionLink: false, code };
 };
 
 /**

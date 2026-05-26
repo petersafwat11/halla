@@ -68,7 +68,18 @@ export const DiscountCodeCard = ({ title, discountCode, onCodeChange, onApply, d
   </View>
 );
 
-export const PaymentSummaryCard = ({ title, planPrice, discountAmt, finalTotal, currency, planPriceLabel, discountLabel, totalLabel }) => (
+export const PaymentSummaryCard = ({
+  title,
+  planPrice,
+  setupFee = 0,
+  discountAmt,
+  finalTotal,
+  currency,
+  planPriceLabel,
+  setupFeeLabel,
+  discountLabel,
+  totalLabel,
+}) => (
   <View style={styles.card}>
     <View style={styles.cardHeader}>
       <Text style={styles.cardTitle}>{title}</Text>
@@ -79,6 +90,12 @@ export const PaymentSummaryCard = ({ title, planPrice, discountAmt, finalTotal, 
           <Text style={styles.summaryLabel}>{planPriceLabel}</Text>
           <Text style={styles.summaryValue}>{planPrice} {currency}</Text>
         </View>
+        {setupFee > 0 && (
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>{setupFeeLabel}</Text>
+            <Text style={styles.summaryValue}>{setupFee} {currency}</Text>
+          </View>
+        )}
         {discountAmt > 0 && (
           <View style={[styles.summaryRow, styles.discountRow]}>
             <Text style={styles.summaryLabel}>{discountLabel}</Text>

@@ -10,12 +10,14 @@ import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
 import useLanguageChange from "@/hooks/UseLanguageChange";
+import { getAuthErrorMessage } from "@/services/errorHandlingService";
 
 const ChangePassword = () => {
   const { currentLocale } = useLanguageChange();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation("changePassword");
+  const { t: tCommon } = useTranslation("common");
 
   // Auth mutation hook
   const {
@@ -79,13 +81,17 @@ const ChangePassword = () => {
       });
       setPasswordChanged(true);
     } catch (error) {
-      const errorMessage = error.message || t("changePasswordForm.errors.generic");
-      // Check if it's a token-related error
-      if (
-        errorMessage.toLowerCase().includes("token") ||
-        errorMessage.toLowerCase().includes("expired") ||
-        errorMessage.toLowerCase().includes("invalid")
-      ) {
+      const resolved = getAuthErrorMessage(error.parsedError || null, tCommon);
+      const errorMessage = resolved?.message || error.message || t("changePasswordForm.errors.generic");
+      // Stable code wins over substring sniffing — token expiry now uses
+      // TOKEN_INVALID_OR_EXPIRED from the backend (see auth.service.js
+      // resetPassword) so we route to the dedicated tokenError view + offer
+      // a "request new link" action instead of stuffing the message into
+      // the password field.
+      const isTokenError =
+        resolved?.code === "TOKEN_INVALID_OR_EXPIRED" ||
+        resolved?.actionLink === "requestNewLink";
+      if (isTokenError) {
         setTokenError(errorMessage);
       } else {
         setError("password", { message: errorMessage });
@@ -97,8 +103,12 @@ const ChangePassword = () => {
     router.push(`/${currentLocale}/login`);
   };
 
-  // Show error if no token
-  if (tokenError && !token) {
+  const handleRequestNewLink = () => {
+    router.push(`/${currentLocale}/forget-password`);
+  };
+
+  // Show error if no token OR token expired/invalid after submit.
+  if (tokenError) {
     return (
       <div className={styles.container}>
         <div className={styles.form_header}>
@@ -118,15 +128,21 @@ const ChangePassword = () => {
             <h2 className={styles.title}>
               {t("changePasswordForm.errors.tokenExpired")}
             </h2>
-            <p className={styles.description}>
-              {t("changePasswordForm.errors.tokenExpiredDescription")}
-            </p>
+            <p className={styles.description}>{tokenError}</p>
           </div>
           <ConfirmBtn
-            text={t("changePasswordForm.buttons.backToLogin")}
+            text={tCommon("authErrors.requestNewLinkAction")}
             active={true}
-            clickHandler={handleGoToLogin}
+            clickHandler={handleRequestNewLink}
           />
+          <button
+            type="button"
+            className={styles.edit_phone}
+            onClick={handleGoToLogin}
+            style={{ marginTop: "1rem", background: "none", border: "none", cursor: "pointer" }}
+          >
+            {t("changePasswordForm.buttons.backToLogin")}
+          </button>
         </div>
       </div>
     );

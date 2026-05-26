@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
+import { authErrorMessage } from "../../services/authErrors";
 import {
   EmailLoginForm,
   MobileLoginForm,
@@ -31,34 +32,49 @@ export default function LoginScreen({ navigation }) {
   const [loginMethod, setLoginMethod] = useState("mobile");
   const loading = status === "loading";
 
+  // Resolve the store's structured error (errorDetail) through i18n so
+  // the user sees Arabic copy for locked / suspended / OTP_*  /
+  // network errors instead of the backend's English fallback.
+  const resolveError = useCallback((result, fallbackKey) => {
+    const resolved = authErrorMessage(result?.errorDetail, t);
+    return resolved?.message || result?.error || t(fallbackKey);
+  }, [t]);
+
   const handleEmailLogin = useCallback(async (data) => {
     const result = await loginWithEmail(data);
     if (!result.success) {
-      toast.error(result.error || t("errors.loginFailed", "فشل تسجيل الدخول"));
-      return { success: false, fieldErrors: { email: result.error } };
+      const msg = resolveError(result, "errors.loginFailed");
+      toast.error(msg);
+      const detail = result.errorDetail;
+      const fieldErrors = {};
+      if (detail?.field === "email" || detail?.code === "UNAUTHORIZED") fieldErrors.email = msg;
+      if (detail?.field === "phoneNumber") fieldErrors.mobile = msg;
+      return { success: false, fieldErrors };
     }
     return result;
-  }, [loginWithEmail, toast, t]);
+  }, [loginWithEmail, toast, t, resolveError]);
 
   const handleMobileLogin = useCallback(async (data) => {
     const result = await sendOTP({ ...data, type: "login" });
     if (result.success) {
       setStep("otp");
     } else {
-      toast.error(result.error || t("errors.otpFailed", "فشل التحقق من الرمز"));
-      return { success: false, fieldErrors: { mobile: result.error } };
+      const msg = resolveError(result, "errors.otpFailed");
+      toast.error(msg);
+      return { success: false, fieldErrors: { mobile: msg } };
     }
     return result;
-  }, [sendOTP, toast, t]);
+  }, [sendOTP, toast, t, resolveError]);
 
   const handleOTPVerification = useCallback(async (data) => {
     const result = await verifyOTP(data);
     if (!result.success) {
-      toast.error(result.error || t("errors.otpFailed", "فشل التحقق من الرمز"));
-      return { success: false, fieldErrors: { otp: result.error } };
+      const msg = resolveError(result, "errors.otpFailed");
+      toast.error(msg);
+      return { success: false, fieldErrors: { otp: msg } };
     }
     return result;
-  }, [verifyOTP, toast, t]);
+  }, [verifyOTP, toast, t, resolveError]);
 
   const switchMethod = useCallback(() => {
     setLoginMethod((m) => (m === "mobile" ? "email" : "mobile"));
@@ -131,9 +147,11 @@ export default function LoginScreen({ navigation }) {
                   onResend={async () => {
                     const result = await resendOTP({ type: "login" });
                     if (!result.success) {
-                      toast.error(result.error || t("errors.otpFailed", "فشل التحقق من الرمز"));
-                      throw new Error(result.error);
+                      const msg = resolveError(result, "errors.otpFailed");
+                      toast.error(msg);
+                      throw new Error(msg);
                     }
+                    return { cooldownSeconds: result.cooldownSeconds };
                   }}
                   phoneNumber={`+966${getTempMobile()}`}
                   loading={loading}

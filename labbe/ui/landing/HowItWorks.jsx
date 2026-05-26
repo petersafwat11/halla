@@ -62,7 +62,6 @@ export default function HowItWorks({ lang = "ar" }) {
     <section id="how-it-works" className={styles.hiwRoot}>
       <div className={styles.hiwInner}>
         <div className={styles.hiwHdr}>
-          <span className={styles.hiwEyebrow}>{t("howItWorks.eyebrow")}</span>
           <h2 className={styles.hiwTitle}>{t("howItWorks.title")}</h2>
           <p className={styles.hiwSub}>{t("howItWorks.sub")}</p>
         </div>

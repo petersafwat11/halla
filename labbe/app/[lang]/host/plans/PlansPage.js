@@ -41,9 +41,6 @@ const PlansPage = () => {
     setPaymentMethod,
     setCardData,
     setStcMobile,
-    compensationInvites,
-    basicFeatures,
-    premiumFeatures,
     handleInviteChange,
     handleAddonsChange,
     handleSubscribe,
@@ -157,8 +154,7 @@ const PlansPage = () => {
               billingType={billingType}
               selectedInvites={selectedInvites}
               onInviteChange={handleInviteChange}
-              features={basicFeatures}
-              compensationCount={compensationInvites}
+              lang={lang}
               onSubscribe={(plan) => handleSubscribe("basic", plan)}
             />
             <HostPlanCard
@@ -168,8 +164,7 @@ const PlansPage = () => {
               billingType={billingType}
               selectedInvites={selectedInvites}
               onInviteChange={handleInviteChange}
-              features={premiumFeatures}
-              compensationCount={compensationInvites}
+              lang={lang}
               onSubscribe={(plan) => handleSubscribe("premium", plan)}
             />
           </div>

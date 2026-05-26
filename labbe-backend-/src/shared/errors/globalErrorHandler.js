@@ -75,14 +75,28 @@ const handleJWTExpiredError = () => {
  * @param {Object} res
  */
 const sendErrorDev = (err, res) => {
-  res.status(err.statusCode).json({
+  const response = {
     success: false,
     status: err.status,
     message: err.message,
     code: err.code || null,
-    error: err,
-    stack: err.stack,
-  });
+  };
+  // Mirror the prod top-level shape so clients see the same fields in both
+  // environments. Without this, the structured fields (field/errors/meta/
+  // otpErrorType/etc.) end up nested under `error` only in dev, and any
+  // client logic that reads them silently breaks.
+  if (err.errors) response.errors = err.errors;
+  if (err.field) response.field = err.field;
+  if (err.feature) response.feature = err.feature;
+  if (err.otpErrorType) response.otpErrorType = err.otpErrorType;
+  if (err.accountStatus) response.accountStatus = err.accountStatus;
+  if (err.remainingMinutes !== undefined) response.remainingMinutes = err.remainingMinutes;
+  if (err.retryAfterSeconds !== undefined) response.retryAfterSeconds = err.retryAfterSeconds;
+  if (err.meta) response.meta = err.meta;
+  if (err.body && typeof err.body === 'object') Object.assign(response, err.body);
+  response.error = err;
+  response.stack = err.stack;
+  res.status(err.statusCode).json(response);
 };
 
 /**
@@ -105,6 +119,11 @@ const sendErrorProd = (err, res) => {
     if (err.errors) response.errors = err.errors;
     if (err.field) response.field = err.field;
     if (err.feature) response.feature = err.feature;
+    if (err.otpErrorType) response.otpErrorType = err.otpErrorType;
+    if (err.accountStatus) response.accountStatus = err.accountStatus;
+    if (err.remainingMinutes !== undefined) response.remainingMinutes = err.remainingMinutes;
+    if (err.retryAfterSeconds !== undefined) response.retryAfterSeconds = err.retryAfterSeconds;
+    if (err.meta) response.meta = err.meta;
     if (err.body && typeof err.body === 'object') Object.assign(response, err.body);
 
     res.status(err.statusCode).json(response);

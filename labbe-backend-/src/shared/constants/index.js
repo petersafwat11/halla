@@ -12,7 +12,7 @@ const { PLAN_DEFAULTS } = require('./planDefaults');
 const { ADDON_TYPES, EXTRA_INVITES_TIERS, EXTRA_REMINDERS_TIERS, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION } = require('./addons');
 const {
   isPerEventPlan, isPoolPlan, isManagedPlan, getPlanFamily, getBillingType,
-  PLAN_FAMILIES, BILLING_TYPES, COMPENSATION_PERCENTAGE, BUSINESS_SETUP_FEE,
+  PLAN_FAMILIES, BILLING_TYPES, COMPENSATION_PERCENTAGE,
 } = require('./plans');
 
 module.exports = {
@@ -34,5 +34,4 @@ module.exports = {
   PLAN_FAMILIES,
   BILLING_TYPES,
   COMPENSATION_PERCENTAGE,
-  BUSINESS_SETUP_FEE,
 };

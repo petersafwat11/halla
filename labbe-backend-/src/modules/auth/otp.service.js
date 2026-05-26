@@ -22,17 +22,27 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+/**
+ * Result shape:
+ *   { success: true, ... }
+ *   { success: false, errorType: 'cooldown'|'expired'|'invalid'|'max_attempts'|'not_found'|'send_failed', meta?: {...}, message? }
+ *
+ * Callers should re-throw as `new OTPError(errorType, message, meta)` so
+ * the structured fields reach the client via the global error handler.
+ * Never put internal provider error strings on `message` — those leak.
+ */
 const sendOTP = async (phoneNumber, lang = 'ar') => {
   const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
   const recent = await OTP.findOne({ phoneNumber: normalizedPhone });
   if (recent && (Date.now() - recent.createdAt.getTime()) < OTP_CONFIG.cooldownSeconds * 1000) {
-    const waitTime = Math.ceil(
+    const waitSeconds = Math.ceil(
       (OTP_CONFIG.cooldownSeconds * 1000 - (Date.now() - recent.createdAt.getTime())) / 1000
     );
     return {
       success: false,
-      error: `Please wait ${waitTime} seconds before requesting a new code.`,
+      errorType: 'cooldown',
+      meta: { waitSeconds },
     };
   }
 
@@ -56,10 +66,36 @@ const sendOTP = async (phoneNumber, lang = 'ar') => {
 
   try {
     const result = await taqnyat.sendSMS(normalizedPhone, messages[lang] || messages.ar);
+    // taqnyat.sendSMS also signals "soft" failures (HTTP 200 with no
+    // messageId, or a recognised error envelope) by returning
+    // { success: false, ... } instead of throwing. Without this check the
+    // OTP record is written but no SMS goes out, and the client is told
+    // "code sent" — silently broken auth.
+    if (!result || result.success === false) {
+      logger.error('OTP send failed (provider soft failure)', {
+        phoneNumber: normalizedPhone,
+        providerError: result?.error,
+        providerCode: result?.code,
+        providerDetails: result?.details,
+      });
+      return { success: false, errorType: 'send_failed' };
+    }
     return { success: true, messageId: result.messageId };
   } catch (error) {
-    logger.error('OTP send failed', error);
-    return { success: false, error: error.message };
+    // The provider error message may contain internal details (account IDs,
+    // raw API errors). Log it for ops, return only a stable error type to
+    // the caller.
+    logger.error('OTP send failed', {
+      phoneNumber: normalizedPhone,
+      message: error.message,
+      // axios attaches the upstream response body on `error.response.data` —
+      // this is where Taqnyat puts the actionable reason (e.g. "ip not
+      // authorized", "invalid sender name"). Without it the only signal in
+      // logs is a generic network/HTTP message.
+      providerStatus: error.response?.status,
+      providerData: error.response?.data,
+    });
+    return { success: false, errorType: 'send_failed' };
   }
 };
 
@@ -69,12 +105,12 @@ const verifyOTP = async (phoneNumber, otp) => {
   const stored = await OTP.findOne({ phoneNumber: normalizedPhone, used: { $ne: true } });
 
   if (!stored) {
-    return { success: false, error: 'No OTP found. Please request a new code.' };
+    return { success: false, errorType: 'not_found' };
   }
 
   if (stored.expiresAt < new Date()) {
     await OTP.deleteOne({ _id: stored._id });
-    return { success: false, error: 'OTP has expired. Please request a new code.' };
+    return { success: false, errorType: 'expired' };
   }
 
   // Use timing-safe comparison
@@ -86,10 +122,11 @@ const verifyOTP = async (phoneNumber, otp) => {
     const attempts = (stored.attempts || 0) + 1;
     if (attempts >= OTP_CONFIG.maxAttempts) {
       await OTP.deleteOne({ _id: stored._id });
-      return { success: false, error: 'Too many attempts. Please request a new code.' };
+      return { success: false, errorType: 'max_attempts' };
     }
     await OTP.updateOne({ _id: stored._id }, { $inc: { attempts: 1 } });
-    return { success: false, error: 'Invalid OTP code.' };
+    const attemptsLeft = Math.max(0, OTP_CONFIG.maxAttempts - attempts);
+    return { success: false, errorType: 'invalid', meta: { attemptsLeft } };
   }
 
   // soft-invalidate instead of hard-delete so the record survives for
@@ -103,8 +140,8 @@ const resendOTP = async (phoneNumber) => {
   const stored = await OTP.findOne({ phoneNumber: normalizedPhone });
 
   if (stored && (Date.now() - stored.createdAt.getTime()) < OTP_CONFIG.cooldownSeconds * 1000) {
-    const waitTime = Math.ceil((OTP_CONFIG.cooldownSeconds * 1000 - (Date.now() - stored.createdAt.getTime())) / 1000);
-    return { success: false, error: `Please wait ${waitTime} seconds before requesting a new code.` };
+    const waitSeconds = Math.ceil((OTP_CONFIG.cooldownSeconds * 1000 - (Date.now() - stored.createdAt.getTime())) / 1000);
+    return { success: false, errorType: 'cooldown', meta: { waitSeconds } };
   }
 
   return sendOTP(phoneNumber);
@@ -168,7 +205,7 @@ const redeemEmailVerificationToken = async (rawToken) => {
   });
 
   if (!record) {
-    return { success: false, error: 'Verification link is invalid or has expired. Please request a new one.' };
+    return { success: false, errorType: 'expired_or_invalid' };
   }
 
   // Soft-invalidate so the record survives for audit but cannot be replayed.

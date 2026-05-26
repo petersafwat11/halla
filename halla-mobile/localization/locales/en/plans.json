@@ -184,6 +184,22 @@
   "features": {
     "title": "Included Features"
   },
+  "taglines": {
+    "basic": "Full control of your event — manage everything yourself with the easiest steps!",
+    "premium": "Your event is on us — we manage everything on your behalf, from the first invitation to the last guest.",
+    "business": "Professional management of invitations and corporate events with the organization's official brand identity through the Halaa team — the ideal choice for companies, organizers of large recurring events, and organizations."
+  },
+  "duration": {
+    "event": "Valid for {{days}} days",
+    "monthly": "Monthly subscription — unlimited events",
+    "quarterly": "3-month subscription",
+    "annual": "Annual subscription"
+  },
+  "includes": { "basic": "All Basic features +" },
+  "compensationRow": "{{count}} compensation invites ({{percent}}% of {{base}})",
+  "setupFeeRow": "One-time setup fee: {{amount}} SAR",
+  "freeInvitesRow": "Includes {{count}} free invitations during the subscription period",
+  "whatsappTemplates": "Custom WhatsApp templates: {{count}}",
   "badges": { "selected": "Selected" },
   "monthlyPlan": { "durationNote": "Valid 30 days — unlimited events" }
 }

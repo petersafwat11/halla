@@ -83,7 +83,10 @@ const Form = () => {
       await sendSignupOTP(formData.phoneNumber);
       // If successful, otpSent will be true and OTP screen will show
     } catch (error) {
-      setLocalError(error.message || t("signupForm.errors.generic"));
+      const resolved = getAuthErrorMessage(error.parsedError || null, tCommon);
+      setLocalError(
+        resolved?.message || error.message || t("signupForm.errors.generic")
+      );
     }
   };
 

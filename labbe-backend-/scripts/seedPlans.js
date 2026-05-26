@@ -1,6 +1,12 @@
 /**
- * Seed Halaa plans — 36-plan structure
- * node scripts/seedPlans.js
+ * Seed Halaa plans — 54-plan structure (rev. 2)
+ * Idempotent: upserts by `code` so re-running is safe.
+ *
+ * Usage:
+ *   node scripts/seedPlans.js
+ *
+ * When the schema changes shape (e.g. removed fields), drop the collection
+ * manually first (`db.plans.drop()`) so stale paths don't linger.
  */
 require('dotenv').config({ path: './config.env' });
 const mongoose = require('mongoose');
@@ -19,16 +25,18 @@ async function seed() {
   }
   await mongoose.connect(MONGODB_URI, mongoOptions);
   console.log('Connected to MongoDB');
-  await Plan.deleteMany({});
-  console.log('Cleared existing plans');
 
   const entries = Object.entries(PLAN_DEFAULTS);
-  const created = [], errors = [];
+  const upserted = [], errors = [];
 
   for (const [code, config] of entries) {
     try {
-      await Plan.create({ code, ...config, isActive: true, isPublic: true });
-      created.push({ code, planType: config.planType });
+      const doc = await Plan.findOneAndUpdate(
+        { code },
+        { $set: { code, ...config, isActive: true, isPublic: true } },
+        { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
+      );
+      upserted.push({ code, planType: doc.planType });
       console.log(`✓ ${code}`);
     } catch (err) {
       errors.push({ code, error: err.message });
@@ -36,17 +44,23 @@ async function seed() {
     }
   }
 
-  console.log(`\nSeeded ${created.length} plans (${errors.length} errors)\n`);
+  console.log(`\nUpserted ${upserted.length} plans (${errors.length} errors)\n`);
   const byType = {};
-  for (const p of created) byType[p.planType] = (byType[p.planType] || 0) + 1;
+  for (const p of upserted) byType[p.planType] = (byType[p.planType] || 0) + 1;
   console.table(byType);
 
   const EXPECTED = {
-    trial: 1, basic_event: 8, basic_monthly: 5,
-    premium_event: 8, premium_monthly: 5,
-    business_event: 6, business_quarterly: 1, business_annual: 1, unlimited: 1,
+    trial: 1,
+    basic_event: 10,
+    basic_monthly: 10,
+    premium_event: 10,
+    premium_monthly: 10,
+    business_event: 10,
+    business_quarterly: 1,
+    business_annual: 1,
+    unlimited: 1,
   };
-  const EXPECTED_TOTAL = 36;
+  const EXPECTED_TOTAL = 54;
 
   console.log('\n── Validation ──');
   let allOk = true;
@@ -56,12 +70,25 @@ async function seed() {
     if (!ok) allOk = false;
     console.log(`${ok ? '✓' : '✗'} ${type}: expected ${expected}, got ${actual}`);
   }
-  const totalOk = created.length === EXPECTED_TOTAL;
+  const totalOk = upserted.length === EXPECTED_TOTAL;
   if (!totalOk) allOk = false;
-  console.log(`${totalOk ? '✓' : '✗'} TOTAL: expected ${EXPECTED_TOTAL}, got ${created.length}`);
+  console.log(`${totalOk ? '✓' : '✗'} TOTAL: expected ${EXPECTED_TOTAL}, got ${upserted.length}`);
+
+  // Sanity: business_event_500 must be gone after this seed.
+  const stray500 = await Plan.findOne({ code: 'business_event_500' });
+  if (stray500) {
+    allOk = false;
+    console.log("✗ stale plan 'business_event_500' still in DB — drop the collection and re-run");
+  } else {
+    console.log("✓ business_event_500 absent");
+  }
+
   console.log(allOk ? '\n✅ All counts correct!' : '\n❌ Count mismatch — check planDefaults.js');
 
   await mongoose.disconnect();
 }
 
-seed().catch(console.error);
+seed().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

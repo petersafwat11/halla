@@ -6,9 +6,11 @@ import FormHeader from "../../../commen/formHeader/FormHeader";
 import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
 import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
 import OtpInput from "@/ui/auth/login/form/otpInput/OtpInput";
+import { parseError, getAuthErrorMessage } from "@/services/errorHandlingService";
 
 const OTPVerification = ({ phoneNumber, onBack, type = "signup" }) => {
   const { t } = useTranslation("signup");
+  const { t: tCommon } = useTranslation("common");
   const {
     mutateAsync: verifyOTP,
     isPending: isVerifying,
@@ -17,8 +19,18 @@ const OTPVerification = ({ phoneNumber, onBack, type = "signup" }) => {
   const { mutateAsync: resendOTP, isPending: isResendingOTP } =
     useAuthMutation("resendOTP");
 
+  // Route the mutation error through i18n so the user sees Arabic
+  // copy for OTP_ERROR.invalid / expired / cooldown / send_failed
+  // instead of the backend's English fallback string.
+  const resolveAuthError = (rawError) => {
+    if (!rawError) return "";
+    const parsed = parseError(rawError);
+    const resolved = getAuthErrorMessage(parsed, tCommon);
+    return resolved?.message || rawError.message || "";
+  };
+
   const isLoading = isVerifying;
-  const errorMessage = error?.message || "";
+  const errorMessage = resolveAuthError(error);
 
   const [verificationCode, setVerificationCode] = useState({
     value: ["", "", "", "", "", ""],
@@ -52,9 +64,9 @@ const OTPVerification = ({ phoneNumber, onBack, type = "signup" }) => {
     try {
       await verifyOTP({ phoneNumber, otp: otpCode, type });
       // Success redirect is handled by mutation onSuccess
-    } catch (error) {
+    } catch (err) {
       setLocalError(
-        error.message ||
+        resolveAuthError(err) ||
         t("signupForm.hostSignup.otp.invalidCode") ||
         "Invalid code"
       );

@@ -26,10 +26,8 @@ export const planHasBillingCycle = (planType) =>
   BILLING_CYCLE_SUFFIXES.some((suffix) => planType.endsWith(suffix));
 
 /**
- * Default compensation percentage — mirrors the backend
- * `PlanModel.featuresSchema.compensationPercentage` default of 15.
- *
- * Use this as the fallback when a plan record doesn't include
- * `compensationPercentage` (e.g. older subscriptions, hand-built test data).
+ * Compensation is universal across all plans — 15% of the selected invite
+ * tier (event plans) or the invite pool (pool plans). Computed at render
+ * time via this constant in `<PlanDescription>` and `PlanSummaryCard`.
  */
-export const DEFAULT_COMPENSATION_PERCENTAGE = 15;
+export const COMPENSATION_PERCENTAGE = 15;
