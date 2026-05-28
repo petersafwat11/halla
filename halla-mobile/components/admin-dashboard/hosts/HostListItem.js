@@ -87,7 +87,7 @@ const HostListItem = ({ host, onPress, onManageSubscription, selected = false, o
     <AdminListItem
       title={name || t("hosts.labels.unnamed")}
       subtitle={email}
-      subtitleAlt={phoneNumber}
+      subtitleAlt={phoneNumber ? `‪${phoneNumber}‬` : null}
       avatarColor={colors.primary[500]}
       status={status}
       details={[

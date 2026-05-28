@@ -6,7 +6,7 @@ import {
   rotateGuestQr,
   revokeGuestAccess,
   exportEventGuests,
-} from "../../services/guestsService";
+} from "../../services/eventGuestsService";
 
 /**
  * Invalidate every cache slice that depends on guest state for a given

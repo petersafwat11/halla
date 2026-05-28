@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "../../../localization";
-import EventsService from "../../../services/EventsService";
+import EventsService from "../../../hooks/events/useEventForm";
 import Button from "../../commen/Button";
 
 export default function GuestForm({ isLimitReached }) {

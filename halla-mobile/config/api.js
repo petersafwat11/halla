@@ -1,320 +1,284 @@
 /**
  * API Configuration
- * Central configuration for all API endpoints
- * Aligned with backend routes mounted at /api/v2/*
+ *
+ * Phase 1 unification: the endpoint registry is now shared with web via
+ * `@halla/shared/api/paths` (`API_PATHS`, camelCase). This file is a thin
+ * UPPER_SNAKE_CASE wrapper that preserves the legacy `ENDPOINTS.X.Y`
+ * call sites used across mobile services. Phase 5/8 will migrate
+ * services to import `API_PATHS` directly and this wrapper will be deleted.
+ *
+ * `API_BASE_URL` stays here — it's platform-specific (mobile points
+ * straight at production over HTTPS; web routes via Next rewrites).
  */
 
-// Base URL for the backend API
-// Production VPS (Contabo, nginx → labbe-backend on :8000) — see DEPLOYMENT_RECORD_2026-05-14.md
+import { API_PATHS } from "@halla/shared/api/paths";
+
+// Backend base URL. Production VPS (Contabo, nginx → labbe-backend on :8000)
+// — see DEPLOYMENT_RECORD_2026-05-14.md
 export const API_BASE_URL = "https://halaa.com.sa/api/v2";
 
-// API Endpoints (all relative to API_BASE_URL which already includes /api/v2)
 export const ENDPOINTS = {
-  // Auth endpoints
   AUTH: {
-    LOGIN: "/auth/login",
-    SIGNUP_HOST: "/auth/signup/host",
-    SIGNUP_VENDOR: "/auth/signup/vendor",
-    SIGNUP_WHITELABEL: "/auth/signup/whitelabel",
-    OTP_SEND_LOGIN: "/auth/otp/send-login",
-    OTP_SEND_SIGNUP: "/auth/otp/send-signup",
-    OTP_VERIFY_LOGIN: "/auth/otp/verify-login",
-    OTP_VERIFY_SIGNUP: "/auth/otp/verify-signup",
-    COMPLETE_PROFILE: "/auth/complete-profile",
-    FORGOT_PASSWORD: "/auth/forgot-password",
-    RESET_PASSWORD: (token) => `/auth/reset-password/${token}`,
-    LOGOUT: "/auth/logout",
-    REFRESH: "/auth/refresh",
-    OTP_RESEND: "/auth/otp/resend",
-    ME: "/auth/me",
-    UPDATE_ME: "/auth/update-me",
-    UPDATE_PASSWORD: "/auth/update-password",
-    SEND_VERIFICATION_CODE: "/auth/send-verification-code",
-    VERIFY_EMAIL: "/auth/verify-email",
-    UPDATE_PUSH_TOKEN: "/auth/update-push-token",
-    SETUP_PASSWORD: "/auth/setup-password",
-    RESEND_SETUP_EMAIL: "/auth/resend-setup-email",
+    LOGIN: API_PATHS.auth.login,
+    SIGNUP_HOST: API_PATHS.auth.hostSignup,
+    SIGNUP_VENDOR: API_PATHS.auth.vendorSignup,
+    SIGNUP_WHITELABEL: API_PATHS.auth.whitelabelSignup,
+    OTP_SEND_LOGIN: API_PATHS.auth.sendLoginOTP,
+    OTP_SEND_SIGNUP: API_PATHS.auth.sendSignupOTP,
+    OTP_VERIFY_LOGIN: API_PATHS.auth.verifyLoginOTP,
+    OTP_VERIFY_SIGNUP: API_PATHS.auth.verifySignupOTP,
+    COMPLETE_PROFILE: API_PATHS.auth.completeHostProfile,
+    FORGOT_PASSWORD: API_PATHS.auth.forgotPassword,
+    RESET_PASSWORD: API_PATHS.auth.resetPassword,
+    LOGOUT: API_PATHS.auth.logout,
+    REFRESH: API_PATHS.auth.refresh,
+    OTP_RESEND: API_PATHS.auth.resendOTP,
+    ME: API_PATHS.auth.getMe,
+    UPDATE_ME: API_PATHS.auth.updateMe,
+    UPDATE_PASSWORD: API_PATHS.auth.updatePassword,
+    SEND_VERIFICATION_CODE: API_PATHS.auth.sendVerificationCode,
+    VERIFY_EMAIL: API_PATHS.auth.verifyEmail,
+    UPDATE_PUSH_TOKEN: API_PATHS.auth.updatePushToken,
+    SETUP_PASSWORD: API_PATHS.auth.setupPassword,
+    RESEND_SETUP_EMAIL: API_PATHS.auth.resendSetupEmail,
   },
 
-  // Dashboard endpoints
   DASHBOARD: {
-    HOST: "/dashboard/host",
-    ADMIN: "/dashboard/admin",
+    HOST: API_PATHS.dashboard.getHostDashboard,
+    ADMIN: API_PATHS.dashboard.getAdminDashboard,
   },
 
-  // Plans endpoints
   PLANS: {
-    ALL: "/plans",
-    HOST_PLANS: "/plans/host",
-    BUSINESS: "/plans/business",
-    BY_CODE: (code) => `/plans/code/${code}`,
-    BY_ID: (id) => `/plans/${id}`,
+    ALL: API_PATHS.plans.getPlans,
+    HOST_PLANS: API_PATHS.plans.getHostPlans,
+    BUSINESS: API_PATHS.plans.getBusinessPlans,
+    BY_CODE: API_PATHS.plans.getPlanByCode,
+    BY_ID: API_PATHS.plans.getPlanById,
   },
 
-  // Subscriptions endpoints (reads only; self-subscribe via PAYMENTS.CHECKOUT)
   SUBSCRIPTIONS: {
-    MY_SUBSCRIPTION: "/subscriptions/my-subscription",
-    MY_PAYMENTS: "/subscriptions/payments",
+    MY_SUBSCRIPTION: API_PATHS.subscriptions.getMySubscription,
+    MY_PAYMENTS: API_PATHS.subscriptions.getMyPayments,
   },
 
-  // Addons endpoints
   ADDONS: {
     BASE: "/addons",
-    CATALOG: "/addons",
-    PURCHASE: "/addons/purchase",
-    MY: "/addons/my",
-    ADMIN_ACTIVATE: (id) => `/addons/admin/${id}/activate`,
+    CATALOG: API_PATHS.addons.getCatalog,
+    PURCHASE: API_PATHS.addons.purchase,
+    MY: API_PATHS.addons.listMine,
+    ADMIN_ACTIVATE: API_PATHS.addons.adminActivate,
   },
 
-  // Payments endpoints. Host-self lock + manage RBAC verb live on
-  // `/payments/:id/{refund|capture|void}` so admin surfaces hit the
-  // same canonical paths rather than admin-prefixed mirrors.
   PAYMENTS: {
-    CHECKOUT: "/payments/checkout",
-    BY_ID: (id) => `/payments/${id}`,
-    POLL_3DS: (id) => `/payments/${id}/poll`,
-    REFUND: (id) => `/payments/${id}/refund`,
-    CAPTURE: (id) => `/payments/${id}/capture`,
-    VOID: (id) => `/payments/${id}/void`,
+    CHECKOUT: API_PATHS.hostPayments.checkout,
+    BY_ID: API_PATHS.hostPayments.getById,
+    POLL_3DS: API_PATHS.hostPayments.poll3ds,
+    REFUND: API_PATHS.payments.refund,
+    CAPTURE: API_PATHS.payments.capture,
+    VOID: API_PATHS.payments.void,
   },
 
-  // Events endpoints
   EVENTS: {
     BASE: "/events",
-    MY_EVENTS: "/events/my-events",
-    STATS: "/events/stats",
-    SINGLE_STATS: (id) => `/events/stats/${id}`,
-    SUBSCRIPTION_INFO: "/events/subscription-info",
-    CREATE: "/events",
-    BY_ID: (id) => `/events/${id}`,
-    UPDATE_DETAILS: (id) => `/events/${id}/event-details`,
-    UPDATE_GUEST_LIST: (id) => `/events/${id}/guest-list`,
-    UPDATE_STAFF_LIST: (id) => `/events/${id}/staff-list`,
-    // Single endpoint that updates guests + staff in one transaction.
-    // Old endpoints stay as compat for one cycle.
-    UPDATE_STEP2: (id) => `/events/${id}/step2`,
-    UPDATE_INVITATION: (id) => `/events/${id}/invitation-settings`,
-    UPDATE_LAUNCH: (id) => `/events/${id}/launch-settings`,
-    TEST_MESSAGE: (id) => `/events/${id}/test-message`,
-    DELETE: (id) => `/events/${id}`,
-    BULK_DELETE: "/events/bulk-delete",
-    // Staff management
-    ADD_STAFF: (eventId) => `/events/${eventId}/staff`,
-    UPDATE_STAFF: (eventId, staffId) => `/events/${eventId}/staff/${staffId}`,
-    DELETE_STAFF: (eventId, staffId) => `/events/${eventId}/staff/${staffId}`,
-    // Export
-    EXPORT_EVENTS: "/events/export/events",
-    // Staff notification
-    NOTIFY_STAFF: (eventId) => `/events/${eventId}/notify-staff`,
-    // Manual launch retry
-    RETRY_LAUNCH: (id) => `/events/${id}/retry-launch`,
-    // Scheduled extra reminders
-    SCHEDULED_REMINDERS_LIST: (id) => `/events/${id}/scheduled-reminders`,
-    SCHEDULED_REMINDERS_CREATE: (id) => `/events/${id}/scheduled-reminders`,
-    SCHEDULED_REMINDERS_CANCEL: (id, rid) =>
-      `/events/${id}/scheduled-reminders/${rid}`,
-    // Staff access tokens (active + revoked) for an event
-    LIST_STAFF_TOKENS: (eventId) => `/events/${eventId}/staff-tokens`,
-    // Revoke a single staff access token (resolved by staffList sub-doc id)
-    REVOKE_STAFF: (eventId, staffId) => `/events/${eventId}/staff/${staffId}/revoke`,
+    MY_EVENTS: API_PATHS.events.getMyEvents,
+    STATS: API_PATHS.events.getEventStats,
+    SINGLE_STATS: API_PATHS.events.getSingleEventStats,
+    SUBSCRIPTION_INFO: API_PATHS.events.getSubscriptionInfo,
+    CREATE: API_PATHS.events.createEvent,
+    BY_ID: API_PATHS.events.getEventById,
+    UPDATE_DETAILS: API_PATHS.events.updateEventDetails,
+    UPDATE_GUEST_LIST: API_PATHS.events.updateGuestList,
+    UPDATE_STAFF_LIST: API_PATHS.events.updateStaffList,
+    UPDATE_STEP2: API_PATHS.events.updateEventStep2,
+    UPDATE_INVITATION: API_PATHS.events.updateInvitationSettings,
+    UPDATE_LAUNCH: API_PATHS.events.updateLaunchSettings,
+    TEST_MESSAGE: API_PATHS.events.sendTestMessage,
+    DELETE: API_PATHS.events.deleteEvent,
+    BULK_DELETE: API_PATHS.events.bulkDeleteEvents,
+    ADD_STAFF: API_PATHS.events.addStaff,
+    UPDATE_STAFF: API_PATHS.events.updateStaff,
+    DELETE_STAFF: API_PATHS.events.deleteStaff,
+    EXPORT_EVENTS: API_PATHS.events.exportEventsAsExcel,
+    NOTIFY_STAFF: API_PATHS.events.notifyStaff,
+    RETRY_LAUNCH: API_PATHS.events.retryLaunch,
+    SCHEDULED_REMINDERS_LIST: API_PATHS.events.scheduledRemindersList,
+    SCHEDULED_REMINDERS_CREATE: API_PATHS.events.scheduledRemindersCreate,
+    SCHEDULED_REMINDERS_CANCEL: API_PATHS.events.scheduledRemindersCancel,
+    LIST_STAFF_TOKENS: API_PATHS.events.listStaffTokens,
+    REVOKE_STAFF: API_PATHS.events.revokeStaffAccess,
   },
 
-  // Guests endpoints
   GUESTS: {
-    INVITATION: (code) => `/guests/invitation/${code}`,
-    RSVP: (id) => `/guests/${id}/rsvp`,
-    EVENT_GUESTS: (eventId) => `/guests/events/${eventId}`,
-    EXPORT: (eventId) => `/guests/events/${eventId}/export`,
-    ROTATE_QR: (eventId, guestId) =>
-      `/guests/events/${eventId}/guests/${guestId}/rotate-qr`,
-    REVOKE_ACCESS: (eventId, guestId) =>
-      `/guests/events/${eventId}/guests/${guestId}/revoke-access`,
+    INVITATION: API_PATHS.guests.getByInvitationCode,
+    RSVP: API_PATHS.guests.submitRSVP,
+    EVENT_GUESTS: API_PATHS.guests.getEventGuests,
+    EXPORT: API_PATHS.guests.exportGuests,
+    ROTATE_QR: API_PATHS.guests.rotateQR,
+    REVOKE_ACCESS: API_PATHS.guests.revokeAccess,
   },
 
-  // Notifications endpoints
   NOTIFICATIONS: {
     BASE: "/notifications",
-    UNREAD_COUNT: "/notifications/unread-count",
-    MARK_ALL_READ: "/notifications/read-all",
-    CLEAR_ALL: "/notifications/clear-all",
-    SEND: "/notifications/send",
-    BROADCAST: "/notifications/broadcast",
+    UNREAD_COUNT: API_PATHS.notifications.getUnreadCount,
+    MARK_ALL_READ: API_PATHS.notifications.markAllAsRead,
+    CLEAR_ALL: API_PATHS.notifications.clearAllNotifications,
+    SEND: API_PATHS.notifications.sendNotification,
+    BROADCAST: API_PATHS.notifications.broadcastNotification,
   },
 
-  // Users endpoints
   USERS: {
-    PROFILE: "/users/profile",
-    UPDATE_PROFILE: "/users/profile",
-    UPDATE_PASSWORD: "/users/password",
-    UPDATE_PROFILE_SECTION: (section) => `/users/profile/${section}`,
-    NOTIFICATION_SETTINGS: "/users/notification-preferences",
-    SEND_PHONE_CHANGE_OTP: "/users/profile/phone/send-otp",
-    UPDATE_PHONE: "/users/profile/phone",
-    DELETE_VENDOR_IMAGE: "/users/profile/vendorData/image",
+    PROFILE: API_PATHS.users.getMyProfile,
+    UPDATE_PROFILE: API_PATHS.users.updateMyProfile,
+    UPDATE_PASSWORD: API_PATHS.users.updateMyPassword,
+    UPDATE_PROFILE_SECTION: API_PATHS.users.updateMyProfileSection,
+    NOTIFICATION_SETTINGS: API_PATHS.users.getNotificationPreferences,
+    SEND_PHONE_CHANGE_OTP: API_PATHS.users.sendPhoneChangeOtp,
+    UPDATE_PHONE: API_PATHS.users.updatePhone,
+    DELETE_VENDOR_IMAGE: API_PATHS.users.deleteVendorImage,
   },
 
-  // Vendors endpoints
   VENDORS: {
-    CATEGORIES: "/vendors/categories",
+    CATEGORIES: API_PATHS.vendors.getCategories,
   },
 
-  // Services endpoints
   SERVICES: {
     BASE: "/services",
-    PUBLIC: "/services/public",
-    STATS: "/services/stats",
-    BY_ID: (id) => `/services/${id}`,
-    TOGGLE_STATUS: (id) => `/services/${id}/toggle-status`,
+    PUBLIC: API_PATHS.vendorServices.getPublicServices,
+    STATS: API_PATHS.vendorServices.getMyStats,
+    BY_ID: API_PATHS.vendorServices.getService,
+    TOGGLE_STATUS: API_PATHS.vendorServices.toggleServiceStatus,
   },
 
-  // Tickets endpoints
   TICKETS: {
     BASE: "/tickets",
-    BY_ID: (id) => `/tickets/${id}`,
-    RATE: (id) => `/tickets/${id}/rate`,
-    RATING_INFO: (id) => `/tickets/${id}/rating-info`,
-    ASSIGN: (id) => `/tickets/${id}/assign`,
-    STATUS: (id) => `/tickets/${id}/status`,
-    EXPORT: "/tickets/export",
+    BY_ID: API_PATHS.tickets.getTicketById,
+    RATE: API_PATHS.tickets.rateTicket,
+    RATING_INFO: API_PATHS.tickets.getTicketForRating,
+    ASSIGN: API_PATHS.tickets.assignTicket,
+    STATUS: API_PATHS.tickets.updateTicketStatus,
+    EXPORT: API_PATHS.tickets.exportTickets,
   },
 
-  // Staff endpoints
   STAFF: {
-    VERIFY: "/staff/verify",
-    EVENT_GUESTS: (eventId) => `/staff/events/${eventId}/guests`,
-    CHECK_IN: (eventId) => `/staff/events/${eventId}/check-in`,
+    VERIFY: API_PATHS.staff.verifyStaffAccess,
+    EVENT_GUESTS: API_PATHS.staff.getEventGuests,
+    CHECK_IN: API_PATHS.staff.checkInGuest,
   },
 
-  // Locations endpoints — mounted at /api/v2/locations/*
   LOCATIONS: {
-    REGIONS: "/locations/regions",
-    CITIES_BY_REGION: (regionId) => `/locations/cities/${regionId}`,
-    DISTRICTS_BY_CITY: (cityId) => `/locations/districts/${cityId}`,
-    ALL: "/locations/all",
-    SEARCH: "/locations/search",
+    REGIONS: API_PATHS.locations.getRegions,
+    CITIES_BY_REGION: API_PATHS.locations.getCitiesByRegion,
+    DISTRICTS_BY_CITY: API_PATHS.locations.getDistrictsByCity,
+    ALL: API_PATHS.locations.getAllLocations,
+    SEARCH: API_PATHS.locations.searchLocations,
   },
 
-  // Post-Event endpoints (guest access + host management)
   POST_EVENT: {
-    VALIDATE_TOKEN: "/post-event/validate",
-    // Guest routes
-    CONTENT: (eventId) => `/post-event/${eventId}/content`,
-    TOGGLE_LIKE: (eventId, postId) =>
-      `/post-event/${eventId}/posts/${postId}/like`,
-    ADD_COMMENT: (eventId, postId) =>
-      `/post-event/${eventId}/posts/${postId}/comments`,
-    GET_COMMENTS: (eventId, postId) =>
-      `/post-event/${eventId}/posts/${postId}/comments`,
-    // Host routes
-    HOST_CONTENT: (eventId) => `/post-event/${eventId}`,
-    UPLOAD_MEDIA: (eventId) => `/post-event/${eventId}/media`,
-    DELETE_MEDIA: (eventId, mediaId) =>
-      `/post-event/${eventId}/media/${mediaId}`,
-    UPDATE_THANK_YOU: (eventId) => `/post-event/${eventId}/thank-you`,
-    UPDATE_MESSAGING_TEMPLATE: (eventId) =>
-      `/post-event/${eventId}/messaging`,
-    PUBLISH: (eventId) => `/post-event/${eventId}/publish`,
-    UNPUBLISH: (eventId) => `/post-event/${eventId}/unpublish`,
-    GENERATE_TOKENS: (eventId) => `/post-event/${eventId}/generate-tokens`,
-    SEND_ACCESS_LINKS: (eventId) =>
-      `/post-event/${eventId}/send-access-links`,
+    VALIDATE_TOKEN: API_PATHS.postEvent.validateToken,
+    CONTENT: API_PATHS.postEvent.getContent,
+    TOGGLE_LIKE: API_PATHS.postEvent.toggleLike,
+    ADD_COMMENT: API_PATHS.postEvent.addComment,
+    GET_COMMENTS: API_PATHS.postEvent.getComments,
+    HOST_CONTENT: API_PATHS.postEvent.getHostContent,
+    UPLOAD_MEDIA: API_PATHS.postEvent.uploadMedia,
+    DELETE_MEDIA: API_PATHS.postEvent.deleteMedia,
+    UPDATE_THANK_YOU: API_PATHS.postEvent.updateThankYouMessage,
+    UPDATE_MESSAGING_TEMPLATE: API_PATHS.postEvent.updateMessagingTemplate,
+    PUBLISH: API_PATHS.postEvent.publishContent,
+    UNPUBLISH: API_PATHS.postEvent.unpublishContent,
+    GENERATE_TOKENS: API_PATHS.postEvent.generateBulkTokens,
+    SEND_ACCESS_LINKS: API_PATHS.postEvent.sendBulkAccessLinks,
   },
 
-  // Messaging endpoints
   MESSAGING: {
-    SEND: "/messaging/send",
-    SEND_BULK: "/messaging/send-bulk",
-    RETRY: "/messaging/retry",
-    SEND_REMINDER: "/messaging/send-reminder",
-    SCHEDULE: "/messaging/schedule",
+    SEND: API_PATHS.invitations.send,
+    SEND_BULK: API_PATHS.invitations.sendBulk,
+    RETRY: API_PATHS.invitations.retry,
+    SEND_REMINDER: API_PATHS.invitations.sendReminder,
+    SCHEDULE: API_PATHS.invitations.schedule,
   },
 
-  // Templates endpoints — backed by the cached templates table; categories
-  // are served from /template-categories.
   TEMPLATES: {
-    LIST: "/templates",
-    CATEGORIES: "/template-categories",
+    LIST: API_PATHS.templates.list,
+    CATEGORIES: API_PATHS.templates.categories,
   },
 
-  // Taqnyat-template cache that powers the wizard picker.
   TAQNYAT_TEMPLATES: {
-    LIST: "/taqnyat-templates",
+    LIST: API_PATHS.taqnyatTemplates.list,
   },
 
-  // Fonts endpoints
   FONTS: {
-    LIST: "/fonts",
+    LIST: API_PATHS.templates.fonts,
   },
 
-  // Admin endpoints
   ADMIN: {
     HOSTS: {
-      BASE: "/admin/hosts",
-      BY_ID: (id) => `/admin/hosts/${id}`,
-      STATUS: (id) => `/admin/hosts/${id}/status`,
-      SUBSCRIPTION: (id) => `/admin/hosts/${id}/subscription`,
-      BULK_DELETE: "/admin/hosts/bulk-delete",
-      EXPORT: "/admin/hosts/export",
-      VERIFY_PHONE: "/admin/hosts/verify-phone",
-      FIND_OR_CREATE: "/admin/hosts/find-or-create",
+      BASE: API_PATHS.admin.hosts.getAll,
+      BY_ID: API_PATHS.admin.hosts.getById,
+      STATUS: API_PATHS.admin.hosts.updateStatus,
+      SUBSCRIPTION: API_PATHS.admin.hosts.updateSubscription,
+      BULK_DELETE: API_PATHS.admin.hosts.bulkDelete,
+      EXPORT: API_PATHS.admin.hosts.export,
+      VERIFY_PHONE: API_PATHS.admin.hosts.verifyPhone,
+      FIND_OR_CREATE: API_PATHS.admin.hosts.findOrCreate,
     },
     MODERATORS: {
-      BASE: "/admin/moderators",
-      BY_ID: (id) => `/admin/moderators/${id}`,
-      STATUS: (id) => `/admin/moderators/${id}/status`,
-      BULK_DELETE: "/admin/moderators/bulk-delete",
-      BULK_STATUS: "/admin/moderators/bulk-status",
-      EXPORT: "/admin/moderators/export",
+      BASE: API_PATHS.admin.moderators.getAll,
+      BY_ID: API_PATHS.admin.moderators.update,
+      STATUS: API_PATHS.admin.moderators.updateStatus,
+      BULK_DELETE: API_PATHS.admin.moderators.bulkDelete,
+      BULK_STATUS: API_PATHS.admin.moderators.bulkStatus,
+      EXPORT: API_PATHS.admin.moderators.export,
     },
     VENDORS: {
-      BASE: "/admin/vendors",
-      BY_ID: (id) => `/admin/vendors/${id}`,
-      STATUS: (id) => `/admin/vendors/${id}/status`,
-      RATING: (id) => `/admin/vendors/${id}/rating`,
-      BULK_DELETE: "/admin/vendors/bulk-delete",
-      BULK_STATUS: "/admin/vendors/bulk-status",
-      EXPORT: "/admin/vendors/export",
+      BASE: API_PATHS.admin.vendors.getAll,
+      BY_ID: API_PATHS.admin.vendors.getById,
+      STATUS: API_PATHS.admin.vendors.updateStatus,
+      RATING: API_PATHS.admin.vendors.updateRating,
+      BULK_DELETE: API_PATHS.admin.vendors.bulkDelete,
+      BULK_STATUS: API_PATHS.admin.vendors.bulkStatus,
+      EXPORT: API_PATHS.admin.vendors.export,
     },
     EVENTS: {
-      ADMIN_ALL: "/events/admin/all",
-      BY_ID: (id) => `/admin/events/${id}`,
-      CREATE_FOR_HOST: "/admin/events/create-for-host",
-      STATUS: (id) => `/admin/events/${id}/status`,
-      BULK_DELETE: "/admin/events/bulk-delete",
-      BULK_STATUS: "/admin/events/bulk-status",
-      EXPORT: "/admin/events/export",
+      ADMIN_ALL: API_PATHS.admin.events.getAll,
+      BY_ID: API_PATHS.admin.events.getById,
+      CREATE_FOR_HOST: API_PATHS.admin.events.createForHost,
+      STATUS: API_PATHS.admin.events.updateStatus,
+      BULK_DELETE: API_PATHS.admin.events.bulkDelete,
+      BULK_STATUS: API_PATHS.admin.events.bulkStatus,
+      EXPORT: API_PATHS.admin.events.export,
     },
     PAYMENTS: {
-      BASE: "/admin/payments",
-      BY_ID: (id) => `/admin/payments/${id}`,
-      EXPORT: "/admin/payments/export",
+      BASE: API_PATHS.payments.getAll,
+      BY_ID: API_PATHS.payments.getById,
+      EXPORT: API_PATHS.payments.export,
     },
     PLANS: {
-      ALL: "/plans/admin/all",
-      BY_CODE: (code) => `/plans/admin/${code}`,
-      CREATE: "/plans/admin",
+      ALL: API_PATHS.plans.adminGetAll,
+      BY_CODE: API_PATHS.plans.adminUpdate,
+      CREATE: API_PATHS.plans.adminCreate,
     },
     SUBSCRIPTIONS: {
-      ASSIGN: "/subscriptions/admin/assign",
+      ASSIGN: API_PATHS.subscriptions.adminAssign,
     },
     WHITELABELS: {
-      BASE: "/admin/whitelabels",
-      BY_ID: (id) => `/admin/whitelabels/${id}`,
-      STATUS: (id) => `/admin/whitelabels/${id}/status`,
-      SUBSCRIPTION: (id) => `/admin/whitelabels/${id}/subscription`,
-      FEATURES: (id) => `/admin/whitelabels/${id}/features`,
-      BULK_DELETE: "/admin/whitelabels/bulk-delete",
-      BULK_STATUS: "/admin/whitelabels/bulk-status",
-      EXPORT: "/admin/whitelabels/export",
+      BASE: API_PATHS.admin.whitelabels.getAll,
+      BY_ID: API_PATHS.admin.whitelabels.getById,
+      STATUS: API_PATHS.admin.whitelabels.updateStatus,
+      SUBSCRIPTION: API_PATHS.admin.whitelabels.updateSubscription,
+      FEATURES: API_PATHS.admin.whitelabels.features,
+      BULK_DELETE: API_PATHS.admin.whitelabels.bulkDelete,
+      BULK_STATUS: API_PATHS.admin.whitelabels.bulkStatus,
+      EXPORT: API_PATHS.admin.whitelabels.export,
     },
     DISCOUNTS: {
-      BASE: "/discounts/admin",
-      BY_ID: (id) => `/discounts/admin/${id}`,
-      TOGGLE: (id) => `/discounts/admin/${id}/toggle`,
-      VALIDATE: "/discounts/validate",
+      BASE: API_PATHS.discounts.list,
+      BY_ID: API_PATHS.discounts.byId,
+      TOGGLE: API_PATHS.discounts.toggle,
+      VALIDATE: API_PATHS.discounts.validate,
     },
-    EVENT_TARGETS: "/admin/event-targets",
-    USER_SUBSCRIPTION_INFO: (id) => `/admin/users/${id}/subscription-info`,
+    EVENT_TARGETS: API_PATHS.admin.events.eventTargets,
+    USER_SUBSCRIPTION_INFO: API_PATHS.admin.events.userSubscriptionInfo,
   },
 };
 

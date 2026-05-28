@@ -23,6 +23,8 @@ export default function PlanDescription({
   lang = "ar",
   selectedInviteCount,
   showTagline = true,
+  showDuration = true,
+  size = "default",
 }) {
   const { t } = useTranslation("plans");
 
@@ -59,13 +61,15 @@ export default function PlanDescription({
   const tagline = taglineKey ? t(taglineKey, { defaultValue: "" }) : "";
   const includesBasic = family === "premium";
 
+  const rootClass = `${styles.planDescription}${size === "large" ? ` ${styles.large}` : ""}`;
+
   return (
-    <div className={styles.planDescription} dir={lang === "ar" ? "rtl" : "ltr"}>
+    <div className={rootClass} dir={lang === "ar" ? "rtl" : "ltr"}>
       {showTagline && tagline ? (
         <p className={styles.tagline}>{tagline}</p>
       ) : null}
 
-      {durationLine ? (
+      {showDuration && durationLine ? (
         <p className={styles.duration}>{durationLine}</p>
       ) : null}
 
@@ -84,39 +88,36 @@ export default function PlanDescription({
         </ul>
       ) : null}
 
-      <div className={styles.metaRows}>
-        {compensationCount > 0 ? (
-          <p className={styles.metaRow}>
-            <span className={styles.metaIcon} aria-hidden>🎁</span>
+      {compensationCount > 0 ? (
+        <div className={styles.compensationBox}>
+          <span className={styles.compensationIcon} aria-hidden>🎁</span>
+          <span className={styles.compensationText}>
             {t("compensationRow", {
               count: compensationCount,
               percent: COMPENSATION_PERCENTAGE,
               base: compensationBase,
             })}
-          </p>
-        ) : null}
+          </span>
+        </div>
+      ) : null}
 
-        {setupFee > 0 ? (
-          <p className={styles.metaRow}>
-            <span className={styles.metaIcon} aria-hidden>💼</span>
-            {t("setupFeeRow", { amount: setupFee.toLocaleString() })}
-          </p>
-        ) : null}
+      {(setupFee > 0 || whatsappCount > 0) ? (
+        <div className={styles.metaRows}>
+          {setupFee > 0 ? (
+            <p className={styles.metaRow}>
+              <span className={styles.metaIcon} aria-hidden>💼</span>
+              {t("setupFeeRow", { amount: setupFee.toLocaleString() })}
+            </p>
+          ) : null}
 
-        {isPool && invitePool > 0 ? (
-          <p className={styles.metaRow}>
-            <span className={styles.metaIcon} aria-hidden>✉️</span>
-            {t("freeInvitesRow", { count: invitePool })}
-          </p>
-        ) : null}
-
-        {whatsappCount > 0 ? (
-          <p className={styles.metaRow}>
-            <span className={styles.metaIcon} aria-hidden>💬</span>
-            {t("whatsappTemplates", { count: whatsappCount })}
-          </p>
-        ) : null}
-      </div>
+          {whatsappCount > 0 ? (
+            <p className={styles.metaRow}>
+              <span className={styles.metaIcon} aria-hidden>💬</span>
+              {t("whatsappTemplates", { count: whatsappCount })}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

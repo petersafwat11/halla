@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as staffService from "../../services/staffService";
-import { revokeStaffAccess } from "../../services/eventsService2";
+import { revokeStaffAccess } from "../../services/eventsService";
 
 /**
  * Verify staff access via phone+eventId (or token, when supported).

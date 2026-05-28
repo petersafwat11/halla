@@ -2,6 +2,7 @@
 import { FaCalendarAlt, FaUsers, FaCheckCircle, FaCrown, FaRocket } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { getLocalized } from "@/utils/locale";
+import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import styles from "../page.module.css";
 
 const POOL_PLAN_TYPES = new Set([
@@ -36,7 +37,6 @@ export default function CurrentPlanCard({ subscription, plans }) {
   const inviteValue = pool
     ? displayLimits?.invitePool
     : displayLimits?.maxInvitesPerEvent;
-  const currency = fullPlan?.currency || subscription?.pricePaid?.currency || "SAR";
   const pricePaid = subscription?.pricePaid?.amount ?? fullPlan?.pricing?.oneTime ?? 0;
   const unlimited = t("plansPage.currentPlan.unlimited");
 
@@ -56,10 +56,9 @@ export default function CurrentPlanCard({ subscription, plans }) {
             </div>
             <div className={styles.planPrice}>
               {new Intl.NumberFormat(i18n.language === "ar" ? "ar-SA" : "en-US", {
-                style: "currency",
-                currency,
                 minimumFractionDigits: 0,
               }).format(pricePaid)}
+              <SarIcon size="1.5rem" style={{ marginInlineStart: "0.3em" }} />
             </div>
           </div>
           <div className={styles.currentPlanDetails}>

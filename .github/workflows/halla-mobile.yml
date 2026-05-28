@@ -1,0 +1,37 @@
+name: halla-mobile
+
+on:
+  pull_request:
+    paths:
+      - "halla-mobile/**"
+      - "shared/**"
+      - ".github/workflows/halla-mobile.yml"
+  push:
+    branches: [master]
+    paths:
+      - "halla-mobile/**"
+      - "shared/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: halla-mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install (workspaces from repo root)
+        working-directory: .
+        run: npm install --no-audit --no-fund
+      - name: Expo config check
+        run: npx --yes expo config --type public > /dev/null
+      - name: Metro bundle (production, android)
+        # Fast resolution + transform smoke; full native build runs on EAS.
+        run: npx --yes expo export --platform android --output-dir /tmp/halla-mobile-export --no-bytecode
+        env:
+          EXPO_NO_TELEMETRY: "1"

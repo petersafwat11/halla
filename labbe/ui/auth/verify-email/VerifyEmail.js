@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
 
-import FormHeader from "@/ui/commen/formHeader/FormHeader";
 import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import { FormProvider, useForm } from "react-hook-form";
@@ -93,10 +92,6 @@ const VerifyEmail = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.form_header}>
-        <FormHeader />
-      </div>
-
       <div className={styles.form}>
         {state === STATE.VERIFYING && (
           <div className={styles.message_container}>

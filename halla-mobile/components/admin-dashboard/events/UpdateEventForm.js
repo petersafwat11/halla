@@ -6,7 +6,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { FormProvider, useForm } from "react-hook-form";
-import EventsService from "../../../services/EventsService";
+import EventsService from "../../../hooks/events/useEventForm";
 import { useTranslation } from "../../../localization";
 import { useMySubscription } from "../../../hooks";
 import StepOne from "../../createEvent/StepOne";

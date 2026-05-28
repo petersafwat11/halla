@@ -14,7 +14,6 @@ import {
   isNavItemActive,
   DASHBOARD_TYPES,
 } from "../navConfig";
-import Image from "next/image";
 
 /**
  * Global Sidebar Component
@@ -79,19 +78,13 @@ function Sidebar({ className, dashboardType: propDashboardType }) {
 
   return (
     <div className={`${styles.sidebarContainer} ${className || ""}`}>
-      <div className={styles.sidebarHeader}>
-                  <Image 
- src="/logo.png" alt="Logo" width={60} height={60} />
-        
-        <img
-          className={styles.logoMobile}
-          src="/svg/events/sidebar-mobile-logo.svg"
-          alt="logo"
-        />
-        <button className={styles.closeBtn} onClick={() => setIsOpen(false)}>
-          <img src="/svg/events/close-circle.svg" alt="close" />
-        </button>
-      </div>
+      <button
+        className={styles.closeBtn}
+        onClick={() => setIsOpen(false)}
+        aria-label="Close menu"
+      >
+        <img src="/svg/events/close-circle.svg" alt="close" />
+      </button>
 
       <div className={styles.body}>
         <nav className={styles.menu}>

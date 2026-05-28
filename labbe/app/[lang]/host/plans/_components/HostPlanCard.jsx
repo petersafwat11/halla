@@ -1,6 +1,7 @@
 "use client";
 import { useTranslation } from "react-i18next";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
+import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import styles from "./HostPlanCard.module.css";
 
 const getOptionValue = (plan, billingType) => {
@@ -42,7 +43,7 @@ const HostPlanCard = ({
         <div className={styles.price}>
           <div className={styles.priceRow}>
             <span className={styles.priceNum}>{price.toLocaleString()}</span>
-            <span className={styles.priceCur}>{t("currency")}</span>
+            <SarIcon size="1.5rem" className={styles.priceCur} />
           </div>
           <span className={styles.pricePer}>
             {billingType === "monthly"

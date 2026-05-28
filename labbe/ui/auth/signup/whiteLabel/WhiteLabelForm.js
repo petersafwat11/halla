@@ -13,7 +13,6 @@ import { whitelabelSignupSchema } from "@/utils/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
-import FormHeader from "../../../commen/formHeader/FormHeader";
 import {
   validateFormStep,
   handleNextStep as utilNextStep,
@@ -152,9 +151,6 @@ const WhiteLabelForm = () => {
 
   return (
     <div>
-      <div className={styles.form_header}>
-        <FormHeader />
-      </div>
       <div className={styles.container}>
         <FormProvider {...methods}>
           <div className={styles.stepper_desk}>

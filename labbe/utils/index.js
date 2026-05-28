@@ -53,7 +53,6 @@ export function validateStep({ schema, fields, watch, setError }) {
   const formValues = watch();
   let valuesToValidate;
   let pickedSchema = schema;
-  console.log("formValues", formValues);
   if (fields) {
     const fieldList = Array.isArray(fields) ? fields : [fields];
     valuesToValidate = {};
@@ -74,7 +73,6 @@ export function validateStep({ schema, fields, watch, setError }) {
   }
 
   const result = pickedSchema.safeParse(valuesToValidate);
-  console.log("result", result);
   if (!result.success) {
     result.error.errors.forEach((err) => {
       setError(

@@ -153,7 +153,7 @@ exports.handle = async (req, res) => {
         userId: null,
       }
     );
-    return res.status(200).json({ status: 'success', ...result });
+    return res.status(200).json({ success: true, status: 'success', ...result });
   } catch (err) {
     logger.error('[moyasar.webhook] handler error', { error: err?.message });
     // Return 500 so Moyasar retries.

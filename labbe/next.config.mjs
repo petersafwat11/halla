@@ -3,6 +3,10 @@ const nextConfig = {
   // Ensure static assets are served from the correct path regardless of locale
   assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || "",
 
+  // Transpile the in-repo workspace package so Next bundles it rather than
+  // externalizing as a node module. Required for `@halla/shared` (plain ESM).
+  transpilePackages: ["@halla/shared"],
+
   // Proxy /api/v2/* to the backend in development (and any env where
   // BACKEND_PROXY_URL is set). This routes all API calls through :3000 so
   // the backend's Set-Cookie headers land on the Next.js origin — solving

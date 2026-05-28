@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import styles from "@/ui/auth/login/form/form.module.css";
 import { useTranslation } from "react-i18next";
-import FormHeader from "../../../commen/formHeader/FormHeader";
 import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -115,9 +114,6 @@ const Form = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.form_header}>
-        <FormHeader />
-      </div>
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.form}>

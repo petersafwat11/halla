@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import * as staffService from "../../services/staffService";
-import { listStaffTokens } from "../../services/eventsService2";
+import { listStaffTokens } from "../../services/eventsService";
 import { useAuthStore } from "../../stores/authStore";
 
 const EMPTY_GUEST_RESULT = { guests: [], stats: {}, pagination: {} };

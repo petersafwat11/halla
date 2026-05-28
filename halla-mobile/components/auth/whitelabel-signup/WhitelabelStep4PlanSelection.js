@@ -5,6 +5,7 @@ import SectionCard from '../../commen/SectionCard';
 import { useBusinessPlans } from '../../../hooks/queries/usePlans';
 import { useTranslation } from '../../../localization';
 import { getLocalized } from '../../../utils/locale';
+import SarIcon from '../../commen/SarIcon';
 
 const PlanGroup = ({ title, subtitle, plans, selectedPlanCode, onSelect, locale, t }) => {
   if (!plans || plans.length === 0) return null;
@@ -25,9 +26,12 @@ const PlanGroup = ({ title, subtitle, plans, selectedPlanCode, onSelect, locale,
           >
             <Text style={[styles.planName, isSelected && styles.planNameSelected]}>{name}</Text>
             {price !== undefined && (
-              <Text style={[styles.planPrice, isSelected && styles.planPriceSelected]}>
-                {price} {t('signupForm.whiteLabel.planSelection.cards.currency')}
-              </Text>
+              <View style={styles.planPriceRow}>
+                <Text style={[styles.planPrice, isSelected && styles.planPriceSelected]}>
+                  {price}
+                </Text>
+                <SarIcon size={20} color={isSelected ? '#c28e5c' : '#888'} style={{ marginHorizontal: 4 }} />
+              </View>
             )}
             {isSelected && (
               <Text style={styles.selectedBadge}>{t('signupForm.whiteLabel.planSelection.cards.selected')}</Text>
@@ -133,6 +137,7 @@ const styles = StyleSheet.create({
   planCardSelected: { borderColor: '#c28e5c', backgroundColor: '#f5ece4' },
   planName: { fontSize: 16, fontFamily: 'Cairo_700Bold', color: '#2c2c2c', marginBottom: 4 },
   planNameSelected: { color: '#8a6541' },
+  planPriceRow: { flexDirection: 'row', alignItems: 'center' },
   planPrice: { fontSize: 14, fontFamily: 'Cairo_600SemiBold', color: '#888' },
   planPriceSelected: { color: '#c28e5c' },
   selectedBadge: { fontSize: 12, fontFamily: 'Cairo_600SemiBold', color: '#c28e5c', marginTop: 6 },

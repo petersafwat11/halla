@@ -32,7 +32,7 @@ import {
   useAddEventStaff,
   useUpdateEventStaff,
   useDeleteEventStaff,
-} from "../../hooks/mutations/useEventStaffCrudMutations";
+} from "../../hooks/events/mutations/useEventMutation";
 import { useRevokeStaffAccess } from "../../hooks/mutations/useStaffMutations";
 import { useSendReminder } from "../../hooks/mutations/useMessagingMutations";
 

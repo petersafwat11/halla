@@ -183,6 +183,7 @@ const createApp = () => {
 
   app.get("/health", (req, res) => {
     res.status(200).json({
+      success: true,
       status: "success",
       message: "Server is healthy",
       timestamp: new Date().toISOString(),

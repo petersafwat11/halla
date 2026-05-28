@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import EventsService from "../services/EventsService";
+import EventsService from "./events/useEventForm";
 
 /**
  * Custom hook for managing guest/moderator lists

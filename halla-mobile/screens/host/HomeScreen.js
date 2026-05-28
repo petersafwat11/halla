@@ -23,7 +23,7 @@ import { useHostDashboard } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
 import { useTranslation } from "../../localization";
 import NotificationBell from "../../components/notifications/NotificationBell";
-import { useNotifyStaff } from "../../hooks/mutations/useEventMutations";
+import { useNotifyStaff } from "../../hooks/events/mutations/useEventMutation";
 import HomeHeaderContent from "../../components/home/HomeHeaderContent";
 
 const HomeScreen = ({ navigation }) => {

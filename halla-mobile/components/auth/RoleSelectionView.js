@@ -76,14 +76,19 @@ function RoleCard({ role, index, onPress, isRTL }) {
           <Ionicons name={role.icon} size={26} color={role.accentColor} />
         </View>
         <View style={styles.cardText}>
-          <Text style={[styles.cardTitle, isRTL && styles.cardTitleRTL]}>
+          <Text
+            style={[styles.cardTitle, isRTL && styles.cardTitleRTL]}
+            numberOfLines={1}
+          >
             {t(role.titleKey)}
           </Text>
-          <Text style={[styles.cardDesc, isRTL && styles.cardDescRTL]}>
+          <Text
+            style={[styles.cardDesc, isRTL && styles.cardDescRTL]}
+            numberOfLines={2}
+          >
             {t(role.descKey)}
           </Text>
         </View>
-        <View style={styles.spacer} />
         <Ionicons
           name={isRTL ? "chevron-back" : "chevron-forward"}
           size={18}
@@ -139,7 +144,7 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
             role={role}
             index={i}
             onPress={onSelectRole}
-            isRTL={isRTL}
+            // isRTL={isRTL}
           />
         ))}
       </View>
@@ -200,15 +205,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     paddingVertical: 20,
+    minHeight: 92,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 10,
     elevation: 3,
-  },
-  spacer: {
-    flexGrow: 1,
-    flexShrink: 0,
   },
   cardLTR: {
     paddingLeft: 17,
@@ -232,7 +234,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   cardText: {
-    flexShrink: 1,
+    flex: 1,
+    justifyContent: "flex-start",
   },
   cardTitle: {
     fontSize: 16,

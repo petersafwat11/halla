@@ -2,12 +2,29 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: clamp(1.2rem, 2vw, 1.6rem) clamp(2rem, 4vw, 4rem);
+  padding: 1rem clamp(2rem, 4vw, 4rem);
   background: #fff;
   border-bottom: 1px solid #f2f2f2;
-  min-height: clamp(6rem, 10vw, 7.2rem);
+  height: 7.2rem;
   gap: clamp(1.6rem, 3vw, 2.4rem);
   width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.headerStart {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-shrink: 0;
+}
+
+.headerLogo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
 }
 
 .userInfo {
@@ -81,17 +98,13 @@
   align-items: center;
 }
 
-.headerMobileLogo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.2rem;
-}
-
 .toggleMenu {
   background: none;
   border: none;
   cursor: pointer;
+  padding: 0.4rem;
+  display: none;
+  align-items: center;
 }
 
 .iconsRow {
@@ -253,16 +266,12 @@
   cursor: pointer;
 }
 
-.headerMobileLogo {
-  display: none;
-}
-
 .iconDesktop {
   display: block;
 }
 
 @media screen and (max-width: 1024px) {
-  .headerMobileLogo {
+  .toggleMenu {
     display: flex;
   }
 
@@ -271,8 +280,8 @@
   }
 
   .headerContainer {
-    padding: 1.5rem 2rem;
-    min-height: 6rem;
+    padding: 0.8rem 2rem;
+    height: 6.4rem;
   }
 
   .iconsRow {
@@ -282,17 +291,11 @@
   .profile {
     display: none;
   }
-
-  .sidebarLogo {
-    display: block;
-    width: 155px;
-    height: auto;
-  }
 }
 
 @media screen and (max-width: 768px) {
   .headerContainer {
-    padding: 1.2rem 1.6rem;
+    padding: 0.8rem 1.6rem;
     gap: 1.2rem;
   }
 
@@ -307,7 +310,7 @@
 
 @media screen and (max-width: 480px) {
   .headerContainer {
-    padding: 1rem 1.2rem;
+    padding: 0.6rem 1.2rem;
   }
 
   .iconsRow {

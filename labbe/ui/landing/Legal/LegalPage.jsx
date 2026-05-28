@@ -9,7 +9,7 @@ import UseLanguageChange from "@/hooks/UseLanguageChange";
 
 /* ─── Contact constants ─── */
 const CONTACT_EMAIL = "mailto:support@halaa.net";
-const CONTACT_WA = "https://wa.me/966551324939";
+const CONTACT_WA = "https://wa.me/966552619282";
 
 /* ─── Icons ─── */
 const IconHome = () => (

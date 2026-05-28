@@ -215,7 +215,7 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
                         strokeWidth="2"
                       />
                     </svg>
-                    <span className={styles.contactText}>{phone}</span>
+                    <span className={styles.contactText} dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{phone}</span>
                   </a>
                 )}
               </div>

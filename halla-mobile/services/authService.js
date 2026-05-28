@@ -262,7 +262,7 @@ export const sendOTPAPI = async ({ mobile, type = "login" }) => {
  */
 export const verifyOTPAPI = async ({ mobile, otp }) => {
   try {
-    console.log("[AUTH SERVICE] Verifying OTP for login:", mobile);
+    dlog("[AUTH SERVICE] Verifying OTP for login");
     const data = await postJson(ENDPOINTS.AUTH.OTP_VERIFY_LOGIN, {
       phoneNumber: mobile,
       otp,
@@ -312,7 +312,7 @@ export const signupWithPhoneAPI = async ({ mobile }) => {
  */
 export const verifySignupOTPAPI = async ({ mobile, otp }) => {
   try {
-    console.log("[AUTH SERVICE] Verifying OTP for signup:", mobile);
+    dlog("[AUTH SERVICE] Verifying OTP for signup");
     const data = await postJson(ENDPOINTS.AUTH.OTP_VERIFY_SIGNUP, {
       phoneNumber: mobile,
       otp,

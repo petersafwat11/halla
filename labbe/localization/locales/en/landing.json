@@ -146,14 +146,14 @@
   "vendorCTA": {
     "title": "Join the",
     "titleHighlight": "Halla",
-    "titleEnd": "Marketplace Now",
+    "titleEnd": "Marketplace",
     "description": "Showcase your services and reach out to many prospect clients",
     "feature1": "Easy Booking Management",
     "feature2": "Grow Your Revenue",
     "feature3": "Connect with Event Planners",
     "stat1": "200+ Active Vendors",
     "stat2": "98% Client Satisfaction",
-    "cta": "Register as a Vendor"
+    "cta": "Register as a Merchant"
   },
   "vendorSearch": {
     "title": "Find the Best Vendors",

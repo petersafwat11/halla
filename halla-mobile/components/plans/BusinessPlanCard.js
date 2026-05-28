@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "../../localization";
 import { getLocalized, formatNumber } from "../../utils/locale";
 import PlanDescription from "./PlanDescription";
+import SarIcon from "../commen/SarIcon";
 
 const BusinessPlanCard = ({
   plan,
   compLabel,
-  priceSuffix,
   selectedInviteCount,
   onSubscribe,
 }) => {
@@ -22,7 +22,7 @@ const BusinessPlanCard = ({
       <Text style={styles.planName}>{planName}</Text>
       <View style={styles.priceRow}>
         <Text style={styles.priceAmount}>{formatNumber(price, locale)}</Text>
-        <Text style={styles.priceCurrency}>{priceSuffix}</Text>
+        <SarIcon size={20} color="#8A6541" style={{ marginBottom: 4, marginHorizontal: 4 }} />
       </View>
 
       <PlanDescription

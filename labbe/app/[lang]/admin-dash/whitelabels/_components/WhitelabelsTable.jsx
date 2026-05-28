@@ -115,6 +115,9 @@ export default function WhitelabelsTable() {
     }
 
     if (key === "createdAt" && value) return new Date(value).toLocaleDateString();
+    if (key === "phone") {
+      return <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{value}</span>;
+    }
     return value;
   }, [canUpdate, statusClassMap, statusTextMap, handleStatusChange, handleSubscriptionClick, t]);
 

@@ -21,8 +21,8 @@ import { useMySubscription } from "../../../hooks";
 import { useTranslation } from "../../../localization";
 import {
   useUpdateEvent, useUpdateEventStep2, useUpdateVisualTemplate, useUpdateTaqnyatTemplate,
-} from "../../../hooks/mutations/useEventMutations";
-import EventsService from "../../../services/EventsService";
+} from "../../../hooks/events/mutations/useEventMutation";
+import EventsService from "../../../hooks/events/useEventForm";
 
 import TopBar from "../../../components/plans/TopBar";
 import StepHeader from "../../../components/createEvent/StepHeader";

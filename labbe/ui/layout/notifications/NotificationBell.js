@@ -1,44 +1,23 @@
-/**
- * Notification Bell Component
- * Bell icon with unread badge and dropdown
- */
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import useNotificationStore from "@/stores/notificationStore";
+import { useUnreadNotificationCount } from "@/hooks/reactQueryHooks/useNotifications";
 import NotificationDropdown from "./NotificationDropdown";
 import { getDashboardTypeFromPath, getBasePath } from "@/ui/layout/navConfig";
 import styles from "./notifications.module.css";
-
-// ============================================
-// COMPONENT
-// ============================================
 
 const NotificationBell = () => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const { unreadCount, startPolling, stopPolling, fetchUnreadCount } =
-    useNotificationStore();
+  const { data: unreadCountResponse } = useUnreadNotificationCount();
+  const unreadCount = unreadCountResponse?.data?.unreadCount ?? 0;
 
-  // Determine base path for navigation
   const dashboardType = getDashboardTypeFromPath(pathname);
   const basePath = getBasePath(dashboardType);
 
-  // Start polling on mount
-  useEffect(() => {
-    fetchUnreadCount();
-    startPolling();
-
-    return () => {
-      stopPolling();
-    };
-  }, [fetchUnreadCount, startPolling, stopPolling]);
-
-  // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -55,7 +34,6 @@ const NotificationBell = () => {
     };
   }, [isOpen]);
 
-  // Handle escape key to close dropdown
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -80,7 +58,6 @@ const NotificationBell = () => {
     setIsOpen(false);
   }, []);
 
-  // Format badge count
   const formatCount = (count) => {
     if (count > 99) return "99+";
     return count.toString();

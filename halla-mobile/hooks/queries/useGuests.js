@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
-import { getEventGuests } from "../../services/guestsService";
+import { getEventGuests } from "../../services/eventGuestsService";
 
 /**
  * Fetch the guest list for an event.

@@ -1,5 +1,6 @@
 .layoutContainer {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   overflow-x: hidden;
   background: #f9f4ef;
@@ -26,7 +27,7 @@
 .contentWithHeader {
   flex: 1;
   width: 100%;
-  min-height: 100vh;
+  min-height: calc(100vh - 7.2rem);
   margin-inline-start: 28rem;
   display: flex;
   flex-direction: column;
@@ -37,5 +38,6 @@
 @media (max-width: 1024px) {
   .contentWithHeader {
     margin-inline-start: 0;
+    min-height: calc(100vh - 6.4rem);
   }
 }

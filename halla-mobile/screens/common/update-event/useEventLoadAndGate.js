@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAuthStore } from "../../../stores/authStore";
 import { useTranslation } from "../../../localization";
-import * as eventsService2 from "../../../services/eventsService2";
-import EventsService from "../../../services/EventsService";
+import * as eventsService2 from "../../../services/eventsService";
+import EventsService from "../../../hooks/events/useEventForm";
 import useEventActionGate from "../../../hooks/useEventActionGate";
 
 /**

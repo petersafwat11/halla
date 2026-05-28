@@ -8,6 +8,7 @@ import {
   borderRadius,
   typography,
 } from "../../../styles/tokens";
+import SarIcon from "../../commen/SarIcon";
 
 const PlanCard = ({ plan, isSelected, onSelect }) => {
   const { t } = useTranslation("admin");
@@ -34,9 +35,11 @@ const PlanCard = ({ plan, isSelected, onSelect }) => {
           <Text style={[styles.planLabel, isSelected && styles.planLabelSelected]}>
             {planLabel}
           </Text>
-          <Text style={styles.planDesc}>
-            {price.toLocaleString()} SAR{inviteInfo ? `  ·  ${inviteInfo}` : ""}
-          </Text>
+          <View style={styles.planDescRow}>
+            <Text style={styles.planDesc}>{price.toLocaleString()}</Text>
+            <SarIcon size={20} color={colors.natural[500]} style={{ marginHorizontal: 4 }} />
+            {inviteInfo ? <Text style={styles.planDesc}>{`·  ${inviteInfo}`}</Text> : null}
+          </View>
           {planDesc ? <Text style={styles.planDescAr}>{planDesc}</Text> : null}
         </View>
       </View>
@@ -102,6 +105,11 @@ const styles = StyleSheet.create({
   planDesc: {
     fontSize: typography.fontSize.label.small,
     color: colors.natural[500],
+    marginTop: 2,
+  },
+  planDescRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 2,
   },
   planDescAr: {

@@ -11,7 +11,7 @@ import {
 import { FormProvider, useForm } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import EventsService from "../../../services/EventsService";
+import EventsService from "../../../hooks/events/useEventForm";
 import { useTranslation } from "../../../localization";
 import {
   useSubscriptionInfo,

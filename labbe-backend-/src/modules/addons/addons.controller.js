@@ -3,6 +3,7 @@ const catchAsync = require('../../shared/utils/catchAsync');
 const {
   sendSuccess,
   sendCreated,
+  sendPaginated,
   getPaginationFromQuery,
 } = require('../../shared/utils/responseHelper');
 
@@ -32,12 +33,7 @@ const purchaseAddon = catchAsync(async (req, res) => {
 const getMyAddons = catchAsync(async (req, res) => {
   const pagination = getPaginationFromQuery(req.query, 20);
   const result = await addonsService.getMyAddons(req.user._id, pagination);
-  res.status(200).json({
-    success: true,
-    status: 'success',
-    data: result.items,
-    pagination: result.pagination,
-  });
+  sendPaginated(res, result.items, result.pagination);
 });
 
 const adminActivateAddon = catchAsync(async (req, res) => {

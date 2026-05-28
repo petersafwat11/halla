@@ -10,11 +10,9 @@ function Layout({ children }) {
 
   return (
     <div className={styles.layoutContainer} dir={isRTL ? "rtl" : "ltr"}>
+      <Header dashboardType={DASHBOARD_TYPES.HOST} />
       <ResponsiveSidebar dashboardType={DASHBOARD_TYPES.HOST} />
-      <div className={styles.contentWithHeader}>
-        <Header dashboardType={DASHBOARD_TYPES.HOST} />
-        {children}
-      </div>
+      <div className={styles.contentWithHeader}>{children}</div>
     </div>
   );
 }

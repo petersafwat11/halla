@@ -13,6 +13,7 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import SearchableSelect from "@/ui/commen/inputs/SearchableSelect/SearchableSelect";
 import EditPlanPopup from "./EditPlanPopup";
 import { getLocalized } from "@/utils/locale";
+import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import styles from "./ManagePlansContent.module.css";
 
 const PLAN_TYPE_KEYS = [
@@ -144,7 +145,7 @@ export default function ManagePlansContent() {
 
                 <div className={styles.priceSection}>
                   <div className={styles.priceAmount}>
-                    <span className={styles.currency}>{t("managePlans.priceCurrency")}</span>
+                    <SarIcon size="1.5rem" className={styles.currency} style={{ color: accent }} />
                     <span className={styles.price} style={{ color: accent }}>
                       {price.toLocaleString()}
                     </span>

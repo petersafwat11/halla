@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
 import { colors, spacing, typography } from "../../../styles/tokens";
+import SarIcon from "../../commen/SarIcon";
 
 const PlanPriceBlock = ({ planFamily, billingType, price }) => {
   const { t } = useTranslation("plans");
@@ -17,7 +18,7 @@ const PlanPriceBlock = ({ planFamily, billingType, price }) => {
       <View style={styles.priceWrap}>
         <View style={styles.priceRow}>
           <Text style={styles.priceNum}>{(price || 0).toLocaleString()}</Text>
-          <Text style={styles.priceCur}>{t("currency")}</Text>
+          <SarIcon size={20} color={colors.secondary[700]} />
         </View>
         <Text style={styles.pricePer}>
           {billingType === "monthly"

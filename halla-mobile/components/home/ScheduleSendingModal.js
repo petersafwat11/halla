@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import DatePicker from "../commen/DatePicker";
 import TimePicker from "../commen/TimePicker";
 import Button from "../commen/Button";
-import { useScheduleSend } from "../../hooks/mutations/useEventMutations";
+import { useScheduleSend } from "../../hooks/mutations/useMessagingMutations";
 
 const getTwoDaysFromNow = () => {
   const date = new Date();

@@ -41,7 +41,7 @@ const VendorHeroCard = ({ vendor }) => {
       {phone !== "—" && (
         <View style={styles.contactRow}>
           <Ionicons name="call-outline" size={13} color={colors.natural[400]} />
-          <Text style={styles.contactText}>{phone}</Text>
+          <Text style={[styles.contactText, { writingDirection: "ltr" }]}>{`‪${phone}‬`}</Text>
         </View>
       )}
 

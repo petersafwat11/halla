@@ -139,10 +139,17 @@ function AppContent() {
   // up (requires apple-app-site-association + assetlinks.json hosting).
   const linking = useMemo(
     () => ({
-      prefixes: ["halla://"],
+      prefixes: ["halla://", "https://halaa.com.sa"],
       config: {
         screens: {
           SetupPassword: "setup-password/:token",
+          // Phase 4b: forgot-password completion. Backend's email links
+          // point to `https://halaa.com.sa/reset-password/<token>`; the
+          // universal link variant carries the user into this screen
+          // with the token in route params. The custom scheme variant
+          // (`halla://reset-password/<token>`) is also supported for
+          // dev/QA flows.
+          ResetPassword: "reset-password/:token",
           // Whitelabel guest portal — `halla://invitation/<code>`. The
           // screen is registered on AuthStack so SMS/WhatsApp taps from
           // an unauthenticated device land directly without forcing a

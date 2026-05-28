@@ -1,5 +1,7 @@
 "use client";
 import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import styles from "./page.module.css";
 import ImageCarousel from "@/ui/commen/imageCarousel/ImageCarousel";
 import LangToggle from "@/ui/common/LangToggle";
@@ -7,6 +9,7 @@ import { usePathname } from "next/navigation";
 
 const Page = ({ children }) => {
   const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
 
   const shouldShowSlider = !pathname.includes("/signup/continue-signup");
 
@@ -19,9 +22,14 @@ const Page = ({ children }) => {
           }}
           className={styles.right}
         >
-          <div className={styles.langBar}>
-            <LangToggle className={styles.langToggle} />
-          </div>
+          <header className={styles.authHeader}>
+            <div className={styles.authHeaderInner}>
+              <Link href={`/${lang}`} className={styles.authLogo} aria-label="Halla">
+                <Image src="/logo.png" alt="Halla" width={50} height={50} priority />
+              </Link>
+              <LangToggle className={styles.authLangToggle} />
+            </div>
+          </header>
           {children}
         </div>
         {shouldShowSlider && (

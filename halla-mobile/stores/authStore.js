@@ -9,6 +9,7 @@ import {
   signupVendorAPI,
   completeProfileAPI,
   forgotPasswordAPI,
+  resetPasswordAPI,
   logoutAPI,
   refreshTokenAPI,
 } from "../services/authService";
@@ -306,6 +307,31 @@ export const useAuthStore = create((set, get) => ({
         error: error.message || "Failed to send reset email",
       });
       return failure(error, "Failed to send reset email");
+    }
+  },
+
+  /**
+   * Phase 4b: complete the forgot-password flow with the email's token.
+   * Backend returns a fresh token pair so the user is logged in
+   * immediately on success.
+   */
+  resetPassword: async ({ token, password, passwordConfirm }) => {
+    set({ status: "loading", error: null });
+    try {
+      const { accessToken, refreshToken, user } = await resetPasswordAPI({
+        token,
+        password,
+        passwordConfirm,
+      });
+      const role = requireRole(user);
+      await get()._persistAuth({ user, accessToken, refreshToken, role });
+      return { success: true };
+    } catch (error) {
+      set({
+        status: "unauthenticated",
+        error: error.message || "Reset failed",
+      });
+      return failure(error, "Reset failed");
     }
   },
 

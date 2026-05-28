@@ -8,7 +8,10 @@
  * HttpOnly, backend-issued cookies.
  */
 
-import apiClient from "./apiClient";
+// Phase 3: migrated from the legacy fetch-based `./apiClient` to the
+// canonical axios pipeline via legacyAdapter. Staff portal session token
+// remains JS-readable for now (documented future-hardening item, §7.1).
+import { legacyClientAdapter as apiClient } from "./new-backend/legacyAdapter";
 import Cookies from "js-cookie";
 import { API_PATHS } from "./new-backend/api.config";
 

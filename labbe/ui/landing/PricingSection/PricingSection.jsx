@@ -5,28 +5,13 @@ import styles from "./pricingSection.module.css";
 import { useTranslation } from "react-i18next";
 import { useLandingPlans } from "@/hooks/reactQueryHooks/usePlans";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
+import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 
-const WA_LINK = "https://wa.me/966551324939";
+const WA_LINK = "https://wa.me/966552619282";
 
 const formatPrice = (n) => (n || 0).toLocaleString();
 
-const SarSymbol = () => (
-  <svg
-    width="0.85em"
-    height="0.85em"
-    viewBox="0 0 30 22"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-    style={{ display: "inline-block", verticalAlign: "middle" }}
-  >
-    <path d="M24 2 C26 4 26 8 22 12 C18 16 13 19 8 19 C5 19 3 17 3 15" strokeWidth="2.2" />
-    <line x1="1" y1="8" x2="26" y2="8" strokeWidth="1.8" />
-    <line x1="1" y1="13" x2="26" y2="13" strokeWidth="1.8" />
-  </svg>
-);
+const SarSymbol = () => <SarIcon size="1.5rem" />;
 
 const WaIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
@@ -42,6 +27,22 @@ const getInviteValue = (plan, billingType) => {
 
 export default function PricingSection({ lang = "ar" }) {
   const { t } = useTranslation("landing");
+  const { t: tPlans } = useTranslation("plans");
+  const getTagline = (plan) => {
+    const family = plan?.planFamily;
+    if (!family) return "";
+    return tPlans(`taglines.${family}`, { defaultValue: "" });
+  };
+  const getDurationText = (plan) => {
+    if (!plan) return "";
+    const billingType = plan.billingType;
+    const durationDays = plan?.limits?.durationDays;
+    if (billingType === "monthly") return tPlans("duration.monthly", { defaultValue: "" });
+    if (billingType === "quarterly") return tPlans("duration.quarterly", { defaultValue: "" });
+    if (billingType === "annual") return tPlans("duration.annual", { defaultValue: "" });
+    if (durationDays) return tPlans("duration.event", { days: durationDays, defaultValue: "" });
+    return "";
+  };
 
   const { data: landingData, isLoading, error } = useLandingPlans();
   const plans = landingData?.data ?? null;
@@ -240,15 +241,23 @@ export default function PricingSection({ lang = "ar" }) {
             {/* Basic Card */}
             <div className={styles.prCard}>
               <div className={styles.prCardTop}>
-                <div>
-                  <h3 className={styles.prCardName}>{t("pricing.basic")}</h3>
-                </div>
-                <div className={styles.prPrice}>
-                  <div className={styles.prPriceRow}>
-                    <span className={styles.prPriceNum}>{formatPrice(currentHostEventPlan?.pricing?.oneTime)}</span>
-                    <SarSymbol />
+                <div className={styles.prCardTopRow}>
+                  <div>
+                    <h3 className={styles.prCardName}>{t("pricing.basic")}</h3>
+                  </div>
+                  <div className={styles.prPrice}>
+                    <div className={styles.prPriceRow}>
+                      <span className={styles.prPriceNum}>{formatPrice(currentHostEventPlan?.pricing?.oneTime)}</span>
+                      <SarSymbol />
+                    </div>
                   </div>
                 </div>
+                {getTagline(currentHostEventPlan) ? (
+                  <p className={styles.prCardTagline}>{getTagline(currentHostEventPlan)}</p>
+                ) : null}
+                {getDurationText(currentHostEventPlan) ? (
+                  <p className={styles.prCardDuration}>{getDurationText(currentHostEventPlan)}</p>
+                ) : null}
               </div>
 
               <div className={styles.prGuestTrack}>
@@ -268,7 +277,14 @@ export default function PricingSection({ lang = "ar" }) {
               </div>
 
               <div className={styles.prFeatSection}>
-                <PlanDescription plan={currentHostEventPlan} lang={lang} selectedInviteCount={selInvites} />
+                <PlanDescription
+                  plan={currentHostEventPlan}
+                  lang={lang}
+                  selectedInviteCount={selInvites}
+                  showTagline={false}
+                  showDuration={false}
+                  size="large"
+                />
               </div>
 
               <div className={styles.prCardFooter}>
@@ -280,15 +296,23 @@ export default function PricingSection({ lang = "ar" }) {
             <div className={`${styles.prCard} ${styles.popular}`}>
               <div className={styles.prPopularBadge}>{t("pricing.popular")}</div>
               <div className={styles.prCardTop}>
-                <div>
-                  <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
-                </div>
-                <div className={styles.prPrice}>
-                  <div className={styles.prPriceRow}>
-                    <span className={styles.prPriceNum}>{formatPrice(currentPremiumEventPlan?.pricing?.oneTime)}</span>
-                    <SarSymbol />
+                <div className={styles.prCardTopRow}>
+                  <div>
+                    <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
+                  </div>
+                  <div className={styles.prPrice}>
+                    <div className={styles.prPriceRow}>
+                      <span className={styles.prPriceNum}>{formatPrice(currentPremiumEventPlan?.pricing?.oneTime)}</span>
+                      <SarSymbol />
+                    </div>
                   </div>
                 </div>
+                {getTagline(currentPremiumEventPlan) ? (
+                  <p className={styles.prCardTagline}>{getTagline(currentPremiumEventPlan)}</p>
+                ) : null}
+                {getDurationText(currentPremiumEventPlan) ? (
+                  <p className={styles.prCardDuration}>{getDurationText(currentPremiumEventPlan)}</p>
+                ) : null}
               </div>
 
               <div className={styles.prGuestTrack}>
@@ -308,7 +332,14 @@ export default function PricingSection({ lang = "ar" }) {
               </div>
 
               <div className={styles.prFeatSection}>
-                <PlanDescription plan={currentPremiumEventPlan} lang={lang} selectedInviteCount={selInvites} />
+                <PlanDescription
+                  plan={currentPremiumEventPlan}
+                  lang={lang}
+                  selectedInviteCount={selInvites}
+                  showTagline={false}
+                  showDuration={false}
+                  size="large"
+                />
               </div>
 
               <div className={styles.prCardFooter}>
@@ -324,15 +355,23 @@ export default function PricingSection({ lang = "ar" }) {
             {/* Basic Card */}
             <div className={styles.prCard}>
               <div className={styles.prCardTop}>
-                <div>
-                  <h3 className={styles.prCardName}>{t("pricing.basic")}</h3>
-                </div>
-                <div className={styles.prPrice}>
-                  <div className={styles.prPriceRow}>
-                    <span className={styles.prPriceNum}>{formatPrice(currentHostMonthlyPlan?.pricing?.oneTime)}</span>
-                    <SarSymbol />
+                <div className={styles.prCardTopRow}>
+                  <div>
+                    <h3 className={styles.prCardName}>{t("pricing.basic")}</h3>
+                  </div>
+                  <div className={styles.prPrice}>
+                    <div className={styles.prPriceRow}>
+                      <span className={styles.prPriceNum}>{formatPrice(currentHostMonthlyPlan?.pricing?.oneTime)}</span>
+                      <SarSymbol />
+                    </div>
                   </div>
                 </div>
+                {getTagline(currentHostMonthlyPlan) ? (
+                  <p className={styles.prCardTagline}>{getTagline(currentHostMonthlyPlan)}</p>
+                ) : null}
+                {getDurationText(currentHostMonthlyPlan) ? (
+                  <p className={styles.prCardDuration}>{getDurationText(currentHostMonthlyPlan)}</p>
+                ) : null}
               </div>
 
               <div className={styles.prGuestTrack}>
@@ -352,7 +391,14 @@ export default function PricingSection({ lang = "ar" }) {
               </div>
 
               <div className={styles.prFeatSection}>
-                <PlanDescription plan={currentHostMonthlyPlan} lang={lang} selectedInviteCount={selPool} />
+                <PlanDescription
+                  plan={currentHostMonthlyPlan}
+                  lang={lang}
+                  selectedInviteCount={selPool}
+                  showTagline={false}
+                  showDuration={false}
+                  size="large"
+                />
               </div>
 
               <div className={styles.prCardFooter}>
@@ -364,15 +410,23 @@ export default function PricingSection({ lang = "ar" }) {
             <div className={`${styles.prCard} ${styles.popular}`}>
               <div className={styles.prPopularBadge}>{t("pricing.popular")}</div>
               <div className={styles.prCardTop}>
-                <div>
-                  <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
-                </div>
-                <div className={styles.prPrice}>
-                  <div className={styles.prPriceRow}>
-                    <span className={styles.prPriceNum}>{formatPrice(currentPremiumMonthlyPlan?.pricing?.oneTime)}</span>
-                    <SarSymbol />
+                <div className={styles.prCardTopRow}>
+                  <div>
+                    <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
+                  </div>
+                  <div className={styles.prPrice}>
+                    <div className={styles.prPriceRow}>
+                      <span className={styles.prPriceNum}>{formatPrice(currentPremiumMonthlyPlan?.pricing?.oneTime)}</span>
+                      <SarSymbol />
+                    </div>
                   </div>
                 </div>
+                {getTagline(currentPremiumMonthlyPlan) ? (
+                  <p className={styles.prCardTagline}>{getTagline(currentPremiumMonthlyPlan)}</p>
+                ) : null}
+                {getDurationText(currentPremiumMonthlyPlan) ? (
+                  <p className={styles.prCardDuration}>{getDurationText(currentPremiumMonthlyPlan)}</p>
+                ) : null}
               </div>
 
               <div className={styles.prGuestTrack}>
@@ -392,7 +446,14 @@ export default function PricingSection({ lang = "ar" }) {
               </div>
 
               <div className={styles.prFeatSection}>
-                <PlanDescription plan={currentPremiumMonthlyPlan} lang={lang} selectedInviteCount={selPool} />
+                <PlanDescription
+                  plan={currentPremiumMonthlyPlan}
+                  lang={lang}
+                  selectedInviteCount={selPool}
+                  showTagline={false}
+                  showDuration={false}
+                  size="large"
+                />
               </div>
 
               <div className={styles.prCardFooter}>
@@ -405,6 +466,19 @@ export default function PricingSection({ lang = "ar" }) {
         {/* ═══ BUSINESS — PER EVENT ═══ */}
         {audience === "business" && bizType === "event" && currentBizEventPlan && (
           <div className={styles.prHostCard}>
+            <div className={styles.prHostCardTop}>
+              <div className={styles.prHostPrice}>
+                <span className={styles.prHostPriceNum}>{formatPrice(currentBizEventPlan.pricing?.oneTime)}</span>
+                <SarSymbol />
+              </div>
+              {getTagline(currentBizEventPlan) ? (
+                <p className={styles.prCardTagline}>{getTagline(currentBizEventPlan)}</p>
+              ) : null}
+              {getDurationText(currentBizEventPlan) ? (
+                <p className={styles.prCardDuration}>{getDurationText(currentBizEventPlan)}</p>
+              ) : null}
+            </div>
+
             <div className={styles.prGuestTrack}>
               {bizEventPlans.map((plan) => {
                 const v = getInviteValue(plan, "event");
@@ -421,13 +495,15 @@ export default function PricingSection({ lang = "ar" }) {
               })}
             </div>
 
-            <div className={styles.prHostPrice}>
-              <span className={styles.prHostPriceNum}>{formatPrice(currentBizEventPlan.pricing?.oneTime)}</span>
-              <SarSymbol />
-            </div>
-
             <div className={styles.prFeatSection}>
-              <PlanDescription plan={currentBizEventPlan} lang={lang} selectedInviteCount={selBizInvites} />
+              <PlanDescription
+                plan={currentBizEventPlan}
+                lang={lang}
+                selectedInviteCount={selBizInvites}
+                showTagline={false}
+                showDuration={false}
+                size="large"
+              />
             </div>
 
             <div className={styles.prCardFooter}>
@@ -441,13 +517,21 @@ export default function PricingSection({ lang = "ar" }) {
         {/* ═══ BUSINESS — QUARTERLY ═══ */}
         {audience === "business" && bizType === "quarterly" && bizQuarterlyPlan && (
           <div className={styles.prHostCard}>
-            <div className={styles.prHostPrice}>
-              <span className={styles.prHostPriceNum}>{formatPrice(bizQuarterlyPlan.pricing?.oneTime)}</span>
-              <SarSymbol />
+            <div className={styles.prHostCardTop}>
+              <div className={styles.prHostPrice}>
+                <span className={styles.prHostPriceNum}>{formatPrice(bizQuarterlyPlan.pricing?.oneTime)}</span>
+                <SarSymbol />
+              </div>
+              {getTagline(bizQuarterlyPlan) ? (
+                <p className={styles.prCardTagline}>{getTagline(bizQuarterlyPlan)}</p>
+              ) : null}
+              {getDurationText(bizQuarterlyPlan) ? (
+                <p className={styles.prCardDuration}>{getDurationText(bizQuarterlyPlan)}</p>
+              ) : null}
             </div>
 
             <div className={styles.prFeatSection}>
-              <PlanDescription plan={bizQuarterlyPlan} lang={lang} />
+              <PlanDescription plan={bizQuarterlyPlan} lang={lang} showTagline={false} showDuration={false} size="large" />
             </div>
 
             <div className={styles.prCardFooter}>
@@ -461,13 +545,21 @@ export default function PricingSection({ lang = "ar" }) {
         {/* ═══ BUSINESS — ANNUAL ═══ */}
         {audience === "business" && bizType === "annual" && bizAnnualPlan && (
           <div className={styles.prHostCard}>
-            <div className={styles.prHostPrice}>
-              <span className={styles.prHostPriceNum}>{formatPrice(bizAnnualPlan.pricing?.oneTime)}</span>
-              <SarSymbol />
+            <div className={styles.prHostCardTop}>
+              <div className={styles.prHostPrice}>
+                <span className={styles.prHostPriceNum}>{formatPrice(bizAnnualPlan.pricing?.oneTime)}</span>
+                <SarSymbol />
+              </div>
+              {getTagline(bizAnnualPlan) ? (
+                <p className={styles.prCardTagline}>{getTagline(bizAnnualPlan)}</p>
+              ) : null}
+              {getDurationText(bizAnnualPlan) ? (
+                <p className={styles.prCardDuration}>{getDurationText(bizAnnualPlan)}</p>
+              ) : null}
             </div>
 
             <div className={styles.prFeatSection}>
-              <PlanDescription plan={bizAnnualPlan} lang={lang} />
+              <PlanDescription plan={bizAnnualPlan} lang={lang} showTagline={false} showDuration={false} size="large" />
             </div>
 
             <div className={styles.prCardFooter}>

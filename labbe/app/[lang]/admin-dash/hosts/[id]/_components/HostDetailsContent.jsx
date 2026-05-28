@@ -117,7 +117,7 @@ export default function HostDetailsContent({ hostId }) {
             <h3 className={styles.cardTitle}>{t("hostDetails.contactInfo", "Contact Info")}</h3>
             <div className={styles.infoList}>
               {[
-                { icon: <FiPhone size={15} />, label: t("hostDetails.phoneNumber", "Phone"), value: host?.phoneNumber },
+                { icon: <FiPhone size={15} />, label: t("hostDetails.phoneNumber", "Phone"), value: host?.phoneNumber ? <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{host.phoneNumber}</span> : null },
                 { icon: <FiMail size={15} />, label: t("hostDetails.email", "Email"), value: host?.email },
                 { icon: <FiClock size={15} />, label: t("hostDetails.joinDate", "Join Date"), value: fmtDate(host?.createdAt, locale) },
               ].map((row, i) => (

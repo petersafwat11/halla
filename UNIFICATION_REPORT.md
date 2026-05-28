@@ -8,6 +8,119 @@
 
 ---
 
+## Session Progress Log
+
+### 2026-05-26, follow-up session (Opus 4.7) — Phase 4 mobile events consolidation
+
+**Shipped, build-validated (`expo export --platform web` exit 0, 3287 modules bundled):**
+
+- **New consolidated `halla-mobile/services/eventsService.js`** — single file replacing the 8 shards. `authenticatedFetch` is inlined (module-private); every per-domain function is exported by name AND grouped into `crud`/`guests`/`staff`/`settings`/`exports` sub-objects on the default export, so both `import { foo } from "../services/eventsService"` and `import service from "../services/eventsService"` (`service.crud.foo` / `service.foo`) resolve.
+- **`halla-mobile/services/eventGuestsService.js`** — rename of `guestsService.js` via `git mv`. Per-guest CRUD stays separate because the backend mount is on the `/guests` module (`/guests/events/:eventId/...`), not events.
+- **`halla-mobile/hooks/events/useEventForm.js`** — pure-helper module (NOT a hook) holding the validation, list-management, CSV-import, step-validation, payload-transform, and default-form-values helpers extracted from `EventsService.js`. File name kept as `useEventForm.js` for parity with web's hook file (web's file is a real hook with different concerns; mobile-local helpers stay mobile-local — verified web's file does not contain these names).
+- **`halla-mobile/hooks/events/mutations/useEventMutation.js`** — single-file factory mirroring web's pattern but with the config-map collapsed inline (web has 4 sub-hooks + façade; mobile's smaller surface fits one file). Action keys: `createEvent`, `updateEventDetails`, `deleteEvent`, `bulkDeleteEvents`, `updateEventStep2`, `updateGuestList` (bulk), `updateStaffList`/`addStaff`/`updateStaff`/`deleteStaff`/`notifyStaff`, `updateInvitationSettings`/`updateLaunchSettings`/`updateVisualTemplate`/`updateTaqnyatTemplate`/`updateMessagingContent`/`retryLaunch`. Convenience hooks (`useCreateEvent`, `useNotifyStaff`, `useAddEventStaff`, etc.) wrap the factory with literal actions so the action arg stays stable.
+- **18 importers re-pointed:**
+  - Service consumers (form helpers, queries, EventList, useEventLoadAndGate, mutation hooks): all moved off `eventsService2`/`EventsService`/`guestsService` to the new files.
+  - `hooks/index.js` barrel: `./mutations/useEventMutations` → `./events/mutations/useEventMutation`.
+  - Messaging-hook consumers (`TestMessageModal`, `ScheduleSendingModal`, `SendInvitationModal`, `EventDetailsScreen`) re-pointed directly at `useMessagingMutations.js` — the prior re-export through `useEventMutations` is gone. `useMessagingMutations.js` itself is NOT in the deletion list (per plan §4) and stays separate.
+  - `EventDetailsScreen.js` staff CRUD consumer re-pointed from `useEventStaffCrudMutations` to the factory's convenience hooks. Verified call-site arg shapes (`{ eventId, data }`, `{ eventId, staffId, data }`, `{ eventId, staffId }`) match the factory's `mutationFn` signatures.
+- **13 files deleted** (all on the Phase 4 ledger in §A.2):
+  - `services/EventsService.js`, `eventsService.{crud,http,guests,settings,staff,exports}.js`, `eventsService2.js`.
+  - `hooks/mutations/useEvent{Crud,Guest,Mutations,Settings,Staff,StaffCrud}Mutations.js`.
+- Grep verified: zero remaining imports of any deleted file across the mobile tree.
+
+**Notes / deliberate divergences:**
+- Mobile factory uses one file + config map vs. web's four sub-hooks; the plan §4.4 allows either ("config map" called out explicitly). Easier to maintain at mobile's smaller surface size.
+- `useStaffMutations.useRevokeStaffAccess` and per-guest hooks in `useGuestMutations` stay where they are (separate concerns: StaffAccessToken lifecycle and the `/guests` module respectively).
+- Vestigial `_token` args on every service function preserved to minimise call-site churn; `apiFetch` ignores them and reads the in-memory token from the auth store.
+
+**Pre-existing bug not fixed (out of scope):** `useEventLoadAndGate.js:156-158` reads `res?.data` from `getEventById`, which already unwraps `data?.data` and returns the event object directly. Likely never noticed because the surrounding code re-extracts via `eventData.eventDetails ?? eventData`. Leave for a focused session.
+
+**Remaining ledger after this session:**
+- Phase 5 — hook layout standardization (both apps)
+- Phase 6 — auth store alignment
+- Phase 8 — remaining items (lint rules, helper extractions, `userAccountService`, `getStaticAssetBaseUrl`, schema-shim removals)
+- Phase 9 — final verification + ARCHITECTURE.md
+
+### 2026-05-26, late-evening session (Opus 4.7) — Phase 7+8 partial completion
+
+**Verified-on-disk before starting (so the picture matches the file system, not memory):**
+Phase 0/0a/0b/0c done; Phase 1 partial (auth/events/tickets in shared, 5 domains still in app dirs); Phase 2 done; Phase 3 done; Phase 4b done (`halla-mobile/screens/auth/ResetPasswordScreen.js` exists); Phases 4, 5, 6, 7, 8 outstanding.
+
+**Shipped this session, build-validated (`next build` exit 0 after):**
+
+- **Phase 8 safe deletes (zero-importer verified by grep):**
+  - `labbe/staticData/events/data.js` — deleted; `staticData/` folder removed.
+  - `halla-mobile/utils/errorHandler.js` — deleted.
+  - `labbe/utils/schemas/phoneValidation.js` — deleted.
+- **Phase 8 documented console.log cleanup:**
+  - `labbe/utils/index.js:56,77` — debug `console.log("formValues", ...)` and `console.log("result", ...)` removed inside `validateStep`.
+  - `halla-mobile/services/authService.js:265,315` — replaced raw `console.log` with `dlog` (PII leak in release builds; previously logged phone number).
+- **Phase 7 mobile — `halla-mobile/stores/adminStore.js` deleted.**
+  - Grep returned zero importers across the mobile codebase before delete. The store was wholly orphaned — RQ already served all admin tables via `hooks/queries/useAdmin*`. No consumer rewrites required.
+- **Phase 7 web — `labbe/stores/notificationStore.js` deleted, 2 consumers rewritten:**
+  - `labbe/ui/layout/notifications/NotificationBell.js` — now reads from `useUnreadNotificationCount()`; the hook already had a 30 s `refetchInterval` so the manual `setInterval(30s)` polling is gone with no behavior change.
+  - `labbe/ui/layout/notifications/NotificationDropdown.js` — rewired to use `useInfiniteQuery` against `API_PATHS.notifications.getNotifications` for paginated load-more (preserves the original "append next page" UX) plus `useNotificationMutation` for markAsRead / markAllAsRead / delete / clearAll.
+  - **Note on follow-up:** `useInfiniteQuery` was used inline in the dropdown component because the existing `useNotifications` hook in `hooks/reactQueryHooks/useNotifications.js` is a `useQuery` returning a single page. A future tidy-up could promote `useNotificationsInfinite` into that hook file and have the dropdown import it. Left inline to minimize risk in this session.
+
+**Deliberately deferred (and why):**
+
+- **Phase 6 — auth store alignment.** Mobile already uses the canonical status machine (`checking → loading → authenticated|unauthenticated`); web uses `isAuthenticated`+`isLoading` booleans. Aligning the two requires touching ~30 consumer files (found via grep on `isAuthenticated|isLoading`). Doing it partially risks an inconsistent state machine. Needs a dedicated session that can build-validate after every batch.
+- **Phase 4 — mobile events service consolidation.** 8 service shards + 6 mutation hook files; touches the entire mobile event-creation flow. Plan estimates 2-3 focused days. Not safe to rush.
+- **Phase 5 — hook layout standardization across ~20 domains.** Plan itself calls this "Risk: Highest." Cache-key migration alone is a session.
+- **Phase 1 leftovers — 5 schema domains.** ~2000 lines of schema code across 12+ files plus consumer re-pointing across ~40 files. Manageable but a session of its own.
+
+**Build evidence:** `labbe` → `next build` exit 0 after Phase 7 web rewrite. Mobile → no runtime-affecting changes this session (only zero-importer deletes + log-level swap); `expo export` ran as a final sanity check.
+
+**Remaining ledger after this session:**
+- Phase 1 leftovers — 5 schema domains (plans, vendor, settings, admin, post-event)
+- Phase 4 — mobile events consolidation
+- Phase 5 — hook layout standardization (both apps)
+- Phase 6 — auth store alignment
+- Phase 7 leftover — none (both stores resolved)
+- Phase 8 — remaining items (lint rules, helper extractions, userAccountService, getStaticAssetBaseUrl)
+- Phase 9 — final verification + ARCHITECTURE.md
+
+### 2026-05-26, late-night follow-up — Phase 1 leftovers completed
+
+**Shipped, build-validated (`next build` exit 0, `expo export` exit 0):**
+
+- **5 new shared schema files** created in `D:\halla\shared\src\schemas\`:
+  - `plans.js` — `createPlanSchema`, `editPlanSchema`, `PLAN_TYPES`, enums (planType/planFamily/billingType/availability/currency). Admin-only, English messages preserved.
+  - `post-event.js` — guest portal schemas (PostType, PostSchema, CommentSchema, TokenValidationResponseSchema, PostEventContentResponseSchema, LikeToggleResponseSchema, AddCommentSchema, etc.). `File`-typed fields softened to `z.any()` so mobile RN file objects also pass (web's File instance check was platform-specific).
+  - `admin.js` — addHost/addModerator/editModerator, vendorRating, ticket/template/notification/taqnyat/discount popups. Hardcoded Arabic messages preserved verbatim (admin surface; not user-facing).
+  - `settings.js` — union of `settingsSchemas.js` + `accountSettingsSchema.js` + `notificationPreferencesSchemas.js` validation portions + mobile `settingsSchema.js`. Both `accountSettingsSchema` variants kept (factory `(t) => …` for web, opaque-key version for mobile — exported as `accountSettingsSchema` and `mobileAccountSettingsSchema` respectively). Role-aware host/vendor/admin/whitelabel notification preferences schemas + defaults + `getNotificationSchemaForRole` / `getNotificationDefaultsForRole` helpers.
+  - `vendor.js` — Zod portions split out of `vendorSettings.js` (web's section-object pattern keeps its `fields` metadata locally; only `zodSchema` payloads moved). Mobile vendorSchemas (English-message variants) included with `mobile*` prefix; original names preserved via the shim's `mobileX as X` aliases.
+- **`shared/src/schemas/index.js` barrel** updated with the 5 new namespaces.
+- **Compat shims** (the pattern established by the prior agent) installed at every former source location so consumer imports keep working unchanged:
+  - `labbe/utils/schemas/planSchema.js` — re-exports from `@halla/shared/schemas/plans`.
+  - `labbe/utils/schemas/postEventSchemas.js` — re-exports from `@halla/shared/schemas/post-event` (named + default).
+  - `labbe/utils/schemas/adminPopupSchemas.js` — re-exports the 15 popup schemas from `@halla/shared/schemas/admin`.
+  - `labbe/utils/schemas/settingsSchemas.js` — re-exports from `@halla/shared/schemas/settings`. `hostEmailNotificationsSchema` aliased from the legacy variant (`hostEmailNotificationsSchemaLegacy` in shared) since two files exported the same name with different fields; the legacy 5-field shape stays here, the role-aware 5-field shape stays under the canonical name in `notificationPreferencesSchemas.js`.
+  - `labbe/utils/schemas/accountSettingsSchema.js` — re-exports the factory variant.
+  - `labbe/utils/schemas/notificationPreferencesSchemas.js` — re-exports all schemas/defaults/getters from shared; keeps `getNotificationOptionsForRole` (UI option config with hardcoded Arabic labels + i18n keys) inline since it's a web-side rendering concern, not validation.
+  - `labbe/utils/schemas/vendorSettings.js` — keeps the section-object wrappers (`personalInfoSchema = { sectionKey, titleKey, zodSchema, fields, ... }`) and the `validateField` / `validateForm` helpers that `DynamicForm` consumes; swaps each `zodSchema` body for an import from `@halla/shared/schemas/vendor`. Form metadata stays web-side; validation moved.
+  - `halla-mobile/utils/schemas/vendorSchemas.js` — re-exports mobile variants with `mobileX as X` aliases.
+  - `halla-mobile/utils/schemas/settingsSchema.js` — re-exports mobile variants with `mobileX as X` aliases.
+- **Orphan deletions (verified zero importers by grep):**
+  - `labbe/utils/schemas/addHostSchema.js` — orphan (its consumers use `adminPopupSchemas.js#addHostSchema`, a different shape).
+  - `labbe/utils/schemas/addModeratorSchema.js` — same story.
+
+**Build evidence:** `labbe` → `next build` exit 0; mobile → `expo export --platform web` exit 0. Both with the new shared schemas resolved through the workspace symlink.
+
+**Files NOT migrated this session (out of scope — not in the user-named 5 domains):**
+- `labbe/utils/schemas/createEventSchema.js`, `updateEventSchema.js`, `eventAddintionSchemas.js`, `staffSchemas.js`, `ticketSchema.js`, `ticketRatingSchema.js`, `authSchema.js`, `addServiceSchema.js` — these belong to domains (events, tickets, auth, vendor-service) that are either already in shared (auth/events/tickets) and just need re-pointing in a future pass, or are UI-coupled (addServiceSchema has hardcoded Arabic SERVICE_TYPES list).
+- Mobile `createEventSchema.js`, `updateEventSchema.js`, `ticketSchema.js`, `authSchemas.js`, `discountSchema.js`, `vendorServiceSchema.js` — same story.
+
+**Remaining ledger after this follow-up:**
+- Phase 1 — **complete for the 5 user-named domains**; non-named-domain stragglers above remain as a future tidy-up.
+- Phase 4 — mobile events consolidation
+- Phase 5 — hook layout standardization (both apps)
+- Phase 6 — auth store alignment
+- Phase 8 — physical removal of the compat shims (this session and the prior one both intentionally use shims to minimize consumer churn); other Phase 8 items (lint rules, helper extractions, userAccountService, getStaticAssetBaseUrl).
+- Phase 9 — final verification + ARCHITECTURE.md
+
+---
+
 ## 0. TL;DR
 
 Both apps consume the same backend (`/api/v2`, ~460 endpoints, Zod-validated). They have **diverged in three independent ways**, none of which are intrinsic to the platform:

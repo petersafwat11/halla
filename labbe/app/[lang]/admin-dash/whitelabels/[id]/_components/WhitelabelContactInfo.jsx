@@ -15,7 +15,7 @@ export default function WhitelabelContactInfo({ wl, t }) {
           <div className={styles.infoIcon}><FiPhone size={15} /></div>
           <div>
             <div className={styles.infoLabel}>{t("info.phoneNumber", "Phone Number")}</div>
-            <div className={styles.infoValue}>{wl?.phoneNumber || "\u2014"}</div>
+            <div className={styles.infoValue} dir="ltr" style={{ unicodeBidi: "embed" }}>{wl?.phoneNumber || "\u2014"}</div>
           </div>
         </div>
         <div className={styles.infoRow}>

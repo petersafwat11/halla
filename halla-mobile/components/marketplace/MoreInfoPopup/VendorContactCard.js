@@ -39,7 +39,7 @@ const VendorContactCard = ({ vendor }) => {
         {vendor.phone && (
           <TouchableOpacity style={styles.contactItem} onPress={() => handleCall(vendor.phone)} activeOpacity={0.7}>
             <Ionicons name="call-outline" size={16} color="#737373" />
-            <Text style={styles.contactText}>{vendor.phone}</Text>
+            <Text style={[styles.contactText, { writingDirection: "ltr" }]}>{`‪${vendor.phone}‬`}</Text>
           </TouchableOpacity>
         )}
       </View>

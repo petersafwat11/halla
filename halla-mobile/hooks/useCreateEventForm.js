@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { Alert } from "react-native";
 import { useForm } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
-import EventsService from "../services/EventsService";
+import EventsService from "./events/useEventForm";
 
 export function useCreateEventForm() {
   const [currentStep, setCurrentStep] = useState(1);

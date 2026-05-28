@@ -3,7 +3,9 @@
  * API service for notification management
  */
 
-import apiClient from "./apiClient";
+// Phase 3: migrated from the legacy fetch-based `./apiClient` to the
+// canonical axios-based pipeline via a thin shape-compat adapter.
+import { legacyClientAdapter as apiClient } from "./new-backend/legacyAdapter";
 
 // ============================================
 // ENDPOINTS

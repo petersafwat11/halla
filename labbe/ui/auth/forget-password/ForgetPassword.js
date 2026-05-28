@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import styles from "./forgetPassword.module.css";
 import Image from "next/image";
-import FormHeader from "../../commen/formHeader/FormHeader";
 import InputGroup from "../../commen/inputs/inputGroup/InputGroup";
 import ConfirmBtn from "../../commen/confirmButton/ConfirmBtn";
 import { useTranslation } from "react-i18next";
@@ -91,9 +90,6 @@ const ForgetPassword = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.form_header}>
-        <FormHeader />
-      </div>
       {!showEmailSentMessage ? (
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.image_container}>

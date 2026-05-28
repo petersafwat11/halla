@@ -8,6 +8,7 @@ import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
 import { StepTitle } from "../../../../commen/title/SectionTitle";
 import { getLocalized } from "@/utils/locale";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
+import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import styles from "./stepFive.module.css";
 
 const formatPrice = (n) => (n || 0).toLocaleString();
@@ -41,7 +42,7 @@ function EventPlanSelector({ plans, selectedCode, onSelect, tp, lang }) {
         <span className={styles.hostPriceNum}>
           {formatPrice(selectedPlan?.pricing?.oneTime)}
         </span>
-        <span className={styles.hostPriceCur}>{tp("currency")}</span>
+        <SarIcon size="1.5rem" className={styles.hostPriceCur} />
         <span className={styles.hostPricePer}>{tp("pricePerEvent")}</span>
       </div>
 
@@ -89,7 +90,7 @@ function PoolPlanCard({ plan, type, isSelected, onSelect, tp, i18n, lang }) {
             <span className={styles.planPriceNum}>
               {formatPrice(plan.pricing?.oneTime)}
             </span>
-            <span className={styles.planPriceCur}>{tp("currency")}</span>
+            <SarIcon size="1.5rem" className={styles.planPriceCur} />
           </div>
           <span className={styles.planPricePer}>
             {type === "quarterly" ? tp("pricePerQuarter") : tp("pricePerYear")}

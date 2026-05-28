@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useFormContext } from "react-hook-form";
 import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
 import { getLocalized } from "@/utils/locale";
+import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 
 const StepSix = ({ goToPreviousStep }) => {
   const { t, i18n } = useTranslation("signup");
@@ -63,7 +64,7 @@ const StepSix = ({ goToPreviousStep }) => {
                 </span>
                 <span className={styles.pricingValue}>
                   {planPrice.toLocaleString()}{" "}
-                  {t("signupForm.whiteLabel.summary.currency")}
+                  <SarIcon size="1.5rem" />
                 </span>
               </div>
 
@@ -74,7 +75,7 @@ const StepSix = ({ goToPreviousStep }) => {
                   </span>
                   <span className={styles.pricingValue}>
                     {setupFee.toLocaleString()}{" "}
-                    {t("signupForm.whiteLabel.summary.currency")}
+                    <SarIcon size="1.5rem" />
                   </span>
                 </div>
               )}
@@ -85,7 +86,7 @@ const StepSix = ({ goToPreviousStep }) => {
                 </span>
                 <span className={styles.totalValue}>
                   {totalPrice.toLocaleString()}{" "}
-                  {t("signupForm.whiteLabel.summary.currency")}
+                  <SarIcon size="1.5rem" />
                 </span>
               </div>
             </div>

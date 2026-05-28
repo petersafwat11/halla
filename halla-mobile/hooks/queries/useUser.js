@@ -5,7 +5,7 @@ import {
   getNotificationPreferencesAPI
 } from '../../services/settingsService';
 import subscriptionService from '../../services/subscriptionService';
-import { getSubscriptionInfo as getSubscriptionInfoAPI } from '../../services/eventsService2';
+import { getSubscriptionInfo as getSubscriptionInfoAPI } from '../../services/eventsService';
 
 /**
  * Fetch user profile.

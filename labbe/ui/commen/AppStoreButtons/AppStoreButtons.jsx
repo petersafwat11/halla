@@ -1,4 +1,4 @@
-import { FaApple, FaGooglePlay } from "react-icons/fa";
+import Image from "next/image";
 import styles from "./AppStoreButtons.module.css";
 
 const labels = {
@@ -24,7 +24,13 @@ const AppStoreButtons = ({
   return (
     <div className={`${styles.wrap} ${direction === "column" ? styles.column : ""}`}>
       <a href={appleHref} className={styles.btn}>
-        <FaApple size={26} color="#fff" />
+        <Image
+          src="/svg/apple-store.svg"
+          alt="App Store"
+          width={22}
+          height={27}
+          className={styles.icon}
+        />
         <div className={styles.content}>
           <span className={styles.label}>{t.apple}</span>
           <span className={styles.name}>App Store</span>
@@ -32,7 +38,13 @@ const AppStoreButtons = ({
       </a>
 
       <a href={googleHref} className={styles.btn}>
-        <FaGooglePlay size={22} color="#fff" />
+        <Image
+          src="/svg/google-store.svg"
+          alt="Google Play"
+          width={24}
+          height={24}
+          className={styles.icon}
+        />
         <div className={styles.content}>
           <span className={styles.label}>{t.google}</span>
           <span className={styles.name}>Google Play</span>

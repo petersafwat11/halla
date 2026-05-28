@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import styles from "./form.module.css";
 import { useTranslation } from "react-i18next";
-import FormHeader from "../../../commen/formHeader/FormHeader";
 import FormBottom from "./formBottom/FormBottom";
 import Greating from "./Greating/Greating";
 import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
@@ -230,10 +229,6 @@ const Form = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.form_header}>
-        <FormHeader />
-      </div>
-
       <FormProvider {...methods} key={loginType}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.form}>

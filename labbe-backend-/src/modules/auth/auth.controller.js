@@ -109,6 +109,7 @@ const sendAuthResponse = (
   { user, accessToken, refreshToken, additionalData = {}, statusCode = 200, message = null }
 ) => {
   const response = {
+    success: true,
     status: "success",
     token: accessToken,
     data: {

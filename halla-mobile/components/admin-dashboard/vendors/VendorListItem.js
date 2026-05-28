@@ -195,7 +195,7 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
     <AdminListItem
       title={displayName}
       subtitle={email}
-      subtitleAlt={phone}
+      subtitleAlt={phone ? `‪${phone}‬` : null}
       avatarColor={colors.primary[500]}
       status={vendorStatus}
       chips={chips}

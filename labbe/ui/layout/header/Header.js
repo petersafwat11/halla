@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import useSidebarStore from "@/stores/sidebarStore";
 import { cookieUtils } from "@/utils/cookieUtils";
 import Link from "next/link";
+import Image from "next/image";
 import { IoIosArrowDown } from "react-icons/io";
 import { FaRegUser } from "react-icons/fa";
 import useAuthStore from "@/stores/authStore";
@@ -84,12 +85,21 @@ function Header({ dashboardType: propDashboardType }) {
     }
   };
 
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
+
   return (
     <div className={styles.headerContainer}>
-      <div className={styles.headerMobileLogo}>
-        <button onClick={() => setIsOpen(true)} className={styles.toggleMenu}>
+      <div className={styles.headerStart}>
+        <button
+          onClick={() => setIsOpen(true)}
+          className={styles.toggleMenu}
+          aria-label="Open menu"
+        >
           <img src="/svg/events/menu.svg" alt="menu" />
         </button>
+        <Link href={`/${lang}`} className={styles.headerLogo} aria-label="Halla">
+          <Image src="/logo.png" alt="Halla" width={48} height={48} priority />
+        </Link>
       </div>
       <div className={styles.iconsRow}>
         <LangToggle className={styles.langToggle} />

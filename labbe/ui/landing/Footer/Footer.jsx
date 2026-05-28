@@ -22,9 +22,9 @@ const Footer = ({ lang = "ar" }) => {
         <div className={styles.contactSection}>
           <h3 className={styles.sectionTitle}>{t("footer.contactTitle")}</h3>
           <div className={styles.contactInfo}>
-            <a href="tel:+966551324939" className={styles.contactLink}>
+            <a href="tel:+966552619282" className={styles.contactLink}>
               <Image src="/svg/phone.svg" alt="phone" width={18} height={18} className={styles.contactIcon} />
-              <span>+966 55 132 4939</span>
+              <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>+966 55 261 9282</span>
             </a>
 
             <a href="mailto:support@halaa.net" className={styles.contactLink}>

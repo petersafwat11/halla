@@ -14,6 +14,7 @@ import { getLocalized } from "@/utils/locale";
 import Summary from "@/app/[lang]/host/plans/summary/Summary";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
+import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import CurrentPlanCard from "./_components/CurrentPlanCard";
 
 const formatPrice = (n) => (n || 0).toLocaleString();
@@ -47,7 +48,7 @@ function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSe
         <span className={styles.hostPriceNum}>
           {formatPrice(selectedPlan?.pricing?.oneTime)}
         </span>
-        <span className={styles.hostPriceCur}>{t("plansPage.currency")}</span>
+        <SarIcon size="1.5rem" className={styles.hostPriceCur} />
         <span className={styles.hostPricePer}>{t("plansPage.pricePerEvent")}</span>
       </div>
 
@@ -100,7 +101,7 @@ function PoolPlanCard({ plan, type, isSelected, isCurrent, isSubscribing, onSele
             <span className={styles.planPriceNum}>
               {formatPrice(plan.pricing?.oneTime)}
             </span>
-            <span className={styles.planPriceCur}>{t("plansPage.currency")}</span>
+            <SarIcon size="1.5rem" className={styles.planPriceCur} />
           </div>
           <span className={styles.planPricePer}>
             {type === "quarterly" ? t("plansPage.pricePerQuarter") : t("plansPage.pricePerYear")}

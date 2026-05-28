@@ -1,67 +1,13 @@
-import { z } from "zod";
-
-// Account Settings Schema
-export const accountSettingsSchema = z
-  .object({
-    username: z
-      .string()
-      .min(2, "validation.usernameMin")
-      .max(50, "validation.usernameMax"),
-    email: z.string().email("validation.emailInvalid"),
-    currentPassword: z.string().optional(),
-    newPassword: z
-      .string()
-      .optional()
-      .refine((val) => !val || val.length >= 8, "validation.passwordMin"),
-    confirmPassword: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.newPassword && data.newPassword.length > 0) {
-        return data.confirmPassword === data.newPassword;
-      }
-      return true;
-    },
-    {
-      message: "validation.passwordsDoNotMatch",
-      path: ["confirmPassword"],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.newPassword && data.newPassword.length > 0) {
-        return !!data.currentPassword;
-      }
-      return true;
-    },
-    {
-      message: "validation.currentPasswordRequired",
-      path: ["currentPassword"],
-    }
-  );
-
-// Host Notification Settings Schema (matches backend NotificationPreferencesModel)
-export const notificationSettingsSchema = z.object({
-  appNotifications: z.object({
-    eventUpdates: z.boolean(),
-    eventReminders: z.boolean(),
-    guestResponses: z.boolean(),
-    guestCheckIns: z.boolean(),
-    subscriptionAlerts: z.boolean(),
-    systemUpdates: z.boolean(),
-  }),
-  emailNotifications: z.object({
-    eventUpdates: z.boolean(),
-    eventReminders: z.boolean(),
-    guestResponses: z.boolean(),
-    subscriptionAlerts: z.boolean(),
-    invitationReports: z.boolean(),
-  }),
-  smsNotifications: z
-    .object({
-      eventReminders: z.boolean(),
-      guestConfirmations: z.boolean(),
-      importantUpdates: z.boolean(),
-    })
-    .optional(),
-});
+/**
+ * @halla/shared compat shim — settings schemas live in
+ * `@halla/shared/schemas/settings` after the Phase 1 migration. This
+ * file re-exports the mobile variants under their original names so
+ * existing imports keep working; new code should import from shared
+ * directly.
+ *
+ * Phase 8 will remove this shim and the consumers along with it.
+ */
+export {
+  mobileAccountSettingsSchema as accountSettingsSchema,
+  mobileNotificationSettingsSchema as notificationSettingsSchema,
+} from "@halla/shared/schemas/settings";

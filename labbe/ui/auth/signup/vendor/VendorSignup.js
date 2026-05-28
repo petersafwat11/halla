@@ -14,7 +14,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import StepSix from "./stepSix/StepSix";
 import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
-import FormHeader from "@/ui/commen/formHeader/FormHeader";
 import {
   validateFormStep,
   handleNextStep as utilNextStep,
@@ -233,9 +232,6 @@ const VendorSignup = () => {
 
   return (
     <div>
-      <div className={styles.form_header}>
-        <FormHeader />
-      </div>
       <div className={styles.container}>
         <FormProvider {...methods}>
           <div className={styles.stepper_desk}>

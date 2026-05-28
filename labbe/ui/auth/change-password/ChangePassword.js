@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./changePassword.module.css";
-import FormHeader from "../../commen/formHeader/FormHeader";
 import InputGroup from "../../commen/inputs/inputGroup/InputGroup";
 import ConfirmBtn from "../../commen/confirmButton/ConfirmBtn";
 import Image from "next/image";
@@ -111,9 +110,6 @@ const ChangePassword = () => {
   if (tokenError) {
     return (
       <div className={styles.container}>
-        <div className={styles.form_header}>
-          <FormHeader />
-        </div>
         <div className={styles.form}>
           <div className={styles.image_container}>
             <Image
@@ -152,9 +148,6 @@ const ChangePassword = () => {
   if (passwordChanged) {
     return (
       <div className={styles.container}>
-        <div className={styles.form_header}>
-          <FormHeader />
-        </div>
         <div className={styles.email_sent_message}>
           <div className={styles.image_container}>
             <Image
@@ -186,9 +179,6 @@ const ChangePassword = () => {
   // Main form
   return (
     <div className={styles.container}>
-      <div className={styles.form_header}>
-        <FormHeader />
-      </div>
       <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
         <div className={styles.image_container}>
           <Image

@@ -19,6 +19,7 @@ import VendorHomeScreen from "../screens/vendor/VendorHomeScreen";
 import LoginScreen from "../screens/auth/LoginScreen";
 import SignupScreen from "../screens/auth/SignupScreen";
 import ForgetPasswordScreen from "../screens/auth/ForgetPasswordScreen";
+import ResetPasswordScreen from "../screens/auth/ResetPasswordScreen";
 import PlansScreen from "../screens/host/PlansScreen";
 import PlansSummaryScreen from "../screens/host/PlansSummaryScreen";
 import SettingsScreen from "../screens/host/SettingsScreen";
@@ -269,6 +270,7 @@ function AuthStack() {
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Signup" component={SignupScreen} />
       <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
+      <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
       <Stack.Screen name="VendorSignup" component={VendorSignupScreen} />
       <Stack.Screen name="WhitelabelSignup" component={WhitelabelSignupScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />

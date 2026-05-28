@@ -10,9 +10,9 @@ function Layout({ children }) {
 
   return (
     <div className={styles.layoutContainer} dir={isRTL ? "rtl" : "ltr"}>
+      <Header dashboardType={DASHBOARD_TYPES.ADMIN} />
       <ResponsiveSidebar dashboardType={DASHBOARD_TYPES.ADMIN} />
       <div className={styles.contentWithHeader}>
-        <Header dashboardType={DASHBOARD_TYPES.ADMIN} />
         <div className="w-full p-2">{children}</div>
       </div>
     </div>

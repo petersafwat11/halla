@@ -16,7 +16,7 @@ export default function ListItem({ guest, onGuestClick }) {
             <div className={styles.contactInfo}>
               <div className={styles.contactGroup}>
                 <div className={styles.phoneContainer}>
-                  <span className={styles.phone}>{phone}</span>
+                  <span className={styles.phone} dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{phone}</span>
                 </div>
                 <div className={styles.divider}>
                   <span className={styles.dividerText}>|</span>

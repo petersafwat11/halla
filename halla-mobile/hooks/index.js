@@ -16,7 +16,7 @@ export * from './queries/useDiscounts';
 export { useDebouncedValue } from './useDebouncedValue';
 
 // Mutation Hooks
-export * from './mutations/useEventMutations';
+export * from './events/mutations/useEventMutation';
 export * from './mutations/useTicketMutations';
 export * from './mutations/useUserMutations';
 export * from './mutations/useVendorMutations';

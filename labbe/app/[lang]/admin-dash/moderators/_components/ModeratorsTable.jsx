@@ -166,6 +166,9 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
     }
 
     if (key === "createdAt" && value) return new Date(value).toLocaleDateString("ar-SA");
+    if (key === "phone") {
+      return <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{value}</span>;
+    }
     return value;
   };
 

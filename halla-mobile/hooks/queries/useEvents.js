@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/authStore';
-import * as eventsService2 from '../../services/eventsService2';
+import * as eventsService2 from '../../services/eventsService';
 
 /**
  * Hook to fetch user events with statistics

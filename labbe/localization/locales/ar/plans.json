@@ -43,10 +43,10 @@
   "duration": {
     "event": "مدة الصلاحية {{days}} يومًا",
     "monthly": "اشتراك شهري — مناسبات غير محدودة",
-    "quarterly": "اشتراك ٣ أشهر",
-    "annual": "اشتراك سنوي"
+    "quarterly": "اشتراك 3 اشهر",
+    "annual": "اشتراك سنوى"
   },
-  "includes": { "basic": "جميع مميزات باقة هلا بيسك +" },
+  "includes": { "basic": "جميع مميزات باقة هلا بيزك +" },
   "compensationRow": "{{count}} دعوة تعويضية ({{percent}}٪ من {{base}})",
   "setupFeeRow": "رسوم تأسيس لمرة واحدة: {{amount}} ر.س",
   "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",

@@ -5,8 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
-import { useNotifyStaff } from "../../hooks/mutations/useEventMutations";
-import { useDeleteEvent } from "../../hooks/mutations/useEventCrudMutations";
+import { useNotifyStaff, useDeleteEvent } from "../../hooks/events/mutations/useEventMutation";
 import { useToast } from "../../contexts/ToastContext";
 
 const EVENT_EDIT_STEPS = [

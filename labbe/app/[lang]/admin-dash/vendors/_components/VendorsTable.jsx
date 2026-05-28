@@ -167,6 +167,9 @@ export default function VendorsTable() {
     if (key === "createdAt" && value) {
       return new Date(value).toLocaleDateString("ar-SA");
     }
+    if (key === "phone") {
+      return <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{value}</span>;
+    }
     return value;
   }, [statusTextMap, canUpdate, handleRatingClick, t]);
 

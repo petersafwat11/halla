@@ -4,7 +4,10 @@
  * Enhanced with duplicate error handling and package limit validation
  */
 
-import apiClient, { APIError } from "./apiClient";
+// Phase 3: migrated from the legacy fetch-based `./apiClient` to the
+// canonical axios pipeline via legacyAdapter. `APIError` is the
+// re-exported shared `ApiError` so `instanceof APIError` checks survive.
+import { legacyClientAdapter as apiClient, APIError } from "./new-backend/legacyAdapter";
 
 /**
  * Helper to trigger file download from blob

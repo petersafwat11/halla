@@ -99,8 +99,8 @@
     "perEventTab": "لكل مناسبة",
     "monthlyTab": "شهري",
     "bizEventTab": "لكل مناسبة",
-    "bizQuarterlyTab": "رصيد ٣ أشهر",
-    "bizAnnualTab": "رصيد سنوي",
+    "bizQuarterlyTab": "اشتراك 3 اشهر",
+    "bizAnnualTab": "اشتراك سنوى",
     "direct": "هلا مباشر",
     "managed": "هلا علينا",
     "byClient": "يدير العميل",
@@ -127,7 +127,7 @@
     "setupFeeIncluded": "رسوم الإعداد مدرجة",
     "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",
     "featuresTitle": "المميزات المتضمنة",
-    "includesBasic": "جميع مميزات باقة هلا بيسك +",
+    "includesBasic": "جميع مميزات باقة هلا بيزك +",
     "compensationTitle": "دعوات تعويضية مجانية",
     "compensationRow": "{{count}} دعوة تعويضية ({{percent}}٪ من {{base}})",
     "popular": "الأكثر طلباً",
@@ -146,14 +146,14 @@
   "vendorCTA": {
     "title": "انضم لسوق",
     "titleHighlight": "هلا",
-    "titleEnd": "الان",
+    "titleEnd": "",
     "description": "اعرض خدماتك وتواصل مع عملاء محتملين",
     "feature1": "سهولة إدارة الحجوزات",
     "feature2": "زيادة إيراداتك",
     "feature3": "تواصل مع مخططي المناسبات",
     "stat1": "200+ مزود خدمة نشط",
     "stat2": "98٪ رضا العملاء",
-    "cta": "سجّل كمزود خدمة"
+    "cta": "سجل كتاجر"
   },
   "vendorSearch": {
     "title": "ابحث عن أفضل مزودي الخدمات",

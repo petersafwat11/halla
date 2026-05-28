@@ -2,7 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { staffService } from "@/services/staff";
-import apiClient from "@/services/apiClient";
+// Phase 3: migrated from the legacy fetch-based `apiClient` to the
+// canonical axios pipeline via legacyAdapter.
+import { legacyClientAdapter as apiClient } from "@/services/new-backend/legacyAdapter";
 import { API_PATHS } from "@/services/new-backend/api.config";
 
 // ============================================
