@@ -11,7 +11,7 @@ export default function TestimonialsSection({ lang = "ar" }) {
   const { t } = useTranslation("landing");
   const isAr = lang === "ar";
   const items = t("testimonials.items", { returnObjects: true });
-  const { trackRef, idx, maxIdx, scrollToIdx, handleScroll } = useCarouselSnap({
+  const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
     gap: GAP,
     totalItems: items.length,
   });
@@ -49,6 +49,8 @@ export default function TestimonialsSection({ lang = "ar" }) {
               idx={idx}
               maxIdx={maxIdx}
               onChange={scrollToIdx}
+              onPrev={goPrev}
+              onNext={goNext}
               isAr={isAr}
               prevLabel={t("testimonials.prevBtn")}
               nextLabel={t("testimonials.nextBtn")}

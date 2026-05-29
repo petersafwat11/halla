@@ -200,7 +200,31 @@
   "sendNotification": {
     "sentToAll": "Notification sent to all users",
     "sentSuccess": "Notification sent successfully",
-    "sendFailed": "Failed to send notification"
+    "sendFailed": "Failed to send notification",
+    "dialog": {
+      "title": "Send Notification",
+      "titleBulk": "Send Notification to All {{role}}",
+      "to": "To:",
+      "titleArLabel": "Title (Arabic) *",
+      "titleArPlaceholder": "Notification title in Arabic",
+      "titleEnLabel": "Title (English)",
+      "titleEnPlaceholder": "Notification title in English (optional)",
+      "messageArLabel": "Message (Arabic) *",
+      "messageArPlaceholder": "Notification content in Arabic",
+      "messageEnLabel": "Message (English)",
+      "messageEnPlaceholder": "Notification content in English (optional)",
+      "bulkWarning": "⚠️ This notification will be sent to all {{role}}",
+      "cancel": "Cancel",
+      "send": "Send",
+      "usersFallback": "users"
+    },
+    "roleLabels": {
+      "host": "Hosts",
+      "vendor": "Vendors",
+      "moderator": "Moderators",
+      "whitelabel_admin": "Whitelabel Admins",
+      "admin": "Admins"
+    }
   },
   "managePlans": {
     "title": "Manage Plans & Pricing",

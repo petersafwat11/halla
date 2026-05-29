@@ -55,7 +55,6 @@ export default function SetupPassword({ token }) {
   const router = useRouter();
   const params = useParams();
   const lang = params?.lang === "en" ? "en" : "ar";
-  const isRtl = lang !== "en";
   const { t } = useTranslation("setupPassword");
 
   const validate = useAuthMutation("validateSetupToken");
@@ -130,7 +129,7 @@ export default function SetupPassword({ token }) {
 
   if (tokenStatus === "checking") {
     return (
-      <div className={styles.wrapper} dir={isRtl ? "rtl" : "ltr"}>
+      <div className={styles.wrapper}>
         <SimpleLoading message={t("validating_token")} />
       </div>
     );
@@ -138,7 +137,7 @@ export default function SetupPassword({ token }) {
 
   if (tokenStatus === "invalid") {
     return (
-      <div className={styles.wrapper} dir={isRtl ? "rtl" : "ltr"}>
+      <div className={styles.wrapper}>
         <div className={styles.card}>
           <h1 className={styles.title}>{t("invalid_title")}</h1>
           <p className={styles.body}>{t("invalid_message")}</p>
@@ -148,7 +147,7 @@ export default function SetupPassword({ token }) {
   }
 
   return (
-    <div className={styles.wrapper} dir={isRtl ? "rtl" : "ltr"}>
+    <div className={styles.wrapper}>
       <form className={styles.card} onSubmit={handleSubmit(onSubmit)}>
         <h1 className={styles.title}>{t("title")}</h1>
         {tokenInfo?.email ? (

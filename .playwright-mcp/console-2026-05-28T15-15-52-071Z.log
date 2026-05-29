@@ -37,3 +37,205 @@ Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ 
 [   10052ms] [LOG] [API] GET /plans/landing - 200 (1307ms) @ http://localhost:3001/_next/static/chunks/_a37f5ea3._.js:2596
 [   13160ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/ar:0
 [   28405ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/ar:0
+[  142157ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  142246ms] [LOG] [Fast Refresh] done in 30ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  147337ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/ar:0
+[  150811ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  151663ms] [LOG] [Fast Refresh] done in 258ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  154076ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  154081ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [0, (i)=>{
+            const el = trackRef.current;
+            const m = getMetrics();
+            if (!el || !m) return;
+            const clamped = Math.min(Math.max(0, i), m.maxIdx);
+            const target = clamped * m.step;
+            programmaticRef.current = true;
+            el.scrollTo({
+                left: m.isRTL ? -target : target,
+                behavior: "smooth"
+            });
+            idxRef.current = clamped;
+            setIdx(clamped);
+            clearTimeout(programmaticTimerRef.current);
+            programmaticTimerRef.current = setTimeout({
+                "useCarouselSnap.useCallback[scrollToIdx]": ()=>{
+                    programmaticRef.current = false;
+                }
+            }["useCarouselSnap.useCallback[scrollToIdx]"], SCROLL_GUARD_MS);
+        }] [(i)=>{
+            const el = trackRef.current;
+            const m = getMetrics();
+            if (!el || !m) return;
+            const clamped = Math.min(Math.max(0, i), m.maxIdx);
+            const target = clamped * m.step;
+            programmaticRef.current = true;
+            el.scrollTo({
+                left: m.isRTL ? -target : target,
+                behavior: "smooth"
+            });
+            idxRef.current = clamped;
+            setIdx(clamped);
+            clearTimeout(programmaticTimerRef.current);
+            programmaticTimerRef.current = setTimeout({
+                "useCarouselSnap.useCallback[scrollToIdx]": ()=>{
+                    programmaticRef.current = false;
+                }
+            }["useCarouselSnap.useCallback[scrollToIdx]"], SCROLL_GUARD_MS);
+        }] @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2405
+[  154092ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [0, (i)=>{
+            const el = trackRef.current;
+            const m = getMetrics();
+            if (!el || !m) return;
+            const clamped = Math.min(Math.max(0, i), m.maxIdx);
+            const target = clamped * m.step;
+            programmaticRef.current = true;
+            el.scrollTo({
+                left: m.isRTL ? -target : target,
+                behavior: "smooth"
+            });
+            idxRef.current = clamped;
+            setIdx(clamped);
+            clearTimeout(programmaticTimerRef.current);
+            programmaticTimerRef.current = setTimeout({
+                "useCarouselSnap.useCallback[scrollToIdx]": ()=>{
+                    programmaticRef.current = false;
+                }
+            }["useCarouselSnap.useCallback[scrollToIdx]"], SCROLL_GUARD_MS);
+        }] [(i)=>{
+            const el = trackRef.current;
+            const m = getMetrics();
+            if (!el || !m) return;
+            const clamped = Math.min(Math.max(0, i), m.maxIdx);
+            const target = clamped * m.step;
+            programmaticRef.current = true;
+            el.scrollTo({
+                left: m.isRTL ? -target : target,
+                behavior: "smooth"
+            });
+            idxRef.current = clamped;
+            setIdx(clamped);
+            clearTimeout(programmaticTimerRef.current);
+            programmaticTimerRef.current = setTimeout({
+                "useCarouselSnap.useCallback[scrollToIdx]": ()=>{
+                    programmaticRef.current = false;
+                }
+            }["useCarouselSnap.useCallback[scrollToIdx]"], SCROLL_GUARD_MS);
+        }] @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2405
+[  154098ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [0, (i)=>{
+            const el = trackRef.current;
+            const m = getMetrics();
+            if (!el || !m) return;
+            const clamped = Math.min(Math.max(0, i), m.maxIdx);
+            const target = clamped * m.step;
+            programmaticRef.current = true;
+            el.scrollTo({
+                left: m.isRTL ? -target : target,
+                behavior: "smooth"
+            });
+            idxRef.current = clamped;
+            setIdx(clamped);
+            clearTimeout(programmaticTimerRef.current);
+            programmaticTimerRef.current = setTimeout({
+                "useCarouselSnap.useCallback[scrollToIdx]": ()=>{
+                    programmaticRef.current = false;
+                }
+            }["useCarouselSnap.useCallback[scrollToIdx]"], SCROLL_GUARD_MS);
+        }] [(i)=>{
+            const el = trackRef.current;
+            const m = getMetrics();
+            if (!el || !m) return;
+            const clamped = Math.min(Math.max(0, i), m.maxIdx);
+            const target = clamped * m.step;
+            programmaticRef.current = true;
+            el.scrollTo({
+                left: m.isRTL ? -target : target,
+                behavior: "smooth"
+            });
+            idxRef.current = clamped;
+            setIdx(clamped);
+            clearTimeout(programmaticTimerRef.current);
+            programmaticTimerRef.current = setTimeout({
+                "useCarouselSnap.useCallback[scrollToIdx]": ()=>{
+                    programmaticRef.current = false;
+                }
+            }["useCarouselSnap.useCallback[scrollToIdx]"], SCROLL_GUARD_MS);
+        }] @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2405
+[  154109ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [0, (i)=>{
+            const el = trackRef.current;
+            const m = getMetrics();
+            if (!el || !m) return;
+            const clamped = Math.min(Math.max(0, i), m.maxIdx);
+            const target = clamped * m.step;
+            programmaticRef.current = true;
+            el.scrollTo({
+                left: m.isRTL ? -target : target,
+                behavior: "smooth"
+            });
+            idxRef.current = clamped;
+            setIdx(clamped);
+            clearTimeout(programmaticTimerRef.current);
+            programmaticTimerRef.current = setTimeout({
+                "useCarouselSnap.useCallback[scrollToIdx]": ()=>{
+                    programmaticRef.current = false;
+                }
+            }["useCarouselSnap.useCallback[scrollToIdx]"], SCROLL_GUARD_MS);
+        }] [(i)=>{
+            const el = trackRef.current;
+            const m = getMetrics();
+            if (!el || !m) return;
+            const clamped = Math.min(Math.max(0, i), m.maxIdx);
+            const target = clamped * m.step;
+            programmaticRef.current = true;
+            el.scrollTo({
+                left: m.isRTL ? -target : target,
+                behavior: "smooth"
+            });
+            idxRef.current = clamped;
+            setIdx(clamped);
+            clearTimeout(programmaticTimerRef.current);
+            programmaticTimerRef.current = setTimeout({
+                "useCarouselSnap.useCallback[scrollToIdx]": ()=>{
+                    programmaticRef.current = false;
+                }
+            }["useCarouselSnap.useCallback[scrollToIdx]"], SCROLL_GUARD_MS);
+        }] @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2405
+[  154136ms] [LOG] [Fast Refresh] done in 20ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  154282ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  154283ms] [LOG] [Fast Refresh] done in 108ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  157262ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/ar:0
+[  162471ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  162505ms] [LOG] [Fast Refresh] done in 31ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  165532ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  165665ms] [LOG] [Fast Refresh] done in 187ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  167870ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  168040ms] [LOG] [Fast Refresh] done in 225ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  176821ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  176843ms] [LOG] [Fast Refresh] done in 46ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  179850ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/ar:0
+[  180358ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  180761ms] [LOG] [Fast Refresh] done in 356ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  181899ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  181925ms] [LOG] [Fast Refresh] done in 22ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  183804ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  183836ms] [LOG] [Fast Refresh] done in 35ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  184937ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/ar:0
+[  185753ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  185783ms] [LOG] [Fast Refresh] done in 24ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  188784ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  189059ms] [LOG] [Fast Refresh] done in 240ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  190836ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  190866ms] [LOG] [Fast Refresh] done in 38ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  192268ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  192301ms] [LOG] [Fast Refresh] done in 32ms @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816

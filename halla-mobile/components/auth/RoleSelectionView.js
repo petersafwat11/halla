@@ -64,28 +64,19 @@ function RoleCard({ role, index, onPress, isRTL }) {
       <TouchableOpacity
         style={[
           styles.card,
-          isRTL ? styles.cardRTL : styles.cardLTR,
-          isRTL
-            ? { borderRightWidth: 3, borderRightColor: role.accentColor }
-            : { borderLeftWidth: 3, borderLeftColor: role.accentColor },
+          { borderLeftWidth: 3, borderLeftColor: role.accentColor },
         ]}
         onPress={() => onPress(role.id)}
         activeOpacity={0.72}
       >
-        <View style={[styles.iconBox, { backgroundColor: role.bgColor }, isRTL ? styles.iconBoxRTL : styles.iconBoxLTR]}>
+        <View style={[styles.iconBox, { backgroundColor: role.bgColor }]}>
           <Ionicons name={role.icon} size={26} color={role.accentColor} />
         </View>
         <View style={styles.cardText}>
-          <Text
-            style={[styles.cardTitle, isRTL && styles.cardTitleRTL]}
-            numberOfLines={1}
-          >
+          <Text style={styles.cardTitle} numberOfLines={1}>
             {t(role.titleKey)}
           </Text>
-          <Text
-            style={[styles.cardDesc, isRTL && styles.cardDescRTL]}
-            numberOfLines={2}
-          >
+          <Text style={styles.cardDesc} numberOfLines={2}>
             {t(role.descKey)}
           </Text>
         </View>
@@ -93,7 +84,7 @@ function RoleCard({ role, index, onPress, isRTL }) {
           name={isRTL ? "chevron-back" : "chevron-forward"}
           size={18}
           color="#a0a0a0"
-          style={isRTL ? styles.chevronRTL : styles.chevronLTR}
+          style={styles.chevron}
         />
       </TouchableOpacity>
     </Animated.View>
@@ -144,12 +135,12 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
             role={role}
             index={i}
             onPress={onSelectRole}
-            // isRTL={isRTL}
+            isRTL={isRTL}
           />
         ))}
       </View>
 
-      <View style={[styles.loginRow, isRTL && { flexDirection: "row-reverse" }]}>
+      <View style={styles.loginRow}>
         <Text style={styles.loginText}>{t("signup.hasAccount")} </Text>
         <TouchableOpacity onPress={onLogin}>
           <Text style={styles.loginLink}>{t("signup.signIn")}</Text>
@@ -205,6 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     paddingVertical: 20,
+    paddingHorizontal: 17,
     minHeight: 92,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -212,26 +204,13 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
-  cardLTR: {
-    paddingLeft: 17,
-    paddingRight: 18,
-  },
-  cardRTL: {
-    paddingLeft: 18,
-    paddingRight: 17,
-  },
   iconBox: {
     width: 52,
     height: 52,
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-  },
-  iconBoxLTR: {
     marginRight: 10,
-  },
-  iconBoxRTL: {
-    marginLeft: 10,
   },
   cardText: {
     flex: 1,
@@ -243,23 +222,14 @@ const styles = StyleSheet.create({
     color: "#2c2c2c",
     marginBottom: 3,
   },
-  cardTitleRTL: {
-    textAlign: "right",
-  },
   cardDesc: {
     fontSize: 13,
     fontFamily: "Cairo_400Regular",
     color: "#a0a0a0",
     lineHeight: 20,
   },
-  cardDescRTL: {
-    textAlign: "right",
-  },
-  chevronLTR: {
+  chevron: {
     marginLeft: 4,
-  },
-  chevronRTL: {
-    marginRight: 4,
   },
   loginRow: {
     flexDirection: "row",

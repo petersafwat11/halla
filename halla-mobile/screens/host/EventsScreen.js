@@ -8,7 +8,6 @@ import MakeYourFirst from "../../components/home/MakeYourFirst";
 import { TopBar } from "../../components/plans";
 import { useEventStats } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
-import { useLanguage } from "../../localization/providers/LanguageProvider";
 
 /**
  * Host events list. Tapping an event pushes the shared `EventDetails`
@@ -20,8 +19,6 @@ import { useLanguage } from "../../localization/providers/LanguageProvider";
 const EventsScreen = ({ navigation }) => {
   const { t } = useTranslation("events");
   const { token } = useAuthStore();
-  const { isRTL } = useLanguage();
-  const directionStyle = { direction: isRTL ? "rtl" : "ltr" };
 
   const { data: eventsData, isLoading: loading, error } = useEventStats();
 
@@ -36,7 +33,7 @@ const EventsScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <TopBar title={t("title")} showBack={true} onBack={() => navigation.goBack()} />
-      <View style={[styles.container, directionStyle]}>
+      <View style={styles.container}>
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#C28E5C" />

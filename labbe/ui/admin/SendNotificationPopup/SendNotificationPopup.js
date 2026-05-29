@@ -20,16 +20,13 @@ const SendNotificationPopup = ({
   onClose,
   onSuccess,
 }) => {
-  const { t, i18n } = useTranslation("admin");
-  const isRTL = i18n.language === "ar";
+  const { t } = useTranslation("admin");
 
-  const roleLabels = {
-    host: isRTL ? "المضيفين" : "Hosts",
-    vendor: isRTL ? "مزودي الخدمات" : "Vendors",
-    moderator: isRTL ? "المشرفين" : "Moderators",
-    whitelabel_admin: isRTL ? "مديري الوايت ليبل" : "Whitelabel Admins",
-    admin: isRTL ? "المديرين" : "Admins",
-  };
+  const roleLabel = targetRole
+    ? t(`sendNotification.roleLabels.${targetRole}`, {
+        defaultValue: t("sendNotification.dialog.usersFallback"),
+      })
+    : t("sendNotification.dialog.usersFallback");
 
   const methods = useForm({
     resolver: zodResolver(sendNotificationSchema),
@@ -70,21 +67,19 @@ const SendNotificationPopup = ({
   };
 
   return (
-    <div className={styles.popup} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={styles.popup}>
       <div className={styles.header}>
         <div className={styles.headerContent}>
           <MdNotifications className={styles.headerIcon} />
           <div>
             <h2 className={styles.title}>
               {isBulk
-                ? isRTL
-                  ? `إرسال إشعار لجميع ${roleLabels[targetRole] || "المستخدمين"}`
-                  : `Send Notification to All ${roleLabels[targetRole] || "Users"}`
-                : isRTL ? "إرسال إشعار" : "Send Notification"}
+                ? t("sendNotification.dialog.titleBulk", { role: roleLabel })
+                : t("sendNotification.dialog.title")}
             </h2>
             {!isBulk && targetUser && (
               <p className={styles.subtitle}>
-                {isRTL ? "إلى:" : "To:"} {targetUser.username || targetUser.email || targetUser.phoneNumber}
+                {t("sendNotification.dialog.to")} {targetUser.username || targetUser.email || targetUser.phoneNumber}
               </p>
             )}
           </div>
@@ -97,45 +92,41 @@ const SendNotificationPopup = ({
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.form}>
           <InputGroup
-            label={isRTL ? "العنوان (عربي) *" : "Title (Arabic) *"}
-            placeholder={isRTL ? "عنوان الإشعار بالعربية" : "Notification title in Arabic"}
+            label={t("sendNotification.dialog.titleArLabel")}
+            placeholder={t("sendNotification.dialog.titleArPlaceholder")}
             type="text"
             name="titleAr"
             required
           />
           <InputGroup
-            label={isRTL ? "العنوان (إنجليزي)" : "Title (English)"}
-            placeholder={isRTL ? "عنوان الإشعار بالإنجليزية (اختياري)" : "Notification title in English (optional)"}
+            label={t("sendNotification.dialog.titleEnLabel")}
+            placeholder={t("sendNotification.dialog.titleEnPlaceholder")}
             type="text"
             name="titleEn"
           />
           <TextArea
-            label={isRTL ? "الرسالة (عربي) *" : "Message (Arabic) *"}
-            placeholder={isRTL ? "محتوى الإشعار بالعربية" : "Notification content in Arabic"}
+            label={t("sendNotification.dialog.messageArLabel")}
+            placeholder={t("sendNotification.dialog.messageArPlaceholder")}
             name="messageAr"
             required
             rows={4}
           />
           <TextArea
-            label={isRTL ? "الرسالة (إنجليزي)" : "Message (English)"}
-            placeholder={isRTL ? "محتوى الإشعار بالإنجليزية (اختياري)" : "Notification content in English (optional)"}
+            label={t("sendNotification.dialog.messageEnLabel")}
+            placeholder={t("sendNotification.dialog.messageEnPlaceholder")}
             name="messageEn"
             rows={4}
           />
 
           {isBulk && (
             <div className={styles.warning}>
-              <p>
-                {isRTL
-                  ? `⚠️ سيتم إرسال هذا الإشعار لجميع ${roleLabels[targetRole] || "المستخدمين"}`
-                  : `⚠️ This notification will be sent to all ${roleLabels[targetRole] || "users"}`}
-              </p>
+              <p>{t("sendNotification.dialog.bulkWarning", { role: roleLabel })}</p>
             </div>
           )}
 
           <div className={styles.actions}>
             <button type="button" className={styles.cancelButton} onClick={onClose} disabled={isSubmitting}>
-              {isRTL ? "إلغاء" : "Cancel"}
+              {t("sendNotification.dialog.cancel")}
             </button>
             <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
               {isSubmitting ? (
@@ -143,7 +134,7 @@ const SendNotificationPopup = ({
               ) : (
                 <>
                   <MdSend size={18} />
-                  {isRTL ? "إرسال" : "Send"}
+                  {t("sendNotification.dialog.send")}
                 </>
               )}
             </button>

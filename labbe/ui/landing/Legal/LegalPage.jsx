@@ -157,7 +157,7 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
   const isCurrentSibling = (href) => pathname?.endsWith(href);
 
   return (
-    <div className={styles.root} dir={isRtl ? "rtl" : "ltr"}>
+    <div className={styles.root}>
 
       {/* ── Reading progress bar ── */}
       <div

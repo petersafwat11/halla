@@ -19,8 +19,7 @@ import styles from "./page.module.css";
 const TicketRatingContent = () => {
   const { id: ticketId } = useParams();
   const router = useRouter();
-  const { t, i18n } = useTranslation("ticketRating");
-  const isRTL = i18n.language === "ar";
+  const { t } = useTranslation("ticketRating");
   const [submitted, setSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState(null);
 
@@ -151,7 +150,7 @@ const TicketRatingContent = () => {
   // Success state
   if (submitted) {
     return (
-      <div className={styles.container} dir={isRTL ? "rtl" : "ltr"}>
+      <div className={styles.container}>
         <div className={styles.card}>
           <div className={styles.successContent}>
             <FaCheckCircle className={styles.successIcon} />
@@ -188,7 +187,7 @@ const TicketRatingContent = () => {
 
   // Rating form
   return (
-    <div className={styles.container} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={styles.container}>
       <div className={styles.card}>
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>

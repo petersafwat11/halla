@@ -13,10 +13,10 @@ import Welcome from "./Welcome";
 const { width, height } = Dimensions.get("window");
 
 const WelcomeWrapper = ({ onSkip, onLogin, onSignup }) => {
-  const { t, isRTL } = useTranslation("welcome");
+  const { t } = useTranslation("welcome");
 
   return (
-    <View style={[styles.page, { direction: isRTL ? "rtl" : "ltr" }]}>
+    <View style={styles.page}>
       <TouchableOpacity style={styles.skip} onPress={onSkip}>
         <Text style={styles.skipText}>{t("skip")}</Text>
       </TouchableOpacity>

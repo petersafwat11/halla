@@ -21,6 +21,7 @@ export default function useCarouselSnap({ gap = 14, totalItems }) {
   const throttleRef = useRef(false);
   const programmaticRef = useRef(false);
   const programmaticTimerRef = useRef(null);
+  const idxRef = useRef(0);
   const [idx, setIdx] = useState(0);
   const [maxIdx, setMaxIdx] = useState(0);
 
@@ -30,8 +31,15 @@ export default function useCarouselSnap({ gap = 14, totalItems }) {
     const cardW = el.firstElementChild?.offsetWidth || 0;
     const step = cardW + gap;
     if (step <= 0) return null;
+    // Source of truth for the last reachable index is the actual scrollable
+    // extent. Visible-count math (totalItems - floor((clientWidth+gap)/step))
+    // overshoots when padding/trailing-gap make scrollWidth ≠ N×step, and a
+    // dot the user can't actually reach feels broken.
     const visible = Math.max(1, Math.floor((el.clientWidth + gap) / step));
-    const max = Math.max(0, totalItems - visible);
+    const visibleMax = Math.max(0, totalItems - visible);
+    const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+    const scrollMax = Math.round(maxScrollLeft / step);
+    const max = Math.min(visibleMax, scrollMax);
     const isRTL = getComputedStyle(el).direction === "rtl";
     return { step, maxIdx: max, isRTL };
   }, [gap, totalItems]);
@@ -57,6 +65,7 @@ export default function useCarouselSnap({ gap = 14, totalItems }) {
       const target = clamped * m.step;
       programmaticRef.current = true;
       el.scrollTo({ left: m.isRTL ? -target : target, behavior: "smooth" });
+      idxRef.current = clamped;
       setIdx(clamped);
       clearTimeout(programmaticTimerRef.current);
       programmaticTimerRef.current = setTimeout(() => {
@@ -66,13 +75,18 @@ export default function useCarouselSnap({ gap = 14, totalItems }) {
     [getMetrics],
   );
 
+  const goPrev = useCallback(() => scrollToIdx(idxRef.current - 1), [scrollToIdx]);
+  const goNext = useCallback(() => scrollToIdx(idxRef.current + 1), [scrollToIdx]);
+
   const handleScroll = useCallback(() => {
     if (programmaticRef.current) return;
     const el = trackRef.current;
     const m = getMetrics();
     if (!el || !m) return;
     const pos = Math.abs(el.scrollLeft);
-    setIdx(Math.min(Math.max(0, Math.round(pos / m.step)), m.maxIdx));
+    const next = Math.min(Math.max(0, Math.round(pos / m.step)), m.maxIdx);
+    idxRef.current = next;
+    setIdx(next);
   }, [getMetrics]);
 
   useEffect(() => {
@@ -87,13 +101,13 @@ export default function useCarouselSnap({ gap = 14, totalItems }) {
         throttleRef.current = false;
       }, WHEEL_THROTTLE_MS);
       const delta = (e.deltaY || e.deltaX) > 0 ? 1 : -1;
-      scrollToIdx(idx + delta);
+      scrollToIdx(idxRef.current + delta);
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [idx, scrollToIdx]);
+  }, [scrollToIdx]);
 
   useEffect(() => () => clearTimeout(programmaticTimerRef.current), []);
 
-  return { trackRef, idx, maxIdx, scrollToIdx, handleScroll };
+  return { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll };
 }

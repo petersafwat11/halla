@@ -20,7 +20,7 @@ const VendorSearchSection = ({ lang = "ar" }) => {
   const { t } = useTranslation("landing");
   const isAr = lang === "ar";
   const vendors = t("vendorSearch.vendors", { returnObjects: true });
-  const { trackRef, idx, maxIdx, scrollToIdx, handleScroll } = useCarouselSnap({
+  const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
     gap: GAP,
     totalItems: vendors.length,
   });
@@ -78,6 +78,8 @@ const VendorSearchSection = ({ lang = "ar" }) => {
             idx={idx}
             maxIdx={maxIdx}
             onChange={scrollToIdx}
+            onPrev={goPrev}
+            onNext={goNext}
             isAr={isAr}
             classes={{
               controls: styles.controls,

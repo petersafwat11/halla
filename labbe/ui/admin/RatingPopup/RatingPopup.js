@@ -8,8 +8,7 @@ import adminDashboardAPI from "@/services/adminDashboard";
 import styles from "./RatingPopup.module.css";
 
 const RatingPopup = ({ data, onClose, onSuccess }) => {
-  const { t, i18n } = useTranslation("adminVendors");
-  const isRTL = i18n.language === "ar";
+  const { t } = useTranslation("adminVendors");
   const [rating, setRating] = useState(data?.rating || 0);
   const [hoverRating, setHoverRating] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -41,7 +40,7 @@ const RatingPopup = ({ data, onClose, onSuccess }) => {
   };
 
   return (
-    <div className={styles.popup} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={styles.popup}>
       <div className={styles.header}>
         <h2 className={styles.title}>
           {t("actions.giveRating", "تقييم التاجر")}

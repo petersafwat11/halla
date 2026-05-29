@@ -14,7 +14,7 @@ export default function HowItWorks({ lang = "ar" }) {
   const { t } = useTranslation("landing");
   const isAr = lang === "ar";
   const steps = t("howItWorks.steps", { returnObjects: true });
-  const { trackRef, idx, maxIdx, scrollToIdx, handleScroll } = useCarouselSnap({
+  const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
     gap: GAP,
     totalItems: steps.length,
   });
@@ -47,6 +47,8 @@ export default function HowItWorks({ lang = "ar" }) {
             idx={idx}
             maxIdx={maxIdx}
             onChange={scrollToIdx}
+            onPrev={goPrev}
+            onNext={goNext}
             isAr={isAr}
             prevLabel={t("howItWorks.prevBtn")}
             nextLabel={t("howItWorks.nextBtn")}

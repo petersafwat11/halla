@@ -64,7 +64,7 @@ export default function PlanDescription({
   const rootClass = `${styles.planDescription}${size === "large" ? ` ${styles.large}` : ""}`;
 
   return (
-    <div className={rootClass} dir={lang === "ar" ? "rtl" : "ltr"}>
+    <div className={rootClass}>
       {showTagline && tagline ? (
         <p className={styles.tagline}>{tagline}</p>
       ) : null}

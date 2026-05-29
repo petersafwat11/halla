@@ -15,6 +15,8 @@ export default function CarouselDots({
   idx,
   maxIdx,
   onChange,
+  onPrev,
+  onNext,
   isAr = false,
   visibleDots = null,
   classes,
@@ -22,6 +24,8 @@ export default function CarouselDots({
   nextLabel,
   dotRole,
 }) {
+  const handlePrev = onPrev || (() => onChange(idx - 1));
+  const handleNext = onNext || (() => onChange(idx + 1));
   let dotIndices;
   if (visibleDots) {
     const half = Math.floor(visibleDots / 2);
@@ -43,7 +47,7 @@ export default function CarouselDots({
       <button
         type="button"
         className={classes.ctrlBtn}
-        onClick={() => onChange(idx - 1)}
+        onClick={handlePrev}
         disabled={idx <= 0}
         aria-label={prevLabel || (isAr ? "السابق" : "Previous")}
       >
@@ -75,7 +79,7 @@ export default function CarouselDots({
       <button
         type="button"
         className={classes.ctrlBtn}
-        onClick={() => onChange(idx + 1)}
+        onClick={handleNext}
         disabled={idx >= maxIdx}
         aria-label={nextLabel || (isAr ? "التالي" : "Next")}
       >

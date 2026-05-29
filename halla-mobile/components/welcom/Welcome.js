@@ -12,7 +12,7 @@ import { useTranslation } from "../../localization";
 const { width, height } = Dimensions.get("window");
 
 const Welcome = ({ onLogin, onSignup }) => {
-  const { t, isRTL } = useTranslation("welcome");
+  const { t } = useTranslation("welcome");
   const slides = t("slides", { returnObjects: true });
 
   const [currentIndex, setCurrentIndex] = useState(0);

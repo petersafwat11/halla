@@ -200,7 +200,31 @@
   "sendNotification": {
     "sentToAll": "تم إرسال الإشعار لجميع المستخدمين",
     "sentSuccess": "تم إرسال الإشعار بنجاح",
-    "sendFailed": "فشل في إرسال الإشعار"
+    "sendFailed": "فشل في إرسال الإشعار",
+    "dialog": {
+      "title": "إرسال إشعار",
+      "titleBulk": "إرسال إشعار لجميع {{role}}",
+      "to": "إلى:",
+      "titleArLabel": "العنوان (عربي) *",
+      "titleArPlaceholder": "عنوان الإشعار بالعربية",
+      "titleEnLabel": "العنوان (إنجليزي)",
+      "titleEnPlaceholder": "عنوان الإشعار بالإنجليزية (اختياري)",
+      "messageArLabel": "الرسالة (عربي) *",
+      "messageArPlaceholder": "محتوى الإشعار بالعربية",
+      "messageEnLabel": "الرسالة (إنجليزي)",
+      "messageEnPlaceholder": "محتوى الإشعار بالإنجليزية (اختياري)",
+      "bulkWarning": "⚠️ سيتم إرسال هذا الإشعار لجميع {{role}}",
+      "cancel": "إلغاء",
+      "send": "إرسال",
+      "usersFallback": "المستخدمين"
+    },
+    "roleLabels": {
+      "host": "المضيفين",
+      "vendor": "مزودي الخدمات",
+      "moderator": "المشرفين",
+      "whitelabel_admin": "مديري الوايت ليبل",
+      "admin": "المديرين"
+    }
   },
   "managePlans": {
     "title": "إدارة الباقات والأسعار",

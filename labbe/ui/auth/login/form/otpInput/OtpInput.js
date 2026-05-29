@@ -4,7 +4,6 @@ import styles from "./otpInput.module.css";
 import Image from "next/image";
 import { FaArrowRightLong, FaArrowLeftLong } from "react-icons/fa6";
 import { useTranslation } from "react-i18next";
-import useLanguageChange from "@/hooks/UseLanguageChange";
 
 const OtpInput = ({
   verificationCode,
@@ -14,11 +13,10 @@ const OtpInput = ({
   onResend,
   isResending = false,
 }) => {
-  const { t } = useTranslation("login");
-  const { currentLocale } = useLanguageChange();
+  const { t, i18n } = useTranslation("login");
   const [resendTime, setResendTime] = useState(90);
   const inputRefs = useRef([]);
-  const isRTL = currentLocale === 'ar';
+  const isRTL = i18n.language === 'ar';
 
   useEffect(() => {
     const timer = setInterval(() => {
