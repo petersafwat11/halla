@@ -4,7 +4,7 @@ import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { FaSpinner, FaExclamationTriangle, FaCheck } from "react-icons/fa";
-import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
+import { useBusinessPlans, plansKeys } from "@/hooks/plans";
 import { StepTitle } from "../../../../commen/title/SectionTitle";
 import { getLocalized } from "@/utils/locale";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
@@ -198,7 +198,7 @@ const StepFive = ({ goToPreviousStep }) => {
           <button
             type="button"
             onClick={() =>
-              queryClient.invalidateQueries({ queryKey: ["plans", "business"] })
+              queryClient.invalidateQueries({ queryKey: plansKeys.business() })
             }
             className={styles.retryBtn}
           >

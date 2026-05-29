@@ -4,61 +4,48 @@ import { useTranslation } from "../../../localization";
 import { colors, spacing, typography } from "../../../styles/tokens";
 import SarIcon from "../../commen/SarIcon";
 
-const PlanPriceBlock = ({ planFamily, billingType, price }) => {
+const PlanPriceBlock = ({ planFamily, price }) => {
   const { t } = useTranslation("plans");
+  const name = planFamily ? t(`planFamilies.${planFamily}`) : "";
+  const tagline = planFamily
+    ? t(`taglines.${planFamily}`, { defaultValue: "" })
+    : "";
 
   return (
     <View style={styles.cardTop}>
-      <View style={styles.titleSection}>
-        <Text style={styles.cardName}>{t(`planFamilies.${planFamily}`)}</Text>
-        <Text style={styles.cardDesc}>
-          {t(`planFamilyDescriptions.${planFamily}`)}
-        </Text>
-      </View>
-      <View style={styles.priceWrap}>
+      <View style={styles.cardTopRow}>
+        <Text style={styles.cardName}>{name}</Text>
         <View style={styles.priceRow}>
           <Text style={styles.priceNum}>{(price || 0).toLocaleString()}</Text>
           <SarIcon size={20} color={colors.secondary[700]} />
         </View>
-        <Text style={styles.pricePer}>
-          {billingType === "monthly"
-            ? t("billingTypeLabels.monthly")
-            : t("billingTypeLabels.event")}
-        </Text>
       </View>
+      {tagline ? <Text style={styles.cardTagline}>{tagline}</Text> : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   cardTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: spacing[12],
+    flexDirection: "column",
+    gap: spacing[8],
     paddingBottom: spacing[16],
     borderBottomWidth: 1,
     borderBottomColor: colors.primary[100],
     marginBottom: spacing[16],
   },
-  titleSection: {
-    flex: 1,
-    minWidth: 0,
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: spacing[12],
   },
   cardName: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.title.large,
     color: colors.secondary[700],
-    marginBottom: spacing[4],
-  },
-  cardDesc: {
-    fontFamily: "Cairo_400Regular",
-    fontSize: typography.fontSize.body.small,
-    color: colors.natural[400],
-    lineHeight: 18,
-  },
-  priceWrap: {
-    alignItems: "flex-end",
+    flex: 1,
+    minWidth: 0,
   },
   priceRow: {
     flexDirection: "row",
@@ -71,16 +58,11 @@ const styles = StyleSheet.create({
     color: colors.secondary[700],
     lineHeight: 28,
   },
-  priceCur: {
+  cardTagline: {
     fontFamily: "Cairo_600SemiBold",
     fontSize: typography.fontSize.body.medium,
-    color: colors.secondary[700],
-  },
-  pricePer: {
-    fontFamily: "Cairo_400Regular",
-    fontSize: typography.fontSize.caption.large,
-    color: colors.natural[400],
-    marginTop: 2,
+    color: colors.primary[500],
+    lineHeight: 22,
   },
 });
 

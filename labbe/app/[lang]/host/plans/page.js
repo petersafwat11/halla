@@ -2,6 +2,8 @@
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
+import { subscriptionsKeys } from "@/hooks/subscriptions/keys";
+import { plansKeys } from "@/hooks/plans/keys";
 import PlansPage from "./PlansPage";
 
 export default async function PlansPageServer({ params }) {
@@ -14,7 +16,7 @@ export default async function PlansPageServer({ params }) {
       // Prefetch host plans
       await prefetchServerData({
         queryClient,
-        queryKey: ["plans", "host"],
+        queryKey: plansKeys.host(),
         path: API_PATHS.plans.getHostPlans,
         token,
       });
@@ -22,7 +24,7 @@ export default async function PlansPageServer({ params }) {
       // Prefetch user subscription
       await prefetchServerData({
         queryClient,
-        queryKey: ["subscriptions", "my-subscription"],
+        queryKey: subscriptionsKeys.mine(),
         path: API_PATHS.subscriptions.getMySubscription,
         token,
       });

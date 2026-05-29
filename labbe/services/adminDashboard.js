@@ -587,7 +587,7 @@ export const subscriptionAdminAPI = {
 
 /**
  * Legacy addons API surface. New code should use the `useAddons` and
- * `useCheckout` hooks from `hooks/reactQueryHooks/`. This export remains
+ * `useCheckout` hooks from `hooks/addons/` and `hooks/checkout/`. This export remains
  * for the admin dashboard's bulk operations.
  */
 export const addonsAPI = {

@@ -6,7 +6,7 @@ import TicketsHeader from "./_components/TicketsHeader";
 import TicketCard from "./_components/TicketCard";
 import SendTicketPopup from "./_components/SendTicketPopup";
 import EmptyState from "./_components/EmptyState";
-import { useMyTickets, useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { useMyTickets, useTicketMutation, ticketsKeys } from "@/hooks/tickets";
 import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
@@ -126,7 +126,7 @@ const TicketsPage = () => {
     return (
       <div className={styles.page}>
         <ErrorBoundary
-          onRetry={() => queryClient.invalidateQueries({ queryKey: ["tickets"] })}
+          onRetry={() => queryClient.invalidateQueries({ queryKey: ticketsKeys.all })}
           fallbackMessage={t("errors.loadFailed") || "Failed to load tickets"}
         >
           <div />

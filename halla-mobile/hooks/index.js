@@ -1,27 +1,38 @@
-// Query Hooks
-export * from './queries/useEvents';
-export * from './queries/useDashboard';
-export * from './queries/usePlans';
-export * from './queries/useTickets';
-export * from './queries/useNotifications';
-export * from './queries/useMarketplace';
-export * from './queries/useVendor';
-export * from './queries/useUser';
-export * from './queries/useSubscriptions';
-export * from './queries/useAdmin';
-export * from './queries/useAdminInfinite';
-export * from './queries/usePaymentPoll';
-export * from './queries/useAddons';
-export * from './queries/useDiscounts';
-export { useDebouncedValue } from './useDebouncedValue';
+// Centralized hooks barrel.
+//
+// Each domain folder owns its own queries/mutations/keys (see Phase 5
+// in UNIFICATION_REPORT.md). This barrel re-exports the public hook
+// surface so consumers can `import { useFoo } from "../../hooks"`
+// without knowing the domain split. Domain-specific consumers should
+// import from the domain folder directly (`../../hooks/<domain>`) to
+// avoid pulling unrelated hooks into their bundle.
 
-// Mutation Hooks
-export * from './events/mutations/useEventMutation';
-export * from './mutations/useTicketMutations';
-export * from './mutations/useUserMutations';
-export * from './mutations/useVendorMutations';
-export * from './mutations/useAdminMutations';
-export * from './mutations/useNotificationMutations';
-export * from './mutations/useAddonMutations';
-export * from './mutations/useCheckout';
-export * from './mutations/useDiscountMutations';
+// Queries + mutations by domain.
+export * from "./addons";
+export * from "./admin";
+export * from "./auth";
+export * from "./checkout";
+export * from "./dashboard";
+export * from "./discounts";
+export * from "./events/queries";
+export * from "./events/mutations/useEventMutation";
+export * from "./guests";
+export * from "./guestPortal";
+export * from "./locations";
+export * from "./marketplace";
+export * from "./messaging";
+export * from "./notifications";
+export * from "./payments";
+export * from "./plans";
+export * from "./postEvent";
+export * from "./scheduledExtraReminders";
+export * from "./staff";
+export * from "./subscriptions";
+export * from "./taqnyatTemplates";
+export * from "./templates";
+export * from "./tickets";
+export * from "./users";
+export * from "./vendor";
+
+// Non-domain utility hooks.
+export { useDebouncedValue } from "./useDebouncedValue";

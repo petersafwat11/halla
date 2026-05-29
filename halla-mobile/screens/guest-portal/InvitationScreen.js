@@ -11,8 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import QRCode from "react-native-qrcode-svg";
 import { useTranslation } from "../../localization";
-import useGuestByToken from "../../hooks/queries/useGuestPortal";
-import useSubmitRSVP from "../../hooks/mutations/useGuestPortal";
+import useGuestByToken from "../../hooks/guestPortal/queries";
+import useSubmitRSVP from "../../hooks/guestPortal/mutations";
 
 const FALLBACK_BRAND_COLOR = "#C28E5C";
 const FALLBACK_ACCENT_COLOR = "#6B4E33";

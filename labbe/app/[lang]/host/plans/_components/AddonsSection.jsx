@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaPaperPlane, FaBell, FaPalette, FaCheck, FaTimes } from "react-icons/fa";
-import { useAvailableAddons } from "@/hooks/reactQueryHooks/useAddons";
+import { useAvailableAddons } from "@/hooks/addons";
 import styles from "./AddonsSection.module.css";
 
 /**

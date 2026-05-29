@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useAdminModeratorMutation,
   useAdminWhitelabels,
-} from "@/hooks/reactQueryHooks/useAdmin";
+} from "@/hooks/admin";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";

@@ -3,7 +3,7 @@ import React from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import styles from "./locationSelector.module.css";
-import { useRegions, useCitiesByRegion, useDistrictsByCity } from "@/hooks/reactQueryHooks/useLocations";
+import { useRegions, useCitiesByRegion, useDistrictsByCity } from "@/hooks/locations";
 import { useLocationFormSelection } from "./useLocationFormSelection";
 import DistrictsMultiSelect from "./DistrictsMultiSelect";
 

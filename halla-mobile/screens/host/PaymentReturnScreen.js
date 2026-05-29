@@ -22,7 +22,7 @@ import { useRoute, useNavigation, CommonActions } from "@react-navigation/native
 import { Ionicons } from "@expo/vector-icons";
 import { usePaymentPoll } from "../../hooks";
 import { useTranslation } from "../../localization";
-import { clearPendingCheckoutCart } from "../../hooks/mutations/useCheckout";
+import { clearPendingCheckoutCart } from "../../hooks/checkout";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../styles/tokens";
 
 const TERMINAL_OK = new Set(["paid", "captured"]);

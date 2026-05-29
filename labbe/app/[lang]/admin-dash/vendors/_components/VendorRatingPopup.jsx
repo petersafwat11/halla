@@ -2,7 +2,7 @@
 
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAdminVendorMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminVendorMutation } from "@/hooks/admin";
 import { useTranslation } from "react-i18next";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";

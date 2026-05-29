@@ -2,6 +2,7 @@
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { adminKeys } from "@/hooks/admin/keys";
 import initTranslations from "@/localization/i18n";
 import ClientComponentsTranslationsProvider from "@/providers/ClientCompTrans";
 import WhitelabelsPageHeader from "./_components/WhitelabelsPageHeader";
@@ -33,7 +34,7 @@ export default async function WhitelabelsPage({ params, searchParams }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["admin", "whitelabels", filters],
+      queryKey: adminKeys.whitelabels(filters),
       path: API_PATHS.admin.whitelabels.getAll,
       params: filters,
       token,

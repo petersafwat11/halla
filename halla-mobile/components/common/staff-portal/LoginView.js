@@ -12,7 +12,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useVerifyStaffAccess } from "../../../hooks/mutations/useStaffMutations";
+import { useVerifyStaffAccess } from "../../../hooks/staff";
 
 const LoginView = ({ onVerified, t }) => {
   const [phone, setPhone] = useState("");

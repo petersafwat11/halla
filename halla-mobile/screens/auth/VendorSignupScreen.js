@@ -7,7 +7,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { Button } from '../../components/commen';
 import SignupStepper from '../../components/commen/SignupStepper';
 import { vendorSignupSchema } from '../../utils/schemas/authSchemas';
-import { useVendorSignup } from '../../hooks/mutations/useAuthMutations';
+import { useVendorSignup } from '../../hooks/auth';
 import { authErrorMessage } from '../../services/authErrors';
 import VendorStep1Identity from '../../components/auth/vendor-signup/VendorStep1Identity';
 import VendorStep2ServiceData from '../../components/auth/vendor-signup/VendorStep2ServiceData';

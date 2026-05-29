@@ -7,7 +7,7 @@ import Image from "next/image";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import { editPlanSchema } from "@/utils/schemas/planSchema";
-import { useAdminPlanMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminPlanMutation } from "@/hooks/admin";
 import styles from "./EditPlanPopup.module.css";
 
 import PlanIdentityChips from "./edit-plan/PlanIdentityChips";

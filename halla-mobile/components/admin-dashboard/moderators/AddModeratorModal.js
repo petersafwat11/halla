@@ -19,7 +19,7 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 import { useCreateModerator, useUpdateModerator } from "../../../hooks";
-import { useAdminWhitelabels } from "../../../hooks/queries/useAdmin";
+import { useAdminWhitelabels } from "../../../hooks/admin";
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";

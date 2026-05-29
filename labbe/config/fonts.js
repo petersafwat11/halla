@@ -6,7 +6,7 @@
  * `t('fonts.<id>.displayName')` — names live in locale files, not here.
  *
  * The default value below is a reasonable boot-time fallback. The
- * `useFonts` query (`hooks/queries/useTemplates.js`) hydrates the live
+ * `useFonts` query (`hooks/templates/queries.js`) hydrates the live
  * list from `GET /api/v2/fonts` cached for the session, so the
  * authoritative source is always the backend.
  */

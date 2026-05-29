@@ -1,6 +1,6 @@
 "use client";
 
-import { useAdminModerators } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminModerators } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";

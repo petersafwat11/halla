@@ -16,7 +16,7 @@ import { useToast } from "../../contexts/ToastContext";
 import {
   usePostEventContent,
   useValidatePostEventToken,
-} from "../../hooks/queries/post-event/useGuestPostEvent";
+} from "../../hooks/postEvent";
 import PostCard from "../../components/host/post-event/post-card/PostCard";
 import GuestEventHeader from "../../components/host/post-event/GuestEventHeader";
 

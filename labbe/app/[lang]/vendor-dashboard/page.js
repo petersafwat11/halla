@@ -18,7 +18,8 @@ import {
   useMyServices,
   useServiceStats,
   useServiceMutation,
-} from "@/hooks/reactQueryHooks/useServices";
+  vendorServicesKeys,
+} from "@/hooks/vendorServices";
 import { useQueryClient } from "@tanstack/react-query";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
@@ -135,7 +136,7 @@ const VendorServicesPage = () => {
   const handlePopupSuccess = useCallback(() => {
     setIsPopupOpen(false);
     setEditingService(null);
-    queryClient.invalidateQueries({ queryKey: ["vendor-services"] });
+    queryClient.invalidateQueries({ queryKey: vendorServicesKeys.all });
   }, [queryClient]);
 
   const handleComplaints = () => {

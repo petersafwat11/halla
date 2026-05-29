@@ -4,7 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { useCreateTaqnyatTemplate } from "@/hooks/queries/useTaqnyatTemplates";
+import { useCreateTaqnyatTemplate } from "@/hooks/taqnyatTemplates";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import { createTaqnyatTemplateSchema } from "@/utils/schemas/adminPopupSchemas";

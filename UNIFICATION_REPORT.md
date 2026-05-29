@@ -10,6 +10,219 @@
 
 ## Session Progress Log
 
+### 2026-05-29, Phase 6 (Opus 4.7 1M) — auth store alignment, web → mobile-shaped status machine
+
+**Shipped, build-validated (`next build` exit 0 for `labbe`):**
+
+The initial scope estimate of "~30 consumer files" turned out to be raw `grep isAuthenticated|isLoading` noise — most matches are React Query's `useQuery({ isLoading })` and unrelated local `useState` flags. Actual auth-store consumer surface on web:
+
+- `isAuthenticated` read by user code: **1 file** (`ContinueSignupForm.js`).
+- `isLoading` read by user code: **0 files** (the store's `setLoading` was defined but never called externally; only `setAuth`/`logout` flipped the flag).
+- `setAuth(user, token, subscription)` callers: **5 sites, all in `labbe/hooks/auth/mutations.js`**.
+- `setToken`, `initializeAuth`: never called externally (the `token` field was vestigial — HttpOnly cookies have been authoritative since Phase 3).
+
+Files changed:
+
+- **`shared/src/schemas/auth.js`** — added `AUTH_STATUS_VALUES`, `authStatusSchema`, `authStoreSnapshotSchema`. The snapshot covers the *durable* slice both apps persist: `{ user, subscription? }`. Tokens are explicitly excluded (web: HttpOnly cookies; mobile: secure-store for refresh + memory for access). `authSchemas` barrel updated.
+- **`labbe/stores/authStore.js`** — full rewrite of the state block:
+  - Removed `isAuthenticated`, `isLoading`, `token`, `setToken`, `setLoading`, `initializeAuth`.
+  - Added `status: "checking" | "loading" | "authenticated" | "unauthenticated"`, `setStatus`.
+  - `setAuth(user, subscription)` (dropped `token` arg) sets `status: "authenticated"`.
+  - `logout` resets to `status: "unauthenticated"`.
+  - `partialize` now writes only `{ user, subscription }`. `status` is *derived on rehydrate* via `onRehydrateStorage` (`state.user ? "authenticated" : "unauthenticated"`). On web, localStorage rehydration is synchronous, so `checking` is effectively a single render frame on cold mount — we keep the vocabulary for cross-app readability.
+- **`labbe/hooks/auth/mutations.js`** — all 5 `setAuth(user, token, subscription)` callers updated to `setAuth(user, subscription)`. The unused `token`/`newToken` locals removed from each handler.
+- **`labbe/ui/auth/signup/host/continueSignupForm/ContinueSignupForm.js`** — replaced `const { isAuthenticated } = useAuthStore()` with the selector-based `useAuthStore((s) => s.status === "authenticated")`. The `useEffect` semantics are unchanged (redirects to `/signup` if the user lands here without being authenticated).
+
+**Mobile:** **no changes**. Mobile's store was already the canonical reference (status machine, in-memory access token, secure-store refresh, secure-store user shadow). Spec §6.2's example of renaming `plan` → `subscription` was moot — mobile had neither field. Subscription on mobile is fetched via the dedicated `hooks/subscriptions/` query domain (Phase 5 work), not persisted in the auth store. The shared `authStoreSnapshotSchema` declares `subscription` optional precisely so this asymmetry is *expected* rather than a divergence.
+
+**Persist-migration safety:** the previous web partialize wrote `{ user, isAuthenticated, subscription }`. The new shape is `{ user, subscription }`. zustand's default `merge` is a shallow merge of persisted state into the current store, so on a returning visitor with the legacy shape the stale `isAuthenticated: true` is harmlessly merged in as an unread field; nothing in the codebase reads it anymore, and the next `set()`-triggered persist write rewrites localStorage with just `{ user, subscription }`, purging it. `onRehydrateStorage` runs on the merged state, so `state.user ? "authenticated" : "unauthenticated"` derives correctly in both legacy and new-shape cases. No `version` bump needed because the change is purely a *narrowing* of the persisted slice — no field conflict in either direction. Verified against zustand persist docs (default `merge` semantics).
+
+**`status: "loading"` asymmetry — documented, not a missing feature.** Mobile flips `status` to `"loading"` mid-action because its auth actions live in the store (`loginWithEmail`, `verifyOTP`, etc. call `set({ status: "loading" })` while the network call is in flight). Web's auth actions live in `hooks/auth/mutations.js` as React Query mutations (Phase 3 architecture); their pending state is exposed via `mutation.isPending` on the call site, and the store never goes through `"loading"`. This is *intentional* — moving web's auth actions into the store would regress Phase 3. The store-level status vocabulary is aligned (same enum, same possible states); only the transition policy differs by app.
+
+**Spec §6.5 action-surface alignment — intentionally limited.** The spec says "both stores expose the same action surface, including `resetPassword`." We aligned the *state-setter* surface (`setAuth`, `setUser`, `setStatus`, `setError`, `clearError`, `logout`, OTP setters). We did NOT move web's auth mutations (`login`, `verifyLoginOTP`, `forgotPassword`, `resetPassword`, etc.) into the store — those stay as RQ mutations in `hooks/auth/mutations.js` because Phase 3 deliberately routed all network I/O through React Query for cache and retry semantics. Mobile's in-store actions remain in-store because the mobile app does not consume RQ for the auth flow itself (auth completes before RQ takes over). Both apps DO expose `resetPassword` at their canonical layer: mobile in `useAuthStore`, web via `useAuthMutation("resetPassword")` in `hooks/auth/mutations.js`. This asymmetry is the same shape as `login`/`logout` and is documented here so the next session doesn't read §6.5 and try to "fix" it.
+
+**Runtime verification gap:** `next build` proves the new store and consumer compile. It does NOT exercise (a) rehydration from a real pre-migration localStorage entry, (b) the cold-mount `"checking"`-frame UX, (c) the logout → partialize roundtrip, (d) refresh-after-expiry. The spec's Phase 6 test bar ("cold-launch with cached refresh on mobile; refresh-after-expiry on web; logout from both clears all state") needs a browser session — deferred to the Phase 9 verification pass which runs both apps end-to-end. Mobile was not touched this session, so its existing runtime behavior is unchanged.
+
+**What this unlocks:** any cross-app component or test can now import `authStoreSnapshotSchema` from `@halla/shared/schemas/auth` and validate either store's slice with one assertion. Phase 9's "lock in" verification will use this.
+
+**Remaining ledger:**
+- Phase 8 — lint rules (`no-restricted-imports` for deleted legacy paths, forbid literal `/api/v2/` outside `@halla/shared`), helper extractions (`userAccountService`, `getStaticAssetBaseUrl`), schema-shim removals, `console.log` PII audit
+- Phase 9 — final verification + `ARCHITECTURE.md`
+
+### 2026-05-29, Phase 5 chunk 6 (Opus 4.7 1M) — mobile cross-domain literal sweep, factory adoption complete
+
+**Shipped, build-validated (`expo export --platform web` exit 0, bundle 6.78 MB):**
+
+Now that the mobile `events` and `guests` factories landed in chunk 5, the cross-domain literals deferred from chunks 4 and 5 are swapped for factory calls:
+
+- **`hooks/checkout/mutations.js`** — `["events","subscription-info"]` → `eventsKeys.subscriptionInfo()`. Imports `eventsKeys`. The "literal stays until events factory lands" comment is gone.
+- **`hooks/scheduledExtraReminders/mutations.js`** (both create + cancel) — `["events", eventId]` → `eventsKeys.detail(eventId)`; `["guests", eventId]` → `guestsKeys.forEvent(eventId)`. The guest swap is also a **behavioral fix**: the prior literal `["guests", eventId]` was a no-op invalidation (no query key in the codebase started with `["guests", eventId]` — the actual key is `["guests","events",eventId]` from `guestsKeys.forEvent`). Worth flagging in case anyone noticed stale guest lists after creating/cancelling extra reminders; the factory call now correctly invalidates them.
+- **`hooks/staff/queries.js`** (`useEventStaffTokens`) and **`hooks/staff/mutations.js`** (`useRevokeStaffAccess`) — `["events", eventId, "staff-tokens"]` → `eventsKeys.staffTokens(eventId)` on both sides. Byte-identical, so revocations continue to invalidate the matching read.
+- **`hooks/guests/mutations.js`** (`_invalidateGuests` helper) — `["events","single-stats",eventId]` → `eventsKeys.singleStats(eventId)`. Byte-identical.
+- **`hooks/messaging/mutations.js`** (`invalidateEventCaches` helper) — `["events","single-stats",eventId]` → `eventsKeys.singleStats(eventId)`; `["events"]` bulk → `eventsKeys.all`. `dashboardKeys.host()` left untouched (already factory-based).
+
+**Verified clean — no remaining cross-domain literal keys outside the events domain itself:**
+- `grep -n 'queryKey:\s*\[\s*"events"' halla-mobile/hooks/` returns only `hooks/events/mutations/useEventMutation.js` (5 occurrences) — those are within-domain literals that the keys.js comment explicitly allows ("byte-identical to factory output").
+- `grep -nE 'hooks/(queries|mutations)/' halla-mobile/` returns zero matches → no stragglers still importing from the deleted legacy folders.
+
+**Caveat on build evidence:** `expo export --platform web` only validates the web build target. Native iOS/Android paths could differ if there's a platform-specific import (none expected — all changes are pure JS in hook files), but a Metro bundler smoke test (`expo prebuild --no-install` dry-run, or running `npm run android`/`ios` once locally) would close that gap. Not run this session.
+
+**Phase 5 = COMPLETE.** Hook layout is unified across both apps. 21 web domains + 24 mobile domains, all using the `{queries.js, mutations.js, keys.js, index.js}` layout, all cross-domain invalidations routed through key factories, both apps have `runCacheMigrations(qc)` infrastructure ready for future key-shape changes (currently empty MIGRATIONS arrays because chunks 1–6 all produced byte-identical keys).
+
+**Remaining ledger:**
+- Phase 6 — auth store alignment (web `isAuthenticated`+`isLoading` booleans → mobile-style `status` state machine, ~30 consumer files)
+- Phase 8 — lint rules (forbid `no-restricted-imports` on the deleted legacy paths; forbid literal `/api/v2/` outside `@halla/shared`), helper extractions, `userAccountService`, `getStaticAssetBaseUrl`, schema shim removals
+- Phase 9 — final verification + ARCHITECTURE.md
+
+### 2026-05-29, Phase 5 chunk 5 (Opus 4.7 1M) — mobile batches A+B: all remaining mobile domains, legacy folders deleted
+
+**Shipped, build-validated (`expo export --platform web` exit 0, bundle 6.78 MB):**
+
+- **19 new mobile domain folders** at `halla-mobile/hooks/<domain>/{queries.js, mutations.js, keys.js, index.js}` (admin also gets an `infinite.js` split because its infinite-query surface is large and self-contained):
+  - **Small read-only:** `dashboard`, `marketplace`, `subscriptions`, `plans`. Mobile `plans` exposes a richer surface than web (`usePlans`, `useHostPlans`, `useBusinessPlans`, `usePlanByCode`, `usePlanById`) because the mobile create-event wizard needs plan lookup by code/id.
+  - **Read + write:** `addons` (catalog + my + purchase + admin-activate), `vendor` (profile/stats/services/tickets queries + 6 mutations), `users` (profile + notification settings + subscription queries; profile/password/notification mutations).
+  - **Auth:** mutation-only (`useVendorSignup`, `useWhitelabelSignup`) — login/logout sit on the auth store, not React Query.
+  - **Checkout:** ports the cart-persistence helpers + `useCheckout` mutation. Cross-domain invalidations now use `subscriptionsKeys.all` + `addonsKeys.all`; the `["events","subscription-info"]` literal stays only because the mobile events factory will land in this same chunk's events migration (see below).
+  - **Notifications, discounts, staff, tickets:** identical surface to chunk 2/3 on web with mobile-specific `useAuthStore` token gating preserved.
+  - **Guests, guestPortal, messaging, payments:** `guestPortal/keys.js` re-exports `guestsKeys.byInvitation` so the portal stays under the canonical guests namespace. `payments/hooks.js` houses `usePaymentPoll`, which is a `useEffect`-based polling hook (not React Query) — the factory and folder layout exist for symmetry, but there's no queryKey to migrate.
+  - **Events queries:** `useUserEventsWithStats`, `useEventStats`, `useSingleEventStats` moved out of `hooks/queries/useEvents.js` and into `hooks/events/queries.js`. Added `hooks/events/keys.js` with `eventsKeys` factory (`all`, `userStats`, `stats`, `subscriptionInfo`, `detail`, `singleStats`, `staffTokens`) — codifies the literal keys already used by existing event mutation files; structurally identical, no cache migration needed. Existing event-mutation files in `hooks/events/mutations/` still use literals (will adopt the factory incrementally).
+  - **postEvent:** consolidated `hooks/queries/post-event/{useGuestPostEvent,useHostPostEvent}.js` into a single `hooks/postEvent/` folder split by queries vs mutations (camelCase rename mirrors what we did on web). `postEventKeys.hostContent(eventId)` preserves mobile's `["post-event","host","content",eventId]` shape (one segment longer than web's, byte-identical to mobile's prior literal).
+  - **Admin:** the largest migration. `adminKeys` factory consolidates 18 sub-namespaces including infinite-query variants (`hostsInfinite`, `vendorsInfinite`, etc.). `queries.js` covers the 17 list/detail queries; `infinite.js` holds the 7 infinite-query hooks plus the shared `_buildInfinite` + `_normalizePage` + `_normalizeFilters` helpers (the helpers stay private to the file); `mutations.js` covers ~40 mutation hooks across hosts/vendors/moderators/events/tickets/whitelabels/plans/payments. Cross-domain `["tickets"]` invalidation in the admin ticket mutations now uses `ticketsKeys.all`.
+- **`halla-mobile/hooks/index.js` barrel rewritten** to re-export from the 21 domain folders + `events/queries` + `events/mutations/useEventMutation` for backward compat with consumers that import from `../../hooks` (the existing convention on mobile).
+- **Consumer files re-pointed:** ~17 files with direct-path imports were repointed via a single batched sed pass against the literal import strings (`hooks/queries/useFoo` → `hooks/foo`, etc.). The 2 single-quoted survivors (`useVendorSignup`, `useWhitelabelSignup` in screens/auth/*) were fixed manually. A comment-only reference in `hooks/events/mutations/useEventMutation.js` was updated to point at the new locations.
+- **18 old hook files deleted** + the empty `hooks/queries/`, `hooks/mutations/`, and `hooks/queries/post-event/` directories `rmdir`ed. Grep confirms zero remaining references to any deleted path.
+
+**Final mobile hook tree** (`halla-mobile/hooks/`): 21 domain folders — `addons`, `admin`, `auth`, `checkout`, `dashboard`, `discounts`, `events`, `guests`, `guestPortal`, `locations`, `marketplace`, `messaging`, `notifications`, `payments`, `plans`, `postEvent`, `scheduledExtraReminders`, `staff`, `subscriptions`, `taqnyatTemplates`, `templates`, `tickets`, `users`, `vendor`. Plus `_cacheMigrations.js` (registry) and standalone hooks (`useCreateEventForm.js`, `useDebouncedValue.js`, `useEventActionGate.js`, `useFilterData.js`, `useListManager.js`).
+
+**Mobile cross-app convention divergences (intentional, documented for chunk 6):**
+- Mobile uses singular `["user", ...]` and `["vendor", ...]` (and `["subscription"]` for the addon purchase) where web uses plural — the literals are preserved byte-for-byte under their respective factories.
+- Mobile preserves `useAuthStore` token gating on every authenticated query. Web relies on the HttpOnly cookie so no client-side gating is needed.
+- The `useCheckout` mutation on mobile still uses a literal `["events","subscription-info"]` invalidation (it could now use `eventsKeys.subscriptionInfo()` — left for the chunk 6 sweep so the diff stays small here).
+- `guestPortal/keys.js` re-exports through the guests namespace because the backend route is `/guests/invitation/:code` — there's no separate "portal" cache key.
+
+**Phase 5 web + mobile = complete.** Remaining ledger:
+- Phase 5 chunk 6 — final grep + delete sweep (mostly about swapping the remaining cross-domain literals like the `useCheckout` example above, and verifying no stragglers)
+- Phase 6 — auth store alignment
+- Phase 8 — lint rules, helper extractions, `userAccountService`, `getStaticAssetBaseUrl`, shim removals
+- Phase 9 — final verification + ARCHITECTURE.md
+
+### 2026-05-29, Phase 5 chunk 4 (Opus 4.7 1M) — mobile pilot: locations, templates, taqnyatTemplates, scheduledExtraReminders
+
+**Shipped, build-validated (`expo export --platform web` exit 0, bundle 6.76 MB):**
+
+- **`halla-mobile/hooks/_cacheMigrations.js`** — mobile equivalent of the web registry. Storage backend is `@react-native-async-storage/async-storage` (already in `package.json`, `2.2.0`). `runCacheMigrations(queryClient)` is async (AsyncStorage is async); `MIGRATIONS` array is empty for the pilot.
+- **`halla-mobile/contexts/QueryProvider.js`** — fires `runCacheMigrations(queryClient)` once via `useEffect` after the provider mounts. The function is async but we don't await — startup latency stays at zero, and the migration runs before any real user interaction completes the first query.
+- **4 new mobile domain folders** at `halla-mobile/hooks/<domain>/` with `{queries.js, mutations.js, keys.js, index.js}` (locations + taqnyatTemplates are read-only, no mutations.js):
+  - **`hooks/locations/`** — `locationsKeys` factory (same shape as web); `useRegions`, `useCitiesByRegion`, `useDistrictsByCity`, `useAllLocations`, `useSearchLocations`. Replaces `hooks/queries/useLocations.js`.
+  - **`hooks/templates/`** — `templatesKeys` + `templateCategoriesKeys` + `fontsKeys`; `useHostTemplates`, `useTemplateCategories`, `useFonts`. Mobile uses `useAuthStore` to gate `useHostTemplates` on `!!token` (web doesn't — auth pattern stays divergent because mobile drives the gate from the in-memory token while web relies on the HttpOnly cookie). Replaces `hooks/queries/useTemplates.js`.
+  - **`hooks/taqnyatTemplates/`** — `taqnyatTemplatesKeys`; `useHostTaqnyatTemplates` (token-gated). Default export preserved for backward compat with consumers that imported as default. Replaces `hooks/queries/useTaqnyatTemplates.js`.
+  - **`hooks/scheduledExtraReminders/`** — `scheduledExtraRemindersKeys`; `useScheduledExtraReminders` query; `useCreateScheduledExtraReminder` + `useCancelScheduledExtraReminder` mutations. Cross-domain `["events", eventId]` + `["guests", eventId]` invalidations kept as literals because mobile events/guests factories don't exist yet — TODO marker left in the file noting they'll swap during chunk 5. Replaces `hooks/queries/useScheduledExtraReminders.js`.
+- **5 consumer files re-pointed:** `components/commen/LocationSelector.js` → `../../hooks/locations`; `components/home/EventTemplates.js` → `../../hooks/templates`; `components/createEvent/StepFour.js`, `components/host/post-event/{AccessLinksSheet,MessagingTemplatePicker}.js` → `hooks/taqnyatTemplates`; `components/admin-dashboard/events/ScheduleReminderSection.js` → `hooks/scheduledExtraReminders`. Also fixed `hooks/useFilterData.js` which imported from `./queries/useLocations`.
+- **4 files deleted** (zero-importer verified by grep): `hooks/queries/{useLocations,useTemplates,useTaqnyatTemplates,useScheduledExtraReminders}.js`.
+
+**Convention reminders for mobile chunk 5:**
+- Mobile uses relative imports (`../../hooks/<domain>`), not the `@/hooks/...` alias used on web — match the surrounding file style.
+- Mobile query hooks routinely gate on `!!token` via `useAuthStore`; preserve this when migrating each domain.
+- Cross-domain literals for `events`/`guests` stay until those domains migrate in chunk 5; the convention swap happens then.
+- The `MIGRATIONS` array in `_cacheMigrations.js` stays empty as long as new factories produce byte-identical arrays to old literals (the pilot does); future mobile chunks that change key shapes add `{ name, run(qc) }` entries — mobile is the bigger risk because users hold versions for weeks.
+
+**Remaining ledger after this chunk:**
+- Phase 5 chunk 5 (mobile batches A + B) — addons, admin, adminInfinite, auth, checkout, dashboard, discounts, events, guests, guestPortal, marketplace, messaging, notifications, paymentPoll, plans, post-event, staff, subscriptions, tickets, user, vendor; then delete `hooks/queries/`, `hooks/mutations/`
+- Phase 5 chunk 6 — final grep + delete sweep
+- Phase 6 — auth store alignment
+- Phase 8 — lint rules, helper extractions, `userAccountService`, `getStaticAssetBaseUrl`, shim removals
+- Phase 9 — final verification + ARCHITECTURE.md
+
+### 2026-05-29, Phase 5 chunk 3 (Opus 4.7 1M) — web batch B: all remaining domains, legacy hooks folders deleted
+
+**Shipped, build-validated (`next build` exit 0, "Compiled successfully in 16.4s", full route table emitted):**
+
+- **Deprecated `useEvents` shim deleted** — 7 consumers re-pointed from `@/hooks/reactQueryHooks/useEvents` to `@/hooks/events` (the shim was already a `export *` re-export).
+- **`hooks/events/keys.js`** added retroactively (the events domain itself was migrated in Phase 4 but had no key factory yet). Factory: `eventsKeys` with `all`, `myEvents()`, `stats()`, `subscriptionInfo()`, `detail(eventId)`, `singleStats(eventId)`, `staffTokens(eventId)`. The existing event hook files in `hooks/events/{queries,mutations}/` still use literal arrays whose shapes are byte-identical to the factory output — they'll adopt the factory incrementally; cross-domain callers (`checkout`, `scheduledExtraReminders`, `staff`, `guests`, `messaging`, `admin`, `postEvent`) use the factory exclusively.
+- **13 new domain folders** at `labbe/hooks/<domain>/{queries.js, mutations.js, keys.js, index.js}` (some without mutations.js for read-only domains; some with only mutations for write-only domains). All factories produce byte-identical arrays to prior literals — no cache migrations registered.
+  - **Small read/write:** `dashboard` (`dashboardKeys.host()`), `vendors` (`vendorsKeys.categories()`), `payments` (`paymentsKeys.poll3ds(id)` + `useMyPaymentsExport`), `plans` (`plansKeys.{list,host,landing,business}`), `users` (`usersKeys.{myProfile,notificationPreferences}` + `useUserMutation` factory).
+  - **Auth:** `auth/mutations.js` holds the `useAuthMutation(action)` factory (login / OTP / forgot-password / signup / setupPassword / verifyEmail / logout). `authKeys` is a stub for future me-query support. Cross-domain `["users","my-profile"]` invalidation in `verifyEmail` now uses `usersKeys.myProfile()`.
+  - **Checkout:** moved cart-persistence helpers + `useCheckout` mutation. Now invalidates `subscriptionsKeys.all`, `addonsKeys.all`, `eventsKeys.subscriptionInfo()` (was the literal `["events","subscription-info"]`).
+  - **Staff:** `staffKeys.{all, guests(eventId,filters), guestsForEvent(eventId)}`; `useStaffEventGuests`, `useEventStaffTokens` (uses `eventsKeys.staffTokens(eventId)` since the token list is event-namespaced on the backend); `useStaffMutation("checkInGuest")` + `useRevokeStaffAccess`.
+  - **Guests:** `guestsKeys.{all, byToken, byInvitation, forEvent}` + `useGuestByToken` / `useGuestInvitation` / `useGuestMutation(action)` factory (add / update / delete / rotateQr / revokeAccess / export / rsvp). Cross-domain `["events", eventId]` invalidation in mutation success now uses `eventsKeys.detail(eventId)`.
+  - **Messaging:** `messagingKeys.stats(eventId)` + 6 write-only hooks (`useSendInvitation`, `useSendBulkInvitations`, `useRetryFailedInvitations`, `useSendReminder`, `useScheduleSend`, `useSendTestMessage`). Cross-domain `["dashboard","host"]` + `["events", eventId]` invalidations now use `dashboardKeys.host()` + `eventsKeys.detail(eventId)`.
+  - **Tickets:** `ticketsKeys.{all, myTickets(params), myTicketsPrefix(), assignees(), adminList(), detail(id), forRating(id)}`; queries: `useMyTickets`, `useTicketAssignees`, `useTicket`, `useTicketForRating`; mutations: `useExportTickets`, `useTicketMutation(action)`. Fixed a **pre-existing SSR prefetch bug** in `app/[lang]/admin-dash/tickets/page.js`: the literal `["tickets", filters]` queryKey didn't match the client `useMyTickets` shape (`["tickets","my-tickets", params]`) so SSR data was never used; swapping to `ticketsKeys.myTickets(filters)` aligns both. Added a one-line comment explaining the fix.
+  - **Admin:** the largest domain. `adminKeys` factory consolidates 16 sub-namespaces (`dashboard`, `hosts`, `vendors`, `moderators`, `whitelabels`, `plans`, `payments`, `eventDetail`, `eventTargets`, `userSubscriptionInfo`, `whitelabelFeatures`, plus the `adminEventsList` key which intentionally lives in the events namespace, not admin, to match `["events","admin",filters]`). 17 queries + 11 mutation factories (`useAdminHostMutation`, `useAdminVendorMutation`, `useAdminModeratorMutation`, `useAdminWhitelabelMutation`, `useAdminEventMutation`, `useAdminPlanMutation`, `useAdminPaymentRefund/Capture/Void/Export`, `useAdminWhitelabelFeatureMutation`). Cross-domain `["events"]` invalidations in `useAdminEventMutation` swapped to `eventsKeys.all`; the `["plans"]` invalidation in `useAdminPlanMutation` swapped to `plansKeys.all`. Fixed another **pre-existing SSR bug** in `app/[lang]/admin-dash/whitelabels/[id]/details/page.js` (literal `["admin","whitelabels","details",id]` didn't match `useAdminWhitelabel`'s `["admin","whitelabels",id]`); swapped to `adminKeys.whitelabelDetail(id)`. 32 consumer files re-pointed via a single sed pass against the import literal.
+  - **Post-event:** folder renamed from `post-event/` (with hyphen, hard to type in JS imports) to `postEvent/`. `postEventKeys` covers guest portal (`validate`, `content`, `comments`) and host management (`hostContent`). 4 queries + 10 mutations (`useTogglePostEventLike`, `useAddPostEventComment`, `useUploadPostEventMedia`, `useDeletePostEventMedia`, `useUpdateThankYouMessage`, `useUpdatePostEventMessagingTemplate`, `usePublishPostEventContent`, `useUnpublishPostEventContent`, `useGeneratePostEventTokens`, `useSendPostEventAccessLinks`). 10 consumer files re-pointed.
+- **SSR prefetches updated to use factories from `/keys`:** `host/page.js` (dashboardKeys), `admin-dash/settings/page.js` (usersKeys × 2), `host/plans/page.js` (plansKeys), `admin-dash/whitelabels/page.js` (adminKeys.whitelabels), `admin-dash/whitelabels/[id]/page.js`, `admin-dash/whitelabels/[id]/details/page.js`, `admin-dash/manage-plans/page.js`, `admin-dash/payments/page.js`, `admin-dash/page.js` (admin dashboard), `admin-dash/vendors/page.js`, `admin-dash/moderators/page.js`, `admin-dash/vendors/[id]/page.js`, `admin-dash/hosts/[id]/page.js`, `admin-dash/hosts/page.js`, `admin-dash/tickets/page.js`, `admin-dash/tickets/[id]/page.js`.
+- **Cross-domain literal-key swaps in app code:** `app/[lang]/host/plans/PlansPage.js` (plansKeys.all), `app/[lang]/admin-dash/plans/page.js` (subscriptionsKeys.all, plansKeys.business), `ui/auth/signup/whiteLabel/stepFive/StepFive.js` (plansKeys.business), `app/[lang]/admin-dash/_components/SubscriptionAssignmentPopup.jsx` (adminKeys.plans), `app/[lang]/vendor-dashboard/tickets/page.js` (ticketsKeys.all), `app/[lang]/host/tickets/page.js` (ticketsKeys.all), `app/[lang]/host/tickets/_components/TicketCard.jsx` (ticketsKeys.detail).
+- **15 old hook files deleted** + the now-empty `labbe/hooks/{reactQueryHooks,queries,mutations}/` directories `rmdir`ed (plus the `post-event/` subdirectory). Grep confirms zero non-comment references remain to any deleted path. Two comment-only mentions of the old paths in `services/adminDashboard.js` and `hooks/events/mutations/useEventGuestMutation.js` updated to point at the new locations.
+
+**Final web hook tree** (`labbe/hooks/`): 21 domain folders — `addons`, `admin`, `auth`, `checkout`, `dashboard`, `discounts`, `events`, `guests`, `locations`, `messaging`, `notifications`, `payments`, `plans`, `postEvent`, `scheduledExtraReminders`, `staff`, `subscriptions`, `taqnyatTemplates`, `templates`, `tickets`, `users`, `vendors`, `vendorServices`. Plus `_cacheMigrations.js` (registry) and the standalone non-domain helpers (`UseLanguageChange.js`, `use-media-query.js`, `useDebounce.js`, `useDirection.js`, `usePageAccess.js`, `useUnsavedChanges.js`). **Web side of Phase 5 is complete.**
+
+**Remaining ledger after this chunk:**
+- Phase 5 chunks 4–5 (mobile pilot + batches; mobile QueryClient needs a `runCacheMigrations` hookup of its own before any mobile domain shifts keys)
+- Phase 5 chunk 6 — final grep + delete sweep on the mobile side
+- Phase 6 — auth store alignment
+- Phase 8 — lint rules (forbid imports from deleted paths via ESLint `no-restricted-imports`; forbid literal `/api/v2/` strings outside `@halla/shared`), helper extractions, `userAccountService`, `getStaticAssetBaseUrl`, shim removals
+- Phase 9 — final verification + ARCHITECTURE.md
+
+### 2026-05-29, Phase 5 chunk 2 (Opus 4.7 1M) — web batch A: notifications, addons, discounts, vendorServices, subscriptions
+
+**Shipped, build-validated (`next build` exit 0, "Compiled successfully in 13.8s"):**
+
+- **5 new domain folders** at `labbe/hooks/<domain>/{queries.js, mutations.js, keys.js, index.js}` (subscriptions has no mutations file — read-only domain on the web side; addons no longer needs the inline `ADDONS_BASE_KEY` constant). All factories produce byte-identical arrays to the prior literals — no cache migrations registered.
+- **`hooks/notifications/`** — `notificationsKeys` (`all`, `list(params)`, `unreadCount()`, `detail(id)`, `dropdown(limit)`); queries: `useNotifications`, `useUnreadNotificationCount`, `useNotification`; the `useNotificationMutation(action)` factory (markAsRead / markAllAsRead / deleteNotification / clearAll / adminSend / adminBroadcast). `dropdown(limit)` was added because `NotificationDropdown.js` uses an inline `useInfiniteQuery` with the literal `["notifications", "dropdown", PAGE_LIMIT]` — that literal is now swapped for `notificationsKeys.dropdown(PAGE_LIMIT)`.
+- **`hooks/addons/`** — `addonsKeys` (`all`, `catalog()`, `my(params)`); queries: `useAvailableAddons`, `useMyAddons`; mutations: `usePurchaseAddon`, `useAdminActivateAddon`. The cross-domain `["subscriptions"]` invalidation inside `usePurchaseAddon` was swapped to `subscriptionsKeys.all` after subscriptions migrated below.
+- **`hooks/discounts/`** — `discountsKeys` (`all`, `adminList(filters)`, `detail(id)`); queries: `useDiscounts`, `useDiscount`; mutations: `useCreateDiscount`, `useUpdateDiscount`, `useToggleDiscount`, `useDeleteDiscount`, `useValidateDiscount` (the comment justifying the one-shot mutation pattern preserved verbatim).
+- **`hooks/vendorServices/`** — chose folder name `vendorServices` over `services` so the directory matches the canonical `vendor-services` API namespace + `vendorServicesService` module (avoids colliding with the generic "services" concept). `vendorServicesKeys` (`all`, `publicList(params)`, `myList()`, `stats()`, `detail(id)`); queries: `usePublicVendorServices`, `useMyServices`, `useServiceStats`; the `useServiceMutation(action)` factory (createService / updateService / deleteService / toggleStatus).
+- **`hooks/subscriptions/`** — read-only on web; `subscriptionsKeys` (`all`, `mine()`, `myPayments(params)`); queries: `useMySubscription`, `useMyPayments`.
+- **Consumers re-pointed (9 files):** `ui/layout/notifications/{NotificationBell,NotificationDropdown}.js`, `app/[lang]/host/plans/_components/AddonsSection.jsx`, `app/[lang]/admin-dash/discounts/_components/{DiscountsTable,DiscountsStats,DiscountsFormPopup}.jsx`, `app/[lang]/host/plans/summary/Summary.js`, `ui/vendor/addServicePopup/AddServicePopup.js`, `app/[lang]/market-place/page.js`, `app/[lang]/vendor-dashboard/page.js`, `app/[lang]/host/plans/_hooks/usePlansPageState.js`, `app/[lang]/host/payments/_components/PaymentsClient.jsx`.
+- **SSR prefetches updated to import factories from `/keys`:** `app/[lang]/admin-dash/discounts/page.js` (uses `discountsKeys.adminList(filters)`) + `app/[lang]/host/plans/page.js` (uses `subscriptionsKeys.mine()`).
+- **Cross-domain invalidation literals swapped (advisor convention: once the target domain has a factory, callers stop using literals):**
+  - `hooks/reactQueryHooks/useCheckout.js:105` — `["subscriptions"]` + `["addons"]` literals → `subscriptionsKeys.all` + `addonsKeys.all`. (useCheckout itself stays in `reactQueryHooks/` until chunk 3.)
+  - `app/[lang]/admin-dash/plans/page.js:250` — `["subscriptions"]` → `subscriptionsKeys.all`.
+  - `app/[lang]/host/plans/PlansPage.js:129` — `["subscriptions"]` → `subscriptionsKeys.all`.
+  - `app/[lang]/vendor-dashboard/page.js:139` — `["vendor-services"]` → `vendorServicesKeys.all`.
+- **5 files deleted** (zero-importer verified by grep): `hooks/reactQueryHooks/{useNotifications,useAddons,useDiscounts,useServices,useSubscriptions}.js`.
+
+**Remaining ledger after this chunk:**
+- Phase 5 chunk 3 (web batch B) — admin, tickets, staff, guests, payments, vendors, users, plans, messaging, checkout, dashboard, auth, post-event; delete `hooks/reactQueryHooks/`, `hooks/queries/`, `hooks/mutations/`
+- Phase 5 chunks 4–5 (mobile pilot + batches; mobile QueryClient needs a `runCacheMigrations` hookup of its own before any mobile domain shifts keys)
+- Phase 5 chunk 6 — final grep + delete sweep
+- Phase 6 — auth store alignment
+- Phase 8 — lint rules, helper extractions, `userAccountService`, `getStaticAssetBaseUrl`, shim removals
+- Phase 9 — final verification + ARCHITECTURE.md
+
+### 2026-05-29, Phase 5 chunk 1 (Opus 4.7 1M) — web pilot: locations, templates, taqnyatTemplates, scheduledExtraReminders
+
+**Shipped, build-validated (`next build` exit 0, "Compiled successfully in 10.6s"):**
+
+- **New domain layout established at `labbe/hooks/<domain>/` with `{queries.js, mutations.js, keys.js, index.js}`.** Each domain exposes a key factory whose methods produce arrays structurally identical to the prior literal keys — so the new code interoperates with already-cached queries (no migration runs for this batch).
+- **`labbe/hooks/locations/`** — `locationsKeys` factory (`regions`, `cities(regionId)`, `districts(cityId)`, `allList`, `search(q)`); queries: `useRegions`, `useCitiesByRegion`, `useDistrictsByCity`, `useAllLocations`, `useSearchLocations`. Replaces `labbe/hooks/reactQueryHooks/useLocations.js`.
+- **`labbe/hooks/templates/`** — `templatesKeys` + `templateCategoriesKeys` + `fontsKeys` factories; queries: `useHostTemplates`, `useAdminTemplates`, `useTemplate`, `useTemplateCategories`, `useFonts`; mutations: `useCreateTemplate`, `useUpdateTemplate`, `useDeleteTemplate`, `useDuplicateTemplate`, `useCreateCategory`, `useUpdateCategory`, `useDeleteCategory`. Replaces `labbe/hooks/queries/useTemplates.js` + `labbe/hooks/mutations/useTemplateMutations.js`.
+- **`labbe/hooks/taqnyatTemplates/`** — split out from templates because the underlying service (`taqnyatTemplatesService`) is the SMS template module, not the invitation template module. `taqnyatTemplatesKeys` factory; queries: `useHostTaqnyatTemplates`, `useAdminTaqnyatTemplates`; mutations: `useSyncTaqnyat`, `useAssignTaqnyat`, `useCreateTaqnyatTemplate`, `useDeleteTaqnyatTemplate`. Replaces `labbe/hooks/queries/useTaqnyatTemplates.js`.
+- **`labbe/hooks/scheduledExtraReminders/`** — `scheduledExtraRemindersKeys` factory; queries: `useScheduledExtraReminders`; mutations: `useCreateScheduledExtraReminder`, `useCancelScheduledExtraReminder`. Cross-domain invalidations (events/guests on success) intentionally kept as literal arrays since `eventsKeys`/`guestsKeys` factories don't exist yet — they'll be swapped over when those domains migrate in chunk 3. Replaces `labbe/hooks/queries/useScheduledExtraReminders.js`.
+- **Consumers re-pointed (13 files):**
+  - `app/[lang]/vendor-dashboard/settings/_components/ServiceDetailsSection/ServiceDetailsEditForm.jsx`, `ui/auth/signup/vendor/stepTwo/LocationSelector.js`, `app/[lang]/market-place/page.js` → `@/hooks/locations`.
+  - `app/[lang]/host/create-event/_components/templateForm/DynamicTemplateForm.jsx`, `app/[lang]/host/create-event/_components/stepThree/StepThree.js`, `app/[lang]/admin-dash/templates/_components/{CategoryFormPopup,CategoriesStats,CategoriesTable,TemplateEditorPage,TemplatesPageContent}.jsx`, `ui/host/main-page/EventTemplatesSection.jsx` → `@/hooks/templates`.
+  - `app/[lang]/host/create-event/_components/stepFour/StepFour.js`, `app/[lang]/host/post-event/[eventId]/_components/MessagingTemplatePicker/MessagingTemplatePicker.jsx`, `app/[lang]/host/post-event/[eventId]/_components/AccessLinksDialog/AccessLinksDialog.jsx`, `app/[lang]/admin-dash/taqnyat-templates/_components/{CreateTaqnyatTemplatePopup,AssignTaqnyatTemplatePopup,TaqnyatTemplatesStats,TaqnyatTemplatesTable}.jsx` → `@/hooks/taqnyatTemplates`.
+  - `components/event-detail/ScheduleReminderSection.jsx` → `@/hooks/scheduledExtraReminders`.
+- **SSR prefetch updated:** `app/[lang]/admin-dash/taqnyat-templates/page.jsx` swapped its literal `["taqnyat-templates", "admin"]` queryKey for `taqnyatTemplatesKeys.adminList()` imported from `@/hooks/taqnyatTemplates/keys`.
+- **4 files deleted** (all zero-importer verified by grep): `hooks/reactQueryHooks/useLocations.js`, `hooks/queries/useTemplates.js`, `hooks/queries/useTaqnyatTemplates.js`, `hooks/mutations/useTemplateMutations.js`, `hooks/queries/useScheduledExtraReminders.js`. (Stale comment in `config/fonts.js` also updated to point at the new path.)
+- **Cache-migration infrastructure shipped:** `labbe/hooks/_cacheMigrations.js` (registry with `STORAGE_KEY = "halaa.cacheMigrations.applied"` + `runCacheMigrations(qc)` runner) + `providers/ReactQueryProvider.jsx` invokes it once via `useEffect` after the QueryClient is created. `MIGRATIONS` array is empty this batch (pilot factories produce byte-identical arrays); future chunks that actually change key shapes add `{ name, run(qc) }` entries.
+
+**Convention established for the remaining ~16 web domains:**
+- One folder per domain at `hooks/<domain>/`. Single `queries.js` + `mutations.js` files inside (events kept its split-file layout from Phase 4 — both are allowed by §2.4).
+- `keys.js` exports a `<domain>Keys` factory: `{ all: ["<domain>"], <subtype>: (...args) => [...all, ...] }`. Always derive from `all` so a single `invalidateQueries({ queryKey: <domain>Keys.all })` purges everything.
+- `index.js` is a barrel re-exporting queries + mutations + keys (no logic).
+- Cross-domain invalidations stay as literal arrays until the *target* domain has its factory, then get swapped.
+- **Server components must import key factories from `@/hooks/<domain>/keys` directly, not the `@/hooks/<domain>` barrel.** The barrel re-exports `"use client"` queries/mutations; the `/keys` path is plain ES module data with no client boundary. The `taqnyat-templates` SSR prefetch follows this rule.
+
+**Remaining ledger after this chunk:**
+- Phase 5 chunk 2 (web batch A) — notifications, addons, discounts, services, subscriptions
+- Phase 5 chunk 3 (web batch B) — admin, tickets, staff, guests, payments, vendors, users, plans, messaging, checkout, dashboard, auth, post-event; delete `hooks/reactQueryHooks/`, `hooks/queries/`, `hooks/mutations/`
+- Phase 5 chunks 4–5 (mobile pilot + batches)
+- Phase 5 chunk 6 — final grep + delete sweep
+- Phase 6 — auth store alignment
+- Phase 8 — lint rules, helper extractions, `userAccountService`, `getStaticAssetBaseUrl`, shim removals
+- Phase 9 — final verification + ARCHITECTURE.md
+
 ### 2026-05-26, follow-up session (Opus 4.7) — Phase 4 mobile events consolidation
 
 **Shipped, build-validated (`expo export --platform web` exit 0, 3287 modules bundled):**

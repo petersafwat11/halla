@@ -1,11 +1,13 @@
-"use client";
-import { Header } from "@/ui/layout";
+import Header from "@/ui/landing/Header/Header";
+import Footer from "@/ui/landing/Footer/Footer";
 
-export default function MarketPlaceLayout({ children }) {
+export default async function MarketPlaceLayout({ children, params }) {
+  const { lang } = await params;
   return (
     <>
-      <Header />
+      <Header lang={lang} />
       {children}
+      <Footer lang={lang} />
     </>
   );
 }

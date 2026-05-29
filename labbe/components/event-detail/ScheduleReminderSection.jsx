@@ -8,7 +8,7 @@ import {
   useCancelScheduledExtraReminder,
   useCreateScheduledExtraReminder,
   useScheduledExtraReminders,
-} from "@/hooks/queries/useScheduledExtraReminders";
+} from "@/hooks/scheduledExtraReminders";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";

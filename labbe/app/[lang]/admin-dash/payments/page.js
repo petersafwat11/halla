@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { adminKeys } from "@/hooks/admin/keys";
 import PaymentsPageHeader from "./_components/PaymentsPageHeader";
 import PaymentStats from "./_components/PaymentStats";
 import PaymentsTable from "./_components/PaymentsTable";
@@ -27,7 +28,7 @@ export default async function PaymentsPage({ params, searchParams }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["admin", "payments", filters],
+      queryKey: adminKeys.payments(filters),
       path: API_PATHS.payments.getAll,
       params: filters,
       token,

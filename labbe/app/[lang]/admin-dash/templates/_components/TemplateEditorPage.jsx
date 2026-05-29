@@ -11,11 +11,9 @@ import {
   useTemplate,
   useTemplateCategories,
   useFonts,
-} from "@/hooks/queries/useTemplates";
-import {
   useCreateTemplate,
   useUpdateTemplate,
-} from "@/hooks/mutations/useTemplateMutations";
+} from "@/hooks/templates";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import FieldConfigPanel from "./FieldConfigPanel";

@@ -18,8 +18,8 @@ import {
   useCreateScheduledExtraReminder,
   useCancelScheduledExtraReminder,
   useScheduledExtraReminders,
-} from "../../../hooks/queries/useScheduledExtraReminders";
-import { useSingleEventStats } from "../../../hooks/queries/useEvents";
+} from "../../../hooks/scheduledExtraReminders";
+import { useSingleEventStats } from "../../../hooks/events/queries";
 import { colors, spacing, textStyles } from "../../../styles/tokens";
 
 const FIVE_MIN_MS = 5 * 60 * 1000;

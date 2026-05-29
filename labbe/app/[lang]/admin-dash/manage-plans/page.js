@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { adminKeys } from "@/hooks/admin/keys";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import ManagePlansContent from "./_components/ManagePlansContent";
 import styles from "./page.module.css";
@@ -17,7 +18,9 @@ export default async function AdminManagePlansPage({ params }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["admin", "plans"],
+      // Note: client uses `adminKeys.plans(filters)` with a filters arg;
+      // the prefetch here passes no params, so we use the prefix.
+      queryKey: adminKeys.plansAll(),
       path: API_PATHS.plans.adminGetAll,
       token,
     });

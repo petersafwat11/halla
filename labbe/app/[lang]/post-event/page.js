@@ -7,7 +7,7 @@ import PostEventContent from "./_components/PostEventContent/PostEventContent";
 import {
   useValidatePostEventToken,
   usePostEventContent,
-} from "@/hooks/reactQueryHooks/post-event/useGuestPostEvent";
+} from "@/hooks/postEvent";
 import { guestTokenUtils } from "@/services/guestTokenUtils";
 import styles from "./page.module.css";
 

@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useAuthMutation } from "@/hooks/auth";
 import useAuthStore from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";

@@ -7,7 +7,7 @@ import Button from "@/ui/commen/button/Button";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import StaffPopup from "@/app/[lang]/host/create-event/_components/staffPopup/StaffPopup";
 import EventActionsHeader from "@/ui/host/events/EventActionsHeader";
-import { useEvent, useEventMutation } from "@/hooks/reactQueryHooks/useEvents";
+import { useEvent, useEventMutation } from "@/hooks/events";
 import StaffTokensList from "./StaffTokensList";
 import styles from "@/app/[lang]/host/events/[id]/singleEvent.module.css";
 

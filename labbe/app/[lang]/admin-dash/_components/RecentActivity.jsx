@@ -1,6 +1,6 @@
 "use client";
 
-import { useAdminDashboard } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminDashboard } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useCallback } from "react";

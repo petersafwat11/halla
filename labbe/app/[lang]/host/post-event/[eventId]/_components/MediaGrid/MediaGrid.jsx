@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { useDeletePostEventMedia } from "@/hooks/reactQueryHooks/post-event/useHostPostEvent";
+import { useDeletePostEventMedia } from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./mediaGrid.module.css";
 

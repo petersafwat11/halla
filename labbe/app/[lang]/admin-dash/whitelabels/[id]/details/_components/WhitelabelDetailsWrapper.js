@@ -6,7 +6,7 @@ import {
   useAdminWhitelabel,
   useAdminWhitelabelFeatures,
   useAdminWhitelabelFeatureMutation,
-} from "@/hooks/reactQueryHooks/useAdmin";
+} from "@/hooks/admin";
 import { handleError } from "@/services/errorHandlingService";
 import FeatureToggle from "@/ui/admin/FeatureToggle";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";

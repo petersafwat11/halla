@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
-import { useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { useTicketMutation } from "@/hooks/tickets";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
 import { ticketResponseSchema } from "@/utils/schemas/adminPopupSchemas";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";

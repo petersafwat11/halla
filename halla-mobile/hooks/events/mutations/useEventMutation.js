@@ -32,9 +32,8 @@ import {
  * because its backend mount is `/guests/...` rather than `/events/.../guests`.
  * Messaging mutations (`useSendTestMessage`, `useScheduleSend`,
  * `useSendBulkInvitations`, `useRetryFailed`, `useSendReminder`) live in
- * `hooks/mutations/useMessagingMutations.js` and hit the `/messaging` mount.
- * Staff-access-token lifecycle (`useRevokeStaffAccess`) lives in
- * `hooks/mutations/useStaffMutations.js`.
+ * `hooks/messaging/` and hit the `/messaging` mount. Staff-access-token
+ * lifecycle (`useRevokeStaffAccess`) lives in `hooks/staff/`.
  */
 
 const invalidateEventList = (queryClient) => {

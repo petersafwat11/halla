@@ -1,0 +1,34 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - banner [ref=e5]:
+        - generic [ref=e6]:
+          - link "Halla" [ref=e7] [cursor=pointer]:
+            - /url: /ar
+            - img "Halla" [ref=e8]
+          - link "Switch language" [ref=e9] [cursor=pointer]:
+            - /url: /en/login
+            - img [ref=e10]
+            - generic [ref=e13]: EN
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - heading "مرحبًا بك فى هلا" [level=2] [ref=e18]
+          - paragraph [ref=e19]: سجّل دخولك وابدأ رحلتك معنا في تنظيم الدعوات بأسلوب عصري ومميز.
+        - generic [ref=e21]:
+          - generic [ref=e22]: رقم الهاتف
+          - generic [ref=e23]:
+            - textbox [ref=e24]
+            - img "country-code" [ref=e25]
+        - button "تسجيل الدخول" [ref=e26] [cursor=pointer]
+        - generic [ref=e27]:
+          - button "تسجيل الدخول بالبريد اللإلكترونى arrow" [ref=e28] [cursor=pointer]:
+            - text: تسجيل الدخول بالبريد اللإلكترونى
+            - img "arrow" [ref=e29]
+          - button "ليس لديك حساب؟ إنشاء حساب" [ref=e30] [cursor=pointer]
+    - generic [ref=e32]:
+      - img "image1" [ref=e34]
+      - generic [ref=e35]:
+        - heading "Halla هلا" [level=1] [ref=e36]
+        - paragraph [ref=e37]: region's most distinguished gatherings.
+  - alert [ref=e43]

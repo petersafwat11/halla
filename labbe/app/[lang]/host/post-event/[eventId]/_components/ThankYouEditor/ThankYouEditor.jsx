@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { useUpdateThankYouMessage } from "@/hooks/reactQueryHooks/post-event/useHostPostEvent";
+import { useUpdateThankYouMessage } from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./thankYouEditor.module.css";
 

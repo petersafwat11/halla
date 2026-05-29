@@ -1,0 +1,197 @@
+/* ============================================
+   SHARED PLAN CARD — visual source of truth for
+   both the landing pricing section and the host
+   plans dashboard. Mirrors the landing card.
+   ============================================ */
+
+.card {
+  position: relative;
+  background: var(--color-natural-50);
+  border-radius: 2.4rem;
+  padding: 2rem;
+  border: none;
+  box-shadow: 0 2px 16px color-mix(in srgb, var(--color-secondary-600) 8%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: all 250ms ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--color-secondary-600) 12%, transparent);
+  transform: translateY(-4px);
+}
+
+.card.popular {
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--color-primary-500) 18%, transparent);
+}
+
+.popularBadge {
+  position: absolute;
+  top: -13px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary-300);
+  color: var(--color-natural-50);
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 0.4rem 1.4rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  font-family: "Cairo", sans-serif;
+}
+
+/* ── Top: name + price + tagline ── */
+.cardTop {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-primary-100);
+}
+
+.cardTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cardName {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-secondary-700);
+  margin: 0;
+  font-family: "Cairo", sans-serif;
+}
+
+.cardTagline {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--color-primary-500);
+  font-family: "Cairo", sans-serif;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  justify-content: flex-end;
+  text-align: end;
+}
+
+.priceNum {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--color-secondary-700);
+  line-height: 1;
+  font-family: "Cairo", sans-serif;
+}
+
+/* ── Invite selector ── */
+.guestTrack {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.55rem;
+}
+
+.guestBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.55rem 0.35rem;
+  border: 2px solid var(--color-primary-200);
+  border-radius: 0.8rem;
+  background: var(--color-natural-50);
+  cursor: pointer;
+  transition: all 220ms ease;
+  font-family: "Cairo", sans-serif;
+}
+
+.guestBtn:hover:not(.active) {
+  border-color: var(--color-primary-300);
+  background: var(--color-primary-50);
+}
+
+.guestBtn.active {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-100);
+}
+
+.guestNum {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-primary-500);
+  line-height: 1;
+}
+
+.guestUnit {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-accent-500);
+}
+
+.guestBtn.active .guestNum,
+.guestBtn.active .guestUnit {
+  color: var(--color-primary-700);
+}
+
+/* ── Features ── */
+.featSection {
+  flex: 1;
+}
+
+/* ── Footer / CTA ── */
+.cardFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.btn {
+  width: 100%;
+  padding: 1.25rem;
+  border: none;
+  border-radius: 1rem;
+  background: var(--color-primary-500);
+  color: var(--color-natural-50);
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: "Cairo", sans-serif;
+  cursor: pointer;
+  transition: all 250ms ease;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--color-primary-700);
+  transform: translateY(-2px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .guestTrack {
+    gap: 0.4rem;
+  }
+
+  .guestBtn {
+    padding: 0.5rem 0.3rem;
+  }
+
+  .guestNum {
+    font-size: 1.3rem;
+  }
+
+  .guestUnit {
+    font-size: 0.85rem;
+  }
+}

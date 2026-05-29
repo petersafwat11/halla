@@ -1,6 +1,7 @@
 ﻿import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
+import { dashboardKeys } from "@/hooks/dashboard/keys";
 import HostDashboardContent from "./HostDashboardContent";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 
@@ -16,7 +17,7 @@ export default async function HostPage({ params }) {
       // Prefetch dashboard stats for StatsCards
       initialData = await prefetchServerData({
         queryClient,
-        queryKey: ["dashboard", "host"],
+        queryKey: dashboardKeys.host(),
         path: API_PATHS.dashboard.getHostDashboard,
         token,
       });

@@ -1,0 +1,114 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halla" [ref=e5] [cursor=pointer]:
+        - /url: /ar
+        - img "Halla" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /en/admin-dash/plans
+          - img [ref=e9]
+          - generic [ref=e12]: EN
+        - button "Notifications" [ref=e14] [cursor=pointer]:
+          - img "notifications" [ref=e15]
+        - img "messages" [ref=e16]
+        - button "مدير النظام" [ref=e18] [cursor=pointer]:
+          - generic [ref=e19]:
+            - img [ref=e21]
+            - generic [ref=e23]: مدير النظام
+          - img [ref=e25]
+    - generic [ref=e27]:
+      - navigation [ref=e29]:
+        - list [ref=e30]:
+          - listitem [ref=e31] [cursor=pointer]:
+            - link "لوحة التحكم" [ref=e32]:
+              - /url: /admin-dash
+              - img [ref=e33]
+              - generic [ref=e35]: لوحة التحكم
+          - listitem [ref=e36] [cursor=pointer]:
+            - link "المدراء" [ref=e37]:
+              - /url: /admin-dash/moderators
+              - img [ref=e38]
+              - generic [ref=e40]: المدراء
+          - listitem [ref=e41] [cursor=pointer]:
+            - link "العملاء" [ref=e42]:
+              - /url: /admin-dash/hosts
+              - img [ref=e43]
+              - generic [ref=e45]: العملاء
+          - listitem [ref=e46] [cursor=pointer]:
+            - link "التجار" [ref=e47]:
+              - /url: /admin-dash/vendors
+              - img [ref=e48]
+              - generic [ref=e51]: التجار
+          - listitem [ref=e52] [cursor=pointer]:
+            - link "الوايت ليبل" [ref=e53]:
+              - /url: /admin-dash/whitelabels
+              - img [ref=e54]
+              - generic [ref=e56]: الوايت ليبل
+          - listitem [ref=e57] [cursor=pointer]:
+            - link "المناسبات" [ref=e58]:
+              - /url: /admin-dash/events
+              - img [ref=e59]
+              - generic [ref=e61]: المناسبات
+          - listitem [ref=e62] [cursor=pointer]:
+            - link "الشكاوى" [ref=e63]:
+              - /url: /admin-dash/tickets
+              - img [ref=e64]
+              - generic [ref=e66]: الشكاوى
+          - listitem [ref=e67] [cursor=pointer]:
+            - link "المدفوعات" [ref=e68]:
+              - /url: /admin-dash/payments
+              - img [ref=e69]
+              - generic [ref=e71]: المدفوعات
+          - listitem [ref=e72] [cursor=pointer]:
+            - link "الباقات" [ref=e73]:
+              - /url: /admin-dash/plans
+              - img [ref=e74]
+              - generic [ref=e76]: الباقات
+          - listitem [ref=e77] [cursor=pointer]:
+            - link "إدارة الأسعار" [ref=e78]:
+              - /url: /admin-dash/manage-plans
+              - img [ref=e79]
+              - generic [ref=e81]: إدارة الأسعار
+          - listitem [ref=e82] [cursor=pointer]:
+            - link "الخصومات" [ref=e83]:
+              - /url: /admin-dash/discounts
+              - img [ref=e84]
+              - generic [ref=e87]: الخصومات
+          - listitem [ref=e88] [cursor=pointer]:
+            - link "الإعدادات" [ref=e89]:
+              - /url: /admin-dash/settings
+              - img [ref=e90]
+              - generic [ref=e93]: الإعدادات
+          - listitem [ref=e94] [cursor=pointer]:
+            - link "قوالب الدعوات" [ref=e95]:
+              - /url: /admin-dash/templates
+              - img [ref=e96]
+              - generic [ref=e101]: قوالب الدعوات
+          - listitem [ref=e102] [cursor=pointer]:
+            - link "فئات القوالب" [ref=e103]:
+              - /url: /admin-dash/templates/categories
+              - img [ref=e104]
+              - generic [ref=e108]: فئات القوالب
+          - listitem [ref=e109] [cursor=pointer]:
+            - link "قوالب واتساب" [ref=e110]:
+              - /url: /admin-dash/taqnyat-templates
+              - img [ref=e111]
+              - generic [ref=e114]: قوالب واتساب
+      - button "تسجيل الخروج" [ref=e116]:
+        - img [ref=e117]
+        - generic [ref=e119]: تسجيل الخروج
+    - generic [ref=e122]:
+      - generic [ref=e123]:
+        - heading "باقات الاشتراك" [level=1] [ref=e124]
+        - paragraph [ref=e125]: عرض وإدارة باقة اشتراكك
+      - generic [ref=e127]:
+        - img [ref=e128]
+        - heading "لا يوجد اشتراك نشط" [level=3] [ref=e130]
+        - paragraph [ref=e131]: اختر إحدى الباقات أدناه للبدء في استخدام جميع المميزات
+      - generic [ref=e135]:
+        - generic [ref=e136]:
+          - generic [ref=e137]: "0"
+          - img "SAR" [ref=e138]
+        - button "اشترك الآن" [ref=e139] [cursor=pointer]

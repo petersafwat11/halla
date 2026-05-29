@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useEvent } from "@/hooks/reactQueryHooks/useEvents";
-import { useGuestMutation } from "@/hooks/reactQueryHooks/useGuests";
+import { useEvent } from "@/hooks/events";
+import { useGuestMutation } from "@/hooks/guests";
 import { useEventGuests } from "@/hooks/events/queries/useEventGuests";
 import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
 import styles from "@/app/[lang]/host/events/[id]/singleEvent.module.css";

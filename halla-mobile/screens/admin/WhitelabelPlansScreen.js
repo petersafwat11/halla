@@ -120,9 +120,6 @@ const WhitelabelPlansScreen = () => {
                 {t("eventTab.hint")}
               </Text>
 
-              <Text style={styles.selectorLabel}>
-                {t("inviteSelector.label")}
-              </Text>
               <View style={styles.inviteRow}>
                 {eventPlans.map((p) => {
                   const inv = p.limits?.maxInvitesPerEvent || 0;

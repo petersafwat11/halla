@@ -7,8 +7,8 @@ import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import Button from "@/ui/commen/button/Button";
 import OtpInput from "@/ui/commen/inputs/optInput/OtpInput";
 import { accountSettingsSchema } from "@/utils/schemas/accountSettingsSchema";
-import { useUserMutation } from "@/hooks/reactQueryHooks/useUsers";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useUserMutation } from "@/hooks/users";
+import { useAuthMutation } from "@/hooks/auth";
 import { toastUtils } from "@/utils/toastUtils";
 import styles from "./AccountSettings.module.css";
 

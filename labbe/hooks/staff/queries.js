@@ -1,0 +1,50 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { staffService } from "@/services/staff";
+// Phase 3: migrated from the legacy fetch-based `apiClient` to the
+// canonical axios pipeline via legacyAdapter.
+import { legacyClientAdapter as apiClient } from "@/services/new-backend/legacyAdapter";
+import { API_PATHS } from "@/services/new-backend/api.config";
+import { staffKeys } from "./keys";
+import { eventsKeys } from "@/hooks/events/keys";
+
+/**
+ * Hook to fetch event guests for staff portal.
+ */
+export const useStaffEventGuests = (eventId, filters = {}, options = {}) => {
+  const { search = "", status = "", page = 1, limit = 50 } = filters;
+  return useQuery({
+    queryKey: staffKeys.guests(eventId, { search, status, page, limit }),
+    queryFn: async () => {
+      const response = await staffService.getGuests(eventId, {
+        search,
+        status,
+        page,
+        limit,
+      });
+      return response.data || { guests: [], stats: {}, pagination: {} };
+    },
+    enabled: !!eventId,
+    staleTime: 30 * 1000,
+    ...options,
+  });
+};
+
+/**
+ * Hook to list staff access tokens for an event (host-facing).
+ */
+export const useEventStaffTokens = (eventId, options = {}) => {
+  return useQuery({
+    queryKey: eventsKeys.staffTokens(eventId),
+    queryFn: async () => {
+      const response = await apiClient.get(
+        API_PATHS.events.listStaffTokens(eventId)
+      );
+      return response.data || { tokens: [] };
+    },
+    enabled: !!eventId,
+    staleTime: 30 * 1000,
+    ...options,
+  });
+};

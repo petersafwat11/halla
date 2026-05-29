@@ -7,7 +7,7 @@ import { usePageAccess } from "@/hooks/usePageAccess";
 import {
   useAdminPayments,
   useAdminPaymentsExport,
-} from "@/hooks/reactQueryHooks/useAdmin";
+} from "@/hooks/admin";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import Table from "@/ui/commen/new-table/Table";

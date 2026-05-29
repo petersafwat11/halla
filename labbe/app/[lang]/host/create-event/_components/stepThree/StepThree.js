@@ -18,7 +18,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   useHostTemplates,
   useTemplateCategories,
-} from "@/hooks/queries/useTemplates";
+} from "@/hooks/templates";
 
 const StepThree = () => {
   const { setValue, watch } = useFormContext();

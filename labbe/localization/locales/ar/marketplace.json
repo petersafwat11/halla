@@ -39,18 +39,30 @@
   },
   "card": {
     "users": "مستخدمين",
-    "callNow": "اتصل الآن"
+    "callNow": "اتصل الآن",
+    "priceOnRequest": "السعر عند الطلب"
   },
   "vendor": {
     "defaultName": "خدمة",
-    "serviceDuration": "مدة تنفيذ الخدمة",
+    "serviceDuration": "المدة",
     "price": "السعر",
     "whatsIncluded": "ما هو مدرج",
     "contactInfo": "معلومات الاتصال",
+    "providedBy": "مقدم الخدمة",
+    "whatsapp": "واتساب",
     "close": "إغلاق"
   },
   "currency": "ريال",
-  "title": "متجر هلا",
+  "title": "سوق هلا",
+  "hero": {
+    "eyebrow": "سوق هلا",
+    "title": "اكتشف مزودي خدمات المناسبات",
+    "subtitle": "تصفّح خدمات موثوقة من مزودين معتمدين لإنجاح مناسبتك القادمة"
+  },
+  "emptyState": {
+    "title": "قريباً مزودون جدد",
+    "description": "نضيف بانتظام مزودين جدد. عد لاحقاً لاستكشاف المزيد من الخدمات."
+  },
   "noResults": {
     "title": "لا توجد نتائج",
     "description": "حاول تعديل التصفيات أو مصطلحات البحث"

@@ -3,8 +3,8 @@ import React from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { useHostTaqnyatTemplates } from "@/hooks/queries/useTaqnyatTemplates";
-import { useUpdatePostEventMessagingTemplate } from "@/hooks/reactQueryHooks/post-event/useHostPostEvent";
+import { useHostTaqnyatTemplates } from "@/hooks/taqnyatTemplates";
+import { useUpdatePostEventMessagingTemplate } from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./messagingTemplatePicker.module.css";
 

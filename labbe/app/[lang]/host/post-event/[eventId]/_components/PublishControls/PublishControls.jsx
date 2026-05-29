@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import {
   usePublishPostEventContent,
   useUnpublishPostEventContent,
-} from "@/hooks/reactQueryHooks/post-event/useHostPostEvent";
+} from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./publishControls.module.css";
 

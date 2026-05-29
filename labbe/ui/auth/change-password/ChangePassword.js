@@ -7,7 +7,7 @@ import InputGroup from "../../commen/inputs/inputGroup/InputGroup";
 import ConfirmBtn from "../../commen/confirmButton/ConfirmBtn";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useAuthMutation } from "@/hooks/auth";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 import { getAuthErrorMessage } from "@/services/errorHandlingService";
 

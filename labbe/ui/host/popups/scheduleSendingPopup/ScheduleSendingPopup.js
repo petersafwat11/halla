@@ -9,7 +9,7 @@ import Button from "@/ui/commen/button/Button";
 import DatePicker from "@/ui/commen/inputs/datePicker";
 import TimePicker from "@/ui/commen/inputs/TimePicker";
 import { toast } from "react-toastify";
-import { useScheduleSend } from "@/hooks/reactQueryHooks/useMessaging";
+import { useScheduleSend } from "@/hooks/messaging";
 
 const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule }) => {
   const { t } = useTranslation("common");

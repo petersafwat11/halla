@@ -8,7 +8,7 @@ import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import TestMessagePopup from "../TestMessagePopup";
 import ScheduleSendingPopup from "@/ui/host/popups/scheduleSendingPopup/ScheduleSendingPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import { useHostDashboard } from "@/hooks/reactQueryHooks/useDashboard";
+import { useHostDashboard } from "@/hooks/dashboard";
 import LastEventHeader from "./_components/LastEventHeader";
 import LastEventResponseStats from "./_components/LastEventResponseStats";
 import LastEventQuota from "./_components/LastEventQuota";

@@ -12,7 +12,7 @@ import {
 import { hostsAPI } from "@/services/adminDashboard";
 import { cookieUtils } from "@/utils/cookieUtils";
 import { toastUtils } from "@/utils/toastUtils";
-import { useAdminEventTargets } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminEventTargets } from "@/hooks/admin";
 import styles from "./hostSelector.module.css";
 
 const PLATFORM_ADMIN_ROLES = ["super_admin", "admin", "moderator"];

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { useAdminPayments } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminPayments } from "@/hooks/admin";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaMoneyBillWave, FaCheckCircle, FaClock, FaTimesCircle } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";

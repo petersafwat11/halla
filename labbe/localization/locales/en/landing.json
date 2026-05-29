@@ -8,13 +8,14 @@
       "store": "Store"
     },
     "login": "Login",
-    "signup": "Sign Up"
+    "signup": "Sign Up",
+    "dashboard": "Dashboard"
   },
   "hero": {
     "titleBlack1": "Your Smart Platform",
     "titleBrand": " for Invitations & Event Management",
     "titleBlack2": " Made Easy!",
-    "description": "Create your events, send personalized digital invitations via WhatsApp and SMS, and track attendance in real time — all from one platform.",
+    "description": "Create premium digital invitations, send them via WhatsApp, and track replies and attendance in real time — with Halla, your events are simpler and smarter.",
     "appText": "Or download the app"
   },
   "features": {
@@ -147,7 +148,7 @@
     "title": "Join the",
     "titleHighlight": "Halla",
     "titleEnd": "Marketplace",
-    "description": "Showcase your services and reach out to many prospect clients",
+    "description": "Join Halla Marketplace and grow your business by reaching new customers — showcase your services and manage your orders easily, for free, all from one place!",
     "feature1": "Easy Booking Management",
     "feature2": "Grow Your Revenue",
     "feature3": "Connect with Event Planners",
@@ -156,7 +157,7 @@
     "cta": "Register as a Merchant"
   },
   "vendorSearch": {
-    "title": "Find the Best Vendors",
+    "title": "Discover Halla Market",
     "description": "Connect with our best specialized and certified stores and get premium services for your next event.",
     "searchPlaceholder": "Search for a vendor...",
     "searchBtn": "Search",

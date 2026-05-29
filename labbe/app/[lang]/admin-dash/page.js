@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { adminKeys } from "@/hooks/admin/keys";
 import DashboardPageHeader from "./_components/DashboardPageHeader";
 import DashboardStats from "./_components/DashboardStats";
 import DashboardCharts from "./_components/DashboardCharts";
@@ -32,7 +33,7 @@ export default async function AdminDashboardPage({ params, searchParams }) {
     try {
       await prefetchServerData({
         queryClient,
-        queryKey: ["admin", "dashboard", filters],
+        queryKey: adminKeys.dashboard(filters),
         path: API_PATHS.dashboard.getAdminDashboard,
         params: filters,
         token,

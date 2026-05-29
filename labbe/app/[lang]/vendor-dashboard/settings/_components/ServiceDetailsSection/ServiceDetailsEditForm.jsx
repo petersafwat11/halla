@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import EditFormHeader from "./EditFormHeader";
 import DocumentUploadsRow from "./DocumentUploadsRow";
 import LocationFieldsRow from "./LocationFieldsRow";
-import { useRegions, useCitiesByRegion, useDistrictsByCity } from "@/hooks/reactQueryHooks/useLocations";
+import { useRegions, useCitiesByRegion, useDistrictsByCity } from "@/hooks/locations";
 import { validateForm, serviceDetailsSchema } from "@/utils/schemas/vendorSettings";
 
 const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading }) => {

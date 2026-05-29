@@ -4,9 +4,9 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
 import { toastUtils } from "@/utils/toastUtils";
-import { useHostPlans } from "@/hooks/reactQueryHooks/usePlans";
-import { useMySubscription } from "@/hooks/reactQueryHooks/useSubscriptions";
-import { useCheckout } from "@/hooks/reactQueryHooks/useCheckout";
+import { useHostPlans } from "@/hooks/plans";
+import { useMySubscription } from "@/hooks/subscriptions";
+import { useCheckout } from "@/hooks/checkout";
 
 const getInviteValue = (plan, billingType) => {
   if (billingType === "monthly") return plan.invitePool ?? 0;

@@ -6,7 +6,7 @@ import {
   FaCalendarAlt, FaBuilding, FaUsers,
 } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import { useAdminPlans } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminPlans } from "@/hooks/admin";
 import Header from "@/ui/admin/header/Header";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";

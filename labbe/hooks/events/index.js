@@ -2,6 +2,8 @@
 // EVENTS HOOKS - Barrel Export
 // ============================================
 
+export { eventsKeys } from "./keys";
+
 // Queries
 export { useMyEvents } from "./queries/useMyEvents";
 export { useEventStats } from "./queries/useEventStats";

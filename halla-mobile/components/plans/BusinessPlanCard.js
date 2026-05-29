@@ -29,6 +29,8 @@ const BusinessPlanCard = ({
         plan={plan}
         lang={locale}
         selectedInviteCount={selectedInviteCount}
+        showDuration={false}
+        inlineExtras
       />
 
       <TouchableOpacity

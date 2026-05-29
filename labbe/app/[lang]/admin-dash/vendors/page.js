@@ -2,6 +2,7 @@
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { adminKeys } from "@/hooks/admin/keys";
 import VendorsPageHeader from "./_components/VendorsPageHeader";
 import VendorsTable from "./_components/VendorsTable";
 import VendorStats from "./_components/VendorStats";
@@ -28,7 +29,7 @@ export default async function VendorsPage({ params, searchParams }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["admin", "vendors", filters],
+      queryKey: adminKeys.vendors(filters),
       path: API_PATHS.admin.vendors.getAll,
       params: filters,
       token,

@@ -2,6 +2,7 @@
 import { requirePageAccess } from "@/services/serverAuth";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
+import { adminKeys } from "@/hooks/admin/keys";
 import HostDetailsContent from "./_components/HostDetailsContent";
 import styles from "./page.module.css";
 
@@ -16,7 +17,7 @@ export default async function AdminHostDetailsPage({ params }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["admin", "hosts", id],
+      queryKey: adminKeys.hostDetail(id),
       path: API_PATHS.admin.hosts.getById(id),
       token,
     });

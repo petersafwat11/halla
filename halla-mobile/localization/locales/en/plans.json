@@ -9,6 +9,7 @@
     "annual": "Annual Pool"
   },
   "planFamilies": { "basic": "Halaa Basic", "premium": "Halaa Premium" },
+  "popular": "Most Popular",
   "planFamilyDescriptions": {
     "basic": "Self-managed — you handle everything",
     "premium": "Fully managed by our team"

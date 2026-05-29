@@ -1,6 +1,6 @@
 "use client";
 import { useTranslation } from "react-i18next";
-import { useAdminPaymentDetail } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminPaymentDetail } from "@/hooks/admin";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./AdminPaymentsClient.module.css";
 

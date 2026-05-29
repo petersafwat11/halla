@@ -150,11 +150,17 @@
 }
 
 .large .check {
-  width: 1.5rem;
-  height: 1.5rem;
-  font-size: 0.95rem;
-  margin-top: 0.1rem;
-  background: color-mix(in srgb, var(--color-success-600, #16a34a) 16%, transparent);
+  width: 1.7rem;
+  height: 1.7rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 0.15rem;
+  border: none;
+  position: relative;
+  z-index: 1;
+  background: var(--color-primary-100, #f5ece4);
+  color: var(--color-primary-700, #8a6541);
 }
 
 .large .metaRows {

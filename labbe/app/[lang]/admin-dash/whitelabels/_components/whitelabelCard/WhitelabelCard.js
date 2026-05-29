@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
-import { useAdminWhitelabelMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminWhitelabelMutation } from "@/hooks/admin";
 import { useRouter } from "next/navigation";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";

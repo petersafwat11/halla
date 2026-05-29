@@ -18,8 +18,8 @@ import {
   useUpdateAdminEventStatus,
   useDeleteAdminEvent,
 } from "../../hooks";
-import { useSingleEventStats } from "../../hooks/queries/useEvents";
-import { useEventGuests } from "../../hooks/queries/useGuests";
+import { useSingleEventStats } from "../../hooks/events/queries";
+import { useEventGuests } from "../../hooks/guests";
 import {
   useUpdateGuest,
   useDeleteGuest,
@@ -27,14 +27,14 @@ import {
   useRevokeGuestAccess,
   useAddGuest,
   useExportGuests,
-} from "../../hooks/mutations/useGuestMutations";
+} from "../../hooks/guests";
 import {
   useAddEventStaff,
   useUpdateEventStaff,
   useDeleteEventStaff,
 } from "../../hooks/events/mutations/useEventMutation";
-import { useRevokeStaffAccess } from "../../hooks/mutations/useStaffMutations";
-import { useSendReminder } from "../../hooks/mutations/useMessagingMutations";
+import { useRevokeStaffAccess } from "../../hooks/staff";
+import { useSendReminder } from "../../hooks/messaging";
 
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";

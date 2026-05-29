@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRegions, useCitiesByRegion, useDistrictsByCity } from "./queries/useLocations";
+import { useRegions, useCitiesByRegion, useDistrictsByCity } from "./locations";
 import { useVendorCategories } from "./queries/useMarketplace";
 
 const DEFAULT_FILTERS = {

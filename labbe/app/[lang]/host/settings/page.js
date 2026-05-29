@@ -9,7 +9,7 @@ import NotificationPreferences from "@/ui/settings/notificationsPrefrences/Notif
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import { useMyProfile, useNotificationPreferences } from "@/hooks/reactQueryHooks/useUsers";
+import { useMyProfile, useNotificationPreferences } from "@/hooks/users";
 import { USER_ROLES } from "@/utils/schemas/notificationPreferencesSchemas";
 import styles from "./page.module.css";
 

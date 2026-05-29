@@ -26,13 +26,19 @@ export const USER_STATUS = {
 
 // ============================================
 // AUTH STORE - STATE ONLY
-// All API logic moved to hooks/auth/useAuthMutation.js
+// All API logic moved to hooks/auth/mutations.js
 //
 // Tokens live in HttpOnly cookies (`access_token`, `refresh_token`).
-// JS never reads them. The in-memory `token` field is kept for components
-// that still display the JWT during a session, but it is **not persisted**:
-// a page reload leaves no copy in localStorage. `partialize` pins the
-// persisted slice.
+// JS never reads them — the store therefore holds no `token` field
+// (Phase 6 alignment with mobile, which uses secure-store for refresh
+// and keeps access in-memory).
+//
+// `status` is the canonical 4-state machine shared with mobile:
+//   checking → loading → authenticated | unauthenticated
+// On the web side the localStorage rehydration is synchronous, so
+// `checking` is effectively a single frame on initial mount; we still
+// expose the same vocabulary so cross-app components can read one
+// shape (`@halla/shared/schemas/auth` → `authStoreSnapshotSchema`).
 // ============================================
 
 const useAuthStore = create(
@@ -40,10 +46,9 @@ const useAuthStore = create(
     (set, get) => ({
       // ============ STATE ============
       user: null,
-      token: null, // not persisted (cookie-only) — see partialize
       subscription: null,
-      isAuthenticated: false,
-      isLoading: false,
+      // 'checking' | 'loading' | 'authenticated' | 'unauthenticated'
+      status: "checking",
       error: null,
 
       // OTP State
@@ -61,7 +66,7 @@ const useAuthStore = create(
 
       // ============ COMPUTED GETTERS ============
       getUserRole: () => get().user?.role || null,
-      
+
       isAdmin: () => {
         const role = get().user?.role;
         return [
@@ -70,11 +75,11 @@ const useAuthStore = create(
           USER_ROLES.MODERATOR,
         ].includes(role);
       },
-      
+
       isHost: () => get().user?.role === USER_ROLES.HOST,
-      
+
       isVendor: () => get().user?.role === USER_ROLES.VENDOR,
-      
+
       isWhitelabel: () => {
         const role = get().user?.role;
         return [
@@ -82,57 +87,55 @@ const useAuthStore = create(
           USER_ROLES.WHITELABEL_MODERATOR,
         ].includes(role);
       },
-      
+
       getSubscription: () => get().subscription,
-      
+
       isProfileComplete: () => get().user?.roleData?.profileCompleted ?? true,
 
       // ============ STATE SETTERS ============
       setUser: (user) => set({ user }),
-      
-      setToken: (token) => set({ token }),
-      
+
       setSubscription: (subscription) => set({ subscription }),
-      
-      setLoading: (loading) => set({ isLoading: loading }),
-      
+
+      setStatus: (status) => set({ status }),
+
       setError: (error) => set({ error }),
-      
+
       clearError: () => set({ error: null }),
 
       // OTP State Setters
-      setOTPSent: (phoneNumber, type) => 
+      setOTPSent: (phoneNumber, type) =>
         set({ otpSent: true, otpPhone: phoneNumber, otpType: type }),
-      
-      clearOTPState: () => 
+
+      clearOTPState: () =>
         set({ otpSent: false, otpPhone: null, otpType: null }),
 
       // Reset State Setters
-      setResetTokenSent: (email) => 
+      setResetTokenSent: (email) =>
         set({ resetTokenSent: true, resetEmail: email }),
-      
-      clearResetState: () => 
+
+      clearResetState: () =>
         set({ resetTokenSent: false, resetEmail: null }),
 
       // Setup Token Setters
-      setSetupTokenValid: (data) => 
+      setSetupTokenValid: (data) =>
         set({ setupTokenValid: true, setupTokenData: data }),
-      
-      clearSetupState: () => 
+
+      clearSetupState: () =>
         set({ setupTokenValid: false, setupTokenData: null }),
 
       // ============ AUTH STATE ACTIONS ============
-      
+
       /**
-       * Set authenticated user after successful login/signup
+       * Set authenticated user after successful login/signup.
+       * The access token is no longer tracked client-side — it lives in
+       * the HttpOnly `access_token` cookie set by the backend.
        */
-      setAuth: (user, token, subscription = null) => {
+      setAuth: (user, subscription = null) => {
         set({
           user,
-          token,
           subscription,
-          isAuthenticated: true,
-          isLoading: false,
+          status: "authenticated",
           error: null,
         });
       },
@@ -154,11 +157,6 @@ const useAuthStore = create(
        * local state regardless of network outcome. Without the backend
        * call a stolen cookie could keep refreshing access tokens until
        * the 30-day TTL.
-       *
-       * Note on import shape: this method is also wired through the
-       * `useAuthMutation('logout')` mutation in `useAuthMutation.js` for
-       * call-sites that prefer React Query semantics. Both paths must
-       * remain safe to call independently.
        */
       logout: async () => {
         if (typeof window !== "undefined") {
@@ -179,10 +177,8 @@ const useAuthStore = create(
 
         set({
           user: null,
-          token: null,
           subscription: null,
-          isAuthenticated: false,
-          isLoading: false,
+          status: "unauthenticated",
           error: null,
           otpSent: false,
           otpPhone: null,
@@ -193,24 +189,22 @@ const useAuthStore = create(
           setupTokenData: null,
         });
       },
-
-      /**
-       * Initialize auth state (called on app mount)
-       */
-      initializeAuth: (token) => {
-        if (token) {
-          set({ token });
-        }
-      },
     }),
     {
       name: "auth-storage",
       storage: createJSONStorage(() => localStorage),
+      // Persist only the durable slice. `status` is derived on rehydrate
+      // so a returning visitor with a cached `user` is immediately
+      // "authenticated" without an extra round-trip; a cleared cache
+      // lands in "unauthenticated". Tokens are never persisted (cookies).
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
         subscription: state.subscription,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+        state.status = state.user ? "authenticated" : "unauthenticated";
+      },
     },
   ),
 );

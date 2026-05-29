@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useAdminWhitelabels } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminWhitelabels } from "@/hooks/admin";
 import { useTranslation } from "react-i18next";
 import { FiEye, FiCheckCircle, FiSlash, FiCreditCard, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";

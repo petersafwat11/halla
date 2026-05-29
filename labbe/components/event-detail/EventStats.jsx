@@ -2,7 +2,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import CardLayout from "@/ui/commen/card/CardLayout";
-import { useSingleEventStats, useEvent } from "@/hooks/reactQueryHooks/useEvents";
+import { useSingleEventStats, useEvent } from "@/hooks/events";
 import PartialFailureBanner from "./PartialFailureBanner";
 // Canonical layout classes live in the host page CSS. Admin's page CSS
 // duplicates the same class names but with slightly different rules —

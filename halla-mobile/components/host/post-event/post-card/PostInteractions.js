@@ -12,7 +12,7 @@ import {
   usePostEventComments,
   useAddPostEventComment,
   useTogglePostEventLike,
-} from "../../../../hooks/queries/post-event/useGuestPostEvent";
+} from "../../../../hooks/postEvent";
 
 const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
   const liked = !!post.userLiked;

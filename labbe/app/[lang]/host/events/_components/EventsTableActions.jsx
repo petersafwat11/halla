@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEventMutation } from "@/hooks/reactQueryHooks/useEvents";
+import { useEventMutation } from "@/hooks/events";
 import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 
 /**

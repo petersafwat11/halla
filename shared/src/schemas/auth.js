@@ -373,6 +373,52 @@ export const updateProfileSchema = (t = idT) =>
   });
 
 // ============================================================
+// AUTH STORE SNAPSHOT
+// ============================================================
+// Canonical shape of the persisted slice of both apps' auth stores.
+// Web persists to localStorage via zustand `persist`; mobile mirrors the
+// user object to secure-store as a cold-launch shadow. The full store
+// object holds additional in-memory fields (status machine, OTP flow
+// state, errors); only the fields below are *durable* and shared.
+//
+// Tokens are NEVER part of the snapshot:
+//   - web: access + refresh tokens live in HttpOnly cookies (server-set)
+//   - mobile: refresh token lives in expo-secure-store; access token is
+//     in-memory only (rotated via /auth/refresh on cold-launch)
+//
+// `subscription` is optional because mobile fetches it through a
+// dedicated RQ query (`hooks/subscriptions/`) rather than persisting it
+// in the auth store. Web keeps it here because the login response
+// envelope returns it inline.
+export const AUTH_STATUS_VALUES = [
+  "checking",
+  "loading",
+  "authenticated",
+  "unauthenticated",
+];
+
+export const authStatusSchema = z.enum(AUTH_STATUS_VALUES);
+
+export const authStoreSnapshotSchema = z
+  .object({
+    user: z
+      .object({
+        _id: z.string().optional(),
+        id: z.string().optional(),
+        role: z.string(),
+        email: z.string().optional().nullable(),
+        phoneNumber: z.string().optional().nullable(),
+        username: z.string().optional().nullable(),
+        name: z.string().optional().nullable(),
+        roleData: z.record(z.any()).optional(),
+      })
+      .passthrough()
+      .nullable(),
+    subscription: z.record(z.any()).nullable().optional(),
+  })
+  .passthrough();
+
+// ============================================================
 // SCHEMA BARREL (object form for legacy `schemas.foo` access)
 // ============================================================
 
@@ -396,6 +442,9 @@ export const authSchemas = {
   whitelabelSignup: whitelabelSignupSchema,
 
   updateProfile: updateProfileSchema,
+
+  authStoreSnapshot: authStoreSnapshotSchema,
+  authStatus: authStatusSchema,
 };
 
 export default authSchemas;

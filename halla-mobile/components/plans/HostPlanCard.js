@@ -38,16 +38,12 @@ const HostPlanCard = ({
       {isPopular ? (
         <View style={styles.popularBadge}>
           <Text style={styles.popularBadgeText}>
-            {t(`planFamilies.${planFamily}`)}
+            {t("popular", { defaultValue: "" })}
           </Text>
         </View>
       ) : null}
 
-      <PlanPriceBlock
-        planFamily={planFamily}
-        billingType={billingType}
-        price={price}
-      />
+      <PlanPriceBlock planFamily={planFamily} price={price} />
 
       <InviteSelector
         plans={plans}
@@ -60,6 +56,9 @@ const HostPlanCard = ({
         plan={matchedPlan}
         lang={lang}
         selectedInviteCount={selectedInvites}
+        showTagline={false}
+        showDuration={false}
+        inlineExtras
       />
 
       <TouchableOpacity
@@ -79,8 +78,6 @@ const styles = StyleSheet.create({
     position: "relative",
     backgroundColor: colors.natural[50],
     borderRadius: borderRadius[20],
-    borderWidth: 2,
-    borderColor: colors.primary[200],
     padding: spacing[20],
     marginBottom: spacing[16],
     shadowColor: colors.black[100],
@@ -90,8 +87,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardPopular: {
-    borderColor: colors.primary[500],
-    shadowOpacity: 0.12,
+    shadowColor: colors.primary[500],
+    shadowOpacity: 0.18,
   },
   popularBadge: {
     position: "absolute",
@@ -107,51 +104,12 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.body.small,
     color: colors.natural[50],
   },
-  validityNote: {
-    backgroundColor: colors.primary[50],
-    borderWidth: 1,
-    borderColor: colors.primary[100],
-    borderRadius: borderRadius[12],
-    paddingVertical: spacing[8],
-    paddingHorizontal: spacing[12],
-    marginBottom: spacing[16],
-    alignItems: "center",
-  },
-  validityNoteText: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: typography.fontSize.body.small,
-    color: colors.secondary[700],
-    textAlign: "center",
-  },
-  compensation: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing[12],
-    padding: spacing[12],
-    backgroundColor: colors.primary[50],
-    borderWidth: 1,
-    borderColor: colors.primary[200],
-    borderRadius: borderRadius[12],
-    marginBottom: spacing[12],
-  },
-  compensationContent: {
-    flex: 1,
-  },
-  compensationTitle: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: typography.fontSize.body.small,
-    color: colors.secondary[600],
-  },
-  compensationValue: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.body.medium,
-    color: colors.primary[500],
-  },
   subscribeBtn: {
     paddingVertical: spacing[16],
     borderRadius: borderRadius[12],
     backgroundColor: colors.primary[500],
     alignItems: "center",
+    marginTop: spacing[8],
     shadowColor: colors.primary[500],
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,

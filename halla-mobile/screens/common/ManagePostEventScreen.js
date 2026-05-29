@@ -19,7 +19,7 @@ import {
   useUnpublishPostEventContent,
   useUpdateThankYouMessage,
   useUploadPostEventMedia,
-} from "../../hooks/queries/post-event/useHostPostEvent";
+} from "../../hooks/postEvent";
 import ThankYouMessageSection from "../../components/host/post-event/ThankYouMessageSection";
 import ContentSummary from "../../components/host/post-event/ContentSummary";
 import MediaUploader from "../../components/host/post-event/MediaUploader";

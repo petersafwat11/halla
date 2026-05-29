@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { useMyTickets } from "@/hooks/reactQueryHooks/useTickets";
+import { useMyTickets } from "@/hooks/tickets";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaTicketAlt, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";

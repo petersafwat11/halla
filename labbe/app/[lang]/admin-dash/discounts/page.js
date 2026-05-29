@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { discountsKeys } from "@/hooks/discounts/keys";
 import DiscountsPageContent from "./_components/DiscountsPageContent";
 
 export default async function DiscountsPage({ params, searchParams }) {
@@ -24,7 +25,7 @@ export default async function DiscountsPage({ params, searchParams }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["discounts", "admin", filters],
+      queryKey: discountsKeys.adminList(filters),
       path: API_PATHS.discounts.list,
       params: filters,
       token,

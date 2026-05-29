@@ -144,14 +144,20 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(cfg);
       }
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        // The HttpOnly access/refresh cookies are cleared server-side by
-        // /auth/logout; here we only clear the JS-readable routing hints.
-        Cookies.remove('token'); // legacy cookie cleanup (B-1)
-        Cookies.remove('userType');
-        Cookies.remove('profileCompleted');
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 100);
+        // If there was no session to begin with, this 401 came from a public
+        // page that incidentally fired an authenticated request. Bouncing an
+        // anonymous visitor to /login would be wrong — just reject.
+        const hadSession = Cookies.get('userType');
+        if (hadSession) {
+          // The HttpOnly access/refresh cookies are cleared server-side by
+          // /auth/logout; here we only clear the JS-readable routing hints.
+          Cookies.remove('token'); // legacy cookie cleanup (B-1)
+          Cookies.remove('userType');
+          Cookies.remove('profileCompleted');
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 100);
+        }
       }
     }
 

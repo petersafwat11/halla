@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { usePoll3DS } from "@/hooks/reactQueryHooks/usePayments";
+import { usePoll3DS } from "@/hooks/payments";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./PaymentReturnClient.module.css";
 

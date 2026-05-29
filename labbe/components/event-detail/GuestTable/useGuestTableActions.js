@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { handleError } from "@/services/errorHandlingService";
 import { downloadExportFile } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
-import { useSendReminder } from "@/hooks/reactQueryHooks/useMessaging";
+import { useSendReminder } from "@/hooks/messaging";
 
 export default function useGuestTableActions({
   t,

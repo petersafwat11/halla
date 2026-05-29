@@ -1,0 +1,54 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - banner [ref=e5]:
+        - generic [ref=e6]:
+          - link "Halla" [ref=e7] [cursor=pointer]:
+            - /url: /ar
+            - img "Halla" [ref=e8]
+          - link "Switch language" [ref=e9] [cursor=pointer]:
+            - /url: /en/login
+            - img [ref=e10]
+            - generic [ref=e13]: EN
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - heading "مرحبًا بك فى هلا" [level=2] [ref=e47]
+          - paragraph [ref=e48]: سجّل دخولك وابدأ رحلتك معنا في تنظيم الدعوات بأسلوب عصري ومميز.
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]: البريد اللإلكترونى*
+              - generic [ref=e53]:
+                - textbox "البريد اللإلكترونى*" [ref=e54]:
+                  - /placeholder: ادخل البريد اللإلكترونى
+                  - text: test.admin@labbe.sa
+                - img "icon" [ref=e55]
+            - generic [ref=e56]:
+              - generic [ref=e57]: كلمة المرور*
+              - generic [ref=e58]:
+                - textbox "كلمة المرور*" [ref=e59]:
+                  - /placeholder: ادخل كلمة المرور
+                  - text: password123
+                - img "icon" [ref=e60]
+                - button "Show password" [ref=e61] [cursor=pointer]:
+                  - img [ref=e62]
+          - generic [ref=e65]:
+            - button "نسيت كلمة المرور" [ref=e66] [cursor=pointer]
+            - generic [ref=e67]:
+              - paragraph [ref=e68]: تذكرنى
+              - checkbox [ref=e69] [cursor=pointer]
+        - button "تسجيل الدخول" [ref=e70] [cursor=pointer]
+        - generic [ref=e71]:
+          - button "تسجيل الدخول بكلمة مرور مؤقتة arrow" [ref=e72] [cursor=pointer]:
+            - text: تسجيل الدخول بكلمة مرور مؤقتة
+            - img "arrow" [ref=e73]
+          - button "ليس لديك حساب؟ إنشاء حساب" [ref=e74] [cursor=pointer]
+    - generic [ref=e32]:
+      - img "image3" [ref=e75]
+      - generic [ref=e35]:
+        - heading "Halla هلا" [level=1] [ref=e36]
+        - paragraph [ref=e37]: region's most distinguished gatherings.
+  - button "Open Next.js Dev Tools" [ref=e81] [cursor=pointer]:
+    - img [ref=e82]
+  - alert [ref=e43]

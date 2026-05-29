@@ -1,6 +1,6 @@
 "use client";
 
-import { useAdminHosts, useAdminHostMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminHosts, useAdminHostMutation } from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";

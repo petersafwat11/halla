@@ -2,42 +2,18 @@ import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { View, StyleSheet, StatusBar } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TopBar from "../../components/plans/TopBar";
-import {
-  SearchAndFilter,
-  VendorCards,
-  MoreInfoPopup,
-} from "../../components/marketplace";
-import FilterPopup from "../../components/marketplace/FilterPopup";
+import { VendorCards, MoreInfoPopup } from "../../components/marketplace";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import marketplaceService from "../../services/marketplaceService";
 import { useMarketplaceServices } from "../../hooks";
 
-const DEFAULT_FILTERS = {
-  serviceType: "all",
-  regionId: "",
-  cityId: "",
-  districtIds: [],
-  minPrice: "",
-  maxPrice: "",
-  minRating: "",
-};
-
 const Marketplace = ({ navigation }) => {
-  const { t, i18n } = useTranslation("marketplace");
+  const { t } = useTranslation("marketplace");
   const toast = useToast();
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [showVendorPopup, setShowVendorPopup] = useState(false);
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
-
-  const queryParams = useMemo(() => ({
-    search: searchQuery,
-    ...filters,
-    districtIds: filters.districtIds?.join(","),
-  }), [searchQuery, filters]);
 
   const {
     data: infiniteData,
@@ -47,7 +23,7 @@ const Marketplace = ({ navigation }) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMarketplaceServices(queryParams);
+  } = useMarketplaceServices({});
 
   useEffect(() => {
     if (error) {
@@ -56,7 +32,7 @@ const Marketplace = ({ navigation }) => {
   }, [error, toast, t]);
 
   const vendors = useMemo(() => {
-    const allServices = infiniteData?.pages?.flatMap(page => page?.data || []) || [];
+    const allServices = infiniteData?.pages?.flatMap((page) => page?.data || []) || [];
     return allServices.map((service) => ({
       id: service.id,
       name: service.name || t("vendor.defaultName", "خدمة"),
@@ -83,22 +59,6 @@ const Marketplace = ({ navigation }) => {
 
   const totalVendors = infiniteData?.pages?.[0]?.pagination?.total || vendors.length;
 
-  const handleSearch = useCallback((query) => {
-    setSearchQuery(query);
-  }, []);
-
-  const handleFilterPress = useCallback(() => {
-    setShowFilterPopup(true);
-  }, []);
-
-  const handleApplyFilters = useCallback((newFilters) => {
-    setFilters(newFilters);
-  }, []);
-
-  const handleResetFilters = useCallback(() => {
-    setFilters(DEFAULT_FILTERS);
-  }, []);
-
   const handleVendorCallPress = useCallback((vendor) => {
     setSelectedVendor(vendor);
     setShowVendorPopup(true);
@@ -121,33 +81,17 @@ const Marketplace = ({ navigation }) => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const activeFiltersCount = [
-    filters.serviceType && filters.serviceType !== "all",
-    filters.regionId,
-    filters.cityId,
-    filters.districtIds?.length > 0,
-    filters.minPrice || filters.maxPrice,
-    filters.minRating,
-  ].filter(Boolean).length;
-
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#C28E5C" />
 
       <TopBar
-        title={`${t("title", "المتجر")} (${totalVendors})`}
+        title={`${t("title", "المتجر")}${totalVendors ? ` (${totalVendors})` : ""}`}
         onBack={handleBack}
         showBack={!!navigation}
       />
 
       <View style={styles.content}>
-        <SearchAndFilter
-          onSearch={handleSearch}
-          onFilterPress={handleFilterPress}
-          searchQuery={searchQuery}
-          activeFiltersCount={activeFiltersCount}
-        />
-
         <VendorCards
           vendors={vendors}
           onVendorCallPress={handleVendorCallPress}
@@ -163,14 +107,6 @@ const Marketplace = ({ navigation }) => {
         visible={showVendorPopup}
         vendor={selectedVendor}
         onClose={handleCloseVendorPopup}
-      />
-
-      <FilterPopup
-        visible={showFilterPopup}
-        onClose={() => setShowFilterPopup(false)}
-        filters={filters}
-        onApplyFilters={handleApplyFilters}
-        onResetFilters={handleResetFilters}
       />
     </SafeAreaView>
   );

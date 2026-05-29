@@ -4,7 +4,7 @@ import Table from "@/ui/commen/new-table/Table";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMyEvents } from "@/hooks/reactQueryHooks/useEvents";
+import { useMyEvents } from "@/hooks/events";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import { useLocalizedDate } from "@/utils/date/useLocalizedDate";

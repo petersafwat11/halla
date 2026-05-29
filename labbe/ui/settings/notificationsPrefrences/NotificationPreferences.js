@@ -17,7 +17,7 @@ import {
   getNotificationOptionsForRole,
   USER_ROLES,
 } from "@/utils/schemas/notificationPreferencesSchemas";
-import { useUserMutation } from "@/hooks/reactQueryHooks/useUsers";
+import { useUserMutation } from "@/hooks/users";
 import { toastUtils } from "@/utils/toastUtils";
 import styles from "./NotificationPreferences.module.css";
 

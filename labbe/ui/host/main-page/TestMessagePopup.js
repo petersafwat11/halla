@@ -7,7 +7,7 @@ import { z } from "zod";
 import styles from "./testMessagePopup.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import Button from "@/ui/commen/button/Button";
-import { useSendTestMessage } from "@/hooks/reactQueryHooks/useMessaging";
+import { useSendTestMessage } from "@/hooks/messaging";
 import { toast } from "react-toastify";
 
 const testMessageSchema = (t) =>

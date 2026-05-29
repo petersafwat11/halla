@@ -7,7 +7,7 @@ import { buildMutationOptions } from "./_shared";
 
 // Action keys handled by this sub-mutation. Guest add/update/delete
 // have moved to the canonical `useGuestMutation` factory in
-// `hooks/reactQueryHooks/useGuests.js`.
+// `hooks/guests/`.
 export const GUEST_ACTIONS = ["updateGuestList"];
 
 const buildMutations = (queryClient) => ({

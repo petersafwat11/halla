@@ -1,0 +1,160 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halla" [ref=e5] [cursor=pointer]:
+        - /url: /ar
+        - img "Halla" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /en/host
+          - img [ref=e9]
+          - generic [ref=e12]: EN
+        - button "Notifications (8 unread)" [ref=e14] [cursor=pointer]:
+          - img "notifications" [ref=e15]
+          - generic [ref=e16]: "8"
+        - img "messages" [ref=e17]
+        - button "إدارة المناسبات" [ref=e19] [cursor=pointer]:
+          - generic [ref=e20]:
+            - img [ref=e22]
+            - generic [ref=e24]: إدارة المناسبات
+          - img [ref=e26]
+    - generic [ref=e28]:
+      - navigation [ref=e30]:
+        - list [ref=e31]:
+          - listitem [ref=e32] [cursor=pointer]:
+            - link "لوحة التحكم" [ref=e33]:
+              - /url: /host
+              - img [ref=e34]
+              - generic [ref=e36]: لوحة التحكم
+          - listitem [ref=e37] [cursor=pointer]:
+            - link "المناسبات" [ref=e38]:
+              - /url: /host/events
+              - img [ref=e39]
+              - generic [ref=e41]: المناسبات
+          - listitem [ref=e42] [cursor=pointer]:
+            - link "المدفوعات" [ref=e43]:
+              - /url: /host/payments
+              - img [ref=e44]
+              - generic [ref=e46]: المدفوعات
+          - listitem [ref=e47] [cursor=pointer]:
+            - link "الشكاوى" [ref=e48]:
+              - /url: /host/tickets
+              - img [ref=e49]
+              - generic [ref=e51]: الشكاوى
+          - listitem [ref=e52] [cursor=pointer]:
+            - link "الخدمات" [ref=e53]:
+              - /url: /host/plans
+              - img [ref=e54]
+              - generic [ref=e56]: الخدمات
+          - listitem [ref=e57] [cursor=pointer]:
+            - link "المتجر" [ref=e58]:
+              - /url: /market-place
+              - img [ref=e59]
+              - generic [ref=e61]: المتجر
+          - listitem [ref=e62] [cursor=pointer]:
+            - link "الإعدادات" [ref=e63]:
+              - /url: /host/settings
+              - img [ref=e64]
+              - generic [ref=e67]: الإعدادات
+      - button "تسجيل الخروج" [ref=e69]:
+        - img [ref=e70]
+        - generic [ref=e72]: تسجيل الخروج
+    - generic [ref=e74]:
+      - generic [ref=e75]:
+        - generic [ref=e76]:
+          - heading "مرحباً! 👋" [level=1] [ref=e77]
+          - paragraph [ref=e78]: أدر مناسباتك وتابع تقدمك
+        - button "إنشاء مناسبة +" [ref=e79] [cursor=pointer]
+      - generic [ref=e80]:
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - generic [ref=e84]:
+              - generic [ref=e85]: إجمالي المناسبات
+              - generic [ref=e86]: "9"
+            - img "total events" [ref=e87]
+          - generic [ref=e88]:
+            - generic [ref=e89]:
+              - generic [ref=e90]: المناسبات النشطة
+              - generic [ref=e91]: "1"
+            - img "active events" [ref=e92]
+          - generic [ref=e93]:
+            - generic [ref=e94]:
+              - generic [ref=e95]: المسودات
+              - generic [ref=e96]: "4"
+            - img "draft events" [ref=e97]
+          - generic [ref=e98]:
+            - generic [ref=e99]:
+              - generic [ref=e100]: المناسبات المنتهية
+              - generic [ref=e101]: "2"
+            - img "ended events" [ref=e102]
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - img [ref=e107]
+            - generic [ref=e109]:
+              - generic [ref=e110]:
+                - heading "kjkjkjl" [level=3] [ref=e112]
+                - generic [ref=e114]: مسودة
+              - generic [ref=e115]:
+                - generic [ref=e116]:
+                  - img "guest" [ref=e117]
+                  - generic [ref=e118]: 1 ضيف
+                - generic [ref=e119]:
+                  - img "date" [ref=e120]
+                  - generic [ref=e121]: الأربعاء، ٢٧ مايو ٢٠٢٦ - 12:00:AM
+                - generic [ref=e122]:
+                  - img "location" [ref=e123]
+                  - generic [ref=e124]: RHDA3934، 3934 وادي القري، 7094, King Salman Neighborhood, Riyadh 12433, Saudi Arabia
+          - img [ref=e126]
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - generic [ref=e129]: لم يرد
+              - generic [ref=e130]: "1"
+            - generic [ref=e131]:
+              - generic [ref=e132]: معتذر
+              - generic [ref=e133]: "0"
+            - generic [ref=e134]:
+              - generic [ref=e135]: موافق
+              - generic [ref=e136]: "0"
+          - img [ref=e138]
+          - generic [ref=e139]:
+            - generic [ref=e140]:
+              - generic [ref=e141]: ضيوف المناسبة المتبقين
+              - generic [ref=e142]: "149"
+            - generic [ref=e144]:
+              - generic [ref=e145]: الرسائل التعويضية المتبقية
+              - generic [ref=e146]: "22"
+          - img [ref=e148]
+          - generic [ref=e149]:
+            - button "رسالة تجريبية test" [ref=e150] [cursor=pointer]:
+              - generic [ref=e151]: رسالة تجريبية
+              - img "test" [ref=e152]
+            - button "عرض الإحصائيات diagram" [ref=e153] [cursor=pointer]:
+              - generic [ref=e154]: عرض الإحصائيات
+              - img "diagram" [ref=e155]
+            - button "edit تعديل المناسبة arrow-down" [ref=e157] [cursor=pointer]:
+              - img "edit" [ref=e158]
+              - generic [ref=e159]: تعديل المناسبة
+              - img "arrow-down" [ref=e160]
+      - generic [ref=e162]:
+        - generic [ref=e163]:
+          - heading "قوالب المناسبات" [level=2] [ref=e164]
+          - paragraph [ref=e165]: اختر القالب المناسب الذى تراه يعبر عن المناسبة
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - button "كل الفئات" [ref=e168] [cursor=pointer]
+            - button "زفاف" [ref=e169] [cursor=pointer]
+            - button "خطوبة" [ref=e170] [cursor=pointer]
+            - button "عيد ميلاد" [ref=e171] [cursor=pointer]
+            - button "استقبال مولود" [ref=e172] [cursor=pointer]
+            - button "مناسبة نسائية" [ref=e173] [cursor=pointer]
+            - button "مناسبات عامة" [ref=e174] [cursor=pointer]
+            - button "مؤتمر" [ref=e175] [cursor=pointer]
+          - generic [ref=e176]:
+            - img "مؤتمر القادة" [ref=e179] [cursor=pointer]
+            - img "ربيع المناسبات" [ref=e182] [cursor=pointer]
+            - img "زفاف ملكي" [ref=e185] [cursor=pointer]
+            - img "ليلة الفوانيس" [ref=e188] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e200] [cursor=pointer]:
+    - img [ref=e201]
+  - alert [ref=e204]

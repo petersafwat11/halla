@@ -25,6 +25,7 @@ export default function PlanDescription({
   showTagline = true,
   showDuration = true,
   size = "default",
+  inlineExtras = false,
 }) {
   const { t } = useTranslation("plans");
 
@@ -61,7 +62,23 @@ export default function PlanDescription({
   const tagline = taglineKey ? t(taglineKey, { defaultValue: "" }) : "";
   const includesBasic = family === "premium";
 
-  const rootClass = `${styles.planDescription}${size === "large" ? ` ${styles.large}` : ""}`;
+  const compensationLine = compensationCount > 0
+    ? t("compensationRow", {
+        count: compensationCount,
+        percent: COMPENSATION_PERCENTAGE,
+        base: compensationBase,
+      })
+    : null;
+
+  const mergedBullets = inlineExtras
+    ? [
+        ...(durationLine ? [durationLine] : []),
+        ...bullets,
+        ...(compensationLine ? [compensationLine] : []),
+      ]
+    : bullets;
+
+  const rootClass = `${styles.planDescription}${size === "large" ? ` ${styles.large}` : ""}${inlineExtras ? ` ${styles.inlineExtras}` : ""}`;
 
   return (
     <div className={rootClass}>
@@ -69,7 +86,7 @@ export default function PlanDescription({
         <p className={styles.tagline}>{tagline}</p>
       ) : null}
 
-      {showDuration && durationLine ? (
+      {showDuration && !inlineExtras && durationLine ? (
         <p className={styles.duration}>{durationLine}</p>
       ) : null}
 
@@ -77,9 +94,9 @@ export default function PlanDescription({
         <p className={styles.includesHeading}>{t("includes.basic")}</p>
       ) : null}
 
-      {bullets.length > 0 ? (
+      {mergedBullets.length > 0 ? (
         <ul className={styles.bullets}>
-          {bullets.map((line, i) => (
+          {mergedBullets.map((line, i) => (
             <li key={i} className={styles.bulletItem}>
               <span className={styles.check} aria-hidden>✓</span>
               <span className={styles.bulletText}>{line}</span>
@@ -88,20 +105,16 @@ export default function PlanDescription({
         </ul>
       ) : null}
 
-      {compensationCount > 0 ? (
+      {!inlineExtras && compensationCount > 0 ? (
         <div className={styles.compensationBox}>
           <span className={styles.compensationIcon} aria-hidden>🎁</span>
           <span className={styles.compensationText}>
-            {t("compensationRow", {
-              count: compensationCount,
-              percent: COMPENSATION_PERCENTAGE,
-              base: compensationBase,
-            })}
+            {compensationLine}
           </span>
         </div>
       ) : null}
 
-      {(setupFee > 0 || whatsappCount > 0) ? (
+      {!inlineExtras && (setupFee > 0 || whatsappCount > 0) ? (
         <div className={styles.metaRows}>
           {setupFee > 0 ? (
             <p className={styles.metaRow}>

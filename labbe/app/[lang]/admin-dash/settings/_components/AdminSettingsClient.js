@@ -8,7 +8,7 @@ import AccountSettings from "@/app/[lang]/host/settings/_components/AccountSetti
 import NotificationPreferences from "@/ui/settings/notificationsPrefrences/NotificationPreferences";
 import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import { useMyProfile, useNotificationPreferences } from "@/hooks/reactQueryHooks/useUsers";
+import { useMyProfile, useNotificationPreferences } from "@/hooks/users";
 import { USER_ROLES } from "@/utils/schemas/notificationPreferencesSchemas";
 import styles from "../page.module.css";
 

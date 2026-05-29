@@ -6,8 +6,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { FaSpinner, FaExclamationTriangle, FaCheck } from "react-icons/fa";
 import styles from "./page.module.css";
 import useAuthStore from "@/stores/authStore";
-import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
-import { useCheckout } from "@/hooks/reactQueryHooks/useCheckout";
+import { useBusinessPlans } from "@/hooks/plans";
+import { useCheckout } from "@/hooks/checkout";
+import { subscriptionsKeys } from "@/hooks/subscriptions/keys";
+import { plansKeys } from "@/hooks/plans/keys";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import { getLocalized } from "@/utils/locale";
@@ -25,23 +27,20 @@ function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSe
 
   return (
     <div className={styles.hostCard}>
-      <div>
-        <div className={styles.guestLabel}>{t("plansPage.selectInvites")}</div>
-        <div className={styles.guestTrack}>
-          {plans.map((plan) => (
-            <button
-              key={plan.code}
-              type="button"
-              className={`${styles.guestBtn} ${selectedCode === plan.code ? styles.guestBtnActive : ""}`}
-              onClick={() => onSelect(plan.code)}
-            >
-              <span className={styles.guestNum}>
-                {plan.limits?.maxInvitesPerEvent || 0}
-              </span>
-              <span className={styles.guestUnit}>{t("plansPage.inviteUnit")}</span>
-            </button>
-          ))}
-        </div>
+      <div className={styles.guestTrack}>
+        {plans.map((plan) => (
+          <button
+            key={plan.code}
+            type="button"
+            className={`${styles.guestBtn} ${selectedCode === plan.code ? styles.guestBtnActive : ""}`}
+            onClick={() => onSelect(plan.code)}
+          >
+            <span className={styles.guestNum}>
+              {plan.limits?.maxInvitesPerEvent || 0}
+            </span>
+            <span className={styles.guestUnit}>{t("plansPage.inviteUnit")}</span>
+          </button>
+        ))}
       </div>
 
       <div className={styles.hostPrice}>
@@ -49,11 +48,17 @@ function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSe
           {formatPrice(selectedPlan?.pricing?.oneTime)}
         </span>
         <SarIcon size="1.5rem" className={styles.hostPriceCur} />
-        <span className={styles.hostPricePer}>{t("plansPage.pricePerEvent")}</span>
       </div>
 
       <div className={styles.featSection}>
-        <PlanDescription plan={selectedPlan} lang={lang} selectedInviteCount={selectedInvites} />
+        <PlanDescription
+          plan={selectedPlan}
+          lang={lang}
+          selectedInviteCount={selectedInvites}
+          showDuration={false}
+          size="large"
+          inlineExtras
+        />
       </div>
 
       <button
@@ -103,14 +108,17 @@ function PoolPlanCard({ plan, type, isSelected, isCurrent, isSubscribing, onSele
             </span>
             <SarIcon size="1.5rem" className={styles.planPriceCur} />
           </div>
-          <span className={styles.planPricePer}>
-            {type === "quarterly" ? t("plansPage.pricePerQuarter") : t("plansPage.pricePerYear")}
-          </span>
         </div>
       </div>
 
       <div className={styles.featSection}>
-        <PlanDescription plan={plan} lang={lang} />
+        <PlanDescription
+          plan={plan}
+          lang={lang}
+          showDuration={false}
+          size="large"
+          inlineExtras
+        />
       </div>
 
       <button
@@ -247,7 +255,7 @@ const PlansPageInner = () => {
       if (result?.requiresAction) {
         return;
       }
-      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
       toastUtils.success(t("plansPage.successMessage"));
       setShowSummary(false);
       setSelectedPlanForSummary(null);
@@ -288,7 +296,7 @@ const PlansPageInner = () => {
           <button
             type="button"
             onClick={() =>
-              queryClient.invalidateQueries({ queryKey: ["plans", "business"] })
+              queryClient.invalidateQueries({ queryKey: plansKeys.business() })
             }
             className={styles.retryBtn}
           >

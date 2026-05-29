@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaLock } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
-import { useValidateDiscount } from "@/hooks/reactQueryHooks/useDiscounts";
+import { useValidateDiscount } from "@/hooks/discounts";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import PaymentMethodSelector from "../_components/PaymentMethodSelector";
 import PlanSummaryCard from "./_components/PlanSummaryCard";

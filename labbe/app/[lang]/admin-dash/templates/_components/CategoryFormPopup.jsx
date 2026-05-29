@@ -12,7 +12,7 @@ import Button from "@/ui/commen/button/Button";
 import {
   useCreateCategory,
   useUpdateCategory,
-} from "@/hooks/mutations/useTemplateMutations";
+} from "@/hooks/templates";
 import styles from "./CategoryFormPopup.module.css";
 
 export default function CategoryFormPopup({ onClose, category }) {

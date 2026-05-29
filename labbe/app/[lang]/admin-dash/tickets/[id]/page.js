@@ -2,6 +2,7 @@
 import { requirePageAccess } from "@/services/serverAuth";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
+import { ticketsKeys } from "@/hooks/tickets/keys";
 import TicketDetailsContent from "./_components/TicketDetailsContent";
 import styles from "./page.module.css";
 
@@ -16,7 +17,7 @@ export default async function AdminTicketDetailsPage({ params }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["tickets", id],
+      queryKey: ticketsKeys.detail(id),
       path: API_PATHS.tickets.getTicketById(id),
       token,
     });

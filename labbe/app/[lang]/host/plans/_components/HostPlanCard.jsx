@@ -1,14 +1,17 @@
 "use client";
 import { useTranslation } from "react-i18next";
-import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
-import SarIcon from "@/ui/commen/SarIcon/SarIcon";
-import styles from "./HostPlanCard.module.css";
+import PlanCard from "@/ui/plans/PlanCard/PlanCard";
 
 const getOptionValue = (plan, billingType) => {
+  if (!plan) return 0;
   if (billingType === "monthly") return plan.invitePool ?? 0;
   return plan.invites ?? 0;
 };
 
+/**
+ * Host plans dashboard card — thin wrapper around the shared <PlanCard>
+ * so the page and the landing pricing section stay visually identical.
+ */
 const HostPlanCard = ({
   planFamily,
   isPopular = false,
@@ -19,81 +22,26 @@ const HostPlanCard = ({
   onSubscribe,
   lang = "ar",
 }) => {
-  const { t, i18n } = useTranslation("plans");
-  const activeLang = lang || i18n.language || "ar";
+  const { t } = useTranslation("plans");
 
   const matchedPlan =
     plans.find((p) => getOptionValue(p, billingType) === selectedInvites) ||
     plans[0] ||
     null;
 
-  const price = matchedPlan?.price || 0;
-
   return (
-    <div className={`${styles.card} ${isPopular ? styles.popular : ""}`}>
-      {isPopular ? (
-        <div className={styles.popularBadge}>{t(`planFamilies.${planFamily}`)}</div>
-      ) : null}
-
-      <div className={styles.cardTop}>
-        <div className={styles.titleSection}>
-          <h3 className={styles.cardName}>{t(`planFamilies.${planFamily}`)}</h3>
-          <p className={styles.cardDesc}>{t(`planFamilyDescriptions.${planFamily}`)}</p>
-        </div>
-        <div className={styles.price}>
-          <div className={styles.priceRow}>
-            <span className={styles.priceNum}>{price.toLocaleString()}</span>
-            <SarIcon size="1.5rem" className={styles.priceCur} />
-          </div>
-          <span className={styles.pricePer}>
-            {billingType === "monthly"
-              ? t("billingTypeLabels.monthly")
-              : t("billingTypeLabels.event")}
-          </span>
-        </div>
-      </div>
-
-      <div className={styles.selectorWrap}>
-        <div className={styles.selectorLabel}>
-          {billingType === "monthly"
-            ? t("inviteSelector.poolLabel")
-            : t("inviteSelector.label")}
-        </div>
-        <div className={styles.guestTrack}>
-          {plans.map((plan) => {
-            const value = getOptionValue(plan, billingType);
-            return (
-              <button
-                key={plan.code}
-                type="button"
-                className={`${styles.guestBtn} ${selectedInvites === value ? styles.active : ""}`}
-                onClick={() => onInviteChange(value)}
-              >
-                <span className={styles.guestNum}>{value}</span>
-                <span className={styles.guestUnit}>{t("inviteSelector.invites")}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <PlanDescription
-        plan={matchedPlan}
-        lang={activeLang}
-        selectedInviteCount={selectedInvites}
-      />
-
-      <div className={styles.cardFooter}>
-        <button
-          type="button"
-          className={styles.subscribeBtn}
-          onClick={() => onSubscribe?.(matchedPlan)}
-          disabled={!matchedPlan}
-        >
-          {t("buttons.subscribeNow")}
-        </button>
-      </div>
-    </div>
+    <PlanCard
+      planFamily={planFamily}
+      matchedPlan={matchedPlan}
+      plans={plans}
+      billingType={billingType}
+      selectedInvites={selectedInvites}
+      onInviteChange={onInviteChange}
+      isPopular={isPopular}
+      lang={lang}
+      ctaLabel={t("buttons.subscribeNow")}
+      onCtaClick={onSubscribe}
+    />
   );
 };
 

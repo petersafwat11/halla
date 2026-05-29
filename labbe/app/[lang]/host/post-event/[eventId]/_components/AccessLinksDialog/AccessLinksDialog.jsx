@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { useHostTaqnyatTemplates } from "@/hooks/queries/useTaqnyatTemplates";
+import { useHostTaqnyatTemplates } from "@/hooks/taqnyatTemplates";
 import {
   useGeneratePostEventTokens,
   useSendPostEventAccessLinks,
-} from "@/hooks/reactQueryHooks/post-event/useHostPostEvent";
+} from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./accessLinksDialog.module.css";
 

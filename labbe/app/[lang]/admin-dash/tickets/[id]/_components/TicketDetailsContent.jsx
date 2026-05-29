@@ -1,6 +1,6 @@
 "use client";
 
-import { useTicket } from "@/hooks/reactQueryHooks/useTickets";
+import { useTicket } from "@/hooks/tickets";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";

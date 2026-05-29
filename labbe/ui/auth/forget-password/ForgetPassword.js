@@ -6,7 +6,7 @@ import Image from "next/image";
 import InputGroup from "../../commen/inputs/inputGroup/InputGroup";
 import ConfirmBtn from "../../commen/confirmButton/ConfirmBtn";
 import { useTranslation } from "react-i18next";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useAuthMutation } from "@/hooks/auth";
 import { getAuthErrorMessage } from "@/services/errorHandlingService";
 
 const ForgetPassword = () => {

@@ -11,6 +11,8 @@ import {
 import Summary from "./summary/Summary";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { usePlansPageState } from "./_hooks/usePlansPageState";
+import { subscriptionsKeys } from "@/hooks/subscriptions/keys";
+import { plansKeys } from "@/hooks/plans/keys";
 import styles from "./plans.module.css";
 
 const PlansPage = () => {
@@ -125,8 +127,8 @@ const PlansPage = () => {
           <p>{t("errors.loadFailed")}</p>
           <button
             onClick={() => {
-              queryClient.invalidateQueries({ queryKey: ["plans"] });
-              queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+              queryClient.invalidateQueries({ queryKey: plansKeys.all });
+              queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
             }}
           >
             {t("buttons.retry")}

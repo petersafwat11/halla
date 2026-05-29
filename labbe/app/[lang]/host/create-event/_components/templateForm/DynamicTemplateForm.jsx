@@ -11,7 +11,7 @@ import {
   buildDynamicTemplateSchema,
   buildDefaultValues,
 } from "@/utils/schemas/createEventSchema";
-import { useFonts } from "@/hooks/queries/useTemplates";
+import { useFonts } from "@/hooks/templates";
 import TemplatePreviewCanvas from "@/components/shared/TemplatePreviewCanvas";
 import { renderField } from "./renderField";
 import { bakeTemplateImage } from "./useTemplateBake";

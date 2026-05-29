@@ -13,7 +13,7 @@ import { vendorSignupSchema } from "@/utils/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import StepSix from "./stepSix/StepSix";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useAuthMutation } from "@/hooks/auth";
 import {
   validateFormStep,
   handleNextStep as utilNextStep,

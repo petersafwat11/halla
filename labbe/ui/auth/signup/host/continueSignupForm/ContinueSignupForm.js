@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { hostProfileCompletionSchema } from "@/utils/schemas/authSchema";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useAuthMutation } from "@/hooks/auth";
 import useAuthStore from "@/stores/authStore";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 import { useRouter } from "next/navigation";
@@ -31,7 +31,7 @@ const ContinueSignupForm = () => {
   const mutationErrorMsg = mutationErrorInfo?.message || "";
 
   // Auth store for auth state
-  const { isAuthenticated } = useAuthStore();
+  const isAuthenticated = useAuthStore((s) => s.status === "authenticated");
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);

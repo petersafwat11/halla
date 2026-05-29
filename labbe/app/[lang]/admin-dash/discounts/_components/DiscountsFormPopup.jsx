@@ -8,7 +8,7 @@ import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
-import { useCreateDiscount, useUpdateDiscount } from "@/hooks/reactQueryHooks/useDiscounts";
+import { useCreateDiscount, useUpdateDiscount } from "@/hooks/discounts";
 import DiscountsFormFields from "./DiscountsFormFields";
 import { buildPayload } from "./discountsFormUtils";
 import { discountSchema } from "@/utils/schemas/adminPopupSchemas";

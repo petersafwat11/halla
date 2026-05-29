@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaCheckCircle, FaTicketAlt, FaStar } from "react-icons/fa";
-import { useTicketForRating, useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { useTicketForRating, useTicketMutation } from "@/hooks/tickets";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import StarRating from "@/ui/commen/inputs/starRating/StarRating";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";

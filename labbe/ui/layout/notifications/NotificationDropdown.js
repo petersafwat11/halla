@@ -7,7 +7,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { IoCheckmarkDoneOutline, IoTrashOutline } from "react-icons/io5";
 import { apiRequest } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
-import { useNotificationMutation } from "@/hooks/reactQueryHooks/useNotifications";
+import { useNotificationMutation } from "@/hooks/notifications";
+import { notificationsKeys } from "@/hooks/notifications/keys";
 import NotificationItem from "./NotificationItem";
 import NotificationEmpty from "./NotificationEmpty";
 import styles from "./notifications.module.css";
@@ -25,7 +26,7 @@ const NotificationDropdown = ({ onClose, basePath = "" }) => {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ["notifications", "dropdown", PAGE_LIMIT],
+    queryKey: notificationsKeys.dropdown(PAGE_LIMIT),
     queryFn: ({ pageParam = 1 }) =>
       apiRequest({
         method: "GET",

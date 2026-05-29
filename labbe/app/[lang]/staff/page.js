@@ -16,7 +16,7 @@ import { useStaffAuth } from "./hooks/useStaffAuth";
 import {
   useStaffEventGuests,
   useStaffMutation,
-} from "@/hooks/reactQueryHooks/useStaff";
+} from "@/hooks/staff";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./page.module.css";
 

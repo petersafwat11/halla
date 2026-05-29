@@ -8,23 +8,22 @@ const COMPENSATION_PERCENTAGE = 15;
 
 /**
  * <PlanDescription> — mobile mirror of the web component.
- * Source-of-truth contract is documented in docs/plans-rewrite-2026-05.md §5.
  *
- * Renders (in order):
- *   1. Family tagline (basic / premium / business)
- *   2. Duration line (event / monthly / quarterly / annual)
- *   3. "All Basic features +" heading (premium only)
- *   4. Feature bullets from plan.featureBullets[lang]
- *   5. Compensation row (computed from COMPENSATION_PERCENTAGE)
- *   6. Setup fee row (if plan.setupFeeAmount > 0)
- *   7. Free invites row (pool plans with invitePool > 0)
- *   8. WhatsApp templates row (if features.whatsAppTemplates > 0)
+ * Props mirror web/ui/plans/PlanDescription:
+ *   showTagline  — render the family tagline above bullets (default true)
+ *   showDuration — render the duration line above bullets (default true).
+ *                  Has no effect when `inlineExtras` is true.
+ *   inlineExtras — when true, fold duration + compensation into the bullet
+ *                  list (with checkmark icons) instead of rendering them as
+ *                  standalone rows. Matches the landing pricing card.
  */
 const PlanDescription = ({
   plan,
   lang,
   selectedInviteCount,
   showTagline = true,
+  showDuration = true,
+  inlineExtras = false,
 }) => {
   const { t, i18n } = useTranslation("plans");
   const activeLang = lang || i18n.language || "ar";
@@ -65,13 +64,30 @@ const PlanDescription = ({
   const tagline = family ? t(`taglines.${family}`, { defaultValue: "" }) : "";
   const includesBasic = family === "premium";
 
+  const compensationLine =
+    compensationCount > 0
+      ? t("compensationRow", {
+          count: formatNumber(compensationCount, activeLang),
+          percent: COMPENSATION_PERCENTAGE,
+          base: formatNumber(compensationBase, activeLang),
+        })
+      : null;
+
+  const mergedBullets = inlineExtras
+    ? [
+        ...(durationLine ? [durationLine] : []),
+        ...bullets,
+        ...(compensationLine ? [compensationLine] : []),
+      ]
+    : bullets;
+
   return (
     <View style={styles.container}>
       {showTagline && tagline ? (
         <Text style={styles.tagline}>{tagline}</Text>
       ) : null}
 
-      {durationLine ? (
+      {showDuration && !inlineExtras && durationLine ? (
         <Text style={styles.duration}>{durationLine}</Text>
       ) : null}
 
@@ -79,9 +95,9 @@ const PlanDescription = ({
         <Text style={styles.includesHeading}>{t("includes.basic")}</Text>
       ) : null}
 
-      {bullets.length > 0 ? (
+      {mergedBullets.length > 0 ? (
         <View style={styles.bullets}>
-          {bullets.map((line, i) => (
+          {mergedBullets.map((line, i) => (
             <View key={i} style={styles.bulletItem}>
               <Ionicons
                 name="checkmark-circle-outline"
@@ -94,51 +110,47 @@ const PlanDescription = ({
         </View>
       ) : null}
 
-      <View style={styles.metaRows}>
-        {compensationCount > 0 ? (
-          <View style={styles.metaRow}>
-            <Ionicons name="gift-outline" size={16} color="#C28E5C" />
-            <Text style={styles.metaText}>
-              {t("compensationRow", {
-                count: formatNumber(compensationCount, activeLang),
-                percent: COMPENSATION_PERCENTAGE,
-                base: formatNumber(compensationBase, activeLang),
-              })}
-            </Text>
-          </View>
-        ) : null}
+      {!inlineExtras && (compensationCount > 0 || setupFee > 0 || (isPool && invitePool > 0) || whatsappCount > 0) ? (
+        <View style={styles.metaRows}>
+          {compensationCount > 0 ? (
+            <View style={styles.metaRow}>
+              <Ionicons name="gift-outline" size={16} color="#C28E5C" />
+              <Text style={styles.metaText}>{compensationLine}</Text>
+            </View>
+          ) : null}
 
-        {setupFee > 0 ? (
-          <View style={styles.metaRow}>
-            <Ionicons name="briefcase-outline" size={16} color="#C28E5C" />
-            <Text style={styles.metaText}>
-              {t("setupFeeRow", {
-                amount: formatNumber(setupFee, activeLang),
-              })}
-            </Text>
-          </View>
-        ) : null}
+          {setupFee > 0 ? (
+            <View style={styles.metaRow}>
+              <Ionicons name="briefcase-outline" size={16} color="#C28E5C" />
+              <Text style={styles.metaText}>
+                {t("setupFeeRow", {
+                  amount: formatNumber(setupFee, activeLang),
+                })}
+              </Text>
+            </View>
+          ) : null}
 
-        {isPool && invitePool > 0 ? (
-          <View style={styles.metaRow}>
-            <Ionicons name="mail-outline" size={16} color="#C28E5C" />
-            <Text style={styles.metaText}>
-              {t("freeInvitesRow", {
-                count: formatNumber(invitePool, activeLang),
-              })}
-            </Text>
-          </View>
-        ) : null}
+          {isPool && invitePool > 0 ? (
+            <View style={styles.metaRow}>
+              <Ionicons name="mail-outline" size={16} color="#C28E5C" />
+              <Text style={styles.metaText}>
+                {t("freeInvitesRow", {
+                  count: formatNumber(invitePool, activeLang),
+                })}
+              </Text>
+            </View>
+          ) : null}
 
-        {whatsappCount > 0 ? (
-          <View style={styles.metaRow}>
-            <Ionicons name="logo-whatsapp" size={16} color="#2A8C5B" />
-            <Text style={styles.metaText}>
-              {t("whatsappTemplates", { count: whatsappCount })}
-            </Text>
-          </View>
-        ) : null}
-      </View>
+          {whatsappCount > 0 ? (
+            <View style={styles.metaRow}>
+              <Ionicons name="logo-whatsapp" size={16} color="#2A8C5B" />
+              <Text style={styles.metaText}>
+                {t("whatsappTemplates", { count: whatsappCount })}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
     </View>
   );
 };

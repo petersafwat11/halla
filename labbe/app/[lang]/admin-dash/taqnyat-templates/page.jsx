@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { taqnyatTemplatesKeys } from "@/hooks/taqnyatTemplates/keys";
 import TaqnyatTemplatesPageContent from "./_components/TaqnyatTemplatesPageContent";
 
 export default async function Page({ params }) {
@@ -15,7 +16,7 @@ export default async function Page({ params }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["taqnyat-templates", "admin"],
+      queryKey: taqnyatTemplatesKeys.adminList(),
       path: API_PATHS.taqnyatTemplates.adminList,
       token,
     });

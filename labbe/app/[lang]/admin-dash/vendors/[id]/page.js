@@ -2,6 +2,7 @@
 import { requirePageAccess } from "@/services/serverAuth";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
+import { adminKeys } from "@/hooks/admin/keys";
 import VendorDetailsContent from "./_components/VendorDetailsContent";
 import styles from "./page.module.css";
 
@@ -16,7 +17,7 @@ export default async function AdminVendorDetailsPage({ params }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["admin", "vendors", id],
+      queryKey: adminKeys.vendorDetail(id),
       path: API_PATHS.admin.vendors.getById(id),
       token,
     });

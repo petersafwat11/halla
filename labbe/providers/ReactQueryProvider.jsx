@@ -1,7 +1,8 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { runCacheMigrations } from "@/hooks/_cacheMigrations";
 
 export default function ReactQueryProvider({ children }) {
   const [queryClient] = useState(
@@ -15,6 +16,10 @@ export default function ReactQueryProvider({ children }) {
         },
       })
   );
+
+  useEffect(() => {
+    runCacheMigrations(queryClient);
+  }, [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

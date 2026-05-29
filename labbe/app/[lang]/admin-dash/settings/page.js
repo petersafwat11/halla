@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { usersKeys } from "@/hooks/users/keys";
 import AdminSettingsClient from "./_components/AdminSettingsClient";
 
 const AdminSettingsPage = async ({ params }) => {
@@ -17,13 +18,13 @@ const AdminSettingsPage = async ({ params }) => {
     await Promise.all([
       prefetchServerData({
         queryClient,
-        queryKey: ["users", "my-profile"],
+        queryKey: usersKeys.myProfile(),
         path: API_PATHS.users.getMyProfile,
         token,
       }),
       prefetchServerData({
         queryClient,
-        queryKey: ["users", "notification-preferences"],
+        queryKey: usersKeys.notificationPreferences(),
         path: API_PATHS.users.getNotificationPreferences,
         token,
       }),

@@ -18,7 +18,7 @@
   "pageTitle": "اختر باقتك",
   "pageSubtitle": "اختر الباقة المناسبة لمناسبتك",
   "loading": "جار التحميل...",
-  "planFamilies": { "basic": "هلا اساسى", "premium": "هلا مميز" },
+  "planFamilies": { "basic": "هلا بيسك", "premium": "هلا بريميوم" },
   "planFamilyDescriptions": {
     "basic": "تدير كل شيء بنفسك — نحن نتولى الجانب التقني",
     "premium": "فريقنا يدير كل شيء عنك"
@@ -46,7 +46,7 @@
     "quarterly": "اشتراك 3 اشهر",
     "annual": "اشتراك سنوى"
   },
-  "includes": { "basic": "جميع مميزات باقة هلا بيزك +" },
+  "includes": { "basic": "جميع مميزات باقة هلا بيسك +" },
   "compensationRow": "{{count}} دعوة تعويضية ({{percent}}٪ من {{base}})",
   "setupFeeRow": "رسوم تأسيس لمرة واحدة: {{amount}} ر.س",
   "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",

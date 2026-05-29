@@ -17,7 +17,7 @@ import {
   useToggleServiceStatus,
   useAddVendorService,
   useUpdateVendorService,
-} from "../../hooks/mutations/useVendorMutations";
+} from "../../hooks/vendor";
 import { useToast } from "../../contexts/ToastContext";
 import { getImageUrl } from "../../utils/imageUtils";
 

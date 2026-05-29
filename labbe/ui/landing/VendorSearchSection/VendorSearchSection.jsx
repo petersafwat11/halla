@@ -2,6 +2,7 @@
 import React from "react";
 import styles from "./vendorSearchSection.module.css";
 import Image from "next/image";
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import useCarouselSnap from "../_shared/useCarouselSnap";
 import CarouselDots from "../_shared/CarouselDots";
@@ -91,7 +92,9 @@ const VendorSearchSection = ({ lang = "ar" }) => {
           />
         </div>
 
-        <button className={styles.moreButton}>{t("vendorSearch.moreBtn")}</button>
+        <Link href={`/${lang}/market-place`} className={styles.moreButton}>
+          {t("vendorSearch.moreBtn")}
+        </Link>
       </div>
     </section>
   );

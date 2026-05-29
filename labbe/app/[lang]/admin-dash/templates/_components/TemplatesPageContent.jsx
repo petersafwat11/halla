@@ -8,11 +8,9 @@ import Button from "@/ui/commen/button/Button";
 import {
   useAdminTemplates,
   useTemplateCategories,
-} from "@/hooks/queries/useTemplates";
-import {
   useDeleteTemplate,
   useDuplicateTemplate,
-} from "@/hooks/mutations/useTemplateMutations";
+} from "@/hooks/templates";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";

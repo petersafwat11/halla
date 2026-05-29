@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useFormContext } from 'react-hook-form';
 import { DropdownInput } from './index';
 import CheckboxGroup from './CheckboxGroup';
-import { useRegions, useCitiesByRegion, useDistrictsByCity } from '../../hooks/queries/useLocations';
+import { useRegions, useCitiesByRegion, useDistrictsByCity } from '../../hooks/locations';
 import { useTranslation } from '../../localization';
 
 const LocationSelector = () => {

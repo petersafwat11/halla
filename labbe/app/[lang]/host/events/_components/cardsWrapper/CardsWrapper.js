@@ -3,7 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./cardsWrapper.module.css";
 import StatsCards from "@/ui/host/main-page/StatsCards";
-import { useEventStats } from "@/hooks/reactQueryHooks/useEvents";
+import { useEventStats } from "@/hooks/events";
 
 const CardsWrapper = () => {
   const { t } = useTranslation("home-events");

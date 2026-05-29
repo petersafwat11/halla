@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useAdminWhitelabel, useAdminWhitelabelMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminWhitelabel, useAdminWhitelabelMutation } from "@/hooks/admin";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";

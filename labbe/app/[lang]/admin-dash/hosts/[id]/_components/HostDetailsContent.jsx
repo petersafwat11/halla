@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useAdminHost, useAdminHostMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminHost, useAdminHostMutation } from "@/hooks/admin";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";

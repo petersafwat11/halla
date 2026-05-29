@@ -7,7 +7,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { Button } from '../../components/commen';
 import SignupStepper from '../../components/commen/SignupStepper';
 import { whitelabelSignupSchema } from '../../utils/schemas/authSchemas';
-import { useWhitelabelSignup } from '../../hooks/mutations/useAuthMutations';
+import { useWhitelabelSignup } from '../../hooks/auth';
 import { authErrorMessage } from '../../services/authErrors';
 import WhitelabelStep1Identity from '../../components/auth/whitelabel-signup/WhitelabelStep1Identity';
 import WhitelabelStep2Login from '../../components/auth/whitelabel-signup/WhitelabelStep2Login';

@@ -51,16 +51,16 @@ async function seed() {
 
   const EXPECTED = {
     trial: 1,
-    basic_event: 10,
-    basic_monthly: 10,
-    premium_event: 10,
-    premium_monthly: 10,
-    business_event: 10,
+    basic_event: 6,
+    basic_monthly: 6,
+    premium_event: 6,
+    premium_monthly: 6,
+    business_event: 6,
     business_quarterly: 1,
     business_annual: 1,
     unlimited: 1,
   };
-  const EXPECTED_TOTAL = 54;
+  const EXPECTED_TOTAL = 34;
 
   console.log('\n── Validation ──');
   let allOk = true;

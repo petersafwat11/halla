@@ -22,7 +22,7 @@ import {
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
-import { useHostTaqnyatTemplates } from "../../hooks/queries/useTaqnyatTemplates";
+import { useHostTaqnyatTemplates } from "../../hooks/taqnyatTemplates";
 import { useTranslation } from "../../localization";
 
 const CATEGORY_LABELS_AR = {

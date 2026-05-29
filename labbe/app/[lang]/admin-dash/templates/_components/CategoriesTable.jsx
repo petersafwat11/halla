@@ -1,10 +1,10 @@
 "use client";
 
-import { useTemplateCategories } from "@/hooks/queries/useTemplates";
 import {
+  useTemplateCategories,
   useDeleteCategory,
   useUpdateCategory,
-} from "@/hooks/mutations/useTemplateMutations";
+} from "@/hooks/templates";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";

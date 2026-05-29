@@ -39,10 +39,13 @@
     "moreInfo": "More Info",
     "users": "users",
     "sar": "SAR",
-    "serviceDuration": "Service Duration",
+    "serviceDuration": "Duration",
     "price": "Price",
+    "priceOnRequest": "Price on request",
     "whatsIncluded": "What's Included",
-    "contactInfo": "Contact Information"
+    "contactInfo": "Contact Information",
+    "providedBy": "Provided by",
+    "whatsapp": "WhatsApp"
   },
   "noResults": "No results found",
   "loading": "Loading...",

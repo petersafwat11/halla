@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { hostSignupSchema } from "@/utils/schemas/authSchema";
 import Link from "next/link";
 import useLanguageChange from "@/hooks/UseLanguageChange";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useAuthMutation } from "@/hooks/auth";
 import useAuthStore from "@/stores/authStore";
 import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
 import OTPVerification from "./OTPVerification";

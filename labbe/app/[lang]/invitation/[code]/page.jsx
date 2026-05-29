@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   useGuestByToken,
   useGuestMutation,
-} from "@/hooks/reactQueryHooks/useGuests";
+} from "@/hooks/guests";
 import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
 import styles from "./page.module.css";
 import PortalSkeleton from "./_components/PortalSkeleton";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useHostDashboard } from "@/hooks/reactQueryHooks/useDashboard";
+import { useHostDashboard } from "@/hooks/dashboard";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
 import styles from "./page.module.css";

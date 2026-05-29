@@ -39,7 +39,7 @@
 .prBillBtn.active .prSaveBadge { background: var(--color-white-20); color: var(--color-natural-50); }
 
 /* ── Host single card ── */
-.prHostCard { max-width: 600px; margin: 0 auto; background: var(--color-natural-50); border-radius: 1.5rem; padding: 2.4rem; border: 2px solid var(--color-primary-200); box-shadow: 0 4px 24px color-mix(in srgb, var(--color-secondary-600) 10%, transparent); display: flex; flex-direction: column; gap: 2rem; }
+.prHostCard { max-width: 600px; margin: 0 auto; background: var(--color-natural-50); border-radius: 2.4rem; padding: 2.4rem; border: none; box-shadow: 0 4px 24px color-mix(in srgb, var(--color-secondary-600) 10%, transparent); display: flex; flex-direction: column; gap: 2rem; }
 .prHostCardTop {
   display: flex;
   flex-direction: column;
@@ -52,11 +52,11 @@
 
 /* ── Guest selector ── */
 .prGuestLabel { font-size: 1.3rem; font-weight: 700; color: var(--color-secondary-600); font-family: "Cairo", sans-serif; margin-bottom: 1rem; text-align: center; }
-.prGuestTrack { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; }
-.prGuestBtn { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: .8rem .5rem; border: 2px solid var(--color-primary-200); border-radius: 1rem; background: var(--color-natural-50); cursor: pointer; transition: all 220ms ease; font-family: "Cairo", sans-serif; }
+.prGuestTrack { display: grid; grid-template-columns: repeat(5, 1fr); gap: .55rem; }
+.prGuestBtn { display: flex; flex-direction: column; align-items: center; gap: .2rem; padding: .55rem .35rem; border: 2px solid var(--color-primary-200); border-radius: .8rem; background: var(--color-natural-50); cursor: pointer; transition: all 220ms ease; font-family: "Cairo", sans-serif; }
 .prGuestBtn.active { border-color: var(--color-primary-500); background: var(--color-primary-100); }
-.prGuestNum { font-size: 2rem; font-weight: 800; color: var(--color-primary-500); line-height: 1; }
-.prGuestUnit { font-size: 1.1rem; font-weight: 500; color: var(--color-accent-500); }
+.prGuestNum { font-size: 1.5rem; font-weight: 800; color: var(--color-primary-500); line-height: 1; }
+.prGuestUnit { font-size: .95rem; font-weight: 500; color: var(--color-accent-500); }
 .prGuestBtn.active .prGuestNum { color: var(--color-primary-700); }
 .prGuestBtn.active .prGuestUnit { color: var(--color-primary-700); }
 .prGuestBtn:hover:not(.active) { border-color: var(--color-primary-300); background: var(--color-primary-50); }
@@ -101,9 +101,9 @@
 
 /* ── Enterprise 2-col grid ── */
 .prGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; max-width: 860px; margin: 0 auto; }
-.prCard { background: var(--color-natural-50); border-radius: 1.5rem; padding: 2rem; border: 2px solid var(--color-primary-200); box-shadow: 0 2px 16px color-mix(in srgb, var(--color-secondary-600) 8%, transparent); display: flex; flex-direction: column; gap: 1.5rem; position: relative; transition: all 250ms ease; }
+.prCard { background: var(--color-natural-50); border-radius: 2.4rem; padding: 2rem; border: none; box-shadow: 0 2px 16px color-mix(in srgb, var(--color-secondary-600) 8%, transparent); display: flex; flex-direction: column; gap: 1.5rem; position: relative; transition: all 250ms ease; }
 .prCard:hover { box-shadow: 0 8px 32px color-mix(in srgb, var(--color-secondary-600) 12%, transparent); transform: translateY(-4px); }
-.prCard.popular { border-color: var(--color-primary-500); box-shadow: 0 4px 24px color-mix(in srgb, var(--color-primary-500) 18%, transparent); }
+.prCard.popular { box-shadow: 0 4px 24px color-mix(in srgb, var(--color-primary-500) 18%, transparent); }
 .prPopularBadge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--color-primary-300); color: var(--color-natural-50); font-size: 1.2rem; font-weight: 700; padding: .4rem 1.4rem; border-radius: 9999px; white-space: nowrap; font-family: "Cairo", sans-serif; }
 .prCardTop {
   display: flex;
@@ -162,9 +162,10 @@
   .prSegLabel { font-size: 1.25rem; }
   .prSegSub { display: none; }
   .prFeatGrid { gap: .4rem; }
-  .prGuestTrack { gap: .5rem; }
-  .prGuestBtn { padding: .7rem .4rem; }
-  .prGuestNum { font-size: 1.6rem; }
+  .prGuestTrack { gap: .4rem; }
+  .prGuestBtn { padding: .5rem .3rem; }
+  .prGuestNum { font-size: 1.3rem; }
+  .prGuestUnit { font-size: .85rem; }
   .prManaged { flex-direction: column; text-align: center; margin-top: 2rem; }
   .prHostPriceNum { font-size: 3.6rem; }
 }

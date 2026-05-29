@@ -1,7 +1,7 @@
 import React from "react";
 import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useUnreadCount } from "../../hooks/queries/useNotifications";
+import { useUnreadCount } from "../../hooks/notifications";
 
 const NotificationBell = ({ onPress, color = "#F9F4EF", size = 20 }) => {
   const { data: unreadData } = useUnreadCount();

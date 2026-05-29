@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import { useUnreadNotificationCount } from "@/hooks/reactQueryHooks/useNotifications";
+import { useUnreadNotificationCount } from "@/hooks/notifications";
 import NotificationDropdown from "./NotificationDropdown";
 import { getDashboardTypeFromPath, getBasePath } from "@/ui/layout/navConfig";
 import styles from "./notifications.module.css";

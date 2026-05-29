@@ -20,7 +20,7 @@ import {
   useMyProfile,
   useNotificationPreferences,
   useUserMutation,
-} from "@/hooks/reactQueryHooks/useUsers";
+} from "@/hooks/users";
 import { getImageUrl, extractCategoriesArray } from "@/utils/vendorHelpers";
 import { USER_ROLES } from "@/utils/schemas/notificationPreferencesSchemas";
 

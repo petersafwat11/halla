@@ -1,315 +1,508 @@
+/* ============================================
+   OVERLAY + SHELL
+   ============================================ */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(17, 24, 39, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1.6rem;
+  padding: 24px;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .popup {
-  background: #f8fafc;
-  border-radius: 1.6rem;
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
   width: 100%;
-  max-width: 56rem;
-  max-height: 90vh;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideUp 0.25s ease-out;
+  box-shadow: 0 20px 50px rgba(17, 24, 39, 0.25);
+  animation: slideUp 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.header {
+/* ============================================
+   HERO
+   ============================================ */
+.hero {
   position: relative;
-  height: 12rem;
-  background: #1f2937;
-  overflow: hidden;
+  width: 100%;
+  height: 200px;
   flex-shrink: 0;
+  background: #1a1a1a;
+  overflow: hidden;
 }
 
-.headerGradient {
+.heroFallback {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #c28e5c 0%, #8a6541 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroFallbackInitial {
+  font-size: 88px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.heroOverlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.6) 0%,
-    rgba(0, 0, 0, 0.4) 50%,
-    rgba(0, 0, 0, 0.7) 100%
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.35) 55%,
+    rgba(0, 0, 0, 0.75) 100%
   );
+  pointer-events: none;
 }
 
 .closeButton {
   position: absolute;
-  top: 1.6rem;
-  inset-inline-end: 1.6rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: none;
-  width: 3.6rem;
-  height: 3.6rem;
+  top: 14px;
+  inset-inline-end: 14px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 2;
-  transition: background 0.2s ease;
+  color: #fff;
+  font-size: 18px;
+  z-index: 3;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
 
 .closeButton:hover {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
 }
 
-.headerTitle {
+.closeButton:active {
+  transform: scale(0.94);
+}
+
+.heroContent {
   position: absolute;
-  bottom: 1.6rem;
-  inset-inline-start: 2rem;
-  inset-inline-end: 6rem;
-  color: #fff;
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 2.6rem;
-  margin: 0;
+  inset-inline-start: 20px;
+  inset-inline-end: 20px;
+  bottom: 18px;
   z-index: 2;
-}
-
-.content {
-  padding: 1.6rem;
+  color: #fff;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
-  overflow-y: auto;
-  flex: 1;
+  gap: 8px;
 }
 
-.infoCard,
-.includedCard,
-.vendorCard {
-  background: #fff;
-  border-radius: 1.2rem;
-  border: 1px solid #e7e5e4;
-  padding: 1.6rem;
+.heroTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.heroMeta {
   display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.includedCard {
-  padding: 2rem;
-  gap: 1.6rem;
-}
-
-.vendorCard {
-  padding: 2rem;
-  gap: 1.2rem;
-}
-
-.infoHeader {
-  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   align-items: center;
-  gap: 1.2rem;
 }
 
-.iconBadge {
+.heroMetaItem {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 0.5rem;
-}
-
-.iconBadgeBlue {
-  background: #eff6ff;
-}
-
-.iconBadgeYellow {
-  background: #fffbeb;
-}
-
-.infoTitle,
-.includedTitle {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #2c2c2c;
-  line-height: 2rem;
-}
-
-.infoValue {
-  font-size: 1.4rem;
+  gap: 5px;
+  font-size: 13px;
   font-weight: 500;
-  color: #1c1917;
-  line-height: 1.8rem;
+  color: rgba(255, 255, 255, 0.95);
 }
 
+.heroMetaItem strong {
+  font-weight: 700;
+}
+
+.heroMetaDim {
+  opacity: 0.8;
+}
+
+.starIcon {
+  color: #f5b342;
+  fill: #f5b342;
+}
+
+/* ============================================
+   CONTENT
+   ============================================ */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  background: #fafaf7;
+}
+
+/* ============================================
+   VENDOR IDENTITY CARD
+   ============================================ */
+.vendorCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+}
+
+.vendorLogo {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f4efe9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vendorLogoFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #c28e5c 0%, #a67749 100%);
+  color: #fff;
+  font-size: 24px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.vendorMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.vendorLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9a9a9a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vendorName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================
+   META CHIPS (price / duration)
+   ============================================ */
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metaChip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+}
+
+.metaChipLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b6b6b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metaChipIcon {
+  width: 13px;
+  height: 13px;
+  color: #9a9a9a;
+}
+
+.metaChipValue {
+  font-size: 17px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* ============================================
+   SECTIONS (included / contact)
+   ============================================ */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.01em;
+}
+
+/* Included list */
 .includedList {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 10px;
 }
 
 .includedItem {
   display: flex;
-  align-items: center;
-  gap: 1.2rem;
+  align-items: flex-start;
+  gap: 10px;
 }
 
-.bullet {
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 50%;
-  background: #d97706;
+.includedCheck {
   flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(194, 142, 92, 0.15);
+  color: #a67749;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
 }
 
 .includedText {
   flex: 1;
-  font-size: 1.4rem;
-  font-weight: 400;
-  color: #44403c;
-  line-height: 1.8rem;
+  font-size: 14px;
+  color: #2c2c2c;
+  line-height: 1.5;
+  padding-top: 2px;
 }
 
-.vendorInfo {
-  display: flex;
-  gap: 1.2rem;
-  align-items: flex-start;
-}
-
-.vendorDetails {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.vendorName {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #262626;
-  line-height: 2.2rem;
-}
-
-.vendorStats {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.statLabel {
-  font-size: 1.3rem;
-  color: #262626;
-  font-weight: 600;
-}
-
-.statValue {
-  font-size: 1.3rem;
-  color: #737373;
-}
-
-.vendorLogo {
-  width: 4.8rem;
-  height: 4.8rem;
-  border-radius: 0.6rem;
-  overflow: hidden;
-  background: #f5f5f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.contactSection {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  padding: 0 0.4rem;
-}
-
-.contactTitle {
-  font-size: 1.4rem;
-  font-weight: 500;
-  color: #262626;
-  line-height: 2rem;
-}
-
+/* Contact list */
 .contactList {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 6px;
 }
 
-.contactItem {
+.contactRow {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 12px;
+  padding: 10px 10px;
+  margin: -4px;
+  margin-bottom: -2px;
+  border-radius: 10px;
   text-decoration: none;
   color: inherit;
+  transition: background 0.15s ease;
+}
+
+a.contactRow {
+  cursor: pointer;
+}
+
+a.contactRow:hover {
+  background: rgba(194, 142, 92, 0.08);
+}
+
+.contactIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f4efe9;
+  color: #a67749;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
 }
 
 .contactText {
   flex: 1;
-  font-size: 1.4rem;
-  color: #656565;
-  line-height: 1.8rem;
+  font-size: 13.5px;
+  color: #4a4a4a;
+  line-height: 1.45;
   word-break: break-all;
+  font-weight: 500;
 }
 
-a.contactItem:hover .contactText {
-  color: #c28e5c;
+a.contactRow:hover .contactText {
+  color: #1a1a1a;
 }
 
-.footer {
-  margin-top: 0.8rem;
-}
-
-.callButton {
+/* ============================================
+   STICKY CTA FOOTER
+   ============================================ */
+.ctaFooter {
   display: flex;
-  width: 100%;
-  padding: 1.4rem 1.6rem;
-  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: #ffffff;
+  border-top: 1px solid #ececec;
+  flex-shrink: 0;
+}
+
+.ctaButton {
+  flex: 1;
+  display: inline-flex;
   align-items: center;
-  gap: 0.8rem;
-  border-radius: 1.2rem;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 14.5px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.ctaButtonPrimary {
   background: #c28e5c;
   color: #fff;
-  font-size: 1.6rem;
-  font-weight: 600;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(194, 142, 92, 0.3);
 }
 
-.callButton:hover {
-  background: #b07d4a;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.3);
+.ctaButtonPrimary:hover {
+  background: #a67749;
+  box-shadow: 0 4px 14px rgba(194, 142, 92, 0.4);
 }
 
+.ctaButtonPrimary:active {
+  transform: translateY(1px);
+}
+
+.ctaButtonWhatsapp {
+  background: #25d366;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(37, 211, 102, 0.3);
+}
+
+.ctaButtonWhatsapp:hover {
+  background: #1ebe5b;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+}
+
+.ctaButtonWhatsapp:active {
+  transform: translateY(1px);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 600px) {
   .overlay {
     padding: 0;
+    align-items: flex-end;
   }
+
   .popup {
-    max-height: 100vh;
-    border-radius: 1.6rem 1.6rem 0 0;
-    align-self: flex-end;
+    max-height: 92vh;
+    border-radius: 20px 20px 0 0;
+    animation: slideUpSheet 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @keyframes slideUpSheet {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .hero {
+    height: 180px;
+  }
+
+  .heroTitle {
+    font-size: 19px;
+  }
+
+  .content {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ctaFooter {
+    padding: 12px 16px;
+  }
+
+  .ctaButton {
+    height: 46px;
+    font-size: 14px;
   }
 }

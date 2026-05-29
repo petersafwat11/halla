@@ -14,7 +14,7 @@ import {
   TICKET_TYPES,
   getCreateTicketDefaults,
 } from "@/utils/schemas/ticketSchema";
-import { useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { useTicketMutation } from "@/hooks/tickets";
 import { toast } from "react-toastify";
 
 const buildTypeOptions = (t) =>

@@ -1,5 +1,5 @@
 {
-  "title": "المتجر",
+  "title": "سوق هلا",
   "search": {
     "placeholder": "ابحث عن أي شيء...",
     "filter": "تصفية"
@@ -39,10 +39,13 @@
     "moreInfo": "المزيد من المعلومات",
     "users": "مستخدم",
     "sar": "ريال",
-    "serviceDuration": "مدة تنفيذ الخدمة",
+    "serviceDuration": "المدة",
     "price": "السعر",
+    "priceOnRequest": "السعر عند الطلب",
     "whatsIncluded": "ما هو مدرج",
-    "contactInfo": "معلومات الاتصال"
+    "contactInfo": "معلومات الاتصال",
+    "providedBy": "مقدم الخدمة",
+    "whatsapp": "واتساب"
   },
   "noResults": "لا توجد نتائج",
   "loading": "جاري التحميل...",

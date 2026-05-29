@@ -12,7 +12,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { whitelabelSignupSchema } from "@/utils/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useAuthMutation } from "@/hooks/auth";
 import {
   validateFormStep,
   handleNextStep as utilNextStep,

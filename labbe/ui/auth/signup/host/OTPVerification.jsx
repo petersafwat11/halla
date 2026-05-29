@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import styles from "@/ui/auth/login/form/form.module.css";
 import { useTranslation } from "react-i18next";
 import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useAuthMutation } from "@/hooks/auth";
 import OtpInput from "@/ui/auth/login/form/otpInput/OtpInput";
 import { parseError, getAuthErrorMessage } from "@/services/errorHandlingService";
 

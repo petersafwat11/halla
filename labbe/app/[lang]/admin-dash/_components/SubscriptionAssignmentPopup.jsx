@@ -4,8 +4,7 @@ import { useMemo } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAdminHostMutation, useAdminWhitelabelMutation } from "@/hooks/reactQueryHooks/useAdmin";
-import { useAdminPlans } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminHostMutation, useAdminWhitelabelMutation, useAdminPlans, adminKeys } from "@/hooks/admin";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
@@ -78,7 +77,7 @@ export default function SubscriptionAssignmentPopup({
   };
 
   const handleRetryPlans = () => {
-    queryClient.invalidateQueries({ queryKey: ["admin", "plans", { availableFor: entityType }] });
+    queryClient.invalidateQueries({ queryKey: adminKeys.plans({ availableFor: entityType }) });
   };
 
   return (

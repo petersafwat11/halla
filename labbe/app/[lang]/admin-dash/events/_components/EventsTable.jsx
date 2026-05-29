@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useCallback } from "react";
-import { useAdminEvents, useAdminEventMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminEvents, useAdminEventMutation } from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";

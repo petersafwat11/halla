@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
-import { useAdminVendorMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminVendorMutation } from "@/hooks/admin";
 import styles from "./VendorDetailsWrapper.module.css";
 
 export default function VendorActionButtons({ vendor, currentStatus, updateStatus }) {

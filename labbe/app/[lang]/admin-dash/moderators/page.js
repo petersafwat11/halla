@@ -2,6 +2,7 @@
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { adminKeys } from "@/hooks/admin/keys";
 import ModeratorsPageContent from "./_components/ModeratorsPageContent";
 import styles from "./page.module.css";
 
@@ -26,7 +27,7 @@ export default async function ModeratorsPage({ params, searchParams }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      queryKey: ["admin", "moderators", filters],
+      queryKey: adminKeys.moderators(filters),
       path: API_PATHS.admin.moderators.getAll,
       params: filters,
       token,

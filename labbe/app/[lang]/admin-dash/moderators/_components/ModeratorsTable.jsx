@@ -1,6 +1,6 @@
 "use client";
 
-import { useAdminModerators, useAdminModeratorMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminModerators, useAdminModeratorMutation } from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTemplateCategories } from "@/hooks/queries/useTemplates";
+import { useTemplateCategories } from "@/hooks/templates";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import StatsCards from "@/ui/host/main-page/StatsCards";

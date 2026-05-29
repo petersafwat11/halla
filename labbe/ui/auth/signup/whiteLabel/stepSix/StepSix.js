@@ -4,7 +4,7 @@ import { StepTitle } from "../../../../commen/title/SectionTitle";
 import SummarySection from "./SummarySection";
 import { useTranslation } from "react-i18next";
 import { useFormContext } from "react-hook-form";
-import { useBusinessPlans } from "@/hooks/reactQueryHooks/usePlans";
+import { useBusinessPlans } from "@/hooks/plans";
 import { getLocalized } from "@/utils/locale";
 import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { useAdminVendorMutation } from "@/hooks/reactQueryHooks/useAdmin";
+import { useAdminVendorMutation } from "@/hooks/admin";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import VendorStatusBadge from "./VendorStatusBadge";

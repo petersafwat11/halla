@@ -8,8 +8,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useHostTaqnyatTemplates } from "../../../hooks/queries/useTaqnyatTemplates";
-import { useUpdatePostEventMessagingTemplate } from "../../../hooks/queries/post-event/useHostPostEvent";
+import { useHostTaqnyatTemplates } from "../../../hooks/taqnyatTemplates";
+import { useUpdatePostEventMessagingTemplate } from "../../../hooks/postEvent";
 
 /**
  * Mirror of the web `MessagingTemplatePicker`. Each card surfaces the

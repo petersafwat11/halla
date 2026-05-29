@@ -5,7 +5,7 @@ import { usePageAccess } from "@/hooks/usePageAccess";
 import {
   useEventStaffTokens,
   useRevokeStaffAccess,
-} from "@/hooks/reactQueryHooks/useStaff";
+} from "@/hooks/staff";
 import styles from "./staffTokensList.module.css";
 
 const formatDate = (value) => {

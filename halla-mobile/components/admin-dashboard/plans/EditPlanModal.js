@@ -13,7 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useUpdatePlan } from "../../../hooks/mutations/useAdminMutations";
+import { useUpdatePlan } from "../../../hooks/admin";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import {

@@ -2,7 +2,7 @@
 
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
-import { useAdminTaqnyatTemplates } from "@/hooks/queries/useTaqnyatTemplates";
+import { useAdminTaqnyatTemplates } from "@/hooks/taqnyatTemplates";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaLayerGroup, FaCheckCircle, FaClock, FaToggleOn } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";

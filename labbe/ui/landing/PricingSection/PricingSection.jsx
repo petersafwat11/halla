@@ -3,9 +3,10 @@ import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import styles from "./pricingSection.module.css";
 import { useTranslation } from "react-i18next";
-import { useLandingPlans } from "@/hooks/reactQueryHooks/usePlans";
+import { useLandingPlans } from "@/hooks/plans";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
 import SarIcon from "@/ui/commen/SarIcon/SarIcon";
+import PlanCard from "@/ui/plans/PlanCard/PlanCard";
 
 const WA_LINK = "https://wa.me/966552619282";
 
@@ -238,228 +239,58 @@ export default function PricingSection({ lang = "ar" }) {
         {/* ═══ HOST — PER EVENT (Basic + Premium side-by-side) ═══ */}
         {audience === "host" && billingType === "event" && (
           <div className={styles.prGrid}>
-            {/* Basic Card */}
-            <div className={styles.prCard}>
-              <div className={styles.prCardTop}>
-                <div className={styles.prCardTopRow}>
-                  <div>
-                    <h3 className={styles.prCardName}>{t("pricing.basic")}</h3>
-                  </div>
-                  <div className={styles.prPrice}>
-                    <div className={styles.prPriceRow}>
-                      <span className={styles.prPriceNum}>{formatPrice(currentHostEventPlan?.pricing?.oneTime)}</span>
-                      <SarSymbol />
-                    </div>
-                  </div>
-                </div>
-                {getTagline(currentHostEventPlan) ? (
-                  <p className={styles.prCardTagline}>{getTagline(currentHostEventPlan)}</p>
-                ) : null}
-                {getDurationText(currentHostEventPlan) ? (
-                  <p className={styles.prCardDuration}>{getDurationText(currentHostEventPlan)}</p>
-                ) : null}
-              </div>
-
-              <div className={styles.prGuestTrack}>
-                {basicEvent.map((plan) => {
-                  const v = getInviteValue(plan, "event");
-                  return (
-                    <button
-                      key={plan.code}
-                      className={`${styles.prGuestBtn}${selInvites === v ? ` ${styles.active}` : ""}`}
-                      onClick={() => setSelInvites(v)}
-                    >
-                      <span className={styles.prGuestNum}>{v}</span>
-                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className={styles.prFeatSection}>
-                <PlanDescription
-                  plan={currentHostEventPlan}
-                  lang={lang}
-                  selectedInviteCount={selInvites}
-                  showTagline={false}
-                  showDuration={false}
-                  size="large"
-                />
-              </div>
-
-              <div className={styles.prCardFooter}>
-                <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
-              </div>
-            </div>
-
-            {/* Premium Card */}
-            <div className={`${styles.prCard} ${styles.popular}`}>
-              <div className={styles.prPopularBadge}>{t("pricing.popular")}</div>
-              <div className={styles.prCardTop}>
-                <div className={styles.prCardTopRow}>
-                  <div>
-                    <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
-                  </div>
-                  <div className={styles.prPrice}>
-                    <div className={styles.prPriceRow}>
-                      <span className={styles.prPriceNum}>{formatPrice(currentPremiumEventPlan?.pricing?.oneTime)}</span>
-                      <SarSymbol />
-                    </div>
-                  </div>
-                </div>
-                {getTagline(currentPremiumEventPlan) ? (
-                  <p className={styles.prCardTagline}>{getTagline(currentPremiumEventPlan)}</p>
-                ) : null}
-                {getDurationText(currentPremiumEventPlan) ? (
-                  <p className={styles.prCardDuration}>{getDurationText(currentPremiumEventPlan)}</p>
-                ) : null}
-              </div>
-
-              <div className={styles.prGuestTrack}>
-                {premiumEvent.map((plan) => {
-                  const v = getInviteValue(plan, "event");
-                  return (
-                    <button
-                      key={plan.code}
-                      className={`${styles.prGuestBtn}${selInvites === v ? ` ${styles.active}` : ""}`}
-                      onClick={() => setSelInvites(v)}
-                    >
-                      <span className={styles.prGuestNum}>{v}</span>
-                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className={styles.prFeatSection}>
-                <PlanDescription
-                  plan={currentPremiumEventPlan}
-                  lang={lang}
-                  selectedInviteCount={selInvites}
-                  showTagline={false}
-                  showDuration={false}
-                  size="large"
-                />
-              </div>
-
-              <div className={styles.prCardFooter}>
-                <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
-              </div>
-            </div>
+            <PlanCard
+              planFamily="basic"
+              matchedPlan={currentHostEventPlan}
+              plans={basicEvent}
+              billingType="event"
+              selectedInvites={selInvites}
+              onInviteChange={setSelInvites}
+              lang={lang}
+              ctaLabel={t("pricing.subscribe")}
+              ctaHref={`/${lang}/signup`}
+            />
+            <PlanCard
+              planFamily="premium"
+              matchedPlan={currentPremiumEventPlan}
+              plans={premiumEvent}
+              billingType="event"
+              selectedInvites={selInvites}
+              onInviteChange={setSelInvites}
+              isPopular
+              lang={lang}
+              ctaLabel={t("pricing.subscribe")}
+              ctaHref={`/${lang}/signup`}
+            />
           </div>
         )}
 
         {/* ═══ HOST — MONTHLY POOL (Basic + Premium side-by-side) ═══ */}
         {audience === "host" && billingType === "monthly" && (
           <div className={styles.prGrid}>
-            {/* Basic Card */}
-            <div className={styles.prCard}>
-              <div className={styles.prCardTop}>
-                <div className={styles.prCardTopRow}>
-                  <div>
-                    <h3 className={styles.prCardName}>{t("pricing.basic")}</h3>
-                  </div>
-                  <div className={styles.prPrice}>
-                    <div className={styles.prPriceRow}>
-                      <span className={styles.prPriceNum}>{formatPrice(currentHostMonthlyPlan?.pricing?.oneTime)}</span>
-                      <SarSymbol />
-                    </div>
-                  </div>
-                </div>
-                {getTagline(currentHostMonthlyPlan) ? (
-                  <p className={styles.prCardTagline}>{getTagline(currentHostMonthlyPlan)}</p>
-                ) : null}
-                {getDurationText(currentHostMonthlyPlan) ? (
-                  <p className={styles.prCardDuration}>{getDurationText(currentHostMonthlyPlan)}</p>
-                ) : null}
-              </div>
-
-              <div className={styles.prGuestTrack}>
-                {basicMonthly.map((plan) => {
-                  const v = getInviteValue(plan, "monthly");
-                  return (
-                    <button
-                      key={plan.code}
-                      className={`${styles.prGuestBtn}${selPool === v ? ` ${styles.active}` : ""}`}
-                      onClick={() => setSelPool(v)}
-                    >
-                      <span className={styles.prGuestNum}>{v}</span>
-                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className={styles.prFeatSection}>
-                <PlanDescription
-                  plan={currentHostMonthlyPlan}
-                  lang={lang}
-                  selectedInviteCount={selPool}
-                  showTagline={false}
-                  showDuration={false}
-                  size="large"
-                />
-              </div>
-
-              <div className={styles.prCardFooter}>
-                <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
-              </div>
-            </div>
-
-            {/* Premium Card */}
-            <div className={`${styles.prCard} ${styles.popular}`}>
-              <div className={styles.prPopularBadge}>{t("pricing.popular")}</div>
-              <div className={styles.prCardTop}>
-                <div className={styles.prCardTopRow}>
-                  <div>
-                    <h3 className={styles.prCardName}>{t("pricing.premium")}</h3>
-                  </div>
-                  <div className={styles.prPrice}>
-                    <div className={styles.prPriceRow}>
-                      <span className={styles.prPriceNum}>{formatPrice(currentPremiumMonthlyPlan?.pricing?.oneTime)}</span>
-                      <SarSymbol />
-                    </div>
-                  </div>
-                </div>
-                {getTagline(currentPremiumMonthlyPlan) ? (
-                  <p className={styles.prCardTagline}>{getTagline(currentPremiumMonthlyPlan)}</p>
-                ) : null}
-                {getDurationText(currentPremiumMonthlyPlan) ? (
-                  <p className={styles.prCardDuration}>{getDurationText(currentPremiumMonthlyPlan)}</p>
-                ) : null}
-              </div>
-
-              <div className={styles.prGuestTrack}>
-                {premiumMonthly.map((plan) => {
-                  const v = getInviteValue(plan, "monthly");
-                  return (
-                    <button
-                      key={plan.code}
-                      className={`${styles.prGuestBtn}${selPool === v ? ` ${styles.active}` : ""}`}
-                      onClick={() => setSelPool(v)}
-                    >
-                      <span className={styles.prGuestNum}>{v}</span>
-                      <span className={styles.prGuestUnit}>{t("pricing.inviteUnit")}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className={styles.prFeatSection}>
-                <PlanDescription
-                  plan={currentPremiumMonthlyPlan}
-                  lang={lang}
-                  selectedInviteCount={selPool}
-                  showTagline={false}
-                  showDuration={false}
-                  size="large"
-                />
-              </div>
-
-              <div className={styles.prCardFooter}>
-                <Link href={`/${lang}/signup`} className={styles.prBtn}>{t("pricing.subscribe")}</Link>
-              </div>
-            </div>
+            <PlanCard
+              planFamily="basic"
+              matchedPlan={currentHostMonthlyPlan}
+              plans={basicMonthly}
+              billingType="monthly"
+              selectedInvites={selPool}
+              onInviteChange={setSelPool}
+              lang={lang}
+              ctaLabel={t("pricing.subscribe")}
+              ctaHref={`/${lang}/signup`}
+            />
+            <PlanCard
+              planFamily="premium"
+              matchedPlan={currentPremiumMonthlyPlan}
+              plans={premiumMonthly}
+              billingType="monthly"
+              selectedInvites={selPool}
+              onInviteChange={setSelPool}
+              isPopular
+              lang={lang}
+              ctaLabel={t("pricing.subscribe")}
+              ctaHref={`/${lang}/signup`}
+            />
           </div>
         )}
 
@@ -473,9 +304,6 @@ export default function PricingSection({ lang = "ar" }) {
               </div>
               {getTagline(currentBizEventPlan) ? (
                 <p className={styles.prCardTagline}>{getTagline(currentBizEventPlan)}</p>
-              ) : null}
-              {getDurationText(currentBizEventPlan) ? (
-                <p className={styles.prCardDuration}>{getDurationText(currentBizEventPlan)}</p>
               ) : null}
             </div>
 
@@ -503,6 +331,7 @@ export default function PricingSection({ lang = "ar" }) {
                 showTagline={false}
                 showDuration={false}
                 size="large"
+                inlineExtras
               />
             </div>
 
@@ -525,13 +354,10 @@ export default function PricingSection({ lang = "ar" }) {
               {getTagline(bizQuarterlyPlan) ? (
                 <p className={styles.prCardTagline}>{getTagline(bizQuarterlyPlan)}</p>
               ) : null}
-              {getDurationText(bizQuarterlyPlan) ? (
-                <p className={styles.prCardDuration}>{getDurationText(bizQuarterlyPlan)}</p>
-              ) : null}
             </div>
 
             <div className={styles.prFeatSection}>
-              <PlanDescription plan={bizQuarterlyPlan} lang={lang} showTagline={false} showDuration={false} size="large" />
+              <PlanDescription plan={bizQuarterlyPlan} lang={lang} showTagline={false} showDuration={false} size="large" inlineExtras />
             </div>
 
             <div className={styles.prCardFooter}>
@@ -553,13 +379,10 @@ export default function PricingSection({ lang = "ar" }) {
               {getTagline(bizAnnualPlan) ? (
                 <p className={styles.prCardTagline}>{getTagline(bizAnnualPlan)}</p>
               ) : null}
-              {getDurationText(bizAnnualPlan) ? (
-                <p className={styles.prCardDuration}>{getDurationText(bizAnnualPlan)}</p>
-              ) : null}
             </div>
 
             <div className={styles.prFeatSection}>
-              <PlanDescription plan={bizAnnualPlan} lang={lang} showTagline={false} showDuration={false} size="large" />
+              <PlanDescription plan={bizAnnualPlan} lang={lang} showTagline={false} showDuration={false} size="large" inlineExtras />
             </div>
 
             <div className={styles.prCardFooter}>

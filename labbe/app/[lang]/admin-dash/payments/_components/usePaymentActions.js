@@ -5,7 +5,7 @@ import {
   useAdminPaymentRefund,
   useAdminPaymentCapture,
   useAdminPaymentVoid,
-} from "@/hooks/reactQueryHooks/useAdmin";
+} from "@/hooks/admin";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 

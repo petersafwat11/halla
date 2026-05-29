@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import { useHostPostEventContent } from "@/hooks/reactQueryHooks/post-event/useHostPostEvent";
+import { useHostPostEventContent } from "@/hooks/postEvent";
 import MediaGrid from "./_components/MediaGrid/MediaGrid";
 import MediaUploader from "./_components/MediaUploader/MediaUploader";
 import MessagingTemplatePicker from "./_components/MessagingTemplatePicker/MessagingTemplatePicker";

@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { emailLoginSchema, phoneLoginSchema } from "@/utils/schemas/authSchema";
 import EmailSection from "./EmailForm";
 import PhoneSection from "./PhoneForm";
-import { useAuthMutation } from "@/hooks/reactQueryHooks/useAuthMutation";
+import { useAuthMutation } from "@/hooks/auth";
 import useAuthStore, { USER_ROLES } from "@/stores/authStore";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 import { getAuthErrorMessage } from "@/services/errorHandlingService";

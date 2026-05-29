@@ -16,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import MobileInput from "../commen/MobileInput";
 import Button from "../commen/Button";
-import { useSendTestMessage } from "../../hooks/mutations/useMessagingMutations";
+import { useSendTestMessage } from "../../hooks/messaging";
 
 const buildSchema = (t) =>
   z.object({

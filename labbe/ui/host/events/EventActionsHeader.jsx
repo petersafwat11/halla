@@ -6,7 +6,7 @@ import Image from "next/image";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import TestMessagePopup from "@/ui/host/main-page/TestMessagePopup";
 import ScheduleSendingPopup from "@/ui/host/popups/scheduleSendingPopup/ScheduleSendingPopup";
-import { useEventMutation } from "@/hooks/reactQueryHooks/useEvents";
+import { useEventMutation } from "@/hooks/events";
 import { toast } from "react-toastify";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
 import { useEventActionGate } from "@/hooks/events/useEventActionGate";

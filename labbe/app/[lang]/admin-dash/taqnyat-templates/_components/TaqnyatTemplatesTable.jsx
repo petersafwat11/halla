@@ -7,8 +7,8 @@ import {
   useAdminTaqnyatTemplates,
   useSyncTaqnyat,
   useDeleteTaqnyatTemplate,
-} from "@/hooks/queries/useTaqnyatTemplates";
-import { useTemplateCategories } from "@/hooks/queries/useTemplates";
+} from "@/hooks/taqnyatTemplates";
+import { useTemplateCategories } from "@/hooks/templates";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import Table from "@/ui/commen/new-table/Table";

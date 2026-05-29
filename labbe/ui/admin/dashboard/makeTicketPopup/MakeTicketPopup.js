@@ -11,7 +11,7 @@ import {
   createTicketSchema,
   TICKET_TYPES,
 } from "@/utils/schemas/ticketSchema";
-import { useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { useTicketMutation } from "@/hooks/tickets";
 
 const MakeTicketPopup = ({ onClose, onSuccess }) => {
   const { t } = useTranslation("adminDashboard");

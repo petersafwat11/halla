@@ -13,7 +13,7 @@ import {
   SERVICE_TYPES,
   PREDEFINED_TAGS,
 } from "@/utils/schemas/addServiceSchema";
-import { useServiceMutation } from "@/hooks/reactQueryHooks/useServices";
+import { useServiceMutation } from "@/hooks/vendorServices";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 

@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAddPostEventComment } from "@/hooks/reactQueryHooks/post-event/useGuestPostEvent";
+import { useAddPostEventComment } from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./commentSection.module.css";
 

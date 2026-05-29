@@ -14,8 +14,8 @@ import { Ionicons } from "@expo/vector-icons";
 import StatCard from "./StatCard";
 import GuestCard from "./GuestCard";
 import QRModal from "./QRModal";
-import { useStaffEventGuests } from "../../../hooks/queries/useStaff";
-import { useCheckInGuest } from "../../../hooks/mutations/useStaffMutations";
+import { useStaffEventGuests } from "../../../hooks/staff";
+import { useCheckInGuest } from "../../../hooks/staff";
 
 const STATUS_OPTIONS = [
   { key: "all", value: "" },

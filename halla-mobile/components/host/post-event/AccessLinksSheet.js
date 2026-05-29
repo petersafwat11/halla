@@ -9,11 +9,11 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useHostTaqnyatTemplates } from "../../../hooks/queries/useTaqnyatTemplates";
+import { useHostTaqnyatTemplates } from "../../../hooks/taqnyatTemplates";
 import {
   useGeneratePostEventTokens,
   useSendPostEventAccessLinks,
-} from "../../../hooks/queries/post-event/useHostPostEvent";
+} from "../../../hooks/postEvent";
 
 const FILTERS = ["attended", "confirmed", "all"];
 

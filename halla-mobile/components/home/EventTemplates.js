@@ -11,7 +11,7 @@ import { useTranslation } from "../../localization";
 import {
   useHostTemplates,
   useTemplateCategories,
-} from "../../hooks/queries/useTemplates";
+} from "../../hooks/templates";
 import TemplateCategoryChips from "./_components/TemplateCategoryChips";
 import TemplateCard from "./_components/TemplateCard";
 

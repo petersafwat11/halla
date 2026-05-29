@@ -2,6 +2,7 @@
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
 import { API_PATHS } from "@/services/new-backend/api.config";
 import { requirePageAccess } from "@/services/serverAuth";
+import { adminKeys } from "@/hooks/admin/keys";
 import initTranslations from "@/localization/i18n";
 import ClientComponentsTranslationsProvider from "@/providers/ClientCompTrans";
 import WhitelabelDetailsWrapper from "./_components/WhitelabelDetailsWrapper";
@@ -21,7 +22,10 @@ export default async function WhitelabelDetailsPage({ params }) {
     try {
       await prefetchServerData({
         queryClient,
-        queryKey: ["admin", "whitelabels", "details", id],
+        // Pre-existing literal `["admin","whitelabels","details",id]` didn't
+        // match any client hook key. Swapping to `whitelabelDetail(id)` aligns
+        // the prefetch with `useAdminWhitelabel` so SSR data is actually used.
+        queryKey: adminKeys.whitelabelDetail(id),
         path: API_PATHS.admin.whitelabels.getById(id),
         token,
       });

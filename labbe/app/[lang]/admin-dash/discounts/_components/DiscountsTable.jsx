@@ -12,7 +12,7 @@ import {
   useDiscounts,
   useToggleDiscount,
   useDeleteDiscount,
-} from "@/hooks/reactQueryHooks/useDiscounts";
+} from "@/hooks/discounts";
 import styles from "./DiscountsTable.module.css";
 
 function buildFilters(searchParams) {

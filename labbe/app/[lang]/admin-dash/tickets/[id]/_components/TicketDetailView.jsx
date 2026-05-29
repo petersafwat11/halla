@@ -9,7 +9,7 @@ import {
   FaUser,
   FaClock,
 } from "react-icons/fa";
-import { useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { useTicketMutation } from "@/hooks/tickets";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import styles from "./TicketDetailView.module.css";

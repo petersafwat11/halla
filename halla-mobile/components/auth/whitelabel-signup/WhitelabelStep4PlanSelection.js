@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useFormContext, Controller } from 'react-hook-form';
 import SectionCard from '../../commen/SectionCard';
-import { useBusinessPlans } from '../../../hooks/queries/usePlans';
+import { useBusinessPlans } from '../../../hooks/plans';
 import { useTranslation } from '../../../localization';
 import { getLocalized } from '../../../utils/locale';
 import SarIcon from '../../commen/SarIcon';

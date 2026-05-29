@@ -9,7 +9,7 @@ import EmptyState from "@/app/[lang]/host/tickets/_components/EmptyState";
 import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import { useMyTickets, useTicketMutation } from "@/hooks/reactQueryHooks/useTickets";
+import { useMyTickets, useTicketMutation, ticketsKeys } from "@/hooks/tickets";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 
@@ -114,7 +114,7 @@ const VendorTicketsPage = () => {
     return (
       <div className={styles.page}>
         <ErrorBoundary
-          onRetry={() => queryClient.invalidateQueries({ queryKey: ["tickets"] })}
+          onRetry={() => queryClient.invalidateQueries({ queryKey: ticketsKeys.all })}
           fallbackMessage={t("errors.loadFailed") || "Failed to load tickets"}
         >
           <div />

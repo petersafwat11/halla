@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import styles from "./TicketCard.module.css";
 import { useTranslation } from "react-i18next";
 import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
+import { ticketsKeys } from "@/hooks/tickets/keys";
 
 const statusClassMap = {
   open: styles.statusOpen,
@@ -28,7 +29,7 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
 
   const handleMouseEnter = () => {
     queryClient.prefetchQuery({
-      queryKey: ["tickets", ticket.id],
+      queryKey: ticketsKeys.detail(ticket.id),
       staleTime: 2 * 60 * 1000,
     });
   };

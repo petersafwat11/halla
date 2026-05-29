@@ -9,6 +9,7 @@
     "annual": "رصيد سنوي"
   },
   "planFamilies": { "basic": "هلا بيسك", "premium": "هلا بريميوم" },
+  "popular": "الأكثر طلباً",
   "planFamilyDescriptions": {
     "basic": "تدير بنفسك — كل شيء بيدك",
     "premium": "يديره فريقنا بالكامل"

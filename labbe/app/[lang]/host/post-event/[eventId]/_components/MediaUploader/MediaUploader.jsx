@@ -2,7 +2,7 @@
 import React, { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { useUploadPostEventMedia } from "@/hooks/reactQueryHooks/post-event/useHostPostEvent";
+import { useUploadPostEventMedia } from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./mediaUploader.module.css";
 

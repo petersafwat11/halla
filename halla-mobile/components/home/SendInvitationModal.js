@@ -12,7 +12,7 @@ import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import Button from "../commen/Button";
-import { useSendBulkInvitations } from "../../hooks/mutations/useMessagingMutations";
+import { useSendBulkInvitations } from "../../hooks/messaging";
 
 const SendInvitationModal = ({
   visible,

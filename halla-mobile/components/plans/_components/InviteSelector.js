@@ -11,34 +11,29 @@ const getInviteValue = (plan, billingType) => {
 const InviteSelector = ({ plans, billingType, selectedInvites, onInviteChange }) => {
   const { t } = useTranslation("plans");
 
+  if (!plans || plans.length <= 1) return null;
+
   return (
-    <View style={styles.selectorWrap}>
-      <Text style={styles.selectorLabel}>
-        {billingType === "monthly"
-          ? t("inviteSelector.poolLabel")
-          : t("inviteSelector.label")}
-      </Text>
-      <View style={styles.guestTrack}>
-        {plans.map((plan) => {
-          const value = getInviteValue(plan, billingType);
-          const active = selectedInvites === value;
-          return (
-            <TouchableOpacity
-              key={plan.code}
-              style={[styles.guestBtn, active && styles.guestBtnActive]}
-              onPress={() => onInviteChange?.(value)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.guestNum, active && styles.guestNumActive]}>
-                {value}
-              </Text>
-              <Text style={[styles.guestUnit, active && styles.guestUnitActive]}>
-                {t("inviteSelector.invites")}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+    <View style={styles.guestTrack}>
+      {plans.map((plan) => {
+        const value = getInviteValue(plan, billingType);
+        const active = selectedInvites === value;
+        return (
+          <TouchableOpacity
+            key={plan.code}
+            style={[styles.guestBtn, active && styles.guestBtnActive]}
+            onPress={() => onInviteChange?.(value)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.guestNum, active && styles.guestNumActive]}>
+              {value}
+            </Text>
+            <Text style={[styles.guestUnit, active && styles.guestUnitActive]}>
+              {t("inviteSelector.invites")}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
@@ -46,20 +41,11 @@ const InviteSelector = ({ plans, billingType, selectedInvites, onInviteChange })
 export { getInviteValue };
 
 const styles = StyleSheet.create({
-  selectorWrap: {
-    marginBottom: spacing[16],
-  },
-  selectorLabel: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.body.small,
-    color: colors.secondary[600],
-    textAlign: "center",
-    marginBottom: spacing[8],
-  },
   guestTrack: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing[8],
+    marginBottom: spacing[16],
   },
   guestBtn: {
     flexBasis: "30%",

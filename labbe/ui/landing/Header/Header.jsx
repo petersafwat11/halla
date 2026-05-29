@@ -1,23 +1,73 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./header.module.css";
 import Button from "../../commen/button/Button";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import LangToggle from "../../common/LangToggle";
+import { cookieUtils } from "@/utils/cookieUtils";
+
+// Role → dashboard path. Mirrors middleware.js getRedirectPath().
+const dashboardPathForRole = (role) => {
+  if (
+    role === "super_admin" ||
+    role === "admin" ||
+    role === "moderator" ||
+    role === "whitelabel_admin" ||
+    role === "whitelabel_moderator"
+  ) {
+    return "/admin-dash";
+  }
+  if (role === "vendor") return "/vendor-dashboard";
+  if (role === "host") return "/host";
+  return null;
+};
 
 const Header = ({ lang = "ar" }) => {
   const { t } = useTranslation("landing");
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Defer reading the cookie until after mount so SSR and first client render
+  // match (cookies aren't available on the server here). The component briefly
+  // renders the logged-out state, then swaps if a session is detected.
+  const [dashboardHref, setDashboardHref] = useState(null);
+  useEffect(() => {
+    const role = cookieUtils.getCookie("userType");
+    const path = dashboardPathForRole(role);
+    if (path) setDashboardHref(`/${lang}${path}`);
+  }, [lang]);
+
+  // Anchors must resolve from any page, not only landing — prefix with the
+  // landing route so clicking "Pricing" from /market-place jumps to /ar#pricing.
+  const isLanding = pathname === `/${lang}` || pathname === "/";
+  const anchor = (id) => (isLanding ? `#${id}` : `/${lang}#${id}`);
+
   const menuItems = [
-    { label: t("header.nav.home"),        href: "#home",        active: true },
-    { label: t("header.nav.features"),    href: "#features" },
-    { label: t("header.nav.pricing"),     href: "#pricing" },
-    { label: t("header.nav.invitations"), href: "#invitations" },
-    { label: t("header.nav.store"),       href: "#store" },
+    { label: t("header.nav.home"),        href: `/${lang}`,        active: isLanding },
+    { label: t("header.nav.features"),    href: anchor("features") },
+    { label: t("header.nav.pricing"),     href: anchor("pricing") },
+    { label: t("header.nav.invitations"), href: anchor("invitations") },
+    { label: t("header.nav.store"),       href: `/${lang}/market-place`, active: pathname?.includes("/market-place") },
   ];
+
+  const renderAuthCtas = ({ onClick } = {}) =>
+    dashboardHref ? (
+      <Link href={dashboardHref} onClick={onClick} className={styles.mobileBtnLink}>
+        <Button title={t("header.dashboard")} variant="primary" className={styles.headerBtnLogin} />
+      </Link>
+    ) : (
+      <>
+        <Link href={`/${lang}/login`} onClick={onClick} className={styles.mobileBtnLink}>
+          <Button title={t("header.login")} variant="primary" className={styles.headerBtnLogin} />
+        </Link>
+        <Link href={`/${lang}/signup`} onClick={onClick} className={styles.mobileBtnLink}>
+          <Button title={t("header.signup")} variant="secondary" className={styles.headerBtnSignup} />
+        </Link>
+      </>
+    );
 
   return (
     <header className={styles.header}>
@@ -44,12 +94,7 @@ const Header = ({ lang = "ar" }) => {
         {/* Desktop right: lang toggle + buttons */}
         <div className={styles.buttonsSection}>
           <LangToggle className={styles.langSwitcher} />
-          <Link href={`/${lang}/login`}>
-            <Button title={t("header.login")} variant="primary" className={styles.headerBtnLogin} />
-          </Link>
-          <Link href={`/${lang}/signup`}>
-            <Button title={t("header.signup")} variant="secondary" className={styles.headerBtnSignup} />
-          </Link>
+          {renderAuthCtas()}
         </div>
 
         {/* Mobile right: lang toggle + hamburger */}
@@ -84,12 +129,7 @@ const Header = ({ lang = "ar" }) => {
           ))}
         </ul>
         <div className={styles.mobileButtons}>
-          <Link href={`/${lang}/login`} onClick={() => setMenuOpen(false)} className={styles.mobileBtnLink}>
-            <Button title={t("header.login")} variant="primary" className={styles.headerBtnLogin} />
-          </Link>
-          <Link href={`/${lang}/signup`} onClick={() => setMenuOpen(false)} className={styles.mobileBtnLink}>
-            <Button title={t("header.signup")} variant="secondary" className={styles.headerBtnSignup} />
-          </Link>
+          {renderAuthCtas({ onClick: () => setMenuOpen(false) })}
         </div>
       </div>
     </header>

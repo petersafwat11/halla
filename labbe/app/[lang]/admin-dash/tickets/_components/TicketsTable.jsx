@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { usePageAccess } from "@/hooks/usePageAccess";
-import { useMyTickets, useTicketMutation, useExportTickets } from "@/hooks/reactQueryHooks/useTickets";
+import { useMyTickets, useTicketMutation, useExportTickets } from "@/hooks/tickets";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import Table from "@/ui/commen/new-table/Table";

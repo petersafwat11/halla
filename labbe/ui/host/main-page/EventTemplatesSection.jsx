@@ -9,7 +9,7 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import {
   useHostTemplates,
   useTemplateCategories,
-} from "@/hooks/queries/useTemplates";
+} from "@/hooks/templates";
 
 function EventTemplatesSection() {
   const { t } = useTranslation("home-events");

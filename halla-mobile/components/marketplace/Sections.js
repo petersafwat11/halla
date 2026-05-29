@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useTranslation } from "../../localization";
-import { useVendorCategories } from "../../hooks/queries/useMarketplace";
+import { useVendorCategories } from "../../hooks/marketplace";
 
 const Sections = ({ selectedSection, onSectionChange }) => {
   const { t, i18n } = useTranslation("marketplace");

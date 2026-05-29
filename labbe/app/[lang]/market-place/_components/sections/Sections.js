@@ -2,7 +2,7 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./sections.module.css";
-import { useVendorCategories } from "@/hooks/reactQueryHooks/useVendors";
+import { useVendorCategories } from "@/hooks/vendors";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 
 const Sections = ({ selectedSection, onSectionChange }) => {
