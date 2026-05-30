@@ -6,7 +6,7 @@ import {
   sendReminder,
 } from "../../services/messagingService";
 import { ENDPOINTS } from "../../config/api";
-import { apiFetch } from "../../services/apiClient";
+import { apiFetch } from "../../services/http";
 import { dashboardKeys } from "../dashboard/keys";
 import { eventsKeys } from "../events/keys";
 

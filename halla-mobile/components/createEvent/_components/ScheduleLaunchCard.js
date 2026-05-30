@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useLanguage, useTranslation } from "../../../localization";
-import { formatDateTime } from "../../../utils/locale";
+import { formatDateTime } from "@halla/shared/utils/locale";
 import Svg, { Path } from "react-native-svg";
 
 const CalendarIcon = () => (

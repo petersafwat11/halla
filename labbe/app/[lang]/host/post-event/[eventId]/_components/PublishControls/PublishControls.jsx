@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
+import Button from "@/ui/commen/button/Button";
 import {
   usePublishPostEventContent,
   useUnpublishPostEventContent,
@@ -9,7 +10,7 @@ import {
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./publishControls.module.css";
 
-const ConfirmDialog = ({ open, title, message, onConfirm, onCancel, t }) => {
+const ConfirmDialog = ({ open, title, message, onConfirm, onCancel, t, confirmVariant = "primary" }) => {
   if (!open) return null;
   return (
     <div className={styles.modalOverlay} role="dialog" aria-modal="true">
@@ -17,12 +18,18 @@ const ConfirmDialog = ({ open, title, message, onConfirm, onCancel, t }) => {
         <h3 className={styles.modalTitle}>{title}</h3>
         <p className={styles.modalMessage}>{message}</p>
         <div className={styles.modalActions}>
-          <button className={styles.cancelButton} onClick={onCancel}>
-            {t("host.cancel")}
-          </button>
-          <button className={styles.confirmButton} onClick={onConfirm}>
-            {t("host.confirm")}
-          </button>
+          <Button
+            variant="secondary"
+            size="small"
+            title={t("host.cancel")}
+            onClick={onCancel}
+          />
+          <Button
+            variant={confirmVariant}
+            size="small"
+            title={t("host.confirm")}
+            onClick={onConfirm}
+          />
         </div>
       </div>
     </div>
@@ -95,30 +102,28 @@ const PublishControls = ({
 
       <div className={styles.buttons}>
         {!isPublished ? (
-          <button
-            className={styles.primaryButton}
-            disabled={publishDisabled}
-            title={publishTooltip}
-            onClick={() => setConfirm("publish")}
-          >
-            {t("host.publish")}
-          </button>
+          <span title={publishTooltip}>
+            <Button
+              variant="primary"
+              title={t("host.publish")}
+              disabled={publishDisabled}
+              onClick={() => setConfirm("publish")}
+            />
+          </span>
         ) : (
-          <button
-            className={styles.dangerButton}
+          <Button
+            variant="danger"
+            title={t("host.unpublish")}
             disabled={unpublish.isPending}
             onClick={() => setConfirm("unpublish")}
-          >
-            {t("host.unpublish")}
-          </button>
+          />
         )}
 
-        <button
-          className={styles.secondaryButton}
+        <Button
+          variant="secondary"
+          title={t("host.accessLinks.title")}
           onClick={onSendAccessLinks}
-        >
-          {t("host.accessLinks.title")}
-        </button>
+        />
       </div>
 
       <ConfirmDialog
@@ -128,6 +133,7 @@ const PublishControls = ({
         onConfirm={onPublish}
         onCancel={() => setConfirm(null)}
         t={t}
+        confirmVariant="primary"
       />
       <ConfirmDialog
         open={confirm === "unpublish"}
@@ -136,6 +142,7 @@ const PublishControls = ({
         onConfirm={onUnpublish}
         onCancel={() => setConfirm(null)}
         t={t}
+        confirmVariant="danger"
       />
     </div>
   );

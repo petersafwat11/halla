@@ -14,13 +14,9 @@ const Actions = () => {
   const [showTicketPopup, setShowTicketPopup] = useState(false);
   const [showModeratorPopup, setShowModeratorPopup] = useState(false);
 
-  const handleTicketSuccess = () => {
-    console.log("Ticket created successfully");
-  };
+  const handleTicketSuccess = () => {};
 
-  const handleModeratorSuccess = () => {
-    console.log("Moderator added successfully");
-  };
+  const handleModeratorSuccess = () => {};
 
   const handleCreateEvent = () => {
     router.push("/admin-dash/create-event");

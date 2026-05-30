@@ -1,7 +1,7 @@
 // Mobile Taqnyat templates client — host-facing list only (admin is web-only).
 
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 
 const buildQuery = (params = {}) => {
   const qs = new URLSearchParams(

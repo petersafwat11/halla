@@ -1,7 +1,7 @@
 "use client";
 import { FaCalendarAlt, FaUsers, FaCheckCircle, FaCrown, FaRocket } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
-import { getLocalized } from "@/utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import styles from "../page.module.css";
 

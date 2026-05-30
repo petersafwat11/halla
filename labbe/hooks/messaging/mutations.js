@@ -11,8 +11,8 @@
 // the cached response instead of double-spending an SMS credit).
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import { messagingKeys } from "./keys";
 import { eventsKeys } from "@/hooks/events/keys";
 import { dashboardKeys } from "@/hooks/dashboard/keys";

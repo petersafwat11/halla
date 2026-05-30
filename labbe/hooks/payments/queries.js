@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import { paymentsKeys } from "./keys";
 
 const TERMINAL = new Set([

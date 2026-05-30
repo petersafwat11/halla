@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
 
 function EventCard({ event }) {
-  console.log(event);
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const { t } = useTranslation("home-events");
   const router = useRouter();

@@ -9,7 +9,7 @@ import ScheduleSendingPopup from "@/ui/host/popups/scheduleSendingPopup/Schedule
 import { useEventMutation } from "@/hooks/events";
 import { toast } from "react-toastify";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
-import { useEventActionGate } from "@/hooks/events/useEventActionGate";
+import { useEventActionGate } from "@halla/shared/hooks/useEventActionGate";
 import styles from "./EventActionsHeader.module.css";
 
 export default function EventActionsHeader({ event, isAdmin = false }) {

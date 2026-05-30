@@ -13,7 +13,6 @@ const CustomPieChart = ({ data: guestStats }) => {
     { name: "declined", value: guestStats?.totalDeclined || 0 },
     { name: "pending", value: guestStats?.totalPending || 0 },
   ];
-  console.log("chartData", chartData);
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 

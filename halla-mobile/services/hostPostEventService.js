@@ -7,7 +7,7 @@
  */
 
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 
 const _request = async (path, options = {}) => {
   const isFormData =

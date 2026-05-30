@@ -15,7 +15,7 @@ import TextAreaInput from "../commen/TextAreaInput";
 import Button from "../commen/Button";
 import MapPicker from "../commen/MapPicker";
 import * as ImagePicker from "expo-image-picker";
-import { serviceDetailsSchema } from "../../utils/schemas/vendorSchemas";
+import { mobileServiceDetailsSchema as serviceDetailsSchema } from "@halla/shared/schemas/vendor";
 
 const ServiceDetailsForm = ({ data, onSave, loading }) => {
   const { t } = useTranslation("vendor");

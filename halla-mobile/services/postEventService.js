@@ -12,7 +12,7 @@
  */
 
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
-import { fetchWithTimeout } from "./apiClient";
+import { fetchWithTimeout } from "./http";
 
 const _request = async (url, init, errorMessage) => {
   const response = await fetchWithTimeout(url, init);

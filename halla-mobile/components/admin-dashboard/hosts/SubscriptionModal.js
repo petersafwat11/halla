@@ -22,7 +22,7 @@ import { useAdminPlans, useUpdateHostSubscription } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 
-import { getLocalized } from "../../../utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 
 const PickDropdown = ({ label, options, selectedValue, onSelect }) => (
   <View style={styles.field}>

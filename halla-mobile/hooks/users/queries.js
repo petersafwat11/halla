@@ -67,7 +67,7 @@ export function useSubscriptionInfo() {
   return useQuery({
     queryKey: subscriptionInfoKeys.eventInfo(),
     queryFn: async () => {
-      const response = await getSubscriptionInfoAPI(token);
+      const response = await getSubscriptionInfoAPI();
       return response?.data || response;
     },
     enabled: !!token,

@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAdminHostsInfinite, useDebouncedValue } from "../../../hooks";
+import { useAdminHostsInfinite, useDebounce } from "../../../hooks";
 import { useAuthStore } from "../../../stores/authStore";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
@@ -18,7 +18,7 @@ const AdminHostsScreen = ({ navigation }) => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const debouncedSearch = useDebounce(searchQuery, 350);
   const filters = useMemo(
     () => ({
       search: debouncedSearch,

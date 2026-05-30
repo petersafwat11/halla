@@ -1,5 +1,5 @@
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 
 const _request = async (path, init, errorMessage) => {
   const response = await apiFetch(path, init);

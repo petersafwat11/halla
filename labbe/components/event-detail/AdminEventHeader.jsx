@@ -32,13 +32,17 @@ export default function AdminEventHeader({ data }) {
   const hostName =
     data?.host?.username || data?.host?.name || "";
 
-  // Transform event data for EventActionsHeader
+  // Spread the full event so every field the shared `useEventActionGate`
+  // hook reads (`taqnyatTemplate`, `status`, `launchSettings`,
+  // `staffList`, …) reaches `EventActionsHeader`. The previous hand-picked
+  // projection dropped `taqnyatTemplate` + `status`, which made
+  // `hasTemplate=false` and silently hid every action button on the admin
+  // single-event page. Mirrors the spread `EventDetailsScreen.js` already
+  // uses on mobile.
   const event = {
+    ...(data?.event || {}),
     id: eventId,
     title: eventTitle,
-    testMessageSent: data?.event?.testMessageSent,
-    whatsappTemplateStatus: data?.event?.whatsappTemplateStatus,
-    launchSettings: data?.event?.launchSettings,
     staffCount: (data?.staff || []).length,
   };
 
@@ -74,8 +78,7 @@ export default function AdminEventHeader({ data }) {
 
     setIsDeleting(true);
     try {
-      const token = cookieUtils.getCookie("token");
-      await eventsAPI.delete(eventId, token);
+      await eventsAPI.delete(eventId);
       toastUtils.success(
         t("singleEvent.deleteSuccess", "Event deleted successfully")
       );

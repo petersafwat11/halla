@@ -14,7 +14,6 @@ import { Svg, Path } from "react-native-svg";
 import EventListItem from "./EventListItem";
 import { exportEvents } from "../../services/eventsService";
 import { saveBlobAndShare } from "../../utils/download";
-import { useAuthStore } from "../../stores/authStore";
 
 // Same SVG icons as home StatsCards
 const PeopleIcon = ({ color }) => (
@@ -76,7 +75,6 @@ const EventList = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all"); // all, live, ended, draft
   const [exporting, setExporting] = useState(false);
-  const token = useAuthStore((state) => state.token);
 
   // Phase 4 W3-ADMIN — host export of all events to XLSX. The blob is
   // saved to cache and the native share sheet is opened so the user
@@ -85,7 +83,7 @@ const EventList = ({
     if (exporting) return;
     setExporting(true);
     try {
-      const result = await exportEvents(token);
+      const result = await exportEvents();
       if (!result?.blob) {
         throw new Error("Empty export response");
       }

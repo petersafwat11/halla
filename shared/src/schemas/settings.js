@@ -268,7 +268,7 @@ export const hostEmailNotificationsSchemaLegacy = z.object({
   afterSendingInvitations: z.boolean().default(false),
 });
 
-export const notificationsSchema = (t = idT) =>
+export const notificationsSchema = (_t = idT) =>
   z.object({
     appNotifications: appNotificationsSchema,
     emailNotifications: hostEmailNotificationsSchemaLegacy,

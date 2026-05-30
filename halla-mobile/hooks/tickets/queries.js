@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
-import { apiFetch } from "../../services/apiClient";
+import { apiFetch } from "../../services/http";
 import { ENDPOINTS } from "../../config/api";
 import { getTicketsAPI, getTicketAPI } from "../../services/ticketsService";
 import { ticketsKeys } from "./keys";

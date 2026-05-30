@@ -1,3 +1,8 @@
+/**
+ * Ticket enums — mirror `labbe-backend-/src/shared/constants/status.js`
+ * (TICKET_STATUS, TICKET_PRIORITY) plus the FE-only TICKET_TYPES list.
+ */
+
 export const TICKET_TYPES = Object.freeze({
   TECHNICAL: "technical",
   PAYMENT: "payment",

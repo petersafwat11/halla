@@ -10,7 +10,7 @@ import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import {
   createTicketSchema,
   TICKET_TYPES,
-} from "@/utils/schemas/ticketSchema";
+} from "@halla/shared/schemas/tickets";
 import { useTicketMutation } from "@/hooks/tickets";
 
 const MakeTicketPopup = ({ onClose, onSuccess }) => {

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import TextInput from "../commen/TextInput";
 import Button from "../commen/Button";
-import { socialLinksSchema } from "../../utils/schemas/vendorSchemas";
+import { mobileSocialLinksSchema as socialLinksSchema } from "@halla/shared/schemas/vendor";
 
 const AdditionalLinksForm = ({ data, onSave, loading }) => {
   const { t } = useTranslation("vendor");

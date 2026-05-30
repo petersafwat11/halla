@@ -12,7 +12,7 @@ export function useUserEventsWithStats() {
   return useQuery({
     queryKey: eventsKeys.userStats(),
     queryFn: async () => {
-      const response = await eventsService2.getUserEventsWithStats(token);
+      const response = await eventsService2.getUserEventsWithStats();
       return response;
     },
     enabled: !!token,
@@ -29,7 +29,7 @@ export function useEventStats() {
   return useQuery({
     queryKey: eventsKeys.stats(),
     queryFn: async () => {
-      const response = await eventsService2.getEventStats(token);
+      const response = await eventsService2.getEventStats();
       return response;
     },
     enabled: !!token,
@@ -83,7 +83,7 @@ export function useSingleEventStats(eventId, opts) {
   return useQuery({
     queryKey: eventsKeys.singleStats(eventId),
     queryFn: async () => {
-      const response = await eventsService2.getSingleEventStats(eventId, token);
+      const response = await eventsService2.getSingleEventStats(eventId);
       return response;
     },
     enabled: !!token && !!eventId,

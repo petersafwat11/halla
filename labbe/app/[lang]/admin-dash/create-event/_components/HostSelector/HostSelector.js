@@ -61,8 +61,7 @@ const HostSelector = ({
     setSearchError(null);
     setSearchResult(null);
     try {
-      const token = cookieUtils.getCookie("token");
-      const response = await hostsAPI.verifyByPhone(phoneNumber.trim(), token);
+      const response = await hostsAPI.verifyByPhone(phoneNumber.trim());
       if (response?.data?.isValid && response?.data?.host) {
         setSearchResult(response.data.host);
         setSearchError(null);

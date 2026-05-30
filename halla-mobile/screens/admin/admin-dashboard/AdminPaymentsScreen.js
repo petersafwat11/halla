@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { useAdminPaymentsInfinite, useDebouncedValue } from "../../../hooks";
+import { useAdminPaymentsInfinite, useDebounce } from "../../../hooks";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import { useAuthStore } from "../../../stores/authStore";
@@ -26,7 +26,7 @@ const AdminPaymentsScreen = () => {
 
   const token = useAuthStore((state) => state.token);
 
-  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const debouncedSearch = useDebounce(searchQuery, 350);
   const paymentsFilters = useMemo(
     () => ({
       search: debouncedSearch,

@@ -1,5 +1,5 @@
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 
 export const getHostDashboard = async () => {
   const response = await apiFetch(ENDPOINTS.DASHBOARD.HOST, { method: "GET" });

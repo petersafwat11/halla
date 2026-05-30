@@ -2,8 +2,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { staffService } from "@/services/staff";
-import { legacyClientAdapter as apiClient } from "@/services/new-backend/legacyAdapter";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import { staffKeys } from "./keys";
 import { eventsKeys } from "@/hooks/events/keys";
 
@@ -48,11 +48,12 @@ export const useRevokeStaffAccess = () => {
       const idempotencyKey = `staff-revoke-${eventId}-${staffId}-${Date.now()}-${Math.random()
         .toString(36)
         .slice(2, 10)}`;
-      const response = await apiClient.post(
-        API_PATHS.events.revokeStaffAccess(eventId, staffId),
-        {},
-        { headers: { "Idempotency-Key": idempotencyKey } }
-      );
+      const response = await apiRequest({
+        method: "POST",
+        path: API_PATHS.events.revokeStaffAccess(eventId, staffId),
+        data: {},
+        config: { headers: { "Idempotency-Key": idempotencyKey } },
+      });
       return response.data || response;
     },
     onSuccess: (_, { eventId }) => {

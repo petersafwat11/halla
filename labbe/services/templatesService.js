@@ -1,10 +1,10 @@
 /**
  * Visual templates service. Wraps `apiRequest` for the templates,
- * categories, and fonts endpoints in `services/new-backend/api.config.js`.
+ * categories, and fonts endpoints declared in `@halla/shared/api/paths`.
  */
 
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 
 const buildQuery = (params = {}) => {
   const q = Object.entries(params)

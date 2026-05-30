@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useLanguage, useTranslation } from "../../../localization";
-import { formatCount, localizeDigits } from "../../../utils/locale";
+import { formatCount, localizeDigits } from "@halla/shared/utils/locale";
 import Svg, { Path } from "react-native-svg";
 
 const PeopleIcon = () => (

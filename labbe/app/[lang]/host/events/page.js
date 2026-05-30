@@ -8,8 +8,8 @@ import {
   createServerQueryClient,
   prefetchServerData,
   QueryClientServerProvider,
-} from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+} from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 
 const page = async () => {
   const cookieStore = await cookies();

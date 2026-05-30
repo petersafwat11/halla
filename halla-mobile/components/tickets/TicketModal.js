@@ -19,7 +19,7 @@ import {
   updateTicketSchema,
   TICKET_TYPES,
   getCreateTicketDefaults,
-} from "../../utils/schemas/ticketSchema";
+} from "@halla/shared/schemas/tickets";
 import { useLanguage, useTranslation } from "../../localization";
 
 const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {

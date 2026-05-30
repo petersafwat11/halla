@@ -50,7 +50,13 @@ const PostEventPage = () => {
     error: validateError,
   } = useValidatePostEventToken(token);
 
-  const validatePayload = validateData?.data ?? validateData;
+  // Phase 8 — memoised so it's stable across renders and the
+  // `authError` useMemo below can list it as an explicit dep without
+  // re-running on every parent render.
+  const validatePayload = useMemo(
+    () => validateData?.data ?? validateData,
+    [validateData]
+  );
   const isAuthenticated = hasSession || validatePayload?.valid === true;
   const eventId =
     validatePayload?.event?._id || (hasSession ? sessionEventId : null);
@@ -98,7 +104,7 @@ const PostEventPage = () => {
     token,
     hasSession,
     isAuthenticated,
-    validateData,
+    validatePayload,
     validateError,
     reasonToMessage,
     t,

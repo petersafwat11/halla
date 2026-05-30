@@ -1,5 +1,5 @@
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 import { saveBlobAndShare } from "../utils/download";
 
 const _request = async (path, init, errorMessage) => {

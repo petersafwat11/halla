@@ -1,7 +1,7 @@
 "use client";
 import { useTranslation } from "react-i18next";
 import { FaCalendarAlt, FaUsers, FaClock, FaRegCalendarTimes } from "react-icons/fa";
-import { getLocalized } from "@/utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 import styles from "./CurrentPlanCard.module.css";
 
 /**

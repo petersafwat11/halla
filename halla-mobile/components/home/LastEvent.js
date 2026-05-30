@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import useEventActionGate from "../../hooks/useEventActionGate";
+import useEventActionGate from "@halla/shared/hooks/useEventActionGate";
 import LastEventHeader from "./_components/LastEventHeader";
 import LastEventStatsRow from "./_components/LastEventStatsRow";
 import LastEventQuota from "./_components/LastEventQuota";

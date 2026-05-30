@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import {
   useAdminTicketsInfinite,
-  useDebouncedValue,
+  useDebounce,
   useResolveTicket,
   useReopenTicket,
   useAssignTicket,
@@ -43,7 +43,7 @@ const AdminTicketsScreen = () => {
   const role  = useAuthStore((state) => state.user?.role);
   const canDelete = canDeleteOnPage(role, PAGES.TICKETS);
 
-  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const debouncedSearch = useDebounce(searchQuery, 350);
   const ticketsFilters = useMemo(
     () => ({ search: debouncedSearch, ...(activeFilter !== "all" && { status: activeFilter }) }),
     [debouncedSearch, activeFilter]

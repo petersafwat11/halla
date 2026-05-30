@@ -32,7 +32,14 @@ const AddGuestOrModeratorPopup = ({
   onSave,
   type, // "guest" or "moderator"
   initialData = null,
-  loading = false
+  loading = false,
+  // Existing entries (guests OR moderators) already saved for this
+  // event. Rendered above the form as a compact list with edit/delete
+  // so the popup matches the web `StaffPopup` UX, where the host can
+  // see everyone they've added without closing the modal first.
+  itemsList = [],
+  onEditItem,
+  onDeleteItem
 }) => {
   const isGuest = type === "guest";
   const isEdit = !!initialData;
@@ -114,6 +121,53 @@ const AddGuestOrModeratorPopup = ({
                 countryCode="+966"
               />
             </FormProvider>
+
+            {itemsList.length > 0 && (
+              <View style={styles.listSection}>
+                <Text style={styles.listTitle}>
+                  {isGuest ? "الضيوف الحاليون" : "فريق العمل الحالي"} ({itemsList.length})
+                </Text>
+                {itemsList.map((item) => {
+                  const itemId = item._id || item.id;
+                  const isCurrent = initialData && (initialData._id === itemId);
+                  return (
+                    <View
+                      key={itemId}
+                      style={[styles.listRow, isCurrent && styles.listRowActive]}
+                    >
+                      <View style={styles.listInfo}>
+                        <Text style={styles.listName} numberOfLines={1}>
+                          {item.name || "—"}
+                        </Text>
+                        <Text style={styles.listPhone} numberOfLines={1}>
+                          {item.phone || item.mobile || "—"}
+                        </Text>
+                      </View>
+                      <View style={styles.listActions}>
+                        {onEditItem && (
+                          <TouchableOpacity
+                            onPress={() => onEditItem(item)}
+                            style={styles.listIconBtn}
+                            disabled={loading}
+                          >
+                            <Ionicons name="create-outline" size={18} color="#6B4E33" />
+                          </TouchableOpacity>
+                        )}
+                        {onDeleteItem && (
+                          <TouchableOpacity
+                            onPress={() => onDeleteItem(item)}
+                            style={styles.listIconBtn}
+                            disabled={loading}
+                          >
+                            <Ionicons name="trash-outline" size={18} color="#C0392B" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
           </ScrollView>
 
           {/* Footer Buttons */}
@@ -225,6 +279,63 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: "#FFF"
+  },
+  listSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+    gap: 8
+  },
+  listTitle: {
+    fontSize: 13,
+    fontFamily: "Cairo_700Bold",
+    color: "#2C2C2C",
+    marginBottom: 4,
+    textAlign: "right"
+  },
+  listRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: "#F9F4EF",
+    borderWidth: 1,
+    borderColor: "#F5ECE4"
+  },
+  listRowActive: {
+    borderColor: "#C28E5C",
+    backgroundColor: "#F5ECE4"
+  },
+  listInfo: {
+    flex: 1,
+    gap: 2
+  },
+  listName: {
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#2C2C2C",
+    textAlign: "right"
+  },
+  listPhone: {
+    fontSize: 12,
+    fontFamily: "Cairo_500Medium",
+    color: "#656565",
+    textAlign: "right"
+  },
+  listActions: {
+    flexDirection: "row",
+    gap: 4
+  },
+  listIconBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFF"
   }
 });
 

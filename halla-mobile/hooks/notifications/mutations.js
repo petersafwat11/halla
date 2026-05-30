@@ -1,15 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "../../stores/authStore";
 import notificationService from "../../services/notificationService";
 import { notificationsKeys } from "./keys";
 
 export function useMarkAsRead() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation({
     mutationFn: async (id) => {
-      const response = await notificationService.markAsRead(id, token);
+      const response = await notificationService.markAsRead(id);
       return response.data;
     },
     onSuccess: () => {
@@ -20,11 +18,10 @@ export function useMarkAsRead() {
 
 export function useMarkAllAsRead() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation({
     mutationFn: async () => {
-      const response = await notificationService.markAllAsRead(token);
+      const response = await notificationService.markAllAsRead();
       return response.data;
     },
     onSuccess: () => {
@@ -35,11 +32,10 @@ export function useMarkAllAsRead() {
 
 export function useDeleteNotification() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation({
     mutationFn: async (id) => {
-      const response = await notificationService.deleteNotification(id, token);
+      const response = await notificationService.deleteNotification(id);
       return response.data;
     },
     onSuccess: () => {
@@ -50,11 +46,10 @@ export function useDeleteNotification() {
 
 export function useClearAllNotifications() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation({
     mutationFn: async () => {
-      const response = await notificationService.clearAllNotifications(token);
+      const response = await notificationService.clearAllNotifications();
       return response.data;
     },
     onSuccess: () => {
@@ -64,22 +59,18 @@ export function useClearAllNotifications() {
 }
 
 export function useSendNotification() {
-  const token = useAuthStore((state) => state.token);
-
   return useMutation({
     mutationFn: async (data) => {
-      const response = await notificationService.sendNotification(data, token);
+      const response = await notificationService.sendNotification(data);
       return response.data;
     },
   });
 }
 
 export function useBroadcastNotification() {
-  const token = useAuthStore((state) => state.token);
-
   return useMutation({
     mutationFn: async (data) => {
-      const response = await notificationService.broadcastNotification(data, token);
+      const response = await notificationService.broadcastNotification(data);
       return response.data;
     },
   });

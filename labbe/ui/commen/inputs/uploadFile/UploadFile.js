@@ -26,7 +26,6 @@ const UploadFile = ({
   });
 
   const error = get(errors, name)?.message;
-  console.log("error,,,,", error);
   const [isDragOver, setIsDragOver] = useState(false);
   const [fileError, setFileError] = useState("");
 

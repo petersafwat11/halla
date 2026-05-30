@@ -7,7 +7,7 @@
  * `fetchWithTimeout` — fetch-specific code that can't move into shared.
  */
 
-import { fetchWithTimeout } from "./apiClient";
+import { fetchWithTimeout } from "./http";
 import { API_BASE_URL } from "../config/api";
 import {
   ApiError,

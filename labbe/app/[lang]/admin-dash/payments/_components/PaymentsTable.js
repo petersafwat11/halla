@@ -64,7 +64,14 @@ export default function PaymentsTable() {
   );
 
   const { data, isLoading, error } = useAdminPayments(filters);
-  const payments = data?.data?.payments || [];
+  // Phase 8 — wrap the `|| []` default in its own `useMemo` so the
+  // `tableData` memo at the bottom of the file actually caches across
+  // renders. The bare `data?.data?.payments || []` form returns a new
+  // array reference every render and defeats memoization.
+  const payments = useMemo(
+    () => data?.data?.payments || [],
+    [data]
+  );
   const pagination = data?.data?.pagination || { page: 1, pages: 1, total: 0 };
 
   const handlePageChange = useCallback(

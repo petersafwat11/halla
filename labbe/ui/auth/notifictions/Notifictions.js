@@ -5,7 +5,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ToggleInput from "@/ui/commen/inputs/toggelInput/ToggelInput";
 import Button from "@/ui/commen/button/Button";
-import { notificationsSchema } from "@/utils/schemas/settingsSchemas";
+import { notificationsSchema } from "@halla/shared/schemas/settings";
 import { toastUtils } from "@/utils/toastUtils";
 import styles from "./notifictions.module.css";
 
@@ -51,7 +51,6 @@ const Notifications = ({ initialData }) => {
 
       if (response.status === "success") {
         toastUtils.success(response.message || t("success_message"));
-        console.log("Update response:", response);
       }
     } catch (error) {
       console.error("Error updating notification settings:", error);

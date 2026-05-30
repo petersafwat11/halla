@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import useEventActionGate from "../../hooks/useEventActionGate";
+import useEventActionGate from "@halla/shared/hooks/useEventActionGate";
 
 /**
  * PartialFailureBanner — mobile mirror of

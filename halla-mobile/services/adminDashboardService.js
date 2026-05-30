@@ -5,7 +5,7 @@
  */
 
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 import { saveBlobAndShare } from "../utils/download";
 import {
   getTicketsAPI as ticketsGetAll,

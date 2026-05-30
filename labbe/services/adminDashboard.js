@@ -1,13 +1,15 @@
 /**
  * Admin Dashboard Service
- * Centralized API service for admin dashboard operations
- * Enhanced with duplicate error handling and package limit validation
+ * Centralized API service for admin dashboard operations.
+ *
+ * Phase 8: retired the `legacyClientAdapter` `.get/.post/.patch/.delete`
+ * façade; every call now goes through `apiRequest` directly. The
+ * vestigial `token = null` parameter every function carried is gone —
+ * auth flows through the HttpOnly access_token cookie attached by the
+ * axios `withCredentials: true` config in `services/http.js`.
  */
 
-// Phase 3: migrated from the legacy fetch-based `./apiClient` to the
-// canonical axios pipeline via legacyAdapter. `APIError` is the
-// re-exported shared `ApiError` so `instanceof APIError` checks survive.
-import { legacyClientAdapter as apiClient, APIError } from "./new-backend/legacyAdapter";
+import { apiRequest } from "./http";
 
 /**
  * Helper to trigger file download from blob
@@ -28,154 +30,156 @@ const downloadBlob = (blob, filename) => {
  * Dashboard Statistics API
  */
 export const dashboardAPI = {
-  getStats: async (period = "month", token = null, filters = {}) => {
-    const qs = apiClient.buildQueryString({ period, ...filters });
-    return apiClient.get(`/dashboard/admin${qs}`, { token });
-  },
-  getUserGrowth: async (
-    period = "month",
-    granularity = "day",
-    token = null,
-  ) => {
-    return apiClient.get(
-      `/dashboard/admin/users/growth?period=${period}&granularity=${granularity}`,
-      { token },
-    );
-  },
-  getRevenue: async (period = "month", granularity = "day", token = null) => {
-    return apiClient.get(
-      `/dashboard/admin/revenue?period=${period}&granularity=${granularity}`,
-      { token },
-    );
-  },
-  getEventStats: async (period = "month", token = null) => {
-    return apiClient.get(`/dashboard/admin/events?period=${period}`, { token });
-  },
-  getSubscriptionStats: async (token = null) => {
-    return apiClient.get(`/dashboard/admin/subscriptions`, { token });
-  },
+  getStats: async (period = "month", filters = {}) =>
+    apiRequest({
+      method: "GET",
+      path: "/dashboard/admin",
+      params: { period, ...filters },
+    }),
+  getUserGrowth: async (period = "month", granularity = "day") =>
+    apiRequest({
+      method: "GET",
+      path: "/dashboard/admin/users/growth",
+      params: { period, granularity },
+    }),
+  getRevenue: async (period = "month", granularity = "day") =>
+    apiRequest({
+      method: "GET",
+      path: "/dashboard/admin/revenue",
+      params: { period, granularity },
+    }),
+  getEventStats: async (period = "month") =>
+    apiRequest({
+      method: "GET",
+      path: "/dashboard/admin/events",
+      params: { period },
+    }),
+  getSubscriptionStats: async () =>
+    apiRequest({ method: "GET", path: "/dashboard/admin/subscriptions" }),
 };
 
 /**
  * Hosts Management API (Extended with subscription management)
  */
 export const hostsAPI = {
-  getAll: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    return apiClient.get(`/admin/hosts${qs}`, { token });
-  },
+  getAll: async (filters = {}) =>
+    apiRequest({ method: "GET", path: "/admin/hosts", params: filters }),
 
-  getById: async (hostId, token = null) => {
+  getById: async (hostId) => {
     if (!hostId) throw new Error("Host ID is required");
-    return apiClient.get(`/admin/hosts/${hostId}`, { token });
+    return apiRequest({ method: "GET", path: `/admin/hosts/${hostId}` });
   },
 
-  create: async (hostData, token = null) => {
-    return apiClient.post("/admin/hosts", hostData, { token });
-  },
+  create: async (hostData) =>
+    apiRequest({ method: "POST", path: "/admin/hosts", data: hostData }),
 
-  updateStatus: async (hostId, status, token = null) => {
+  updateStatus: async (hostId, status) => {
     if (!hostId) throw new Error("Host ID is required");
-    return apiClient.patch(
-      `/admin/hosts/${hostId}/status`,
-      { status },
-      { token },
-    );
-  },
-
-  updateSubscription: async (
-    hostId,
-    planCode,
-    billingCycle = null,
-    token = null,
-  ) => {
-    if (!hostId) throw new Error("Host ID is required");
-    const body = { planCode };
-    if (billingCycle) {
-      body.billingCycle = billingCycle;
-    }
-    return apiClient.patch(`/admin/hosts/${hostId}/subscription`, body, {
-      token,
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/hosts/${hostId}/status`,
+      data: { status },
     });
   },
 
-  delete: async (hostId, token = null) => {
+  updateSubscription: async (hostId, planCode, billingCycle = null) => {
     if (!hostId) throw new Error("Host ID is required");
-    return apiClient.delete(`/admin/hosts/${hostId}`, { token });
+    const body = { planCode };
+    if (billingCycle) body.billingCycle = billingCycle;
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/hosts/${hostId}/subscription`,
+      data: body,
+    });
   },
 
-  bulkDelete: async (hostIds, token = null) => {
-    if (!hostIds || hostIds.length === 0)
-      throw new Error("Host IDs are required");
+  delete: async (hostId) => {
+    if (!hostId) throw new Error("Host ID is required");
+    return apiRequest({ method: "DELETE", path: `/admin/hosts/${hostId}` });
+  },
+
+  bulkDelete: async (hostIds) => {
+    if (!hostIds || hostIds.length === 0) throw new Error("Host IDs are required");
     if (hostIds.length > 100)
       throw new Error("Cannot delete more than 100 items at once");
     const objectIdRegex = /^[a-fA-F0-9]{24}$/;
     const invalidIds = hostIds.filter((id) => !objectIdRegex.test(id));
     if (invalidIds.length > 0)
       throw new Error(`Invalid ObjectId format in ids: ${invalidIds[0]}`);
-    return apiClient.post(
-      `/admin/hosts/bulk-delete`,
-      { hostIds },
-      { token },
-    );
+    return apiRequest({
+      method: "POST",
+      path: "/admin/hosts/bulk-delete",
+      data: { hostIds },
+    });
   },
 
-  export: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    const blob = await apiClient.get(`/admin/hosts/export${qs}`, { token });
+  export: async (filters = {}) => {
+    const blob = await apiRequest({
+      method: "GET",
+      path: "/admin/hosts/export",
+      params: filters,
+    });
     return downloadBlob(
       blob,
       `hosts_export_${new Date().toISOString().split("T")[0]}.xlsx`,
     );
   },
 
-  verifyByPhone: async (phoneNumber, token = null) => {
+  verifyByPhone: async (phoneNumber) => {
     if (!phoneNumber) throw new Error("Phone number is required");
-    return apiClient.get(
-      `/admin/hosts/verify-phone?phoneNumber=${encodeURIComponent(
-        phoneNumber,
-      )}`,
-      { token },
-    );
+    return apiRequest({
+      method: "GET",
+      path: "/admin/hosts/verify-phone",
+      params: { phoneNumber },
+    });
   },
 
-  sendNotification: async (hostId, notificationData, token = null) => {
+  sendNotification: async (hostId, notificationData) => {
     if (!hostId) throw new Error("Host ID is required");
-    return apiClient.post(`/notifications/send`, {
-      userIds: [hostId],
-      ...notificationData,
-    }, { token });
+    return apiRequest({
+      method: "POST",
+      path: "/notifications/send",
+      data: { userIds: [hostId], ...notificationData },
+    });
   },
 
-  notifyAll: async (notificationData, token = null) => {
-    return apiClient.post(`/notifications/broadcast`, {
-      role: "host",
-      ...notificationData,
-    }, { token });
-  },
-
-  /**
-   * Find or create a host by phone number
-   * Used when creating events for hosts that may not exist yet
-   */
-  findOrCreate: async (hostData, token = null) => {
-    return apiClient.post("/admin/hosts/find-or-create", hostData, { token });
-  },
+  notifyAll: async (notificationData) =>
+    apiRequest({
+      method: "POST",
+      path: "/notifications/broadcast",
+      data: { role: "host", ...notificationData },
+    }),
 
   /**
-   * Get event targets (hosts and whitelabels) for admin event creation
+   * Find or create a host by phone number.
+   * Used when creating events for hosts that may not exist yet.
    */
-  getEventTargets: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    return apiClient.get(`/admin/event-targets${qs}`, { token });
-  },
+  findOrCreate: async (hostData) =>
+    apiRequest({
+      method: "POST",
+      path: "/admin/hosts/find-or-create",
+      data: hostData,
+    }),
 
   /**
-   * Get subscription info for a specific user (for event creation validation)
+   * Get event targets (hosts and whitelabels) for admin event creation.
    */
-  getUserSubscriptionInfo: async (userId, token = null) => {
+  getEventTargets: async (filters = {}) =>
+    apiRequest({
+      method: "GET",
+      path: "/admin/event-targets",
+      params: filters,
+    }),
+
+  /**
+   * Get subscription info for a specific user (for event creation validation).
+   */
+  getUserSubscriptionInfo: async (userId) => {
     if (!userId) throw new Error("User ID is required");
-    return apiClient.get(`/admin/users/${userId}/subscription-info`, { token });
+    return apiRequest({
+      method: "GET",
+      path: `/admin/users/${userId}/subscription-info`,
+    });
   },
 };
 
@@ -183,28 +187,30 @@ export const hostsAPI = {
  * Moderators/Admins Management API
  */
 export const moderatorsAPI = {
-  getAll: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    return apiClient.get(`/admin/moderators${qs}`, { token });
-  },
+  getAll: async (filters = {}) =>
+    apiRequest({ method: "GET", path: "/admin/moderators", params: filters }),
 
-  create: async (adminData, token = null) => {
-    return apiClient.post("/admin/moderators", adminData, { token });
-  },
+  create: async (adminData) =>
+    apiRequest({ method: "POST", path: "/admin/moderators", data: adminData }),
 
-  update: async (adminId, adminData, token = null) => {
+  update: async (adminId, adminData) => {
     if (!adminId) throw new Error("Admin ID is required");
-    return apiClient.patch(`/admin/moderators/${adminId}`, adminData, {
-      token,
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/moderators/${adminId}`,
+      data: adminData,
     });
   },
 
-  delete: async (adminId, token = null) => {
+  delete: async (adminId) => {
     if (!adminId) throw new Error("Admin ID is required");
-    return apiClient.delete(`/admin/moderators/${adminId}`, { token });
+    return apiRequest({
+      method: "DELETE",
+      path: `/admin/moderators/${adminId}`,
+    });
   },
 
-  bulkDelete: async (adminIds, token = null) => {
+  bulkDelete: async (adminIds) => {
     if (!adminIds || adminIds.length === 0)
       throw new Error("Admin IDs are required");
     if (adminIds.length > 100)
@@ -213,88 +219,96 @@ export const moderatorsAPI = {
     const invalidIds = adminIds.filter((id) => !objectIdRegex.test(id));
     if (invalidIds.length > 0)
       throw new Error(`Invalid ObjectId format in ids: ${invalidIds[0]}`);
-    return apiClient.post(
-      `/admin/moderators/bulk-delete`,
-      { moderatorIds: adminIds },
-      { token },
-    );
+    return apiRequest({
+      method: "POST",
+      path: "/admin/moderators/bulk-delete",
+      data: { moderatorIds: adminIds },
+    });
   },
 
-  export: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    const blob = await apiClient.get(`/admin/moderators/export${qs}`, { token });
+  export: async (filters = {}) => {
+    const blob = await apiRequest({
+      method: "GET",
+      path: "/admin/moderators/export",
+      params: filters,
+    });
     return downloadBlob(
       blob,
       `moderators_export_${new Date().toISOString().split("T")[0]}.xlsx`,
     );
   },
 
-  updateStatus: async (adminId, status, token = null) => {
+  updateStatus: async (adminId, status) => {
     if (!adminId) throw new Error("Admin ID is required");
-    return apiClient.patch(
-      `/admin/moderators/${adminId}/status`,
-      { status },
-      { token },
-    );
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/moderators/${adminId}/status`,
+      data: { status },
+    });
   },
 
-  sendNotification: async (adminId, notificationData, token = null) => {
+  sendNotification: async (adminId, notificationData) => {
     if (!adminId) throw new Error("Admin ID is required");
-    return apiClient.post(
-      `/notifications/send`,
-      { userIds: [adminId], ...notificationData },
-      { token },
-    );
+    return apiRequest({
+      method: "POST",
+      path: "/notifications/send",
+      data: { userIds: [adminId], ...notificationData },
+    });
   },
 
-  notifyAll: async (notificationData, token = null) => {
-    return apiClient.post(`/notifications/broadcast`, {
-      role: "moderator",
-      ...notificationData,
-    }, { token });
-  },
+  notifyAll: async (notificationData) =>
+    apiRequest({
+      method: "POST",
+      path: "/notifications/broadcast",
+      data: { role: "moderator", ...notificationData },
+    }),
 };
 
 /**
  * Whitelabel Management API
  */
 export const whitelabelAPI = {
-  getAll: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    return apiClient.get(`/admin/whitelabels${qs}`, { token });
-  },
+  getAll: async (filters = {}) =>
+    apiRequest({ method: "GET", path: "/admin/whitelabels", params: filters }),
 
-  getById: async (whitelabelId, token = null) => {
+  getById: async (whitelabelId) => {
     if (!whitelabelId) throw new Error("Whitelabel ID is required");
-    return apiClient.get(`/admin/whitelabels/${whitelabelId}`, { token });
-  },
-
-  create: async (data, token = null) => {
-    return apiClient.post("/admin/whitelabels", data, { token });
-  },
-
-  update: async (whitelabelId, data, token = null) => {
-    if (!whitelabelId) throw new Error("Whitelabel ID is required");
-    return apiClient.patch(`/admin/whitelabels/${whitelabelId}`, data, {
-      token,
+    return apiRequest({
+      method: "GET",
+      path: `/admin/whitelabels/${whitelabelId}`,
     });
   },
 
-  updateStatus: async (whitelabelId, status, token = null) => {
+  create: async (data) =>
+    apiRequest({ method: "POST", path: "/admin/whitelabels", data }),
+
+  update: async (whitelabelId, data) => {
     if (!whitelabelId) throw new Error("Whitelabel ID is required");
-    return apiClient.patch(
-      `/admin/whitelabels/${whitelabelId}/status`,
-      { status },
-      { token },
-    );
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/whitelabels/${whitelabelId}`,
+      data,
+    });
   },
 
-  delete: async (whitelabelId, token = null) => {
+  updateStatus: async (whitelabelId, status) => {
     if (!whitelabelId) throw new Error("Whitelabel ID is required");
-    return apiClient.delete(`/admin/whitelabels/${whitelabelId}`, { token });
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/whitelabels/${whitelabelId}/status`,
+      data: { status },
+    });
   },
 
-  bulkDelete: async (whitelabelIds, token = null) => {
+  delete: async (whitelabelId) => {
+    if (!whitelabelId) throw new Error("Whitelabel ID is required");
+    return apiRequest({
+      method: "DELETE",
+      path: `/admin/whitelabels/${whitelabelId}`,
+    });
+  },
+
+  bulkDelete: async (whitelabelIds) => {
     if (!whitelabelIds || whitelabelIds.length === 0)
       throw new Error("Whitelabel IDs are required");
     if (whitelabelIds.length > 100)
@@ -303,64 +317,63 @@ export const whitelabelAPI = {
     const invalidIds = whitelabelIds.filter((id) => !objectIdRegex.test(id));
     if (invalidIds.length > 0)
       throw new Error(`Invalid ObjectId format in ids: ${invalidIds[0]}`);
-    return apiClient.post(
-      `/admin/whitelabels/bulk-delete`,
-      { whitelabelIds },
-      { token },
-    );
+    return apiRequest({
+      method: "POST",
+      path: "/admin/whitelabels/bulk-delete",
+      data: { whitelabelIds },
+    });
   },
 
-  updateSubscription: async (
-    whitelabelId,
-    subscriptionData,
-    token = null,
-  ) => {
+  updateSubscription: async (whitelabelId, subscriptionData) => {
     if (!whitelabelId) throw new Error("Whitelabel ID is required");
-    return apiClient.patch(
-      `/admin/whitelabels/${whitelabelId}/subscription`,
-      subscriptionData,
-      { token },
-    );
-  },
-
-  /**
-   * Update whitelabel settings (branding, etc.)
-   * Supports both JSON data and FormData for file uploads
-   */
-  updateSettings: async (data, token = null) => {
-    const isFormData = data instanceof FormData;
-    return apiClient.patch("/whitelabel/settings", data, {
-      token,
-      headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/whitelabels/${whitelabelId}/subscription`,
+      data: subscriptionData,
     });
   },
 
   /**
-   * Get whitelabel settings
+   * Update whitelabel settings (branding, etc.).
+   * Supports both JSON data and FormData for file uploads.
    */
-  getSettings: async (token = null) => {
-    return apiClient.get("/whitelabel/settings", { token });
+  updateSettings: async (data) => {
+    const isFormData = data instanceof FormData;
+    return apiRequest({
+      method: "PATCH",
+      path: "/whitelabel/settings",
+      data,
+      config: isFormData
+        ? { headers: { "Content-Type": "multipart/form-data" } }
+        : {},
+    });
   },
 
-  sendNotification: async (whitelabelId, notificationData, token = null) => {
+  getSettings: async () =>
+    apiRequest({ method: "GET", path: "/whitelabel/settings" }),
+
+  sendNotification: async (whitelabelId, notificationData) => {
     if (!whitelabelId) throw new Error("Whitelabel ID is required");
-    return apiClient.post(
-      `/notifications/send`,
-      { userIds: [whitelabelId], ...notificationData },
-      { token },
-    );
+    return apiRequest({
+      method: "POST",
+      path: "/notifications/send",
+      data: { userIds: [whitelabelId], ...notificationData },
+    });
   },
 
-  notifyAll: async (notificationData, token = null) => {
-    return apiClient.post(`/notifications/broadcast`, {
-      role: "whitelabel_admin",
-      ...notificationData,
-    }, { token });
-  },
+  notifyAll: async (notificationData) =>
+    apiRequest({
+      method: "POST",
+      path: "/notifications/broadcast",
+      data: { role: "whitelabel_admin", ...notificationData },
+    }),
 
-  export: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    const blob = await apiClient.get(`/admin/whitelabels/export${qs}`, { token });
+  export: async (filters = {}) => {
+    const blob = await apiRequest({
+      method: "GET",
+      path: "/admin/whitelabels/export",
+      params: filters,
+    });
     return downloadBlob(
       blob,
       `whitelabels_export_${new Date().toISOString().split("T")[0]}.xlsx`,
@@ -372,44 +385,40 @@ export const whitelabelAPI = {
  * Vendors Management API
  */
 export const vendorsAPI = {
-  getAll: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    return apiClient.get(`/admin/vendors${qs}`, { token });
-  },
+  getAll: async (filters = {}) =>
+    apiRequest({ method: "GET", path: "/admin/vendors", params: filters }),
 
-  getById: async (vendorId, token = null) => {
+  getById: async (vendorId) => {
     if (!vendorId) throw new Error("Vendor ID is required");
-    return apiClient.get(`/admin/vendors/${vendorId}`, { token });
+    return apiRequest({ method: "GET", path: `/admin/vendors/${vendorId}` });
   },
 
-  updateStatus: async (vendorId, status, token = null) => {
+  updateStatus: async (vendorId, status) => {
     if (!vendorId) throw new Error("Vendor ID is required");
-    return apiClient.patch(
-      `/admin/vendors/${vendorId}/status`,
-      { status },
-      { token },
-    );
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/vendors/${vendorId}/status`,
+      data: { status },
+    });
   },
 
-  approve: async (vendorId, token = null) => {
-    return vendorsAPI.updateStatus(vendorId, "approved", token);
-  },
+  approve: async (vendorId) => vendorsAPI.updateStatus(vendorId, "approved"),
 
-  giveRating: async (vendorId, rating, token = null) => {
+  giveRating: async (vendorId, rating) => {
     if (!vendorId) throw new Error("Vendor ID is required");
-    return apiClient.patch(
-      `/admin/vendors/${vendorId}/rating`,
-      { rating },
-      { token },
-    );
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/vendors/${vendorId}/rating`,
+      data: { rating },
+    });
   },
 
-  delete: async (vendorId, token = null) => {
+  delete: async (vendorId) => {
     if (!vendorId) throw new Error("Vendor ID is required");
-    return apiClient.delete(`/admin/vendors/${vendorId}`, { token });
+    return apiRequest({ method: "DELETE", path: `/admin/vendors/${vendorId}` });
   },
 
-  bulkDelete: async (vendorIds, token = null) => {
+  bulkDelete: async (vendorIds) => {
     if (!vendorIds || vendorIds.length === 0)
       throw new Error("Vendor IDs are required");
     if (vendorIds.length > 100)
@@ -418,22 +427,20 @@ export const vendorsAPI = {
     const invalidIds = vendorIds.filter((id) => !objectIdRegex.test(id));
     if (invalidIds.length > 0)
       throw new Error(`Invalid ObjectId format in ids: ${invalidIds[0]}`);
-    return apiClient.post(
-      `/admin/vendors/bulk-delete`,
-      { vendorIds },
-      { token },
-    );
+    return apiRequest({
+      method: "POST",
+      path: "/admin/vendors/bulk-delete",
+      data: { vendorIds },
+    });
   },
 
-  bulkApprove: async (vendorIds, token = null) => {
-    return vendorsAPI.bulkUpdateStatus(vendorIds, "approved", token);
-  },
+  bulkApprove: async (vendorIds) =>
+    vendorsAPI.bulkUpdateStatus(vendorIds, "approved"),
 
-  bulkSuspend: async (vendorIds, token = null) => {
-    return vendorsAPI.bulkUpdateStatus(vendorIds, "suspended", token);
-  },
+  bulkSuspend: async (vendorIds) =>
+    vendorsAPI.bulkUpdateStatus(vendorIds, "suspended"),
 
-  bulkUpdateStatus: async (vendorIds, status, token = null) => {
+  bulkUpdateStatus: async (vendorIds, status) => {
     if (!vendorIds || vendorIds.length === 0)
       throw new Error("Vendor IDs are required");
     if (vendorIds.length > 100)
@@ -442,68 +449,69 @@ export const vendorsAPI = {
     const invalidIds = vendorIds.filter((id) => !objectIdRegex.test(id));
     if (invalidIds.length > 0)
       throw new Error(`Invalid ObjectId format in ids: ${invalidIds[0]}`);
-    return apiClient.post(
-      `/admin/vendors/bulk-status`,
-      { vendorIds, status },
-      { token },
-    );
+    return apiRequest({
+      method: "POST",
+      path: "/admin/vendors/bulk-status",
+      data: { vendorIds, status },
+    });
   },
 
-  export: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    const blob = await apiClient.get(`/admin/vendors/export${qs}`, { token });
+  export: async (filters = {}) => {
+    const blob = await apiRequest({
+      method: "GET",
+      path: "/admin/vendors/export",
+      params: filters,
+    });
     return downloadBlob(
       blob,
       `vendors_export_${new Date().toISOString().split("T")[0]}.xlsx`,
     );
   },
 
-  sendNotification: async (vendorId, notificationData, token = null) => {
+  sendNotification: async (vendorId, notificationData) => {
     if (!vendorId) throw new Error("Vendor ID is required");
-    return apiClient.post(
-      `/notifications/send`,
-      { userIds: [vendorId], ...notificationData },
-      { token },
-    );
+    return apiRequest({
+      method: "POST",
+      path: "/notifications/send",
+      data: { userIds: [vendorId], ...notificationData },
+    });
   },
 
-  notifyAll: async (notificationData, token = null) => {
-    return apiClient.post(`/notifications/broadcast`, {
-      role: "vendor",
-      ...notificationData,
-    }, { token });
-  },
+  notifyAll: async (notificationData) =>
+    apiRequest({
+      method: "POST",
+      path: "/notifications/broadcast",
+      data: { role: "vendor", ...notificationData },
+    }),
 };
 
 /**
  * Events Management API
  */
 export const eventsAPI = {
-  getAll: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    return apiClient.get(`/admin/events${qs}`, { token });
-  },
+  getAll: async (filters = {}) =>
+    apiRequest({ method: "GET", path: "/admin/events", params: filters }),
 
-  getById: async (eventId, token = null) => {
+  getById: async (eventId) => {
     if (!eventId) throw new Error("Event ID is required");
-    return apiClient.get(`/admin/events/${eventId}`, { token });
+    return apiRequest({ method: "GET", path: `/admin/events/${eventId}` });
   },
 
-  updateStatus: async (eventId, status, token = null) => {
+  updateStatus: async (eventId, status) => {
     if (!eventId) throw new Error("Event ID is required");
-    return apiClient.patch(
-      `/admin/events/${eventId}/status`,
-      { status },
-      { token },
-    );
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/events/${eventId}/status`,
+      data: { status },
+    });
   },
 
-  delete: async (eventId, token = null) => {
+  delete: async (eventId) => {
     if (!eventId) throw new Error("Event ID is required");
-    return apiClient.delete(`/events/admin/${eventId}`, { token });
+    return apiRequest({ method: "DELETE", path: `/events/admin/${eventId}` });
   },
 
-  bulkDelete: async (eventIds, token = null) => {
+  bulkDelete: async (eventIds) => {
     if (!eventIds || eventIds.length === 0)
       throw new Error("Event IDs are required");
     if (eventIds.length > 100)
@@ -512,60 +520,73 @@ export const eventsAPI = {
     const invalidIds = eventIds.filter((id) => !objectIdRegex.test(id));
     if (invalidIds.length > 0)
       throw new Error(`Invalid ObjectId format in ids: ${invalidIds[0]}`);
-    return apiClient.post(
-      `/admin/events/bulk-delete`,
-      { eventIds },
-      { token },
-    );
+    return apiRequest({
+      method: "POST",
+      path: "/admin/events/bulk-delete",
+      data: { eventIds },
+    });
   },
 
-  createForHost: async (formData, token = null) => {
-    return apiClient.post("/admin/events/create-for-host", formData, { token });
+  createForHost: async (formData) =>
+    apiRequest({
+      method: "POST",
+      path: "/admin/events/create-for-host",
+      data: formData,
+    }),
+
+  /**
+   * Update event (admin).
+   */
+  updateEvent: async (eventId, eventData) => {
+    if (!eventId) throw new Error("Event ID is required");
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/events/${eventId}`,
+      data: eventData,
+    });
   },
 
   /**
-   * Update event (admin)
+   * Get event stats (admin) - includes RSVP stats, guests, subscription info.
    */
-  updateEvent: async (eventId, eventData, token = null) => {
+  getEventStats: async (eventId) => {
     if (!eventId) throw new Error("Event ID is required");
-    return apiClient.patch(`/admin/events/${eventId}`, eventData, { token });
+    return apiRequest({
+      method: "GET",
+      path: `/admin/events/${eventId}/stats`,
+    });
   },
 
   /**
-   * Get event stats (admin) - includes RSVP stats, guests, subscription info
+   * Send test message for event (admin).
    */
-  getEventStats: async (eventId, token = null) => {
+  sendTestMessage: async (eventId, phoneNumber, channel = "whatsapp") => {
     if (!eventId) throw new Error("Event ID is required");
-    return apiClient.get(`/admin/events/${eventId}/stats`, { token });
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/events/${eventId}/test-message`,
+      data: { phoneNumber, channel },
+    });
   },
 
   /**
-   * Send test message for event (admin)
+   * Update event launch settings (admin).
    */
-  sendTestMessage: async (eventId, phoneNumber, channel = 'whatsapp', token = null) => {
+  updateLaunchSettings: async (eventId, launchSettings) => {
     if (!eventId) throw new Error("Event ID is required");
-    return apiClient.patch(
-      `/admin/events/${eventId}/test-message`,
-      { phoneNumber, channel },
-      { token },
-    );
+    return apiRequest({
+      method: "PATCH",
+      path: `/admin/events/${eventId}/launch-settings`,
+      data: launchSettings,
+    });
   },
 
-  /**
-   * Update event launch settings (admin)
-   */
-  updateLaunchSettings: async (eventId, launchSettings, token = null) => {
-    if (!eventId) throw new Error("Event ID is required");
-    return apiClient.patch(
-      `/admin/events/${eventId}/launch-settings`,
-      launchSettings,
-      { token },
-    );
-  },
-
-  export: async (filters = {}, token = null) => {
-    const qs = apiClient.buildQueryString(filters);
-    const blob = await apiClient.get(`/admin/events/export${qs}`, { token });
+  export: async (filters = {}) => {
+    const blob = await apiRequest({
+      method: "GET",
+      path: "/admin/events/export",
+      params: filters,
+    });
     return downloadBlob(
       blob,
       `events_export_${new Date().toISOString().split("T")[0]}.xlsx`,
@@ -578,44 +599,47 @@ export const eventsAPI = {
  * migration). Audit log is wired server-side.
  */
 export const subscriptionAdminAPI = {
-  assign: async (data, token = null) => {
+  assign: async (data) => {
     if (!data?.userId || !data?.planCode)
       throw new Error("userId and planCode are required");
-    return apiClient.post("/subscriptions/admin/assign", data, { token });
+    return apiRequest({
+      method: "POST",
+      path: "/subscriptions/admin/assign",
+      data,
+    });
   },
 };
 
 /**
  * Legacy addons API surface. New code should use the `useAddons` and
- * `useCheckout` hooks from `hooks/addons/` and `hooks/checkout/`. This export remains
- * for the admin dashboard's bulk operations.
+ * `useCheckout` hooks from `hooks/addons/` and `hooks/checkout/`. This
+ * export remains for the admin dashboard's bulk operations.
  */
 export const addonsAPI = {
-  purchase: async (data, token = null, idempotencyKey = null) => {
-    return apiClient.post("/addons/purchase", data, {
-      token,
-      headers: idempotencyKey
-        ? { "Idempotency-Key": idempotencyKey }
-        : undefined,
-    });
-  },
+  purchase: async (data, idempotencyKey = null) =>
+    apiRequest({
+      method: "POST",
+      path: "/addons/purchase",
+      data,
+      config: idempotencyKey
+        ? { headers: { "Idempotency-Key": idempotencyKey } }
+        : {},
+    }),
 
-  adminActivate: async (addonId, data, token = null, idempotencyKey = null) => {
+  adminActivate: async (addonId, data, idempotencyKey = null) => {
     if (!addonId) throw new Error("addonId is required");
-    return apiClient.post(`/addons/admin/${addonId}/activate`, data, {
-      token,
-      headers: idempotencyKey
-        ? { "Idempotency-Key": idempotencyKey }
-        : undefined,
+    return apiRequest({
+      method: "POST",
+      path: `/addons/admin/${addonId}/activate`,
+      data,
+      config: idempotencyKey
+        ? { headers: { "Idempotency-Key": idempotencyKey } }
+        : {},
     });
   },
 
-  listMine: async (token = null, params = {}) => {
-    const qs = Object.keys(params).length
-      ? `?${new URLSearchParams(params).toString()}`
-      : "";
-    return apiClient.get(`/addons${qs}`, { token });
-  },
+  listMine: async (params = {}) =>
+    apiRequest({ method: "GET", path: "/addons", params }),
 };
 
 /**
@@ -631,8 +655,8 @@ const adminDashboardAPI = {
   events: eventsAPI,
 };
 
-// Alias for backward compatibility with old lib/admin.js imports
-// Provides adminAPI.hosts.* pattern used by admin components
+// Alias for backward compatibility with old lib/admin.js imports.
+// Provides adminAPI.hosts.* pattern used by admin components.
 export const adminAPI = {
   hosts: hostsAPI,
   moderators: moderatorsAPI,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { FiClock } from "react-icons/fi";
 import styles from "./AutoReminderInfoText.module.css";
 
 /**
@@ -13,7 +14,9 @@ export default function AutoReminderInfoText() {
   const { t } = useTranslation("home-events");
   return (
     <div className={styles.banner} role="note">
-      <span className={styles.dot} aria-hidden="true">●</span>
+      <span className={styles.iconWrap} aria-hidden="true">
+        <FiClock className={styles.icon} />
+      </span>
       <span className={styles.text}>
         {t(
           "singleEvent.autoReminderInfo",

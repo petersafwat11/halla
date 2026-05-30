@@ -9,7 +9,7 @@
  */
 
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 
 const newIdempotencyKey = (prefix) => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {

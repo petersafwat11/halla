@@ -21,7 +21,7 @@ import {
 } from "../../../styles/tokens";
 import { useResolveTicket } from "../../../hooks";
 import { useTranslation } from "../../../localization";
-import { ticketResolutionSchema } from "../../../utils/schemas/ticketSchema";
+import { ticketResolutionSchema } from "@halla/shared/schemas/tickets";
 
 const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
   const { t } = useTranslation("admin");

@@ -7,18 +7,17 @@ import { colors, spacing, textStyles } from "../../../styles/tokens";
 /**
  * Small inline banner reminding the user that the platform auto-sends a
  * reminder 24h before the event. Mirrors the web component in
- * labbe/components/event-detail/AutoReminderInfoText.jsx.
+ * labbe/components/event-detail/AutoReminderInfoText.jsx — both use the
+ * brand primary palette (the previous blue hex fallbacks were a relic
+ * from the original Figma comp, not the live token set).
  */
 const AutoReminderInfoText = () => {
   const { t } = useTranslation("events");
   return (
     <View style={styles.banner} accessibilityRole="text">
-      <Ionicons
-        name="time-outline"
-        size={18}
-        color={colors.primary[600]}
-        style={styles.icon}
-      />
+      <View style={styles.iconWrap}>
+        <Ionicons name="time-outline" size={16} color={colors.primary[700]} />
+      </View>
       <Text style={styles.text}>
         {t(
           "autoReminderInfo",
@@ -33,18 +32,28 @@ const styles = StyleSheet.create({
   banner: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing[8],
-    paddingVertical: spacing[8],
+    gap: spacing[10] || 10,
+    paddingVertical: spacing[10] || 10,
     paddingHorizontal: spacing[12],
-    borderRadius: 10,
-    backgroundColor: colors.primary?.[50] || "#EEF6FF",
+    borderRadius: 12,
+    backgroundColor: colors.primary[50],
+    borderWidth: 1,
+    borderColor: colors.primary[100],
     marginHorizontal: spacing[4],
   },
-  icon: { marginRight: spacing[4] },
+  iconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.primary[100],
+    alignItems: "center",
+    justifyContent: "center",
+  },
   text: {
     ...textStyles.bodyMedium,
-    color: colors.primary?.[700] || "#1F3A5F",
+    color: colors.primary[800],
     flex: 1,
+    fontFamily: "Cairo_500Medium",
   },
 });
 

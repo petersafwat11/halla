@@ -9,10 +9,10 @@ import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
-import { subscriptionAssignmentSchema } from "@/utils/schemas/adminPopupSchemas";
+import { subscriptionAssignmentSchema } from "@halla/shared/schemas/admin";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
-import { getLocalized } from "@/utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 import styles from "./SubscriptionAssignmentPopup.module.css";
 
 export default function SubscriptionAssignmentPopup({

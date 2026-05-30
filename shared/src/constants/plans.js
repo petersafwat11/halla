@@ -1,5 +1,5 @@
 /**
- * Plan helpers — mirror backend `shared/constants/plans.js`.
+ * Plan helpers — mirror `labbe-backend-/src/shared/constants/plans.js`.
  *
  * A plan with planType ending in `_quarterly` / `_annual` (or the legacy
  * `business_quarterly` / `business_annual` codes) shares an invite pool
@@ -28,6 +28,6 @@ export const planHasBillingCycle = (planType) =>
 /**
  * Compensation is universal across all plans — 15% of the selected invite
  * tier (event plans) or the invite pool (pool plans). Computed at render
- * time via this constant in `<PlanDescription>` and `PlanSummaryCard`.
+ * time by `<PlanDescription>` and `PlanSummaryCard`.
  */
 export const COMPENSATION_PERCENTAGE = 15;

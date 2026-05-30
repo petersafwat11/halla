@@ -17,7 +17,7 @@ import { useCreateDiscount, useUpdateDiscount } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { Button } from "../../../components/commen";
 import DiscountFormFields from "./_components/DiscountFormFields";
-import { discountSchema } from "../../../utils/schemas/discountSchema";
+import { discountSchema } from "@halla/shared/schemas/admin";
 import { buildPayload } from "./discountsFormUtils";
 import {
   colors,

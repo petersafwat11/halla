@@ -9,7 +9,7 @@
  */
 
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
-import { fetchWithTimeout } from "./apiClient";
+import { fetchWithTimeout } from "./http";
 import {
   saveStaffToken as secureSaveStaffToken,
   loadStaffToken as secureLoadStaffToken,

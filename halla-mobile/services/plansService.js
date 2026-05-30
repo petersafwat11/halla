@@ -8,7 +8,7 @@
  */
 
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 
 class PlansService {
   async request(endpoint, options = {}) {

@@ -3,7 +3,7 @@ import styles from "./topVendors.module.css";
 import { useTranslation } from "react-i18next";
 
 
-const topVendors = ({ bestVendors = [] }) => {
+const TopVendors = ({ bestVendors = [] }) => {
   const { t } = useTranslation("adminDashboard");
 
   return (
@@ -23,4 +23,4 @@ const topVendors = ({ bestVendors = [] }) => {
   );
 };
 
-export default topVendors;
+export default TopVendors;

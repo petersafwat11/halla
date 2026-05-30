@@ -2,7 +2,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { FaCalendarAlt, FaUsers, FaGift } from "react-icons/fa";
-import { getLocalized } from "@/utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 import styles from "../summary.module.css";
 
 const PlanSummaryCard = ({ selectedPlan, planFamily, billingType, planPrice, t: tProp }) => {

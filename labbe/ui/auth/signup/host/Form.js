@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { hostSignupSchema } from "@/utils/schemas/authSchema";
+import { hostSignupSchema } from "@halla/shared/schemas/auth";
 import Link from "next/link";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 import { useAuthMutation } from "@/hooks/auth";

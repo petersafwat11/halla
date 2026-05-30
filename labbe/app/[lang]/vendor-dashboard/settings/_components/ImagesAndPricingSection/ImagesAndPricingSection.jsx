@@ -9,8 +9,8 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import DynamicForm from "@/ui/vendor/dynamicForm/DynamicForm";
 import { imagesAndPricingSchema } from "@/utils/schemas/vendorSettings";
 import { keyFromSignedUrl } from "@/utils/vendorHelpers";
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 
 const ImagesAndPricingSection = ({ data, onSave, onRefetch }) => {
   const { t } = useTranslation("vendorSettings");

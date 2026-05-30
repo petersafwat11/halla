@@ -1,7 +1,7 @@
 ﻿import { cookies } from "next/headers";
 import { requirePageAccess } from "@/services/serverAuth";
-import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import { ticketsKeys } from "@/hooks/tickets/keys";
 import TicketDetailsContent from "./_components/TicketDetailsContent";
 import styles from "./page.module.css";

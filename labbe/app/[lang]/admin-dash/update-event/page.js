@@ -3,8 +3,8 @@ import {
   createServerQueryClient,
   prefetchServerData,
   QueryClientServerProvider,
-} from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+} from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import { requirePageAccess } from "@/services/serverAuth";
 import UpdateEventWizard from "../../host/update-event/_components/UpdateEventWizard";
 import styles from "./page.module.css";

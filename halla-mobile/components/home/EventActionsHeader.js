@@ -7,6 +7,7 @@ import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
 import { useNotifyStaff, useDeleteEvent } from "../../hooks/events/mutations/useEventMutation";
 import { useToast } from "../../contexts/ToastContext";
+import { useEventActionGate } from "@halla/shared/hooks/useEventActionGate";
 
 const EVENT_EDIT_STEPS = [
   { step: 1, labelKey: "lastEvent.dropdown.eventDetails", fallback: "تفاصيل المناسبة" },
@@ -30,13 +31,12 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
   const eventId = event?.id || event?._id;
   const updateRoute = isAdmin ? "UpdateEvent" : "UpdateEventScreen";
 
-  const status = event?.status;
-  const isCompleted = status === "completed";
-  const isFailed = status === "failed";
-  const isLive = status === "live";
-  const canSendTest = !isCompleted && !isFailed;
-  const canSchedule = testMessageSent && !isLive && !isCompleted && !isFailed;
-  const hasSupervisors = !isCompleted && !isFailed;
+  // Shared gate — matches web host single-event header so the two
+  // platforms can't drift. Visibility rules now require an active
+  // template before test/schedule, and an actual staff entry before
+  // Notify Staff (previously this only checked event status).
+  const { canSendTest, canSchedule, hasStaff, isCompleted } =
+    useEventActionGate({ event, testMessageSent });
 
   const handleEditStep = (step) => {
     setShowManageMenu(false);
@@ -118,21 +118,21 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
           <TouchableOpacity
             style={[
               styles.outlineButton,
-              (!hasSupervisors || notifyStaffMutation.isPending) && styles.outlineButtonDisabled,
+              (!hasStaff || notifyStaffMutation.isPending) && styles.outlineButtonDisabled,
             ]}
             onPress={handleNotifyStaff}
             activeOpacity={0.7}
-            disabled={!hasSupervisors || notifyStaffMutation.isPending}
+            disabled={!hasStaff || notifyStaffMutation.isPending}
           >
             <Ionicons
               name="megaphone-outline"
               size={14}
-              color={hasSupervisors ? "#6B4E33" : "#B5A691"}
+              color={hasStaff ? "#6B4E33" : "#B5A691"}
             />
             <Text
               style={[
                 styles.outlineButtonText,
-                !hasSupervisors && styles.outlineButtonTextDisabled,
+                !hasStaff && styles.outlineButtonTextDisabled,
               ]}
             >
               {notifyStaffMutation.isPending

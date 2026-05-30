@@ -4,7 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import ForgetPassword from "@/ui/auth/forget-password/ForgetPassword";
-import { forgotPasswordSchema } from "@/utils/schemas/authSchema";
+import { forgotPasswordSchema } from "@halla/shared/schemas/auth";
 
 const ForgetPasswordPage = () => {
   const { t } = useTranslation("forgetPassword");

@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0"
+  },
   "exports": {
     ".": "./src/index.js",
     "./schemas": "./src/schemas/index.js",

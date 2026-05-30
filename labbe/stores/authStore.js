@@ -163,8 +163,8 @@ const useAuthStore = create(
           try {
             // Lazy-load to avoid a circular import between the store and
             // the API client (which already imports the store indirectly).
-            const { apiRequest } = await import("@/services/new-backend/apiClient");
-            const { API_PATHS } = await import("@/services/new-backend/api.config");
+            const { apiRequest } = await import("@/services/http");
+            const { API_PATHS } = await import("@halla/shared/api/paths");
             await apiRequest({ method: "POST", path: API_PATHS.auth.logout });
           } catch (err) {
             // Network/other failure: still clear local state. Server-side

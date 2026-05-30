@@ -22,49 +22,22 @@ import {
   IoPricetagsOutline,
   IoChatbubblesOutline,
 } from "react-icons/io5";
+import {
+  USER_ROLES,
+  ADMIN_ROLES,
+  WHITELABEL_ROLES,
+  isAdminRole,
+  isWhitelabelRole,
+} from "@halla/shared/constants/roles";
+import { ACCESS_LEVELS } from "@halla/shared/constants/permissions";
 
 /**
- * User roles (matching backend constants)
+ * Role enums, hierarchy helpers, and access levels come from
+ * `@halla/shared/constants` (mirror of backend). Re-exported here so
+ * existing consumer imports `from "@/ui/layout/navConfig"` continue to
+ * work without churn.
  */
-export const USER_ROLES = {
-  SUPER_ADMIN: "super_admin",
-  ADMIN: "admin",
-  MODERATOR: "moderator",
-  WHITELABEL_ADMIN: "whitelabel_admin",
-  WHITELABEL_MODERATOR: "whitelabel_moderator",
-  HOST: "host",
-  VENDOR: "vendor",
-  GUEST: "guest",
-};
-
-/**
- * Admin roles that can access admin dashboard
- */
-export const ADMIN_ROLES = [
-  USER_ROLES.SUPER_ADMIN,
-  USER_ROLES.ADMIN,
-  USER_ROLES.MODERATOR,
-  USER_ROLES.WHITELABEL_ADMIN,
-  USER_ROLES.WHITELABEL_MODERATOR,
-];
-
-/**
- * Whitelabel roles
- */
-export const WHITELABEL_ROLES = [
-  USER_ROLES.WHITELABEL_ADMIN,
-  USER_ROLES.WHITELABEL_MODERATOR,
-];
-
-/**
- * Check if role is an admin role (can access admin-dash)
- */
-export const isAdminRole = (role) => ADMIN_ROLES.includes(role);
-
-/**
- * Check if role is a whitelabel role
- */
-export const isWhitelabelRole = (role) => WHITELABEL_ROLES.includes(role);
+export { USER_ROLES, ADMIN_ROLES, WHITELABEL_ROLES, isAdminRole, isWhitelabelRole, ACCESS_LEVELS };
 
 /**
  * Dashboard types
@@ -342,15 +315,6 @@ export const whitelabelNavItems = [
   },
 ];
 
-/**
- * Access levels (matching backend ACCESS_LEVELS)
- */
-export const ACCESS_LEVELS = {
-  FULL: "full",
-  EDIT: "edit",
-  VIEW: "view",
-  NONE: "none",
-};
 
 /**
  * Nav items accessible by each role in admin-dash

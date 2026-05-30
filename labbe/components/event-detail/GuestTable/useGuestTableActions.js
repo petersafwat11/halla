@@ -2,8 +2,8 @@
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import { handleError } from "@/services/errorHandlingService";
-import { downloadExportFile } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { downloadExportFile } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import { useSendReminder } from "@/hooks/messaging";
 
 export default function useGuestTableActions({

@@ -28,7 +28,12 @@ jobs:
       - name: Install (workspaces from repo root)
         working-directory: .
         run: npm install --no-audit --no-fund
-      - name: Lint
+      # Phase 9 lock-in: lint @halla/shared first so a regression there fails
+      # the labbe pipeline (shared is in labbe's `paths:` trigger).
+      - name: Lint @halla/shared
+        working-directory: shared
+        run: npm run lint
+      - name: Lint labbe
         run: npm run lint
       - name: Build
         run: npm run build

@@ -1,7 +1,7 @@
 // Taqnyat templates API client — host list + admin sync/create/assign/delete.
 
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 
 const buildQuery = (params = {}) => {
   const q = Object.entries(params)

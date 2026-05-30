@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint . --max-warnings 100"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

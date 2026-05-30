@@ -16,7 +16,7 @@ import { useTranslation } from "../../localization/hooks/useTranslation";
 import TextInput from "../commen/TextInput";
 import EmailInput from "../commen/EmailInput";
 import Button from "../commen/Button";
-import { personalInfoSchema } from "../../utils/schemas/vendorSchemas";
+import { mobilePersonalInfoSchema as personalInfoSchema } from "@halla/shared/schemas/vendor";
 
 /**
  * Personal Info form.

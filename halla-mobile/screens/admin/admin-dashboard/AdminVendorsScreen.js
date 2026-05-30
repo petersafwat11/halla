@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAdminVendorsInfinite, useDebouncedValue, useGiveVendorRating } from "../../../hooks";
+import { useAdminVendorsInfinite, useDebounce, useGiveVendorRating } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import TopBar from "../../../components/plans/TopBar";
@@ -14,7 +14,7 @@ const AdminVendorsScreen = ({ navigation }) => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const debouncedSearch = useDebounce(searchQuery, 350);
   const filters = useMemo(
     () => ({ search: debouncedSearch, status: activeFilter }),
     [debouncedSearch, activeFilter]

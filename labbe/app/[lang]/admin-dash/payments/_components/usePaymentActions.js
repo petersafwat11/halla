@@ -24,9 +24,15 @@ export default function usePaymentActions() {
 
   // Stable per-modal idempotency key. Re-mounting the modal mints a new
   // UUID; submitting twice from the same modal (double-click) reuses it.
+  // `actionType` is in the dep list intentionally so switching the action
+  // (refund→capture for the same payment) also remints — the closure
+  // itself doesn't read it, hence the eslint disable.
+  const paymentId = actionPayment?.payment?._id;
+  const actionType = actionPayment?.type;
   const idempotencyKey = useMemo(
-    () => (actionPayment ? newUuid() : null),
-    [actionPayment?.payment?._id, actionPayment?.type]
+    () => (paymentId ? newUuid() : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional cache-invalidation dep
+    [paymentId, actionType]
   );
 
   const refundMutation = useAdminPaymentRefund();

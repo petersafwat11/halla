@@ -9,7 +9,7 @@ import StepFive from "./stepFive/StepFive";
 import StepSix from "./stepSix/StepSix";
 import { useTranslation } from "react-i18next";
 import { FormProvider, useForm } from "react-hook-form";
-import { whitelabelSignupSchema } from "@/utils/schemas/authSchema";
+import { whitelabelSignupSchema } from "@halla/shared/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthMutation } from "@/hooks/auth";

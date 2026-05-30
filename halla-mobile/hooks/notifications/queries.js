@@ -3,6 +3,8 @@ import { useAuthStore } from "../../stores/authStore";
 import notificationService from "../../services/notificationService";
 import { notificationsKeys } from "./keys";
 
+// `token` is read only to gate the query on authentication. The service
+// itself reads the in-memory access token from the store via `apiFetch`.
 export function useNotifications(params = {}) {
   const token = useAuthStore((state) => state.token);
   const limit = params.limit || 20;
@@ -10,10 +12,11 @@ export function useNotifications(params = {}) {
   return useInfiniteQuery({
     queryKey: notificationsKeys.list({ limit }),
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await notificationService.getNotifications(
-        { ...params, page: pageParam, limit },
-        token,
-      );
+      const response = await notificationService.getNotifications({
+        ...params,
+        page: pageParam,
+        limit,
+      });
       return {
         notifications: response.data?.notifications || [],
         pagination: response.data?.pagination || {},
@@ -38,7 +41,7 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: notificationsKeys.unreadCount(),
     queryFn: async () => {
-      const response = await notificationService.getUnreadCount(token);
+      const response = await notificationService.getUnreadCount();
       return { count: response.data?.unreadCount || 0 };
     },
     enabled: !!token,

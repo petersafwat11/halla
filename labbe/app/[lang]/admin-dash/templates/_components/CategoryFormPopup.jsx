@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
-import { categoryFormSchema } from "@/utils/schemas/adminPopupSchemas";
+import { categoryFormSchema } from "@halla/shared/schemas/admin";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import {

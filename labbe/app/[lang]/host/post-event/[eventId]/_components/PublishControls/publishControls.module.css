@@ -2,72 +2,42 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 1.2rem;
   flex-wrap: wrap;
 }
 
 .statusBlock {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.8rem;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 1rem;
+  height: 1rem;
   border-radius: 50%;
   display: inline-block;
 }
 
 .dotPublished {
-  background: #10b981;
+  background: var(--color-success-500);
 }
 
 .dotDraft {
-  background: #9ca3af;
+  background: var(--color-natural-350);
 }
 
 .statusText {
-  font-size: 14px;
-  color: #374151;
+  font-size: 1.4rem;
+  color: var(--color-secondary-500);
+  font-weight: 500;
 }
 
 .buttons {
   display: flex;
-  gap: 8px;
+  gap: 1.2rem;
   flex-wrap: wrap;
-}
-
-.primaryButton,
-.secondaryButton,
-.dangerButton {
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
-}
-
-.primaryButton {
-  background: #4f46e5;
-  color: #fff;
-}
-
-.primaryButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.secondaryButton {
-  background: #fff;
-  color: #4f46e5;
-  border: 1px solid #4f46e5;
-}
-
-.dangerButton {
-  background: #ef4444;
-  color: #fff;
+  align-items: center;
 }
 
 .modalOverlay {
@@ -78,53 +48,38 @@
   align-items: center;
   justify-content: center;
   z-index: 50;
+  padding: 1.6rem;
 }
 
 .modal {
-  background: #fff;
-  border-radius: 12px;
-  padding: 24px;
-  max-width: 420px;
-  width: calc(100% - 32px);
+  background: var(--color-natural-50);
+  border-radius: 1.6rem;
+  padding: 2.4rem;
+  max-width: 44rem;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 1.2rem;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
 }
 
 .modalTitle {
-  font-size: 18px;
+  font-size: 1.8rem;
   font-weight: 700;
   margin: 0;
+  color: var(--color-secondary-900);
 }
 
 .modalMessage {
-  font-size: 14px;
-  color: #4b5563;
+  font-size: 1.4rem;
+  color: var(--color-secondary-500);
   margin: 0;
+  line-height: 2.1rem;
 }
 
 .modalActions {
   display: flex;
-  gap: 8px;
+  gap: 0.8rem;
   justify-content: flex-end;
-}
-
-.cancelButton {
-  background: transparent;
-  border: 1px solid #d1d5db;
-  color: #374151;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.confirmButton {
-  background: #4f46e5;
-  color: #fff;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
+  margin-top: 0.4rem;
 }

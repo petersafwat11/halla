@@ -1,4 +1,4 @@
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 import { ENDPOINTS } from "../config/api";
 
 const INVITATIONS_BASE = "/messaging";

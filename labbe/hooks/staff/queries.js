@@ -2,10 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { staffService } from "@/services/staff";
-// Phase 3: migrated from the legacy fetch-based `apiClient` to the
-// canonical axios pipeline via legacyAdapter.
-import { legacyClientAdapter as apiClient } from "@/services/new-backend/legacyAdapter";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import { staffKeys } from "./keys";
 import { eventsKeys } from "@/hooks/events/keys";
 
@@ -38,9 +36,10 @@ export const useEventStaffTokens = (eventId, options = {}) => {
   return useQuery({
     queryKey: eventsKeys.staffTokens(eventId),
     queryFn: async () => {
-      const response = await apiClient.get(
-        API_PATHS.events.listStaffTokens(eventId)
-      );
+      const response = await apiRequest({
+        method: "GET",
+        path: API_PATHS.events.listStaffTokens(eventId),
+      });
       return response.data || { tokens: [] };
     },
     enabled: !!eventId,

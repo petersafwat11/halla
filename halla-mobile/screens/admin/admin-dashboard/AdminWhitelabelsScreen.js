@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAdminWhitelabelsInfinite, useDebouncedValue } from "../../../hooks";
+import { useAdminWhitelabelsInfinite, useDebounce } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import TopBar from "../../../components/plans/TopBar";
@@ -15,7 +15,7 @@ const AdminWhitelabelsScreen = ({ navigation }) => {
 
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const debouncedSearch = useDebouncedValue(search, 350);
+  const debouncedSearch = useDebounce(search, 350);
   const filters = useMemo(
     () => ({ search: debouncedSearch, status: activeFilter }),
     [debouncedSearch, activeFilter]

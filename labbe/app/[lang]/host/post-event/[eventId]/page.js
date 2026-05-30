@@ -71,34 +71,38 @@ const HostPostEventPage = () => {
         lastChannelBreakdown={lastChannelBreakdown}
       />
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.fullWidth}`}>
         <h2 className={styles.sectionTitle}>{t("host.media.title")}</h2>
         <MediaUploader
           eventId={eventId}
-          onError={(err) => toast.error(err?.message || t("host.errors.uploadFailed"))}
+          onError={(err) =>
+            toast.error(err?.message || t("host.errors.uploadFailed"))
+          }
         />
         <MediaGrid eventId={eventId} media={media} />
       </section>
 
-      <section className={styles.section}>
-        <ThankYouEditor
-          eventId={eventId}
-          initial={thankYouMessage}
-          initialDescription={{
-            description: content?.description || "",
-            descriptionAr: content?.descriptionAr || "",
-          }}
-        />
-      </section>
+      <div className={styles.mainGrid}>
+        <section className={styles.section}>
+          <ThankYouEditor
+            eventId={eventId}
+            initial={thankYouMessage}
+            initialDescription={{
+              description: content?.description || "",
+              descriptionAr: content?.descriptionAr || "",
+            }}
+          />
+        </section>
 
-      <section className={styles.section}>
-        <MessagingTemplatePicker
-          eventId={eventId}
-          savedTemplateRef={savedTemplate?.templateRef || null}
-        />
-      </section>
+        <section className={styles.section}>
+          <MessagingTemplatePicker
+            eventId={eventId}
+            savedTemplateRef={savedTemplate?.templateRef || null}
+          />
+        </section>
+      </div>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.fullWidth}`}>
         <PublishControls
           eventId={eventId}
           isPublished={isPublished}

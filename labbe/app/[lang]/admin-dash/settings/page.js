@@ -1,7 +1,7 @@
 import React from "react";
 import { cookies } from "next/headers";
-import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import { requirePageAccess } from "@/services/serverAuth";
 import { usersKeys } from "@/hooks/users/keys";
 import AdminSettingsClient from "./_components/AdminSettingsClient";

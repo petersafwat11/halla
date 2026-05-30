@@ -3,7 +3,7 @@ import { View, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   useAdminModeratorsInfinite,
-  useDebouncedValue,
+  useDebounce,
   useUpdateModeratorStatus,
   useDeleteModerator,
 } from "../../../hooks";
@@ -29,7 +29,7 @@ const AdminModeratorsScreen = ({ navigation }) => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const debouncedSearch = useDebounce(searchQuery, 350);
   const filters = useMemo(
     () => ({ search: debouncedSearch, status: activeFilter }),
     [debouncedSearch, activeFilter]

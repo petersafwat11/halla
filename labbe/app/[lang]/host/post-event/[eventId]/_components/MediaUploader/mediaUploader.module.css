@@ -1,17 +1,17 @@
 .dropzone {
-  border: 2px dashed #cbd5e1;
-  border-radius: 12px;
-  padding: 32px 16px;
+  border: 2px dashed var(--color-primary-200);
+  border-radius: 1.2rem;
+  padding: 3.6rem 1.6rem;
   text-align: center;
-  background: #f9fafb;
+  background: var(--color-primary-50);
   cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .dropzone:hover,
 .dropzoneActive {
-  background: #eef2ff;
-  border-color: #6366f1;
+  background: var(--color-primary-100);
+  border-color: var(--color-primary-500);
 }
 
 .hiddenInput {
@@ -19,14 +19,14 @@
 }
 
 .hintTitle {
-  font-size: 15px;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin: 0 0 6px;
-  color: #1f2937;
+  margin: 0 0 0.6rem;
+  color: var(--color-secondary-900);
 }
 
 .hintSub {
-  font-size: 13px;
-  color: #6b7280;
+  font-size: 1.3rem;
+  color: var(--color-natural-450);
   margin: 0;
 }

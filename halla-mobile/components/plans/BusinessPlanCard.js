@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "../../localization";
-import { getLocalized, formatNumber } from "../../utils/locale";
+import { getLocalized, formatNumber } from "@halla/shared/utils/locale";
 import PlanDescription from "./PlanDescription";
 import SarIcon from "../commen/SarIcon";
 

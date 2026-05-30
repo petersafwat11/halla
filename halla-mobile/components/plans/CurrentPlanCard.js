@@ -8,8 +8,8 @@ import {
   borderRadius,
   typography,
 } from "../../styles/tokens";
-import { getLocalized } from "../../utils/locale";
-import { isPoolPlan } from "../../utils/constants/plans";
+import { getLocalized } from "@halla/shared/utils/locale";
+import { isPoolPlan } from "@halla/shared/constants/plans";
 
 const CurrentPlanCard = ({ subscription, usage }) => {
   const { t, i18n } = useTranslation("plans");

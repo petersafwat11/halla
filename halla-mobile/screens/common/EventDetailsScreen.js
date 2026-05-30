@@ -860,6 +860,12 @@ const EventDetailsScreen = () => {
           addStaffMutation.isPending ||
           updateStaffMutation.isPending
         }
+        // Show the existing roster inside the popup so the host has the
+        // same list-in-modal UX the web `StaffPopup` provides. Edit/delete
+        // re-use the same handlers wired into the tabs view below.
+        itemsList={popup.type === "guest" ? guests : staffFromStats}
+        onEditItem={popup.type === "guest" ? handleEditGuest : handleEditModerator}
+        onDeleteItem={popup.type === "guest" ? handleDeleteGuest : handleDeleteModerator}
         onClose={() => setPopup({ open: false, type: popup.type, initialData: null })}
         onSave={handleSavePopup}
       />

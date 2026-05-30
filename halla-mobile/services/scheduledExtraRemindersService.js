@@ -4,7 +4,7 @@
 // scheduled-extra-reminders.service.js via getEventById's scoped query.
 
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 
 async function request(path, init = {}) {
   const res = await apiFetch(path, init);

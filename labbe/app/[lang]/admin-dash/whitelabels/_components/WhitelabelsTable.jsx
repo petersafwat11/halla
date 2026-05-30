@@ -8,7 +8,7 @@ import Table from "@/ui/commen/new-table/Table";
 import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { useWhitelabelTableActions } from "./useWhitelabelTableActions";
-import { getLocalized } from "@/utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 import styles from "./WhitelabelsTable.module.css";
 
 export default function WhitelabelsTable() {

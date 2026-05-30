@@ -1,5 +1,14 @@
+/**
+ * settingsService — user-settings-screen-specific endpoints.
+ *
+ * Phase 8: profile / password endpoints delegated to
+ * `userAccountService`. The settings screen also drives notification
+ * preferences and email verification, which stay here because vendor
+ * code never touches them.
+ */
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
+import { userAccountService } from "./userAccountService";
 
 const _request = async (path, init = {}, errorMessage) => {
   const response = await apiFetch(path, init);
@@ -10,45 +19,22 @@ const _request = async (path, init = {}, errorMessage) => {
   return data;
 };
 
-export const getProfileAPI = () =>
-  _request(ENDPOINTS.USERS.PROFILE, { method: "GET" }, "Failed to get profile");
+export const getProfileAPI = () => userAccountService.getProfile();
 
-export const updateProfileAPI = (data) =>
-  _request(
-    ENDPOINTS.USERS.UPDATE_PROFILE,
-    { method: "PATCH", body: data },
-    "Failed to update profile"
-  );
+export const updateProfileAPI = (data) => userAccountService.updateProfile(data);
 
 export const uploadProfileImageAPI = (imageFile) => {
   const formData = new FormData();
   formData.append("avatar", imageFile);
-  return _request(
-    ENDPOINTS.USERS.UPDATE_PROFILE,
-    { method: "PATCH", body: formData, timeoutMs: 60 * 1000 },
-    "Failed to upload profile image"
-  );
+  return userAccountService.updateProfileWithFiles(formData);
 };
 
 export const changePasswordAPI = ({ currentPassword, newPassword, passwordConfirm }) =>
-  _request(
-    ENDPOINTS.USERS.UPDATE_PASSWORD,
-    {
-      method: "PATCH",
-      body: { currentPassword, newPassword, passwordConfirm },
-    },
-    "Failed to change password"
-  );
+  userAccountService.updatePassword({ currentPassword, newPassword, passwordConfirm });
 
-export const deleteAccountAPI = () =>
-  _request(ENDPOINTS.USERS.PROFILE, { method: "DELETE" }, "Failed to delete account");
+export const deleteAccountAPI = () => userAccountService.deleteAccount();
 
-export const updateAccountAPI = (data) =>
-  _request(
-    ENDPOINTS.USERS.UPDATE_PROFILE,
-    { method: "PATCH", body: data },
-    "Failed to update account"
-  );
+export const updateAccountAPI = (data) => userAccountService.updateProfile(data);
 
 export const getNotificationPreferencesAPI = () =>
   _request(

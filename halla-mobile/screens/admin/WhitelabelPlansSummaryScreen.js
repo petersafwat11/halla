@@ -16,7 +16,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useCheckout, useValidateDiscount } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
 import { PlanSummaryCard, DiscountCodeCard, PaymentSummaryCard } from "../../components/plans/SummaryCards";
-import { getLocalized } from "../../utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 
 const WhitelabelPlansSummaryScreen = () => {
   const { t, currentLanguage } = useTranslation("plans");

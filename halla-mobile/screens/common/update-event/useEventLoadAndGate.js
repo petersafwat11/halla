@@ -4,7 +4,7 @@ import { useAuthStore } from "../../../stores/authStore";
 import { useTranslation } from "../../../localization";
 import * as eventsService2 from "../../../services/eventsService";
 import EventsService from "../../../hooks/events/useEventForm";
-import useEventActionGate from "../../../hooks/useEventActionGate";
+import useEventActionGate from "@halla/shared/hooks/useEventActionGate";
 
 /**
  * Maps the event API response onto the form-state shape that the
@@ -153,7 +153,7 @@ const useEventLoadAndGate = ({ eventId, currentStep }) => {
     (async () => {
       try {
         setLoadingEvent(true);
-        const res = await eventsService2.getEventById(eventId, token);
+        const res = await eventsService2.getEventById(eventId);
         if (cancelled) return;
         const payload = res?.data;
         if (payload) setEventData(payload);

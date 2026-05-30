@@ -29,6 +29,7 @@ const {
   TAQNYAT_SENDER,
   resolveTaqnyatTemplate,
   getPostEventBodyParams,
+  getEventImageUrl,
   buildPostEventAccessLinkSmsBody,
 } = require('../messaging/messaging.formatting');
 
@@ -52,25 +53,54 @@ const noTemplateError = () => {
 };
 
 /**
- * Build the WhatsApp components + SMS fallback payload for a single send.
+ * Build per-guest body params, image header URL, and SMS fallback.
  * Shared by bulk-send and post-publish auto-send so both speak the same
- * Taqnyat contract.
+ * Taqnyat contract. `imageUrl` is non-null only when the template declares
+ * an IMAGE header AND the event has a baked image asset — Taqnyat rejects
+ * (code 100) any send that omits a header for an IMAGE-header template.
  */
 const buildSendArgs = (event, guest, template, accessLink, expiresAt) => {
   const bodyParams = getPostEventBodyParams(event, guest.name, template, {
     link: accessLink,
     expiresAt,
   });
+  const imageUrl = getEventImageUrl(event, template);
   const smsBody = buildPostEventAccessLinkSmsBody(event, guest.name, accessLink);
   return {
-    components: [
+    bodyParams,
+    imageUrl,
+    smsFallback: { sender: TAQNYAT_SENDER, body: smsBody },
+  };
+};
+
+/**
+ * Dispatch one WhatsApp template message, routing through the image-header
+ * variant when the template requires an IMAGE header. Mirrors the pattern
+ * in `events.staff.service.notifyStaff`.
+ */
+const dispatchTemplate = (phone, template, language, bodyParams, imageUrl, smsFallback) => {
+  if (imageUrl) {
+    return taqnyat.sendWhatsAppTemplateWithImage(
+      phone,
+      template.templateName,
+      language,
+      imageUrl,
+      bodyParams,
+      smsFallback
+    );
+  }
+  return taqnyat.sendWhatsAppTemplate(
+    phone,
+    template.templateName,
+    language,
+    [
       {
         type: 'body',
         parameters: bodyParams.map((text) => ({ type: 'text', text })),
       },
     ],
-    smsFallback: { sender: TAQNYAT_SENDER, body: smsBody },
-  };
+    smsFallback
+  );
 };
 
 /**
@@ -150,18 +180,19 @@ async function sendBulkAccessLinks(
         key,
         async () => {
           const accessLink = buildAccessLink(t.token);
-          const { components, smsFallback } = buildSendArgs(
+          const { bodyParams, imageUrl, smsFallback } = buildSendArgs(
             event,
             t.guest,
             template,
             accessLink,
             t.expiresAt
           );
-          return taqnyat.sendWhatsAppTemplate(
+          return dispatchTemplate(
             t.guest.phone,
-            template.templateName,
+            template,
             language,
-            components,
+            bodyParams,
+            imageUrl,
             smsFallback
           );
         },
@@ -285,18 +316,19 @@ async function autoNotifyAfterPublish(event, content) {
             30
           );
           const accessLink = buildAccessLink(tokenDoc.token);
-          const { components, smsFallback } = buildSendArgs(
+          const { bodyParams, imageUrl, smsFallback } = buildSendArgs(
             event,
             guest,
             template,
             accessLink,
             tokenDoc.expiresAt
           );
-          return taqnyat.sendWhatsAppTemplate(
+          return dispatchTemplate(
             guest.phone,
-            template.templateName,
+            template,
             language,
-            components,
+            bodyParams,
+            imageUrl,
             smsFallback
           );
         },

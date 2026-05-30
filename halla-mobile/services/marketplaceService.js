@@ -1,5 +1,6 @@
 import { ENDPOINTS, API_BASE_URL } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
+import { getStaticAssetBaseUrl } from "@halla/shared/utils/media";
 
 const _request = async (path, init, errorMessage) => {
   const response = await apiFetch(path, init);
@@ -65,10 +66,9 @@ class MarketplaceService {
   getImageUrl(imagePath) {
     if (!imagePath) return null;
     if (imagePath.startsWith("http")) return imagePath;
-    const cleanPath = imagePath.startsWith("/")
-      ? imagePath.slice(1)
-      : imagePath;
-    return `${API_BASE_URL.replace("/api/v2", "")}/${cleanPath}`;
+    const origin = getStaticAssetBaseUrl(API_BASE_URL);
+    const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+    return `${origin}${cleanPath}`;
   }
 }
 

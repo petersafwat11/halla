@@ -25,7 +25,7 @@ import {
 } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { getLocalized } from "../../../utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 
 /**
  * Shared "Manage Subscription" modal for the admin dashboard. Mirrors the

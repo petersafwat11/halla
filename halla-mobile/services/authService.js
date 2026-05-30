@@ -1,6 +1,7 @@
 import { API_BASE_URL, ENDPOINTS } from "../config/api";
-import { fetchWithTimeout } from "./apiClient";
+import { fetchWithTimeout } from "./http";
 import { postJson, postForm, patchJson, requestJson } from "./authErrors";
+import { dlog } from "../utils/log";
 
 /**
  * Strip token + refreshToken before logging an auth response. Keeping the
@@ -13,23 +14,6 @@ const redactTokens = (data) => {
   if (out.token) out.token = "[REDACTED]";
   if (out.refreshToken) out.refreshToken = "[REDACTED]";
   return out;
-};
-
-/**
- * L-3: dev-only logger. The auth-service log stream has historically
- * included PII (email, phone) so support engineers could trace flows.
- * In production builds (`__DEV__ === false`) we mute these to avoid
- * leaking PII into release-build crash reporters or device logs. Errors
- * still log so we don't lose visibility on real failures.
- *
- * Use `dlog(...)` for chatty info; keep `console.error(...)` for
- * exceptions because release builds need those.
- */
-const dlog = (...args) => {
-  if (typeof __DEV__ !== "undefined" && __DEV__) {
-    // eslint-disable-next-line no-console
-    console.log(...args);
-  }
 };
 
 /**

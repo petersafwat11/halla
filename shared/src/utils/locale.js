@@ -1,5 +1,6 @@
 /**
- * Locale helpers for mobile.
+ * Locale helpers — platform-pure (no `react-native`, `next/*`, or
+ * runtime DOM access). Safe to import from web, mobile, and tests.
  *
  * Phase 4 W0-RTL: numeric/currency/date formatters that respect the
  * user's locale. Arabic uses the `ar-SA` locale so numerals render as

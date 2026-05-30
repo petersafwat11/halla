@@ -4,7 +4,7 @@ import { useFormContext, Controller } from 'react-hook-form';
 import SectionCard from '../../commen/SectionCard';
 import { useBusinessPlans } from '../../../hooks/plans';
 import { useTranslation } from '../../../localization';
-import { getLocalized } from '../../../utils/locale';
+import { getLocalized } from '@halla/shared/utils/locale';
 import SarIcon from '../../commen/SarIcon';
 
 const PlanGroup = ({ title, subtitle, plans, selectedPlanCode, onSelect, locale, t }) => {

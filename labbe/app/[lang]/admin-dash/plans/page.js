@@ -12,7 +12,7 @@ import { subscriptionsKeys } from "@/hooks/subscriptions/keys";
 import { plansKeys } from "@/hooks/plans/keys";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
-import { getLocalized } from "@/utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 import Summary from "@/app/[lang]/host/plans/summary/Summary";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
@@ -164,7 +164,14 @@ const PlansPageInner = () => {
   const { data: businessPlansResponse, isLoading, error } = useBusinessPlans({
     enabled: !!user && isWhitelabel(),
   });
-  const businessPlansData = businessPlansResponse?.data ?? {};
+  // Phase 8 — each `|| []` / `?? {}` default below was creating a new
+  // reference every render, which made every dependent `useMemo` recompute
+  // each pass. Wrapping each fallback in its own `useMemo` keeps references
+  // stable until `businessPlansResponse` actually changes.
+  const businessPlansData = useMemo(
+    () => businessPlansResponse?.data ?? {},
+    [businessPlansResponse]
+  );
 
   const eventPlans = useMemo(
     () =>
@@ -175,8 +182,14 @@ const PlansPageInner = () => {
       ),
     [businessPlansData]
   );
-  const quarterlyPlans = businessPlansData?.quarterly || [];
-  const annualPlans = businessPlansData?.annual || [];
+  const quarterlyPlans = useMemo(
+    () => businessPlansData?.quarterly || [],
+    [businessPlansData]
+  );
+  const annualPlans = useMemo(
+    () => businessPlansData?.annual || [],
+    [businessPlansData]
+  );
 
   const hasEvent = eventPlans.length > 0;
   const hasQuarterly = quarterlyPlans.length > 0;

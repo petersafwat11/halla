@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
+import Button from "@/ui/commen/button/Button";
 import { useUpdateThankYouMessage } from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./thankYouEditor.module.css";
@@ -104,13 +105,12 @@ const ThankYouEditor = ({ eventId, initial, initialDescription }) => {
       </div>
 
       <div className={styles.actions}>
-        <button
+        <Button
+          variant="primary"
           type="submit"
-          className={styles.saveButton}
           disabled={update.isPending}
-        >
-          {update.isPending ? "…" : t("host.thankYouMessage.save")}
-        </button>
+          title={update.isPending ? "…" : t("host.thankYouMessage.save")}
+        />
       </div>
     </form>
   );

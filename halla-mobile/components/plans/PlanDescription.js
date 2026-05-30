@@ -2,9 +2,8 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { formatNumber } from "../../utils/locale";
-
-const COMPENSATION_PERCENTAGE = 15;
+import { formatNumber } from "@halla/shared/utils/locale";
+import { COMPENSATION_PERCENTAGE } from "@halla/shared/constants/plans";
 
 /**
  * <PlanDescription> — mobile mirror of the web component.

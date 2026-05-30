@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { FaSpinner, FaExclamationTriangle, FaCheck } from "react-icons/fa";
 import { useBusinessPlans, plansKeys } from "@/hooks/plans";
 import { StepTitle } from "../../../../commen/title/SectionTitle";
-import { getLocalized } from "@/utils/locale";
+import { getLocalized } from "@halla/shared/utils/locale";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
 import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import styles from "./stepFive.module.css";

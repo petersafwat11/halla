@@ -15,7 +15,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import * as Location from "expo-location";
-import { fetchWithTimeout } from "../../services/apiClient";
+import { fetchWithTimeout } from "../../services/http";
 
 const DEFAULT_LOCATION = {
   address: "",

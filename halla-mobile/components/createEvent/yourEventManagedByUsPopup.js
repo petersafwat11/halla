@@ -22,6 +22,7 @@ const YourEventManagedByUsPopup = ({ visible, onClose, onContactUs }) => {
             {/* Image */}
             <Image
               source={{
+                // eslint-disable-next-line no-restricted-syntax -- third-party (api.builder.io), not the labbe backend.
                 uri: "https://api.builder.io/api/v1/image/assets/TEMP/81b61464bd4ea192b71ab86caee3678fbacffef8?width=320"
               }}
               style={styles.image}

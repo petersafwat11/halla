@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { formatCount } from "../../utils/locale";
+import { formatCount } from "@halla/shared/utils/locale";
 import { useLanguage } from "../../localization";
 
 const StatsCards = ({ stats }) => {

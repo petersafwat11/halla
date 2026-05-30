@@ -22,7 +22,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, Animated, Easing } fro
 import { Ionicons } from '@expo/vector-icons';
 import WhatsAppContactButton from '../shared/WhatsAppContactButton';
 // L-8: shared status constant prevents typo-drift with backend.
-import { EVENT_STATUS } from '../../utils/constants/eventStatus';
+import { EVENT_STATUS } from '@halla/shared/constants/eventStatus';
 
 const MAX_VISIBLE_ATTEMPTS = 5;
 

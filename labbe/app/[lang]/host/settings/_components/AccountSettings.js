@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import Button from "@/ui/commen/button/Button";
 import OtpInput from "@/ui/commen/inputs/optInput/OtpInput";
-import { accountSettingsSchema } from "@/utils/schemas/accountSettingsSchema";
+import { accountSettingsSchema } from "@halla/shared/schemas/settings";
 import { useUserMutation } from "@/hooks/users";
 import { useAuthMutation } from "@/hooks/auth";
 import { toastUtils } from "@/utils/toastUtils";

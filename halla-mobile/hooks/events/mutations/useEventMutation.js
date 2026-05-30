@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { ENDPOINTS } from "../../../config/api";
-import { apiFetch } from "../../../services/apiClient";
+import { apiFetch } from "../../../services/http";
 import {
   updateEventDetails as updateEventDetailsAPI,
   deleteEvent as deleteEventAPI,

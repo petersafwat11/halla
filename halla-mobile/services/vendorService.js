@@ -1,5 +1,14 @@
+/**
+ * vendorService — vendor-screen-specific endpoints.
+ *
+ * Phase 8: the shared user-account endpoints (profile, password, phone,
+ * profile sections, vendor-image deletion) delegate to
+ * `userAccountService` so settings and vendor flows share one shape.
+ * The vendor-only surface (services CRUD, stats, tickets) stays here.
+ */
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
+import { userAccountService } from "./userAccountService";
 
 const _request = async (path, init = {}, errorMessage) => {
   const response = await apiFetch(path, init);
@@ -52,9 +61,19 @@ const buildServiceFormData = (data) => {
 };
 
 export const vendorService = {
-  getProfile: () =>
-    _request(ENDPOINTS.USERS.PROFILE, { method: "GET" }, "Failed to get profile"),
+  // ---- Shared user-account surface (delegates to userAccountService) ----
+  getProfile: () => userAccountService.getProfile(),
+  updateSection: (section, data) => userAccountService.updateProfileSection(section, data),
+  updateSectionWithFiles: (section, formData) =>
+    userAccountService.updateProfileSectionWithFiles(section, formData),
+  updateProfile: (data) => userAccountService.updateProfile(data),
+  updateProfileWithFiles: (formData) => userAccountService.updateProfileWithFiles(formData),
+  updatePassword: (data) => userAccountService.updatePassword(data),
+  sendPhoneChangeOtp: (phoneNumber) => userAccountService.sendPhoneChangeOtp(phoneNumber),
+  updatePhone: (phoneNumber, otp) => userAccountService.updatePhone(phoneNumber, otp),
+  deleteVendorImage: (field, key) => userAccountService.deleteVendorImage(field, key),
 
+  // ---- Vendor-only surface ----
   getStats: () =>
     _request(ENDPOINTS.SERVICES.STATS, { method: "GET" }, "Failed to get vendor stats"),
 
@@ -66,62 +85,6 @@ export const vendorService = {
       ENDPOINTS.SERVICES.TOGGLE_STATUS(serviceId),
       { method: "PATCH" },
       "Failed to toggle service status"
-    ),
-
-  updateSection: (section, data) =>
-    _request(
-      ENDPOINTS.USERS.UPDATE_PROFILE_SECTION(section),
-      { method: "PATCH", body: data },
-      "Failed to update profile section"
-    ),
-
-  updateSectionWithFiles: (section, formData) =>
-    _request(
-      ENDPOINTS.USERS.UPDATE_PROFILE_SECTION(section),
-      { method: "PATCH", body: formData, timeoutMs: 60 * 1000 },
-      "Failed to update profile section"
-    ),
-
-  updateProfile: (data) =>
-    _request(
-      ENDPOINTS.USERS.UPDATE_PROFILE,
-      { method: "PATCH", body: data },
-      "Failed to update profile"
-    ),
-
-  updateProfileWithFiles: (formData) =>
-    _request(
-      ENDPOINTS.USERS.UPDATE_PROFILE,
-      { method: "PATCH", body: formData, timeoutMs: 60 * 1000 },
-      "Failed to update profile"
-    ),
-
-  updatePassword: (data) =>
-    _request(
-      ENDPOINTS.USERS.UPDATE_PASSWORD,
-      { method: "PATCH", body: data },
-      "Failed to update password"
-    ),
-
-  sendPhoneChangeOtp: (phoneNumber) =>
-    _request(
-      ENDPOINTS.USERS.SEND_PHONE_CHANGE_OTP,
-      { method: "POST", body: { phoneNumber } },
-      "Failed to send verification code"
-    ),
-
-  updatePhone: (phoneNumber, otp) =>
-    _request(
-      ENDPOINTS.USERS.UPDATE_PHONE,
-      { method: "PATCH", body: { phoneNumber, otp } },
-      "Failed to update phone number"
-    ),
-
-  deleteVendorImage: (field, key) =>
-    _request(
-      ENDPOINTS.USERS.DELETE_VENDOR_IMAGE,
-      { method: "DELETE", body: { field, key } },
-      "Failed to delete image"
     ),
 
   getTickets: (params = {}) =>

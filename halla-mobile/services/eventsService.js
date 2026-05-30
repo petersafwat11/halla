@@ -14,15 +14,15 @@
  * is exposed here.
  *
  * Every call routes through `apiFetch`, which auto-refreshes the access
- * token on 401 and retries. The legacy `_token` arg every function carries
- * is ignored — apiFetch sources the in-memory token from the auth store.
- * Preserved to minimise the diff at call sites.
+ * token on 401 and retries. Phase 8 dropped the `_legacyToken` second-arg
+ * compat shim every function used to carry — `apiFetch` reads the in-memory
+ * token straight from `useAuthStore`.
  */
 
 import { ENDPOINTS } from "../config/api";
-import { apiFetch } from "./apiClient";
+import { apiFetch } from "./http";
 
-const authenticatedFetch = async (path, _legacyToken, options = {}) => {
+const authenticatedFetch = async (path, options = {}) => {
   const fetchOpts = {
     method: options.method || "GET",
     headers: options.headers || {},
@@ -50,8 +50,8 @@ const authenticatedFetch = async (path, _legacyToken, options = {}) => {
 // CRUD + stats
 // ===========================================================================
 
-export const getUserEventsWithStats = async (_token) => {
-  const data = await authenticatedFetch(ENDPOINTS.EVENTS.STATS, _token);
+export const getUserEventsWithStats = async () => {
+  const data = await authenticatedFetch(ENDPOINTS.EVENTS.STATS);
   const stats = data?.data || {};
   return {
     totalEvents: stats.totalEvents || 0,
@@ -62,10 +62,10 @@ export const getUserEventsWithStats = async (_token) => {
   };
 };
 
-export const getEventStats = async (_token) => {
+export const getEventStats = async () => {
   const [statsData, eventsData] = await Promise.all([
-    authenticatedFetch(ENDPOINTS.EVENTS.STATS, _token),
-    authenticatedFetch(`${ENDPOINTS.EVENTS.MY_EVENTS}?limit=50`, _token),
+    authenticatedFetch(ENDPOINTS.EVENTS.STATS),
+    authenticatedFetch(`${ENDPOINTS.EVENTS.MY_EVENTS}?limit=50`),
   ]);
 
   const stats = statsData?.data || {};
@@ -88,18 +88,15 @@ export const getEventStats = async (_token) => {
  * Backend `getEventById` returns `{ status, data: {...event} }` — the event
  * object IS `data`, not `data.event`.
  */
-export const getEventById = async (eventId, _token) => {
-  const data = await authenticatedFetch(
-    ENDPOINTS.EVENTS.BY_ID(eventId),
-    _token,
-  );
+export const getEventById = async (eventId) => {
+  const data = await authenticatedFetch(ENDPOINTS.EVENTS.BY_ID(eventId));
   return data?.data || {};
 };
 
-export const getSingleEventStats = async (eventId, _token) => {
+export const getSingleEventStats = async (eventId) => {
   const [statsRes, eventRes] = await Promise.all([
-    authenticatedFetch(ENDPOINTS.EVENTS.SINGLE_STATS(eventId), _token),
-    authenticatedFetch(ENDPOINTS.EVENTS.BY_ID(eventId), _token),
+    authenticatedFetch(ENDPOINTS.EVENTS.SINGLE_STATS(eventId)),
+    authenticatedFetch(ENDPOINTS.EVENTS.BY_ID(eventId)),
   ]);
 
   const stats = statsRes?.data || {};
@@ -135,10 +132,9 @@ export const getSingleEventStats = async (eventId, _token) => {
  * Backend normalises both `supervisorsList` (web) and `staffList` (mobile);
  * this client always sends `staffList`.
  */
-export const updateEventStep2 = async (eventId, payload, _token) => {
+export const updateEventStep2 = async (eventId, payload) => {
   const data = await authenticatedFetch(
     ENDPOINTS.EVENTS.UPDATE_STEP2(eventId),
-    _token,
     {
       method: "PATCH",
       body: JSON.stringify({
@@ -150,27 +146,27 @@ export const updateEventStep2 = async (eventId, payload, _token) => {
   return data?.data?.event;
 };
 
-export const deleteEvent = async (eventId, _token) => {
-  await authenticatedFetch(ENDPOINTS.EVENTS.DELETE(eventId), _token, {
+export const deleteEvent = async (eventId) => {
+  await authenticatedFetch(ENDPOINTS.EVENTS.DELETE(eventId), {
     method: "DELETE",
   });
 };
 
-export const bulkDeleteEvents = async (eventIds, _token) => {
+export const bulkDeleteEvents = async (eventIds) => {
   if (!eventIds || !Array.isArray(eventIds) || eventIds.length === 0) {
     throw new Error("Event IDs array is required");
   }
   if (eventIds.length > 100) {
     throw new Error("Cannot delete more than 100 events at once");
   }
-  return authenticatedFetch(ENDPOINTS.EVENTS.BULK_DELETE, _token, {
+  return authenticatedFetch(ENDPOINTS.EVENTS.BULK_DELETE, {
     method: "POST",
     body: JSON.stringify({ eventIds }),
   });
 };
 
-export const getSubscriptionInfo = async (_token) =>
-  authenticatedFetch(ENDPOINTS.EVENTS.SUBSCRIPTION_INFO, _token);
+export const getSubscriptionInfo = async () =>
+  authenticatedFetch(ENDPOINTS.EVENTS.SUBSCRIPTION_INFO);
 
 // ===========================================================================
 // Guest list (bulk; per-guest CRUD lives in eventGuestsService.js)
@@ -180,18 +176,12 @@ export const getSubscriptionInfo = async (_token) =>
  * Bulk update of an event's guestList sub-document. Replaces the entire
  * array in one shot; used by the create/update wizard.
  */
-export const updateGuestList = async (
-  eventId,
-  guestList,
-  _token,
-  staffList = null,
-) => {
+export const updateGuestList = async (eventId, guestList, staffList = null) => {
   const body = { guestList };
   if (staffList) body.staffList = staffList;
 
   const data = await authenticatedFetch(
     ENDPOINTS.EVENTS.UPDATE_GUEST_LIST(eventId),
-    _token,
     { method: "PATCH", body: JSON.stringify(body) },
   );
   return data?.data?.event;
@@ -201,37 +191,33 @@ export const updateGuestList = async (
 // Staff
 // ===========================================================================
 
-export const updateStaffList = async (eventId, staffList, _token) => {
+export const updateStaffList = async (eventId, staffList) => {
   const data = await authenticatedFetch(
     ENDPOINTS.EVENTS.UPDATE_STAFF_LIST(eventId),
-    _token,
     { method: "PATCH", body: JSON.stringify({ staffList }) },
   );
   return data?.data?.event;
 };
 
-export const addStaff = async (eventId, staffData, _token) => {
+export const addStaff = async (eventId, staffData) => {
   const data = await authenticatedFetch(
     ENDPOINTS.EVENTS.ADD_STAFF(eventId),
-    _token,
     { method: "POST", body: JSON.stringify(staffData) },
   );
   return data?.data?.staff;
 };
 
-export const updateStaff = async (eventId, staffId, staffData, _token) => {
+export const updateStaff = async (eventId, staffId, staffData) => {
   const data = await authenticatedFetch(
     ENDPOINTS.EVENTS.UPDATE_STAFF(eventId, staffId),
-    _token,
     { method: "PUT", body: JSON.stringify(staffData) },
   );
   return data?.data?.staff;
 };
 
-export const deleteStaff = async (eventId, staffId, _token) => {
+export const deleteStaff = async (eventId, staffId) => {
   await authenticatedFetch(
     ENDPOINTS.EVENTS.DELETE_STAFF(eventId, staffId),
-    _token,
     { method: "DELETE" },
   );
 };
@@ -251,7 +237,7 @@ export const listStaffTokens = async (eventId) => {
  * Idempotent. `staffId` is the event.staffList sub-document _id, not the
  * StaffAccessToken doc id — backend resolves the token from staff phone.
  */
-export const revokeStaffAccess = async (eventId, staffId, _token) => {
+export const revokeStaffAccess = async (eventId, staffId) => {
   if (!eventId || !staffId)
     throw new Error("eventId and staffId are required");
   const idempotencyKey = `staff-revoke-${eventId}-${staffId}-${Date.now()}-${Math.random()
@@ -259,7 +245,6 @@ export const revokeStaffAccess = async (eventId, staffId, _token) => {
     .slice(2, 10)}`;
   const data = await authenticatedFetch(
     ENDPOINTS.EVENTS.REVOKE_STAFF(eventId, staffId),
-    _token,
     { method: "POST", headers: { "Idempotency-Key": idempotencyKey } },
   );
   return data?.data || data;
@@ -274,11 +259,7 @@ export const revokeStaffAccess = async (eventId, staffId, _token) => {
  * (uploadTemplateImage middleware); apiFetch detects FormData and skips JSON
  * serialization (Content-Type set by fetch boundary).
  */
-export const updateInvitationSettings = async (
-  eventId,
-  invitationSettings,
-  _token,
-) => {
+export const updateInvitationSettings = async (eventId, invitationSettings) => {
   const formData = new FormData();
   const { templateImage, ...restSettings } = invitationSettings;
 
@@ -316,37 +297,36 @@ export const updateInvitationSettings = async (
  * Manually retry a failed event launch. RBAC enforced server-side. Per-click
  * idempotency key protects against double-tap.
  */
-export const retryLaunch = async (eventId, _token) => {
+export const retryLaunch = async (eventId) => {
   const idempotencyKey = `retry-${eventId}-${Date.now()}-${Math.random()
     .toString(36)
     .slice(2, 10)}`;
   const data = await authenticatedFetch(
     ENDPOINTS.EVENTS.RETRY_LAUNCH(eventId),
-    _token,
     { method: "POST", headers: { "Idempotency-Key": idempotencyKey } },
   );
   return data?.data || data;
 };
 
-export const updateLaunchSettings = async (eventId, launchSettings, _token) => {
+export const updateLaunchSettings = async (eventId, launchSettings) => {
   if (!eventId) throw new Error("Event ID is required");
-  return authenticatedFetch(ENDPOINTS.EVENTS.UPDATE_LAUNCH(eventId), _token, {
+  return authenticatedFetch(ENDPOINTS.EVENTS.UPDATE_LAUNCH(eventId), {
     method: "PATCH",
     body: JSON.stringify(launchSettings),
   });
 };
 
-export const sendTestMessage = async (eventId, phoneNumber, channel, _token) => {
+export const sendTestMessage = async (eventId, phoneNumber, channel) => {
   if (!eventId) throw new Error("Event ID is required");
-  return authenticatedFetch(ENDPOINTS.EVENTS.TEST_MESSAGE(eventId), _token, {
+  return authenticatedFetch(ENDPOINTS.EVENTS.TEST_MESSAGE(eventId), {
     method: "PATCH",
     body: JSON.stringify({ phoneNumber, channel }),
   });
 };
 
-export const updateEventDetails = async (eventId, eventDetails, _token) => {
+export const updateEventDetails = async (eventId, eventDetails) => {
   if (!eventId) throw new Error("Event ID is required");
-  return authenticatedFetch(ENDPOINTS.EVENTS.UPDATE_DETAILS(eventId), _token, {
+  return authenticatedFetch(ENDPOINTS.EVENTS.UPDATE_DETAILS(eventId), {
     method: "PATCH",
     body: JSON.stringify(eventDetails),
   });
@@ -358,9 +338,10 @@ export const updateEventDetails = async (eventId, eventDetails, _token) => {
 
 /**
  * Export events to XLSX. Returns a blob the caller hands to
- * `saveBlobAndShare`.
+ * `saveBlobAndShare`. `apiFetch` reads the access token from the auth
+ * store, so callers don't pass one in.
  */
-export const exportEvents = async (_legacyToken) => {
+export const exportEvents = async () => {
   const response = await apiFetch(ENDPOINTS.EVENTS.EXPORT_EVENTS, {
     method: "GET",
     timeoutMs: 60 * 1000,

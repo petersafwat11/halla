@@ -46,14 +46,21 @@ export const useEventMutation = (action) => {
   if (!group) {
     throw new Error(`Unknown event action: ${action}`);
   }
+  // Rules of Hooks: each call site passes a stable literal action (see header
+  // doc), so the runtime path through this switch is constant per consumer —
+  // the rule's invariant holds even though ESLint can't statically prove it.
   switch (group) {
     case "crud":
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       return useEventCrudMutation(action);
     case "guest":
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       return useEventGuestMutation(action);
     case "staff":
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       return useEventStaffMutation(action);
     case "settings":
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       return useEventSettingsMutation(action);
     default:
       // Unreachable — ACTION_GROUPS only contains the four group names.

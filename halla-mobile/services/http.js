@@ -16,7 +16,7 @@
  *
  * Usage:
  *
- *     import { apiFetch } from "../services/apiClient";
+ *     import { apiFetch } from "../services/http";
  *     const res = await apiFetch("/dashboard/host", { method: "GET" });
  *     const json = await res.json();
  *

@@ -2,7 +2,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@halla/shared/utils/useDebounce";
 
 /**
  * Encapsulates all URL-based filter state and handlers for the Marketplace page.
@@ -17,8 +17,12 @@ export const useMarketplaceFilters = () => {
   const searchQuery = searchParams.get("search") || "";
   const regionId = searchParams.get("regionId") || "";
   const cityId = searchParams.get("cityId") || "";
-  const districtIds =
-    searchParams.get("districtIds")?.split(",").filter(Boolean) || [];
+  // Phase 8 — memoised so the `|| []` fallback doesn't produce a fresh
+  // array every render and bust the `activeFilters` useMemo below.
+  const districtIds = useMemo(
+    () => searchParams.get("districtIds")?.split(",").filter(Boolean) || [],
+    [searchParams]
+  );
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
   const minRating = searchParams.get("minRating") || "";

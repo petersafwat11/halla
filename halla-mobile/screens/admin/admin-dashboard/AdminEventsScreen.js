@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { useAdminEventsInfinite, useDebouncedValue } from "../../../hooks";
+import { useAdminEventsInfinite, useDebounce } from "../../../hooks";
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
@@ -20,7 +20,7 @@ const AdminEventsScreen = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const debouncedSearch = useDebounce(searchQuery, 350);
   const filters = useMemo(
     () => ({ search: debouncedSearch, status: activeFilter }),
     [debouncedSearch, activeFilter]

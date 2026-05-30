@@ -9,7 +9,7 @@ import StepFour from "./stepFour/StepFour";
 import StepFive from "./stepFive/StepFive";
 import { useTranslation } from "react-i18next";
 import { FormProvider, useForm } from "react-hook-form";
-import { vendorSignupSchema } from "@/utils/schemas/authSchema";
+import { vendorSignupSchema } from "@halla/shared/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import StepSix from "./stepSix/StepSix";

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
+import Button from "@/ui/commen/button/Button";
 import { useHostTaqnyatTemplates } from "@/hooks/taqnyatTemplates";
 import {
   useGeneratePostEventTokens,
@@ -139,22 +140,20 @@ const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
         </div>
 
         <footer className={styles.footer}>
-          <button
-            type="button"
-            className={styles.cancelButton}
+          <Button
+            variant="secondary"
+            size="small"
+            title={t("host.cancel")}
             onClick={onClose}
             disabled={isPending}
-          >
-            {t("host.cancel")}
-          </button>
-          <button
-            type="button"
-            className={styles.sendButton}
+          />
+          <Button
+            variant="primary"
+            size="small"
+            title={isPending ? "…" : t("host.accessLinks.send")}
             onClick={handleSend}
             disabled={isPending || templates.length === 0}
-          >
-            {isPending ? "…" : t("host.accessLinks.send")}
-          </button>
+          />
         </footer>
       </div>
     </div>

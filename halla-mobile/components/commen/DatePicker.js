@@ -10,7 +10,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { formatTemplateDate } from "../../utils/formatTemplateDate";
+import { formatTemplateDate } from "@halla/shared/utils/formatTemplateDate";
 
 const DatePicker = ({
   name,

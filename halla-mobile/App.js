@@ -22,7 +22,7 @@ import { useAuthStore } from "./stores/authStore";
 import AppNavigator from "./navigation/AppNavigator";
 import LanguageSelector from "./components/languagePrefrence/LanguageSelector";
 import { ENDPOINTS } from "./config/api";
-import { apiFetch } from "./services/apiClient";
+import { apiFetch } from "./services/http";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 // ------------------------------------------------- //

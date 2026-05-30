@@ -9,8 +9,8 @@ import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { apiRequest } from "@/services/new-backend/apiClient";
-import { API_PATHS } from "@/services/new-backend/api.config";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import {
   parseError,
   getAuthErrorMessage,

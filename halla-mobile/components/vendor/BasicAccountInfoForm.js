@@ -13,7 +13,7 @@ import { useTranslation } from "../../localization/hooks/useTranslation";
 import TextInput from "../commen/TextInput";
 import EmailInput from "../commen/EmailInput";
 import Button from "../commen/Button";
-import { basicAccountInfoSchema } from "../../utils/schemas/vendorSchemas";
+import { mobileBasicAccountInfoSchema as basicAccountInfoSchema } from "@halla/shared/schemas/vendor";
 import PhoneChangeOtpModal from "./PhoneChangeOtpModal";
 
 /**

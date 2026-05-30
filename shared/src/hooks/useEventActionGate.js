@@ -1,26 +1,23 @@
+"use client";
+
 import { useMemo } from "react";
 
 /**
- * Phase 4b W2-POLL-FAIL — mobile companion of `labbe/hooks/events/useEventActionGate.js`.
+ * Shared gate hook for the single-event UI (web host single-event,
+ * mobile EventDetails / LastEvent / SingleEventStats). Centralises the
+ * per-action visibility logic so the two apps can't drift.
  *
- * Same prop shape, same return shape, so the manual-verification
- * checklist's parity test ("returns the same gate state as web for the
- * same event payload") passes. Used by the mobile single-event
- * components that previously inlined gate logic
- * (`components/home/EventActionsHeader.js`,
- * `components/home/LastEvent.js`, `components/events/SingleEventStats.js`).
+ * Inputs:
+ *   event           — { status, invitationSettings, staffList,
+ *                       messagingStatus, attemptCount, host, whitelabelId,
+ *                       taqnyatTemplate }
+ *   testMessageSent — local UI state set by the test-message popup
+ *   currentUser     — { _id, role, whitelabelId }; gates manual retry
  *
- * Inputs
- *   event           — event payload from the API (status,
- *                     invitationSettings, staffList, messagingStatus,
- *                     attemptCount, host, whitelabelId).
- *   testMessageSent — local flag (set after a successful test send).
- *   currentUser     — auth user ({ _id, role, whitelabelId }).
- *
- * Outputs
- *   hasTemplate, canSendTest, canSchedule, hasStaff, isCompleted,
- *   isLive, isFailed, isScheduled, hasFailedSends (live or completed
- *   + failedCount > 0), failedCount, canManualRetry.
+ * Outputs: hasTemplate, canSendTest, canSchedule, hasStaff, isCompleted,
+ * isLive, isFailed, isScheduled, hasFailedSends, failedCount,
+ * canManualRetry (RBAC mirror of EventFailureBanner / PartialFailureBanner;
+ * server still enforces).
  */
 export function useEventActionGate({
   event,
@@ -46,8 +43,7 @@ export function useEventActionGate({
 
     const status = event.status;
     const hasTemplate = !!event.taqnyatTemplate?.templateRef;
-    const hasStaff =
-      (event.staffList?.length || event.staffCount || 0) > 0;
+    const hasStaff = (event.staffList?.length || event.staffCount || 0) > 0;
 
     const isCompleted = status === "completed";
     const isLive = status === "live";

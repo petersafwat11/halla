@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable no-console -- demo file; example handlers intentionally log to console. */
 import React, { useState } from "react";
 import Table from "./Table";
 

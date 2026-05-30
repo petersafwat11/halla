@@ -27,7 +27,7 @@ import React, { useState } from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
 import * as LucideIcons from "lucide-react-native";
 import { useTranslation } from "../../localization";
-import { formatTemplateDate } from "../../utils/formatTemplateDate";
+import { formatTemplateDate } from "@halla/shared/utils/formatTemplateDate";
 
 const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
 
