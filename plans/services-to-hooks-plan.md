@@ -141,10 +141,19 @@ Same shape for the 6 leftover labbe domain services. Each PR:
 - No move of auth-token storage out of `secureStorage.js` /
   `guestTokenUtils.js` — those are not API services
 
-## Open questions for the user
+## Locked decisions (2026-05-30)
 
-1. Approve the per-domain PR cadence above, or batch some together
-   (e.g. `subscription` + `plans` + `addons` in one)?
-2. Web cleanup in the same sprint as mobile, or sequence mobile first?
-3. Display helpers from `eventsService` — `utils/event-display.js` on each
-   app, or push to `@halla/shared/utils/event` for both?
+1. **Order:** finish web cleanup first, then mobile. Sequential, not parallel.
+2. **Branch / push cadence:** work on `master` in `D:/halla` (single repo
+   covering both `labbe/` and `halla-mobile/`). User will clean and push
+   in-flight local changes first; agent starts fresh after that. **One push
+   at the end of the whole migration**, not per-domain. No intermediate
+   pushes to `master`.
+3. **Display helpers:** pure helpers extracted from domain services
+   (`formatEventForDisplay`, `calculateResponseRate`, `groupGuestsByStatus`,
+   `formatTimeAgo` family, etc.) go into `@halla/shared/utils/<domain>`
+   **once** and are imported from both `labbe` and `halla-mobile`. No
+   per-app duplication.
+4. **PR cadence:** per-domain phasing kept as the working sequence
+   internally, but since the agent only pushes once at the end, treat the
+   per-domain phases as ordered commits on `master`, not separate PRs.

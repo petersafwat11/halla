@@ -10,6 +10,7 @@ export {
   useUpdateTemplate,
   useDeleteTemplate,
   useDuplicateTemplate,
+  useAdminUploadTemplateImage,
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,

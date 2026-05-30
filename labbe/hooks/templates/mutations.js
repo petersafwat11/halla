@@ -1,12 +1,18 @@
 "use client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { templatesService } from "@/services/templatesService";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 import { templatesKeys, templateCategoriesKeys } from "./keys";
 
 export function useCreateTemplate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body) => templatesService.adminCreateTemplate(body),
+    mutationFn: (body) =>
+      apiRequest({
+        method: "POST",
+        path: API_PATHS.templates.adminCreate,
+        data: body,
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: templatesKeys.all }),
   });
 }
@@ -14,7 +20,12 @@ export function useCreateTemplate() {
 export function useUpdateTemplate(id) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body) => templatesService.adminUpdateTemplate(id, body),
+    mutationFn: (body) =>
+      apiRequest({
+        method: "PUT",
+        path: API_PATHS.templates.adminUpdate(id),
+        data: body,
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: templatesKeys.all });
       if (id) qc.invalidateQueries({ queryKey: templatesKeys.detail(id) });
@@ -25,7 +36,11 @@ export function useUpdateTemplate(id) {
 export function useDeleteTemplate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id) => templatesService.adminDeleteTemplate(id),
+    mutationFn: (id) =>
+      apiRequest({
+        method: "DELETE",
+        path: API_PATHS.templates.adminDelete(id),
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: templatesKeys.all }),
   });
 }
@@ -33,15 +48,56 @@ export function useDeleteTemplate() {
 export function useDuplicateTemplate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id) => templatesService.adminDuplicateTemplate(id),
+    mutationFn: (id) =>
+      apiRequest({
+        method: "POST",
+        path: API_PATHS.templates.adminDuplicate(id),
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: templatesKeys.all }),
+  });
+}
+
+/**
+ * Upload a template image. Backend proxies to S3 to avoid browser→S3 CORS.
+ * Returns `{ s3Key }`. Optional `onProgress` callback (0–100).
+ */
+export function useAdminUploadTemplateImage() {
+  return useMutation({
+    mutationFn: async ({ file, templateId = "new", onProgress } = {}) => {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const result = await apiRequest({
+        method: "POST",
+        path: `${API_PATHS.templates.adminUploadImage}?templateId=${encodeURIComponent(
+          templateId,
+        )}`,
+        data: formData,
+        config: {
+          headers: { "Content-Type": undefined },
+          ...(typeof onProgress === "function" && {
+            onUploadProgress: (e) => {
+              if (e.total) onProgress(Math.round((e.loaded / e.total) * 100));
+            },
+          }),
+        },
+      });
+
+      const { s3Key } = result?.data || result;
+      return { s3Key };
+    },
   });
 }
 
 export function useCreateCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body) => templatesService.adminCreateCategory(body),
+    mutationFn: (body) =>
+      apiRequest({
+        method: "POST",
+        path: API_PATHS.templates.adminCreateCategory,
+        data: body,
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: templateCategoriesKeys.all }),
   });
 }
@@ -49,7 +105,12 @@ export function useCreateCategory() {
 export function useUpdateCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, body }) => templatesService.adminUpdateCategory(id, body),
+    mutationFn: ({ id, body }) =>
+      apiRequest({
+        method: "PUT",
+        path: API_PATHS.templates.adminUpdateCategory(id),
+        data: body,
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: templateCategoriesKeys.all }),
   });
 }
@@ -57,7 +118,11 @@ export function useUpdateCategory() {
 export function useDeleteCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id) => templatesService.adminDeleteCategory(id),
+    mutationFn: (id) =>
+      apiRequest({
+        method: "DELETE",
+        path: API_PATHS.templates.adminDeleteCategory(id),
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: templateCategoriesKeys.all }),
   });
 }

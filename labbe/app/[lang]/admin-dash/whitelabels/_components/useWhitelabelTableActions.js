@@ -1,13 +1,15 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { useAdminWhitelabelMutation } from "@/hooks/admin";
+import {
+  useAdminWhitelabelMutation,
+  useAdminWhitelabelsExport,
+} from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
-import { whitelabelAPI } from "@/services/adminDashboard";
 
 export function useWhitelabelTableActions(data) {
   const { t } = useTranslation("adminWhitelabels");
@@ -18,6 +20,7 @@ export function useWhitelabelTableActions(data) {
   const deleteWhitelabel = useAdminWhitelabelMutation("delete");
   const bulkDelete = useAdminWhitelabelMutation("bulkDelete");
   const updateStatus = useAdminWhitelabelMutation("updateStatus");
+  const exportWhitelabels = useAdminWhitelabelsExport();
 
   const filters = useMemo(
     () => ({
@@ -68,7 +71,7 @@ export function useWhitelabelTableActions(data) {
 
   const handleExport = useCallback(async () => {
     try {
-      await whitelabelAPI.export({
+      await exportWhitelabels.mutateAsync({
         search: filters.search,
         status: filters.status,
         from: filters.from,
@@ -77,7 +80,7 @@ export function useWhitelabelTableActions(data) {
     } catch (error) {
       handleError(error, t, { fallbackMessage: "messages.exportError" });
     }
-  }, [filters.search, filters.status, filters.from, filters.to, t]);
+  }, [exportWhitelabels, filters.search, filters.status, filters.from, filters.to, t]);
 
   const handlePageChange = useCallback((page) => {
     const params = new URLSearchParams(searchParams);

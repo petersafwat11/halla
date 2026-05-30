@@ -285,15 +285,30 @@ export const useAdminEventMutation = (action) => {
 
   const mutations = {
     createForHost: {
-      mutationFn: ({ hostId, eventData }) =>
+      // Accepts a FormData (admin event-creation wizard, multipart with
+      // templateImage) or a plain JSON object — apiRequest/axios pick the
+      // correct content type from the body.
+      mutationFn: (data) =>
         apiRequest({
           method: "POST",
           path: API_PATHS.admin.events.createForHost,
-          data: { hostId, ...eventData },
+          data,
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: eventsKeys.all });
         queryClient.invalidateQueries({ queryKey: dashboardAll() });
+      },
+    },
+    update: {
+      mutationFn: ({ eventId, data }) =>
+        apiRequest({
+          method: "PATCH",
+          path: API_PATHS.admin.events.update(eventId),
+          data,
+        }),
+      onSuccess: (_, { eventId }) => {
+        queryClient.invalidateQueries({ queryKey: eventsKeys.all });
+        queryClient.invalidateQueries({ queryKey: adminKeys.eventDetail(eventId) });
       },
     },
     updateStatus: {
@@ -334,6 +349,68 @@ export const useAdminEventMutation = (action) => {
 
   return useMutation(mutations[action]);
 };
+
+/**
+ * Generic admin export mutation factory.
+ * `path` is the API_PATHS export endpoint; `prefix` becomes the filename
+ * stem (`prefix_export_YYYY-MM-DD.xlsx`). Filters are forwarded as query
+ * params and the resulting blob is downloaded via a synthetic anchor.
+ */
+const buildExportMutation = (path, prefix) => ({
+  mutationFn: async (filters = {}) => {
+    const blob = await apiRequest({
+      method: "GET",
+      path,
+      params: filters,
+      isExport: true,
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${prefix}_export_${new Date()
+      .toISOString()
+      .split("T")[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    return { ok: true };
+  },
+});
+
+export const useAdminHostsExport = () =>
+  useMutation(buildExportMutation(API_PATHS.admin.hosts.export, "hosts"));
+
+export const useAdminVendorsExport = () =>
+  useMutation(buildExportMutation(API_PATHS.admin.vendors.export, "vendors"));
+
+export const useAdminModeratorsExport = () =>
+  useMutation(
+    buildExportMutation(API_PATHS.admin.moderators.export, "moderators"),
+  );
+
+export const useAdminWhitelabelsExport = () =>
+  useMutation(
+    buildExportMutation(API_PATHS.admin.whitelabels.export, "whitelabels"),
+  );
+
+export const useAdminEventsExport = () =>
+  useMutation(buildExportMutation(API_PATHS.admin.events.export, "events"));
+
+/**
+ * Imperative one-shot host phone verification (used by admin create-event
+ * wizard + CreateEventPopup). The declarative version `useVerifyHostPhone`
+ * stays for live "type and watch" UIs.
+ */
+export const useVerifyHostPhoneMutation = () =>
+  useMutation({
+    mutationFn: (phoneNumber) =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.admin.hosts.verifyPhone,
+        params: { phoneNumber },
+      }),
+  });
 
 export const useAdminPlanMutation = () => {
   const queryClient = useQueryClient();

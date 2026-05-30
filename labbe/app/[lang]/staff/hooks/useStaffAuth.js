@@ -2,7 +2,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "next/navigation";
-import { staffService } from "@/services/staff";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
+import { isStaffAuthenticated, setStaffToken } from "@/utils/staffToken";
 
 /**
  * Hook that handles staff portal authentication.
@@ -24,6 +26,13 @@ export function useStaffAuth() {
   const [eventId, setEventId] = useState(null);
 
   useEffect(() => {
+    const verify = (params) =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.staff.verifyStaffAccess,
+        params,
+      });
+
     const verifyAccess = async () => {
       const token = searchParams.get("token");
       const phone = searchParams.get("phone");
@@ -32,10 +41,10 @@ export function useStaffAuth() {
       try {
         let response;
         if (token) {
-          response = await staffService.verifyByToken(token);
+          response = await verify({ token });
         } else if (phone && eventIdParam) {
-          response = await staffService.verifyByPhone(phone, eventIdParam);
-        } else if (staffService.isAuthenticated()) {
+          response = await verify({ phone, eventId: eventIdParam });
+        } else if (isStaffAuthenticated()) {
           setIsAuthenticated(true);
           setIsLoading(false);
           return;
@@ -43,6 +52,10 @@ export function useStaffAuth() {
           setAuthError(t("errors.noAccessToken"));
           setIsLoading(false);
           return;
+        }
+
+        if (response.data?.sessionToken) {
+          setStaffToken(response.data.sessionToken);
         }
 
         if (response.data?.verified) {

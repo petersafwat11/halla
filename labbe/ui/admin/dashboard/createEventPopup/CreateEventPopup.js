@@ -4,8 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
 import styles from "./createEventPopup.module.css";
 import Button from "@/ui/commen/button/Button";
-import { adminAPI } from "@/services/adminDashboard";
-import { cookieUtils } from "@/utils/cookieUtils";
+import { useAdminHosts, useVerifyHostPhoneMutation } from "@/hooks/admin";
 
 const CreateEventPopup = ({ onClose }) => {
   const { t } = useTranslation("adminDashboard");
@@ -16,7 +15,6 @@ const CreateEventPopup = ({ onClose }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [hosts, setHosts] = useState([]);
   const [filteredHosts, setFilteredHosts] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -24,21 +22,10 @@ const CreateEventPopup = ({ onClose }) => {
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Fetch all hosts on mount
-  useEffect(() => {
-    const fetchHosts = async () => {
-      try {
-        const token = cookieUtils.getCookie("token");
-        // Pass empty filters as first arg, token as second arg
-        const response = await adminAPI.hosts.getAll({}, token);
-        const hostsData = response.data?.hosts || [];
-        setHosts(hostsData);
-      } catch (error) {
-        console.error("Error fetching hosts:", error);
-      }
-    };
-    fetchHosts();
-  }, []);
+  const { data: hostsResponse } = useAdminHosts({});
+  const hosts = hostsResponse?.data?.hosts || [];
+
+  const verifyHostPhone = useVerifyHostPhoneMutation();
 
   // Filter hosts based on phone number input
   useEffect(() => {
@@ -110,13 +97,8 @@ const CreateEventPopup = ({ onClose }) => {
       setIsLoading(true);
 
       try {
-        const token = cookieUtils.getCookie("token");
-        if (!token) {
-          throw new Error("Authentication required");
-        }
-
         // Verify host exists in database
-        const response = await adminAPI.hosts.verifyByPhone(phoneNumber, token);
+        const response = await verifyHostPhone.mutateAsync(phoneNumber);
 
         if (!response.data?.isValid) {
           setError(
@@ -143,7 +125,7 @@ const CreateEventPopup = ({ onClose }) => {
         setIsLoading(false);
       }
     },
-    [phoneNumber, t, onClose, router, params.lang]
+    [phoneNumber, t, onClose, router, params.lang, verifyHostPhone]
   );
 
   // Render dropdown items

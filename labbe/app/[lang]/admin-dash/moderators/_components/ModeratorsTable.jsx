@@ -1,6 +1,10 @@
 "use client";
 
-import { useAdminModerators, useAdminModeratorMutation } from "@/hooks/admin";
+import {
+  useAdminModerators,
+  useAdminModeratorMutation,
+  useAdminModeratorsExport,
+} from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -9,7 +13,6 @@ import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import { FiEdit2, FiCheckCircle, FiSlash, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
-import { moderatorsAPI } from "@/services/adminDashboard";
 import AddModeratorPopup from "./AddModeratorPopup";
 import EditModeratorPopup from "./EditModeratorPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -39,6 +42,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
   const deleteModerator = useAdminModeratorMutation("delete");
   const bulkDelete = useAdminModeratorMutation("bulkDelete");
   const updateStatus = useAdminModeratorMutation("updateStatus");
+  const exportModerators = useAdminModeratorsExport();
 
   const handleDelete = async (moderatorId) => {
     if (!confirm(t("confirmDelete.message", "Are you sure you want to delete this moderator?"))) return;
@@ -77,7 +81,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
 
   const handleExport = async () => {
     try {
-      await moderatorsAPI.export({
+      await exportModerators.mutateAsync({
         search: filters.search,
         status: filters.status,
         from: filters.from,

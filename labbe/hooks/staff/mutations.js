@@ -1,11 +1,19 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { staffService } from "@/services/staff";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
+import { staffAuthConfig } from "@/utils/staffToken";
 import { staffKeys } from "./keys";
 import { eventsKeys } from "@/hooks/events/keys";
+
+const checkInGuest = (eventId, body) =>
+  apiRequest({
+    method: "POST",
+    path: API_PATHS.staff.checkInGuest(eventId),
+    data: body,
+    config: staffAuthConfig(),
+  });
 
 /**
  * Unified staff mutation hook.
@@ -17,9 +25,9 @@ export const useStaffMutation = (action) => {
   const mutations = {
     checkInGuest: {
       mutationFn: ({ eventId, qrCode, guestId, phone }) => {
-        if (qrCode) return staffService.checkInByQR(eventId, qrCode);
-        if (guestId) return staffService.checkInById(eventId, guestId);
-        return staffService.checkInByPhone(eventId, phone);
+        if (qrCode) return checkInGuest(eventId, { qrCode });
+        if (guestId) return checkInGuest(eventId, { guestId });
+        return checkInGuest(eventId, { phone });
       },
       onSuccess: (_, { eventId }) => {
         queryClient.invalidateQueries({

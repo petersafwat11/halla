@@ -8,8 +8,7 @@ import Image from "next/image";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import StaffPopup from "@/app/[lang]/host/create-event/_components/staffPopup/StaffPopup";
 import EventActionsHeader from "@/ui/host/events/EventActionsHeader";
-import { eventsAPI } from "@/services/adminDashboard";
-import { cookieUtils } from "@/utils/cookieUtils";
+import { useAdminEventMutation } from "@/hooks/admin";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 // Admin-specific classes (`outlineButton`, `dangerButton`) live in the
@@ -24,6 +23,9 @@ export default function AdminEventHeader({ data }) {
   const [showStaffPopup, setShowStaffPopup] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const deleteEvent = useAdminEventMutation("delete");
+  const updateEvent = useAdminEventMutation("update");
 
   const isArabic = i18n.language === "ar";
   const eventTitle =
@@ -78,7 +80,7 @@ export default function AdminEventHeader({ data }) {
 
     setIsDeleting(true);
     try {
-      await eventsAPI.delete(eventId);
+      await deleteEvent.mutateAsync(eventId);
       toastUtils.success(
         t("singleEvent.deleteSuccess", "Event deleted successfully")
       );
@@ -92,63 +94,36 @@ export default function AdminEventHeader({ data }) {
 
   // Staff handlers
   const handleAddStaff = async (staffMember) => {
-    try {
-      const token = cookieUtils.getCookie("token");
-      const staffData = {
-        name: staffMember.name,
-        phone: staffMember.mobile,
-      };
-      await eventsAPI.updateEvent(
-        eventId,
-        {
-          staffList: [
-            ...staffList.map((m) => ({ name: m.name, phone: m.mobile })),
-            staffData,
-          ],
-        },
-        token
-      );
-      setShowStaffPopup(false);
-      router.refresh();
-    } catch (error) {
-      throw error;
-    }
+    const staffData = { name: staffMember.name, phone: staffMember.mobile };
+    await updateEvent.mutateAsync({
+      eventId,
+      data: {
+        staffList: [
+          ...staffList.map((m) => ({ name: m.name, phone: m.mobile })),
+          staffData,
+        ],
+      },
+    });
+    setShowStaffPopup(false);
+    router.refresh();
   };
 
   const handleEditStaff = async (staffMember) => {
-    try {
-      const token = cookieUtils.getCookie("token");
-      const updatedList = staffList.map((m) =>
-        m.id === staffMember.id
-          ? { name: staffMember.name, phone: staffMember.mobile }
-          : { name: m.name, phone: m.mobile }
-      );
-      await eventsAPI.updateEvent(
-        eventId,
-        { staffList: updatedList },
-        token
-      );
-      router.refresh();
-    } catch (error) {
-      throw error;
-    }
+    const updatedList = staffList.map((m) =>
+      m.id === staffMember.id
+        ? { name: staffMember.name, phone: staffMember.mobile }
+        : { name: m.name, phone: m.mobile }
+    );
+    await updateEvent.mutateAsync({ eventId, data: { staffList: updatedList } });
+    router.refresh();
   };
 
   const handleDeleteStaff = async (id) => {
-    try {
-      const token = cookieUtils.getCookie("token");
-      const updatedList = staffList
-        .filter((m) => m.id !== id)
-        .map((m) => ({ name: m.name, phone: m.mobile }));
-      await eventsAPI.updateEvent(
-        eventId,
-        { staffList: updatedList },
-        token
-      );
-      router.refresh();
-    } catch (error) {
-      throw error;
-    }
+    const updatedList = staffList
+      .filter((m) => m.id !== id)
+      .map((m) => ({ name: m.name, phone: m.mobile }));
+    await updateEvent.mutateAsync({ eventId, data: { staffList: updatedList } });
+    router.refresh();
   };
 
   return (

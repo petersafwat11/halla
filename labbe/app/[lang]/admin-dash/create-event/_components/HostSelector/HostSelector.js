@@ -9,10 +9,8 @@ import {
   FaUserShield,
   FaBuilding,
 } from "react-icons/fa";
-import { hostsAPI } from "@/services/adminDashboard";
-import { cookieUtils } from "@/utils/cookieUtils";
 import { toastUtils } from "@/utils/toastUtils";
-import { useAdminEventTargets } from "@/hooks/admin";
+import { useAdminEventTargets, useVerifyHostPhoneMutation } from "@/hooks/admin";
 import styles from "./hostSelector.module.css";
 
 const PLATFORM_ADMIN_ROLES = ["super_admin", "admin", "moderator"];
@@ -49,6 +47,7 @@ const HostSelector = ({
   );
   const targets = targetsData?.data?.targets || targetsData?.targets || [];
 
+  const verifyHostPhone = useVerifyHostPhoneMutation();
 
   const handleSearch = useCallback(async () => {
     if (!phoneNumber.trim()) {
@@ -61,7 +60,7 @@ const HostSelector = ({
     setSearchError(null);
     setSearchResult(null);
     try {
-      const response = await hostsAPI.verifyByPhone(phoneNumber.trim());
+      const response = await verifyHostPhone.mutateAsync(phoneNumber.trim());
       if (response?.data?.isValid && response?.data?.host) {
         setSearchResult(response.data.host);
         setSearchError(null);
@@ -83,7 +82,7 @@ const HostSelector = ({
     } finally {
       setIsSearching(false);
     }
-  }, [phoneNumber, t]);
+  }, [phoneNumber, t, verifyHostPhone]);
 
   const handleSelectTarget = useCallback(
     (target, type = "host") => {

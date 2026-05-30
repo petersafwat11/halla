@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { staffService } from "@/services/staff";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
+import { staffAuthConfig } from "@/utils/staffToken";
 import { staffKeys } from "./keys";
 import { eventsKeys } from "@/hooks/events/keys";
 
@@ -15,11 +15,11 @@ export const useStaffEventGuests = (eventId, filters = {}, options = {}) => {
   return useQuery({
     queryKey: staffKeys.guests(eventId, { search, status, page, limit }),
     queryFn: async () => {
-      const response = await staffService.getGuests(eventId, {
-        search,
-        status,
-        page,
-        limit,
+      const response = await apiRequest({
+        method: "GET",
+        path: API_PATHS.staff.getEventGuests(eventId),
+        params: { search, status, page, limit },
+        config: staffAuthConfig(),
       });
       return response.data || { guests: [], stats: {}, pagination: {} };
     },

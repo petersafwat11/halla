@@ -1,6 +1,10 @@
 "use client";
 
-import { useAdminHosts, useAdminHostMutation } from "@/hooks/admin";
+import {
+  useAdminHosts,
+  useAdminHostMutation,
+  useAdminHostsExport,
+} from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -9,7 +13,6 @@ import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import { FiEye, FiCheckCircle, FiSlash, FiCreditCard, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
-import { hostsAPI } from "@/services/adminDashboard";
 import AddHostPopup from "./AddHostPopup";
 import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -39,6 +42,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
   const deleteHost = useAdminHostMutation("delete");
   const bulkDelete = useAdminHostMutation("bulkDelete");
   const updateStatus = useAdminHostMutation("updateStatus");
+  const exportHosts = useAdminHostsExport();
 
   const handleDelete = async (hostId) => {
     if (!confirm(t("confirmDelete.message", "Are you sure you want to delete this host?"))) return;
@@ -77,7 +81,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
 
   const handleExport = async () => {
     try {
-      await hostsAPI.export({ search: filters.search, status: filters.status, from: filters.from, to: filters.to });
+      await exportHosts.mutateAsync({ search: filters.search, status: filters.status, from: filters.from, to: filters.to });
     } catch (error) {
       handleError(error, t);
     }

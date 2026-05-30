@@ -1,14 +1,17 @@
 "use client";
 
 import { useMemo, useCallback } from "react";
-import { useAdminEvents, useAdminEventMutation } from "@/hooks/admin";
+import {
+  useAdminEvents,
+  useAdminEventMutation,
+  useAdminEventsExport,
+} from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { FiEye, FiCheckCircle, FiSlash, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
-import { eventsAPI } from "@/services/adminDashboard";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./EventsTable.module.css";
 
@@ -32,6 +35,7 @@ export default function EventsTable() {
   const deleteEvent = useAdminEventMutation("delete");
   const bulkDelete = useAdminEventMutation("bulkDelete");
   const updateStatus = useAdminEventMutation("updateStatus");
+  const exportEvents = useAdminEventsExport();
 
   const handleDelete = async (eventId) => {
     if (!confirm(t("events.confirmDelete", "هل أنت متأكد من حذف هذه المناسبة؟"))) return;
@@ -65,7 +69,7 @@ export default function EventsTable() {
 
   const handleExport = async () => {
     try {
-      await eventsAPI.export({
+      await exportEvents.mutateAsync({
         search: filters.search,
         status: filters.status,
         from: filters.from,

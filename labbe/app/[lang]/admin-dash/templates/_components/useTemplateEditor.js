@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { templatesService } from "@/services/templatesService";
+import { useAdminUploadTemplateImage } from "@/hooks/templates";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 
@@ -19,6 +19,7 @@ export function useTemplateEditor({
   t,
 }) {
   const router = useRouter();
+  const uploadImage = useAdminUploadTemplateImage();
   const [uploading, setUploading] = useState(false);
   const [pendingImageFile, setPendingImageFile] = useState(null);
 
@@ -48,10 +49,10 @@ export function useTemplateEditor({
       let s3Key = data.s3Key;
       if (pendingImageFile) {
         setUploading(true);
-        const result = await templatesService.adminUploadImage(
-          pendingImageFile,
-          { templateId: isNew ? "new" : id }
-        );
+        const result = await uploadImage.mutateAsync({
+          file: pendingImageFile,
+          templateId: isNew ? "new" : id,
+        });
         s3Key = result.s3Key;
         setUploading(false);
       }

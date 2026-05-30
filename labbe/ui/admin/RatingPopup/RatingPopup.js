@@ -3,8 +3,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { MdStar, MdClose, MdStarBorder } from "react-icons/md";
-import { cookieUtils } from "@/utils/cookieUtils";
-import adminDashboardAPI from "@/services/adminDashboard";
+import { useAdminVendorMutation } from "@/hooks/admin";
 import styles from "./RatingPopup.module.css";
 
 const RatingPopup = ({ data, onClose, onSuccess }) => {
@@ -12,6 +11,7 @@ const RatingPopup = ({ data, onClose, onSuccess }) => {
   const [rating, setRating] = useState(data?.rating || 0);
   const [hoverRating, setHoverRating] = useState(0);
   const [loading, setLoading] = useState(false);
+  const updateRating = useAdminVendorMutation("updateRating");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,12 +22,10 @@ const RatingPopup = ({ data, onClose, onSuccess }) => {
 
     setLoading(true);
     try {
-      const token = cookieUtils.getCookie("token");
-      await adminDashboardAPI.vendors.giveRating(
-        data.id || data._id,
+      await updateRating.mutateAsync({
+        vendorId: data.id || data._id,
         rating,
-        token
-      );
+      });
       toast.success(t("rating.success", "Rating updated successfully"));
       onSuccess?.();
       onClose();

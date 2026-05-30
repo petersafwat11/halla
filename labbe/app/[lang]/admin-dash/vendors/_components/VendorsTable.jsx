@@ -1,14 +1,17 @@
 "use client";
 
 import { useCallback, useState, useMemo } from "react";
-import { useAdminVendors, useAdminVendorMutation } from "@/hooks/admin";
+import {
+  useAdminVendors,
+  useAdminVendorMutation,
+  useAdminVendorsExport,
+} from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import Table from "@/ui/commen/new-table/Table";
-import { vendorsAPI } from "@/services/adminDashboard";
 import VendorRatingPopup from "./VendorRatingPopup";
 import StatusBadge from "./StatusBadge";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -51,6 +54,7 @@ export default function VendorsTable() {
   const bulkDelete = useAdminVendorMutation("bulkDelete");
   const updateStatus = useAdminVendorMutation("updateStatus");
   const bulkStatus = useAdminVendorMutation("bulkStatus");
+  const exportVendors = useAdminVendorsExport();
 
   const handleDelete = useCallback(async (vendorId) => {
     if (!confirm(t("confirmDelete.message"))) return;
@@ -116,7 +120,7 @@ export default function VendorsTable() {
 
   const handleExport = useCallback(async () => {
     try {
-      await vendorsAPI.export({
+      await exportVendors.mutateAsync({
         search: filters.search,
         status: filters.status,
         from: filters.from,
@@ -125,7 +129,7 @@ export default function VendorsTable() {
     } catch (err) {
       handleError(err, t, { fallbackMessage: "messages.exportError" });
     }
-  }, [filters.search, filters.status, filters.from, filters.to, t]);
+  }, [exportVendors, filters.search, filters.status, filters.from, filters.to, t]);
 
   const handlePageChange = useCallback((page) => {
     const params = new URLSearchParams(searchParams);

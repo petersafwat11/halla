@@ -4,9 +4,8 @@ import styles from "./hostCard.module.css";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { cookieUtils } from "@/utils/cookieUtils";
 import { useRouter, useParams } from "next/navigation";
-import adminDashboardAPI from "@/services/adminDashboard";
+import { useAdminHostMutation } from "@/hooks/admin";
 import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import {
   FaCrown,
@@ -22,6 +21,7 @@ const HostCard = ({ data }) => {
 
   const host = data;
   const subscription = data?.subscription;
+  const updateHostStatus = useAdminHostMutation("updateStatus");
 
   const getPlanBadge = (planType) => {
     const plans = {
@@ -72,8 +72,7 @@ const HostCard = ({ data }) => {
     if (!confirmed) return;
 
     try {
-      const token = cookieUtils.getCookie("token");
-      await adminDashboardAPI.hosts.updateStatus(hostId, "suspended", token);
+      await updateHostStatus.mutateAsync({ hostId, status: "suspended" });
       toast.success(t("actions.suspendSuccess", "تم إيقاف المضيف بنجاح"));
       router.refresh();
     } catch (error) {
@@ -89,8 +88,7 @@ const HostCard = ({ data }) => {
     }
 
     try {
-      const token = cookieUtils.getCookie("token");
-      await adminDashboardAPI.hosts.updateStatus(hostId, "active", token);
+      await updateHostStatus.mutateAsync({ hostId, status: "active" });
       toast.success(t("actions.activateSuccess", "تم تنشيط المضيف بنجاح"));
       router.refresh();
     } catch (error) {

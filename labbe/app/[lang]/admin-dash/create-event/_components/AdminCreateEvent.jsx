@@ -22,8 +22,7 @@ import HostSelector from "./HostSelector/HostSelector";
 import EventLimitReached from "@/ui/host/subscription/EventLimitReached";
 import useAuthStore from "@/stores/authStore";
 import { useEventForm, buildEventPayload } from "@/hooks/events/useEventForm";
-import adminDashboardAPI from "@/services/adminDashboard";
-import { cookieUtils } from "@/utils/cookieUtils";
+import { useAdminEventMutation } from "@/hooks/admin";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 
@@ -138,6 +137,8 @@ export default function AdminCreateEvent() {
     handleSubmit,
   } = useEventForm({ mode: "create", totalSteps: 5 });
 
+  const createForHost = useAdminEventMutation("createForHost");
+
   // Check if the selected host/self can create events
   const canSelectedTargetCreateEvent = useCallback(() => {
     if (!selectedHost) return true;
@@ -181,8 +182,7 @@ export default function AdminCreateEvent() {
       }
 
       setIsSubmitting(true);
-      const token = cookieUtils.getCookie("token");
-      await adminDashboardAPI.events.createForHost(fd, token);
+      await createForHost.mutateAsync(fd);
 
       toastUtils.success(tAdmin("createEvent.success.created") || "Event created successfully");
       router.push(`/${locale}/admin-dash/events`);
@@ -191,7 +191,7 @@ export default function AdminCreateEvent() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, selectedHost, router, locale, t, tAdmin]);
+  }, [formData, selectedHost, createForHost, router, locale, t, tAdmin]);
 
   const onNext = useCallback(() => {
     if (!validateStep(currentStep)) {
