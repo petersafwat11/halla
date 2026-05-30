@@ -14,7 +14,6 @@
 
 import {
   personalInfoZodSchema,
-  basicAccountInfoZodSchema,
   serviceDetailsZodSchema,
   socialLinksZodSchema,
   imagesAndPricingZodSchema,
@@ -33,7 +32,12 @@ export const FIELD_TYPES = {
 };
 
 // ---------------------------------------------------------------------------
-// 1) Personal Info
+// 1) Personal Info (consolidated)
+//
+// Holds everything a vendor edits about their own account: identity
+// (ownerFullName, brandName), contact (email, phone), the store logo, and an
+// optional password change. The previous "Basic Account Info" section was
+// removed and its fields folded in here so each key has exactly one writer.
 // ---------------------------------------------------------------------------
 export const personalInfoSchema = {
   sectionKey: "personalInfo",
@@ -42,27 +46,13 @@ export const personalInfoSchema = {
   zodSchema: personalInfoZodSchema,
   fields: [
     { name: "avatar", type: FIELD_TYPES.FILE, labelKey: "personalInfo.storeLogo", labelAr: "شعار المتجر", required: false, accept: "image/*", multiple: false },
-    { name: "name", type: FIELD_TYPES.TEXT, labelKey: "personalInfo.fullName", labelAr: "الاسم الكامل", placeholderKey: "personalInfo.fullNamePlaceholder", placeholderAr: "أدخل اسمك الكامل", required: true },
+    { name: "ownerFullName", type: FIELD_TYPES.TEXT, labelKey: "personalInfo.fullName", labelAr: "الاسم بالكامل", placeholderKey: "personalInfo.fullNamePlaceholder", placeholderAr: "أدخل اسمك الكامل", required: true },
+    { name: "brandName", type: FIELD_TYPES.TEXT, labelKey: "personalInfo.businessName", labelAr: "اسم النشاط التجاري", placeholderKey: "personalInfo.businessNamePlaceholder", placeholderAr: "أدخل اسم النشاط التجاري", required: true },
     { name: "email", type: FIELD_TYPES.EMAIL, labelKey: "personalInfo.email", labelAr: "البريد الإلكتروني", placeholderKey: "personalInfo.emailPlaceholder", placeholderAr: "أدخل بريدك الإلكتروني", required: true },
+    { name: "phoneNumber", type: FIELD_TYPES.TEL, labelKey: "personalInfo.phoneWhatsapp", labelAr: "رقم الهاتف / واتساب", placeholderKey: "personalInfo.phonePlaceholder", placeholderAr: "+966 5XX XXX XXXX", required: false },
     { name: "currentPassword", type: FIELD_TYPES.PASSWORD, labelKey: "personalInfo.currentPassword", labelAr: "كلمة المرور الحالية", placeholderKey: "personalInfo.currentPasswordPlaceholder", placeholderAr: "••••••••", required: false },
     { name: "newPassword", type: FIELD_TYPES.PASSWORD, labelKey: "personalInfo.newPassword", labelAr: "كلمة المرور الجديدة", placeholderKey: "personalInfo.newPasswordPlaceholder", placeholderAr: "••••••••", required: false },
     { name: "confirmPassword", type: FIELD_TYPES.PASSWORD, labelKey: "personalInfo.confirmPassword", labelAr: "تأكيد كلمة المرور", placeholderKey: "personalInfo.confirmPasswordPlaceholder", placeholderAr: "••••••••", required: false },
-  ],
-};
-
-// ---------------------------------------------------------------------------
-// 2) Basic Account Info
-// ---------------------------------------------------------------------------
-export const basicAccountInfoSchema = {
-  sectionKey: "basicAccountInfo",
-  titleKey: "basicAccountInfo.title",
-  titleAr: "معلومات الحساب الأساسية",
-  zodSchema: basicAccountInfoZodSchema,
-  fields: [
-    { name: "ownerFullName", type: FIELD_TYPES.TEXT, labelKey: "basicAccountInfo.ownerFullName", labelAr: "الاسم الكامل للمالك", placeholderKey: "basicAccountInfo.ownerFullNamePlaceholder", placeholderAr: "أدخل اسم المالك", required: true },
-    { name: "brandName", type: FIELD_TYPES.TEXT, labelKey: "basicAccountInfo.businessName", labelAr: "اسم النشاط التجاري", placeholderKey: "basicAccountInfo.businessNamePlaceholder", placeholderAr: "أدخل اسم النشاط التجاري", required: true },
-    { name: "email", type: FIELD_TYPES.EMAIL, labelKey: "basicAccountInfo.email", labelAr: "البريد الإلكتروني", placeholderKey: "basicAccountInfo.emailPlaceholder", placeholderAr: "أدخل بريدك الإلكتروني", required: true },
-    { name: "phoneNumber", type: FIELD_TYPES.TEL, labelKey: "basicAccountInfo.phoneWhatsapp", labelAr: "رقم الهاتف / واتساب", placeholderKey: "basicAccountInfo.phonePlaceholder", placeholderAr: "+966 5XX XXX XXXX", required: true },
   ],
 };
 
@@ -120,7 +110,6 @@ export const imagesAndPricingSchema = {
 
 export const vendorSettingsSchemas = {
   personalInfo: personalInfoSchema,
-  basicAccountInfo: basicAccountInfoSchema,
   serviceDetails: serviceDetailsSchema,
   socialLinks: socialLinksSchema,
   imagesAndPricing: imagesAndPricingSchema,

@@ -4,9 +4,8 @@ import { useTranslation } from "../../../localization";
 import { backgrounds, colors } from "../../../styles/tokens";
 import { useAuthStore } from "../../../stores/authStore";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
-import { useBulkDeleteWhitelabels, useBulkSuspendWhitelabels } from "../../../hooks";
+import { useBulkDeleteWhitelabels, useBulkSuspendWhitelabels, useExportWhitelabels } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
-import adminDashboardService from "../../../services/adminDashboardService";
 import AdminPageHeader from "../common/AdminPageHeader";
 import AdminFlatList from "../common/AdminFlatList";
 import ExportButton from "../common/ExportButton";
@@ -39,12 +38,12 @@ const WhitelabelList = ({
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
-  const token = useAuthStore((state) => state.token);
   const role  = useAuthStore((state) => state.user?.role);
   const canEdit   = canEditPage(role, PAGES.WHITELABELS);
   const canDelete = canDeleteOnPage(role, PAGES.WHITELABELS);
   const bulkDelete  = useBulkDeleteWhitelabels();
   const bulkSuspend = useBulkSuspendWhitelabels();
+  const exportWhitelabels = useExportWhitelabels();
   const toast = useToast();
 
   const filterOptions = useMemo(
@@ -87,7 +86,7 @@ const WhitelabelList = ({
   const handleExport = async () => {
     try {
       setExportLoading(true);
-      await adminDashboardService.whitelabels.export(token);
+      await exportWhitelabels.mutateAsync({});
     } catch {
       toast.error(t("common.error"));
     } finally {

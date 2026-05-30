@@ -227,13 +227,19 @@ const CreateEventV2 = () => {
 
             {/* WhatsApp Preview - Only show on Step 4 */}
             {currentStep === 4 && (
-              <WhatsappPreview
-                eventTitle={formData.eventName || ""}
-                previewBody={formData.selectedTemplate?.bodyText || ""}
-                templateImage={formData.templateImage || "/svg/events/invitation.svg"}
-                templateData={formData.visualTemplate?.data || {}}
-                locale={locale}
-              />
+              <div className={styles.preview_wrapper}>
+                <WhatsappPreview
+                  eventTitle={formData.eventName || ""}
+                  previewBody={formData.selectedTemplate?.bodyText || ""}
+                  templateImage={formData.templateImage || "/svg/events/invitation.svg"}
+                  templateData={formData.visualTemplate?.data || {}}
+                  selectedTemplate={formData.selectedTemplate}
+                  eventDate={formData.eventDate || ""}
+                  eventTime={formData.eventTime || ""}
+                  locationAddress={formData.address?.address || ""}
+                  locale={locale}
+                />
+              </div>
             )}
           </div>
 

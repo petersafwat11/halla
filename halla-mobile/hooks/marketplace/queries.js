@@ -1,6 +1,32 @@
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import marketplaceService from "../../services/marketplaceService";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { ENDPOINTS } from "../../config/api";
+import { apiFetch } from "../../services/http";
 import { marketplaceKeys } from "./keys";
+
+const _request = async (path, errorMessage) => {
+  const response = await apiFetch(path, { method: "GET" });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.message || errorMessage);
+  return data;
+};
+
+const _buildVendorsPath = (params) => {
+  const queryParams = new URLSearchParams();
+  if (params.search) queryParams.append("search", params.search);
+  if (params.serviceType && params.serviceType !== "all") {
+    queryParams.append("category", params.serviceType);
+  }
+  if (params.regionId) queryParams.append("regionId", params.regionId);
+  if (params.cityId) queryParams.append("cityId", params.cityId);
+  if (params.districtIds) queryParams.append("districtIds", params.districtIds);
+  if (params.minPrice) queryParams.append("minPrice", params.minPrice);
+  if (params.maxPrice) queryParams.append("maxPrice", params.maxPrice);
+  if (params.minRating) queryParams.append("minRating", params.minRating);
+  if (params.page) queryParams.append("page", params.page);
+  if (params.limit) queryParams.append("limit", params.limit);
+  const qs = queryParams.toString();
+  return `${ENDPOINTS.SERVICES.PUBLIC}${qs ? `?${qs}` : ""}`;
+};
 
 /**
  * Marketplace vendors with infinite scroll support.
@@ -9,12 +35,8 @@ export function useMarketplaceServices(filters = {}) {
   return useInfiniteQuery({
     queryKey: marketplaceKeys.vendors(filters),
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await marketplaceService.getMarketplaceServices({
-        ...filters,
-        page: pageParam,
-        limit: 20,
-      });
-      return response;
+      const path = _buildVendorsPath({ ...filters, page: pageParam, limit: 20 });
+      return _request(path, "Failed to fetch marketplace services");
     },
     getNextPageParam: (lastPage) => {
       const { page, pages } = lastPage?.pagination || {};
@@ -27,10 +49,7 @@ export function useMarketplaceServices(filters = {}) {
 export function useVendorCategories() {
   return useQuery({
     queryKey: marketplaceKeys.categories(),
-    queryFn: async () => {
-      const response = await marketplaceService.getServiceTypes();
-      return response;
-    },
+    queryFn: () => _request(ENDPOINTS.VENDORS.CATEGORIES, "Failed to fetch service types"),
     staleTime: 30 * 60 * 1000,
   });
 }

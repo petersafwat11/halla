@@ -3,38 +3,74 @@ import React, { useMemo } from "react";
 import styles from "./whatsappPreview.module.css";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
+import {
+  resolveTaqnyatPlaceholders,
+  buildTaqnyatPreviewContext,
+} from "@halla/shared/utils";
+import useAuthStore from "@/stores/authStore";
 
 const WhatsappPreview = ({
   eventTitle = "",
   previewBody = "",
   templateImage = "/svg/events/invitation.svg",
   templateData = {},
+  // Selected Taqnyat template — drives per-placeholder substitution via
+  // its admin-curated `varMapping`. Falls back to legacy 5-param order
+  // when absent (matches backend `messaging.formatting.js`).
+  selectedTemplate = null,
+  // Event-form fields used to resolve `{{N}}` placeholders. Optional —
+  // when missing, placeholders fall through to the per-mapping fallback.
+  eventDate = "",
+  eventTime = "",
+  locationAddress = "",
   locale = "ar",
   forceShow = false,
 }) => {
   const { t } = useTranslation("createEvent");
   const { entryDate, address } = templateData;
+  const hostName = useAuthStore(
+    (state) => state.user?.name || state.user?.username || ""
+  );
 
   const formattedDate = useMemo(() => {
-    if (!entryDate) return "";
+    const dateSource = eventDate || entryDate;
+    if (!dateSource) return "";
     try {
-      return new Date(entryDate).toLocaleDateString(
+      return new Date(dateSource).toLocaleDateString(
         locale === "ar" ? "ar-EG" : "en-US",
         { year: "numeric", month: "long", day: "numeric", calendar: "gregory" }
       );
     } catch {
       return "";
     }
-  }, [entryDate, locale]);
+  }, [eventDate, entryDate, locale]);
 
   const resolvedMessage = useMemo(() => {
     if (!previewBody) return "";
-    return previewBody
-      .replace(/\{\{1\}\}/g, "ضيف عزيز")
-      .replace(/\{\{2\}\}/g, eventTitle || "اسم المناسبة")
-      .replace(/\{\{3\}\}/g, formattedDate || (entryDate ? entryDate : "التاريخ"))
-      .replace(/\{\{4\}\}/g, address || "الموقع");
-  }, [previewBody, eventTitle, formattedDate, entryDate, address]);
+    const context = buildTaqnyatPreviewContext({
+      guestName: locale === "en" ? "Dear Guest" : "ضيفنا الكريم",
+      eventTitle,
+      dateFormatted: formattedDate,
+      eventTime,
+      locationAddress: locationAddress || address || "",
+      hostName,
+    });
+    return resolveTaqnyatPlaceholders(
+      previewBody,
+      selectedTemplate?.varMapping,
+      context
+    );
+  }, [
+    previewBody,
+    selectedTemplate?.varMapping,
+    eventTitle,
+    formattedDate,
+    eventTime,
+    locationAddress,
+    address,
+    hostName,
+    locale,
+  ]);
 
   const displayImage = useMemo(() => {
     if (!templateImage || templateImage === "/svg/events/invitation.svg") {
@@ -66,7 +102,9 @@ const WhatsappPreview = ({
       {/* Card wrapper */}
       <div className={styles.previewCard}>
         <div className={styles.previewHeader}>
-          <h3 className={styles.previewTitle}>معاينة الدعوة</h3>
+          <h3 className={styles.previewTitle}>
+            {t("preview_title", "معاينة الدعوة")}
+          </h3>
         </div>
 
         {/* Phone frame */}
@@ -74,6 +112,49 @@ const WhatsappPreview = ({
           <div className={styles.phone}>
             {/* Notch */}
             <div className={styles.notch} />
+
+            {/* iOS-style status bar */}
+            <div className={styles.statusBar}>
+              <span className={styles.statusBarTime}>9:41</span>
+              <div className={styles.statusBarRight}>
+                <span className={styles.statusBarIcon} aria-hidden="true">
+                  <svg width="14" height="10" viewBox="0 0 18 12" fill="none">
+                    <path
+                      d="M1 7.5C3.5 5 6 4 9 4s5.5 1 8 3.5"
+                      stroke="white"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                    <path
+                      d="M3.5 9.5C5 8 7 7.3 9 7.3s4 .7 5.5 2.2"
+                      stroke="white"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                    <circle cx="9" cy="11" r="0.9" fill="white" />
+                  </svg>
+                </span>
+                <span className={styles.statusBarIcon} aria-hidden="true">
+                  <svg width="22" height="11" viewBox="0 0 26 12" fill="none">
+                    <rect
+                      x="0.6"
+                      y="0.6"
+                      width="22"
+                      height="10.8"
+                      rx="2.6"
+                      stroke="white"
+                      strokeWidth="1.1"
+                      fill="none"
+                      opacity="0.6"
+                    />
+                    <rect x="2.2" y="2.2" width="18.8" height="7.6" rx="1.3" fill="white" />
+                    <rect x="23.4" y="3.8" width="1.6" height="4.4" rx="0.7" fill="white" opacity="0.7" />
+                  </svg>
+                </span>
+              </div>
+            </div>
 
             {/* WhatsApp top bar */}
             <div className={styles.waBar}>

@@ -8,10 +8,9 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { useAuthStore } from '../../../stores/authStore';
+import { useAdminEventTargets, useVerifyHostPhone } from '../../../hooks/admin';
 import { useTranslation } from '../../../localization';
-import adminDashboardService from '../../../services/adminDashboardService';
+import { useAuthStore } from '../../../stores/authStore';
 import ActionButton from '../common/ActionButton';
 import SectionCard from '../../commen/SectionCard';
 
@@ -20,7 +19,6 @@ const WHITELABEL_ROLES = ['whitelabel_admin', 'whitelabel_moderator'];
 
 const HostSelectorStep = ({ value = {}, onChange }) => {
   const { t } = useTranslation('admin');
-  const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
   const isPlatformAdmin = PLATFORM_ADMIN_ROLES.includes(user?.role) && !user?.whitelabelId;
   const isWhitelabelAdmin = WHITELABEL_ROLES.includes(user?.role);
@@ -31,23 +29,15 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState(null);
 
-  const { data: hostsData, isLoading: hostsLoading } = useQuery({
-    queryKey: ['admin', 'event-targets', 'host'],
-    queryFn: async () => {
-      const res = await adminDashboardService.hosts.getEventTargets(token, 'host');
-      return res.data;
-    },
-    enabled: activeTab === 'host',
-  });
+  const { data: hostsData, isLoading: hostsLoading } = useAdminEventTargets(
+    activeTab === 'host' ? 'host' : undefined,
+  );
 
-  const { data: whitelabelsData, isLoading: whitelabelsLoading } = useQuery({
-    queryKey: ['admin', 'event-targets', 'whitelabel'],
-    queryFn: async () => {
-      const res = await adminDashboardService.hosts.getEventTargets(token, 'whitelabel');
-      return res.data;
-    },
-    enabled: activeTab === 'whitelabel',
-  });
+  const { data: whitelabelsData, isLoading: whitelabelsLoading } = useAdminEventTargets(
+    activeTab === 'whitelabel' ? 'whitelabel' : undefined,
+  );
+
+  const verifyHostPhone = useVerifyHostPhone();
 
   const handleVerifyPhone = useCallback(async () => {
     if (!phoneSearch.trim()) return;
@@ -55,9 +45,9 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
     setSearchResult(null);
     setSearchError(null);
     try {
-      const res = await adminDashboardService.hosts.verifyHostPhone(token, phoneSearch.trim());
-      if (res.success && res.data) {
-        setSearchResult(res.data);
+      const data = await verifyHostPhone.mutateAsync(phoneSearch.trim());
+      if (data) {
+        setSearchResult(data);
       } else {
         setSearchError(t('events.hostSelector.noResults'));
       }
@@ -66,7 +56,7 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
     } finally {
       setSearching(false);
     }
-  }, [phoneSearch, token, t]);
+  }, [phoneSearch, verifyHostPhone, t]);
 
   const handleSelectSelf = () => {
     onChange({ createForSelf: true, targetUserId: null, targetType: 'self' });

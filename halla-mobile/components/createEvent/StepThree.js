@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,13 +7,16 @@ import {
   TouchableOpacity,
   Animated,
   Modal,
+  Image as RNImage,
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { useFormContext, FormProvider, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import EventTemplates from "../home/EventTemplates";
 import PreviewInvitation from "./PreviewInvitation";
 import { useTranslation } from "../../localization";
@@ -25,6 +28,10 @@ import { dateToTimeString } from "../../utils/timeFormat";
 import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 import { bakeCanvas } from "../../utils/canvasBake";
 import { renderTemplateField } from "./_components/TemplateFieldRenderer";
+
+// Server limit lives in s3Upload.js (uploadInvitationImage, 10MB).
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+const ACCEPTED_EXT = /\.(jpe?g|png|webp)$/i;
 
 /**
  * Step 3 (mobile) — visual template selection.
@@ -52,7 +59,18 @@ const StepThree = () => {
   const eventDate = parentWatch("eventDate");
   const eventTime = parentWatch("eventTime");
   const templateImage = parentWatch("templateImage");
-  const templateConfirmed = !!templateImage;
+
+  // Mode resolution — upload mode is sticky once the host enters it or
+  // a saved event was created in upload mode (mapEventToFormValues sets
+  // the flag).
+  const isUploadMode = !!selectedTemplate?.isCustomUpload;
+  const [mode, setMode] = useState(isUploadMode ? "upload" : "template");
+
+  // Keep mode in sync with form state on remote reset (update wizard
+  // re-seeds defaults after the event API resolves).
+  useEffect(() => {
+    setMode(isUploadMode ? "upload" : "template");
+  }, [isUploadMode]);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -64,7 +82,11 @@ const StepThree = () => {
 
   const handleTemplateSelect = useCallback(
     (template) => {
-      parentSetValue("visualTemplate", template, { shouldValidate: true });
+      parentSetValue(
+        "visualTemplate",
+        { ...template, isCustomUpload: false },
+        { shouldValidate: true },
+      );
       // Wipe the stale bake. The next bake happens when the host saves the
       // modal — preventing a stock thumbnail from leaking through if they
       // never confirm a customisation.
@@ -80,53 +102,253 @@ const StepThree = () => {
     if (selectedTemplate?.fields?.length > 0) setShowFormModal(true);
   }, [selectedTemplate]);
 
+  // ── Mode switching ──────────────────────────────────────────────────
+  const switchToTemplateMode = useCallback(() => {
+    if (mode === "template") return;
+    setMode("template");
+    parentSetValue("visualTemplate", null, { shouldValidate: true });
+    parentSetValue("templateImage", null, { shouldValidate: true });
+  }, [mode, parentSetValue]);
+
+  const switchToUploadMode = useCallback(() => {
+    if (mode === "upload") return;
+    setMode("upload");
+    parentSetValue(
+      "visualTemplate",
+      { isCustomUpload: true, fieldValues: {} },
+      { shouldValidate: true },
+    );
+    parentSetValue("templateImage", null, { shouldValidate: true });
+  }, [mode, parentSetValue]);
+
+  // ── Picker ──────────────────────────────────────────────────────────
+  const pickInvitationImage = useCallback(async () => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (perm.status !== "granted") {
+        Alert.alert(
+          t("upload_card_permission_title", "Permission needed"),
+          t(
+            "upload_card_permission_msg",
+            "Halla needs access to your photos to upload an invitation card.",
+          ),
+        );
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: false,
+        quality: 0.9,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+      const asset = result.assets[0];
+
+      const name = asset.fileName || asset.uri?.split("/").pop() || "card.jpg";
+      if (!ACCEPTED_EXT.test(name) && !(asset.mimeType || "").startsWith("image/")) {
+        Alert.alert(
+          t("upload_card_invalid_type_title", "Unsupported file"),
+          t(
+            "upload_card_invalid_type",
+            "Use JPG, PNG or WEBP only.",
+          ),
+        );
+        return;
+      }
+      if (typeof asset.fileSize === "number" && asset.fileSize > MAX_UPLOAD_BYTES) {
+        Alert.alert(
+          t("upload_card_too_big_title", "Image too large"),
+          t("upload_card_too_big", "Maximum size is 10 MB."),
+        );
+        return;
+      }
+
+      const file = {
+        uri: asset.uri,
+        type: asset.mimeType || "image/jpeg",
+        fileName: name,
+        width: asset.width,
+        height: asset.height,
+      };
+
+      parentSetValue(
+        "visualTemplate",
+        { isCustomUpload: true, fieldValues: {} },
+        { shouldValidate: true },
+      );
+      parentSetValue("templateImage", file, { shouldValidate: true });
+    } catch (err) {
+      console.error("[StepThree] custom upload failed", err);
+      Alert.alert(
+        t("errors.upload_failed_title", "Upload failed"),
+        err?.message || t("errors.upload_failed", "Could not open the picker."),
+      );
+    }
+  }, [parentSetValue, t]);
+
+  // Preview URI for the upload-mode tile. File pick → uri; saved
+  // backend URL → use directly.
+  const uploadPreviewUri = useMemo(() => {
+    if (!templateImage) return null;
+    if (typeof templateImage === "string") return templateImage;
+    if (typeof templateImage === "object" && templateImage.uri) {
+      return templateImage.uri;
+    }
+    return null;
+  }, [templateImage]);
+
+  // The "selected template" summary row should NOT appear in upload
+  // mode (there's no predefined template name to show).
+  const showPredefinedSelectionRow = mode === "template" && selectedTemplate;
+
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <View style={styles.templateSection}>
-        <Text style={styles.sectionLabel}>{t("select_template")}</Text>
-        <EventTemplates
-          onSelectTemplate={handleTemplateSelect}
-          selectedTemplateId={selectedTemplate?._id || selectedTemplate?.id}
-        />
+      <View style={styles.modeToggle}>
+        <TouchableOpacity
+          style={[
+            styles.modeBtn,
+            mode === "template" && styles.modeBtnActive,
+          ]}
+          onPress={switchToTemplateMode}
+          activeOpacity={0.85}
+        >
+          <Ionicons
+            name="grid-outline"
+            size={16}
+            color={mode === "template" ? "#2C2C2C" : "#6B4E33"}
+          />
+          <Text
+            style={[
+              styles.modeBtnText,
+              mode === "template" && styles.modeBtnTextActive,
+            ]}
+          >
+            {t("choose_from_templates", "Choose from templates")}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modeBtn, mode === "upload" && styles.modeBtnActive]}
+          onPress={switchToUploadMode}
+          activeOpacity={0.85}
+        >
+          <Ionicons
+            name="cloud-upload-outline"
+            size={16}
+            color={mode === "upload" ? "#2C2C2C" : "#6B4E33"}
+          />
+          <Text
+            style={[
+              styles.modeBtnText,
+              mode === "upload" && styles.modeBtnTextActive,
+            ]}
+          >
+            {t("upload_own_card", "Upload your own card")}
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {selectedTemplate && (
-        <View style={styles.selectedRow}>
-          <Text style={styles.selectedLabel}>
-            {t("selected_template")}:{" "}
-            <Text style={styles.selectedName}>
-              {locale === "ar"
-                ? selectedTemplate.nameAr || selectedTemplate.name
-                : selectedTemplate.nameEn || selectedTemplate.name}
-            </Text>
-          </Text>
-
-          <View style={styles.actionsRow}>
-            {selectedTemplate?.fields?.length > 0 && (
-              <TouchableOpacity
-                style={[styles.secondaryButton, { flex: 1 }]}
-                onPress={handleEditTemplate}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="create-outline" size={18} color="#C28E5C" />
-                <Text style={styles.secondaryButtonText}>
-                  {t("edit_design_template")}
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-              style={[styles.primaryButton, { flex: 1 }]}
-              onPress={() => setShowPreview(true)}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="eye-outline" size={18} color="#FFF" />
-              <Text style={styles.primaryButtonText}>
-                {t("preview_template")}
-              </Text>
-            </TouchableOpacity>
+      {mode === "template" && (
+        <>
+          <View style={styles.templateSection}>
+            <Text style={styles.sectionLabel}>{t("select_template")}</Text>
+            <EventTemplates
+              onSelectTemplate={handleTemplateSelect}
+              selectedTemplateId={
+                selectedTemplate?._id || selectedTemplate?.id
+              }
+            />
           </View>
 
+          {showPredefinedSelectionRow && (
+            <View style={styles.selectedRow}>
+              <Text style={styles.selectedLabel}>
+                {t("selected_template")}:{" "}
+                <Text style={styles.selectedName}>
+                  {locale === "ar"
+                    ? selectedTemplate.nameAr || selectedTemplate.name
+                    : selectedTemplate.nameEn || selectedTemplate.name}
+                </Text>
+              </Text>
+
+              <View style={styles.actionsRow}>
+                {selectedTemplate?.fields?.length > 0 && (
+                  <TouchableOpacity
+                    style={[styles.secondaryButton, { flex: 1 }]}
+                    onPress={handleEditTemplate}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="create-outline" size={18} color="#C28E5C" />
+                    <Text style={styles.secondaryButtonText}>
+                      {t("edit_design_template")}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                <TouchableOpacity
+                  style={[styles.primaryButton, { flex: 1 }]}
+                  onPress={() => setShowPreview(true)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="eye-outline" size={18} color="#FFF" />
+                  <Text style={styles.primaryButtonText}>
+                    {t("preview_template")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </>
+      )}
+
+      {mode === "upload" && (
+        <View style={styles.uploadSection}>
+          {uploadPreviewUri ? (
+            <View style={styles.uploadPreviewWrapper}>
+              <RNImage
+                source={{ uri: uploadPreviewUri }}
+                style={styles.uploadPreviewImg}
+                resizeMode="contain"
+              />
+              <View style={styles.actionsRow}>
+                <TouchableOpacity
+                  style={[styles.primaryButton, { flex: 1 }]}
+                  onPress={pickInvitationImage}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="cloud-upload-outline" size={18} color="#FFF" />
+                  <Text style={styles.primaryButtonText}>
+                    {t("replace_image", "Replace image")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.uploadHintSmall}>
+                {t(
+                  "upload_card_saved_hint",
+                  "This image will be sent to guests exactly as shown.",
+                )}
+              </Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.uploadDropzone}
+              onPress={pickInvitationImage}
+              activeOpacity={0.85}
+            >
+              <Ionicons
+                name="cloud-upload-outline"
+                size={36}
+                color="#C28E5C"
+              />
+              <Text style={styles.uploadDropzoneTitle}>
+                {t("upload_card_cta", "Tap to upload your card")}
+              </Text>
+              <Text style={styles.uploadDropzoneHint}>
+                {t(
+                  "upload_card_hint",
+                  "JPG, PNG or WEBP — up to 10 MB",
+                )}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
 
@@ -145,6 +367,7 @@ const StepThree = () => {
               ...selectedTemplate,
               data: formValues,
               fieldValues: formValues,
+              isCustomUpload: false,
             },
             { shouldValidate: true },
           );
@@ -160,6 +383,7 @@ const StepThree = () => {
         templateImage={templateImage}
         eventTitle={parentWatch("eventName") || ""}
         previewBody={parentWatch("selectedTemplate")?.bodyText || ""}
+        selectedTemplate={parentWatch("selectedTemplate")}
         eventDate={eventDate}
         eventTime={eventTime}
         location={parentWatch("address")?.address || ""}
@@ -356,6 +580,107 @@ const TemplateFormModal = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  modeToggle: {
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    padding: 4,
+    gap: 4,
+    backgroundColor: "#F7F3EE",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#EAD9C8",
+    marginBottom: 12,
+  },
+  modeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: "transparent",
+  },
+  modeBtnActive: {
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  modeBtnText: {
+    fontSize: 12,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#6B4E33",
+  },
+  modeBtnTextActive: {
+    color: "#2C2C2C",
+    fontFamily: "Cairo_700Bold",
+  },
+  uploadSection: {
+    gap: 12,
+  },
+  uploadDropzone: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: "#C28E5C",
+    backgroundColor: "#FFFAF3",
+  },
+  uploadDropzoneTitle: {
+    fontSize: 14,
+    fontFamily: "Cairo_700Bold",
+    color: "#2C2C2C",
+    textAlign: "center",
+  },
+  uploadDropzoneHint: {
+    fontSize: 12,
+    fontFamily: "Cairo_500Medium",
+    color: "#767676",
+    textAlign: "center",
+  },
+  uploadPreviewWrapper: {
+    gap: 12,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: "#FFFAF3",
+    borderWidth: 1,
+    borderColor: "#EAD9C8",
+  },
+  uploadPreviewImg: {
+    width: "100%",
+    aspectRatio: 3 / 4,
+    borderRadius: 10,
+    backgroundColor: "#FFF",
+  },
+  uploadHintSmall: {
+    fontSize: 12,
+    fontFamily: "Cairo_500Medium",
+    color: "#767676",
+    textAlign: "center",
+  },
+  dangerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: "#E5B9B9",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: "#FFF",
+    gap: 6,
+  },
+  dangerButtonText: {
+    color: "#A13D3D",
+    fontFamily: "Cairo_700Bold",
+    fontSize: 13,
+  },
   templateSection: { marginBottom: 16 },
   sectionLabel: {
     fontSize: 14,

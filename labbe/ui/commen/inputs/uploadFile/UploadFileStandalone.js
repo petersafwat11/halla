@@ -4,6 +4,22 @@ import styles from "./uploadFile.module.css";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 
+/**
+ * UploadFileStandalone
+ *
+ * Generic file picker used across vendor settings dynamic forms.
+ *
+ * Image-handling contract (matches mobile + ImagesAndPricingEditForm):
+ *  - `existingImages`: server-side images already saved. Each tile gets an
+ *     "×" delete button ONLY when the parent supplies `onDeleteExisting`,
+ *     so the parent can fire the DELETE endpoint and refetch.
+ *  - `value` / `onChange`: new files picked locally. Each tile shows a
+ *     local "remove" button that just unstages the file from `value`.
+ *
+ * The dropzone is also a button: clicking opens the native picker. We
+ * render a visible "+ Add image" affordance so users see it as an action,
+ * not as decorative copy.
+ */
 const UploadFileStandalone = ({
   value = [],
   onChange,
@@ -11,6 +27,8 @@ const UploadFileStandalone = ({
   multiple = false,
   acceptImages = false,
   existingImages = [],
+  onDeleteExisting,
+  isDeletingExisting = false,
 }) => {
   const { t } = useTranslation("common");
   const [files, setFiles] = useState(value || []);
@@ -83,6 +101,8 @@ const UploadFileStandalone = ({
     if (selectedFiles && selectedFiles.length) {
       handleFileChange(selectedFiles);
     }
+    // Reset so picking the same file twice in a row still fires onChange.
+    event.target.value = "";
   };
 
   const removeFile = (index) => {
@@ -114,6 +134,14 @@ const UploadFileStandalone = ({
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onClick={triggerInput}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            triggerInput();
+          }
+        }}
       >
         <input
           type="file"
@@ -131,6 +159,9 @@ const UploadFileStandalone = ({
                 "اسحب وأفلت الملفات هنا أو انقر للتحميل"
               )}
           </p>
+          <span className={styles.addBadge}>
+            + {t("uploadFile.add", "إضافة صورة")}
+          </span>
           {acceptImages && (
             <p className={styles.acceptedFormats}>
               {t("uploadFile.acceptedFormats", "الصيغ المقبولة")}:{" "}
@@ -150,8 +181,21 @@ const UploadFileStandalone = ({
             const isImage =
               typeof file === "string" || file?.type?.startsWith("image/");
 
+            // Existing items are only deletable when the parent wires
+            // `onDeleteExisting` — that callback must fire the DELETE
+            // endpoint and trigger a refetch, since the value lives on
+            // the server, not in this component's `files` state.
+            const canDelete = isExisting ? !!onDeleteExisting : true;
+            const handleClick = () => {
+              if (isExisting) {
+                onDeleteExisting?.(file);
+              } else {
+                removeFile(fileIndex);
+              }
+            };
+
             return (
-              <div key={index} className={styles.fileItem}>
+              <div key={`${isExisting ? "existing" : "new"}-${index}`} className={styles.fileItem}>
                 <div className={styles.fileInfo}>
                   {isImage ? (
                     <Image
@@ -160,6 +204,7 @@ const UploadFileStandalone = ({
                       width={48}
                       height={48}
                       className={styles.filePreview}
+                      unoptimized
                     />
                   ) : (
                     <Image
@@ -184,12 +229,14 @@ const UploadFileStandalone = ({
                     )}
                   </div>
                 </div>
-                {!isExisting && (
+                {canDelete && (
                   <div className={styles.fileActions}>
                     <button
                       type="button"
-                      onClick={() => removeFile(fileIndex)}
+                      onClick={handleClick}
                       className={styles.deleteButton}
+                      disabled={isExisting && isDeletingExisting}
+                      aria-label={t("uploadFile.delete", "حذف")}
                     >
                       <Image
                         src="/svg/auth/trash.svg"
@@ -198,7 +245,9 @@ const UploadFileStandalone = ({
                         alt="delete"
                       />
                       <span className={styles.delete}>
-                        {t("uploadFile.delete", "حذف")}
+                        {isExisting && isDeletingExisting
+                          ? t("uploadFile.deleting", "...")
+                          : t("uploadFile.delete", "حذف")}
                       </span>
                     </button>
                   </div>

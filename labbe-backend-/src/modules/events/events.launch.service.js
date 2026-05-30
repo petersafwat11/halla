@@ -103,13 +103,34 @@ module.exports = {
     const eventTitle = event.eventDetails?.title || 'Untitled';
     const hostId = event.host;
 
-    // Notify host (unless host is changing their own status - still notify for transparency)
+    // Dedicated notification types for terminal transitions so the
+    // host's `eventUpdates` preference can be honored cleanly. Generic
+    // status changes still fall through to `event_status_change`.
+    let type = 'event_status_change';
+    let title = 'Event Status Updated';
+    let titleAr = 'تم تحديث حالة المناسبة';
+    let message = `Your event "${eventTitle}" status changed to ${newStatus}.`;
+    let messageAr = `تم تغيير حالة مناسبتك "${eventTitle}" إلى ${newStatus}.`;
+    if (newStatus === 'cancelled') {
+      type = 'event_cancelled';
+      title = 'Event Cancelled';
+      titleAr = 'تم إلغاء المناسبة';
+      message = `Your event "${eventTitle}" has been cancelled.`;
+      messageAr = `تم إلغاء مناسبتك "${eventTitle}".`;
+    } else if (newStatus === 'completed') {
+      type = 'event_completed';
+      title = 'Event Completed';
+      titleAr = 'اكتملت المناسبة';
+      message = `Your event "${eventTitle}" is now marked as completed.`;
+      messageAr = `تم تحديث حالة مناسبتك "${eventTitle}" إلى مكتملة.`;
+    }
+
     await notificationService.sendToUser(hostId, {
-      type: 'event_status_change',
-      title: 'Event Status Updated',
-      titleAr: 'تم تحديث حالة المناسبة',
-      message: `Your event "${eventTitle}" status changed to ${newStatus}.`,
-      messageAr: `تم تغيير حالة مناسبتك "${eventTitle}" إلى ${newStatus}.`,
+      type,
+      title,
+      titleAr,
+      message,
+      messageAr,
       data: { entityType: 'event', entityId: event._id, metadata: { newStatus } },
     });
 

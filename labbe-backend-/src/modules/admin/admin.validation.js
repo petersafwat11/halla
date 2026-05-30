@@ -77,6 +77,7 @@ const updateModeratorSchema = z.object({
   permissions: z.array(z.string()).optional(),
   pageAccess: z.record(z.any()).optional(),
   username: z.string().optional(),
+  role: z.enum(['moderator', 'admin', 'whitelabel_moderator', 'whitelabel_admin']).optional(),
 });
 
 const updateModeratorStatusSchema = z.object({

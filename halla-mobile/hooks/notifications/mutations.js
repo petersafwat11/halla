@@ -1,13 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import notificationService from "../../services/notificationService";
 import { notificationsKeys } from "./keys";
+import { notificationsRequest } from "./queries";
 
 export function useMarkAsRead() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (id) => {
-      const response = await notificationService.markAsRead(id);
+      const response = await notificationsRequest(`/${id}/read`, {
+        method: "PATCH",
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -18,10 +19,11 @@ export function useMarkAsRead() {
 
 export function useMarkAllAsRead() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async () => {
-      const response = await notificationService.markAllAsRead();
+      const response = await notificationsRequest("/read-all", {
+        method: "PATCH",
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -32,10 +34,11 @@ export function useMarkAllAsRead() {
 
 export function useDeleteNotification() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (id) => {
-      const response = await notificationService.deleteNotification(id);
+      const response = await notificationsRequest(`/${id}`, {
+        method: "DELETE",
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -46,10 +49,11 @@ export function useDeleteNotification() {
 
 export function useClearAllNotifications() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async () => {
-      const response = await notificationService.clearAllNotifications();
+      const response = await notificationsRequest("/clear-all", {
+        method: "DELETE",
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -61,7 +65,10 @@ export function useClearAllNotifications() {
 export function useSendNotification() {
   return useMutation({
     mutationFn: async (data) => {
-      const response = await notificationService.sendNotification(data);
+      const response = await notificationsRequest("/send", {
+        method: "POST",
+        body: data,
+      });
       return response.data;
     },
   });
@@ -70,7 +77,10 @@ export function useSendNotification() {
 export function useBroadcastNotification() {
   return useMutation({
     mutationFn: async (data) => {
-      const response = await notificationService.broadcastNotification(data);
+      const response = await notificationsRequest("/broadcast", {
+        method: "POST",
+        body: data,
+      });
       return response.data;
     },
   });

@@ -30,6 +30,7 @@
   flex: 1;
   min-height: calc(100vh - 7.2rem);
   margin-inline-start: 28rem;
+  padding-top: 7.2rem;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
@@ -40,6 +41,7 @@
   .contentWithHeader {
     margin-inline-start: 0;
     min-height: calc(100vh - 6.4rem);
+    padding-top: 6.4rem;
   }
 }
 

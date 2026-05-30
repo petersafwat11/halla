@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
@@ -23,8 +23,19 @@ const PhoneChangeOtpModal = ({ isOpen, phoneNumber, onClose, onSuccess }) => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
+  // The auto-send effect MUST NOT depend on `onClose` / `t` — both are
+  // unstable references in the parent and would re-fire the POST on every
+  // render. Duplicate sends trip the OTP rate limiter, the catch then fires
+  // `onClose()` and the modal flickers shut ~1s after opening. We dedupe by
+  // (isOpen+phoneNumber) via a ref, and we no longer close on send error —
+  // the user can read the toast and either retry or cancel manually.
+  const lastSentForRef = useRef(null);
+
   useEffect(() => {
     if (!isOpen || !phoneNumber) return;
+    if (lastSentForRef.current === phoneNumber) return;
+    lastSentForRef.current = phoneNumber;
+
     let cancelled = false;
     (async () => {
       setIsSending(true);
@@ -46,7 +57,8 @@ const PhoneChangeOtpModal = ({ isOpen, phoneNumber, onClose, onSuccess }) => {
             err?.response?.data?.message ||
               t("messages.otpSendFailed", "Failed to send verification code")
           );
-          if (onClose) onClose();
+          // Allow the user to hit "Resend" without closing.
+          lastSentForRef.current = null;
         }
       } finally {
         if (!cancelled) setIsSending(false);
@@ -55,12 +67,14 @@ const PhoneChangeOtpModal = ({ isOpen, phoneNumber, onClose, onSuccess }) => {
     return () => {
       cancelled = true;
     };
-  }, [isOpen, phoneNumber, onClose, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, phoneNumber]);
 
   useEffect(() => {
     if (!isOpen) {
       setOtp("");
       setOtpSent(false);
+      lastSentForRef.current = null;
     }
   }, [isOpen]);
 
@@ -94,6 +108,7 @@ const PhoneChangeOtpModal = ({ isOpen, phoneNumber, onClose, onSuccess }) => {
         path: API_PATHS.users.sendPhoneChangeOtp,
         data: { phoneNumber },
       });
+      lastSentForRef.current = phoneNumber;
       toast.info(t("messages.otpResent", "Verification code resent"));
     } catch (err) {
       toast.error(

@@ -2,14 +2,16 @@
 .color_section {
   display: flex;
   flex-direction: column;
-  /* gap: 0.4rem; */
+  gap: 0.8rem;
+  width: 100%;
 }
 
 .color_label {
-  color: var(--color-title);
-  font-size: 1.6rem;
+  color: var(--color-title, #2c2c2c);
+  font-size: 1.4rem;
   font-weight: 600;
-  line-height: 2.4rem;
+  line-height: 2rem;
+  margin: 0 0 0.4rem 0;
 }
 
 .color_active {

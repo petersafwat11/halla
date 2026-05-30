@@ -24,6 +24,36 @@ const { GUEST_LIST_BELOW_CONFIRMED } = require('../../shared/constants/events');
 
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
+const notificationService = require('../notifications/notifications.service');
+
+// Emit a PLAN_LIMIT_WARNING when host crosses the 80% or 95% threshold
+// against their pool plan. Crossing detection is loose — we fire on any
+// post-consume snapshot that lands in either band; the notifications
+// service dedupes by (userId, type, entityId) within its idempotency
+// window so duplicate ticks within hours are absorbed.
+async function maybeNotifyPlanLimit(userId, sub) {
+  if (!sub) return;
+  const pool = (sub.invitePool || 0) + (sub.compensationPool || 0);
+  if (pool <= 0) return;
+  const used = sub.invitesConsumed || 0;
+  const ratio = used / pool;
+  if (ratio < 0.8) return;
+  const remaining = Math.max(0, pool - used);
+  const band = ratio >= 0.95 ? '95' : '80';
+  await notificationService.sendToUser(userId, {
+    type: 'plan_limit_warning',
+    title: 'Plan Usage Warning',
+    titleAr: 'تنبيه استهلاك الباقة',
+    message: `You've used ${Math.round(ratio * 100)}% of your invite quota (${remaining} remaining).`,
+    messageAr: `استهلكت ${Math.round(ratio * 100)}% من رصيد الدعوات (${remaining} متبقية).`,
+    data: {
+      entityType: 'subscription',
+      entityId: sub._id,
+      metadata: { used, pool, remaining, band },
+    },
+    priority: band === '95' ? 'high' : 'normal',
+  });
+}
 
 module.exports = {
   /**
@@ -91,7 +121,10 @@ module.exports = {
     }
 
     if (isPoolPlan(capacitySub.planId?.planType)) {
-      await Subscription.consumeInvites(capacitySub._id, newGuestCount);
+      const updated = await Subscription.consumeInvites(capacitySub._id, newGuestCount);
+      maybeNotifyPlanLimit(userId, updated).catch((err) =>
+        logger.warn('plan_limit_warning notify failed', { err: err?.message })
+      );
     } else if (isPerEventPlan(capacitySub.planId?.planType)) {
       const maxInvites = capacitySub.planId?.limits?.maxInvitesPerEvent;
       if (maxInvites !== null && maxInvites !== undefined && newGuestCount > maxInvites) {

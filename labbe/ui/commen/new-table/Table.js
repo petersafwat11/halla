@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import styles from "./table.module.css";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
@@ -46,6 +46,11 @@ const Table = ({
   const filterRef = useRef(null);
   const bulkActionsRef = useRef(null);
   const dropdownRefs = useRef({});
+  // Trigger element refs — captured synchronously on click so positioning
+  // doesn't depend on the (possibly stale) synthetic event later.
+  const actionsTriggerRef = useRef(null);
+  const filterTriggerRef = useRef(null);
+  const bulkTriggerRef = useRef(null);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -93,6 +98,37 @@ const Table = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Position the row-actions dropdown synchronously after open, before paint.
+  // Using useLayoutEffect (instead of setTimeout) guarantees the dropdown is
+  // never painted at the wrong position on first open.
+  useLayoutEffect(() => {
+    if (actionsDropdownOpen === null) return;
+    const key = `actions-${actionsDropdownOpen}`;
+    const triggerEl = actionsTriggerRef.current;
+    const dropdownEl = dropdownRefs.current[key];
+    if (!triggerEl || !dropdownEl) return;
+    const position = calculateDropdownPosition(triggerEl, dropdownEl);
+    setDropdownPosition((prev) => ({ ...prev, [key]: position }));
+  }, [actionsDropdownOpen]);
+
+  useLayoutEffect(() => {
+    if (!filterDropdownOpen) return;
+    const triggerEl = filterTriggerRef.current;
+    const dropdownEl = dropdownRefs.current["filter"];
+    if (!triggerEl || !dropdownEl) return;
+    const position = calculateDropdownPosition(triggerEl, dropdownEl);
+    setDropdownPosition((prev) => ({ ...prev, filter: position }));
+  }, [filterDropdownOpen]);
+
+  useLayoutEffect(() => {
+    if (!bulkActionsDropdownOpen) return;
+    const triggerEl = bulkTriggerRef.current;
+    const dropdownEl = dropdownRefs.current["bulkActions"];
+    if (!triggerEl || !dropdownEl) return;
+    const position = calculateDropdownPosition(triggerEl, dropdownEl);
+    setDropdownPosition((prev) => ({ ...prev, bulkActions: position }));
+  }, [bulkActionsDropdownOpen]);
 
   // Recalculate dropdown positions on scroll or resize
   useEffect(() => {
@@ -205,26 +241,15 @@ const Table = ({
   const toggleActionsDropdown = (rowId, e) => {
     e.preventDefault();
     e.stopPropagation();
-    const newState = actionsDropdownOpen === rowId ? null : rowId;
-    setActionsDropdownOpen(newState);
-
-    if (newState !== null) {
-      // Calculate position after dropdown is rendered
-      setTimeout(() => {
-        const buttonElement = e.currentTarget;
-        const dropdownElement = dropdownRefs.current[`actions-${rowId}`];
-        if (buttonElement && dropdownElement) {
-          const position = calculateDropdownPosition(
-            buttonElement,
-            dropdownElement
-          );
-          setDropdownPosition((prev) => ({
-            ...prev,
-            [`actions-${rowId}`]: position,
-          }));
-        }
-      }, 0);
+    if (actionsDropdownOpen === rowId) {
+      setActionsDropdownOpen(null);
+      actionsTriggerRef.current = null;
+      return;
     }
+    // Capture the trigger DOM node synchronously — the useLayoutEffect will
+    // read this to position the dropdown before the next paint.
+    actionsTriggerRef.current = e.currentTarget;
+    setActionsDropdownOpen(rowId);
   };
 
   const handleActionClick = (action, row, e) => {
@@ -239,22 +264,13 @@ const Table = ({
   const handleFilterClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const newState = !filterDropdownOpen;
-    setFilterDropdownOpen(newState);
-
-    if (newState) {
-      setTimeout(() => {
-        const buttonElement = e.currentTarget;
-        const dropdownElement = dropdownRefs.current["filter"];
-        if (buttonElement && dropdownElement) {
-          const position = calculateDropdownPosition(
-            buttonElement,
-            dropdownElement
-          );
-          setDropdownPosition((prev) => ({ ...prev, filter: position }));
-        }
-      }, 0);
+    if (filterDropdownOpen) {
+      setFilterDropdownOpen(false);
+      filterTriggerRef.current = null;
+      return;
     }
+    filterTriggerRef.current = e.currentTarget;
+    setFilterDropdownOpen(true);
   };
 
   const handleFilterOptionClick = (option) => {
@@ -283,25 +299,13 @@ const Table = ({
   const handleBulkActionsClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const newState = !bulkActionsDropdownOpen;
-    setBulkActionsDropdownOpen(newState);
-
-    if (newState) {
-      // Use requestAnimationFrame to ensure dropdown is rendered before calculating position
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const buttonElement = e.currentTarget;
-          const dropdownElement = dropdownRefs.current["bulkActions"];
-          if (buttonElement && dropdownElement) {
-            const position = calculateDropdownPosition(
-              buttonElement,
-              dropdownElement
-            );
-            setDropdownPosition((prev) => ({ ...prev, bulkActions: position }));
-          }
-        }, 0);
-      });
+    if (bulkActionsDropdownOpen) {
+      setBulkActionsDropdownOpen(false);
+      bulkTriggerRef.current = null;
+      return;
     }
+    bulkTriggerRef.current = e.currentTarget;
+    setBulkActionsDropdownOpen(true);
   };
 
   const handleBulkActionClick = (action, e) => {
@@ -468,29 +472,32 @@ const Table = ({
                       className={styles.dropdown}
                       style={dropdownPosition["filter"] || {}}
                     >
-                      {filterOptions.map((option, index) => (
-                        <button
-                          type="button"
-                          key={`filter-${option.text || index}`}
-                          className={styles.dropdownItem}
-                          onClick={() => handleFilterOptionClick(option)}
-                        >
-                          {option.icon &&
-                            (typeof option.icon === "string" ? (
-                              <Image
-                                src={option.icon}
-                                alt={option.text || "filter"}
-                                width={16}
-                                height={16}
-                              />
-                            ) : (
-                              <span className={styles.iconWrapper}>
-                                {option.icon}
-                              </span>
-                            ))}
-                          <span>{option.text}</span>
-                        </button>
-                      ))}
+                      {filterOptions.map((option, index) => {
+                        const optionLabel = option.label ?? option.text;
+                        return (
+                          <button
+                            type="button"
+                            key={`filter-${optionLabel || index}`}
+                            className={styles.dropdownItem}
+                            onClick={() => handleFilterOptionClick(option)}
+                          >
+                            {option.icon &&
+                              (typeof option.icon === "string" ? (
+                                <Image
+                                  src={option.icon}
+                                  alt={optionLabel || "filter"}
+                                  width={16}
+                                  height={16}
+                                />
+                              ) : (
+                                <span className={styles.iconWrapper}>
+                                  {option.icon}
+                                </span>
+                              ))}
+                            <span>{optionLabel}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

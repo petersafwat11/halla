@@ -374,7 +374,7 @@ const moyasarProvider = {
     }
   },
 
-  // Exposed for the stub + tests
+  // Exposed for tests
   _sarToHalalas: sarToHalalas,
   _halalasToSar: halalasToSar,
   _deriveGivenId: deriveGivenId,

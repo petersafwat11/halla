@@ -2,33 +2,34 @@
   "pageTitle": "الإعدادات",
   "tabs": {
     "services": "الخدمات",
-    "accountSetup": "إعدادات الحساب",
-    "notifications": "الإشعارات"
+    "accountSetup": "إعدادات الحساب"
   },
   "personalInfo": {
     "title": "معلومات الحساب الشخصية",
     "storeLogo": "شعار المتجر",
     "uploadImage": "ارفع الصور",
     "fullName": "الاسم بالكامل",
-    "fullNamePlaceholder": "اختر نوع المناسبة",
+    "fullNamePlaceholder": "أدخل اسمك الكامل",
+    "businessName": "اسم المنشأة التجارى",
+    "businessNamePlaceholder": "أدخل اسم النشاط التجاري",
     "email": "البريد الإلكتروني",
     "emailPlaceholder": "ادخل بريدك الالكترونى",
     "emailValidationExample": "قم بإدخال بريد الكترونى صحيح مثال : example@domain.com",
+    "phoneWhatsapp": "رقم الهاتف / واتساب",
+    "phonePlaceholder": "+966 5XX XXX XXXX",
     "verifyEmail": "توثيق البريد",
     "password": "كلمة المرور",
     "passwordPlaceholder": "*****************************",
+    "currentPassword": "كلمة المرور الحالية",
+    "currentPasswordPlaceholder": "••••••••",
+    "newPassword": "كلمة المرور الجديدة",
+    "newPasswordPlaceholder": "••••••••",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "confirmPasswordPlaceholder": "••••••••",
     "changePassword": "تغيير كلمة المرور",
     "logout": "تسجيل خروج",
     "clickToView": "اضغط للعرض",
     "noLogo": "لا يوجد شعار"
-  },
-  "basicAccountInfo": {
-    "title": "معلومات الحساب الأساسية",
-    "businessType": "نوع النشاط",
-    "ownerFullName": "الاسم الكامل لصاحب المنشأة",
-    "businessName": "اسم المنشأة التجارى",
-    "email": "البريد الالكترونى",
-    "phoneWhatsapp": "رقم الهاتف  "
   },
   "serviceDetails": {
     "title": "تفاصيل الخدمة او المتجر",
@@ -68,11 +69,16 @@
   },
   "imagesAndPricing": {
     "title": "الصور والعروض والأسعار",
-    "previousWorkImages": "3 صور من أعمالك السابقة",
+    "previousWorkImages": "صور من أعمالك السابقة",
     "priceListsAndPackages": "قوائم الاسعار والباقات",
     "uploaded": "تم الرفع",
     "clickToView": "اضغط للعرض",
-    "noImages": "لا توجد صور"
+    "noImages": "لا توجد صور",
+    "addImages": "إضافة صور",
+    "savedImages": "الصور المحفوظة",
+    "newUploads": "صور جديدة",
+    "confirmDelete": "هل تريد حذف هذه الصورة؟",
+    "invalidFormat": "الصيغ المقبولة: JPEG, PNG, GIF, WebP"
   },
   "paymentPolicy": {
     "title": "سياسة التعامل والدفع",

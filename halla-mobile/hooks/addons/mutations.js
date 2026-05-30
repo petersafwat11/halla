@@ -1,7 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Linking } from "react-native";
-import addonsService from "../../services/addonsService";
+import { ENDPOINTS } from "../../config/api";
 import { addonsKeys } from "./keys";
+import { addonsRequest } from "./queries";
+
+const newIdempotencyKey = (prefix) => {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return `${prefix}-${crypto.randomUUID()}`;
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
 
 /**
  * Single-addon top-up purchase. The bundled checkout flow uses
@@ -11,7 +19,12 @@ export const useAddonPurchase = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input) => {
-      const data = await addonsService.purchase(input);
+      const idempotencyKey = newIdempotencyKey(`addon-${input.addonType}`);
+      const data = await addonsRequest(ENDPOINTS.ADDONS.PURCHASE, {
+        method: "POST",
+        body: input,
+        headers: { "Idempotency-Key": idempotencyKey },
+      });
       const inner = data?.data || data;
       if (inner?.requiresAction && inner?.redirectUrl) {
         await Linking.openURL(inner.redirectUrl);
@@ -31,8 +44,15 @@ export const useAddonPurchase = () => {
 export const useAddonAdminActivate = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ addonId, notes }) =>
-      addonsService.adminActivate(addonId, notes ? { notes } : {}),
+    mutationFn: async ({ addonId, notes }) => {
+      if (!addonId) throw new Error("addonId is required");
+      const idempotencyKey = newIdempotencyKey(`addon-activate-${addonId}`);
+      return addonsRequest(ENDPOINTS.ADDONS.ADMIN_ACTIVATE(addonId), {
+        method: "POST",
+        body: notes ? { notes } : {},
+        headers: { "Idempotency-Key": idempotencyKey },
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: addonsKeys.all });
     },

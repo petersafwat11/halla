@@ -1,0 +1,39 @@
+[    2568ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[    2701ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3000/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[    3000ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[    3232ms] [LOG] [Fast Refresh] done in 340ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[    3324ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[    3346ms] [LOG] [API] GET /services/public - 200 (582ms) @ http://localhost:3000/_next/static/chunks/_42f47df5._.js:706
+[    3755ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:3000/_next/image?url=https%3A%2F%2Fhallamangement.s3.eu-north-1.amazonaws.com%2Fhttps%253A%2F%2Fhallamangement.s3.eu-north-1.amazonaws.com%2Fvendors%2Flogos%2Ftemp%2F4-1778708266832-f03ee87ed4f40aea.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Content-Sha256%3DUNSIGNED-PAYLOAD%26X-Amz-Credential%3DAKIA4LGDAXN6E3NWNJRH%252F20260530%252Feu-north-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260530T151652Z%26X-Amz-Expires%3D3600%26X-Amz-Signature%3Dc80d449c7dea74ad58859584987832c431e33000fecfbf20fc3b10c9afed72f8%26X-Amz-SignedHeaders%3Dhost%26x-amz-checksum-mode%3DENABLED%26x-id%3DGetObject&w=750&q=75:0
+[    3765ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:3000/_next/image?url=https%3A%2F%2Fhallamangement.s3.eu-north-1.amazonaws.com%2Fhttps%253A%2F%2Fexample.com%2Flogo.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Content-Sha256%3DUNSIGNED-PAYLOAD%26X-Amz-Credential%3DAKIA4LGDAXN6E3NWNJRH%252F20260530%252Feu-north-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260530T151652Z%26X-Amz-Expires%3D3600%26X-Amz-Signature%3D0953a580d96fe8ed734543cf992d6f2bd141083c13c41c9daa9b63d49b3ec697%26X-Amz-SignedHeaders%3Dhost%26x-amz-checksum-mode%3DENABLED%26x-id%3DGetObject&w=750&q=75:0
+[    6769ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/market-place:0
+[    9952ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[    9956ms] [LOG] [Fast Refresh] done in 105ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[   48720ms] [ERROR] ./labbe/ui/vendor/addServicePopup/AddServicePopup.js:19:10
+Ecmascript file had an error
+  17 | import { handleError } from "@/services/errorHandlingService";
+  18 | import { toastUtils } from "@/utils/toastUtils";
+> 19 | import { useWatch } from "react-hook-form";
+     |          ^^^^^^^^
+  20 | import { getImageUrl } from "@/utils/vendorHelpers";
+  21 |
+  22 | const ExistingImagePreview = ({ control, existingImageUrl, t }) => {
+
+the name `useWatch` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./labbe/ui/vendor/addServicePopup/AddServicePopup.js [Client Component Browser]
+    ./labbe/app/[lang]/vendor-dashboard/page.js [Client Component Browser]
+    ./labbe/app/[lang]/vendor-dashboard/page.js [Server Component]
+
+  Client Component SSR:
+    ./labbe/ui/vendor/addServicePopup/AddServicePopup.js [Client Component SSR]
+    ./labbe/app/[lang]/vendor-dashboard/page.js [Client Component SSR]
+    ./labbe/app/[lang]/vendor-dashboard/page.js [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2405
+[   48734ms] [LOG] {file: Object} @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_a9cb0712.js:16058
+[   48798ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[   51798ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/market-place:0
+[   53253ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[   53277ms] [LOG] [Fast Refresh] done in 64ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[   57162ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar/market-place:0

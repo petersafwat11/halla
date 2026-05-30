@@ -6,12 +6,19 @@ import { toast } from "react-toastify";
 
 import styles from "./imagesAndPricingSection.module.css";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
-import DynamicForm from "@/ui/vendor/dynamicForm/DynamicForm";
-import { imagesAndPricingSchema } from "@/utils/schemas/vendorSettings";
+import ImagesAndPricingEditForm from "./ImagesAndPricingEditForm";
 import { keyFromSignedUrl } from "@/utils/vendorHelpers";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
 
+/**
+ * Read-only summary card + edit popup for the Images & Pricing section.
+ *
+ * The popup is rendered by `ImagesAndPricingEditForm` so we can deliver the
+ * per-item delete + multi-file upload UX in one place. Inline thumbnails on
+ * the summary card still expose quick delete buttons; both delete paths hit
+ * the same DELETE endpoint and refetch on success.
+ */
 const ImagesAndPricingSection = ({ data, onSave, onRefetch }) => {
   const { t } = useTranslation("vendorSettings");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -19,23 +26,13 @@ const ImagesAndPricingSection = ({ data, onSave, onRefetch }) => {
   const [deletingKey, setDeletingKey] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
 
-  const portfolioImages = data?.portfolioImages || [];
-  const pricePackages = data?.pricePackages || [];
+  const portfolioImages = (data?.portfolioImages || []).filter(Boolean);
+  const pricePackages = (data?.pricePackages || []).filter(Boolean);
 
-  const handleFormSubmit = async (formData) => {
+  const handleFormSubmit = async (payload) => {
     setIsLoading(true);
     try {
-      const newPortfolio = formData.portfolioImages?.files || [];
-      const newPrice = formData.pricePackages?.files || [];
-      const payload = {};
-      if (newPortfolio.length) payload.portfolioImages = newPortfolio;
-      if (newPrice.length) payload.pricePackages = newPrice;
-      if (Object.keys(payload).length === 0) {
-        setIsPopupOpen(false);
-        return;
-      }
       if (onSave) await onSave(payload);
-      setIsPopupOpen(false);
     } catch (error) {
       console.error("Error saving:", error);
     } finally {
@@ -49,7 +46,11 @@ const ImagesAndPricingSection = ({ data, onSave, onRefetch }) => {
       toast.error(t("messages.deleteFailed", "Failed to delete image"));
       return;
     }
-    if (!window.confirm(t("imagesAndPricing.confirmDelete", "Delete this image?"))) {
+    if (
+      !window.confirm(
+        t("imagesAndPricing.confirmDelete", "Delete this image?")
+      )
+    ) {
       return;
     }
     setDeletingKey(key);
@@ -85,7 +86,10 @@ const ImagesAndPricingSection = ({ data, onSave, onRefetch }) => {
       const key = keyFromSignedUrl(url);
       const isDeleting = deletingKey === key;
       return (
-        <div key={`${field}-${index}-${url}`} className={styles.imagePreview}>
+        <div
+          key={`${field}-${index}-${url}`}
+          className={styles.imagePreview}
+        >
           <div
             className={styles.imageClickable}
             onClick={() => setPreviewImage(url)}
@@ -157,23 +161,34 @@ const ImagesAndPricingSection = ({ data, onSave, onRefetch }) => {
         </div>
       </div>
 
-      <PopupLayout isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)}>
-        <DynamicForm
-          schema={imagesAndPricingSchema}
-          initialData={{ portfolioImages, pricePackages }}
-          onSubmit={handleFormSubmit}
-          onCancel={() => setIsPopupOpen(false)}
+      <PopupLayout
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        size="medium"
+      >
+        <ImagesAndPricingEditForm
+          existingPortfolio={portfolioImages}
+          existingPricing={pricePackages}
+          onSave={handleFormSubmit}
+          onClose={() => setIsPopupOpen(false)}
+          onRefetch={onRefetch}
           isLoading={isLoading}
         />
       </PopupLayout>
 
       {previewImage && (
-        <div className={styles.modalOverlay} onClick={() => setPreviewImage(null)}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setPreviewImage(null)}
+        >
           <div
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
-            <button className={styles.closeButton} onClick={() => setPreviewImage(null)}>
+            <button
+              className={styles.closeButton}
+              onClick={() => setPreviewImage(null)}
+            >
               ×
             </button>
             <Image

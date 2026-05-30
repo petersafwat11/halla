@@ -22,6 +22,8 @@
     "viewDetails": "View Details",
     "activate": "Activate",
     "suspend": "Suspend",
+    "confirmSuspend": "Are you sure you want to suspend this event?",
+    "confirmActivate": "Are you sure you want to activate this event?",
     "delete": "Delete",
     "status": {
       "scheduled": "Scheduled",

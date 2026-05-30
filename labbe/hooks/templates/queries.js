@@ -11,7 +11,7 @@ export function useHostTemplates({ category } = {}) {
       apiRequest({
         method: "GET",
         path: API_PATHS.templates.list,
-        params: { category },
+        params: category ? { category } : undefined,
       }),
     staleTime: 5 * 60 * 1000,
   });

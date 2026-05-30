@@ -95,13 +95,15 @@ export default function TaqnyatTemplatesTable({
 
   const renderCell = (key, value, row) => {
     if (key === "name") {
+      return <strong>{value || "-"}</strong>;
+    }
+
+    if (key === "body") {
+      if (!value) return "-";
       return (
-        <div>
-          <strong>{row.templateName || "-"}</strong>
-          <div className={styles.templateBody}>
-            {row.bodyText?.substring(0, 80) || ""}
-            {row.bodyText && row.bodyText.length > 80 ? "…" : ""}
-          </div>
+        <div className={styles.templateBody}>
+          {value.substring(0, 120)}
+          {value.length > 120 ? "…" : ""}
         </div>
       );
     }
@@ -155,14 +157,13 @@ export default function TaqnyatTemplatesTable({
   const tableData = templates.map((tpl) => ({
     id: tpl._id,
     name: tpl.templateName,
+    body: tpl.bodyText,
     language: tpl.language || "ar",
     status: tpl.status,
     category: tpl.category,
     type: tpl.type || null,
     mappingCount: tpl.varMapping?.length || 0,
     active: tpl.active !== false,
-    bodyText: tpl.bodyText,
-    templateName: tpl.templateName,
   }));
 
   if (isLoading) return <SimpleLoading />;
@@ -201,6 +202,7 @@ export default function TaqnyatTemplatesTable({
           title={t("taqnyat.tableTitle", "قوالب Taqnyat")}
           headers={[
             t("taqnyat.col.name", "الاسم"),
+            t("taqnyat.col.body", "نص القالب"),
             t("taqnyat.col.lang", "اللغة"),
             t("taqnyat.col.status", "الحالة"),
             t("taqnyat.col.category", "الفئة"),

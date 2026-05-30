@@ -67,15 +67,32 @@ const phoneFieldEn = z
 // with its `fields` metadata so DynamicForm keeps working unchanged.
 // ============================================================
 
+// Personal Info — single consolidated section. Owns identity (ownerFullName +
+// brandName), contact (email, phone), avatar/logo, and password change. Phone
+// is OTP-gated and is not committed by the form submit itself — it's submitted
+// via the dedicated /users/profile/phone endpoints. Keep it optional here so
+// the form validates even when the phone hasn't changed.
 export const personalInfoZodSchema = z
   .object({
     avatar: z.any().optional(),
-    name: z
-      .string({ required_error: "الاسم مطلوب" })
+    ownerFullName: z
+      .string({ required_error: "اسم المالك مطلوب" })
       .trim()
-      .min(2, "الاسم يجب أن يكون حرفين على الأقل")
-      .max(100, "الاسم يجب أن يكون أقل من 100 حرف"),
+      .min(2, "اسم المالك يجب أن يكون حرفين على الأقل")
+      .max(100, "اسم المالك يجب أن يكون أقل من 100 حرف"),
+    brandName: z
+      .string({ required_error: "اسم النشاط التجاري مطلوب" })
+      .trim()
+      .min(2, "اسم النشاط التجاري يجب أن يكون حرفين على الأقل")
+      .max(100, "اسم النشاط التجاري يجب أن يكون أقل من 100 حرف"),
     email: emailFieldAr,
+    phoneNumber: z
+      .string()
+      .trim()
+      .optional()
+      .refine((v) => !v || /^[+]?[0-9]{7,15}$/.test(v), {
+        message: "رقم الهاتف غير صالح",
+      }),
     currentPassword: z.string().optional(),
     newPassword: z
       .string()
@@ -103,21 +120,6 @@ export const personalInfoZodSchema = z
       }
     }
   });
-
-export const basicAccountInfoZodSchema = z.object({
-  ownerFullName: z
-    .string({ required_error: "اسم المالك مطلوب" })
-    .trim()
-    .min(2, "اسم المالك يجب أن يكون حرفين على الأقل")
-    .max(100),
-  brandName: z
-    .string({ required_error: "اسم النشاط التجاري مطلوب" })
-    .trim()
-    .min(2, "اسم النشاط التجاري يجب أن يكون حرفين على الأقل")
-    .max(100),
-  email: emailFieldAr,
-  phoneNumber: phoneFieldAr,
-});
 
 export const serviceDetailsZodSchema = z.object({
   nationalIdImage: z.any().optional(),
@@ -153,16 +155,10 @@ export const imagesAndPricingZodSchema = z.object({
 // MOBILE — VENDOR SETTINGS SCHEMAS (English messages, opaque)
 // ============================================================
 
+// Consolidated mobile personal-info schema — identity (ownerFullName +
+// brandName) and contact (email + phone). Phone is OTP-gated; the form keeps
+// it optional and the OTP flow handles the actual commit.
 export const mobilePersonalInfoSchema = z.object({
-  name: z
-    .string({ required_error: "Name is required" })
-    .trim()
-    .min(2, "Name must be at least 2 characters")
-    .max(100),
-  email: emailFieldEn,
-});
-
-export const mobileBasicAccountInfoSchema = z.object({
   ownerFullName: z
     .string({ required_error: "Owner name is required" })
     .trim()
@@ -173,6 +169,14 @@ export const mobileBasicAccountInfoSchema = z.object({
     .trim()
     .min(2, "Brand name must be at least 2 characters")
     .max(100),
+  email: emailFieldEn,
+  phoneNumber: z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || /^[+]?[0-9]{7,15}$/.test(v), {
+      message: "Invalid phone number format",
+    }),
 });
 
 export const mobileServiceDetailsSchema = z.object({

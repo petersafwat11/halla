@@ -440,8 +440,6 @@ class AddonsService {
     const charge = await paymentProvider.charge({
       amount: price,
       currency: 'SAR',
-      // Default `creditcard` → stub immediate-paid; tests opt into the 3DS
-      // redirect path explicitly via `creditcard_3ds_test`.
       source: source || { type: 'creditcard' },
       customer: { id: userId },
       callbackUrl,

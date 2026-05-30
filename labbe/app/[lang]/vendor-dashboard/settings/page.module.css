@@ -87,13 +87,6 @@
   background: var(--Content-bg-Card-bg-5, #f9f4ef);
 }
 
-.notificationsContainer {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 24px 0;
-}
-
 @media (max-width: 1024px) {
   .header {
     padding: 32px 24px;

@@ -1,14 +1,32 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  sendTestInvitation,
-  sendBulkInvitations,
-  retryFailedInvitations,
-  sendReminder,
-} from "../../services/messagingService";
 import { ENDPOINTS } from "../../config/api";
 import { apiFetch } from "../../services/http";
 import { dashboardKeys } from "../dashboard/keys";
 import { eventsKeys } from "../events/keys";
+
+const INVITATIONS_BASE = "/messaging";
+
+/**
+ * Internal messaging API helper. Routes through `apiFetch` so 401s
+ * auto-refresh the access token.
+ */
+const _messagingRequest = async (suffix, options = {}) => {
+  const path = `${INVITATIONS_BASE}${suffix}`;
+  const fetchOpts = {
+    method: options.method || "GET",
+    headers: options.headers || {},
+  };
+  if (options.body !== undefined && options.body !== null) {
+    fetchOpts.body =
+      typeof options.body === "string"
+        ? JSON.parse(options.body)
+        : options.body;
+  }
+  const response = await apiFetch(path, fetchOpts);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.message || "API request failed");
+  return data;
+};
 
 const invalidateEventCaches = (queryClient, eventId) => {
   queryClient.invalidateQueries({ queryKey: eventsKeys.singleStats(eventId) });
@@ -17,17 +35,23 @@ const invalidateEventCaches = (queryClient, eventId) => {
 };
 
 /**
- * Send a test message for an event. Calls PATCH /events/:eventId/test-message
- * via `sendTestInvitation`.
+ * Send a test message for an event. Hits PATCH /events/:eventId/test-message
+ * (the canonical events route, not the /messaging mount).
  */
 export function useSendTestMessage() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ eventId, phoneNumber, channel }) => {
-      return await sendTestInvitation(phoneNumber, eventId, channel);
+      const response = await apiFetch(ENDPOINTS.EVENTS.TEST_MESSAGE(eventId), {
+        method: "PATCH",
+        body: { phoneNumber, channel },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || "API request failed");
+      return data;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       invalidateEventCaches(queryClient, variables.eventId);
     },
   });
@@ -49,7 +73,7 @@ export function useScheduleSend() {
       if (!response.ok) throw new Error(data.message || "Failed to schedule message");
       return data;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       invalidateEventCaches(queryClient, variables.eventId);
     },
   });
@@ -62,10 +86,12 @@ export function useSendBulkInvitations() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ guestIds, eventId, channel }) => {
-      return await sendBulkInvitations(guestIds, eventId, channel);
-    },
-    onSuccess: (data, variables) => {
+    mutationFn: async ({ guestIds, eventId, channel = "sms" }) =>
+      _messagingRequest("/send-bulk", {
+        method: "POST",
+        body: { guestIds, eventId, channel },
+      }),
+    onSuccess: (_data, variables) => {
       invalidateEventCaches(queryClient, variables.eventId);
     },
   });
@@ -78,10 +104,12 @@ export function useRetryFailed() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ eventId, channel }) => {
-      return await retryFailedInvitations(eventId, channel);
-    },
-    onSuccess: (data, variables) => {
+    mutationFn: async ({ eventId, channel = "sms" }) =>
+      _messagingRequest("/retry", {
+        method: "POST",
+        body: { eventId, channel },
+      }),
+    onSuccess: (_data, variables) => {
       invalidateEventCaches(queryClient, variables.eventId);
     },
   });
@@ -94,10 +122,12 @@ export function useSendReminder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ eventId, channel, customMessage }) => {
-      return await sendReminder(eventId, channel, customMessage);
+    mutationFn: async ({ eventId, channel = "sms", customMessage }) => {
+      const body = { eventId, channel };
+      if (customMessage) body.customMessage = customMessage;
+      return _messagingRequest("/send-reminder", { method: "POST", body });
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       invalidateEventCaches(queryClient, variables.eventId);
     },
   });

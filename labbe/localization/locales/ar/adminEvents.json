@@ -22,6 +22,8 @@
     "viewDetails": "عرض التفاصيل",
     "activate": "تفعيل",
     "suspend": "إيقاف",
+    "confirmSuspend": "هل أنت متأكد من إيقاف هذه المناسبة؟",
+    "confirmActivate": "هل أنت متأكد من تفعيل هذه المناسبة؟",
     "delete": "حذف",
     "status": {
       "scheduled": "مجدول",

@@ -294,20 +294,6 @@ const send = {
     return sender.sendEmail(to, subject, html);
   },
 
-  /**
-   * Send vendor new inquiry email
-   * @param {string} to - Recipient email
-   * @param {Object} data - { vendorName, customerName, customerPhone, customerEmail, message, eventType, eventDate, inquiryUrl }
-   * @param {string} lang - Language (ar/en)
-   */
-  vendorNewInquiry: async (to, data, lang = "ar") => {
-    const { subject, html } = templates.vendors.vendorNewInquiryEmail(
-      data,
-      lang
-    );
-    return sender.sendEmail(to, subject, html);
-  },
-
   // ==========================================
   // WHITELABEL EMAILS
   // ==========================================

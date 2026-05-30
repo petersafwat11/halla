@@ -27,6 +27,32 @@ const SubscriptionsService = require('../subscriptions/subscriptions.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 
+// PLAN_LIMIT_WARNING emitter — fires when pool usage crosses 80% / 95%.
+// Idempotency in createNotification dedupes repeated ticks within window.
+async function _maybeNotifyPlanLimit(userId, sub) {
+  if (!sub) return;
+  const pool = (sub.invitePool || 0) + (sub.compensationPool || 0);
+  if (pool <= 0) return;
+  const used = sub.invitesConsumed || 0;
+  const ratio = used / pool;
+  if (ratio < 0.8) return;
+  const remaining = Math.max(0, pool - used);
+  const band = ratio >= 0.95 ? '95' : '80';
+  await notificationService.sendToUser(userId, {
+    type: 'plan_limit_warning',
+    title: 'Plan Usage Warning',
+    titleAr: 'تنبيه استهلاك الباقة',
+    message: `You've used ${Math.round(ratio * 100)}% of your invite quota (${remaining} remaining).`,
+    messageAr: `استهلكت ${Math.round(ratio * 100)}% من رصيد الدعوات (${remaining} متبقية).`,
+    data: {
+      entityType: 'subscription',
+      entityId: sub._id,
+      metadata: { used, pool, remaining, band },
+    },
+    priority: band === '95' ? 'high' : 'normal',
+  });
+}
+
 module.exports = {
   /**
    * Build search query
@@ -448,8 +474,11 @@ module.exports = {
       // anything between consumption and the final save throws, we release
       // the invites and rethrow.
       if (isPoolPlan(capacitySub.planId?.planType)) {
-        await Subscription.consumeInvites(capacitySub._id, guestCount);
+        const updated = await Subscription.consumeInvites(capacitySub._id, guestCount);
         poolConsumed = true;
+        _maybeNotifyPlanLimit(userId, updated).catch((err) =>
+          logger.warn('plan_limit_warning notify failed', { err: err?.message })
+        );
       } else if (isPerEventPlan(capacitySub.planId?.planType)) {
         const maxInvites = capacitySub.planId?.limits?.maxInvitesPerEvent;
         if (maxInvites !== null && maxInvites !== undefined && guestCount > maxInvites) {
@@ -481,6 +510,19 @@ module.exports = {
           };
           eventData.templateImage = templateImagePath;
         }
+      }
+
+      // Custom-upload mode: the host supplied their own invitation
+      // image directly (no predefined Template, no form fields). Drop
+      // any stale templateRef / fieldValues so a partial client send
+      // can't leave the document in a mixed state, and skip the
+      // template-fields validation entirely.
+      if (eventData.visualTemplate?.isCustomUpload) {
+        eventData.visualTemplate = {
+          isCustomUpload: true,
+          bakedImagePath: eventData.visualTemplate.bakedImagePath || null,
+          fieldValues: {},
+        };
       }
 
       // Drop any client-side `invitationSettings` mirror that may

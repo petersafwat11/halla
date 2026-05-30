@@ -8,7 +8,6 @@ import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import StaffPopup from "@/app/[lang]/host/create-event/_components/staffPopup/StaffPopup";
 import EventActionsHeader from "@/ui/host/events/EventActionsHeader";
 import { useEvent, useEventMutation } from "@/hooks/events";
-import StaffTokensList from "./StaffTokensList";
 import styles from "@/app/[lang]/host/events/[id]/singleEvent.module.css";
 
 export default function HostEventHeader({ eventId }) {
@@ -28,11 +27,11 @@ export default function HostEventHeader({ eventId }) {
   const eventTitle = event?.eventDetails?.title || t("singleEvent.header.eventDetails");
   const staff = event?.staffList || [];
 
-  // Transform staff data from API format (phone) to popup format (mobile)
+  // Shape staff for StaffPopup which reads `id`, `name`, `phone`.
   const staffList = staff.map((s) => ({
     id: s._id || s.id,
     name: s.name,
-    mobile: s.phone,
+    phone: s.phone,
   }));
 
   const handleEditGuests = () => {
@@ -42,7 +41,7 @@ export default function HostEventHeader({ eventId }) {
   const handleAddStaff = async (staffMember) => {
     const staffData = {
       name: staffMember.name,
-      phone: staffMember.mobile,
+      phone: staffMember.phone ?? staffMember.mobile,
     };
     await addStaffMutation.mutateAsync({
       eventId,
@@ -54,7 +53,7 @@ export default function HostEventHeader({ eventId }) {
   const handleEditStaff = async (staffMember) => {
     const staffData = {
       name: staffMember.name,
-      phone: staffMember.mobile,
+      phone: staffMember.phone ?? staffMember.mobile,
     };
     await updateStaffMutation.mutateAsync({
       eventId,
@@ -111,7 +110,6 @@ export default function HostEventHeader({ eventId }) {
           onDelete={handleDeleteStaff}
           onClose={() => setShowStaffPopup(false)}
         />
-        <StaffTokensList eventId={eventId} staffList={staff} />
       </PopupWrapper>
     </>
   );

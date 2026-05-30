@@ -11,6 +11,40 @@ const { withIdempotency, sha256 } = require("../../shared/utils/idempotency");
 // Import existing models during migration
 const Notification = require("../../../models/NotificationModel");
 
+// ============================================
+// NOTIFICATION TYPE -> APP-PREFERENCE KEY
+// Mirrors the toggles in NotificationPreferences UI. Any type not in this
+// map bypasses the preference check (always delivered).
+// ============================================
+const APP_NOTIFICATION_TYPE_TO_PREF_KEY = {
+  // Host — event-update bucket
+  event_created: "eventUpdates",
+  event_status_change: "eventUpdates",
+  event_completed: "eventUpdates",
+  event_cancelled: "eventUpdates",
+  invitations_sent: "eventUpdates",
+  template_status_change: "eventUpdates",
+  // Host — reminders
+  event_reminder: "eventReminders",
+  // Host — guest responses
+  guest_rsvp: "guestResponses",
+  guest_rsvp_accepted: "guestResponses",
+  guest_rsvp_declined: "guestResponses",
+  guest_rsvp_maybe: "guestResponses",
+  // Host — guest check-ins
+  guest_checked_in: "guestCheckIns",
+  // Host — subscription/plan alerts
+  subscription_activated: "subscriptionAlerts",
+  subscription_expiring: "subscriptionAlerts",
+  subscription_expired: "subscriptionAlerts",
+  subscription_renewed: "subscriptionAlerts",
+  subscription_renewal_invoice: "subscriptionAlerts",
+  plan_limit_warning: "subscriptionAlerts",
+  // Host — system / welcome
+  welcome: "systemUpdates",
+  announcement: "systemUpdates",
+};
+
 class NotificationsService {
   /**
    * Send notification to a specific user (in-app + optional email)
@@ -20,14 +54,23 @@ class NotificationsService {
    * @returns {Promise<Object>}
    */
   async sendToUser(userId, notificationData, sendEmail = false) {
+    // Preference gate — load the user's saved appNotifications map and
+    // skip in-app creation when the relevant toggle is `false`. Unknown
+    // notification types (no entry in APP_NOTIFICATION_TYPE_TO_PREF_KEY)
+    // always deliver. A missing preferences record means "all on" (the
+    // defaults applied at signup), so undefined === enabled.
+    const User = require("../../../models/UserModel");
+    const user = await User.findById(userId).select("email notificationPreferences");
+
+    if (!this._shouldDeliverApp(user, notificationData.type)) {
+      return null;
+    }
+
     // Create in-app notification
     const notification = await this.createNotification(userId, notificationData);
 
     // Send email if requested and user has email preference enabled
     if (sendEmail) {
-      const User = require("../../../models/UserModel");
-      const user = await User.findById(userId).select("email notificationPreferences");
-
       if (user?.email && this._shouldSendEmail(user, notificationData.type)) {
         // FLOW-27-F04: attempt email delivery and write status back to the
         // Notification record. The existing NotificationModel already has a
@@ -104,23 +147,33 @@ class NotificationsService {
   }
 
   /**
-   * Check if should send email based on user preferences
+   * Decide whether to create the in-app notification for this user.
+   * Returns false ONLY when the user has explicitly toggled off the
+   * matching preference key. Unknown types and missing prefs both
+   * default to delivery.
+   * @private
+   */
+  _shouldDeliverApp(user, notificationType) {
+    const prefKey = APP_NOTIFICATION_TYPE_TO_PREF_KEY[notificationType];
+    if (!prefKey) return true; // no mapping → always deliver
+    const appPrefs = user?.notificationPreferences?.appNotifications;
+    if (!appPrefs) return true; // no record → defaults all-on
+    return appPrefs[prefKey] !== false;
+  }
+
+  /**
+   * Check if should send email based on user preferences. Host email
+   * preferences were removed (plan/payment emails always fire and do not
+   * route through this service), so this is now only consulted by
+   * admin/whitelabel-targeted email flows that may layer in their own
+   * preference keys later.
    * @private
    */
   _shouldSendEmail(user, notificationType) {
-    if (!user.notificationPreferences) return true;
-
-    // Map notification types to preference keys
-    const preferenceMap = {
-      event_created: "eventUpdates",
-      event_reminder: "eventReminders",
-      guest_rsvp: "guestResponses",
-    };
-
-    const preferenceKey = preferenceMap[notificationType];
-    if (!preferenceKey) return true;
-
-    return user.notificationPreferences[preferenceKey] !== false;
+    if (!user?.notificationPreferences?.emailNotifications) return true;
+    const prefKey = APP_NOTIFICATION_TYPE_TO_PREF_KEY[notificationType];
+    if (!prefKey) return true;
+    return user.notificationPreferences.emailNotifications[prefKey] !== false;
   }
 
   /**

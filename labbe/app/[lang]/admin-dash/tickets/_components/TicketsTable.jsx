@@ -37,7 +37,6 @@ export default function TicketsTable() {
   const { data, isLoading, error } = useMyTickets(filters);
   const deleteMutation = useTicketMutation("deleteTicket");
   const statusMutation = useTicketMutation("updateStatus");
-  const updateMutation = useTicketMutation("updateTicket");
   const exportMutation = useExportTickets();
 
   const handleDelete = useCallback(async (ticketId) => {
@@ -58,15 +57,6 @@ export default function TicketsTable() {
       handleError(err, t, { fallbackMessage: "messages.updateError" });
     }
   }, [statusMutation, t]);
-
-  const handleMarkUrgent = useCallback(async (ticketId) => {
-    try {
-      await updateMutation.mutateAsync({ ticketId, priority: "high" });
-      toastUtils.success(t("messages.markUrgentSuccess"));
-    } catch (err) {
-      handleError(err, t, { fallbackMessage: "messages.updateError" });
-    }
-  }, [updateMutation, t]);
 
   const handleAssignClick = useCallback((ticket) => {
     setSelectedTicket(ticket);
@@ -138,7 +128,6 @@ export default function TicketsTable() {
           handleExport={handleExport}
           handleDelete={handleDelete}
           handleStatusChange={handleStatusChange}
-          handleMarkUrgent={handleMarkUrgent}
           handleAssignClick={handleAssignClick}
           handleResponseClick={handleResponseClick}
           handleViewResolutionClick={handleViewResolutionClick}

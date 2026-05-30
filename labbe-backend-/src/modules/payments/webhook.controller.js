@@ -38,10 +38,33 @@
 const crypto = require('crypto');
 const Payment = require('../../../models/PaymentModel');
 const Subscription = require('../../../models/SubscriptionModel');
+const User = require('../../../models/UserModel');
 const paymentsService = require('./payments.service');
 const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
+const email = require('../../../email');
+const config = require('../../config');
+
+// Send payment-failure email — plan/payment emails always fire (no prefs).
+async function sendPaymentFailedEmail({ userId, amount, currency, planName, reason }) {
+  try {
+    if (!userId) return;
+    const user = await User.findById(userId).select('email name username');
+    if (!user?.email) return;
+    const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
+    await email.send.paymentFailed(user.email, {
+      userName: user.name || user.username || '',
+      amount: amount ?? 0,
+      currency: currency || 'SAR',
+      planName: planName || '',
+      reason: reason || '',
+      retryUrl: `${frontendUrl}/ar/host/subscription`,
+    });
+  } catch (e) {
+    logger.warn('[moyasar.webhook] paymentFailed email failed', { error: e?.message });
+  }
+}
 
 const constantTimeEqual = (a, b) => {
   const ab = Buffer.from(String(a || ''));
@@ -124,6 +147,14 @@ exports.handle = async (req, res) => {
         // failure already wrote a `pending_refund` audit row.
         if (eventType === 'payment_paid') {
           await paymentsService.runFinalization(payment);
+        } else if (eventType === 'payment_failed') {
+          await sendPaymentFailedEmail({
+            userId: payment.userId,
+            amount: payment.amount,
+            currency: payment.currency,
+            planName: payment.metadata?.planCode || payment.metadata?.planName,
+            reason: data?.source?.message || data?.message || '',
+          });
         }
 
         await logAudit({
@@ -192,6 +223,13 @@ async function handleInvoiceEvent(eventType, data) {
   } else if (eventType === 'invoice_failed') {
     sub.status = 'past_due';
     await sub.save();
+    await sendPaymentFailedEmail({
+      userId: sub.userId,
+      amount: data?.amount ?? 0,
+      currency: data?.currency || sub.currency || 'SAR',
+      planName: sub.planName || sub.planCode || '',
+      reason: data?.message || 'Recurring invoice payment failed',
+    });
   }
 
   await logAudit({

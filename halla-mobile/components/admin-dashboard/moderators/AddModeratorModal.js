@@ -19,19 +19,11 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 import { useCreateModerator, useUpdateModerator } from "../../../hooks";
-import { useAdminWhitelabels } from "../../../hooks/admin";
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const ROLES_THAT_NEED_TENANT = new Set([
-  "admin",
-  "moderator",
-  "whitelabel_admin",
-  "whitelabel_moderator",
-]);
 
 const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
   const { t } = useTranslation("admin");
@@ -39,24 +31,21 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
   const createModerator = useCreateModerator();
   const updateModerator = useUpdateModerator();
   const currentUser = useAuthStore((s) => s.user);
-  const isSuperAdmin = currentUser?.role === "super_admin";
+  const isWhitelabel = ["whitelabel_admin", "whitelabel_moderator"].includes(
+    currentUser?.role
+  );
 
-  const whitelabelsQuery = useAdminWhitelabels({}, { enabled: isSuperAdmin });
-  const whitelabelOptions = (
-    whitelabelsQuery.data?.data ||
-    whitelabelsQuery.data ||
-    []
-  )
-    .filter((w) => w && (w._id || w.id))
-    .map((w) => ({
-      id: w._id || w.id,
-      label: w.name || w.brandName || w.email || (w._id || w.id),
-    }));
+  const ROLE_OPTIONS = isWhitelabel
+    ? [
+        { id: "whitelabel_moderator", label: t("moderators.roles.whitelabelModerator"), description: t("moderators.add.moderatorDesc") },
+        { id: "whitelabel_admin",     label: t("moderators.roles.whitelabelAdmin"),     description: t("moderators.add.adminDesc") },
+      ]
+    : [
+        { id: "moderator", label: t("moderators.roles.moderator"),  description: t("moderators.add.moderatorDesc") },
+        { id: "admin",     label: t("moderators.roles.admin"),      description: t("moderators.add.adminDesc") },
+      ];
 
-  const ROLE_OPTIONS = [
-    { id: "moderator", label: t("moderators.roles.moderator"),  description: t("moderators.add.moderatorDesc") },
-    { id: "admin",     label: t("moderators.roles.admin"),      description: t("moderators.add.adminDesc") },
-  ];
+  const defaultRole = isWhitelabel ? "whitelabel_moderator" : "moderator";
 
   const isEdit = !!moderator;
   const saving = createModerator.isPending || updateModerator.isPending;
@@ -66,13 +55,9 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
     email: "",
     password: "",
     phoneNumber: "",
-    role: "moderator",
-    whitelabelId: "",
+    role: defaultRole,
   });
   const [errors, setErrors] = useState({});
-
-  const showWhitelabelPicker =
-    isSuperAdmin && !isEdit && ROLES_THAT_NEED_TENANT.has(formData.role);
 
   useEffect(() => {
     if (visible) {
@@ -82,7 +67,7 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
           email:       moderator.email || "",
           password:    "",
           phoneNumber: moderator.phoneNumber || moderator.phone || "",
-          role:        moderator.role || "moderator",
+          role:        moderator.role || defaultRole,
         });
       } else {
         setFormData({
@@ -90,13 +75,12 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
           email: "",
           password: "",
           phoneNumber: "",
-          role: "moderator",
-          whitelabelId: "",
+          role: defaultRole,
         });
       }
       setErrors({});
     }
-  }, [visible, moderator]);
+  }, [visible, moderator, defaultRole]);
 
   const updateField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -119,9 +103,6 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
     if (!isEdit && !formData.phoneNumber.trim()) {
       e.phoneNumber = t("moderators.add.phoneRequired");
     }
-    if (showWhitelabelPicker && !formData.whitelabelId) {
-      e.whitelabelId = t("moderators.add.whitelabelRequired");
-    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -136,9 +117,6 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
         role:        formData.role,
       };
       if (!isEdit) payload.password = formData.password;
-      if (showWhitelabelPicker && formData.whitelabelId) {
-        payload.whitelabelId = formData.whitelabelId;
-      }
 
       if (isEdit) {
         await updateModerator.mutateAsync({
@@ -293,69 +271,6 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                 <Text style={styles.errorText}>{errors.phoneNumber}</Text>
               ) : null}
             </View>
-
-            {showWhitelabelPicker ? (
-              <View style={styles.field}>
-                <Text style={styles.label}>
-                  {t("moderators.add.whitelabel")} *
-                </Text>
-                {whitelabelsQuery.isLoading ? (
-                <Text style={styles.roleDesc}>
-                  {t("common.loading")}
-                </Text>
-                ) : (
-                  <View style={styles.roleList}>
-                    {whitelabelOptions.length === 0 ? (
-                      <Text style={styles.roleDesc}>
-                        {t("moderators.add.noWhitelabels")}
-                      </Text>
-                    ) : (
-                      whitelabelOptions.map((opt) => {
-                        const selected = formData.whitelabelId === opt.id;
-                        return (
-                          <TouchableOpacity
-                            key={opt.id}
-                            style={[
-                              styles.roleOption,
-                              selected && styles.roleOptionSelected,
-                            ]}
-                            onPress={() => updateField("whitelabelId", opt.id)}
-                            disabled={saving}
-                          >
-                            <View style={styles.roleInfo}>
-                              <Text
-                                style={[
-                                  styles.roleName,
-                                  selected && styles.roleNameSelected,
-                                ]}
-                              >
-                                {opt.label}
-                              </Text>
-                            </View>
-                            {selected ? (
-                              <Ionicons
-                                name="checkmark-circle"
-                                size={22}
-                                color={colors.primary[500]}
-                              />
-                            ) : (
-                              <Ionicons
-                                name="ellipse-outline"
-                                size={22}
-                                color={colors.natural[300]}
-                              />
-                            )}
-                          </TouchableOpacity>
-                        );
-                      })
-                    )}
-                  </View>
-                )}
-                {errors.whitelabelId ? (
-                  <Text style={styles.errorText}>{errors.whitelabelId}</Text>
-                ) : null}
-              </View>
-            ) : null}
 
             <View style={styles.field}>
               <Text style={styles.label}>{t("moderators.add.role")} *</Text>

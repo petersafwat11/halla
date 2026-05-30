@@ -322,6 +322,18 @@ const userSchema = new mongoose.Schema(
       default: USER_STATUS.ACTIVE,
     },
 
+    // ============ NOTIFICATION PREFERENCES ============
+    // Shape mirrors the role-aware schemas in
+    // `@halla/shared/schemas/settings`. Mixed because keys vary by role
+    // (host has appNotifications only; admin/whitelabel have both app +
+    // email; vendor has neither — vendor prefs were removed). The active
+    // notifications service reads `appNotifications[<key>]` to decide
+    // whether to create an in-app notification.
+    notificationPreferences: {
+      type: mongoose.Schema.Types.Mixed,
+      default: undefined,
+    },
+
     // ============ MULTI-TENANT ============
     // References another User with role whitelabel_admin (the whitelabel owner)
     whitelabelId: {

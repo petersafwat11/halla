@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Modal,
   View,
@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import { useToast } from "../../contexts/ToastContext";
-import { vendorService } from "../../services/vendorService";
+import { usersApi } from "../../hooks/users/_api";
 
 /**
  * Phone-change OTP modal (mobile).
@@ -25,16 +25,24 @@ const PhoneChangeOtpModal = ({ visible, phoneNumber, onClose, onSuccess }) => {
   const [otp, setOtp] = useState("");
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  // Dedupe auto-sends across rapid re-renders of the parent. Without this,
+  // a refetch fired from the parent right after opening the modal would
+  // re-mount the effect and trip the OTP rate limiter, which would in turn
+  // toast an error and (previously) auto-close the modal.
+  const lastSentForRef = useRef(null);
 
-  const sendOtp = async () => {
+  const sendOtp = async ({ isResend = false } = {}) => {
     if (!phoneNumber) return;
     setSending(true);
     try {
-      await vendorService.sendPhoneChangeOtp(phoneNumber);
+      await usersApi.sendPhoneChangeOtp(phoneNumber);
+      lastSentForRef.current = phoneNumber;
       toast.info(
         t(
-          "settings.phoneOtp.sent",
-          "Verification code sent to your new phone number"
+          isResend ? "settings.phoneOtp.resent" : "settings.phoneOtp.sent",
+          isResend
+            ? "Verification code resent"
+            : "Verification code sent to your new phone number"
         )
       );
     } catch (err) {
@@ -42,25 +50,34 @@ const PhoneChangeOtpModal = ({ visible, phoneNumber, onClose, onSuccess }) => {
         err.message ||
           t("settings.phoneOtp.sendFailed", "Failed to send verification code")
       );
-      onClose && onClose();
+      // Allow a manual "Resend" without closing the modal. The user can read
+      // the toast and decide whether to retry or cancel.
+      lastSentForRef.current = null;
     } finally {
       setSending(false);
     }
   };
 
   useEffect(() => {
-    if (visible && phoneNumber) {
-      setOtp("");
-      sendOtp();
-    }
+    if (!visible || !phoneNumber) return;
+    if (lastSentForRef.current === phoneNumber) return;
+    setOtp("");
+    sendOtp();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, phoneNumber]);
+
+  useEffect(() => {
+    if (!visible) {
+      setOtp("");
+      lastSentForRef.current = null;
+    }
+  }, [visible]);
 
   const verify = async () => {
     if (!otp.trim()) return;
     setVerifying(true);
     try {
-      await vendorService.updatePhone(phoneNumber, otp.trim());
+      await usersApi.updatePhone(phoneNumber, otp.trim());
       toast.success(t("settings.phoneOtp.success", "Phone number updated"));
       onSuccess && onSuccess();
     } catch (err) {
@@ -118,7 +135,7 @@ const PhoneChangeOtpModal = ({ visible, phoneNumber, onClose, onSuccess }) => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={sendOtp}
+            onPress={() => sendOtp({ isResend: true })}
             disabled={sending || verifying}
             style={styles.linkBtn}
           >

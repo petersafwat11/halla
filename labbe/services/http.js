@@ -218,6 +218,26 @@ export const apiRequest = async ({
     ...config,
   };
 
+  // The axios instance defaults Content-Type to application/json. In axios 1.x,
+  // that flag causes `transformRequest` to JSON.stringify FormData via
+  // formDataToJSON — File entries serialize to `{}` and multer sees no
+  // multipart body. Force the multipart header whenever the caller passes
+  // FormData and didn't already set Content-Type explicitly.
+  const isBrowserFormData =
+    typeof FormData !== 'undefined' && data instanceof FormData;
+  if (isBrowserFormData) {
+    const existing = requestConfig.headers || {};
+    const hasContentType = Object.keys(existing).some(
+      (k) => k.toLowerCase() === 'content-type'
+    );
+    if (!hasContentType) {
+      requestConfig.headers = {
+        ...existing,
+        'Content-Type': 'multipart/form-data',
+      };
+    }
+  }
+
   // Server-side token handling
   if (isServer && serverToken) {
     requestConfig.headers = {

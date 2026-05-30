@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { FormProvider } from "react-hook-form";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -115,9 +115,29 @@ export default function AdminCreateEvent() {
   // Merge subscription from auth store into user object for HostSelector
   const currentUserWithSubscription = user ? { ...user, subscription: authSubscription } : null;
 
-  // Step 0 = HostSelector, steps 1-5 = event form
-  const [adminStep, setAdminStep] = useState(0);
+  // Step 0 = HostSelector, steps 1-5 = event form.
+  // Whitelabel admins/moderators no longer manage hosts — they always create
+  // events for themselves, so the HostSelector step is skipped entirely.
+  const [adminStep, setAdminStep] = useState(isWhitelabelUser ? 1 : 0);
   const [selectedHost, setSelectedHost] = useState(null);
+
+  useEffect(() => {
+    if (!isWhitelabelUser || !currentUserWithSubscription) return;
+    setSelectedHost((prev) =>
+      prev
+        ? prev
+        : {
+            ...currentUserWithSubscription,
+            targetType: "self",
+            createForSelf: true,
+            subscription:
+              currentUserWithSubscription.subscription ||
+              currentUserWithSubscription.whitelabelSubscription ||
+              null,
+          },
+    );
+    setAdminStep((s) => (s === 0 ? 1 : s));
+  }, [isWhitelabelUser, currentUserWithSubscription]);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showStaffPopup, setShowStaffPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -207,11 +227,12 @@ export default function AdminCreateEvent() {
 
   const onPrevious = useCallback(() => {
     if (currentStep === 1) {
-      setAdminStep(0);
+      // Whitelabel roles don't have the HostSelector step to go back to.
+      if (!isWhitelabelUser) setAdminStep(0);
     } else {
       goToPreviousStep();
     }
-  }, [currentStep, goToPreviousStep]);
+  }, [currentStep, goToPreviousStep, isWhitelabelUser]);
 
   // Step 0: HostSelector
   if (adminStep === 0) {
@@ -349,7 +370,7 @@ export default function AdminCreateEvent() {
                   onNext={onNext}
                   onPrevious={onPrevious}
                   isNextDisabled={!isStepValid || isSubmitting}
-                  showPrevious={true}
+                  showPrevious={!(isWhitelabelUser && currentStep === 1)}
                   isLoading={isSubmitting}
                 />
               </form>

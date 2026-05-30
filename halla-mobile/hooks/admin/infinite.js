@@ -10,8 +10,9 @@
  */
 
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { ENDPOINTS } from "../../config/api";
 import { useAuthStore } from "../../stores/authStore";
-import adminDashboardService from "../../services/adminDashboardService";
+import { adminQs, adminRequest } from "./_request";
 import { adminKeys } from "./keys";
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -115,7 +116,9 @@ export function useAdminHostsInfinite(filters = {}) {
   return _buildInfinite({
     queryKey: adminKeys.hostsInfinite(cleanFilters),
     fetchPage: ({ page, limit }) =>
-      adminDashboardService.hosts.getAll(token, { ...cleanFilters, page, limit }),
+      adminRequest(
+        `${ENDPOINTS.ADMIN.HOSTS.BASE}${adminQs({ ...cleanFilters, page, limit })}`,
+      ),
     collectionKey: "hosts",
     enabled: !!token,
   });
@@ -127,7 +130,9 @@ export function useAdminVendorsInfinite(filters = {}) {
   return _buildInfinite({
     queryKey: adminKeys.vendorsInfinite(cleanFilters),
     fetchPage: ({ page, limit }) =>
-      adminDashboardService.vendors.getAll(token, { ...cleanFilters, page, limit }),
+      adminRequest(
+        `${ENDPOINTS.ADMIN.VENDORS.BASE}${adminQs({ ...cleanFilters, page, limit })}`,
+      ),
     collectionKey: "vendors",
     enabled: !!token,
   });
@@ -139,7 +144,9 @@ export function useAdminEventsInfinite(filters = {}) {
   return _buildInfinite({
     queryKey: adminKeys.eventsInfinite(cleanFilters),
     fetchPage: ({ page, limit }) =>
-      adminDashboardService.events.getAll(token, { ...cleanFilters, page, limit }),
+      adminRequest(
+        `${ENDPOINTS.ADMIN.EVENTS.ADMIN_ALL}${adminQs({ ...cleanFilters, page, limit })}`,
+      ),
     collectionKey: "events",
     enabled: !!token,
   });
@@ -151,7 +158,9 @@ export function useAdminTicketsInfinite(filters = {}) {
   return _buildInfinite({
     queryKey: adminKeys.ticketsInfinite(cleanFilters),
     fetchPage: ({ page, limit }) =>
-      adminDashboardService.tickets.getAll(token, { ...cleanFilters, page, limit }),
+      adminRequest(
+        `${ENDPOINTS.ADMIN.TICKETS.BASE}${adminQs({ ...cleanFilters, page, limit })}`,
+      ),
     collectionKey: "tickets",
     enabled: !!token,
   });
@@ -164,7 +173,9 @@ export function useAdminWhitelabelsInfinite(filters = {}, opts = {}) {
   return _buildInfinite({
     queryKey: adminKeys.whitelabelsInfinite(cleanFilters),
     fetchPage: ({ page, limit }) =>
-      adminDashboardService.whitelabels.getAll(token, { ...cleanFilters, page, limit }),
+      adminRequest(
+        `${ENDPOINTS.ADMIN.WHITELABELS.BASE}${adminQs({ ...cleanFilters, page, limit })}`,
+      ),
     collectionKey: "whitelabels",
     enabled: !!token && callerEnabled,
   });
@@ -176,7 +187,9 @@ export function useAdminPaymentsInfinite(filters = {}) {
   return _buildInfinite({
     queryKey: adminKeys.paymentsInfinite(cleanFilters),
     fetchPage: ({ page, limit }) =>
-      adminDashboardService.payments.getAll(token, { ...cleanFilters, page, limit }),
+      adminRequest(
+        `${ENDPOINTS.ADMIN.PAYMENTS.BASE}${adminQs({ ...cleanFilters, page, limit })}`,
+      ),
     collectionKey: "payments",
     enabled: !!token,
   });
@@ -188,7 +201,9 @@ export function useAdminModeratorsInfinite(filters = {}) {
   return _buildInfinite({
     queryKey: adminKeys.moderatorsInfinite(cleanFilters),
     fetchPage: ({ page, limit }) =>
-      adminDashboardService.moderators.getAll(token, { ...cleanFilters, page, limit }),
+      adminRequest(
+        `${ENDPOINTS.ADMIN.MODERATORS.BASE}${adminQs({ ...cleanFilters, page, limit })}`,
+      ),
     collectionKey: "moderators",
     enabled: !!token,
   });

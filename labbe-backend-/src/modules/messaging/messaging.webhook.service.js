@@ -7,7 +7,9 @@
 const taqnyat = require('../../infrastructure/taqnyat');
 const Guest = require('../../../models/GuestModel');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
-const notificationService = require('../../shared/utils/notificationService');
+// Use the gated notifications service so a host who turned off
+// `guestResponses` in Settings doesn't get a WhatsApp-RSVP push.
+const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { NotFoundError } = require('../../shared/errors');

@@ -346,6 +346,16 @@ module.exports = {
         results.push({ name: staffMember.name, phone: staffMember.phone, status: "sent" });
       } catch (error) {
         failed++;
+        logger.warn('[notifyStaff] send failed', {
+          eventId,
+          staffName: staffMember.name,
+          staffPhone: staffMember.phone,
+          usedTemplate: Boolean(template),
+          templateName: template?.templateName,
+          error: error.message,
+          response: error.response?.data,
+          stack: error.stack,
+        });
         // Track staff SMS failures for host dashboard visibility
         event.messagingStatus = event.messagingStatus || {};
         event.messagingStatus.staffFailedCount = (event.messagingStatus.staffFailedCount || 0) + 1;

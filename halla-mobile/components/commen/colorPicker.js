@@ -225,13 +225,15 @@ const ColorPicker = ({
 };
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 16, width: "100%" },  label: {
+  container: { marginBottom: 16, width: "100%" },
+  label: {
     fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#2c2c2c",
+    fontFamily: "Cairo_500Medium",
+    color: "#2C2C2C",
     marginBottom: 8,
-    textAlign: "left"
-  },  colorDisplay: {
+    paddingHorizontal: 8,
+  },
+  colorDisplay: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,

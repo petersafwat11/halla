@@ -169,15 +169,29 @@ async function updateVendorStatus(vendorId, vendorStatus, whitelabelId, actorId 
       priority: 'high',
     }).catch((err) => logger.error('admin.service notify failed', err));
 
-    // email ensures vendor is notified even when push delivery fails
-    if (isApproved && vendor.email) {
+    // Email always fires for approve/reject — both are admin-driven outcomes
+    // the vendor needs to receive regardless of in-app delivery, and they
+    // intentionally bypass the (removed) vendor notification preferences.
+    if (vendor.email) {
       const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
-      email.send.vendorApproval(vendor.email, {
-        vendorName: vendor.profile?.vendorData?.brandName || vendor.name,
-        ownerName: vendor.profile?.vendorData?.ownerFullName || vendor.name,
-        status: vendorStatus,
-        dashboardUrl: `${frontendUrl}/ar/vendor-dashboard`,
-      }).catch((err) => logger.error('admin.updateVendorStatus approval email failed', err));
+      const brandName = vendor.profile?.vendorData?.brandName || vendor.name;
+      const ownerName = vendor.profile?.vendorData?.ownerFullName || vendor.name;
+      if (isApproved) {
+        email.send.vendorApproval(vendor.email, {
+          vendorName: ownerName,
+          brandName,
+          status: vendorStatus,
+          dashboardUrl: `${frontendUrl}/ar/vendor-dashboard`,
+        }).catch((err) => logger.error('admin.updateVendorStatus approval email failed', err));
+      } else {
+        email.send.vendorRejection(vendor.email, {
+          vendorName: ownerName,
+          brandName,
+          status: vendorStatus,
+          reapplyUrl: `${frontendUrl}/ar/vendor-onboarding`,
+          supportEmail: config.supportEmail || process.env.SUPPORT_EMAIL || '',
+        }).catch((err) => logger.error('admin.updateVendorStatus rejection email failed', err));
+      }
     }
   } else if (vendorStatus === VENDOR_STATUS.SUSPENDED) {
     notificationService.sendToUser(vendor._id, {

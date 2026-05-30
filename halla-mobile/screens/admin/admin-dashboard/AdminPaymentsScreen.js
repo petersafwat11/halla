@@ -2,11 +2,9 @@ import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { useAdminPaymentsInfinite, useDebounce } from "../../../hooks";
+import { useAdminPaymentsInfinite, useDebounce, useExportAdminPayments } from "../../../hooks";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
-import { useAuthStore } from "../../../stores/authStore";
-import adminDashboardService from "../../../services/adminDashboardService";
 import TopBar from "../../../components/plans/TopBar";
 import { PaymentList } from "../../../components/admin-dashboard/payments";
 import AdminPageHeader from "../../../components/admin-dashboard/common/AdminPageHeader";
@@ -24,7 +22,7 @@ const AdminPaymentsScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
 
-  const token = useAuthStore((state) => state.token);
+  const exportPayments = useExportAdminPayments();
 
   const debouncedSearch = useDebounce(searchQuery, 350);
   const paymentsFilters = useMemo(
@@ -63,7 +61,7 @@ const AdminPaymentsScreen = () => {
   const handleExport = useCallback(async () => {
     try {
       setExportLoading(true);
-      await adminDashboardService.payments.export(token, {
+      await exportPayments.mutateAsync({
         status: filter !== "all" ? filter : undefined,
       });
     } catch {
@@ -71,7 +69,7 @@ const AdminPaymentsScreen = () => {
     } finally {
       setExportLoading(false);
     }
-  }, [token, filter, toast, t]);
+  }, [exportPayments, filter, toast, t]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>

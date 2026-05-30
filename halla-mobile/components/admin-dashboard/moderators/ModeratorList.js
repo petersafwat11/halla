@@ -2,10 +2,8 @@ import React, { useState, useMemo } from "react";
 import { View, Alert, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
 import { backgrounds, colors } from "../../../styles/tokens";
-import { useAuthStore } from "../../../stores/authStore";
-import { useBulkDeleteModerators, useBulkSuspendModerators } from "../../../hooks";
+import { useBulkDeleteModerators, useBulkSuspendModerators, useExportModerators } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
-import adminDashboardService from "../../../services/adminDashboardService";
 import AdminPageHeader from "../common/AdminPageHeader";
 import AdminFlatList from "../common/AdminFlatList";
 import ExportButton from "../common/ExportButton";
@@ -45,9 +43,9 @@ const ModeratorList = ({
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
-  const token = useAuthStore((state) => state.token);
   const bulkDelete = useBulkDeleteModerators();
   const bulkSuspend = useBulkSuspendModerators();
+  const exportModerators = useExportModerators();
   const toast = useToast();
 
   const filterOptions = useMemo(
@@ -88,7 +86,7 @@ const ModeratorList = ({
   const handleExport = async () => {
     try {
       setExportLoading(true);
-      await adminDashboardService.moderators.export(token);
+      await exportModerators.mutateAsync({});
     } catch {
       toast.error(t("common.error"));
     } finally {

@@ -50,6 +50,7 @@ async function syncFromTaqnyat({ actor } = {}) {
 
   const seenIds = new Set();
   const upserted = [];
+  const notificationService = require('../notifications/notifications.service');
   for (const t of upstream) {
     const taqnyatId = t.id || t.template_id || t.name;
     if (!taqnyatId) continue;
@@ -60,6 +61,10 @@ async function syncFromTaqnyat({ actor } = {}) {
       (c) => c.type === 'HEADER' && c.format === 'IMAGE'
     );
 
+    const nextStatus = (t.status || 'APPROVED').toUpperCase();
+    const existing = await TaqnyatTemplate.findOne({ taqnyatId: String(taqnyatId) })
+      .select('status createdBy templateName');
+
     // Preserve admin-curated fields (`category`, `varMapping`, `active`,
     // `sortOrder`) on update. `removedFromMeta` is forced false so a
     // re-approved template comes back into the host wizard automatically.
@@ -68,7 +73,7 @@ async function syncFromTaqnyat({ actor } = {}) {
       $set: {
         templateName: t.name,
         language: t.language || 'ar',
-        status: (t.status || 'APPROVED').toUpperCase(),
+        status: nextStatus,
         metaCategory: t.category || null,
         bodyText: bodyComponent.text || '',
         hasImageHeader: !!hasImageHeader,
@@ -89,6 +94,39 @@ async function syncFromTaqnyat({ actor } = {}) {
       new: true,
     });
     upserted.push(doc);
+
+    // Notify the template's creator on terminal status transitions. The
+    // host-side `eventUpdates` preference covers this type per the
+    // notifications service mapping.
+    const previousStatus = existing?.status;
+    const creatorId = existing?.createdBy || doc.createdBy;
+    if (
+      creatorId &&
+      previousStatus !== nextStatus &&
+      (nextStatus === 'APPROVED' || nextStatus === 'REJECTED')
+    ) {
+      const isApproved = nextStatus === 'APPROVED';
+      notificationService
+        .sendToUser(creatorId, {
+          type: 'template_status_change',
+          title: isApproved ? 'Template Approved' : 'Template Rejected',
+          titleAr: isApproved ? 'تمت الموافقة على القالب' : 'تم رفض القالب',
+          message: isApproved
+            ? `Your WhatsApp template "${t.name}" has been approved.`
+            : `Your WhatsApp template "${t.name}" was rejected.`,
+          messageAr: isApproved
+            ? `تمت الموافقة على قالب الواتساب "${t.name}".`
+            : `تم رفض قالب الواتساب "${t.name}".`,
+          data: {
+            entityType: 'taqnyat_template',
+            entityId: doc._id,
+            metadata: { taqnyatId, status: nextStatus },
+          },
+        })
+        .catch((err) =>
+          logger.warn('template_status_change notify failed', { err: err?.message })
+        );
+    }
   }
 
   // Soft-delete templates that no longer exist upstream so the host

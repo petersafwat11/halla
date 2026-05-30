@@ -7,7 +7,7 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import ImagePreviewModal from "@/ui/vendor/modals/ImagePreviewModal";
 import ServiceDetailsEditForm from "./ServiceDetailsEditForm";
 
-const ServiceDetailsSection = ({ data, onSave }) => {
+const ServiceDetailsSection = ({ data, onSave, onRefetch }) => {
   const { t } = useTranslation("vendorSettings");
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -211,6 +211,7 @@ const ServiceDetailsSection = ({ data, onSave }) => {
           onClose={handleClosePopup}
           isLoading={isLoading}
           setIsLoading={setIsLoading}
+          onRefetch={onRefetch}
         />
       </PopupLayout>
 

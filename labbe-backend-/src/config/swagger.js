@@ -2069,7 +2069,7 @@ const swaggerOptions = {
               properties: {
                 type: {
                   type: 'string',
-                  enum: ['creditcard', 'creditcard_3ds_test', 'stcpay', 'applepay'],
+                  enum: ['creditcard', 'stcpay', 'applepay'],
                 },
                 name: { type: 'string' },
                 number: { type: 'string' },
@@ -2152,7 +2152,7 @@ const swaggerOptions = {
               properties: {
                 type: {
                   type: 'string',
-                  enum: ['creditcard', 'creditcard_3ds_test', 'stcpay', 'applepay'],
+                  enum: ['creditcard', 'stcpay', 'applepay'],
                 },
                 name: { type: 'string' },
                 number: { type: 'string' },

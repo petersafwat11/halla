@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import vendorService from "../../services/vendorService";
+import { usersApi } from "../users/_api";
+import { vendorApi } from "./_api";
 import { vendorKeys } from "./keys";
 
 export function useUpdateVendorProfile() {
@@ -7,7 +8,7 @@ export function useUpdateVendorProfile() {
 
   return useMutation({
     mutationFn: async ({ section, data }) => {
-      const response = await vendorService.updateSection(section, data);
+      const response = await usersApi.updateProfileSection(section, data);
       return response.data;
     },
     onSuccess: () => {
@@ -21,7 +22,7 @@ export function useUpdateVendorProfileWithFiles() {
 
   return useMutation({
     mutationFn: async ({ section, formData }) => {
-      const response = await vendorService.updateSectionWithFiles(section, formData);
+      const response = await usersApi.updateProfileSectionWithFiles(section, formData);
       return response.data;
     },
     onSuccess: () => {
@@ -35,7 +36,7 @@ export function useDeleteVendorService() {
 
   return useMutation({
     mutationFn: async (serviceId) => {
-      const response = await vendorService.deleteService(serviceId);
+      const response = await vendorApi.deleteService(serviceId);
       return response.data;
     },
     onSuccess: () => {
@@ -50,7 +51,7 @@ export function useToggleServiceStatus() {
 
   return useMutation({
     mutationFn: async (serviceId) => {
-      const response = await vendorService.toggleServiceStatus(serviceId);
+      const response = await vendorApi.toggleServiceStatus(serviceId);
       return response.data;
     },
     onSuccess: () => {
@@ -65,7 +66,7 @@ export function useAddVendorService() {
 
   return useMutation({
     mutationFn: async (data) => {
-      const response = await vendorService.addService(data);
+      const response = await vendorApi.addService(data);
       return response.data;
     },
     onSuccess: () => {
@@ -80,7 +81,7 @@ export function useUpdateVendorService() {
 
   return useMutation({
     mutationFn: async ({ serviceId, data }) => {
-      const response = await vendorService.updateService(serviceId, data);
+      const response = await vendorApi.updateService(serviceId, data);
       return response.data;
     },
     onSuccess: () => {

@@ -48,10 +48,6 @@ export const addModeratorSchema = z.object({
     .regex(phoneRegex, "رقم الهاتف يجب أن يكون بين 7 و 15 رقم"),
   password: z.string().optional().or(z.literal("")),
   role: z.string().min(1, "الرجاء اختيار الدور"),
-  // SUPER_ADMIN supplies a tenant scope for ADMIN/MODERATOR/WL_*
-  // creations. Popup component validates "required when shown" at submit
-  // time; here we just allow the field through.
-  whitelabelId: z.string().optional().or(z.literal("")),
 });
 
 export const editModeratorSchema = z.object({

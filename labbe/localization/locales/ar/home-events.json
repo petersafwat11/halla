@@ -92,7 +92,8 @@
     "buttons": {
       "scheduleEvent": "جدولة المناسبة",
       "testMessage": "رسالة تجريبية",
-      "guests": "ضيف"
+      "guests": "ضيف",
+      "sharePostEvent": "مشاركة صفحة ما بعد المناسبة"
     },
     "quota": {
       "remainingGuests": "ضيوف المناسبة المتبقين",
@@ -102,6 +103,13 @@
   },
   "errors": {
     "loadFailed": "تعذّر تحميل لوحة التحكم"
+  },
+  "staff": {
+    "notifyStaff": "إشعار فريق العمل",
+    "notifying": "جارٍ الإرسال...",
+    "notifySuccess": "تم الإرسال إلى {{sent}} من {{total}} من فريق العمل",
+    "notifyPartial": "تم الإرسال إلى {{sent}} من {{total}}. السبب: {{error}}",
+    "notifyError": "فشل إشعار فريق العمل"
   },
   "subscription": {
     "eventLimitReached": "تم الوصول للحد الأقصى من المناسبات",
@@ -185,7 +193,9 @@
       "whatsapp": "واتساب",
       "sms": "SMS",
       "smsFallback": "SMS (بديل)"
-    }
+    },
+    "confirmDelete": "حذف",
+    "cancelDelete": "إلغاء"
   },
   "confirmDelete": "هل أنت متأكد من حذف هذه المناسبة؟ لا يمكن التراجع عن هذا الإجراء.",
   "deleteSuccess": "تم حذف المناسبة بنجاح",
@@ -288,6 +298,7 @@
       "more": "خيارات إضافية",
       "exportSuccess": "تم تصدير قائمة الضيوف بنجاح",
       "exportError": "فشل في تصدير قائمة الضيوف",
+      "deleteTitle": "حذف الضيف",
       "confirmDelete": "هل أنت متأكد من حذف هذا الضيف؟",
       "deleteSuccess": "تم حذف الضيف بنجاح",
       "deleteError": "فشل في حذف الضيف"

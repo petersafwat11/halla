@@ -1,0 +1,101 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - img "Logo" [ref=e5]
+      - navigation [ref=e6]:
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "الرئيسية" [ref=e9] [cursor=pointer]:
+              - /url: /ar
+          - listitem [ref=e10]:
+            - link "المميزات" [ref=e11] [cursor=pointer]:
+              - /url: /ar#features
+          - listitem [ref=e12]:
+            - link "الباقات" [ref=e13] [cursor=pointer]:
+              - /url: /ar#pricing
+          - listitem [ref=e14]:
+            - link "الدعوات" [ref=e15] [cursor=pointer]:
+              - /url: /ar#invitations
+          - listitem [ref=e16]:
+            - link "سوق هلا" [ref=e17] [cursor=pointer]:
+              - /url: /ar/market-place
+      - generic [ref=e18]:
+        - link "Switch language" [ref=e19] [cursor=pointer]:
+          - /url: /en/market-place
+          - img [ref=e20]
+          - generic [ref=e23]: EN
+        - link "سجل دخولك الان" [ref=e24] [cursor=pointer]:
+          - /url: /ar/login
+          - button "سجل دخولك الان" [ref=e25]
+        - link "انشاء حساب" [ref=e26] [cursor=pointer]:
+          - /url: /ar/signup
+          - button "انشاء حساب" [ref=e27]
+  - generic [ref=e30]:
+    - generic [ref=e31]: سوق هلا
+    - heading "اكتشف مزودي خدمات المناسبات" [level=1] [ref=e32]
+    - paragraph [ref=e33]: تصفّح خدمات موثوقة من مزودين معتمدين لإنجاح مناسبتك القادمة
+  - contentinfo [ref=e38]:
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - heading "معلومات التواصل" [level=3] [ref=e41]
+        - generic [ref=e42]:
+          - link "phone +966 55 261 9282" [ref=e43] [cursor=pointer]:
+            - /url: tel:+966552619282
+            - img "phone" [ref=e44]
+            - generic [ref=e45]: +966 55 261 9282
+          - link "email support@halaa.net" [ref=e46] [cursor=pointer]:
+            - /url: mailto:support@halaa.net
+            - img "email" [ref=e47]
+            - generic [ref=e48]: support@halaa.net
+          - generic [ref=e49]:
+            - img "location" [ref=e50]
+            - generic [ref=e51]: شارع المتحف - جدة - الرمز البريدي 23326
+          - generic [ref=e52]:
+            - link "WhatsApp" [ref=e53] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e54]
+            - link "Twitter" [ref=e56] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e57]
+            - link "Instagram" [ref=e59] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e60]
+            - link "YouTube" [ref=e63] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e64]
+            - link "Snapchat" [ref=e66] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e67]
+      - generic [ref=e69]:
+        - heading "الصفحات المهمة" [level=3] [ref=e70]
+        - navigation [ref=e71]:
+          - link "arrow الشروط والأحكام" [ref=e72] [cursor=pointer]:
+            - /url: /ar/terms
+            - img "arrow" [ref=e73]
+            - generic [ref=e74]: الشروط والأحكام
+          - link "arrow سياسة الخصوصية" [ref=e75] [cursor=pointer]:
+            - /url: /ar/privacy
+            - img "arrow" [ref=e76]
+            - generic [ref=e77]: سياسة الخصوصية
+          - link "arrow سياسة الإلغاء والاسترداد" [ref=e78] [cursor=pointer]:
+            - /url: /ar/refund
+            - img "arrow" [ref=e79]
+            - generic [ref=e80]: سياسة الإلغاء والاسترداد
+      - generic [ref=e82]:
+        - heading "حمل التطبيق" [level=3] [ref=e83]
+        - paragraph [ref=e84]: هلا منصة ذكية لإدارة المناسبات — أنشئ فعالياتك، أرسل دعوات رقمية مخصصة عبر واتساب، وتتبع الحضور في الوقت الفعلي.
+        - generic [ref=e86]:
+          - link "App Store تنزيل من App Store" [ref=e87] [cursor=pointer]:
+            - /url: "#"
+            - img "App Store" [ref=e88]
+            - generic [ref=e89]:
+              - generic [ref=e90]: تنزيل من
+              - generic [ref=e91]: App Store
+          - link "Google Play احصل عليه من Google Play" [ref=e92] [cursor=pointer]:
+            - /url: "#"
+            - img "Google Play" [ref=e93]
+            - generic [ref=e94]:
+              - generic [ref=e95]: احصل عليه من
+              - generic [ref=e96]: Google Play
+    - generic [ref=e98]: جميع الحقوق محفوظة © 2026 هلا

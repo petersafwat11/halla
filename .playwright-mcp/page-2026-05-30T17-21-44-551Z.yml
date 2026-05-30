@@ -1,0 +1,214 @@
+- generic [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halla" [ref=e5] [cursor=pointer]:
+        - /url: /en
+        - img "Halla" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /ar/vendor-dashboard/settings
+          - img [ref=e9]
+          - generic [ref=e12]: AR
+        - button "Notifications (7 unread)" [ref=e64] [cursor=pointer]:
+          - img "notifications" [ref=e15]
+          - generic [ref=e65]: "7"
+        - img "messages" [ref=e16]
+        - button "Vendor" [ref=e18] [cursor=pointer]:
+          - generic [ref=e19]:
+            - img [ref=e21]
+            - generic [ref=e23]: Vendor
+          - img [ref=e25]
+    - generic [ref=e27]:
+      - navigation [ref=e29]:
+        - list [ref=e30]:
+          - listitem [ref=e31] [cursor=pointer]:
+            - link "Services" [ref=e32]:
+              - /url: /vendor-dashboard
+              - img [ref=e33]
+              - generic [ref=e35]: Services
+          - listitem [ref=e36] [cursor=pointer]:
+            - link "Marketplace" [ref=e37]:
+              - /url: /market-place
+              - img [ref=e38]
+              - generic [ref=e40]: Marketplace
+          - listitem [ref=e41] [cursor=pointer]:
+            - link "Tickets" [ref=e42]:
+              - /url: /vendor-dashboard/tickets
+              - img [ref=e43]
+              - generic [ref=e45]: Tickets
+          - listitem [ref=e46] [cursor=pointer]:
+            - link "Settings" [ref=e47]:
+              - /url: /vendor-dashboard/settings
+              - img [ref=e48]
+              - generic [ref=e51]: Settings
+      - button "Logout" [ref=e53]:
+        - img [ref=e54]
+        - generic [ref=e56]: Logout
+    - generic [ref=e66]:
+      - heading "Settings" [level=1] [ref=e68]
+      - generic [ref=e70]:
+        - generic [ref=e71]:
+          - generic [ref=e72]:
+            - generic [ref=e73]: Personal Account Information
+            - button "Edit" [active] [ref=e74] [cursor=pointer]:
+              - img "Edit" [ref=e75]
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - generic [ref=e78]: Store Logo
+              - generic [ref=e79]: No logo
+            - generic [ref=e80]:
+              - generic [ref=e81]:
+                - generic [ref=e82]: Full Name
+                - generic [ref=e83]:
+                  - img "profile" [ref=e84]
+                  - generic [ref=e85]: أحمد محمد السالم
+              - generic [ref=e86]:
+                - generic [ref=e87]: Business Name
+                - generic [ref=e89]: استوديو الإبداع للتصوير
+            - generic [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e92]: Email
+                - generic [ref=e93]:
+                  - img "email" [ref=e94]
+                  - generic [ref=e95]: test.vendor@labbe.sa
+              - generic [ref=e96]:
+                - generic [ref=e97]: Phone / WhatsApp
+                - generic [ref=e99]: "+966523456789"
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - generic [ref=e103]: Service or Store Details
+            - button "Edit" [ref=e104] [cursor=pointer]:
+              - img "Edit" [ref=e105]
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - generic [ref=e108]:
+                - generic [ref=e109]: Other Licenses (Optional)
+                - generic [ref=e110]: No image
+              - generic [ref=e111]:
+                - generic [ref=e112]: Commercial Register Copy (Optional)
+                - generic [ref=e113]: No image
+              - generic [ref=e114]:
+                - generic [ref=e115]: National ID Number - Residence Number
+                - generic [ref=e116]: "1098765433"
+            - generic [ref=e118]:
+              - generic [ref=e119]: Brief Service Description
+              - generic [ref=e120]: نقدم خدمات التصوير الاحترافي للمناسبات والأفراح بأحدث المعدات وفريق متخصص. 4444
+            - generic [ref=e122]:
+              - generic [ref=e123]: Various Activities
+              - generic [ref=e125]:
+                - generic [ref=e126]: event_coordination
+                - generic [ref=e127]: photography
+                - generic [ref=e128]: videography
+                - generic [ref=e129]: drone_coverage
+            - generic [ref=e130]:
+              - generic [ref=e131]: Service Location
+              - generic [ref=e132]:
+                - generic [ref=e133]:
+                  - generic [ref=e134]: Region
+                  - generic [ref=e135]: منطقة عسير
+                - generic [ref=e136]:
+                  - generic [ref=e137]: City
+                  - generic [ref=e138]: محبة
+                - generic [ref=e139]:
+                  - generic [ref=e140]: Districts
+                  - generic [ref=e141]: All districts
+        - generic [ref=e142]:
+          - generic [ref=e143]:
+            - generic [ref=e144]: Images, Offers and Pricing
+            - button "Edit" [ref=e145] [cursor=pointer]:
+              - img "Edit" [ref=e146]
+          - generic [ref=e147]:
+            - generic [ref=e148]:
+              - generic [ref=e149]: Images of Previous Work
+              - generic [ref=e151]:
+                - generic [ref=e152]:
+                  - img "portfolioImages-0" [ref=e154] [cursor=pointer]
+                  - button "Delete" [ref=e155] [cursor=pointer]: ×
+                - generic [ref=e156]:
+                  - img "portfolioImages-1" [ref=e158] [cursor=pointer]
+                  - button "Delete" [ref=e159] [cursor=pointer]: ×
+            - generic [ref=e160]:
+              - generic [ref=e161]: Price Lists and Packages
+              - generic [ref=e164]:
+                - img "pricePackages-0" [ref=e166] [cursor=pointer]
+                - button "Delete" [ref=e167] [cursor=pointer]: ×
+        - generic [ref=e168]:
+          - generic [ref=e169]:
+            - generic [ref=e170]: Additional Links
+            - button "Edit" [ref=e171] [cursor=pointer]:
+              - img "Edit" [ref=e172]
+          - generic [ref=e173]:
+            - generic [ref=e174]:
+              - generic [ref=e175]:
+                - img [ref=e177]
+                - text: Website Link
+              - generic [ref=e179]: https://creativestudio.sa
+            - generic [ref=e180]:
+              - generic [ref=e181]:
+                - img [ref=e183]
+                - text: Instagram Link
+              - generic [ref=e185]: https://instagram.com/creative_studio_sa
+            - generic [ref=e186]:
+              - generic [ref=e187]:
+                - img [ref=e189]
+                - text: Facebook
+              - generic [ref=e191]: https://facebook.com/creative_studio_sa
+            - generic [ref=e192]:
+              - generic [ref=e193]:
+                - img [ref=e195]
+                - text: Twitter
+              - generic [ref=e197]: https://twitter.com/creative_studio_sa
+            - generic [ref=e198]:
+              - generic [ref=e199]:
+                - img [ref=e201]
+                - text: TikTok
+              - generic [ref=e203]: https://tiktok.com/creative_studio_sa
+        - button "Cancel" [ref=e205] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e211] [cursor=pointer]:
+    - img [ref=e212]
+  - alert [ref=e63]
+  - generic [ref=e217]:
+    - generic [ref=e218]:
+      - button [ref=e219] [cursor=pointer]:
+        - img [ref=e220]
+      - heading "Personal Account Information" [level=2] [ref=e223]
+    - generic [ref=e224]:
+      - generic [ref=e225]:
+        - generic [ref=e226]:
+          - generic [ref=e227]: Store Logo
+          - 'button "Drag images here or click to select + إضافة صورة Accepted formats: JPEG, PNG, GIF, WebP" [ref=e229] [cursor=pointer]':
+            - generic [ref=e230]:
+              - paragraph [ref=e231]: Drag images here or click to select
+              - generic [ref=e232]: + إضافة صورة
+              - paragraph [ref=e233]: "Accepted formats: JPEG, PNG, GIF, WebP"
+        - generic [ref=e234]:
+          - generic [ref=e235]:
+            - text: Full Name
+            - generic [ref=e236]: "*"
+          - textbox "Enter your full name" [ref=e237]: أحمد محمد السالم
+        - generic [ref=e238]:
+          - generic [ref=e239]:
+            - text: Business Name
+            - generic [ref=e240]: "*"
+          - textbox "Enter your business name" [ref=e241]: استوديو الإبداع للتصوير
+        - generic [ref=e242]:
+          - generic [ref=e243]:
+            - text: Email
+            - generic [ref=e244]: "*"
+          - textbox "Enter your email" [ref=e245]: test.vendor@labbe.sa
+        - generic [ref=e246]:
+          - generic [ref=e247]: Phone / WhatsApp
+          - textbox "+966 5XX XXX XXXX" [ref=e248]: "+966523456789"
+        - generic [ref=e249]:
+          - generic [ref=e250]: Current Password
+          - textbox "••••••••" [ref=e251]: password123
+        - generic [ref=e252]:
+          - generic [ref=e253]: New Password
+          - textbox "••••••••" [ref=e254]
+        - generic [ref=e255]:
+          - generic [ref=e256]: Confirm Password
+          - textbox "••••••••" [ref=e257]
+      - generic [ref=e258]:
+        - button "Save" [ref=e259] [cursor=pointer]
+        - button "Cancel" [ref=e260] [cursor=pointer]

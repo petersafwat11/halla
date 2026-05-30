@@ -59,6 +59,10 @@ export default function EventsTable() {
   };
 
   const handleStatusChange = async (eventId, newStatus) => {
+    const confirmMessage = newStatus === "cancelled"
+      ? t("events.confirmSuspend", "هل أنت متأكد من إيقاف هذه المناسبة؟")
+      : t("events.confirmActivate", "هل أنت متأكد من تفعيل هذه المناسبة؟");
+    if (!confirm(confirmMessage)) return;
     try {
       await updateStatus.mutateAsync({ eventId, status: newStatus });
       toastUtils.success(t("events.statusUpdateSuccess", "تم تحديث الحالة بنجاح"));
@@ -141,12 +145,6 @@ export default function EventsTable() {
             alignItems: "center",
             borderRadius: "9999px",
             background: config.bg,
-            cursor: canUpdate ? "pointer" : "default",
-          }}
-          onClick={() => {
-            if (!canUpdate) return;
-            const newStatus = value === "cancelled" ? (row.previousStatus || "published") : "cancelled";
-            handleStatusChange(row.id, newStatus);
           }}
         >
           <span style={{ color: config.color, fontFamily: "Cairo", fontSize: "1.2rem" }}>

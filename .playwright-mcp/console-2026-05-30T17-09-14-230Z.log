@@ -1,0 +1,7 @@
+[    2383ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[    2521ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3000/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[    2751ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[    3303ms] [LOG] [API] GET /notifications/unread-count - 200 (730ms) @ http://localhost:3000/_next/static/chunks/_39d7dd9e._.js:2245
+[    3307ms] [LOG] [API] GET /services/stats - 200 (734ms) @ http://localhost:3000/_next/static/chunks/_39d7dd9e._.js:2245
+[    3310ms] [LOG] [API] GET /services - 200 (736ms) @ http://localhost:3000/_next/static/chunks/_39d7dd9e._.js:2245
+[    7028ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/en/vendor-dashboard:0

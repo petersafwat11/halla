@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { useAuthStore } from "../../../stores/authStore";
-import { useTranslation } from "../../../localization";
-import * as eventsService2 from "../../../services/eventsService";
-import EventsService from "../../../hooks/events/useEventForm";
 import useEventActionGate from "@halla/shared/hooks/useEventActionGate";
+import { ENDPOINTS } from "../../../config/api";
+import EventsService from "../../../hooks/events/useEventForm";
+import { useTranslation } from "../../../localization";
+import { apiFetch } from "../../../services/http";
+import { useAuthStore } from "../../../stores/authStore";
 
 /**
  * Maps the event API response onto the form-state shape that the
@@ -34,7 +35,13 @@ const mapApiToFormValues = (eventData) => {
   const replies = eventData.guestReplies || {};
 
   const visualRef = cv.templateRef;
-  const visualTemplate = visualRef
+  const visualTemplate = cv.isCustomUpload
+    ? {
+        isCustomUpload: true,
+        fieldValues: {},
+        bakedImagePath: cv.bakedImagePath || null,
+      }
+    : visualRef
     ? typeof visualRef === "object" && visualRef !== null
       ? {
           ...visualRef,
@@ -43,6 +50,7 @@ const mapApiToFormValues = (eventData) => {
           id: visualRef._id,
           fieldValues: cv.fieldValues || {},
           bakedImagePath: cv.bakedImagePath || null,
+          isCustomUpload: false,
         }
       : {
           templateRef: visualRef,
@@ -50,6 +58,7 @@ const mapApiToFormValues = (eventData) => {
           id: visualRef,
           fieldValues: cv.fieldValues || {},
           bakedImagePath: cv.bakedImagePath || null,
+          isCustomUpload: false,
         }
     : null;
 
@@ -153,11 +162,16 @@ const useEventLoadAndGate = ({ eventId, currentStep }) => {
     (async () => {
       try {
         setLoadingEvent(true);
-        const res = await eventsService2.getEventById(eventId);
+        const response = await apiFetch(ENDPOINTS.EVENTS.BY_ID(eventId));
+        const json = await response.json().catch(() => ({}));
         if (cancelled) return;
-        const payload = res?.data;
-        if (payload) setEventData(payload);
-        else setLoadError(t("events.update.loadError"));
+        if (!response.ok) {
+          setLoadError(json.message || t("events.update.loadError"));
+        } else if (json?.data) {
+          setEventData(json.data);
+        } else {
+          setLoadError(t("events.update.loadError"));
+        }
       } catch (err) {
         if (!cancelled) {
           setLoadError(err?.message || t("events.update.loadError"));

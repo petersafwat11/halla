@@ -2,20 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { ENDPOINTS } from "../../../config/api";
 import { apiFetch } from "../../../services/http";
-import {
-  updateEventDetails as updateEventDetailsAPI,
-  deleteEvent as deleteEventAPI,
-  bulkDeleteEvents as bulkDeleteEventsAPI,
-  updateEventStep2 as updateEventStep2API,
-  updateGuestList as updateGuestListAPI,
-  updateStaffList as updateStaffListAPI,
-  addStaff as addStaffAPI,
-  updateStaff as updateStaffAPI,
-  deleteStaff as deleteStaffAPI,
-  updateInvitationSettings as updateInvitationSettingsAPI,
-  updateLaunchSettings as updateLaunchSettingsAPI,
-  retryLaunch as retryLaunchAPI,
-} from "../../../services/eventsService";
 
 /**
  * Unified event mutation factory. Mirrors the web hook at
@@ -49,6 +35,159 @@ const invalidateSingleEvent = (queryClient, eventId) => {
   }
 };
 
+const jsonRequest = async (path, options = {}) => {
+  const fetchOpts = {
+    method: options.method || "GET",
+    headers: options.headers || {},
+  };
+  if (options.body !== undefined && options.body !== null) {
+    fetchOpts.body =
+      typeof options.body === "string" ? JSON.parse(options.body) : options.body;
+  }
+  const res = await apiFetch(path, fetchOpts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || "API request failed");
+  return data;
+};
+
+const newIdempotencyKey = (prefix) =>
+  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+const _updateEventDetails = (eventId, eventDetails) => {
+  if (!eventId) throw new Error("Event ID is required");
+  return jsonRequest(ENDPOINTS.EVENTS.UPDATE_DETAILS(eventId), {
+    method: "PATCH",
+    body: eventDetails,
+  });
+};
+
+const _deleteEvent = async (eventId) => {
+  await jsonRequest(ENDPOINTS.EVENTS.DELETE(eventId), { method: "DELETE" });
+};
+
+const _bulkDeleteEvents = (eventIds) => {
+  if (!eventIds || !Array.isArray(eventIds) || eventIds.length === 0) {
+    throw new Error("Event IDs array is required");
+  }
+  if (eventIds.length > 100) {
+    throw new Error("Cannot delete more than 100 events at once");
+  }
+  return jsonRequest(ENDPOINTS.EVENTS.BULK_DELETE, {
+    method: "POST",
+    body: { eventIds },
+  });
+};
+
+const _updateEventStep2 = async (eventId, payload) => {
+  const data = await jsonRequest(ENDPOINTS.EVENTS.UPDATE_STEP2(eventId), {
+    method: "PATCH",
+    body: {
+      guestList: Array.isArray(payload?.guestList) ? payload.guestList : [],
+      staffList: Array.isArray(payload?.staffList) ? payload.staffList : [],
+    },
+  });
+  return data?.data?.event;
+};
+
+const _updateGuestList = async (eventId, guestList, staffList = null) => {
+  const body = { guestList };
+  if (staffList) body.staffList = staffList;
+  const data = await jsonRequest(ENDPOINTS.EVENTS.UPDATE_GUEST_LIST(eventId), {
+    method: "PATCH",
+    body,
+  });
+  return data?.data?.event;
+};
+
+const _updateStaffList = async (eventId, staffList) => {
+  const data = await jsonRequest(ENDPOINTS.EVENTS.UPDATE_STAFF_LIST(eventId), {
+    method: "PATCH",
+    body: { staffList },
+  });
+  return data?.data?.event;
+};
+
+const _addStaff = async (eventId, staffData) => {
+  const data = await jsonRequest(ENDPOINTS.EVENTS.ADD_STAFF(eventId), {
+    method: "POST",
+    body: staffData,
+  });
+  return data?.data?.staff;
+};
+
+const _updateStaff = async (eventId, staffId, staffData) => {
+  const data = await jsonRequest(ENDPOINTS.EVENTS.UPDATE_STAFF(eventId, staffId), {
+    method: "PUT",
+    body: staffData,
+  });
+  return data?.data?.staff;
+};
+
+const _deleteStaff = async (eventId, staffId) => {
+  await jsonRequest(ENDPOINTS.EVENTS.DELETE_STAFF(eventId, staffId), {
+    method: "DELETE",
+  });
+};
+
+/**
+ * Update invitation settings. Backend expects multipart/form-data
+ * (uploadTemplateImage middleware); apiFetch detects FormData and skips JSON
+ * serialization (Content-Type set by fetch boundary).
+ */
+const _updateInvitationSettings = async (eventId, invitationSettings) => {
+  const formData = new FormData();
+  const { templateImage, ...restSettings } = invitationSettings;
+
+  Object.entries(restSettings).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(
+        key,
+        typeof value === "object" ? JSON.stringify(value) : String(value),
+      );
+    }
+  });
+
+  if (templateImage && typeof templateImage === "object" && templateImage.uri) {
+    formData.append("templateImage", {
+      uri: templateImage.uri,
+      type: templateImage.type || "image/jpeg",
+      name: templateImage.fileName || "template.jpg",
+    });
+  }
+
+  const response = await apiFetch(ENDPOINTS.EVENTS.UPDATE_INVITATION(eventId), {
+    method: "PATCH",
+    body: formData,
+    timeoutMs: 60 * 1000,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to update invitation settings");
+  }
+  return data?.data?.event;
+};
+
+const _updateLaunchSettings = (eventId, launchSettings) => {
+  if (!eventId) throw new Error("Event ID is required");
+  return jsonRequest(ENDPOINTS.EVENTS.UPDATE_LAUNCH(eventId), {
+    method: "PATCH",
+    body: launchSettings,
+  });
+};
+
+/**
+ * Manually retry a failed event launch. RBAC enforced server-side. Per-click
+ * idempotency key protects against double-tap.
+ */
+const _retryLaunch = async (eventId) => {
+  const idempotencyKey = newIdempotencyKey(`retry-${eventId}`);
+  const data = await jsonRequest(ENDPOINTS.EVENTS.RETRY_LAUNCH(eventId), {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+  });
+  return data?.data || data;
+};
+
 const ACTIONS = {
   // --------------------------------------------------------------- CRUD
   createEvent: {
@@ -71,27 +210,26 @@ const ACTIONS = {
   },
 
   updateEventDetails: {
-    mutationFn: ({ eventId, eventData }) =>
-      updateEventDetailsAPI(eventId, eventData),
+    mutationFn: ({ eventId, eventData }) => _updateEventDetails(eventId, eventData),
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
 
   deleteEvent: {
-    mutationFn: (eventId) => deleteEventAPI(eventId),
+    mutationFn: (eventId) => _deleteEvent(eventId),
     onSuccess: (_data, _vars, _ctx, queryClient) =>
       invalidateEventList(queryClient),
   },
 
   bulkDeleteEvents: {
-    mutationFn: (eventIds) => bulkDeleteEventsAPI(eventIds),
+    mutationFn: (eventIds) => _bulkDeleteEvents(eventIds),
     onSuccess: (_data, _vars, _ctx, queryClient) =>
       invalidateEventList(queryClient),
   },
 
   updateEventStep2: {
     mutationFn: ({ eventId, guestList, staffList }) =>
-      updateEventStep2API(eventId, { guestList, staffList }),
+      _updateEventStep2(eventId, { guestList, staffList }),
     onSuccess: (_data, vars, _ctx, queryClient) => {
       invalidateSingleEvent(queryClient, vars?.eventId);
       // Mirror web's `["guests", "events", eventId]` invalidation so any
@@ -106,8 +244,7 @@ const ACTIONS = {
 
   // -------------------------------------------------------------- Guest
   updateGuestList: {
-    mutationFn: ({ eventId, guestData }) =>
-      updateGuestListAPI(eventId, guestData),
+    mutationFn: ({ eventId, guestData }) => _updateGuestList(eventId, guestData),
     onSuccess: (_data, vars, _ctx, queryClient) => {
       if (vars?.eventId) {
         queryClient.invalidateQueries({
@@ -119,27 +256,25 @@ const ACTIONS = {
 
   // -------------------------------------------------------------- Staff
   updateStaffList: {
-    mutationFn: ({ eventId, staffList }) =>
-      updateStaffListAPI(eventId, staffList),
+    mutationFn: ({ eventId, staffList }) => _updateStaffList(eventId, staffList),
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
 
   addStaff: {
-    mutationFn: ({ eventId, data }) => addStaffAPI(eventId, data),
+    mutationFn: ({ eventId, data }) => _addStaff(eventId, data),
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
 
   updateStaff: {
-    mutationFn: ({ eventId, staffId, data }) =>
-      updateStaffAPI(eventId, staffId, data),
+    mutationFn: ({ eventId, staffId, data }) => _updateStaff(eventId, staffId, data),
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
 
   deleteStaff: {
-    mutationFn: ({ eventId, staffId }) => deleteStaffAPI(eventId, staffId),
+    mutationFn: ({ eventId, staffId }) => _deleteStaff(eventId, staffId),
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
@@ -161,15 +296,14 @@ const ACTIONS = {
 
   // ----------------------------------------------------------- Settings
   updateInvitationSettings: {
-    mutationFn: ({ eventId, settings }) =>
-      updateInvitationSettingsAPI(eventId, settings),
+    mutationFn: ({ eventId, settings }) => _updateInvitationSettings(eventId, settings),
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
 
   updateLaunchSettings: {
     mutationFn: ({ eventId, launchSettings }) =>
-      updateLaunchSettingsAPI(eventId, launchSettings),
+      _updateLaunchSettings(eventId, launchSettings),
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
@@ -200,7 +334,7 @@ const ACTIONS = {
           visualTemplate.id;
       }
       if (templateImage !== undefined) settings.templateImage = templateImage;
-      return updateInvitationSettingsAPI(eventId, settings);
+      return _updateInvitationSettings(eventId, settings);
     },
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
@@ -217,7 +351,7 @@ const ACTIONS = {
       const settings = {};
       if (selectedTemplate !== undefined) settings.selectedTemplate = selectedTemplate;
       if (ref) settings.taqnyatTemplateRef = ref;
-      return updateInvitationSettingsAPI(eventId, settings);
+      return _updateInvitationSettings(eventId, settings);
     },
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
@@ -244,16 +378,36 @@ const ACTIONS = {
         if (guestReplies.onAbsent !== undefined) settings.absenceAutoReply = guestReplies.onAbsent;
         if (guestReplies.onExpected !== undefined) settings.expectedAttendanceAutoReply = guestReplies.onExpected;
       }
-      return updateInvitationSettingsAPI(eventId, settings);
+      return _updateInvitationSettings(eventId, settings);
     },
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
 
   retryLaunch: {
-    mutationFn: ({ eventId }) => retryLaunchAPI(eventId),
+    mutationFn: ({ eventId }) => _retryLaunch(eventId),
     onSuccess: (_data, vars, _ctx, queryClient) =>
       invalidateSingleEvent(queryClient, vars?.eventId),
+  },
+
+  /**
+   * Export events to XLSX. Returns `{ success, blob, filename }` — the caller
+   * hands the blob to `saveBlobAndShare`. Listed as a mutation (not query)
+   * because each invocation is a one-shot download triggered by user action.
+   */
+  exportEvents: {
+    mutationFn: async () => {
+      const response = await apiFetch(ENDPOINTS.EVENTS.EXPORT_EVENTS, {
+        method: "GET",
+        timeoutMs: 60 * 1000,
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to export events");
+      }
+      const blob = await response.blob();
+      return { success: true, blob, filename: "events-export.xlsx" };
+    },
   },
 };
 
@@ -307,5 +461,8 @@ export const useUpdateTaqnyatTemplate = () =>
 export const useUpdateMessagingContent = () =>
   useEventMutation("updateMessagingContent");
 export const useRetryLaunch = () => useEventMutation("retryLaunch");
+
+// Exports
+export const useExportEvents = () => useEventMutation("exportEvents");
 
 export default useEventMutation;

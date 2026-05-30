@@ -11,7 +11,7 @@ import React, { useState } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
-import * as staffService from "../../services/staffService";
+import { clearStaffToken } from "../../services/secureStorage";
 import LoginView from "../../components/common/staff-portal/LoginView";
 import PortalView from "../../components/common/staff-portal/PortalView";
 
@@ -37,7 +37,7 @@ export default function StaffPortalScreen() {
           text: t("portal.logout"),
           style: "destructive",
           onPress: async () => {
-            await staffService.clearStaffToken();
+            await clearStaffToken();
             setStaffInfo(null);
             setEventInfo(null);
             setEventId(null);

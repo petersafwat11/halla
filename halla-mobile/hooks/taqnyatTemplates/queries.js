@@ -1,7 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
+import { ENDPOINTS } from "../../config/api";
+import { apiFetch } from "../../services/http";
 import { useAuthStore } from "../../stores/authStore";
-import { taqnyatTemplatesService } from "../../services/taqnyatTemplatesService";
 import { taqnyatTemplatesKeys } from "./keys";
+
+const buildQuery = (params = {}) => {
+  const qs = new URLSearchParams(
+    Object.entries(params).filter(
+      ([, v]) => v !== undefined && v !== null && v !== ""
+    )
+  ).toString();
+  return qs ? `?${qs}` : "";
+};
 
 /**
  * Fetch the host-facing Taqnyat templates filtered by (category, type).
@@ -15,7 +25,14 @@ export function useHostTaqnyatTemplates({ category, type } = {}, opts = {}) {
 
   return useQuery({
     queryKey: taqnyatTemplatesKeys.hostList({ category, type }),
-    queryFn: () => taqnyatTemplatesService.getTemplates({ category, type }),
+    queryFn: async () => {
+      const res = await apiFetch(
+        `${ENDPOINTS.TAQNYAT_TEMPLATES.LIST}${buildQuery({ category, type })}`
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || "Request failed");
+      return data;
+    },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
     ...opts,

@@ -47,6 +47,19 @@
   margin-top: 0.4rem;
 }
 
+.addBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.6rem;
+  border-radius: 999px;
+  background: var(--color-primary, #c28e5c);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .fileList {
   display: flex;
   flex-direction: column;

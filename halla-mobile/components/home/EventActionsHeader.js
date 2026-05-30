@@ -87,73 +87,72 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
     );
   };
 
+  const hasAnyOutlineAction = canSendTest || canSchedule || hasStaff || isCompleted;
+
   return (
     <>
       <View style={styles.container}>
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={[styles.outlineButton, !canSendTest && styles.outlineButtonDisabled]}
-            onPress={() => setShowTestModal(true)}
-            activeOpacity={0.7}
-            disabled={!canSendTest}
-          >
-            <Ionicons name="paper-plane-outline" size={14} color={canSendTest ? "#6B4E33" : "#B5A691"} />
-            <Text style={[styles.outlineButtonText, !canSendTest && styles.outlineButtonTextDisabled]}>
-              {t("testMessage.title", "رسالة تجريبية")}
-            </Text>
-          </TouchableOpacity>
+        {hasAnyOutlineAction && (
+          <View style={styles.actionsRow}>
+            {canSendTest && (
+              <TouchableOpacity
+                style={styles.outlineButton}
+                onPress={() => setShowTestModal(true)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="paper-plane-outline" size={14} color="#6B4E33" />
+                <Text style={styles.outlineButtonText}>
+                  {t("testMessage.title", "رسالة تجريبية")}
+                </Text>
+              </TouchableOpacity>
+            )}
 
-          <TouchableOpacity
-            style={[styles.outlineButton, !canSchedule && styles.outlineButtonDisabled]}
-            onPress={() => setShowScheduleModal(true)}
-            activeOpacity={0.7}
-            disabled={!canSchedule}
-          >
-            <Ionicons name="calendar-outline" size={14} color={canSchedule ? "#6B4E33" : "#B5A691"} />
-            <Text style={[styles.outlineButtonText, !canSchedule && styles.outlineButtonTextDisabled]}>
-              {t("scheduleSend.title", "جدولة الإرسال")}
-            </Text>
-          </TouchableOpacity>
+            {canSchedule && (
+              <TouchableOpacity
+                style={styles.outlineButton}
+                onPress={() => setShowScheduleModal(true)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="calendar-outline" size={14} color="#6B4E33" />
+                <Text style={styles.outlineButtonText}>
+                  {t("scheduleSend.title", "جدولة الإرسال")}
+                </Text>
+              </TouchableOpacity>
+            )}
 
-          <TouchableOpacity
-            style={[
-              styles.outlineButton,
-              (!hasStaff || notifyStaffMutation.isPending) && styles.outlineButtonDisabled,
-            ]}
-            onPress={handleNotifyStaff}
-            activeOpacity={0.7}
-            disabled={!hasStaff || notifyStaffMutation.isPending}
-          >
-            <Ionicons
-              name="megaphone-outline"
-              size={14}
-              color={hasStaff ? "#6B4E33" : "#B5A691"}
-            />
-            <Text
-              style={[
-                styles.outlineButtonText,
-                !hasStaff && styles.outlineButtonTextDisabled,
-              ]}
-            >
-              {notifyStaffMutation.isPending
-                ? t("staff.notifying", "جاري الإرسال...")
-                : t("staff.notifyStaff", "إشعار الطاقم")}
-            </Text>
-          </TouchableOpacity>
+            {hasStaff && (
+              <TouchableOpacity
+                style={[
+                  styles.outlineButton,
+                  notifyStaffMutation.isPending && styles.outlineButtonDisabled,
+                ]}
+                onPress={handleNotifyStaff}
+                activeOpacity={0.7}
+                disabled={notifyStaffMutation.isPending}
+              >
+                <Ionicons name="megaphone-outline" size={14} color="#6B4E33" />
+                <Text style={styles.outlineButtonText}>
+                  {notifyStaffMutation.isPending
+                    ? t("staff.notifying", "جاري الإرسال...")
+                    : t("staff.notifyStaff", "إشعار الطاقم")}
+                </Text>
+              </TouchableOpacity>
+            )}
 
-          {isCompleted && (
-            <TouchableOpacity
-              style={styles.outlineButton}
-              onPress={() => navigation.navigate("ManagePostEvent", { eventId })}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="share-social-outline" size={14} color="#6B4E33" />
-              <Text style={styles.outlineButtonText}>
-                {t("postEvent.share", "مشاركة ما بعد المناسبة")}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+            {isCompleted && (
+              <TouchableOpacity
+                style={styles.outlineButton}
+                onPress={() => navigation.navigate("ManagePostEvent", { eventId })}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="share-social-outline" size={14} color="#6B4E33" />
+                <Text style={styles.outlineButtonText}>
+                  {t("postEvent.share", "مشاركة ما بعد المناسبة")}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         <View style={styles.primaryRow}>
           <TouchableOpacity

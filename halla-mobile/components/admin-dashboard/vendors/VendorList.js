@@ -4,9 +4,8 @@ import { useTranslation } from "../../../localization";
 import { backgrounds, colors } from "../../../styles/tokens";
 import { useAuthStore } from "../../../stores/authStore";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
-import { useBulkDeleteVendors, useBulkApproveVendors, useBulkSuspendVendors } from "../../../hooks";
+import { useBulkApproveVendors, useBulkDeleteVendors, useBulkSuspendVendors, useExportVendors } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
-import adminDashboardService from "../../../services/adminDashboardService";
 import AdminPageHeader from "../common/AdminPageHeader";
 import AdminFlatList from "../common/AdminFlatList";
 import ExportButton from "../common/ExportButton";
@@ -39,11 +38,11 @@ const VendorList = ({
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
-  const token = useAuthStore((state) => state.token);
   const role  = useAuthStore((state) => state.user?.role);
   const canEdit   = canEditPage(role, PAGES.VENDORS);
   const canDelete = canDeleteOnPage(role, PAGES.VENDORS);
   const bulkDelete  = useBulkDeleteVendors();
+  const exportVendors = useExportVendors();
   const bulkApprove = useBulkApproveVendors();
   const bulkSuspend = useBulkSuspendVendors();
   const toast = useToast();
@@ -101,7 +100,7 @@ const VendorList = ({
   const handleExport = async () => {
     try {
       setExportLoading(true);
-      await adminDashboardService.vendors.export(token);
+      await exportVendors.mutateAsync({});
     } catch {
       toast.error(t("common.error"));
     } finally {

@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import {
   renderSentViaBadge,
@@ -74,7 +75,7 @@ export default function GuestRows({
       actions={[
         {
           type: "dropdown",
-          icon: "/svg/events/edit.svg",
+          icon: <FiEdit2 size={16} />,
           text: t("table.actions.edit", "تعديل"),
           onClick: (row) => {
             const guest = guestsList.find((g) => g.id === row.id);
@@ -83,7 +84,7 @@ export default function GuestRows({
         },
         {
           type: "dropdown",
-          icon: "/svg/events/delete.svg",
+          icon: <FiTrash2 size={16} />,
           text: t("table.actions.delete", "حذف"),
           onClick: (row) => {
             const guest = guestsList.find((g) => g.id === row.id);

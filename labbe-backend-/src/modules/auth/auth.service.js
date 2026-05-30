@@ -402,6 +402,9 @@ class AuthService {
     await this._checkDuplicates(email, normalizedPhone);
 
     // Create host
+    // notificationPreferences.appNotifications seeds every toggle as on so
+    // a new host receives every in-app notification by default. They can
+    // opt out per-channel from Settings → Notifications.
     const host = await User.create({
       email: email?.toLowerCase(),
       phoneNumber: normalizedPhone,
@@ -414,6 +417,16 @@ class AuthService {
         hostData: {
           profileCompleted: false,
           emailVerified: false,
+        },
+      },
+      notificationPreferences: {
+        appNotifications: {
+          eventUpdates: true,
+          eventReminders: true,
+          guestResponses: true,
+          guestCheckIns: true,
+          subscriptionAlerts: true,
+          systemUpdates: true,
         },
       },
     });
@@ -854,6 +867,16 @@ class AuthService {
           hostData: {
             profileCompleted: false,
             phoneVerified: true,
+          },
+        },
+        notificationPreferences: {
+          appNotifications: {
+            eventUpdates: true,
+            eventReminders: true,
+            guestResponses: true,
+            guestCheckIns: true,
+            subscriptionAlerts: true,
+            systemUpdates: true,
           },
         },
       });

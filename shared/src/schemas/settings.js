@@ -219,61 +219,6 @@ export const mobileAccountSettingsSchema = z
     }
   );
 
-// ============================================================
-// LEGACY NOTIFICATION PREFS (older settings page shape)
-//
-// Kept for back-compat with web's older settings flow. The newer,
-// role-aware schemas live further down (`hostNotificationPreferencesSchema`
-// etc.) and back the per-role NotificationPreferences UI.
-// ============================================================
-
-export const emailNotificationSchema = z.object({
-  eventReminders: z.boolean().default(true),
-  guestUpdates: z.boolean().default(true),
-  paymentAlerts: z.boolean().default(true),
-  marketingEmails: z.boolean().default(false),
-  weeklyDigest: z.boolean().default(true),
-});
-
-export const pushNotificationSchema = z.object({
-  eventReminders: z.boolean().default(true),
-  guestUpdates: z.boolean().default(true),
-  paymentAlerts: z.boolean().default(true),
-  chatMessages: z.boolean().default(true),
-});
-
-export const smsNotificationSchema = z.object({
-  eventReminders: z.boolean().default(false),
-  urgentAlerts: z.boolean().default(true),
-});
-
-export const notificationPreferencesSchema = z.object({
-  email: emailNotificationSchema.optional(),
-  push: pushNotificationSchema.optional(),
-  sms: smsNotificationSchema.optional(),
-});
-
-export const appNotificationsSchema = z.object({
-  eventUpdates: z.boolean().default(true),
-  eventDates: z.boolean().default(true),
-  packageRenewal: z.boolean().default(true),
-  systemInteractions: z.boolean().default(true),
-});
-
-export const hostEmailNotificationsSchemaLegacy = z.object({
-  eventUpdates: z.boolean().default(false),
-  eventDates: z.boolean().default(false),
-  packageRenewal: z.boolean().default(false),
-  beforeSendingInvitations: z.boolean().default(false),
-  afterSendingInvitations: z.boolean().default(false),
-});
-
-export const notificationsSchema = (_t = idT) =>
-  z.object({
-    appNotifications: appNotificationsSchema,
-    emailNotifications: hostEmailNotificationsSchemaLegacy,
-  });
-
 export const accountDeletionSchema = (t = idT) =>
   z.object({
     password: z
@@ -312,29 +257,6 @@ export const hostAppNotificationsSchema = z.object({
   systemUpdates: z.boolean().default(true),
 });
 
-export const hostEmailNotificationsSchema = z.object({
-  eventUpdates: z.boolean().default(false),
-  eventReminders: z.boolean().default(true),
-  guestResponses: z.boolean().default(false),
-  subscriptionAlerts: z.boolean().default(true),
-  invitationReports: z.boolean().default(true),
-});
-
-export const vendorAppNotificationsSchema = z.object({
-  serviceInquiries: z.boolean().default(true),
-  adminReviews: z.boolean().default(true),
-  profileViews: z.boolean().default(false),
-  approvalStatus: z.boolean().default(true),
-  systemUpdates: z.boolean().default(true),
-});
-
-export const vendorEmailNotificationsSchema = z.object({
-  serviceInquiries: z.boolean().default(true),
-  adminReviews: z.boolean().default(true),
-  weeklyReport: z.boolean().default(true),
-  approvalStatus: z.boolean().default(true),
-});
-
 export const adminAppNotificationsSchema = z.object({
   newUsers: z.boolean().default(true),
   vendorApprovals: z.boolean().default(true),
@@ -369,12 +291,6 @@ export const whitelabelEmailNotificationsSchema = z.object({
 
 export const hostNotificationPreferencesSchema = z.object({
   appNotifications: hostAppNotificationsSchema,
-  emailNotifications: hostEmailNotificationsSchema,
-});
-
-export const vendorNotificationPreferencesSchema = z.object({
-  appNotifications: vendorAppNotificationsSchema,
-  emailNotifications: vendorEmailNotificationsSchema,
 });
 
 export const adminNotificationPreferencesSchema = z.object({
@@ -410,11 +326,12 @@ export const getNotificationSchemaForRole = (role) => {
     case USER_ROLES.WHITELABEL_ADMIN:
     case USER_ROLES.WHITELABEL_MODERATOR:
       return whitelabelNotificationPreferencesSchema;
-    case USER_ROLES.VENDOR:
-      return vendorNotificationPreferencesSchema;
     case USER_ROLES.HOST:
-    default:
       return hostNotificationPreferencesSchema;
+    default:
+      throw new Error(
+        `No notification preferences schema for role: ${role}`
+      );
   }
 };
 
@@ -426,29 +343,6 @@ export const hostNotificationDefaults = {
     guestCheckIns: true,
     subscriptionAlerts: true,
     systemUpdates: true,
-  },
-  emailNotifications: {
-    eventUpdates: false,
-    eventReminders: true,
-    guestResponses: false,
-    subscriptionAlerts: true,
-    invitationReports: true,
-  },
-};
-
-export const vendorNotificationDefaults = {
-  appNotifications: {
-    serviceInquiries: true,
-    adminReviews: true,
-    profileViews: false,
-    approvalStatus: true,
-    systemUpdates: true,
-  },
-  emailNotifications: {
-    serviceInquiries: true,
-    adminReviews: true,
-    weeklyReport: true,
-    approvalStatus: true,
   },
 };
 
@@ -495,11 +389,12 @@ export const getNotificationDefaultsForRole = (role) => {
     case USER_ROLES.WHITELABEL_ADMIN:
     case USER_ROLES.WHITELABEL_MODERATOR:
       return whitelabelNotificationDefaults;
-    case USER_ROLES.VENDOR:
-      return vendorNotificationDefaults;
     case USER_ROLES.HOST:
-    default:
       return hostNotificationDefaults;
+    default:
+      throw new Error(
+        `No notification preferences defaults for role: ${role}`
+      );
   }
 };
 
@@ -518,20 +413,6 @@ export const mobileNotificationSettingsSchema = z.object({
     subscriptionAlerts: z.boolean(),
     systemUpdates: z.boolean(),
   }),
-  emailNotifications: z.object({
-    eventUpdates: z.boolean(),
-    eventReminders: z.boolean(),
-    guestResponses: z.boolean(),
-    subscriptionAlerts: z.boolean(),
-    invitationReports: z.boolean(),
-  }),
-  smsNotifications: z
-    .object({
-      eventReminders: z.boolean(),
-      guestConfirmations: z.boolean(),
-      importantUpdates: z.boolean(),
-    })
-    .optional(),
 });
 
 // ============================================================
@@ -549,26 +430,6 @@ export const getPasswordDefaults = () => ({
   currentPassword: "",
   newPassword: "",
   confirmPassword: "",
-});
-
-export const getNotificationDefaults = () => ({
-  email: {
-    eventReminders: true,
-    guestUpdates: true,
-    paymentAlerts: true,
-    marketingEmails: false,
-    weeklyDigest: true,
-  },
-  push: {
-    eventReminders: true,
-    guestUpdates: true,
-    paymentAlerts: true,
-    chatMessages: true,
-  },
-  sms: {
-    eventReminders: false,
-    urgentAlerts: true,
-  },
 });
 
 export const validateProfileData = (data, t) => {

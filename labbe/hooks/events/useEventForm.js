@@ -62,8 +62,22 @@ export const transformStaffList = (staff = []) =>
 // are populated by the backend (events.crud.service findById path) so the
 // step-3 picker / step-4 picker can highlight the saved selection and
 // preview body text without a follow-up fetch.
+//
+// Custom-upload events: the doc has `isCustomUpload: true`, no
+// templateRef, and the uploaded image URL on `bakedImagePath`. We carry
+// the flag through so StepThree opens in upload mode and the host sees
+// the previously uploaded card.
 const populatedVisualTemplate = (event) => {
-  const ref = event.visualTemplate?.templateRef;
+  const vt = event.visualTemplate;
+  if (!vt) return null;
+  if (vt.isCustomUpload) {
+    return {
+      isCustomUpload: true,
+      fieldValues: {},
+      bakedImagePath: vt.bakedImagePath || null,
+    };
+  }
+  const ref = vt.templateRef;
   if (!ref) return null;
   // Populated docs are objects with _id; raw ObjectId strings are bare
   // strings. Both shapes carry the canonical templateRef forward.
@@ -71,14 +85,16 @@ const populatedVisualTemplate = (event) => {
     return {
       ...ref,
       templateRef: ref._id,
-      fieldValues: event.visualTemplate.fieldValues || {},
-      bakedImagePath: event.visualTemplate.bakedImagePath || null,
+      fieldValues: vt.fieldValues || {},
+      bakedImagePath: vt.bakedImagePath || null,
+      isCustomUpload: false,
     };
   }
   return {
     templateRef: ref,
-    fieldValues: event.visualTemplate.fieldValues || {},
-    bakedImagePath: event.visualTemplate.bakedImagePath || null,
+    fieldValues: vt.fieldValues || {},
+    bakedImagePath: vt.bakedImagePath || null,
+    isCustomUpload: false,
   };
 };
 
@@ -107,7 +123,8 @@ export const mapEventToFormValues = (event) => ({
   address: event.eventDetails?.location || DEFAULT_ADDRESS,
   guestList: transformGuestList(event.guestList),
   staffList: transformStaffList(event.staffList),
-  templateImage: event.visualTemplate?.bakedImagePath || "",
+  templateImage:
+    event.visualTemplate?.bakedImagePath || event.templateImage || "",
   visualTemplate: populatedVisualTemplate(event),
   selectedTemplate: populatedSelectedTemplate(event),
   taqnyatTemplate: event.taqnyatTemplate || null,
@@ -141,14 +158,20 @@ export const buildEventPayload = (data) => ({
   })),
   // Canonical top-level keys (no legacy invitationSettings mirror).
   visualTemplate: data.visualTemplate
-    ? {
-        templateRef:
-          data.visualTemplate.templateRef ||
-          data.visualTemplate._id ||
-          data.visualTemplate.id,
-        fieldValues:
-          data.visualTemplate.fieldValues || data.visualTemplate.data || {},
-      }
+    ? data.visualTemplate.isCustomUpload
+      ? {
+          isCustomUpload: true,
+          fieldValues: {},
+        }
+      : {
+          templateRef:
+            data.visualTemplate.templateRef ||
+            data.visualTemplate._id ||
+            data.visualTemplate.id,
+          fieldValues:
+            data.visualTemplate.fieldValues || data.visualTemplate.data || {},
+          isCustomUpload: false,
+        }
     : undefined,
   taqnyatTemplate: data.selectedTemplate
     ? {
@@ -353,16 +376,22 @@ export const useEventForm = (options = {}) => {
             type: "invitationSettings",
             data: {
               visualTemplate: formData.visualTemplate
-                ? {
-                    templateRef:
-                      formData.visualTemplate.templateRef ||
-                      formData.visualTemplate._id ||
-                      formData.visualTemplate.id,
-                    fieldValues:
-                      formData.visualTemplate.fieldValues ||
-                      formData.visualTemplate.data ||
-                      {},
-                  }
+                ? formData.visualTemplate.isCustomUpload
+                  ? {
+                      isCustomUpload: true,
+                      fieldValues: {},
+                    }
+                  : {
+                      templateRef:
+                        formData.visualTemplate.templateRef ||
+                        formData.visualTemplate._id ||
+                        formData.visualTemplate.id,
+                      fieldValues:
+                        formData.visualTemplate.fieldValues ||
+                        formData.visualTemplate.data ||
+                        {},
+                      isCustomUpload: false,
+                    }
                 : undefined,
               ...(formData.templateImage instanceof File && {
                 templateImage: formData.templateImage,

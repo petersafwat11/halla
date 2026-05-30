@@ -19,6 +19,8 @@ const { computePrice, resolveScope } = require('../addons/addons.pricing');
 const { applyQuota } = require('../addons/addons.quota');
 const { recordPendingRefund } = require('../addons/addons.refund');
 const notificationService = require('../notifications/notifications.service');
+const email = require('../../../email');
+const config = require('../../config');
 
 class CheckoutService {
   /**
@@ -504,6 +506,23 @@ class CheckoutService {
       messageAr: `تم تفعيل اشتراكك في باقة ${planCode}.`,
       data: { entityType: 'subscription', entityId: subscription._id, metadata: { planCode } },
     }).catch((e) => logger.warn('[checkout] notify user failed', { error: e?.message }));
+
+    // Plan/payment emails always fire — host has no opt-out for these.
+    if (user.email) {
+      const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
+      email.send.paymentConfirmation(user.email, {
+        userName: user.name || user.username || '',
+        amount: totals?.totalAmount ?? totals?.amount ?? paymentRecord?.amount ?? 0,
+        currency: paymentRecord?.currency || plan?.currency || 'SAR',
+        planName: plan?.name || planCode,
+        paymentDate: new Date(),
+        invoiceNumber: paymentRecord?.moyasarPaymentId || String(paymentRecord?._id || ''),
+        paymentMethod: paymentRecord?.paymentMethod || paymentRecord?.metadata?.source || 'card',
+        invoiceUrl: `${frontendUrl}/ar/host/subscription`,
+      }).catch((e) =>
+        logger.warn('[checkout] payment confirmation email failed', { error: e?.message })
+      );
+    }
 
     return {
       subscription: subscription.getSummary ? subscription.getSummary() : subscription,

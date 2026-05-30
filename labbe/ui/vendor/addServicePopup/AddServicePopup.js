@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import styles from "./addServicePopup.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
@@ -16,6 +16,25 @@ import {
 import { useServiceMutation } from "@/hooks/vendorServices";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
+import { getImageUrl } from "@/utils/vendorHelpers";
+
+const ExistingImagePreview = ({ control, existingImageUrl, t }) => {
+  const newFiles = useWatch({ control, name: "image" });
+  const hasNewFile = Array.isArray(newFiles) && newFiles.length > 0;
+  if (!existingImageUrl || hasNewFile) return null;
+  return (
+    <div className={styles.existingImageWrapper}>
+      <p className={styles.existingImageLabel}>
+        {t("addServicePopup.imageUpload.current", "Current image")}
+      </p>
+      <img
+        src={existingImageUrl}
+        alt={t("addServicePopup.imageUpload.label")}
+        className={styles.existingImagePreview}
+      />
+    </div>
+  );
+};
 
 const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
   const { t } = useTranslation("vendorServices");
@@ -35,7 +54,11 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
     defaultValues: addServiceDefaultValues,
   });
 
-  const { handleSubmit, reset } = methods;
+  const { handleSubmit, reset, control } = methods;
+
+  const existingImageUrl = isEditing
+    ? getImageUrl(editingService?._raw?.image || editingService?.image)
+    : null;
 
   useEffect(() => {
     if (editingService?._raw) {
@@ -171,6 +194,11 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
             <label className={styles.label}>
               {t("addServicePopup.imageUpload.label")}
             </label>
+            <ExistingImagePreview
+              control={control}
+              existingImageUrl={existingImageUrl}
+              t={t}
+            />
             <UploadFile name="image" acceptImages={true} multiple={false} />
           </div>
 

@@ -84,6 +84,27 @@
   text-align: right;
 }
 
+.existingImageWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.existingImageLabel {
+  color: #6b6b6b;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.existingImagePreview {
+  width: 12rem;
+  height: 12rem;
+  object-fit: cover;
+  border-radius: 0.8rem;
+  border: 1px solid #e5e5e5;
+}
+
 /* Image Upload */
 .imageUploadArea {
   display: flex;

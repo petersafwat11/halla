@@ -55,12 +55,6 @@ const NOTIFICATION_TYPES = {
   REVENUE_REPORT: "revenue_report",
   USAGE_REPORT: "usage_report",
 
-  // Vendor notifications
-  SERVICE_INQUIRY: "service_inquiry",
-  SERVICE_BOOKING: "service_booking",
-  NEW_REVIEW: "new_review",
-  SERVICE_VIEWS_MILESTONE: "service_views_milestone",
-
   // General
   ANNOUNCEMENT: "announcement",
   CUSTOM: "custom",

@@ -4,18 +4,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import {
   useAdminTicketsInfinite,
-  useDebounce,
-  useResolveTicket,
-  useReopenTicket,
   useAssignTicket,
   useBulkDeleteTickets,
   useBulkResolveTickets,
+  useDebounce,
+  useExportAdminTickets,
+  useReopenTicket,
+  useResolveTicket,
 } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { useAuthStore } from "../../../stores/authStore";
 import { canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
-import adminDashboardService from "../../../services/adminDashboardService";
 import TopBar from "../../../components/plans/TopBar";
 import TicketListItem from "../../../components/admin-dashboard/tickets/TicketListItem";
 import { ResolveTicketModal, AssignTicketModal } from "../../../components/admin-dashboard/tickets";
@@ -39,8 +39,8 @@ const AdminTicketsScreen = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
-  const token = useAuthStore((state) => state.token);
   const role  = useAuthStore((state) => state.user?.role);
+  const exportTickets = useExportAdminTickets();
   const canDelete = canDeleteOnPage(role, PAGES.TICKETS);
 
   const debouncedSearch = useDebounce(searchQuery, 350);
@@ -130,7 +130,7 @@ const AdminTicketsScreen = () => {
   const handleExport = async () => {
     try {
       setExportLoading(true);
-      await adminDashboardService.tickets.export(token);
+      await exportTickets.mutateAsync({});
     } catch {
       toast.error(t("common.error"));
     } finally {

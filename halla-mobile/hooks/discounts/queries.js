@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import adminDashboardService from "../../services/adminDashboardService";
+import { ENDPOINTS } from "../../config/api";
 import { useAuthStore } from "../../stores/authStore";
+import { adminQs, adminRequest } from "../admin/_request";
 import { discountsKeys } from "./keys";
 
 /**
@@ -15,7 +16,9 @@ export function useAdminDiscounts(params = {}) {
   return useQuery({
     queryKey: discountsKeys.adminList(params),
     queryFn: async () => {
-      const response = await adminDashboardService.discounts.getAll(token, params);
+      const response = await adminRequest(
+        `${ENDPOINTS.ADMIN.DISCOUNTS.BASE}${adminQs(params)}`,
+      );
       return response.data;
     },
     enabled: !!token,

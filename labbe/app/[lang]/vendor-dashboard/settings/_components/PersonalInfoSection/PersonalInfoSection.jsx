@@ -3,63 +3,122 @@ import React, { useState } from "react";
 import styles from "./personalInfoSection.module.css";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
+import { toast } from "react-toastify";
+
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import DynamicForm from "@/ui/vendor/dynamicForm/DynamicForm";
+import PhoneChangeOtpModal from "../PhoneChangeOtpModal/PhoneChangeOtpModal";
 import { personalInfoSchema } from "@/utils/schemas/vendorSettings";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 
-const PersonalInfoSection = ({ data, onSave }) => {
+/**
+ * Personal Info — single consolidated section.
+ *
+ * Owns the full vendor identity edit surface: logo (businessLogo), owner full
+ * name, brand name, email, phone (OTP-gated), and password change. The phone
+ * field is collected by the form but committed via the separate OTP flow, not
+ * by the form's submit handler.
+ *
+ * The store logo is a single-value image: new uploads overwrite, and the
+ * inline "×" calls the shared DELETE endpoint (`field: businessLogo`, no key)
+ * which wipes the value and the underlying S3 object server-side.
+ */
+const PersonalInfoSection = ({ data, onSave, onPhoneVerified, onRefetch }) => {
   const { t } = useTranslation("vendorSettings");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [otpCandidate, setOtpCandidate] = useState(null);
+  const [isDeletingLogo, setIsDeletingLogo] = useState(false);
 
-  // Extract display data
   const displayData = {
-    name: data?.name || "",
+    ownerFullName: data?.ownerFullName || "",
+    brandName: data?.brandName || "",
     email: data?.email || "",
+    phoneNumber: data?.phoneNumber || "",
     avatar: data?.avatar || null,
   };
 
-  const handleEditClick = () => {
-    setIsPopupOpen(true);
-  };
+  const handleEditClick = () => setIsPopupOpen(true);
+  const handleClosePopup = () => setIsPopupOpen(false);
+  const handleImageClick = (src) => setPreviewImage(src);
+  const closePreview = () => setPreviewImage(null);
 
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-  };
-
-  const handleImageClick = (imageSrc) => {
-    setPreviewImage(imageSrc);
-  };
-
-  const closePreview = () => {
-    setPreviewImage(null);
+  const handleDeleteLogo = async () => {
+    if (
+      !window.confirm(
+        t("personalInfo.confirmDeleteLogo", "Delete this logo?")
+      )
+    ) {
+      return;
+    }
+    setIsDeletingLogo(true);
+    try {
+      await apiRequest({
+        method: "DELETE",
+        path: API_PATHS.users.deleteVendorImage,
+        data: { field: "businessLogo" },
+      });
+      toast.success(t("messages.imageDeleted", "Image deleted"));
+      if (onRefetch) onRefetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t("messages.deleteFailed", "Failed to delete image")
+      );
+    } finally {
+      setIsDeletingLogo(false);
+    }
   };
 
   const handleFormSubmit = async (formData) => {
     setIsLoading(true);
     try {
-      if (onSave) {
-        const updateData = {
-          name: formData.name,
-          email: formData.email,
-        };
-        if (formData.newPassword) {
-          updateData.currentPassword = formData.currentPassword;
-          updateData.newPassword = formData.newPassword;
-          updateData.passwordConfirm = formData.confirmPassword;
-        }
-        if (formData.avatar?.files && formData.avatar.files.length > 0) {
-          updateData.businessLogo = formData.avatar.files[0];
-        }
-        await onSave(updateData);
+      const phoneChanged =
+        (formData.phoneNumber || "").trim() !==
+        (displayData.phoneNumber || "").trim();
+
+      const updateData = {
+        ownerFullName: formData.ownerFullName,
+        brandName: formData.brandName,
+        email: formData.email,
+      };
+      if (formData.newPassword) {
+        updateData.currentPassword = formData.currentPassword;
+        updateData.newPassword = formData.newPassword;
+        updateData.passwordConfirm = formData.confirmPassword;
       }
+      if (formData.avatar?.files && formData.avatar.files.length > 0) {
+        updateData.businessLogo = formData.avatar.files[0];
+      }
+
+      if (onSave) await onSave(updateData);
+
+      // Close the form popup BEFORE opening the OTP modal so they don't
+      // stack (the form's overlay would otherwise sit on top of the OTP
+      // modal and the user would see a flash).
       setIsPopupOpen(false);
+      if (phoneChanged && formData.phoneNumber) {
+        setOtpCandidate(formData.phoneNumber.trim());
+      }
     } catch (error) {
       console.error("Error saving:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOtpSuccess = () => {
+    setOtpCandidate(null);
+    if (onPhoneVerified) onPhoneVerified();
+  };
+
+  const fileHandlers = {
+    avatar: {
+      onDeleteExisting: handleDeleteLogo,
+      isDeletingExisting: isDeletingLogo,
+    },
   };
 
   return (
@@ -84,26 +143,37 @@ const PersonalInfoSection = ({ data, onSave }) => {
         </div>
 
         <div className={styles.content}>
-          {/* Logo Display */}
           <div className={styles.logoSection}>
             <label className={styles.label}>
               {t("personalInfo.storeLogo")}
             </label>
             {displayData.avatar ? (
-              <div
-                className={styles.imagePreview}
-                onClick={() => handleImageClick(displayData.avatar)}
-              >
-                <Image
-                  src={displayData.avatar}
-                  alt="Logo"
-                  width={80}
-                  height={80}
-                  className={styles.thumbnailImage}
-                />
-                <span className={styles.viewText}>
-                  {t("personalInfo.clickToView", "اضغط للعرض")}
-                </span>
+              <div className={styles.logoWrapper}>
+                <div
+                  className={styles.imagePreview}
+                  onClick={() => handleImageClick(displayData.avatar)}
+                >
+                  <Image
+                    src={displayData.avatar}
+                    alt="Logo"
+                    width={80}
+                    height={80}
+                    className={styles.thumbnailImage}
+                    unoptimized
+                  />
+                  <span className={styles.viewText}>
+                    {t("personalInfo.clickToView", "اضغط للعرض")}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className={styles.inlineDeleteBtn}
+                  onClick={handleDeleteLogo}
+                  disabled={isDeletingLogo}
+                  aria-label={t("buttons.delete", "حذف")}
+                >
+                  {isDeletingLogo ? "…" : "×"}
+                </button>
               </div>
             ) : (
               <div className={styles.noLogo}>
@@ -112,11 +182,10 @@ const PersonalInfoSection = ({ data, onSave }) => {
             )}
           </div>
 
-          {/* Full Name */}
           <div className={styles.fieldsRow}>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>
-                {t("personalInfo.fullName")}
+                {t("personalInfo.fullName", "الاسم بالكامل")}
               </label>
               <div className={styles.inputContainer}>
                 <Image
@@ -126,13 +195,23 @@ const PersonalInfoSection = ({ data, onSave }) => {
                   height={24}
                 />
                 <div className={styles.inputValue}>
-                  {displayData.name || t("personalInfo.fullNamePlaceholder")}
+                  {displayData.ownerFullName ||
+                    t("personalInfo.fullNamePlaceholder")}
+                </div>
+              </div>
+            </div>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>
+                {t("personalInfo.businessName", "اسم النشاط التجاري")}
+              </label>
+              <div className={styles.inputContainer}>
+                <div className={styles.inputValue}>
+                  {displayData.brandName || "-"}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Email */}
           <div className={styles.fieldsRow}>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>{t("personalInfo.email")}</label>
@@ -148,11 +227,20 @@ const PersonalInfoSection = ({ data, onSave }) => {
                 </div>
               </div>
             </div>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>
+                {t("personalInfo.phoneWhatsapp", "رقم الهاتف / واتساب")}
+              </label>
+              <div className={styles.inputContainer}>
+                <div className={styles.inputValue}>
+                  {displayData.phoneNumber || "-"}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Edit Popup */}
       <PopupLayout isOpen={isPopupOpen} onClose={handleClosePopup}>
         <DynamicForm
           schema={personalInfoSchema}
@@ -160,10 +248,17 @@ const PersonalInfoSection = ({ data, onSave }) => {
           onSubmit={handleFormSubmit}
           onCancel={handleClosePopup}
           isLoading={isLoading}
+          fileHandlers={fileHandlers}
         />
       </PopupLayout>
 
-      {/* Image Preview Modal */}
+      <PhoneChangeOtpModal
+        isOpen={!!otpCandidate}
+        phoneNumber={otpCandidate}
+        onClose={() => setOtpCandidate(null)}
+        onSuccess={handleOtpSuccess}
+      />
+
       {previewImage && (
         <div className={styles.modalOverlay} onClick={closePreview}>
           <div
@@ -180,6 +275,7 @@ const PersonalInfoSection = ({ data, onSave }) => {
               height={400}
               className={styles.previewImage}
               style={{ objectFit: "contain" }}
+              unoptimized
             />
           </div>
         </div>

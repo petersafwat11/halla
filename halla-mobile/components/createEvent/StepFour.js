@@ -9,7 +9,7 @@
  * guestReplies.* + legacy keys.
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -22,8 +22,13 @@ import {
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  resolveTaqnyatPlaceholders,
+  buildTaqnyatPreviewContext,
+} from "@halla/shared/utils";
 import { useHostTaqnyatTemplates } from "../../hooks/taqnyatTemplates";
 import { useTranslation } from "../../localization";
+import { useAuthStore } from "../../stores/authStore";
 
 const CATEGORY_LABELS_AR = {
   wedding: "حفل زفاف",
@@ -72,6 +77,40 @@ const StepFour = () => {
   const selectedTemplate = watch("selectedTemplate");
   const category = visualTemplate?.categories?.[0] || "";
   const guestReplies = watch("guestReplies") || {};
+  const eventName = watch("eventName");
+  const eventDate = watch("eventDate");
+  const eventTime = watch("eventTime");
+  const address = watch("address");
+  const hostName = useAuthStore(
+    (state) => state.user?.name || state.user?.username || ""
+  );
+
+  // Build a preview-resolution context once per form change. Mirrors the
+  // backend resolver in `messaging.formatting.js#getEventBodyParams` so
+  // template previews on screen match what the guest will receive.
+  const previewContext = useMemo(() => {
+    const locale = (t("preview_date_locale", "ar-SA") || "ar-SA").toString();
+    let dateFormatted = "";
+    if (eventDate) {
+      try {
+        dateFormatted = new Date(eventDate).toLocaleDateString(locale, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      } catch {
+        dateFormatted = "";
+      }
+    }
+    return buildTaqnyatPreviewContext({
+      guestName: t("preview_guest_placeholder", "ضيفنا الكريم"),
+      eventTitle: eventName,
+      dateFormatted,
+      eventTime,
+      locationAddress: address?.address || "",
+      hostName,
+    });
+  }, [eventName, eventDate, eventTime, address?.address, hostName, t]);
 
   const { data, isLoading, error } = useHostTaqnyatTemplates({
     category: category || undefined,
@@ -187,8 +226,12 @@ const StepFour = () => {
                     </View>
                     {tpl.bodyText ? (
                       <View style={styles.bubble}>
-                        <Text style={styles.bubbleText} numberOfLines={6}>
-                          {tpl.bodyText}
+                        <Text style={styles.bubbleText}>
+                          {resolveTaqnyatPlaceholders(
+                            tpl.bodyText,
+                            tpl.varMapping,
+                            previewContext
+                          )}
                         </Text>
                       </View>
                     ) : null}

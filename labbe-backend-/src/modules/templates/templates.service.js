@@ -165,9 +165,21 @@ async function processImage(s3Key) {
 
 const LIST_LIMIT = 200;
 
+// Categories whose templates / chips are intentionally hidden from the
+// host-facing endpoints (home page + create-event step 3). They drive
+// admin/internal flows — post-event content and staff/moderator entry —
+// not the invitations a host would pick for a new event.
+const HOST_HIDDEN_CATEGORY_CODES = ["post_event", "staff_access"];
+
 async function listForHost({ category } = {}) {
+  if (category && HOST_HIDDEN_CATEGORY_CODES.includes(category)) return [];
+
   const query = { active: true, deletedAt: null };
-  if (category) query.categories = category;
+  if (category) {
+    query.categories = category;
+  } else {
+    query.categories = { $nin: HOST_HIDDEN_CATEGORY_CODES };
+  }
 
   return Template.find(query)
     .select("-imageS3Key -createdBy -updatedBy -version -__v")
@@ -369,9 +381,10 @@ async function duplicateTemplate(id, actor) {
 // CATEGORIES
 // ============================================
 
-async function listCategories({ includeInactive = false } = {}) {
+async function listCategories({ includeInactive = false, forHost = false } = {}) {
   const query = {};
   if (!includeInactive) query.active = true;
+  if (forHost) query.code = { $nin: HOST_HIDDEN_CATEGORY_CODES };
   return TemplateCategory.find(query).sort({ sortOrder: 1, code: 1 }).lean();
 }
 

@@ -15,20 +15,15 @@
 export {
   USER_ROLES,
   hostAppNotificationsSchema,
-  hostEmailNotificationsSchema,
-  vendorAppNotificationsSchema,
-  vendorEmailNotificationsSchema,
   adminAppNotificationsSchema,
   adminEmailNotificationsSchema,
   whitelabelAppNotificationsSchema,
   whitelabelEmailNotificationsSchema,
   hostNotificationPreferencesSchema,
-  vendorNotificationPreferencesSchema,
   adminNotificationPreferencesSchema,
   whitelabelNotificationPreferencesSchema,
   getNotificationSchemaForRole,
   hostNotificationDefaults,
-  vendorNotificationDefaults,
   adminNotificationDefaults,
   whitelabelNotificationDefaults,
   getNotificationDefaultsForRole,
@@ -58,28 +53,7 @@ export const getNotificationOptionsForRole = (role, t) => {
         { key: "subscriptionAlerts", labelKey: "notifications.subscriptionAlerts", defaultLabel: "تنبيهات الاشتراك" },
         { key: "systemUpdates", labelKey: "notifications.systemUpdates", defaultLabel: "تحديثات النظام" },
       ],
-      emailNotifications: [
-        { key: "eventUpdates", labelKey: "notifications.eventUpdates", defaultLabel: "تحديثات الفعاليات" },
-        { key: "eventReminders", labelKey: "notifications.eventReminders", defaultLabel: "تذكيرات الفعاليات" },
-        { key: "guestResponses", labelKey: "notifications.guestResponses", defaultLabel: "ردود الضيوف" },
-        { key: "subscriptionAlerts", labelKey: "notifications.subscriptionAlerts", defaultLabel: "تنبيهات الاشتراك" },
-        { key: "invitationReports", labelKey: "notifications.invitationReports", defaultLabel: "تقارير الدعوات" },
-      ],
-    },
-    vendor: {
-      appNotifications: [
-        { key: "serviceInquiries", labelKey: "notifications.serviceInquiries", defaultLabel: "استفسارات الخدمة" },
-        { key: "adminReviews", labelKey: "notifications.adminReviews", defaultLabel: "تقييمات المدير" },
-        { key: "profileViews", labelKey: "notifications.profileViews", defaultLabel: "مشاهدات الملف" },
-        { key: "approvalStatus", labelKey: "notifications.approvalStatus", defaultLabel: "حالة الموافقة" },
-        { key: "systemUpdates", labelKey: "notifications.systemUpdates", defaultLabel: "تحديثات النظام" },
-      ],
-      emailNotifications: [
-        { key: "serviceInquiries", labelKey: "notifications.serviceInquiries", defaultLabel: "استفسارات الخدمة" },
-        { key: "adminReviews", labelKey: "notifications.adminReviews", defaultLabel: "تقييمات المدير" },
-        { key: "weeklyReport", labelKey: "notifications.weeklyReport", defaultLabel: "التقرير الأسبوعي" },
-        { key: "approvalStatus", labelKey: "notifications.approvalStatus", defaultLabel: "حالة الموافقة" },
-      ],
+      emailNotifications: [],
     },
     admin: {
       appNotifications: [
@@ -125,9 +99,6 @@ export const getNotificationOptionsForRole = (role, t) => {
     case USER_ROLES.WHITELABEL_ADMIN:
     case USER_ROLES.WHITELABEL_MODERATOR:
       configKey = "whitelabel";
-      break;
-    case USER_ROLES.VENDOR:
-      configKey = "vendor";
       break;
     default:
       configKey = "host";

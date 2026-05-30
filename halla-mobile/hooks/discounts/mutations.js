@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import adminDashboardService from "../../services/adminDashboardService";
-import { useAuthStore } from "../../stores/authStore";
+import { ENDPOINTS } from "../../config/api";
+import { adminRequest } from "../admin/_request";
 import { discountsKeys } from "./keys";
 
 const assertOk = (response) => {
@@ -12,10 +12,13 @@ const assertOk = (response) => {
 
 export function useCreateDiscount() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
   return useMutation({
     mutationFn: async (data) => {
-      const response = await adminDashboardService.discounts.create(token, data);
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.DISCOUNTS.BASE,
+        "POST",
+        data,
+      );
       return assertOk(response);
     },
     onSuccess: async () => {
@@ -26,10 +29,13 @@ export function useCreateDiscount() {
 
 export function useUpdateDiscount() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
   return useMutation({
     mutationFn: async ({ id, data }) => {
-      const response = await adminDashboardService.discounts.update(token, id, data);
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.DISCOUNTS.BY_ID(id),
+        "PATCH",
+        data,
+      );
       return assertOk(response);
     },
     onSuccess: async () => {
@@ -40,10 +46,12 @@ export function useUpdateDiscount() {
 
 export function useDeleteDiscount() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
   return useMutation({
     mutationFn: async (id) => {
-      const response = await adminDashboardService.discounts.delete(token, id);
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.DISCOUNTS.BY_ID(id),
+        "DELETE",
+      );
       return assertOk(response);
     },
     onSuccess: async () => {
@@ -54,10 +62,12 @@ export function useDeleteDiscount() {
 
 export function useToggleDiscount() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
   return useMutation({
     mutationFn: async (id) => {
-      const response = await adminDashboardService.discounts.toggleStatus(token, id);
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.DISCOUNTS.TOGGLE(id),
+        "PATCH",
+      );
       return assertOk(response);
     },
     onSuccess: async () => {
@@ -71,14 +81,13 @@ export function useToggleDiscount() {
  * caller stores the resolved discount in local state.
  */
 export function useValidateDiscount() {
-  const token = useAuthStore((state) => state.token);
   return useMutation({
     mutationFn: async ({ code, amount, planType = null }) => {
-      const response = await adminDashboardService.discounts.validate(token, {
-        code,
-        amount,
-        planType,
-      });
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.DISCOUNTS.VALIDATE,
+        "POST",
+        { code, amount, planType },
+      );
       // Don't assertOk: the validate endpoint may legitimately return
       // `valid: false` with a 200 + reason. Surface the body so the caller
       // decides what to do.

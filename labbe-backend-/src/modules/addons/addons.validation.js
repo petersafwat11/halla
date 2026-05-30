@@ -7,7 +7,7 @@ const objectId = z
 
 const sourceSchema = z
   .object({
-    type: z.enum(['creditcard', 'creditcard_3ds_test', 'stcpay', 'applepay']),
+    type: z.enum(['creditcard', 'stcpay', 'applepay']),
     name: z.string().optional(),
     number: z.string().optional(),
     month: z.union([z.number(), z.string()]).optional(),

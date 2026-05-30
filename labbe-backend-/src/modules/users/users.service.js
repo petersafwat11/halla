@@ -89,7 +89,10 @@ class UsersService {
     }
     if (uploaded.businessLogo && user.profile?.vendorData) {
       await safeDeleteOldKey(user.profile.vendorData.businessLogo);
-      user.profile.vendorData.businessLogo = uploaded.businessLogo;
+      // `user.set(path, value)` is the mongoose-idiomatic write — direct
+      // property assignment on a mongoose subdocument was silently dropped
+      // here (the response said 200 but the DB never persisted the key).
+      user.set("profile.vendorData.businessLogo", uploaded.businessLogo);
     }
 
     await user.save({ validateBeforeSave: false });
@@ -132,73 +135,87 @@ class UsersService {
     }
 
     if (!user.profile) user.profile = {};
-    user.profile[section] = mergeSectionData(user.profile[section], data);
+    // `user.set(path, value)` instead of property assignment — mongoose
+    // subdocs silently dropped direct `user.profile.vendorData = {...}` /
+    // `vd.field = value` writes here, so PATCH said 200 but the DB never
+    // persisted anything.
+    const sectionMerged = mergeSectionData(user.profile[section], data);
+    user.set(`profile.${section}`, sectionMerged);
 
     const uploaded = processUploadedFiles(files);
 
     if (section === "documents") {
-      user.profile.documents = user.profile.documents || {};
+      if (!user.profile.documents) user.profile.documents = {};
       if (uploaded.nationalIdImage) {
         await safeDeleteOldKey(user.profile.documents.nationalIdImage);
-        user.profile.documents.nationalIdImage = uploaded.nationalIdImage;
+        user.set("profile.documents.nationalIdImage", uploaded.nationalIdImage);
       }
       if (uploaded.commercialRecordImage) {
         await safeDeleteOldKey(user.profile.documents.commercialRecordImage);
-        user.profile.documents.commercialRecordImage =
-          uploaded.commercialRecordImage;
+        user.set(
+          "profile.documents.commercialRecordImage",
+          uploaded.commercialRecordImage
+        );
       }
     }
 
     if (section === "vendorData") {
-      const vd = (user.profile.vendorData = user.profile.vendorData || {});
+      if (!user.profile.vendorData) user.profile.vendorData = {};
+      const vd = user.profile.vendorData;
 
       if (uploaded.businessLogo) {
         await safeDeleteOldKey(vd.businessLogo);
-        vd.businessLogo = uploaded.businessLogo;
+        user.set("profile.vendorData.businessLogo", uploaded.businessLogo);
       }
       if (uploaded.nationalIdImage) {
         await safeDeleteOldKey(vd.nationalIdImage);
-        vd.nationalIdImage = uploaded.nationalIdImage;
+        user.set("profile.vendorData.nationalIdImage", uploaded.nationalIdImage);
       }
       if (uploaded.commercialRecordImage) {
         await safeDeleteOldKey(vd.commercialRecordImage);
-        vd.commercialRecordImage = uploaded.commercialRecordImage;
+        user.set(
+          "profile.vendorData.commercialRecordImage",
+          uploaded.commercialRecordImage
+        );
       }
       if (uploaded.profileFile) {
         await safeDeleteOldKey(vd.profileFile);
-        vd.profileFile = uploaded.profileFile;
+        user.set("profile.vendorData.profileFile", uploaded.profileFile);
       }
       if (uploaded.cv) {
         await safeDeleteOldKey(vd.cv);
-        vd.cv = uploaded.cv;
+        user.set("profile.vendorData.cv", uploaded.cv);
       }
       if (uploaded.portfolioImages?.length) {
-        vd.portfolioImages = [
+        user.set("profile.vendorData.portfolioImages", [
           ...(vd.portfolioImages || []),
           ...uploaded.portfolioImages,
-        ];
+        ]);
       }
       if (uploaded.pricePackages?.length) {
-        vd.pricePackages = [
+        user.set("profile.vendorData.pricePackages", [
           ...(vd.pricePackages || []),
           ...uploaded.pricePackages,
-        ];
+        ]);
       }
 
-      const hasName = !!vd.brandName?.trim();
+      // Re-read after the set()s above so we're checking the live values.
+      const liveVd = user.profile.vendorData;
+      const hasName = !!liveVd.brandName?.trim();
       const hasCategory = !!(
-        vd.serviceCategories &&
-        Object.values(vd.serviceCategories).some(
+        liveVd.serviceCategories &&
+        Object.values(liveVd.serviceCategories).some(
           (arr) => Array.isArray(arr) && arr.length > 0
         )
       );
-      const hasDescription = !!vd.serviceDescription?.trim();
-      const hasPortfolio = !!(vd.portfolioImages?.length > 0);
-      vd.profileCompleted =
-        hasName && hasCategory && hasDescription && hasPortfolio;
+      const hasDescription = !!liveVd.serviceDescription?.trim();
+      const hasPortfolio = !!(liveVd.portfolioImages?.length > 0);
+      user.set(
+        "profile.vendorData.profileCompleted",
+        hasName && hasCategory && hasDescription && hasPortfolio
+      );
     }
 
-    user.markModified("profile");
     await user.save({ validateBeforeSave: false });
     return { user: await user.toPublicJSON() };
   }
@@ -303,7 +320,9 @@ class UsersService {
     }
 
     if (!user.profile) user.profile = {};
-    const vd = (user.profile.vendorData = user.profile.vendorData || {});
+    if (!user.profile.vendorData) user.profile.vendorData = {};
+    const vd = user.profile.vendorData;
+    const path = `profile.vendorData.${field}`;
 
     const arrayFields = new Set(["portfolioImages", "pricePackages"]);
 
@@ -312,8 +331,11 @@ class UsersService {
       if (!current.includes(key)) {
         throw new NotFoundError(`Image (${field}/${key})`);
       }
-      vd[field] = current.filter((k) => k !== key);
-      user.markModified("profile");
+      // `user.set(path, value)` is the mongoose-idiomatic way to write a
+      // nested path — it marks the path dirty and routes through the schema
+      // setter so the change is persisted (direct property assignment on a
+      // mongoose subdocument was failing to save the new value).
+      user.set(path, current.filter((k) => k !== key));
       await user.save({ validateBeforeSave: false });
       await safeDeleteOldKey(key);
       return { user: await user.toPublicJSON() };
@@ -324,8 +346,7 @@ class UsersService {
     if (!old) {
       throw new NotFoundError(`Image (${field})`);
     }
-    vd[field] = null;
-    user.markModified("profile");
+    user.set(path, null);
     await user.save({ validateBeforeSave: false });
     await safeDeleteOldKey(old);
     return { user: await user.toPublicJSON() };

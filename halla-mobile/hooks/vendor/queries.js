@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
-import vendorService from "../../services/vendorService";
+import { usersApi } from "../users/_api";
+import { vendorApi } from "./_api";
 import { vendorKeys } from "./keys";
 
 export function useVendorProfile() {
@@ -9,7 +10,7 @@ export function useVendorProfile() {
   return useQuery({
     queryKey: vendorKeys.profile(),
     queryFn: async () => {
-      const response = await vendorService.getProfile();
+      const response = await usersApi.getProfile();
       return response.data?.user || response.data;
     },
     enabled: !!token,
@@ -23,7 +24,7 @@ export function useVendorStats() {
   return useQuery({
     queryKey: vendorKeys.stats(),
     queryFn: async () => {
-      const response = await vendorService.getStats();
+      const response = await vendorApi.getStats();
       return response.data?.stats || {};
     },
     enabled: !!token,
@@ -37,7 +38,7 @@ export function useVendorServices() {
   return useQuery({
     queryKey: vendorKeys.services(),
     queryFn: async () => {
-      const response = await vendorService.getServices();
+      const response = await vendorApi.getServices();
       return response.data || [];
     },
     enabled: !!token,
@@ -51,7 +52,7 @@ export function useVendorTickets(params = {}) {
   return useQuery({
     queryKey: vendorKeys.tickets(params),
     queryFn: async () => {
-      const response = await vendorService.getTickets(params);
+      const response = await vendorApi.getTickets(params);
       return response.data || [];
     },
     enabled: !!token,

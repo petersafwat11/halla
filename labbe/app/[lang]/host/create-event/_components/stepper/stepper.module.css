@@ -1,8 +1,22 @@
-/* Desktop Stepper */
+/* ══════════════════════════════════════════════════
+   Create-Event Stepper — refined brand-aligned design
+══════════════════════════════════════════════════ */
+
+@keyframes stepPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(194, 142, 92, 0.45); }
+  70%  { box-shadow: 0 0 0 0.8rem rgba(194, 142, 92, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(194, 142, 92, 0); }
+}
+
+@keyframes stepPopIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Desktop Stepper ──────────────────────────────────── */
 .stepper_desktop {
   display: flex;
   width: 100%;
-  /* padding: 1rem; */
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -11,94 +25,198 @@
 
 .stepper {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: flex-start;
-  border-radius: 0.6rem;
   position: relative;
   width: 100%;
+  padding: 1.6rem 2rem;
+  border-radius: 1.6rem;
+  background: linear-gradient(
+    180deg,
+    var(--color-natural-50) 0%,
+    var(--color-primary-50) 100%
+  );
+  border: 1px solid var(--color-primary-100);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(194, 142, 92, 0.06);
 }
 
 .step_wrapper {
   display: flex;
-  width: 15rem;
-  /* padding: 1.6rem 2.4rem; */
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  gap: 1rem;
+  gap: 0.9rem;
   position: relative;
+  min-width: 9rem;
+  flex-shrink: 0;
 }
 
 .step_number {
   display: flex;
-  width: 2rem;
-  height: 2rem;
-  flex-direction: column;
-  justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  flex-shrink: 0;
   align-items: center;
-  gap: 0.5rem;
-  border-radius: 1rem;
+  justify-content: center;
+  border-radius: 50%;
   position: relative;
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: inherit;
+  transition: background 0.25s ease, color 0.25s ease,
+    border-color 0.25s ease, box-shadow 0.25s ease, transform 0.18s ease;
 }
 
-.step_number_active {
-  border: 0.5px solid var(--Content-Text-Text-title-brand, #c28e5c);
+.step_digit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-feature-settings: "tnum" on;
 }
 
-.step_number_inactive {
-  background: var(--Button-Secondary-bg-active, #f5ece4);
+/* Upcoming step */
+.step_upcoming .step_number {
+  background: var(--color-natural-50);
+  border: 1.5px solid var(--color-primary-100);
+  color: var(--color-primary-300);
 }
 
-.dot {
-  width: 1rem;
-  height: 1rem;
-  border-radius: 0.5rem;
-  background: var(--Content-bg-Card-bg-8, #c28e5c);
-  display: none;
+/* Active step */
+.step_active .step_number {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-400) 0%,
+    var(--color-primary-500) 55%,
+    var(--color-primary-700) 100%
+  );
+  border: 1.5px solid var(--color-primary-500);
+  color: var(--color-natural-50);
+  box-shadow:
+    0 4px 10px rgba(194, 142, 92, 0.32),
+    0 0 0 4px var(--color-primary-50);
+  transform: scale(1.06);
+  animation: stepPopIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.step_number_active .dot {
-  display: block;
+.step_pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: stepPulse 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Completed step */
+.step_completed .step_number {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-500) 0%,
+    var(--color-primary-700) 100%
+  );
+  border: 1.5px solid var(--color-primary-600);
+  color: var(--color-natural-50);
+  box-shadow: 0 2px 6px rgba(138, 101, 65, 0.25);
 }
 
 .content {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-end;
-  gap: 1.6rem;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
 }
 
 .step_label {
-  color: var(--Content-Text-Text-body-discription, #656565);
   text-align: center;
-  font-size: 1.4rem;
-  font-style: normal;
+  font-size: 1.3rem;
   font-weight: 500;
-  line-height: 2rem;
-  letter-spacing: 0.035px;
+  line-height: 1.7rem;
+  letter-spacing: 0.02px;
+  transition: color 0.25s ease, font-weight 0.25s ease;
+  max-width: 12rem;
 }
 
-.step_label_active {
-  color: var(--Content-Text-Text-title-brand, #c28e5c);
+.step_upcoming .step_label {
+  color: var(--color-natural-400);
 }
 
-.step_label_inactive {
-  color: var(--Content-Text-Text-body-discription, #656565);
+.step_active .step_label {
+  color: var(--color-primary-700);
+  font-weight: 700;
 }
 
+.step_completed .step_label {
+  color: var(--color-primary-600);
+  font-weight: 600;
+}
+
+/* Connector between steps */
 .connector {
-  width: 12rem;
+  flex: 1;
+  min-width: 2rem;
   height: 0.3rem;
   position: relative;
-  top: 2.6rem;
-  border-radius: 0.2rem;
-  background: var(--Button-Secondary-bg-active, #f5ece4);
+  top: 1.6rem;
+  border-radius: 999px;
+  background: var(--color-primary-100);
+  overflow: hidden;
+  margin: 0 0.4rem;
+  transition: background 0.3s ease;
 }
 
-/* Mobile Stepper */
+.connector_filled {
+  background: linear-gradient(
+    90deg,
+    var(--color-primary-400) 0%,
+    var(--color-primary-600) 100%
+  );
+}
+
+/* In RTL the visual progression is right→left, so flip the gradient
+   so the "deeper" tone sits on the side adjacent to the next step. */
+html[dir="rtl"] .connector_filled {
+  background: linear-gradient(
+    270deg,
+    var(--color-primary-400) 0%,
+    var(--color-primary-600) 100%
+  );
+}
+
+/* ─── Mobile Stepper ───────────────────────────────────── */
 .stepper_mobile {
   display: none;
+}
+
+@media (max-width: 900px) {
+  .stepper {
+    padding: 1.2rem 1.4rem;
+  }
+
+  .step_wrapper {
+    min-width: 0;
+    gap: 0.7rem;
+  }
+
+  .step_number {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.3rem;
+  }
+
+  .step_label {
+    font-size: 1.15rem;
+    line-height: 1.5rem;
+    max-width: 9rem;
+  }
+
+  .connector {
+    top: 1.4rem;
+    margin: 0 0.2rem;
+  }
 }
 
 @media (max-width: 600px) {
@@ -108,77 +226,124 @@
 
   .stepper_mobile {
     display: flex;
-    /* padding: 0 2.4rem; */
     flex-direction: column;
-    align-items: flex-start;
     gap: 1rem;
     width: 100%;
   }
 
   .stepper_mobile_container {
     display: flex;
+    flex-direction: column;
     width: 100%;
-    padding: 1.2rem;
-    justify-content: flex-end;
-    align-items: flex-start;
-    gap: 2.4rem;
-    border-radius: 0.6rem;
-    background: var(--Content-bg-Card-bg-1, #fff);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
-      0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    padding: 1.4rem 1.6rem;
+    gap: 1.2rem;
+    border-radius: 1.4rem;
+    background: linear-gradient(
+      135deg,
+      var(--color-natural-50) 0%,
+      var(--color-primary-50) 100%
+    );
+    border: 1px solid var(--color-primary-100);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 6px 18px rgba(194, 142, 92, 0.08);
   }
 
   .stepper_mobile_header {
     display: flex;
-    padding: 0.8rem 1.6rem;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    flex: 1;
-    border-radius: 1.2rem;
-    background: var(--Content-bg-Card-bg-5, #f9f4ef);
-  }
-
-  .arrow_icon {
-    display: flex;
-    width: 2.4rem;
-    height: 2.4rem;
-    justify-content: center;
-    align-items: center;
+    gap: 1.2rem;
+    width: 100%;
   }
 
   .mobile_step_info {
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1.6rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  html[dir="rtl"] .mobile_step_info {
+    align-items: flex-end;
+  }
+
+  .mobile_step_eyebrow {
+    color: var(--color-natural-400);
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.02px;
+    text-transform: none;
   }
 
   .mobile_step_label {
-    color: var(--Content-Text-Text-title-brand, #c28e5c);
-    text-align: center;
-    font-size: 1.4rem;
-    font-style: normal;
-    font-weight: 500;
+    color: var(--color-primary-700);
+    font-size: 1.5rem;
+    font-weight: 700;
     line-height: 2rem;
-    letter-spacing: 0.014px;
+    letter-spacing: 0.02px;
   }
 
   .mobile_step_badge {
-    display: flex;
-    width: 4rem;
-    height: 4rem;
-    flex-direction: column;
-    justify-content: center;
+    display: inline-flex;
     align-items: center;
-    gap: 1rem;
-    border-radius: 2rem;
-    border: 2px solid var(--Content-Text-Text-title-brand, #c28e5c);
-    color: var(--Content-Text-Text-title-brand, #c28e5c);
-    text-align: center;
-    font-size: 1.6rem;
-    font-style: normal;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: var(--color-primary-500);
+    color: var(--color-natural-50);
+    font-feature-settings: "tnum" on;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .mobile_badge_current {
+    font-size: 1.2rem;
     font-weight: 700;
-    line-height: 2.4rem;
-    letter-spacing: 0.08px;
+    line-height: 1;
+  }
+
+  .mobile_badge_divider {
+    font-size: 1.1rem;
+    font-weight: 500;
+    opacity: 0.7;
+    line-height: 1;
+  }
+
+  .mobile_badge_total {
+    font-size: 1.1rem;
+    font-weight: 600;
+    opacity: 0.85;
+    line-height: 1;
+  }
+
+  .mobile_progress_track {
+    width: 100%;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--color-primary-100);
+    overflow: hidden;
+  }
+
+  .mobile_progress_fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      var(--color-primary-400) 0%,
+      var(--color-primary-600) 100%
+    );
+    transition: width 0.35s ease;
+  }
+
+  html[dir="rtl"] .mobile_progress_fill {
+    background: linear-gradient(
+      270deg,
+      var(--color-primary-400) 0%,
+      var(--color-primary-600) 100%
+    );
   }
 }

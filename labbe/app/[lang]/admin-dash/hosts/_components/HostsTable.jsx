@@ -148,13 +148,8 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
       const config = statusConfig[value] || statusConfig.active;
       return (
         <div
-          className={`${styles.statusBadge} ${canUpdate ? styles.statusBadgeClickable : styles.statusBadgeReadonly}`}
+          className={`${styles.statusBadge} ${styles.statusBadgeReadonly}`}
           style={{ background: config.bg }}
-          onClick={() => {
-            if (!canUpdate) return;
-            const newStatus = value === "active" ? "suspended" : "active";
-            handleStatusChange(row.id, newStatus);
-          }}
         >
           <span className={styles.statusBadgeText} style={{ color: config.color }}>
             {config.text}

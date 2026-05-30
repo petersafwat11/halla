@@ -6,7 +6,7 @@ import { useAuthStore } from "../../../stores/authStore";
 import { canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
 import { useBulkDeleteHosts } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
-import adminDashboardService from "../../../services/adminDashboardService";
+import { useExportHosts } from "../../../hooks/admin";
 import AdminPageHeader from "../common/AdminPageHeader";
 import AdminFlatList from "../common/AdminFlatList";
 import ExportButton from "../common/ExportButton";
@@ -39,10 +39,10 @@ const HostList = ({
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
-  const token = useAuthStore((state) => state.token);
   const role  = useAuthStore((state) => state.user?.role);
   const canDelete = canDeleteOnPage(role, PAGES.HOSTS);
   const bulkDelete = useBulkDeleteHosts();
+  const exportHosts = useExportHosts();
   const toast = useToast();
 
   const filterOptions = useMemo(() => [
@@ -81,7 +81,7 @@ const HostList = ({
   const handleExport = async () => {
     try {
       setExportLoading(true);
-      await adminDashboardService.hosts.export(token);
+      await exportHosts.mutateAsync({});
     } catch {
       toast.error(t("common.error"));
     } finally {

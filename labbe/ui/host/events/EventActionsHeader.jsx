@@ -61,13 +61,24 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
     try {
       const result = await notifyStaffMutation.mutateAsync({ eventId: effectiveEventId });
       const data = result?.data || result;
-      toast.success(
-        t("staff.notifySuccess", { sent: data?.sent || 0, total: data?.total || 0 }) ||
-        `Sent to ${data?.sent || 0}/${data?.total || 0} staff`
-      );
+      const sent = data?.sent || 0;
+      const total = data?.total || 0;
+      const firstError = data?.results?.find((r) => r.status === "failed")?.error;
+
+      if (sent === 0 && total > 0) {
+        // Provider rejected every send — surface the actual reason (e.g.
+        // taqnyat IP allowlist 403) instead of a misleading success toast.
+        toast.error(firstError || t("staff.notifyError"));
+      } else if (sent < total) {
+        toast.warn(
+          t("staff.notifyPartial", { sent, total, error: firstError || "" })
+        );
+      } else {
+        toast.success(t("staff.notifySuccess", { sent, total }));
+      }
     } catch (error) {
       toast.error(
-        error?.response?.data?.message || t("staff.notifyError", "Failed to notify staff")
+        error?.response?.data?.message || t("staff.notifyError")
       );
     }
   };

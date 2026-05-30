@@ -1,14 +1,25 @@
 "use client";
 import React, { useState } from "react";
-import styles from "./serviceDetailsSection.module.css";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
+
+import styles from "./serviceDetailsSection.module.css";
 import EditFormHeader from "./EditFormHeader";
 import DocumentUploadsRow from "./DocumentUploadsRow";
 import LocationFieldsRow from "./LocationFieldsRow";
 import { useRegions, useCitiesByRegion, useDistrictsByCity } from "@/hooks/locations";
 import { validateForm, serviceDetailsSchema } from "@/utils/schemas/vendorSettings";
+import { apiRequest } from "@/services/http";
+import { API_PATHS } from "@halla/shared/api/paths";
 
-const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading }) => {
+const ServiceDetailsEditForm = ({
+  data,
+  onSave,
+  onClose,
+  isLoading,
+  setIsLoading,
+  onRefetch,
+}) => {
   const { t } = useTranslation("vendorSettings");
 
   const [formData, setFormData] = useState({
@@ -18,6 +29,7 @@ const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading
   const [errors, setErrors] = useState({});
   const [nationalIdImages, setNationalIdImages] = useState([]);
   const [commercialRecordImages, setCommercialRecordImages] = useState([]);
+  const [deletingField, setDeletingField] = useState(null);
 
   const [selectedRegion, setSelectedRegion] = useState(data?.serviceLocation?.regionId || "");
   const [selectedCity, setSelectedCity] = useState(data?.serviceLocation?.cityId || "");
@@ -33,6 +45,37 @@ const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading
   const regions = regionsData?.data?.regions || [];
   const cities = citiesData?.data?.cities || [];
   const districts = districtsData?.data?.districts || [];
+
+  // Single-value document images live on the server; deletion hits the
+  // shared DELETE endpoint with `{ field }` (no key — backend wipes the
+  // stored value + S3 object) and asks the parent to refetch so the
+  // form re-renders without the old preview.
+  const handleDeleteExisting = async (field) => {
+    if (
+      !window.confirm(
+        t("serviceDetails.confirmDeleteImage", "Delete this document?")
+      )
+    ) {
+      return;
+    }
+    setDeletingField(field);
+    try {
+      await apiRequest({
+        method: "DELETE",
+        path: API_PATHS.users.deleteVendorImage,
+        data: { field },
+      });
+      toast.success(t("messages.imageDeleted", "Image deleted"));
+      if (onRefetch) onRefetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t("messages.deleteFailed", "Failed to delete image")
+      );
+    } finally {
+      setDeletingField(null);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,13 +106,59 @@ const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading
         if (commercialRecordImages.length > 0) {
           payload.commercialRecordImage = commercialRecordImages;
         }
-        const hasLocation = selectedRegion || selectedCity || selectedDistricts.length;
+
+        // The <select> elements emit strings, but the backend's strict zod
+        // schema for `serviceLocation` requires `regionId` / `cityId` to be
+        // numbers (`serviceLocation.regionId: Expected number, received
+        // string`). Coerce here, and pull the matching localized names so
+        // the read path can render the location without another lookup.
+        const regionIdNum = selectedRegion ? Number(selectedRegion) : null;
+        const cityIdNum = selectedCity ? Number(selectedCity) : null;
+        const districtIdsNum = (selectedDistricts || [])
+          .map((id) => Number(id))
+          .filter((n) => Number.isFinite(n));
+
+        const hasLocation =
+          Number.isFinite(regionIdNum) ||
+          Number.isFinite(cityIdNum) ||
+          districtIdsNum.length > 0;
+
         if (hasLocation) {
-          payload.serviceLocation = {
-            regionId: selectedRegion || undefined,
-            cityId: selectedCity || undefined,
-            districtIds: selectedDistricts,
-          };
+          const matchedRegion = regions.find(
+            (r) => Number(r.region_id) === regionIdNum
+          );
+          const matchedCity = cities.find(
+            (c) => Number(c.city_id) === cityIdNum
+          );
+          const matchedDistricts = districts.filter((d) =>
+            districtIdsNum.includes(Number(d.district_id))
+          );
+
+          const location = {};
+          if (Number.isFinite(regionIdNum)) {
+            location.regionId = regionIdNum;
+            if (matchedRegion?.name_ar) location.regionNameAr = matchedRegion.name_ar;
+            if (matchedRegion?.name_en) location.regionNameEn = matchedRegion.name_en;
+          }
+          if (Number.isFinite(cityIdNum)) {
+            location.cityId = cityIdNum;
+            if (matchedCity?.name_ar) location.cityNameAr = matchedCity.name_ar;
+            if (matchedCity?.name_en) location.cityNameEn = matchedCity.name_en;
+          }
+          if (districtIdsNum.length > 0) {
+            location.districtIds = districtIdsNum;
+            location.districtNames = matchedDistricts.map((d) => ({
+              ...(d.name_ar ? { nameAr: d.name_ar } : {}),
+              ...(d.name_en ? { nameEn: d.name_en } : {}),
+            }));
+          }
+          location.coverageType = districtIdsNum.length
+            ? "districts"
+            : Number.isFinite(cityIdNum)
+            ? "city"
+            : "region";
+
+          payload.serviceLocation = location;
         }
         await onSave(payload);
       }
@@ -98,6 +187,10 @@ const ServiceDetailsEditForm = ({ data, onSave, onClose, isLoading, setIsLoading
           setCommercialRecordImages={setCommercialRecordImages}
           existingNationalIdImages={existingNationalIdImages}
           existingCommercialImages={existingCommercialImages}
+          onDeleteNationalId={() => handleDeleteExisting("nationalIdImage")}
+          onDeleteCommercial={() => handleDeleteExisting("commercialRecordImage")}
+          isDeletingNationalId={deletingField === "nationalIdImage"}
+          isDeletingCommercial={deletingField === "commercialRecordImage"}
         />
 
         <div className={styles.editFormField}>

@@ -97,10 +97,7 @@ export default function WhitelabelsTable() {
     if (key === "status") {
       const colorClass = statusClassMap[value] || styles.statusActive;
       return (
-        <div
-          className={`${styles.statusBadge} ${colorClass} ${canUpdate ? styles.clickable : ""}`}
-          onClick={() => { if (canUpdate) handleStatusChange(row.id, value === "active" ? "suspended" : "active"); }}
-        >
+        <div className={`${styles.statusBadge} ${colorClass}`}>
           <span>{statusTextMap[value] || value}</span>
         </div>
       );

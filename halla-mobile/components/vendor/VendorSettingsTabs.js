@@ -7,7 +7,6 @@ const VendorSettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
   const { t } = useTranslation("settings");
   const tabs = [
     { id: "accountSetup", label: t("tabs.account"), icon: "person-outline" },
-    { id: "notifications", label: t("tabs.notifications"), icon: "notifications-outline" },
     { id: "about", label: t("tabs.about"), icon: "information-circle-outline" },
     { id: "privacy", label: t("tabs.privacy"), icon: "shield-checkmark-outline" },
     { id: "terms", label: t("tabs.terms"), icon: "document-text-outline" },

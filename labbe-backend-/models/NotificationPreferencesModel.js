@@ -154,15 +154,6 @@ function getDefaultAppNotifications(role) {
         systemUpdates: true,
         supportTickets: true, // For ticket notifications
       };
-    case "vendor":
-      return {
-        serviceInquiries: true,
-        adminReviews: true,
-        profileViews: false,
-        approvalStatus: true,
-        systemUpdates: true,
-        supportTickets: true, // For ticket notifications
-      };
     case "admin":
     case "super_admin":
     case "moderator":
@@ -198,20 +189,9 @@ function getDefaultAppNotifications(role) {
 function getDefaultEmailNotifications(role) {
   switch (role) {
     case "host":
-      return {
-        eventUpdates: false,
-        eventReminders: true,
-        guestResponses: false,
-        subscriptionAlerts: true,
-        invitationReports: true,
-      };
-    case "vendor":
-      return {
-        serviceInquiries: true,
-        adminReviews: true,
-        weeklyReport: true,
-        approvalStatus: true,
-      };
+      // Host has no opt-in email preferences. Plan/payment emails always
+      // fire (no preference check); every other host email was removed.
+      return {};
     case "admin":
     case "super_admin":
     case "moderator":

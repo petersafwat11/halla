@@ -5,20 +5,78 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as ImagePicker from "expo-image-picker";
+
 import { useTranslation } from "../../localization/hooks/useTranslation";
+import { useToast } from "../../contexts/ToastContext";
 import TextInput from "../commen/TextInput";
 import TextAreaInput from "../commen/TextAreaInput";
 import Button from "../commen/Button";
 import MapPicker from "../commen/MapPicker";
-import * as ImagePicker from "expo-image-picker";
 import { mobileServiceDetailsSchema as serviceDetailsSchema } from "@halla/shared/schemas/vendor";
+import { usersApi } from "../../hooks/users/_api";
 
-const ServiceDetailsForm = ({ data, onSave, loading }) => {
+/**
+ * Tile that owns BOTH ends of the single-image flow for a document field:
+ *
+ *  - newFile present → preview the local file with a × that drops the
+ *    pending pick from state.
+ *  - existingUri present → preview the server image with a × that fires
+ *    the shared DELETE endpoint and asks the parent to refetch.
+ *  - neither → render an empty pick button.
+ *
+ * Tap the preview itself to replace.
+ */
+const DocumentTile = ({
+  existingUri,
+  newFile,
+  onPick,
+  onClearNew,
+  onDeleteExisting,
+  isDeleting,
+  pickLabel,
+  changeLabel,
+}) => {
+  const previewUri = newFile?.uri || existingUri;
+  if (!previewUri) {
+    return (
+      <TouchableOpacity style={styles.imageUploadButton} onPress={onPick}>
+        <Text style={styles.imageUploadText}>{pickLabel}</Text>
+      </TouchableOpacity>
+    );
+  }
+  return (
+    <View style={styles.docTile}>
+      <TouchableOpacity onPress={onPick} activeOpacity={0.8}>
+        <Image source={{ uri: previewUri }} style={styles.docImage} />
+        <View style={styles.docTileOverlay}>
+          <Text style={styles.docTileOverlayText}>{changeLabel}</Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.docRemove}
+        onPress={newFile ? onClearNew : onDeleteExisting}
+        disabled={isDeleting}
+      >
+        {isDeleting ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <Text style={styles.docRemoveText}>✕</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
   const { t } = useTranslation("vendor");
+  const toast = useToast();
   const methods = useForm({
     resolver: zodResolver(serviceDetailsSchema),
     defaultValues: {
@@ -32,10 +90,12 @@ const ServiceDetailsForm = ({ data, onSave, loading }) => {
   const [serviceLocation, setServiceLocation] = useState(
     data?.serviceLocation || { address: "", coordinates: null }
   );
-  const [nationalIdImage, setNationalIdImage] = useState(data?.nationalIdImage || null);
-  const [commercialRecordImage, setCommercialRecordImage] = useState(data?.commercialRecordImage || null);
   const [nationalIdFile, setNationalIdFile] = useState(null);
   const [commercialRecordFile, setCommercialRecordFile] = useState(null);
+  const [deletingField, setDeletingField] = useState(null);
+
+  const existingNationalId = data?.nationalIdImage || null;
+  const existingCommercial = data?.commercialRecordImage || null;
 
   useEffect(() => {
     methods.reset({
@@ -46,8 +106,6 @@ const ServiceDetailsForm = ({ data, onSave, loading }) => {
     setServiceLocation(
       data?.serviceLocation || { address: "", coordinates: null }
     );
-    setNationalIdImage(data?.nationalIdImage || null);
-    setCommercialRecordImage(data?.commercialRecordImage || null);
     setNationalIdFile(null);
     setCommercialRecordFile(null);
   }, [
@@ -88,17 +146,47 @@ const ServiceDetailsForm = ({ data, onSave, loading }) => {
       });
 
       if (!result.canceled && result.assets[0]) {
-        if (type === "nationalId") {
-          setNationalIdImage(result.assets[0].uri);
-          setNationalIdFile(result.assets[0]);
-        } else if (type === "commercialRecord") {
-          setCommercialRecordImage(result.assets[0].uri);
+        if (type === "nationalId") setNationalIdFile(result.assets[0]);
+        else if (type === "commercialRecord")
           setCommercialRecordFile(result.assets[0]);
-        }
       }
     } catch (error) {
       Alert.alert(t("common.error"), t("settings.imagePickError"));
     }
+  };
+
+  const deleteExisting = (field) => {
+    Alert.alert(
+      t("settings.serviceDetails.confirmDeleteTitle", "Delete document?"),
+      t("settings.serviceDetails.confirmDeleteMsg", "This cannot be undone."),
+      [
+        { text: t("common.cancel", "Cancel"), style: "cancel" },
+        {
+          text: t("common.delete", "Delete"),
+          style: "destructive",
+          onPress: async () => {
+            setDeletingField(field);
+            try {
+              await usersApi.deleteVendorImage(field);
+              toast.success(
+                t("settings.imagesAndPricing.deleted", "Image deleted")
+              );
+              if (onRefetch) onRefetch();
+            } catch (err) {
+              toast.error(
+                err.message ||
+                  t(
+                    "settings.imagesAndPricing.deleteFailed",
+                    "Failed to delete image"
+                  )
+              );
+            } finally {
+              setDeletingField(null);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const onSubmit = (formValues) => {
@@ -109,9 +197,44 @@ const ServiceDetailsForm = ({ data, onSave, loading }) => {
     if (serviceCategories?.length) {
       submitData.serviceCategories = serviceCategories;
     }
-    if (serviceLocation && (serviceLocation.address || serviceLocation.regionId)) {
-      submitData.serviceLocation = serviceLocation;
-    }
+
+    // The backend's `serviceLocation` schema is `.strict()` and only accepts
+    // a fixed set of admin-area IDs/names. The mobile MapPicker currently
+    // emits lat/lng/address (different shape), so passing the raw output
+    // through would 400 the whole PATCH — silently swallowing the document
+    // image uploads sitting in the same payload. We forward only the
+    // backend-recognized keys; if none are present (the common case for the
+    // current MapPicker), `serviceLocation` is omitted.
+    const sanitizedLocation = (() => {
+      if (!serviceLocation) return null;
+      const out = {};
+      const regionId = Number(serviceLocation.regionId);
+      const cityId = Number(serviceLocation.cityId);
+      if (Number.isFinite(regionId)) out.regionId = regionId;
+      if (Number.isFinite(cityId)) out.cityId = cityId;
+      if (typeof serviceLocation.regionNameAr === "string")
+        out.regionNameAr = serviceLocation.regionNameAr;
+      if (typeof serviceLocation.regionNameEn === "string")
+        out.regionNameEn = serviceLocation.regionNameEn;
+      if (typeof serviceLocation.cityNameAr === "string")
+        out.cityNameAr = serviceLocation.cityNameAr;
+      if (typeof serviceLocation.cityNameEn === "string")
+        out.cityNameEn = serviceLocation.cityNameEn;
+      if (Array.isArray(serviceLocation.districtIds)) {
+        const ids = serviceLocation.districtIds
+          .map((id) => Number(id))
+          .filter((n) => Number.isFinite(n));
+        if (ids.length) out.districtIds = ids;
+      }
+      if (
+        ["region", "city", "districts"].includes(serviceLocation.coverageType)
+      ) {
+        out.coverageType = serviceLocation.coverageType;
+      }
+      return Object.keys(out).length ? out : null;
+    })();
+    if (sanitizedLocation) submitData.serviceLocation = sanitizedLocation;
+
     if (nationalIdFile) submitData.nationalIdImage = nationalIdFile;
     if (commercialRecordFile)
       submitData.commercialRecordImage = commercialRecordFile;
@@ -197,42 +320,32 @@ const ServiceDetailsForm = ({ data, onSave, loading }) => {
             <Text style={styles.label}>
               {t("settings.serviceDetails.nationalIdImage")}
             </Text>
-            <TouchableOpacity
-              style={styles.imageUploadButton}
-              onPress={() => pickImage("nationalId")}
-            >
-              <Text style={styles.imageUploadText}>
-                {nationalIdImage
-                  ? t("settings.changeImage")
-                  : t("settings.uploadImage")}
-              </Text>
-            </TouchableOpacity>
-            {nationalIdImage && (
-              <Text style={styles.imageSelectedText}>
-                ✓ {t("settings.imageSelected")}
-              </Text>
-            )}
+            <DocumentTile
+              existingUri={existingNationalId}
+              newFile={nationalIdFile}
+              onPick={() => pickImage("nationalId")}
+              onClearNew={() => setNationalIdFile(null)}
+              onDeleteExisting={() => deleteExisting("nationalIdImage")}
+              isDeleting={deletingField === "nationalIdImage"}
+              pickLabel={t("settings.uploadImage")}
+              changeLabel={t("settings.changeImage")}
+            />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>
               {t("settings.serviceDetails.commercialRecord")}
             </Text>
-            <TouchableOpacity
-              style={styles.imageUploadButton}
-              onPress={() => pickImage("commercialRecord")}
-            >
-              <Text style={styles.imageUploadText}>
-                {commercialRecordImage
-                  ? t("settings.changeImage")
-                  : t("settings.uploadImage")}
-              </Text>
-            </TouchableOpacity>
-            {commercialRecordImage && (
-              <Text style={styles.imageSelectedText}>
-                ✓ {t("settings.imageSelected")}
-              </Text>
-            )}
+            <DocumentTile
+              existingUri={existingCommercial}
+              newFile={commercialRecordFile}
+              onPick={() => pickImage("commercialRecord")}
+              onClearNew={() => setCommercialRecordFile(null)}
+              onDeleteExisting={() => deleteExisting("commercialRecordImage")}
+              isDeleting={deletingField === "commercialRecordImage"}
+              pickLabel={t("settings.uploadImage")}
+              changeLabel={t("settings.changeImage")}
+            />
           </View>
 
           <View style={styles.buttonContainer}>
@@ -297,11 +410,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
   },
-  imageSelectedText: {
-    fontSize: 12,
-    fontFamily: "Cairo_400Regular",
-    color: "#4CAF50",
-    marginTop: 8,
+  docTile: {
+    position: "relative",
+    alignSelf: "flex-start",
+  },
+  docImage: {
+    width: 140,
+    height: 100,
+    borderRadius: 10,
+  },
+  docTileOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(194, 142, 92, 0.8)",
+    paddingVertical: 4,
+    alignItems: "center",
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  docTileOverlayText: {
+    color: "#fff",
+    fontSize: 11,
+    fontFamily: "Cairo_600SemiBold",
+  },
+  docRemove: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "#c0392b",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  docRemoveText: {
+    color: "#fff",
+    fontSize: 13,
+    fontFamily: "Cairo_700Bold",
   },
   categoriesContainer: {
     flexDirection: "row",

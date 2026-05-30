@@ -2,7 +2,6 @@ const paymentsService = require('./payments.service');
 const webhookController = require('./webhook.controller');
 const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess } = require('../../shared/utils/responseHelper');
-const logger = require('../../shared/utils/logger');
 
 exports.webhook = webhookController.handle;
 
@@ -55,14 +54,3 @@ exports.void = catchAsync(async (req, res) => {
   sendSuccess(res, payment, 'Payment voided');
 });
 
-// Stub-only: allow tests to flip a stub payment to `paid` without
-// going through 3DS. Disabled when MOYASAR_API_KEY is set (production).
-exports.stubComplete3ds = catchAsync(async (req, res) => {
-  if (process.env.MOYASAR_API_KEY) return res.status(404).end();
-  const stub = require('../../infrastructure/paymentProvider/stub');
-  stub._setStubStatus(req.query.id, 'paid');
-  logger.warn('[payments] stub 3DS completion used — must not happen in production', {
-    moyasarId: req.query.id,
-  });
-  res.send('Stub 3DS complete. You may close this window.');
-});

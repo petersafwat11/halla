@@ -30,13 +30,18 @@ const HostSelector = ({
   const [searchResult, setSearchResult] = useState(null);
   const [searchError, setSearchError] = useState(null);
 
-  // Check if user is a platform admin (super_admin, admin, moderator without whitelabelId)
+  // Platform admins — super_admin / admin / moderator. The role string
+  // already discriminates platform vs whitelabel-scoped (whitelabel_admin
+  // and whitelabel_moderator are separate role values), so no `whitelabelId`
+  // check is needed. These roles can create events for themselves, for any
+  // host, or for any whitelabel — the tabs below render the choices.
   const isPlatformAdmin =
-    currentUser &&
-    PLATFORM_ADMIN_ROLES.includes(currentUser.role) &&
-    !currentUser.whitelabelId;
+    currentUser && PLATFORM_ADMIN_ROLES.includes(currentUser.role);
 
-  // Check if user is a whitelabel admin (whitelabel_admin or whitelabel_moderator)
+  // Whitelabel-scoped admins (whitelabel_admin / whitelabel_moderator).
+  // The wrapper (AdminCreateEvent) actually skips this step entirely for
+  // them now, but the flags are still used inside the component to drive
+  // the "create for self" copy and to hide the whitelabel tab.
   const isWhitelabelAdmin =
     currentUser && WHITELABEL_ADMIN_ROLES.includes(currentUser.role);
 

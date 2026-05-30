@@ -10,10 +10,7 @@ import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import { useAuthStore } from "../../../stores/authStore";
 import { EmailInput, OTPInput } from "../../commen";
-import {
-  sendEmailVerificationCodeAPI,
-  verifyEmailAPI,
-} from "../../../services/settingsService";
+import { settingsApi } from "../../../hooks/users/_api";
 
 const EmailVerificationSection = ({ emailValue, loading }) => {
   const { t } = useTranslation("settings");
@@ -37,7 +34,7 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
   const handleSendVerificationCode = async () => {
     setIsVerifyingEmail(true);
     try {
-      await sendEmailVerificationCodeAPI();
+      await settingsApi.sendEmailVerificationCode();
       setShowVerificationInput(true);
       toast.success(t("account.verificationCodeSent"));
     } catch (error) {
@@ -55,7 +52,7 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
 
     setIsVerifyingEmail(true);
     try {
-      await verifyEmailAPI(verificationCode);
+      await settingsApi.verifyEmail(verificationCode);
       toast.success(t("account.emailVerified"));
       setShowVerificationInput(false);
       setVerificationCode("");

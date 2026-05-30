@@ -12,7 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { Svg, Path } from "react-native-svg";
 import EventListItem from "./EventListItem";
-import { exportEvents } from "../../services/eventsService";
+import { useExportEvents } from "../../hooks/events/mutations/useEventMutation";
 import { saveBlobAndShare } from "../../utils/download";
 
 // Same SVG icons as home StatsCards
@@ -75,6 +75,7 @@ const EventList = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all"); // all, live, ended, draft
   const [exporting, setExporting] = useState(false);
+  const exportEventsMutation = useExportEvents();
 
   // Phase 4 W3-ADMIN — host export of all events to XLSX. The blob is
   // saved to cache and the native share sheet is opened so the user
@@ -83,7 +84,7 @@ const EventList = ({
     if (exporting) return;
     setExporting(true);
     try {
-      const result = await exportEvents();
+      const result = await exportEventsMutation.mutateAsync();
       if (!result?.blob) {
         throw new Error("Empty export response");
       }

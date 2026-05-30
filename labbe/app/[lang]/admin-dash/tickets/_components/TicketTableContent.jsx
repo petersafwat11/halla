@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { FiEye, FiUserPlus, FiCheckSquare, FiAlertTriangle, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiUserPlus, FiCheckSquare, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
@@ -25,36 +25,25 @@ const PRIORITY_CLASS_MAP = {
 export default function TicketTableContent({
   t, tableData, canUpdate, canDelete, filters, data,
   handlePageChange, handleExport, handleDelete, handleStatusChange,
-  handleMarkUrgent, handleAssignClick, handleResponseClick, handleViewResolutionClick,
+  handleAssignClick, handleResponseClick, handleViewResolutionClick,
 }) {
   const { t: tHook } = useTranslation("adminTickets");
   const i18nT = t || tHook;
-
-  const handleStatusBadgeClick = useCallback((row, value) => {
-    if (!canUpdate) return;
-    const newStatus = value === "open" ? "in_progress" : value === "in_progress" ? "resolved" : "open";
-    handleStatusChange(row.id, newStatus);
-  }, [canUpdate, handleStatusChange]);
 
   const getRowActions = useCallback((row) => {
     const actions = [];
     if (row.status === "resolved") {
       actions.push({ type: "dropdown", icon: <FiEye size={16} />, text: i18nT("actions.viewResolution"), onClick: () => handleViewResolutionClick(row) });
     }
-    if (canUpdate) {
+    if (canUpdate && row.status !== "resolved") {
       actions.push({ type: "dropdown", icon: <FiUserPlus size={16} />, text: i18nT("actions.assign"), onClick: () => handleAssignClick(row) });
-      if (row.status !== "resolved") {
-        actions.push({ type: "dropdown", icon: <FiCheckSquare size={16} />, text: i18nT("actions.resolve"), onClick: () => handleResponseClick(row) });
-      }
-      if (row.priority !== "high") {
-        actions.push({ type: "dropdown", icon: <FiAlertTriangle size={16} />, text: i18nT("actions.markUrgent"), onClick: () => handleMarkUrgent(row.id) });
-      }
+      actions.push({ type: "dropdown", icon: <FiCheckSquare size={16} />, text: i18nT("actions.resolve"), onClick: () => handleResponseClick(row) });
     }
     if (canDelete) {
       actions.push({ type: "dropdown", icon: <FiTrash2 size={16} />, text: i18nT("actions.delete"), onClick: () => handleDelete(row.id) });
     }
     return actions;
-  }, [canUpdate, canDelete, i18nT, handleViewResolutionClick, handleAssignClick, handleResponseClick, handleMarkUrgent, handleDelete]);
+  }, [canUpdate, canDelete, i18nT, handleViewResolutionClick, handleAssignClick, handleResponseClick, handleDelete]);
 
   const bulkActions = useMemo(() => {
     const actions = [];
@@ -91,7 +80,7 @@ export default function TicketTableContent({
     if (key === "status") {
       const colorClass = STATUS_CLASS_MAP[value] || styles.statusOpen;
       return (
-        <div className={`${styles.statusBadge} ${colorClass} ${canUpdate ? styles.clickableIf : ""}`} onClick={() => handleStatusBadgeClick(row, value)}>
+        <div className={`${styles.statusBadge} ${colorClass}`}>
           <span>{i18nT(`status.${value}`, value)}</span>
         </div>
       );
@@ -114,7 +103,7 @@ export default function TicketTableContent({
     }
     if (key === "createdAt" && value) return new Date(value).toLocaleDateString();
     return value;
-  }, [canUpdate, i18nT, handleStatusBadgeClick, handleResponseClick, handleAssignClick]);
+  }, [canUpdate, i18nT, handleResponseClick, handleAssignClick]);
 
   return (
     <Table

@@ -58,9 +58,11 @@ const NotificationPreferences = ({
     reset,
   } = methods;
 
+  const hasEmailOptions = (options.emailNotifications || []).length > 0;
+
   const onSubmit = async (formData) => {
     // Check if trying to enable email notifications without verified email
-    if (!emailVerified) {
+    if (hasEmailOptions && !emailVerified) {
       const hasEnabledEmailNotif = Object.values(
         formData.emailNotifications || {}
       ).some((v) => v === true);
@@ -129,53 +131,57 @@ const NotificationPreferences = ({
             </div>
           </div>
 
-          {/* Email Notifications Section */}
-          <div className={styles.section}>
-            <div className={styles.sectionContent}>
-              <div className={styles.sectionHeader}>
-                <h3 className={styles.sectionTitle}>
-                  {t(
-                    "notifications.emailNotifications",
-                    "إشعارات البريد الإلكتروني"
-                  )}
-                </h3>
-                <p className={styles.sectionDescription}>
-                  {t(
-                    "notifications.emailNotificationsDesc",
-                    "تحكم في الإشعارات التي ترسل إلى بريدك الإلكتروني"
-                  )}
-                </p>
-              </div>
-
-              {/* Email verification warning */}
-              {!emailVerified && (
-                <div className={styles.emailWarning}>
-                  <span className={styles.warningIcon}>⚠️</span>
-                  <p className={styles.warningText}>
+          {/* Email Notifications Section — only rendered for roles that
+              still expose email preferences. Host has no email prefs:
+              plan/payment emails always fire, all other host emails are
+              gone. */}
+          {hasEmailOptions && (
+            <div className={styles.section}>
+              <div className={styles.sectionContent}>
+                <div className={styles.sectionHeader}>
+                  <h3 className={styles.sectionTitle}>
                     {t(
-                      "notifications.emailNotVerifiedWarning",
-                      "يجب التحقق من بريدك الإلكتروني لتفعيل إشعارات البريد. يرجى التحقق من بريدك في إعدادات الحساب."
+                      "notifications.emailNotifications",
+                      "إشعارات البريد الإلكتروني"
+                    )}
+                  </h3>
+                  <p className={styles.sectionDescription}>
+                    {t(
+                      "notifications.emailNotificationsDesc",
+                      "تحكم في الإشعارات التي ترسل إلى بريدك الإلكتروني"
                     )}
                   </p>
                 </div>
-              )}
 
-              <div
-                className={`${styles.togglesContainer} ${
-                  !emailVerified ? styles.disabled : ""
-                }`}
-              >
-                {options.emailNotifications.map((option) => (
-                  <ToggleInput
-                    key={option.key}
-                    name={`emailNotifications.${option.key}`}
-                    label={option.label}
-                    disabled={!emailVerified}
-                  />
-                ))}
+                {!emailVerified && (
+                  <div className={styles.emailWarning}>
+                    <span className={styles.warningIcon}>⚠️</span>
+                    <p className={styles.warningText}>
+                      {t(
+                        "notifications.emailNotVerifiedWarning",
+                        "يجب التحقق من بريدك الإلكتروني لتفعيل إشعارات البريد. يرجى التحقق من بريدك في إعدادات الحساب."
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                <div
+                  className={`${styles.togglesContainer} ${
+                    !emailVerified ? styles.disabled : ""
+                  }`}
+                >
+                  {options.emailNotifications.map((option) => (
+                    <ToggleInput
+                      key={option.key}
+                      name={`emailNotifications.${option.key}`}
+                      label={option.label}
+                      disabled={!emailVerified}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className={styles.buttonsContainer}>

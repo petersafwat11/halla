@@ -1,18 +1,18 @@
 import { create } from "zustand";
 import {
-  loginWithEmailAPI,
-  sendOTPAPI,
-  verifyOTPAPI,
-  resendOTPAPI,
-  signupWithPhoneAPI,
-  verifySignupOTPAPI,
-  signupVendorAPI,
-  completeProfileAPI,
-  forgotPasswordAPI,
-  resetPasswordAPI,
-  logoutAPI,
-  refreshTokenAPI,
-} from "../services/authService";
+  completeProfile as completeProfileAPI,
+  forgotPassword as forgotPasswordAPI,
+  loginWithEmail as loginWithEmailAPI,
+  logout as logoutAPI,
+  refreshTokens as refreshTokenAPI,
+  resendOTP as resendOTPAPI,
+  resetPassword as resetPasswordAPI,
+  sendOTP as sendOTPAPI,
+  signupVendor as signupVendorAPI,
+  signupWithPhone as signupWithPhoneAPI,
+  verifyOTP as verifyOTPAPI,
+  verifySignupOTP as verifySignupOTPAPI,
+} from "../hooks/auth/_api";
 import {
   saveRefreshToken,
   loadRefreshToken,

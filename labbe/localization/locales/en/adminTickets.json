@@ -57,7 +57,6 @@
     "assign": "Assign",
     "resolve": "Resolve",
     "reopen": "Reopen",
-    "markUrgent": "Mark as Urgent",
     "delete": "Delete",
     "viewResolution": "View Resolution",
     "back": "Back"
@@ -118,7 +117,6 @@
     "deleteError": "Failed to delete ticket",
     "bulkDeleteSuccess": "Tickets deleted successfully",
     "bulkDeleteError": "Failed to delete tickets",
-    "markUrgentSuccess": "Ticket marked as urgent",
     "statusUpdateSuccess": "Status updated successfully",
     "selectRows": "Please select rows",
     "reopenSuccess": "Ticket reopened successfully",

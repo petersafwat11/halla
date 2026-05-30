@@ -11,6 +11,10 @@ const DocumentUploadsRow = ({
   setCommercialRecordImages,
   existingNationalIdImages,
   existingCommercialImages,
+  onDeleteNationalId,
+  onDeleteCommercial,
+  isDeletingNationalId,
+  isDeletingCommercial,
 }) => {
   const { t } = useTranslation("vendorSettings");
 
@@ -25,6 +29,8 @@ const DocumentUploadsRow = ({
           acceptImages={true}
           existingImages={existingNationalIdImages}
           placeholder={t("serviceDetails.uploadLicense", "Upload license image")}
+          onDeleteExisting={onDeleteNationalId}
+          isDeletingExisting={isDeletingNationalId}
         />
       </div>
       <div className={styles.editFormField}>
@@ -36,6 +42,8 @@ const DocumentUploadsRow = ({
           acceptImages={true}
           existingImages={existingCommercialImages}
           placeholder={t("serviceDetails.uploadCommercial", "Upload commercial record")}
+          onDeleteExisting={onDeleteCommercial}
+          isDeletingExisting={isDeletingCommercial}
         />
       </div>
     </div>

@@ -36,7 +36,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
-import { setupPasswordAPI } from "../../services/authService";
+import { setupPassword as setupPasswordAPI } from "../../hooks/auth/_api";
 import { authErrorMessage } from "../../services/authErrors";
 import TopBar from "../../components/plans/TopBar";
 

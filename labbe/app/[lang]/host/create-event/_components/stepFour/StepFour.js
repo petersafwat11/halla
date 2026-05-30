@@ -12,11 +12,16 @@
  * Auto-replies dual-write canonical guestReplies.* + legacy keys.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import styles from "./stepfour.module.css";
 import { useHostTaqnyatTemplates } from "@/hooks/taqnyatTemplates";
+import {
+  resolveTaqnyatPlaceholders,
+  buildTaqnyatPreviewContext,
+} from "@halla/shared/utils";
+import useAuthStore from "@/stores/authStore";
 
 const CheckIcon = () => (
   <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
@@ -65,12 +70,49 @@ const REPLY_TABS = [
 
 const StepFour = () => {
   const { setValue, watch } = useFormContext();
-  const { t } = useTranslation("createEvent");
+  const { t, i18n } = useTranslation("createEvent");
   const [activeTab, setActiveTab] = useState("attending");
 
   const visualTemplate = watch("visualTemplate");
   const selectedTemplate = watch("selectedTemplate");
   const guestReplies = watch("guestReplies") || {};
+  const eventName = watch("eventName");
+  const eventDate = watch("eventDate");
+  const eventTime = watch("eventTime");
+  const address = watch("address");
+  const hostName = useAuthStore(
+    (state) => state.user?.name || state.user?.username || ""
+  );
+
+  // Build the preview context once per form change. The same context drives
+  // placeholder substitution in the template-picker list AND the WhatsApp
+  // preview pane, mirroring the backend resolver semantics so what the host
+  // sees on screen matches what the guest receives.
+  const previewContext = useMemo(() => {
+    const locale = i18n?.language === "en" ? "en-US" : "ar-EG";
+    let dateFormatted = "";
+    if (eventDate) {
+      try {
+        dateFormatted = new Date(eventDate).toLocaleDateString(locale, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          calendar: "gregory",
+        });
+      } catch {
+        dateFormatted = "";
+      }
+    }
+    return buildTaqnyatPreviewContext({
+      guestName:
+        i18n?.language === "en" ? "Dear Guest" : "ضيفنا الكريم",
+      eventTitle: eventName,
+      dateFormatted,
+      eventTime,
+      locationAddress: address?.address || "",
+      hostName,
+    });
+  }, [eventName, eventDate, eventTime, address?.address, hostName, i18n?.language]);
 
   const category = visualTemplate?.categories?.[0] || "";
 
@@ -197,7 +239,13 @@ const StepFour = () => {
                       </div>
                       {template.bodyText && (
                         <div className={styles.bubbleWrap}>
-                          <p className={styles.bubbleText}>{template.bodyText}</p>
+                          <p className={styles.bubbleText}>
+                            {resolveTaqnyatPlaceholders(
+                              template.bodyText,
+                              template.varMapping,
+                              previewContext
+                            )}
+                          </p>
                         </div>
                       )}
                     </div>

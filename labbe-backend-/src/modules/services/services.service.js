@@ -9,7 +9,7 @@ const User = require('../../../models/UserModel');
 const mongoose = require('mongoose');
 const { NotFoundError } = require('../../shared/errors');
 const { SERVICE_STATUS, VENDOR_STATUS } = require('../../shared/constants');
-const { getFileUrl, getSignedUrlForKey, getKeyFromUrl, isS3Url, signStoredImage } = require('../../shared/utils/s3Upload');
+const { extractStoredRef, signStoredImage } = require('../../shared/utils/s3Upload');
 const logger = require('../../shared/utils/logger');
 const { logAudit } = require('../../shared/utils/auditLog');
 const locationsService = require('../locations/locations.service');
@@ -172,7 +172,10 @@ class ServicesService {
     }
 
     if (file) {
-      serviceData.image = getFileUrl(file) || `/uploads/services/${file.filename}`;
+      // Persist the S3 key (or local dev path) so reads can sign fresh URLs.
+      // Storing `file.location` (the full S3 URL) breaks once the bucket name
+      // or region moves and forces brittle URL-parsing on every read.
+      serviceData.image = extractStoredRef(file);
     }
 
     const service = await Service.create(serviceData);
@@ -204,7 +207,7 @@ class ServicesService {
 
     Object.assign(service, data);
     if (file) {
-      service.image = getFileUrl(file) || `/uploads/services/${file.filename}`;
+      service.image = extractStoredRef(file);
     }
 
     await service.save();
@@ -280,7 +283,7 @@ class ServicesService {
       category: service.category,
       price: service.price,
       priceUnit: service.priceUnit || service.currency,
-      image: await this._getImageUrl(service.image),
+      image: await signStoredImage(service.image),
       tags: service.tags || [],
       duration: service.duration || null,
       included: service.included || [],
@@ -307,44 +310,6 @@ class ServicesService {
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
     };
-  }
-
-  /**
-   * Return a publicly accessible URL for a stored service image.
-   * For private S3 objects, generates a 1-hour pre-signed GET URL.
-   * Falls back to the raw URL if signing fails.
-   * @private
-   */
-  async _getImageUrl(storedImage) {
-    if (!storedImage) return null;
-
-    const isS3 = isS3Url(storedImage) || /\.amazonaws\.com\//.test(storedImage);
-    if (isS3) {
-      const key = getKeyFromUrl(storedImage) || this._extractS3Key(storedImage);
-      if (key) {
-        try {
-          return await getSignedUrlForKey(key);
-        } catch (err) {
-          logger.warn('Failed to sign S3 URL for service image', { error: err.message });
-          return storedImage;
-        }
-      }
-    }
-    return this._sanitizeImagePath(storedImage);
-  }
-
-  /**
-   * Extract S3 key from a URL when getKeyFromUrl fails (e.g. AWS_S3_BASE_URL mismatch).
-   * @private
-   */
-  _extractS3Key(url) {
-    try {
-      const u = new URL(url);
-      const path = u.pathname.startsWith('/') ? u.pathname.slice(1) : u.pathname;
-      return path || null;
-    } catch {
-      return null;
-    }
   }
 
   /**
@@ -388,22 +353,6 @@ class ServicesService {
     return resolved;
   }
 
-  /**
-   * Sanitize image path - extract relative path from absolute filesystem paths
-   * @private
-   */
-  _sanitizeImagePath(imagePath) {
-    if (!imagePath) return null;
-    if (imagePath.startsWith('http')) return imagePath;
-    if (imagePath.startsWith('/uploads')) return imagePath;
-
-    const publicIndex = imagePath.indexOf('public');
-    if (publicIndex !== -1) {
-      return imagePath.substring(publicIndex + 6).replace(/\\/g, '/');
-    }
-
-    return null;
-  }
 }
 
 module.exports = new ServicesService();

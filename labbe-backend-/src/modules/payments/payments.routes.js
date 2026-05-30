@@ -37,27 +37,6 @@ const { refundSchema, captureSchema } = require('./payments.validation');
  */
 router.post('/webhook', paymentsController.webhook);
 
-/**
- * @swagger
- * /payments/_stub/3ds-complete:
- *   get:
- *     summary: Dev-only 3DS completion stub
- *     description: |
- *       Flips a stub payment's status to `paid` without going through real
- *       3DS. Disabled when `MOYASAR_API_KEY` is set. Internal/dev surface.
- *     tags: [Internal/Dev]
- *     x-internal: true
- *     parameters:
- *       - in: query
- *         name: id
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200: { description: Stub flipped to paid }
- *       404: { description: Disabled in production }
- */
-router.get('/_stub/3ds-complete', paymentsController.stubComplete3ds);
-
 router.use(protect);
 
 /**

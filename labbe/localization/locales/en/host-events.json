@@ -14,7 +14,21 @@
     "export": "Export",
     "eventsList": "Events List",
     "exportSuccess": "Data exported successfully",
-    "exportError": "Failed to export data"
+    "exportError": "Failed to export data",
+    "actions": {
+      "delete": "Delete",
+      "deleteSelected": "Delete Selected"
+    },
+    "deleteTitle": "Delete Event",
+    "bulkDeleteTitle": "Delete Selected Events",
+    "deleteConfirm": "Are you sure you want to delete this event? This action cannot be undone.",
+    "bulkDeleteConfirm": "Are you sure you want to delete {{count}} events? This action cannot be undone.",
+    "confirmDelete": "Confirm Delete",
+    "cancelDelete": "Cancel",
+    "deleteSuccess": "Event deleted successfully",
+    "deleteError": "Failed to delete event. Please try again.",
+    "bulkDeleteSuccess": "{{count}} events deleted successfully",
+    "bulkDeleteError": "Failed to delete events. Please try again."
   },
   "eventTypes": {
     "birthday": "Birthday",
@@ -29,7 +43,11 @@
     "published": "Published",
     "draft": "Draft",
     "ended": "Ended",
-    "suspended": "Suspended"
+    "suspended": "Suspended",
+    "live": "Live",
+    "scheduled": "Scheduled",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
   },
   "errors": {
     "noEventId": "Event ID not found",

@@ -29,7 +29,9 @@ const NotificationSettings = ({ initialData, onUpdate }) => {
     }).start();
   }, []);
 
-  // Matches backend NotificationPreferencesModel defaults for host role
+  // Matches backend NotificationPreferencesModel defaults for host role.
+  // Email + SMS preferences were removed — plan/payment emails always fire,
+  // every other host email was deleted with the preferences UI.
   const defaultValues = {
     appNotifications: {
       eventUpdates: true,
@@ -38,18 +40,6 @@ const NotificationSettings = ({ initialData, onUpdate }) => {
       guestCheckIns: true,
       subscriptionAlerts: true,
       systemUpdates: true,
-    },
-    emailNotifications: {
-      eventUpdates: false,
-      eventReminders: true,
-      guestResponses: false,
-      subscriptionAlerts: true,
-      invitationReports: true,
-    },
-    smsNotifications: {
-      eventReminders: false,
-      guestConfirmations: false,
-      importantUpdates: false,
     },
   };
 
@@ -139,78 +129,6 @@ const NotificationSettings = ({ initialData, onUpdate }) => {
               <ToggleInput
                 name="appNotifications.systemUpdates"
                 label={t("notifications.systemUpdates")}
-                disabled={loading}
-              />
-            </View>
-          </View>
-
-          {/* Email Notifications Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {t("notifications.emailNotifications")}
-            </Text>
-            <Text style={[styles.sectionDescription]}>
-              {t("notifications.emailNotificationsDescription")}
-            </Text>
-
-            <View style={styles.togglesGroup}>
-              <ToggleInput
-                name="emailNotifications.eventUpdates"
-                label={t("notifications.eventUpdates")}
-                disabled={loading}
-              />
-
-              <ToggleInput
-                name="emailNotifications.eventReminders"
-                label={t("notifications.eventReminders")}
-                disabled={loading}
-              />
-
-              <ToggleInput
-                name="emailNotifications.guestResponses"
-                label={t("notifications.guestResponses")}
-                disabled={loading}
-              />
-
-              <ToggleInput
-                name="emailNotifications.subscriptionAlerts"
-                label={t("notifications.subscriptionAlerts")}
-                disabled={loading}
-              />
-
-              <ToggleInput
-                name="emailNotifications.invitationReports"
-                label={t("notifications.invitationReports")}
-                disabled={loading}
-              />
-            </View>
-          </View>
-
-          {/* SMS Notifications Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {t("notifications.smsNotifications")}
-            </Text>
-            <Text style={styles.sectionDescription}>
-              {t("notifications.smsNotificationsDescription")}
-            </Text>
-
-            <View style={styles.togglesGroup}>
-              <ToggleInput
-                name="smsNotifications.eventReminders"
-                label={t("notifications.eventReminders")}
-                disabled={loading}
-              />
-
-              <ToggleInput
-                name="smsNotifications.guestConfirmations"
-                label={t("notifications.guestConfirmations")}
-                disabled={loading}
-              />
-
-              <ToggleInput
-                name="smsNotifications.importantUpdates"
-                label={t("notifications.importantUpdates")}
                 disabled={loading}
               />
             </View>

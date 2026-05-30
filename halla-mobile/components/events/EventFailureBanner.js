@@ -14,7 +14,8 @@
  *     Phase 4 (mobile parity). Banner only requires the detail screen to
  *     render, which it does.
  *
- * The retry button uses `eventsService.retryLaunch` (added alongside).
+ * The retry button uses the `useRetryLaunch` hook from
+ * `hooks/events/mutations/useEventMutation.js`.
  */
 
 import React, { useEffect, useRef, useState } from 'react';

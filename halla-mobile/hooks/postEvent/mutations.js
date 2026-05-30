@@ -1,19 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  addPostEventComment,
-  togglePostEventLike,
-} from "../../services/postEventService";
-import {
-  deletePostEventMedia,
-  generatePostEventTokens,
-  publishPostEventContent,
-  sendPostEventAccessLinks,
-  unpublishPostEventContent,
-  updatePostEventMessagingTemplate,
-  updateThankYouMessage,
-  uploadPostEventMedia,
-} from "../../services/hostPostEventService";
+import { API_BASE_URL, ENDPOINTS } from "../../config/api";
 import { postEventKeys } from "./keys";
+import {
+  hostPostEventRequest,
+  postEventGuestRequest,
+  postEventWithSession,
+} from "./queries";
 
 /**
  * Optimistic toggle-like mutation. Snapshots `post-event/content`,
@@ -27,7 +19,11 @@ export function useTogglePostEventLike() {
 
   return useMutation({
     mutationFn: ({ eventId, postId, sessionToken }) =>
-      togglePostEventLike(eventId, postId, sessionToken),
+      postEventGuestRequest(
+        `${API_BASE_URL}${ENDPOINTS.POST_EVENT.TOGGLE_LIKE(eventId, postId)}`,
+        { method: "POST", headers: postEventWithSession(sessionToken) },
+        "Failed to toggle like",
+      ),
     onMutate: async ({ eventId, postId }) => {
       const key = postEventKeys.content(eventId);
       await queryClient.cancelQueries({ queryKey: key });
@@ -84,7 +80,15 @@ export function useAddPostEventComment() {
 
   return useMutation({
     mutationFn: ({ eventId, postId, formData, sessionToken }) =>
-      addPostEventComment(eventId, postId, formData, sessionToken),
+      postEventGuestRequest(
+        `${API_BASE_URL}${ENDPOINTS.POST_EVENT.ADD_COMMENT(eventId, postId)}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${sessionToken}` },
+          body: formData,
+        },
+        "Failed to add comment",
+      ),
     onSuccess: (_data, { eventId, postId }) => {
       // Invalidate every paginated comments page for this post.
       queryClient.invalidateQueries({
@@ -100,7 +104,10 @@ export function useUploadPostEventMedia() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ eventId, formData }) =>
-      uploadPostEventMedia(eventId, formData),
+      hostPostEventRequest(ENDPOINTS.POST_EVENT.UPLOAD_MEDIA(eventId), {
+        method: "POST",
+        body: formData,
+      }),
     onSuccess: (_data, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: postEventKeys.hostContent(eventId) });
     },
@@ -111,7 +118,9 @@ export function useDeletePostEventMedia() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ eventId, mediaId }) =>
-      deletePostEventMedia(eventId, mediaId),
+      hostPostEventRequest(ENDPOINTS.POST_EVENT.DELETE_MEDIA(eventId, mediaId), {
+        method: "DELETE",
+      }),
     onSuccess: (_data, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: postEventKeys.hostContent(eventId) });
     },
@@ -121,7 +130,11 @@ export function useDeletePostEventMedia() {
 export function useUpdateThankYouMessage() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ eventId, body }) => updateThankYouMessage(eventId, body),
+    mutationFn: ({ eventId, body }) =>
+      hostPostEventRequest(ENDPOINTS.POST_EVENT.UPDATE_THANK_YOU(eventId), {
+        method: "PATCH",
+        body,
+      }),
     onSuccess: (_data, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: postEventKeys.hostContent(eventId) });
     },
@@ -132,7 +145,10 @@ export function useUpdatePostEventMessagingTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ eventId, body }) =>
-      updatePostEventMessagingTemplate(eventId, body),
+      hostPostEventRequest(
+        ENDPOINTS.POST_EVENT.UPDATE_MESSAGING_TEMPLATE(eventId),
+        { method: "PATCH", body },
+      ),
     onSuccess: (_data, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: postEventKeys.hostContent(eventId) });
     },
@@ -142,7 +158,10 @@ export function useUpdatePostEventMessagingTemplate() {
 export function usePublishPostEventContent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ eventId }) => publishPostEventContent(eventId),
+    mutationFn: ({ eventId }) =>
+      hostPostEventRequest(ENDPOINTS.POST_EVENT.PUBLISH(eventId), {
+        method: "POST",
+      }),
     onSuccess: (_data, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: postEventKeys.hostContent(eventId) });
     },
@@ -152,7 +171,10 @@ export function usePublishPostEventContent() {
 export function useUnpublishPostEventContent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ eventId }) => unpublishPostEventContent(eventId),
+    mutationFn: ({ eventId }) =>
+      hostPostEventRequest(ENDPOINTS.POST_EVENT.UNPUBLISH(eventId), {
+        method: "PATCH",
+      }),
     onSuccess: (_data, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: postEventKeys.hostContent(eventId) });
     },
@@ -161,12 +183,20 @@ export function useUnpublishPostEventContent() {
 
 export function useGeneratePostEventTokens() {
   return useMutation({
-    mutationFn: ({ eventId, body }) => generatePostEventTokens(eventId, body),
+    mutationFn: ({ eventId, body }) =>
+      hostPostEventRequest(ENDPOINTS.POST_EVENT.GENERATE_TOKENS(eventId), {
+        method: "POST",
+        body,
+      }),
   });
 }
 
 export function useSendPostEventAccessLinks() {
   return useMutation({
-    mutationFn: ({ eventId, body }) => sendPostEventAccessLinks(eventId, body),
+    mutationFn: ({ eventId, body }) =>
+      hostPostEventRequest(ENDPOINTS.POST_EVENT.SEND_ACCESS_LINKS(eventId), {
+        method: "POST",
+        body,
+      }),
   });
 }

@@ -7,50 +7,76 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
+  TextInput as RNTextInput,
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as ImagePicker from "expo-image-picker";
 
 import { useTranslation } from "../../localization/hooks/useTranslation";
+import { useToast } from "../../contexts/ToastContext";
 import TextInput from "../commen/TextInput";
 import EmailInput from "../commen/EmailInput";
 import Button from "../commen/Button";
 import { mobilePersonalInfoSchema as personalInfoSchema } from "@halla/shared/schemas/vendor";
+import { usersApi } from "../../hooks/users/_api";
+import PhoneChangeOtpModal from "./PhoneChangeOtpModal";
 
 /**
- * Personal Info form.
+ * Personal Info — single consolidated section.
  *
- * Submits two payloads:
- *   - `_main`     → top-level user fields (name, email)            via /users/profile
- *   - `vendorData` → ownerFullName + optional businessLogo upload  via /users/profile/vendorData
- *
- * The parent screen splits these and makes the right API calls.
+ * Image handling matches web + ImagesAndPricingForm:
+ *   - Picking a file shows it locally; it is committed on Save (PATCH upload
+ *     overwrites the businessLogo on the server).
+ *   - Pressing × on a pending pick clears local state only.
+ *   - Pressing × on the existing (server-side) avatar fires
+ *     `usersApi.deleteVendorImage('businessLogo')` and asks the parent to
+ *     refetch so the next render no longer shows the old logo.
  */
-const PersonalInfoForm = ({ data, onSave, loading }) => {
+const PersonalInfoForm = ({ data, onSave, onPhoneChanged, onRefetch, loading }) => {
   const { t } = useTranslation("vendor");
+  const toast = useToast();
   const methods = useForm({
     resolver: zodResolver(personalInfoSchema),
     defaultValues: {
-      name: data?.name || "",
+      ownerFullName: data?.ownerFullName || "",
+      brandName: data?.brandName || "",
       email: data?.email || "",
+      phoneNumber: data?.phoneNumber || "",
     },
   });
-  const [avatarUri, setAvatarUri] = useState(data?.avatar || null);
+  const existingAvatar = data?.avatar || null;
   const [avatarFile, setAvatarFile] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState(data?.phoneNumber || "");
+  const [otpCandidate, setOtpCandidate] = useState(null);
+  const [isDeletingLogo, setIsDeletingLogo] = useState(false);
 
   useEffect(() => {
     methods.reset({
-      name: data?.name || "",
+      ownerFullName: data?.ownerFullName || "",
+      brandName: data?.brandName || "",
       email: data?.email || "",
+      phoneNumber: data?.phoneNumber || "",
     });
-    setAvatarUri(data?.avatar || null);
     setAvatarFile(null);
-  }, [data?.name, data?.email, data?.avatar]);
+    setPhoneNumber(data?.phoneNumber || "");
+  }, [
+    data?.ownerFullName,
+    data?.brandName,
+    data?.email,
+    data?.phoneNumber,
+    data?.avatar,
+  ]);
+
+  // Preview: pending pick wins over the server-side value.
+  const previewUri = avatarFile?.uri || existingAvatar;
+  const isPendingPick = !!avatarFile;
 
   const pickImage = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
           t("settings.permissions.title"),
@@ -65,7 +91,6 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
         quality: 0.8,
       });
       if (!result.canceled && result.assets[0]) {
-        setAvatarUri(result.assets[0].uri);
         setAvatarFile(result.assets[0]);
       }
     } catch (_e) {
@@ -73,16 +98,59 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
     }
   };
 
+  const handleRemove = () => {
+    if (isPendingPick) {
+      setAvatarFile(null);
+      return;
+    }
+    if (!existingAvatar) return;
+    Alert.alert(
+      t("settings.personalInfo.confirmDeleteLogoTitle", "Delete logo?"),
+      t("settings.personalInfo.confirmDeleteLogoMsg", "This cannot be undone."),
+      [
+        { text: t("common.cancel", "Cancel"), style: "cancel" },
+        {
+          text: t("common.delete", "Delete"),
+          style: "destructive",
+          onPress: async () => {
+            setIsDeletingLogo(true);
+            try {
+              await usersApi.deleteVendorImage("businessLogo");
+              toast.success(
+                t("settings.imagesAndPricing.deleted", "Image deleted")
+              );
+              if (onRefetch) onRefetch();
+            } catch (err) {
+              toast.error(
+                err.message ||
+                  t("settings.imagesAndPricing.deleteFailed", "Failed to delete image")
+              );
+            } finally {
+              setIsDeletingLogo(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const onSubmit = (formValues) => {
-    // PersonalInfo owns top-level `name` + `email` (and the businessLogo
-    // upload on the vendor section). It does NOT write `ownerFullName` —
-    // that field is owned by BasicAccountInfoForm so the two forms never
-    // race-overwrite each other.
-    const vendor = avatarFile ? { businessLogo: avatarFile } : {};
+    const vendor = {
+      ownerFullName: formValues.ownerFullName,
+      brandName: formValues.brandName,
+    };
+    if (avatarFile) vendor.businessLogo = avatarFile;
+
     onSave({
-      main: { name: formValues.name, email: formValues.email },
+      main: { email: formValues.email },
       vendor,
     });
+
+    const phoneChanged =
+      (phoneNumber || "").trim() !== (data?.phoneNumber || "").trim();
+    if (phoneChanged && phoneNumber) {
+      setOtpCandidate(phoneNumber.trim());
+    }
   };
 
   return (
@@ -97,28 +165,62 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
           </Text>
 
           <View style={styles.avatarSection}>
-            <Text style={styles.label}>{t("settings.personalInfo.avatar")}</Text>
-            <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
-              {avatarUri ? (
-                <Image source={{ uri: avatarUri }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarPlaceholderText}>📷</Text>
+            <Text style={styles.label}>
+              {t("settings.personalInfo.avatar")}
+            </Text>
+            <View style={styles.avatarContainer}>
+              <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
+                {previewUri ? (
+                  <Image source={{ uri: previewUri }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Text style={styles.avatarPlaceholderText}>📷</Text>
+                  </View>
+                )}
+                <View style={styles.avatarOverlay}>
+                  <Text style={styles.avatarOverlayText}>
+                    {previewUri
+                      ? t("settings.changePhoto")
+                      : t("settings.uploadImage", "Upload image")}
+                  </Text>
                 </View>
+              </TouchableOpacity>
+              {previewUri && (
+                <TouchableOpacity
+                  style={styles.avatarRemove}
+                  onPress={handleRemove}
+                  disabled={isDeletingLogo}
+                  accessibilityLabel={t("common.delete", "Delete")}
+                >
+                  {isDeletingLogo ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <Text style={styles.avatarRemoveText}>✕</Text>
+                  )}
+                </TouchableOpacity>
               )}
-              <View style={styles.avatarOverlay}>
-                <Text style={styles.avatarOverlayText}>
-                  {t("settings.changePhoto")}
-                </Text>
-              </View>
-            </TouchableOpacity>
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
             <TextInput
-              name="name"
+              name="ownerFullName"
               label={t("settings.personalInfo.name")}
               placeholder={t("settings.personalInfo.namePlaceholder")}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <TextInput
+              name="brandName"
+              label={t(
+                "settings.basicAccountInfo.businessName",
+                "Business name"
+              )}
+              placeholder={t(
+                "settings.basicAccountInfo.businessNamePlaceholder",
+                "Enter your business name"
+              )}
             />
           </View>
 
@@ -127,6 +229,29 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
               name="email"
               label={t("settings.personalInfo.email")}
               placeholder={t("settings.personalInfo.emailPlaceholder")}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>
+              {t(
+                "settings.basicAccountInfo.phoneWhatsapp",
+                "Phone / WhatsApp"
+              )}
+            </Text>
+            <Text style={styles.helper}>
+              {t(
+                "settings.basicAccountInfo.phoneHelp",
+                "Changing your phone number requires verification via OTP."
+              )}
+            </Text>
+            <RNTextInput
+              style={styles.phoneInput}
+              placeholder="+966 5XX XXX XXXX"
+              keyboardType="phone-pad"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              placeholderTextColor="#999"
             />
           </View>
 
@@ -140,6 +265,16 @@ const PersonalInfoForm = ({ data, onSave, loading }) => {
           </View>
         </View>
       </ScrollView>
+
+      <PhoneChangeOtpModal
+        visible={!!otpCandidate}
+        phoneNumber={otpCandidate}
+        onClose={() => setOtpCandidate(null)}
+        onSuccess={() => {
+          setOtpCandidate(null);
+          if (onPhoneChanged) onPhoneChanged();
+        }}
+      />
     </FormProvider>
   );
 };
@@ -172,6 +307,23 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_600SemiBold",
     color: "#2c2c2c",
     marginBottom: 8,
+  },
+  helper: {
+    fontSize: 12,
+    fontFamily: "Cairo_400Regular",
+    color: "#888",
+    marginBottom: 8,
+  },
+  phoneInput: {
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    minHeight: 50,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    fontFamily: "Cairo_400Regular",
+    color: "#2c2c2c",
   },
   avatarContainer: { alignSelf: "center", position: "relative" },
   avatar: {
@@ -208,6 +360,24 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 11,
     fontFamily: "Cairo_600SemiBold",
+  },
+  avatarRemove: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#c0392b",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  avatarRemoveText: {
+    color: "#fff",
+    fontSize: 14,
+    fontFamily: "Cairo_700Bold",
   },
   inputGroup: { marginBottom: 8 },
   buttonContainer: { marginTop: 16 },

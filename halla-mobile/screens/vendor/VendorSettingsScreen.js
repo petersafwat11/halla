@@ -17,15 +17,11 @@ const VendorSettingsScreen = ({ navigation }) => {
   };
 
   const handleTabChange = (tabId) => {
-    if (tabId === "about" || tabId === "privacy" || tabId === "terms") {
-      toast.info(t("settings.notifications.comingSoon"));
-      return;
-    }
     if (tabId === "accountSetup") {
       navigation.navigate("VendorAccountSetup");
-    } else if (tabId === "notifications") {
-      toast.info(t("settings.notifications.comingSoon"));
+      return;
     }
+    toast.info(t("settings.notifications.comingSoon"));
   };
 
   return (

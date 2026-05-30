@@ -2,33 +2,34 @@
   "pageTitle": "Settings",
   "tabs": {
     "services": "Services",
-    "accountSetup": "Account Setup",
-    "notifications": "Notifications"
+    "accountSetup": "Account Setup"
   },
   "personalInfo": {
     "title": "Personal Account Information",
     "storeLogo": "Store Logo",
     "uploadImage": "Upload Images",
     "fullName": "Full Name",
-    "fullNamePlaceholder": "Choose event type",
+    "fullNamePlaceholder": "Enter your full name",
+    "businessName": "Business Name",
+    "businessNamePlaceholder": "Enter your business name",
     "email": "Email",
     "emailPlaceholder": "Enter your email",
     "emailValidationExample": "Please enter a valid email example: example@domain.com",
+    "phoneWhatsapp": "Phone / WhatsApp",
+    "phonePlaceholder": "+966 5XX XXX XXXX",
     "verifyEmail": "Verify Email",
     "password": "Password",
     "passwordPlaceholder": "*****************************",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "••••••••",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "••••••••",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "••••••••",
     "changePassword": "Change Password",
     "logout": "Logout",
     "clickToView": "Click to view",
     "noLogo": "No logo"
-  },
-  "basicAccountInfo": {
-    "title": "Basic Account Information",
-    "businessType": "Business Type",
-    "ownerFullName": "Full Name of Business Owner",
-    "businessName": "Business Name",
-    "email": "Email",
-    "phoneWhatsapp": "WhatsApp Phone Number"
   },
   "serviceDetails": {
     "title": "Service or Store Details",
@@ -68,11 +69,16 @@
   },
   "imagesAndPricing": {
     "title": "Images, Offers and Pricing",
-    "previousWorkImages": "3 Images of Previous Work",
+    "previousWorkImages": "Images of Previous Work",
     "priceListsAndPackages": "Price Lists and Packages",
     "uploaded": "Uploaded",
     "clickToView": "Click to view",
-    "noImages": "No images"
+    "noImages": "No images",
+    "addImages": "Add images",
+    "savedImages": "Saved images",
+    "newUploads": "New uploads",
+    "confirmDelete": "Delete this image?",
+    "invalidFormat": "Only JPEG, PNG, GIF, WebP files are accepted"
   },
   "paymentPolicy": {
     "title": "Payment and Transaction Policy",

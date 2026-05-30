@@ -70,18 +70,20 @@ async function getModerators({ page = 1, limit = 10, search, status, from, to, w
 /**
  * Create new moderator
  */
-async function createModerator({ email, phoneNumber, name, username, password, permissions, role: requestedRole, actorRole, bodyWhitelabelId, filterWhitelabelId }) {
+async function createModerator({ email, phoneNumber, name, username, password, permissions, role: requestedRole, actorRole, filterWhitelabelId }) {
+  // Whitelabel is derived from the actor, not selected in the UI:
+  //  - super_admin / admin → platform-wide moderator (whitelabelId: null)
+  //  - whitelabel_admin    → inherits the creator's whitelabelId
   let whitelabelId;
-  if (actorRole === ROLES.SUPER_ADMIN) {
-    whitelabelId = bodyWhitelabelId;
-    if (!whitelabelId) {
-      throw new ValidationError('whitelabelId is required when a super admin creates an admin or moderator');
-    }
-  } else {
+  if (actorRole === ROLES.SUPER_ADMIN || actorRole === ROLES.ADMIN) {
+    whitelabelId = null;
+  } else if (actorRole === ROLES.WHITELABEL_ADMIN) {
     whitelabelId = filterWhitelabelId;
     if (!whitelabelId) {
       throw new ValidationError('Creator has no whitelabel scope; cannot create moderator');
     }
+  } else {
+    throw new ValidationError('Not authorized to create moderators');
   }
   const existingUser = await User.findOne({
     $or: [
@@ -99,20 +101,16 @@ async function createModerator({ email, phoneNumber, name, username, password, p
     }
   }
 
-  // Determine the correct role. Both branches require a whitelabelId.
-  // - Whitelabel-creator path (called by WHITELABEL_ADMIN): whitelabel-only roles.
-  // - Platform-creator path (called by SUPER_ADMIN): platform-admin roles, but
-  //   still tenant-bound via the supplied whitelabelId.
+  // Pin the role to the actor's scope so a whitelabel admin can't escalate to
+  // a platform role (or vice versa) by tampering with the request body.
   const WHITELABEL_ALLOWED = [ROLES.WHITELABEL_MODERATOR, ROLES.WHITELABEL_ADMIN];
   const PLATFORM_ALLOWED = [ROLES.MODERATOR, ROLES.ADMIN];
 
   let moderatorRole;
-  if (WHITELABEL_ALLOWED.includes(requestedRole)) {
-    moderatorRole = requestedRole;
-  } else if (PLATFORM_ALLOWED.includes(requestedRole)) {
-    moderatorRole = requestedRole;
+  if (whitelabelId === null) {
+    moderatorRole = PLATFORM_ALLOWED.includes(requestedRole) ? requestedRole : ROLES.MODERATOR;
   } else {
-    moderatorRole = ROLES.MODERATOR;
+    moderatorRole = WHITELABEL_ALLOWED.includes(requestedRole) ? requestedRole : ROLES.WHITELABEL_MODERATOR;
   }
 
   const moderator = await User.create({

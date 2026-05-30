@@ -9,7 +9,11 @@ const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
 const Notification = require("../../../models/NotificationModel");
-const notificationService = require("./notificationService");
+// Use the active notifications service (with preference gating). The
+// shared/utils notificationService still exists for the `notifyX` helpers
+// that other code references, but those helpers do not gate on user
+// preferences and we want cron-driven notifications to respect them.
+const notificationService = require("../../modules/notifications/notifications.service");
 const emailService = require("./emailService");
 const messagingService = require("../../modules/messaging/messaging.service");
 const messagingReminderService = require("../../modules/messaging/messaging.reminder.service");
@@ -589,16 +593,37 @@ const scheduleEventCompletion = () => {
   cron.schedule("0 * * * *", async () => {
     try {
       const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const result = await Event.updateMany(
-        {
-          status: "live",
-          "eventDetails.date": { $lte: cutoff },
-        },
+      // Find first (so we can notify each host) then update.
+      const toComplete = await Event.find({
+        status: "live",
+        "eventDetails.date": { $lte: cutoff },
+      }).select("_id host eventDetails.title");
+
+      if (toComplete.length === 0) return;
+
+      await Event.updateMany(
+        { _id: { $in: toComplete.map((e) => e._id) } },
         { $set: { status: "completed" } }
       );
-      if (result.modifiedCount > 0) {
-        console.log(`[Cron] Marked ${result.modifiedCount} events as completed`);
+
+      for (const event of toComplete) {
+        if (!event.host) continue;
+        const title = event.eventDetails?.title || "Untitled";
+        notificationService
+          .sendToUser(event.host, {
+            type: "event_completed",
+            title: "Event Completed",
+            titleAr: "اكتملت المناسبة",
+            message: `Your event "${title}" is now marked as completed.`,
+            messageAr: `تم تحديث حالة مناسبتك "${title}" إلى مكتملة.`,
+            data: { entityType: "event", entityId: event._id },
+          })
+          .catch((err) =>
+            console.error("[Cron] event_completed notify failed", err?.message)
+          );
       }
+
+      console.log(`[Cron] Marked ${toComplete.length} events as completed`);
     } catch (error) {
       console.error("[Cron] Event completion job failed:", error);
     }

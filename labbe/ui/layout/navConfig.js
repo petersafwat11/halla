@@ -279,13 +279,6 @@ export const whitelabelNavItems = [
     defaultLabel: "المديرون",
   },
   {
-    key: "hosts",
-    path: "/admin-dash/hosts",
-    icon: IoPersonAdd,
-    labelKey: "adminSidebar.hosts",
-    defaultLabel: "المضيفون",
-  },
-  {
     key: "events",
     path: "/admin-dash/events",
     icon: IoCalendar,
@@ -376,7 +369,6 @@ const ROLE_NAV_ACCESS = {
   [USER_ROLES.WHITELABEL_ADMIN]: [
     "dashboard",
     "moderators",
-    "hosts",
     "events",
     "tickets",
     "payments",
@@ -385,7 +377,6 @@ const ROLE_NAV_ACCESS = {
   ],
   [USER_ROLES.WHITELABEL_MODERATOR]: [
     "dashboard",
-    "hosts", // EDIT access (create/update, no delete)
     "events", // EDIT access (create/update, no delete)
     "tickets", // FULL access
     "payments", // VIEW access
@@ -451,7 +442,7 @@ export const ROLE_PAGE_ACCESS = {
   },
   [USER_ROLES.WHITELABEL_ADMIN]: {
     dashboard: ACCESS_LEVELS.FULL,
-    hosts: ACCESS_LEVELS.FULL,
+    hosts: ACCESS_LEVELS.NONE,
     vendors: ACCESS_LEVELS.NONE,
     events: ACCESS_LEVELS.FULL,
     tickets: ACCESS_LEVELS.NONE,
@@ -464,7 +455,7 @@ export const ROLE_PAGE_ACCESS = {
   },
   [USER_ROLES.WHITELABEL_MODERATOR]: {
     dashboard: ACCESS_LEVELS.VIEW,
-    hosts: ACCESS_LEVELS.EDIT,
+    hosts: ACCESS_LEVELS.NONE,
     vendors: ACCESS_LEVELS.NONE,
     events: ACCESS_LEVELS.EDIT,
     tickets: ACCESS_LEVELS.NONE,

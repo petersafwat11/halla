@@ -42,6 +42,7 @@ const DynamicForm = ({
   isLoading = false,
   submitLabel,
   cancelLabel,
+  fileHandlers = {},
 }) => {
   const { t, i18n } = useTranslation("vendorSettings");
 
@@ -121,12 +122,13 @@ const DynamicForm = ({
     const error = errors[name];
 
     switch (type) {
-      case FIELD_TYPES.FILE:
+      case FIELD_TYPES.FILE: {
         const existingImages = Array.isArray(initialData[name])
           ? initialData[name]
           : initialData[name]
           ? [initialData[name]]
           : [];
+        const fieldHandlers = fileHandlers[name] || {};
         return (
           <div key={name} className={styles.fieldGroup}>
             <label className={styles.label}>
@@ -142,10 +144,13 @@ const DynamicForm = ({
               acceptImages={accept?.includes("image")}
               existingImages={existingImages}
               placeholder={getPlaceholder(field)}
+              onDeleteExisting={fieldHandlers.onDeleteExisting}
+              isDeletingExisting={fieldHandlers.isDeletingExisting}
             />
             {error && <span className={styles.error}>{error}</span>}
           </div>
         );
+      }
 
       case FIELD_TYPES.TEXTAREA:
         return (

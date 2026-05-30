@@ -58,14 +58,12 @@ const subscriptions = subscriptionsTemplates;
 
 /**
  * Vendor Templates
+ * Only the two admin-driven outcomes are wired — every other vendor email
+ * (inquiries, reviews, weekly stats, suspensions, profile updates) was
+ * removed alongside the vendor notification preferences.
  * - vendorApplicationPendingEmail
  * - vendorApprovalEmail
  * - vendorRejectionEmail
- * - vendorProfileUpdateEmail
- * - vendorNewInquiryEmail
- * - vendorNewReviewEmail
- * - vendorAccountSuspendedEmail
- * - vendorWeeklyStatsEmail
  */
 const vendors = vendorsTemplates;
 
@@ -178,11 +176,6 @@ const TEMPLATE_REGISTRY = {
   vendorApplicationPending: vendorsTemplates.vendorApplicationPendingEmail,
   vendorApproval: vendorsTemplates.vendorApprovalEmail,
   vendorRejection: vendorsTemplates.vendorRejectionEmail,
-  vendorProfileUpdate: vendorsTemplates.vendorProfileUpdateEmail,
-  vendorNewInquiry: vendorsTemplates.vendorNewInquiryEmail,
-  vendorNewReview: vendorsTemplates.vendorNewReviewEmail,
-  vendorAccountSuspended: vendorsTemplates.vendorAccountSuspendedEmail,
-  vendorWeeklyStats: vendorsTemplates.vendorWeeklyStatsEmail,
 
   // Whitelabel templates
   whitelabelApplicationPending:

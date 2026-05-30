@@ -61,7 +61,10 @@ exports.adminDuplicate = catchAsync(async (req, res) => {
 
 // ── Categories ──────────────────────────────────────────────────────────────
 exports.listCategories = catchAsync(async (_req, res) => {
-  const categories = await service.listCategories({ includeInactive: false });
+  const categories = await service.listCategories({
+    includeInactive: false,
+    forHost: true,
+  });
   sendSuccess(res, { categories });
 });
 

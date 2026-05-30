@@ -15,7 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import { useToast } from "../../contexts/ToastContext";
 import Button from "../commen/Button";
-import { vendorService } from "../../services/vendorService";
+import { usersApi } from "../../hooks/users/_api";
 
 /**
  * Extract the S3 key from a backend-signed URL.
@@ -126,7 +126,7 @@ const ImagesAndPricingForm = ({ data, onSave, onRefetch, loading }) => {
           onPress: async () => {
             setDeletingUrl(url);
             try {
-              await vendorService.deleteVendorImage(field, key);
+              await usersApi.deleteVendorImage(field, key);
               toast.success(t("settings.imagesAndPricing.deleted", "Image deleted"));
               onRefetch && onRefetch();
             } catch (err) {

@@ -224,10 +224,14 @@ export const validateStepData = (stepNumber, formData) => {
         formData.address?.address &&
         formData.guestList &&
         formData.guestList.length > 0 &&
+        // Step-3 satisfied: either a predefined template ref, a custom
+        // upload (templateImage), or both. visualTemplate truthy alone
+        // is no longer enough — an empty {isCustomUpload:true} with no
+        // image must NOT pass.
         (formData.visualTemplate?.templateRef ||
           formData.visualTemplate?._id ||
           formData.visualTemplate?.id ||
-          formData.visualTemplate) &&
+          formData.templateImage) &&
         (formData.selectedTemplate?.name ||
           formData.taqnyatTemplate?.templateRef) &&
         formData.confirmReviewed
@@ -259,16 +263,22 @@ export const transformFormDataToPayload = (formData) => ({
     phone: moderator.phone || moderator.mobile,
   })),
   visualTemplate: formData.visualTemplate
-    ? {
-        templateRef:
-          formData.visualTemplate.templateRef ||
-          formData.visualTemplate._id ||
-          formData.visualTemplate.id,
-        fieldValues:
-          formData.visualTemplate.fieldValues ||
-          formData.visualTemplate.data ||
-          {},
-      }
+    ? formData.visualTemplate.isCustomUpload
+      ? {
+          isCustomUpload: true,
+          fieldValues: {},
+        }
+      : {
+          templateRef:
+            formData.visualTemplate.templateRef ||
+            formData.visualTemplate._id ||
+            formData.visualTemplate.id,
+          fieldValues:
+            formData.visualTemplate.fieldValues ||
+            formData.visualTemplate.data ||
+            {},
+          isCustomUpload: false,
+        }
     : undefined,
   taqnyatTemplate: formData.selectedTemplate
     ? {

@@ -1,12 +1,11 @@
 /**
  * Payment provider factory.
  *
- * Chooses Moyasar or stub based on `MOYASAR_API_KEY`. Wraps `charge()`
- * with `withIdempotency()` so the outbound call is exactly-once when
- * the caller supplies an `idempotencyKey`. The same key is also passed
- * down to the provider, which converts it to a Moyasar `given_id` —
- * defense in depth: if the network retries past our cache, Moyasar
- * still dedupes.
+ * Always Moyasar. Wraps `charge()` with `withIdempotency()` so the
+ * outbound call is exactly-once when the caller supplies an
+ * `idempotencyKey`. The same key is also passed down to the provider,
+ * which converts it to a Moyasar `given_id` — defense in depth: if
+ * the network retries past our cache, Moyasar still dedupes.
  *
  * `fetchPayment`, `refund`, `capture`, `voidPayment` are passed through
  * directly. Refunds are NOT idempotency-wrapped at this layer because
@@ -15,18 +14,18 @@
  * middleware to guard double-clicks.
  */
 
-const stub = require("./stub");
 const moyasar = require("./moyasar");
 const { withIdempotency, sha256 } = require("../../shared/utils/idempotency");
 
-const isMoyasarConfigured = () => !!process.env.MOYASAR_API_KEY;
+if (!process.env.MOYASAR_API_KEY) {
+  throw new Error(
+    "[paymentProvider] MOYASAR_API_KEY is required — set it in config.env before starting the server."
+  );
+}
 
-const active = isMoyasarConfigured() ? moyasar : stub;
+const active = moyasar;
 
-console.log(
-  `[paymentProvider] active provider: ${active.name}` +
-    (active.name === "stub" ? " (MOYASAR_API_KEY absent — synthetic success)" : "")
-);
+console.log(`[paymentProvider] active provider: ${active.name}`);
 
 const computeChargeRequestHash = (params) => {
   const { amount, currency, source, metadata } = params || {};
@@ -61,13 +60,6 @@ module.exports = {
   refund: (params) => active.refund(params),
   capture: (params) => active.capture(params),
   voidPayment: (params) => active.voidPayment(params),
-  createInvoice: (params) =>
-    typeof active.createInvoice === "function"
-      ? active.createInvoice(params)
-      : Promise.resolve({ success: false, error: "createInvoice not supported", provider: active.name }),
-  fetchInvoice: (id) =>
-    typeof active.fetchInvoice === "function"
-      ? active.fetchInvoice(id)
-      : Promise.resolve({ success: false, error: "fetchInvoice not supported", provider: active.name }),
-  isMoyasarConfigured,
+  createInvoice: (params) => active.createInvoice(params),
+  fetchInvoice: (id) => active.fetchInvoice(id),
 };

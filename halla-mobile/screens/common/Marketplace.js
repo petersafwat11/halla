@@ -5,7 +5,10 @@ import TopBar from "../../components/plans/TopBar";
 import { VendorCards, MoreInfoPopup } from "../../components/marketplace";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
-import marketplaceService from "../../services/marketplaceService";
+import { getMarketplaceImageUrl as getSharedMarketplaceImageUrl } from "@halla/shared/utils/marketplace";
+import { API_BASE_URL } from "../../config/api";
+
+const getMarketplaceImageUrl = (path) => getSharedMarketplaceImageUrl(path, API_BASE_URL);
 import { useMarketplaceServices } from "../../hooks";
 
 const Marketplace = ({ navigation }) => {
@@ -42,10 +45,10 @@ const Marketplace = ({ navigation }) => {
       rating: service.rating || 0,
       reviewCount: service.reviewsCount || 0,
       price: service.price ? `${service.price}` : "",
-      image: marketplaceService.getImageUrl(
+      image: getMarketplaceImageUrl(
         service.image || service.vendor?.logo || service.vendor?.avatar,
       ),
-      logo: marketplaceService.getImageUrl(service.vendor?.logo),
+      logo: getMarketplaceImageUrl(service.vendor?.logo),
       tags: service.tags || [],
       duration: service.duration || "",
       included: service.included || [],

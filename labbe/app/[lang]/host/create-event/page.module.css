@@ -1,12 +1,8 @@
 .page_container {
   width: 100%;
   min-height: 100vh;
-  background: var(--Content-bg-Card-Bg-artboard, #f9f4ef);
+  background: var(--bg-artboard);
   padding: 2rem;
-  /* margin: 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center; */
 }
 
 .main_content {
@@ -21,15 +17,13 @@
 .header_wrapper,
 .stepper_wrapper {
   width: 100%;
-  max-width: 80rem;
-  /* padding: 0 2rem; */
+  max-width: 96rem;
 }
 
 .content_wrapper {
   display: flex;
   width: 100%;
-  /* padding: 0 4rem; */
-  align-items: stretch;
+  align-items: flex-start;
   gap: 2.4rem;
   position: relative;
   justify-content: center;
@@ -37,16 +31,19 @@
 
 .form_section {
   display: flex;
-  flex: 1;
+  flex: 1 1 auto;
   flex-direction: column;
   align-items: flex-start;
   gap: 1rem;
   width: 100%;
   max-width: 85rem;
+  min-width: 0;
 }
 
+/* Step 4 has a side-by-side preview, so the form column gets a slightly
+   wider cap and the preview takes its natural width next to it. */
 .form_section_wide {
-  max-width: 124rem;
+  max-width: 82rem;
 }
 
 .form_card {
@@ -55,10 +52,39 @@
   align-items: center;
   gap: 2.4rem;
   align-self: stretch;
-  border-radius: 1.2rem;
-  background: var(--Content-bg-Card-bg-1, #fff);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  /* padding-bottom: 2.4rem; */
+  border-radius: 1.6rem;
+  background: var(--color-natural-50);
+  border: 1px solid var(--color-primary-100);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 10px 32px rgba(81, 60, 39, 0.08);
+}
+
+/* Preview column on step 4 — sticky so it tracks the form as you scroll. */
+.preview_wrapper {
+  position: sticky;
+  top: 2rem;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+/* Tablet — drop the preview below the form */
+@media (max-width: 900px) {
+  .content_wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form_section,
+  .form_section_wide {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .preview_wrapper {
+    position: static;
+    align-self: center;
+  }
 }
 
 /* Mobile styles */
@@ -69,18 +95,15 @@
 
   .header_wrapper,
   .stepper_wrapper {
-    padding: 0 2.4rem;
+    padding: 0 1.6rem;
   }
 
   .content_wrapper {
-    padding: 0 2.4rem;
-    flex-direction: column;
+    padding: 0 1.6rem;
   }
 
-  .form_section,
-  .form_section_wide {
-    width: 100%;
-    max-width: 100%;
+  .form_card {
+    border-radius: 1.2rem;
   }
 }
 

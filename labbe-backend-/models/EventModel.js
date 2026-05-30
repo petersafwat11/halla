@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { EVENT_STATUS } = require("../src/shared/constants");
+const { EVENT_STATUS, SUPERVISOR_STATUS } = require("../src/shared/constants");
 
 // Staff sub-schema (specific to events, not a separate model)
 const staffSchema = new mongoose.Schema(
@@ -14,6 +14,11 @@ const staffSchema = new mongoose.Schema(
       required: [true, "Supervisor phone number is required"],
       trim: true,
       length: [9, "Phone number must be 9 digits"],
+    },
+    status: {
+      type: String,
+      enum: Object.values(SUPERVISOR_STATUS),
+      default: SUPERVISOR_STATUS.ACTIVE,
     },
   },
 
@@ -106,11 +111,17 @@ const eventDetailsSchema = new mongoose.Schema(
 //   - bakedImagePath:  S3 key/URL for the canvas-baked WhatsApp header.
 //                      Web bakes via html2canvas; mobile via
 //                      react-native-view-shot.
+//   - isCustomUpload:  true when the host uploaded their own invitation
+//                      image directly (no predefined template / no form
+//                      fields). In that mode templateRef + fieldValues
+//                      are unset and bakedImagePath stores the uploaded
+//                      asset URL.
 const canonicalVisualTemplateSchema = new mongoose.Schema(
   {
     templateRef: { type: mongoose.Schema.Types.ObjectId, ref: "Template" },
     fieldValues: { type: mongoose.Schema.Types.Mixed, default: {} },
     bakedImagePath: String,
+    isCustomUpload: { type: Boolean, default: false },
   },
   { _id: false }
 );

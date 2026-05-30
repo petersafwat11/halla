@@ -1,7 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
+import { ENDPOINTS } from "../../config/api";
+import { apiFetch } from "../../services/http";
 import { useAuthStore } from "../../stores/authStore";
-import * as eventsService2 from "../../services/eventsService";
 import { eventsKeys } from "./keys";
+
+const eventsRequest = async (path, options = {}) => {
+  const fetchOpts = {
+    method: options.method || "GET",
+    headers: options.headers || {},
+  };
+  if (options.body !== undefined && options.body !== null) {
+    fetchOpts.body =
+      typeof options.body === "string" ? JSON.parse(options.body) : options.body;
+  }
+  const res = await apiFetch(path, fetchOpts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || "API request failed");
+  return data;
+};
+
+// Exposed so cross-domain hooks (users/subscriptionInfo, staff/tokens) share
+// the same request shape without re-importing the deleted service.
+export { eventsRequest };
 
 /**
  * Fetch user events with statistics.
@@ -12,8 +32,15 @@ export function useUserEventsWithStats() {
   return useQuery({
     queryKey: eventsKeys.userStats(),
     queryFn: async () => {
-      const response = await eventsService2.getUserEventsWithStats();
-      return response;
+      const data = await eventsRequest(ENDPOINTS.EVENTS.STATS);
+      const stats = data?.data || {};
+      return {
+        totalEvents: stats.totalEvents || 0,
+        activeEvents: stats.activeEvents || 0,
+        completedEvents: stats.completedEvents || 0,
+        totalGuests: stats.totalGuests || 0,
+        confirmedGuests: stats.confirmedGuests || 0,
+      };
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
@@ -29,8 +56,23 @@ export function useEventStats() {
   return useQuery({
     queryKey: eventsKeys.stats(),
     queryFn: async () => {
-      const response = await eventsService2.getEventStats();
-      return response;
+      const [statsData, eventsData] = await Promise.all([
+        eventsRequest(ENDPOINTS.EVENTS.STATS),
+        eventsRequest(`${ENDPOINTS.EVENTS.MY_EVENTS}?limit=50`),
+      ]);
+      const stats = statsData?.data || {};
+      const events = Array.isArray(eventsData?.data) ? eventsData.data : [];
+      const totalGuests = stats.totalGuests || 0;
+      const confirmedGuests = stats.confirmedGuests || 0;
+      const respondedGuests = confirmedGuests + (stats.checkedInGuests || 0);
+      return {
+        allGuests: totalGuests,
+        attendanceRate:
+          totalGuests > 0 ? Math.round((confirmedGuests / totalGuests) * 100) : 0,
+        responseRate:
+          totalGuests > 0 ? Math.round((respondedGuests / totalGuests) * 100) : 0,
+        events,
+      };
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
@@ -83,12 +125,57 @@ export function useSingleEventStats(eventId, opts) {
   return useQuery({
     queryKey: eventsKeys.singleStats(eventId),
     queryFn: async () => {
-      const response = await eventsService2.getSingleEventStats(eventId);
-      return response;
+      const [statsRes, eventRes] = await Promise.all([
+        eventsRequest(ENDPOINTS.EVENTS.SINGLE_STATS(eventId)),
+        eventsRequest(ENDPOINTS.EVENTS.BY_ID(eventId)),
+      ]);
+      const stats = statsRes?.data || {};
+      const eventData = eventRes?.data || {};
+      const guestList = Array.isArray(eventData.guestList) ? eventData.guestList : [];
+      const staffList = Array.isArray(eventData.staffList) ? eventData.staffList : [];
+      const guests = guestList.map((guest) => ({
+        guestId: guest._id || guest.id,
+        name: guest.name || "ضيف",
+        phone: guest.phone || "",
+        status: guest.status || "invited",
+        respondedAt: guest.rsvp?.respondedAt || guest.respondedAt || null,
+        addedBy: guest.addedBy || "",
+      }));
+      return {
+        event: eventData,
+        guests,
+        staff: staffList,
+        confirmed: stats.confirmed || 0,
+        declined: stats.declined || 0,
+        pending: stats.pending || 0,
+        maybe: stats.maybe || 0,
+        checkedIn: stats.checkedIn || 0,
+        totalGuests: stats.totalGuests || 0,
+      };
     },
     enabled: !!token && !!eventId,
     staleTime: refetchInterval ? 0 : 2 * 60 * 1000,
     refetchInterval,
     refetchIntervalInBackground: false,
+  });
+}
+
+/**
+ * Fetch a single event by id. Returns the event payload (backend's
+ * `data` field). Used as a `useQuery` where reactive caching is wanted;
+ * imperative load paths (e.g. update-event gate) inline `apiFetch`
+ * directly.
+ */
+export function useEventById(eventId, opts = {}) {
+  const token = useAuthStore((state) => state.token);
+  return useQuery({
+    queryKey: eventsKeys.detail(eventId),
+    queryFn: async () => {
+      const data = await eventsRequest(ENDPOINTS.EVENTS.BY_ID(eventId));
+      return data?.data || {};
+    },
+    enabled: !!token && !!eventId,
+    staleTime: 60 * 1000,
+    ...opts,
   });
 }

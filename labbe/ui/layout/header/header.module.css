@@ -8,8 +8,10 @@
   height: 7.2rem;
   gap: clamp(1.6rem, 3vw, 2.4rem);
   width: 100%;
-  position: sticky;
+  position: fixed;
   top: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   z-index: 100;
 }
 

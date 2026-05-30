@@ -89,7 +89,8 @@
     "buttons": {
       "scheduleEvent": "Schedule Event",
       "testMessage": "Test Message",
-      "guests": "Guests"
+      "guests": "Guests",
+      "sharePostEvent": "Share Post-Event Page"
     },
     "quota": {
       "remainingGuests": "Remaining Guests",
@@ -99,6 +100,13 @@
   },
   "errors": {
     "loadFailed": "Failed to load dashboard"
+  },
+  "staff": {
+    "notifyStaff": "Notify Staff",
+    "notifying": "Sending...",
+    "notifySuccess": "Sent to {{sent}} of {{total}} staff",
+    "notifyPartial": "Sent to {{sent}} of {{total}}. Reason: {{error}}",
+    "notifyError": "Failed to notify staff"
   },
   "subscription": {
     "eventLimitReached": "Event Limit Reached",
@@ -181,7 +189,9 @@
       "whatsapp": "WhatsApp",
       "sms": "SMS",
       "smsFallback": "SMS (fallback)"
-    }
+    },
+    "confirmDelete": "Delete",
+    "cancelDelete": "Cancel"
   },
   "confirmDelete": "Are you sure you want to delete this event? This action cannot be undone.",
   "deleteSuccess": "Event deleted successfully",
@@ -283,6 +293,7 @@
       "more": "More Options",
       "exportSuccess": "Guest list exported successfully",
       "exportError": "Failed to export guest list",
+      "deleteTitle": "Delete Guest",
       "confirmDelete": "Are you sure you want to delete this guest?",
       "deleteSuccess": "Guest deleted successfully",
       "deleteError": "Failed to delete guest"

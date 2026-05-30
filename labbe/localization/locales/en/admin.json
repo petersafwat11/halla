@@ -31,6 +31,7 @@
     "synced": "Synced",
     "col": {
       "name": "Template Name",
+      "body": "Template Text",
       "lang": "Language",
       "status": "Status",
       "category": "Category",

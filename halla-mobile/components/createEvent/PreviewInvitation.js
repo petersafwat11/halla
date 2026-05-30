@@ -10,7 +10,12 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  resolveTaqnyatPlaceholders,
+  buildTaqnyatPreviewContext,
+} from "@halla/shared/utils";
 import { useTranslation } from "../../localization";
+import { useAuthStore } from "../../stores/authStore";
 import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 
 /**
@@ -29,11 +34,18 @@ const PreviewInvitation = ({
   templateImage = null,
   templateData = {},
   template = null,
+  // Selected Taqnyat template carries the `varMapping` curated by admins.
+  // When provided, `previewBody` placeholders are resolved against event
+  // data so the preview matches what the guest will see at send time.
+  selectedTemplate = null,
   eventDate = null,
   eventTime = "",
   location = "",
 }) => {
   const { t } = useTranslation("createEvent");
+  const hostName = useAuthStore(
+    (state) => state.user?.name || state.user?.username || ""
+  );
 
   const formattedDate = useMemo(() => {
     if (!eventDate) return "";
@@ -47,6 +59,32 @@ const PreviewInvitation = ({
       return "";
     }
   }, [eventDate]);
+
+  const resolvedBody = useMemo(() => {
+    if (!previewBody) return "";
+    const context = buildTaqnyatPreviewContext({
+      guestName: t("preview_guest_placeholder", "ضيفنا الكريم"),
+      eventTitle,
+      dateFormatted: formattedDate,
+      eventTime,
+      locationAddress: location || "",
+      hostName,
+    });
+    return resolveTaqnyatPlaceholders(
+      previewBody,
+      selectedTemplate?.varMapping,
+      context
+    );
+  }, [
+    previewBody,
+    selectedTemplate?.varMapping,
+    eventTitle,
+    formattedDate,
+    eventTime,
+    location,
+    hostName,
+    t,
+  ]);
 
   const displayTitle = useMemo(() => {
     const brideName = templateData?.brideName;
@@ -122,8 +160,8 @@ const PreviewInvitation = ({
                 <Text style={styles.eventTitle}>{displayTitle}</Text>
               )}
 
-              {!!previewBody && (
-                <Text style={styles.invitationMessage}>{previewBody}</Text>
+              {!!resolvedBody && (
+                <Text style={styles.invitationMessage}>{resolvedBody}</Text>
               )}
 
               {!!formattedDate && (

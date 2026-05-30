@@ -56,6 +56,15 @@ const PaymentsClient = () => {
     t("table.columns.status"),
   ];
 
+  const headerKeys = [
+    "service",
+    "amount",
+    "method",
+    "transactionId",
+    "date",
+    "status",
+  ];
+
   const tableData = payments.map((item) => ({
     id: item.id,
     service: item.service,
@@ -138,6 +147,7 @@ const PaymentsClient = () => {
       <Table
         title={t("table.title")}
         headers={headers}
+        headerKeys={headerKeys}
         data={tableData}
         filterOptions={filterOptions}
         renderCell={renderCell}

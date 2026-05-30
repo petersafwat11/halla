@@ -14,7 +14,8 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import adminDashboardService from "../../services/adminDashboardService";
+import { ENDPOINTS } from "../../config/api";
+import { adminRequest } from "../admin/_request";
 
 const TERMINAL = new Set([
   "paid",
@@ -53,7 +54,9 @@ export function usePaymentPoll(moyasarId) {
 
     const poll = async () => {
       try {
-        const response = await adminDashboardService.payments.poll3ds(null, moyasarId);
+        const response = await adminRequest(
+          ENDPOINTS.PAYMENTS.POLL_3DS(moyasarId),
+        );
         if (cancelledRef.current) return;
 
         if (!response.success) {

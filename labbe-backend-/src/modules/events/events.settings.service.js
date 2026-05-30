@@ -188,12 +188,34 @@ module.exports = {
     // shape; clients now send `visualTemplate / taqnyatTemplate /
     // guestReplies / templateImage` directly.
     if (settings.visualTemplate !== undefined) {
-      const next = {
-        ...(event.visualTemplate?.toObject?.() || event.visualTemplate || {}),
-        ...settings.visualTemplate,
-      };
+      let next;
+      if (settings.visualTemplate.isCustomUpload) {
+        // Mode switch / custom-upload write — REPLACE (not merge) so
+        // any prior templateRef + fieldValues from a predefined
+        // template selection are dropped. Otherwise the host can't
+        // truly "switch" modes.
+        next = {
+          isCustomUpload: true,
+          bakedImagePath:
+            settings.visualTemplate.bakedImagePath ||
+            event.visualTemplate?.bakedImagePath ||
+            null,
+          fieldValues: {},
+        };
+      } else {
+        next = {
+          ...(event.visualTemplate?.toObject?.() || event.visualTemplate || {}),
+          ...settings.visualTemplate,
+        };
+        // Switching FROM custom-upload BACK to a predefined template:
+        // the client supplies a templateRef, so explicitly flip the
+        // flag off (spread alone would leave isCustomUpload=true).
+        if (next.templateRef && !settings.visualTemplate.isCustomUpload) {
+          next.isCustomUpload = false;
+        }
+      }
       // Validate fieldValues against Template.fields[] BEFORE save.
-      if (next.templateRef && next.fieldValues) {
+      if (next.templateRef && next.fieldValues && !next.isCustomUpload) {
         await this._validateVisualTemplateFieldValues(
           next.templateRef,
           next.fieldValues

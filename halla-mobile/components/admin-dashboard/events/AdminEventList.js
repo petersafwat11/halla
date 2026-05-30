@@ -4,9 +4,8 @@ import { useTranslation } from "../../../localization";
 import { backgrounds, colors } from "../../../styles/tokens";
 import { useAuthStore } from "../../../stores/authStore";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
-import { useBulkDeleteEvents, useBulkSuspendEvents } from "../../../hooks";
+import { useBulkDeleteEvents, useBulkSuspendEvents, useExportAdminEvents } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
-import adminDashboardService from "../../../services/adminDashboardService";
 import AdminPageHeader from "../common/AdminPageHeader";
 import AdminFlatList from "../common/AdminFlatList";
 import ExportButton from "../common/ExportButton";
@@ -41,12 +40,12 @@ const AdminEventList = ({
   const [selectedIds, setSelectedIds] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
-  const token = useAuthStore((state) => state.token);
   const role  = useAuthStore((state) => state.user?.role);
   const canEdit   = canEditPage(role, PAGES.EVENTS);
   const canDelete = canDeleteOnPage(role, PAGES.EVENTS);
   const bulkDelete  = useBulkDeleteEvents();
   const bulkSuspend = useBulkSuspendEvents();
+  const exportEvents = useExportAdminEvents();
   const toast = useToast();
 
   const filterOptions = useMemo(
@@ -87,7 +86,7 @@ const AdminEventList = ({
   const handleExport = async () => {
     try {
       setExportLoading(true);
-      await adminDashboardService.events.export(token);
+      await exportEvents.mutateAsync({});
     } catch {
       toast.error(t("common.error"));
     } finally {

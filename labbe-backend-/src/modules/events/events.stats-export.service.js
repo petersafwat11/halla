@@ -166,6 +166,14 @@ module.exports = {
         whatsappTemplateStatus: eventObj.whatsappTemplateStatus || null,
         launchSettings: eventObj.launchSettings || null,
         status: eventObj.status,
+        // Required by `useEventActionGate` so admin web + mobile resolve
+        // the test/schedule/notify-staff visibility identically to the
+        // host web page (which loads the full event via getEventById).
+        taqnyatTemplate: eventObj.taqnyatTemplate || null,
+        staffList: eventObj.staffList || [],
+        messagingStatus: eventObj.messagingStatus || null,
+        host: eventObj.host || null,
+        whitelabelId: eventObj.whitelabelId || null,
       },
       host: host
         ? {

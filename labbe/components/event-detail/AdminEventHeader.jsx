@@ -48,13 +48,12 @@ export default function AdminEventHeader({ data }) {
     staffCount: (data?.staff || []).length,
   };
 
-  const staffList = (data?.staff || []).map(
-    (s) => ({
-      id: s._id || s.id,
-      name: s.name,
-      mobile: s.phone,
-    })
-  );
+  // Shape staff for StaffPopup which reads `id`, `name`, `phone`.
+  const staffList = (data?.staff || []).map((s) => ({
+    id: s._id || s.id,
+    name: s.name,
+    phone: s.phone,
+  }));
 
   // Dropdown items for Edit
   const dropdownItems = [
@@ -94,12 +93,13 @@ export default function AdminEventHeader({ data }) {
 
   // Staff handlers
   const handleAddStaff = async (staffMember) => {
-    const staffData = { name: staffMember.name, phone: staffMember.mobile };
+    const phone = staffMember.phone ?? staffMember.mobile;
+    const staffData = { name: staffMember.name, phone };
     await updateEvent.mutateAsync({
       eventId,
       data: {
         staffList: [
-          ...staffList.map((m) => ({ name: m.name, phone: m.mobile })),
+          ...staffList.map((m) => ({ name: m.name, phone: m.phone })),
           staffData,
         ],
       },
@@ -109,10 +109,11 @@ export default function AdminEventHeader({ data }) {
   };
 
   const handleEditStaff = async (staffMember) => {
+    const phone = staffMember.phone ?? staffMember.mobile;
     const updatedList = staffList.map((m) =>
       m.id === staffMember.id
-        ? { name: staffMember.name, phone: staffMember.mobile }
-        : { name: m.name, phone: m.mobile }
+        ? { name: staffMember.name, phone }
+        : { name: m.name, phone: m.phone }
     );
     await updateEvent.mutateAsync({ eventId, data: { staffList: updatedList } });
     router.refresh();
@@ -121,7 +122,7 @@ export default function AdminEventHeader({ data }) {
   const handleDeleteStaff = async (id) => {
     const updatedList = staffList
       .filter((m) => m.id !== id)
-      .map((m) => ({ name: m.name, phone: m.mobile }));
+      .map((m) => ({ name: m.name, phone: m.phone }));
     await updateEvent.mutateAsync({ eventId, data: { staffList: updatedList } });
     router.refresh();
   };

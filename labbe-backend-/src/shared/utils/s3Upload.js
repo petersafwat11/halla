@@ -552,9 +552,27 @@ const signStoredImage = async (stored) => {
   if (stored.startsWith("/uploads/") || stored.startsWith("uploads/")) {
     return stored.startsWith("/") ? stored : `/${stored}`;
   }
-  // Already a signed URL (defensive — should not happen but cheap to check)
+  // Already a signed URL — return unchanged. Re-signing would expire quickly
+  // and double-signing produces invalid URLs.
   if (stored.includes("X-Amz-Signature=")) return stored;
-  // S3 key — sign it
+
+  // Full URL stored (legacy data, seed data, or callers that persisted
+  // `file.location` instead of the key). Two cases:
+  //   1. URL points at our own S3 bucket → extract key and sign.
+  //   2. URL points elsewhere (CDN, external image) → pass through unchanged.
+  if (stored.startsWith("http://") || stored.startsWith("https://")) {
+    const extracted = _extractKeyFromOurS3Url(stored);
+    if (extracted && isS3Configured()) {
+      try {
+        return await getSignedUrlForKey(extracted);
+      } catch (err) {
+        return stored;
+      }
+    }
+    return stored;
+  }
+
+  // Bare S3 key — sign it.
   if (isS3Configured()) {
     try {
       return await getSignedUrlForKey(stored);
@@ -563,6 +581,55 @@ const signStoredImage = async (stored) => {
     }
   }
   return stored;
+};
+
+/**
+ * Extract the S3 key from a URL that points at our bucket. Returns null if
+ * the URL is from a different host.
+ *
+ * Handles three URL shapes:
+ *   - `${AWS_S3_BASE_URL}/<key>` (canonical)
+ *   - `https://<bucket>.s3.<region>.amazonaws.com/<key>` (virtual-host)
+ *   - `https://s3.<region>.amazonaws.com/<bucket>/<key>` (path-style)
+ *
+ * @param {string} url
+ * @returns {string|null}
+ */
+const _extractKeyFromOurS3Url = (url) => {
+  try {
+    const u = new URL(url);
+    const baseUrl = process.env.AWS_S3_BASE_URL;
+    const bucket = process.env.AWS_S3_BUCKET;
+
+    if (baseUrl && url.startsWith(baseUrl + "/")) {
+      const after = url.slice(baseUrl.length + 1);
+      const qIdx = after.indexOf("?");
+      const path = qIdx === -1 ? after : after.slice(0, qIdx);
+      return path ? decodeURIComponent(path) : null;
+    }
+
+    if (!bucket) return null;
+    const isVirtualHost =
+      u.hostname === `${bucket}.s3.amazonaws.com` ||
+      /^([a-z0-9.-]+)\.s3[.-][a-z0-9-]+\.amazonaws\.com$/.test(u.hostname) &&
+        u.hostname.startsWith(`${bucket}.`);
+    const isPathStyle =
+      /^s3[.-][a-z0-9-]+\.amazonaws\.com$/.test(u.hostname) ||
+      u.hostname === "s3.amazonaws.com";
+
+    let pathname = u.pathname.startsWith("/") ? u.pathname.slice(1) : u.pathname;
+    if (!pathname) return null;
+
+    if (isVirtualHost) {
+      return decodeURIComponent(pathname);
+    }
+    if (isPathStyle && pathname.startsWith(`${bucket}/`)) {
+      return decodeURIComponent(pathname.slice(bucket.length + 1));
+    }
+    return null;
+  } catch {
+    return null;
+  }
 };
 
 /**
@@ -703,6 +770,16 @@ const uploadImage = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
+// Template/invitation image — hosts can either let the wizard bake the
+// preview canvas (always < 1MB) OR upload their own card photo straight
+// from a phone camera, which routinely runs 6–10MB. Keep a dedicated
+// instance so the general image limit stays tight.
+const uploadInvitationImage = multer({
+  storage: s3Storage,
+  fileFilter: imageFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
+
 const uploadMedia = multer({
   storage: s3Storage,
   fileFilter: mediaFilter,
@@ -800,7 +877,7 @@ module.exports = {
   uploadUserProfile,
   uploadPostEventMedia,
   uploadLogo: uploadImage.single("logo"),
-  uploadTemplateImage: uploadImage.single("templateImage"),
+  uploadTemplateImage: uploadInvitationImage.single("templateImage"),
   uploadServiceImage: uploadImage.single("image"),
   uploadAvatar: uploadImage.single("avatar"),
   uploadMultipleImages: uploadImage.array("images", 10),

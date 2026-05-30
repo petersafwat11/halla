@@ -146,12 +146,8 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
       const config = statusConfig[value] || statusConfig.pending;
       return (
         <div
-          className={`${styles.statusBadge} ${canUpdate ? styles.statusBadgeClickable : styles.statusBadgeReadonly}`}
+          className={`${styles.statusBadge} ${styles.statusBadgeReadonly}`}
           style={{ background: config.bg }}
-          onClick={() => {
-            if (!canUpdate) return;
-            handleStatusChange(row.id, value === "active" ? "inactive" : "active");
-          }}
         >
           <span className={styles.statusBadgeText} style={{ color: config.color }}>{config.text}</span>
         </div>

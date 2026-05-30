@@ -9,7 +9,7 @@ const { sendSuccess } = require('../../shared/utils/responseHelper');
 const { ValidationError } = require('../../shared/errors');
 const { generateExcel } = require('../../shared/utils/excelExport');
 const { getWhitelabelIdFromFilter } = require('./admin.controller.shared');
-const { PLATFORM_ADMIN_ROLES } = require('../../shared/constants/roles');
+const { PLATFORM_ADMIN_ROLES, WHITELABEL_ROLES } = require('../../shared/constants/roles');
 
 exports.createEventForHost = catchAsync(async (req, res) => {
   // Parse FormData JSON fields (same pattern as events.controller.createEvent)
@@ -30,8 +30,16 @@ exports.createEventForHost = catchAsync(async (req, res) => {
 
   // Resolve target user
   let targetUserId = req.body.targetUserId;
-  const createForSelf = req.body.createForSelf === 'true' || req.body.createForSelf === true;
+  let createForSelf = req.body.createForSelf === 'true' || req.body.createForSelf === true;
   let skipSubscriptionCheck = false;
+
+  // Whitelabel admins/moderators can only create events for themselves.
+  // Host management has been removed from these roles, so any client-supplied
+  // targetUserId/targetType must be ignored server-side.
+  if (WHITELABEL_ROLES.includes(req.user.role)) {
+    createForSelf = true;
+    targetUserId = null;
+  }
 
   if (createForSelf) {
     targetUserId = req.user._id;
@@ -137,6 +145,11 @@ exports.updateEventFull = catchAsync(async (req, res) => {
 
 exports.getEventTargets = catchAsync(async (req, res) => {
   const { type } = req.query;
+  // Whitelabel roles no longer manage hosts — they can only create events
+  // for themselves, so there are no other targets to list.
+  if (WHITELABEL_ROLES.includes(req.user.role)) {
+    return sendSuccess(res, { targets: [] }, 'Event targets retrieved successfully');
+  }
   const result = await adminService.getEventTargets(type, req.user);
   sendSuccess(res, result, 'Event targets retrieved successfully');
 });

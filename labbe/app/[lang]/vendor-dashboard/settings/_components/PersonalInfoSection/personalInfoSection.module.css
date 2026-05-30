@@ -248,6 +248,35 @@
   color: #6366f1;
 }
 
+.logoWrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.inlineDeleteBtn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #c0392b;
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.inlineDeleteBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Modal Overlay */
 .modalOverlay {
   position: fixed;

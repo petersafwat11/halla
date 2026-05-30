@@ -1,13 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { ENDPOINTS } from "../../config/api";
 import { useAuthStore } from "../../stores/authStore";
-import {
-  getProfileAPI,
-  getNotificationPreferencesAPI,
-} from "../../services/settingsService";
-import subscriptionService from "../../services/subscriptionService";
-import { getSubscriptionInfo as getSubscriptionInfoAPI } from "../../services/eventsService";
-import { usersKeys, subscriptionInfoKeys } from "./keys";
+import { eventsRequest } from "../events/queries";
 import { subscriptionsKeys } from "../subscriptions/keys";
+import { subscriptionsRequest } from "../subscriptions/queries";
+import { settingsApi, usersApi } from "./_api";
+import { subscriptionInfoKeys, usersKeys } from "./keys";
 
 /**
  * Fetch user profile.
@@ -17,7 +15,7 @@ export function useProfile() {
 
   return useQuery({
     queryKey: usersKeys.profile(),
-    queryFn: () => getProfileAPI(),
+    queryFn: () => usersApi.getProfile(),
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
   });
@@ -32,7 +30,7 @@ export function useNotificationSettings() {
   return useQuery({
     queryKey: usersKeys.notificationSettings(),
     queryFn: async () => {
-      const response = await getNotificationPreferencesAPI();
+      const response = await settingsApi.getNotificationPreferences();
       return response.data?.preferences;
     },
     enabled: !!token,
@@ -50,7 +48,10 @@ export function useMySubscription() {
 
   return useQuery({
     queryKey: [...subscriptionsKeys.all, "my-subscription"],
-    queryFn: () => subscriptionService.getMySubscription(),
+    queryFn: () =>
+      subscriptionsRequest(ENDPOINTS.SUBSCRIPTIONS.MY_SUBSCRIPTION, {
+        method: "GET",
+      }),
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
   });
@@ -67,7 +68,7 @@ export function useSubscriptionInfo() {
   return useQuery({
     queryKey: subscriptionInfoKeys.eventInfo(),
     queryFn: async () => {
-      const response = await getSubscriptionInfoAPI();
+      const response = await eventsRequest(ENDPOINTS.EVENTS.SUBSCRIPTION_INFO);
       return response?.data || response;
     },
     enabled: !!token,

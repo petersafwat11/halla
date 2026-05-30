@@ -17,10 +17,9 @@ import {
   useUpdateVendorProfile,
   useUpdateVendorProfileWithFiles,
 } from "../../hooks";
-import { vendorService } from "../../services/vendorService";
+import { usersApi } from "../../hooks/users/_api";
 import TopBar from "../../components/plans/TopBar";
 import PersonalInfoForm from "../../components/vendor/PersonalInfoForm";
-import BasicAccountInfoForm from "../../components/vendor/BasicAccountInfoForm";
 import ServiceDetailsForm from "../../components/vendor/ServiceDetailsForm";
 import ImagesAndPricingForm from "../../components/vendor/ImagesAndPricingForm";
 import AdditionalLinksForm from "../../components/vendor/AdditionalLinksForm";
@@ -120,9 +119,9 @@ const VendorAccountSetupScreen = () => {
     setSavingMain(true);
     try {
       if (hasAnyFile(mainData)) {
-        await vendorService.updateProfileWithFiles(toFormData(mainData));
+        await usersApi.updateProfileWithFiles(toFormData(mainData));
       } else {
-        await vendorService.updateProfile(mainData);
+        await usersApi.updateProfile(mainData);
       }
       refetchProfile();
     } catch (err) {
@@ -133,7 +132,9 @@ const VendorAccountSetupScreen = () => {
     }
   };
 
-  // ---- Adapter for PersonalInfoForm / BasicAccountInfoForm ------------------
+  // ---- Adapter for PersonalInfoForm (consolidated section) -----------------
+  // Splits a {main, vendor} payload across the two endpoints, since identity
+  // lives in vendorData and email is a top-level user field.
   const savePersonalInfo = async ({ main, vendor }) => {
     try {
       if (main && Object.keys(main).length > 0) {
@@ -192,26 +193,19 @@ const VendorAccountSetupScreen = () => {
         >
           <PersonalInfoForm
             data={{
-              name:
+              ownerFullName:
                 vendorData?.roleData?.ownerFullName ||
                 vendorData?.name ||
                 "",
+              brandName: vendorData?.roleData?.brandName || "",
               email: vendorData?.email || "",
+              phoneNumber:
+                vendorData?.mobile || vendorData?.phoneNumber || "",
               avatar: vendorData?.roleData?.businessLogo || vendorData?.avatar,
             }}
             onSave={savePersonalInfo}
-            loading={isSaving}
-          />
-
-          <BasicAccountInfoForm
-            data={{
-              ownerFullName: vendorData?.roleData?.ownerFullName || "",
-              brandName: vendorData?.roleData?.brandName || "",
-              email: vendorData?.email || "",
-              phoneNumber: vendorData?.mobile || vendorData?.phoneNumber || "",
-            }}
-            onSave={savePersonalInfo}
             onPhoneChanged={refetchProfile}
+            onRefetch={refetchProfile}
             loading={isSaving}
           />
 
@@ -225,6 +219,7 @@ const VendorAccountSetupScreen = () => {
               serviceCategories: vendorData?.roleData?.serviceCategories || [],
             }}
             onSave={saveVendorSection}
+            onRefetch={refetchProfile}
             loading={isSaving}
           />
 
