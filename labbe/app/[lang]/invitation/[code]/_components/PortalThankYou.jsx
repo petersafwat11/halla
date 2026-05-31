@@ -4,9 +4,11 @@ import styles from "../page.module.css";
 
 export default function PortalThankYou({
   response,
+  guestName,
   event,
   whitelabel,
   logoUrl,
+  onChangeResponse,
   t,
 }) {
   const isDeclined = response === "declined";
@@ -22,19 +24,31 @@ export default function PortalThankYou({
       <h1 className={styles.successHeading}>
         {isDeclined
           ? t("guestPortal.declined.title", "Thank you for letting us know")
-          : t("guestPortal.maybe.title", "Thank you for your response")}
+          : t("guestPortal.maybe.title", "Thank you — your response is saved")}
       </h1>
       <p className={styles.message}>
         {isDeclined
           ? t(
               "guestPortal.declined.body",
-              "We'll miss you. Thank you for replying."
+              "We'll truly miss you, {{name}}. Thank you for taking the time to reply — you're welcome anytime.",
+              { name: guestName }
             )
           : t(
               "guestPortal.maybe.body",
-              "We've noted your response. You can update it later if you change your mind."
+              "We've saved your reply, {{name}}. Come back anytime to confirm if your plans change.",
+              { name: guestName }
             )}
       </p>
+
+      {onChangeResponse ? (
+        <button
+          type="button"
+          className={styles.changeLink}
+          onClick={onChangeResponse}
+        >
+          {t("guestPortal.actions.change", "Change my response")}
+        </button>
+      ) : null}
     </div>
   );
 }

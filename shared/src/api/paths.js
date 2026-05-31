@@ -339,10 +339,16 @@ const PATHS = {
   postEvent: {
     validateToken: "/post-event/validate",
     getContent: (eventId) => `/post-event/${eventId}/content`,
+    // Post-level interactions (one post per event) — used by the web guest page.
+    togglePostLike: (eventId) => `/post-event/${eventId}/like`,
+    addPostComment: (eventId) => `/post-event/${eventId}/comments`,
+    getPostComments: (eventId) => `/post-event/${eventId}/comments`,
+    // Per-media interactions (legacy) — still used by the mobile app.
     toggleLike: (eventId, postId) => `/post-event/${eventId}/posts/${postId}/like`,
     addComment: (eventId, postId) => `/post-event/${eventId}/posts/${postId}/comments`,
     getComments: (eventId, postId) => `/post-event/${eventId}/posts/${postId}/comments`,
     getHostContent: (eventId) => `/post-event/${eventId}`,
+    publishAndNotify: (eventId) => `/post-event/${eventId}/publish-and-notify`,
     uploadMedia: (eventId) => `/post-event/${eventId}/media`,
     deleteMedia: (eventId, mediaId) => `/post-event/${eventId}/media/${mediaId}`,
     updateThankYouMessage: (eventId) => `/post-event/${eventId}/thank-you`,

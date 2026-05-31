@@ -25,6 +25,7 @@ const EMPTY_STATS = {
   confirmed: 0,
   checkedIn: 0,
   declined: 0,
+  maybe: 0,
   pending: 0,
   lastCheckIn: null,
 };
@@ -132,7 +133,10 @@ function StaffPageInner() {
   return (
     <div className={styles.staffPage}>
       <div className={styles.contentWrapper}>
-        <Header eventName={eventInfo?.title || t("defaultEventName")} />
+        <Header
+          eventName={eventInfo?.title || t("defaultEventName")}
+          event={eventInfo}
+        />
         <Cards stats={stats} t={t} />
         <Filters
           search={search}

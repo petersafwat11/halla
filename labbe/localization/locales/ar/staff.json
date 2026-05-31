@@ -21,6 +21,13 @@
   "error": "حدث خطأ",
   "success": "تم بنجاح",
   "defaultEventName": "مناسبة زفاف",
+  "stats": {
+    "total": "اجمالي الضيوف",
+    "confirmed": "أكد الحضور",
+    "maybe": "ربما",
+    "declined": "اعتذر",
+    "checkedIn": "في الحفل الآن"
+  },
   "errors": {
     "noAccessToken": "لم يتم توفير رمز الدخول",
     "accessDenied": "تم رفض الدخول",

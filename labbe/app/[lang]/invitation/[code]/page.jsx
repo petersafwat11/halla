@@ -47,7 +47,7 @@ function isReplaySuccess(error) {
 }
 
 export default function GuestPortalPage() {
-  const { code } = useParams();
+  const { code, lang } = useParams();
   const { t } = useTranslation("guest-portal");
   const { formatDate } = useLocalizedDate();
 
@@ -55,6 +55,9 @@ export default function GuestPortalPage() {
   const rsvpMutation = useGuestMutation("rsvp");
 
   const [submittedResponse, setSubmittedResponse] = useState(null);
+  // When true, the guest tapped "Change my response" — re-show the form even
+  // though a prior response is already stored.
+  const [isChanging, setIsChanging] = useState(false);
 
   const guest = data?.data?.guest || data?.guest || null;
   const event = data?.data?.event || data?.event || null;
@@ -75,14 +78,27 @@ export default function GuestPortalPage() {
       await rsvpMutation.mutateAsync({
         token: code,
         response,
-        data: { invitationCode: code, ...(optional || {}) },
+        data: {
+          invitationCode: code,
+          lang: lang === "ar" ? "ar" : "en",
+          ...(optional || {}),
+        },
       });
       setSubmittedResponse(response);
+      setIsChanging(false);
     } catch (err) {
       if (isReplaySuccess(err)) {
         setSubmittedResponse(response);
+        setIsChanging(false);
       }
     }
+  };
+
+  // Re-open the RSVP form so the guest can switch their answer. The next
+  // submit overwrites the stored response server-side and swaps the screen.
+  const handleChangeResponse = () => {
+    setSubmittedResponse(null);
+    setIsChanging(true);
   };
 
   if (isLoading) {
@@ -105,7 +121,10 @@ export default function GuestPortalPage() {
     );
   }
 
-  const finalResponse = submittedResponse || guest.rsvp?.response;
+  const finalResponse = isChanging
+    ? null
+    : submittedResponse || guest.rsvp?.response;
+  const guestsCount = 1 + Math.max(0, Number(guest.rsvp?.plusOnes) || 0);
 
   if (finalResponse === "confirmed") {
     return (
@@ -116,7 +135,9 @@ export default function GuestPortalPage() {
           whitelabel={whitelabel}
           logoUrl={logoUrl}
           code={code}
+          guestsCount={guestsCount}
           formatDate={formatDate}
+          onChangeResponse={handleChangeResponse}
           t={t}
         />
       </div>
@@ -128,9 +149,11 @@ export default function GuestPortalPage() {
       <div className={styles.page} style={cssVars}>
         <PortalThankYou
           response={finalResponse}
+          guestName={guest.name}
           event={event}
           whitelabel={whitelabel}
           logoUrl={logoUrl}
+          onChangeResponse={handleChangeResponse}
           t={t}
         />
       </div>

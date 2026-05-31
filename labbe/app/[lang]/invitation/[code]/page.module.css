@@ -118,6 +118,167 @@
   color: var(--portal-primary, #2a8c5b);
 }
 
+/* ---- Entry pass (confirmed screen) — warm boarding-pass card ---- */
+.pass {
+  width: 100%;
+  max-width: 23rem;
+  margin: 1.75rem auto 0;
+  background: #fdf4ea;
+  border: 1px solid #f0dcc4;
+  border-radius: 1.5rem;
+  box-shadow: 0 14px 36px rgba(180, 120, 60, 0.12);
+  overflow: hidden;
+  text-align: center;
+}
+
+.passHeader {
+  background: #e6a572;
+  color: #ffffff;
+  padding: 0.7rem 1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+.passShowCode {
+  margin: 1.1rem 1rem 0.25rem;
+  font-size: 0.85rem;
+  color: #a07b53;
+  line-height: 1.5;
+}
+
+/* Logo beside the QR */
+.passMain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem 0.25rem;
+}
+
+.passLogoWrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passLogo {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: contain;
+}
+
+.passQr {
+  display: inline-flex;
+  padding: 0.7rem;
+  background: #ffffff;
+  border: 1px solid #f0e3d2;
+  border-radius: 0.85rem;
+}
+
+/* Guest count below the QR */
+.passCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.95rem auto 0;
+  padding: 0.3rem 0.4rem 0.3rem 0.9rem;
+  background: #f6e2cd;
+  color: #9a5f2c;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.passCountLabel {
+  color: #9a5f2c;
+}
+
+.passCountValue {
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6a572;
+  color: #ffffff;
+  border-radius: 9999px;
+  font-weight: 700;
+}
+
+/* Perforated divider with side notches (cut-outs match the white card) */
+.passPerforation {
+  position: relative;
+  height: 1.5rem;
+  margin-top: 1rem;
+}
+
+.passPerforation::before,
+.passPerforation::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+.passPerforation::before { left: -0.75rem; }
+.passPerforation::after { right: -0.75rem; }
+
+.passDashes {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  right: 1rem;
+  border-top: 2px dashed #e8d3ba;
+  transform: translateY(-50%);
+}
+
+.passStub {
+  padding: 0.4rem 1.25rem 1.5rem;
+}
+
+.passEventTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #5b4a36;
+}
+
+.passEventMeta {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  color: #9a886e;
+}
+
+.passNote {
+  max-width: 22rem;
+  margin: 1.1rem auto 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #a39c8c;
+}
+
+.changeLink {
+  margin-top: 1.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.changeLink:hover {
+  color: #374151;
+}
+
 .errorWrap {
   background: #fff;
   border-radius: 1.5rem;

@@ -10,15 +10,21 @@
     },
     "confirmed": {
       "title": "You're confirmed!",
-      "welcome": "Welcome, {{name}}! We can't wait to see you. Show this QR at the door."
+      "welcome": "Welcome, {{name}} — we're delighted you'll be joining us."
+    },
+    "pass": {
+      "label": "Entry Pass · بطاقة الدخول",
+      "showCode": "Please show this code to enter · يُرجى إبراز الكود للدخول",
+      "guests": "Guests · ضيوف",
+      "keepHandy": "Keep this code handy and show it at the door · يُرجى الاحتفاظ بهذا الرمز لإبرازه عند الدخول"
     },
     "declined": {
       "title": "Thank you for letting us know",
-      "body": "We'll miss you. Thank you for replying."
+      "body": "We'll truly miss you, {{name}}. Thank you for taking the time to reply — you're welcome anytime."
     },
     "maybe": {
-      "title": "Thank you for your response",
-      "body": "We've noted your response. You can update it later if you change your mind."
+      "title": "Thank you — your response is saved",
+      "body": "We've saved your reply, {{name}}. Come back anytime to confirm if your plans change."
     },
     "hostedBy": "Hosted by {{host}}",
     "fields": {
@@ -35,7 +41,8 @@
     "actions": {
       "confirm": "Confirm",
       "maybe": "Maybe",
-      "decline": "Decline"
+      "decline": "Decline",
+      "change": "Change my response"
     }
   }
 }

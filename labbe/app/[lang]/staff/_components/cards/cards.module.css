@@ -30,7 +30,7 @@
 .interactionCard {
   display: flex;
   flex-direction: column;
-    align-self: stretch;
+  align-self: stretch;
   border-radius: 1.2rem;
   background: var(--Content-bg-Card-bg-1, #fff);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
@@ -47,8 +47,8 @@
   align-items: center;
   align-self: stretch;
   border-bottom: 1px solid var(--Natural-200, #f2f2f2);
-  padding-bottom: 1.6rem;
-  margin-bottom: 1.6rem;
+  padding-bottom: 1.2rem;
+  margin-bottom: 0.4rem;
 }
 
 .cardTitle {
@@ -62,102 +62,99 @@
   margin: 0;
 }
 
-.statsGrid {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  align-self: stretch;
-  flex-wrap: wrap;
-}
-
-.statCard {
+/* Stats as a compact list — one row per stat */
+.statsList {
   display: flex;
   flex-direction: column;
+  align-self: stretch;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.statItem {
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex: 1 1 calc(50% - 0.6rem);
-  min-width: calc(50% - 0.6rem);
-  border-radius: 0.8rem;
-  padding: 1.2rem 0.8rem;
-  transition: all 0.3s ease;
+  justify-content: space-between;
+  gap: 1.2rem;
+  padding: 1.2rem 0.4rem;
+  border-bottom: 1px solid #f2f2f2;
   animation: slideUp 0.5s ease-out forwards;
   opacity: 0;
 }
-.statCard--waiting {
-  background-color: transparent;
-}
-.statCard--checkedIn {
-  background-color: #eef2ff;
-}
-.statCard--declined {
-  background-color: #f9eaea;
-}
-.statCard--confirmed {
-  background-color: #eaf4ef;
+
+.statItem:last-child {
+  border-bottom: none;
 }
 
-.statCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.iconLabel {
+.statLabelGroup {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 0.4rem;
-  align-self: stretch;
+  gap: 1rem;
+  min-width: 0;
 }
 
-.icon {
+.iconCircle {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.iconCircle svg {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+.iconCircle--total {
+  background-color: #f4ece2;
+}
+.iconCircle--confirmed {
+  background-color: #d9ece2;
+}
+.iconCircle--maybe {
+  background-color: #fbf0dc;
+}
+.iconCircle--declined {
+  background-color: #f5dada;
+}
+.iconCircle--checkedIn {
+  background-color: #e0e5ff;
 }
 
-.label {
+.statLabel {
+  color: #2c2c2c;
   font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 1.2rem;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 1.6rem;
-  text-align: center;
-}
-.label--waiting {
-  color: #374151;
-}
-.label--checkedIn {
-  color: #4338ca;
-}
-.label--declined {
-  color: #c0392b;
-}
-.label--confirmed {
-  color: #2a8c5b;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.value {
+.statValue {
   font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
-  font-size: 2rem;
-  font-style: normal;
+  font-size: 1.8rem;
   font-weight: 700;
-  line-height: 2.8rem;
-  text-align: center;
+  line-height: 2.4rem;
+  flex-shrink: 0;
 }
-.value--waiting {
-  color: #4b5563;
+.statValue--total {
+  color: #c28e5c;
 }
-.value--checkedIn {
-  color: #4338ca;
+.statValue--confirmed {
+  color: #2a8c5b;
 }
-.value--declined {
+.statValue--maybe {
+  color: #d38200;
+}
+.statValue--declined {
   color: #c0392b;
 }
-.value--confirmed {
-  color: #2a8c5b;
+.statValue--checkedIn {
+  color: #4338ca;
 }
 
 @keyframes fadeIn {
@@ -180,17 +177,6 @@
   }
 }
 
-@media (min-width: 480px) {
-  .statsGrid {
-    flex-wrap: nowrap;
-  }
-
-  .statCard {
-    flex: 1;
-    min-width: 0;
-  }
-}
-
 @media (min-width: 768px) {
   .sectionContainer {
     padding: 0 4rem;
@@ -200,32 +186,18 @@
     padding: 2.4rem;
   }
 
-  .sectionTitle {
-    font-size: 1.8rem;
-    line-height: 2.8rem;
-  }
-
+  .sectionTitle,
   .cardTitle {
     font-size: 1.8rem;
     line-height: 2.8rem;
   }
 
-  .statsGrid {
-    gap: 1.6rem;
+  .statLabel {
+    font-size: 1.5rem;
   }
 
-  .statCard {
-    padding: 1.6rem 1.2rem;
-  }
-
-  .label {
-    font-size: 1.4rem;
-    line-height: 1.8rem;
-  }
-
-  .value {
-    font-size: 2.4rem;
-    line-height: 3.2rem;
+  .statValue {
+    font-size: 2rem;
   }
 }
 
@@ -234,13 +206,5 @@
     max-width: 100rem;
     margin-left: auto;
     margin-right: auto;
-  }
-
-  .statsGrid {
-    gap: 2rem;
-  }
-
-  .statCard {
-    padding: 2rem 1.6rem;
   }
 }

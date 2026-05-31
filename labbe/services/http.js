@@ -76,6 +76,13 @@ const _refreshOnce = async () => {
 // is now exclusively the HttpOnly `access_token` cookie which the browser
 // attaches automatically because of `withCredentials: true` above. The JS
 // layer never sees the access token.
+// Guest post-event interaction endpoints. These are authenticated by the
+// guest *session* JWT (issued by /post-event/validate), NOT the host HttpOnly
+// cookie. The JWT lives in the JS-readable `guestToken` cookie, so we attach
+// it here as a Bearer header — scoped to exactly these paths so host requests
+// (which use the HttpOnly access_token cookie) are never affected.
+const GUEST_POST_EVENT_RE = /\/post-event\/[^/]+\/(content|like|comments)(?:[/?]|$)/;
+
 axiosInstance.interceptors.request.use(
   (config) => {
     // Add request timestamp for timing
@@ -83,6 +90,14 @@ axiosInstance.interceptors.request.use(
 
     // Add request ID for tracking
     config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Attach the guest session token for guest post-event interactions.
+    if (typeof window !== 'undefined' && GUEST_POST_EVENT_RE.test(config.url || '')) {
+      const guestToken = Cookies.get('guestToken');
+      if (guestToken) {
+        config.headers['Authorization'] = `Bearer ${guestToken}`;
+      }
+    }
 
     return config;
   },
@@ -120,7 +135,10 @@ axiosInstance.interceptors.response.use(
       cfg._retry ||
       url.includes('/auth/refresh') ||
       url.includes('/auth/login') ||
-      url.includes('/auth/logout');
+      url.includes('/auth/logout') ||
+      // Guest post-event 401s are about the guest session token, not the host
+      // session — don't attempt a host /auth/refresh or bounce to /login.
+      GUEST_POST_EVENT_RE.test(url);
 
     // Suppress the console error for 401s that are about to be retried —
     // logging there is noise, and if the retry succeeds the user has no

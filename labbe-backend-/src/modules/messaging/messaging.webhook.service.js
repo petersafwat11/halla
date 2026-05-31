@@ -14,6 +14,10 @@ const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { NotFoundError } = require('../../shared/errors');
 const { TAQNYAT_SENDER } = require('./messaging.formatting');
+const {
+  getReplyMessage,
+  buildConfirmedCaption,
+} = require('../../shared/utils/rsvpMessages');
 
 /**
  * Update a guest's invitation delivery status from a webhook event.
@@ -146,17 +150,28 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
     logger.error('[Messaging] Failed to notify host of RSVP', { error: notifErr.message });
   }
 
-  // Auto-reply text from canonical `guestReplies.*`.
-  const autoReplyMap = {
-    'confirmed':
-      event.guestReplies?.onAttend || 'شكراً لتأكيد حضورك! نتطلع لرؤيتك.',
-    'declined':
-      event.guestReplies?.onAbsent || 'شكراً لإعلامنا. نتمنى لك يوماً سعيداً.',
-    'maybe':
-      event.guestReplies?.onExpected || 'شكراً. نأمل أن نراك بيننا!',
-  };
-  const replyMessage = autoReplyMap[rsvpStatus];
+  // Reply copy from shared source of truth (per-event override → default).
+  // WhatsApp invites are Arabic-templated, so replies use Arabic.
+  const replyMessage = getReplyMessage(rsvpStatus, event, 'ar');
 
+  // Only a CONFIRMED guest receives the entry pass (QR image + rich caption).
+  // Declined / maybe get a plain text reply — no QR.
+  if (rsvpStatus !== 'confirmed') {
+    try {
+      const waResult = await taqnyat.sendWhatsAppText(phoneNumber, replyMessage);
+      if (!waResult.success) throw new Error(waResult.error || 'WA text failed');
+    } catch (waErr) {
+      logger.warn('[Messaging] WhatsApp text reply failed, falling back to SMS', {
+        error: waErr.message,
+      });
+      await taqnyat.sendSMS(phoneNumber, replyMessage, { sender: TAQNYAT_SENDER });
+    }
+    return { success: true, status: rsvpStatus };
+  }
+
+  // Confirmed → QR image of the guest's qrcode + a formatted caption carrying
+  // event data + guest count + entry instructions.
+  const caption = buildConfirmedCaption(event, guest, 'ar');
   const qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(
     guest.qrcode || guest._id.toString()
   )}&size=300`;
@@ -164,7 +179,7 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
   // sendWhatsAppImage uses the 24h conversation window (session message).
   // If the window has expired, fall back to SMS with the QR link as text.
   try {
-    const waResult = await taqnyat.sendWhatsAppImage(phoneNumber, qrCodeUrl, replyMessage);
+    const waResult = await taqnyat.sendWhatsAppImage(phoneNumber, qrCodeUrl, caption);
     if (!waResult.success) {
       throw new Error(waResult.error || 'WA image failed');
     }
@@ -175,7 +190,7 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
     );
     await taqnyat.sendSMS(
       phoneNumber,
-      `${replyMessage}\nرمز الدخول الخاص بك: ${qrCodeUrl}`,
+      `${caption}\nرمز الدخول الخاص بك: ${qrCodeUrl}`,
       { sender: TAQNYAT_SENDER }
     );
   }

@@ -11,9 +11,11 @@ const objectId = z
   .string()
   .regex(/^[0-9a-fA-F]{24}$/, 'must be a 24-char hex ObjectId');
 
+// Text is optional: a comment may carry only image attachments (validated in
+// the service, which can see `req.files`). Zod only sees the body.
 const addCommentSchema = z
   .object({
-    text: z.string().trim().min(1, 'text is required').max(1000),
+    text: z.string().trim().max(1000).optional(),
   })
   .strict();
 
@@ -66,6 +68,15 @@ const paginationSchema = z
   })
   .strict();
 
+// Combined "Publish & notify" — audience filter (defaults to attended) plus
+// an optional template override (falls back to the saved template).
+const publishAndNotifySchema = z
+  .object({
+    filter: z.enum(['attended', 'confirmed', 'all']).default('attended'),
+    taqnyatTemplateRef: objectId.optional(),
+  })
+  .strict();
+
 module.exports = {
   addCommentSchema,
   uploadMediaSchema,
@@ -74,4 +85,5 @@ module.exports = {
   bulkGuestActionSchema,
   sendAccessLinksSchema,
   paginationSchema,
+  publishAndNotifySchema,
 };

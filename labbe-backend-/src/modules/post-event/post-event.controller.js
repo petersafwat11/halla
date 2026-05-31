@@ -25,12 +25,15 @@ exports.validateToken = catchAsync(async (req, res) => {
 });
 
 /**
- * Get post-event content (guest or host view; the route layer scopes which).
+ * Get published post-event content for a guest (token-authenticated).
+ * Uses `getGuestContent` → model `getForGuest`, which returns the caption,
+ * media gallery, and post-level like/comment counts + the guest's own like
+ * state.
  */
 exports.getContent = catchAsync(async (req, res) => {
-  const result = await postEventService.getPostEventContent(
+  const result = await postEventService.getGuestContent(
     req.params.eventId,
-    req.guestUser ? req.guestUser.guestId : req.user._id
+    req.guestUser.guestId
   );
   sendSuccess(res, result);
 });
@@ -159,6 +162,57 @@ exports.getComments = catchAsync(async (req, res) => {
     { page: req.query.page, limit: req.query.limit }
   );
   sendSuccess(res, result);
+});
+
+/**
+ * Toggle the guest's like on the post (one post per event).
+ * POST /api/v2/post-event/:eventId/like
+ */
+exports.togglePostLike = catchAsync(async (req, res) => {
+  const result = await postEventService.togglePostLike(
+    req.params.eventId,
+    req.guestUser
+  );
+  sendSuccess(res, result);
+});
+
+/**
+ * Add a comment to the post (one post per event). Supports image attachments.
+ * POST /api/v2/post-event/:eventId/comments
+ */
+exports.addPostComment = catchAsync(async (req, res) => {
+  const result = await postEventService.addPostComment(
+    req.params.eventId,
+    req.body,
+    req.files,
+    req.guestUser
+  );
+  sendSuccess(res, result, "Comment added");
+});
+
+/**
+ * Get comments for the post (paginated).
+ * GET /api/v2/post-event/:eventId/comments
+ */
+exports.getPostComments = catchAsync(async (req, res) => {
+  const result = await postEventService.getPostComments(req.params.eventId, {
+    page: req.query.page,
+    limit: req.query.limit,
+  });
+  sendSuccess(res, result);
+});
+
+/**
+ * Publish post-event content AND notify the chosen audience in one action.
+ * POST /api/v2/post-event/:eventId/publish-and-notify
+ */
+exports.publishAndNotify = catchAsync(async (req, res) => {
+  const result = await postEventService.publishAndNotify(
+    req.params.eventId,
+    req.user,
+    req.body
+  );
+  sendSuccess(res, result, "Content published and guests notified");
 });
 
 /**

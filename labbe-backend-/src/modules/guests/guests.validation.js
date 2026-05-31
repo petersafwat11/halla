@@ -42,6 +42,8 @@ const submitRSVPSchema = z
     message: z.string().max(500).optional(),
     dietaryRestrictions: z.string().max(200).optional(),
     plusOnes: z.number().int().min(0).max(10).optional(),
+    // UI language for the reply copy returned to the guest ('ar' | 'en').
+    lang: z.enum(['ar', 'en']).optional(),
   })
   .strict();
 

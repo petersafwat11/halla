@@ -64,6 +64,18 @@ const PostEventPage = () => {
   const eventInfo = validatePayload?.event || null;
   const guestId = guestInfo?._id || null;
 
+  // Persist the guest session token (returned by /validate) so the axios
+  // interceptor attaches it to content/like/comment requests, and so a refresh
+  // without ?token= can resume from the cookie. Set synchronously during
+  // render (not in an effect) so the cookie is in place before the content
+  // query's fetch fires on this same commit.
+  if (typeof window !== "undefined" && validatePayload?.sessionToken) {
+    if (guestTokenUtils.getToken() !== validatePayload.sessionToken) {
+      guestTokenUtils.setToken(validatePayload.sessionToken);
+    }
+    if (eventId) guestTokenUtils.setEventId(eventId);
+  }
+
   const { data: contentResponse, isLoading: isContentLoading } =
     usePostEventContent(eventId, {
       enabled: isAuthenticated && !!eventId,

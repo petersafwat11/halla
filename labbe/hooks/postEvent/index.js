@@ -12,6 +12,7 @@ export {
   useUpdateThankYouMessage,
   useUpdatePostEventMessagingTemplate,
   usePublishPostEventContent,
+  usePublishAndNotify,
   useUnpublishPostEventContent,
   useGeneratePostEventTokens,
   useSendPostEventAccessLinks,

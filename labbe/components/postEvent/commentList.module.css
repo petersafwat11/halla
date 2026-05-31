@@ -1,0 +1,85 @@
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.emptyNotice {
+  margin: 0;
+  text-align: center;
+  color: var(--color-description, #8a8a8a);
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.3rem;
+  padding: 0.8rem 0;
+}
+
+.commentItem {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.commentAvatar {
+  flex-shrink: 0;
+  width: 3.2rem;
+  height: 3.2rem;
+  color: #c28e5c;
+}
+
+.commentBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.commentBubble {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: #f0f2f5;
+  border-radius: 1.4rem;
+  padding: 0.8rem 1.2rem;
+  align-self: flex-start;
+  max-width: 100%;
+}
+
+.commentName {
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-title, #2a2a2a);
+}
+
+.commentText {
+  margin: 0;
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  color: #1c1e21;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.commentImages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.commentImage {
+  width: 10rem;
+  height: 10rem;
+  object-fit: cover;
+  border-radius: 0.8rem;
+}
+
+.commentTime {
+  font-size: 1.1rem;
+  color: var(--color-description, #8a8a8a);
+  padding: 0 1.2rem;
+}

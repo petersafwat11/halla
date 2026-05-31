@@ -26,12 +26,13 @@ exports.getByInvitationCode = catchAsync(async (req, res) => {
  * POST /api/v2/guests/:id/rsvp
  */
 exports.submitRSVP = catchAsync(async (req, res) => {
-  const { response, message, dietaryRestrictions, plusOnes, invitationCode } = req.body;
+  const { response, message, dietaryRestrictions, plusOnes, invitationCode, lang } = req.body;
   const result = await guestsService.submitRSVP(req.params.id, response, {
     message,
     dietaryRestrictions,
     plusOnes,
     invitationCode,
+    lang: lang || req.query.lang,
   });
   sendSuccess(res, result, 'RSVP submitted successfully');
 });

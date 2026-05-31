@@ -8,13 +8,27 @@
   "floralDecoration": "Floral decoration",
   "invitationImageAlt": "Event invitation",
   "comments": {
-    "unavailable": "Comments are not available right now."
+    "unavailable": "Comments are not available right now.",
+    "empty": "No comments yet. Be the first to share a kind word!",
+    "loadMore": "Load more comments",
+    "submittedForReview": "Your comment was submitted and is awaiting the host's review."
+  },
+  "counts": {
+    "likes": "{{count}} likes",
+    "comments": "{{count}} comments"
+  },
+  "actions": {
+    "like": "Like",
+    "comment": "Comment"
   },
   "aria": {
     "like": "Like",
     "comment": "Comment",
     "emoji": "Emoji",
-    "attachFile": "Attach file"
+    "attachFile": "Attach file",
+    "attachImage": "Attach image",
+    "removeImage": "Remove image",
+    "close": "Close"
   },
   "errors": {
     "accessError": "Access error",
@@ -31,6 +45,26 @@
     "confirm": "Confirm",
     "statusPublished": "Published",
     "statusDraft": "Draft",
+    "caption": {
+      "placeholder": "Write a caption for your post… (e.g. Thank you for celebrating with us!)",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
+    "publishNotify": {
+      "button": "Publish & notify guests",
+      "sending": "Publishing…",
+      "success": "Published! Notified {{sent}} guest(s) — WhatsApp: {{whatsapp}}, SMS: {{sms}}, failed: {{failed}}.",
+      "noAudience": "No guests match the selected audience. The post was published; pick a different audience to notify guests.",
+      "publishedNoNotify": "Published. No guests were notified — pick an audience and use 'Send to more guests'.",
+      "notified": "Notified",
+      "failed": "Failed",
+      "sentAt": "Last sent {{time}}",
+      "notSentYet": "Published. No access links were sent (no matching audience). Unpublish and publish again to notify guests.",
+      "sendMore": "Send to more guests",
+      "previewHeading": "Your published post",
+      "likesTitle": "Likes",
+      "noLikes": "No likes yet."
+    },
     "publish": "Publish",
     "publishSuccess": "Post-event content published.",
     "publishConfirmTitle": "Publish post-event content?",

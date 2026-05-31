@@ -40,21 +40,21 @@ export const usePostEventContent = (eventId, options = {}) =>
   });
 
 /**
- * Paginated comments on a single post (media item).
+ * Paginated comments on the post (one post per event).
  */
 export const usePostEventComments = (
-  { eventId, postId, page = 1, limit = 20 } = {},
+  { eventId, page = 1, limit = 20 } = {},
   options = {}
 ) =>
   useQuery({
-    queryKey: postEventKeys.comments(eventId, postId, page, limit),
+    queryKey: postEventKeys.comments(eventId, page, limit),
     queryFn: () =>
       apiRequest({
         method: "GET",
-        path: API_PATHS.postEvent.getComments(eventId, postId),
+        path: API_PATHS.postEvent.getPostComments(eventId),
         params: { page, limit },
       }),
-    enabled: !!eventId && !!postId,
+    enabled: !!eventId,
     staleTime: 30 * 1000,
     ...options,
   });

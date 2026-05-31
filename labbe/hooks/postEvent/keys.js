@@ -3,20 +3,12 @@ export const postEventKeys = {
   // Guest-portal keys (public via token).
   validate: (token) => [...postEventKeys.all, "validate", token],
   content: (eventId) => [...postEventKeys.all, "content", eventId],
-  comments: (eventId, postId, page, limit) => [
-    ...postEventKeys.all,
-    "comments",
-    eventId,
-    postId,
-    page,
-    limit,
-  ],
-  commentsForPost: (eventId, postId) => [
-    ...postEventKeys.all,
-    "comments",
-    eventId,
-    postId,
-  ],
+  // Post-level comments (one post per event). Calling with just eventId
+  // matches every page/limit variant for invalidation.
+  comments: (eventId, page, limit) =>
+    [...postEventKeys.all, "comments", eventId, page, limit].filter(
+      (k) => k !== undefined
+    ),
   // Host-management keys.
   hostContent: (eventId) => [...postEventKeys.all, "host", eventId],
 };

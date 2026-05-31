@@ -21,6 +21,13 @@
   "error": "An error occurred",
   "success": "Success",
   "defaultEventName": "Wedding Event",
+  "stats": {
+    "total": "Total Guests",
+    "confirmed": "Confirmed",
+    "maybe": "Maybe",
+    "declined": "Declined",
+    "checkedIn": "At Event Now"
+  },
   "errors": {
     "noAccessToken": "No access token provided",
     "accessDenied": "Access denied",

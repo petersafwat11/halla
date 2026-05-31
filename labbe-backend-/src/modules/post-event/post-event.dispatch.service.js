@@ -226,6 +226,30 @@ async function sendBulkAccessLinks(
     }
   }
 
+  // Persist a delivery summary on the content doc so the host's published
+  // view can show "X guests notified" on revisit. `content` was loaded
+  // non-lean above, so a targeted update keeps it simple and atomic.
+  await PostEventContent.updateOne(
+    { _id: content._id },
+    {
+      $set: {
+        'stats.lastSend': {
+          at: new Date(),
+          total: reachable.length,
+          whatsapp: whatsappCount,
+          sms: smsCount,
+          failed: failed.length,
+          audience: filter,
+        },
+      },
+    }
+  ).catch((err) => {
+    logger.error('[post-event] failed to persist stats.lastSend', {
+      eventId: String(eventId),
+      error: err.message,
+    });
+  });
+
   logAudit({
     action: 'post_event.access_links_sent',
     actor: { _id: actorId },

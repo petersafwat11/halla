@@ -1,0 +1,131 @@
+.grid {
+  display: grid;
+  gap: 0.4rem;
+  width: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.cell {
+  position: relative;
+  min-width: 0;
+}
+
+.one {
+  grid-template-columns: 1fr;
+}
+
+.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.three {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* First item of a 3-grid spans both columns. */
+.three .cell:first-child {
+  grid-column: 1 / -1;
+}
+
+.many {
+  grid-template-columns: 1fr 1fr;
+}
+
+.tile {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: #ece6df;
+  cursor: pointer;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.one .tile {
+  aspect-ratio: 4 / 3;
+  cursor: pointer;
+}
+
+.media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.one .media {
+  object-fit: contain;
+  background: #000;
+}
+
+.moreOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 2.4rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.lightboxClose {
+  position: absolute;
+  top: 1.6rem;
+  right: 1.6rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+.lightboxInner {
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+}
+
+.lightboxMedia {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 0.6rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .grid {
+    gap: 0.6rem;
+  }
+}

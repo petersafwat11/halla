@@ -188,4 +188,63 @@ router.get(
   postEventController.getComments
 );
 
+// ============================================
+// POST-LEVEL interactions (one post per event) — used by the web guest page.
+// eventId-only; the post IS the content doc.
+// ============================================
+
+/**
+ * @swagger
+ * /post-event/{eventId}/like:
+ *   post:
+ *     summary: Toggle the guest's like on the post
+ *     tags: [Post-Event]
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Like toggled successfully
+ */
+router.post(
+  "/:eventId/like",
+  validateObjectId("eventId"),
+  guestAuth,
+  postEventController.togglePostLike
+);
+
+/**
+ * @swagger
+ * /post-event/{eventId}/comments:
+ *   post:
+ *     summary: Add a comment to the post (text + optional images)
+ *     tags: [Post-Event]
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema: { type: string }
+ *   get:
+ *     summary: Get post comments (paginated)
+ *     tags: [Post-Event]
+ */
+router.post(
+  "/:eventId/comments",
+  validateObjectId("eventId"),
+  guestAuth,
+  uploadMultipleImages,
+  validateZod(addCommentSchema),
+  postEventController.addPostComment
+);
+
+router.get(
+  "/:eventId/comments",
+  validateObjectId("eventId"),
+  guestAuth,
+  validateZod(paginationSchema, "query"),
+  postEventController.getPostComments
+);
+
 module.exports = router;

@@ -15,10 +15,15 @@ export const useStaffEventGuests = (eventId, filters = {}, options = {}) => {
   return useQuery({
     queryKey: staffKeys.guests(eventId, { search, status, page, limit }),
     queryFn: async () => {
+      // Only send non-empty filters: the backend status enum rejects "" with a
+      // 400, which otherwise leaves the guest list permanently empty.
+      const params = { page, limit };
+      if (search) params.search = search;
+      if (status) params.status = status;
       const response = await apiRequest({
         method: "GET",
         path: API_PATHS.staff.getEventGuests(eventId),
-        params: { search, status, page, limit },
+        params,
         config: staffAuthConfig(),
       });
       return response.data || { guests: [], stats: {}, pagination: {} };

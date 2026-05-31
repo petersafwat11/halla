@@ -22,6 +22,7 @@ const {
   updateMessagingTemplateSchema,
   bulkGuestActionSchema,
   sendAccessLinksSchema,
+  publishAndNotifySchema,
 } = require("./post-event.validation");
 
 router.use(protect);
@@ -266,6 +267,53 @@ router.patch(
   "/:eventId/unpublish",
   validateObjectId("eventId"),
   postEventController.unpublishContent
+);
+
+/**
+ * @swagger
+ * /post-event/{eventId}/publish-and-notify:
+ *   post:
+ *     summary: Publish content and notify the chosen audience in one action
+ *     description: |
+ *       The web "Publish & notify" button. Publishes the post, generates (or
+ *       reuses) access tokens for the chosen audience, then dispatches the
+ *       WhatsApp/SMS access links — returning a per-channel delivery
+ *       breakdown. Returns `400 NoTemplateConfigured` if no Taqnyat template
+ *       is set.
+ *     tags: [Post-Event]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               filter:
+ *                 type: string
+ *                 enum: [attended, confirmed, all]
+ *               taqnyatTemplateRef:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Published and access links dispatched
+ *       400:
+ *         description: No Taqnyat template configured
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.post(
+  "/:eventId/publish-and-notify",
+  validateObjectId("eventId"),
+  otpHourlyLimiter,
+  idempotency({ scope: "post_event_publish_notify" }),
+  validateZod(publishAndNotifySchema),
+  postEventController.publishAndNotify
 );
 
 /**

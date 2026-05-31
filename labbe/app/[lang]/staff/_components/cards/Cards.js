@@ -2,60 +2,46 @@
 import React from "react";
 import styles from "./cards.module.css";
 
-const WaitingIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clipPath="url(#clip0_waiting)">
-      <path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M6 3V6L8 7" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-    </g>
-    <defs>
-      <clipPath id="clip0_waiting"><rect width="12" height="12" fill="white" /></clipPath>
-    </defs>
-  </svg>
-);
-
-const CheckedInIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clipPath="url(#clip0_checkedin)">
-      <path d="M11 5.54286V6.00286C10.9994 7.08107 10.6503 8.1302 10.0047 8.99377C9.35908 9.85735 8.45164 10.4891 7.41768 10.7948C6.38372 11.1005 5.27863 11.0638 4.26724 10.6902C3.25584 10.3165 2.39233 9.62591 1.80548 8.7214C1.21863 7.81688 0.939896 6.74689 1.01084 5.67102C1.08178 4.59514 1.4986 3.57103 2.19914 2.7514C2.89968 1.93177 3.84639 1.36055 4.89809 1.12293C5.9498 0.885317 7.05013 0.99403 8.035 1.43286" stroke="#4338CA" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M3 5.5L5 7.5L9 3.5" stroke="#4338CA" strokeLinecap="round" strokeLinejoin="round" />
-    </g>
-    <defs>
-      <clipPath id="clip0_checkedin"><rect width="12" height="12" fill="white" /></clipPath>
-    </defs>
-  </svg>
-);
-
-const DeclinedIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clipPath="url(#clip0_declined)">
-      <path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11Z" stroke="#C0392B" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M7.5 4.5L4.5 7.5" stroke="#C0392B" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4.5 4.5L7.5 7.5" stroke="#C0392B" strokeLinecap="round" strokeLinejoin="round" />
-    </g>
-    <defs>
-      <clipPath id="clip0_declined"><rect width="12" height="12" fill="white" /></clipPath>
-    </defs>
+const TotalIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M11.94 4.77c-.04-.01-.09-.01-.13 0a1.78 1.78 0 0 1-1.72-1.78c0-.99.8-1.79 1.79-1.79s1.79.8 1.79 1.79c-.01.96-.77 1.74-1.73 1.78ZM11.25 9.55c.99.16 2.08 0 2.85-.48.96-.64.96-1.69 0-2.33-.78-.49-1.88-.65-2.87-.48M4.04 4.77c.04-.01.09-.01.13 0a1.78 1.78 0 0 0 1.72-1.78c0-.99-.8-1.79-1.79-1.79s-1.79.8-1.79 1.79c.01.96.77 1.74 1.73 1.78ZM4.73 9.55c-.99.16-2.08 0-2.85-.48-.96-.64-.96-1.69 0-2.33.78-.49 1.88-.65 2.87-.48M8 9.75a1.78 1.78 0 0 1-1.72-1.78c0-.99.8-1.79 1.79-1.79s1.79.8 1.79 1.79c-.01.96-.77 1.74-1.73 1.78H8.07M6.12 11.85c-.96.64-.96 1.69 0 2.33 1.09.73 2.87.73 3.96 0 .96-.64.96-1.69 0-2.33-1.08-.72-2.87-.72-3.96 0Z" stroke="#c28e5c" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 const ConfirmedIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clipPath="url(#clip0_confirmed)">
-      <path d="M11 5.54286V6.00286C10.9994 7.08107 10.6503 8.1302 10.0047 8.99377C9.35908 9.85735 8.45164 10.4891 7.41768 10.7948C6.38372 11.1005 5.27863 11.0638 4.26724 10.6902C3.25584 10.3165 2.39233 9.62591 1.80548 8.7214C1.21863 7.81688 0.939896 6.74689 1.01084 5.67102C1.08178 4.59514 1.4986 3.57103 2.19914 2.7514C2.89968 1.93177 3.84639 1.36055 4.89809 1.12293C5.9498 0.885317 7.05013 0.99403 8.035 1.43286" stroke="#2A8C5B" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4.5 5.5L6 7L11 2" stroke="#2A8C5B" strokeLinecap="round" strokeLinejoin="round" />
-    </g>
-    <defs>
-      <clipPath id="clip0_confirmed"><rect width="12" height="12" fill="white" /></clipPath>
-    </defs>
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.67 7.39v.61a6.67 6.67 0 1 1-3.95-6.1" stroke="#2A8C5B" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M6 7.33 8 9.33l6.67-6.66" stroke="#2A8C5B" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const MaybeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8 14.67A6.67 6.67 0 1 0 8 1.33a6.67 6.67 0 0 0 0 13.34Z" stroke="#D38200" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M6.06 6a2 2 0 0 1 3.89.67c0 1.33-2 2-2 2M8 11.33h.01" stroke="#D38200" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const DeclinedIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8 14.67A6.67 6.67 0 1 0 8 1.33a6.67 6.67 0 0 0 0 13.34Z" stroke="#C0392B" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M10 6 6 10M6 6l4 4" stroke="#C0392B" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CheckedInIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.67 7.39v.61a6.67 6.67 0 1 1-3.95-6.1" stroke="#4338CA" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 7.33 6.67 10 14.67 2" stroke="#4338CA" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 const STAT_CONFIG = [
-  { icon: <WaitingIcon />, labelKey: "waiting", valueKey: "pending", variant: "waiting" },
-  { icon: <CheckedInIcon />, labelKey: "checkedIn", valueKey: "checkedIn", variant: "checkedIn" },
-  { icon: <DeclinedIcon />, labelKey: "declined", valueKey: "declined", variant: "declined" },
-  { icon: <ConfirmedIcon />, labelKey: "confirmed", valueKey: "confirmed", variant: "confirmed" },
+  { icon: <TotalIcon />, labelKey: "stats.total", valueKey: "total", variant: "total" },
+  { icon: <ConfirmedIcon />, labelKey: "stats.confirmed", valueKey: "confirmed", variant: "confirmed" },
+  { icon: <MaybeIcon />, labelKey: "stats.maybe", valueKey: "maybe", variant: "maybe" },
+  { icon: <DeclinedIcon />, labelKey: "stats.declined", valueKey: "declined", variant: "declined" },
+  { icon: <CheckedInIcon />, labelKey: "stats.checkedIn", valueKey: "checkedIn", variant: "checkedIn" },
 ];
 
 export default function Cards({ stats, t }) {
@@ -70,24 +56,21 @@ export default function Cards({ stats, t }) {
           <h3 className={styles.cardTitle}>{t("invitationInteraction")}</h3>
         </div>
 
-        <div className={styles.statsGrid}>
-          {STAT_CONFIG.map((stat, index) => (
-            <div
-              key={stat.variant}
-              className={`${styles.statCard} ${styles[`statCard--${stat.variant}`]}`}
-            >
-              <div className={styles.iconLabel}>
-                <div className={styles.icon}>{stat.icon}</div>
-                <div className={`${styles.label} ${styles[`label--${stat.variant}`]}`}>
-                  {t(stat.labelKey)}
-                </div>
+        <ul className={styles.statsList}>
+          {STAT_CONFIG.map((stat) => (
+            <li key={stat.variant} className={styles.statItem}>
+              <div className={styles.statLabelGroup}>
+                <span className={`${styles.iconCircle} ${styles[`iconCircle--${stat.variant}`]}`}>
+                  {stat.icon}
+                </span>
+                <span className={styles.statLabel}>{t(stat.labelKey)}</span>
               </div>
-              <div className={`${styles.value} ${styles[`value--${stat.variant}`]}`}>
+              <span className={`${styles.statValue} ${styles[`statValue--${stat.variant}`]}`}>
                 {stats?.[stat.valueKey] ?? 0}
-              </div>
-            </div>
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </div>
   );

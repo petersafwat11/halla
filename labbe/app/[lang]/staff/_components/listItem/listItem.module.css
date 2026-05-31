@@ -25,16 +25,52 @@
 
 .cardContainer {
   display: flex;
-  align-items: flex-start;
-  gap: 1.6rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
   align-self: stretch;
+  cursor: pointer;
 }
 
 .contentWrapper {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  flex: 1 0 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0.4rem 1rem;
+  border-radius: 10rem;
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  white-space: nowrap;
+}
+.statusBadge--checkedIn {
+  background: #eef2ff;
+  color: #4338ca;
+}
+.statusBadge--confirmed {
+  background: #eaf4ef;
+  color: #2a8c5b;
+}
+.statusBadge--declined {
+  background: #f9eaea;
+  color: #c0392b;
+}
+.statusBadge--maybe {
+  background: #fbf3e6;
+  color: #d38200;
+}
+.statusBadge--invited {
+  background: #f2f2f2;
+  color: #656565;
 }
 
 .infoColumn {

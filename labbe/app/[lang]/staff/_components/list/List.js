@@ -83,7 +83,12 @@ export default function List({ guests = [], t, loading, onGuestClick }) {
               <p className={styles.emptyState}>{t("noGuests")}</p>
             ) : (
               guests.map((guest, index) => (
-                <ListItem key={guest._id || index} guest={guest} onGuestClick={onGuestClick} />
+                <ListItem
+                  key={guest._id || index}
+                  guest={guest}
+                  onGuestClick={onGuestClick}
+                  t={t}
+                />
               ))
             )}
           </div>

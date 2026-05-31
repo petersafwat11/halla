@@ -12,15 +12,16 @@ const useInvalidateHostContent = () => {
 };
 
 /**
- * Single POST toggle for like/unlike (backend is POST-only).
+ * Single POST toggle for like/unlike on the post (one post per event;
+ * backend is POST-only, eventId-only).
  */
 export const useTogglePostEventLike = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ eventId, postId }) =>
+    mutationFn: ({ eventId }) =>
       apiRequest({
         method: "POST",
-        path: API_PATHS.postEvent.toggleLike(eventId, postId),
+        path: API_PATHS.postEvent.togglePostLike(eventId),
       }),
     onSuccess: (_, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: postEventKeys.content(eventId) });
@@ -29,27 +30,27 @@ export const useTogglePostEventLike = () => {
 };
 
 /**
- * Add a comment to a post; supports text + optional images via FormData.
+ * Add a comment to the post; supports text + optional images via FormData.
  * Caller passes `data` as a FormData (text + files[]) or as `{ text }`.
  */
 export const useAddPostEventComment = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ eventId, postId, data }) => {
+    mutationFn: ({ eventId, data }) => {
       const isFormData =
         typeof FormData !== "undefined" && data instanceof FormData;
       return apiRequest({
         method: "POST",
-        path: API_PATHS.postEvent.addComment(eventId, postId),
+        path: API_PATHS.postEvent.addPostComment(eventId),
         data,
         config: isFormData
           ? { headers: { "Content-Type": "multipart/form-data" } }
           : undefined,
       });
     },
-    onSuccess: (_, { eventId, postId }) => {
+    onSuccess: (_, { eventId }) => {
       queryClient.invalidateQueries({
-        queryKey: postEventKeys.commentsForPost(eventId, postId),
+        queryKey: postEventKeys.comments(eventId),
       });
       queryClient.invalidateQueries({ queryKey: postEventKeys.content(eventId) });
     },
@@ -127,6 +128,24 @@ export const usePublishPostEventContent = () => {
       apiRequest({
         method: "POST",
         path: API_PATHS.postEvent.publishContent(eventId),
+      }),
+    onSuccess: (_, { eventId }) => invalidate(eventId),
+  });
+};
+
+/**
+ * Combined "Publish & notify" — publishes the post and dispatches access
+ * links to the chosen audience in one call. Body: `{ filter, taqnyatTemplateRef? }`.
+ * On no template, backend returns 400 with `error.response.data.reason === 'no_template'`.
+ */
+export const usePublishAndNotify = () => {
+  const invalidate = useInvalidateHostContent();
+  return useMutation({
+    mutationFn: ({ eventId, data }) =>
+      apiRequest({
+        method: "POST",
+        path: API_PATHS.postEvent.publishAndNotify(eventId),
+        data,
       }),
     onSuccess: (_, { eventId }) => invalidate(eventId),
   });

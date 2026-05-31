@@ -17,6 +17,10 @@ const Guest = require('../../../models/GuestModel');
 const notificationService = require('../notifications/notifications.service');
 const { generateExcel, guardExportMaxRows } = require('../../shared/utils/excelExport');
 const { formatRiyadh } = require('../../shared/utils/timezone');
+const {
+  getReplyMessage,
+  buildEntryPass,
+} = require('../../shared/utils/rsvpMessages');
 const GuestAccessToken = require('../../../models/GuestAccessTokenModel');
 const { logAudit } = require('../../shared/utils/auditLog');
 
@@ -97,7 +101,44 @@ class GuestsService {
       logger.error('guests.submitRSVP notify host failed', err)
     );
 
-    return { guest: this._formatGuestPortal(guest) };
+    // Response shape differs by outcome:
+    //   - confirmed → message + structured entry-pass (renders the boarding pass)
+    //   - declined / maybe → message only
+    const lang = additionalInfo.lang === 'en' ? 'en' : 'ar';
+    const event = guest.event;
+    const message = getReplyMessage(response, event, lang);
+
+    const result = {
+      guest: this._formatGuestPortal(guest),
+      response,
+      message,
+    };
+
+    if (response === 'confirmed') {
+      result.pass = buildEntryPass(event, guest, lang, this._brandForPass());
+    }
+
+    return result;
+  }
+
+  /**
+   * Brand bits for the entry pass. No per-whitelabel colours exist in the
+   * model, so we use our platform logo (the same asset as the landing page)
+   * and derive the website from the configured frontend URL.
+   */
+  _brandForPass() {
+    const url = config.frontend?.url || 'https://halaa.sa';
+    let website = url;
+    try {
+      website = new URL(url).host;
+    } catch (_) {
+      /* leave as-is on parse failure */
+    }
+    return {
+      logoUrl: `${url.replace(/\/$/, '')}/logo.png`,
+      brandName: 'Halla',
+      website,
+    };
   }
 
   /**

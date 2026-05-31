@@ -126,6 +126,43 @@ class PostEventService {
       throw new NotFoundError('Event');
     }
 
+    // Hydrate guest names for post-level likes + comments so the host's
+    // published view can render the real liker list and comment thread
+    // (the same post the guest sees). The lean doc carries only guest
+    // ObjectIds on these sub-arrays.
+    if (content) {
+      const likeGuestIds = (content.likes || []).map((l) => l.guest);
+      const commentGuestIds = (content.comments || []).map((c) => c.guest);
+      const allIds = [...likeGuestIds, ...commentGuestIds].filter(Boolean);
+
+      let nameMap = new Map();
+      if (allIds.length) {
+        const guests = await Guest.find({ _id: { $in: allIds } })
+          .select('name')
+          .lean();
+        nameMap = new Map(guests.map((g) => [g._id.toString(), g.name]));
+      }
+      const nameOf = (id) => nameMap.get(id?.toString()) || 'Guest';
+
+      content.likes = (content.likes || []).map((l) => ({
+        _id: l._id,
+        guest: { _id: l.guest, name: nameOf(l.guest) },
+        likedAt: l.likedAt,
+      }));
+      content.comments = (content.comments || [])
+        .filter((c) => !c.isHidden)
+        .map((c) => ({
+          _id: c._id,
+          guest: { _id: c.guest, name: nameOf(c.guest) },
+          text: c.text,
+          images: c.images,
+          createdAt: c.createdAt,
+        }))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      content.likesCount = content.likes.length;
+      content.commentsCount = content.comments.length;
+    }
+
     return {
       eventId: event._id,
       eventTitle: event.eventDetails?.title,
@@ -139,6 +176,25 @@ class PostEventService {
         settings: { isPublished: false },
       },
     };
+  }
+
+  /**
+   * Guest-facing read of published post-event content. Uses the model's
+   * `getForGuest` static — which filters to published content, increments
+   * view/visitor stats, strips raw like/comment arrays, and returns
+   * post-level `userLiked` / `likesCount` / `commentsCount` plus the caption
+   * (`title`) and a clean media gallery.
+   *
+   * NOTE: This replaces the previous (broken) path where the guest route ran
+   * through `getPostEventContent` with a bare guestId string, which threw a
+   * ForbiddenError in `buildScopedEventQuery`.
+   */
+  async getGuestContent(eventId, guestId) {
+    const content = await PostEventContent.getForGuest(eventId, guestId);
+    if (!content) {
+      throw new NotFoundError('No published content available');
+    }
+    return content;
   }
 
   // ============================================
@@ -344,6 +400,65 @@ class PostEventService {
     };
   }
 
+  /**
+   * Publish AND notify guests in one action (the web "Publish & notify"
+   * button). Self-contained — composes three already-tested steps:
+   *   1. publish the content
+   *   2. generate-or-reuse access tokens for the chosen audience
+   *      (`sendBulkAccessLinks` only dispatches to *existing* tokens, so on a
+   *      fresh event this MUST run first or the send half throws NotFound)
+   *   3. dispatch the access links (also persists `stats.lastSend`)
+   *
+   * Distinct from `publishContent` (which is left untouched for the mobile
+   * app): this never triggers the publish-scope auto-notify, so there is no
+   * double-send.
+   */
+  async publishAndNotify(eventId, user, { filter = 'attended', taqnyatTemplateRef } = {}) {
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user)).select('_id');
+    if (!event) throw new NotFoundError('Event');
+
+    const content = await PostEventContent.findOne({ event: eventId });
+    if (!content) throw new ValidationError('No post-event content to publish');
+
+    await content.publish();
+
+    // Notify is best-effort: the publish already succeeded and is durable, so
+    // a notify failure (empty audience, deleted template, dispatch error) must
+    // NOT roll the host back to the composer. We return `notified: false` so
+    // the UI flips to the published view (which surfaces "no links sent yet"),
+    // matching the original non-fatal `autoNotifyAfterPublish` semantics.
+    try {
+      // Step 2 — create or reuse tokens for the audience (must precede send;
+      // sendBulkAccessLinks only dispatches to existing tokens).
+      await this.generateBulkTokens(eventId, user, { filter });
+      // Step 3 — dispatch (persists stats.lastSend).
+      const sendResult = await dispatchService.sendBulkAccessLinks(eventId, user, {
+        filter,
+        taqnyatTemplateRef,
+      });
+      return {
+        published: true,
+        publishedAt: content.settings.publishedAt,
+        notified: true,
+        ...sendResult,
+      };
+    } catch (err) {
+      logger.warn('[post-event] publishAndNotify: published but notify failed', {
+        eventId: String(eventId),
+        reason: err.body?.reason,
+        error: err.message,
+      });
+      return {
+        published: true,
+        publishedAt: content.settings.publishedAt,
+        notified: false,
+        notifyReason: err.body?.reason || 'send_failed',
+        sent: 0,
+        channelBreakdown: { whatsapp: 0, sms: 0, failed: 0 },
+      };
+    }
+  }
+
   async unpublishContent(eventId, user) {
     const event = await Event.findOne(buildScopedEventQuery(eventId, user)).select('_id');
     if (!event) throw new NotFoundError('Event');
@@ -480,6 +595,91 @@ class PostEventService {
     if (!item) throw new NotFoundError('Media not found');
 
     const visible = (item.comments || []).filter((c) => !c.isHidden);
+    const total = visible.length;
+    const skip = (page - 1) * limit;
+    const paginated = visible
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(skip, skip + limit);
+
+    const guestIds = paginated.map((c) => c.guest);
+    const guests = await Guest.find({ _id: { $in: guestIds } }).select('name').lean();
+    const guestMap = new Map(guests.map((g) => [g._id.toString(), g.name]));
+
+    return {
+      comments: paginated.map((c) => ({
+        _id: c._id,
+        guest: { _id: c.guest, name: guestMap.get(c.guest?.toString()) || 'Guest' },
+        text: c.text,
+        images: c.images,
+        createdAt: c.createdAt,
+      })),
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalComments: total,
+      },
+    };
+  }
+
+  // ============================================
+  // GUEST: POST-LEVEL LIKE / COMMENT (one post per event)
+  // ============================================
+
+  async togglePostLike(eventId, guestUser) {
+    const content = await PostEventContent.findOne({
+      event: eventId,
+      'settings.isPublished': true,
+    });
+    if (!content) throw new NotFoundError('Content not found');
+
+    return content.togglePostLike(guestUser.guestId);
+  }
+
+  async addPostComment(eventId, body, files, guestUser) {
+    const content = await PostEventContent.findOne({
+      event: eventId,
+      'settings.isPublished': true,
+    });
+    if (!content) throw new NotFoundError('Content not found');
+
+    const text = (body.text || '').trim();
+    const images = (files || []).map((f) => ({ url: f.location || f.path }));
+    // A comment must carry text and/or at least one image.
+    if (!text && images.length === 0) {
+      throw new ValidationError('Comment must include text or an image');
+    }
+
+    const commentData = {
+      text,
+      images,
+      // When `requireApproval` is enabled, hide the comment until the host
+      // reviews it.
+      ...(content.settings?.requireApproval && { isHidden: true, pendingApproval: true }),
+    };
+
+    const comment = await content.addPostComment(guestUser.guestId, commentData);
+
+    return {
+      comment: {
+        _id: comment._id,
+        guest: { _id: guestUser.guestId, name: guestUser.guestName },
+        text: comment.text,
+        images: comment.images,
+        createdAt: comment.createdAt,
+      },
+      pendingApproval: !!comment.pendingApproval,
+      commentsCount: content.comments.filter((c) => !c.isHidden).length,
+    };
+  }
+
+  async getPostComments(eventId, { page = 1, limit = 20 }) {
+    const content = await PostEventContent.findOne({
+      event: eventId,
+      'settings.isPublished': true,
+    });
+    if (!content) throw new NotFoundError('Content not found');
+
+    const visible = (content.comments || []).filter((c) => !c.isHidden);
     const total = visible.length;
     const skip = (page - 1) * limit;
     const paginated = visible

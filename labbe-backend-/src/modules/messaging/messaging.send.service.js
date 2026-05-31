@@ -151,7 +151,11 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
     throw new ForbiddenError('Not authorized for this event');
   }
 
-  const rsvpLink = `${config.frontend?.url || 'https://halaa.sa'}/rsvp/${eventId}/${guestId}`;
+  // Points at the live guest portal, keyed by the guest's qrcode
+  // (route: app/[lang]/invitation/[code]). The old /rsvp/:eventId/:guestId
+  // path had no corresponding page and 404'd.
+  const rsvpBase = config.frontend?.url || 'https://halaa.sa';
+  const rsvpLink = `${rsvpBase.replace(/\/$/, '')}/invitation/${guest.qrcode}`;
 
   const cached = await resolveTaqnyatTemplate(event);
   const templateName = cached?.templateName;

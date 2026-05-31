@@ -158,6 +158,14 @@ const postEventContentSchema = new mongoose.Schema(
     // Unified media array (photos + videos in one place, distinguished by `type`).
     media: [mediaItemSchema],
 
+    // Post-level interactions. The post-event content IS the post (one per
+    // event): a single caption + media gallery, one like set, one comment
+    // thread — Facebook-style. Per-media `likes`/`comments` on mediaItemSchema
+    // are retained for backward compatibility with the mobile app's per-media
+    // endpoints, but the web flow uses these post-level arrays.
+    likes: [likeSchema],
+    comments: [commentSchema],
+
     // Host's chosen Taqnyat WhatsApp template for access-link dispatch.
     taqnyatTemplate: {
       type: taqnyatTemplateSchema,
@@ -210,6 +218,18 @@ const postEventContentSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      // Persisted summary of the most recent access-link dispatch, written by
+      // post-event.dispatch.service.sendBulkAccessLinks. Lets the host's
+      // published view show "X guests notified" on revisit (the dispatch
+      // breakdown is otherwise only in the HTTP response + audit log).
+      lastSend: {
+        at: Date,
+        total: { type: Number, default: 0 },
+        whatsapp: { type: Number, default: 0 },
+        sms: { type: Number, default: 0 },
+        failed: { type: Number, default: 0 },
+        audience: String,
+      },
     },
 
     whitelabelId: {
@@ -231,6 +251,15 @@ postEventContentSchema.index({ whitelabelId: 1 });
 
 postEventContentSchema.virtual("uniqueVisitorCount").get(function () {
   return this.stats?.uniqueVisitors?.length || 0;
+});
+
+// Post-level interaction counts (the whole post, not a single media item).
+postEventContentSchema.virtual("postLikesCount").get(function () {
+  return this.likes?.length || 0;
+});
+
+postEventContentSchema.virtual("postCommentsCount").get(function () {
+  return this.comments?.filter((c) => !c.isHidden).length || 0;
 });
 
 postEventContentSchema.statics.createForEvent = async function (
@@ -278,6 +307,7 @@ postEventContentSchema.statics.getForGuest = async function (eventId, guestId) {
   if (content.media) {
     content.media = content.media
       .filter((m) => m.isPublished)
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
       .map((item) => ({
         ...item,
         likesCount: item.likes?.length || 0,
@@ -290,7 +320,66 @@ postEventContentSchema.statics.getForGuest = async function (eventId, guestId) {
       }));
   }
 
+  // Post-level interaction summary (one like set + one comment thread for the
+  // whole post). The full arrays are stripped; the guest gets counts + their
+  // own like state. Comments are fetched separately via getPostComments.
+  content.likesCount = content.likes?.length || 0;
+  content.commentsCount =
+    content.comments?.filter((c) => !c.isHidden).length || 0;
+  content.userLiked =
+    content.likes?.some(
+      (l) => l.guest?.toString() === guestId?.toString()
+    ) || false;
+  content.likes = undefined;
+  content.comments = undefined;
+
   return content;
+};
+
+// Toggle the current guest's like on the post itself (not a media item).
+postEventContentSchema.methods.togglePostLike = async function (guestId) {
+  if (!this.settings.allowLikes) {
+    throw new Error("Likes are disabled for this event");
+  }
+
+  const existingLikeIndex = this.likes.findIndex(
+    (l) => l.guest.toString() === guestId.toString()
+  );
+
+  let liked;
+  if (existingLikeIndex > -1) {
+    this.likes.splice(existingLikeIndex, 1);
+    this.stats.totalLikes = Math.max(0, this.stats.totalLikes - 1);
+    liked = false;
+  } else {
+    this.likes.push({ guest: guestId });
+    this.stats.totalLikes += 1;
+    liked = true;
+  }
+
+  await this.save();
+  return { liked, likesCount: this.likes.length };
+};
+
+// Add a comment to the post itself (not a media item).
+postEventContentSchema.methods.addPostComment = async function (
+  guestId,
+  commentData
+) {
+  if (!this.settings.allowComments) {
+    throw new Error("Comments are disabled for this event");
+  }
+
+  const comment = {
+    guest: guestId,
+    ...commentData,
+  };
+
+  this.comments.push(comment);
+  this.stats.totalComments += 1;
+
+  await this.save();
+  return this.comments[this.comments.length - 1];
 };
 
 // Add a media item (photo or video).
