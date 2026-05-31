@@ -114,7 +114,11 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
         {isCompleted && (
           <button
             className={styles.outlineButton}
-            onClick={() => router.push(`/${currentLocale}/host/post-event/${effectiveEventId}`)}
+            onClick={() =>
+              router.push(
+                `/${currentLocale}/${isAdmin ? "admin-dash" : "host"}/post-event/${effectiveEventId}`
+              )
+            }
           >
             <span>{t("lastEvent.buttons.sharePostEvent", "مشاركة صفحة ما بعد المناسبة")}</span>
           </button>

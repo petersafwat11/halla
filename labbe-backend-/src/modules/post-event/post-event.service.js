@@ -50,8 +50,15 @@ const dispatchService = require('./post-event.dispatch.service');
 const buildScopedEventQuery = (eventId, user) => {
   const role = user?.role;
   const userId = user?._id?.toString?.() || user?._id;
-  const whitelabelId = user?.whitelabelId
-    ? user.whitelabelId.toString?.() || user.whitelabelId
+  // `whitelabelId` may be a populated Whitelabel doc (auth populates it) or a
+  // raw ObjectId/string. A populated doc used directly makes Mongoose throw
+  // `CastError: Invalid whitelabelId` (400). Normalise to the id in all shapes
+  // — mirrors `events.crud.service._buildScopedEventQuery`.
+  const rawWhitelabel = user?.whitelabelId;
+  const whitelabelId = rawWhitelabel
+    ? rawWhitelabel._id?.toString?.() ||
+      rawWhitelabel.toString?.() ||
+      rawWhitelabel
     : null;
 
   if (!role && !userId) {

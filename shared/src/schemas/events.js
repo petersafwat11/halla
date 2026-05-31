@@ -395,7 +395,11 @@ export const buildDefaultValues = (template, parentEventDate, parentEventTime, o
           : (saved ?? parentEventTime ?? "12:00:AM");
         break;
       case "font":
-        defaultVal = saved ?? field.defaultValue ?? "cairo";
+        // Cairo is the product-wide default for every template form (web +
+        // mobile). Honour a previously saved choice, but otherwise always
+        // start on Cairo — we intentionally ignore a per-template
+        // `defaultValue` so the default font stays consistent everywhere.
+        defaultVal = saved ?? "cairo";
         break;
       case "color":
         defaultVal = saved ?? field.defaultValue ?? "#c28e5c";

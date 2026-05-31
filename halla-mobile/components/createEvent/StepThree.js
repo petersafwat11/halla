@@ -8,11 +8,11 @@ import {
   Animated,
   Modal,
   Image as RNImage,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useFormContext, FormProvider, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
@@ -491,7 +491,7 @@ const TemplateFormModal = ({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <SafeAreaView style={styles.modalContainer}>
+      <SafeAreaView style={styles.modalContainer} edges={["top", "bottom"]}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>{t("edit_design_template")}</Text>
           <TouchableOpacity

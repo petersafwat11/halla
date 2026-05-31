@@ -7,6 +7,16 @@ const nextConfig = {
   // externalizing as a node module. Required for `@halla/shared` (plain ESM).
   transpilePackages: ["@halla/shared"],
 
+  // Production deploys copy `shared/` into `frontend/node_modules/@halla/shared`
+  // as a real directory (not a symlink) to keep webpack's realpath() from
+  // resolving back to the source tree, where peer deps like `xlsx` aren't
+  // installed. Setting symlinks:false makes the local dev tree behave the same
+  // way and prevents the resolution from drifting on a workspace symlink.
+  webpack: (config) => {
+    config.resolve.symlinks = false;
+    return config;
+  },
+
   // Proxy /api/v2/* to the backend in development (and any env where
   // BACKEND_PROXY_URL is set). This routes all API calls through :3000 so
   // the backend's Set-Cookie headers land on the Next.js origin — solving

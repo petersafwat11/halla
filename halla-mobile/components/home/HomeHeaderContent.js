@@ -16,9 +16,9 @@ const HeaderTexture = () => (
 );
 
 const HomeHeaderContent = ({
-  loading, error, hasEvents, event, subscription, isNotifyingStaff,
+  loading, error, hasEvents, event, subscription,
   onEditPress, onTestMessagePress, onViewStatsPress, onSchedulePress,
-  onNotifyStaffPress, onPostEventPress, onCreateEventPress, onRetry, t,
+  onPostEventPress, onCreateEventPress, onRetry, t,
 }) => {
   if (loading) {
     return (
@@ -49,10 +49,8 @@ const HomeHeaderContent = ({
           onTestMessagePress={onTestMessagePress}
           onViewStatsPress={onViewStatsPress}
           onSchedulePress={onSchedulePress}
-          onNotifyStaffPress={onNotifyStaffPress}
           onPostEventPress={onPostEventPress}
           subscription={subscription}
-          isNotifyingStaff={isNotifyingStaff}
         />
       ) : (
         <MakeYourFirst onCreatePress={onCreateEventPress} />

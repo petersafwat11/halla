@@ -13,12 +13,9 @@ const DROPDOWN_STEPS = [
 export default function LastEventActions({
   canSendTest,
   canSchedule,
-  hasSupervisors,
   isCompleted,
-  isNotifyingStaff,
   onTestMessagePress,
   onSchedulePress,
-  onNotifyStaffPress,
   onViewStatsPress,
   onPostEventPress,
   onEditPress,
@@ -44,18 +41,9 @@ export default function LastEventActions({
             <Text style={styles.outlineButtonText}>{t("lastEvent.buttons.scheduleEvent")}</Text>
           </TouchableOpacity>
         )}
-        {hasSupervisors && onNotifyStaffPress && (
-          <TouchableOpacity
-            style={styles.outlineButton}
-            onPress={onNotifyStaffPress}
-            activeOpacity={0.7}
-            disabled={isNotifyingStaff}
-          >
-            <Text style={styles.outlineButtonText}>
-              {isNotifyingStaff ? t("lastEvent.buttons.notifying") : t("lastEvent.buttons.notifyStaff")}
-            </Text>
-          </TouchableOpacity>
-        )}
+        {/* Notify Staff intentionally omitted here to match the web
+            dashboard card (labbe LastEventActions). Notify Staff lives on
+            the single-event page (EventActionsHeader) on both platforms. */}
         {onViewStatsPress && (
           <TouchableOpacity style={styles.outlineButton} onPress={onViewStatsPress} activeOpacity={0.7}>
             <Text style={styles.outlineButtonText}>{t("lastEvent.buttons.viewStats")}</Text>

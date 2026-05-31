@@ -1,0 +1,102 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halla" [ref=e5] [cursor=pointer]:
+        - /url: /en
+        - img "Halla" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /ar/admin-dash/post-event/6a00858bbed593ed4fd100c3
+          - img [ref=e9]
+          - generic [ref=e12]: AR
+        - button "Notifications" [ref=e14] [cursor=pointer]:
+          - img "notifications" [ref=e15]
+        - img "messages" [ref=e16]
+        - button "Admin" [ref=e18] [cursor=pointer]:
+          - generic [ref=e19]:
+            - img [ref=e21]
+            - generic [ref=e23]: Admin
+          - img [ref=e25]
+    - generic [ref=e27]:
+      - navigation [ref=e29]:
+        - list [ref=e30]:
+          - listitem [ref=e31] [cursor=pointer]:
+            - link "Dashboard" [ref=e32]:
+              - /url: /admin-dash
+              - img [ref=e33]
+              - generic [ref=e35]: Dashboard
+          - listitem [ref=e36] [cursor=pointer]:
+            - link "Moderators" [ref=e37]:
+              - /url: /admin-dash/moderators
+              - img [ref=e38]
+              - generic [ref=e40]: Moderators
+          - listitem [ref=e41] [cursor=pointer]:
+            - link "Hosts" [ref=e42]:
+              - /url: /admin-dash/hosts
+              - img [ref=e43]
+              - generic [ref=e45]: Hosts
+          - listitem [ref=e46] [cursor=pointer]:
+            - link "Vendors" [ref=e47]:
+              - /url: /admin-dash/vendors
+              - img [ref=e48]
+              - generic [ref=e51]: Vendors
+          - listitem [ref=e52] [cursor=pointer]:
+            - link "Whitelabels" [ref=e53]:
+              - /url: /admin-dash/whitelabels
+              - img [ref=e54]
+              - generic [ref=e56]: Whitelabels
+          - listitem [ref=e57] [cursor=pointer]:
+            - link "Events" [ref=e58]:
+              - /url: /admin-dash/events
+              - img [ref=e59]
+              - generic [ref=e61]: Events
+          - listitem [ref=e62] [cursor=pointer]:
+            - link "Tickets" [ref=e63]:
+              - /url: /admin-dash/tickets
+              - img [ref=e64]
+              - generic [ref=e66]: Tickets
+          - listitem [ref=e67] [cursor=pointer]:
+            - link "Payments" [ref=e68]:
+              - /url: /admin-dash/payments
+              - img [ref=e69]
+              - generic [ref=e71]: Payments
+          - listitem [ref=e72] [cursor=pointer]:
+            - link "Plans" [ref=e73]:
+              - /url: /admin-dash/plans
+              - img [ref=e74]
+              - generic [ref=e76]: Plans
+          - listitem [ref=e77] [cursor=pointer]:
+            - link "Manage Plans" [ref=e78]:
+              - /url: /admin-dash/manage-plans
+              - img [ref=e79]
+              - generic [ref=e81]: Manage Plans
+          - listitem [ref=e82] [cursor=pointer]:
+            - link "Discounts" [ref=e83]:
+              - /url: /admin-dash/discounts
+              - img [ref=e84]
+              - generic [ref=e87]: Discounts
+          - listitem [ref=e88] [cursor=pointer]:
+            - link "Settings" [ref=e89]:
+              - /url: /admin-dash/settings
+              - img [ref=e90]
+              - generic [ref=e93]: Settings
+          - listitem [ref=e94] [cursor=pointer]:
+            - link "Templates" [ref=e95]:
+              - /url: /admin-dash/templates
+              - img [ref=e96]
+              - generic [ref=e101]: Templates
+          - listitem [ref=e102] [cursor=pointer]:
+            - link "Template Categories" [ref=e103]:
+              - /url: /admin-dash/templates/categories
+              - img [ref=e104]
+              - generic [ref=e108]: Template Categories
+          - listitem [ref=e109] [cursor=pointer]:
+            - link "WhatsApp Templates" [ref=e110]:
+              - /url: /admin-dash/taqnyat-templates
+              - img [ref=e111]
+              - generic [ref=e114]: WhatsApp Templates
+      - button "Logout" [ref=e116]:
+        - img [ref=e117]
+        - generic [ref=e119]: Logout
+    - paragraph [ref=e125]: Loading...

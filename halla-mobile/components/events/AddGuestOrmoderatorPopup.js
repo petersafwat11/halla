@@ -243,7 +243,13 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   content: {
-    flex: 1
+    // NOT `flex: 1`. The parent `container` has only `maxHeight: "80%"` with no
+    // fixed height, so it sizes to its content. A `flex: 1` child in an
+    // auto-height column has no definite height to grow into and collapses to
+    // 0 — which hid the entire form, leaving just the header + footer buttons.
+    // `flexShrink: 1` lets the ScrollView size to its content and grow the
+    // modal naturally, then shrink + scroll once content exceeds the 80% cap.
+    flexShrink: 1
   },
   contentContainer: {
     padding: 20

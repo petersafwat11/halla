@@ -538,10 +538,25 @@ const processUploadedFiles = (files) => {
 /**
  * Convert a stored image reference into a renderable URL.
  *
- * - S3 keys → 1-hour pre-signed URL
- * - Already-signed URLs → returned unchanged
+ * The S3 bucket is served with a public-read bucket policy
+ * (`PublicReadGetObject` on `arn:aws:s3:::<bucket>/*`), so objects are
+ * fetched directly by their public URL — the same way event / post-event
+ * media is served. We deliberately do NOT presign here: the IAM user the
+ * backend runs as carries an explicit Deny on `s3:GetObject`, so presigned
+ * URLs (authenticated as that user) get a 403 "explicit deny" even though
+ * the bucket policy would allow anonymous reads. Returning the plain public
+ * URL keeps vendor/service images consistent with event images and avoids
+ * that failure mode.
+ *
+ * - S3 keys → public bucket URL (`AWS_S3_BASE_URL/<key>`)
+ * - Our-bucket URLs (incl. stale presigned ones) → normalized to the clean
+ *   public URL (query string / signature stripped)
+ * - External URLs (CDN, third-party) → returned unchanged
  * - Local-disk dev paths → returned unchanged
  * - null / undefined / non-string → returned as-is
+ *
+ * Kept `async` so existing `await signStoredImage(...)` call sites are
+ * unaffected.
  *
  * @param {string|null|undefined} stored
  * @returns {Promise<string|null>}
@@ -552,33 +567,22 @@ const signStoredImage = async (stored) => {
   if (stored.startsWith("/uploads/") || stored.startsWith("uploads/")) {
     return stored.startsWith("/") ? stored : `/${stored}`;
   }
-  // Already a signed URL — return unchanged. Re-signing would expire quickly
-  // and double-signing produces invalid URLs.
-  if (stored.includes("X-Amz-Signature=")) return stored;
 
-  // Full URL stored (legacy data, seed data, or callers that persisted
-  // `file.location` instead of the key). Two cases:
-  //   1. URL points at our own S3 bucket → extract key and sign.
-  //   2. URL points elsewhere (CDN, external image) → pass through unchanged.
+  // Full URL stored (legacy data, seed data, callers that persisted
+  // `file.location`, or a previously-minted presigned URL). If it points at
+  // our own bucket, normalize to the clean public URL (this strips any stale
+  // `X-Amz-*` query string). Otherwise it's an external URL — pass through.
   if (stored.startsWith("http://") || stored.startsWith("https://")) {
     const extracted = _extractKeyFromOurS3Url(stored);
-    if (extracted && isS3Configured()) {
-      try {
-        return await getSignedUrlForKey(extracted);
-      } catch (err) {
-        return stored;
-      }
+    if (extracted && process.env.AWS_S3_BASE_URL) {
+      return getS3Url(extracted);
     }
     return stored;
   }
 
-  // Bare S3 key — sign it.
-  if (isS3Configured()) {
-    try {
-      return await getSignedUrlForKey(stored);
-    } catch (err) {
-      return stored;
-    }
+  // Bare S3 key → public bucket URL.
+  if (process.env.AWS_S3_BASE_URL) {
+    return getS3Url(stored);
   }
   return stored;
 };

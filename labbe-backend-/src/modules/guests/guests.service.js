@@ -157,8 +157,15 @@ class GuestsService {
 
     const role = userContext?.role;
     const userId = userContext?._id?.toString?.() || userContext?._id;
-    const whitelabelId = userContext?.whitelabelId
-      ? userContext.whitelabelId.toString?.() || userContext.whitelabelId
+    // `whitelabelId` may be a populated Whitelabel doc (auth populates it) or a
+    // raw ObjectId/string — normalise to the id so the Mongoose query can cast
+    // it (a populated doc throws `CastError: Invalid whitelabelId`, 400). See
+    // `events.crud.service._buildScopedEventQuery`.
+    const rawWhitelabel = userContext?.whitelabelId;
+    const whitelabelId = rawWhitelabel
+      ? rawWhitelabel._id?.toString?.() ||
+        rawWhitelabel.toString?.() ||
+        rawWhitelabel
       : null;
 
     let eventQuery = { _id: eventId };

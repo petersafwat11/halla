@@ -12,6 +12,79 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import { formatTemplateDate } from "@halla/shared/utils/formatTemplateDate";
 
+/**
+ * Inner field renderer. Hoisted out of the Controller `render` prop so the
+ * `useState` hook lives at the top level of a real component — calling the
+ * hook inside the render prop was a Rules-of-Hooks violation that desynced
+ * the open/close state when the parent form re-rendered heavily (e.g. inside
+ * StepThree's template modal where the live canvas watches every field
+ * change). The symptom was the picker refusing to open on tap (it looked
+ * "disabled"). Mirrors the same fix already applied to TextInput.
+ */
+const DatePickerField = ({
+  label,
+  placeholder,
+  disabled,
+  minimumDate,
+  maximumDate,
+  value,
+  error,
+  onChange,
+  formatDate,
+  extraProps,
+}) => {
+  const [show, setShow] = useState(false);
+  const selectedDate = value ? new Date(value) : null;
+
+  const handleDateChange = (event, date) => {
+    if (Platform.OS === "android") {
+      setShow(false);
+    }
+    if (date) {
+      onChange(date);
+    }
+  };
+
+  const displayValue = selectedDate ? formatDate(selectedDate) : "";
+
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <TouchableOpacity
+        style={[
+          styles.inputContainer,
+          error && styles.inputContainerError,
+          disabled && styles.inputContainerDisabled,
+        ]}
+        onPress={() => !disabled && setShow(true)}
+        disabled={disabled}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="calendar-outline" size={20} color="#C28E5C" />
+        <Text
+          style={[styles.inputText, !displayValue && styles.placeholderText]}
+        >
+          {displayValue || placeholder}
+        </Text>
+      </TouchableOpacity>
+      {error && <Text style={styles.errorText}>{error.message}</Text>}
+
+      {show && (
+        <DateTimePicker
+          value={selectedDate || new Date()}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleDateChange}
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
+          textColor="#2C2C2C"
+          {...extraProps}
+        />
+      )}
+    </View>
+  );
+};
+
 const DatePicker = ({
   name,
   label,
@@ -32,62 +105,20 @@ const DatePicker = ({
       control={control}
       name={name}
       rules={rules}
-      render={({ field: { onChange, value }, fieldState: { error } }) => {
-        const [show, setShow] = useState(false);
-        const selectedDate = value ? new Date(value) : null;
-
-        const handleDateChange = (event, date) => {
-          if (Platform.OS === "android") {
-            setShow(false);
-          }
-
-          if (date) {
-            onChange(date);
-          }
-        };
-
-        const displayValue = selectedDate ? formatDate(selectedDate) : "";
-
-        return (
-          <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
-            <TouchableOpacity
-              style={[
-                styles.inputContainer,
-                error && styles.inputContainerError,
-                disabled && styles.inputContainerDisabled,
-              ]}
-              onPress={() => !disabled && setShow(true)}
-              disabled={disabled}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="calendar-outline" size={20} color="#C28E5C" />
-              <Text
-                style={[
-                  styles.inputText,
-                  !displayValue && styles.placeholderText,
-                ]}
-              >
-                {displayValue || placeholder}
-              </Text>
-            </TouchableOpacity>
-            {error && <Text style={styles.errorText}>{error.message}</Text>}
-
-            {show && (
-              <DateTimePicker
-                value={selectedDate || new Date()}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={handleDateChange}
-                minimumDate={minimumDate}
-                maximumDate={maximumDate}
-                textColor="#2C2C2C"
-                {...props}
-              />
-            )}
-          </View>
-        );
-      }}
+      render={({ field: { onChange, value }, fieldState: { error } }) => (
+        <DatePickerField
+          label={label}
+          placeholder={placeholder}
+          disabled={disabled}
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
+          value={value}
+          error={error}
+          onChange={onChange}
+          formatDate={formatDate}
+          extraProps={props}
+        />
+      )}
     />
   );
 };

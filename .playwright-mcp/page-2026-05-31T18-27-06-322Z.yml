@@ -1,0 +1,235 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halla" [ref=e5] [cursor=pointer]:
+        - /url: /en
+        - img "Halla" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /ar/admin-dash
+          - img [ref=e9]
+          - generic [ref=e12]: AR
+        - button "Notifications (15 unread)" [ref=e14] [cursor=pointer]:
+          - img "notifications" [ref=e15]
+          - generic [ref=e16]: "15"
+        - img "messages" [ref=e17]
+        - button "Admin" [ref=e19] [cursor=pointer]:
+          - generic [ref=e20]:
+            - img [ref=e22]
+            - generic [ref=e24]: Admin
+          - img [ref=e26]
+    - generic [ref=e28]:
+      - navigation [ref=e30]:
+        - list [ref=e31]:
+          - listitem [ref=e32] [cursor=pointer]:
+            - link "Dashboard" [ref=e33]:
+              - /url: /admin-dash
+              - img [ref=e34]
+              - generic [ref=e36]: Dashboard
+          - listitem [ref=e37] [cursor=pointer]:
+            - link "Moderators" [ref=e38]:
+              - /url: /admin-dash/moderators
+              - img [ref=e39]
+              - generic [ref=e41]: Moderators
+          - listitem [ref=e42] [cursor=pointer]:
+            - link "Hosts" [ref=e43]:
+              - /url: /admin-dash/hosts
+              - img [ref=e44]
+              - generic [ref=e46]: Hosts
+          - listitem [ref=e47] [cursor=pointer]:
+            - link "Vendors" [ref=e48]:
+              - /url: /admin-dash/vendors
+              - img [ref=e49]
+              - generic [ref=e52]: Vendors
+          - listitem [ref=e53] [cursor=pointer]:
+            - link "Whitelabels" [ref=e54]:
+              - /url: /admin-dash/whitelabels
+              - img [ref=e55]
+              - generic [ref=e57]: Whitelabels
+          - listitem [ref=e58] [cursor=pointer]:
+            - link "Events" [ref=e59]:
+              - /url: /admin-dash/events
+              - img [ref=e60]
+              - generic [ref=e62]: Events
+          - listitem [ref=e63] [cursor=pointer]:
+            - link "Tickets" [ref=e64]:
+              - /url: /admin-dash/tickets
+              - img [ref=e65]
+              - generic [ref=e67]: Tickets
+          - listitem [ref=e68] [cursor=pointer]:
+            - link "Payments" [ref=e69]:
+              - /url: /admin-dash/payments
+              - img [ref=e70]
+              - generic [ref=e72]: Payments
+          - listitem [ref=e73] [cursor=pointer]:
+            - link "Manage Plans" [ref=e74]:
+              - /url: /admin-dash/manage-plans
+              - img [ref=e75]
+              - generic [ref=e77]: Manage Plans
+          - listitem [ref=e78] [cursor=pointer]:
+            - link "Discounts" [ref=e79]:
+              - /url: /admin-dash/discounts
+              - img [ref=e80]
+              - generic [ref=e83]: Discounts
+          - listitem [ref=e84] [cursor=pointer]:
+            - link "Settings" [ref=e85]:
+              - /url: /admin-dash/settings
+              - img [ref=e86]
+              - generic [ref=e89]: Settings
+          - listitem [ref=e90] [cursor=pointer]:
+            - link "Templates" [ref=e91]:
+              - /url: /admin-dash/templates
+              - img [ref=e92]
+              - generic [ref=e97]: Templates
+          - listitem [ref=e98] [cursor=pointer]:
+            - link "Template Categories" [ref=e99]:
+              - /url: /admin-dash/templates/categories
+              - img [ref=e100]
+              - generic [ref=e104]: Template Categories
+          - listitem [ref=e105] [cursor=pointer]:
+            - link "WhatsApp Templates" [ref=e106]:
+              - /url: /admin-dash/taqnyat-templates
+              - img [ref=e107]
+              - generic [ref=e110]: WhatsApp Templates
+      - button "Logout" [ref=e112]:
+        - img [ref=e113]
+        - generic [ref=e115]: Logout
+    - generic [ref=e118]:
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - heading "Admin Dashboard" [level=1] [ref=e121]
+          - paragraph [ref=e122]: Overview of your platform performance
+        - button "Select time period" [ref=e124]:
+          - paragraph [ref=e125]: Select time period
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - generic [ref=e130]: Total Hosts
+            - generic [ref=e131]: "3"
+          - img [ref=e133]
+        - generic [ref=e135]:
+          - generic [ref=e136]:
+            - generic [ref=e137]: Total Vendors
+            - generic [ref=e138]: "3"
+          - img [ref=e140]
+        - generic [ref=e142]:
+          - generic [ref=e143]:
+            - generic [ref=e144]: Total Events
+            - generic [ref=e145]: "11"
+          - img [ref=e147]
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - generic [ref=e151]: Active Subscriptions
+            - generic [ref=e152]: "8"
+          - img [ref=e154]
+        - generic [ref=e156]:
+          - generic [ref=e157]:
+            - generic [ref=e158]: Open Tickets
+            - generic [ref=e159]: "2"
+          - img [ref=e161]
+      - generic [ref=e163]:
+        - generic [ref=e165]:
+          - generic [ref=e166]:
+            - heading "Subscriptions" [level=3] [ref=e167]
+            - paragraph [ref=e168]: "8"
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - paragraph [ref=e173]: "premium_monthly: 1"
+              - paragraph [ref=e176]: "basic_event: 1"
+              - paragraph [ref=e179]: "Other: 1"
+              - paragraph [ref=e182]: "business_event: 1"
+              - paragraph [ref=e185]: "unlimited: 3"
+              - paragraph [ref=e188]: "business_annual: 1"
+            - application [ref=e191]
+        - generic [ref=e214]:
+          - generic [ref=e215]:
+            - heading "Guest Response" [level=3] [ref=e216]
+            - paragraph [ref=e217]: "23"
+          - generic [ref=e218]:
+            - generic [ref=e219]:
+              - paragraph [ref=e222]: 22% Confirmed
+              - paragraph [ref=e225]: 13% Declined
+              - paragraph [ref=e228]: 65% Pending
+            - application [ref=e231]
+        - generic [ref=e245]:
+          - generic [ref=e246]:
+            - heading "Tickets" [level=3] [ref=e247]
+            - paragraph [ref=e248]: "4"
+          - generic [ref=e249]:
+            - generic [ref=e250]:
+              - paragraph [ref=e253]: "Resolved: 2"
+              - paragraph [ref=e256]: "Open: 2"
+            - application [ref=e259]
+      - generic [ref=e269]:
+        - generic [ref=e270]:
+          - generic [ref=e272]:
+            - heading "Recent Hosts" [level=2] [ref=e275]
+            - table [ref=e277]:
+              - rowgroup [ref=e278]:
+                - row "Name Email Status Date" [ref=e279]:
+                  - columnheader "Name" [ref=e280]
+                  - columnheader "Email" [ref=e281]
+                  - columnheader "Status" [ref=e282]
+                  - columnheader "Date" [ref=e283]
+              - rowgroup [ref=e284]:
+                - row "Host Platform verify.host.b@test.local Active April 30, 2026" [ref=e285]:
+                  - cell "Host Platform" [ref=e286]
+                  - cell "verify.host.b@test.local" [ref=e287]
+                  - cell "Active" [ref=e288]:
+                    - generic [ref=e289]: Active
+                  - cell "April 30, 2026" [ref=e290]
+                - row "محمد أحمد الحربي test.host@labbe.sa Active April 26, 2026" [ref=e291]:
+                  - cell "محمد أحمد الحربي" [ref=e292]
+                  - cell "test.host@labbe.sa" [ref=e293]
+                  - cell "Active" [ref=e294]:
+                    - generic [ref=e295]: Active
+                  - cell "April 26, 2026" [ref=e296]
+          - generic [ref=e298]:
+            - heading "Recent Events" [level=2] [ref=e301]
+            - table [ref=e303]:
+              - rowgroup [ref=e304]:
+                - row "Title Host Date Status" [ref=e305]:
+                  - columnheader "Title" [ref=e306]
+                  - columnheader "Host" [ref=e307]
+                  - columnheader "Date" [ref=e308]
+                  - columnheader "Status" [ref=e309]
+              - rowgroup [ref=e310]:
+                - row "real test محمد أحمد الحربي June 16, 2026 Draft" [ref=e311]:
+                  - cell "real test" [ref=e312]
+                  - cell "محمد أحمد الحربي" [ref=e313]
+                  - cell "June 16, 2026" [ref=e314]
+                  - cell "Draft" [ref=e315]:
+                    - generic [ref=e316]: Draft
+                - row "kjkjkjl محمد أحمد الحربي May 27, 2026 Scheduled" [ref=e317]:
+                  - cell "kjkjkjl" [ref=e318]
+                  - cell "محمد أحمد الحربي" [ref=e319]
+                  - cell "May 27, 2026" [ref=e320]
+                  - cell "Scheduled" [ref=e321]:
+                    - generic [ref=e322]: Scheduled
+                - row "Wedding محمد أحمد الحربي May 31, 2026 Live" [ref=e323]:
+                  - cell "Wedding" [ref=e324]
+                  - cell "محمد أحمد الحربي" [ref=e325]
+                  - cell "May 31, 2026" [ref=e326]
+                  - cell "Live" [ref=e327]:
+                    - generic [ref=e328]: Live
+                - row "admin test عبدالرحمن محمد القحطاني May 14, 2026 Draft" [ref=e329]:
+                  - cell "admin test" [ref=e330]
+                  - cell "عبدالرحمن محمد القحطاني" [ref=e331]
+                  - cell "May 14, 2026" [ref=e332]
+                  - cell "Draft" [ref=e333]:
+                    - generic [ref=e334]: Draft
+                - row "real test محمد أحمد الحربي May 13, 2026 Completed" [ref=e335]:
+                  - cell "real test" [ref=e336]
+                  - cell "محمد أحمد الحربي" [ref=e337]
+                  - cell "May 13, 2026" [ref=e338]
+                  - cell "Completed" [ref=e339]:
+                    - generic [ref=e340]: Completed
+        - generic [ref=e342]:
+          - heading "Top Vendors" [level=1] [ref=e343]
+          - generic [ref=e345]:
+            - heading "Unknown" [level=3] [ref=e346]
+            - paragraph [ref=e347]: 0 clicks
+  - button "Open Next.js Dev Tools" [ref=e353] [cursor=pointer]:
+    - img [ref=e354]
+  - alert [ref=e357]

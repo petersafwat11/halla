@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TextInput as RNTextInput,
+  Pressable,
   StyleSheet,
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
@@ -29,16 +30,22 @@ const TextInputField = ({
   error,
   onChange,
   onBlur,
+  style,
   extraProps,
 }) => {
   const [isFocused, setIsFocused] = React.useState(false);
+  const inputRef = React.useRef(null);
 
   return (
     <View style={styles.container}>
       {!!label && <Text style={styles.label}>{label}</Text>}
-      <View
+      {/* The whole box is pressable so a tap anywhere inside (padding included,
+          not just the text node) focuses the input. */}
+      <Pressable
+        onPress={() => !isDisabled && inputRef.current?.focus()}
         style={[
           styles.inputContainer,
+          multiline && styles.inputContainerMultiline,
           isFocused && styles.inputContainerFocused,
           error && styles.inputContainerError,
           isDisabled && styles.inputContainerDisabled,
@@ -46,7 +53,9 @@ const TextInputField = ({
       >
         {icon && <View style={styles.iconContainer}>{icon}</View>}
         <RNTextInput
-          style={[styles.input, multiline && styles.inputMultiline]}
+          {...extraProps}
+          ref={inputRef}
+          style={[styles.input, multiline && styles.inputMultiline, style]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={value ?? ""}
@@ -63,9 +72,8 @@ const TextInputField = ({
           multiline={multiline}
           numberOfLines={numberOfLines}
           textAlign="auto"
-          {...extraProps}
         />
-      </View>
+      </Pressable>
       {error && <Text style={styles.errorText}>{error.message}</Text>}
     </View>
   );
@@ -84,6 +92,7 @@ const TextInput = ({
   numberOfLines = 1,
   icon,
   rules,
+  style,
   ...props
 }) => {
   const { control } = useFormContext();
@@ -112,6 +121,7 @@ const TextInput = ({
           error={error}
           onChange={onChange}
           onBlur={onBlur}
+          style={style}
           extraProps={props}
         />
       )}
@@ -141,6 +151,9 @@ const styles = StyleSheet.create({
     minHeight: 50,
     paddingHorizontal: 16,
     width: "100%",
+  },
+  inputContainerMultiline: {
+    alignItems: "stretch",
   },
   inputContainerFocused: {
     borderColor: "#c28e5c",

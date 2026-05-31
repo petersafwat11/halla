@@ -130,7 +130,14 @@ export function useSingleEventStats(eventId, opts) {
         eventsRequest(ENDPOINTS.EVENTS.BY_ID(eventId)),
       ]);
       const stats = statsRes?.data || {};
-      const eventData = eventRes?.data || {};
+      // `getEventById` returns the envelope `{ success, data: { event } }`, so
+      // the event is nested at `data.event` — NOT `data` itself. Unwrapping the
+      // extra level is what makes `taqnyatTemplate` / `status` / `staffList`
+      // visible to `useEventActionGate`; without it every field read below was
+      // `undefined` and ALL action buttons (test/schedule/notify/post-event)
+      // were hidden on the single-event screen for every role. Fall back to
+      // `data` for resilience if the shape ever flattens.
+      const eventData = eventRes?.data?.event || eventRes?.data || {};
       const guestList = Array.isArray(eventData.guestList) ? eventData.guestList : [];
       const staffList = Array.isArray(eventData.staffList) ? eventData.staffList : [];
       const guests = guestList.map((guest) => ({

@@ -116,13 +116,24 @@ const mapApiToFormValues = (eventData) => {
  *     under their `whitelabelId`.
  *   - HOST — only events they own.
  */
+// Normalise an id-or-populated-ref to a comparable string. The auth layer
+// can populate `user.whitelabelId` into a full document, so a bare
+// `.toString()` on it yields "[object Object]" and silently broke the
+// whitelabel admin/moderator gate. `event.host` from getEventById is also
+// populated. Pull `_id` first whenever the value is an object.
+const idOf = (val) => {
+  if (!val) return null;
+  if (typeof val === "object") return (val._id ?? val.id ?? "").toString();
+  return val.toString();
+};
+
 const canEditEvent = (event, user) => {
   if (!event || !user) return false;
   const role = user.role;
-  const userId = user._id?.toString?.() || user._id;
-  const userWl = user.whitelabelId?.toString?.() || user.whitelabelId;
-  const eventHostId = event.host?._id || event.host;
-  const eventWl = event.whitelabelId?.toString?.() || event.whitelabelId;
+  const userId = idOf(user._id ?? user.id);
+  const userWl = idOf(user.whitelabelId);
+  const eventHostId = idOf(event.host);
+  const eventWl = idOf(event.whitelabelId);
 
   if (role === "super_admin" || role === "admin") return true;
   if (
@@ -133,7 +144,7 @@ const canEditEvent = (event, user) => {
     return Boolean(userWl) && userWl === eventWl;
   }
   // Default: host. Match by ownership.
-  return eventHostId?.toString?.() === userId?.toString?.();
+  return Boolean(eventHostId) && eventHostId === userId;
 };
 
 /**
@@ -168,7 +179,15 @@ const useEventLoadAndGate = ({ eventId, currentStep }) => {
         if (!response.ok) {
           setLoadError(json.message || t("events.update.loadError"));
         } else if (json?.data) {
-          setEventData(json.data);
+          // `getEventById` returns the envelope `{ success, data: { event } }`,
+          // so the event is nested one level deeper at `data.event` — NOT
+          // `data` itself. Without unwrapping it, `event.host` was `undefined`
+          // so the host role-gate (`canEditEvent`) returned false ("ليست لديك
+          // صلاحية لتعديل هذه المناسبة") and `mapApiToFormValues` read the wrong
+          // level, leaving the wizard blank for every role. Mirrors the same
+          // unwrap in `hooks/events/queries.js` (useSingleEventStats); fall
+          // back to `data` for resilience if the shape ever flattens.
+          setEventData(json.data.event || json.data);
         } else {
           setLoadError(t("events.update.loadError"));
         }

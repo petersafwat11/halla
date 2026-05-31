@@ -12,20 +12,19 @@ const LastEvent = ({
   onTestMessagePress,
   onViewStatsPress,
   onSchedulePress,
-  onNotifyStaffPress,
   onPostEventPress,
   subscription,
-  isNotifyingStaff,
 }) => {
   if (!event) return null;
 
   const testMessageSent = event.testMessageSent || false;
-  const {
-    canSendTest,
-    canSchedule,
-    isCompleted,
-    hasStaff: hasSupervisors,
-  } = useEventActionGate({ event, testMessageSent });
+  // Notify Staff is intentionally not surfaced on this dashboard card (it
+  // lives on the single-event page), so `hasStaff` is not consumed here —
+  // this keeps the button set in parity with the web dashboard card.
+  const { canSendTest, canSchedule, isCompleted } = useEventActionGate({
+    event,
+    testMessageSent,
+  });
 
   return (
     <View style={styles.container}>
@@ -38,12 +37,9 @@ const LastEvent = ({
       <LastEventActions
         canSendTest={canSendTest}
         canSchedule={canSchedule}
-        hasSupervisors={hasSupervisors}
         isCompleted={isCompleted}
-        isNotifyingStaff={isNotifyingStaff}
         onTestMessagePress={onTestMessagePress}
         onSchedulePress={onSchedulePress}
-        onNotifyStaffPress={onNotifyStaffPress}
         onViewStatsPress={onViewStatsPress}
         onPostEventPress={onPostEventPress}
         onEditPress={onEditPress}

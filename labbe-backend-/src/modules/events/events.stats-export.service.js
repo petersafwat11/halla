@@ -225,7 +225,14 @@ module.exports = {
       user?.role === ROLES.ADMIN ||
       user?.role === ROLES.MODERATOR
     ) {
-      if (user.whitelabelId) query.whitelabelId = user.whitelabelId;
+      // `whitelabelId` may be a populated Whitelabel doc (auth populates it);
+      // normalise to the id so Mongoose can cast the query (see
+      // `_buildScopedEventQuery`).
+      const rawWl = user.whitelabelId;
+      const wlId = rawWl
+        ? rawWl._id?.toString?.() || rawWl.toString?.() || rawWl
+        : null;
+      if (wlId) query.whitelabelId = wlId;
     }
 
     const count = await Event.countDocuments(query);

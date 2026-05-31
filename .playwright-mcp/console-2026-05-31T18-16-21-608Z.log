@@ -1,0 +1,48 @@
+[    7044ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[    7110ms] [INFO] %c%s%c 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ about://React/Server/D:%5Challa%5Clabbe%5C.next%5Cserver%5Cchunks%5Cssr%5C%5Broot-of-the-server%5D__852da727._.js?2:798
+[    7180ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3000/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[    7299ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/v2/notifications/unread-count:0
+[    7303ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/v2/services/stats:0
+[    7304ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/v2/services:0
+[    8400ms] [LOG] [API] GET /notifications/unread-count - 200 (234ms) @ http://localhost:3000/_next/static/chunks/_39d7dd9e._.js:2258
+[    8401ms] [LOG] [API] GET /services/stats - 200 (235ms) @ http://localhost:3000/_next/static/chunks/_39d7dd9e._.js:2258
+[    8402ms] [LOG] [API] GET /services - 200 (235ms) @ http://localhost:3000/_next/static/chunks/_39d7dd9e._.js:2258
+[    8526ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[    9605ms] [WARNING] Image with src "https://hallamangement.s3.eu-north-1.amazonaws.com/vendors/services/69ee38f0542490955b2ab3f4/card-1780154747509-13107ee3a8b7a17e.jpg" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:1014
+[   12556ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/en/vendor-dashboard:0
+[   23472ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[   24507ms] [LOG] [Fast Refresh] done in 1148ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[   25430ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[   25476ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3000/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[   25555ms] [LOG] [API] POST /auth/logout - 200 (21ms) @ http://localhost:3000/_next/static/chunks/_b89a6c7c._.js:2459
+[   25654ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[   25750ms] [LOG] [Fast Refresh] done in 205ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[   25850ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[   28586ms] [WARNING] Image with src "/login/2.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:1014
+[   34586ms] [WARNING] Image with src "/login/4.png" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:1014
+[   47991ms] [WARNING] Form submission canceled because the form is not connected @ http://localhost:3000/en/login:0
+[   48089ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/en/login:0
+[   66068ms] [LOG] [API] POST /auth/login - 200 (557ms) @ http://localhost:3000/_next/static/chunks/_b89a6c7c._.js:2459
+[   66217ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[   67337ms] [LOG] [Fast Refresh] done in 1232ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[   67449ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[   67485ms] [LOG] [Fast Refresh] done in 147ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[   68685ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[   68706ms] [LOG] %c%s%c [API] GET /dashboard/host - 200 (433ms) background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ about://React/Server/D:%5Challa%5Clabbe%5C.next%5Cserver%5Cchunks%5Cssr%5C%5Broot-of-the-server%5D__10554727._.js?7:774
+[   68764ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3000/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[   68983ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[   69044ms] [LOG] [Fast Refresh] done in 171ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[   69045ms] [LOG] [API] GET /template-categories - 200 (190ms) @ http://localhost:3000/_next/static/chunks/_e506227d._.js:2258
+[   69093ms] [LOG] [API] GET /notifications/unread-count - 200 (237ms) @ http://localhost:3000/_next/static/chunks/_e506227d._.js:2258
+[   69153ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
+[   69275ms] [LOG] [API] GET /templates - 200 (419ms) @ http://localhost:3000/_next/static/chunks/_e506227d._.js:2258
+[   72315ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/en/host:0
+[   80381ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/v2/events?limit=20:0
+[   83381ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/en/host:0
+[   99300ms] [LOG] [API] GET /notifications/unread-count - 200 (203ms) @ http://localhost:3000/_next/static/chunks/_e506227d._.js:2258
+[  105280ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/en/host:0
+[  129517ms] [LOG] [API] GET /notifications/unread-count - 200 (205ms) @ http://localhost:3000/_next/static/chunks/_e506227d._.js:2258
+[  135242ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/en/host:0

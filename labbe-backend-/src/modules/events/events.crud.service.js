@@ -175,8 +175,17 @@ module.exports = {
   _buildScopedEventQuery(eventId, userContext) {
     const role = userContext?.role;
     const userId = userContext?._id?.toString?.() || userContext?._id;
-    const whitelabelId = userContext?.whitelabelId
-      ? userContext.whitelabelId.toString?.() || userContext.whitelabelId
+    // `whitelabelId` may arrive as a raw ObjectId/string OR as a *populated*
+    // Whitelabel document — `auth.service` populates it (`identity domain
+    // status`) on the `protect` path. A populated doc has a `._id`; using the
+    // doc directly in the query made Mongoose throw `CastError: Invalid
+    // whitelabelId` (400), which silently broke every tenant-scoped event read
+    // for admin / whitelabel roles. Normalise to the id string in all shapes.
+    const rawWhitelabel = userContext?.whitelabelId;
+    const whitelabelId = rawWhitelabel
+      ? rawWhitelabel._id?.toString?.() ||
+        rawWhitelabel.toString?.() ||
+        rawWhitelabel
       : null;
 
     // Defense in depth: callers always come through `protect` so this
@@ -850,6 +859,12 @@ module.exports = {
       time: event.eventDetails?.time,
       location: event.eventDetails?.location,
       status: event.status,
+      // Rendered invitation card image (baked template OR custom upload).
+      // Mirrors the web's resolution order in `mapEventToFormValues`
+      // (`labbe/hooks/events/useEventForm.js`). Without this the mobile
+      // EventListItem had no `image` URL and fell back to its placeholder.
+      image:
+        event.visualTemplate?.bakedImagePath || event.templateImage || null,
       guestCount: event.guestList?.length || 0,
       confirmedCount:
         event.guestList?.filter((g) => g.status === "confirmed").length || 0,

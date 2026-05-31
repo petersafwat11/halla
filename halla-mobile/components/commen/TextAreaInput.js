@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, TextInput as RNTextInput, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput as RNTextInput,
+  Pressable,
+  StyleSheet,
+} from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 
 /**
@@ -21,15 +27,20 @@ const TextAreaField = ({
   error,
   onChange,
   onBlur,
+  style,
   extraProps,
 }) => {
   const [isFocused, setIsFocused] = React.useState(false);
+  const inputRef = React.useRef(null);
   const formValue = value ?? "";
 
   return (
     <View style={styles.container}>
       {!!label && <Text style={styles.label}>{label}</Text>}
-      <View
+      {/* The whole box is pressable so a tap anywhere inside (padding included,
+          not just the text node) focuses the input. */}
+      <Pressable
+        onPress={() => !isDisabled && inputRef.current?.focus()}
         style={[
           styles.inputContainer,
           isFocused && styles.inputContainerFocused,
@@ -38,7 +49,9 @@ const TextAreaField = ({
         ]}
       >
         <RNTextInput
-          style={styles.textArea}
+          {...extraProps}
+          ref={inputRef}
+          style={[styles.textArea, style]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={formValue}
@@ -55,9 +68,8 @@ const TextAreaField = ({
           textAlign="auto"
           textAlignVertical="top"
           maxLength={maxLength}
-          {...extraProps}
         />
-      </View>
+      </Pressable>
       {error && <Text style={styles.errorText}>{error.message}</Text>}
       {maxLength && (
         <Text style={styles.charCount}>
@@ -78,6 +90,7 @@ const TextAreaInput = ({
   numberOfLines = 3,
   maxLength,
   rules,
+  style,
   ...props
 }) => {
   const { control } = useFormContext();
@@ -103,6 +116,7 @@ const TextAreaInput = ({
           error={error}
           onChange={onChange}
           onBlur={onBlur}
+          style={style}
           extraProps={props}
         />
       )}

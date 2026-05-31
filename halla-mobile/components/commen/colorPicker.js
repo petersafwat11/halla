@@ -11,6 +11,179 @@ import {
 import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 
+const presetColors = [
+  { color: "#c28e5c", name: "ذهبي" },
+  { color: "#d6b392", name: "بيج فاتح" },
+  { color: "#8b6f47", name: "بني" },
+  { color: "#a0845c", name: "كراميل" },
+  { color: "#e74c3c", name: "أحمر" },
+  { color: "#3498db", name: "أزرق" },
+  { color: "#2ecc71", name: "أخضر" },
+  { color: "#f39c12", name: "برتقالي" },
+  { color: "#9b59b6", name: "بنفسجي" },
+  { color: "#1abc9c", name: "تركواز" },
+  { color: "#34495e", name: "رمادي داكن" },
+  { color: "#95a5a6", name: "رمادي فاتح" },
+];
+
+/**
+ * Inner field renderer. Hoisted out of the Controller `render` prop so the
+ * `useState` hooks live at the top level of a real component — calling hooks
+ * inside the render prop was a Rules-of-Hooks violation that desynced the
+ * modal open/close state under heavy parent re-renders (e.g. inside
+ * StepThree's template modal where the live canvas watches every field
+ * change). The symptom was the picker refusing to open on tap (it looked
+ * "disabled"). Mirrors the same fix already applied to TextInput.
+ */
+const ColorPickerField = ({
+  label,
+  placeholder,
+  disabled,
+  showPresets,
+  value,
+  error,
+  onChange,
+}) => {
+  const [showModal, setShowModal] = useState(false);
+  const [customColor, setCustomColor] = useState(value || "#c28e5c");
+
+  const handleColorSelect = (color) => {
+    setCustomColor(color);
+    onChange(color);
+  };
+
+  const handleCustomColorChange = (text) => {
+    const hexPattern = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+    setCustomColor(text);
+    if (hexPattern.test(text)) onChange(text);
+  };
+
+  const isColorSelected = (color) =>
+    value?.toLowerCase() === color.toLowerCase();
+
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+
+      <TouchableOpacity
+        style={[
+          styles.colorDisplay,
+          error && styles.colorDisplayError,
+          disabled && styles.colorDisplayDisabled,
+        ]}
+        onPress={() => !disabled && setShowModal(true)}
+        disabled={disabled}
+      >
+        <View
+          style={[styles.colorPreview, { backgroundColor: value || "#c28e5c" }]}
+        />
+        <Text style={styles.colorValue}>
+          {value || placeholder || "#c28e5c"}
+        </Text>
+        <Ionicons
+          name="chevron-down"
+          size={20}
+          color="#656565"
+          style={styles.icon}
+        />
+      </TouchableOpacity>
+
+      {error && <Text style={styles.errorText}>{error.message}</Text>}
+
+      {/* Modal */}
+      <Modal
+        visible={showModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent]}>
+            <View style={[styles.modalHeader]}>
+              <Text style={[styles.modalTitle]}>اختر اللون</Text>
+
+              <TouchableOpacity
+                onPress={() => setShowModal(false)}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={24} color="#2C2C2C" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.modalBody}
+              contentContainerStyle={styles.modalBodyContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {showPresets && (
+                <View style={styles.presetsSection}>
+                  <Text style={[styles.sectionTitle]}>الألوان الشائعة</Text>
+
+                  <View style={styles.colorGrid}>
+                    {presetColors.map((item) => (
+                      <TouchableOpacity
+                        key={item.color}
+                        style={[
+                          styles.colorOption,
+                          isColorSelected(item.color) &&
+                            styles.colorOptionSelected,
+                        ]}
+                        onPress={() => handleColorSelect(item.color)}
+                      >
+                        <View
+                          style={[
+                            styles.colorCircle,
+                            { backgroundColor: item.color },
+                          ]}
+                        >
+                          {isColorSelected(item.color) && (
+                            <Ionicons name="checkmark" size={20} color="#fff" />
+                          )}
+                        </View>
+                        <Text style={[styles.colorName]}>{item.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              <View style={styles.customSection}>
+                <Text style={[styles.sectionTitle]}>لون مخصص</Text>
+
+                <View style={[styles.customColorContainer]}>
+                  <View
+                    style={[
+                      styles.customColorPreview,
+                      { backgroundColor: customColor },
+                    ]}
+                  />
+
+                  <RNTextInput
+                    style={[styles.customColorInput]}
+                    value={customColor}
+                    onChangeText={handleCustomColorChange}
+                    placeholder="#c28e5c"
+                    placeholderTextColor="#999"
+                    autoCapitalize="none"
+                    maxLength={7}
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={() => setShowModal(false)}
+              >
+                <Text style={styles.applyButtonText}>تطبيق</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
 const ColorPicker = ({
   name,
   label,
@@ -20,206 +193,23 @@ const ColorPicker = ({
   rules
 }) => {
   const { control } = useFormContext();
-  const [showModal, setShowModal] = useState(false);
-
-  const presetColors = [
-    { color: "#c28e5c", name: "ذهبي" },
-    { color: "#d6b392", name: "بيج فاتح" },
-    { color: "#8b6f47", name: "بني" },
-    { color: "#a0845c", name: "كراميل" },
-    { color: "#e74c3c", name: "أحمر" },
-    { color: "#3498db", name: "أزرق" },
-    { color: "#2ecc71", name: "أخضر" },
-    { color: "#f39c12", name: "برتقالي" },
-    { color: "#9b59b6", name: "بنفسجي" },
-    { color: "#1abc9c", name: "تركواز" },
-    { color: "#34495e", name: "رمادي داكن" },
-    { color: "#95a5a6", name: "رمادي فاتح" },
-  ];
 
   return (
     <Controller
       control={control}
       name={name}
       rules={rules}
-      render={({ field: { onChange, value }, fieldState: { error } }) => {
-        const [customColor, setCustomColor] = useState(value || "#c28e5c");
-
-        const handleColorSelect = (color) => {
-          setCustomColor(color);
-          onChange(color);
-        };
-
-        const handleCustomColorChange = (text) => {
-          const hexPattern = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-          setCustomColor(text);
-          if (hexPattern.test(text)) onChange(text);
-        };
-
-        const isColorSelected = (color) =>
-          value?.toLowerCase() === color.toLowerCase();
-
-        return (
-          <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
-
-            <TouchableOpacity
-              style={[
-                styles.colorDisplay,
-                error && styles.colorDisplayError,
-                disabled && styles.colorDisplayDisabled,
-              ]}
-              onPress={() => !disabled && setShowModal(true)}
-              disabled={disabled}
-            >
-              <View
-                style={[
-                  styles.colorPreview,
-                  { backgroundColor: value || "#c28e5c" },
-                ]}
-              />
-              <Text style={styles.colorValue}>
-                {value || placeholder || "#c28e5c"}
-              </Text>
-              <Ionicons
-                name="chevron-down"
-                size={20}
-                color="#656565"
-                style={styles.icon}
-              />
-            </TouchableOpacity>
-
-            {error && <Text style={styles.errorText}>{error.message}</Text>}
-
-            {/* Modal */}
-            <Modal
-              visible={showModal}
-              transparent
-              animationType="fade"
-              onRequestClose={() => setShowModal(false)}
-            >
-              <View style={styles.modalOverlay}>
-                <View
-                  style={[styles.modalContent]}
-                >
-                  <View
-                    style={[styles.modalHeader]}
-                  >
-                    <Text
-                      style={[styles.modalTitle]}
-                    >
-                      اختر اللون
-                    </Text>
-
-                    <TouchableOpacity
-                      onPress={() => setShowModal(false)}
-                      style={styles.closeButton}
-                    >
-                      <Ionicons name="close" size={24} color="#2C2C2C" />
-                    </TouchableOpacity>
-                  </View>
-
-                  <ScrollView
-                    style={styles.modalBody}
-                    contentContainerStyle={styles.modalBodyContent}
-                    showsVerticalScrollIndicator={false}
-                  >
-                    {showPresets && (
-                      <View style={styles.presetsSection}>
-                        <Text
-                          style={[
-                            styles.sectionTitle,
-                          ]}
-                        >
-                          الألوان الشائعة
-                        </Text>
-
-                        <View style={styles.colorGrid}>
-                          {presetColors.map((item) => (
-                            <TouchableOpacity
-                              key={item.color}
-                              style={[
-                                styles.colorOption,
-                                isColorSelected(item.color) &&
-                                  styles.colorOptionSelected,
-                              ]}
-                              onPress={() => handleColorSelect(item.color)}
-                            >
-                              <View
-                                style={[
-                                  styles.colorCircle,
-                                  { backgroundColor: item.color },
-                                ]}
-                              >
-                                {isColorSelected(item.color) && (
-                                  <Ionicons
-                                    name="checkmark"
-                                    size={20}
-                                    color="#fff"
-                                  />
-                                )}
-                              </View>
-                              <Text
-                                style={[
-                                  styles.colorName,
-                                ]}
-                              >
-                                {item.name}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      </View>
-                    )}
-
-                    <View style={styles.customSection}>
-                      <Text
-                        style={[
-                          styles.sectionTitle
-                        ]}
-                      >
-                        لون مخصص
-                      </Text>
-
-                      <View
-                        style={[
-                          styles.customColorContainer
-                        ]}
-                      >
-                        <View
-                          style={[
-                            styles.customColorPreview,
-                            { backgroundColor: customColor },
-                          ]}
-                        />
-
-                        <RNTextInput
-                          style={[
-                            styles.customColorInput
-                          ]}
-                          value={customColor}
-                          onChangeText={handleCustomColorChange}
-                          placeholder="#c28e5c"
-                          placeholderTextColor="#999"
-                          autoCapitalize="none"
-                          maxLength={7}
-                        />
-                      </View>
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.applyButton}
-                      onPress={() => setShowModal(false)}
-                    >
-                      <Text style={styles.applyButtonText}>تطبيق</Text>
-                    </TouchableOpacity>
-                  </ScrollView>
-                </View>
-              </View>
-            </Modal>
-          </View>
-        );
-      }}
+      render={({ field: { onChange, value }, fieldState: { error } }) => (
+        <ColorPickerField
+          label={label}
+          placeholder={placeholder}
+          disabled={disabled}
+          showPresets={showPresets}
+          value={value}
+          error={error}
+          onChange={onChange}
+        />
+      )}
     />
   );
 };

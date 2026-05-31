@@ -10,6 +10,86 @@ import { useFormContext, Controller } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 
+const formatTime = (time) => {
+  if (!time) return "";
+  const t = new Date(time);
+  const hours = t.getHours();
+  const minutes = t.getMinutes();
+  const ampm = hours >= 12 ? "مساءً" : "صباحاً";
+  const formattedHours = hours % 12 || 12;
+  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+  return `${formattedHours}:${formattedMinutes} ${ampm}`;
+};
+
+/**
+ * Inner field renderer. Hoisted out of the Controller `render` prop so the
+ * `useState` hook lives at the top level of a real component — calling the
+ * hook inside the render prop was a Rules-of-Hooks violation that desynced
+ * the open/close state under heavy parent re-renders (e.g. inside StepThree's
+ * template modal where the live canvas watches every field change). The
+ * symptom was the picker refusing to open on tap (it looked "disabled").
+ * Mirrors the same fix already applied to TextInput.
+ */
+const TimePickerField = ({
+  label,
+  placeholder,
+  disabled,
+  value,
+  error,
+  onChange,
+  extraProps,
+}) => {
+  const [show, setShow] = useState(false);
+  const selectedTime = value ? new Date(value) : null;
+
+  const handleTimeChange = (event, time) => {
+    if (Platform.OS === "android") {
+      setShow(false);
+    }
+    if (time) {
+      onChange(time);
+    }
+  };
+
+  const displayValue = selectedTime ? formatTime(selectedTime) : "";
+
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <TouchableOpacity
+        style={[
+          styles.inputContainer,
+          error && styles.inputContainerError,
+          disabled && styles.inputContainerDisabled,
+        ]}
+        onPress={() => !disabled && setShow(true)}
+        disabled={disabled}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="time-outline" size={20} color="#C28E5C" />
+        <Text
+          style={[styles.inputText, !displayValue && styles.placeholderText]}
+        >
+          {displayValue || placeholder}
+        </Text>
+      </TouchableOpacity>
+      {error && <Text style={styles.errorText}>{error.message}</Text>}
+
+      {show && (
+        <DateTimePicker
+          value={selectedTime || new Date()}
+          mode="time"
+          is24Hour={false}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleTimeChange}
+          textColor="#2C2C2C"
+          {...extraProps}
+        />
+      )}
+    </View>
+  );
+};
+
 const TimePicker = ({
   name,
   label,
@@ -20,77 +100,22 @@ const TimePicker = ({
 }) => {
   const { control } = useFormContext();
 
-  const formatTime = (time) => {
-    if (!time) return "";
-    const t = new Date(time);
-    const hours = t.getHours();
-    const minutes = t.getMinutes();
-    const ampm = hours >= 12 ? "مساءً" : "صباحاً";
-    const formattedHours = hours % 12 || 12;
-    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-    return `${formattedHours}:${formattedMinutes} ${ampm}`;
-  };
-
   return (
     <Controller
       control={control}
       name={name}
       rules={rules}
-      render={({ field: { onChange, value }, fieldState: { error } }) => {
-        const [show, setShow] = useState(false);
-        const selectedTime = value ? new Date(value) : null;
-
-        const handleTimeChange = (event, time) => {
-          if (Platform.OS === "android") {
-            setShow(false);
-          }
-
-          if (time) {
-            onChange(time);
-          }
-        };
-
-        const displayValue = selectedTime ? formatTime(selectedTime) : "";
-
-        return (
-          <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
-            <TouchableOpacity
-              style={[
-                styles.inputContainer,
-                error && styles.inputContainerError,
-                disabled && styles.inputContainerDisabled,
-              ]}
-              onPress={() => !disabled && setShow(true)}
-              disabled={disabled}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="time-outline" size={20} color="#C28E5C" />
-              <Text
-                style={[
-                  styles.inputText,
-                  !displayValue && styles.placeholderText,
-                ]}
-              >
-                {displayValue || placeholder}
-              </Text>
-            </TouchableOpacity>
-            {error && <Text style={styles.errorText}>{error.message}</Text>}
-
-            {show && (
-              <DateTimePicker
-                value={selectedTime || new Date()}
-                mode="time"
-                is24Hour={false}
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={handleTimeChange}
-                textColor="#2C2C2C"
-                {...props}
-              />
-            )}
-          </View>
-        );
-      }}
+      render={({ field: { onChange, value }, fieldState: { error } }) => (
+        <TimePickerField
+          label={label}
+          placeholder={placeholder}
+          disabled={disabled}
+          value={value}
+          error={error}
+          onChange={onChange}
+          extraProps={props}
+        />
+      )}
     />
   );
 };

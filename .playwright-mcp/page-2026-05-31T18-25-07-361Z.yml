@@ -1,0 +1,36 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - banner [ref=e5]:
+        - generic [ref=e6]:
+          - link "Halla" [ref=e7] [cursor=pointer]:
+            - /url: /en
+            - img "Halla" [ref=e8]
+          - link "Switch language" [ref=e9] [cursor=pointer]:
+            - /url: /ar/login
+            - img [ref=e10]
+            - generic [ref=e13]: AR
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - heading "Welcome to Halla" [level=2] [ref=e18]
+          - paragraph [ref=e19]: Login to your account and start your journey with us in organizing invitations in a modern and unique way.
+        - generic [ref=e21]:
+          - generic [ref=e22]: Phone Number
+          - generic [ref=e23]:
+            - textbox [ref=e24]
+            - img "country-code" [ref=e25]
+        - button "Login" [ref=e26] [cursor=pointer]
+        - generic [ref=e27]:
+          - button "Login with email arrow" [ref=e28] [cursor=pointer]:
+            - text: Login with email
+            - img "arrow" [ref=e29]
+          - button "Don't have an account? Create account" [ref=e30] [cursor=pointer]
+    - generic [ref=e32]:
+      - img "image3" [ref=e55]
+      - generic [ref=e35]:
+        - heading "Halla هلا" [level=1] [ref=e36]
+        - paragraph [ref=e37]: region's most distinguished gatherings.
+  - button "Open Next.js Dev Tools" [ref=e48] [cursor=pointer]:
+    - img [ref=e49]
+  - alert [ref=e52]

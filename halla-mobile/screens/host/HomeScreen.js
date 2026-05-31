@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,7 +22,6 @@ import { useHostDashboard } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
 import { useTranslation } from "../../localization";
 import NotificationBell from "../../components/notifications/NotificationBell";
-import { useNotifyStaff } from "../../hooks/events/mutations/useEventMutation";
 import HomeHeaderContent from "../../components/home/HomeHeaderContent";
 
 const HomeScreen = ({ navigation }) => {
@@ -33,7 +31,6 @@ const HomeScreen = ({ navigation }) => {
   const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
 
   const { data: dashboardData, isLoading: loading, error, refetch } = useHostDashboard();
-  const notifyStaffMutation = useNotifyStaff();
 
   const eventId = dashboardData?.lastEvent?.id || dashboardData?.lastEvent?._id;
   const hasEvents = dashboardData?.hasEvents === true;
@@ -46,18 +43,15 @@ const HomeScreen = ({ navigation }) => {
   const handleTestMessagePress = () => setTestMessageModalVisible(true);
 
   const handleViewStatsPress = () => {
-    if (navigation) navigation.navigate("Events");
+    // Match web: View Stats opens THIS event's detail page (web pushes
+    // /host/events/{id}), not the events list tab. Fall back to the list
+    // only if we somehow have no event id.
+    if (!navigation) return;
+    if (eventId) navigation.navigate("EventDetails", { eventId });
+    else navigation.navigate("Events");
   };
 
   const handleSchedulePress = () => setScheduleModalVisible(true);
-
-  const handleNotifyStaff = () => {
-    if (!eventId) return;
-    notifyStaffMutation.mutate({ eventId }, {
-      onSuccess: () => Alert.alert(t("notifyStaff.successTitle", "تم"), t("notifyStaff.successMessage", "تم إرسال الإشعار للفريق")),
-      onError: (err) => Alert.alert(t("notifyStaff.errorTitle", "خطأ"), err.message || t("notifyStaff.errorMessage", "فشل إرسال الإشعار")),
-    });
-  };
 
   const handleCreateEvent = () => {
     if (navigation) navigation.navigate("CreateEventScreen");
@@ -103,12 +97,10 @@ const HomeScreen = ({ navigation }) => {
               hasEvents={hasEvents}
               event={dashboardData?.lastEvent}
               subscription={dashboardData?.subscription}
-              isNotifyingStaff={notifyStaffMutation.isPending}
               onEditPress={handleEditPress}
               onTestMessagePress={handleTestMessagePress}
               onViewStatsPress={handleViewStatsPress}
               onSchedulePress={handleSchedulePress}
-              onNotifyStaffPress={handleNotifyStaff}
               onPostEventPress={handlePostEventPress}
               onCreateEventPress={handleCreateEvent}
               onRetry={() => refetch()}

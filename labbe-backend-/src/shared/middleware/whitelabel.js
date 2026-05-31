@@ -80,7 +80,15 @@ exports.injectWhitelabel = catchAsync(async (req, res, next) => {
     return next();
   }
 
-  const userWhitelabelId = req.user.whitelabelId;
+  // `req.user.whitelabelId` may be a populated Whitelabel doc (auth populates
+  // it) — normalise to the id string so it passes `objectId` validation and is
+  // stored as a ref, not the whole object.
+  const rawWhitelabel = req.user.whitelabelId;
+  const userWhitelabelId = rawWhitelabel
+    ? rawWhitelabel._id?.toString?.() ||
+      rawWhitelabel.toString?.() ||
+      rawWhitelabel
+    : null;
 
   if (userWhitelabelId) {
     req.body.whitelabelId = userWhitelabelId;
