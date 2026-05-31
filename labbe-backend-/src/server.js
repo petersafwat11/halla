@@ -36,18 +36,12 @@ const startServer = async () => {
 ╚════════════════════════════════════════════╝
       `);
 
-      // PIPELINE-F02: confirm HMAC verification on /messaging/webhook is
-      // wired. WHATSAPP_APP_SECRET is required and validated by env.js, so
-      // reaching this point with an empty secret is a programmer error.
-      if (process.env.WHATSAPP_APP_SECRET) {
-        console.log(
-          '🔐 WhatsApp webhook HMAC verification: ACTIVE (fail-closed on missing or invalid x-hub-signature-256)'
-        );
-      } else {
-        console.error(
-          '⚠️  WhatsApp webhook HMAC verification: NO SECRET — requests will be rejected. This should be unreachable.'
-        );
-      }
+      // WhatsApp webhook HMAC verification is TEMPORARILY DISABLED
+      // (2026-06-01). See messaging.webhook.controller.js for the rationale
+      // and how to re-enable it.
+      console.log(
+        '⚠️  WhatsApp webhook HMAC verification: DISABLED — accepting all payloads on /messaging/webhook'
+      );
     });
 
     // Handle unhandled rejections
