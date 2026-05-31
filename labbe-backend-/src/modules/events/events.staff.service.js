@@ -335,7 +335,12 @@ module.exports = {
                 staffMember.phone,
                 template.templateName,
                 template.language,
-                bodyParams,
+                [
+                  {
+                    type: 'body',
+                    parameters: bodyParams.map((text) => ({ type: 'text', text })),
+                  },
+                ],
                 smsFallback
               );
           if (!wa?.success) throw new Error(wa?.error || 'wa_failed');

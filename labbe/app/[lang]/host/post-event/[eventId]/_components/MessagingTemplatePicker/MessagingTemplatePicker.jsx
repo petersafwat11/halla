@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useHostTaqnyatTemplates } from "@/hooks/taqnyatTemplates";
@@ -26,17 +25,11 @@ const SkeletonList = () => (
   </div>
 );
 
-const EmptyState = ({ lang, t }) => (
+const EmptyState = ({ t }) => (
   <div className={styles.emptyState}>
     <div className={styles.emptyIcon}>✉</div>
     <p className={styles.emptyTitle}>{t("host.messaging.empty")}</p>
     <p className={styles.emptyHint}>{t("host.messaging.emptyHint")}</p>
-    <a
-      className={styles.emptyCta}
-      href={`/${lang}/host/settings/messaging-templates`}
-    >
-      {t("host.accessLinks.noTemplateCta")}
-    </a>
   </div>
 );
 
@@ -69,8 +62,7 @@ const TemplateCard = ({ template, isSelected, onSelect, t }) => (
 
 const MessagingTemplatePicker = ({ eventId, savedTemplateRef }) => {
   const { t } = useTranslation("postEvent");
-  const { lang } = useParams();
-  const { data, isLoading } = useHostTaqnyatTemplates({ category: "post_event" });
+  const { data, isLoading } = useHostTaqnyatTemplates({ type: "post_event" });
   const saveTemplate = useUpdatePostEventMessagingTemplate();
 
   const templates = data?.data?.templates || data?.templates || [];
@@ -103,7 +95,7 @@ const MessagingTemplatePicker = ({ eventId, savedTemplateRef }) => {
       {isLoading ? (
         <SkeletonList />
       ) : templates.length === 0 ? (
-        <EmptyState lang={lang} t={t} />
+        <EmptyState t={t} />
       ) : (
         <div className={styles.templateList}>
           {templates.map((template) => (

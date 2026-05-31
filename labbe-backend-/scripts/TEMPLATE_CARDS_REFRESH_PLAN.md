@@ -207,21 +207,36 @@ We have no host-facing data referencing these templates yet (no events were buil
 
 ---
 
-## 7. Open questions (need user sign-off before coding)
+## 7. Decisions locked in (all questions resolved)
 
-0. **🚩 Calligraphy names — biggest decision.** Several polished cards show couple names as **bespoke joined-letter calligraphy**:
-   - `5.png` "حسنان" (joined), `6.png` "محمد حليمة" (interlocked), `7.png` "نبيل مسرة" (interlocked), `9.png` "ماجدة", `15.png` "بيان" (with graduation cap fused into the letterform), `16.png` "فهد & هلا" + "HALA | FAHAD"
+This is the authoritative spec — no open questions remain.
 
-   The editor renders text in a chosen `fontFamily` at a `fontSize`. **It cannot reproduce joined-letter calligraphy from a host-typed name.** Pick one approach per card:
+1. **Polished cards are layout references, not art.** The text visible in each polished mockup is example data showing where the host's input will land. Every text block in the mockup → one real input field + one overlay at that exact position. Names render in a normal Arabic font (Amiri / Reem-Kufi / Cairo). We are **not** trying to reproduce bespoke joined-letter calligraphy — that's a fidelity tradeoff we accept.
 
-   - **(A) Bake the names into the background.** The card stops being a "template" and becomes hardcoded to one couple. No `groomName` / `brideName` overlay; remove the field.
-   - **(B) Render names as plain Amiri/Reem-Kufi text.** Editable, but the polished mockup's calligraphic feel is lost.
-   - **(C) Drop these specific cards from the seed for now** and revisit when we have a calligraphy renderer (out of scope today).
+2. **Mapping confirmed for cards 5 / 9 / 15.**
+   - `5.png` → `blessed_births.jpg`
+   - `9.png` → `marriage_contract_arch.jpg`
+   - `15.png` → `marriage_contract_bronze.jpg`
 
-   §3 currently assumes path **B** silently for all of them. Please confirm A/B/C per card before we measure overlays — the choice changes which fields each card has.
+3. **Backgrounds with no polished mockup — borrow layout from a same-category polished card.** Don't drop them; produce a polished-style spec by reusing the field set + overlay placements:
 
-1. **Mapping rows 5, 9 and 15 are guesses** — `5.png` ↔ `blessed_births.jpg`?, `9.png` ↔ `marriage_contract_arch.jpg`?, `15.png` ↔ `marriage_contract_bronze.jpg`? Please confirm or correct.
-2. **Drop unused sources?** OK to soft-delete the existing Royal Navy / Pearl Frame / Sacred Pilgrimage / Visionary Conference templates and skip the matching source images for now?
-3. **Single script or two?** The wave-1/wave-2 split has no remaining meaning. Merge into one `seedTemplateCards.js`?
-4. **Categories.** Do we still want all 7 (`wedding`, `engagement`, `birthday`, `baby_shower`, `ladies_event`, `general_event`, `conference`), or drop `ladies_event` (no polished card) and `conference` (no polished card)?
-5. **Wave-1 Royal/Garden/Pure Promise/Sweet Celebration/Blessed Newborn/Ladies' Gathering** — these templates exist today from `seedTemplateCards.js`. They're being replaced by the polished set. Soft-delete them as part of the re-seed?
+   | Background | Borrowed layout | Final category |
+   |---|---|---|
+   | `wedding_navy_frame.jpg` | card #3 Royal Da'wah | wedding |
+   | `wedding_white_frame.jpg` | card #2 Pearl Da'wah | wedding |
+   | `general_pilgrimage.jpg` | card #11 Ramadan Iftar | general_event |
+   | `conference.jpg` | card #1 Royal Groom (dark bg, text-left layout) | conference |
+
+4. **Categories — keep all 7.** `wedding`, `engagement`, `birthday`, `baby_shower`, `ladies_event`, `general_event`, `conference`. None are dropped.
+
+5. **`ladies_event` — card #6 (`woman_invitation.jpg`) is tagged in BOTH categories.** `Template.categories` is already an array, so we tag the polished design as `["wedding", "ladies_event"]`. Same card surfaces under both filters; no duplicate template is created.
+
+6. **Single merged script.** Wave-1 and Wave-2 collapse into one `seedTemplateCards.js`. `seedTemplateCardsWave2.js` is removed at the end.
+
+7. **Shared vocab module.** Extract field labels, placeholders and limits into `scripts/_templateCardVocab.js`. Every template spec consumes it — one place to edit any shared label.
+
+8. **No `defaultValue` on any field.** Placeholders only. Hosts always type their own data. Today's seed sets things like `defaultValue: "20:00"` on `eventTime` and Arabic default messages — all of that goes away.
+
+9. **Replace, don't mutate.** Soft-delete every previously-seeded template by `nameEn`, then create **20 new templates** (16 polished + 4 borrowed-layout backgrounds). Run `gcOrphanTemplateImages.js` afterwards to clean stale S3 keys.
+
+10. **Aspect-ratio guard.** Sharp check at script startup that the source JPG and the polished PNG share W/H ratio (within 1%). Hard-fail with a clear message if any pair mismatches, so overlays never render at the wrong spot silently.

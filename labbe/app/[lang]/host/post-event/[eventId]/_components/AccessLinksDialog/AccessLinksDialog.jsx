@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import Button from "@/ui/commen/button/Button";
@@ -16,7 +15,6 @@ const FILTERS = ["attended", "confirmed", "all"];
 
 const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
   const { t } = useTranslation("postEvent");
-  const { lang } = useParams();
   const [filter, setFilter] = useState("attended");
 
   const initialOverrideId =
@@ -26,7 +24,7 @@ const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
   const [overrideId, setOverrideId] = useState(initialOverrideId || "");
 
   const { data, isLoading } = useHostTaqnyatTemplates({
-    category: "post_event",
+    type: "post_event",
   });
   const templates = data?.data?.templates || data?.templates || [];
 
@@ -117,12 +115,6 @@ const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
           ) : templates.length === 0 ? (
             <div className={styles.emptyTemplate}>
               <p>{t("host.accessLinks.noTemplateConfigured")}</p>
-              <a
-                className={styles.cta}
-                href={`/${lang}/host/settings/messaging-templates`}
-              >
-                {t("host.accessLinks.noTemplateCta")}
-              </a>
             </div>
           ) : (
             <select
