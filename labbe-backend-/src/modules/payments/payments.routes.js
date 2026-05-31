@@ -37,6 +37,29 @@ const { refundSchema, captureSchema } = require('./payments.validation');
  */
 router.post('/webhook', paymentsController.webhook);
 
+/**
+ * @swagger
+ * /payments/app-return:
+ *   get:
+ *     summary: Mobile 3DS deep-link bounce (public)
+ *     description: |
+ *       Public redirect target handed to Moyasar as `callback_url` by the
+ *       mobile app. Moyasar appends `?id=&status=`; this 302s to the
+ *       `halla://host/payments/return` deep link so the in-app browser
+ *       returns the user to the app instead of the auth-gated web pages.
+ *     tags: [Payments]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema: { type: string }
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *     responses:
+ *       302: { description: Redirect to the app deep link }
+ */
+router.get('/app-return', paymentsController.appReturn);
+
 router.use(protect);
 
 /**

@@ -199,8 +199,11 @@ const PlansSummaryScreen = () => {
         source: buildSource(),
       });
       if (result?.requiresAction) {
-        // useCheckout has already opened the redirect URL via Linking; the
-        // user is mid-flow with the bank — don't toast a fake success.
+        // useCheckout ran the 3DS step in an in-app browser that has now
+        // closed. Hand off to the polling screen, which confirms the
+        // payment and routes onward per its purpose. Don't toast a fake
+        // success — the charge isn't terminal yet.
+        navigation.navigate("PaymentReturn", { moyasarId: result.moyasarId });
         return;
       }
       const failedCount = result?.failedAddons?.length || 0;

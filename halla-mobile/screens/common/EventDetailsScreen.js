@@ -44,6 +44,7 @@ import {
   canDeleteOnPage,
   PAGES,
 } from "../../utils/adminPermissions";
+import { saveBlobAndShare } from "../../utils/download";
 
 import TopBar from "../../components/plans/TopBar";
 import {
@@ -342,8 +343,25 @@ const EventDetailsScreen = () => {
 
   const handleExportGuests = async () => {
     try {
-      await exportGuestsMutation.mutateAsync({ eventId });
-      toast.success(t("guest.alerts.exportTitle", "تصدير"));
+      // The mutation returns the XLSX blob; it does NOT persist it. We have to
+      // hand the blob to `saveBlobAndShare` (write to cache + native share
+      // sheet) — mirroring EventList's host events export. Previously this
+      // awaited the mutation and showed a success toast while silently
+      // dropping the blob, so nothing was ever exported.
+      const result = await exportGuestsMutation.mutateAsync({ eventId });
+      if (!result?.blob) {
+        throw new Error(t("guest.alerts.exportError", "تعذر تصدير قائمة الضيوف"));
+      }
+      const share = await saveBlobAndShare(
+        result.blob,
+        result.filename || `event-${eventId}-guests.xlsx`,
+        { dialogTitle: t("guest.alerts.exportTitle", "تصدير") }
+      );
+      // The share sheet opening IS the success signal — stay silent on
+      // success and on user-cancel; surface only real failures.
+      if (!share.success && share.message) {
+        toast.error(share.message);
+      }
     } catch (e) {
       toast.error(e?.message || t("guest.alerts.exportError", "تعذر تصدير قائمة الضيوف"));
     }

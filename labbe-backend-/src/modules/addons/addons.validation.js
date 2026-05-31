@@ -34,6 +34,10 @@ const purchaseAddonSchema = z
     eventId: objectId.optional(),
     subscriptionId: objectId.optional(),
     source: sourceSchema.optional(),
+    // Where Moyasar redirects after 3DS. Web omits it (backend defaults to
+    // the web return page); mobile sends a `halla://` deep link so the user
+    // returns to the app instead of the website. Mirrors checkout.validation.
+    callbackUrl: z.string().url().optional(),
     // Legacy: service prefers the Idempotency-Key header. Body-level key is
     // kept for backward compat with older clients.
     idempotencyKey: z.string().optional(),

@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Linking } from "react-native";
 import { ENDPOINTS } from "../../config/api";
 import { addonsKeys } from "./keys";
 import { addonsRequest } from "./queries";
+import { buildMoyasarCallbackUrl, runThreeDsSession } from "../../utils/paymentBrowser";
 
 const newIdempotencyKey = (prefix) => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -20,15 +20,26 @@ export const useAddonPurchase = () => {
   return useMutation({
     mutationFn: async (input) => {
       const idempotencyKey = newIdempotencyKey(`addon-${input.addonType}`);
+      // Send Moyasar our public bounce endpoint (http[s], 302s to the app
+      // deep link) so 3DS returns to the app, not the website login.
+      const moyasarCallback = input.callbackUrl || buildMoyasarCallbackUrl();
       const data = await addonsRequest(ENDPOINTS.ADDONS.PURCHASE, {
         method: "POST",
-        body: input,
+        body: { ...input, callbackUrl: moyasarCallback },
         headers: { "Idempotency-Key": idempotencyKey },
       });
       const inner = data?.data || data;
       if (inner?.requiresAction && inner?.redirectUrl) {
-        await Linking.openURL(inner.redirectUrl);
-        return { requiresAction: true, paymentId: inner.paymentId };
+        const { moyasarId, browserType } = await runThreeDsSession(
+          inner.redirectUrl,
+          inner.paymentId
+        );
+        return {
+          requiresAction: true,
+          paymentId: inner.paymentId,
+          moyasarId,
+          browserType,
+        };
       }
       return data;
     },

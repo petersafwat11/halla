@@ -16,7 +16,13 @@
  * Both helpers return `{ success, message, fileUri? }`.
  */
 
-import * as FileSystem from "expo-file-system";
+// SDK 54 (expo-file-system 19) moved the classic file API
+// (`cacheDirectory`, `writeAsStringAsync`, `EncodingType`, …) to the
+// `/legacy` entry point — the default module now exports only the new
+// `File`/`Directory`/`Paths` classes. Importing from the bare package made
+// `FileSystem.EncodingType` undefined, so `saveBlobAndShare` threw on every
+// export (host events + all admin tables + tickets). Pin to `/legacy`.
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
 const XLSX_MIME =

@@ -43,6 +43,7 @@ class AddonsService {
       templateType,
       subscriptionId,
       eventId,
+      callbackUrl,
     } = data || {};
 
     if (!Object.values(ADDON_TYPES).includes(addonType)) {
@@ -70,7 +71,7 @@ class AddonsService {
     if (price > 0) {
       paymentRecord = await this._chargeForPurchase({
         userId, price, addonType, quantity, templateType, scope, subscriptionId, eventId,
-        source: data?.source, idempotencyKey,
+        source: data?.source, idempotencyKey, callbackUrl,
       });
       if (paymentRecord.requiresAction) return paymentRecord.requiresActionResponse;
     }
@@ -412,9 +413,12 @@ class AddonsService {
 
   async _chargeForPurchase({
     userId, price, addonType, quantity, templateType, scope, subscriptionId, eventId,
-    source, idempotencyKey,
+    source, idempotencyKey, callbackUrl: callbackUrlArg,
   }) {
-    const callbackUrl = `${process.env.FRONTEND_URL || ''}/host/payments/return`;
+    // Honor a caller-supplied deep link (mobile) so 3DS returns to the app;
+    // fall back to the web return page when omitted (web clients).
+    const callbackUrl =
+      callbackUrlArg || `${process.env.FRONTEND_URL || ''}/host/payments/return`;
     const derivedKey = idempotencyKey
       || `addon:${userId}:${addonType}:${scope}:${eventId || 'pool'}:${price}`;
 

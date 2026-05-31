@@ -4,7 +4,11 @@
  * `@halla/shared/utils/xlsx`.
  */
 import * as XLSX from "xlsx";
-import * as FileSystem from "expo-file-system";
+// SDK 54 (expo-file-system 19) moved the classic file API to `/legacy`; the
+// bare module no longer exports `cacheDirectory` / `writeAsStringAsync` /
+// `readAsStringAsync` / `EncodingType`. Without `/legacy`, template export and
+// XLSX import both threw on `EncodingType.Base64`.
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import {

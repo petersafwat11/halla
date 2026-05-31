@@ -1,8 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Linking } from "react-native";
 import { ENDPOINTS } from "../../config/api";
 import { apiFetch } from "../../services/http";
+import { buildMoyasarCallbackUrl, runThreeDsSession } from "../../utils/paymentBrowser";
 import { addonsKeys } from "../addons/keys";
 import { eventsKeys } from "../events/keys";
 import { subscriptionsKeys } from "../subscriptions/keys";
@@ -58,12 +58,17 @@ export const useCheckout = () => {
     mutationFn: async ({ planCode, addons = [], discountCode, source, callbackUrl }) => {
       if (!planCode) throw new Error("planCode is required");
       const idempotencyKey = newIdempotencyKey();
+      // Hand Moyasar our public bounce endpoint (http[s], as Moyasar
+      // requires) instead of the web default that strands mobile users on
+      // the website login. It 302s back to the app's deep link. Callers may
+      // still override with an explicit callbackUrl.
+      const moyasarCallback = callbackUrl || buildMoyasarCallbackUrl();
       const body = {
         planCode,
         addons,
         ...(discountCode ? { discountCode } : {}),
         ...(source ? { source } : {}),
-        ...(callbackUrl ? { callbackUrl } : {}),
+        callbackUrl: moyasarCallback,
       };
       const response = await apiFetch(ENDPOINTS.PAYMENTS.CHECKOUT, {
         method: "POST",
@@ -84,8 +89,17 @@ export const useCheckout = () => {
           addons,
           discountCode: discountCode || null,
         });
-        await Linking.openURL(inner.redirectUrl);
-        return { requiresAction: true, paymentId: inner.paymentId };
+        // Run 3DS in an in-app browser sheet that auto-closes on return.
+        const { moyasarId, browserType } = await runThreeDsSession(
+          inner.redirectUrl,
+          inner.paymentId
+        );
+        return {
+          requiresAction: true,
+          paymentId: inner.paymentId,
+          moyasarId,
+          browserType,
+        };
       }
       return inner;
     },
