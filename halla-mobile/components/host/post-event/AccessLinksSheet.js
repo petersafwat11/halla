@@ -35,7 +35,7 @@ const AccessLinksSheet = ({
 
   const { data: tplResponse, isLoading: loadingTemplates } =
     useHostTaqnyatTemplates(
-      { category: "post_event" },
+      { type: "post_event" },
       { enabled: visible }
     );
   const templates = tplResponse?.data || [];

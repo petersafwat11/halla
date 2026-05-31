@@ -24,7 +24,7 @@ const MessagingTemplatePicker = ({
   toast,
 }) => {
   const { data, isLoading } = useHostTaqnyatTemplates({
-    category: "post_event",
+    type: "post_event",
   });
   const updateTemplate = useUpdatePostEventMessagingTemplate();
 
