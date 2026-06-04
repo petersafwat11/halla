@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useAdminWhitelabels } from "@/hooks/admin";
 import { useTranslation } from "react-i18next";
 import { FiEye, FiCheckCircle, FiSlash, FiCreditCard, FiTrash2 } from "react-icons/fi";
@@ -13,6 +14,8 @@ import styles from "./WhitelabelsTable.module.css";
 
 export default function WhitelabelsTable() {
   const { t, i18n } = useTranslation("adminWhitelabels");
+  const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
   const [selectedWhitelabel, setSelectedWhitelabel] = useState(null);
 
@@ -53,7 +56,7 @@ export default function WhitelabelsTable() {
         type: "dropdown",
         icon: <FiEye size={16} />,
         text: t("actions.viewDetails"),
-        onClick: (r) => router.push(`/admin-dash/whitelabels/${r.id}`),
+        onClick: (r) => router.push(`/${lang}/admin-dash/whitelabels/${r.id}`),
       },
     ];
 

@@ -7,7 +7,7 @@ import {
   useAdminEventsExport,
 } from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { FiEye, FiCheckCircle, FiSlash, FiTrash2 } from "react-icons/fi";
@@ -18,6 +18,8 @@ import styles from "./EventsTable.module.css";
 export default function EventsTable() {
   const { t } = useTranslation("adminEvents");
   const router = useRouter();
+  const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   const searchParams = useSearchParams();
   const { canCreate, canUpdate, canDelete } = usePageAccess("events");
 
@@ -90,7 +92,7 @@ export default function EventsTable() {
         type: "dropdown",
         icon: <FiEye size={16} />,
         text: t("events.viewDetails", "عرض التفاصيل"),
-        onClick: (r) => router.push(`/admin-dash/events/${r.id}`),
+        onClick: (r) => router.push(`/${lang}/admin-dash/events/${r.id}`),
       },
     ];
 
@@ -162,7 +164,7 @@ export default function EventsTable() {
       return (
         <span
           style={{ color: "#3498DB", cursor: "pointer", textDecoration: "underline" }}
-          onClick={() => router.push(`/admin-dash/events/${row.id}`)}
+          onClick={() => router.push(`/${lang}/admin-dash/events/${row.id}`)}
         >
           {value}
         </span>

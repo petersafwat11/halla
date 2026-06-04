@@ -1,11 +1,13 @@
 "use client";
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import styles from "./formBottom.module.css";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 const FormBottom = ({ text, clickHandler }) => {
   const router = useRouter();
+  const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   const { t } = useTranslation("login");
 
   return (
@@ -23,7 +25,7 @@ const FormBottom = ({ text, clickHandler }) => {
       <button className={styles.sign_up_button}>
         {t("loginForm.formBottom.noAccount")}{" "}
         <span
-          onClick={() => router.push("/signup")}
+          onClick={() => router.push(`/${lang}/signup`)}
           className={styles.make_acc}
         >
           {t("loginForm.formBottom.createAccount")}

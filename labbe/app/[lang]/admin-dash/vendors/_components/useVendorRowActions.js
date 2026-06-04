@@ -1,16 +1,19 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { FiEye, FiThumbsUp, FiStar, FiCheckCircle, FiSlash, FiTrash2, FiPauseCircle } from "react-icons/fi";
 
 export function useRowActions({ canUpdate, canDelete, t, router, handleStatusChange, handleRatingClick, handleDelete }) {
+  const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   return useCallback((row) => {
     const actions = [
       {
         type: "dropdown",
         icon: <FiEye size={16} />,
         text: t("table.actions.viewDetails"),
-        onClick: (r) => router.push(`/admin-dash/vendors/${r.id}`),
+        onClick: (r) => router.push(`/${lang}/admin-dash/vendors/${r.id}`),
       },
     ];
 
@@ -49,7 +52,7 @@ export function useRowActions({ canUpdate, canDelete, t, router, handleStatusCha
     }
 
     return actions;
-  }, [canUpdate, canDelete, t, router, handleStatusChange, handleRatingClick, handleDelete]);
+  }, [canUpdate, canDelete, t, router, lang, handleStatusChange, handleRatingClick, handleDelete]);
 }
 
 export function useBulkActions({ canUpdate, canDelete, t, handleBulkApprove, handleBulkSuspend, handleBulkDelete }) {

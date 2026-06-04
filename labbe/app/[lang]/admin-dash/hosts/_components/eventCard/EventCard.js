@@ -2,11 +2,13 @@
 import React from "react";
 import styles from "./eventCard.module.css";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
 const EventCard = ({ data }) => {
   const router = useRouter();
+  const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   const { t } = useTranslation("adminHosts");
 
   const getStatusText = (status) => {
@@ -96,7 +98,7 @@ const EventCard = ({ data }) => {
       <button
         className={styles.seeStats}
         onClick={() => {
-          router.push(`/admin-dash/events/${data?.id || data?._id}`);
+          router.push(`/${lang}/admin-dash/events/${data?.id || data?._id}`);
         }}
       >
         <Image

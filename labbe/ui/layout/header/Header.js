@@ -67,7 +67,7 @@ function Header({ dashboardType: propDashboardType }) {
   const handleLogout = async () => {
     setIsOpen(false);
     await useAuthStore.getState().logout();
-    router.replace("/");
+    router.replace(`/${lang}`);
   };
 
   // Get role label based on dashboard type
@@ -127,7 +127,7 @@ function Header({ dashboardType: propDashboardType }) {
 
           {isDropdownOpen && (
             <div className={styles.dropdown}>
-              <Link className={styles.menuLink} href={`/${basePath}/settings`}>
+              <Link className={styles.menuLink} href={`/${lang}/${basePath}/settings`}>
                 <img
                   src="/svg/events/setting.svg"
                   alt="settings"

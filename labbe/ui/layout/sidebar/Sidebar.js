@@ -42,6 +42,7 @@ function Sidebar({ className, dashboardType: propDashboardType }) {
   const navItems = getNavItems(dashboardType, userRole, userPermissions);
 
   // Get clean path without language prefix for active state checking
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   const cleanPath = pathname
     .split("/")
     .slice(2, pathname.split("/").length)
@@ -50,7 +51,7 @@ function Sidebar({ className, dashboardType: propDashboardType }) {
   const handleLogout = async () => {
     setIsOpen(false);
     await useAuthStore.getState().logout();
-    router.replace("/");
+    router.replace(`/${lang}`);
   };
 
   // Get translation based on dashboard type
@@ -99,7 +100,7 @@ function Sidebar({ className, dashboardType: propDashboardType }) {
                     className={`${styles.menuLink} ${
                       isActive ? styles.active : ""
                     }`}
-                    href={item.path}
+                    href={`/${lang}${item.path}`}
                     onClick={() => setIsOpen(false)}
                   >
                     <IconComponent className={styles.icon} />

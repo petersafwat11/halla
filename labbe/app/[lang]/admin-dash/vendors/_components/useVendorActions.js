@@ -1,18 +1,21 @@
 "use client";
 
 import { useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FiEye, FiThumbsUp, FiStar, FiCheckCircle, FiSlash, FiTrash2, FiPauseCircle } from "react-icons/fi";
 import styles from "./VendorsTable.module.css";
 
 export default function useVendorActions({ canUpdate, canDelete, t, router, handleStatusChange, handleRatingClick, handleDelete }) {
+  const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   const getRowActions = useCallback((row) => {
     const actions = [
       {
         type: "dropdown",
         icon: <FiEye size={16} />,
         text: t("table.actions.viewDetails"),
-        onClick: (r) => router.push(`/admin-dash/vendors/${r.id}`),
+        onClick: (r) => router.push(`/${lang}/admin-dash/vendors/${r.id}`),
       },
     ];
 
@@ -51,7 +54,7 @@ export default function useVendorActions({ canUpdate, canDelete, t, router, hand
     }
 
     return actions;
-  }, [canUpdate, canDelete, t, router, handleStatusChange, handleRatingClick, handleDelete]);
+  }, [canUpdate, canDelete, t, router, lang, handleStatusChange, handleRatingClick, handleDelete]);
 
   const bulkActions = [];
   if (canUpdate) {

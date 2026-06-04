@@ -13,7 +13,7 @@ const Header = () => {
   const isArabic = i18n.language === "ar";
 
   const handleCreateEvent = () => {
-    router.push("/host/create-event");
+    router.push(`/${lang}/host/create-event`);
   };
 
   return (

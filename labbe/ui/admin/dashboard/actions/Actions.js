@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import styles from "./actions.module.css";
 import Image from "next/image";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
@@ -11,6 +11,8 @@ import AddModeratorPopup from "@/app/[lang]/admin-dash/moderators/_components/ad
 const Actions = () => {
   const { t } = useTranslation("adminDashboard");
   const router = useRouter();
+  const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   const [showTicketPopup, setShowTicketPopup] = useState(false);
   const [showModeratorPopup, setShowModeratorPopup] = useState(false);
 
@@ -19,7 +21,7 @@ const Actions = () => {
   const handleModeratorSuccess = () => {};
 
   const handleCreateEvent = () => {
-    router.push("/admin-dash/create-event");
+    router.push(`/${lang}/admin-dash/create-event`);
   };
 
   return (

@@ -86,7 +86,7 @@ const TicketRatingContent = () => {
   }, [rateMutation, ticketId, t]);
 
   const handleReload = useCallback(() => refetch(), [refetch]);
-  const handleGoHome = useCallback(() => router.push("/"), [router]);
+  const handleGoHome = useCallback(() => router.push(`/${window.location.pathname.split("/")[1] || "ar"}`), [router]);
 
   // Loading state
   if (isLoading) {

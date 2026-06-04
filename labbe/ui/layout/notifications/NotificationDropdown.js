@@ -68,14 +68,21 @@ const NotificationDropdown = ({ onClose, basePath = "" }) => {
         { en: "hostEventEn", ar: "hostEventAr" },
       ];
 
+      let matched = false;
       for (const mapping of urlMappings) {
         if (currentLang === "en" && metadata[mapping.en]) {
           targetUrl = metadata[mapping.en];
+          matched = true;
           break;
         } else if (currentLang === "ar" && metadata[mapping.ar]) {
           targetUrl = metadata[mapping.ar];
+          matched = true;
           break;
         }
+      }
+
+      if (!matched && targetUrl && targetUrl.startsWith("/") && !targetUrl.match(/^\/(ar|en)(\/|$)/)) {
+        targetUrl = `/${currentLang}${targetUrl}`;
       }
 
       router.push(targetUrl);

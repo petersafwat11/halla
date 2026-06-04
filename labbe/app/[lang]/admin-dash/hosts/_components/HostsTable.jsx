@@ -6,7 +6,7 @@ import {
   useAdminHostsExport,
 } from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { toastUtils } from "@/utils/toastUtils";
@@ -21,6 +21,8 @@ import styles from "./HostsTable.module.css";
 export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPopup: externalSetShowAdd }) {
   const { t } = useTranslation("adminHosts");
   const router = useRouter();
+  const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   const searchParams = useSearchParams();
   const { canCreate, canUpdate, canDelete } = usePageAccess("hosts");
   const [internalShowAdd, setInternalShowAdd] = useState(false);
@@ -93,7 +95,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
         type: "dropdown",
         icon: <FiEye size={16} />,
         text: t("hosts.viewDetails", "عرض التفاصيل"),
-        onClick: (r) => router.push(`/admin-dash/hosts/${r.id}`),
+        onClick: (r) => router.push(`/${lang}/admin-dash/hosts/${r.id}`),
       },
     ];
 
