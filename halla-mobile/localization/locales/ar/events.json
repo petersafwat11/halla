@@ -230,6 +230,24 @@
       "cancelFailed": "تعذّر إلغاء التذكير"
     }
   },
+  "failureBanner": {
+    "retrying": {
+      "title": "نُعيد محاولة إطلاق مناسبتك",
+      "attemptCount": "محاولة {{attempt}} من {{max}}. سنحاول مجدداً تلقائياً.",
+      "nextAttempt": "المحاولة التالية خلال {{countdown}}"
+    },
+    "failed": {
+      "title": "نعتذر — تعذّر إطلاق مناسبتك",
+      "message": "لم نتمكن من إرسال الدعوات لمناسبتك. سنبذل كل جهد لمساعدتك على إطلاقها.",
+      "reason": "سبب الفشل: "
+    },
+    "retryButton": {
+      "retrying": "جارٍ إعادة المحاولة...",
+      "idle": "إعادة محاولة الإطلاق"
+    },
+    "retryNotAvailable": "إعادة المحاولة غير متاحة في هذه الشاشة",
+    "retryUnavailableTitle": "غير متاح"
+  },
   "guestTableExtras": {
     "autoReminder": "تذكير تلقائي",
     "extraReminder": "تذكير إضافي",

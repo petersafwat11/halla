@@ -154,9 +154,18 @@
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.barOpen1 { transform: translateY(7.5px) rotate(45deg); }
-.barOpen2 { opacity: 0; transform: scaleX(0); }
-.barOpen3 { transform: translateY(-7.5px) rotate(-45deg); }
+.barOpen1 {
+  transform: translateY(7.5px) rotate(45deg);
+}
+
+.barOpen2 {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.barOpen3 {
+  transform: translateY(-7.5px) rotate(-45deg);
+}
 
 /* ── Mobile right (lang toggle + hamburger) — hidden on desktop ── */
 .mobileRight {
@@ -173,15 +182,28 @@
 
 /* ── 1200px ── */
 @media (max-width: 1200px) {
-  .container { padding: 2rem 3.2rem; }
-  .menuItems { gap: 2.6rem; }
+  .container {
+    padding: 2rem 3.2rem;
+  }
+
+  .menuItems {
+    gap: 2.6rem;
+  }
 }
 
 /* ── 1024px ── */
 @media (max-width: 1024px) {
-  .container { padding: 2rem 2.4rem; }
-  .menuItems { gap: 1.8rem; }
-  .menuItems li a { font-size: 1.4rem; }
+  .container {
+    padding: 2rem 2.4rem;
+  }
+
+  .menuItems {
+    gap: 1.8rem;
+  }
+
+  .menuItems li a {
+    font-size: 1.4rem;
+  }
 }
 
 /* ── 768px — switch to hamburger ── */
@@ -191,14 +213,24 @@
     justify-content: space-between;
   }
 
-  .logoImg { width: 45px; height: 45px; }
+  .logoImg {
+    width: 45px;
+    height: 45px;
+  }
 
   /* Hide desktop nav and buttons */
-  .nav { display: none; }
-  .buttonsSection { display: none; }
+  .nav {
+    display: none;
+  }
+
+  .buttonsSection {
+    display: none;
+  }
 
   /* Show mobile right (lang + hamburger) */
-  .mobileRight { display: flex; }
+  .mobileRight {
+    display: flex;
+  }
 
   /* Mobile dropdown */
   .mobileMenu {
@@ -264,13 +296,18 @@
     display: flex;
   }
 
-  .mobileBtnLink > * {
+  .mobileBtnLink>* {
     flex: 1;
   }
 }
 
 /* ── 480px ── */
 @media (max-width: 480px) {
-  .container { padding: 0.7rem 1.6rem; }
-  .mobileMenu { padding: 1.2rem 1.6rem 1.6rem; }
+  .container {
+    padding: 0.7rem 1.6rem;
+  }
+
+  .mobileMenu {
+    padding: 1.2rem 1.6rem 1.6rem;
+  }
 }

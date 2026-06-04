@@ -8,12 +8,12 @@
   position: relative;
   background: var(--color-natural-50);
   border-radius: 2.4rem;
-  padding: 2rem;
-  border: none;
+  padding: 3.5rem;
+  border: 2px solid var(--border-brand);
   box-shadow: 0 2px 16px color-mix(in srgb, var(--color-secondary-600) 8%, transparent);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
   transition: all 250ms ease;
 }
 
@@ -29,7 +29,7 @@
 .popularBadge {
   position: absolute;
   top: -13px;
-  inset-inline-start: 50%;
+  left: 50%;
   transform: translateX(-50%);
   background: var(--color-primary-300);
   color: var(--color-natural-50);
@@ -45,9 +45,7 @@
 .cardTop {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--color-primary-100);
+  gap: 1.5rem;
 }
 
 .cardTopRow {
@@ -93,7 +91,7 @@
 /* ── Invite selector ── */
 .guestTrack {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.55rem;
 }
 
@@ -180,7 +178,13 @@
 
 @media (max-width: 640px) {
   .guestTrack {
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.4rem;
+  }
+
+  .card {
+    padding: 2.5rem;
+    gap: 1.5rem;
   }
 
   .guestBtn {

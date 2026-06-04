@@ -2,7 +2,7 @@
  * INITIAL_TEMPLATE_NAMES — Phase 4c reference seed list (per v4.1 §B-17).
  *
  * The set of canonical visual-template names that ship with a fresh
- * Halla deployment. The seed script (`scripts/seedInitialTemplates.js`)
+ * Halaa deployment. The seed script (`scripts/seedInitialTemplates.js`)
  * upserts a Template record per entry; admins replace the placeholder
  * artwork via the editor afterwards.
  *

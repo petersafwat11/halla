@@ -12,10 +12,9 @@ import Button from "@/ui/commen/button/Button";
  * Displays when user has reached their event creation limit
  */
 function EventLimitReached({ subscription, onUpgrade }) {
-  const { t, i18n } = useTranslation("home-events");
+  const { t } = useTranslation("home-events");
   const router = useRouter();
   const { currentLocale } = UseLanguageChange();
-  const isArabic = i18n.language === "ar" || currentLocale === "ar";
 
   const handleUpgrade = () => {
     if (onUpgrade) {
@@ -62,23 +61,19 @@ function EventLimitReached({ subscription, onUpgrade }) {
 
         {/* Title */}
         <h2 className={styles.title}>
-          {isArabic
-            ? "تم الوصول للحد الأقصى من المناسبات"
-            : "Event Limit Reached"}
+          {t("subscription.eventLimitReached")}
         </h2>
 
         {/* Description */}
         <p className={styles.description}>
-          {isArabic
-            ? `لقد استخدمت جميع المناسبات المتاحة في باقتك (${eventsUsed}/${eventsLimit}). قم بترقية باقتك للاستمتاع بمزايا أكثر وإنشاء مناسبات إضافية.`
-            : `You have used all available events in your plan (${eventsUsed}/${eventsLimit}). Upgrade your plan to enjoy more features and create additional events.`}
+          {t("subscription.eventLimitDescription", { eventsUsed, eventsLimit })}
         </p>
 
         {/* Usage Stats */}
         <div className={styles.usageCard}>
           <div className={styles.usageHeader}>
             <span className={styles.usageLabel}>
-              {isArabic ? "استخدام المناسبات" : "Events Usage"}
+              {t("subscription.eventsUsage")}
             </span>
             <span className={styles.usageValue}>
               {eventsUsed}/{eventsLimit}
@@ -89,21 +84,15 @@ function EventLimitReached({ subscription, onUpgrade }) {
           </div>
           <div className={styles.planBadge}>
             <span className={styles.planLabel}>
-              {isArabic ? "الباقة الحالية:" : "Current Plan:"}
+              {t("subscription.currentPlan")}
             </span>
             <span className={styles.planName}>
               {planType === "lite"
-                ? isArabic
-                  ? "لايت"
-                  : "Lite"
+                ? t("subscription.planLite")
                 : planType === "pro"
-                ? isArabic
-                  ? "برو"
-                  : "Pro"
+                ? t("subscription.planPro")
                 : planType === "elite"
-                ? isArabic
-                  ? "إيليت"
-                  : "Elite"
+                ? t("subscription.planElite")
                 : planType}
             </span>
           </div>
@@ -113,13 +102,13 @@ function EventLimitReached({ subscription, onUpgrade }) {
         <div className={styles.actions}>
           <Button
             variant="primary"
-            title={isArabic ? "ترقية الباقة" : "Upgrade Plan"}
+            title={t("subscription.upgradePlan")}
             onClick={handleUpgrade}
             className={styles.upgradeButton}
           />
           <Button
             variant="secondary"
-            title={isArabic ? "العودة للرئيسية" : "Back to Home"}
+            title={t("subscription.backToHome")}
             onClick={handleBackToHome}
             className={styles.backButton}
           />
@@ -128,22 +117,20 @@ function EventLimitReached({ subscription, onUpgrade }) {
         {/* Features hint */}
         <div className={styles.featuresHint}>
           <h4 className={styles.featuresTitle}>
-            {isArabic ? "مميزات الترقية:" : "Upgrade Benefits:"}
+            {t("subscription.upgradeFeatures")}
           </h4>
           <ul className={styles.featuresList}>
             <li>
-              {isArabic ? "مناسبات أكثر شهرياً" : "More events per month"}
+              {t("subscription.moreEventsPerMonth")}
             </li>
             <li>
-              {isArabic ? "ضيوف أكثر لكل مناسبة" : "More guests per event"}
+              {t("subscription.moreGuestsPerEvent")}
             </li>
             <li>
-              {isArabic
-                ? "رسائل متابعة إضافية"
-                : "Additional follow-up messages"}
+              {t("subscription.additionalFollowUp")}
             </li>
             <li>
-              {isArabic ? "تخصيص العلامة التجارية" : "Custom branding options"}
+              {t("subscription.customBranding")}
             </li>
           </ul>
         </div>

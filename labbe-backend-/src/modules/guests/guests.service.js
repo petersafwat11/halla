@@ -136,7 +136,7 @@ class GuestsService {
     }
     return {
       logoUrl: `${url.replace(/\/$/, '')}/logo.png`,
-      brandName: 'Halla',
+      brandName: 'Halaa',
       website,
     };
   }

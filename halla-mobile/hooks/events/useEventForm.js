@@ -257,6 +257,7 @@ export const transformFormDataToPayload = (formData) => ({
   guestList: (formData.guestList || []).map((guest) => ({
     name: guest.name,
     phone: guest.phone || guest.mobile,
+    email: guest.email || "",
   })),
   staffList: (formData.staffList || []).map((moderator) => ({
     name: moderator.name,
@@ -309,7 +310,7 @@ export const getDefaultFormValues = () => ({
   // Step 1 — Event Details
   eventType: "",
   eventName: "",
-  eventDate: null,
+  eventDate: "",
   eventTime: "",
   address: {
     address: "",
@@ -335,7 +336,7 @@ export const getDefaultFormValues = () => ({
 
   // Launch settings
   sendSchedule: "now",
-  scheduleDate: null,
+  scheduleDate: "",
   scheduleTime: "",
 
   // Step 5 — Review (create only)

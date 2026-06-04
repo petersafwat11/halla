@@ -601,7 +601,7 @@ const eventCompletedEmail = (data, lang = "ar") => {
       ${
         isAr
           ? "شكراً لاستخدامك هلا! نتطلع لخدمتك في فعالياتك القادمة."
-          : "Thank you for using Halla! We look forward to serving you in your future events."
+          : "Thank you for using Halaa! We look forward to serving you in your future events."
       }
     </p>
   `;
@@ -697,7 +697,7 @@ const eventLaunchFailedEmail = (data, lang = "ar") => {
  */
 const genericNotificationEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
-  const title = data.title || (isAr ? "إشعار من هلا" : "Halla notification");
+  const title = data.title || (isAr ? "إشعار من هلا" : "Halaa notification");
   const message = data.message || "";
   const subject = title;
 

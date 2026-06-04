@@ -113,7 +113,7 @@
   },
   "subscription": {
     "eventLimitReached": "تم الوصول للحد الأقصى من المناسبات",
-    "eventLimitDescription": "لقد استخدمت جميع المناسبات المتاحة في باقتك. قم بترقية باقتك للاستمتاع بمزايا أكثر وإنشاء مناسبات إضافية.",
+    "eventLimitDescription": "لقد استخدمت جميع المناسبات المتاحة في باقتك ({{eventsUsed}}/{{eventsLimit}}). قم بترقية باقتك للاستمتاع بمزايا أكثر وإنشاء مناسبات إضافية.",
     "eventsUsage": "استخدام المناسبات",
     "currentPlan": "الباقة الحالية:",
     "upgradePlan": "ترقية الباقة",
@@ -125,7 +125,7 @@
     "customBranding": "تخصيص العلامة التجارية",
     "guestQuota": "حصة الضيوف",
     "unlimitedGuests": "ضيوف غير محدودين",
-    "guestsRemaining": "ضيف متبقي",
+    "guestsRemaining": "{{count}} ضيف متبقي",
     "overLimitBy": "تجاوزت الحد بـ",
     "guests": "ضيف",
     "planLite": "لايت",
@@ -149,6 +149,8 @@
   "templates": {
     "title": "قوالب المناسبات",
     "subtitle": "اختر القالب المناسب الذى تراه يعبر عن المناسبة",
+    "all": "كل الفئات",
+    "empty": "لا توجد قوالب متاحة بعد.",
     "wedding": "حفلات زفاف",
     "graduation": "حفلات تخرج",
     "birthday": "حفلات عيد ميلاد",

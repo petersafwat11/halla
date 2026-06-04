@@ -15,11 +15,11 @@
     "titleBlack1": "Your Smart Platform",
     "titleBrand": " for Invitations & Event Management",
     "titleBlack2": " Made Easy!",
-    "description": "Create premium digital invitations, send them via WhatsApp, and track replies and attendance in real time — with Halla, your events are simpler and smarter.",
+    "description": "Create premium digital invitations, send them via WhatsApp, and track replies and attendance in real time — with Halaa, your events are simpler and smarter.",
     "appText": "Or download the app"
   },
   "features": {
-    "heading": "Halla Features",
+    "heading": "Halaa Features",
     "subheading": "Enjoy advanced digital solutions for designing invitations, tracking attendance, performance analytics, and everything you need to manage your events easier than ever.",
     "items": [
       { "title": "Event Creation", "description": "Set the event type, add the location, timing, and guest details with ease." },
@@ -55,16 +55,16 @@
   "testimonials": {
     "eyebrow": "Testimonials",
     "title": "What Event Organizers Say",
-    "sub": "Thousands of organizers trust Halla for their most important events.",
+    "sub": "Thousands of organizers trust Halaa for their most important events.",
     "prevBtn": "Previous",
     "nextBtn": "Next",
     "items": [
-      { "name": "Noura Al-Ghamdi", "role": "Wedding Planner", "text": "Halla completely changed how I work. WhatsApp invites with one click and real-time attendance tracking. 100% recommended." },
-      { "name": "Fahad Al-Otaibi", "role": "Corporate Events Manager", "text": "We used Halla for a 500-person conference. QR check-in was incredibly smooth. Saved hours of manual work." },
-      { "name": "Mona Al-Salem", "role": "Wedding Designer", "text": "The invitation templates are stunning and the system is very easy for clients. Halla is now a core part of my services." },
+      { "name": "Noura Al-Ghamdi", "role": "Wedding Planner", "text": "Halaa completely changed how I work. WhatsApp invites with one click and real-time attendance tracking. 100% recommended." },
+      { "name": "Fahad Al-Otaibi", "role": "Corporate Events Manager", "text": "We used Halaa for a 500-person conference. QR check-in was incredibly smooth. Saved hours of manual work." },
+      { "name": "Mona Al-Salem", "role": "Wedding Designer", "text": "The invitation templates are stunning and the system is very easy for clients. Halaa is now a core part of my services." },
       { "name": "Khalid Al-Dosari", "role": "Venue Owner", "text": "Managing multiple events simultaneously became easy. The dashboard is clear and comprehensive." },
       { "name": "Haifa Al-Anazi", "role": "Event Organizer", "text": "Excellent support and the platform keeps improving. Best investment for my business this year." },
-      { "name": "Saad Al-Harbi", "role": "Marketing Manager", "text": "We tried several platforms and came back to Halla. The experience design is completely different from competitors." }
+      { "name": "Saad Al-Harbi", "role": "Marketing Manager", "text": "We tried several platforms and came back to Halaa. The experience design is completely different from competitors." }
     ]
   },
   "faq": {
@@ -73,22 +73,21 @@
     "sub": "Didn't find your answer? Contact us on WhatsApp.",
     "items": [
       { "q": "How do I create a new invitation?", "a": "Create your event in four easy steps: First, add your event details — name, venue, date, and time, with a location pin on the map. Second, add guests one by one or import your full list from a CSV file in one click. Third, choose an invitation image from our library or upload your own and add any text you like. Fourth, select a WhatsApp message template, review all your event details, send yourself a test message to see what your guests will receive, then schedule the send time — we'll deliver all invitations at your chosen moment with an automatic reminder 24 hours before the event." },
-      { "q": "Can I add my own custom design?", "a": "Absolutely. You can upload your own designs or choose from our premium template library and customize them with your preferred colors and text, or request professional design services through the 'Halla Marketplace' by connecting directly with one of our talented designers." },
+      { "q": "Can I add my own custom design?", "a": "Absolutely. You can upload your own designs or choose from our premium template library and customize them with your preferred colors and text, or request professional design services through the 'Halaa Marketplace' by connecting directly with one of our talented designers." },
       { "q": "Can I see attendance and RSVP details?", "a": "Yes, your dashboard shows in real time who accepted, who declined, and who hasn't responded yet, with comprehensive exportable detailed reports." },
-      { "q": "Can I send reminders to guests?", "a": "Yes, Halla automatically sends a WhatsApp reminder to every guest 24 hours before the event — no action needed from you." },
-      { "q": "What about guests who don't use WhatsApp?", "a": "Halla sends invitations via WhatsApp by default. If a WhatsApp message doesn't reach a guest for any reason, the system automatically falls back to SMS to ensure the invitation is delivered." },
-      { "q": "Can I invite guests from outside Saudi Arabia?", "a": "Currently, the Halla platform and app support sending invitations to mobile numbers within Saudi Arabia only." },
+      { "q": "Can I send reminders to guests?", "a": "Yes, Halaa automatically sends a WhatsApp reminder to every guest 24 hours before the event — no action needed from you." },
+      { "q": "What about guests who don't use WhatsApp?", "a": "Halaa sends invitations via WhatsApp by default. If a WhatsApp message doesn't reach a guest for any reason, the system automatically falls back to SMS to ensure the invitation is delivered." },
+      { "q": "Can I invite guests from outside Saudi Arabia?", "a": "Currently, the Halaa platform and app support sending invitations to mobile numbers within Saudi Arabia only." },
       { "q": "Can I assign more than one additional host?", "a": "Yes, you can add one or more co-hosts to your event, allowing them to send invitations and track guest responses on your behalf." },
       { "q": "What is the compensation credit system?", "a": "Compensation credits are extra invite slots granted on top of your plan's guest count. When a guest declines, you can use these credits to invite someone else in their place and ensure your event is fully attended." },
-      { "q": "Is my data safe with Halla?", "a": "Yes, we use the highest security and encryption standards to protect your data and your guests' data, in accordance with international best practices and data protection regulations." },
-      { "q": "Can I try the Halla platform for free?", "a": "Yes, you can create a new account for free and try the platform with a limited number of trial invitations." },
+      { "q": "Is my data safe with Halaa?", "a": "Yes, we use the highest security and encryption standards to protect your data and your guests' data, in accordance with international best practices and data protection regulations." },
+      { "q": "Can I try the Halaa platform for free?", "a": "Yes, you can create a new account for free and try the platform with a limited number of trial invitations." },
       { "q": "Can I cancel my subscription at any time?", "a": "Yes, you can cancel anytime with no additional fees. Your subscription continues until the end of the paid period and the prepaid plan amount is non-refundable." }
     ]
   },
   "pricing": {
     "eyebrow": "Pricing",
     "title": "Choose the Right Plan for You",
-    "sub": "For individuals and businesses — per-event or monthly subscription plans.",
     "tabHost": "Individuals",
     "tabHostSub": "",
     "tabHostIcon": "",
@@ -146,9 +145,9 @@
   },
   "vendorCTA": {
     "title": "Join the",
-    "titleHighlight": "Halla",
+    "titleHighlight": "Halaa",
     "titleEnd": "Marketplace",
-    "description": "Join Halla Marketplace and grow your business by reaching new customers — showcase your services and manage your orders easily, for free, all from one place!",
+    "description": "Join Halaa Marketplace and grow your business by reaching new customers — showcase your services and manage your orders easily, for free, all from one place!",
     "feature1": "Easy Booking Management",
     "feature2": "Grow Your Revenue",
     "feature3": "Connect with Event Planners",
@@ -157,7 +156,7 @@
     "cta": "Register as a Merchant"
   },
   "vendorSearch": {
-    "title": "Discover Halla Market",
+    "title": "Discover Halaa Market",
     "description": "Connect with our best specialized and certified stores and get premium services for your next event.",
     "searchPlaceholder": "Search for a vendor...",
     "searchBtn": "Search",
@@ -198,18 +197,22 @@
     "contactTitle": "Contact Info",
     "helpTitle": "Important Pages",
     "downloadTitle": "Download App",
-    "description": "Halla is a smart event management platform — create your events, send personalized digital invitations via WhatsApp, and track attendance in real time.",
+    "description": "Halaa is a smart event management platform — create your events, send personalized digital invitations via WhatsApp, and track attendance in real time.",
     "helpLinks": [
       { "name": "Terms & Conditions", "href": "/terms" },
       { "name": "Privacy Policy", "href": "/privacy" },
       { "name": "Cancellation & Refund", "href": "/refund" }
     ],
-    "copyright": "© 2026 Halla. All rights reserved."
+    "copyright": "© 2026 Halaa. All rights reserved."
   },
   "appDownload": {
-    "brand": "Halla — Events & Invitations",
-    "title": "Join Halla Now",
+    "brand": "Halaa — Events & Invitations",
+    "title": "Join Halaa Now",
     "description": "Your smart platform for managing invitations and events professionally.\nSend personalized WhatsApp invites, track attendance via QR, and manage your team — all from the app."
+  },
+  "carousel": {
+    "prev": "Previous",
+    "next": "Next"
   },
   "legal": {
     "backHome": "Back to Home",
@@ -235,16 +238,16 @@
     },
     "metadata": {
       "terms": {
-        "title": "Terms & Conditions – Halla",
-        "description": "Terms and conditions for using the Halla event management platform"
+        "title": "Terms & Conditions – Halaa",
+        "description": "Terms and conditions for using the Halaa event management platform"
       },
       "privacy": {
-        "title": "Privacy Policy – Halla",
-        "description": "Privacy policy for using the Halla event management platform"
+        "title": "Privacy Policy – Halaa",
+        "description": "Privacy policy for using the Halaa event management platform"
       },
       "refund": {
-        "title": "Cancellation & Refund Policy – Halla",
-        "description": "Cancellation, postponement, and refund policy for the Halla platform"
+        "title": "Cancellation & Refund Policy – Halaa",
+        "description": "Cancellation, postponement, and refund policy for the Halaa platform"
       }
     }
   }

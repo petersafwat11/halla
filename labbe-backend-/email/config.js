@@ -81,7 +81,7 @@ const createTransporter = () => {
  * @returns {string} Formatted sender address
  */
 const getDefaultSender = () => {
-  const senderName = process.env.EMAIL_SENDER_NAME || "Halla";
+  const senderName = process.env.EMAIL_SENDER_NAME || "Halaa";
   const senderEmail = process.env.EMAIL_FROM || process.env.EMAIL_USERNAME;
   return `${senderName} <${senderEmail}>`;
 };
@@ -99,7 +99,7 @@ const getConfig = () => ({
   baseUrl:
     process.env.FRONTEND_URL || process.env.BASE_URL || "https://labbe.sa",
   supportEmail: process.env.SUPPORT_EMAIL || "support@halaa.net",
-  companyName: process.env.COMPANY_NAME || "Halla",
+  companyName: process.env.COMPANY_NAME || "Halaa",
   companyNameAr: process.env.COMPANY_NAME_AR || "هلا",
 });
 

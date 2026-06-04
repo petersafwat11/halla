@@ -2,16 +2,13 @@
 import React from "react";
 import styles from "./GuestQuotaCounter.module.css";
 import { useTranslation } from "react-i18next";
-import UseLanguageChange from "@/hooks/UseLanguageChange";
 
 /**
  * GuestQuotaCounter Component
  * Shows guest usage against subscription limits
  */
 function GuestQuotaCounter({ currentGuests = 0, subscription }) {
-  const { i18n } = useTranslation("home-events");
-  const { currentLocale } = UseLanguageChange();
-  const isArabic = i18n.language === "ar" || currentLocale === "ar";
+  const { t } = useTranslation("home-events");
 
   // Normalized subscription shape from backend:
   // { guestLimit, isGuestUnlimited, isPoolPlan, invitePool, invitesRemaining }
@@ -53,9 +50,7 @@ function GuestQuotaCounter({ currentGuests = 0, subscription }) {
         <div className={styles.noSubscription}>
           <span className={styles.warningIcon}>⚠️</span>
           <span className={styles.warningText}>
-            {isArabic
-              ? "يرجى الاشتراك لإضافة ضيوف"
-              : "Please subscribe to add guests"}
+            {t("subscription.subscribeToAdd")}
           </span>
         </div>
       </div>
@@ -79,7 +74,7 @@ function GuestQuotaCounter({ currentGuests = 0, subscription }) {
             />
           </svg>
           <span className={styles.title}>
-            {isArabic ? "حصة الضيوف" : "Guest Quota"}
+            {t("subscription.guestQuota")}
           </span>
         </div>
         <div className={`${styles.counter} ${styles[statusColor]}`}>
@@ -110,20 +105,16 @@ function GuestQuotaCounter({ currentGuests = 0, subscription }) {
         {isUnlimited ? (
           <span className={styles.unlimited}>
             <span className={styles.checkIcon}>✓</span>
-            {isArabic ? "ضيوف غير محدودين" : "Unlimited guests"}
+            {t("subscription.unlimitedGuests")}
           </span>
         ) : isLimitReached ? (
           <span className={styles.limitReached}>
             <span className={styles.warningIcon}>⚠️</span>
-            {isArabic
-              ? "تم الوصول للحد الأقصى من الضيوف"
-              : "Guest limit reached"}
+            {t("subscription.guestLimitReached")}
           </span>
         ) : (
           <span className={styles.remaining}>
-            {isArabic
-              ? `متبقي ${remaining} ضيف`
-              : `${remaining} guests remaining`}
+            {t("subscription.guestsRemaining", { count: remaining })}
           </span>
         )}
       </div>

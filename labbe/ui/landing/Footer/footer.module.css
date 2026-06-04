@@ -606,21 +606,37 @@
 }
 
 @media (max-width: 1400px) {
-  .bottomBar { margin: 40px 70px 0; }
+  .bottomBar {
+    margin: 40px 70px 0;
+  }
 }
+
 @media (max-width: 1200px) {
-  .bottomBar { margin: 36px 48px 0; }
+  .bottomBar {
+    margin: 36px 48px 0;
+  }
 }
+
 @media (max-width: 900px) {
-  .bottomBar { margin: 32px 24px 0; }
+  .bottomBar {
+    margin: 32px 24px 0;
+  }
 }
+
 @media (max-width: 576px) {
   .bottomBar {
     margin: 24px 0 0;
     align-items: center;
     gap: 10px;
   }
-  .langLinks { gap: 8px; justify-content: center; }
-  .langLink, .copyright { font-size: 12px; }
-}
 
+  .langLinks {
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .langLink,
+  .copyright {
+    font-size: 12px;
+  }
+}

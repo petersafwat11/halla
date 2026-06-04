@@ -34,7 +34,7 @@ router.use(protect);
  *       - in: query
  *         name: category
  *         schema: { type: string }
- *         description: Halla-side category code (e.g. wedding, engagement).
+  *         description: Halaa-side category code (e.g. wedding, engagement).
  *     responses:
  *       200:
  *         description: Templates list

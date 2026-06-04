@@ -448,7 +448,7 @@ class AuthService {
     // Send welcome notification to new host (non-blocking)
     notificationService.sendToUser(host._id, {
       type: 'welcome',
-      title: 'Welcome to Halla!',
+      title: 'Welcome to Halaa!',
       titleAr: 'مرحباً بك في هلا!',
       message: 'Your account has been created successfully. Start creating your first event!',
       messageAr: 'تم إنشاء حسابك بنجاح. ابدأ في إنشاء أول مناسبة لك!',
@@ -904,7 +904,7 @@ class AuthService {
     // Send welcome notification to new user (non-blocking)
     notificationService.sendToUser(user._id, {
       type: 'welcome',
-      title: 'Welcome to Halla!',
+      title: 'Welcome to Halaa!',
       titleAr: 'مرحباً بك في هلا!',
       message: 'Your account has been created successfully. Start creating your first event!',
       messageAr: 'تم إنشاء حسابك بنجاح. ابدأ في إنشاء أول مناسبة لك!',

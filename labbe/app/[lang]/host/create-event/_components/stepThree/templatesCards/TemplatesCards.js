@@ -3,15 +3,12 @@ import React from "react";
 import Image from "next/image";
 import { FaCheckCircle } from "react-icons/fa";
 import styles from "./templatesCards.module.css";
-import UseLanguageChange from "@/hooks/UseLanguageChange";
 import useCarouselSnap from "@/ui/landing/_shared/useCarouselSnap";
 import CarouselDots from "@/ui/landing/_shared/CarouselDots";
 
 const GAP = 14;
 
 const TemplatesCards = ({ templates, selectedTemplate, onTemplateSelect }) => {
-  const { currentLocale } = UseLanguageChange();
-  const isAr = currentLocale === "ar";
   const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
     gap: GAP,
     totalItems: templates.length,
@@ -78,7 +75,6 @@ const TemplatesCards = ({ templates, selectedTemplate, onTemplateSelect }) => {
           onChange={scrollToIdx}
           onPrev={goPrev}
           onNext={goNext}
-          isAr={isAr}
           classes={{
             controls: styles.controls,
             ctrlBtn: styles.ctrlBtn,

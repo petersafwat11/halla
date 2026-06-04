@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
   const { t } = await initTranslations(lang, ["landing"]);
 
   return {
-    title: t("metadata.title", "هلا — منصة إدارة المناسبات الذكية | Halla"),
+    title: t("metadata.title", "هلا — منصة إدارة المناسبات الذكية | Halaa"),
     description: t(
       "metadata.description",
       "أنشئ مناسباتك، أرسل دعوات رقمية عبر واتساب، وتتبع الحضور في الوقت الفعلي."

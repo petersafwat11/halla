@@ -32,7 +32,7 @@ const vendorApplicationPendingEmail = (data, lang = "ar") => {
 
   const subject = isAr
     ? "تم استلام طلبك كمزود خدمة - هلا"
-    : "Vendor Application Received - Halla";
+    : "Vendor Application Received - Halaa";
 
   const content = `
     ${getGreeting(data.vendorName, lang)}
@@ -46,7 +46,7 @@ const vendorApplicationPendingEmail = (data, lang = "ar") => {
     <p>${
       isAr
         ? "شكراً لتقديم طلبك كمزود خدمة في منصة هلا. تم استلام طلبك بنجاح وهو الآن قيد المراجعة من قبل فريقنا."
-        : "Thank you for submitting your vendor application to Halla. Your application has been received and is now under review by our team."
+        : "Thank you for submitting your vendor application to Halaa. Your application has been received and is now under review by our team."
     }
     </p>
     
@@ -103,7 +103,7 @@ const vendorApprovalEmail = (data, lang = "ar") => {
 
   const subject = isAr
     ? "تهانينا! تمت الموافقة على حسابك - هلا"
-    : "Congratulations! Your Account is Approved - Halla";
+    : "Congratulations! Your Account is Approved - Halaa";
 
   const content = `
     ${getGreeting(data.vendorName, lang)}
@@ -182,7 +182,7 @@ const vendorRejectionEmail = (data, lang = "ar") => {
 
   const subject = isAr
     ? "تحديث حالة طلبك - هلا"
-    : "Application Status Update - Halla";
+    : "Application Status Update - Halaa";
 
   const content = `
     ${getGreeting(data.vendorName, lang)}
@@ -190,7 +190,7 @@ const vendorRejectionEmail = (data, lang = "ar") => {
     <p>${
       isAr
         ? `شكراً لاهتمامك بالانضمام إلى منصة هلا كمزود خدمة لعلامة "${data.brandName}" التجارية.`
-        : `Thank you for your interest in joining Halla as a vendor for "${data.brandName}".`
+        : `Thank you for your interest in joining Halaa as a vendor for "${data.brandName}".`
     }
     </p>
     

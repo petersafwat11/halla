@@ -27,7 +27,7 @@ const welcomeEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
   const config = getConfig();
 
-  const subject = isAr ? "مرحباً بك في هلا!" : "Welcome to Halla!";
+  const subject = isAr ? "مرحباً بك في هلا!" : "Welcome to Halaa!";
 
   const roleMessages = {
     host: {
@@ -75,7 +75,7 @@ const welcomeEmail = (data, lang = "ar") => {
 
   const html = getBaseLayout(content, {
     lang,
-    headerTitle: isAr ? "مرحباً بك في هلا!" : "Welcome to Halla!",
+    headerTitle: isAr ? "مرحباً بك في هلا!" : "Welcome to Halaa!",
     preheader: isAr
       ? "نحن سعداء بانضمامك إلينا"
       : "We're excited to have you join us",

@@ -29,7 +29,7 @@ const whitelabelApplicationPendingEmail = (data, lang = "ar") => {
 
   const subject = isAr
     ? "تم استلام طلب منصتك - هلا"
-    : "Whitelabel Application Received - Halla";
+    : "Whitelabel Application Received - Halaa";
 
   const content = `
     ${getGreeting(data.platformName, lang)}
@@ -43,7 +43,7 @@ const whitelabelApplicationPendingEmail = (data, lang = "ar") => {
     <p>${
       isAr
         ? "شكراً لتقديم طلبك للحصول على منصة العلامة البيضاء من هلا. تم استلام طلبك بنجاح وهو الآن قيد المراجعة."
-        : "Thank you for submitting your whitelabel platform application to Halla. Your application has been received and is now under review."
+        : "Thank you for submitting your whitelabel platform application to Halaa. Your application has been received and is now under review."
     }
     </p>
     
@@ -98,7 +98,7 @@ const whitelabelApprovalEmail = (data, lang = "ar") => {
 
   const subject = isAr
     ? "تهانينا! تمت الموافقة على طلبك - هلا"
-    : "Congratulations! Your Application is Approved - Halla";
+    : "Congratulations! Your Application is Approved - Halaa";
 
   // `data.features` expects an array of localized bullet strings.
   // TODO: callers should pass `plan.featureBullets[user.preferredLang || 'ar']`
@@ -210,7 +210,7 @@ const whitelabelRejectionEmail = (data, lang = "ar") => {
 
   const subject = isAr
     ? "تحديث حالة طلبك - هلا"
-    : "Application Status Update - Halla";
+    : "Application Status Update - Halaa";
 
   const content = `
     ${getGreeting(data.platformName, lang)}
@@ -218,7 +218,7 @@ const whitelabelRejectionEmail = (data, lang = "ar") => {
     <p>${
       isAr
         ? "شكراً لاهتمامك بالحصول على منصة العلامة البيضاء من هلا."
-        : "Thank you for your interest in obtaining a whitelabel platform from Halla."
+        : "Thank you for your interest in obtaining a whitelabel platform from Halaa."
     }
     </p>
     

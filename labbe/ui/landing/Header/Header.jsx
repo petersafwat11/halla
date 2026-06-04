@@ -25,7 +25,7 @@ const dashboardPathForRole = (role) => {
   return null;
 };
 
-const Header = ({ lang = "ar" }) => {
+const Header = ({ lang = "ar", variant = "primary" }) => {
   const { t } = useTranslation("landing");
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -45,13 +45,28 @@ const Header = ({ lang = "ar" }) => {
   const isLanding = pathname === `/${lang}` || pathname === "/";
   const anchor = (id) => (isLanding ? `#${id}` : `/${lang}#${id}`);
 
-  const menuItems = [
+  const primaryMenuItems = [
     { label: t("header.nav.home"),        href: `/${lang}`,        active: isLanding },
     { label: t("header.nav.features"),    href: anchor("features") },
     { label: t("header.nav.pricing"),     href: anchor("pricing") },
     { label: t("header.nav.invitations"), href: anchor("invitations") },
-    { label: t("header.nav.store"),       href: `/${lang}/market-place`, active: pathname?.includes("/market-place") },
+    { label: t("header.nav.store"),       href: anchor("store"), active: pathname?.includes("/market-place") },
   ];
+
+  const secondaryMenuItems = [
+    { label: t("header.nav.home"),              href: `/${lang}`,              active: isLanding },
+    { label: t("header.nav.store"),             href: `/${lang}/market-place`, active: pathname?.includes("/market-place") },
+    { label: t("legal.siblings.terms"),         href: `/${lang}/terms`,        active: pathname?.includes("/terms") },
+    { label: t("legal.siblings.privacy"),       href: `/${lang}/privacy`,      active: pathname?.includes("/privacy") },
+    { label: t("legal.siblings.refund"),        href: `/${lang}/refund`,       active: pathname?.includes("/refund") },
+  ];
+
+  const minimalMenuItems = [
+    { label: t("header.nav.home"),  href: `/${lang}`,              active: isLanding },
+    { label: t("header.nav.store"), href: `/${lang}/market-place`, active: pathname?.includes("/market-place") },
+  ];
+
+  const menuItems = variant === "secondary" ? secondaryMenuItems : variant === "minimal" ? minimalMenuItems : primaryMenuItems;
 
   const renderAuthCtas = ({ onClick } = {}) =>
     dashboardHref ? (

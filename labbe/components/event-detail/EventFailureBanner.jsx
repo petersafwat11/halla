@@ -55,17 +55,7 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
   const [retryError, setRetryError] = useState(null);
   const [tick, setTick] = useState(0);
   const retryLaunch = useRetryLaunch();
-  const isRtl = lang !== "en";
-  const dir = isRtl ? "rtl" : "ltr";
-  // i18n via react-i18next, with hard-coded Arabic strings as fallback
-  // so the banner still works even when the translations file hasn't
-  // been wired yet.
-  let t;
-  try {
-    ({ t } = useTranslation("events"));
-  } catch (_) {
-    t = (_k, fb) => fb;
-  }
+  const { t } = useTranslation("events");
 
   // Tick every second so the countdown re-renders. Cleared on unmount.
   useEffect(() => {
@@ -97,7 +87,7 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
     const countdownStr = formatCountdown(countdownMs, lang);
 
     return (
-      <div className={`${styles.banner} ${styles.retrying}`} dir={dir}>
+      <div className={`${styles.banner} ${styles.retrying}`}>
         <div className={styles.titleRow}>
           <span className={styles.iconWrap} aria-hidden="true">
             <svg
@@ -123,17 +113,12 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
             </svg>
           </span>
           <h3 className={styles.title}>
-            {t(
-              "failureBanner.retrying.title",
-              isRtl ? "نُعيد محاولة إطلاق مناسبتك" : "Retrying your event launch"
-            )}
+            {t("failureBanner.retrying.title")}
           </h3>
         </div>
 
         <p className={styles.message}>
-          {isRtl
-            ? `محاولة ${attemptCount} من ${MAX_VISIBLE_ATTEMPTS}. سنحاول مجدداً تلقائياً.`
-            : `Attempt ${attemptCount} of ${MAX_VISIBLE_ATTEMPTS}. We'll try again automatically.`}
+          {t("failureBanner.retrying.attemptCount", { attempt: attemptCount, max: MAX_VISIBLE_ATTEMPTS })}
         </p>
 
         <div className={styles.progress} aria-label={`${attemptCount}/${MAX_VISIBLE_ATTEMPTS}`}>
@@ -153,7 +138,7 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
           <div className={styles.countdownPill}>
             <span className={styles.countdownDot} aria-hidden="true" />
             <span>
-              {isRtl ? `المحاولة التالية خلال ${countdownStr}` : `Next attempt in ${countdownStr}`}
+              {t("failureBanner.retrying.nextAttempt", { countdown: countdownStr })}
             </span>
           </div>
         ) : null}
@@ -191,7 +176,7 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
     (failureReason ? ` — السبب: ${failureReason}` : "");
 
   return (
-    <div className={`${styles.banner} ${styles.failed}`} dir={dir}>
+    <div className={`${styles.banner} ${styles.failed}`}>
       <div className={styles.titleRow}>
         <span className={styles.iconWrap} aria-hidden="true">
           <svg
@@ -211,23 +196,15 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
           </svg>
         </span>
         <h3 className={styles.title}>
-          {t(
-            "failureBanner.failed.title",
-            isRtl ? "نعتذر — تعذّر إطلاق مناسبتك" : "We're sorry — your event couldn't launch"
-          )}
+          {t("failureBanner.failed.title")}
         </h3>
       </div>
       <p className={styles.message}>
-        {t(
-          "failureBanner.failed.message",
-          isRtl
-            ? "لم نتمكن من إرسال الدعوات لمناسبتك. سنبذل كل جهد لمساعدتك على إطلاقها."
-            : "We couldn't send your invitations. We'll do our best to help you launch."
-        )}
+        {t("failureBanner.failed.message")}
       </p>
       {failureReason ? (
         <div className={styles.reason} data-testid="failure-reason">
-          <span>{isRtl ? "سبب الفشل: " : "Reason: "}</span>
+          <span>{t("failureBanner.failed.reason")}</span>
           <code>{failureReason}</code>
         </div>
       ) : null}
@@ -242,12 +219,8 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
             data-testid="retry-launch-button"
           >
             {retryLaunch.isPending || retryLaunch.isLoading
-              ? isRtl
-                ? "جارٍ إعادة المحاولة..."
-                : "Retrying..."
-              : isRtl
-                ? "إعادة محاولة الإطلاق"
-                : "Retry launch"}
+              ? t("failureBanner.retryButton.retrying")
+              : t("failureBanner.retryButton.idle")}
           </button>
         )}
         <WhatsAppContactButton contextMessage={contextMessage} />

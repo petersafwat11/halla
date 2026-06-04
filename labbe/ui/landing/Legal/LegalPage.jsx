@@ -5,36 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import styles from "./LegalPage.module.css";
-import UseLanguageChange from "@/hooks/UseLanguageChange";
 
 /* ─── Contact constants ─── */
 const CONTACT_EMAIL = "mailto:support@halaa.net";
 const CONTACT_WA = "https://wa.me/966552619282";
 
 /* ─── Icons ─── */
-const IconHome = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-    <polyline points="9 22 9 12 15 12 15 22"/>
-  </svg>
-);
-
-const IconChevronRight = ({ isRtl }) => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={isRtl ? styles.iconFlipped : styles.iconFlippable}
-  >
-    <polyline points="9 18 15 12 9 6"/>
-  </svg>
-);
-
 const IconChevronDown = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="6 9 12 15 18 9"/>
@@ -101,7 +77,6 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
   const isRtl = lang === "ar";
   const { t } = useTranslation("landing");
   const pathname = usePathname();
-  const { currentLocale, handleChange } = UseLanguageChange();
 
   const [activeId, setActiveId] = useState(doc.sections[0]?.id ?? null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -173,42 +148,6 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
       <header className={styles.hero}>
         <div className={styles.heroInner}>
 
-          {/* Top row: breadcrumb + lang toggle */}
-          <div className={styles.heroTopRow}>
-            <nav className={styles.breadcrumb} aria-label="breadcrumb">
-              <Link href={`/${lang}`} className={styles.breadcrumbLink}>
-                <IconHome />
-                <span>{t("legal.backHome")}</span>
-              </Link>
-              <span className={styles.breadcrumbSep} aria-hidden="true">
-                <IconChevronRight isRtl={isRtl} />
-              </span>
-              <span className={styles.breadcrumbCurrent}>{doc.badge}</span>
-            </nav>
-
-            {/* Lang toggle */}
-            <div className={styles.langToggle}>
-              <button
-                className={currentLocale === "ar" ? styles.langActive : styles.langOption}
-                onClick={() => handleChange("ar")}
-              >
-                {t("legal.langAr", "العربية")}
-              </button>
-              <button
-                className={currentLocale === "en" ? styles.langActive : styles.langOption}
-                onClick={() => handleChange("en")}
-              >
-                {t("legal.langEn", "English")}
-              </button>
-            </div>
-          </div>
-
-          {/* Document type tag */}
-          <div className={styles.heroTag} aria-hidden="true">
-            <span className={styles.heroTagPulse} />
-            {doc.badge}
-          </div>
-
           {/* Title */}
           <h1 className={styles.heroTitle}>{doc.title}</h1>
 
@@ -220,40 +159,34 @@ export default function LegalPage({ doc, lang, siblingPages = [] }) {
           {/* Meta row */}
           <div className={styles.heroMeta}>
             {doc.lastUpdated && (
-              <>
-                <span className={styles.metaItem}>
-                  <IconCalendar />
-                  {t("legal.lastUpdated")}: <strong>{doc.lastUpdated}</strong>
-                </span>
-                <span className={styles.metaDivider} aria-hidden="true">·</span>
-              </>
+              <span className={styles.metaChip}>
+                <IconCalendar />
+                <span>{doc.lastUpdated}</span>
+              </span>
             )}
-            <span className={styles.metaItem}>
-              <strong>{doc.sections.length}</strong>&nbsp;{t("legal.articles")}
+            <span className={styles.metaChip}>
+              <strong>{doc.sections.length}</strong>
+              <span>{t("legal.articles")}</span>
             </span>
           </div>
 
           {/* Related pages */}
           {siblingPages.length > 0 && (
             <div className={styles.relatedRow}>
-              <span className={styles.relatedLabel}>{t("legal.legalDocs")}:</span>
-              <div className={styles.relatedLinks}>
-                {siblingPages.map((p) => {
-                  const isCurrent = isCurrentSibling(p.href);
-                  return (
-                    <Link
-                      key={p.href}
-                      href={`/${lang}${p.href}`}
-                      className={`${styles.relatedLink} ${isCurrent ? styles.relatedLinkCurrent : ""}`}
-                      aria-current={isCurrent ? "page" : undefined}
-                    >
-                      <IconFileText />
-                      <span>{t(p.titleKey)}</span>
-                      {!isCurrent && <IconArrowUpRight isRtl={isRtl} />}
-                    </Link>
-                  );
-                })}
-              </div>
+              {siblingPages.map((p) => {
+                const isCurrent = isCurrentSibling(p.href);
+                return (
+                  <Link
+                    key={p.href}
+                    href={`/${lang}${p.href}`}
+                    className={`${styles.relatedLink} ${isCurrent ? styles.relatedLinkCurrent : ""}`}
+                    aria-current={isCurrent ? "page" : undefined}
+                  >
+                    <span>{t(p.titleKey)}</span>
+                    {!isCurrent && <IconArrowUpRight isRtl={isRtl} />}
+                  </Link>
+                );
+              })}
             </div>
           )}
 

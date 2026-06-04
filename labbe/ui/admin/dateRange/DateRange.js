@@ -44,7 +44,7 @@ export default function DateRange({
   onDateRangeChange,
   selectedRange,
 }) {
-  const { t } = useTranslation("adminModerators");
+  const { t, i18n } = useTranslation("adminModerators");
   const [range, setRange] = useState(selectedRange || undefined);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -54,38 +54,9 @@ export default function DateRange({
     }
   }, [isOpen, selectedRange]);
 
-  const { i18n } = useTranslation("adminModerators");
   const isArabic = i18n.language === "ar";
 
-  const months = isArabic
-    ? [
-        "يناير",
-        "فبراير",
-        "مارس",
-        "أبريل",
-        "مايو",
-        "يونيو",
-        "يوليو",
-        "أغسطس",
-        "سبتمبر",
-        "أكتوبر",
-        "نوفمبر",
-        "ديسمبر",
-      ]
-    : [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
+  const months = t("dateRange.months", { returnObjects: true });
 
   const years = Array.from({ length: 21 }, (_, i) => 2015 + i);
 
@@ -130,36 +101,36 @@ export default function DateRange({
     return [
       {
         key: "all",
-        label: isArabic ? "الكل" : "All Time",
+        label: t("dateRange.allTime"),
         value: allTime,
       },
       {
         key: "today",
-        label: isArabic ? "اليوم" : "Today",
+        label: t("dateRange.today"),
         value: { from: todayStart, to: todayEnd },
       },
       {
         key: "week",
-        label: isArabic ? "آخر أسبوع" : "Last Week",
+        label: t("dateRange.lastWeek"),
         value: { from: weekStart, to: endDate },
       },
       {
         key: "month",
-        label: isArabic ? "آخر شهر" : "Last Month",
+        label: t("dateRange.lastMonth"),
         value: { from: monthStart, to: endDate },
       },
       {
         key: "quarter",
-        label: isArabic ? "آخر 3 أشهر" : "Last Quarter",
+        label: t("dateRange.lastQuarter"),
         value: { from: quarterStart, to: endDate },
       },
       {
         key: "year",
-        label: isArabic ? "آخر سنة" : "Last Year",
+        label: t("dateRange.lastYear"),
         value: { from: yearStart, to: endDate },
       },
     ];
-  }, [isArabic]);
+  }, [t]);
 
   const handlePreviousMonth = () => {
     setCurrentMonth(
@@ -271,7 +242,7 @@ export default function DateRange({
         {/* Footer Buttons */}
         <div className={styles.footer}>
           <button type="button" className={styles.cancelBtn} onClick={onClose}>
-            {isArabic ? "إلغاء" : "Cancel"}
+            {t("dateRange.cancel")}
           </button>
           <button
             type="button"
@@ -283,7 +254,7 @@ export default function DateRange({
               onClose();
             }}
           >
-            {isArabic ? "تطبيق" : "Apply"}
+            {t("dateRange.apply")}
           </button>
         </div>
       </div>

@@ -230,6 +230,24 @@
       "cancelFailed": "Could not cancel the reminder"
     }
   },
+  "failureBanner": {
+    "retrying": {
+      "title": "Retrying your event launch",
+      "attemptCount": "Attempt {{attempt}} of {{max}}. We'll retry automatically.",
+      "nextAttempt": "Next attempt in {{countdown}}"
+    },
+    "failed": {
+      "title": "We're sorry — your event couldn't launch",
+      "message": "We couldn't send your invitations. We'll do our best to help you launch.",
+      "reason": "Reason: "
+    },
+    "retryButton": {
+      "retrying": "Retrying...",
+      "idle": "Retry launch"
+    },
+    "retryNotAvailable": "Retry is not available on this screen",
+    "retryUnavailableTitle": "Not Available"
+  },
   "guestTableExtras": {
     "autoReminder": "Auto reminder",
     "extraReminder": "Extra reminder",

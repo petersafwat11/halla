@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, I18nManager } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import TopBar from "../plans/TopBar";
@@ -22,7 +22,7 @@ export default function LimitReachedView({ tEvents, title, leftContent, navigati
             onPress={() => navigation.goBack()}
             activeOpacity={0.7}
           >
-            <Ionicons name="arrow-back" size={18} color="#FFF" />
+            <Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={18} color="#FFF" />
             <Text style={styles.backButtonText}>
               {tEvents?.("limitReached.goBack") || "Go Back"}
             </Text>

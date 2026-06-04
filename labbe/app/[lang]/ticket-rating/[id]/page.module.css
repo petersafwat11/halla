@@ -409,7 +409,7 @@
 /* Tablet */
 @media (max-width: 768px) {
   .card {
-    padding: 3.2rem;
+    padding: 2.5rem;
     border-radius: 2rem;
   }
 
@@ -432,7 +432,7 @@
   }
 
   .card {
-    padding: 2.8rem 2.2rem;
+    padding: 2rem;
     border-radius: 1.8rem;
   }
 
@@ -494,34 +494,5 @@
 
   .label {
     font-size: 1.4rem;
-  }
-}
-
-/* Small Mobile */
-@media (max-width: 360px) {
-  .container {
-    padding: 1.2rem;
-    padding-top: 2rem;
-  }
-
-  .card {
-    padding: 2.4rem 1.8rem;
-  }
-
-  .star {
-    font-size: 3rem;
-  }
-
-  .stars {
-    gap: 0.5rem;
-  }
-
-  .ratingSection {
-    padding: 1.6rem;
-  }
-
-  .ticketBadge {
-    font-size: 1.2rem;
-    padding: 0.6rem 1.4rem;
   }
 }

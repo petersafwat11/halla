@@ -250,7 +250,7 @@ async function createHost({ email, phoneNumber, name, username, password, whitel
   // Welcome notification to new host (non-blocking)
   notificationService.sendToUser(host._id, {
     type: 'welcome',
-    title: 'Welcome to Halla!',
+    title: 'Welcome to Halaa!',
     titleAr: 'مرحباً بك في هلا!',
     message: 'Your host account has been created successfully. Start creating events!',
     messageAr: 'تم إنشاء حساب المضيف بنجاح. ابدأ في إنشاء المناسبات!',

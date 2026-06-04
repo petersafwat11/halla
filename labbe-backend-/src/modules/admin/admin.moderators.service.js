@@ -128,7 +128,7 @@ async function createModerator({ email, phoneNumber, name, username, password, p
   // Welcome notification to new moderator (non-blocking)
   notificationService.sendToUser(moderator._id, {
     type: 'welcome',
-    title: 'Welcome to Halla!',
+    title: 'Welcome to Halaa!',
     titleAr: 'مرحباً بك في هلا!',
     message: `Your moderator account has been created. You now have access to the admin dashboard.`,
     messageAr: 'تم إنشاء حساب المشرف الخاص بك. يمكنك الآن الوصول إلى لوحة التحكم.',

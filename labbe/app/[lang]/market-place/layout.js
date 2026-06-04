@@ -5,7 +5,7 @@ export default async function MarketPlaceLayout({ children, params }) {
   const { lang } = await params;
   return (
     <>
-      <Header lang={lang} />
+      <Header lang={lang} variant="minimal" />
       {children}
       <Footer lang={lang} />
     </>

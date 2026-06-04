@@ -11,7 +11,7 @@ const FormHeader = () => {
         <div className={styles.brand}>
           <Image
             src="/logo.png"
-            alt="Halla"
+            alt="Halaa"
             width={60}
             height={60}
             priority

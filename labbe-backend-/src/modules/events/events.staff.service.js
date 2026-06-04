@@ -308,12 +308,13 @@ module.exports = {
         // SMS body kept as the fallback that Taqnyat falls through to when
         // the recipient has no WhatsApp capability or the template send
         // errors out.
-        const smsFallback =
+        const smsBody =
           `مرحبا ${staffMember.name}!\n\n` +
           `تم تعيينك كمشرف في فعالية "${eventTitle}"\n` +
           (eventDate ? `📅 التاريخ: ${eventDate}\n` : "") +
           (eventLocation ? `📍 المكان: ${eventLocation}\n` : "") +
           `\nللدخول لصفحة المشرفين:\n${staffUrl}`;
+        const smsFallback = { sender: 'HalaaApp', body: smsBody };
 
         if (template) {
           // Per-iteration local — never mutates the shared event doc.
@@ -345,7 +346,7 @@ module.exports = {
               );
           if (!wa?.success) throw new Error(wa?.error || 'wa_failed');
         } else {
-          await taqnyat.sendSMS(staffMember.phone, smsFallback);
+          await taqnyat.sendSMS(staffMember.phone, smsBody, { sender: 'HalaaApp' });
         }
         sent++;
         results.push({ name: staffMember.name, phone: staffMember.phone, status: "sent" });

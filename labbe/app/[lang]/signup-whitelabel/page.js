@@ -1,11 +1,16 @@
 import WhiteLabelForm from "@/ui/auth/signup/whiteLabel/WhiteLabelForm";
+import Header from "@/ui/landing/Header/Header";
 import styles from "./page.module.css";
 
-const SignupWhitelabelPage = () => {
+const SignupWhitelabelPage = async ({ params }) => {
+  const { lang } = await params;
   return (
-    <div className={styles.wrapper}>
-      <WhiteLabelForm />
-    </div>
+    <>
+      <Header lang={lang} variant="minimal" />
+      <div className={styles.wrapper}>
+        <WhiteLabelForm />
+      </div>
+    </>
   );
 };
 

@@ -7,7 +7,7 @@ const TaqnyatTemplate = require('../../../models/TaqnyatTemplateModel');
 const { formatRiyadh } = require('../../shared/utils/timezone');
 const logger = require('../../shared/utils/logger');
 
-const TAQNYAT_SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp-AD';
+const TAQNYAT_SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp';
 
 /**
  * Format a date for messages in Asia/Riyadh wall-clock.

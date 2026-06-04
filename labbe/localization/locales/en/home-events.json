@@ -110,7 +110,7 @@
   },
   "subscription": {
     "eventLimitReached": "Event Limit Reached",
-    "eventLimitDescription": "You have used all available events in your plan. Upgrade your plan to enjoy more features and create additional events.",
+    "eventLimitDescription": "You have used all available events in your plan ({{eventsUsed}}/{{eventsLimit}}). Upgrade your plan to enjoy more features and create additional events.",
     "eventsUsage": "Events Usage",
     "currentPlan": "Current Plan:",
     "upgradePlan": "Upgrade Plan",
@@ -122,7 +122,7 @@
     "customBranding": "Custom branding options",
     "guestQuota": "Guest Quota",
     "unlimitedGuests": "Unlimited guests",
-    "guestsRemaining": "guests remaining",
+    "guestsRemaining": "{{count}} guests remaining",
     "overLimitBy": "Over limit by",
     "guests": "guests",
     "planLite": "Lite",
@@ -146,6 +146,8 @@
   "templates": {
     "title": "Event Templates",
     "subtitle": "Choose the appropriate template that you think expresses the occasion",
+    "all": "All categories",
+    "empty": "No templates available yet.",
     "wedding": "Weddings",
     "graduation": "Graduations",
     "birthday": "Birthdays",

@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Shared prev/dots/next control bar used by landing carousels.
@@ -17,13 +18,13 @@ export default function CarouselDots({
   onChange,
   onPrev,
   onNext,
-  isAr = false,
   visibleDots = null,
   classes,
   prevLabel,
   nextLabel,
   dotRole,
 }) {
+  const { t } = useTranslation("landing");
   const handlePrev = onPrev || (() => onChange(idx - 1));
   const handleNext = onNext || (() => onChange(idx + 1));
   let dotIndices;
@@ -49,7 +50,7 @@ export default function CarouselDots({
         className={classes.ctrlBtn}
         onClick={handlePrev}
         disabled={idx <= 0}
-        aria-label={prevLabel || (isAr ? "السابق" : "Previous")}
+        aria-label={prevLabel || t("carousel.prev")}
       >
         <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
           <path
@@ -81,7 +82,7 @@ export default function CarouselDots({
         className={classes.ctrlBtn}
         onClick={handleNext}
         disabled={idx >= maxIdx}
-        aria-label={nextLabel || (isAr ? "التالي" : "Next")}
+        aria-label={nextLabel || t("carousel.next")}
       >
         <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
           <path

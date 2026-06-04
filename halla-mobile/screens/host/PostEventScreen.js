@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -143,7 +144,7 @@ export default function PostEventScreen({ navigation, route }) {
               style={styles.topBarBack}
               activeOpacity={0.7}
             >
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={24} color="#fff" />
             </TouchableOpacity>
           )}
           <Text style={styles.topBarTitle}>

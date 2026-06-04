@@ -30,7 +30,6 @@ const VISIBLE_DOTS = 7;
 
 const InvitationsCarousel = ({ lang = "ar" }) => {
   const { t } = useTranslation("landing");
-  const isAr = lang === "ar";
   const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
     gap: GAP,
     totalItems: TEMPLATE_IMAGES.length,
@@ -70,7 +69,6 @@ const InvitationsCarousel = ({ lang = "ar" }) => {
           onChange={scrollToIdx}
           onPrev={goPrev}
           onNext={goNext}
-          isAr={isAr}
           visibleDots={VISIBLE_DOTS}
           classes={{
             controls: styles.controls,

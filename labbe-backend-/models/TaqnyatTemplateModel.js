@@ -46,7 +46,7 @@ const taqnyatTemplateSchema = new mongoose.Schema(
     metaCategory: { type: String },
 
     /**
-     * Halla-side category, set by admin via the Assign dialog. Drives the
+     * Halaa-side category, set by admin via the Assign dialog. Drives the
      * host wizard's filtered list (category locked in step 3 → this
      * filter). Mirrors TemplateCategory codes (e.g. "wedding"). Null =
      * uncategorized → hidden from hosts until admin assigns.

@@ -22,8 +22,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WhatsAppContactButton from '../shared/WhatsAppContactButton';
-// L-8: shared status constant prevents typo-drift with backend.
 import { EVENT_STATUS } from '@halla/shared/constants/eventStatus';
+import { useTranslation } from '../../localization/hooks/useTranslation';
 
 const MAX_VISIBLE_ATTEMPTS = 5;
 
@@ -50,6 +50,7 @@ const formatCountdown = (ms) => {
 };
 
 export default function EventFailureBanner({ event, currentUser, onRetry, lang = 'ar' }) {
+  const { t } = useTranslation('events');
   const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState(null);
   const [, setTick] = useState(0);
@@ -113,14 +114,12 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
             style={[styles.title, styles.titleRetrying, !isRtl && styles.titleLtr]}
             numberOfLines={2}
           >
-            {isRtl ? 'نُعيد محاولة إطلاق مناسبتك' : 'Retrying your event launch'}
+            {t('failureBanner.retrying.title')}
           </Text>
         </View>
 
         <Text style={[styles.message, styles.messageRetrying, !isRtl && styles.messageLtr]}>
-          {isRtl
-            ? `محاولة ${attemptCount} من ${MAX_VISIBLE_ATTEMPTS}. سنحاول مجدداً تلقائياً.`
-            : `Attempt ${attemptCount} of ${MAX_VISIBLE_ATTEMPTS}. We'll retry automatically.`}
+          {t('failureBanner.retrying.attemptCount', { attempt: attemptCount, max: MAX_VISIBLE_ATTEMPTS })}
         </Text>
 
         <View style={[styles.progress, !isRtl && styles.progressLtr]}>
@@ -145,9 +144,7 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
           <View style={[styles.countdownPill, !isRtl && styles.countdownPillLtr]}>
             <View style={styles.countdownDot} />
             <Text style={styles.countdownText}>
-              {isRtl
-                ? `المحاولة التالية خلال ${countdownStr}`
-                : `Next attempt in ${countdownStr}`}
+              {t('failureBanner.retrying.nextAttempt', { countdown: countdownStr })}
             </Text>
           </View>
         ) : null}
@@ -173,7 +170,7 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
 
   const handleRetry = async () => {
     if (!onRetry) {
-      Alert.alert('غير متاح', 'إعادة المحاولة غير متاحة في هذه الشاشة');
+      Alert.alert(t('failureBanner.retryUnavailableTitle'), t('failureBanner.retryNotAvailable'));
       return;
     }
     setRetrying(true);
@@ -203,21 +200,16 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
           <Ionicons name="alert-circle" size={20} color="#88281f" />
         </View>
         <Text style={[styles.title, !isRtl && styles.titleLtr]} numberOfLines={2}>
-          {isRtl
-            ? 'نعتذر — تعذّر إطلاق مناسبتك'
-            : "We're sorry — your event couldn't launch"}
+          {t('failureBanner.failed.title')}
         </Text>
       </View>
       <Text style={[styles.message, !isRtl && styles.messageLtr]}>
-        {isRtl
-          ? 'لم نتمكن من إرسال الدعوات لمناسبتك. سنبذل كل جهد لمساعدتك على إطلاقها.'
-          : "We couldn't send your invitations. We'll do our best to help you launch."}
+        {t('failureBanner.failed.message')}
       </Text>
       {failureReason ? (
         <View style={styles.reason}>
           <Text style={[styles.reasonText, !isRtl && styles.messageLtr]}>
-            {isRtl ? 'سبب الفشل: ' : 'Reason: '}
-            {failureReason}
+            {t('failureBanner.failed.reason')}{failureReason}
           </Text>
         </View>
       ) : null}
@@ -233,12 +225,8 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
           >
             <Text style={styles.retryButtonText}>
               {retrying
-                ? isRtl
-                  ? 'جارٍ إعادة المحاولة...'
-                  : 'Retrying...'
-                : isRtl
-                  ? 'إعادة محاولة الإطلاق'
-                  : 'Retry launch'}
+                ? t('failureBanner.retryButton.retrying')
+                : t('failureBanner.retryButton.idle')}
             </Text>
           </TouchableOpacity>
         ) : null}

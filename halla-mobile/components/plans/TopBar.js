@@ -39,8 +39,7 @@ const TopBar = ({
           hitSlop={{ top: spacing[8], bottom: spacing[8], left: spacing[8], right: spacing[8] }}
         >
           <Ionicons
-            style={I18nManager.isRTL ? { transform: [{ rotate: "180deg" }] } : null}
-            name="chevron-back"
+            name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
             size={24}
             color={colors.primary[50]}
           />

@@ -640,8 +640,6 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--color-primary-100, #f5ece4);
   gap: 1rem;
 }
 

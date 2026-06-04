@@ -148,7 +148,7 @@ const moyasarProvider = {
       amount: halalas,
       currency,
       source,
-      description: description || metadata?.description || "Halla payment",
+      description: description || metadata?.description || "Halaa payment",
       metadata: metadata || {},
     };
     if (callbackUrl) body.callback_url = callbackUrl;

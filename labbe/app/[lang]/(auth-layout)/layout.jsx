@@ -24,8 +24,8 @@ const Page = ({ children }) => {
         >
           <header className={styles.authHeader}>
             <div className={styles.authHeaderInner}>
-              <Link href={`/${lang}`} className={styles.authLogo} aria-label="Halla">
-                <Image src="/logo.png" alt="Halla" width={50} height={50} priority />
+              <Link href={`/${lang}`} className={styles.authLogo} aria-label="Halaa">
+                <Image src="/logo.png" alt="Halaa" width={50} height={50} priority />
               </Link>
               <LangToggle className={styles.authLangToggle} />
             </div>

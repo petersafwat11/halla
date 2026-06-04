@@ -65,7 +65,7 @@ function EventTemplatesSection() {
               }`}
               onClick={() => setSelectedCategory("")}
             >
-              {t("templates.all", isAr ? "كل الفئات" : "All categories")}
+              {t("templates.all")}
             </button>
             {categories.map((c) => (
               <button
@@ -85,12 +85,7 @@ function EventTemplatesSection() {
             <SimpleLoading />
           ) : templates.length === 0 ? (
             <p className={styles.emptyMessage}>
-              {t(
-                "templates.empty",
-                isAr
-                  ? "لا توجد قوالب متاحة بعد."
-                  : "No templates available yet.",
-              )}
+              {t("templates.empty")}
             </p>
           ) : (
             <div className={styles.templatesGrid}>

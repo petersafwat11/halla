@@ -22,7 +22,9 @@
 }
 
 /* ── Carousel controls (hidden on desktop) ── */
-.controls { display: none; }
+.controls {
+  display: none;
+}
 
 .ctrlBtn {
   width: 3.6rem;
@@ -38,21 +40,44 @@
   color: var(--color-secondary-400);
   flex-shrink: 0;
 }
+
 .ctrlBtn:hover:not(:disabled) {
   background: var(--color-primary-500);
   border-color: var(--color-primary-500);
   color: var(--color-natural-50);
   box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary-500) 30%, transparent);
 }
-.ctrlBtn:disabled { opacity: .3; cursor: default; }
 
-.dots { display: flex; align-items: center; gap: 0.8rem; flex-wrap: nowrap; overflow: hidden; }
-.dot {
-  width: 0.7rem; height: 0.7rem; border-radius: 50%;
-  background: var(--color-primary-200);
-  transition: all .25s ease; cursor: pointer; border: none; padding: 0; flex-shrink: 0;
+.ctrlBtn:disabled {
+  opacity: .3;
+  cursor: default;
 }
-.dotActive { width: 2rem; border-radius: 0.35rem; background: var(--color-primary-500); }
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--color-primary-200);
+  transition: all .25s ease;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.dotActive {
+  width: 2rem;
+  border-radius: 0.35rem;
+  background: var(--color-primary-500);
+}
 
 /* ── Header ── */
 .header {
@@ -102,19 +127,21 @@
   background: var(--color-natural-50);
   border: 1.5px solid color-mix(in srgb, var(--color-primary-500) 18%, transparent);
   box-shadow: 0 2px 12px color-mix(in srgb, var(--color-secondary-500) 6%, transparent),
-              0 1px 3px  color-mix(in srgb, var(--color-secondary-500) 4%, transparent);
+    0 1px 3px color-mix(in srgb, var(--color-secondary-500) 4%, transparent);
   transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
 }
+
 .featureCard:hover {
   transform: translateY(-4px);
   border-color: color-mix(in srgb, var(--color-primary-500) 25%, transparent);
   box-shadow: 0 8px 28px color-mix(in srgb, var(--color-primary-500) 12%, transparent),
-              0 3px 8px  color-mix(in srgb, var(--color-secondary-500) 8%, transparent);
+    0 3px 8px color-mix(in srgb, var(--color-secondary-500) 8%, transparent);
 }
 
 .iconWrapper {
   display: flex;
-  width: 64px; height: 64px;
+  width: 64px;
+  height: 64px;
   padding: 1.4rem;
   justify-content: center;
   align-items: center;
@@ -152,7 +179,7 @@
 /* ── 900px: switch to horizontal carousel ── */
 @media (max-width: 900px) {
   .featuresSection {
-    padding: 4rem 2rem;
+    padding: 5.5rem 2rem;
     gap: 4rem;
   }
 
@@ -187,7 +214,10 @@
     grid-template-columns: unset;
     max-width: none;
   }
-  .featuresGrid::-webkit-scrollbar { display: none; }
+
+  .featuresGrid::-webkit-scrollbar {
+    display: none;
+  }
 
   /* 20% smaller: show ~2 cards on tablet */
   .featureCard {
@@ -198,9 +228,21 @@
     gap: 1.9rem;
   }
 
-  .iconWrapper { width: 52px; height: 52px; padding: 1.1rem; }
-  .featureTitle { font-size: 1.9rem; line-height: 2.6rem; }
-  .featureDescription { font-size: 1.3rem; line-height: 1.9rem; }
+  .iconWrapper {
+    width: 52px;
+    height: 52px;
+    padding: 1.1rem;
+  }
+
+  .featureTitle {
+    font-size: 1.9rem;
+    line-height: 2.6rem;
+  }
+
+  .featureDescription {
+    font-size: 1.3rem;
+    line-height: 1.9rem;
+  }
 
   /* Show controls */
   .controls {
@@ -215,19 +257,60 @@
 
 /* ── 640px: narrower card ── */
 @media (max-width: 640px) {
-  .featuresSection { padding: 4rem 2rem; gap: 3.5rem; }
-  .header { padding: 0; }
-  .title { font-size: 2.6rem; line-height: 3.4rem; }
-  .description { font-size: 1.6rem; }
-  .featuresGrid { gap: 1.1rem; padding: 0.6rem 0 0.8rem; }
-  .featureCard { width: min(72vw, 260px); padding: 1.7rem; gap: 1.7rem; }
-  .controls { padding: 0; margin-top: 1.4rem; }
+  .featuresSection {
+    padding: 5.5rem 2rem;
+    gap: 3.5rem;
+  }
+
+  .header {
+    padding: 0;
+  }
+
+  .title {
+    font-size: 2.6rem;
+    line-height: 3.4rem;
+  }
+
+  .description {
+    font-size: 1.6rem;
+  }
+
+  .featuresGrid {
+    gap: 1.1rem;
+    padding: 0.6rem 0 0.8rem;
+  }
+
+  .featureCard {
+    width: min(72vw, 260px);
+    padding: 1.7rem;
+    gap: 1.7rem;
+  }
+
+  .controls {
+    padding: 0;
+    margin-top: 1.4rem;
+  }
 }
 
 /* ── 480px: single card ── */
 @media (max-width: 480px) {
-  .featuresSection { padding: 4rem 2rem; gap: 3rem; }
-  .title { font-size: 2.4rem; line-height: 3.2rem; }
-  .description { font-size: 1.5rem; }
-  .featureCard { width: min(82vw, 240px); padding: 1.6rem; gap: 1.9rem; }
+  .featuresSection {
+    padding: 5.5rem 2rem;
+    gap: 3rem;
+  }
+
+  .title {
+    font-size: 2.4rem;
+    line-height: 3.2rem;
+  }
+
+  .description {
+    font-size: 1.5rem;
+  }
+
+  .featureCard {
+    width: min(82vw, 240px);
+    padding: 1.6rem;
+    gap: 1.9rem;
+  }
 }

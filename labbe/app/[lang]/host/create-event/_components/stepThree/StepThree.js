@@ -156,21 +156,13 @@ const StepThree = () => {
   const validateFile = (file) => {
     if (!ACCEPTED_MIME.includes(file.type)) {
       toastUtils.error(
-        t(
-          "upload_card_invalid_type",
-          isAr
-            ? "نوع ملف غير مدعوم. استخدم JPG أو PNG أو WEBP."
-            : "Unsupported file type. Use JPG, PNG or WEBP.",
-        ),
+        t("upload_card_invalid_type"),
       );
       return false;
     }
     if (file.size > MAX_UPLOAD_BYTES) {
       toastUtils.error(
-        t(
-          "upload_card_too_big",
-          isAr ? "الحد الأقصى 10 ميجابايت." : "Maximum size is 10 MB.",
-        ),
+        t("upload_card_too_big"),
       );
       return false;
     }
@@ -240,10 +232,7 @@ const StepThree = () => {
           >
             <FiImage size={16} />
             <span>
-              {t(
-                "choose_from_templates",
-                isAr ? "اختر من القوالب" : "Choose from templates",
-              )}
+              {t("choose_from_templates")}
             </span>
           </button>
           <button
@@ -257,10 +246,7 @@ const StepThree = () => {
           >
             <FiUploadCloud size={16} />
             <span>
-              {t(
-                "upload_own_card",
-                isAr ? "ارفع تصميمك الخاص" : "Upload your own card",
-              )}
+              {t("upload_own_card")}
             </span>
           </button>
         </div>
@@ -275,7 +261,7 @@ const StepThree = () => {
                 }`}
                 onClick={() => setSelectedCategory("")}
               >
-                {t("all_categories", isAr ? "كل الفئات" : "All categories")}
+                {t("all_categories")}
               </button>
               {categories.map((c) => (
                 <button
@@ -295,12 +281,7 @@ const StepThree = () => {
               <SimpleLoading />
             ) : templates.length === 0 ? (
               <p className={styles.emptyMessage}>
-                {t(
-                  "no_templates_available",
-                  isAr
-                    ? "لا توجد قوالب متاحة بعد. تواصل مع الدعم."
-                    : "No templates available yet.",
-                )}
+                {t("no_templates_available")}
               </p>
             ) : (
               <div className={styles.templatesGrid}>
@@ -391,10 +372,7 @@ const StepThree = () => {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={previewUrl}
-                    alt={t(
-                      "uploaded_card_preview",
-                      isAr ? "معاينة البطاقة" : "Uploaded card preview",
-                    )}
+                    alt={t("uploaded_card_preview")}
                     className={styles.uploadPreviewImg}
                   />
                 </div>
@@ -405,19 +383,11 @@ const StepThree = () => {
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <FiUploadCloud size={14} />
-                    {t(
-                      "replace_image",
-                      isAr ? "استبدال الصورة" : "Replace image",
-                    )}
+                    {t("replace_image")}
                   </button>
                 </div>
                 <p className={styles.uploadHintSmall}>
-                  {t(
-                    "upload_card_saved_hint",
-                    isAr
-                      ? "سيُستخدم هذا التصميم كما هو في الدعوات والمعاينات."
-                      : "This image will be sent to guests exactly as shown.",
-                  )}
+                  {t("upload_card_saved_hint")}
                 </p>
               </div>
             ) : (
@@ -431,20 +401,10 @@ const StepThree = () => {
               >
                 <FiUploadCloud size={32} className={styles.uploadDropzoneIcon} />
                 <span className={styles.uploadDropzoneTitle}>
-                  {t(
-                    "upload_card_cta",
-                    isAr
-                      ? "اضغط لرفع صورة البطاقة"
-                      : "Click to upload your card",
-                  )}
+                  {t("upload_card_cta")}
                 </span>
                 <span className={styles.uploadDropzoneHint}>
-                  {t(
-                    "upload_card_hint",
-                    isAr
-                      ? "JPG أو PNG أو WEBP — حتى 10 ميجابايت"
-                      : "JPG, PNG or WEBP — up to 10 MB",
-                  )}
+                  {t("upload_card_hint")}
                 </span>
               </button>
             )}

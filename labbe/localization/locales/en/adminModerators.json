@@ -7,14 +7,19 @@
   },
   "dateRange": {
     "all": "All",
+    "allTime": "All Time",
     "today": "Today",
     "yesterday": "Yesterday",
     "thisWeek": "This week",
-    "lastWeek": "Last week",
+    "lastWeek": "Last Week",
     "thisMonth": "This month",
-    "lastMonth": "Last month",
+    "lastMonth": "Last Month",
+    "lastQuarter": "Last Quarter",
+    "lastYear": "Last Year",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
   },
   "addModerator": {
     "title": "Add Moderator",

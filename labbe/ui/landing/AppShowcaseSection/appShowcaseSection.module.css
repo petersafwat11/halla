@@ -47,7 +47,7 @@
   .appShowcaseSection {
     padding: 60px 0;
   }
-  
+
   .container {
     gap: 70px;
   }
@@ -57,16 +57,16 @@
   .appShowcaseSection {
     padding: 50px 0;
   }
-  
+
   .container {
     padding: 0 24px;
     gap: 50px;
   }
-  
+
   .imageWrapper {
     border-radius: 20px;
   }
-  
+
   .macbookImage {
     border-radius: 20px;
   }
@@ -76,16 +76,16 @@
   .appShowcaseSection {
     padding: 40px 0;
   }
-  
+
   .container {
     padding: 0 20px;
     gap: 40px;
   }
-  
+
   .imageWrapper {
     border-radius: 15px;
   }
-  
+
   .macbookImage {
     border-radius: 15px;
   }
@@ -95,16 +95,16 @@
   .appShowcaseSection {
     padding: 30px 0;
   }
-  
+
   .container {
     padding: 0 15px;
     gap: 30px;
   }
-  
+
   .imageWrapper {
     border-radius: 12px;
   }
-  
+
   .macbookImage {
     border-radius: 12px;
   }

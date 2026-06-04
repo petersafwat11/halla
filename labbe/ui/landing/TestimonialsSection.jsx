@@ -9,7 +9,6 @@ const GAP = 16;
 
 export default function TestimonialsSection({ lang = "ar" }) {
   const { t } = useTranslation("landing");
-  const isAr = lang === "ar";
   const items = t("testimonials.items", { returnObjects: true });
   const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
     gap: GAP,
@@ -29,7 +28,7 @@ export default function TestimonialsSection({ lang = "ar" }) {
           <div className={styles.testCarousel}>
             <div className={styles.testTrack} ref={trackRef} onScroll={handleScroll}>
               {items.map((r, i) => (
-                <div key={i} className={styles.testCard} dir={isAr ? "rtl" : "ltr"}>
+                <div key={i} className={styles.testCard}>
                   <div className={styles.testStars} aria-label={`${r.rating || 5} stars`}>{"★".repeat(r.rating || 5)}</div>
                   <p className={styles.testText}>{r.text}</p>
                   <div className={styles.testAuthor}>
@@ -51,7 +50,6 @@ export default function TestimonialsSection({ lang = "ar" }) {
               onChange={scrollToIdx}
               onPrev={goPrev}
               onNext={goNext}
-              isAr={isAr}
               prevLabel={t("testimonials.prevBtn")}
               nextLabel={t("testimonials.nextBtn")}
               dotRole="tablist"

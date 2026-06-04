@@ -60,12 +60,12 @@ const sendOTP = async (phoneNumber, lang = 'ar') => {
   });
 
   const messages = {
-    ar: `رمز التحقق الخاص بك في Halla هو: ${otp}\nصالح لمدة 5 دقائق.`,
-    en: `Your Halla verification code is: ${otp}\nValid for 5 minutes.`,
+    ar: `رمز التحقق الخاص بك في Halaa هو: ${otp}\nصالح لمدة 5 دقائق.`,
+    en: `Your Halaa verification code is: ${otp}\nValid for 5 minutes.`,
   };
 
   try {
-    const result = await taqnyat.sendSMS(normalizedPhone, messages[lang] || messages.ar);
+    const result = await taqnyat.sendSMS(normalizedPhone, messages[lang] || messages.ar, { sender: 'HalaaApp' });
     // taqnyat.sendSMS also signals "soft" failures (HTTP 200 with no
     // messageId, or a recognised error envelope) by returning
     // { success: false, ... } instead of throwing. Without this check the

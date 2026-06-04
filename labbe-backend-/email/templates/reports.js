@@ -697,7 +697,7 @@ const eventSummaryReportEmail = (data, lang = "ar") => {
       ${
         isAr
           ? "شكراً لاستخدامك هلا! نتطلع لخدمتك في فعالياتك القادمة."
-          : "Thank you for using Halla! We look forward to serving you in your future events."
+          : "Thank you for using Halaa! We look forward to serving you in your future events."
       }
     </p>
   `;

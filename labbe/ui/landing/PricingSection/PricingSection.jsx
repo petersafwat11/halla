@@ -7,6 +7,8 @@ import { useLandingPlans } from "@/hooks/plans";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
 import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import PlanCard from "@/ui/plans/PlanCard/PlanCard";
+import useCarouselSnap from "../_shared/useCarouselSnap";
+import CarouselDots from "../_shared/CarouselDots";
 
 const WA_LINK = "https://wa.me/966552619282";
 
@@ -26,6 +28,9 @@ const getInviteValue = (plan, billingType) => {
   return plan.invites ?? 0;
 };
 
+const PLAN_CAROUSEL_GAP = 20;
+const PLAN_CAROUSEL_ITEMS = 2;
+
 export default function PricingSection({ lang = "ar" }) {
   const { t } = useTranslation("landing");
   const { t: tPlans } = useTranslation("plans");
@@ -33,16 +38,6 @@ export default function PricingSection({ lang = "ar" }) {
     const family = plan?.planFamily;
     if (!family) return "";
     return tPlans(`taglines.${family}`, { defaultValue: "" });
-  };
-  const getDurationText = (plan) => {
-    if (!plan) return "";
-    const billingType = plan.billingType;
-    const durationDays = plan?.limits?.durationDays;
-    if (billingType === "monthly") return tPlans("duration.monthly", { defaultValue: "" });
-    if (billingType === "quarterly") return tPlans("duration.quarterly", { defaultValue: "" });
-    if (billingType === "annual") return tPlans("duration.annual", { defaultValue: "" });
-    if (durationDays) return tPlans("duration.event", { days: durationDays, defaultValue: "" });
-    return "";
   };
 
   const { data: landingData, isLoading, error } = useLandingPlans();
@@ -114,13 +109,17 @@ export default function PricingSection({ lang = "ar" }) {
   const bizQuarterlyPlan = bizQuarterlyPlans[0] || null;
   const bizAnnualPlan = bizAnnualPlans[0] || null;
 
+  const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
+    gap: PLAN_CAROUSEL_GAP,
+    totalItems: PLAN_CAROUSEL_ITEMS,
+  });
+
   if (isLoading) {
     return (
       <section id="pricing" className={styles.prRoot}>
         <div className={styles.prInner}>
           <div className={styles.prHdr}>
             <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
-            <p className={styles.prSub}>{t("pricing.sub")}</p>
           </div>
           <div style={{ textAlign: "center", padding: "2rem" }}>
             <p>{t("pricing.loading", "Loading plans...")}</p>
@@ -136,7 +135,6 @@ export default function PricingSection({ lang = "ar" }) {
         <div className={styles.prInner}>
           <div className={styles.prHdr}>
             <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
-            <p className={styles.prSub}>{t("pricing.sub")}</p>
           </div>
         </div>
       </section>
@@ -149,7 +147,6 @@ export default function PricingSection({ lang = "ar" }) {
 
         <div className={styles.prHdr}>
           <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
-          <p className={styles.prSub}>{t("pricing.sub")}</p>
         </div>
 
         <div className={styles.prSelector}>
@@ -238,58 +235,90 @@ export default function PricingSection({ lang = "ar" }) {
 
         {/* ═══ HOST — PER EVENT (Basic + Premium side-by-side) ═══ */}
         {audience === "host" && billingType === "event" && (
-          <div className={styles.prGrid}>
-            <PlanCard
-              planFamily="basic"
-              matchedPlan={currentHostEventPlan}
-              plans={basicEvent}
-              billingType="event"
-              selectedInvites={selInvites}
-              onInviteChange={setSelInvites}
-              lang={lang}
-              ctaLabel={t("pricing.subscribe")}
-              ctaHref={`/${lang}/signup`}
-            />
-            <PlanCard
-              planFamily="premium"
-              matchedPlan={currentPremiumEventPlan}
-              plans={premiumEvent}
-              billingType="event"
-              selectedInvites={selInvites}
-              onInviteChange={setSelInvites}
-              isPopular
-              lang={lang}
-              ctaLabel={t("pricing.subscribe")}
-              ctaHref={`/${lang}/signup`}
+          <div className={styles.carouselWrapper}>
+            <div className={styles.prGrid} ref={trackRef} onScroll={handleScroll}>
+              <PlanCard
+                planFamily="basic"
+                matchedPlan={currentHostEventPlan}
+                plans={basicEvent}
+                billingType="event"
+                selectedInvites={selInvites}
+                onInviteChange={setSelInvites}
+                lang={lang}
+                ctaLabel={t("pricing.subscribe")}
+                ctaHref={`/${lang}/signup`}
+              />
+              <PlanCard
+                planFamily="premium"
+                matchedPlan={currentPremiumEventPlan}
+                plans={premiumEvent}
+                billingType="event"
+                selectedInvites={selInvites}
+                onInviteChange={setSelInvites}
+                isPopular
+                lang={lang}
+                ctaLabel={t("pricing.subscribe")}
+                ctaHref={`/${lang}/signup`}
+              />
+            </div>
+            <CarouselDots
+              idx={idx}
+              maxIdx={maxIdx}
+              onChange={scrollToIdx}
+              onPrev={goPrev}
+              onNext={goNext}
+              classes={{
+                controls: styles.controls,
+                ctrlBtn: styles.ctrlBtn,
+                dots: styles.dots,
+                dot: styles.dot,
+                dotActive: styles.dotActive,
+              }}
             />
           </div>
         )}
 
         {/* ═══ HOST — MONTHLY POOL (Basic + Premium side-by-side) ═══ */}
         {audience === "host" && billingType === "monthly" && (
-          <div className={styles.prGrid}>
-            <PlanCard
-              planFamily="basic"
-              matchedPlan={currentHostMonthlyPlan}
-              plans={basicMonthly}
-              billingType="monthly"
-              selectedInvites={selPool}
-              onInviteChange={setSelPool}
-              lang={lang}
-              ctaLabel={t("pricing.subscribe")}
-              ctaHref={`/${lang}/signup`}
-            />
-            <PlanCard
-              planFamily="premium"
-              matchedPlan={currentPremiumMonthlyPlan}
-              plans={premiumMonthly}
-              billingType="monthly"
-              selectedInvites={selPool}
-              onInviteChange={setSelPool}
-              isPopular
-              lang={lang}
-              ctaLabel={t("pricing.subscribe")}
-              ctaHref={`/${lang}/signup`}
+          <div className={styles.carouselWrapper}>
+            <div className={styles.prGrid} ref={trackRef} onScroll={handleScroll}>
+              <PlanCard
+                planFamily="basic"
+                matchedPlan={currentHostMonthlyPlan}
+                plans={basicMonthly}
+                billingType="monthly"
+                selectedInvites={selPool}
+                onInviteChange={setSelPool}
+                lang={lang}
+                ctaLabel={t("pricing.subscribe")}
+                ctaHref={`/${lang}/signup`}
+              />
+              <PlanCard
+                planFamily="premium"
+                matchedPlan={currentPremiumMonthlyPlan}
+                plans={premiumMonthly}
+                billingType="monthly"
+                selectedInvites={selPool}
+                onInviteChange={setSelPool}
+                isPopular
+                lang={lang}
+                ctaLabel={t("pricing.subscribe")}
+                ctaHref={`/${lang}/signup`}
+              />
+            </div>
+            <CarouselDots
+              idx={idx}
+              maxIdx={maxIdx}
+              onChange={scrollToIdx}
+              onPrev={goPrev}
+              onNext={goNext}
+              classes={{
+                controls: styles.controls,
+                ctrlBtn: styles.ctrlBtn,
+                dots: styles.dots,
+                dot: styles.dot,
+                dotActive: styles.dotActive,
+              }}
             />
           </div>
         )}

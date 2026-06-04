@@ -97,8 +97,8 @@ function Header({ dashboardType: propDashboardType }) {
         >
           <img src="/svg/events/menu.svg" alt="menu" />
         </button>
-        <Link href={`/${lang}`} className={styles.headerLogo} aria-label="Halla">
-          <Image src="/logo.png" alt="Halla" width={48} height={48} priority />
+        <Link href={`/${lang}`} className={styles.headerLogo} aria-label="Halaa">
+          <Image src="/logo.png" alt="Halaa" width={48} height={48} priority />
         </Link>
       </div>
       <div className={styles.iconsRow}>

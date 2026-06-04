@@ -140,12 +140,24 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
       if (payload.staffList) {
         formDataObj.append("staffList", JSON.stringify(payload.staffList));
       }
-      if (payload.invitationSettings) {
-        const { templateImage, ...restInvitation } = payload.invitationSettings;
-        formDataObj.append("invitationSettings", JSON.stringify(restInvitation));
+      if (payload.visualTemplate) {
+        formDataObj.append("visualTemplate", JSON.stringify(payload.visualTemplate));
+      }
+      if (payload.taqnyatTemplate) {
+        formDataObj.append("taqnyatTemplate", JSON.stringify(payload.taqnyatTemplate));
+      }
+      if (payload.guestReplies) {
+        formDataObj.append("guestReplies", JSON.stringify(payload.guestReplies));
       }
       if (payload.launchSettings) {
         formDataObj.append("launchSettings", JSON.stringify(payload.launchSettings));
+      }
+      if (payload.templateImage && payload.templateImage.uri) {
+        formDataObj.append("templateImage", {
+          uri: payload.templateImage.uri,
+          type: payload.templateImage.type || "image/png",
+          name: payload.templateImage.name || payload.templateImage.fileName || `template-${Date.now()}.png`,
+        });
       }
 
       if (isHostMode) {

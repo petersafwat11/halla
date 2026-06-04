@@ -130,7 +130,7 @@ const StepThree = () => {
           t("upload_card_permission_title", "Permission needed"),
           t(
             "upload_card_permission_msg",
-            "Halla needs access to your photos to upload an invitation card.",
+            "Halaa needs access to your photos to upload an invitation card.",
           ),
         );
         return;

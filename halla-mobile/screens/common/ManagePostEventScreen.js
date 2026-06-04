@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -212,7 +213,7 @@ const ManagePostEventScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={20} color="#F9F4EF" />
+          <Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={20} color="#F9F4EF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t("host.title")}</Text>
         <View style={styles.headerRight} />

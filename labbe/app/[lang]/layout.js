@@ -16,7 +16,7 @@ import "swiper/css/effect-coverflow";
 import "swiper/css/effect-flip";
 import "swiper/css/effect-cube";
 export const metadata = {
-  title: "هلا — منصة إدارة المناسبات الذكية | Halla",
+  title: "هلا — منصة إدارة المناسبات الذكية | Halaa",
   description: "أنشئ مناسباتك، أرسل دعوات رقمية عبر واتساب، وتتبع الحضور في الوقت الفعلي.",
 };
 

@@ -74,7 +74,7 @@
   "en": {
     "badge": "Cancellation & Refund Policy",
     "title": "Cancellation & Postponement Policy",
-    "subtitle": "Halla Platform",
+    "subtitle": "Halaa Platform",
     "lastUpdated": "01 March 2026",
     "effectiveDate": "01 March 2026",
     "sections": [
@@ -83,7 +83,7 @@
         "num": "1",
         "label": "Article One",
         "title": "Scope of the Policy",
-        "body": "This policy applies to all events and services created or requested through the Halla Platform and forms an integral part of the agreement between the user and the platform."
+        "body": "This policy applies to all events and services created or requested through the Halaa Platform and forms an integral part of the agreement between the user and the platform."
       },
       {
         "id": "article-2",
@@ -139,7 +139,7 @@
         "num": "9",
         "label": "Article Nine",
         "title": "Acceptance of the Policy",
-        "body": "The user's use of the Halla Platform and creation of an event constitutes explicit acceptance of the terms of this policy and any subsequent updates thereto."
+        "body": "The user's use of the Halaa Platform and creation of an event constitutes explicit acceptance of the terms of this policy and any subsequent updates thereto."
       }
     ]
   }

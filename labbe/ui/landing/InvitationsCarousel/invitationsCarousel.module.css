@@ -187,7 +187,7 @@
 
 @media (max-width: 768px) {
   .invitationsSection {
-    padding: 4rem 2rem;
+    padding: 5.5rem 2rem;
     gap: 3rem;
   }
 
@@ -216,13 +216,20 @@
     height: 228px;
   }
 
-  .controls { margin-top: 1.2rem; gap: 1.6rem; }
-  .ctrlBtn { width: 3.2rem; height: 3.2rem; }
+  .controls {
+    margin-top: 1.2rem;
+    gap: 1.6rem;
+  }
+
+  .ctrlBtn {
+    width: 3.2rem;
+    height: 3.2rem;
+  }
 }
 
 @media (max-width: 480px) {
   .invitationsSection {
-    padding: 4rem 2rem;
+    padding: 5.5rem 2rem;
   }
 
   .title {
