@@ -347,7 +347,7 @@ function ScheduleReminderModal({
 }
 
 export default function ScheduleReminderSection({ eventId }) {
-  const { t } = useTranslation("home-events");
+  const { t, i18n } = useTranslation("home-events");
   const eventQuery = useEvent(eventId);
   const remindersQuery = useScheduledExtraReminders(eventId);
   const cancelMutation = useCancelScheduledExtraReminder();
@@ -433,7 +433,7 @@ export default function ScheduleReminderSection({ eventId }) {
                 <span className={styles.scheduledWhen}>
                   {t("singleEvent.scheduleReminder.scheduledFor", {
                     defaultValue: "Scheduled for {{when}}",
-                    when: new Date(r.scheduledFor).toLocaleString(),
+                    when: new Date(r.scheduledFor).toLocaleString(i18n.language),
                   })}
                 </span>
                 <span className={styles.scheduledCount}>

@@ -9,6 +9,7 @@ const { ROLES, USER_STATUS } = require('../../shared/constants');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
 const { buildSearchQuery, buildDateRangeQuery, formatUserResponse } = require('./admin.shared.service');
+const { normalizePhoneNumber } = require('../../shared/utils/phone');
 
 /**
  * Get all moderators with pagination and filters
@@ -85,10 +86,12 @@ async function createModerator({ email, phoneNumber, name, username, password, p
   } else {
     throw new ValidationError('Not authorized to create moderators');
   }
+
+  const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : undefined;
   const existingUser = await User.findOne({
     $or: [
       { email: email?.toLowerCase() },
-      { phoneNumber },
+      { phoneNumber: normalizedPhone },
     ],
   });
 
@@ -96,7 +99,7 @@ async function createModerator({ email, phoneNumber, name, username, password, p
     if (existingUser.email === email?.toLowerCase()) {
       throw new ConflictError('Email already exists', 'email');
     }
-    if (existingUser.phoneNumber === phoneNumber) {
+    if (existingUser.phoneNumber === normalizedPhone) {
       throw new ConflictError('Phone number already exists', 'phoneNumber');
     }
   }
@@ -115,7 +118,7 @@ async function createModerator({ email, phoneNumber, name, username, password, p
 
   const moderator = await User.create({
     email: email?.toLowerCase(),
-    phoneNumber,
+    phoneNumber: normalizedPhone,
     name,
     username: username || `moderator_${Date.now()}`,
     password,

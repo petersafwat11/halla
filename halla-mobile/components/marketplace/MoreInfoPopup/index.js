@@ -340,6 +340,7 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   container: {
+    flex: 1,
     backgroundColor: "#FAFAF7",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,

@@ -68,7 +68,7 @@ const validateAndFormatPhone = (phoneNumber) => {
     if (digits.startsWith('966')) {
       const nat = digits.substring(3);
       if (nat.length === 9 && nat.startsWith('5')) {
-        return { isValid: true, formatted: `+966${nat}`, countryCode: '+966', country: 'SA' };
+        return { isValid: true, formatted: `966${nat}`, countryCode: '+966', country: 'SA' };
       }
       return { isValid: false, error: 'Saudi numbers must be +966 followed by 9 digits starting with 5' };
     }
@@ -76,7 +76,7 @@ const validateAndFormatPhone = (phoneNumber) => {
     if (digits.startsWith('20')) {
       const nat = digits.substring(2);
       if (nat.length === 10 && nat.startsWith('1')) {
-        return { isValid: true, formatted: `+20${nat}`, countryCode: '+20', country: 'EG' };
+        return { isValid: true, formatted: `20${nat}`, countryCode: '+20', country: 'EG' };
       }
       return { isValid: false, error: 'Egyptian numbers must be +20 followed by 10 digits starting with 1' };
     }
@@ -85,15 +85,15 @@ const validateAndFormatPhone = (phoneNumber) => {
 
   // 9 digits starting with 5 -> Saudi
   if (digits.length === 9 && digits.startsWith('5')) {
-    return { isValid: true, formatted: `+966${digits}`, countryCode: '+966', country: 'SA' };
+    return { isValid: true, formatted: `966${digits}`, countryCode: '+966', country: 'SA' };
   }
   // 10 digits starting with 05 -> Saudi
   if (digits.length === 10 && digits.startsWith('05')) {
-    return { isValid: true, formatted: `+966${digits.substring(1)}`, countryCode: '+966', country: 'SA' };
+    return { isValid: true, formatted: `966${digits.substring(1)}`, countryCode: '+966', country: 'SA' };
   }
   // 11 digits starting with 01 -> Egypt
   if (digits.length === 11 && digits.startsWith('01')) {
-    return { isValid: true, formatted: `+20${digits.substring(1)}`, countryCode: '+20', country: 'EG' };
+    return { isValid: true, formatted: `20${digits.substring(1)}`, countryCode: '+20', country: 'EG' };
   }
 
   return { isValid: false, error: 'Invalid phone number format' };

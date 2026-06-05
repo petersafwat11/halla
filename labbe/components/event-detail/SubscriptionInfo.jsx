@@ -26,13 +26,13 @@ function getProgressPercentage(used, limit, isUnlimited) {
   return Math.min((used / limit) * 100, 100);
 }
 
-function formatExpiryDate(date) {
+function formatExpiryDate(date, locale) {
   if (!date) return null;
   const expiryDate = new Date(date);
   const now = new Date();
   const daysRemaining = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
   return {
-    formatted: expiryDate.toLocaleDateString("en-US", {
+    formatted: expiryDate.toLocaleDateString(locale || "ar", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -47,7 +47,7 @@ export default function SubscriptionInfo({ subscription }) {
   const { t, i18n } = useTranslation("adminEvents");
   const currentLang = i18n.language || "ar";
 
-  const expiryInfo = useMemo(() => formatExpiryDate(subscription?.expiresAt), [subscription?.expiresAt]);
+  const expiryInfo = useMemo(() => formatExpiryDate(subscription?.expiresAt, currentLang), [subscription?.expiresAt, currentLang]);
 
   const planName = useMemo(() => subscription?.planName
     ? currentLang === "ar" ? subscription.planName.ar : subscription.planName.en

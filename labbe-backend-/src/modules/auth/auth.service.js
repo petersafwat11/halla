@@ -496,18 +496,19 @@ class AuthService {
    * @param {Object} files - Uploaded files
    * @returns {Promise<{user: Object, token: string}>}
    */
-  async signupVendor(userData, files = {}) {
-    const { email, phoneNumber, password, brandName, ownerFullName } = userData;
+   async signupVendor(userData, files = {}) {
+     const { email, phoneNumber, password, brandName, ownerFullName } = userData;
 
-    if (!phoneNumber || !email) {
-      throw new ValidationError('Email and phone number are required');
-    }
+     if (!phoneNumber || !email) {
+       throw new ValidationError('Email and phone number are required');
+     }
 
-    if (!brandName || !ownerFullName) {
-      throw new ValidationError('Brand name and owner name are required');
-    }
+     if (!brandName || !ownerFullName) {
+       throw new ValidationError('Brand name and owner name are required');
+     }
 
-    await this._checkDuplicates(email, phoneNumber);
+     const normalizedPhone = normalizePhoneNumber(phoneNumber);
+     await this._checkDuplicates(email, normalizedPhone);
 
     // Parse JSON fields
     const serviceCategories = this._parseJsonField(userData.serviceCategories);
@@ -558,16 +559,16 @@ class AuthService {
     if (uploadedPaths.commercialRecordImage) vendorData.commercialRecordImage = uploadedPaths.commercialRecordImage;
     if (uploadedPaths.portfolioImages) vendorData.portfolioImages = uploadedPaths.portfolioImages;
 
-    const vendor = await User.create({
-      email: email.toLowerCase(),
-      phoneNumber,
-      password,
-      username: brandName.replace(/\s+/g, '_').toLowerCase(),
-      name: ownerFullName,
-      role: ROLES.VENDOR,
-      status: USER_STATUS.PENDING,
-      profile: { vendorData },
-    });
+     const vendor = await User.create({
+       email: email.toLowerCase(),
+       phoneNumber: normalizedPhone,
+       password,
+       username: brandName.replace(/\s+/g, '_').toLowerCase(),
+       name: ownerFullName,
+       role: ROLES.VENDOR,
+       status: USER_STATUS.PENDING,
+       profile: { vendorData },
+     });
 
     // Notifications
     this._notifyAdminsNewVendor(vendor, brandName, ownerFullName).catch((err) =>
@@ -605,14 +606,15 @@ class AuthService {
    * @param {Object} [logoFile] - Uploaded logo file from multer.single (req.file)
    * @returns {Promise<{user: Object, token: string}>}
    */
-  async signupWhitelabel(userData, logoFile = null) {
-    const { email, phoneNumber, englishName, arabicName, planSelection } = userData;
+   async signupWhitelabel(userData, logoFile = null) {
+     const { email, phoneNumber, englishName, arabicName, planSelection } = userData;
 
-    if (!phoneNumber && !email) {
-      throw new ValidationError('Email or phone number is required');
-    }
+     if (!phoneNumber && !email) {
+       throw new ValidationError('Email or phone number is required');
+     }
 
-    await this._checkDuplicates(email, phoneNumber);
+     const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : undefined;
+     await this._checkDuplicates(email, normalizedPhone);
 
     const requirements = this._parseJsonField(userData.requirements);
     const address = this._parseJsonField(userData.address);
@@ -641,16 +643,16 @@ class AuthService {
     // Generate temp password
     const tempPassword = crypto.randomBytes(16).toString('hex');
 
-    const whitelabel = await User.create({
-      email: email?.toLowerCase(),
-      phoneNumber,
-      password: tempPassword,
-      username: englishName?.replace(/\s+/g, '_').toLowerCase() || `wl_${Date.now()}`,
-      name: arabicName || englishName,
-      role: ROLES.WHITELABEL_ADMIN,
-      status: USER_STATUS.PENDING,
-      profile: { whitelabelData },
-    });
+     const whitelabel = await User.create({
+       email: email?.toLowerCase(),
+       phoneNumber: normalizedPhone,
+       password: tempPassword,
+       username: englishName?.replace(/\s+/g, '_').toLowerCase() || `wl_${Date.now()}`,
+       name: arabicName || englishName,
+       role: ROLES.WHITELABEL_ADMIN,
+       status: USER_STATUS.PENDING,
+       profile: { whitelabelData },
+     });
 
     whitelabel.whitelabelId = whitelabel._id;
     await whitelabel.save({ validateBeforeSave: false });
