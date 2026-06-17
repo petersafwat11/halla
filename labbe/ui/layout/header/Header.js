@@ -4,7 +4,6 @@ import styles from "./header.module.css";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import useSidebarStore from "@/stores/sidebarStore";
-import { cookieUtils } from "@/utils/cookieUtils";
 import Link from "next/link";
 import Image from "next/image";
 import { IoIosArrowDown } from "react-icons/io";
@@ -29,22 +28,15 @@ import LangToggle from "@/ui/common/LangToggle";
 function Header({ dashboardType: propDashboardType }) {
   const { t } = useTranslation("home-events");
   const { setIsOpen } = useSidebarStore();
+  const { user } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   // Determine dashboard type
   const dashboardType = propDashboardType || getDashboardTypeFromPath(pathname);
   const basePath = getBasePath(dashboardType);
-
-  useEffect(() => {
-    let user = cookieUtils.getCookie("user");
-    if (user) {
-      setUser(JSON.parse(user));
-    }
-  }, []);
 
   // Handle click outside dropdown
   useEffect(() => {
@@ -67,7 +59,7 @@ function Header({ dashboardType: propDashboardType }) {
   const handleLogout = async () => {
     setIsOpen(false);
     await useAuthStore.getState().logout();
-    router.replace(`/${lang}`);
+    router.replace(`/${lang}/login`);
   };
 
   // Get role label based on dashboard type

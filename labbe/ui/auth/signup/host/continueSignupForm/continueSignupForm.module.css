@@ -6,6 +6,22 @@
   border-radius: 12px;
 }
 
+.backButton {
+  display: flex;
+  align-self: flex-start;
+  padding: 1rem;
+  gap: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e1e1e1;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+}
+
+.backArrow {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
 .mainTitle {
   color: var(--color-title);
   text-align: center;

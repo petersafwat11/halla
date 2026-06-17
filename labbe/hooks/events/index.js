@@ -23,6 +23,7 @@ export {
     useUpdateEventStep2,
     useUpdateInvitationSettings,
     useUpdateLaunchSettings,
+    useUpdateReminderSettings,
     useRetryLaunch,
 } from "./mutations/useEventMutation";
 

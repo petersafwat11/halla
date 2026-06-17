@@ -75,6 +75,10 @@
     "statusInvalid": "Invalid status",
     "resolutionMinLength": "Resolution must be at least 10 characters",
     "resolutionMaxLength": "Resolution must not exceed 5000 characters",
+    "ratingRequired": "Please select a rating",
+    "ratingMax": "Rating must be between 1 and 5",
+    "ratingInvalid": "Rating must be a whole number",
+    "feedbackMaxLength": "Feedback must not exceed 1000 characters",
     "boundary": "Failed to load tickets",
     "loadFailed": "Failed to load tickets"
   },

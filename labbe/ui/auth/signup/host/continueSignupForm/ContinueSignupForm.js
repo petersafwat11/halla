@@ -12,12 +12,14 @@ import useLanguageChange from "@/hooks/UseLanguageChange";
 import { useRouter } from "next/navigation";
 import styles from "./continueSignupForm.module.css";
 import { getAuthErrorMessage } from "@/services/errorHandlingService";
+import { FaArrowRightLong, FaArrowLeftLong } from "react-icons/fa6";
 
 const ContinueSignupForm = () => {
-  const { t } = useTranslation("signup");
+  const { t, i18n } = useTranslation("signup");
   const { t: tCommon } = useTranslation("common");
   const { currentLocale } = useLanguageChange();
   const router = useRouter();
+  const isRTL = i18n.language === 'ar';
 
   // Auth mutation
   const {
@@ -42,7 +44,7 @@ const ContinueSignupForm = () => {
   // Initialize React Hook Form
   const methods = useForm({
     resolver: zodResolver(hostProfileCompletionSchema(t)),
-    mode: "onChange",
+    mode: "onBlur",
     defaultValues: {
       username: "",
       email: "",
@@ -108,6 +110,17 @@ const ContinueSignupForm = () => {
 
   return (
     <div className={styles.container}>
+      <div
+        className={styles.backButton}
+        onClick={() => router.back()}
+        style={{ cursor: "pointer" }}
+      >
+        {isRTL ? (
+          <FaArrowRightLong className={styles.backArrow} />
+        ) : (
+          <FaArrowLeftLong className={styles.backArrow} />
+        )}
+      </div>
       <h1 className={styles.mainTitle}>
         {t("signupForm.continueSignup.title")}
       </h1>

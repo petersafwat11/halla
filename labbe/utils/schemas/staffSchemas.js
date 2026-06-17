@@ -117,38 +117,47 @@ export const StaffVerificationResponseSchema = z.object({
 // CHECK-IN SCHEMAS
 // ============================================
 
+const idT = (k) => k;
+
 /**
  * Check-in by QR code schema
  */
-export const CheckInByQRSchema = z.object({
-  qrCode: z.string().min(1, "QR code is required"),
-});
+export const CheckInByQRSchema = (t = idT) =>
+  z.object({
+    qrCode: z.string().min(1, t("checkIn.qrCodeRequired")),
+  });
 
 /**
  * Check-in by guest ID schema
  */
-export const CheckInByIdSchema = z.object({
-  guestId: z.string().min(1, "Guest ID is required"),
-});
+export const CheckInByIdSchema = (t = idT) =>
+  z.object({
+    guestId: z.string().min(1, t("checkIn.guestIdRequired")),
+  });
 
 /**
  * Check-in by phone schema
  */
-export const CheckInByPhoneSchema = z.object({
-  phone: z
-    .string()
-    .min(9, "Phone number must be at least 9 digits")
-    .regex(/^[0-9+\-\s()]+$/, "Invalid phone number format"),
-});
+export const CheckInByPhoneSchema = (t = idT) =>
+  z.object({
+    phone: z
+      .string()
+      .min(9, t("checkIn.phoneMinLength"))
+      .regex(/^[0-9+\-\s()]+$/, t("checkIn.phoneInvalid")),
+  });
 
 /**
  * Manual check-in schema
  */
-export const ManualCheckInSchema = z.object({
-  guestId: z.string().min(1, "Guest ID is required"),
-  note: z.string().max(500, "Note cannot exceed 500 characters").optional(),
-  overrideDeclined: z.boolean().optional(),
-});
+export const ManualCheckInSchema = (t = idT) =>
+  z.object({
+    guestId: z.string().min(1, t("checkIn.guestIdRequired")),
+    note: z
+      .string()
+      .max(500, t("checkIn.noteMaxLength"))
+      .optional(),
+    overrideDeclined: z.boolean().optional(),
+  });
 
 /**
  * Check-in response schema

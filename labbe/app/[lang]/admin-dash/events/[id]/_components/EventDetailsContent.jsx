@@ -1,4 +1,5 @@
 "use client";
+import { useState, useRef, useCallback } from "react";
 import { useSingleEventStats } from "@/hooks/events";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -17,6 +18,16 @@ export default function EventDetailsContent({ eventId }) {
   const router = useRouter();
   const { t } = useTranslation("adminEvents");
   const { data, isLoading, error } = useSingleEventStats(eventId);
+
+  const [statusFilter, setStatusFilter] = useState(null);
+  const tableRef = useRef(null);
+
+  const handleFilterPress = useCallback((filterKey) => {
+    setStatusFilter((prev) => (prev === filterKey ? null : filterKey));
+    if (tableRef.current) {
+      tableRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
 
   if (isLoading) {
     return <SimpleLoading />;
@@ -44,17 +55,25 @@ export default function EventDetailsContent({ eventId }) {
           <SubscriptionInfo subscription={eventData.subscription} />
         )}
 
-        <AutoReminderInfoText />
+        <AutoReminderInfoText eventId={eventId} />
         <ScheduleReminderSection eventId={eventId} />
 
-        <EventStats eventId={eventId} />
+        <EventStats
+          eventId={eventId}
+          activeFilter={statusFilter}
+          onFilterPress={handleFilterPress}
+        />
 
-        <div className={styles.membersData}>
+        <div
+          className={styles.membersData}
+          ref={tableRef}
+          style={{ scrollMarginTop: "24px" }}
+        >
           {/* Shared GuestTable fetches via useEventGuests internally —
               the `guests` from useSingleEventStats are still loaded by
               the screen but not threaded through; the cache key match
               keeps the second request hot. */}
-          <GuestTable eventId={eventId} />
+          <GuestTable eventId={eventId} statusFilter={statusFilter} onStatusFilterChange={handleFilterPress} />
         </div>
       </div>
     </>

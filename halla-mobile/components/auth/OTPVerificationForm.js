@@ -32,8 +32,8 @@ const OTPVerificationForm = ({
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
   const methods = useForm({
-    resolver: zodResolver(otpSchema),
-    mode: "onChange",
+    resolver: zodResolver(otpSchema(t)),
+    mode: "onBlur",
     defaultValues: {
       otp: "",
     },

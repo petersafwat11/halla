@@ -134,10 +134,10 @@ export default function EventsTable() {
         scheduled: { bg: "#E8F4FD", color: "#3498DB", text: t("events.status.scheduled", "مجدول") },
         live: { bg: "#EAF4EF", color: "#2A8C5B", text: t("events.status.live", "مباشر") },
         completed: { bg: "#F5F5F5", color: "#666666", text: t("events.status.completed", "منتهي") },
-        draft: { bg: "#FBF3E6", color: "#D38200", text: t("events.status.draft", "مسودة") },
+        pending_scheduling: { bg: "#FBF3E6", color: "#D38200", text: t("events.status.pending_scheduling", "في انتظار الجدولة") },
         cancelled: { bg: "#F9EBEA", color: "#C0392B", text: t("events.status.cancelled", "ملغي") },
       };
-      const config = statusConfig[value] || statusConfig.draft;
+      const config = statusConfig[value] || statusConfig.pending_scheduling;
       return (
         <div
           style={{
@@ -180,7 +180,7 @@ export default function EventsTable() {
     host: event.host?.name || event.host?.username || event.hostName || "-",
     date: event.date || event.eventDate,
     guests: event.guestCount || 0,
-    status: event.status || "draft",
+    status: event.status || "pending_scheduling",
   }));
 
   const handlePageChange = useCallback((page) => {
@@ -216,7 +216,7 @@ export default function EventsTable() {
         onExportClick={handleExport}
         filterOptions={[
           { label: t("events.filter.all", "الكل"), value: "" },
-          { label: t("events.filter.draft", "مسودة"), value: "draft" },
+          { label: t("events.filter.pending_scheduling", "في انتظار الجدولة"), value: "pending_scheduling" },
           { label: t("events.filter.scheduled", "مجدول"), value: "scheduled" },
           { label: t("events.filter.live", "مباشر"), value: "live" },
           { label: t("events.filter.completed", "منتهي"), value: "completed" },

@@ -40,7 +40,7 @@ export default function LastEventActions({
   };
 
   const testButton = canSendTest ? (
-    <button className={styles.outlineButton} onClick={onTestMessage}>
+    <button className={`${styles.outlineButton} ${styles.flashingButton}`} onClick={onTestMessage}>
       <span>{t("lastEvent.buttons.testMessage")}</span>
       <Image src="/svg/events/calendar-edit.svg" alt="test" width={12} height={12} />
     </button>
@@ -108,13 +108,13 @@ export default function LastEventActions({
     <div className={styles.actionsContainer}>
       {isMobile ? (
         <>
-          {editDropdown}
           <div className={styles.secondaryActions}>
             {testButton}
             {scheduleButton}
             {viewStatsButton}
             {postEventButton}
           </div>
+          {editDropdown}
         </>
       ) : (
         <>

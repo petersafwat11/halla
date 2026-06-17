@@ -72,6 +72,8 @@ const PlansPage = () => {
         onPaymentMethodChange={setPaymentMethod}
         onCardChange={setCardData}
         onMobileChange={setStcMobile}
+        cardData={cardData}
+        stcMobile={stcMobile}
       />
     );
   }

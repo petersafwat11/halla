@@ -20,12 +20,14 @@
     "otpLogin": {
       "phoneNumber": "Phone Number",
       "verification": "Verification",
-      "editPhone": "Edit phone number",
+      "editPhone": "Cancel",
       "loginWithEmail": "Login with email",
       "verificationTitle": "Phone Number Verification",
       "verificationDescription": "We have sent a 6-digit code to your mobile number ",
       "verificationDescriptionEnd": ". Please enter it below",
-      "resendCode": "Resend code? ({{seconds}} seconds)"
+      "resendCode": "Resend code? ({{seconds}} seconds)",
+      "resendNow": "Resend code",
+      "resending": "Resending..."
     },
     "buttons": {
       "login": "Login",
@@ -74,5 +76,8 @@
       "otpInvalid": "Invalid verification code",
       "otpIncomplete": "Please enter complete verification code"
     }
+  },
+  "validation": {
+    "invalidSaudiPhone": "Please enter a valid Saudi phone number"
   }
 }

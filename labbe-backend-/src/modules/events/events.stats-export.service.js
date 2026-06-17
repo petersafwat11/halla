@@ -172,6 +172,8 @@ module.exports = {
         taqnyatTemplate: eventObj.taqnyatTemplate || null,
         staffList: eventObj.staffList || [],
         messagingStatus: eventObj.messagingStatus || null,
+        // One-time resend-invite tracking
+        resendInviteSentAt: eventObj.resendInviteSentAt || null,
         host: eventObj.host || null,
         whitelabelId: eventObj.whitelabelId || null,
       },

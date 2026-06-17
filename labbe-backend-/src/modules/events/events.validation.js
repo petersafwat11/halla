@@ -132,6 +132,16 @@ const notifyStaffSchema = z.object({
   message: z.string().max(2000).optional(),
 }).passthrough();
 
+const updateReminderSettingsSchema = z.object({
+  customReminderTime: z.boolean().optional(),
+  scheduledDate: z.union([z.string(), z.date()]).nullable().optional(),
+  scheduledTime: z.string().nullable().optional(),
+}).passthrough();
+
+const resendInviteSchema = z.object({
+  channel: z.enum(['sms', 'whatsapp']).optional(),
+}).passthrough();
+
 module.exports = {
   createEventSchema,
   updateEventDetailsSchema,
@@ -147,4 +157,6 @@ module.exports = {
   bulkDeleteSchema,
   adminUpdateStatusSchema,
   notifyStaffSchema,
+  updateReminderSettingsSchema,
+  resendInviteSchema,
 };

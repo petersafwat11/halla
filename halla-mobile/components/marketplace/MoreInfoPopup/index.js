@@ -45,32 +45,31 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
   if (!vendor) return null;
 
   const {
-    name,
-    image,
-    companyName,
+    brandName,
+    description,
     logo,
+    coverImage,
+    portfolio = [],
     rating,
     reviewCount,
-    duration,
-    price,
-    included,
     location,
-    website,
     email,
-    phone,
+    mobile,
+    socialLinks = {},
+    services = [],
   } = vendor;
 
-  const hasIncluded = Array.isArray(included) && included.length > 0;
-  const hasContact = location || website || email || phone;
   const hasRating = rating != null && Number(rating) > 0;
   const reviewCountNum = Number(reviewCount) || 0;
-  const hasHero = !!image && !heroError;
+  const hasHero = !!coverImage && !heroError;
   const hasLogo = !!logo && !logoError;
-  const hasPrice = price != null && price !== "";
-  const heroInitial = (name || companyName || "?").trim().charAt(0).toUpperCase();
-  const logoInitial = (companyName || name || "?").trim().charAt(0).toUpperCase();
+  const hasPortfolio = Array.isArray(portfolio) && portfolio.length > 0;
+  const hasServices = Array.isArray(services) && services.length > 0;
+  const hasContact = location || socialLinks.website || email || mobile;
+  const heroInitial = (brandName || "?").trim().charAt(0).toUpperCase();
+  const logoInitial = (brandName || "?").trim().charAt(0).toUpperCase();
 
-  const phoneDigits = phone ? String(phone).replace(/[^\d]/g, "") : "";
+  const phoneDigits = mobile ? String(mobile).replace(/[^\d]/g, "") : "";
   const whatsappUrl = phoneDigits ? `https://wa.me/${phoneDigits}` : null;
 
   const handleOpen = (url) => url && Linking.openURL(url);
@@ -90,7 +89,7 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
           <View style={styles.hero}>
             {hasHero ? (
               <Image
-                source={{ uri: image }}
+                source={{ uri: coverImage }}
                 style={styles.heroImage}
                 resizeMode="cover"
                 onError={() => setHeroError(true)}
@@ -119,8 +118,22 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
             </TouchableOpacity>
 
             <View style={styles.heroContent}>
+              <View style={styles.heroLogoWrap}>
+                {hasLogo ? (
+                  <Image
+                    source={{ uri: logo }}
+                    style={styles.heroLogo}
+                    resizeMode="contain"
+                    onError={() => setLogoError(true)}
+                  />
+                ) : (
+                  <View style={styles.heroLogoFallbackWrap}>
+                    <Text style={styles.heroLogoFallback}>{logoInitial}</Text>
+                  </View>
+                )}
+              </View>
               <Text style={styles.heroTitle} numberOfLines={2}>
-                {name}
+                {brandName}
               </Text>
               <View style={styles.heroMeta}>
                 {hasRating && (
@@ -152,76 +165,80 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {/* Vendor identity */}
-            {(companyName || logo) && (
-              <View style={styles.vendorCard}>
-                <View style={styles.vendorLogo}>
-                  {hasLogo ? (
-                    <Image
-                      source={{ uri: logo }}
-                      style={styles.vendorLogoImage}
-                      resizeMode="contain"
-                      onError={() => setLogoError(true)}
-                    />
-                  ) : (
-                    <View style={styles.vendorLogoFallback}>
-                      <Text style={styles.vendorLogoFallbackText}>
-                        {logoInitial}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <View style={styles.vendorMeta}>
-                  <Text style={styles.vendorLabel}>
-                    {t("vendor.providedBy", "مقدم الخدمة")}
-                  </Text>
-                  <Text style={styles.vendorName} numberOfLines={1}>
-                    {companyName || name}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* Meta chips */}
-            {(hasPrice || duration) && (
-              <View style={styles.metaGrid}>
-                {hasPrice && (
-                  <View style={styles.metaChip}>
-                    <Text style={styles.metaChipLabel}>
-                      {t("vendor.price")}
-                    </Text>
-                    <Text style={styles.metaChipValue}>
-                      {price} {t("vendor.sar")}
-                    </Text>
-                  </View>
-                )}
-                {duration && (
-                  <View style={styles.metaChip}>
-                    <View style={styles.metaChipLabelRow}>
-                      <Ionicons name="time-outline" size={13} color="#9A9A9A" />
-                      <Text style={styles.metaChipLabel}>
-                        {t("vendor.serviceDuration")}
-                      </Text>
-                    </View>
-                    <Text style={styles.metaChipValue}>{duration}</Text>
-                  </View>
-                )}
-              </View>
-            )}
-
-            {/* What's included */}
-            {hasIncluded && (
+            {/* About Vendor */}
+            {description && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
-                  {t("vendor.whatsIncluded")}
+                  {t("vendor.aboutVendor", "عن المزود")}
                 </Text>
-                <View style={styles.includedList}>
-                  {included.map((item, index) => (
-                    <View key={index} style={styles.includedItem}>
-                      <View style={styles.includedCheck}>
-                        <Ionicons name="checkmark" size={13} color="#A67749" />
+                <Text style={styles.aboutText}>{description}</Text>
+              </View>
+            )}
+
+            {/* Portfolio Gallery */}
+            {hasPortfolio && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  {t("vendor.portfolio", "معرض الأعمال")}
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.portfolioScroll}
+                >
+                  {portfolio.map((img, idx) => (
+                    <View key={idx} style={styles.portfolioItem}>
+                      <Image
+                        source={{ uri: img }}
+                        style={styles.portfolioImage}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Services */}
+            {hasServices && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  {t("vendor.ourServices", "خدماتنا")}
+                </Text>
+                <View style={styles.servicesList}>
+                  {services.map((svc) => (
+                    <View key={svc.id} style={styles.serviceItem}>
+                      {svc.image && (
+                        <Image
+                          source={{ uri: svc.image }}
+                          style={styles.serviceImage}
+                          resizeMode="cover"
+                        />
+                      )}
+                      <View style={styles.serviceDetails}>
+                        <Text style={styles.serviceName} numberOfLines={1}>
+                          {svc.name}
+                        </Text>
+                        {svc.description ? (
+                          <Text style={styles.serviceDesc} numberOfLines={2}>
+                            {svc.description}
+                          </Text>
+                        ) : null}
+                        {svc.price != null && (
+                          <Text style={styles.servicePrice}>
+                            {svc.price} {svc.currency || t("vendor.sar")}
+                          </Text>
+                        )}
                       </View>
-                      <Text style={styles.includedText}>{item}</Text>
+                      {mobile && (
+                        <TouchableOpacity
+                          style={styles.serviceInquiry}
+                          onPress={() => handleOpen(`tel:${mobile}`)}
+                          activeOpacity={0.7}
+                        >
+                          <Ionicons name="call-outline" size={16} color="#FFF" />
+                        </TouchableOpacity>
+                      )}
                     </View>
                   ))}
                 </View>
@@ -243,17 +260,17 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
                       <Text style={styles.contactText}>{location}</Text>
                     </View>
                   )}
-                  {website && (
+                  {socialLinks.website && (
                     <TouchableOpacity
                       style={styles.contactRow}
-                      onPress={() => handleOpen(website)}
+                      onPress={() => handleOpen(socialLinks.website)}
                       activeOpacity={0.7}
                     >
                       <View style={styles.contactIcon}>
                         <Ionicons name="globe-outline" size={14} color="#A67749" />
                       </View>
                       <Text style={styles.contactText} numberOfLines={1}>
-                        {website}
+                        {socialLinks.website}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -271,10 +288,10 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
                       </Text>
                     </TouchableOpacity>
                   )}
-                  {phone && (
+                  {mobile && (
                     <TouchableOpacity
                       style={styles.contactRow}
-                      onPress={() => handleOpen(`tel:${phone}`)}
+                      onPress={() => handleOpen(`tel:${mobile}`)}
                       activeOpacity={0.7}
                     >
                       <View style={styles.contactIcon}>
@@ -283,7 +300,7 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
                       <Text
                         style={[styles.contactText, { writingDirection: "ltr" }]}
                       >
-                        {`‪${phone}‬`}
+                        {`‪${mobile}‬`}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -293,7 +310,7 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
           </ScrollView>
 
           {/* ───────── STICKY CTA FOOTER ───────── */}
-          {phone && (
+          {mobile && (
             <View style={styles.ctaFooter}>
               {whatsappUrl && (
                 <TouchableOpacity
@@ -309,7 +326,7 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
               )}
               <TouchableOpacity
                 style={[styles.ctaButton, styles.ctaButtonPrimary]}
-                onPress={() => handleOpen(`tel:${phone}`)}
+                onPress={() => handleOpen(`tel:${mobile}`)}
                 activeOpacity={0.85}
               >
                 <Ionicons name="call-outline" size={18} color="#FFF" />
@@ -350,7 +367,7 @@ const styles = StyleSheet.create({
 
   /* ────── HERO ────── */
   hero: {
-    height: 200,
+    height: 220,
     position: "relative",
     backgroundColor: "#1A1A1A",
   },
@@ -400,6 +417,40 @@ const styles = StyleSheet.create({
     bottom: 18,
     gap: 8,
   },
+  heroLogoWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    overflow: "hidden",
+    backgroundColor: "#FFF",
+    borderWidth: 2,
+    borderColor: "#FFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heroLogo: {
+    width: "100%",
+    height: "100%",
+  },
+  heroLogoFallbackWrap: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#C28E5C",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heroLogoFallback: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 24,
+    color: "#FFF",
+    textTransform: "uppercase",
+    includeFontPadding: false,
+  },
   heroTitle: {
     fontFamily: "Cairo_700Bold",
     fontSize: 22,
@@ -438,80 +489,78 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   scrollContent: { padding: 20, gap: 16, paddingBottom: 32 },
 
-  /* ────── VENDOR IDENTITY ────── */
-  vendorCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    padding: 14,
-    backgroundColor: "#FFF",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.05)",
+  /* ────── ABOUT ────── */
+  aboutText: {
+    fontFamily: "Cairo_400Regular",
+    fontSize: 14,
+    color: "#2C2C2C",
+    lineHeight: 22,
   },
-  vendorLogo: {
-    width: 56,
-    height: 56,
+
+  /* ────── PORTFOLIO ────── */
+  portfolioScroll: {
+    gap: 10,
+    paddingRight: 10,
+  },
+  portfolioItem: {
+    width: 140,
+    height: 100,
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "#F4EFE9",
-    alignItems: "center",
-    justifyContent: "center",
   },
-  vendorLogoImage: { width: "100%", height: "100%" },
-  vendorLogoFallback: {
+  portfolioImage: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#C28E5C",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  vendorLogoFallbackText: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: 24,
-    color: "#FFF",
-    textTransform: "uppercase",
-    includeFontPadding: false,
-  },
-  vendorMeta: { flex: 1, gap: 2 },
-  vendorLabel: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: 11,
-    color: "#9A9A9A",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  vendorName: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: 15,
-    color: "#1A1A1A",
-    lineHeight: 20,
   },
 
-  /* ────── META CHIPS ────── */
-  metaGrid: { flexDirection: "row", gap: 10 },
-  metaChip: {
-    flex: 1,
-    padding: 14,
+  /* ────── SERVICES ────── */
+  servicesList: {
+    gap: 12,
+  },
+  serviceItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 12,
     backgroundColor: "#FFF",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.05)",
+  },
+  serviceImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 10,
+    backgroundColor: "#F4EFE9",
+  },
+  serviceDetails: {
+    flex: 1,
     gap: 4,
   },
-  metaChipLabelRow: { flexDirection: "row", alignItems: "center", gap: 5 },
-  metaChipLabel: {
-    fontFamily: "Cairo_600SemiBold",
+  serviceName: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 14,
+    color: "#1A1A1A",
+  },
+  serviceDesc: {
+    fontFamily: "Cairo_400Regular",
     fontSize: 12,
     color: "#6B6B6B",
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
+    lineHeight: 16,
   },
-  metaChipValue: {
+  servicePrice: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 17,
-    color: "#1A1A1A",
-    lineHeight: 22,
+    fontSize: 14,
+    color: "#C28E5C",
+  },
+  serviceInquiry: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#C28E5C",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   /* ────── SECTIONS ────── */
@@ -527,25 +576,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     fontSize: 14,
     color: "#1A1A1A",
-  },
-
-  /* Included */
-  includedList: { gap: 10 },
-  includedItem: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  includedCheck: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "rgba(194,142,92,0.15)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  includedText: {
-    flex: 1,
-    fontFamily: "Cairo_400Regular",
-    fontSize: 14,
-    color: "#2C2C2C",
-    lineHeight: 20,
   },
 
   /* Contact */

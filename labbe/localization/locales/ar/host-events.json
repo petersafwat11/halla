@@ -41,7 +41,7 @@
   },
   "eventStatus": {
     "published": "منشور",
-    "draft": "مسودة",
+    "pending_scheduling": "في انتظار الجدولة",
     "ended": "منتهي",
     "suspended": "معلق",
     "live": "مباشرة",

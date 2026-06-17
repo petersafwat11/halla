@@ -111,6 +111,16 @@
     "success": "Service added successfully",
     "updateSuccess": "Service updated successfully",
     "error": "Failed to add service",
-    "updateError": "Failed to update service"
+    "updateError": "Failed to update service",
+    "validation": {
+      "serviceNameMinLength": "Service name must be at least 2 characters",
+      "serviceNameMaxLength": "Service name must be less than 100 characters",
+      "serviceTypeRequired": "Service type is required",
+      "descriptionMinLength": "Description must be at least 10 characters",
+      "descriptionMaxLength": "Description must be less than 1000 characters",
+      "priceRequired": "Price is required",
+      "priceInvalid": "Please enter a valid price",
+      "durationMaxLength": "Duration must be less than 100 characters"
+    }
   }
 }

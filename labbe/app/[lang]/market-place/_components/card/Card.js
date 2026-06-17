@@ -10,9 +10,11 @@ const MAX_VISIBLE_TAGS = 3;
 const ServiceCard = ({ service }) => {
   const { t } = useTranslation("marketplace");
   const [imageError, setImageError] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   const {
     image,
+    logo,
     rating = 0,
     reviewsCount = 0,
     title = "",
@@ -24,8 +26,10 @@ const ServiceCard = ({ service }) => {
   } = service || {};
 
   const hasImage = !!image && !imageError;
+  const hasLogo = !!logo && !logoError;
   const hasRating = rating > 0;
   const initial = (title || vendorName || "?").trim().charAt(0).toUpperCase();
+  const logoInitial = (title || vendorName || "?").trim().charAt(0).toUpperCase();
   const visibleTags = tags.slice(0, MAX_VISIBLE_TAGS);
   const extraTagsCount = tags.length - visibleTags.length;
 
@@ -49,6 +53,21 @@ const ServiceCard = ({ service }) => {
           </div>
         )}
 
+        <div className={styles.logoBadge}>
+          {hasLogo ? (
+            <Image
+              src={logo}
+              alt=""
+              width={40}
+              height={40}
+              className={styles.logoBadgeImg}
+              onError={() => setLogoError(true)}
+            />
+          ) : (
+            <span className={styles.logoBadgeFallback}>{logoInitial}</span>
+          )}
+        </div>
+
         {hasRating && (
           <div className={styles.ratingBadge}>
             <FiStar className={styles.ratingIcon} aria-hidden="true" />
@@ -64,9 +83,6 @@ const ServiceCard = ({ service }) => {
 
       <div className={styles.content}>
         <div className={styles.heading}>
-          {vendorName && (
-            <span className={styles.vendorName}>{vendorName}</span>
-          )}
           <h3 className={styles.title}>{title}</h3>
         </div>
 

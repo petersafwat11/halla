@@ -179,7 +179,7 @@ const guestSchema = new mongoose.Schema(
       // True when Taqnyat returned 429 — transient, not permanently failed
       rateLimited: { type: Boolean, default: false },
 
-      // 24h auto-reminder (free, covered by base plan). Written by
+      // 48h auto-reminder (free, covered by base plan). Written by
       // scheduledTasks.scheduleGuestReminders after a successful send.
       autoReminderSent: { type: Boolean, default: false },
       autoReminderSentAt: { type: Date },

@@ -11,7 +11,9 @@ export const SETTINGS_ACTIONS = [
   "updateEventStep2",
   "updateInvitationSettings",
   "updateLaunchSettings",
+  "updateReminderSettings",
   "retryLaunch",
+  "resendInvite",
 ];
 
 const buildMutations = (queryClient) => ({
@@ -87,6 +89,19 @@ const buildMutations = (queryClient) => ({
     },
   },
 
+  // Update Reminder Settings
+  updateReminderSettings: {
+    mutationFn: ({ eventId, data }) =>
+      apiRequest({
+        method: "PATCH",
+        path: API_PATHS.events.updateReminderSettings(eventId),
+        data,
+      }),
+    onSuccess: (_, { eventId }) => {
+      queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+    },
+  },
+
   // Manual launch retry — for failed events. Sends a per-click
   // Idempotency-Key so a fast double-click is deduped at the middleware
   // layer instead of relying solely on the server-side eventLock. The
@@ -102,6 +117,28 @@ const buildMutations = (queryClient) => ({
       return apiRequest({
         method: "POST",
         path: API_PATHS.events.retryLaunch(eventId),
+        headers: { "Idempotency-Key": idempotencyKey },
+      });
+    },
+    onSuccess: (_, { eventId }) => {
+      queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  },
+
+  // One-time resend invite — re-invites guests who haven't responded
+  // or said "maybe". Available only 48h after the bulk send completed.
+  // Server enforces the one-time constraint via resendInviteSentAt flag.
+  resendInvite: {
+    mutationFn: ({ eventId, channel = "sms" }) => {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? `resend-${eventId}-${crypto.randomUUID()}`
+          : `resend-${eventId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      return apiRequest({
+        method: "POST",
+        path: API_PATHS.events.resendInvite(eventId),
+        data: { channel },
         headers: { "Idempotency-Key": idempotencyKey },
       });
     },

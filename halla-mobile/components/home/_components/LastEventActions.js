@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 
@@ -9,6 +9,8 @@ const DROPDOWN_STEPS = [
   { step: 3, key: "lastEvent.dropdown.invitationDesign" },
   { step: 4, key: "lastEvent.dropdown.invitationCustomization" },
 ];
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function LastEventActions({
   canSendTest,
@@ -22,6 +24,35 @@ export default function LastEventActions({
 }) {
   const { t } = useTranslation("home");
   const [showDropdown, setShowDropdown] = useState(false);
+  const pulseAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1150,
+          useNativeDriver: false,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0,
+          duration: 1150,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+  }, [pulseAnim]);
+
+  const flashingStyle = {
+    backgroundColor: pulseAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["#FFFFFF", "#FAF0E6"],
+    }),
+    borderColor: pulseAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["#D6B392", "#C28E5C"],
+    }),
+  };
 
   const handleEditStep = (step) => {
     setShowDropdown(false);
@@ -32,9 +63,13 @@ export default function LastEventActions({
     <>
       <View style={styles.actionButtonsRow}>
         {canSendTest && onTestMessagePress && (
-          <TouchableOpacity style={styles.outlineButton} onPress={onTestMessagePress} activeOpacity={0.7}>
+          <AnimatedTouchableOpacity
+            style={[styles.outlineButton, flashingStyle]}
+            onPress={onTestMessagePress}
+            activeOpacity={0.7}
+          >
             <Text style={styles.outlineButtonText}>{t("lastEvent.buttons.testMessage")}</Text>
-          </TouchableOpacity>
+          </AnimatedTouchableOpacity>
         )}
         {canSchedule && onSchedulePress && (
           <TouchableOpacity style={styles.outlineButton} onPress={onSchedulePress} activeOpacity={0.7}>
@@ -91,29 +126,30 @@ export default function LastEventActions({
 
 const styles = StyleSheet.create({
   actionButtonsRow: {
-    flexDirection: "row",
+    flexDirection: "column",
     gap: 8,
-    flexWrap: "wrap",
+    width: "100%",
   },
   outlineButton: {
-    flex: 1,
-    minWidth: 70,
-    height: 32,
+    width: "100%",
+    height: 40,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 4,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: "#D6B392",
     backgroundColor: "#FFF",
   },
   outlineButtonText: {
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Cairo_600SemiBold",
     color: "#6B4E33",
-    lineHeight: 16,
+    lineHeight: 18,
   },
   dropdownWrapper: {
     position: "relative",
+    width: "100%",
+    marginTop: 8,
   },
   editButton: {
     flexDirection: "row",
@@ -121,21 +157,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     backgroundColor: "#C28E5C",
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 4,
-    height: 32,
+    borderRadius: 8,
+    height: 40,
+    width: "100%",
   },
   editButtonText: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "Cairo_600SemiBold",
     color: "#FFF",
-    lineHeight: 16,
+    lineHeight: 18,
     letterSpacing: 0.06,
   },
   dropdown: {
     position: "absolute",
-    bottom: 36,
+    bottom: "100%",
+    marginBottom: 8,
     left: 0,
     right: 0,
     backgroundColor: "#FFF",

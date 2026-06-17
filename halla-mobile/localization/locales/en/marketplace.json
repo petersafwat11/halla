@@ -1,5 +1,5 @@
 {
-  "title": "Marketplace",
+  "title": "Halla Marketplace",
   "search": {
     "placeholder": "Search for anything...",
     "filter": "Filter"
@@ -10,7 +10,14 @@
     "eventPlanning": "Event Planning",
     "mediaProduction": "Media Production",
     "giftsAndGiveaways": "Gifts & Giveaways",
-    "foodAndBeverages": "Food & Beverages"
+    "foodAndBeverages": "Food & Beverages",
+    "beautyAndFashion": "Beauty & Fashion",
+    "logisticsAndDelivery": "Logistics & Delivery",
+    "corporateServices": "Corporate Services",
+    "supportServices": "Support Services",
+    "technicalServices": "Technical Services",
+    "soundLightingEntertainment": "Sound, Lighting & Entertainment",
+    "hallsAndVenues": "Halls & Venues"
   },
   "filters": {
     "title": "Filters",
@@ -42,10 +49,14 @@
     "serviceDuration": "Duration",
     "price": "Price",
     "priceOnRequest": "Price on request",
+    "startsFrom": "Starts from",
     "whatsIncluded": "What's Included",
     "contactInfo": "Contact Information",
     "providedBy": "Provided by",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "aboutVendor": "About Vendor",
+    "portfolio": "Portfolio",
+    "ourServices": "Our Services"
   },
   "noResults": "No results found",
   "loading": "Loading...",

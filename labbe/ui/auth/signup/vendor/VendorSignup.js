@@ -86,7 +86,7 @@ const VendorSignup = () => {
     resolver: zodResolver(vendorSignupSchema(t)),
     reValidateMode: "onChange",
     shouldFocusError: false,
-    mode: "onTouched",
+    mode: "onBlur",
     defaultValues: {
       identity: {},
       serviceData: { serviceLocation: { coverageType: "city" } },

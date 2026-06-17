@@ -21,6 +21,7 @@ Object.assign(
   require('./events.settings.service'),
   require('./events.stats-export.service'),
   require('./events.launch.service'),
+  require('./events.resend.service'),
 );
 
 module.exports = new EventsService();

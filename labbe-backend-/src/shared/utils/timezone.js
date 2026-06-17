@@ -160,6 +160,73 @@ const isDue = (eventDoc, now = new Date(), windowSeconds = 60) => {
   return diffSec >= 0 && diffSec < windowSeconds;
 };
 
+const parseDateTime = (date, timeStr) => {
+  if (!date || !timeStr) return null;
+  const m = /^(\d{1,2}):(\d{2})$/.exec(timeStr.trim());
+  if (!m) return null;
+
+  const hh = Number(m[1]);
+  const mm = Number(m[2]);
+  if (Number.isNaN(hh) || Number.isNaN(mm) || hh > 23 || mm > 59) return null;
+
+  const d = new Date(date);
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth();
+  const day = d.getUTCDate();
+
+  const naiveUtc = Date.UTC(year, month, day, hh, mm, 0, 0);
+  return new Date(naiveUtc - RIYADH_OFFSET_MINUTES * 60 * 1000);
+};
+
+const toRiyadhComponents = (utcDate) => {
+  const d = utcDate instanceof Date ? utcDate : new Date(utcDate);
+  if (Number.isNaN(d.getTime())) {
+    return { date: null, time: null };
+  }
+
+  const riyadhMillis = d.getTime() + RIYADH_OFFSET_MINUTES * 60 * 1000;
+  const r = new Date(riyadhMillis);
+
+  const year = r.getUTCFullYear();
+  const month = r.getUTCMonth();
+  const day = r.getUTCDate();
+  const hh = String(r.getUTCHours()).padStart(2, "0");
+  const mm = String(r.getUTCMinutes()).padStart(2, "0");
+
+  return {
+    date: new Date(Date.UTC(year, month, day)),
+    time: `${hh}:${mm}`,
+  };
+};
+
+const parseReminderTime = (eventDoc, tz = DEFAULT_TZ) => {
+  const scheduledDate = eventDoc?.reminderSettings?.scheduledDate;
+  const scheduledTime = eventDoc?.reminderSettings?.scheduledTime; // "HH:mm"
+
+  if (!scheduledDate || !scheduledTime) return null;
+
+  const m = /^(\d{1,2}):(\d{2})$/.exec(scheduledTime.trim());
+  if (!m) return null;
+
+  const hh = Number(m[1]);
+  const mm = Number(m[2]);
+  if (Number.isNaN(hh) || Number.isNaN(mm) || hh > 23 || mm > 59) return null;
+
+  const d = new Date(scheduledDate);
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth(); // 0-indexed
+  const day = d.getUTCDate();
+
+  if (tz === "Asia/Riyadh" || tz === DEFAULT_TZ) {
+    const naiveUtc = Date.UTC(year, month, day, hh, mm, 0, 0);
+    return new Date(naiveUtc - RIYADH_OFFSET_MINUTES * 60 * 1000);
+  }
+
+  throw new Error(
+    `Unsupported timezone: ${tz}. Supported: Asia/Riyadh`
+  );
+};
+
 module.exports = {
   DEFAULT_TZ,
   RIYADH_OFFSET_MINUTES,
@@ -168,4 +235,7 @@ module.exports = {
   parseEventTime,
   isDue,
   formatRiyadh,
+  parseDateTime,
+  toRiyadhComponents,
+  parseReminderTime,
 };

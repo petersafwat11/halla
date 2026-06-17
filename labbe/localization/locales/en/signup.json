@@ -47,7 +47,7 @@
       "description": "Follow these steps to create your account as a service provider and start displaying your services on the Halaa platform.",
       "steps": {
         "identity": "Basic Account Information",
-        "serviceData": "Service or Store Details",
+        "serviceData": "Service or Halla Marketplace Details",
         "samplesAndPackages": "Images, Offers & Prices",
         "commercialVerification": "Commercial Verification",
         "commercialVerificationDescription": "Upload required documents for commercial verification.",
@@ -129,7 +129,7 @@
         }
       },
       "serviceData": {
-        "title": "Service or Store Details",
+        "title": "Service or Halla Marketplace Details",
         "description": "Introduce visitors to your services and the areas you cover.",
 
         "serviceDescription": {
@@ -404,7 +404,8 @@
           "serviceDescriptionMaxLength": "Service description must be less than 500 characters",
           "cityRequired": "City is required",
           "cityMinLength": "City must be at least 2 characters",
-          "coverageAreaRequired": "Please select at least one coverage area"
+          "coverageAreaRequired": "Please select at least one coverage area",
+          "regionRequired": "Region is required"
         }
       },
       "samplesAndPackages": {
@@ -1134,7 +1135,7 @@
       "otpLogin": {
         "phoneNumber": "Phone Number",
         "verification": "Verification",
-        "editPhone": "Edit phone number",
+        "editPhone": "Cancel",
         "loginWithEmail": "Login with email"
       },
       "otp": {
@@ -1233,5 +1234,17 @@
         "passwordsDoNotMatch": "Passwords do not match"
       }
     }
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email",
+    "invalidSaudiPhone": "Please enter a valid Saudi phone number",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMaxLength": "Password must be less than 128 characters",
+    "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+    "passwordMismatch": "Passwords do not match",
+    "nameMinLength": "Name must be at least 2 characters",
+    "otpLength": "Verification code must be 6 digits",
+    "otpInvalid": "Verification code must contain only numbers"
   }
 }

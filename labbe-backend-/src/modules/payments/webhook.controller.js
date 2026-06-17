@@ -209,6 +209,9 @@ async function handleInvoiceEvent(eventType, data) {
     return { handled: false, reason: 'unknown_invoice' };
   }
 
+  const amount = data.amount ? data.amount / 100 : 0;
+  const currency = data.currency || sub.currency || 'SAR';
+
   if (eventType === 'invoice_paid') {
     if (typeof sub.renew === 'function') {
       try {
@@ -225,12 +228,17 @@ async function handleInvoiceEvent(eventType, data) {
     await sub.save();
     await sendPaymentFailedEmail({
       userId: sub.userId,
-      amount: data?.amount ?? 0,
-      currency: data?.currency || sub.currency || 'SAR',
+      amount: amount,
+      currency: currency,
       planName: sub.planName || sub.planCode || '',
       reason: data?.message || 'Recurring invoice payment failed',
     });
   }
+
+  // Trigger renewal notifications asynchronously (non-blocking)
+  sendInvoiceNotifications(eventType, sub, amount, currency).catch((err) => {
+    logger.error('[handleInvoiceEvent] sendInvoiceNotifications failed', { error: err?.message });
+  });
 
   await logAudit({
     action: 'payment.invoice_processed',
@@ -242,3 +250,111 @@ async function handleInvoiceEvent(eventType, data) {
 
   return { handled: true, subscriptionId: sub._id };
 }
+
+async function sendInvoiceNotifications(eventType, sub, amount, currency) {
+  try {
+    const User = require('../../../models/UserModel');
+    const notificationService = require('../notifications/notifications.service');
+    const config = require('../../config');
+
+    const payer = await User.findById(sub.userId).select('name username email role');
+    if (!payer) return;
+
+    const payerName = payer.name || payer.username || payer.email || 'Client';
+    const amountStr = `${amount} ${currency}`;
+    const frontendUrl = config.frontend?.url || '';
+
+    // Plan descriptions
+    const planNames = {
+      basic: { en: 'Basic Plan', ar: 'الباقة الأساسية' },
+      premium: { en: 'Premium Plan', ar: 'الباقة المميزة' },
+      business: { en: 'Business Plan', ar: 'باقة الأعمال' },
+      trial: { en: 'Trial Plan', ar: 'الباقة التجريبية' },
+    };
+    const planCode = sub.planCode || sub.planName || '';
+    const plan = planNames[planCode.toLowerCase()] || { en: planCode || 'Subscription', ar: planCode || 'الاشتراك' };
+    const planDetailsEn = `${plan.en} Subscription`;
+    const planDetailsAr = `اشتراك ${plan.ar}`;
+
+    // Determine notification title and messages
+    let type = 'custom';
+    let title = '';
+    let titleAr = '';
+    let message = '';
+    let messageAr = '';
+    let priority = 'normal';
+
+    let adminTitle = '';
+    let adminTitleAr = '';
+    let adminMessage = '';
+    let adminMessageAr = '';
+
+    if (eventType === 'invoice_paid') {
+      type = 'subscription_renewed';
+      title = 'Subscription Renewed';
+      titleAr = 'تم تجديد الاشتراك';
+      message = `Your subscription renewal payment of ${amountStr} for ${planDetailsEn} was successful.`;
+      messageAr = `تم تجديد اشتراكك بنجاح ودفع بقيمة ${amountStr} لـ ${planDetailsAr}.`;
+
+      adminTitle = 'Subscription Renewal Received';
+      adminTitleAr = 'تم استلام تجديد اشتراك';
+      adminMessage = `A subscription renewal payment of ${amountStr} has been received from ${payerName} for ${planDetailsEn}.`;
+      adminMessageAr = `تم استلام دفعة تجديد اشتراك بقيمة ${amountStr} من ${payerName} لـ ${planDetailsAr}.`;
+    } else if (eventType === 'invoice_failed') {
+      type = 'payment_failed';
+      title = 'Subscription Renewal Failed';
+      titleAr = 'فشل تجديد الاشتراك';
+      message = `Your subscription renewal payment of ${amountStr} for ${planDetailsEn} failed.`;
+      messageAr = `فشلت عملية دفع تجديد اشتراكك بقيمة ${amountStr} لـ ${planDetailsAr}.`;
+      priority = 'high';
+
+      adminTitle = 'Subscription Renewal Failed Alert';
+      adminTitleAr = 'فشل تجديد اشتراك';
+      adminMessage = `A subscription renewal payment of ${amountStr} from ${payerName} for ${planDetailsEn} failed.`;
+      adminMessageAr = `فشلت عملية دفع تجديد اشتراك بقيمة ${amountStr} من ${payerName} لـ ${planDetailsAr}.`;
+    }
+
+    const payerActionUrl = payer.role === 'whitelabel_admin'
+      ? `${frontendUrl}/ar/admin-dash`
+      : `${frontendUrl}/ar/host/subscription`;
+
+    // 1. Notify the payer (host or whitelabel admin)
+    if (payer.role === 'host' || payer.role === 'whitelabel_admin') {
+      await notificationService.sendToUser(payer._id, {
+        type,
+        title,
+        titleAr,
+        message,
+        messageAr,
+        priority,
+        actionUrl: payerActionUrl,
+        data: {
+          entityType: 'subscription',
+          entityId: sub._id,
+          metadata: { amount, currency }
+        }
+      });
+    }
+
+    // 2. Notify platform admins
+    if (adminTitle) {
+      await notificationService.sendToPlatformAdmins({
+        type,
+        title: adminTitle,
+        titleAr: adminTitleAr,
+        message: adminMessage,
+        messageAr: adminMessageAr,
+        priority,
+        actionUrl: `${frontendUrl}/ar/admin-dash/payments`,
+        data: {
+          entityType: 'subscription',
+          entityId: sub._id,
+          metadata: { amount, currency, payerId: sub.userId, payerName }
+        }
+      });
+    }
+  } catch (err) {
+    logger.error('[sendInvoiceNotifications] error', { error: err?.message });
+  }
+}
+

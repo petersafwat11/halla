@@ -27,6 +27,10 @@ const MobilePreviewModal = ({ formData, locale, onClose }) => (
           formData.templateImage || "/svg/events/invitation.svg"
         }
         templateData={formData.visualTemplate?.data || {}}
+        selectedTemplate={formData.selectedTemplate}
+        eventDate={formData.eventDate || ""}
+        eventTime={formData.eventTime || ""}
+        locationAddress={formData.address?.address || ""}
         locale={locale}
         forceShow={true}
       />

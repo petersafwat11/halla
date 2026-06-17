@@ -1,11 +1,10 @@
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import styles from "./singleEvent.module.css";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
 import {
   HostEventHeader,
-  EventStats,
-  GuestTable,
+  EventStatsAndTableWrapper,
   EventFailureBannerClient,
   AutoReminderInfoText,
   ScheduleReminderSection,
@@ -44,16 +43,9 @@ export default async function SingleEventPage({ params }) {
       <div className={styles.page}>
         <HostEventHeader eventId={id} />
         <EventFailureBannerClient eventId={id} />
-        <AutoReminderInfoText />
+        <AutoReminderInfoText eventId={id} />
         <ScheduleReminderSection eventId={id} />
-        <div>
-          <div className={styles.statsData}>
-            <EventStats eventId={id} />
-          </div>
-          <div className={styles.guestsTable}>
-            <GuestTable eventId={id} />
-          </div>
-        </div>
+        <EventStatsAndTableWrapper eventId={id} />
       </div>
     </QueryClientServerProvider>
   );

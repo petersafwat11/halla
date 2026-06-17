@@ -98,6 +98,29 @@
   width: 100%;
 }
 
+.statCardWrapper {
+  cursor: pointer;
+  border-radius: clamp(0.8rem, 1.2vw, 1.2rem);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.statCardWrapper:hover {
+  transform: scale(1.03);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.statCardWrapper:focus-visible {
+  outline: 2px solid #C28E5C;
+  outline-offset: 2px;
+}
+
+.statCardWrapperActive {
+  outline: 2px solid #C28E5C;
+  outline-offset: 2px;
+  box-shadow: 0 2px 12px rgba(194, 142, 92, 0.25);
+}
+
 .statCard {
   display: flex;
   flex-direction: column;
@@ -422,7 +445,9 @@
 
   .header .actions {
     width: 100%;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.2rem;
   }
 
   .header .actions button {

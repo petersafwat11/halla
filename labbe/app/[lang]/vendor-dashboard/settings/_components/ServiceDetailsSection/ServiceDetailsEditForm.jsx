@@ -85,7 +85,7 @@ const ServiceDetailsEditForm = ({
         nationalId: formData.nationalId,
         serviceDescription: formData.description,
       },
-      serviceDetailsSchema
+      serviceDetailsSchema(t)
     );
     if (!isValid) {
       setErrors(zodErrors);

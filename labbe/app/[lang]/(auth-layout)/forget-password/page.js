@@ -11,6 +11,7 @@ const ForgetPasswordPage = () => {
 
   const methods = useForm({
     resolver: zodResolver(forgotPasswordSchema(t)),
+    mode: "onBlur",
     defaultValues: {
       email: "",
     },

@@ -8,6 +8,7 @@
 export { default as AutoReminderInfoText } from "./AutoReminderInfoText";
 export { default as ScheduleReminderSection } from "./ScheduleReminderSection";
 export { default as EventStats } from "./EventStats";
+export { default as EventStatsAndTableWrapper } from "./EventStatsAndTableWrapper";
 export { default as EventFailureBanner } from "./EventFailureBanner";
 export { default as EventFailureBannerClient } from "./EventFailureBannerClient";
 export { default as PartialFailureBanner } from "./PartialFailureBanner";

@@ -57,8 +57,8 @@ export default function WhitelabelSignupScreen({ navigation }) {
   const [currentStep, setCurrentStep] = useState(1);
 
   const methods = useForm({
-    resolver: zodResolver(whitelabelSignupSchema),
-    mode: 'onTouched',
+    resolver: zodResolver(whitelabelSignupSchema(t)),
+    mode: 'onBlur',
     defaultValues: {
       identity: { arabicName: '', englishName: '', companyName: '', licenseNumber: '', taxNumber: '', address: { city: '', neighborhood: '', street: '', buildingNumber: '', additionalNumber: '', placeType: '', placeNumber: '' } },
       loginData: { email: '', phoneNumber: '' },

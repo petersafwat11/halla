@@ -31,8 +31,10 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
   // visibility identically. (Manual-retry RBAC stays in
   // `EventFailureBanner`; here we only need the test/schedule/staff
   // gates so the existing `event` prop is enough.)
-  const { canSendTest, canSchedule, hasStaff, isCompleted } =
+  const { canSendTest, canSchedule, hasStaff, isCompleted, canResendInvite, resendInviteTooltip } =
     useEventActionGate({ event, testMessageSent });
+
+  const resendInviteMutation = useEventMutation("resendInvite");
 
   const dropdownItems = [
     { label: t("lastEvent.dropdown.eventDetails"), step: 1 },
@@ -83,11 +85,27 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
     }
   };
 
+  const handleResendInvite = async () => {
+    if (!effectiveEventId) return;
+    try {
+      const result = await resendInviteMutation.mutateAsync({ eventId: effectiveEventId });
+      const data = result?.data || result;
+      toast.success(
+        t("resendInvite.success", { sent: data?.successful || 0, total: data?.reminded || 0 })
+      );
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || error?.message || t("resendInvite.error")
+      );
+    }
+  };
+
   return (
     <>
       <div className={styles.actionsContainer}>
         {canSendTest && (
-          <button className={styles.outlineButton} onClick={handleTestMessageClick}>
+          <button className={`${styles.outlineButton} ${styles.flashingButton}`} onClick={handleTestMessageClick}>
             <span>{t("lastEvent.buttons.testMessage")}</span>
             <Image src="/svg/events/calendar-edit.svg" alt="test" width={12} height={12} />
           </button>
@@ -121,6 +139,26 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
             }
           >
             <span>{t("lastEvent.buttons.sharePostEvent", "مشاركة صفحة ما بعد المناسبة")}</span>
+          </button>
+        )}
+        {(canResendInvite || resendInviteTooltip) && (
+          <button
+            className={`${styles.outlineButton} ${!canResendInvite ? styles.disabledWithTooltip : ""}`}
+            onClick={canResendInvite ? handleResendInvite : undefined}
+            disabled={!canResendInvite || resendInviteMutation.isPending}
+            title={
+              typeof resendInviteTooltip === "object"
+                ? t(resendInviteTooltip.key, { hours: resendInviteTooltip.hoursLeft })
+                : resendInviteTooltip
+                  ? t(resendInviteTooltip)
+                  : undefined
+            }
+          >
+            <span>
+              {resendInviteMutation.isPending
+                ? t("resendInvite.sending", "جاري الإرسال...")
+                : t("resendInvite.button", "إعادة إرسال الدعوات")}
+            </span>
           </button>
         )}
         <div className={styles.dropdownWrapper}>

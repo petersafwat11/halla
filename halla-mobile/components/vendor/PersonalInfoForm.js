@@ -38,7 +38,7 @@ const PersonalInfoForm = ({ data, onSave, onPhoneChanged, onRefetch, loading }) 
   const { t } = useTranslation("vendor");
   const toast = useToast();
   const methods = useForm({
-    resolver: zodResolver(personalInfoSchema),
+    resolver: zodResolver(personalInfoSchema(t)),
     defaultValues: {
       ownerFullName: data?.ownerFullName || "",
       brandName: data?.brandName || "",

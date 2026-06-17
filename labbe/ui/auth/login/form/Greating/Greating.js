@@ -8,7 +8,6 @@ const Greating = () => {
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>{t("loginForm.greeting.title")}</h2>
-      <p className={styles.login_text}>{t("loginForm.greeting.subtitle")}</p>
     </div>
   );
 };

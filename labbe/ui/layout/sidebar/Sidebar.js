@@ -51,7 +51,7 @@ function Sidebar({ className, dashboardType: propDashboardType }) {
   const handleLogout = async () => {
     setIsOpen(false);
     await useAuthStore.getState().logout();
-    router.replace(`/${lang}`);
+    router.replace(`/${lang}/login`);
   };
 
   // Get translation based on dashboard type

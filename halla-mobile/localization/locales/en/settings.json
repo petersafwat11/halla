@@ -60,6 +60,22 @@
     "updateSuccess": "Notification preferences updated successfully",
     "updateError": "Failed to update notification preferences"
   },
+  "errors": {
+    "usernameMinLength": "Username must be at least 3 characters",
+    "usernameMaxLength": "Username must not exceed 50 characters",
+    "nameMinLength": "Name must be at least 2 characters",
+    "nameMaxLength": "Name must not exceed 100 characters",
+    "invalidEmail": "Invalid email address",
+    "invalidPhone": "Invalid phone number",
+    "currentPasswordRequired": "Current password is required",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+    "confirmPasswordRequired": "Password confirmation is required",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordRequired": "Password is required for confirmation",
+    "confirmDeletion": "Please type DELETE to confirm",
+    "invalidSaudiPhone": "Phone must start with 5 and be 9 digits"
+  },
   "language": {
     "title": "Language",
     "english": "English",

@@ -29,7 +29,7 @@
   "navigation": {
     "home": "Home",
     "events": "Events",
-    "marketplace": "Marketplace",
+    "marketplace": "Halla Marketplace",
     "plans": "Plans",
     "tickets": "Tickets",
     "profile": "Profile",
@@ -59,6 +59,22 @@
     "amiri": { "displayName": "Amiri" },
     "ibm_plex_arabic": { "displayName": "IBM Plex Sans Arabic" },
     "noto_sans_arabic": { "displayName": "Noto Sans Arabic" }
+  },
+  "validation": {
+    "invalidSaudiPhone": "Phone must start with 5 and be 9 digits",
+    "invalidEmail": "Please enter a valid email address",
+    "required": "This field is required",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMaxLength": "Password must not exceed 128 characters",
+    "passwordComplexity": "Password must contain uppercase, lowercase, and a number",
+    "otpLength": "Verification code must be 6 digits",
+    "otpInvalid": "Verification code must contain only digits",
+    "usernameMin": "Username must be at least 2 characters",
+    "usernameMax": "Username must be less than 50 characters",
+    "emailInvalid": "Please enter a valid email address",
+    "passwordMin": "Password must be at least 8 characters",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "currentPasswordRequired": "Current password is required to set a new password"
   },
   "date": {
     "months": {

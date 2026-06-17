@@ -1,5 +1,7 @@
 {
   "validation": {
+    "invalidSaudiPhone": "رقم الهاتف يجب أن يبدأ بـ 5 ويتكون من 9 أرقام",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
     "bride_name_required": "اسم العروسة مطلوب",
     "groom_name_required": "اسم العريس مطلوب",
     "guest_message_required": "رسالة الضيوف مطلوبة",
@@ -31,7 +33,7 @@
   "guest_list_required": "مطلوب ضيف واحد على الأقل.",
   "cancel": "إلغاء",
   "save": "حفظ",
-  "page_title": "انشاء مناسبة",
+  "page_title": "إنشاء مناسبة",
   "page_description": "اتبع الخطوات التالية وانشئ مناسبة بسهولة",
   "step1_label": "تفاصيل المناسبة",
   "step2_label": "تحضير الدعوة",
@@ -228,6 +230,10 @@
   "uploaded_card_preview": "معاينة البطاقة المرفوعة",
   "replace_image": "استبدال الصورة",
   "remove_image": "حذف الصورة",
+  "confirmed_design_label": "التصميم المختار",
+  "uploaded_design_label": "التصميم المرفوع",
+  "remove_selection": "إزالة",
+  "change_design": "تغيير التصميم",
   "auto_replies": "الردود التلقائية",
   "auto_replies_tab_attending": "الحضور",
   "auto_replies_tab_maybe": "ربما",
@@ -302,12 +308,23 @@
   "invitees": "المدعوين",
   "cancel_schedule": "إلغاء الجدولة",
   "reschedule": "إعادة الجدولة",
-  "event_scheduled": "تم جدولة المناسبة",
+  "event_scheduled": "تم جدولة الارسال",
   "confirm_reviewed": "أؤكد صحة جميع المعلومات بعد مراجعتها",
   "invitation_message_label": "رسالة الدعوة",
   "attendance_auto_reply_label": "رد تلقائي للحضور",
   "auto_reply_placeholder": "ادخل رسالة الرد",
   "maybe_auto_reply_label": "رد تلقائي لربما",
   "absence_auto_reply_label": "رد تلقائي للغياب",
-  "add_note_label": "أضف ملاحظتك"
+  "add_note_label": "أضف ملاحظتك",
+  "templates": {
+    "fields": {
+      "validation": {
+        "required": "هذا الحقل مطلوب",
+        "minLength": "يجب أن يكون {{min}} حرف على الأقل",
+        "maxLength": "يجب أن لا يتجاوز {{max}} حرف",
+        "invalidEmail": "يجب أن يكون بريد إلكتروني صحيح",
+        "invalidColor": "يجب أن يكون لوناً صالحاً (مثال: #FF5733)"
+      }
+    }
+  }
 }

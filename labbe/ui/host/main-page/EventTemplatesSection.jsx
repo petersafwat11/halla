@@ -5,11 +5,132 @@ import styles from "./EventTemplatesSection.module.css";
 import { useTranslation } from "react-i18next";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
-import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import {
-  useHostTemplates,
-  useTemplateCategories,
-} from "@/hooks/templates";
+import useCarouselSnap from "@/ui/landing/_shared/useCarouselSnap";
+import CarouselDots from "@/ui/landing/_shared/CarouselDots";
+
+const LOCAL_CATEGORIES = [
+  { code: "wedding",       nameEn: "Wedding",       nameAr: "زفاف" },
+  { code: "engagement",    nameEn: "Engagement",    nameAr: "خطوبة" },
+  { code: "birthday",      nameEn: "Birthday",      nameAr: "عيد ميلاد" },
+  { code: "baby_shower",   nameEn: "Baby Shower",   nameAr: "استقبال مولود" },
+  { code: "ladies_event",  nameEn: "Ladies' Event", nameAr: "مناسبة نسائية" },
+  { code: "general_event", nameEn: "General Event", nameAr: "مناسبات عامة" },
+];
+
+const LOCAL_TEMPLATES = [
+  {
+    id: "tpl-1",
+    nameEn: "Royal Groom",
+    nameAr: "زفاف ملكي",
+    categories: ["wedding"],
+    src: "/template-cards/1.png",
+  },
+  {
+    id: "tpl-2",
+    nameEn: "Pearl Da'wah Wedding",
+    nameAr: "دعوة زفاف لؤلؤية",
+    categories: ["wedding"],
+    src: "/template-cards/2.png",
+  },
+  {
+    id: "tpl-3",
+    nameEn: "Royal Da'wah Wedding",
+    nameAr: "دعوة الفرح الملكي",
+    categories: ["wedding"],
+    src: "/template-cards/3.png",
+  },
+  {
+    id: "tpl-4",
+    nameEn: "Gulf Groom",
+    nameAr: "زفاف الخليج",
+    categories: ["wedding"],
+    src: "/template-cards/4.png",
+  },
+  {
+    id: "tpl-5",
+    nameEn: "Rose Garden Wedding",
+    nameAr: "زفاف الورد",
+    categories: ["wedding"],
+    src: "/template-cards/5.png",
+  },
+  {
+    id: "tpl-6",
+    nameEn: "Burgundy Bloom Wedding",
+    nameAr: "زفاف الورد الأرجواني",
+    categories: ["wedding", "ladies_event"],
+    src: "/template-cards/6.png",
+  },
+  {
+    id: "tpl-7",
+    nameEn: "Floral Arch Wedding",
+    nameAr: "قوس الزهور",
+    categories: ["wedding"],
+    src: "/template-cards/7.png",
+  },
+  {
+    id: "tpl-8",
+    nameEn: "Candle Engagement",
+    nameAr: "خطوبة الشموع",
+    categories: ["wedding", "engagement"],
+    src: "/template-cards/8.png",
+  },
+  {
+    id: "tpl-9",
+    nameEn: "Sacred Vows",
+    nameAr: "عقد قران مبارك",
+    categories: ["wedding"],
+    src: "/template-cards/9.png",
+  },
+  {
+    id: "tpl-10",
+    nameEn: "Eid Al-Adha",
+    nameAr: "عيد الأضحى",
+    categories: ["general_event"],
+    src: "/template-cards/10.png",
+  },
+  {
+    id: "tpl-11",
+    nameEn: "Ramadan Iftar",
+    nameAr: "سفرة إفطار رمضان",
+    categories: ["general_event"],
+    src: "/template-cards/11.png",
+  },
+  {
+    id: "tpl-12",
+    nameEn: "Birthday Party",
+    nameAr: "حفلة عيد ميلاد",
+    categories: ["birthday"],
+    src: "/template-cards/12.png",
+  },
+  {
+    id: "tpl-13",
+    nameEn: "Newborn Boy",
+    nameAr: "بشارة المولود",
+    categories: ["baby_shower"],
+    src: "/template-cards/13.png",
+  },
+  {
+    id: "tpl-14",
+    nameEn: "Newborn Girl",
+    nameAr: "بشارة الأميرة",
+    categories: ["baby_shower"],
+    src: "/template-cards/14.jpg",
+  },
+  {
+    id: "tpl-15",
+    nameEn: "Graduation Celebration",
+    nameAr: "حفل تخرج",
+    categories: ["general_event"],
+    src: "/template-cards/15.png",
+  },
+  {
+    id: "tpl-16",
+    nameEn: "Pearl Promise",
+    nameAr: "وعد لؤلؤي",
+    categories: ["engagement"],
+    src: "/template-cards/16.png",
+  },
+];
 
 function EventTemplatesSection() {
   const { t } = useTranslation("home-events");
@@ -17,36 +138,33 @@ function EventTemplatesSection() {
   const isAr = currentLocale === "ar";
 
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [currentPage, setCurrentPage] = useState(0);
+  const [previewTemplate, setPreviewTemplate] = useState(null);
+
   const isMobile = useMediaQuery("(max-width: 550px)");
   const isTablet = useMediaQuery("(max-width: 768px)");
 
-  // Mobile + tablet use the 3-column grid defined in
-  // EventTemplatesSection.module.css, so pages must hold 3 cards.
-  // Desktop reverts to 4 per page (single row).
-  const itemsPerPage = isMobile || isTablet ? 3 : 4;
+  const categories = LOCAL_CATEGORIES;
+  
+  const templates = useMemo(() => {
+    if (selectedCategory === "") {
+      return LOCAL_TEMPLATES;
+    }
+    return LOCAL_TEMPLATES.filter((tpl) =>
+      tpl.categories.includes(selectedCategory)
+    );
+  }, [selectedCategory]);
 
-  const { data: catData } = useTemplateCategories({ admin: false });
-  const { data: tplData, isLoading } = useHostTemplates({
-    category: selectedCategory,
+  const GAP = isMobile || isTablet ? 12 : 24;
+
+  const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
+    gap: GAP,
+    totalItems: templates.length,
   });
 
-  const categories = catData?.data?.categories || [];
-  const templates = useMemo(
-    () => tplData?.data?.templates || [],
-    [tplData],
-  );
-
-  const totalPages = Math.max(1, Math.ceil(templates.length / itemsPerPage));
-  const startIndex = currentPage * itemsPerPage;
-  const currentTemplates = templates.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
-
+  // Reset slider index to 0 when category changes
   useEffect(() => {
-    setCurrentPage(0);
-  }, [isMobile, isTablet, selectedCategory, templates.length]);
+    scrollToIdx(0);
+  }, [selectedCategory, templates.length, scrollToIdx]);
 
   return (
     <div className={styles.templatesContainer}>
@@ -69,7 +187,7 @@ function EventTemplatesSection() {
             </button>
             {categories.map((c) => (
               <button
-                key={c._id || c.code}
+                key={c.code}
                 type="button"
                 className={`${styles.tab} ${
                   selectedCategory === c.code ? styles.active : ""
@@ -81,19 +199,25 @@ function EventTemplatesSection() {
             ))}
           </div>
 
-          {isLoading ? (
-            <SimpleLoading />
-          ) : templates.length === 0 ? (
+          {templates.length === 0 ? (
             <p className={styles.emptyMessage}>
               {t("templates.empty")}
             </p>
           ) : (
-            <div className={styles.templatesGrid}>
-              {currentTemplates.map((tpl) => {
-                const src = tpl.thumbnailUrl || tpl.imageUrl;
+            <div
+              className={styles.templatesTrack}
+              ref={trackRef}
+              onScroll={handleScroll}
+            >
+              {templates.map((tpl) => {
+                const src = tpl.src;
                 const alt = isAr ? tpl.nameAr : tpl.nameEn;
                 return (
-                  <div key={tpl._id} className={styles.templateCard}>
+                  <div
+                    key={tpl.id}
+                    className={styles.templateCard}
+                    onClick={() => setPreviewTemplate(tpl)}
+                  >
                     <div className={styles.templateCardInner}>
                       {src ? (
                         <Image
@@ -102,9 +226,7 @@ function EventTemplatesSection() {
                           width={129}
                           height={172}
                           className={styles.templateImage}
-                          unoptimized={
-                            src.startsWith("blob:") || src.startsWith("data:")
-                          }
+                          unoptimized={true}
                         />
                       ) : (
                         <div className={styles.templateImage} />
@@ -116,23 +238,64 @@ function EventTemplatesSection() {
             </div>
           )}
 
-          {totalPages > 1 && (
-            <div className={styles.pagination}>
-              {Array.from({ length: totalPages }).map((_, index) => (
-                <div
-                  key={index}
-                  className={`${styles.dot} ${
-                    index === currentPage ? styles.activeDot : ""
-                  }`}
-                  onClick={() => setCurrentPage(index)}
-                />
-              ))}
-            </div>
+          {templates.length > 1 && (
+            <CarouselDots
+              idx={idx}
+              maxIdx={maxIdx}
+              onChange={scrollToIdx}
+              onPrev={goPrev}
+              onNext={goNext}
+              classes={{
+                controls: styles.controls,
+                ctrlBtn: styles.ctrlBtn,
+                dots: styles.dots,
+                dot: styles.dot,
+                dotActive: styles.dotActive,
+              }}
+            />
           )}
         </div>
       </div>
+
+      {previewTemplate && (
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => e.target === e.currentTarget && setPreviewTemplate(null)}
+        >
+          <div className={styles.modal}>
+            <header className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>
+                {isAr ? previewTemplate.nameAr : previewTemplate.nameEn}
+              </h3>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setPreviewTemplate(null)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </header>
+            <div className={styles.modalBody}>
+              <div className={styles.previewImageWrapper}>
+                <Image
+                  src={previewTemplate.src}
+                  alt={isAr ? previewTemplate.nameAr : previewTemplate.nameEn}
+                  width={340}
+                  height={412}
+                  className={styles.previewImage}
+                  unoptimized={true}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default EventTemplatesSection;
+

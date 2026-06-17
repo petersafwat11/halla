@@ -35,7 +35,7 @@ const VENDOR_STATUS = {
  * resets `attemptCount` to 0.
  */
 const EVENT_STATUS = {
-  DRAFT: 'draft',
+  PENDING_SCHEDULING: 'pending_scheduling',
   PENDING_REVIEW: 'pending_review',
   SCHEDULED: 'scheduled',
   LIVE: 'live',

@@ -439,7 +439,7 @@ module.exports = {
         const whitelabelEventCount = await Event.countDocuments({
           whitelabelId,
           createdAt: { $gte: periodStart },
-          status: { $nin: ['cancelled', 'draft'] },
+          status: { $nin: ['cancelled', 'pending_scheduling'] },
         });
         if (whitelabelEventCount >= (subscription.limits?.maxEvents || 1)) {
           throw new PackageLimitError(
@@ -878,7 +878,10 @@ module.exports = {
         sentCount: event.messagingStatus.sentCount || 0,
         failedCount: event.messagingStatus.failedCount || 0,
         staffFailedCount: event.messagingStatus.staffFailedCount || 0,
+        bulkSendCompletedAt: event.messagingStatus.bulkSendCompletedAt || null,
       } : null,
+      // One-time resend-invite flag
+      resendInviteSentAt: event.resendInviteSentAt || null,
       // Multi-tenant context (3c failure-banner RBAC needs this)
       whitelabelId: event.whitelabelId || null,
       host: event.host || null,

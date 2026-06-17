@@ -326,7 +326,7 @@ export const getDefaultFormValues = () => ({
   staffList: [],
 
   // Step 3 — Visual invitation card
-  visualTemplate: null,
+  visualTemplate: { isCustomUpload: true, fieldValues: {} },
   templateImage: null,
 
   // Step 4 — Taqnyat template + auto-replies

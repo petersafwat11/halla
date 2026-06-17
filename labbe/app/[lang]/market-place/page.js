@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { usePublicVendorServices } from "@/hooks/vendorServices";
-import { getImageUrl } from "@/utils/vendorHelpers";
+import { usePublicVendors } from "@/hooks/vendors";
 import styles from "./page.module.css";
 import ServiceCard from "./_components/card/Card";
 import Pagination from "./_components/pagination/Pagination";
@@ -16,19 +15,19 @@ const MarketPlacePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedVendor, setSelectedVendor] = useState(null);
 
-  const { data: servicesData, isLoading } = usePublicVendorServices({
+  const { data: vendorsData, isLoading } = usePublicVendors({
     page: currentPage,
     limit: ITEMS_PER_PAGE,
   });
 
   const vendors = useMemo(() => {
-    const data = servicesData?.data || [];
+    const data = vendorsData?.data || [];
     return Array.isArray(data) ? data : [];
-  }, [servicesData]);
+  }, [vendorsData]);
 
-  const totalItems = servicesData?.pagination?.total ?? vendors.length;
+  const totalItems = vendorsData?.pagination?.total ?? vendors.length;
   const totalPages =
-    servicesData?.pagination?.pages ?? Math.ceil(totalItems / ITEMS_PER_PAGE);
+    vendorsData?.pagination?.pages ?? Math.ceil(totalItems / ITEMS_PER_PAGE);
 
   const handleOpenVendorInfo = useCallback((vendor) => {
     setSelectedVendor(vendor);
@@ -56,46 +55,46 @@ const MarketPlacePage = () => {
         ) : vendors.length > 0 ? (
           <>
             <div className={styles.servicesGrid}>
-              {vendors.map((service) => {
-                const location = service.serviceLocation?.regionNameAr
-                  ? `${service.serviceLocation.cityNameAr || ""}, ${service.serviceLocation.regionNameAr}`
-                  : "";
-                const image =
-                  getImageUrl(service.image || service.vendor?.logo) ||
-                  "/images/placeholder-vendor.jpg";
+              {vendors.map((vendor) => {
+                const locations = vendor.serviceLocation;
+                const cityName = locations?.cityNameAr || locations?.cityNameEn || "";
+                const regionName = locations?.regionNameAr || locations?.regionNameEn || "";
+                const location = [cityName, regionName].filter(Boolean).join(", ") || t("services.defaultLocation");
+
+                const minPrice = vendor.minPrice != null
+                  ? `${t("vendor.startsFrom")} ${vendor.minPrice} ${t("currency")}`
+                  : null;
+
                 const vendorForPopup = {
-                  id: service.id,
-                  name: service.name || t("services.defaultName"),
-                  image,
-                  logo: getImageUrl(service.vendor?.logo) || null,
-                  companyName: service.vendor?.brandName || "",
-                  rating: service.rating || 0,
-                  reviewCount: service.reviewsCount || 0,
-                  duration: service.duration || "",
-                  price: service.price ? String(service.price) : "",
-                  currency: service.priceUnit || "",
-                  included: service.included || [],
-                  location: location || t("services.defaultLocation"),
-                  website: service.vendor?.website || "",
-                  email: service.vendor?.email || "",
-                  phone: service.vendor?.phone || "",
+                  id: vendor.id,
+                  brandName: vendor.brandName,
+                  description: vendor.description,
+                  logo: vendor.logo,
+                  coverImage: vendor.coverImage,
+                  portfolio: vendor.portfolio,
+                  rating: vendor.rating,
+                  reviewCount: vendor.numberOfRatings,
+                  location,
+                  email: vendor.email,
+                  mobile: vendor.mobile,
+                  socialLinks: vendor.socialLinks,
+                  services: vendor.services,
                 };
+
                 return (
                   <ServiceCard
-                    key={service.id}
+                    key={vendor.id}
                     service={{
-                      id: service.id,
-                      image,
-                      rating: service.rating || 0,
-                      reviewsCount: service.reviewsCount || 0,
-                      title: service.name || t("services.defaultName"),
-                      location: location || t("services.defaultLocation"),
-                      tags: service.tags || [],
-                      price: service.price
-                        ? `${service.price} ${t("currency")}`
-                        : "",
-                      description: service.description || "",
-                      vendorName: service.vendor?.brandName || "",
+                      id: vendor.id,
+                      image: vendor.coverImage,
+                      logo: vendor.logo,
+                      rating: vendor.rating || 0,
+                      reviewsCount: vendor.numberOfRatings || 0,
+                      title: vendor.brandName,
+                      location,
+                      tags: vendor.serviceCategories || [],
+                      price: minPrice || "",
+                      vendorName: vendor.brandName,
                       onCallClick: () => handleOpenVendorInfo(vendorForPopup),
                     }}
                   />

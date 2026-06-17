@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 
 const RADIAN = Math.PI / 180;
 const COLORS = ["#C28E5C", "#D6B392"];
-const STATUS_COLORS = ["#D38200", "#3498DB", "#2A8C5B", "#9B59B6"]; // draft, scheduled, live, completed
-const STATUS_KEYS = ["draft", "scheduled", "live", "completed"];
+const STATUS_COLORS = ["#D38200", "#3498DB", "#2A8C5B", "#9B59B6"]; // pending_scheduling, scheduled, live, completed
+const STATUS_KEYS = ["pending_scheduling", "scheduled", "live", "completed"];
 
 const renderCustomizedLabel = ({
   cx,

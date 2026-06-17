@@ -6,7 +6,7 @@
   },
   "personalInfo": {
     "title": "معلومات الحساب الشخصية",
-    "storeLogo": "شعار المتجر",
+    "storeLogo": "شعار سوق هلا",
     "uploadImage": "ارفع الصور",
     "fullName": "الاسم بالكامل",
     "fullNamePlaceholder": "أدخل اسمك الكامل",
@@ -32,7 +32,7 @@
     "noLogo": "لا يوجد شعار"
   },
   "serviceDetails": {
-    "title": "تفاصيل الخدمة او المتجر",
+    "title": "تفاصيل الخدمة او سوق هلا",
     "nationalIdLabel": "رقم الهوية الوطنية - رقم الاقامة",
     "commercialRegister": "نسخه من السجل التجارى( اختيارى)",
     "otherLicenses": "تراخيص اخرى ( اختيارى)",
@@ -107,5 +107,23 @@
   },
   "errors": {
     "boundary": "فشل في تحميل الإعدادات"
+  },
+  "validation": {
+    "ownerNameRequired": "اسم المالك مطلوب",
+    "ownerNameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
+    "ownerNameMaxLength": "الاسم يجب أن يكون أقل من 100 حرف",
+    "brandNameRequired": "اسم النشاط التجاري مطلوب",
+    "brandNameMinLength": "اسم النشاط التجاري يجب أن يكون حرفين على الأقل",
+    "brandNameMaxLength": "اسم النشاط التجاري يجب أن يكون أقل من 100 حرف",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "emailInvalid": "البريد الإلكتروني غير صالح",
+    "phoneInvalid": "رقم الهاتف غير صالح",
+    "phoneRequired": "رقم الهاتف مطلوب",
+    "descriptionMaxLength": "وصف الخدمة يجب أن يكون أقل من 1000 حرف",
+    "nationalIdInvalid": "رقم الهوية يجب أن يكون 10 أرقام",
+    "invalidUrl": "الرابط غير صالح",
+    "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordMismatch": "كلمة المرور غير متطابقة",
+    "currentPasswordRequired": "كلمة المرور الحالية مطلوبة لتغيير كلمة المرور"
   }
 }

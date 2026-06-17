@@ -44,7 +44,7 @@
     },
     "buttons": {
       "testMessage": "Test message",
-      "scheduleEvent": "Schedule event",
+      "scheduleEvent": "Schedule sending",
       "notifyStaff": "Notify staff",
       "notifying": "Sending...",
       "viewStats": "View stats",

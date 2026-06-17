@@ -270,9 +270,40 @@
       "corporate": "Corporate Events",
       "engagement": "Engagement",
       "baby_shower": "Baby Shower"
+    },
+    "validation": {
+      "nameMinLength": "Service name must be more than 2 characters",
+      "typeRequired": "Service type is required",
+      "descriptionMinLength": "Service description must be more than 10 characters",
+      "priceRequired": "Service price is required",
+      "durationMaxLength": "Service duration must be less than 100 characters"
     }
   },
 
+  "validation": {
+    "ownerNameRequired": "Owner name is required",
+    "ownerNameMinLength": "Name must be at least 2 characters",
+    "ownerNameMaxLength": "Name must be less than 100 characters",
+    "brandNameRequired": "Brand name is required",
+    "brandNameMinLength": "Brand name must be at least 2 characters",
+    "brandNameMaxLength": "Brand name must be less than 100 characters",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email format",
+    "phoneInvalid": "Invalid phone number format",
+    "phoneRequired": "Phone number is required",
+    "descriptionMaxLength": "Description must not exceed 1000 characters",
+    "nationalIdInvalid": "National ID must be 10 digits",
+    "invalidUrl": "Invalid URL format",
+    "currentPasswordRequired": "Current password is required",
+    "newPasswordRequired": "New password is required",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "passwordConfirmRequired": "Please confirm your password",
+    "otpRequired": "Verification code is required",
+    "otpInvalid": "Verification code must be 4-8 digits",
+    "otpFormat": "Verification code must be 4-8 digits",
+    "passwordChangeCurrentRequired": "Current password is required to change password"
+  },
   "errors": {
     "fetchFailed": "Failed to Load Data",
     "fetchFailedMessage": "Unable to load data. Please try again.",

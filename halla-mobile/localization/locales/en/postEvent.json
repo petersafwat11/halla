@@ -48,6 +48,16 @@
     "qrExpired": "This link has expired.",
     "qrLookup": "We couldn't find your invitation. Please request a new link."
   },
+  "validation": {
+    "commentEmpty": "Comment cannot be empty",
+    "commentMaxLength": "Comment cannot exceed 1000 characters",
+    "imagesMaxCount": "Maximum 3 images allowed",
+    "titleMaxLength": "Title cannot exceed 200 characters",
+    "titleArMaxLength": "Arabic title cannot exceed 200 characters",
+    "descriptionMaxLength": "Description cannot exceed 1000 characters",
+    "descriptionArMaxLength": "Arabic description cannot exceed 1000 characters",
+    "textMaxLength": "Text cannot exceed 2000 characters"
+  },
   "host": {
     "title": "Post Event Page",
     "publish": "Publish & Send to Guests",

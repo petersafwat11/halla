@@ -6,7 +6,7 @@
     "payments": "المدفوعات",
     "tickets": "الشكاوى",
     "plans": "الخدمات",
-    "shop": "المتجر",
+    "shop": "سوق هلا",
     "freePlan": "الخطة المجانية",
     "freePlanDesc": "اشترك لإرسال دعوات غير محدودة",
     "upgradeNow": "الترقية الآن",
@@ -58,11 +58,11 @@
     "avgAttendance": "متوسط الاستجابة",
     "liveEvents": "المناسبات النشطة",
     "endedEvents": "المناسبات المنتهية",
-    "draftEvents": "المسودات",
+    "pendingSchedulingEvents": "في انتظار الجدولة",
     "attendanceRate": "معدل الحضور"
   },
   "lastEvent": {
-    "scheduleEvent": "جدولة المناسبة",
+    "scheduleEvent": "جدولة الارسال",
     "viewStats": "عرض الإحصائيات",
     "editEvent": "تعديل المناسبة",
     "responseStatus": "حالة الردود",
@@ -72,7 +72,7 @@
     "remainingEvents": "المناسبات المتبقية",
     "plan": "الباقة",
     "status": {
-      "draft": "مسودة",
+      "pending_scheduling": "في انتظار الجدولة",
       "scheduled": "مجدول",
       "published": "منشور",
       "pending": "معلق للموافقة",
@@ -90,7 +90,7 @@
       "invitationCustomization": "تخصيص الرسالة"
     },
     "buttons": {
-      "scheduleEvent": "جدولة المناسبة",
+      "scheduleEvent": "جدولة الارسال",
       "testMessage": "رسالة تجريبية",
       "guests": "ضيف",
       "sharePostEvent": "مشاركة صفحة ما بعد المناسبة"
@@ -136,7 +136,7 @@
   "hero": {
     "welcome": "مرحباً بك",
     "readyToOrganize": "جاهز لتنظيم مناسبتك الأولى؟",
-    "createEvent": "انشئ مناسبتك",
+    "createEvent": "إنشاء مناسبتك",
     "freeTrial": "لديك تجربة مجانية لدعوة 5 أفراد"
   },
   "dashboard": {
@@ -221,7 +221,13 @@
     }
   },
   "singleEvent": {
-    "autoReminderInfo": "نُرسل تذكيراً تلقائياً للضيوف قبل المناسبة بـ 24 ساعة.",
+    "autoReminderInfo": "يتم ارسال تذكيراً تلقائياً للضيوف قبل المناسبة بـ 48 ساعة.",
+    "autoReminderInfoCustom": "يتم إرسال تذكير تلقائي لضيوفك في {{date}} الساعة {{time}}.",
+    "customizeReminder": "تخصيص",
+    "customizeReminderModalTitle": "تخصيص التذكير التلقائي",
+    "customReminderCheckbox": "تخصيص وقت التذكير",
+    "saveSuccess": "تم حفظ إعدادات التذكير بنجاح",
+    "save": "حفظ",
     "scheduleReminder": {
       "heading": "تذكيرات إضافية",
       "button": "جدولة تذكير إضافي",
@@ -272,12 +278,13 @@
       "addGuest": "إضافة ضيف"
     },
     "stats": {
-      "attendanceTracking": "متابعة الحضور",
-      "declined": "تم الرفض",
+      "attendanceTracking": "الاحصائيات",
+      "declined": "اعتذر",
       "confirmed": "تم التأكيد",
       "noResponse": "لم يرد",
       "maybe": "ربما",
-      "checkedIn": "حضر"
+      "checkedIn": "حضر",
+      "totalGuests": "إجمالي الضيوف"
     },
     "staff": {
       "title": "فريق العمل",
@@ -311,6 +318,8 @@
       "namePlaceholder": "أدخل اسم الضيف",
       "phone": "رقم الهاتف",
       "phonePlaceholder": "أدخل رقم الهاتف",
+      "invalidPhone": "رقم الهاتف يجب أن يكون 9 أرقام تبدأ بـ 5",
+      "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
       "success": "تم إضافة الضيف بنجاح",
       "error": "فشل في إضافة الضيف"
     },
@@ -329,6 +338,10 @@
       "email": "البريد الإلكتروني",
       "emailPlaceholder": "أدخل البريد الإلكتروني",
       "mainStaff": "الموظف الرئيسي",
+      "phoneRequired": "رقم الهاتف مطلوب",
+      "invalidPhone": "رقم الهاتف يجب أن يكون 9 أرقام تبدأ بـ 5",
+      "nameRequired": "الاسم يجب أن يكون حرفين على الأقل",
+      "nameMaxLength": "الاسم لا يمكن أن يتجاوز 100 حرف",
       "success": "تم إضافة الموظف بنجاح",
       "error": "فشل في إضافة الموظف"
     },
@@ -416,5 +429,16 @@
       "dateRequired": "التاريخ مطلوب",
       "timeRequired": "الوقت مطلوب"
     }
+  },
+  "resendInvite": {
+    "button": "إعادة إرسال الدعوات",
+    "buttonCooldown": "متاح بعد {{hours}}س",
+    "sending": "جاري الإرسال...",
+    "success": "تم إعادة إرسال الدعوات إلى {{sent}}/{{total}} ضيف",
+    "error": "فشل في إعادة إرسال الدعوات",
+    "notLive": "إعادة الإرسال متاحة فقط للمناسبات النشطة",
+    "alreadyUsed": "تم إعادة إرسال الدعوات لهذه المناسبة مسبقاً",
+    "notSent": "انتظر حتى يتم إرسال رسائل الدعوة الأولية",
+    "cooldown": "متاح بعد {{hours}}س من إرسال الدعوات"
   }
 }

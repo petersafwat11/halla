@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback } from "react";
 import { FormProvider } from "react-hook-form";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Header from "./_components/header/Header";
 import Stepper from "./_components/stepper/Stepper";
@@ -31,7 +31,6 @@ const CreateEventV2 = () => {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showStaffPopup, setShowStaffPopup] = useState(false);
   const router = useRouter();
-  const params = useParams();
 
   // Use unified event form hook
   const {
@@ -77,12 +76,12 @@ const CreateEventV2 = () => {
         await createEvent.mutateAsync(eventPayload);
 
         toastUtils.success(t("success.event_created"));
-        router.push(`/${params.lang}/host`);
+        router.push(`/${locale}/host`);
       } catch (error) {
         handleError(error, t, { fallbackMessage: "errors.create_failed" });
       }
     },
-    [createEvent, router, params, t, buildEventPayload]
+    [createEvent, router, locale, t, buildEventPayload]
   );
 
   const onNext = useCallback(() => {

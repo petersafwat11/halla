@@ -48,7 +48,6 @@ export const cookieUtils = {
     cookieUtils.deleteCookie("jwt");
     cookieUtils.deleteCookie("token");
     cookieUtils.deleteCookie("userType");
-    cookieUtils.deleteCookie("user");
   },
 
   /**

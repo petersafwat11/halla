@@ -36,6 +36,10 @@
   },
   "errors": {
     "loadFailed": "Failed to load ticket data",
-    "submitFailed": "Failed to submit rating"
+    "submitFailed": "Failed to submit rating",
+    "ratingInvalid": "Rating must be a number",
+    "ratingRequired": "Please select a rating",
+    "ratingMax": "Rating cannot exceed 5",
+    "feedbackMaxLength": "Feedback must be less than 1000 characters"
   }
 }

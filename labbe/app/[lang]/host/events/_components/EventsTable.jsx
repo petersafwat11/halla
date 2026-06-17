@@ -69,7 +69,7 @@ const EventsTable = () => {
             declined,
             noResponse,
             dateTime: event.date,
-            status: event.status || "draft",
+            status: event.status || "pending_scheduling",
           };
         })}
         onRowClick={(row) => {
@@ -90,10 +90,10 @@ const EventsTable = () => {
                 color: "#1E40AF",
                 text: t("eventStatus.scheduled", "مجدولة"),
               },
-              draft: {
+              pending_scheduling: {
                 bg: "#FBF3E6",
                 color: "#D38200",
-                text: t("eventStatus.draft", "مسودة"),
+                text: t("eventStatus.pending_scheduling", "في انتظار الجدولة"),
               },
               completed: {
                 bg: "#E5E7EB",
@@ -106,7 +106,7 @@ const EventsTable = () => {
                 text: t("eventStatus.cancelled", "ملغية"),
               },
             };
-            const config = statusConfig[value] || statusConfig.draft;
+            const config = statusConfig[value] || statusConfig.pending_scheduling;
             return (
               <div
                 style={{

@@ -29,7 +29,7 @@
       "scheduled": "Scheduled",
       "live": "Live",
       "completed": "Completed",
-      "draft": "Draft",
+      "pending_scheduling": "Pending Scheduling",
       "cancelled": "Cancelled"
     },
     "loadError": "Failed to load events",
@@ -42,7 +42,7 @@
     },
     "filter": {
       "all": "All",
-      "draft": "Draft",
+      "pending_scheduling": "Pending Scheduling",
       "scheduled": "Scheduled",
       "live": "Live",
       "completed": "Completed",
@@ -94,7 +94,7 @@
       "active": "Active",
       "ended": "Ended",
       "suspended": "Suspended",
-      "draft": "Draft",
+      "pending_scheduling": "Pending Scheduling",
       "accepted": "Accepted",
       "confirmed": "Confirmed",
       "declined": "Declined",
@@ -179,11 +179,11 @@
       "create": "Create Event",
       "changeHost": "Change Host",
       "cancel": "Cancel",
-      "saveDraft": "Save as Draft"
+      "saveDraft": "Pending Scheduling"
     },
     "success": {
       "created": "Event created successfully",
-      "scheduled": "Event scheduled successfully"
+      "scheduled": "Sending scheduled successfully"
     },
     "creatingForSelf": "Creating event for yourself (Unlimited)",
     "errors": {

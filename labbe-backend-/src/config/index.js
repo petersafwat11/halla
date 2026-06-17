@@ -91,6 +91,9 @@ const config = {
     // picker. Reject schedules whose absolute UTC instant is less than
     // `now + scheduleMinLeadHours` away, with code SCHEDULE_TOO_SOON.
     scheduleMinLeadHours: env.SCHEDULE_MIN_LEAD_HOURS,
+    // Trial users get a shorter minimum lead time (default 15 min)
+    // so they can quickly test the scheduling flow.
+    trialScheduleMinLeadMinutes: env.TRIAL_SCHEDULE_MIN_LEAD_MINUTES,
   },
 
   // FLOW-28-F02: maximum rows per export

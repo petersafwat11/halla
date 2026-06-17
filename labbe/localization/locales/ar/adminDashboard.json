@@ -181,7 +181,7 @@
         "scheduled": "مجدول",
         "live": "مباشر",
         "completed": "منتهي",
-        "draft": "مسودة"
+        "pending_scheduling": "في انتظار الجدولة"
       }
     }
   },

@@ -59,8 +59,8 @@ const StatusBadge = ({ status, size = "medium" }) => {
       };
     }
 
-    // Primary/accent states — draft, new
-    if (["draft", "new"].includes(normalizedStatus)) {
+    // Primary/accent states — pending_scheduling, new
+    if (["pending_scheduling", "new"].includes(normalizedStatus)) {
       return {
         background: `${colors.primary[500]}15`,
         text: colors.primary[500],

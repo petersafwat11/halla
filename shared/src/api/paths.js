@@ -91,6 +91,7 @@ const PATHS = {
     updateEventStep2: (id) => `/events/${id}/step2`,
     updateInvitationSettings: (id) => `/events/${id}/invitation-settings`,
     updateLaunchSettings: (id) => `/events/${id}/launch-settings`,
+    updateReminderSettings: (id) => `/events/${id}/reminder-settings`,
 
     // Messaging
     sendTestMessage: (id) => `/events/${id}/test-message`,
@@ -114,6 +115,9 @@ const PATHS = {
 
     // Manual launch retry
     retryLaunch: (id) => `/events/${id}/retry-launch`,
+
+    // One-time resend invite (48h after bulk send, for non-responded / maybe guests)
+    resendInvite: (id) => `/events/${id}/resend-invite`,
 
     // Scheduled extra reminders
     scheduledRemindersList: (id) => `/events/${id}/scheduled-reminders`,
@@ -254,6 +258,7 @@ const PATHS = {
   // ============================================
   vendors: {
     getCategories: "/vendors/categories",
+    getPublicVendors: "/vendors/public",
   },
 
   // ============================================

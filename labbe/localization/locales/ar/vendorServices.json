@@ -111,6 +111,16 @@
     "success": "تم إضافة الخدمة بنجاح",
     "updateSuccess": "تم تحديث الخدمة بنجاح",
     "error": "فشل في إضافة الخدمة",
-    "updateError": "فشل في تحديث الخدمة"
+    "updateError": "فشل في تحديث الخدمة",
+    "validation": {
+      "serviceNameMinLength": "اسم الخدمة يجب أن يكون أكثر من حرفين",
+      "serviceNameMaxLength": "اسم الخدمة يجب أن يكون أقل من 100 حرف",
+      "serviceTypeRequired": "نوع الخدمة مطلوب",
+      "descriptionMinLength": "وصف الخدمة يجب أن يكون أكثر من 10 أحرف",
+      "descriptionMaxLength": "وصف الخدمة يجب أن يكون أقل من 1000 حرف",
+      "priceRequired": "سعر الخدمة مطلوب",
+      "priceInvalid": "يرجى إدخال سعر صحيح",
+      "durationMaxLength": "مدة الخدمة يجب أن تكون أقل من 100 حرف"
+    }
   }
 }

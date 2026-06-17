@@ -85,6 +85,7 @@ export default function HostEventHeader({ eventId }) {
           {eventTitle}
         </h1>
         <div className={styles.actions}>
+          <EventActionsHeader event={event} isAdmin={false} />
           <Button
             variant="secondary"
             title={t("singleEvent.header.editGuests")}
@@ -95,7 +96,6 @@ export default function HostEventHeader({ eventId }) {
             title={t("singleEvent.header.staffDetails")}
             onClick={() => setShowStaffPopup(true)}
           />
-          <EventActionsHeader event={event} isAdmin={false} />
         </div>
       </div>
 

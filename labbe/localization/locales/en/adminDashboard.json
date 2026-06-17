@@ -181,7 +181,7 @@
         "scheduled": "Scheduled",
         "live": "Live",
         "completed": "Completed",
-        "draft": "Draft"
+        "pending_scheduling": "Pending Scheduling"
       }
     }
   },

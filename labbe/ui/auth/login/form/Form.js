@@ -71,7 +71,7 @@ const Form = () => {
     resolver: zodResolver(
       loginType === "otp" ? phoneLoginSchema(t) : emailLoginSchema(t)
     ),
-    mode: "onSubmit",
+    mode: "onBlur",
     defaultValues: {
       email: "",
       password: "",
@@ -230,7 +230,7 @@ const Form = () => {
   return (
     <div className={styles.container}>
       <FormProvider {...methods} key={loginType}>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} key="login-form">
           <div className={styles.form}>
             {!showOtpInput && <Greating />}
 

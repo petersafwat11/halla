@@ -14,7 +14,7 @@
  * inside the editor — this component stays stateless.
  */
 
-import React, { forwardRef, useRef, useEffect, useState } from "react";
+import React, { forwardRef, useRef, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import OverlayItem from "./OverlayItem";
 import { formatTemplateDate } from "@halla/shared/utils/formatTemplateDate";
@@ -78,6 +78,14 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
     return () => ro.disconnect();
   }, [template?.naturalWidth, template?.naturalHeight, containerRef]);
 
+  const imageUrl = useMemo(() => {
+    if (!template?.imageUrl) return "";
+    if (template.imageUrl.startsWith("blob:") || template.imageUrl.startsWith("data:")) {
+      return template.imageUrl;
+    }
+    return `${template.imageUrl}${template.imageUrl.includes("?") ? "&" : "?"}cors=1`;
+  }, [template?.imageUrl]);
+
   if (!template?.imageUrl) return null;
 
   const decorations = [...(template.decorations || [])].sort(cmpZ);
@@ -100,7 +108,7 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
       }}
     >
       <img
-        src={template.imageUrl}
+        src={imageUrl}
         alt=""
         crossOrigin="anonymous"
         style={{

@@ -55,6 +55,8 @@ const {
   updateStaffStatusSchema,
   bulkDeleteSchema,
   notifyStaffSchema,
+  updateReminderSettingsSchema,
+  resendInviteSchema,
 } = require("./events.validation");
 
 const adminRouter = require("./events.admin.routes");
@@ -534,6 +536,50 @@ router.patch(
   eventsController.updateLaunchSettings
 );
 
+/**
+ * @swagger
+ * /events/{id}/reminder-settings:
+ *   patch:
+ *     summary: Update reminder settings
+ *     description: Update reminder settings for a specific event
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/IdParam'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               customReminderTime:
+ *                 type: boolean
+ *               scheduledDate:
+ *                 type: string
+ *                 format: date-time
+ *               scheduledTime:
+ *                 type: string
+ *                 example: "18:30"
+ *     responses:
+ *       200:
+ *         description: Reminder settings updated successfully
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+router.patch(
+  "/:id/reminder-settings",
+  validateObjectId("id"),
+  validateZod(updateReminderSettingsSchema),
+  eventsController.updateReminderSettings
+);
+
+
 // ============================================
 // MESSAGING
 // ============================================
@@ -919,6 +965,20 @@ router.post(
   ),
   idempotency({ scope: "events.retry_launch" }),
   eventsController.retryLaunch
+);
+
+// ============================================
+// RESEND INVITE — one-time re-invitation for guests who didn't
+// respond or said "maybe". Available only 48h after the initial
+// bulk send completed. Idempotent — fires at most once per event.
+// ============================================
+router.post(
+  "/:id/resend-invite",
+  validateObjectId("id"),
+  requireSubscription,
+  idempotency({ scope: "events.resend_invite" }),
+  validateZod(resendInviteSchema),
+  eventsController.resendInvite
 );
 
 // ============================================

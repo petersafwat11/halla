@@ -14,7 +14,64 @@
 const express = require('express');
 const router = express.Router();
 
+const { validateZod } = require('../../shared/middleware/validation');
+const { getPublicVendorsQuerySchema } = require('./vendors.validation');
 const vendorsController = require('./vendors.controller');
+
+/**
+ * @swagger
+ * /vendors/public:
+ *   get:
+ *     summary: Get public vendors
+ *     description: Retrieve paginated list of approved vendors with their active services
+ *     tags: [Vendors]
+ *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: regionId
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: cityId
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: districtIds
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: minRating
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Vendors retrieved successfully
+ */
+router.get('/public', validateZod(getPublicVendorsQuerySchema, 'query'), vendorsController.getPublicVendors);
 
 /**
  * @swagger

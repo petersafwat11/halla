@@ -53,19 +53,11 @@ const Form = () => {
       fontWeight: 600,
       lineHeight: "2.8rem",
     },
-    subtitle: {
-      color: "var(--color-description)",
-      fontSize: "16px",
-      fontStyle: "normal",
-      fontWeight: 400,
-      lineHeight: "24px",
-      letterSpacing: "0.024px",
-    },
   };
 
   const methods = useForm({
     resolver: zodResolver(hostSignupSchema(t)),
-    mode: "onChange",
+    mode: "onBlur",
     defaultValues: {
       phoneNumber: "",
     },
@@ -115,16 +107,13 @@ const Form = () => {
   return (
     <div className={styles.container}>
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} key="host-signup-form">
           <div className={styles.form}>
             {/* Greeting Section */}
             <div style={greetingStyles.container}>
               <h2 style={greetingStyles.title}>
                 {t("signupForm.hostSignup.greeting.title")}
               </h2>
-              <p style={greetingStyles.subtitle}>
-                {t("signupForm.hostSignup.greeting.subtitle")}
-              </p>
             </div>
 
             <MobileInputGroup

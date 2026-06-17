@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const idT = (k) => k;
+
 export const SERVICE_TYPES = [
   { value: "eventPlanning", label: "تخطيط الفعاليات" },
   { value: "mediaProduction", label: "الإنتاج الإعلامي" },
@@ -23,11 +25,24 @@ export const PREDEFINED_TAGS = [
   { value: "baby_shower", label: "استقبال مولود" },
 ];
 
-export const addServiceSchema = z.object({
-  serviceName: z.string().min(2, "اسم الخدمة يجب أن يكون أكثر من حرفين"),
-  serviceType: z.string().min(1, "نوع الخدمة مطلوب"),
-  description: z.string().min(10, "وصف الخدمة يجب أن يكون أكثر من 10 أحرف"),
-  price: z.string().min(1, "سعر الخدمة مطلوب"),
-  duration: z.string().max(100, "مدة الخدمة يجب أن تكون أقل من 100 حرف").optional().or(z.literal("")),
-  serviceImage: z.any().optional(),
-});
+export const addServiceSchema = (t = idT) =>
+  z.object({
+    serviceName: z
+      .string()
+      .min(2, t("services.validation.nameMinLength")),
+    serviceType: z
+      .string()
+      .min(1, t("services.validation.typeRequired")),
+    description: z
+      .string()
+      .min(10, t("services.validation.descriptionMinLength")),
+    price: z
+      .string()
+      .min(1, t("services.validation.priceRequired")),
+    duration: z
+      .string()
+      .max(100, t("services.validation.durationMaxLength"))
+      .optional()
+      .or(z.literal("")),
+    serviceImage: z.any().optional(),
+  });

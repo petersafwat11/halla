@@ -29,7 +29,7 @@ const EventDetailsCard = ({ event }) => {
       active: colors.success[500],
       ended: colors.natural[400],
       suspended: colors.error[500],
-      draft: colors.warning[500],
+      pending_scheduling: colors.warning[500],
     };
     return statusColors[status?.toLowerCase()] || colors.natural[400];
   };
@@ -88,7 +88,7 @@ const EventDetailsCard = ({ event }) => {
           <View style={styles.titleRow}>
             <Text style={styles.value}>{event.title || "بدون عنوان"}</Text>
             <StatusBadge
-              status={event.status || "draft"}
+              status={event.status || "pending_scheduling"}
               color={getStatusColor(event.status)}
             />
           </View>
@@ -196,7 +196,7 @@ const EventDetailsCard = ({ event }) => {
         <View style={styles.row}>
           <Text style={styles.label}>الحالة الحالية:</Text>
           <StatusBadge
-            status={event.status || "draft"}
+            status={event.status || "pending_scheduling"}
             color={getStatusColor(event.status)}
           />
         </View>

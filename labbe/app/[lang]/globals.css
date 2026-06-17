@@ -460,7 +460,11 @@ a {
   text-decoration: none;
 }
 
-button {
+button,
+input,
+optgroup,
+select,
+textarea {
   border: none;
   background: none;
   font-family: inherit;

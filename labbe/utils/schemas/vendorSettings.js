@@ -33,19 +33,14 @@ export const FIELD_TYPES = {
 
 // ---------------------------------------------------------------------------
 // 1) Personal Info (consolidated)
-//
-// Holds everything a vendor edits about their own account: identity
-// (ownerFullName, brandName), contact (email, phone), the store logo, and an
-// optional password change. The previous "Basic Account Info" section was
-// removed and its fields folded in here so each key has exactly one writer.
 // ---------------------------------------------------------------------------
-export const personalInfoSchema = {
+export const personalInfoSchema = (t) => ({
   sectionKey: "personalInfo",
   titleKey: "personalInfo.title",
   titleAr: "المعلومات الشخصية",
-  zodSchema: personalInfoZodSchema,
+  zodSchema: personalInfoZodSchema(t),
   fields: [
-    { name: "avatar", type: FIELD_TYPES.FILE, labelKey: "personalInfo.storeLogo", labelAr: "شعار المتجر", required: false, accept: "image/*", multiple: false },
+    { name: "avatar", type: FIELD_TYPES.FILE, labelKey: "personalInfo.storeLogo", labelAr: "شعار سوق هلا", required: false, accept: "image/*", multiple: false },
     { name: "ownerFullName", type: FIELD_TYPES.TEXT, labelKey: "personalInfo.fullName", labelAr: "الاسم بالكامل", placeholderKey: "personalInfo.fullNamePlaceholder", placeholderAr: "أدخل اسمك الكامل", required: true },
     { name: "brandName", type: FIELD_TYPES.TEXT, labelKey: "personalInfo.businessName", labelAr: "اسم النشاط التجاري", placeholderKey: "personalInfo.businessNamePlaceholder", placeholderAr: "أدخل اسم النشاط التجاري", required: true },
     { name: "email", type: FIELD_TYPES.EMAIL, labelKey: "personalInfo.email", labelAr: "البريد الإلكتروني", placeholderKey: "personalInfo.emailPlaceholder", placeholderAr: "أدخل بريدك الإلكتروني", required: true },
@@ -54,16 +49,16 @@ export const personalInfoSchema = {
     { name: "newPassword", type: FIELD_TYPES.PASSWORD, labelKey: "personalInfo.newPassword", labelAr: "كلمة المرور الجديدة", placeholderKey: "personalInfo.newPasswordPlaceholder", placeholderAr: "••••••••", required: false },
     { name: "confirmPassword", type: FIELD_TYPES.PASSWORD, labelKey: "personalInfo.confirmPassword", labelAr: "تأكيد كلمة المرور", placeholderKey: "personalInfo.confirmPasswordPlaceholder", placeholderAr: "••••••••", required: false },
   ],
-};
+});
 
 // ---------------------------------------------------------------------------
 // 3) Service Details
 // ---------------------------------------------------------------------------
-export const serviceDetailsSchema = {
+export const serviceDetailsSchema = (t) => ({
   sectionKey: "serviceDetails",
   titleKey: "serviceDetails.title",
   titleAr: "تفاصيل الخدمة",
-  zodSchema: serviceDetailsZodSchema,
+  zodSchema: serviceDetailsZodSchema(t),
   fields: [
     { name: "nationalIdImage", type: FIELD_TYPES.FILE, labelKey: "serviceDetails.otherLicenses", labelAr: "التراخيص الأخرى", required: false, accept: "image/*,application/pdf", multiple: false },
     { name: "commercialRecordImage", type: FIELD_TYPES.FILE, labelKey: "serviceDetails.commercialRegister", labelAr: "السجل التجاري", required: false, accept: "image/*,application/pdf", multiple: false },
@@ -75,16 +70,16 @@ export const serviceDetailsSchema = {
     city: { name: "cityId", labelKey: "serviceDetails.city", labelAr: "المدينة" },
     districts: { name: "districtIds", labelKey: "serviceDetails.districts", labelAr: "الأحياء" },
   },
-};
+});
 
 // ---------------------------------------------------------------------------
 // 4) Social / Additional Links
 // ---------------------------------------------------------------------------
-export const socialLinksSchema = {
+export const socialLinksSchema = (t) => ({
   sectionKey: "additionalLinks",
   titleKey: "additionalLinks.title",
   titleAr: "روابط إضافية",
-  zodSchema: socialLinksZodSchema,
+  zodSchema: socialLinksZodSchema(t),
   fields: [
     { name: "website", type: FIELD_TYPES.URL, labelKey: "additionalLinks.websiteLink", labelAr: "رابط الموقع", placeholderKey: "additionalLinks.websitePlaceholder", placeholderAr: "https://example.com", required: false, icon: "globe", iconColor: "#6366f1" },
     { name: "instagram", type: FIELD_TYPES.URL, labelKey: "additionalLinks.instagramLink", labelAr: "انستجرام", placeholderKey: "additionalLinks.instagramPlaceholder", placeholderAr: "https://instagram.com/...", required: false, icon: "instagram", iconColor: "#E4405F" },
@@ -92,7 +87,7 @@ export const socialLinksSchema = {
     { name: "twitter", type: FIELD_TYPES.URL, labelKey: "additionalLinks.twitterLink", labelAr: "تويتر", placeholderKey: "additionalLinks.twitterPlaceholder", placeholderAr: "https://twitter.com/...", required: false, icon: "twitter", iconColor: "#000000" },
     { name: "tiktok", type: FIELD_TYPES.URL, labelKey: "additionalLinks.tiktokLink", labelAr: "تيك توك", placeholderKey: "additionalLinks.tiktokPlaceholder", placeholderAr: "https://tiktok.com/...", required: false, icon: "tiktok", iconColor: "#000000" },
   ],
-};
+});
 
 // ---------------------------------------------------------------------------
 // 5) Images & Pricing
@@ -108,12 +103,12 @@ export const imagesAndPricingSchema = {
   ],
 };
 
-export const vendorSettingsSchemas = {
-  personalInfo: personalInfoSchema,
-  serviceDetails: serviceDetailsSchema,
-  socialLinks: socialLinksSchema,
+export const vendorSettingsSchemas = (t) => ({
+  personalInfo: personalInfoSchema(t),
+  serviceDetails: serviceDetailsSchema(t),
+  socialLinks: socialLinksSchema(t),
   imagesAndPricing: imagesAndPricingSchema,
-};
+});
 
 // ---------------------------------------------------------------------------
 // Validation helpers (Zod-backed) — kept here so DynamicForm consumers

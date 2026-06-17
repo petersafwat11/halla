@@ -1,10 +1,13 @@
 /**
  * Add Service Schema
  * Zod validation schema + form metadata for the vendor add/edit service flow.
+ * Factory function; pass `t` for translation, omit for opaque keys.
  * Structure mirrors halla-mobile/utils/schemas/vendorServiceSchema.js for parity.
  */
 
 import { z } from "zod";
+
+const idT = (k) => k;
 
 export const SERVICE_TYPES = [
   { value: "eventPlanning", labelKey: "addServicePopup.serviceTypes.eventPlanning", labelAr: "تخطيط الفعاليات" },
@@ -29,25 +32,35 @@ export const PREDEFINED_TAGS = [
   { value: "baby_shower", labelKey: "addServicePopup.tags.babyShower", labelAr: "استقبال مولود" },
 ];
 
-export const addServiceSchema = z.object({
-  serviceName: z
-    .string()
-    .trim()
-    .min(2, "اسم الخدمة يجب أن يكون أكثر من حرفين")
-    .max(100, "اسم الخدمة يجب أن يكون أقل من 100 حرف"),
-  serviceType: z.string().min(1, "نوع الخدمة مطلوب"),
-  description: z
-    .string()
-    .trim()
-    .min(10, "وصف الخدمة يجب أن يكون أكثر من 10 أحرف")
-    .max(1000, "وصف الخدمة يجب أن يكون أقل من 1000 حرف"),
-  price: z
-    .union([z.string(), z.number()])
-    .refine((v) => v !== "" && v !== null && v !== undefined, "سعر الخدمة مطلوب")
-    .refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, "يرجى إدخال سعر صحيح"),
-  duration: z.string().trim().max(100, "مدة الخدمة يجب أن تكون أقل من 100 حرف").optional().or(z.literal("")),
-  image: z.any().optional(),
-});
+export const addServiceSchema = (t = idT) =>
+  z.object({
+    serviceName: z
+      .string()
+      .trim()
+      .min(2, t("addServicePopup.validation.serviceNameMinLength"))
+      .max(100, t("addServicePopup.validation.serviceNameMaxLength")),
+    serviceType: z.string().min(1, t("addServicePopup.validation.serviceTypeRequired")),
+    description: z
+      .string()
+      .trim()
+      .min(10, t("addServicePopup.validation.descriptionMinLength"))
+      .max(1000, t("addServicePopup.validation.descriptionMaxLength")),
+    price: z
+      .union([z.string(), z.number()])
+      .refine((v) => v !== "" && v !== null && v !== undefined, {
+        message: t("addServicePopup.validation.priceRequired"),
+      })
+      .refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, {
+        message: t("addServicePopup.validation.priceInvalid"),
+      }),
+    duration: z
+      .string()
+      .trim()
+      .max(100, t("addServicePopup.validation.durationMaxLength"))
+      .optional()
+      .or(z.literal("")),
+    image: z.any().optional(),
+  });
 
 export const addServiceDefaultValues = {
   serviceName: "",

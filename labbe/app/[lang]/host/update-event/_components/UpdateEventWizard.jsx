@@ -11,6 +11,9 @@ import WhatsappPreview from "../../create-event/_components/whatsappPreview/What
 import MobilePreviewButton from "../../create-event/_components/mobilePreviewButton/MobilePreviewButton";
 import LiveEventBanner from "./LiveEventBanner";
 import MobilePreviewModal from "./MobilePreviewModal";
+import StaffPopup from "../../create-event/_components/staffPopup/StaffPopup";
+import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
+import Button from "@/ui/commen/button/Button";
 import {
   useEventById,
   useEventSubscriptionInfo,
@@ -45,6 +48,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
 
   const [isSaving, setIsSaving] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [showStaffPopup, setShowStaffPopup] = useState(false);
 
   const {
     methods,
@@ -54,6 +58,10 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
     locale,
     t,
     reset,
+    staffList,
+    addStaffMember,
+    editStaffMember,
+    deleteStaffMember,
   } = useEventForm({ mode: "update", eventId, totalSteps: 4 });
 
   const buildReturnUrl = useCallback(
@@ -138,7 +146,11 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
             <Stepper currentStep={currentStep} totalSteps={4} />
           </div>
 
-          {isEventLive && <LiveEventBanner currentStep={currentStep} />}
+          {isEventLive && (
+            <div className={styles.header_wrapper}>
+              <LiveEventBanner currentStep={currentStep} />
+            </div>
+          )}
 
           <div className={styles.content_wrapper}>
             <div
@@ -153,6 +165,15 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
                 <StepTitleAndDesc
                   title={currentStepConfig.title}
                   description={currentStepConfig.description}
+                  Button={
+                    currentStep === 2 ? (
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowStaffPopup(true)}
+                        title={t("staff_button")}
+                      />
+                    ) : undefined
+                  }
                 />
                 <fieldset
                   disabled={lockoutActive}
@@ -172,15 +193,21 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
             </div>
 
             {currentStep === 4 && (
-              <WhatsappPreview
-                eventTitle={formData.eventName || ""}
-                previewBody={formData.selectedTemplate?.bodyText || ""}
-                templateImage={
-                  formData.templateImage || "/svg/events/invitation.svg"
-                }
-                templateData={formData.visualTemplate?.data || {}}
-                locale={locale}
-              />
+              <div className={styles.preview_wrapper}>
+                <WhatsappPreview
+                  eventTitle={formData.eventName || ""}
+                  previewBody={formData.selectedTemplate?.bodyText || ""}
+                  templateImage={
+                    formData.templateImage || "/svg/events/invitation.svg"
+                  }
+                  templateData={formData.visualTemplate?.data || {}}
+                  selectedTemplate={formData.selectedTemplate}
+                  eventDate={formData.eventDate || ""}
+                  eventTime={formData.eventTime || ""}
+                  locationAddress={formData.address?.address || ""}
+                  locale={locale}
+                />
+              </div>
             )}
           </div>
 
@@ -195,6 +222,20 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
               onClose={() => toggleMobilePreview(false)}
             />
           )}
+
+          {/* Staff Popup */}
+          <PopupWrapper
+            isOpen={showStaffPopup}
+            onClose={() => setShowStaffPopup(false)}
+          >
+            <StaffPopup
+              staffList={staffList}
+              onAdd={addStaffMember}
+              onEdit={editStaffMember}
+              onDelete={deleteStaffMember}
+              onClose={() => setShowStaffPopup(false)}
+            />
+          </PopupWrapper>
         </div>
       </div>
     </FormProvider>

@@ -5,7 +5,7 @@
       "features": "Features",
       "invitations": "Invitations",
       "pricing": "Pricing",
-      "store": "Store"
+      "store": "Halla Marketplace"
     },
     "login": "Login",
     "signup": "Sign Up",
@@ -72,10 +72,10 @@
     "title": "Questions Everyone Asks",
     "sub": "Didn't find your answer? Contact us on WhatsApp.",
     "items": [
-      { "q": "How do I create a new invitation?", "a": "Create your event in four easy steps: First, add your event details — name, venue, date, and time, with a location pin on the map. Second, add guests one by one or import your full list from a CSV file in one click. Third, choose an invitation image from our library or upload your own and add any text you like. Fourth, select a WhatsApp message template, review all your event details, send yourself a test message to see what your guests will receive, then schedule the send time — we'll deliver all invitations at your chosen moment with an automatic reminder 24 hours before the event." },
-      { "q": "Can I add my own custom design?", "a": "Absolutely. You can upload your own designs or choose from our premium template library and customize them with your preferred colors and text, or request professional design services through the 'Halaa Marketplace' by connecting directly with one of our talented designers." },
+      { "q": "How do I create a new invitation?", "a": "Create your event in four easy steps: First, add your event details — name, venue, date, and time, with a location pin on the map. Second, add guests one by one or import your full list from a CSV file in one click. Third, choose an invitation image from our library or upload your own and add any text you like. Fourth, select a WhatsApp message template, review all your event details, send yourself a test message to see what your guests will receive, then schedule the send time — we'll deliver all invitations at your chosen moment with an automatic reminder 48 hours before the event." },
+      { "q": "Can I add my own custom design?", "a": "Absolutely. You can upload your own designs or choose from our premium template library and customize them with your preferred colors and text, or request professional design services through the 'Halla Marketplace' by connecting directly with one of our talented designers." },
       { "q": "Can I see attendance and RSVP details?", "a": "Yes, your dashboard shows in real time who accepted, who declined, and who hasn't responded yet, with comprehensive exportable detailed reports." },
-      { "q": "Can I send reminders to guests?", "a": "Yes, Halaa automatically sends a WhatsApp reminder to every guest 24 hours before the event — no action needed from you." },
+      { "q": "Can I send reminders to guests?", "a": "Yes, Halaa automatically sends a WhatsApp reminder to every guest 48 hours before the event — no action needed from you." },
       { "q": "What about guests who don't use WhatsApp?", "a": "Halaa sends invitations via WhatsApp by default. If a WhatsApp message doesn't reach a guest for any reason, the system automatically falls back to SMS to ensure the invitation is delivered." },
       { "q": "Can I invite guests from outside Saudi Arabia?", "a": "Currently, the Halaa platform and app support sending invitations to mobile numbers within Saudi Arabia only." },
       { "q": "Can I assign more than one additional host?", "a": "Yes, you can add one or more co-hosts to your event, allowing them to send invitations and track guest responses on your behalf." },
@@ -145,9 +145,9 @@
   },
   "vendorCTA": {
     "title": "Join the",
-    "titleHighlight": "Halaa",
+    "titleHighlight": "Halla",
     "titleEnd": "Marketplace",
-    "description": "Join Halaa Marketplace and grow your business by reaching new customers — showcase your services and manage your orders easily, for free, all from one place!",
+    "description": "Join Halla Marketplace and grow your business by reaching new customers — showcase your services and manage your orders easily, for free, all from one place!",
     "feature1": "Easy Booking Management",
     "feature2": "Grow Your Revenue",
     "feature3": "Connect with Event Planners",
@@ -156,7 +156,7 @@
     "cta": "Register as a Merchant"
   },
   "vendorSearch": {
-    "title": "Discover Halaa Market",
+    "title": "Discover Halla Marketplace",
     "description": "Connect with our best specialized and certified stores and get premium services for your next event.",
     "searchPlaceholder": "Search for a vendor...",
     "searchBtn": "Search",

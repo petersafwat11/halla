@@ -1,2 +1,2 @@
-export { useMarketplaceServices, useVendorCategories } from "./queries";
+export { useMarketplaceVendors, useVendorCategories } from "./queries";
 export { marketplaceKeys } from "./keys";

@@ -47,11 +47,11 @@ export default function HostDashboardContent() {
       alt: "active events",
     },
     {
-      id: "draftEvents",
-      title: t("stats.draftEvents", "المسودات"),
-      value: stats.draftEvents || 0,
+      id: "pendingSchedulingEvents",
+      title: t("stats.pendingSchedulingEvents", "في انتظار الجدولة"),
+      value: stats.pendingSchedulingEvents || 0,
       src: "/svg/stats/events-3.svg",
-      alt: "draft events",
+      alt: "pending scheduling events",
     },
     {
       id: "endedEvents",

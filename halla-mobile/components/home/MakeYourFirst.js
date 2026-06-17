@@ -75,7 +75,7 @@ const MakeYourFirst = ({ onCreatePress }) => {
         onPress={onCreatePress}
         activeOpacity={0.7}
       >
-        <Text style={styles.createButtonText}>انشئ مناسبتك</Text>
+        <Text style={styles.createButtonText}>إنشاء مناسبتك</Text>
         <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <Path
             d="M4 8H12"

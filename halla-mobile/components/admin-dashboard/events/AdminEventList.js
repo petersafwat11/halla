@@ -12,7 +12,7 @@ import ExportButton from "../common/ExportButton";
 import BulkActionsBar from "../common/BulkActionsBar";
 import AdminEventListItem from "./AdminEventListItem";
 
-const EVENT_FILTER_IDS = ["all", "scheduled", "live", "draft", "completed", "cancelled", "suspended"];
+const EVENT_FILTER_IDS = ["all", "scheduled", "live", "pending_scheduling", "completed", "cancelled", "suspended"];
 
 const AdminEventList = ({
   events,

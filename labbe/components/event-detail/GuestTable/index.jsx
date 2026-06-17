@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useEvent } from "@/hooks/events";
 import { useGuestMutation } from "@/hooks/guests";
@@ -10,7 +10,15 @@ import GuestRows from "./GuestRows";
 import GuestPopups from "./GuestPopups";
 import useGuestTableActions from "./useGuestTableActions";
 
-export default function GuestTable({ eventId }) {
+const STATUS_FILTER_MAP = {
+  confirmed: ["confirmed", "checked_in"],
+  declined: ["declined"],
+  maybe: ["maybe"],
+  noResponse: ["invited", "pending"],
+  checkedIn: ["checked_in"],
+};
+
+export default function GuestTable({ eventId, statusFilter, onStatusFilterChange }) {
   const { t } = useTranslation("home-events");
   const { formatDate, formatDateTime } = useLocalizedDate();
 
@@ -21,6 +29,15 @@ export default function GuestTable({ eventId }) {
 
   const event = eventData?.data?.event || null;
   const guests = guestsData?.data || [];
+
+  const filteredGuests = useMemo(() => {
+    if (!statusFilter || statusFilter === "totalGuests") return guests;
+    const matchStatuses = STATUS_FILTER_MAP[statusFilter];
+    if (!matchStatuses) return guests;
+    return guests.filter((g) =>
+      matchStatuses.includes(g.status || "invited")
+    );
+  }, [guests, statusFilter]);
 
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [showReminderPopup, setShowReminderPopup] = useState(false);
@@ -51,10 +68,12 @@ export default function GuestTable({ eventId }) {
     <>
       <div className={styles.rightCol}>
         <GuestRows
-          guests={guests}
+          guests={filteredGuests}
           t={t}
           formatDate={formatDate}
           formatDateTime={formatDateTime}
+          statusFilter={statusFilter}
+          onStatusFilterChange={onStatusFilterChange}
           onEditGuest={actions.handleEditGuest}
           onDeleteGuest={actions.handleDeleteGuest}
           onSendInvitation={actions.handleSendInvitation}

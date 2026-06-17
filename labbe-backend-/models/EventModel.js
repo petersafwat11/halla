@@ -164,6 +164,25 @@ const launchSettingsSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// Reminder Settings sub-schema
+const reminderSettingsSchema = new mongoose.Schema(
+  {
+    customReminderTime: {
+      type: Boolean,
+      default: false,
+    },
+    scheduledDate: {
+      type: Date,
+    },
+    scheduledTime: {
+      type: String,
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
+
 
 // Messaging Status sub-schema (for tracking invitation sending)
 const messagingStatusSchema = new mongoose.Schema(
@@ -208,7 +227,7 @@ const messagingStatusSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    // True after the 24h reminder job has fired for this event (prevents double-send)
+    // True after the 48h reminder job has fired for this event (prevents double-send)
     reminderSent: {
       type: Boolean,
       default: false,
@@ -250,6 +269,12 @@ const eventSchema = new mongoose.Schema(
 
     // Launch Settings
     launchSettings: launchSettingsSchema,
+
+    // Reminder Settings
+    reminderSettings: {
+      type: reminderSettingsSchema,
+      default: () => ({ customReminderTime: false }),
+    },
 
     // Event Host - Reference to User model
     host: {
@@ -352,7 +377,7 @@ const eventSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: Object.values(EVENT_STATUS),
-      default: EVENT_STATUS.DRAFT,
+      default: EVENT_STATUS.PENDING_SCHEDULING,
     },
 
     // Tracks the status before suspension so it can be restored on reactivation
@@ -369,6 +394,11 @@ const eventSchema = new mongoose.Schema(
     },
     // FLOW-16-F03: last test message timestamp for per-event throttle
     lastTestAt: { type: Date },
+
+    // Resend invite — one-time operation to re-invite guests who
+    // haven't responded or said "maybe". Set when the host triggers
+    // the resend; null means the action has never been used.
+    resendInviteSentAt: { type: Date, default: null },
 
 
     // Messaging Status (for bulk sending tracking)
@@ -415,6 +445,7 @@ eventSchema.index({ whitelabelId: 1 }); // For multi-tenant filtering
 eventSchema.index({ whitelabelId: 1, host: 1 });
 eventSchema.index({ whitelabelId: 1, status: 1 });
 eventSchema.index({ "eventDetails.date": 1 });
+eventSchema.index({ "reminderSettings.scheduledDate": 1 });
 eventSchema.index({ status: 1 });
 eventSchema.index({ "eventDetails.type": 1 });
 eventSchema.index({ createdAt: -1 });
@@ -562,6 +593,40 @@ eventSchema.statics.findUpcoming = function (hostId = null) {
     .populate("guestList", "name email phone status")
     .sort({ "eventDetails.date": 1 });
 };
+
+// Pre-save middleware to populate default reminderSettings
+eventSchema.pre("save", function (next) {
+  // Only process if the event has eventDetails
+  if (!this.eventDetails || !this.eventDetails.date || !this.eventDetails.time) {
+    return next();
+  }
+
+  // If reminderSettings is not initialized, initialize it
+  if (!this.reminderSettings) {
+    this.reminderSettings = {
+      customReminderTime: false
+    };
+  }
+
+  // If customReminderTime is false, automatically compute/update reminderSettings to be 48h before the event
+  if (!this.reminderSettings.customReminderTime) {
+    try {
+      const { parseDateTime, toRiyadhComponents } = require("../src/shared/utils/timezone");
+      const eventTimeUtc = parseDateTime(this.eventDetails.date, this.eventDetails.time);
+      if (eventTimeUtc) {
+        const reminderTimeUtc = new Date(eventTimeUtc.getTime() - 48 * 3600 * 1000);
+        const comps = toRiyadhComponents(reminderTimeUtc);
+        this.reminderSettings.scheduledDate = comps.date;
+        this.reminderSettings.scheduledTime = comps.time;
+      }
+    } catch (err) {
+      // Log or handle error, but don't block save
+      console.error("Error setting default reminder settings:", err);
+    }
+  }
+
+  next();
+});
 
 const Event = mongoose.model("Event", eventSchema);
 

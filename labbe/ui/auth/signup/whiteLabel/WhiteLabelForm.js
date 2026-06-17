@@ -60,7 +60,7 @@ const WhiteLabelForm = () => {
     resolver: zodResolver(whitelabelSignupSchema(t)),
     reValidateMode: "onChange",
     shouldFocusError: false,
-    mode: "onTouched",
+    mode: "onBlur",
     defaultValues: {
       identity: { address: {} },
       loginData: {},

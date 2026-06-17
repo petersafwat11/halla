@@ -50,7 +50,7 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
 
   const methods = useForm({
     mode: "onChange",
-    resolver: zodResolver(addServiceSchema),
+    resolver: zodResolver(addServiceSchema(t)),
     defaultValues: addServiceDefaultValues,
   });
 

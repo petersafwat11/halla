@@ -7,7 +7,7 @@
  *
  *   subscription → host home (subscription/plans landing)
  *   addon        → events list (where addon-bound features show up)
- *   checkout     → CreateEventScreen (mirror of the web redirect)
+ *   checkout     → host home (dashboard main page)
  *   missing/unknown → host home
  *
  * `navigation.reset` wipes this screen out of history so the back button
@@ -28,19 +28,13 @@ import { colors, spacing, borderRadius, typography, textStyles, backgrounds } fr
 const TERMINAL_OK = new Set(["paid", "captured"]);
 
 // Build a navigator state for the "post-3DS landing" route.
-// Subscription/addon/unknown all reset to a single MainTabs entry so the
-// back button leads nowhere meaningful (the polling screen is gone). The
-// checkout purpose stacks CreateEventScreen on top of MainTabs so the
-// tab bar is still reachable via a back press — replacing the whole
-// stack with CreateEventScreen would strand the user.
+// All purposes reset to a single MainTabs entry so the back button
+// leads nowhere meaningful (the polling screen is gone).
 const purposeStackRoutes = (purpose) => {
   if (purpose === "checkout") {
     return {
-      index: 1,
-      routes: [
-        { name: "MainTabs", params: { screen: "Home" } },
-        { name: "CreateEventScreen" },
-      ],
+      index: 0,
+      routes: [{ name: "MainTabs", params: { screen: "Home" } }],
     };
   }
   if (purpose === "addon") {

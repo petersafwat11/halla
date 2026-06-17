@@ -36,7 +36,10 @@ const VerifyEmail = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [resendBusy, setResendBusy] = useState(false);
 
-  const methods = useForm({ defaultValues: { email: "" } });
+  const methods = useForm({
+    mode: "onBlur",
+    defaultValues: { email: "" },
+  });
 
   useEffect(() => {
     const token = searchParams.get("token");

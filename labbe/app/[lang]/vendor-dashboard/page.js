@@ -164,7 +164,6 @@ const VendorServicesPage = () => {
           <div className={styles.headerContent}>
             <div className={styles.headerRight}>
               <h1 className={styles.pageTitle}>{t("pageTitle")}</h1>
-              <p className={styles.pageSubtitle}>{t("pageSubtitle")}</p>
             </div>
 
             <div className={styles.headerLeft}>

@@ -44,7 +44,7 @@
     },
     "buttons": {
       "testMessage": "رسالة تجريبية",
-      "scheduleEvent": "جدولة المناسبة",
+      "scheduleEvent": "جدولة الارسال",
       "notifyStaff": "إشعار الفريق",
       "notifying": "جارٍ الإرسال...",
       "viewStats": "عرض الإحصائيات",

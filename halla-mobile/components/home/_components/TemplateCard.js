@@ -37,6 +37,7 @@ export default function TemplateCard({
   });
 
   const imgUri = template.thumbnailUrl || template.imageUrl;
+  const imgSource = template.src || (imgUri ? { uri: imgUri } : null);
 
   return (
     <TouchableOpacity onPress={() => onPress(template)} activeOpacity={0.8}>
@@ -48,9 +49,9 @@ export default function TemplateCard({
         ]}
       >
         <View style={styles.background}>
-          {imgUri ? (
+          {imgSource ? (
             <Image
-              source={{ uri: imgUri }}
+              source={imgSource}
               style={styles.image}
               resizeMode="cover"
             />

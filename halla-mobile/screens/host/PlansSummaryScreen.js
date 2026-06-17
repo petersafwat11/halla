@@ -84,45 +84,80 @@ const PlansSummaryScreen = () => {
     return null;
   };
 
+  const [errors, setErrors] = useState({});
+
+  const checkLuhn = (num) => {
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = num.length - 1; i >= 0; i--) {
+      let digit = parseInt(num.charAt(i), 10);
+      if (shouldDouble) {
+        if ((digit *= 2) > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  };
+
   const validateSource = () => {
+    const newErrors = {};
     if (paymentMethod === "creditcard") {
-      const name = cardData?.name?.trim();
-      const number = cardData?.number?.trim();
-      const month = cardData?.month?.trim();
-      const year = cardData?.year?.trim();
-      const cvc = cardData?.cvc?.trim();
-      if (!name || !number || !month || !year || !cvc) {
-        return t("checkout.errors.cardIncomplete");
+      const name = (cardData?.name || "").trim();
+      const number = (cardData?.number || "").replace(/\D/g, "");
+      const month = (cardData?.month || "").trim();
+      const year = (cardData?.year || "").trim();
+      const cvc = (cardData?.cvc || "").trim();
+
+      if (!name) {
+        newErrors.name = t("checkout.errors.nameRequired", "Cardholder name is required");
+      } else if (name.length < 3) {
+        newErrors.name = t("checkout.errors.nameTooShort", "Please enter full cardholder name");
       }
-      if (number.length < 13 || number.length > 19) {
-        return t("checkout.errors.cardNumberInvalid");
+
+      if (!number) {
+        newErrors.number = t("checkout.errors.numberRequired", "Card number is required");
+      } else if (number.length < 15 || number.length > 16) {
+        newErrors.number = t("checkout.errors.numberLength", "Card number must be 15 or 16 digits");
+      } else if (!checkLuhn(number)) {
+        newErrors.number = t("checkout.errors.numberInvalid", "Invalid card number");
       }
-      const m = Number(month);
-      const y = Number(year);
-      if (!m || m < 1 || m > 12 || !y || year.length !== 4) {
-        return t("checkout.errors.expiryInvalid");
+
+      if (!month || !year) {
+        newErrors.expiry = t("checkout.errors.expiryRequired", "Expiry date is required");
+      } else {
+        const m = parseInt(month, 10);
+        const y = parseInt(year, 10);
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+
+        if (isNaN(m) || m < 1 || m > 12) {
+          newErrors.expiry = t("checkout.errors.expiryMonthInvalid", "Invalid month (01-12)");
+        } else if (isNaN(y) || y < currentYear || (y === currentYear && m < currentMonth)) {
+          newErrors.expiry = t("checkout.errors.expiryExpired", "Card has expired");
+        }
       }
-      if (cvc.length < 3 || cvc.length > 4) {
-        return t("checkout.errors.cvcInvalid");
+
+      if (!cvc) {
+        newErrors.cvc = t("checkout.errors.cvcRequired", "CVC is required");
+      } else if (cvc.length < 3 || cvc.length > 4) {
+        newErrors.cvc = t("checkout.errors.cvcLength", "CVC must be 3 or 4 digits");
       }
-      return null;
+    } else if (paymentMethod === "stcpay") {
+      const mobile = (stcMobile || "").replace(/\D/g, "");
+      if (!mobile) {
+        newErrors.stcMobile = t("checkout.errors.mobileRequired", "Mobile number is required");
+      } else if (!/^(05|5)\d{8}$/.test(mobile)) {
+        newErrors.stcMobile = t("checkout.errors.mobileFormat", "Must be a valid Saudi number (e.g. 05xxxxxxxx)");
+      }
+    } else if (paymentMethod === "applepay") {
+      newErrors.applepay = t("checkout.errors.applepayUnavailable", "Apple Pay is currently unavailable");
+      toast.error(t("checkout.errors.applepayUnavailable"));
     }
-    if (paymentMethod === "stcpay") {
-      // Web sends stcMobile raw with no format check — Moyasar is the
-      // source of truth. We only block empty input here so we don't POST
-      // a guaranteed-bad source to the gateway.
-      if (!stcMobile?.trim()) {
-        return t("checkout.errors.stcMobileInvalid");
-      }
-      return null;
-    }
-    if (paymentMethod === "applepay") {
-      // PassKit wiring isn't shipped yet on mobile. Block the user with a
-      // clear message until that's done, instead of failing silently at
-      // the gateway with token:null.
-      return t("checkout.errors.applepayUnavailable");
-    }
-    return null;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const planPrice = parseFloat(selectedPlan?.price) || 0;
@@ -183,9 +218,7 @@ const PlansSummaryScreen = () => {
   const handlePayment = async () => {
     if (!selectedPlan) return;
 
-    const sourceError = validateSource();
-    if (sourceError) {
-      toast.error(sourceError);
+    if (!validateSource()) {
       return;
     }
 
@@ -214,7 +247,7 @@ const PlansSummaryScreen = () => {
       } else {
         toast.success(t("toasts.subscriptionCreated"));
       }
-      navigation.navigate("CreateEventScreen");
+      navigation.navigate("MainTabs", { screen: "Home" });
     } catch (error) {
       toast.error(error?.message || t("toasts.subscriptionFailed"));
     }
@@ -269,13 +302,19 @@ const PlansSummaryScreen = () => {
               <Text style={styles.methodCardTitle}>
                 {t("summary.payment.method")}
               </Text>
-            </View>
+              </View>
             <View style={styles.methodCardBody}>
               <PaymentMethodSelector
                 value={paymentMethod}
-                onChange={setPaymentMethod}
+                onChange={(m) => {
+                  setPaymentMethod(m);
+                  setErrors({});
+                }}
                 onCardChange={setCardData}
                 onMobileChange={setStcMobile}
+                cardData={cardData}
+                stcMobile={stcMobile}
+                errors={errors}
               />
             </View>
           </View>

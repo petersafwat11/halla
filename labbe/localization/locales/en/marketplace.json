@@ -50,12 +50,16 @@
     "contactInfo": "Contact Information",
     "providedBy": "Provided by",
     "whatsapp": "WhatsApp",
-    "close": "Close"
+    "close": "Close",
+    "startsFrom": "Starts from",
+    "ourServices": "Our Services",
+    "aboutVendor": "About Vendor",
+    "portfolio": "Portfolio"
   },
   "currency": "SAR",
-  "title": "Halaa Marketplace",
+  "title": "Halla Marketplace",
   "hero": {
-    "eyebrow": "Halaa Marketplace",
+    "eyebrow": "Halla Marketplace",
     "title": "Discover event vendors",
     "subtitle": "Browse trusted services from approved vendors to make your next event a success"
   },

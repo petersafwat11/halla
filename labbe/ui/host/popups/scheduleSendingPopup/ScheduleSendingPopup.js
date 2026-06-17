@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import styles from "./scheduleSendingPopup.module.css";
@@ -10,16 +10,29 @@ import DatePicker from "@/ui/commen/inputs/datePicker";
 import TimePicker from "@/ui/commen/inputs/TimePicker";
 import { toast } from "react-toastify";
 import { useScheduleSend } from "@/hooks/messaging";
+import useAuthStore from "@/stores/authStore";
 
 const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule }) => {
   const { t } = useTranslation("common");
   const scheduleSend = useScheduleSend();
+  const subscription = useAuthStore((s) => s.subscription);
+  const isTrial = subscription?.planCode === "trial";
 
-  // Picker hint: minimum allowed day is two days out (00:00). The
-  // authoritative 48h lead-time check lives on the backend; if the
-  // combined date+time still falls under it, the API returns
-  // SCHEDULE_TOO_SOON and the toast surfaces that message.
+  // Picker hint: minimum allowed day is two days out (00:00) for paid
+  // plans. Trial users get a relaxed floor — the backend enforces the
+  // shorter TRIAL_SCHEDULE_MIN_LEAD_MINUTES threshold.
+  // If the combined date+time still falls under the backend lower bound,
+  // the API returns SCHEDULE_TOO_SOON and the toast surfaces that message.
+  const minDate = useMemo(() => {
+    if (isTrial) return null;
+    const date = new Date();
+    date.setDate(date.getDate() + 2);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, [isTrial]);
+
   const getTwoDaysFromNow = () => {
+    if (isTrial) return null;
     const date = new Date();
     date.setDate(date.getDate() + 2);
     date.setHours(0, 0, 0, 0);
@@ -71,11 +84,8 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
         ? new Date(existingSchedule.scheduledDate)
         : null,
       time: fromHHmm(existingSchedule?.scheduledTime),
-      channel: existingSchedule?.preferredChannel || "whatsapp",
     },
   });
-
-  const channel = methods.watch("channel");
 
   const onSubmit = async (data) => {
     if (!data.date || !data.time) {
@@ -83,11 +93,12 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
       return;
     }
 
-    const selectedDate = new Date(data.date);
-    const minDate = getTwoDaysFromNow();
-    if (selectedDate < minDate) {
-      toast.error(t("schedule_min_days_error"));
-      return;
+    if (!isTrial) {
+      const min = getTwoDaysFromNow();
+      if (min && new Date(data.date) < min) {
+        toast.error(t("schedule_min_days_error"));
+        return;
+      }
     }
 
     const time24 = to24h(data.time);
@@ -99,9 +110,8 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
     try {
       await scheduleSend.mutateAsync({
         eventId,
-        scheduledDate: toUtcMidnightIso(selectedDate),
+        scheduledDate: toUtcMidnightIso(new Date(data.date)),
         scheduledTime: time24,
-        channel: data.channel,
       });
 
       toast.success(t("schedule_message_success"));
@@ -136,30 +146,13 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
               "Select when you would like to send the message"}
           </p>
 
-          <div className={styles.channelSelector}>
-            <button
-              type="button"
-              className={`${styles.channelButton} ${channel === "whatsapp" ? styles.active : ""}`}
-              onClick={() => methods.setValue("channel", "whatsapp")}
-            >
-              {t("whatsapp") || "WhatsApp"}
-            </button>
-            <button
-              type="button"
-              className={`${styles.channelButton} ${channel === "sms" ? styles.active : ""}`}
-              onClick={() => methods.setValue("channel", "sms")}
-            >
-              {t("sms") || "SMS"}
-            </button>
-          </div>
-
           <div className={styles.inputContainer}>
             <DatePicker
               name="date"
               label={t("schedule_date") || "Date"}
               placeholder={t("select_date") || "Select date"}
               required
-              minDate={getTwoDaysFromNow()}
+              minDate={minDate}
             />
 
             <TimePicker

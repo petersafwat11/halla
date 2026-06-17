@@ -6,7 +6,7 @@
   },
   "personalInfo": {
     "title": "Personal Account Information",
-    "storeLogo": "Store Logo",
+    "storeLogo": "Halla Marketplace Logo",
     "uploadImage": "Upload Images",
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
@@ -32,7 +32,7 @@
     "noLogo": "No logo"
   },
   "serviceDetails": {
-    "title": "Service or Store Details",
+    "title": "Service or Halla Marketplace Details",
     "nationalIdLabel": "National ID Number - Residence Number",
     "commercialRegister": "Commercial Register Copy (Optional)",
     "otherLicenses": "Other Licenses (Optional)",
@@ -107,5 +107,23 @@
   },
   "errors": {
     "boundary": "Failed to load settings"
+  },
+  "validation": {
+    "ownerNameRequired": "Owner name is required",
+    "ownerNameMinLength": "Name must be at least 2 characters",
+    "ownerNameMaxLength": "Name must be less than 100 characters",
+    "brandNameRequired": "Business name is required",
+    "brandNameMinLength": "Business name must be at least 2 characters",
+    "brandNameMaxLength": "Business name must be less than 100 characters",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email format",
+    "phoneInvalid": "Invalid phone number format",
+    "phoneRequired": "Phone number is required",
+    "descriptionMaxLength": "Description must not exceed 1000 characters",
+    "nationalIdInvalid": "National ID must be 10 digits",
+    "invalidUrl": "Invalid URL format",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "currentPasswordRequired": "Current password is required to change password"
   }
 }

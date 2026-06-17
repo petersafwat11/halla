@@ -196,7 +196,13 @@
       "alreadyResponded": "Your response has already been recorded."
     }
   },
-  "autoReminderInfo": "We automatically send a reminder to your guests 24 hours before the event.",
+  "autoReminderInfo": "We automatically send a reminder to your guests 48 hours before the event.",
+  "autoReminderInfoCustom": "We automatically send a reminder to your guests on {{date}} at {{time}}.",
+  "customizeReminder": "Customize",
+  "customizeReminderModalTitle": "Customize automatic reminder",
+  "customReminderCheckbox": "Customize reminder time",
+  "saveSuccess": "Reminder settings saved successfully",
+  "save": "Save",
   "scheduleReminder": {
     "heading": "Extra reminders",
     "button": "Schedule extra reminder",
@@ -253,5 +259,16 @@
     "extraReminder": "Extra reminder",
     "sent": "Sent",
     "scheduled": "Scheduled"
+  },
+  "resendInvite": {
+    "button": "Resend Invitations",
+    "buttonCooldown": "Available in {{hours}}h",
+    "sending": "Sending...",
+    "success": "Re-invitations sent to {{sent}}/{{total}} guests",
+    "error": "Failed to resend invitations",
+    "notLive": "Resend is only available for live events",
+    "alreadyUsed": "Re-invitations have already been sent for this event",
+    "notSent": "Wait until the initial invitation messages have been sent",
+    "cooldown": "Available {{hours}}h after invitations are sent"
   }
 }

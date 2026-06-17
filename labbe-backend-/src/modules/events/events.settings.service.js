@@ -139,6 +139,19 @@ module.exports = {
     this._checkEditLock(event, details);
 
     event.eventDetails = { ...event.eventDetails, ...details };
+
+    // Rescheduling edge case: if custom reminder exists and new event start time occurs before it, reset customReminderTime to false
+    const newEventDate = details.date || event.eventDetails.date;
+    const newEventTime = details.time || event.eventDetails.time;
+    if (event.reminderSettings?.customReminderTime) {
+      const { parseReminderTime, parseDateTime } = require("../../shared/utils/timezone");
+      const reminderTime = parseReminderTime(event);
+      const newEventTimeUtc = parseDateTime(newEventDate, newEventTime);
+      if (reminderTime && newEventTimeUtc && reminderTime.getTime() >= newEventTimeUtc.getTime()) {
+        event.reminderSettings.customReminderTime = false;
+      }
+    }
+
     await event.save();
 
     // Audit event details update
@@ -383,5 +396,61 @@ module.exports = {
       };
       throw err;
     }
+  },
+
+  /**
+   * Update reminder settings
+   * @param {string} eventId
+   * @param {Object} settings
+   * @param {Object} userContext
+   * @returns {Promise<Object>}
+   */
+  async updateReminderSettings(eventId, settings, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
+    if (!event) throw new NotFoundError("Event");
+
+    if (['completed', 'cancelled'].includes(event.status)) {
+      throw new ValidationError('Cannot modify a completed or cancelled event');
+    }
+
+    if (settings.customReminderTime) {
+      if (!settings.scheduledDate || !settings.scheduledTime) {
+        throw new ValidationError("Scheduled date and time are required for custom reminders");
+      }
+      const { parseReminderTime, parseDateTime } = require("../../shared/utils/timezone");
+      const reminderTime = parseReminderTime({ reminderSettings: settings });
+      if (!reminderTime || Number.isNaN(reminderTime.getTime())) {
+        throw new ValidationError("Invalid scheduled date or time");
+      }
+
+      const now = new Date();
+      if (reminderTime.getTime() <= now.getTime()) {
+        throw new ValidationError("Reminder time must be in the future");
+      }
+
+      // Also ensure reminder time is before the event start time
+      const eventTime = parseDateTime(event.eventDetails.date, event.eventDetails.time);
+      if (eventTime && reminderTime.getTime() >= eventTime.getTime()) {
+        throw new ValidationError("Reminder time must be before the event time");
+      }
+    }
+
+    event.reminderSettings = { ...event.reminderSettings, ...settings };
+    await event.save();
+
+    const userId =
+      typeof userContext === 'object' && userContext !== null
+        ? userContext._id?.toString?.() || userContext._id
+        : userContext;
+
+    logAudit({
+      action: 'event.reminder_settings_updated',
+      actor: { _id: userId },
+      targetType: 'event',
+      targetId: event._id,
+      metadata: { updatedFields: Object.keys(settings) },
+    }).catch(() => {});
+
+    return { event };
   },
 };

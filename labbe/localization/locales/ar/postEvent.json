@@ -39,12 +39,22 @@
     "qrInvalid": "رابط غير صالح أو منتهي الصلاحية.",
     "qrLookup": "تعذّر التحقق من الرابط. يرجى المحاولة مرة أخرى."
   },
+  "validation": {
+    "commentEmpty": "لا يمكن أن يكون التعليق فارغاً",
+    "commentMaxLength": "التعليق يجب أن لا يتجاوز 1000 حرف",
+    "imagesMaxCount": "الحد الأقصى 3 صور",
+    "titleMaxLength": "العنوان يجب أن لا يتجاوز 200 حرف",
+    "titleArMaxLength": "العنوان بالعربية يجب أن لا يتجاوز 200 حرف",
+    "descriptionMaxLength": "الوصف يجب أن لا يتجاوز 1000 حرف",
+    "descriptionArMaxLength": "الوصف بالعربية يجب أن لا يتجاوز 1000 حرف",
+    "textMaxLength": "النص يجب أن لا يتجاوز 2000 حرف"
+  },
   "host": {
     "title": "محتوى ما بعد المناسبة",
     "cancel": "إلغاء",
     "confirm": "تأكيد",
     "statusPublished": "منشور",
-    "statusDraft": "مسودة",
+    "statusDraft": "في انتظار الجدولة",
     "caption": {
       "placeholder": "اكتب تعليقاً لمنشورك… (مثال: شكراً لمشاركتنا فرحتنا!)",
       "saving": "جاري الحفظ…",

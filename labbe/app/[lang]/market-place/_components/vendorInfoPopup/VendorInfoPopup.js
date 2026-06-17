@@ -6,11 +6,9 @@ import {
   FiX,
   FiStar,
   FiMapPin,
-  FiClock,
   FiGlobe,
   FiMail,
   FiPhone,
-  FiCheck,
   FiMessageCircle,
 } from "react-icons/fi";
 import styles from "./vendorInfoPopup.module.css";
@@ -51,33 +49,31 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
   if (!isOpen || !vendor) return null;
 
   const {
-    name,
-    image,
-    companyName,
+    brandName,
+    description,
     logo,
+    coverImage,
+    portfolio = [],
     rating,
     reviewCount,
-    duration,
-    price,
-    currency,
-    included,
     location,
-    website,
     email,
-    phone,
+    mobile,
+    socialLinks = {},
+    services = [],
   } = vendor;
 
-  const hasIncluded = Array.isArray(included) && included.length > 0;
-  const hasContact = location || website || email || phone;
   const hasRating = rating != null && Number(rating) > 0;
   const reviewCountNum = Number(reviewCount) || 0;
-  const hasHero = !!image && !heroError;
+  const hasHero = !!coverImage && !heroError;
   const hasLogo = !!logo && !logoError;
-  const heroInitial = (name || companyName || "?").trim().charAt(0).toUpperCase();
-  const logoInitial = (companyName || name || "?").trim().charAt(0).toUpperCase();
+  const heroInitial = (brandName || "?").trim().charAt(0).toUpperCase();
+  const logoInitial = (brandName || "?").trim().charAt(0).toUpperCase();
+  const hasPortfolio = Array.isArray(portfolio) && portfolio.length > 0;
+  const hasServices = Array.isArray(services) && services.length > 0;
+  const hasContact = location || socialLinks.website || email || mobile;
 
-  // Normalize phone for WhatsApp (digits only, with leading country code)
-  const phoneDigits = phone ? String(phone).replace(/[^\d]/g, "") : "";
+  const phoneDigits = mobile ? String(mobile).replace(/[^\d]/g, "") : "";
   const whatsappHref = phoneDigits ? `https://wa.me/${phoneDigits}` : null;
 
   return (
@@ -92,8 +88,8 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
         <div className={styles.hero}>
           {hasHero ? (
             <Image
-              src={image}
-              alt={name || ""}
+              src={coverImage}
+              alt={brandName || ""}
               fill
               sizes="(max-width: 768px) 100vw, 600px"
               style={{ objectFit: "cover" }}
@@ -116,8 +112,22 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
           </button>
 
           <div className={styles.heroContent}>
+            <div className={styles.heroLogoWrap}>
+              {hasLogo ? (
+                <Image
+                  src={logo}
+                  alt=""
+                  width={64}
+                  height={64}
+                  className={styles.heroLogo}
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <span className={styles.heroLogoFallback}>{logoInitial}</span>
+              )}
+            </div>
             <h2 id="vendor-info-title" className={styles.heroTitle}>
-              {name}
+              {brandName}
             </h2>
             <div className={styles.heroMeta}>
               {hasRating && (
@@ -143,77 +153,81 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
 
         {/* ────────── BODY ────────── */}
         <div className={styles.content}>
-          {/* Vendor identity row */}
-          {(companyName || logo) && (
-            <div className={styles.vendorCard}>
-              <div className={styles.vendorLogo}>
-                {hasLogo ? (
-                  <Image
-                    src={logo}
-                    alt=""
-                    width={56}
-                    height={56}
-                    style={{ objectFit: "contain" }}
-                    onError={() => setLogoError(true)}
-                  />
-                ) : (
-                  <span className={styles.vendorLogoFallback}>
-                    {logoInitial}
-                  </span>
-                )}
-              </div>
-              <div className={styles.vendorMeta}>
-                <span className={styles.vendorLabel}>
-                  {t("vendor.providedBy", "By")}
-                </span>
-                <span className={styles.vendorName}>
-                  {companyName || name}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Meta chips: price + duration */}
-          {(price || duration) && (
-            <div className={styles.metaGrid}>
-              {price && (
-                <div className={styles.metaChip}>
-                  <span className={styles.metaChipLabel}>
-                    {t("vendor.price", "Price")}
-                  </span>
-                  <span className={styles.metaChipValue}>
-                    {price} {currency || t("currency")}
-                  </span>
-                </div>
-              )}
-              {duration && (
-                <div className={styles.metaChip}>
-                  <span className={styles.metaChipLabel}>
-                    <FiClock className={styles.metaChipIcon} />
-                    {t("vendor.serviceDuration")}
-                  </span>
-                  <span className={styles.metaChipValue}>{duration}</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* What's included */}
-          {hasIncluded && (
+          {/* About Vendor */}
+          {description && (
             <section className={styles.section}>
               <h3 className={styles.sectionTitle}>
-                {t("vendor.whatsIncluded")}
+                {t("vendor.aboutVendor", "About Vendor")}
               </h3>
-              <ul className={styles.includedList}>
-                {included.map((item, index) => (
-                  <li key={index} className={styles.includedItem}>
-                    <span className={styles.includedCheck} aria-hidden="true">
-                      <FiCheck />
-                    </span>
-                    <span className={styles.includedText}>{item}</span>
-                  </li>
+              <p className={styles.aboutText}>{description}</p>
+            </section>
+          )}
+
+          {/* Portfolio Gallery */}
+          {hasPortfolio && (
+            <section className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                {t("vendor.portfolio", "Portfolio")}
+              </h3>
+              <div className={styles.portfolioGallery}>
+                {portfolio.map((img, idx) => (
+                  <div key={idx} className={styles.portfolioItem}>
+                    <Image
+                      src={img}
+                      alt={`${t("vendor.portfolio", "Portfolio")} ${idx + 1}`}
+                      fill
+                      sizes="120px"
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
                 ))}
-              </ul>
+              </div>
+            </section>
+          )}
+
+          {/* Services */}
+          {hasServices && (
+            <section className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                {t("vendor.ourServices", "Our Services")}
+              </h3>
+              <div className={styles.servicesList}>
+                {services.map((svc) => (
+                  <div key={svc.id} className={styles.serviceItem}>
+                    {svc.image && (
+                      <div className={styles.serviceImageWrap}>
+                        <Image
+                          src={svc.image}
+                          alt={svc.name || ""}
+                          fill
+                          sizes="80px"
+                          style={{ objectFit: "cover" }}
+                        />
+                      </div>
+                    )}
+                    <div className={styles.serviceDetails}>
+                      <h4 className={styles.serviceName}>{svc.name}</h4>
+                      {svc.description && (
+                        <p className={styles.serviceDesc}>{svc.description}</p>
+                      )}
+                      {svc.price != null && (
+                        <span className={styles.servicePrice}>
+                          {svc.price} {svc.currency || t("currency")}
+                        </span>
+                      )}
+                    </div>
+                    {mobile && (
+                      <a
+                        className={styles.serviceInquiry}
+                        href={`tel:${mobile}`}
+                        aria-label={t("card.callNow")}
+                      >
+                        <FiPhone />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
             </section>
           )}
 
@@ -232,17 +246,17 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
                     <span className={styles.contactText}>{location}</span>
                   </div>
                 )}
-                {website && (
+                {socialLinks.website && (
                   <a
                     className={styles.contactRow}
-                    href={website}
+                    href={socialLinks.website}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <span className={styles.contactIcon}>
                       <FiGlobe />
                     </span>
-                    <span className={styles.contactText}>{website}</span>
+                    <span className={styles.contactText}>{socialLinks.website}</span>
                   </a>
                 )}
                 {email && (
@@ -253,8 +267,8 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
                     <span className={styles.contactText}>{email}</span>
                   </a>
                 )}
-                {phone && (
-                  <a className={styles.contactRow} href={`tel:${phone}`}>
+                {mobile && (
+                  <a className={styles.contactRow} href={`tel:${mobile}`}>
                     <span className={styles.contactIcon}>
                       <FiPhone />
                     </span>
@@ -263,7 +277,7 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
                       dir="ltr"
                       style={{ unicodeBidi: "embed", display: "inline-block" }}
                     >
-                      {phone}
+                      {mobile}
                     </span>
                   </a>
                 )}
@@ -273,7 +287,7 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
         </div>
 
         {/* ────────── STICKY CTA FOOTER ────────── */}
-        {phone && (
+        {mobile && (
           <div className={styles.ctaFooter}>
             {whatsappHref && (
               <a
@@ -288,7 +302,7 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
             )}
             <a
               className={`${styles.ctaButton} ${styles.ctaButtonPrimary}`}
-              href={`tel:${phone}`}
+              href={`tel:${mobile}`}
             >
               <FiPhone />
               <span>{t("card.callNow")}</span>

@@ -95,6 +95,45 @@
   fill: #f5b342;
 }
 
+/* ============================================
+   LOGO BADGE
+   ============================================ */
+.logoBadge {
+  position: absolute;
+  bottom: 12px;
+  inset-inline-start: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.logoBadgeImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logoBadgeFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c28e5c;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .ratingValue {
   font-size: 12px;
   font-weight: 700;

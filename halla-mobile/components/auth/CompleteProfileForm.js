@@ -10,8 +10,8 @@ import FormHeader from "./FormHeader";
 const CompleteProfileForm = ({ onSubmit, loading = false }) => {
   const { t } = useTranslation("auth");
   const methods = useForm({
-    resolver: zodResolver(completeProfileSchema),
-    mode: "onChange",
+    resolver: zodResolver(completeProfileSchema(t)),
+    mode: "onBlur",
     defaultValues: {
       fullName: "",
       email: "",

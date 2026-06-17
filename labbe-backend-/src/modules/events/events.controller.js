@@ -300,6 +300,19 @@ exports.updateLaunchSettings = catchAsync(async (req, res) => {
 });
 
 /**
+ * Update reminder settings
+ * PATCH /api/v2/events/:id/reminder-settings
+ */
+exports.updateReminderSettings = catchAsync(async (req, res) => {
+  const result = await eventsService.updateReminderSettings(
+    req.params.id,
+    req.body,
+    req.user
+  );
+  sendSuccess(res, result, "Reminder settings updated");
+});
+
+/**
  * Send test message
  * PATCH /api/v2/events/:id/test-message
  */
@@ -402,6 +415,26 @@ exports.notifyStaff = catchAsync(async (req, res) => {
 exports.retryLaunch = catchAsync(async (req, res) => {
   const result = await eventsService.retryEventLaunch(req.params.id, req.user);
   sendSuccess(res, result, "Launch retry kicked off");
+});
+
+// ============================================
+// RESEND INVITE
+// ============================================
+
+/**
+ * Resend invitation to guests who haven't responded or said "maybe".
+ * POST /api/v2/events/:id/resend-invite
+ *
+ * Only available 48h after the initial bulk send completed and
+ * fires at most once per event (idempotent via DB flag).
+ */
+exports.resendInvite = catchAsync(async (req, res) => {
+  const result = await eventsService.resendInvite(
+    req.params.id,
+    req.body,
+    req.user
+  );
+  sendSuccess(res, result, "Re-invitations sent");
 });
 
 // ============================================

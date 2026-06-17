@@ -14,6 +14,8 @@ export default function GuestRows({
   t,
   formatDate,
   formatDateTime,
+  statusFilter,
+  onStatusFilterChange,
   onEditGuest,
   onDeleteGuest,
   onSendInvitation,
@@ -21,6 +23,21 @@ export default function GuestRows({
   onExportGuests,
 }) {
   const guestsList = guests || [];
+
+  const filterOptions = onStatusFilterChange && [
+    { label: t("singleEvent.stats.all", "الكل"), value: null },
+    { label: t("singleEvent.stats.confirmed"), value: "confirmed" },
+    { label: t("singleEvent.stats.declined"), value: "declined" },
+    { label: t("singleEvent.stats.maybe", "ربما"), value: "maybe" },
+    { label: t("singleEvent.stats.noResponse"), value: "noResponse" },
+    { label: t("singleEvent.stats.checkedIn"), value: "checkedIn" },
+  ].map((opt) => ({
+    ...opt,
+    onClick: () => onStatusFilterChange(opt.value),
+  }));
+
+  const activeDropdownValue =
+    statusFilter && statusFilter !== "totalGuests" ? statusFilter : null;
 
   // Column keys must match `headers` 1:1 in the same order. The Table
   // component falls back to `Object.keys(row)` when `headerKeys` isn't
@@ -115,7 +132,9 @@ export default function GuestRows({
         return value;
       }}
       showSearch={true}
-      showFilter={false}
+      showFilter={!!onStatusFilterChange}
+      filterOptions={filterOptions}
+      activeFilter={activeDropdownValue}
       showExport={true}
       onExportClick={onExportGuests}
     />

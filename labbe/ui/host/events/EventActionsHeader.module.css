@@ -29,6 +29,11 @@
   cursor: not-allowed;
 }
 
+.disabledWithTooltip {
+  opacity: 0.55;
+  cursor: help;
+}
+
 .primaryButton {
   display: flex;
   align-items: center;
@@ -87,3 +92,49 @@
 .dropdownItem:last-child {
   border-radius: 0 0 8px 8px;
 }
+
+@keyframes pulseFlashing {
+  0% {
+    background-color: #ffffff;
+    box-shadow: 0 0 0 0 rgba(194, 142, 92, 0.4);
+  }
+  50% {
+    background-color: #fbf3eb;
+    box-shadow: 0 0 0 6px rgba(194, 142, 92, 0.2);
+  }
+  100% {
+    background-color: #ffffff;
+    box-shadow: 0 0 0 0 rgba(194, 142, 92, 0.4);
+  }
+}
+
+.flashingButton {
+  animation: pulseFlashing 2.3s infinite;
+  border-color: #c28e5c !important;
+}
+
+@media (max-width: 1023px) {
+  .actionsContainer {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .dropdownWrapper {
+    width: 100%;
+  }
+
+  .outlineButton,
+  .primaryButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dropdown {
+    width: 100%;
+    right: 0;
+    left: 0;
+  }
+}
+

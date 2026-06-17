@@ -41,7 +41,7 @@
   },
   "eventStatus": {
     "published": "Published",
-    "draft": "Draft",
+    "pending_scheduling": "Pending Scheduling",
     "ended": "Ended",
     "suspended": "Suspended",
     "live": "Live",

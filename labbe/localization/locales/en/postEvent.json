@@ -39,12 +39,22 @@
     "qrInvalid": "Invalid or expired link.",
     "qrLookup": "We couldn't verify the link. Please try again."
   },
+  "validation": {
+    "commentEmpty": "Comment cannot be empty",
+    "commentMaxLength": "Comment cannot exceed 1000 characters",
+    "imagesMaxCount": "Maximum 3 images allowed",
+    "titleMaxLength": "Title cannot exceed 200 characters",
+    "titleArMaxLength": "Arabic title cannot exceed 200 characters",
+    "descriptionMaxLength": "Description cannot exceed 1000 characters",
+    "descriptionArMaxLength": "Arabic description cannot exceed 1000 characters",
+    "textMaxLength": "Text cannot exceed 2000 characters"
+  },
   "host": {
     "title": "Post-event content",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "statusPublished": "Published",
-    "statusDraft": "Draft",
+    "statusDraft": "Pending Scheduling",
     "caption": {
       "placeholder": "Write a caption for your post… (e.g. Thank you for celebrating with us!)",
       "saving": "Saving…",

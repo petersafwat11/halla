@@ -6,7 +6,7 @@
     "payments": "Payments",
     "tickets": "Tickets",
     "plans": "Plans",
-    "shop": "Shop",
+    "shop": "Halla Marketplace",
     "freePlan": "Free Plan",
     "freePlanDesc": "Subscribe to send unlimited invitations",
     "upgradeNow": "Upgrade Now",
@@ -58,11 +58,11 @@
     "avgAttendance": "Average Response",
     "liveEvents": "Active Events",
     "endedEvents": "Ended Events",
-    "draftEvents": "Draft Events",
+    "pendingSchedulingEvents": "Pending Scheduling",
     "attendanceRate": "Attendance Rate"
   },
   "lastEvent": {
-    "scheduleEvent": "Schedule Event",
+    "scheduleEvent": "Schedule Sending",
     "viewStats": "View Statistics",
     "editEvent": "Edit Event",
     "responseStatus": "Response Status",
@@ -72,7 +72,7 @@
     "remainingEvents": "Remaining Events",
     "plan": "Plan",
     "status": {
-      "draft": "Draft",
+      "pending_scheduling": "Pending Scheduling",
       "scheduled": "Scheduled",
       "published": "Published",
       "pending": "Pending Approval",
@@ -87,7 +87,7 @@
       "invitationCustomization": "Invitation Customization"
     },
     "buttons": {
-      "scheduleEvent": "Schedule Event",
+      "scheduleEvent": "Schedule Sending",
       "testMessage": "Test Message",
       "guests": "Guests",
       "sharePostEvent": "Share Post-Event Page"
@@ -217,7 +217,13 @@
     }
   },
   "singleEvent": {
-    "autoReminderInfo": "We automatically send a reminder to your guests 24 hours before the event.",
+    "autoReminderInfo": "We automatically send a reminder to your guests 48 hours before the event.",
+    "autoReminderInfoCustom": "We automatically send a reminder to your guests on {{date}} at {{time}}.",
+    "customizeReminder": "Customize",
+    "customizeReminderModalTitle": "Customize automatic reminder",
+    "customReminderCheckbox": "Customize reminder time",
+    "saveSuccess": "Reminder settings saved successfully",
+    "save": "Save",
     "scheduleReminder": {
       "heading": "Extra reminders",
       "button": "Schedule extra reminder",
@@ -267,12 +273,13 @@
       "addGuest": "Add Guest"
     },
     "stats": {
-      "attendanceTracking": "Attendance Tracking",
-      "declined": "Declined",
+      "attendanceTracking": "Statistics",
+      "declined": "Excused",
       "confirmed": "Confirmed",
       "noResponse": "No Response",
       "maybe": "Maybe",
-      "checkedIn": "Checked In"
+      "checkedIn": "Checked In",
+      "totalGuests": "Total Guests"
     },
     "staff": {
       "title": "Staff",
@@ -306,6 +313,8 @@
       "namePlaceholder": "Enter guest name",
       "phone": "Phone",
       "phonePlaceholder": "Enter phone number",
+      "invalidPhone": "Phone number must be 9 digits starting with 5",
+      "invalidEmail": "Please enter a valid email address",
       "success": "Guest added successfully",
       "error": "Failed to add guest"
     },
@@ -324,6 +333,10 @@
       "email": "Email",
       "emailPlaceholder": "Enter email address",
       "mainStaff": "Main Staff",
+      "phoneRequired": "Phone number is required",
+      "invalidPhone": "Phone number must be 9 digits starting with 5",
+      "nameRequired": "Name must be at least 2 characters",
+      "nameMaxLength": "Name cannot exceed 100 characters",
       "success": "Staff added successfully",
       "error": "Failed to add staff"
     },
@@ -411,5 +424,16 @@
       "dateRequired": "Date is required",
       "timeRequired": "Time is required"
     }
+  },
+  "resendInvite": {
+    "button": "Resend Invitations",
+    "buttonCooldown": "Available in {{hours}}h",
+    "sending": "Sending...",
+    "success": "Re-invitations sent to {{sent}}/{{total}} guests",
+    "error": "Failed to resend invitations",
+    "notLive": "Resend is only available for live events",
+    "alreadyUsed": "Re-invitations have already been sent for this event",
+    "notSent": "Wait until the initial invitation messages have been sent",
+    "cooldown": "Available {{hours}}h after invitations are sent"
   }
 }

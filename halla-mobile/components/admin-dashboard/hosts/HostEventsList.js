@@ -22,7 +22,7 @@ const formatDate = (d) => {
 const getStatusColor = (status) => {
   switch (status) {
     case "published": return colors.success[500];
-    case "draft":     return colors.natural[450];
+    case "pending_scheduling": return colors.natural[450];
     case "ended":     return colors.error[500];
     default:          return colors.natural[400];
   }
@@ -42,7 +42,7 @@ const EventCard = ({ event, onPress }) => {
           </Text>
           <View style={[styles.statusChip, { backgroundColor: `${statusColor}20` }]}>
             <Text style={[styles.statusText, { color: statusColor }]}>
-              {event.status || "draft"}
+              {(event.status || "pending_scheduling").replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
             </Text>
           </View>
         </View>

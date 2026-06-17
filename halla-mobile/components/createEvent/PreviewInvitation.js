@@ -104,6 +104,16 @@ const PreviewInvitation = ({
     return null;
   }, [templateImage]);
 
+  const aspectRatio = useMemo(() => {
+    if (template?.naturalWidth && template?.naturalHeight) {
+      return template.naturalWidth / template.naturalHeight;
+    }
+    if (templateImage?.width && templateImage?.height) {
+      return templateImage.width / templateImage.height;
+    }
+    return 4 / 5;
+  }, [template, templateImage]);
+
   return (
     <Modal
       visible={visible}
@@ -132,7 +142,7 @@ const PreviewInvitation = ({
         >
           {/* Chat Bubble */}
           <View style={styles.chatBubble}>
-            <View style={styles.templateImageWrap}>
+            <View style={[styles.templateImageWrap, { aspectRatio }]}>
               {bakedImageSource ? (
                 <Image
                   source={bakedImageSource}
@@ -253,10 +263,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 3,
     elevation: 2,
+    width: "100%",
   },
   templateImageWrap: {
     width: "100%",
-    aspectRatio: 4 / 5,
     backgroundColor: "#F5F1EA",
     overflow: "hidden",
   },

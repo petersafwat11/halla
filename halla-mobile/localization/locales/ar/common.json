@@ -29,7 +29,7 @@
   "navigation": {
     "home": "الرئيسية",
     "events": "المناسبات",
-    "marketplace": "المتجر",
+    "marketplace": "سوق هلا",
     "plans": "الباقات",
     "tickets": "الشكاوى",
     "profile": "الملف الشخصي",
@@ -59,6 +59,22 @@
     "amiri": { "displayName": "أميري" },
     "ibm_plex_arabic": { "displayName": "IBM Plex Sans Arabic" },
     "noto_sans_arabic": { "displayName": "Noto Sans Arabic" }
+  },
+  "validation": {
+    "invalidSaudiPhone": "رقم الهاتف يجب أن يبدأ بـ 5 ويتكون من 9 أرقام",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "required": "هذا الحقل مطلوب",
+    "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordMaxLength": "كلمة المرور يجب أن لا تتجاوز 128 حرف",
+    "passwordComplexity": "كلمة المرور يجب أن تحتوي على حرف كبير وصغير ورقم",
+    "otpLength": "رمز التحقق يجب أن يكون 6 أرقام",
+    "otpInvalid": "رمز التحقق يجب أن يحتوي على أرقام فقط",
+    "usernameMin": "اسم المستخدم يجب أن يكون حرفين على الأقل",
+    "usernameMax": "اسم المستخدم يجب أن يكون أقل من 50 حرف",
+    "emailInvalid": "يرجى إدخال بريد إلكتروني صحيح",
+    "passwordMin": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+    "currentPasswordRequired": "كلمة المرور الحالية مطلوبة لتعيين كلمة مرور جديدة"
   },
   "date": {
     "months": {

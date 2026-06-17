@@ -11,7 +11,7 @@ const SignupMobileForm = ({ onSubmit, loading = false }) => {
   const { t } = useTranslation("auth");
 
   const methods = useForm({
-    resolver: zodResolver(signupMobileSchema),
+    resolver: zodResolver(signupMobileSchema(t)),
     mode: "onBlur",
     defaultValues: {
       mobile: "",

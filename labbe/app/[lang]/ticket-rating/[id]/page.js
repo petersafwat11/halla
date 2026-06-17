@@ -31,7 +31,7 @@ const TicketRatingContent = () => {
 
   // Initialize form with RHF
   const methods = useForm({
-    resolver: zodResolver(ticketRatingSchema),
+    resolver: zodResolver(ticketRatingSchema(t)),
     defaultValues: defaultTicketRatingValues,
     mode: "onChange",
   });

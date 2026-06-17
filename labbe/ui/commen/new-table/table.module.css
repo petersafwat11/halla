@@ -352,6 +352,15 @@
   background: #f7f7f7;
 }
 
+.dropdownItemActive {
+  background: #faf5ef;
+}
+
+.dropdownItemActive span {
+  color: #6B4E33;
+  font-weight: 600;
+}
+
 .dropdownItem:not(:last-child) {
   border-bottom: 1px solid #f2f2f2;
 }

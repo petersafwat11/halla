@@ -36,7 +36,7 @@ const AddServicePopup = ({
   const isEditing = !!editingService;
 
   const methods = useForm({
-    resolver: zodResolver(addServiceSchema),
+    resolver: zodResolver(addServiceSchema(t)),
     defaultValues: {
       serviceName: "",
       serviceType: "",

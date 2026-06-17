@@ -228,6 +228,98 @@
   text-align: center;
 }
 
+/* Confirmed selection card — shown after template bake or image upload */
+.confirmedCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 2rem;
+  border-radius: 1.6rem;
+  background: #fffaf3;
+  border: 1px solid #ead9c8;
+}
+
+.confirmedCardLabel {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c2c2c;
+  text-align: center;
+}
+
+.confirmedCardImageWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.8rem;
+  background: #fff;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.confirmedCardImg {
+  width: 100%;
+  height: auto;
+  max-height: 44rem;
+  object-fit: contain;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.confirmedCardTemplateName {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #6b4e33;
+  text-align: center;
+}
+
+.confirmedCardActions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.confirmedRemoveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  background: #fff;
+  border: 1px solid #e5b9b9;
+  color: #a13d3d;
+}
+
+.confirmedRemoveBtn:hover {
+  background: #fdecec;
+}
+
+.confirmedEditBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  background: #fff;
+  border: 1px solid #c28e5c;
+  color: #c28e5c;
+}
+
+.confirmedEditBtn:hover {
+  background: #fff7eb;
+}
+
 /* Category tabs (match host-dashboard EventTemplatesSection) */
 .tabs {
   display: flex;

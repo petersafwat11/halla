@@ -50,7 +50,11 @@
     "contactInfo": "معلومات الاتصال",
     "providedBy": "مقدم الخدمة",
     "whatsapp": "واتساب",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "startsFrom": "يبدأ من",
+    "ourServices": "خدماتنا",
+    "aboutVendor": "عن المزود",
+    "portfolio": "معرض الأعمال"
   },
   "currency": "ريال",
   "title": "سوق هلا",

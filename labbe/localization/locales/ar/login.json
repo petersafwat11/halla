@@ -20,12 +20,14 @@
     "otpLogin": {
       "phoneNumber": "رقم الهاتف",
       "verification": "التحقق",
-      "editPhone": "تعديل رقم الهاتف",
+      "editPhone": "إلغاء",
       "loginWithEmail": "تسجيل الدخول بالبريد اللإلكترونى",
       "verificationTitle": "التحقق من رقم الهاتف",
       "verificationDescription": "لقد أرسلنا رمز مكون من 6 أرقام إلى رقم هاتفك المحمول ",
       "verificationDescriptionEnd": " يرجى إدخاله أدناه",
-      "resendCode": "إعادة إرسال الرمز؟ ({{seconds}} ثانية)"
+      "resendCode": "إعادة إرسال الرمز؟ ({{seconds}} ثانية)",
+      "resendNow": "إعادة إرسال الرمز",
+      "resending": "جاري إعادة الإرسال..."
     },
     "buttons": {
       "login": "تسجيل الدخول",
@@ -47,5 +49,8 @@
       "otpInvalid": "رمز التحقق غير صحيح",
       "otpIncomplete": "يرجى إدخال رمز التحقق كاملاً"
     }
+  },
+  "validation": {
+    "invalidSaudiPhone": "يرجى إدخال رقم هاتف سعودي صحيح"
   }
 }

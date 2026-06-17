@@ -270,9 +270,40 @@
       "corporate": "فعاليات شركات",
       "engagement": "خطوبة",
       "baby_shower": "استقبال مولود"
+    },
+    "validation": {
+      "nameMinLength": "اسم الخدمة يجب أن يكون أكثر من حرفين",
+      "typeRequired": "نوع الخدمة مطلوب",
+      "descriptionMinLength": "وصف الخدمة يجب أن يكون أكثر من 10 أحرف",
+      "priceRequired": "سعر الخدمة مطلوب",
+      "durationMaxLength": "مدة الخدمة يجب أن تكون أقل من 100 حرف"
     }
   },
 
+  "validation": {
+    "ownerNameRequired": "اسم المالك مطلوب",
+    "ownerNameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
+    "ownerNameMaxLength": "الاسم يجب أن يكون أقل من 100 حرف",
+    "brandNameRequired": "اسم النشاط التجاري مطلوب",
+    "brandNameMinLength": "اسم النشاط التجاري يجب أن يكون حرفين على الأقل",
+    "brandNameMaxLength": "اسم النشاط التجاري يجب أن يكون أقل من 100 حرف",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "emailInvalid": "صيغة البريد الإلكتروني غير صحيحة",
+    "phoneInvalid": "صيغة رقم الهاتف غير صحيحة",
+    "phoneRequired": "رقم الهاتف مطلوب",
+    "descriptionMaxLength": "الوصف يجب أن لا يتجاوز 1000 حرف",
+    "nationalIdInvalid": "رقم الهوية يجب أن يكون 10 أرقام",
+    "invalidUrl": "صيغة الرابط غير صحيحة",
+    "currentPasswordRequired": "كلمة المرور الحالية مطلوبة",
+    "newPasswordRequired": "كلمة المرور الجديدة مطلوبة",
+    "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordMismatch": "كلمات المرور غير متطابقة",
+    "passwordConfirmRequired": "يرجى تأكيد كلمة المرور",
+    "otpRequired": "رمز التحقق مطلوب",
+    "otpInvalid": "رمز التحقق يجب أن يكون 4-8 أرقام",
+    "otpFormat": "رمز التحقق يجب أن يكون 4-8 أرقام",
+    "passwordChangeCurrentRequired": "كلمة المرور الحالية مطلوبة لتغيير كلمة المرور"
+  },
   "errors": {
     "fetchFailed": "فشل تحميل البيانات",
     "fetchFailedMessage": "تعذر تحميل البيانات. يرجى المحاولة مرة أخرى.",

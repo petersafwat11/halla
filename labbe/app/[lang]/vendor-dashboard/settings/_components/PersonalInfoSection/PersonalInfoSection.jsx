@@ -243,7 +243,7 @@ const PersonalInfoSection = ({ data, onSave, onPhoneVerified, onRefetch }) => {
 
       <PopupLayout isOpen={isPopupOpen} onClose={handleClosePopup}>
         <DynamicForm
-          schema={personalInfoSchema}
+          schema={personalInfoSchema(t)}
           initialData={displayData}
           onSubmit={handleFormSubmit}
           onCancel={handleClosePopup}

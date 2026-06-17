@@ -101,6 +101,8 @@ export const ENDPOINTS = {
     EXPORT_EVENTS: API_PATHS.events.exportEventsAsExcel,
     NOTIFY_STAFF: API_PATHS.events.notifyStaff,
     RETRY_LAUNCH: API_PATHS.events.retryLaunch,
+    RESEND_INVITE: API_PATHS.events.resendInvite,
+    UPDATE_REMINDER_SETTINGS: API_PATHS.events.updateReminderSettings,
     SCHEDULED_REMINDERS_LIST: API_PATHS.events.scheduledRemindersList,
     SCHEDULED_REMINDERS_CREATE: API_PATHS.events.scheduledRemindersCreate,
     SCHEDULED_REMINDERS_CANCEL: API_PATHS.events.scheduledRemindersCancel,
@@ -139,6 +141,7 @@ export const ENDPOINTS = {
 
   VENDORS: {
     CATEGORIES: API_PATHS.vendors.getCategories,
+    PUBLIC: API_PATHS.vendors.getPublicVendors,
   },
 
   SERVICES: {

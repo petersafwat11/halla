@@ -4,20 +4,143 @@ import {
   Text,
   StyleSheet,
   Animated,
-  ActivityIndicator,
   TouchableOpacity,
+  Modal,
+  Image,
+  TouchableWithoutFeedback,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import {
-  useHostTemplates,
-  useTemplateCategories,
-} from "../../hooks/templates";
 import TemplateCategoryChips from "./_components/TemplateCategoryChips";
 import TemplateCard from "./_components/TemplateCard";
 
 const CARD_WIDTH = 123;
 const CARD_SPACING = 12;
 const STEP = CARD_WIDTH + CARD_SPACING;
+
+const LOCAL_CATEGORIES = [
+  { code: "wedding",       nameEn: "Wedding",       nameAr: "زفاف" },
+  { code: "engagement",    nameEn: "Engagement",    nameAr: "خطوبة" },
+  { code: "birthday",      nameEn: "Birthday",      nameAr: "عيد ميلاد" },
+  { code: "baby_shower",   nameEn: "Baby Shower",   nameAr: "استقبال مولود" },
+  { code: "ladies_event",  nameEn: "Ladies' Event", nameAr: "مناسبة نسائية" },
+  { code: "general_event", nameEn: "General Event", nameAr: "مناسبات عامة" },
+];
+
+const LOCAL_TEMPLATES = [
+  {
+    _id: "tpl-1",
+    nameEn: "Royal Groom",
+    nameAr: "زفاف ملكي",
+    categories: ["wedding"],
+    src: require("../../assets/template-cards/1.png"),
+  },
+  {
+    _id: "tpl-2",
+    nameEn: "Pearl Da'wah Wedding",
+    nameAr: "دعوة زفاف لؤلؤية",
+    categories: ["wedding"],
+    src: require("../../assets/template-cards/2.png"),
+  },
+  {
+    _id: "tpl-3",
+    nameEn: "Royal Da'wah Wedding",
+    nameAr: "دعوة الفرح الملكي",
+    categories: ["wedding"],
+    src: require("../../assets/template-cards/3.png"),
+  },
+  {
+    _id: "tpl-4",
+    nameEn: "Gulf Groom",
+    nameAr: "زفاف الخليج",
+    categories: ["wedding"],
+    src: require("../../assets/template-cards/4.png"),
+  },
+  {
+    _id: "tpl-5",
+    nameEn: "Rose Garden Wedding",
+    nameAr: "زفاف الورد",
+    categories: ["wedding"],
+    src: require("../../assets/template-cards/5.png"),
+  },
+  {
+    _id: "tpl-6",
+    nameEn: "Burgundy Bloom Wedding",
+    nameAr: "زفاف الورد الأرجواني",
+    categories: ["wedding", "ladies_event"],
+    src: require("../../assets/template-cards/6.png"),
+  },
+  {
+    _id: "tpl-7",
+    nameEn: "Floral Arch Wedding",
+    nameAr: "قوس الزهور",
+    categories: ["wedding"],
+    src: require("../../assets/template-cards/7.png"),
+  },
+  {
+    _id: "tpl-8",
+    nameEn: "Candle Engagement",
+    nameAr: "خطوبة الشموع",
+    categories: ["wedding", "engagement"],
+    src: require("../../assets/template-cards/8.png"),
+  },
+  {
+    _id: "tpl-9",
+    nameEn: "Sacred Vows",
+    nameAr: "عقد قران مبارك",
+    categories: ["wedding"],
+    src: require("../../assets/template-cards/9.png"),
+  },
+  {
+    _id: "tpl-10",
+    nameEn: "Eid Al-Adha",
+    nameAr: "عيد الأضحى",
+    categories: ["general_event"],
+    src: require("../../assets/template-cards/10.png"),
+  },
+  {
+    _id: "tpl-11",
+    nameEn: "Ramadan Iftar",
+    nameAr: "سفرة إفطار رمضان",
+    categories: ["general_event"],
+    src: require("../../assets/template-cards/11.png"),
+  },
+  {
+    _id: "tpl-12",
+    nameEn: "Birthday Party",
+    nameAr: "حفلة عيد ميلاد",
+    categories: ["birthday"],
+    src: require("../../assets/template-cards/12.png"),
+  },
+  {
+    _id: "tpl-13",
+    nameEn: "Newborn Boy",
+    nameAr: "بشارة المولود",
+    categories: ["baby_shower"],
+    src: require("../../assets/template-cards/13.png"),
+  },
+  {
+    _id: "tpl-14",
+    nameEn: "Newborn Girl",
+    nameAr: "بشارة الأميرة",
+    categories: ["baby_shower"],
+    src: require("../../assets/template-cards/14.jpg"),
+  },
+  {
+    _id: "tpl-15",
+    nameEn: "Graduation Celebration",
+    nameAr: "حفل تخرج",
+    categories: ["general_event"],
+    src: require("../../assets/template-cards/15.png"),
+  },
+  {
+    _id: "tpl-16",
+    nameEn: "Pearl Promise",
+    nameAr: "وعد لؤلؤي",
+    categories: ["engagement"],
+    src: require("../../assets/template-cards/16.png"),
+  },
+];
 
 const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const { t, currentLanguage, isRTL } = useTranslation("common");
@@ -26,26 +149,31 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [scrollX] = useState(new Animated.Value(0));
   const [activeIdx, setActiveIdx] = useState(0);
+  const [previewTemplate, setPreviewTemplate] = useState(null);
   const scrollRef = useRef(null);
 
-  const {
-    data: catData,
-    isLoading: loadingCats,
-    isError: catsError,
-  } = useTemplateCategories();
+  const loadingCats = false;
+  const catsError = false;
+  const loadingTemplates = false;
+  const tplError = false;
 
-  const {
-    data: tplData,
-    isLoading: loadingTemplates,
-    isError: tplError,
-  } = useHostTemplates({ category: selectedCategory });
+  const categories = LOCAL_CATEGORIES;
+  
+  const templates = React.useMemo(() => {
+    if (selectedCategory === null) return LOCAL_TEMPLATES;
+    return LOCAL_TEMPLATES.filter((tpl) =>
+      tpl.categories.includes(selectedCategory)
+    );
+  }, [selectedCategory]);
 
-  const categories = catData?.data?.categories || [];
-  const templates = tplData?.data?.templates || [];
   const maxIdx = Math.max(0, templates.length - 1);
 
   const handleTemplatePress = (template) => {
-    if (onSelectTemplate) onSelectTemplate(template);
+    if (onSelectTemplate) {
+      onSelectTemplate(template);
+    } else {
+      setPreviewTemplate(template);
+    }
   };
 
   const scrollToIdx = (i) => {
@@ -71,7 +199,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>
+        <Text style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}>
           {t("templates", "قوالب المناسبات")}
         </Text>
       </View>
@@ -115,7 +243,11 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
               showsHorizontalScrollIndicator={false}
               snapToInterval={STEP}
               decelerationRate="fast"
-              contentContainerStyle={styles.templatesContent}
+              style={styles.scrollView}
+              contentContainerStyle={[
+                styles.templatesContent,
+                { flexDirection: isRTL ? "row-reverse" : "row" },
+              ]}
               onScroll={onScroll}
               onMomentumScrollEnd={handleMomentumEnd}
               scrollEventThrottle={16}
@@ -186,6 +318,44 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
           </>
         )}
       </View>
+
+      <Modal
+        visible={!!previewTemplate}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPreviewTemplate(null)}
+      >
+        <TouchableWithoutFeedback onPress={() => setPreviewTemplate(null)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <View style={[styles.modalHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+                  <Text style={[styles.modalTitle, { textAlign: isRTL ? "right" : "left" }]}>
+                    {locale === "ar"
+                      ? previewTemplate?.nameAr || previewTemplate?.nameEn
+                      : previewTemplate?.nameEn || previewTemplate?.nameAr}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setPreviewTemplate(null)}
+                    style={styles.modalCloseButton}
+                  >
+                    <Ionicons name="close" size={24} color="#656565" />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.modalBody}>
+                  {previewTemplate?.src && (
+                    <Image
+                      source={previewTemplate.src}
+                      style={styles.modalImage}
+                      resizeMode="contain"
+                    />
+                  )}
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 };
@@ -195,7 +365,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     flexDirection: "column",
-    alignItems: "flex-end",
+    alignItems: "stretch",
     gap: 16,
     borderRadius: 12,
     backgroundColor: "#FFF",
@@ -219,10 +389,12 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
+  scrollView: {
+    width: "100%",
+  },
   templatesContent: {
     paddingHorizontal: 0,
     gap: CARD_SPACING,
-    flexDirection: "row-reverse",
   },
   errorText: {
     fontSize: 13,
@@ -281,6 +453,59 @@ const styles = StyleSheet.create({
     width: 18,
     borderRadius: 3,
     backgroundColor: "#C28E5C",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.65)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    width: "100%",
+    maxWidth: 340,
+    maxHeight: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
+    overflow: "hidden",
+  },
+  modalHeader: {
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+    gap: 12,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontFamily: "Cairo_700Bold",
+    color: "#2C2C2C",
+    flex: 1,
+  },
+  modalCloseButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#F5F5F5",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalBody: {
+    padding: 16,
+    backgroundColor: "#FAFAFA",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalImage: {
+    width: "100%",
+    height: 320,
+    borderRadius: 8,
   },
 });
 

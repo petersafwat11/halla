@@ -35,6 +35,7 @@ const buildMutations = (queryClient) => ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   },
 
@@ -47,6 +48,7 @@ const buildMutations = (queryClient) => ({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   },
 
@@ -60,6 +62,7 @@ const buildMutations = (queryClient) => ({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   },
 });

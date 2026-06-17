@@ -34,6 +34,7 @@
 
 const path = require("path");
 const fs = require("fs");
+const dns = require("dns");
 const dotenv = require("dotenv");
 
 dotenv.config({ path: path.join(__dirname, "..", "config.env") });
@@ -767,6 +768,8 @@ async function assertAspectRatios() {
 
 // ── DB connect (mirrors seedTestUsers.js) ──────────────────────────────────
 async function connect() {
+  dns.setServers(["1.1.1.1", "1.0.0.1", "8.8.8.8", "8.8.4.4"]);
+
   let DB = process.env.DATABASE;
   if (process.env.DATABASE_PASSWORD && DB.includes("<PASSWORD>")) {
     DB = DB.replace("<PASSWORD>", process.env.DATABASE_PASSWORD);

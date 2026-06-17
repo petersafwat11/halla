@@ -3,7 +3,7 @@
     "title": "المناسبات",
     "subtitle": "راقب وأدر أحداث المنصة",
     "dateRange": "نطاق التاريخ",
-    "createEvent": "انشئ مناسبة"
+    "createEvent": "إنشاء مناسبة"
   },
   "events": {
     "title": "إدارة المناسبات",
@@ -29,7 +29,7 @@
       "scheduled": "مجدول",
       "live": "مباشر",
       "completed": "منتهي",
-      "draft": "مسودة",
+      "pending_scheduling": "في انتظار الجدولة",
       "cancelled": "ملغي"
     },
     "loadError": "فشل في تحميل المناسبات",
@@ -42,7 +42,7 @@
     },
     "filter": {
       "all": "الكل",
-      "draft": "مسودة",
+      "pending_scheduling": "في انتظار الجدولة",
       "scheduled": "مجدول",
       "live": "مباشر",
       "completed": "منتهي",
@@ -94,7 +94,7 @@
       "active": "نشطة",
       "ended": "منتهية",
       "suspended": "موقوفة",
-      "draft": "مسودة",
+      "pending_scheduling": "في انتظار الجدولة",
       "accepted": "مؤكد",
       "confirmed": "مؤكد",
       "declined": "معتذر",
@@ -179,11 +179,11 @@
       "create": "إنشاء المناسبة",
       "changeHost": "تغيير المضيف",
       "cancel": "إلغاء",
-      "saveDraft": "حفظ كمسودة"
+      "saveDraft": "في انتظار الجدولة"
     },
     "success": {
       "created": "تم إنشاء المناسبة بنجاح",
-      "scheduled": "تم جدولة المناسبة بنجاح"
+      "scheduled": "تم جدولة الارسال بنجاح"
     },
     "creatingForSelf": "إنشاء مناسبة لنفسك (غير محدود)",
     "errors": {

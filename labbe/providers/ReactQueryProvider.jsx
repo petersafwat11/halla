@@ -4,6 +4,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { runCacheMigrations } from "@/hooks/_cacheMigrations";
 
+let _queryClient = null;
+
+export function clearQueryCache() {
+  _queryClient?.clear();
+}
+
 export default function ReactQueryProvider({ children }) {
   const [queryClient] = useState(
     () =>
@@ -18,7 +24,11 @@ export default function ReactQueryProvider({ children }) {
   );
 
   useEffect(() => {
+    _queryClient = queryClient;
     runCacheMigrations(queryClient);
+    return () => {
+      _queryClient = null;
+    };
   }, [queryClient]);
 
   return (

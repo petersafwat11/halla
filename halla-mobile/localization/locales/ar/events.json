@@ -196,7 +196,13 @@
       "alreadyResponded": "تم تسجيل ردك مسبقاً."
     }
   },
-  "autoReminderInfo": "نُرسل تذكيراً تلقائياً للضيوف قبل المناسبة بـ 24 ساعة.",
+  "autoReminderInfo": "يتم ارسال تذكيراً تلقائياً للضيوف قبل المناسبة بـ 48 ساعة.",
+  "autoReminderInfoCustom": "يتم إرسال تذكير تلقائي لضيوفك في {{date}} الساعة {{time}}.",
+  "customizeReminder": "تخصيص",
+  "customizeReminderModalTitle": "تخصيص التذكير التلقائي",
+  "customReminderCheckbox": "تخصيص وقت التذكير",
+  "saveSuccess": "تم حفظ إعدادات التذكير بنجاح",
+  "save": "حفظ",
   "scheduleReminder": {
     "heading": "تذكيرات إضافية",
     "button": "جدولة تذكير إضافي",
@@ -253,5 +259,16 @@
     "extraReminder": "تذكير إضافي",
     "sent": "تم الإرسال",
     "scheduled": "مجدول"
+  },
+  "resendInvite": {
+    "button": "إعادة إرسال الدعوات",
+    "buttonCooldown": "متاح بعد {{hours}}س",
+    "sending": "جاري الإرسال...",
+    "success": "تم إعادة إرسال الدعوات إلى {{sent}}/{{total}} ضيف",
+    "error": "فشل في إعادة إرسال الدعوات",
+    "notLive": "إعادة الإرسال متاحة فقط للمناسبات النشطة",
+    "alreadyUsed": "تم إعادة إرسال الدعوات لهذه المناسبة مسبقاً",
+    "notSent": "انتظر حتى يتم إرسال رسائل الدعوة الأولية",
+    "cooldown": "متاح بعد {{hours}}س من إرسال الدعوات"
   }
 }

@@ -188,6 +188,13 @@ const useAuthStore = create(
           setupTokenValid: false,
           setupTokenData: null,
         });
+
+        if (typeof window !== "undefined") {
+          const { cookieUtils } = await import("@/utils/cookieUtils");
+          cookieUtils.clearAuthCookies();
+          const { clearQueryCache } = await import("@/providers/ReactQueryProvider");
+          clearQueryCache();
+        }
       },
     }),
     {

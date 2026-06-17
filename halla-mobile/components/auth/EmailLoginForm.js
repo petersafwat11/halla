@@ -11,8 +11,8 @@ const EmailLoginForm = ({ onSubmit, loading = false }) => {
   const { t } = useTranslation("auth");
 
   const methods = useForm({
-    resolver: zodResolver(emailLoginSchema),
-    mode: "onChange",
+    resolver: zodResolver(emailLoginSchema(t)),
+    mode: "onBlur",
     defaultValues: {
       email: "",
       password: "",

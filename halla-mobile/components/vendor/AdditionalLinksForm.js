@@ -10,7 +10,7 @@ import { mobileSocialLinksSchema as socialLinksSchema } from "@halla/shared/sche
 const AdditionalLinksForm = ({ data, onSave, loading }) => {
   const { t } = useTranslation("vendor");
   const methods = useForm({
-    resolver: zodResolver(socialLinksSchema),
+    resolver: zodResolver(socialLinksSchema(t)),
     defaultValues: {
       website: data?.website || "",
       instagram: data?.instagram || "",

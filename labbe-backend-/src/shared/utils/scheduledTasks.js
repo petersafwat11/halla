@@ -636,16 +636,15 @@ const scheduleEventCompletion = () => {
  * M-5: explicit Asia/Riyadh time zone — without it, a UTC server formats
  * Riyadh-evening events as the previous calendar day in the reminder SMS.
  */
-const { formatRiyadh } = require("./timezone");
+const { formatRiyadh, parseReminderTime } = require("./timezone");
 const _formatDateAr = (date) => {
   if (!date) return "";
   return formatRiyadh(date, { style: "date", locale: "ar-SA" });
 };
 
 /**
- * Send 24-hour auto reminders to guests — runs every 30 minutes and only
- * fires on events whose date falls in the next 23.5–24.5h window and
- * which have not yet had `messagingStatus.reminderSent` flipped.
+ * Send auto reminders to guests — runs every 15 minutes and fires on events
+ * whose scheduled reminder time is due, or legacy events falling in the 48h window.
  *
  * Segments:
  *   - confirmed → template (category, reminder_confirmed)
@@ -659,23 +658,59 @@ const _formatDateAr = (date) => {
  * skip — they do not crash the tick.
  */
 const scheduleGuestReminders = () => {
-  cron.schedule("*/30 * * * *", async () => {
+  cron.schedule("*/15 * * * *", async () => {
     try {
-      const now = Date.now();
-      const windowStart = new Date(now + 23.5 * 3600 * 1000);
-      const windowEnd = new Date(now + 24.5 * 3600 * 1000);
-
-      const events = await Event.find({
+      const now = new Date();
+      
+      // Load events that have custom reminder settings scheduled for the next 60 minutes or in the past
+      const dateLimit = new Date(now.getTime() + 60 * 60 * 1000);
+      const eventsWithSettings = await Event.find({
         status: { $in: ["scheduled", "live"] },
-        "eventDetails.date": { $gte: windowStart, $lte: windowEnd },
+        "reminderSettings.scheduledDate": { $lte: dateLimit },
         "messagingStatus.reminderSent": { $ne: true },
       }).populate("host", "name username");
 
-      if (events.length === 0) return;
-      console.log(`[Cron] Sending 24h reminders for ${events.length} event(s)`);
+      // Load legacy events without custom settings that fall into the 48h window
+      const windowStart = new Date(now.getTime() + 47.5 * 3600 * 1000);
+      const windowEnd = new Date(now.getTime() + 48.5 * 3600 * 1000);
+      const legacyEvents = await Event.find({
+        status: { $in: ["scheduled", "live"] },
+        "eventDetails.date": { $gte: windowStart, $lte: windowEnd },
+        "reminderSettings.scheduledDate": { $exists: false },
+        "messagingStatus.reminderSent": { $ne: true },
+      }).populate("host", "name username");
 
-      for (const event of events) {
-        await _runAutoReminderForEvent(event);
+      // Combine arrays
+      const allEvents = [...eventsWithSettings];
+      const legacyIds = new Set(eventsWithSettings.map(e => String(e._id)));
+      for (const event of legacyEvents) {
+        if (!legacyIds.has(String(event._id))) {
+          allEvents.push(event);
+        }
+      }
+
+      if (allEvents.length === 0) return;
+
+      for (const event of allEvents) {
+        let shouldSend = false;
+
+        if (event.reminderSettings && event.reminderSettings.scheduledDate) {
+          const scheduledTime = parseReminderTime(event);
+          if (scheduledTime) {
+            const diffMs = now.getTime() - scheduledTime.getTime();
+            const diffSec = diffMs / 1000;
+            // Send if scheduled time is in the past, and within a 60 minutes grace window
+            shouldSend = diffSec >= 0 && diffSec < 3600;
+          }
+        } else {
+          // Legacy event (already matches the 48h query window)
+          shouldSend = true;
+        }
+
+        if (shouldSend) {
+          console.log(`[Cron] Sending reminders for event ${event._id} (custom: ${!!event.reminderSettings?.customReminderTime})`);
+          await _runAutoReminderForEvent(event);
+        }
       }
     } catch (error) {
       console.error("[Cron] Guest reminder job failed:", error);
@@ -684,7 +719,7 @@ const scheduleGuestReminders = () => {
 };
 
 /**
- * Process one event's 24h auto reminder. Splits guests into confirmed and
+ * Process one event's 48h auto reminder. Splits guests into confirmed and
  * pending segments, looks up the per-category template for each, dispatches
  * via the messaging helper, and records per-guest tracking. Marks the
  * event's `messagingStatus.reminderSent` after both segments complete so
@@ -1544,7 +1579,7 @@ const initScheduledTasks = () => {
   console.log("  - Event launch retry: Every 5 minutes");
   console.log("  - Template status polling: Every 30 minutes");
   console.log("  - Event completion (live → completed): Every hour");
-  console.log("  - 24h guest reminder SMS: Every 30 minutes");
+  console.log("  - 48h guest reminder SMS: Every 30 minutes");
   console.log("  - Scheduled extra reminder dispatcher: Every minute");
   console.log("  - Scheduled notification delivery: Every 5 minutes");
   console.log("  - Payment reconciliation: Every 5 minutes");

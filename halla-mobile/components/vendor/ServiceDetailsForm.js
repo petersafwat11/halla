@@ -78,7 +78,7 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
   const { t } = useTranslation("vendor");
   const toast = useToast();
   const methods = useForm({
-    resolver: zodResolver(serviceDetailsSchema),
+    resolver: zodResolver(serviceDetailsSchema(t)),
     defaultValues: {
       serviceDescription: data?.serviceDescription || "",
       nationalId: data?.nationalId || "",

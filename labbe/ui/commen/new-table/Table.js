@@ -13,6 +13,7 @@ const Table = ({
   actions = [],
   getRowActions = null,
   filterOptions = [],
+  activeFilter = null,
   title = "",
   showSearch = true,
   showFilter = true,
@@ -474,11 +475,12 @@ const Table = ({
                     >
                       {filterOptions.map((option, index) => {
                         const optionLabel = option.label ?? option.text;
+                        const isActive = activeFilter === option.value;
                         return (
                           <button
                             type="button"
                             key={`filter-${optionLabel || index}`}
-                            className={styles.dropdownItem}
+                            className={`${styles.dropdownItem} ${isActive ? styles.dropdownItemActive : ""}`}
                             onClick={() => handleFilterOptionClick(option)}
                           >
                             {option.icon &&

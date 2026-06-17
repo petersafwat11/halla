@@ -13,7 +13,7 @@ const STATUS_AVATAR_COLOR = {
   scheduled: "#3498DB",
   live: colors.success[500],
   completed: colors.natural[450],
-  draft: colors.primary[500],
+  pending_scheduling: colors.primary[500],
   cancelled: colors.error[500],
 };
 
@@ -48,7 +48,7 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
 
   const isCancellable = statusKey === "live" || statusKey === "scheduled";
   const isActivatable = statusKey === "cancelled" || statusKey === "suspended";
-  const isSuspendable = canEdit && (statusKey === "scheduled" || statusKey === "draft");
+  const isSuspendable = canEdit && (statusKey === "scheduled" || statusKey === "pending_scheduling");
   const showStatusBtn = canEdit && (isCancellable || isActivatable);
 
   const avatarColor = STATUS_AVATAR_COLOR[statusKey] || colors.natural[450];

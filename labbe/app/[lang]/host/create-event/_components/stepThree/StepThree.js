@@ -17,7 +17,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { FaCheckCircle } from "react-icons/fa";
-import { FiUploadCloud, FiImage } from "react-icons/fi";
+import { FiUploadCloud, FiImage, FiTrash2, FiEdit3 } from "react-icons/fi";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import styles from "./stepThree.module.css";
@@ -25,11 +25,11 @@ import TemplateForm from "../templateForm/TemplateForm";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { toastUtils } from "@/utils/toastUtils";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   useHostTemplates,
   useTemplateCategories,
 } from "@/hooks/templates";
+import TemplatesCards from "./templatesCards/TemplatesCards";
 
 // Server-side limit lives in s3Upload.js (uploadInvitationImage, 10MB).
 // Keep this in sync so the host sees a friendly error before upload.
@@ -45,12 +45,7 @@ const StepThree = () => {
   const [showTemplateForm, setShowTemplateForm] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [currentPage, setCurrentPage] = useState(0);
   const fileInputRef = useRef(null);
-
-  const isMobile = useMediaQuery("(max-width: 550px)");
-  const isTablet = useMediaQuery("(max-width: 768px)");
-  const itemsPerPage = isMobile || isTablet ? 3 : 4;
 
   const { data: catData } = useTemplateCategories({ admin: false });
   const { data: tplData, isLoading } = useHostTemplates({
@@ -85,17 +80,6 @@ const StepThree = () => {
       (tpl) => (tpl.thumbnailUrl || tpl.imageUrl) === templateImage,
     ) ||
     null;
-
-  const totalPages = Math.max(1, Math.ceil(templates.length / itemsPerPage));
-  const startIndex = currentPage * itemsPerPage;
-  const currentTemplates = templates.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
-
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [isMobile, isTablet, selectedCategory, templates.length]);
 
   const handleTemplateSelect = (template) => {
     const existingValues =
@@ -198,10 +182,30 @@ const StepThree = () => {
     e.stopPropagation();
   };
 
-  // Preview source: File → object URL; string → use directly.
+  // ── Remove selection ───────────────────────────────────────────────
+  const handleRemoveSelection = () => {
+    setValue("visualTemplate", null, { shouldValidate: true });
+    setValue("templateImage", "", { shouldValidate: true });
+    setMode("template");
+  };
+
+  // Preview source: File → object URL; string → resolve relative paths to
+  // absolute URLs so the confirmed card image loads from the backend server.
   const previewUrl = useMemo(() => {
     if (!templateImage) return null;
-    if (typeof templateImage === "string") return templateImage;
+    if (typeof templateImage === "string") {
+      if (
+        templateImage.startsWith("http") ||
+        templateImage.startsWith("/") ||
+        templateImage.startsWith("blob:")
+      )
+        return templateImage;
+      // Relative path (e.g. "uploads/…") — prepend the API base URL.
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v2";
+      const baseUrl = apiUrl.replace(/\/api\/v\d+$/, "").replace(/\/api$/, "");
+      return `${baseUrl}/${templateImage}`;
+    }
     if (templateImage instanceof File) return URL.createObjectURL(templateImage);
     return null;
   }, [templateImage]);
@@ -214,201 +218,227 @@ const StepThree = () => {
     return undefined;
   }, [templateImage, previewUrl]);
 
+  // The selection is "confirmed" when the user has completed the
+  // customisation modal (template mode) or uploaded an image (upload mode).
+  // In template mode, `templateImage` becomes truthy only after bake.
+  //
+  // For update-mode (previously saved events), the template may have been
+  // deleted from the database since the event was created. We still show
+  // the confirmed card as long as a `templateRef` + `templateImage` exist
+  // on the saved `visualTemplate` — the host can remove and re-pick.
+  const hasTemplateRef = !!(
+    visualTemplate?.templateRef || visualTemplate?._id
+  );
+  const hasConfirmedSelection =
+    (mode === "template" &&
+      (checkedTemplate || hasTemplateRef) &&
+      !!templateImage) ||
+    (mode === "upload" && !!previewUrl);
+
+  // Resolved preview URI for the confirmed card.
+  const confirmedPreviewUrl = mode === "upload" ? previewUrl : previewUrl;
+
   return (
     <div className={styles.stepThree}>
       <div className={styles.templateSection}>
-        <label className={styles.sectionLabel}>{t("select_template")}</label>
 
-        {/* Mode toggle — predefined templates vs custom upload. */}
-        <div className={styles.modeToggle} role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "template"}
-            className={`${styles.modeToggleBtn} ${
-              mode === "template" ? styles.modeToggleBtnActive : ""
-            }`}
-            onClick={switchToTemplateMode}
-          >
-            <FiImage size={16} />
-            <span>
-              {t("choose_from_templates")}
-            </span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "upload"}
-            className={`${styles.modeToggleBtn} ${
-              mode === "upload" ? styles.modeToggleBtnActive : ""
-            }`}
-            onClick={switchToUploadMode}
-          >
-            <FiUploadCloud size={16} />
-            <span>
-              {t("upload_own_card")}
-            </span>
-          </button>
-        </div>
-
-        {mode === "template" && (
-          <>
-            <div className={styles.tabs}>
+        {hasConfirmedSelection ? (
+          /* ── Confirmed selection card ─────────────────────────────── */
+          <div className={styles.confirmedCard}>
+            <p className={styles.confirmedCardLabel}>
+              {mode === "upload"
+                ? t("uploaded_design_label")
+                : t("confirmed_design_label")}
+            </p>
+            <div className={styles.confirmedCardImageWrapper}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={confirmedPreviewUrl}
+                alt={t("uploaded_card_preview")}
+                className={styles.confirmedCardImg}
+              />
+            </div>
+            {mode === "template" && checkedTemplate && (
+              <p className={styles.confirmedCardTemplateName}>
+                {isAr ? checkedTemplate.nameAr : checkedTemplate.nameEn}
+              </p>
+            )}
+            {mode === "template" && !checkedTemplate && hasTemplateRef && (
+              <p className={styles.confirmedCardTemplateName}>
+                {visualTemplate?.templateName ||
+                  visualTemplate?.name ||
+                  t("saved_design", "Saved Design")}
+              </p>
+            )}
+            <div className={styles.confirmedCardActions}>
               <button
                 type="button"
-                className={`${styles.tab} ${
-                  selectedCategory === "" ? styles.active : ""
-                }`}
-                onClick={() => setSelectedCategory("")}
+                className={styles.confirmedRemoveBtn}
+                onClick={handleRemoveSelection}
               >
-                {t("all_categories")}
+                <FiTrash2 size={14} />
+                {t("remove_selection")}
               </button>
-              {categories.map((c) => (
+              {mode === "template" && checkedTemplate && (
                 <button
-                  key={c._id || c.code}
                   type="button"
-                  className={`${styles.tab} ${
-                    selectedCategory === c.code ? styles.active : ""
-                  }`}
-                  onClick={() => setSelectedCategory(c.code)}
+                  className={styles.confirmedEditBtn}
+                  onClick={() => handleTemplateSelect(checkedTemplate)}
                 >
-                  {isAr ? c.nameAr : c.nameEn}
+                  <FiEdit3 size={14} />
+                  {t("edit_design_template")}
                 </button>
-              ))}
+              )}
+            </div>
+          </div>
+        ) : (
+          /* ── Selection UI (toggle + grid / dropzone) ─────────────── */
+          <>
+            {/* Mode toggle — predefined templates vs custom upload. */}
+            <div className={styles.modeToggle} role="tablist">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "template"}
+                className={`${styles.modeToggleBtn} ${
+                  mode === "template" ? styles.modeToggleBtnActive : ""
+                }`}
+                onClick={switchToTemplateMode}
+              >
+                <FiImage size={16} />
+                <span>
+                  {t("choose_from_templates")}
+                </span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "upload"}
+                className={`${styles.modeToggleBtn} ${
+                  mode === "upload" ? styles.modeToggleBtnActive : ""
+                }`}
+                onClick={switchToUploadMode}
+              >
+                <FiUploadCloud size={16} />
+                <span>
+                  {t("upload_own_card")}
+                </span>
+              </button>
             </div>
 
-            {isLoading ? (
-              <SimpleLoading />
-            ) : templates.length === 0 ? (
-              <p className={styles.emptyMessage}>
-                {t("no_templates_available")}
-              </p>
-            ) : (
-              <div className={styles.templatesGrid}>
-                {currentTemplates.map((tpl) => {
-                  const src = tpl.thumbnailUrl || tpl.imageUrl;
-                  const alt = isAr ? tpl.nameAr : tpl.nameEn;
-                  const isSelected = checkedTemplate?._id === tpl._id;
-                  return (
-                    <div
-                      key={tpl._id}
-                      className={`${styles.templateCard} ${
-                        isSelected ? styles.selected : ""
-                      }`}
-                      onClick={() => handleTemplateSelect(tpl)}
-                    >
-                      <div className={styles.templateCardInner}>
-                        {isSelected && (
-                          <div className={styles.checkmark}>
-                            <FaCheckCircle />
-                          </div>
-                        )}
-                        {src ? (
-                          <Image
-                            src={src}
-                            alt={alt || "template"}
-                            width={129}
-                            height={172}
-                            className={styles.templateImage}
-                            unoptimized={
-                              src.startsWith("blob:") || src.startsWith("data:")
-                            }
-                          />
-                        ) : (
-                          <div className={styles.templateImage} />
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {totalPages > 1 && (
-              <div className={styles.pagination}>
-                {Array.from({ length: totalPages }).map((_, index) => (
-                  <div
-                    key={index}
-                    className={`${styles.dot} ${
-                      index === currentPage ? styles.activeDot : ""
-                    }`}
-                    onClick={() => setCurrentPage(index)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {checkedTemplate && (
-              <p className={styles.selectedLabel}>
-                {t("selected_template")}:{" "}
-                <span className={styles.selectedName}>
-                  {isAr
-                    ? checkedTemplate.nameAr
-                    : checkedTemplate.nameEn}
-                </span>
-              </p>
-            )}
-          </>
-        )}
-
-        {mode === "upload" && (
-          <div className={styles.uploadSection}>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={ACCEPTED_MIME.join(",")}
-              onChange={handleInputChange}
-              className={styles.uploadInputHidden}
-              aria-hidden="true"
-              tabIndex={-1}
-            />
-
-            {previewUrl ? (
-              <div className={styles.uploadPreviewWrapper}>
-                <div className={styles.uploadPreview}>
-                  {/* next/image with `unoptimized` because blob: and
-                      freshly uploaded S3 URLs aren't in next.config.
-                      Plain <img> avoids the loader warning. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={previewUrl}
-                    alt={t("uploaded_card_preview")}
-                    className={styles.uploadPreviewImg}
-                  />
-                </div>
-                <div className={styles.uploadActions}>
+            {mode === "template" && (
+              <>
+                <div className={styles.tabs}>
                   <button
                     type="button"
-                    className={styles.uploadReplaceBtn}
-                    onClick={() => fileInputRef.current?.click()}
+                    className={`${styles.tab} ${
+                      selectedCategory === "" ? styles.active : ""
+                    }`}
+                    onClick={() => setSelectedCategory("")}
                   >
-                    <FiUploadCloud size={14} />
-                    {t("replace_image")}
+                    {t("all_categories")}
                   </button>
+                  {categories.map((c) => (
+                    <button
+                      key={c._id || c.code}
+                      type="button"
+                      className={`${styles.tab} ${
+                        selectedCategory === c.code ? styles.active : ""
+                      }`}
+                      onClick={() => setSelectedCategory(c.code)}
+                    >
+                      {isAr ? c.nameAr : c.nameEn}
+                    </button>
+                  ))}
                 </div>
-                <p className={styles.uploadHintSmall}>
-                  {t("upload_card_saved_hint")}
-                </p>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className={styles.uploadDropzone}
-                onClick={() => fileInputRef.current?.click()}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onDragEnter={handleDragOver}
-              >
-                <FiUploadCloud size={32} className={styles.uploadDropzoneIcon} />
-                <span className={styles.uploadDropzoneTitle}>
-                  {t("upload_card_cta")}
-                </span>
-                <span className={styles.uploadDropzoneHint}>
-                  {t("upload_card_hint")}
-                </span>
-              </button>
+
+                {isLoading ? (
+                  <SimpleLoading />
+                ) : templates.length === 0 ? (
+                  <p className={styles.emptyMessage}>
+                    {t("no_templates_available")}
+                  </p>
+                ) : (
+                  <TemplatesCards
+                    templates={templates}
+                    selectedTemplate={checkedTemplate}
+                    onTemplateSelect={handleTemplateSelect}
+                  />
+                )}
+
+                {checkedTemplate && (
+                  <p className={styles.selectedLabel}>
+                    {t("selected_template")}:{" "}
+                    <span className={styles.selectedName}>
+                      {isAr
+                        ? checkedTemplate.nameAr
+                        : checkedTemplate.nameEn}
+                    </span>
+                  </p>
+                )}
+              </>
             )}
-          </div>
+
+            {mode === "upload" && (
+              <div className={styles.uploadSection}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPTED_MIME.join(",")}
+                  onChange={handleInputChange}
+                  className={styles.uploadInputHidden}
+                  aria-hidden="true"
+                  tabIndex={-1}
+                />
+
+                {previewUrl ? (
+                  <div className={styles.uploadPreviewWrapper}>
+                    <div className={styles.uploadPreview}>
+                      {/* next/image with `unoptimized` because blob: and
+                          freshly uploaded S3 URLs aren't in next.config.
+                          Plain <img> avoids the loader warning. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={previewUrl}
+                        alt={t("uploaded_card_preview")}
+                        className={styles.uploadPreviewImg}
+                      />
+                    </div>
+                    <div className={styles.uploadActions}>
+                      <button
+                        type="button"
+                        className={styles.uploadReplaceBtn}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <FiUploadCloud size={14} />
+                        {t("replace_image")}
+                      </button>
+                    </div>
+                    <p className={styles.uploadHintSmall}>
+                      {t("upload_card_saved_hint")}
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.uploadDropzone}
+                    onClick={() => fileInputRef.current?.click()}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragOver}
+                  >
+                    <FiUploadCloud size={32} className={styles.uploadDropzoneIcon} />
+                    <span className={styles.uploadDropzoneTitle}>
+                      {t("upload_card_cta")}
+                    </span>
+                    <span className={styles.uploadDropzoneHint}>
+                      {t("upload_card_hint")}
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 

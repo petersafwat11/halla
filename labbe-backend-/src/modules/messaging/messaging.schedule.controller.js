@@ -33,12 +33,11 @@ const { sendSuccess } = require('../../shared/utils/responseHelper');
  *         $ref: '#/components/responses/Forbidden'
  */
 exports.scheduleSend = catchAsync(async (req, res) => {
-  const { eventId, scheduledDate, scheduledTime, channel } = req.body;
+  const { eventId, scheduledDate, scheduledTime } = req.body;
   const result = await messagingService.scheduleBulkSend({
     eventId,
     scheduledDate,
     scheduledTime,
-    channel,
     userId: req.user._id,
   });
   sendSuccess(res, result);

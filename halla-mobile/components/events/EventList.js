@@ -73,7 +73,7 @@ const EventList = ({
   responseRate = 0,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all"); // all, live, ended, draft
+  const [statusFilter, setStatusFilter] = useState("all"); // all, live, ended, pending_scheduling
   const [exporting, setExporting] = useState(false);
   const exportEventsMutation = useExportEvents();
 
@@ -123,8 +123,8 @@ const EventList = ({
         if (statusFilter === "completed") {
           return status === "completed" || status === "cancelled";
         }
-        if (statusFilter === "draft") {
-          return status === "draft";
+        if (statusFilter === "pending_scheduling") {
+          return status === "pending_scheduling";
         }
         return true;
       });
@@ -216,7 +216,7 @@ const EventList = ({
           { key: "live", label: "مباشرة" },
           { key: "scheduled", label: "مجدولة" },
           { key: "completed", label: "منتهية" },
-          { key: "draft", label: "مسودة" },
+          { key: "pending_scheduling", label: "في انتظار الجدولة" },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.key}

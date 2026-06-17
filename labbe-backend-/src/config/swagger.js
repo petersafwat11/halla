@@ -359,7 +359,7 @@ const swaggerOptions = {
                 eventsByStatus: {
                   type: 'object',
                   properties: {
-                    draft: { type: 'integer' },
+                    pending_scheduling: { type: 'integer' },
                     scheduled: { type: 'integer' },
                     live: { type: 'integer' },
                     completed: { type: 'integer' },
@@ -380,7 +380,7 @@ const swaggerOptions = {
               properties: {
                 totalEvents: { type: 'integer' },
                 activeEvents: { type: 'integer' },
-                draftEvents: { type: 'integer' },
+                pendingSchedulingEvents: { type: 'integer' },
                 endedEvents: { type: 'integer' },
               },
             },
@@ -699,7 +699,7 @@ const swaggerOptions = {
             },
             status: {
               type: 'string',
-              enum: ['draft', 'active', 'paused', 'completed', 'cancelled'],
+              enum: ['pending_scheduling', 'active', 'paused', 'completed', 'cancelled'],
             },
             guestList: {
               type: 'array',
@@ -1804,7 +1804,7 @@ const swaggerOptions = {
             status: {
               type: 'string',
               enum: [
-                'draft', 'pending_review', 'scheduled', 'live',
+                'pending_scheduling', 'pending_review', 'scheduled', 'live',
                 'published', 'cancelled', 'completed', 'archived',
                 'failed', 'deleted',
               ],
@@ -1930,11 +1930,6 @@ const swaggerOptions = {
               type: 'string',
               pattern: '^([01]\\d|2[0-3]):[0-5]\\d$',
               description: 'HH:mm 24-hour wall-clock time (Asia/Riyadh)',
-            },
-            channel: {
-              type: 'string',
-              enum: ['sms', 'whatsapp'],
-              default: 'whatsapp',
             },
           },
         },

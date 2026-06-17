@@ -33,6 +33,9 @@ const NOTIFICATION_TYPES = {
   PLAN_LIMIT_WARNING: "plan_limit_warning",
   PAYMENT_SUCCESSFUL: "payment_successful",
   PAYMENT_FAILED: "payment_failed",
+  PAYMENT_REFUNDED: "payment_refunded",
+  PAYMENT_PARTIALLY_REFUNDED: "payment_partially_refunded",
+  PAYMENT_VOIDED: "payment_voided",
 
   // User notifications
   NEW_USER: "new_user",
@@ -74,6 +77,7 @@ const ENTITY_TYPES = {
   SUBSCRIPTION: "subscription",
   SERVICE: "service",
   GUEST: "guest",
+  PAYMENT: "payment",
 };
 
 // ============================================

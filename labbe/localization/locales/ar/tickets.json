@@ -75,6 +75,10 @@
     "statusInvalid": "حالة غير صالحة",
     "resolutionMinLength": "الرد يجب أن يكون 10 أحرف على الأقل",
     "resolutionMaxLength": "الرد يجب أن لا يتجاوز 5000 حرف",
+    "ratingRequired": "يرجى اختيار تقييم",
+    "ratingMax": "التقييم يجب أن يكون بين 1 و 5",
+    "ratingInvalid": "التقييم يجب أن يكون رقم صحيح",
+    "feedbackMaxLength": "التعليق يجب أن لا يتجاوز 1000 حرف",
     "boundary": "فشل في تحميل الشكاوى",
     "loadFailed": "فشل في تحميل الشكاوى"
   },

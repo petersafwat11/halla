@@ -96,6 +96,7 @@ export const useUpdateEventDetails = () => useEventSettingsMutation("updateEvent
 export const useUpdateEventStep2 = () => useEventSettingsMutation("updateEventStep2");
 export const useUpdateInvitationSettings = () => useEventSettingsMutation("updateInvitationSettings");
 export const useUpdateLaunchSettings = () => useEventSettingsMutation("updateLaunchSettings");
+export const useUpdateReminderSettings = () => useEventSettingsMutation("updateReminderSettings");
 // Manually retry a failed event launch.
 export const useRetryLaunch = () => useEventSettingsMutation("retryLaunch");
 

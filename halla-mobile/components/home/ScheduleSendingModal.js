@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import DatePicker from "../commen/DatePicker";
 import TimePicker from "../commen/TimePicker";
 import Button from "../commen/Button";
 import { useScheduleSend } from "../../hooks/messaging";
+import { useMySubscription } from "../../hooks/users";
 
 const getTwoDaysFromNow = () => {
   const date = new Date();
@@ -31,7 +32,6 @@ const buildSchema = (t) =>
     .object({
       scheduledDate: z.date({ required_error: t("scheduleSend.validation.dateRequired") }),
       scheduledTime: z.date({ required_error: t("scheduleSend.validation.timeRequired") }),
-      channel: z.enum(["whatsapp", "sms"]),
     })
     .refine((data) => data.scheduledDate >= getTwoDaysFromNow(), {
       message: t("scheduleSend.validation.minDate"),
@@ -68,6 +68,8 @@ const ScheduleSendingModal = ({
 }) => {
   const { t } = useTranslation("events");
   const scheduleSend = useScheduleSend();
+  const { data: subData } = useMySubscription();
+  const isTrial = subData?.data?.subscription?.[0]?.planCode === "trial";
 
   const methods = useForm({
     resolver: zodResolver(buildSchema(t)),
@@ -77,28 +79,35 @@ const ScheduleSendingModal = ({
         ? new Date(existingSchedule.scheduledDate)
         : null,
       scheduledTime: null,
-      channel: existingSchedule?.channel || "whatsapp",
     },
   });
 
   const {
     handleSubmit,
-    watch,
-    setValue,
     reset,
     formState: { isSubmitting },
   } = methods;
 
-  const channel = watch("channel");
   const isPending = isSubmitting || scheduleSend.isPending;
 
+  const minDate = useMemo(() => {
+    if (isTrial) return null;
+    return getTwoDaysFromNow();
+  }, [isTrial]);
+
   const onSubmit = async (data) => {
+    if (!isTrial) {
+      const min = getTwoDaysFromNow();
+      if (min && new Date(data.scheduledDate) < min) {
+        Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.minDate"));
+        return;
+      }
+    }
     try {
       await scheduleSend.mutateAsync({
         eventId,
         scheduledDate: toUtcMidnightIso(data.scheduledDate),
         scheduledTime: formatTimeForAPI(data.scheduledTime),
-        channel: data.channel,
       });
       reset();
       if (onSuccess) onSuccess();
@@ -145,56 +154,6 @@ const ScheduleSendingModal = ({
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.contentInner}
             >
-              {/* Channel Selector */}
-              <Text style={styles.fieldLabel}>{t("messaging.channel")}</Text>
-              <View style={styles.channelSelector}>
-                <TouchableOpacity
-                  style={[
-                    styles.channelButton,
-                    channel === "whatsapp" && styles.channelButtonActive,
-                  ]}
-                  onPress={() => setValue("channel", "whatsapp")}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name="logo-whatsapp"
-                    size={16}
-                    color={channel === "whatsapp" ? "#FFF" : "#C28E5C"}
-                  />
-                  <Text
-                    style={[
-                      styles.channelButtonText,
-                      channel === "whatsapp" && styles.channelButtonTextActive,
-                    ]}
-                  >
-                    {t("messaging.whatsapp")}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.channelButton,
-                    channel === "sms" && styles.channelButtonActive,
-                  ]}
-                  onPress={() => setValue("channel", "sms")}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name="chatbubble-ellipses-outline"
-                    size={16}
-                    color={channel === "sms" ? "#FFF" : "#C28E5C"}
-                  />
-                  <Text
-                    style={[
-                      styles.channelButtonText,
-                      channel === "sms" && styles.channelButtonTextActive,
-                    ]}
-                  >
-                    {t("messaging.sms")}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
               {/* Date Picker */}
               <DatePicker
                 name="scheduledDate"
@@ -300,44 +259,6 @@ const styles = StyleSheet.create({
   contentInner: {
     paddingTop: 20,
     paddingBottom: 8,
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#2C2C2C",
-    marginBottom: 10,
-    textAlign: "right",
-  },
-  channelSelector: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 20,
-  },
-  channelButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#D6B392",
-    backgroundColor: "#FFF",
-  },
-  channelButtonActive: {
-    backgroundColor: "#C28E5C",
-    borderColor: "#C28E5C",
-  },
-  channelButtonText: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#C28E5C",
-    lineHeight: 20,
-  },
-  channelButtonTextActive: {
-    color: "#FFF",
   },
   infoBox: {
     flexDirection: "row",

@@ -64,10 +64,10 @@ export function useScheduleSend() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ eventId, scheduledDate, scheduledTime, channel }) => {
+    mutationFn: async ({ eventId, scheduledDate, scheduledTime }) => {
       const response = await apiFetch(ENDPOINTS.MESSAGING.SCHEDULE, {
         method: "POST",
-        body: { eventId, scheduledDate, scheduledTime, channel },
+        body: { eventId, scheduledDate, scheduledTime },
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Failed to schedule message");

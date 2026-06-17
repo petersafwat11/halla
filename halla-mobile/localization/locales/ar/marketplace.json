@@ -10,7 +10,14 @@
     "eventPlanning": "تخطيط الفعاليات",
     "mediaProduction": "الإنتاج الإعلامي",
     "giftsAndGiveaways": "الهدايا والتوزيعات",
-    "foodAndBeverages": "الأطعمة والمشروبات"
+    "foodAndBeverages": "الأطعمة والمشروبات",
+    "beautyAndFashion": "الجمال والأزياء",
+    "logisticsAndDelivery": "اللوجستيات والتوصيل",
+    "corporateServices": "خدمات الشركات",
+    "supportServices": "خدمات الدعم",
+    "technicalServices": "الخدمات التقنية",
+    "soundLightingEntertainment": "الصوت والإضاءة والترفيه",
+    "hallsAndVenues": "القاعات والأماكن"
   },
   "filters": {
     "title": "الفلاتر",
@@ -42,10 +49,14 @@
     "serviceDuration": "المدة",
     "price": "السعر",
     "priceOnRequest": "السعر عند الطلب",
+    "startsFrom": "يبدأ من",
     "whatsIncluded": "ما هو مدرج",
     "contactInfo": "معلومات الاتصال",
     "providedBy": "مقدم الخدمة",
-    "whatsapp": "واتساب"
+    "whatsapp": "واتساب",
+    "aboutVendor": "عن المزود",
+    "portfolio": "معرض الأعمال",
+    "ourServices": "خدماتنا"
   },
   "noResults": "لا توجد نتائج",
   "loading": "جاري التحميل...",

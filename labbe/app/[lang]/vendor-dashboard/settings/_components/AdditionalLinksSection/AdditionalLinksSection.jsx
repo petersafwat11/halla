@@ -120,7 +120,7 @@ const AdditionalLinksSection = ({ data, onSave }) => {
       {/* Edit Popup */}
       <PopupLayout isOpen={isPopupOpen} onClose={handleClosePopup}>
         <DynamicForm
-          schema={socialLinksSchema}
+          schema={socialLinksSchema(t)}
           initialData={displayData}
           onSubmit={handleFormSubmit}
           onCancel={handleClosePopup}

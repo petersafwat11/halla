@@ -5,11 +5,7 @@ import TopBar from "../../components/plans/TopBar";
 import { VendorCards, MoreInfoPopup } from "../../components/marketplace";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
-import { getMarketplaceImageUrl as getSharedMarketplaceImageUrl } from "@halla/shared/utils/marketplace";
-import { API_BASE_URL } from "../../config/api";
-
-const getMarketplaceImageUrl = (path) => getSharedMarketplaceImageUrl(path, API_BASE_URL);
-import { useMarketplaceServices } from "../../hooks";
+import { useMarketplaceVendors } from "../../hooks";
 
 const Marketplace = ({ navigation }) => {
   const { t } = useTranslation("marketplace");
@@ -23,10 +19,11 @@ const Marketplace = ({ navigation }) => {
     isLoading: loading,
     error,
     refetch,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMarketplaceServices({});
+  } = useMarketplaceVendors({});
 
   useEffect(() => {
     if (error) {
@@ -35,29 +32,33 @@ const Marketplace = ({ navigation }) => {
   }, [error, toast, t]);
 
   const vendors = useMemo(() => {
-    const allServices = infiniteData?.pages?.flatMap((page) => page?.data || []) || [];
-    return allServices.map((service) => ({
-      id: service.id,
-      name: service.name || t("vendor.defaultName", "خدمة"),
-      location: service.serviceLocation?.regionNameAr
-        ? `${service.serviceLocation.cityNameAr || ""}, ${service.serviceLocation.regionNameAr}`
-        : t("vendor.defaultLocation", "المملكة العربية السعودية"),
-      rating: service.rating || 0,
-      reviewCount: service.reviewsCount || 0,
-      price: service.price ? `${service.price}` : "",
-      image: getMarketplaceImageUrl(
-        service.image || service.vendor?.logo || service.vendor?.avatar,
-      ),
-      logo: getMarketplaceImageUrl(service.vendor?.logo),
-      tags: service.tags || [],
-      duration: service.duration || "",
-      included: service.included || [],
-      companyName: service.vendor?.brandName || "",
-      website: service.vendor?.website || "",
-      email: service.vendor?.email || "",
-      phone: service.vendor?.phone || "",
-      description: service.description || "",
-    }));
+    const allVendors = infiniteData?.pages?.flatMap((page) => page?.data || []) || [];
+    return allVendors.map((v) => {
+      const locations = v.serviceLocation;
+      const cityName = locations?.cityNameAr || locations?.cityNameEn || "";
+      const regionName = locations?.regionNameAr || locations?.regionNameEn || "";
+      const location = [cityName, regionName].filter(Boolean).join(", ") || t("vendor.defaultLocation", "المملكة العربية السعودية");
+
+      const minPrice = v.minPrice != null ? String(v.minPrice) : null;
+
+      return {
+        id: v.id,
+        brandName: v.brandName,
+        description: v.description,
+        logo: v.logo,
+        coverImage: v.coverImage,
+        portfolio: v.portfolio || [],
+        rating: v.rating || 0,
+        reviewCount: v.numberOfRatings || 0,
+        location,
+        email: v.email,
+        mobile: v.mobile,
+        socialLinks: v.socialLinks || {},
+        services: v.services || [],
+        serviceCategories: v.serviceCategories || [],
+        minPrice,
+      };
+    });
   }, [infiniteData, t]);
 
   const totalVendors = infiniteData?.pages?.[0]?.pagination?.total || vendors.length;
@@ -89,7 +90,7 @@ const Marketplace = ({ navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor="#C28E5C" />
 
       <TopBar
-        title={`${t("title", "المتجر")}${totalVendors ? ` (${totalVendors})` : ""}`}
+        title={`${t("title", "سوق هلا")}${totalVendors ? ` (${totalVendors})` : ""}`}
         onBack={handleBack}
         showBack={!!navigation}
       />
@@ -99,7 +100,7 @@ const Marketplace = ({ navigation }) => {
           vendors={vendors}
           onVendorCallPress={handleVendorCallPress}
           loading={loading}
-          refreshing={false}
+          refreshing={isRefetching}
           onRefresh={handleRefresh}
           onEndReached={handleEndReached}
           isFetchingNextPage={isFetchingNextPage}

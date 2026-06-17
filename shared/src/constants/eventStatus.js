@@ -9,7 +9,7 @@
  */
 
 export const EVENT_STATUS = Object.freeze({
-  DRAFT: "draft",
+  PENDING_SCHEDULING: "pending_scheduling",
   SCHEDULED: "scheduled",
   LIVE: "live",
   COMPLETED: "completed",
@@ -20,7 +20,7 @@ export const EVENT_STATUS = Object.freeze({
 export const EVENT_STATUSES = Object.freeze(Object.values(EVENT_STATUS));
 
 export const EVENT_STATUS_GROUPS = Object.freeze({
-  PRE_LAUNCH: [EVENT_STATUS.DRAFT, EVENT_STATUS.SCHEDULED],
+  PRE_LAUNCH: [EVENT_STATUS.PENDING_SCHEDULING, EVENT_STATUS.SCHEDULED],
   ACTIVE: [EVENT_STATUS.LIVE],
   TERMINAL: [EVENT_STATUS.COMPLETED, EVENT_STATUS.CANCELLED, EVENT_STATUS.FAILED],
 });

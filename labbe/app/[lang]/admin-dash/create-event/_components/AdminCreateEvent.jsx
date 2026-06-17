@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback, useEffect } from "react";
 import { FormProvider } from "react-hook-form";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import styles from "../../../host/create-event/page.module.css";
 import Header from "../../../host/create-event/_components/header/Header";
@@ -106,7 +106,6 @@ export default function AdminCreateEvent() {
   const { t } = useTranslation("createEvent");
   const { t: tAdmin } = useTranslation("adminEvents");
   const router = useRouter();
-  const { lang: locale } = useParams();
 
   const { user, subscription: authSubscription } = useAuthStore();
 
@@ -154,6 +153,7 @@ export default function AdminCreateEvent() {
     addStaffMember,
     editStaffMember,
     deleteStaffMember,
+    locale,
     handleSubmit,
   } = useEventForm({ mode: "create", totalSteps: 5 });
 

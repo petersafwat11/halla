@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forgetPasswordSchema } from "../../utils/schemas/authSchemas";
+import { forgotPasswordSchema } from "../../utils/schemas/authSchemas";
 import { EmailInput, Button } from "../commen";
 import { useTranslation } from "../../localization";
 
@@ -16,7 +16,7 @@ const ForgetPasswordForm = ({ onSubmit, loading = false }) => {
     formState: { errors },
     setError,
   } = useForm({
-    resolver: zodResolver(forgetPasswordSchema),
+    resolver: zodResolver(forgotPasswordSchema(t)),
     mode: "onBlur",
     defaultValues: {
       email: "",

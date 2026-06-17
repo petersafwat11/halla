@@ -14,7 +14,7 @@ const PURPOSE_REDIRECT = (lang, purpose) => {
     case "addon":
       return `/${lang}/host/events`;
     case "checkout":
-      return `/${lang}/host/create-event`;
+      return `/${lang}/host`;
     default:
       return `/${lang}/host`;
   }

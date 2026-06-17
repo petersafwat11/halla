@@ -1,5 +1,7 @@
 {
   "validation": {
+    "invalidSaudiPhone": "Phone must start with 5 and be 9 digits",
+    "invalidEmail": "Please enter a valid email address",
     "bride_name_required": "Bride name is required",
     "groom_name_required": "Groom name is required",
     "guest_message_required": "Guest message is required",
@@ -231,6 +233,10 @@
   "upload_card_permission_msg": "Halaa needs access to your photos to upload an invitation card.",
   "replace_image": "Replace image",
   "remove_image": "Remove image",
+  "confirmed_design_label": "Selected Design",
+  "uploaded_design_label": "Uploaded Design",
+  "remove_selection": "Remove",
+  "change_design": "Change Design",
   "auto_replies": "Auto Replies",
   "auto_replies_tab_attending": "Attending",
   "auto_replies_tab_maybe": "Maybe",
@@ -247,7 +253,7 @@
   "invitees": "Invitees",
   "cancel_schedule": "Cancel Schedule",
   "reschedule": "Reschedule",
-  "event_scheduled": "Event Scheduled",
+  "event_scheduled": "Sending Scheduled",
   "confirm_reviewed": "I confirm all information after reviewing it",
   "excel_guest_name": "Guest Name",
   "excel_phone_number": "Phone Number",
@@ -344,5 +350,16 @@
   "schedule_title": "Scheduled Launch",
   "schedule_launches_immediately": "Launches immediately on submit",
   "template_details_title": "Template Details",
-  "event_details_title": "Event Details"
+  "event_details_title": "Event Details",
+  "templates": {
+    "fields": {
+      "validation": {
+        "required": "This field is required",
+        "minLength": "Must be at least {{min}} characters",
+        "maxLength": "Must be at most {{max}} characters",
+        "invalidEmail": "Must be a valid email address",
+        "invalidColor": "Must be a valid color (e.g. #FF5733)"
+      }
+    }
+  }
 }

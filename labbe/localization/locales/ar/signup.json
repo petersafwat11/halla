@@ -49,7 +49,7 @@
       "description": "اتبع هذه الخطوات لإنشاء حسابك كمقدم خدمة وبدء عرض خدماتك على منصة هلا.",
       "steps": {
         "identity": "معلومات الحساب الأساسية",
-        "serviceData": "تفاصيل الخدمة أو المتجر",
+        "serviceData": "تفاصيل الخدمة أو سوق هلا",
         "samplesAndPackages": "الصور والعروض والأسعار",
         "commercialVerification": "التحقق التجاري",
         "commercialVerificationDescription": "يرجى رفع المستندات المطلوبة للتحقق التجاري.",
@@ -131,7 +131,7 @@
         }
       },
       "serviceData": {
-        "title": "تفاصيل الخدمة أو المتجر",
+        "title": "تفاصيل الخدمة أو سوق هلا",
         "description": "عرّف الزوار على خدماتك والمناطق التي تغطيها.",
 
         "serviceDescription": {
@@ -403,7 +403,8 @@
           "serviceDescriptionMaxLength": "يجب أن يتكون وصف الخدمة من أقل من 500 حرف",
           "cityRequired": "المدينة مطلوبة",
           "cityMinLength": "يجب أن تتكون المدينة من حرفين على الأقل",
-          "coverageAreaRequired": "يرجى اختيار منطقة تغطية واحدة على الأقل"
+          "coverageAreaRequired": "يرجى اختيار منطقة تغطية واحدة على الأقل",
+          "regionRequired": "المنطقة مطلوبة"
         }
       },
       "samplesAndPackages": {
@@ -1118,7 +1119,7 @@
       "otpLogin": {
         "phoneNumber": "رقم الهاتف",
         "verification": "التحقق",
-        "editPhone": "تعديل رقم الهاتف",
+        "editPhone": "إلغاء",
         "loginWithEmail": "تسجيل الدخول بالبريد الإلكتروني"
       },
       "otp": {
@@ -1217,5 +1218,17 @@
         "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
       }
     }
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "invalidSaudiPhone": "يرجى إدخال رقم هاتف سعودي صحيح",
+    "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordMaxLength": "كلمة المرور يجب أن تكون أقل من 128 حرف",
+    "passwordComplexity": "كلمة المرور يجب أن تحتوي على حرف كبير وحرف صغير ورقم",
+    "passwordMismatch": "كلمات المرور غير متطابقة",
+    "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
+    "otpLength": "رمز التحقق يجب أن يكون 6 أرقام",
+    "otpInvalid": "رمز التحقق يجب أن يحتوي على أرقام فقط"
   }
 }

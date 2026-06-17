@@ -188,6 +188,14 @@ const _retryLaunch = async (eventId) => {
   return data?.data || data;
 };
 
+const _updateReminderSettings = (eventId, reminderSettings) => {
+  if (!eventId) throw new Error("Event ID is required");
+  return jsonRequest(ENDPOINTS.EVENTS.UPDATE_REMINDER_SETTINGS(eventId), {
+    method: "PATCH",
+    body: reminderSettings,
+  });
+};
+
 const ACTIONS = {
   // --------------------------------------------------------------- CRUD
   createEvent: {
@@ -390,6 +398,30 @@ const ACTIONS = {
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
 
+  updateReminderSettings: {
+    mutationFn: ({ eventId, data }) => _updateReminderSettings(eventId, data),
+    onSuccess: (_data, vars, _ctx, queryClient) =>
+      invalidateSingleEvent(queryClient, vars?.eventId),
+  },
+
+  // One-time resend invite — re-invites guests who haven't responded
+  // or said "maybe". Available only 48h after the bulk send completed.
+  // Server enforces the one-time constraint via resendInviteSentAt flag.
+  resendInvite: {
+    mutationFn: async ({ eventId, channel = "sms" }) => {
+      const response = await apiFetch(ENDPOINTS.EVENTS.RESEND_INVITE(eventId), {
+        method: "POST",
+        body: { channel },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok)
+        throw new Error(data.message || "Failed to resend invitations");
+      return data;
+    },
+    onSuccess: (_data, vars, _ctx, queryClient) =>
+      invalidateSingleEvent(queryClient, vars?.eventId),
+  },
+
   /**
    * Export events to XLSX. Returns `{ success, blob, filename }` — the caller
    * hands the blob to `saveBlobAndShare`. Listed as a mutation (not query)
@@ -461,6 +493,8 @@ export const useUpdateTaqnyatTemplate = () =>
 export const useUpdateMessagingContent = () =>
   useEventMutation("updateMessagingContent");
 export const useRetryLaunch = () => useEventMutation("retryLaunch");
+export const useUpdateReminderSettings = () =>
+  useEventMutation("updateReminderSettings");
 
 // Exports
 export const useExportEvents = () => useEventMutation("exportEvents");

@@ -36,6 +36,10 @@
   },
   "errors": {
     "loadFailed": "فشل في تحميل بيانات التذكرة",
-    "submitFailed": "فشل في إرسال التقييم"
+    "submitFailed": "فشل في إرسال التقييم",
+    "ratingInvalid": "التقييم يجب أن يكون رقماً",
+    "ratingRequired": "يرجى اختيار تقييم",
+    "ratingMax": "التقييم لا يمكن أن يتجاوز 5",
+    "feedbackMaxLength": "الملاحظات يجب أن تكون أقل من 1000 حرف"
   }
 }

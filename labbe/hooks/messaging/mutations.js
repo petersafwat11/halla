@@ -140,16 +140,16 @@ export const useSendReminder = () => {
 
 /**
  * Schedule a bulk send.
- * Body: `{ eventId, scheduledDate, scheduledTime, channel }`.
+ * Body: `{ eventId, scheduledDate, scheduledTime }`.
  */
 export const useScheduleSend = () => {
   const invalidate = useMessagingInvalidations();
   return useMutation({
-    mutationFn: ({ eventId, scheduledDate, scheduledTime, channel }) =>
+    mutationFn: ({ eventId, scheduledDate, scheduledTime }) =>
       apiRequest({
         method: "POST",
         path: API_PATHS.invitations.schedule,
-        data: { eventId, scheduledDate, scheduledTime, channel },
+        data: { eventId, scheduledDate, scheduledTime },
         config: {
           headers: {
             "Idempotency-Key": newIdempotencyKey(`schedule-${eventId}`),

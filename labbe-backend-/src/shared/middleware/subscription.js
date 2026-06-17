@@ -130,7 +130,7 @@ exports.checkEventLimit = catchAsync(async (req, res, next) => {
   const eventCount = await Event.countDocuments({
     host: req.user._id,
     createdAt: { $gte: periodStart },
-    status: { $nin: ['cancelled', 'draft'] },
+    status: { $nin: ['cancelled', 'pending_scheduling'] },
   });
 
   if (eventCount >= maxEvents) {

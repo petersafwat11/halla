@@ -66,7 +66,7 @@ const mapApiToFormValues = (eventData) => {
     staffList,
     selectedTemplate: inv.selectedTemplate || null,
     taqnyatTemplate: eventData.taqnyatTemplate || null,
-    visualTemplate: eventData.visualTemplate || inv.visualTemplate || null,
+    visualTemplate: eventData.visualTemplate || inv.visualTemplate || { isCustomUpload: true, fieldValues: {} },
     invitationMessage: eventData.invitationMessage || inv.invitationMessage || "",
     attendanceAutoReply: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
     absenceAutoReply: canonicalReplies.onAbsent || inv.absenceAutoReply || "",

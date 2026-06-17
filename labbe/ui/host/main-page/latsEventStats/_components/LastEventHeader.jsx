@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import styles from "../LastEventStats.module.css";
 
 const STATUS_KEYS = {
-  draft: { textKey: "lastEvent.status.draft", classKey: "statusNotSubmitted" },
+  pending_scheduling: { textKey: "lastEvent.status.pending_scheduling", classKey: "statusNotSubmitted" },
   scheduled: { textKey: "lastEvent.status.scheduled", classKey: "statusPending" },
   live: { textKey: "lastEvent.status.active", classKey: "statusActive" },
   completed: { textKey: "lastEvent.status.completed", classKey: "statusPublished" },

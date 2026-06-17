@@ -86,7 +86,7 @@ async function create({ eventId, body, user }) {
   }
   if (target > eventTs - TWENTY_FOUR_H_MS) {
     throw new AppError(
-      'Reminder must be at least 24 hours before the event',
+      'Reminder must be at least 48 hours before the event',
       400,
       'REMINDER_TOO_LATE'
     );

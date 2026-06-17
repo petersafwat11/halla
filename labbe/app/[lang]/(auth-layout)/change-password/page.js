@@ -11,6 +11,7 @@ const ChangePasswordPage = () => {
 
   const methods = useForm({
     resolver: zodResolver(resetPasswordSchema(t)),
+    mode: "onBlur",
     defaultValues: {
       password: "",
       passwordConfirm: "",

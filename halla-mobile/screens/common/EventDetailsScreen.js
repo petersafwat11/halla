@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -36,6 +36,7 @@ import {
 import { useRevokeStaffAccess } from "../../hooks/staff";
 import { useSendReminder } from "../../hooks/messaging";
 
+import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halla/shared/constants/eventStatus";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";
@@ -184,6 +185,10 @@ const EventDetailsScreen = () => {
   const [activeTab, setActiveTab] = useState("guests");
   const [search, setSearch] = useState("");
   const [popup, setPopup] = useState({ open: false, type: "guest", initialData: null });
+  const [statusFilter, setStatusFilter] = useState(null);
+  const scrollViewRef = useRef(null);
+  const tabsRef = useRef(null);
+  const tabsYRef = useRef(null);
 
   const stats = useMemo(
     () => ({
@@ -197,15 +202,39 @@ const EventDetailsScreen = () => {
     [resp, guests]
   );
 
+  const handleFilterPress = useCallback((filterKey) => {
+    setStatusFilter((prev) => (prev === filterKey ? null : filterKey));
+    if (scrollViewRef.current && tabsYRef.current !== null) {
+      scrollViewRef.current.scrollTo({ y: tabsYRef.current - 20, animated: true });
+    }
+  }, []);
+
+  const STATUS_FILTER_MAP = useMemo(() => ({
+    confirmed: ["confirmed", "checked_in"],
+    declined: ["declined"],
+    maybe: ["maybe"],
+    noResponse: ["invited", "pending"],
+    checkedIn: ["checked_in"],
+  }), []);
+
   const filteredGuests = useMemo(() => {
+    let result = guests;
+    const matchStatuses = statusFilter && statusFilter !== "totalGuests"
+      ? STATUS_FILTER_MAP[statusFilter]
+      : null;
+    if (matchStatuses) {
+      result = result.filter((g) =>
+        matchStatuses.includes(g.status || "invited")
+      );
+    }
     const q = search.trim().toLowerCase();
-    if (!q) return guests;
-    return guests.filter(
+    if (!q) return result;
+    return result.filter(
       (g) =>
         (g.name || "").toLowerCase().includes(q) ||
         (g.phone || "").includes(q)
     );
-  }, [guests, search]);
+  }, [guests, search, statusFilter, STATUS_FILTER_MAP]);
 
   const filteredStaff = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -530,6 +559,7 @@ const EventDetailsScreen = () => {
       />
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scroll}
         contentContainerStyle={styles.content}
         refreshControl={
@@ -598,24 +628,40 @@ const EventDetailsScreen = () => {
         </View>
 
         {/* Stats — confirmed / declined / maybe / pending */}
-        <StatsCards stats={stats} />
+        <StatsCards stats={stats} eventStatus={event?.status} activeFilter={statusFilter} onFilterPress={handleFilterPress} />
 
-        {/* Checked-in mini row (5th stat not in the StatsCards grid). */}
+        {/* Checked-in / total-guests mini row */}
         <View style={styles.checkedInRow}>
-          <View style={styles.checkedInChip}>
-            <Ionicons name="qr-code-outline" size={14} color="#64748B" />
-            <Text style={styles.checkedInLabel}>
-              {t("eventDetails.checkedIn", "تم تسجيل دخولهم")}
-            </Text>
-            <Text style={styles.checkedInValue}>{stats.checkedIn}</Text>
-          </View>
-          <View style={styles.checkedInChip}>
+          {(event?.status === EVENT_STATUS.LIVE || event?.status === EVENT_STATUS.COMPLETED) && (
+            <TouchableOpacity
+              style={[
+                styles.checkedInChip,
+                statusFilter === "checkedIn" && styles.checkedInChipActive,
+              ]}
+              onPress={() => handleFilterPress("checkedIn")}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="qr-code-outline" size={14} color="#64748B" />
+              <Text style={styles.checkedInLabel}>
+                {t("eventDetails.checkedIn", "تم تسجيل دخولهم")}
+              </Text>
+              <Text style={styles.checkedInValue}>{stats.checkedIn}</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={[
+              styles.checkedInChip,
+              statusFilter === "totalGuests" && styles.checkedInChipActive,
+            ]}
+            onPress={() => handleFilterPress("totalGuests")}
+            activeOpacity={0.7}
+          >
             <Ionicons name="people-outline" size={14} color="#6B4E33" />
             <Text style={styles.checkedInLabel}>
               {t("eventDetails.totalGuests", "إجمالي الضيوف")}
             </Text>
             <Text style={styles.checkedInValue}>{stats.totalGuests}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Admin-only: host info section */}
@@ -678,7 +724,7 @@ const EventDetailsScreen = () => {
           </SectionCard>
         )}
 
-        <AutoReminderInfoText />
+        <AutoReminderInfoText event={event} />
         <ScheduleReminderSection
           eventId={event.id || event._id}
           event={event}
@@ -701,7 +747,13 @@ const EventDetailsScreen = () => {
         )}
 
         {/* Guests / Moderators tabs */}
-        <View style={styles.tabsCard}>
+        <View
+          style={styles.tabsCard}
+          ref={tabsRef}
+          onLayout={(e) => {
+            tabsYRef.current = e.nativeEvent.layout.y;
+          }}
+        >
           <View style={styles.tabsRow}>
             <TouchableOpacity
               style={[styles.tab, activeTab === "guests" && styles.tabActive]}
@@ -970,6 +1022,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderWidth: 1,
     borderColor: colors.natural[200] || "#EEE",
+  },
+  checkedInChipActive: {
+    borderColor: "#C28E5C",
+    borderWidth: 2,
   },
   checkedInLabel: { flex: 1, fontSize: 11, fontFamily: "Cairo_500Medium", color: "#656565" },
   checkedInValue: { fontSize: 14, fontFamily: "Cairo_700Bold", color: "#2C2C2C" },

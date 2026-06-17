@@ -228,7 +228,6 @@
 }
 
 .ratingValue {
-  font-family: "Segoe UI", -apple-system, Roboto, Helvetica, sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
@@ -262,7 +261,6 @@
 }
 
 .vendorLocation span {
-  font-family: "Segoe UI", -apple-system, Roboto, Helvetica, sans-serif;
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
@@ -286,7 +284,6 @@
   align-items: center;
   border-radius: 9999px;
   background: var(--color-primary-100);
-  font-family: "Segoe UI", -apple-system, Roboto, Helvetica, sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;

@@ -161,20 +161,25 @@ export default function DynamicTemplateForm({
         size="auto"
       >
         <div className={styles.mobilePreviewModal}>
-          <button
-            type="button"
-            className={styles.mobilePreviewClose}
-            onClick={() => setShowMobilePreview(false)}
-            aria-label="close"
-          >
-            ×
-          </button>
-          <TemplatePreviewCanvas
-            template={template}
-            data={formData}
-            primaryColor={primaryColor}
-            fontFamilyOverride={fontFamilyOverride}
-          />
+          <div className={styles.mobilePreviewHeader}>
+            <h3>{t("preview_invitation", "معاينة الدعوة")}</h3>
+            <button
+              type="button"
+              className={styles.mobilePreviewCloseBtn}
+              onClick={() => setShowMobilePreview(false)}
+              aria-label="close"
+            >
+              <img src="/svg/events/close-circle.svg" alt="close" />
+            </button>
+          </div>
+          <div className={styles.mobilePreviewCanvasWrapper}>
+            <TemplatePreviewCanvas
+              template={template}
+              data={formData}
+              primaryColor={primaryColor}
+              fontFamilyOverride={fontFamilyOverride}
+            />
+          </div>
         </div>
       </PopupLayout>
     </>

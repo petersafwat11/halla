@@ -25,18 +25,18 @@ const _buildVendorsPath = (params) => {
   if (params.page) queryParams.append("page", params.page);
   if (params.limit) queryParams.append("limit", params.limit);
   const qs = queryParams.toString();
-  return `${ENDPOINTS.SERVICES.PUBLIC}${qs ? `?${qs}` : ""}`;
+  return `${ENDPOINTS.VENDORS.PUBLIC}${qs ? `?${qs}` : ""}`;
 };
 
 /**
  * Marketplace vendors with infinite scroll support.
  */
-export function useMarketplaceServices(filters = {}) {
+export function useMarketplaceVendors(filters = {}) {
   return useInfiniteQuery({
     queryKey: marketplaceKeys.vendors(filters),
     queryFn: async ({ pageParam = 1 }) => {
       const path = _buildVendorsPath({ ...filters, page: pageParam, limit: 20 });
-      return _request(path, "Failed to fetch marketplace services");
+      return _request(path, "Failed to fetch marketplace vendors");
     },
     getNextPageParam: (lastPage) => {
       const { page, pages } = lastPage?.pagination || {};

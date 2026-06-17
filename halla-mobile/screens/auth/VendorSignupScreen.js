@@ -88,8 +88,8 @@ export default function VendorSignupScreen({ navigation }) {
   CATEGORY_KEYS.forEach((k) => { categoryDefaults[k] = []; });
 
   const methods = useForm({
-    resolver: zodResolver(vendorSignupSchema),
-    mode: 'onTouched',
+    resolver: zodResolver(vendorSignupSchema(t)),
+    mode: 'onBlur',
     defaultValues: {
       identity: { brandName: '', ownerFullName: '', phoneNumber: '', email: '', password: '', passwordConfirm: '' },
       serviceData: {

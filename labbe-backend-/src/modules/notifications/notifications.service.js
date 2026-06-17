@@ -40,6 +40,12 @@ const APP_NOTIFICATION_TYPE_TO_PREF_KEY = {
   subscription_renewed: "subscriptionAlerts",
   subscription_renewal_invoice: "subscriptionAlerts",
   plan_limit_warning: "subscriptionAlerts",
+  // Host — payment status alerts
+  payment_successful: "subscriptionAlerts",
+  payment_failed: "subscriptionAlerts",
+  payment_refunded: "subscriptionAlerts",
+  payment_partially_refunded: "subscriptionAlerts",
+  payment_voided: "subscriptionAlerts",
   // Host — system / welcome
   welcome: "systemUpdates",
   announcement: "systemUpdates",
@@ -143,6 +149,45 @@ class NotificationsService {
     return {
       sentCount: notifications.filter((n) => n !== null).length,
       totalAdmins: admins.length,
+    };
+  }
+
+  /**
+   * Send notification to all platform-wide admins, super admins, and moderators (no whitelabelId)
+   * @param {Object} notificationData - Notification data
+   * @returns {Promise<Object>}
+   */
+  async sendToPlatformAdmins(notificationData) {
+    const User = require("../../../models/UserModel");
+    const { ROLES, USER_STATUS } = require("../../shared/constants");
+
+    // Find active platform admins/super admins/moderators who do not have a whitelabelId
+    const platformAdmins = await User.find({
+      role: { $in: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR] },
+      status: USER_STATUS.ACTIVE,
+      $or: [
+        { whitelabelId: null },
+        { whitelabelId: { $exists: false } }
+      ]
+    }).select("_id");
+
+    if (platformAdmins.length === 0) {
+      return { sentCount: 0 };
+    }
+
+    // Send to all platform admins in parallel
+    const notifications = await Promise.all(
+      platformAdmins.map((admin) =>
+        this.createNotification(admin._id, notificationData).catch((err) => {
+          console.error(`Failed to notify platform admin ${admin._id}:`, err);
+          return null;
+        })
+      )
+    );
+
+    return {
+      sentCount: notifications.filter((n) => n !== null).length,
+      totalPlatformAdmins: platformAdmins.length,
     };
   }
 

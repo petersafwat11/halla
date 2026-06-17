@@ -26,14 +26,14 @@ const EVENT_STATUS_KEYS = {
   scheduled: "tables.recentEvents.status.scheduled",
   live: "tables.recentEvents.status.live",
   completed: "tables.recentEvents.status.completed",
-  draft: "tables.recentEvents.status.draft",
+  pending_scheduling: "tables.recentEvents.status.pending_scheduling",
 };
 
 const EVENT_STATUS_STYLES = {
   scheduled: styles.statusBadgeScheduled,
   live: styles.statusBadgeLive,
   completed: styles.statusBadgeCompleted,
-  draft: styles.statusBadgeDraft,
+  pending_scheduling: styles.statusBadgePendingScheduling,
 };
 
 function formatDate(value, locale = "ar-SA") {
@@ -85,8 +85,8 @@ export default function RecentActivity() {
   const renderEventStatusCell = useCallback(
     (key, value) => {
       if (key === "status") {
-        const labelKey = EVENT_STATUS_KEYS[value] || EVENT_STATUS_KEYS.draft;
-        const badgeClass = EVENT_STATUS_STYLES[value] || styles.statusBadgeDraft;
+        const labelKey = EVENT_STATUS_KEYS[value] || EVENT_STATUS_KEYS.pending_scheduling;
+        const badgeClass = EVENT_STATUS_STYLES[value] || styles.statusBadgePendingScheduling;
         return (
           <span className={`${styles.statusBadge} ${badgeClass}`}>
             {t(labelKey)}

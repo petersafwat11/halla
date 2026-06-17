@@ -149,7 +149,7 @@ export const usePlansPageState = () => {
       } else {
         toastUtils.success(t("toasts.subscriptionCreated"));
       }
-      router.push(`/${lang}/host/create-event`);
+      router.push(`/${lang}/host`);
     } catch (error) {
       const message =
         error?.response?.data?.message || error?.message || "";

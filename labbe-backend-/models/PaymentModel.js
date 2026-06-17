@@ -253,6 +253,257 @@ paymentSchema.methods.applyMoyasarSnapshot = function (snapshot = {}) {
   return this;
 };
 
+
+// ============================================
+// MIDDLEWARE HOOKS & NOTIFICATION DISPATCH
+// ============================================
+
+paymentSchema.pre("save", function (next) {
+  if (this.isModified("status")) {
+    this._statusWasModified = true;
+  }
+  if (this.isModified("refunds")) {
+    this._refundsWereModified = true;
+  }
+  next();
+});
+
+paymentSchema.post("save", async function (doc, next) {
+  const statusChanged = doc._statusWasModified;
+  const refundsChanged = doc._refundsWereModified;
+
+  // Reset the temporary flags
+  doc._statusWasModified = false;
+  doc._refundsWereModified = false;
+
+  const finalStatuses = ["paid", "captured", "failed", "voided"];
+
+  if (
+    (statusChanged && finalStatuses.includes(doc.status)) ||
+    refundsChanged
+  ) {
+    sendPaymentNotifications(doc).catch((err) => {
+      console.error("[PaymentModel] Notification dispatch failed:", err);
+    });
+  }
+  if (typeof next === "function") next();
+});
+
+async function sendPaymentNotifications(payment) {
+  try {
+    const User = require("./UserModel");
+    const notificationsService = require("../src/modules/notifications/notifications.service");
+    const config = require("../src/config");
+
+    // Fetch user who made the payment
+    const payer = await User.findById(payment.userId).select("name username email role");
+    if (!payer) {
+      console.warn(`[PaymentNotification] Payer user ${payment.userId} not found`);
+      return;
+    }
+
+    const items = resolveItemDetails(payment);
+    const amountStr = `${payment.amount} ${payment.currency}`;
+    const payerName = payer.name || payer.username || payer.email || "Client";
+    const frontendUrl = config.frontend?.url || "";
+
+    // For refunds, determine the most recent refund transaction amount
+    const lastRefund = payment.refunds && payment.refunds.length > 0
+      ? payment.refunds[payment.refunds.length - 1]
+      : null;
+    const lastRefundAmt = lastRefund ? lastRefund.amount : payment.refundedAmount;
+    const lastRefundAmtStr = `${lastRefundAmt} ${payment.currency}`;
+
+    // Determine notification title and message based on status
+    let type = "custom";
+    let title = "";
+    let titleAr = "";
+    let message = "";
+    let messageAr = "";
+    let priority = "normal";
+
+    switch (payment.status) {
+      case "paid":
+      case "captured":
+        type = "payment_successful";
+        title = "Payment Successful";
+        titleAr = "تمت عملية الدفع بنجاح";
+        message = `Your payment of ${amountStr} for ${items.en} was successful.`;
+        messageAr = `تمت عملية الدفع بنجاح بقيمة ${amountStr} لـ ${items.ar}.`;
+        break;
+      case "failed":
+        type = "payment_failed";
+        title = "Payment Failed";
+        titleAr = "فشلت عملية الدفع";
+        message = `Your payment of ${amountStr} for ${items.en} failed.`;
+        messageAr = `فشلت عملية الدفع بقيمة ${amountStr} لـ ${items.ar}.`;
+        priority = "high";
+        break;
+      case "refunded":
+        type = "payment_refunded";
+        title = "Payment Refunded";
+        titleAr = "تم استرجاع مبلغ الدفع";
+        const refundVal = lastRefund ? lastRefundAmtStr : amountStr;
+        message = `Your payment of ${amountStr} for ${items.en} has been fully refunded (amount: ${refundVal}).`;
+        messageAr = `تم استرجاع مبلغ دفعتك بالكامل بقيمة ${amountStr} لـ ${items.ar} (المبلغ المسترجع: ${refundVal}).`;
+        break;
+      case "partially_refunded":
+        type = "payment_partially_refunded";
+        title = "Payment Partially Refunded";
+        titleAr = "تم استرجاع جزء من مبلغ الدفع";
+        message = `Your payment of ${amountStr} for ${items.en} was partially refunded by ${lastRefundAmtStr}.`;
+        messageAr = `تم استرجاع جزء من دفعتك لـ ${items.ar} بقيمة ${lastRefundAmtStr} من إجمالي ${amountStr}.`;
+        break;
+      case "voided":
+        type = "payment_voided";
+        title = "Payment Voided";
+        titleAr = "تم إلغاء عملية الدفع";
+        message = `Your payment of ${amountStr} for ${items.en} was voided.`;
+        messageAr = `تم إلغاء عملية الدفع لـ ${items.ar} بقيمة ${amountStr}.`;
+        break;
+      default:
+        return; // Do not notify for other statuses
+    }
+
+    // Determine target URL for payer
+    const payerActionUrl = payer.role === "whitelabel_admin"
+      ? `${frontendUrl}/ar/admin-dash`
+      : `${frontendUrl}/ar/host/subscription`;
+
+    // 1. Notify the payer (either a host or whitelabel admin)
+    if (payer.role === "host" || payer.role === "whitelabel_admin") {
+      await notificationsService.sendToUser(payer._id, {
+        type,
+        title,
+        titleAr,
+        message,
+        messageAr,
+        priority,
+        actionUrl: payerActionUrl,
+        data: {
+          entityType: "payment",
+          entityId: payment._id,
+          metadata: {
+            status: payment.status,
+            amount: payment.amount,
+            currency: payment.currency,
+          }
+        }
+      });
+    }
+
+    // 2. Notify Platform-Wide Admins, Super Admins, and Moderators (no whitelabelId)
+    let adminTitle = "";
+    let adminTitleAr = "";
+    let adminMessage = "";
+    let adminMessageAr = "";
+
+    switch (payment.status) {
+      case "paid":
+      case "captured":
+        adminTitle = "New Payment Received";
+        adminTitleAr = "تم استلام دفعة جديدة";
+        adminMessage = `A payment of ${amountStr} has been received from ${payerName} for ${items.en}.`;
+        adminMessageAr = `تم استلام دفعة بقيمة ${amountStr} من ${payerName} لـ ${items.ar}.`;
+        break;
+      case "failed":
+        adminTitle = "Payment Failed Alert";
+        adminTitleAr = "فشلت عملية دفع";
+        adminMessage = `A payment of ${amountStr} from ${payerName} for ${items.en} failed.`;
+        adminMessageAr = `فشلت عملية دفع بقيمة ${amountStr} من ${payerName} لـ ${items.ar}.`;
+        break;
+      case "refunded":
+        adminTitle = "Payment Refunded";
+        adminTitleAr = "تم استرجاع دفعة";
+        const refundValAdmin = lastRefund ? lastRefundAmtStr : amountStr;
+        adminMessage = `A payment of ${amountStr} for ${payerName} was fully refunded (amount: ${refundValAdmin}).`;
+        adminMessageAr = `تم استرجاع دفعة لـ ${payerName} بالكامل بقيمة ${amountStr} (المبلغ المسترجع: ${refundValAdmin}).`;
+        break;
+      case "partially_refunded":
+        adminTitle = "Payment Partially Refunded";
+        adminTitleAr = "تم استرجاع جزء من دفعة";
+        adminMessage = `A payment of ${amountStr} for ${payerName} was partially refunded by ${lastRefundAmtStr}.`;
+        adminMessageAr = `تم استرجاع جزء من دفعة لـ ${payerName} بقيمة ${lastRefundAmtStr} من إجمالي ${amountStr}.`;
+        break;
+      case "voided":
+        adminTitle = "Payment Voided";
+        adminTitleAr = "تم إلغاء دفعة";
+        adminMessage = `A payment of ${amountStr} for ${payerName} was voided.`;
+        adminMessageAr = `تم إلغاء دفعة بقيمة ${amountStr} لـ ${payerName}.`;
+        break;
+    }
+
+    if (adminTitle) {
+      await notificationsService.sendToPlatformAdmins({
+        type,
+        title: adminTitle,
+        titleAr: adminTitleAr,
+        message: adminMessage,
+        messageAr: adminMessageAr,
+        priority,
+        actionUrl: `${frontendUrl}/ar/admin-dash/payments`,
+        data: {
+          entityType: "payment",
+          entityId: payment._id,
+          metadata: {
+            status: payment.status,
+            amount: payment.amount,
+            currency: payment.currency,
+            payerId: payer._id,
+            payerName,
+          }
+        }
+      });
+    }
+  } catch (err) {
+    console.error("[PaymentNotification] Error in sendPaymentNotifications:", err);
+  }
+}
+
+function resolveItemDetails(payment) {
+  const purpose = payment.metadata?.purpose;
+  const planCode = payment.metadata?.planCode;
+  const addonType = payment.metadata?.addonType;
+  const quantity = payment.metadata?.quantity;
+
+  const planNames = {
+    basic: { en: "Basic Plan", ar: "الباقة الأساسية" },
+    premium: { en: "Premium Plan", ar: "الباقة المميزة" },
+    business: { en: "Business Plan", ar: "باقة الأعمال" },
+    trial: { en: "Trial Plan", ar: "الباقة التجريبية" },
+  };
+
+  const addonNames = {
+    invitation: { en: "Extra Invitations", ar: "دعوات إضافية" },
+    template: { en: "Extra Templates", ar: "قوالب إضافية" },
+    whatsapp: { en: "WhatsApp Credits", ar: "رصيد واتساب" },
+    sms: { en: "SMS Credits", ar: "رصيد رسائل نصية" },
+  };
+
+  if (purpose === "checkout" || purpose === "subscription_renewal") {
+    const plan = planNames[planCode?.toLowerCase()] || { en: planCode || "Subscription", ar: planCode || "الاشتراك" };
+    return {
+      en: `${plan.en} Subscription`,
+      ar: `اشتراك ${plan.ar}`,
+    };
+  }
+
+  if (purpose === "addon") {
+    const addon = addonNames[addonType?.toLowerCase()] || { en: addonType || "Addon", ar: addonType || "إضافة" };
+    const qtyStr = quantity ? ` (${quantity})` : "";
+    return {
+      en: `${addon.en}${qtyStr}`,
+      ar: `${addon.ar}${qtyStr}`,
+    };
+  }
+
+  return {
+    en: payment.description || "Payment",
+    ar: "دفعة مالية",
+  };
+}
+
 const Payment = mongoose.models.Payment || mongoose.model("Payment", paymentSchema);
 module.exports = Payment;
 module.exports.PAYMENT_STATUS = PAYMENT_STATUS;
+

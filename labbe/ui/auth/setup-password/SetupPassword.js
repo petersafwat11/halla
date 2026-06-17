@@ -69,6 +69,7 @@ export default function SetupPassword({ token }) {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(buildSchema(t)),
+    mode: "onBlur",
     defaultValues: { password: "", passwordConfirm: "" },
   });
 

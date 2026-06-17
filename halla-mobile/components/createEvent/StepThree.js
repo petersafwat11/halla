@@ -28,10 +28,31 @@ import { dateToTimeString } from "../../utils/timeFormat";
 import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 import { bakeCanvas } from "../../utils/canvasBake";
 import { renderTemplateField } from "./_components/TemplateFieldRenderer";
+import { API_BASE_URL } from "../../config/api";
 
 // Server limit lives in s3Upload.js (uploadInvitationImage, 10MB).
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_EXT = /\.(jpe?g|png|webp)$/i;
+
+/**
+ * Resolve a possibly-relative template image path to a full URL.
+ * Freshly-baked images come as File-like objects with `uri`; saved
+ * images from the backend may be bare paths like "uploads/…".
+ */
+const resolveImageUri = (imageValue) => {
+  if (!imageValue) return null;
+  if (typeof imageValue === "object" && imageValue.uri) return imageValue.uri;
+  if (typeof imageValue !== "string") return null;
+  if (
+    imageValue.startsWith("http") ||
+    imageValue.startsWith("file://") ||
+    imageValue.startsWith("blob:") ||
+    imageValue.startsWith("data:")
+  )
+    return imageValue;
+  const base = (API_BASE_URL || "").replace(/\/api\/v\d+$/, "").replace(/\/api$/, "");
+  return `${base}/${imageValue}`;
+};
 
 /**
  * Step 3 (mobile) — visual template selection.
@@ -186,15 +207,40 @@ const StepThree = () => {
   }, [parentSetValue, t]);
 
   // Preview URI for the upload-mode tile. File pick → uri; saved
-  // backend URL → use directly.
+  // backend URL → resolve relative paths via the API base URL.
   const uploadPreviewUri = useMemo(() => {
-    if (!templateImage) return null;
-    if (typeof templateImage === "string") return templateImage;
-    if (typeof templateImage === "object" && templateImage.uri) {
-      return templateImage.uri;
-    }
-    return null;
+    return resolveImageUri(templateImage);
   }, [templateImage]);
+
+  // ── Remove selection ──────────────────────────────────────────────
+  const handleRemoveSelection = useCallback(() => {
+    parentSetValue("visualTemplate", null, { shouldValidate: true });
+    parentSetValue("templateImage", null, { shouldValidate: true });
+    setMode("template");
+  }, [parentSetValue]);
+
+  // The selection is "confirmed" when the user has completed the
+  // customisation modal (template mode) or uploaded an image (upload mode).
+  // In template mode, `templateImage` becomes truthy only after bake.
+  //
+  // For update-mode (previously saved events), the saved `visualTemplate`
+  // may reference a template that has since been deleted. We still show
+  // the confirmed card as long as `templateRef` + `templateImage` exist.
+  const hasTemplateRef = !!(
+    selectedTemplate?.templateRef || selectedTemplate?._id
+  );
+  const hasConfirmedSelection =
+    (mode === "template" &&
+      (selectedTemplate || hasTemplateRef) &&
+      !isUploadMode &&
+      !!templateImage) ||
+    (mode === "upload" && !!uploadPreviewUri);
+
+  // Resolved preview URI for the confirmed card.
+  const confirmedPreviewUri = useMemo(() => {
+    if (mode === "upload") return uploadPreviewUri;
+    return resolveImageUri(templateImage);
+  }, [mode, templateImage, uploadPreviewUri]);
 
   // The "selected template" summary row should NOT appear in upload
   // mode (there's no predefined template name to show).
@@ -202,154 +248,212 @@ const StepThree = () => {
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <View style={styles.modeToggle}>
-        <TouchableOpacity
-          style={[
-            styles.modeBtn,
-            mode === "template" && styles.modeBtnActive,
-          ]}
-          onPress={switchToTemplateMode}
-          activeOpacity={0.85}
-        >
-          <Ionicons
-            name="grid-outline"
-            size={16}
-            color={mode === "template" ? "#2C2C2C" : "#6B4E33"}
-          />
-          <Text
-            style={[
-              styles.modeBtnText,
-              mode === "template" && styles.modeBtnTextActive,
-            ]}
-          >
-            {t("choose_from_templates", "Choose from templates")}
+      {hasConfirmedSelection ? (
+        /* ── Confirmed selection card ────────────────────────────── */
+        <View style={styles.confirmedCard}>
+          <Text style={styles.confirmedCardLabel}>
+            {mode === "upload"
+              ? t("uploaded_design_label", "Uploaded Design")
+              : t("confirmed_design_label", "Selected Design")}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.modeBtn, mode === "upload" && styles.modeBtnActive]}
-          onPress={switchToUploadMode}
-          activeOpacity={0.85}
-        >
-          <Ionicons
-            name="cloud-upload-outline"
-            size={16}
-            color={mode === "upload" ? "#2C2C2C" : "#6B4E33"}
-          />
-          <Text
-            style={[
-              styles.modeBtnText,
-              mode === "upload" && styles.modeBtnTextActive,
-            ]}
-          >
-            {t("upload_own_card", "Upload your own card")}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {mode === "template" && (
-        <>
-          <View style={styles.templateSection}>
-            <Text style={styles.sectionLabel}>{t("select_template")}</Text>
-            <EventTemplates
-              onSelectTemplate={handleTemplateSelect}
-              selectedTemplateId={
-                selectedTemplate?._id || selectedTemplate?.id
-              }
-            />
-          </View>
-
-          {showPredefinedSelectionRow && (
-            <View style={styles.selectedRow}>
-              <Text style={styles.selectedLabel}>
-                {t("selected_template")}:{" "}
-                <Text style={styles.selectedName}>
-                  {locale === "ar"
-                    ? selectedTemplate.nameAr || selectedTemplate.name
-                    : selectedTemplate.nameEn || selectedTemplate.name}
-                </Text>
-              </Text>
-
-              <View style={styles.actionsRow}>
-                {selectedTemplate?.fields?.length > 0 && (
-                  <TouchableOpacity
-                    style={[styles.secondaryButton, { flex: 1 }]}
-                    onPress={handleEditTemplate}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="create-outline" size={18} color="#C28E5C" />
-                    <Text style={styles.secondaryButtonText}>
-                      {t("edit_design_template")}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-
-                <TouchableOpacity
-                  style={[styles.primaryButton, { flex: 1 }]}
-                  onPress={() => setShowPreview(true)}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="eye-outline" size={18} color="#FFF" />
-                  <Text style={styles.primaryButtonText}>
-                    {t("preview_template")}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        </>
-      )}
-
-      {mode === "upload" && (
-        <View style={styles.uploadSection}>
-          {uploadPreviewUri ? (
-            <View style={styles.uploadPreviewWrapper}>
+          <View style={styles.confirmedCardImageWrapper}>
+            {confirmedPreviewUri && (
               <RNImage
-                source={{ uri: uploadPreviewUri }}
-                style={styles.uploadPreviewImg}
+                source={{ uri: confirmedPreviewUri }}
+                style={styles.confirmedCardImg}
                 resizeMode="contain"
               />
-              <View style={styles.actionsRow}>
-                <TouchableOpacity
-                  style={[styles.primaryButton, { flex: 1 }]}
-                  onPress={pickInvitationImage}
-                  activeOpacity={0.85}
-                >
-                  <Ionicons name="cloud-upload-outline" size={18} color="#FFF" />
-                  <Text style={styles.primaryButtonText}>
-                    {t("replace_image", "Replace image")}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.uploadHintSmall}>
-                {t(
-                  "upload_card_saved_hint",
-                  "This image will be sent to guests exactly as shown.",
-                )}
-              </Text>
-            </View>
-          ) : (
+            )}
+          </View>
+          {mode === "template" && selectedTemplate && (
+            <Text style={styles.confirmedCardTemplateName}>
+              {locale === "ar"
+                ? selectedTemplate.nameAr || selectedTemplate.name || selectedTemplate.templateName
+                : selectedTemplate.nameEn || selectedTemplate.name || selectedTemplate.templateName}
+            </Text>
+          )}
+          {mode === "template" && !selectedTemplate && hasTemplateRef && (
+            <Text style={styles.confirmedCardTemplateName}>
+              {t("saved_design", "Saved Design")}
+            </Text>
+          )}
+          <View style={styles.confirmedCardActions}>
             <TouchableOpacity
-              style={styles.uploadDropzone}
-              onPress={pickInvitationImage}
+              style={[styles.dangerButton, { flex: 1 }]}
+              onPress={handleRemoveSelection}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="trash-outline" size={18} color="#A13D3D" />
+              <Text style={styles.dangerButtonText}>
+                {t("remove_selection", "Remove")}
+              </Text>
+            </TouchableOpacity>
+            {mode === "template" && selectedTemplate?.fields?.length > 0 && (
+              <TouchableOpacity
+                style={[styles.secondaryButton, { flex: 1 }]}
+                onPress={handleEditTemplate}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="create-outline" size={18} color="#C28E5C" />
+                <Text style={styles.secondaryButtonText}>
+                  {t("edit_design_template")}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      ) : (
+        /* ── Selection UI (toggle + grid / dropzone) ────────────── */
+        <>
+          <View style={styles.modeToggle}>
+            <TouchableOpacity
+              style={[
+                styles.modeBtn,
+                mode === "template" && styles.modeBtnActive,
+              ]}
+              onPress={switchToTemplateMode}
+              activeOpacity={0.85}
+            >
+              <Ionicons
+                name="grid-outline"
+                size={16}
+                color={mode === "template" ? "#2C2C2C" : "#6B4E33"}
+              />
+              <Text
+                style={[
+                  styles.modeBtnText,
+                  mode === "template" && styles.modeBtnTextActive,
+                ]}
+              >
+                {t("choose_from_templates", "Choose from templates")}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modeBtn, mode === "upload" && styles.modeBtnActive]}
+              onPress={switchToUploadMode}
               activeOpacity={0.85}
             >
               <Ionicons
                 name="cloud-upload-outline"
-                size={36}
-                color="#C28E5C"
+                size={16}
+                color={mode === "upload" ? "#2C2C2C" : "#6B4E33"}
               />
-              <Text style={styles.uploadDropzoneTitle}>
-                {t("upload_card_cta", "Tap to upload your card")}
-              </Text>
-              <Text style={styles.uploadDropzoneHint}>
-                {t(
-                  "upload_card_hint",
-                  "JPG, PNG or WEBP — up to 10 MB",
-                )}
+              <Text
+                style={[
+                  styles.modeBtnText,
+                  mode === "upload" && styles.modeBtnTextActive,
+                ]}
+              >
+                {t("upload_own_card", "Upload your own card")}
               </Text>
             </TouchableOpacity>
+          </View>
+
+          {mode === "template" && (
+            <>
+              <View style={styles.templateSection}>
+                <EventTemplates
+                  onSelectTemplate={handleTemplateSelect}
+                  selectedTemplateId={
+                    selectedTemplate?._id || selectedTemplate?.id
+                  }
+                />
+              </View>
+
+              {showPredefinedSelectionRow && (
+                <View style={styles.selectedRow}>
+                  <Text style={styles.selectedLabel}>
+                    {t("selected_template")}:{" "}
+                    <Text style={styles.selectedName}>
+                      {locale === "ar"
+                        ? selectedTemplate.nameAr || selectedTemplate.name
+                        : selectedTemplate.nameEn || selectedTemplate.name}
+                    </Text>
+                  </Text>
+
+                  <View style={styles.actionsRow}>
+                    {selectedTemplate?.fields?.length > 0 && (
+                      <TouchableOpacity
+                        style={[styles.secondaryButton, { flex: 1 }]}
+                        onPress={handleEditTemplate}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="create-outline" size={18} color="#C28E5C" />
+                        <Text style={styles.secondaryButtonText}>
+                          {t("edit_design_template")}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                      style={[styles.primaryButton, { flex: 1 }]}
+                      onPress={() => setShowPreview(true)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="eye-outline" size={18} color="#FFF" />
+                      <Text style={styles.primaryButtonText}>
+                        {t("preview_template")}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </>
           )}
-        </View>
+
+          {mode === "upload" && (
+            <View style={styles.uploadSection}>
+              {uploadPreviewUri ? (
+                <View style={styles.uploadPreviewWrapper}>
+                  <RNImage
+                    source={{ uri: uploadPreviewUri }}
+                    style={styles.uploadPreviewImg}
+                    resizeMode="contain"
+                  />
+                  <View style={styles.actionsRow}>
+                    <TouchableOpacity
+                      style={[styles.primaryButton, { flex: 1 }]}
+                      onPress={pickInvitationImage}
+                      activeOpacity={0.85}
+                    >
+                      <Ionicons name="cloud-upload-outline" size={18} color="#FFF" />
+                      <Text style={styles.primaryButtonText}>
+                        {t("replace_image", "Replace image")}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.uploadHintSmall}>
+                    {t(
+                      "upload_card_saved_hint",
+                      "This image will be sent to guests exactly as shown.",
+                    )}
+                  </Text>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.uploadDropzone}
+                  onPress={pickInvitationImage}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons
+                    name="cloud-upload-outline"
+                    size={36}
+                    color="#C28E5C"
+                  />
+                  <Text style={styles.uploadDropzoneTitle}>
+                    {t("upload_card_cta", "Tap to upload your card")}
+                  </Text>
+                  <Text style={styles.uploadDropzoneHint}>
+                    {t(
+                      "upload_card_hint",
+                      "JPG, PNG or WEBP — up to 10 MB",
+                    )}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </>
       )}
 
       <TemplateFormModal
@@ -757,6 +861,51 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_700Bold",
     color: "#2E7D32",
+  },
+  // ── confirmed selection card ──
+  confirmedCard: {
+    backgroundColor: "#FFFAF3",
+    borderWidth: 1,
+    borderColor: "#EAD9C8",
+    borderRadius: 16,
+    padding: 16,
+    gap: 14,
+    alignItems: "center",
+  },
+  confirmedCardLabel: {
+    fontSize: 15,
+    fontFamily: "Cairo_700Bold",
+    color: "#2C2C2C",
+    textAlign: "center",
+  },
+  confirmedCardImageWrapper: {
+    width: "100%",
+    alignItems: "center",
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    padding: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  confirmedCardImg: {
+    width: "100%",
+    aspectRatio: 3 / 4,
+    borderRadius: 10,
+    backgroundColor: "#FFF",
+  },
+  confirmedCardTemplateName: {
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#6B4E33",
+    textAlign: "center",
+  },
+  confirmedCardActions: {
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
   },
   // ── modal ──
   modalContainer: { flex: 1, backgroundColor: "#F9F4EF" },

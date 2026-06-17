@@ -9,7 +9,7 @@ const EventActionsSection = ({ event, canEdit, canDelete, updatePending, deleteP
   const actionRows = [];
 
   if (canEdit) {
-    if (status === "draft") {
+    if (status === "pending_scheduling") {
       actionRows.push(
         <EventActionRow
           key="publish"

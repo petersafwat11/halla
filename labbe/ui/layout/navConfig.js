@@ -94,7 +94,7 @@ export const hostNavItems = [
     path: "/market-place",
     icon: IoStorefront,
     labelKey: "sidebar.shop",
-    defaultLabel: "المتجر",
+    defaultLabel: "سوق هلا",
   },
   {
     key: "settings",
@@ -239,7 +239,7 @@ export const vendorNavItems = [
     path: "/market-place",
     icon: IoStorefront,
     labelKey: "vendorSidebar.marketplace",
-    defaultLabel: "المتجر",
+    defaultLabel: "سوق هلا",
   },
   {
     key: "tickets",

@@ -152,7 +152,7 @@ async function sendReminder({
 }
 
 /**
- * Send an auto-reminder batch (24h-before cron) or an extra-reminder batch
+ * Send an auto-reminder batch (48h-before cron) or an extra-reminder batch
  * (manual schedule). Uses the curated Taqnyat template's varMapping for
  * body params and an SMS fallback derived from event details. Each per-
  * guest send runs inside `withIdempotency`. Returns per-guest details so
@@ -183,7 +183,7 @@ async function sendAutoReminderBatch({
     async (guest) => {
       const rsvpLink = `${rsvpBaseUrl}/rsvp/${event._id}/${guest._id}`;
       const attemptToken =
-        attemptKey || attemptId || `${event._id}:${reminderType}:24h`;
+        attemptKey || attemptId || `${event._id}:${reminderType}:48h`;
       const key = `${idempotencyPrefix}:${event._id}:${guest._id}:${reminderType}:${attemptToken}`;
       const requestHash = sha256(
         JSON.stringify({

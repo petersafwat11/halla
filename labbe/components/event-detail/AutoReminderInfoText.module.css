@@ -33,3 +33,21 @@
 .text {
   flex: 1;
 }
+
+.customizeButton {
+  background: var(--color-primary-600, #2c2c2c);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: var(--fw-semibold, 600);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-inline-start: 1rem;
+}
+
+.customizeButton:hover {
+  background: var(--color-primary-700, #1a1a1a);
+}
+

@@ -23,6 +23,7 @@ const GuestTableImpl = ({
       <Table
         title={t("guest_list_title")}
         headers={[t("name"), t("mobile")]}
+        headerKeys={["name", "mobile"]}
         data={guestList}
         // On live events, existing rows become read-only — host can still
         // add new guests via the form above, but cannot edit or delete

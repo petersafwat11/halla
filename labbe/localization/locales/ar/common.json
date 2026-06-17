@@ -71,7 +71,7 @@
       "confirmed": "تم التأكيد",
       "declined": "تم الرفض",
       "maybe": "ربما",
-      "draft": "مسودة",
+      "pending_scheduling": "في انتظار الجدولة",
       "published": "منشور",
       "completed": "مكتمل",
       "cancelled": "ملغي"
@@ -108,7 +108,7 @@
   },
   "vendorSidebar": {
     "services": "الخدمات",
-    "marketplace": "المتجر",
+    "marketplace": "سوق هلا",
     "tickets": "الشكاوى",
     "settings": "الإعدادات"
   },
@@ -118,7 +118,7 @@
     "inactive": "غير نشط",
     "pending": "قيد الانتظار",
     "suspended": "موقوف",
-    "draft": "مسودة",
+    "pending_scheduling": "في انتظار الجدولة",
     "completed": "مكتمل",
     "open": "مفتوح",
     "closed": "مغلق",
@@ -198,6 +198,16 @@
     "resendButton": "إرسال رابط جديد",
     "resendSentTitle": "تم إرسال الرابط",
     "resendSentSubtitle": "إذا كان البريد بحاجة إلى تأكيد، فقد أرسلنا رابطاً جديداً."
+  },
+  "validation": {
+    "invalidSaudiPhone": "رقم الهاتف يجب أن يبدأ بـ 5 ويتكون من 9 أرقام",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "required": "هذا الحقل مطلوب",
+    "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordMaxLength": "كلمة المرور يجب أن لا تتجاوز 128 حرف",
+    "passwordComplexity": "كلمة المرور يجب أن تحتوي على حرف كبير وصغير ورقم",
+    "otpLength": "رمز التحقق يجب أن يكون 6 أرقام",
+    "otpInvalid": "رمز التحقق يجب أن يحتوي على أرقام فقط"
   },
   "date": {
     "months": {

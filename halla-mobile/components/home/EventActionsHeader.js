@@ -1,13 +1,15 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Alert } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Alert, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
-import { useNotifyStaff, useDeleteEvent } from "../../hooks/events/mutations/useEventMutation";
+import { useNotifyStaff, useDeleteEvent, useEventMutation } from "../../hooks/events/mutations/useEventMutation";
 import { useToast } from "../../contexts/ToastContext";
 import { useEventActionGate } from "@halla/shared/hooks/useEventActionGate";
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 const EVENT_EDIT_STEPS = [
   { step: 1, labelKey: "lastEvent.dropdown.eventDetails", fallback: "تفاصيل المناسبة" },
@@ -24,6 +26,35 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showManageMenu, setShowManageMenu] = useState(false);
   const [testMessageSent, setTestMessageSent] = useState(event?.testMessageSent || false);
+  const pulseAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1150,
+          useNativeDriver: false,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0,
+          duration: 1150,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+  }, [pulseAnim]);
+
+  const flashingStyle = {
+    backgroundColor: pulseAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["#FFFFFF", "#FAF0E6"],
+    }),
+    borderColor: pulseAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["#D6B392", "#C28E5C"],
+    }),
+  };
 
   const notifyStaffMutation = useNotifyStaff();
   const deleteEventMutation = useDeleteEvent();
@@ -35,8 +66,10 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
   // platforms can't drift. Visibility rules now require an active
   // template before test/schedule, and an actual staff entry before
   // Notify Staff (previously this only checked event status).
-  const { canSendTest, canSchedule, hasStaff, isCompleted } =
+  const { canSendTest, canSchedule, hasStaff, isCompleted, canResendInvite, resendInviteTooltip } =
     useEventActionGate({ event, testMessageSent });
+
+  const resendInviteMutation = useEventMutation("resendInvite");
 
   const handleEditStep = (step) => {
     setShowManageMenu(false);
@@ -55,6 +88,22 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
       );
     } catch (error) {
       toast.error(error?.message || t("staff.notifyError", "Failed to notify staff"));
+    }
+  };
+
+  const handleResendInvite = async () => {
+    if (!eventId) return;
+    try {
+      const result = await resendInviteMutation.mutateAsync({ eventId });
+      const data = result?.data || result;
+      toast.success(
+        t("resendInvite.success", {
+          sent: data?.successful || 0,
+          total: data?.reminded || 0,
+        }) || `Re-invitations sent to ${data?.successful || 0}/${data?.reminded || 0} guests`
+      );
+    } catch (error) {
+      toast.error(error?.message || t("resendInvite.error", "Failed to resend invitations"));
     }
   };
 
@@ -87,7 +136,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
     );
   };
 
-  const hasAnyOutlineAction = canSendTest || canSchedule || hasStaff || isCompleted;
+  const hasAnyOutlineAction = canSendTest || canSchedule || hasStaff || isCompleted || canResendInvite || resendInviteTooltip;
 
   return (
     <>
@@ -95,8 +144,8 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
         {hasAnyOutlineAction && (
           <View style={styles.actionsRow}>
             {canSendTest && (
-              <TouchableOpacity
-                style={styles.outlineButton}
+              <AnimatedTouchableOpacity
+                style={[styles.outlineButton, flashingStyle]}
                 onPress={() => setShowTestModal(true)}
                 activeOpacity={0.7}
               >
@@ -104,7 +153,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
                 <Text style={styles.outlineButtonText}>
                   {t("testMessage.title", "رسالة تجريبية")}
                 </Text>
-              </TouchableOpacity>
+              </AnimatedTouchableOpacity>
             )}
 
             {canSchedule && (
@@ -148,6 +197,38 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
                 <Ionicons name="share-social-outline" size={14} color="#6B4E33" />
                 <Text style={styles.outlineButtonText}>
                   {t("postEvent.share", "مشاركة ما بعد المناسبة")}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {(canResendInvite || resendInviteTooltip) && (
+              <TouchableOpacity
+                style={[
+                  styles.outlineButton,
+                  (!canResendInvite || resendInviteMutation.isPending) && styles.outlineButtonDisabled,
+                ]}
+                onPress={canResendInvite ? handleResendInvite : undefined}
+                activeOpacity={canResendInvite ? 0.7 : 1}
+                disabled={!canResendInvite || resendInviteMutation.isPending}
+              >
+                <Ionicons
+                  name={canResendInvite ? "paper-plane-outline" : "time-outline"}
+                  size={14}
+                  color={!canResendInvite ? "#B5A691" : "#6B4E33"}
+                />
+                <Text
+                  style={[
+                    styles.outlineButtonText,
+                    !canResendInvite && styles.outlineButtonTextDisabled,
+                  ]}
+                >
+                  {resendInviteMutation.isPending
+                    ? t("resendInvite.sending", "جاري الإرسال...")
+                    : canResendInvite
+                      ? t("resendInvite.button", "إعادة إرسال الدعوات")
+                      : typeof resendInviteTooltip === "object"
+                        ? t("resendInvite.buttonCooldown", { hours: resendInviteTooltip.hoursLeft })
+                        : t("resendInvite.button", "إعادة إرسال الدعوات")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -236,29 +317,32 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
 
 const styles = StyleSheet.create({
   container: {
-    gap: 12,
+    gap: 8,
+    width: "100%",
   },
   actionsRow: {
-    flexDirection: "row",
+    flexDirection: "column",
     gap: 8,
-    flexWrap: "wrap",
+    width: "100%",
   },
   outlineButton: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: "#D6B392",
     backgroundColor: "#FFF",
+    height: 40,
   },
   outlineButtonText: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "Cairo_600SemiBold",
     color: "#6B4E33",
-    lineHeight: 16,
+    lineHeight: 18,
   },
   outlineButtonDisabled: {
     backgroundColor: "#FAF6F1",
@@ -268,20 +352,28 @@ const styles = StyleSheet.create({
   outlineButtonTextDisabled: {
     color: "#B5A691",
   },
+  tooltipHint: {
+    fontSize: 10,
+    fontFamily: "Cairo_500Medium",
+    color: "#9CA3AF",
+    textAlign: "center",
+    marginTop: 2,
+  },
   primaryRow: {
-    flexDirection: "row",
+    flexDirection: "column",
     gap: 8,
+    width: "100%",
   },
   manageButton: {
-    flex: 1,
+    width: "100%",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: 8,
     backgroundColor: "#C28E5C",
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+    borderRadius: 8,
+    height: 40,
   },
   manageButtonText: {
     fontSize: 13,
@@ -290,14 +382,15 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   deleteButton: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
     backgroundColor: "#C0392B",
     paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 6,
+    borderRadius: 8,
+    height: 40,
   },
   deleteButtonText: {
     fontSize: 13,

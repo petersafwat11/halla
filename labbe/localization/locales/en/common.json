@@ -71,7 +71,7 @@
       "confirmed": "Confirmed",
       "declined": "Declined",
       "maybe": "Maybe",
-      "draft": "Draft",
+      "pending_scheduling": "Pending Scheduling",
       "published": "Published",
       "completed": "Completed",
       "cancelled": "Cancelled"
@@ -108,7 +108,7 @@
   },
   "vendorSidebar": {
     "services": "Services",
-    "marketplace": "Marketplace",
+    "marketplace": "Halla Marketplace",
     "tickets": "Tickets",
     "settings": "Settings"
   },
@@ -118,7 +118,7 @@
     "inactive": "Inactive",
     "pending": "Pending",
     "suspended": "Suspended",
-    "draft": "Draft",
+    "pending_scheduling": "Pending Scheduling",
     "completed": "Completed",
     "open": "Open",
     "closed": "Closed",
@@ -198,6 +198,16 @@
     "resendButton": "Send a new link",
     "resendSentTitle": "Link sent",
     "resendSentSubtitle": "If that email needs verification, we've sent a new link."
+  },
+  "validation": {
+    "invalidSaudiPhone": "Phone must start with 5 and be 9 digits",
+    "invalidEmail": "Please enter a valid email address",
+    "required": "This field is required",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMaxLength": "Password must not exceed 128 characters",
+    "passwordComplexity": "Password must contain uppercase, lowercase, and a number",
+    "otpLength": "Verification code must be 6 digits",
+    "otpInvalid": "Verification code must contain only digits"
   },
   "date": {
     "months": {

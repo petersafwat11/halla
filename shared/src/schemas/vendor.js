@@ -7,144 +7,129 @@
  *     drives `DynamicForm` rendering)
  *   - `halla-mobile/utils/schemas/vendorSchemas.js`
  *
- * Field shapes mirror backend `users.validation.js#vendorData`. Web's
- * hardcoded Arabic messages and mobile's English messages are kept
- * as-is in each export; the existing call sites already render the
- * right copy per-app.
+ * Factory functions; pass `t` for translation, omit for opaque keys.
+ * Field shapes mirror backend `users.validation.js#vendorData`.
  */
 import { z } from "zod";
+
+const idT = (k) => k;
 
 // ============================================================
 // PRIMITIVES (vendor-local; mirrors the regex backend accepts)
 // ============================================================
 
-const optionalUrl = z
-  .string()
-  .trim()
-  .max(2048)
-  .refine((v) => v === "" || /^https?:\/\/.+/i.test(v), {
-    message: "الرابط غير صالح",
-  });
+const optionalUrl = (t = idT) =>
+  z
+    .string()
+    .trim()
+    .max(2048)
+    .refine((v) => v === "" || /^https?:\/\/.+/i.test(v), {
+      message: t("validation.invalidUrl"),
+    });
 
-const optionalUrlEn = z
-  .string()
-  .trim()
-  .max(2048)
-  .refine((v) => v === "" || /^https?:\/\/.+/i.test(v), {
-    message: "Invalid URL format",
-  })
-  .optional();
+const optionalUrlEn = (t = idT) =>
+  z
+    .string()
+    .trim()
+    .max(2048)
+    .refine((v) => v === "" || /^https?:\/\/.+/i.test(v), {
+      message: t("validation.invalidUrl"),
+    })
+    .optional();
 
-const emailFieldAr = z
-  .string({ required_error: "البريد الإلكتروني مطلوب" })
-  .trim()
-  .min(1, "البريد الإلكتروني مطلوب")
-  .email("البريد الإلكتروني غير صالح");
+const emailField = (t = idT) =>
+  z
+    .string({ required_error: t("validation.emailRequired") })
+    .trim()
+    .min(1, t("validation.emailRequired"))
+    .email(t("validation.emailInvalid"));
 
-const emailFieldEn = z
-  .string({ required_error: "Email is required" })
-  .trim()
-  .email("Invalid email format");
-
-// Backend's vendor profile accepts the loose 7-15 digit phone pattern
-// (international staff/owner numbers, distinct from Saudi-only customer
-// auth flows). Keep matched.
-const phoneFieldAr = z
-  .string({ required_error: "رقم الهاتف مطلوب" })
-  .trim()
-  .regex(/^[+]?[0-9]{7,15}$/, "رقم الهاتف غير صالح");
-
-const phoneFieldEn = z
-  .string({ required_error: "Phone number is required" })
-  .trim()
-  .regex(/^[+]?[0-9]{7,15}$/, "Invalid phone number format");
+const phoneField = (t = idT) =>
+  z
+    .string({ required_error: t("validation.phoneRequired") })
+    .trim()
+    .regex(/^[+]?[0-9]{7,15}$/, t("validation.phoneInvalid"));
 
 // ============================================================
 // WEB — VENDOR SETTINGS ZOD SCHEMAS (consumed by DynamicForm wrappers)
-//
-// The original `vendorSettings.js` exports `personalInfoSchema = { fields, zodSchema }`.
-// Here we expose only the `zodSchema` payloads. The app re-wraps them
-// with its `fields` metadata so DynamicForm keeps working unchanged.
 // ============================================================
 
-// Personal Info — single consolidated section. Owns identity (ownerFullName +
-// brandName), contact (email, phone), avatar/logo, and password change. Phone
-// is OTP-gated and is not committed by the form submit itself — it's submitted
-// via the dedicated /users/profile/phone endpoints. Keep it optional here so
-// the form validates even when the phone hasn't changed.
-export const personalInfoZodSchema = z
-  .object({
-    avatar: z.any().optional(),
-    ownerFullName: z
-      .string({ required_error: "اسم المالك مطلوب" })
-      .trim()
-      .min(2, "اسم المالك يجب أن يكون حرفين على الأقل")
-      .max(100, "اسم المالك يجب أن يكون أقل من 100 حرف"),
-    brandName: z
-      .string({ required_error: "اسم النشاط التجاري مطلوب" })
-      .trim()
-      .min(2, "اسم النشاط التجاري يجب أن يكون حرفين على الأقل")
-      .max(100, "اسم النشاط التجاري يجب أن يكون أقل من 100 حرف"),
-    email: emailFieldAr,
-    phoneNumber: z
+export const personalInfoZodSchema = (t = idT) =>
+  z
+    .object({
+      avatar: z.any().optional(),
+      ownerFullName: z
+        .string({ required_error: t("validation.ownerNameRequired") })
+        .trim()
+        .min(2, t("validation.ownerNameMinLength"))
+        .max(100, t("validation.ownerNameMaxLength")),
+      brandName: z
+        .string({ required_error: t("validation.brandNameRequired") })
+        .trim()
+        .min(2, t("validation.brandNameMinLength"))
+        .max(100, t("validation.brandNameMaxLength")),
+      email: emailField(t),
+      phoneNumber: z
+        .string()
+        .trim()
+        .optional()
+        .refine((v) => !v || /^[+]?[0-9]{7,15}$/.test(v), {
+          message: t("validation.phoneInvalid"),
+        }),
+      currentPassword: z.string().optional(),
+      newPassword: z
+        .string()
+        .optional()
+        .refine((v) => !v || v.length >= 8, {
+          message: t("validation.passwordMinLength"),
+        }),
+      confirmPassword: z.string().optional(),
+    })
+    .superRefine((d, ctx) => {
+      if (d.newPassword) {
+        if (!d.currentPassword) {
+          ctx.addIssue({
+            path: ["currentPassword"],
+            code: "custom",
+            message: t("validation.currentPasswordRequired"),
+          });
+        }
+        if (d.newPassword !== d.confirmPassword) {
+          ctx.addIssue({
+            path: ["confirmPassword"],
+            code: "custom",
+            message: t("validation.passwordMismatch"),
+          });
+        }
+      }
+    });
+
+export const serviceDetailsZodSchema = (t = idT) =>
+  z.object({
+    nationalIdImage: z.any().optional(),
+    commercialRecordImage: z.any().optional(),
+    nationalId: z
       .string()
       .trim()
       .optional()
-      .refine((v) => !v || /^[+]?[0-9]{7,15}$/.test(v), {
-        message: "رقم الهاتف غير صالح",
+      .refine((v) => !v || /^[0-9]{10}$/.test(v), {
+        message: t("validation.nationalIdInvalid"),
       }),
-    currentPassword: z.string().optional(),
-    newPassword: z
+    serviceDescription: z
       .string()
-      .optional()
-      .refine((v) => !v || v.length >= 8, {
-        message: "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
-      }),
-    confirmPassword: z.string().optional(),
-  })
-  .superRefine((d, ctx) => {
-    if (d.newPassword) {
-      if (!d.currentPassword) {
-        ctx.addIssue({
-          path: ["currentPassword"],
-          code: "custom",
-          message: "كلمة المرور الحالية مطلوبة لتغيير كلمة المرور",
-        });
-      }
-      if (d.newPassword !== d.confirmPassword) {
-        ctx.addIssue({
-          path: ["confirmPassword"],
-          code: "custom",
-          message: "كلمة المرور غير متطابقة",
-        });
-      }
-    }
+      .trim()
+      .max(1000, t("validation.descriptionMaxLength"))
+      .optional(),
   });
 
-export const serviceDetailsZodSchema = z.object({
-  nationalIdImage: z.any().optional(),
-  commercialRecordImage: z.any().optional(),
-  nationalId: z
-    .string()
-    .trim()
-    .optional()
-    .refine((v) => !v || /^[0-9]{10}$/.test(v), {
-      message: "رقم الهوية يجب أن يكون 10 أرقام",
-    }),
-  serviceDescription: z
-    .string()
-    .trim()
-    .max(1000, "وصف الخدمة يجب أن يكون أقل من 1000 حرف")
-    .optional(),
-});
-
-export const socialLinksZodSchema = z.object({
-  website: optionalUrl.optional(),
-  instagram: optionalUrl.optional(),
-  facebook: optionalUrl.optional(),
-  twitter: optionalUrl.optional(),
-  tiktok: optionalUrl.optional(),
-});
+export const socialLinksZodSchema = (t = idT) =>
+  z.object({
+    website: optionalUrl(t).optional(),
+    instagram: optionalUrl(t).optional(),
+    facebook: optionalUrl(t).optional(),
+    twitter: optionalUrl(t).optional(),
+    tiktok: optionalUrl(t).optional(),
+  });
 
 export const imagesAndPricingZodSchema = z.object({
   portfolioImages: z.any().optional(),
@@ -152,81 +137,84 @@ export const imagesAndPricingZodSchema = z.object({
 });
 
 // ============================================================
-// MOBILE — VENDOR SETTINGS SCHEMAS (English messages, opaque)
+// MOBILE — VENDOR SETTINGS SCHEMAS
 // ============================================================
 
-// Consolidated mobile personal-info schema — identity (ownerFullName +
-// brandName) and contact (email + phone). Phone is OTP-gated; the form keeps
-// it optional and the OTP flow handles the actual commit.
-export const mobilePersonalInfoSchema = z.object({
-  ownerFullName: z
-    .string({ required_error: "Owner name is required" })
-    .trim()
-    .min(2, "Name must be at least 2 characters")
-    .max(100),
-  brandName: z
-    .string({ required_error: "Brand name is required" })
-    .trim()
-    .min(2, "Brand name must be at least 2 characters")
-    .max(100),
-  email: emailFieldEn,
-  phoneNumber: z
-    .string()
-    .trim()
-    .optional()
-    .refine((v) => !v || /^[+]?[0-9]{7,15}$/.test(v), {
-      message: "Invalid phone number format",
-    }),
-});
-
-export const mobileServiceDetailsSchema = z.object({
-  serviceDescription: z
-    .string()
-    .trim()
-    .max(1000, "Description must not exceed 1000 characters")
-    .optional(),
-  nationalId: z
-    .string()
-    .trim()
-    .optional()
-    .refine((v) => !v || /^\d{10}$/.test(v), {
-      message: "National ID must be 10 digits",
-    }),
-});
-
-export const mobileSocialLinksSchema = z.object({
-  website: optionalUrlEn,
-  instagram: optionalUrlEn,
-  facebook: optionalUrlEn,
-  twitter: optionalUrlEn,
-  tiktok: optionalUrlEn,
-});
-
-export const phoneChangeSchema = z.object({
-  phoneNumber: phoneFieldEn,
-});
-
-export const phoneVerifySchema = z.object({
-  phoneNumber: phoneFieldEn,
-  otp: z
-    .string({ required_error: "Verification code is required" })
-    .trim()
-    .regex(/^\d{4,8}$/, "Verification code must be 4-8 digits"),
-});
-
-export const passwordChangeSchema = z
-  .object({
-    currentPassword: z
-      .string({ required_error: "Current password is required" })
-      .min(1, "Current password is required"),
-    newPassword: z
-      .string({ required_error: "New password is required" })
-      .min(8, "Password must be at least 8 characters"),
-    passwordConfirm: z
-      .string({ required_error: "Please confirm your password" })
-      .min(1, "Please confirm your password"),
-  })
-  .refine((d) => d.newPassword === d.passwordConfirm, {
-    path: ["passwordConfirm"],
-    message: "Passwords do not match",
+export const mobilePersonalInfoSchema = (t = idT) =>
+  z.object({
+    ownerFullName: z
+      .string({ required_error: t("validation.ownerNameRequired") })
+      .trim()
+      .min(2, t("validation.ownerNameMinLength"))
+      .max(100, t("validation.ownerNameMaxLength")),
+    brandName: z
+      .string({ required_error: t("validation.brandNameRequired") })
+      .trim()
+      .min(2, t("validation.brandNameMinLength"))
+      .max(100, t("validation.brandNameMaxLength")),
+    email: emailField(t),
+    phoneNumber: z
+      .string()
+      .trim()
+      .optional()
+      .refine((v) => !v || /^[+]?[0-9]{7,15}$/.test(v), {
+        message: t("validation.phoneInvalid"),
+      }),
   });
+
+export const mobileServiceDetailsSchema = (t = idT) =>
+  z.object({
+    serviceDescription: z
+      .string()
+      .trim()
+      .max(1000, t("validation.descriptionMaxLength"))
+      .optional(),
+    nationalId: z
+      .string()
+      .trim()
+      .optional()
+      .refine((v) => !v || /^\d{10}$/.test(v), {
+        message: t("validation.nationalIdInvalid"),
+      }),
+  });
+
+export const mobileSocialLinksSchema = (t = idT) =>
+  z.object({
+    website: optionalUrlEn(t),
+    instagram: optionalUrlEn(t),
+    facebook: optionalUrlEn(t),
+    twitter: optionalUrlEn(t),
+    tiktok: optionalUrlEn(t),
+  });
+
+export const phoneChangeSchema = (t = idT) =>
+  z.object({
+    phoneNumber: phoneField(t),
+  });
+
+export const phoneVerifySchema = (t = idT) =>
+  z.object({
+    phoneNumber: phoneField(t),
+    otp: z
+      .string({ required_error: t("validation.otpRequired") })
+      .trim()
+      .regex(/^\d{4,8}$/, t("validation.otpInvalid")),
+  });
+
+export const passwordChangeSchema = (t = idT) =>
+  z
+    .object({
+      currentPassword: z
+        .string({ required_error: t("validation.currentPasswordRequired") })
+        .min(1, t("validation.currentPasswordRequired")),
+      newPassword: z
+        .string({ required_error: t("validation.passwordMinLength") })
+        .min(8, t("validation.passwordMinLength")),
+      passwordConfirm: z
+        .string({ required_error: t("validation.confirmPasswordRequired") })
+        .min(1, t("validation.confirmPasswordRequired")),
+    })
+    .refine((d) => d.newPassword === d.passwordConfirm, {
+      path: ["passwordConfirm"],
+      message: t("validation.passwordMismatch"),
+    });

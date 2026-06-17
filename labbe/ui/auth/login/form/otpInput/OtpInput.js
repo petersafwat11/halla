@@ -4,6 +4,7 @@ import styles from "./otpInput.module.css";
 import Image from "next/image";
 import { FaArrowRightLong, FaArrowLeftLong } from "react-icons/fa6";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 
 const OtpInput = ({
   verificationCode,
@@ -14,9 +15,15 @@ const OtpInput = ({
   isResending = false,
 }) => {
   const { t, i18n } = useTranslation("login");
-  const [resendTime, setResendTime] = useState(90);
+  const router = useRouter();
+  const [resendTime, setResendTime] = useState(30);
   const inputRefs = useRef([]);
   const isRTL = i18n.language === 'ar';
+
+  const handleGoBack = () => {
+    if (onGoBack) onGoBack();
+    router.back();
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -29,7 +36,7 @@ const OtpInput = ({
     if (!onResend || resendTime > 0 || isResending) return;
     try {
       await onResend();
-      setResendTime(90);
+      setResendTime(30);
     } catch (_e) {
       /* error surfaced by parent */
     }
@@ -99,7 +106,7 @@ const OtpInput = ({
     <div className={styles.container}>
       <div
         className={styles.arrow_container}
-        onClick={onGoBack}
+        onClick={handleGoBack}
         style={{ cursor: "pointer" }}
       >
         {isRTL ? (

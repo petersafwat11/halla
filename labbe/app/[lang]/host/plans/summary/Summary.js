@@ -25,6 +25,8 @@ const Summary = ({
   onPaymentMethodChange,
   onCardChange,
   onMobileChange,
+  cardData,
+  stcMobile,
 }) => {
   const { t } = useTranslation("plans");
 
@@ -34,6 +36,7 @@ const Summary = ({
   const [discountError, setDiscountError] = useState("");
   const [appliedCode, setAppliedCode] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const validateDiscount = useValidateDiscount();
   const discountLoading = validateDiscount.isPending;
@@ -46,10 +49,6 @@ const Summary = ({
     if (!discountCode.trim()) return;
     setDiscountError("");
     try {
-      // Why: backend's applicablePlanTypes enum is the canonical PLAN_TYPES
-      // vocabulary (e.g. "basic_event"). selectedPlan.planType IS that value;
-      // .type is the legacy field name; sending null is fine when the plan
-      // doesn't carry one (the backend treats null as no plan-restriction).
       const planTypeKey = selectedPlan?.planType || selectedPlan?.type || null;
       const response = await validateDiscount.mutateAsync({
         code: discountCode.trim(),
@@ -83,7 +82,81 @@ const Summary = ({
     setDiscountError("");
   };
 
+  const checkLuhn = (number) => {
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = number.length - 1; i >= 0; i--) {
+      let digit = parseInt(number.charAt(i), 10);
+      if (shouldDouble) {
+        if ((digit *= 2) > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (paymentMethod === "creditcard") {
+      const name = (cardData?.name || "").trim();
+      const number = (cardData?.number || "").replace(/\D/g, "");
+      const month = (cardData?.month || "").trim();
+      const year = (cardData?.year || "").trim();
+      const cvc = (cardData?.cvc || "").trim();
+
+      if (!name) {
+        newErrors.name = t("checkout.errors.nameRequired", "Cardholder name is required");
+      } else if (name.length < 3) {
+        newErrors.name = t("checkout.errors.nameTooShort", "Please enter full cardholder name");
+      }
+
+      if (!number) {
+        newErrors.number = t("checkout.errors.numberRequired", "Card number is required");
+      } else if (number.length < 15 || number.length > 16) {
+        newErrors.number = t("checkout.errors.numberLength", "Card number must be 15 or 16 digits");
+      } else if (!checkLuhn(number)) {
+        newErrors.number = t("checkout.errors.numberInvalid", "Invalid card number");
+      }
+
+      if (!month || !year) {
+        newErrors.expiry = t("checkout.errors.expiryRequired", "Expiry date is required");
+      } else {
+        const m = parseInt(month, 10);
+        const y = parseInt(year, 10);
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+
+        if (isNaN(m) || m < 1 || m > 12) {
+          newErrors.expiry = t("checkout.errors.expiryMonthInvalid", "Invalid month (01-12)");
+        } else if (isNaN(y) || y < currentYear || (y === currentYear && m < currentMonth)) {
+          newErrors.expiry = t("checkout.errors.expiryExpired", "Card has expired");
+        }
+      }
+
+      if (!cvc) {
+        newErrors.cvc = t("checkout.errors.cvcRequired", "CVC is required");
+      } else if (cvc.length < 3 || cvc.length > 4) {
+        newErrors.cvc = t("checkout.errors.cvcLength", "CVC must be 3 or 4 digits");
+      }
+    } else if (paymentMethod === "stcpay") {
+      const mobile = (stcMobile || "").replace(/\D/g, "");
+      if (!mobile) {
+        newErrors.stcMobile = t("checkout.errors.mobileRequired", "Mobile number is required");
+      } else if (!/^(05|5)\d{8}$/.test(mobile)) {
+        newErrors.stcMobile = t("checkout.errors.mobileFormat", "Must be a valid Saudi number (e.g. 05xxxxxxxx)");
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handlePayment = async () => {
+    if (!validateForm()) {
+      return;
+    }
     setIsProcessing(true);
     try {
       await onProceedToPayment();
@@ -146,6 +219,9 @@ const Summary = ({
                       onChange={onPaymentMethodChange}
                       onCardChange={onCardChange}
                       onMobileChange={onMobileChange}
+                      cardData={cardData}
+                      stcMobile={stcMobile}
+                      errors={errors}
                     />
                   </div>
                 </div>
