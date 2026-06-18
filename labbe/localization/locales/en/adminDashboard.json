@@ -9,7 +9,7 @@
     "totalHosts": "Total Hosts",
     "activeVendors": "Active Vendors",
     "activeEvents": "Active Events",
-    "attendanceRate": "Attendance Rate",
+    "attendanceRate": "Acceptance Count",
     "unsubscribed": "unsubscribed",
     "pending": "pending",
     "activeNow": "active now",

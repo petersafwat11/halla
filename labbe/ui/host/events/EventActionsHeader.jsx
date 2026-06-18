@@ -161,28 +161,30 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
             </span>
           </button>
         )}
-        <div className={styles.dropdownWrapper}>
-          <button className={styles.primaryButton} onClick={() => setShowDropdown(!showDropdown)}>
-            <Image src="/svg/events/edit.svg" alt="edit" width={12} height={12} />
-            <span>{t("lastEvent.editEvent")}</span>
-            <Image
-              src="/svg/events/arrow-down.svg"
-              alt="arrow-down"
-              width={12}
-              height={12}
-              style={{ transform: showDropdown ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
-            />
-          </button>
-          {showDropdown && (
-            <div className={styles.dropdown}>
-              {dropdownItems.map((item) => (
-                <button key={item.step} className={styles.dropdownItem} onClick={() => handleEditClick(item.step)}>
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {!isCompleted && (
+          <div className={styles.dropdownWrapper}>
+            <button className={styles.primaryButton} onClick={() => setShowDropdown(!showDropdown)}>
+              <Image src="/svg/events/edit.svg" alt="edit" width={12} height={12} />
+              <span>{t("lastEvent.editEvent")}</span>
+              <Image
+                src="/svg/events/arrow-down.svg"
+                alt="arrow-down"
+                width={12}
+                height={12}
+                style={{ transform: showDropdown ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
+              />
+            </button>
+            {showDropdown && (
+              <div className={styles.dropdown}>
+                {dropdownItems.map((item) => (
+                  <button key={item.step} className={styles.dropdownItem} onClick={() => handleEditClick(item.step)}>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <PopupWrapper isOpen={showTestMessagePopup} onClose={() => setShowTestMessagePopup(false)}>

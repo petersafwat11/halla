@@ -153,7 +153,6 @@
 .fileName {
   align-self: stretch;
   color: var(--textColor-default, #0b0b0b);
-  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 700;
@@ -163,7 +162,6 @@
 
 .fileSize {
   color: var(--textColor-secDefault, #6d6d6d);
-  font-family: Inter, -apple-system, Roboto, Helvetica, sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 400;

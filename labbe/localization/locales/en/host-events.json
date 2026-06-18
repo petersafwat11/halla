@@ -16,6 +16,7 @@
     "exportSuccess": "Data exported successfully",
     "exportError": "Failed to export data",
     "actions": {
+      "show": "Show",
       "delete": "Delete",
       "deleteSelected": "Delete Selected"
     },

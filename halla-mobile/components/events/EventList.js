@@ -166,8 +166,8 @@ const EventList = ({
           <View style={styles.statIconContainer}>
             <CheckCircleIcon color="#2A8C5B" />
           </View>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>قبول الضيوف</Text>
-          <Text style={styles.statValue}>{attendanceRate}%</Text>
+          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>عدد القبول</Text>
+          <Text style={styles.statValue}>{attendanceRate}</Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: "#FBF3E6" }]}>
           <View style={styles.statIconContainer}>

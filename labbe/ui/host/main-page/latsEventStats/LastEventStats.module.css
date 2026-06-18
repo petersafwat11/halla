@@ -68,6 +68,14 @@
   color: #2a8c5b;
 }
 
+.statusCompleted {
+  background: #f5f5f5;
+}
+
+.statusCompleted .statusText {
+  color: #666666;
+}
+
 .statusPending {
   background: #fff3e0;
 }

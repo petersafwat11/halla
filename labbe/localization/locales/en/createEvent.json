@@ -266,6 +266,7 @@
     "launch_settings_updated": "Launch settings updated successfully"
   },
   "live_event_locked_notice": "This event is live. Editing is locked except for adding guests.",
+  "ended_event_locked_notice": "This event has ended. Editing is disabled.",
   "live_event_step2_notice": "This event is live. You can add new guests, but existing entries are locked.",
   "update_locked_live_event": "This section is locked while the event is live.",
   "event_type_label": "Event Type",

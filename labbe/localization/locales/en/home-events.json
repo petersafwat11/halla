@@ -78,7 +78,7 @@
       "pending": "Pending Approval",
       "suspended": "Suspended by Admins",
       "active": "Active",
-      "completed": "Completed"
+      "completed": "Ended"
     },
     "dropdown": {
       "eventDetails": "Event Details",
@@ -210,7 +210,7 @@
     "stats": {
       "totalGuests": "Total Guests",
       "confirmed": "Confirmed",
-      "guestAcceptance": "Guest Acceptance",
+      "guestAcceptance": "Acceptance Count",
       "declined": "Declined",
       "responseRate": "Response Rate",
       "noResponse": "No Response"

@@ -134,11 +134,6 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
                 <span className={styles.heroMetaItem}>
                   <FiStar className={styles.starIcon} />
                   <strong>{Number(rating).toFixed(1)}</strong>
-                  {reviewCountNum > 0 && (
-                    <span className={styles.heroMetaDim}>
-                      ({reviewCountNum})
-                    </span>
-                  )}
                 </span>
               )}
               {location && (
@@ -191,40 +186,72 @@ const VendorInfoPopup = ({ isOpen, onClose, vendor }) => {
               <h3 className={styles.sectionTitle}>
                 {t("vendor.ourServices", "Our Services")}
               </h3>
-              <div className={styles.servicesList}>
+              <div className={styles.servicesSlider}>
                 {services.map((svc) => (
-                  <div key={svc.id} className={styles.serviceItem}>
-                    {svc.image && (
-                      <div className={styles.serviceImageWrap}>
+                  <div key={svc.id} className={styles.serviceCard}>
+                    {svc.image ? (
+                      <div className={styles.serviceCardImageWrap}>
                         <Image
                           src={svc.image}
                           alt={svc.name || ""}
                           fill
-                          sizes="80px"
+                          sizes="240px"
                           style={{ objectFit: "cover" }}
                         />
                       </div>
+                    ) : (
+                      <div className={styles.serviceCardImageFallback}>
+                        <span>{svc.name?.charAt(0).toUpperCase()}</span>
+                      </div>
                     )}
-                    <div className={styles.serviceDetails}>
-                      <h4 className={styles.serviceName}>{svc.name}</h4>
+                    <div className={styles.serviceCardContent}>
+                      <div className={styles.serviceCardHeader}>
+                        <h4 className={styles.serviceCardName}>{svc.name}</h4>
+                        {svc.category && (
+                          <span className={styles.serviceCardCategory}>{svc.category}</span>
+                        )}
+                      </div>
                       {svc.description && (
-                        <p className={styles.serviceDesc}>{svc.description}</p>
+                        <p className={styles.serviceCardDesc}>{svc.description}</p>
                       )}
-                      {svc.price != null && (
-                        <span className={styles.servicePrice}>
-                          {svc.price} {svc.currency || t("currency")}
-                        </span>
+                      
+                      {(svc.duration || (svc.included && svc.included.length > 0)) && (
+                        <div className={styles.serviceCardSpecs}>
+                          {svc.duration && (
+                            <div className={styles.serviceCardSpecItem}>
+                              <strong>{t("vendor.duration", "Duration")}:</strong> {svc.duration}
+                            </div>
+                          )}
+                          {svc.included && svc.included.length > 0 && (
+                            <div className={styles.serviceCardIncluded}>
+                              <strong>{t("vendor.included", "Includes")}:</strong>
+                              <ul>
+                                {svc.included.map((item, idx) => (
+                                  <li key={idx}>{item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
                       )}
+                      
+                      <div className={styles.serviceCardFooter}>
+                        {svc.price != null && (
+                          <span className={styles.serviceCardPrice}>
+                            {svc.price} {svc.currency || t("currency")}
+                          </span>
+                        )}
+                        {mobile && (
+                          <a
+                            className={styles.serviceCardInquiry}
+                            href={`tel:${mobile}`}
+                            aria-label={t("card.callNow")}
+                          >
+                            <FiPhone />
+                          </a>
+                        )}
+                      </div>
                     </div>
-                    {mobile && (
-                      <a
-                        className={styles.serviceInquiry}
-                        href={`tel:${mobile}`}
-                        aria-label={t("card.callNow")}
-                      >
-                        <FiPhone />
-                      </a>
-                    )}
                   </div>
                 ))}
               </div>

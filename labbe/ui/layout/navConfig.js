@@ -91,7 +91,7 @@ export const hostNavItems = [
   },
   {
     key: "shop",
-    path: "/market-place",
+    path: "/host/market-place",
     icon: IoStorefront,
     labelKey: "sidebar.shop",
     defaultLabel: "سوق هلا",

@@ -96,9 +96,6 @@ const VendorCard = ({ vendor, onCallPress, index = 0 }) => {
             <Text style={styles.ratingValue}>
               {Number(vendor.rating).toFixed(1)}
             </Text>
-            {reviewCount > 0 && (
-              <Text style={styles.reviewsCount}>({reviewCount})</Text>
-            )}
           </View>
         )}
       </View>

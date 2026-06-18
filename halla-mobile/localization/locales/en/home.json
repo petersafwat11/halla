@@ -55,7 +55,7 @@
       "draft": "Draft",
       "scheduled": "Scheduled",
       "live": "Live",
-      "completed": "Completed",
+      "completed": "Ended",
       "suspended": "Suspended",
       "default": "Saved"
     },

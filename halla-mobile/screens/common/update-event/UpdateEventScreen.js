@@ -73,6 +73,7 @@ const UpdateEventScreen = () => {
     loadError,
     allowed,
     isLive,
+    isCompleted,
     lockoutActive,
     allowAddOnlyOnStep2,
   } = useEventLoadAndGate({ eventId, currentStep });
@@ -161,12 +162,14 @@ const UpdateEventScreen = () => {
     if (lockoutActive) {
       Alert.alert(
         t("events.update.stepLockedAlertTitle"),
-        t("events.update.stepLockedAlertBody")
+        isCompleted
+          ? t("events.update.stepLockedCompletedAlertBody")
+          : t("events.update.stepLockedAlertBody")
       );
       return;
     }
     handleSubmit(saveStep)();
-  }, [handleSubmit, saveStep, lockoutActive, t]);
+  }, [handleSubmit, saveStep, lockoutActive, isCompleted, t]);
 
   const onPrevious = useCallback(() => {
     if (currentStep > 1) setCurrentStep((s) => s - 1);
@@ -223,10 +226,12 @@ const UpdateEventScreen = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {isLive && (
+          {(isLive || isCompleted) && (
             <View style={styles.lockoutBanner} accessibilityRole="alert">
               <Text style={styles.lockoutText}>
-                {currentStep === 2
+                {isCompleted
+                  ? t("events.update.completedLocked")
+                  : currentStep === 2
                   ? t("events.update.liveAddOnly")
                   : t("events.update.liveLocked")}
               </Text>

@@ -8,7 +8,7 @@ const STATUS_KEYS = {
   pending_scheduling: { textKey: "lastEvent.status.pending_scheduling", classKey: "statusNotSubmitted" },
   scheduled: { textKey: "lastEvent.status.scheduled", classKey: "statusPending" },
   live: { textKey: "lastEvent.status.active", classKey: "statusActive" },
-  completed: { textKey: "lastEvent.status.completed", classKey: "statusPublished" },
+  completed: { textKey: "lastEvent.status.completed", classKey: "statusCompleted" },
   suspended: { textKey: "lastEvent.status.suspended", classKey: "statusSuspended" },
 };
 

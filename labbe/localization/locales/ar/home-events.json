@@ -78,7 +78,7 @@
       "pending": "معلق للموافقة",
       "suspended": "موقوفة بواسطة المدراء",
       "active": "نشطة",
-      "completed": "مكتمل",
+      "completed": "انتهى",
       "templatePending": "قيد المراجعة",
       "templateRejected": "مرفوض",
       "templateNotSubmitted": "غير مرسل"
@@ -214,7 +214,7 @@
     "stats": {
       "totalGuests": "إجمالي الضيوف",
       "confirmed": "مؤكد",
-      "guestAcceptance": "قبول الضيوف",
+      "guestAcceptance": "عدد القبول",
       "declined": "معتذر",
       "responseRate": "معدل الاستجابة",
       "noResponse": "لم يرد"

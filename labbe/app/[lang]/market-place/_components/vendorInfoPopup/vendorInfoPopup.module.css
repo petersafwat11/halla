@@ -371,71 +371,156 @@
   scroll-snap-align: start;
 }
 
-/* Services */
-.servicesList {
+/* Services Slider */
+.servicesSlider {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 4px 4px 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;  /* Firefox */
+}
+
+.servicesSlider::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.serviceCard {
+  flex-shrink: 0;
+  width: 250px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  scroll-snap-align: start;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.serviceItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 12px;
+.serviceCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
 }
 
-.serviceImageWrap {
+.serviceCardImageWrap {
   position: relative;
-  flex-shrink: 0;
-  width: 72px;
-  height: 72px;
-  border-radius: 8px;
-  overflow: hidden;
+  width: 100%;
+  height: 130px;
   background: #f4efe9;
 }
 
-.serviceDetails {
+.serviceCardImageFallback {
+  width: 100%;
+  height: 130px;
+  background: linear-gradient(135deg, rgba(194, 142, 92, 0.08) 0%, rgba(194, 142, 92, 0.15) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a67749;
+  font-weight: 700;
+  font-size: 32px;
+}
+
+.serviceCardContent {
+  padding: 12px;
   flex: 1;
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.serviceCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.serviceCardName {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.35;
+}
+
+.serviceCardCategory {
+  font-size: 10px;
+  font-weight: 700;
+  color: #c28e5c;
+  background: rgba(194, 142, 92, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
+.serviceCardDesc {
+  margin: 0;
+  font-size: 11.5px;
+  color: #6b6b6b;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.serviceCardSpecs {
+  font-size: 11.5px;
+  color: #4a4a4a;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.serviceName {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #1a1a1a;
-  line-height: 1.3;
-}
-
-.serviceDesc {
-  margin: 0;
-  font-size: 12px;
-  color: #6b6b6b;
+.serviceCardSpecItem {
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-.servicePrice {
+.serviceCardIncluded {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.serviceCardIncluded ul {
+  margin: 0;
+  padding-inline-start: 14px;
+  list-style-type: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.serviceCardIncluded li {
+  color: #6b6b6b;
+}
+
+.serviceCardFooter {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 8px;
+}
+
+.serviceCardPrice {
   font-size: 14px;
   font-weight: 800;
   color: #c28e5c;
 }
 
-.serviceInquiry {
-  flex-shrink: 0;
-  width: 38px;
-  height: 38px;
+.serviceCardInquiry {
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: #c28e5c;
   border: none;
@@ -444,12 +529,12 @@
   justify-content: center;
   color: #fff;
   cursor: pointer;
-  align-self: center;
   transition: background 0.2s ease;
   text-decoration: none;
+  font-size: 12px;
 }
 
-.serviceInquiry:hover {
+.serviceCardInquiry:hover {
   background: #a67749;
 }
 
@@ -647,5 +732,24 @@ a.contactRow:hover .contactText {
   .ctaButton {
     height: 46px;
     font-size: 14px;
+  }
+
+  .serviceCard {
+    width: 220px;
+  }
+
+  .serviceCardImageWrap,
+  .serviceCardImageFallback {
+    height: 110px;
+  }
+
+  .serviceCardContent {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .serviceCardDesc {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 }

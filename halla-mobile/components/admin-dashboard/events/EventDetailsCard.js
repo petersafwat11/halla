@@ -38,8 +38,7 @@ const EventDetailsCard = ({ event }) => {
    * Calculate attendance rate
    */
   const calculateAttendanceRate = () => {
-    if (!event.totalGuests || event.totalGuests === 0) return 0;
-    return Math.round((event.confirmedGuests / event.totalGuests) * 100);
+    return event.confirmedGuests || 0;
   };
 
   /**
@@ -180,11 +179,11 @@ const EventDetailsCard = ({ event }) => {
         </View>
 
         <View style={styles.attendanceRateContainer}>
-          <Text style={styles.attendanceLabel}>نسبة الحضور:</Text>
+          <Text style={styles.attendanceLabel}>عدد القبول:</Text>
           <Text
             style={[styles.attendanceValue, { color: colors.success[500] }]}
           >
-            {attendanceRate}%
+            {attendanceRate}
           </Text>
         </View>
       </View>

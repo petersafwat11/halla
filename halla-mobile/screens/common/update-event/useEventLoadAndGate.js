@@ -219,9 +219,10 @@ const useEventLoadAndGate = ({ eventId, currentStep }) => {
     currentUser: user,
   });
   const isLive = actionGate.isLive;
+  const isCompleted = actionGate.isCompleted;
   // Step 2 stays interactive on live events (allow-add-only); every
-  // other step is frozen.
-  const lockoutActive = isLive && currentStep !== 2;
+  // other step is frozen. If event is completed, all steps are frozen.
+  const lockoutActive = (isLive && currentStep !== 2) || isCompleted;
   const allowAddOnlyOnStep2 = isLive && currentStep === 2;
 
   return {
@@ -232,6 +233,7 @@ const useEventLoadAndGate = ({ eventId, currentStep }) => {
     loadError,
     allowed,
     isLive,
+    isCompleted,
     lockoutActive,
     allowAddOnlyOnStep2,
   };

@@ -72,11 +72,6 @@ const ServiceCard = ({ service }) => {
           <div className={styles.ratingBadge}>
             <FiStar className={styles.ratingIcon} aria-hidden="true" />
             <span className={styles.ratingValue}>{rating.toFixed(1)}</span>
-            {reviewsCount > 0 && (
-              <span className={styles.reviewsCount}>
-                ({reviewsCount})
-              </span>
-            )}
           </div>
         )}
       </div>

@@ -16,6 +16,7 @@
     "exportSuccess": "تم تصدير البيانات بنجاح",
     "exportError": "فشل تصدير البيانات",
     "actions": {
+      "show": "عرض",
       "delete": "حذف",
       "deleteSelected": "حذف المحدد"
     },

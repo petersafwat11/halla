@@ -25,7 +25,7 @@ const ExportButton = ({ onPress, loading = false, label, style }) => {
         <ActivityIndicator size="small" color={colors.success[600]} />
       ) : (
         <View style={styles.content}>
-          <Ionicons name="download-outline" size={16} color={colors.success[600]} />
+          <Ionicons name="share-outline" size={16} color={colors.success[600]} />
           <Text style={styles.label}>{displayLabel}</Text>
         </View>
       )}

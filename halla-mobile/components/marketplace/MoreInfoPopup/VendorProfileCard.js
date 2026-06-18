@@ -16,17 +16,10 @@ const VendorProfileCard = ({ vendor }) => {
         <View style={styles.vendorInfo}>
           <View style={styles.vendorDetails}>
             <Text style={styles.vendorName}>{companyName}</Text>
-            {(hasRating || reviewCount > 0) && (
+            {hasRating && (
               <View style={styles.vendorStats}>
                 <View style={styles.stat}>
-                  {reviewCount > 0 && (
-                    <Text style={styles.statValue}>
-                      ({reviewCount} {t("vendor.users")})
-                    </Text>
-                  )}
-                  {hasRating && (
-                    <Text style={styles.statLabel}>{Number(vendor.rating).toFixed(1)}</Text>
-                  )}
+                  <Text style={styles.statLabel}>{Number(vendor.rating).toFixed(1)}</Text>
                 </View>
               </View>
             )}

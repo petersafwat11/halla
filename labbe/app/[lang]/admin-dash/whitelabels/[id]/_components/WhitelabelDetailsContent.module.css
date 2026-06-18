@@ -67,7 +67,6 @@
 }
 
 .wlNameEn {
-  font-family: var(--font-en, "Inter", sans-serif);
   font-size: 1.4rem;
   color: var(--c-n400, #767676);
   font-weight: 400;

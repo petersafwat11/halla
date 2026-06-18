@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import styles from "./table.module.css";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
+import { FiDownload } from "react-icons/fi";
 import Pagination from "@/ui/commen/pagination/Pagination";
 
 const Table = ({
@@ -513,12 +514,7 @@ const Table = ({
                   aria-label={labels.export}
                   title={labels.export}
                 >
-                  <Image
-                    src="/svg/events/export.svg"
-                    alt=""
-                    width={12}
-                    height={12}
-                  />
+                  <FiDownload size={14} />
                   <span>{labels.export}</span>
                 </button>
               )}

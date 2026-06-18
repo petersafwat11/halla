@@ -91,35 +91,37 @@ export default function LastEventActions({
         )}
       </View>
 
-      <View style={styles.dropdownWrapper}>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => setShowDropdown(!showDropdown)}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="create-outline" size={12} color="#FFF" />
-          <Text style={styles.editButtonText}>{t("lastEvent.buttons.editEvent")}</Text>
-          <Ionicons
-            name={showDropdown ? "chevron-up" : "chevron-down"}
-            size={12}
-            color="#FFF"
-          />
-        </TouchableOpacity>
-        {showDropdown && (
-          <View style={styles.dropdown}>
-            {DROPDOWN_STEPS.map((item) => (
-              <TouchableOpacity
-                key={item.step}
-                style={styles.dropdownItem}
-                onPress={() => handleEditStep(item.step)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.dropdownItemText}>{t(item.key)}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
+      {!isCompleted && (
+        <View style={styles.dropdownWrapper}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => setShowDropdown(!showDropdown)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="create-outline" size={12} color="#FFF" />
+            <Text style={styles.editButtonText}>{t("lastEvent.buttons.editEvent")}</Text>
+            <Ionicons
+              name={showDropdown ? "chevron-up" : "chevron-down"}
+              size={12}
+              color="#FFF"
+            />
+          </TouchableOpacity>
+          {showDropdown && (
+            <View style={styles.dropdown}>
+              {DROPDOWN_STEPS.map((item) => (
+                <TouchableOpacity
+                  key={item.step}
+                  style={styles.dropdownItem}
+                  onPress={() => handleEditStep(item.step)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.dropdownItemText}>{t(item.key)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
     </>
   );
 }

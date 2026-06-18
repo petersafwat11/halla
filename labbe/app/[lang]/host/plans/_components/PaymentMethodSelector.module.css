@@ -23,7 +23,7 @@
   border-radius: var(--radius-12);
   background: var(--color-natural-50);
   cursor: pointer;
-  min-height: 6.8rem;
+  min-height: 5.6rem;
   transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease, transform 150ms ease;
 }
 
@@ -58,7 +58,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2.2rem;
+  min-height: 3.6rem;
   opacity: 0.85;
 }
 

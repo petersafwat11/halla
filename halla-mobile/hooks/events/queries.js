@@ -67,8 +67,7 @@ export function useEventStats() {
       const respondedGuests = confirmedGuests + (stats.checkedInGuests || 0);
       return {
         allGuests: totalGuests,
-        attendanceRate:
-          totalGuests > 0 ? Math.round((confirmedGuests / totalGuests) * 100) : 0,
+        attendanceRate: confirmedGuests,
         responseRate:
           totalGuests > 0 ? Math.round((respondedGuests / totalGuests) * 100) : 0,
         events,

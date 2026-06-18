@@ -631,6 +631,8 @@
       "stepLockedAlertBody": "This step cannot be edited on a live event",
       "liveAddOnly": "This event is live: you can only add new guests.",
       "liveLocked": "This event is live: editing this step is disabled.",
+      "completedLocked": "This event has ended: editing is disabled.",
+      "stepLockedCompletedAlertBody": "This step cannot be edited on a completed event.",
       "cancelTitle": "Discard changes?",
       "cancelBody": "Unsaved changes will be lost. Discard?",
       "cancelKeep": "Keep editing",

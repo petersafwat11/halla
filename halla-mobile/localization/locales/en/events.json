@@ -39,7 +39,7 @@
     "liveEvents": "Live Events",
     "allEvents": "All Events",
     "endedEvents": "Ended Events",
-    "attendanceRate": "Attendance Rate"
+    "attendanceRate": "Acceptance Count"
   },
   "filters": {
     "all": "All",

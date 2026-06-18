@@ -213,6 +213,8 @@ export const usePlansPageState = () => {
     setPaymentMethod,
     setCardData,
     setStcMobile,
+    cardData,
+    stcMobile,
 
     // handlers
     handleInviteChange,

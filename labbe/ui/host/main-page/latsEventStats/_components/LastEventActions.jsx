@@ -46,7 +46,7 @@ export default function LastEventActions({
     </button>
   ) : null;
 
-  const scheduleButton = canSchedule ? (
+  const scheduleButton = canSchedule && !isCompleted ? (
     <button className={styles.outlineButton} onClick={onScheduleSending}>
       <span>{t("lastEvent.buttons.scheduleEvent")}</span>
       <Image src="/svg/events/calendar-edit.svg" alt="calendar" width={12} height={12} />
@@ -69,7 +69,7 @@ export default function LastEventActions({
     </button>
   ) : null;
 
-  const editDropdown = (
+  const editDropdown = !isCompleted ? (
     <div className={styles.dropdownWrapper}>
       <button
         className={styles.primaryButton}
@@ -102,7 +102,7 @@ export default function LastEventActions({
         </div>
       )}
     </div>
-  );
+  ) : null;
 
   return (
     <div className={styles.actionsContainer}>

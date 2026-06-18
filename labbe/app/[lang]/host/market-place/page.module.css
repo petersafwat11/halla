@@ -1,0 +1,176 @@
+.container {
+  width: 100%;
+  background: #f9f4ef;
+  min-height: 100vh;
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+.hero {
+  width: 100%;
+  background: linear-gradient(
+      135deg,
+      rgba(194, 142, 92, 0.08) 0%,
+      rgba(194, 142, 92, 0.02) 100%
+    ),
+    #fffaf5;
+  border-bottom: 1px solid rgba(194, 142, 92, 0.15);
+}
+
+.heroInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 56px 40px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.heroEyebrow {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(194, 142, 92, 0.12);
+  color: #a67749;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.heroTitle {
+  margin: 0;
+  color: #2c2c2c;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.heroSubtitle {
+  margin: 0;
+  max-width: 620px;
+  color: #6b6b6b;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ============================================
+   GRID
+   ============================================ */
+.gridSection {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 40px 80px;
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  justify-items: stretch;
+}
+
+.loadingWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 72px 24px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(194, 142, 92, 0.15);
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(194, 142, 92, 0.1);
+  margin-bottom: 4px;
+}
+
+.emptyState h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c2c2c;
+  margin: 0;
+}
+
+.emptyState p {
+  font-size: 14px;
+  color: #6b6b6b;
+  margin: 0;
+  max-width: 420px;
+  line-height: 1.6;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .heroInner {
+    padding: 40px 20px 32px;
+  }
+
+  .heroTitle {
+    font-size: 30px;
+  }
+
+  .heroSubtitle {
+    font-size: 15px;
+  }
+
+  .gridSection {
+    padding: 32px 20px 56px;
+  }
+
+  .servicesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .heroInner {
+    padding: 32px 16px 28px;
+  }
+
+  .heroTitle {
+    font-size: 26px;
+  }
+
+  .heroSubtitle {
+    font-size: 14px;
+  }
+
+  .gridSection {
+    padding: 24px 16px 48px;
+  }
+
+  .servicesGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .emptyState {
+    padding: 48px 20px;
+  }
+}

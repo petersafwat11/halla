@@ -43,6 +43,8 @@ const PlansPage = () => {
     setPaymentMethod,
     setCardData,
     setStcMobile,
+    cardData,
+    stcMobile,
     handleInviteChange,
     handleAddonsChange,
     handleSubscribe,

@@ -1,7 +1,9 @@
 /**
  * Cookie Utility Functions
- * Client-side cookie management utilities
+ * Client-side cookie management utilities using js-cookie
  */
+
+import Cookies from "js-cookie";
 
 export const cookieUtils = {
   /**
@@ -11,9 +13,7 @@ export const cookieUtils = {
    * @param {number} days - Days until expiry (default: 7)
    */
   setCookie: (name, value, days = 7) => {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+    Cookies.set(name, value, { expires: days, path: "/", sameSite: "lax" });
   },
 
   /**
@@ -22,15 +22,7 @@ export const cookieUtils = {
    * @returns {string|null} Cookie value or null if not found
    */
   getCookie: (name) => {
-    if (typeof window === "undefined") return null;
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(";");
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) === " ") c = c.substring(1, c.length);
-      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
+    return Cookies.get(name) || null;
   },
 
   /**
@@ -38,7 +30,7 @@ export const cookieUtils = {
    * @param {string} name - Cookie name
    */
   deleteCookie: (name) => {
-    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+    Cookies.remove(name, { path: "/", sameSite: "lax" });
   },
 
   /**
@@ -48,6 +40,7 @@ export const cookieUtils = {
     cookieUtils.deleteCookie("jwt");
     cookieUtils.deleteCookie("token");
     cookieUtils.deleteCookie("userType");
+    cookieUtils.deleteCookie("profileCompleted");
   },
 
   /**

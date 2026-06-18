@@ -641,8 +641,8 @@ const eventSummaryReportEmail = (data, lang = "ar") => {
         variant: "success",
       },
       {
-        value: stats.attendanceRate ? `${stats.attendanceRate}%` : "0%",
-        label: isAr ? "نسبة الحضور" : "Attendance Rate",
+        value: stats.attendanceRate || 0,
+        label: isAr ? "عدد القبول" : "Acceptance Count",
         variant: "info",
       },
     ])}

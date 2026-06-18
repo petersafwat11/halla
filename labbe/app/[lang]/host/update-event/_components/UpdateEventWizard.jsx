@@ -81,6 +81,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   // When an event is `live`, every section except step 2's
   // allow-add-only branch is locked.
   const isEventLive = eventRaw?.status === "live";
+  const isEventCompleted = eventRaw?.status === "completed";
 
   useEffect(() => {
     if (eventRaw) reset(mapEventToFormValues(eventRaw));
@@ -128,7 +129,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   // The lockout banner appears at the top of every step on a live
   // event. Step 2 stays interactive (allow-add-only); other steps
   // render the banner above the disabled form.
-  const lockoutActive = isEventLive && currentStep !== 2;
+  const lockoutActive = (isEventLive && currentStep !== 2) || isEventCompleted;
 
   return (
     <FormProvider {...methods}>
@@ -146,9 +147,9 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
             <Stepper currentStep={currentStep} totalSteps={4} />
           </div>
 
-          {isEventLive && (
+          {(isEventLive || isEventCompleted) && (
             <div className={styles.header_wrapper}>
-              <LiveEventBanner currentStep={currentStep} />
+              <LiveEventBanner currentStep={currentStep} isEventCompleted={isEventCompleted} />
             </div>
           )}
 

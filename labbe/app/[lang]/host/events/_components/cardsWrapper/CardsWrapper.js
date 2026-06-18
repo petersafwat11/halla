@@ -34,7 +34,7 @@ const CardsWrapper = () => {
     {
       id: "guestAcceptance",
       title: t("events.stats.guestAcceptance"),
-      value: `${attendanceRate}%`,
+      value: confirmedGuests,
       src: "/svg/stats/events-2.svg",
       alt: "confirmed guests",
     },

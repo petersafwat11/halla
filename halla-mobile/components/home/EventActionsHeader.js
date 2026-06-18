@@ -236,15 +236,17 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
         )}
 
         <View style={styles.primaryRow}>
-          <TouchableOpacity
-            style={styles.manageButton}
-            onPress={() => setShowManageMenu(true)}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="create-outline" size={14} color="#FFF" />
-            <Text style={styles.manageButtonText}>{t("manageEvent", "إدارة المناسبة")}</Text>
-            <Ionicons name="chevron-down" size={14} color="#FFF" />
-          </TouchableOpacity>
+          {!isCompleted && (
+            <TouchableOpacity
+              style={styles.manageButton}
+              onPress={() => setShowManageMenu(true)}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="create-outline" size={14} color="#FFF" />
+              <Text style={styles.manageButtonText}>{t("manageEvent", "إدارة المناسبة")}</Text>
+              <Ionicons name="chevron-down" size={14} color="#FFF" />
+            </TouchableOpacity>
+          )}
 
           {isAdmin && (
             <TouchableOpacity

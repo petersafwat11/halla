@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import styles from "./table.module.css";
 import DynamicTable from "@/ui/commen/table";
 import Image from "next/image";
+import { FiDownload } from "react-icons/fi";
 
 const Table = ({
   data,
@@ -50,12 +51,7 @@ const Table = ({
             {t("table.filter")}
           </div> */}
           <div className={styles.export} onClick={handleExport}>
-            <Image
-              width={24}
-              height={24}
-              src="/svg/admin/export.svg"
-              alt="export"
-            />
+            <FiDownload size={20} />
             {t("table.export")}
           </div>
         </div>

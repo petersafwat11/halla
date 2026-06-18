@@ -2,51 +2,45 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FaLock } from "react-icons/fa";
+import { FaLock, FaApple } from "react-icons/fa";
 import styles from "./PaymentMethodSelector.module.css";
 
 // --- High-Quality SVG Icons ---
-const VisaLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="34" height="22" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-    <path fill="#151b54" d="M22.2,26.4l2.1-10.3h3.5L25.7,26.4H22.2z M37.7,16.5c-0.7-0.3-1.9-0.6-3.3-0.6c-3.6,0-6.1,1.8-6.2,4.4c-0.1,1.9,1.8,2.9,3.2,3.5c1.4,0.7,1.9,1.1,1.9,1.7c0,0.9-1.2,1.3-2.3,1.3c-1.5,0-2.4-0.2-3.6-0.8l-0.5-0.2l-0.5,3.3c1,0.4,2.8,0.8,4.7,0.8c3.8,0,6.3-1.8,6.4-4.6c0.1-1.5-1-2.7-3.1-3.6c-1.3-0.6-2.1-1.1-2.1-1.7c0-0.6,0.7-1.2,2.2-1.2c1.2,0,2.1,0.2,2.8,0.5l0.3,0.1L37.7,16.5z M45.8,16.1h-2.7c-0.8,0-1.5,0.2-1.8,1l-6.4,14.6h3.6l0.7-1.9h4.4l0.4,1.9h3.2L45.8,16.1z M40.6,26.8l1.9-5.1l1.1,5.1H40.6z M16.7,16.1L13.3,27l-0.4-1.8c-0.6-2.1-2.5-4.4-4.7-5.5L11.5,31.7h3.7l5.5-15.6H16.7z M8.1,16.1H0.2v0.8c4.9,1.2,8.2,4.2,9.6,7.6L8.4,18.8C8.1,16.9,8.1,16.1,8.1,16.1z" />
+const VisaLogo = ({ height = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 7.5 22 8.5" width={Math.round(height * (22 / 8.5))} height={height} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <path fill="#1A1F71" d="M16.5 15.6h2.2l1.4-7.3h-2.2zM22 8.3c-.5-.2-1.2-.4-2.1-.4-2.2 0-3.8 1.2-3.8 2.9 0 1.2 1.1 1.9 2 2.4.9.4 1.2.7 1.2 1.1 0 .6-.7.9-1.3.9-.9 0-1.4-.1-2.1-.5l-.3-.1-.3 2c.5.2 1.5.5 2.5.5 2.3 0 3.9-1.2 3.9-3 0-1-.6-1.8-1.9-2.4-.9-.4-1.4-.7-1.4-1.2 0-.4.4-.8 1.3-.8.8 0 1.3.2 1.7.3l.2.1.3-2zM11.7 8.3H9.5c-.7 0-1.2.2-1.4.9l-3.3 6.4h2.4l.5-1.3h2.9l.3 1.3h2.1zm-3.2 5.5l1-2.6.5 2.6H8.5zM2.9 8.3L.6 9.8l-.02.09c1.4.4 2.7 1.2 3.6 2.1l.02-.08L2.1 8.3H0z" />
   </svg>
 );
 
-const MastercardLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="34" height="22" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+const MastercardLogo = ({ height = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="4 10 40 28" width={Math.round(height * (40 / 28))} height={height} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
     <circle cx="18" cy="24" r="14" fill="#eb001b" />
     <circle cx="30" cy="24" r="14" fill="#ff5f00" fillOpacity="0.8" />
   </svg>
 );
 
-const MadaLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" width="45" height="18" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+const MadaLogo = ({ height = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="2 10 44 20" width={Math.round(height * (44 / 20))} height={height} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
     <path fill="#0075A0" d="M12.5,23.3C10.2,23.3,8,22,6.9,19.9c2.1-3.6,5.9-6,10.2-6c3.2,0,6.1,1.3,8.2,3.4l2.4-2.4C24.7,11.9,20.8,10,17.1,10C10.8,10,5.3,13.8,2.7,19.3c-0.2,0.4-0.2,0.8,0,1.2C5.3,26,10.8,29.8,17.1,29.8c3.7,0,7.6-1.9,10.6-4.9l-2.4-2.4C23.2,22,20.3,23.3,12.5,23.3z" />
     <path fill="#54B948" d="M33.6,10c-3.7,0-7.6,1.9-10.6,4.9l2.4,2.4c2.1-2.1,5-3.4,12.8-3.4c2.3,0,4.5,1.3,5.6,3.4c-2.1,3.6-5.9,6-10.2,6c-3.2,0-6.1-1.3-8.2-3.4l-2.4,2.4c3,3,6.9,4.9,10.6,4.9c6.3,0,11.8-3.8,14.4-9.3c0.2-0.4,0.2-0.8,0-1.2C45.4,13.8,39.9,10,33.6,10z" />
-    <text x="52" y="25" fontFamily="Cairo, Arial, sans-serif" fontSize="16" fontWeight="900" fontStyle="italic" fill="#0075A0">mada</text>
   </svg>
 );
 
-const StcPayLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" width="50" height="20" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+const StcPayLogo = ({ height = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" width={Math.round(height * (100 / 40))} height={height} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
     <rect width="100" height="40" fill="#4f005d" rx="6" />
-    <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fontFamily="Cairo, Arial, sans-serif" fontSize="12" fontWeight="bold" fill="#00E5FF">stc pay</text>
+    <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fontFamily="Cairo, Arial, sans-serif" fontSize="18" fontWeight="bold" fill="#00E5FF">stc pay</text>
   </svg>
 );
 
 const ApplePayLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" width="50" height="20" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-    <rect width="100" height="40" fill="#000000" rx="6" />
-    <path fill="#FFFFFF" d="M26.2,20.4c0-2.3,1.8-3.4,1.9-3.5c-1.1-1.6-2.8-1.8-3.4-1.8c-1.4-0.1-2.8,0.8-3.5,0.8c-0.7,0-1.9-0.8-3.1-0.7c-1.5,0-3,0.9-3.7,2.2c-1.6,2.7-0.4,6.7,1.1,8.9c0.7,1.1,1.6,2.2,2.8,2.2c1.1,0,1.5-0.7,2.9-0.7c1.3,0,1.8,0.7,2.9,0.7c1.2,0,2-1,2.7-2.1c0.9-1.3,1.2-2.5,1.2-2.6C28,23.5,26.2,22.2,26.2,20.4z" />
-    <path fill="#FFFFFF" d="M22.9,13.7c0.6-0.8,1.1-1.8,0.9-2.9c-0.9,0-2.1,0.6-2.7,1.3c-0.6,0.7-1.1,1.8-0.9,2.8C21.2,15,22.3,14.4,22.9,13.7z" />
-    <text x="44" y="26" fontFamily="Helvetica Neue, Arial, sans-serif" fontSize="16" fontWeight="bold" fill="#FFFFFF">Pay</text>
-  </svg>
+  <FaApple size={28} color="var(--color-secondary-900)" style={{ display: 'inline-block', verticalAlign: 'middle' }} />
 );
 
 const METHODS = [
-  { key: "creditcard", labelKey: "checkout.method.card", Logo: () => <div style={{ display: 'flex', gap: '4px' }}><VisaLogo /><MastercardLogo /><MadaLogo /></div> },
-  { key: "applepay",   labelKey: "checkout.method.applepay", Logo: ApplePayLogo },
-  { key: "stcpay",     labelKey: "checkout.method.stcpay",   Logo: StcPayLogo },
+  { key: "creditcard", Logo: () => <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><VisaLogo height={24} /><MastercardLogo height={24} /><MadaLogo height={24} /></div> },
+  { key: "applepay",   Logo: ApplePayLogo },
+  { key: "stcpay",     Logo: () => <StcPayLogo height={24} /> },
 ];
 
 const detectCardBrand = (number) => {
@@ -117,12 +111,28 @@ export default function PaymentMethodSelector({
   };
 
   const handleExpiryChange = (e) => {
-    const val = e.target.value;
-    const clean = val.replace(/\D/g, "").slice(0, 4);
-    let formatted = clean;
-    if (clean.length > 2) {
-      formatted = `${clean.slice(0, 2)}/${clean.slice(2, 4)}`;
+    let val = e.target.value;
+    
+    if (val.length > 5) return;
+
+    const clean = val.replace(/\D/g, "");
+    
+    let formatted = "";
+    if (clean.length > 0) {
+      if (clean.length <= 2) {
+        formatted = clean;
+        if (clean.length === 2 && (val.endsWith('/') || val.length > expiryText.length)) {
+          formatted = `${clean}/`;
+        }
+      } else {
+        formatted = `${clean.slice(0, 2)}/${clean.slice(2, 4)}`;
+      }
     }
+    
+    if (expiryText.endsWith('/') && val === expiryText.slice(0, -1)) {
+      formatted = clean.slice(0, -1);
+    }
+
     setExpiryText(formatted);
 
     const month = clean.slice(0, 2);
@@ -145,11 +155,11 @@ export default function PaymentMethodSelector({
   const renderCardInputBrandIcon = () => {
     switch (activeCardBrand) {
       case "visa":
-        return <VisaLogo />;
+        return <VisaLogo height={20} />;
       case "mastercard":
-        return <MastercardLogo />;
+        return <MastercardLogo height={20} />;
       case "mada":
-        return <MadaLogo />;
+        return <MadaLogo height={20} />;
       default:
         return null;
     }
@@ -158,7 +168,7 @@ export default function PaymentMethodSelector({
   return (
     <div className={styles.wrap}>
       <div className={styles.tabs} role="radiogroup">
-        {METHODS.map(({ key, labelKey, Logo }) => {
+        {METHODS.map(({ key, Logo }) => {
           const active = value === key;
           return (
             <button
@@ -170,7 +180,6 @@ export default function PaymentMethodSelector({
               onClick={() => onChange(key)}
             >
               <div className={styles.tabContent}>
-                <span className={styles.tabLabel}>{t(labelKey)}</span>
                 <div className={styles.tabLogoWrap}>
                   <Logo />
                 </div>
@@ -212,6 +221,8 @@ export default function PaymentMethodSelector({
                 value={card.number ? card.number.replace(/(\d{4})(?=\d)/g, "$1 ") : ""}
                 onChange={handleCardNumberChange}
                 autoComplete="cc-number"
+                dir="ltr"
+                style={{ textAlign: "left" }}
               />
             </div>
             {errors.number && <span className={styles.errorText}>{errors.number}</span>}
@@ -230,6 +241,8 @@ export default function PaymentMethodSelector({
                 value={expiryText}
                 onChange={handleExpiryChange}
                 autoComplete="cc-exp"
+                dir="ltr"
+                style={{ textAlign: "left" }}
               />
               {errors.expiry && <span className={styles.errorText}>{errors.expiry}</span>}
             </div>
@@ -246,6 +259,8 @@ export default function PaymentMethodSelector({
                 value={card.cvc || ""}
                 onChange={(e) => updateCardField("cvc", e.target.value.replace(/\D/g, ""))}
                 autoComplete="cc-csc"
+                dir="ltr"
+                style={{ textAlign: "left" }}
               />
               {errors.cvc && <span className={styles.errorText}>{errors.cvc}</span>}
             </div>
@@ -276,6 +291,8 @@ export default function PaymentMethodSelector({
               value={mobileText}
               onChange={handleMobileChange}
               autoComplete="tel"
+              dir="ltr"
+              style={{ textAlign: "left" }}
             />
             {errors.stcMobile && <span className={styles.errorText}>{errors.stcMobile}</span>}
           </div>

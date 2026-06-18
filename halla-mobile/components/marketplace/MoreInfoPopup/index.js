@@ -142,9 +142,6 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
                     <Text style={styles.heroMetaStrong}>
                       {Number(rating).toFixed(1)}
                     </Text>
-                    {reviewCountNum > 0 && (
-                      <Text style={styles.heroMetaDim}>({reviewCountNum})</Text>
-                    )}
                   </View>
                 )}
                 {location && (
@@ -205,43 +202,83 @@ const MoreInfoPopup = ({ visible, vendor, onClose }) => {
                 <Text style={styles.sectionTitle}>
                   {t("vendor.ourServices", "خدماتنا")}
                 </Text>
-                <View style={styles.servicesList}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.servicesSlider}
+                  style={styles.servicesSliderContainer}
+                >
                   {services.map((svc) => (
-                    <View key={svc.id} style={styles.serviceItem}>
-                      {svc.image && (
+                    <View key={svc.id} style={styles.serviceCard}>
+                      {svc.image ? (
                         <Image
                           source={{ uri: svc.image }}
-                          style={styles.serviceImage}
+                          style={styles.serviceCardImage}
                           resizeMode="cover"
                         />
+                      ) : (
+                        <View style={styles.serviceCardImageFallback}>
+                          <Text style={styles.serviceCardFallbackText}>
+                            {svc.name ? svc.name.charAt(0).toUpperCase() : ""}
+                          </Text>
+                        </View>
                       )}
-                      <View style={styles.serviceDetails}>
-                        <Text style={styles.serviceName} numberOfLines={1}>
-                          {svc.name}
-                        </Text>
+                      <View style={styles.serviceCardContent}>
+                        <View style={styles.serviceCardHeader}>
+                          <Text style={styles.serviceCardName} numberOfLines={1}>
+                            {svc.name}
+                          </Text>
+                          {svc.category ? (
+                            <View style={styles.serviceCardCategoryBadge}>
+                              <Text style={styles.serviceCardCategoryText}>
+                                {svc.category}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
+                        
                         {svc.description ? (
-                          <Text style={styles.serviceDesc} numberOfLines={2}>
+                          <Text style={styles.serviceCardDesc} numberOfLines={3}>
                             {svc.description}
                           </Text>
                         ) : null}
-                        {svc.price != null && (
-                          <Text style={styles.servicePrice}>
-                            {svc.price} {svc.currency || t("vendor.sar")}
+
+                        {svc.duration ? (
+                          <Text style={styles.serviceCardSpec} numberOfLines={1}>
+                            {t("vendor.duration", "المدة")}: {svc.duration}
                           </Text>
-                        )}
+                        ) : null}
+
+                        {svc.included && svc.included.length > 0 ? (
+                          <View style={styles.serviceCardIncludedList}>
+                            {svc.included.slice(0, 2).map((item, idx) => (
+                              <Text key={idx} style={styles.serviceCardIncludedItem} numberOfLines={1}>
+                                • {item}
+                              </Text>
+                            ))}
+                          </View>
+                        ) : null}
+
+                        <View style={styles.serviceCardFooter}>
+                          {svc.price != null && (
+                            <Text style={styles.serviceCardPrice}>
+                              {svc.price} {svc.currency || t("vendor.sar")}
+                            </Text>
+                          )}
+                          {mobile && (
+                            <TouchableOpacity
+                              style={styles.serviceCardInquiry}
+                              onPress={() => handleOpen(`tel:${mobile}`)}
+                              activeOpacity={0.7}
+                            >
+                              <Ionicons name="call-outline" size={14} color="#FFF" />
+                            </TouchableOpacity>
+                          )}
+                        </View>
                       </View>
-                      {mobile && (
-                        <TouchableOpacity
-                          style={styles.serviceInquiry}
-                          onPress={() => handleOpen(`tel:${mobile}`)}
-                          activeOpacity={0.7}
-                        >
-                          <Ionicons name="call-outline" size={16} color="#FFF" />
-                        </TouchableOpacity>
-                      )}
                     </View>
                   ))}
-                </View>
+                </ScrollView>
               </View>
             )}
 
@@ -515,49 +552,108 @@ const styles = StyleSheet.create({
   },
 
   /* ────── SERVICES ────── */
-  servicesList: {
+  servicesSliderContainer: {
+    marginTop: 8,
+  },
+  servicesSlider: {
+    paddingRight: 16,
     gap: 12,
   },
-  serviceItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 12,
+  serviceCard: {
+    width: 220,
     backgroundColor: "#FFF",
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.05)",
+    borderColor: "rgba(0,0,0,0.06)",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  serviceImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 10,
+  serviceCardImage: {
+    width: "100%",
+    height: 110,
     backgroundColor: "#F4EFE9",
   },
-  serviceDetails: {
-    flex: 1,
-    gap: 4,
+  serviceCardImageFallback: {
+    width: "100%",
+    height: 110,
+    backgroundColor: "#F4EFE9",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  serviceName: {
+  serviceCardFallbackText: {
     fontFamily: "Cairo_700Bold",
-    fontSize: 14,
-    color: "#1A1A1A",
-  },
-  serviceDesc: {
-    fontFamily: "Cairo_400Regular",
-    fontSize: 12,
-    color: "#6B6B6B",
-    lineHeight: 16,
-  },
-  servicePrice: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: 14,
+    fontSize: 32,
     color: "#C28E5C",
   },
-  serviceInquiry: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  serviceCardContent: {
+    padding: 12,
+    gap: 8,
+  },
+  serviceCardHeader: {
+    gap: 2,
+  },
+  serviceCardName: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 13,
+    color: "#1A1A1A",
+  },
+  serviceCardCategoryBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(194, 142, 92, 0.1)",
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+    marginTop: 2,
+  },
+  serviceCardCategoryText: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 10,
+    color: "#C28E5C",
+  },
+  serviceCardDesc: {
+    fontFamily: "Cairo_400Regular",
+    fontSize: 11,
+    color: "#6B6B6B",
+    lineHeight: 15,
+  },
+  serviceCardSpec: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 11,
+    color: "#4A4A4A",
+  },
+  serviceCardIncludedList: {
+    gap: 2,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.05)",
+    paddingTop: 6,
+  },
+  serviceCardIncludedItem: {
+    fontFamily: "Cairo_400Regular",
+    fontSize: 10.5,
+    color: "#6B6B6B",
+  },
+  serviceCardFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.05)",
+    paddingTop: 8,
+    marginTop: 4,
+  },
+  serviceCardPrice: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 13,
+    color: "#C28E5C",
+  },
+  serviceCardInquiry: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: "#C28E5C",
     alignItems: "center",
     justifyContent: "center",

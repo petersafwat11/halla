@@ -107,7 +107,6 @@
 .time_value {
   color: var(--Content-Text-Text-title-black, #2c2c2c);
   /* Inter-regular-18 */
-  font-family: Inter;
   font-size: 18px;
   font-style: normal;
   font-weight: 400;

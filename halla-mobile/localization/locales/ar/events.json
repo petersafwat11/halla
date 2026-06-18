@@ -39,7 +39,7 @@
     "liveEvents": "مناسبات مباشرة",
     "allEvents": "جميع المناسبات",
     "endedEvents": "مناسبات منتهية",
-    "attendanceRate": "نسبة الحضور"
+    "attendanceRate": "عدد القبول"
   },
   "filters": {
     "all": "الكل",
