@@ -1,49 +1,35 @@
 "use client";
+
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { FiPhone, FiStar, FiMapPin } from "react-icons/fi";
+import { ArrowLeft, ArrowRight, MapPin, Star } from "lucide-react";
 import styles from "./card.module.css";
 
 const MAX_VISIBLE_TAGS = 3;
 
-const ServiceCard = ({ service }) => {
-  const { t } = useTranslation("marketplace");
+const VendorCard = ({ vendor, href }) => {
+  const { t, i18n } = useTranslation("marketplace");
   const [imageError, setImageError] = useState(false);
   const [logoError, setLogoError] = useState(false);
-
-  const {
-    image,
-    logo,
-    rating = 0,
-    reviewsCount = 0,
-    title = "",
-    location = "",
-    tags = [],
-    price = "",
-    vendorName = "",
-    onCallClick,
-  } = service || {};
-
-  const hasImage = !!image && !imageError;
-  const hasLogo = !!logo && !logoError;
-  const hasRating = rating > 0;
-  const initial = (title || vendorName || "?").trim().charAt(0).toUpperCase();
-  const logoInitial = (title || vendorName || "?").trim().charAt(0).toUpperCase();
-  const visibleTags = tags.slice(0, MAX_VISIBLE_TAGS);
-  const extraTagsCount = tags.length - visibleTags.length;
+  const categories = vendor?.categories || [];
+  const visibleTags = categories.slice(0, MAX_VISIBLE_TAGS);
+  const initial = (vendor?.brandName || "?").trim().charAt(0).toUpperCase();
+  const hasRating = Number(vendor?.rating) > 0;
+  const description = vendor?.tagline || vendor?.shortDescription;
+  const ArrowIcon = i18n.language === "ar" ? ArrowLeft : ArrowRight;
 
   return (
     <article className={styles.card}>
-      <div className={styles.imageContainer}>
-        {hasImage ? (
+      <Link href={href} className={styles.imageContainer} aria-label={t("card.viewProfileFor", { name: vendor.brandName })}>
+        {(vendor.presentationImage || vendor.coverImage) && !imageError ? (
           <Image
-            src={image}
-            alt={title}
-            className={styles.image}
+            src={vendor.presentationImage || vendor.coverImage}
+            alt=""
             fill
-            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 320px"
-            style={{ objectFit: "cover" }}
+            sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 320px"
+            className={styles.image}
             onError={() => setImageError(true)}
           />
         ) : (
@@ -54,71 +40,59 @@ const ServiceCard = ({ service }) => {
         )}
 
         <div className={styles.logoBadge}>
-          {hasLogo ? (
-            <Image
-              src={logo}
-              alt=""
-              width={40}
-              height={40}
-              className={styles.logoBadgeImg}
-              onError={() => setLogoError(true)}
-            />
+          {vendor.logo && !logoError ? (
+            <Image src={vendor.logo} alt="" width={48} height={48} className={styles.logoBadgeImg} onError={() => setLogoError(true)} />
           ) : (
-            <span className={styles.logoBadgeFallback}>{logoInitial}</span>
+            <span className={styles.logoBadgeFallback}>{initial}</span>
+          )}
+        </div>
+      </Link>
+
+      <div className={styles.content}>
+        <Link href={href} className={styles.titleLink}>
+          <h2 className={styles.title}>{vendor.brandName}</h2>
+        </Link>
+        {description && <p className={styles.description}>{description}</p>}
+
+        <div className={styles.meta}>
+          {hasRating && (
+            <span className={styles.rating}>
+              <Star className={styles.ratingIcon} aria-hidden="true" />
+              {Number(vendor.rating).toFixed(1)}
+            </span>
+          )}
+          {vendor.location && (
+            <span className={styles.location}>
+              <MapPin size={14} aria-hidden="true" />
+              <span className={styles.locationText}>{vendor.location}</span>
+            </span>
           )}
         </div>
 
-        {hasRating && (
-          <div className={styles.ratingBadge}>
-            <FiStar className={styles.ratingIcon} aria-hidden="true" />
-            <span className={styles.ratingValue}>{rating.toFixed(1)}</span>
-          </div>
-        )}
-      </div>
-
-      <div className={styles.content}>
-        <div className={styles.heading}>
-          <h3 className={styles.title}>{title}</h3>
-        </div>
-
-        {location && (
-          <div className={styles.locationContainer}>
-            <FiMapPin className={styles.locationIcon} aria-hidden="true" />
-            <span className={styles.location}>{location}</span>
-          </div>
-        )}
-
         {visibleTags.length > 0 && (
           <div className={styles.tagsContainer}>
-            {visibleTags.map((tag, index) => (
-              <span key={index} className={styles.tag}>
-                {tag}
-              </span>
-            ))}
-            {extraTagsCount > 0 && (
-              <span className={styles.tagMore}>+{extraTagsCount}</span>
-            )}
+            {visibleTags.map((tag) => <span key={tag} className={styles.tag}>{tag}</span>)}
+            {categories.length > visibleTags.length && <span className={styles.tagMore}>+{categories.length - visibleTags.length}</span>}
           </div>
         )}
 
         <div className={styles.footer}>
-          {price ? (
-            <span className={styles.price}>{price}</span>
-          ) : (
-            <span className={styles.priceOnRequest}>{t("card.priceOnRequest")}</span>
-          )}
-          <button
-            className={styles.callButton}
-            onClick={onCallClick}
-            aria-label={t("card.callNow")}
-          >
-            <FiPhone className={styles.callIcon} aria-hidden="true" />
-            <span>{t("card.callNow")}</span>
-          </button>
+          <div className={styles.priceBlock}>
+            <span className={styles.priceLabel}>{vendor.startingPrice ? t("vendor.startsFrom") : ""}</span>
+            <span className={styles.price}>
+              {vendor.startingPrice
+                ? `${vendor.startingPrice.amount} ${vendor.startingPrice.currency}`
+                : t("card.priceOnRequest")}
+            </span>
+          </div>
+          <Link href={href} className={styles.cta}>
+            <span>{t("card.viewProfile")}</span>
+            <ArrowIcon size={16} aria-hidden="true" />
+          </Link>
         </div>
       </div>
     </article>
   );
 };
 
-export default ServiceCard;
+export default VendorCard;

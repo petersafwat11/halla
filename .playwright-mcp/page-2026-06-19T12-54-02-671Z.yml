@@ -1,0 +1,153 @@
+- generic [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halaa" [ref=e5] [cursor=pointer]:
+        - /url: /ar
+        - img "Halaa" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /en/host/update-event
+          - img [ref=e9]
+          - generic [ref=e12]: EN
+        - button "Notifications (1 unread)" [ref=e76] [cursor=pointer]:
+          - img "notifications" [ref=e15]
+          - generic [ref=e77]: "1"
+        - img "messages" [ref=e16]
+        - button "TestHost إدارة المناسبات" [ref=e78] [cursor=pointer]:
+          - generic [ref=e19]:
+            - generic [ref=e20]:
+              - img [ref=e21]
+              - generic [ref=e79]: TestHost
+            - generic [ref=e23]: إدارة المناسبات
+          - img [ref=e25]
+    - generic [ref=e27]:
+      - navigation [ref=e29]:
+        - list [ref=e30]:
+          - listitem [ref=e31] [cursor=pointer]:
+            - link "لوحة التحكم" [ref=e32]:
+              - /url: /ar/host
+              - img [ref=e33]
+              - generic [ref=e35]: لوحة التحكم
+          - listitem [ref=e36] [cursor=pointer]:
+            - link "المناسبات" [ref=e37]:
+              - /url: /ar/host/events
+              - img [ref=e38]
+              - generic [ref=e40]: المناسبات
+          - listitem [ref=e41] [cursor=pointer]:
+            - link "المدفوعات" [ref=e42]:
+              - /url: /ar/host/payments
+              - img [ref=e43]
+              - generic [ref=e45]: المدفوعات
+          - listitem [ref=e46] [cursor=pointer]:
+            - link "الشكاوى" [ref=e47]:
+              - /url: /ar/host/tickets
+              - img [ref=e48]
+              - generic [ref=e50]: الشكاوى
+          - listitem [ref=e51] [cursor=pointer]:
+            - link "الخدمات" [ref=e52]:
+              - /url: /ar/host/plans
+              - img [ref=e53]
+              - generic [ref=e55]: الخدمات
+          - listitem [ref=e56] [cursor=pointer]:
+            - link "سوق هلا" [ref=e57]:
+              - /url: /ar/host/market-place
+              - img [ref=e58]
+              - generic [ref=e60]: سوق هلا
+          - listitem [ref=e61] [cursor=pointer]:
+            - link "الإعدادات" [ref=e62]:
+              - /url: /ar/host/settings
+              - img [ref=e63]
+              - generic [ref=e66]: الإعدادات
+      - button "تسجيل الخروج" [ref=e68]:
+        - img [ref=e69]
+        - generic [ref=e71]: تسجيل الخروج
+    - generic [ref=e81]:
+      - generic [ref=e85]:
+        - img "back" [ref=e87] [cursor=pointer]
+        - generic [ref=e88]:
+          - heading "تعديل المناسبة" [level=1] [ref=e89]
+          - paragraph [ref=e90]: قم بتعديل تفاصيل المناسبة
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - img [ref=e96]
+          - generic [ref=e99]: تفاصيل المناسبة
+        - generic [ref=e101]:
+          - img [ref=e103]
+          - generic [ref=e106]: الضيوف وفريق العمل
+        - generic [ref=e108]:
+          - generic [ref=e110]: "3"
+          - generic [ref=e112]: تصميم الدعوة
+        - generic [ref=e114]:
+          - generic [ref=e116]: "4"
+          - generic [ref=e118]: قالب الواتساب والردود
+      - generic [ref=e121]:
+        - group [ref=e123]:
+          - generic [ref=e125]:
+            - tablist [ref=e126]:
+              - tab "اختر من القوالب" [selected] [ref=e127] [cursor=pointer]:
+                - img [ref=e128]
+                - generic [ref=e132]: اختر من القوالب
+              - tab "ارفع تصميمك الخاص" [ref=e133] [cursor=pointer]:
+                - img [ref=e134]
+                - generic [ref=e138]: ارفع تصميمك الخاص
+            - generic [ref=e139]:
+              - button "كل الفئات" [ref=e140] [cursor=pointer]
+              - button "زفاف" [ref=e141] [cursor=pointer]
+              - button "خطوبة" [ref=e142] [cursor=pointer]
+              - button "عيد ميلاد" [ref=e143] [cursor=pointer]
+              - button "استقبال مولود" [ref=e144] [cursor=pointer]
+              - button "مناسبة نسائية" [ref=e145] [cursor=pointer]
+              - button "مناسبات عامة" [ref=e146] [cursor=pointer]
+              - button "مؤتمر" [ref=e147] [cursor=pointer]
+            - generic [ref=e148]:
+              - generic [ref=e149]:
+                - img "Template 69fb550534860e1f4dc8c96a" [ref=e152] [cursor=pointer]
+                - img "Template 69fb54ad34860e1f4dc8c95b" [ref=e155] [cursor=pointer]
+                - img "Template 69fb132e6554f97d7ed765b6" [ref=e158] [cursor=pointer]
+                - img "Template 69fb54c834860e1f4dc8c960" [ref=e161] [cursor=pointer]
+                - img "Template 69fb132f6554f97d7ed765bb" [ref=e164] [cursor=pointer]
+                - img "Template 69fb54e534860e1f4dc8c965" [ref=e167] [cursor=pointer]
+                - img "Template 69fb542c34860e1f4dc8c929" [ref=e170] [cursor=pointer]
+                - img "Template 69fb543234860e1f4dc8c92e" [ref=e173] [cursor=pointer]
+                - img "Template 69fb543934860e1f4dc8c933" [ref=e176] [cursor=pointer]
+                - img "Template 69fb544034860e1f4dc8c938" [ref=e179] [cursor=pointer]
+                - img "Template 69fb544a34860e1f4dc8c93d" [ref=e182] [cursor=pointer]
+                - img "Template 69fb545234860e1f4dc8c942" [ref=e185] [cursor=pointer]
+                - img "Template 69fb546e34860e1f4dc8c947" [ref=e188] [cursor=pointer]
+                - img "Template 69fb132f6554f97d7ed765c0" [ref=e191] [cursor=pointer]
+                - img "Template 69fb13306554f97d7ed765c5" [ref=e194] [cursor=pointer]
+                - img "Template 69fb13316554f97d7ed765ca" [ref=e197] [cursor=pointer]
+                - img "Template 69fb13316554f97d7ed765cf" [ref=e200] [cursor=pointer]
+                - img "Template 69fb549534860e1f4dc8c951" [ref=e203] [cursor=pointer]
+                - img "Template 69fb548234860e1f4dc8c94c" [ref=e206] [cursor=pointer]
+                - img "Template 69fb54a134860e1f4dc8c956" [ref=e209] [cursor=pointer]
+              - generic [ref=e210]:
+                - button "السابق" [ref=e211] [cursor=pointer]:
+                  - img [ref=e212]
+                - generic [ref=e214]:
+                  - button "1" [ref=e215] [cursor=pointer]
+                  - button "2" [ref=e216] [cursor=pointer]
+                  - button "3" [ref=e217] [cursor=pointer]
+                  - button "4" [ref=e218] [cursor=pointer]
+                  - button "5" [ref=e219] [cursor=pointer]
+                  - button "6" [ref=e220] [cursor=pointer]
+                  - button "7" [ref=e221] [cursor=pointer]
+                  - button "8" [ref=e222] [cursor=pointer]
+                  - button "9" [ref=e223] [cursor=pointer]
+                  - button "10" [ref=e224] [cursor=pointer]
+                  - button "11" [ref=e225] [cursor=pointer]
+                  - button "12" [ref=e226] [cursor=pointer]
+                  - button "13" [ref=e227] [cursor=pointer]
+                  - button "14" [ref=e228] [cursor=pointer]
+                  - button "15" [ref=e229] [cursor=pointer]
+                  - button "16" [ref=e230] [cursor=pointer]
+                  - button "17" [ref=e231] [cursor=pointer]
+                - button "التالي" [active] [ref=e232] [cursor=pointer]:
+                  - img [ref=e233]
+        - generic [ref=e237]:
+          - button "إلغاء" [ref=e238] [cursor=pointer]
+          - button "حفظ التغييرات" [ref=e239] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e245] [cursor=pointer]:
+    - img [ref=e246]
+  - alert [ref=e249]

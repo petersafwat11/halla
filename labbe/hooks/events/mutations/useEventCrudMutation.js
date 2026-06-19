@@ -4,6 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
 import { buildMutationOptions } from "./_shared";
+import { eventsKeys } from "../keys";
+import { dashboardKeys } from "@/hooks/dashboard/keys";
 
 // Action keys handled by this sub-mutation. Exported so the façade can
 // route requests to the right hook without duplicating the list.
@@ -34,8 +36,10 @@ const buildMutations = (queryClient) => ({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: eventsKeys.myEvents() });
+      queryClient.invalidateQueries({ queryKey: eventsKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: eventsKeys.subscriptionInfo() });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.host() });
     },
   },
 

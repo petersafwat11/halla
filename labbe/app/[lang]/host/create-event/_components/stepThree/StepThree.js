@@ -30,6 +30,7 @@ import {
   useTemplateCategories,
 } from "@/hooks/templates";
 import TemplatesCards from "./templatesCards/TemplatesCards";
+import TemplatePreviewCanvas from "@/components/shared/TemplatePreviewCanvas";
 
 // Server-side limit lives in s3Upload.js (uploadInvitationImage, 10MB).
 // Keep this in sync so the host sees a friendly error before upload.
@@ -90,9 +91,14 @@ const StepThree = () => {
         : null;
     setActiveTemplate({
       ...template,
+      // The full-size original is preferred, while the thumbnail is a
+      // reliable fallback for older template records/storage policies.
+      previewImageUrl: template.imageUrl || template.thumbnailUrl,
       fieldValues: existingValues || {},
       data: existingValues || {},
     });
+    // Never let a newly selected template inherit the prior template's bake.
+    setValue("templateImage", "", { shouldValidate: true });
     setShowTemplateForm(true);
   };
 
@@ -251,12 +257,25 @@ const StepThree = () => {
                 : t("confirmed_design_label")}
             </p>
             <div className={styles.confirmedCardImageWrapper}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={confirmedPreviewUrl}
-                alt={t("uploaded_card_preview")}
-                className={styles.confirmedCardImg}
-              />
+              {mode === "template" &&
+              (checkedTemplate?.imageUrl ||
+                checkedTemplate?.thumbnailUrl ||
+                visualTemplate?.imageUrl ||
+                visualTemplate?.thumbnailUrl) ? (
+                <TemplatePreviewCanvas
+                  template={checkedTemplate || visualTemplate}
+                  data={
+                    visualTemplate?.fieldValues || visualTemplate?.data || {}
+                  }
+                />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={confirmedPreviewUrl}
+                  alt={t("uploaded_card_preview")}
+                  className={styles.confirmedCardImg}
+                />
+              )}
             </div>
             {mode === "template" && checkedTemplate && (
               <p className={styles.confirmedCardTemplateName}>

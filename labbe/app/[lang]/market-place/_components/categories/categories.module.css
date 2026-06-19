@@ -1,0 +1,71 @@
+.strip {
+  display: flex;
+  gap: var(--spacing-8);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-4);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.strip::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--spacing-8);
+  min-height: 44px;
+  padding: 0 var(--spacing-16);
+  border: 1px solid var(--border-gray-250);
+  border-radius: 999px;
+  background: var(--color-natural-50);
+  color: var(--text-description);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.chip svg {
+  flex-shrink: 0;
+  color: var(--color-primary-500);
+  transition: color 0.18s ease;
+}
+
+.chip:hover {
+  border-color: var(--color-primary-300);
+  color: var(--text-body);
+}
+
+.active,
+.active:hover {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-500);
+  color: #fff;
+}
+
+.active svg {
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .strip {
+    margin-inline: calc(var(--spacing-16) * -1);
+    padding-inline: var(--spacing-16);
+  }
+  .chip {
+    min-height: 40px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .chip svg {
+    transition: none;
+  }
+}

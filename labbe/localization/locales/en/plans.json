@@ -7,7 +7,9 @@
     },
     "card": {
       "name": "Cardholder name",
-      "number": "Card number"
+      "number": "Card number",
+      "expiry": "Expiry date",
+      "cvc": "CVC"
     },
     "applepay": {
       "note": "You'll be prompted by Apple Pay on the next step."

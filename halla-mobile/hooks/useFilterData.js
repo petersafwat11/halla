@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRegions, useCitiesByRegion, useDistrictsByCity } from "./locations";
-import { useVendorCategories } from "./queries/useMarketplace";
+import { useVendorCategories } from "./marketplace";
 
 const DEFAULT_FILTERS = {
   serviceType: "all",
@@ -10,6 +10,7 @@ const DEFAULT_FILTERS = {
   minPrice: "",
   maxPrice: "",
   minRating: "",
+  sort: "recommended",
 };
 
 const pickLabel = (lang, ar, en) => (lang === "ar" ? ar || en : en || ar);

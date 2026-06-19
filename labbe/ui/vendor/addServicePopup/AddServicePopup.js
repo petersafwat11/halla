@@ -64,11 +64,12 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
     if (editingService?._raw) {
       reset({
         serviceName: editingService.title || editingService.name || "",
+        serviceNameAr: editingService._raw.nameAr || "",
         serviceType: editingService._raw.serviceType || editingService.category || "",
         description: editingService._raw.description || "",
+        descriptionAr: editingService._raw.descriptionAr || "",
         price:
           editingService._raw.price != null ? String(editingService._raw.price) : "",
-        duration: editingService._raw.duration || "",
         image: undefined,
       });
       setSelectedTags(
@@ -133,11 +134,12 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
   const onSubmit = async (data) => {
     const formData = new FormData();
     formData.append("name", data.serviceName);
+    if (data.serviceNameAr?.trim()) formData.append("nameAr", data.serviceNameAr.trim());
     formData.append("category", data.serviceType);
     formData.append("description", data.description);
+    if (data.descriptionAr?.trim()) formData.append("descriptionAr", data.descriptionAr.trim());
     formData.append("price", String(data.price));
     formData.append("tags", JSON.stringify(selectedTags.map((t) => t.value)));
-    formData.append("duration", (data.duration || "").trim());
     formData.append("included", JSON.stringify(included));
 
     if (data.image && data.image.length > 0) {
@@ -202,14 +204,13 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
             <UploadFile name="image" acceptImages={true} multiple={false} />
           </div>
 
-          <div className={styles.section}>
-            <InputGroup
-              label={t("addServicePopup.serviceName.label")}
-              placeholder={t("addServicePopup.serviceName.placeholder")}
-              name="serviceName"
-              type="text"
-              required
-            />
+          <div className={styles.row}>
+            <div className={styles.inputWrapper}>
+              <InputGroup label={t("addServicePopup.serviceName.label")} placeholder={t("addServicePopup.serviceName.placeholder")} name="serviceName" type="text" required />
+            </div>
+            <div className={styles.inputWrapper} dir="rtl">
+              <InputGroup label={t("addServicePopup.serviceNameAr.label")} placeholder={t("addServicePopup.serviceNameAr.placeholder")} name="serviceNameAr" type="text" />
+            </div>
           </div>
 
           <div className={styles.section}>
@@ -222,14 +223,13 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
             />
           </div>
 
-          <div className={styles.section}>
-            <InputGroup
-              label={t("addServicePopup.description.label")}
-              placeholder={t("addServicePopup.description.placeholder")}
-              name="description"
-              type="textarea"
-              required
-            />
+          <div className={styles.row}>
+            <div className={styles.inputWrapper}>
+              <InputGroup label={t("addServicePopup.description.label")} placeholder={t("addServicePopup.description.placeholder")} name="description" type="textarea" required />
+            </div>
+            <div className={styles.inputWrapper} dir="rtl">
+              <InputGroup label={t("addServicePopup.descriptionAr.label")} placeholder={t("addServicePopup.descriptionAr.placeholder")} name="descriptionAr" type="textarea" />
+            </div>
           </div>
 
           <div className={styles.section}>
@@ -242,14 +242,6 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
             />
           </div>
 
-          <div className={styles.section}>
-            <InputGroup
-              label={t("addServicePopup.duration.label")}
-              placeholder={t("addServicePopup.duration.placeholder")}
-              name="duration"
-              type="text"
-            />
-          </div>
 
           <div className={styles.section}>
             <label className={styles.label}>

@@ -11,10 +11,12 @@ export const usePublicVendors = (params = {}, options = {}) => {
     category,
     regionId,
     cityId,
-    districtIds,
+    districtId,
     minPrice,
     maxPrice,
-    minRating,
+    rating,
+    lang,
+    sort,
     page = 1,
     limit = 12,
   } = params;
@@ -24,10 +26,12 @@ export const usePublicVendors = (params = {}, options = {}) => {
   if (category) queryParams.category = category;
   if (regionId) queryParams.regionId = regionId;
   if (cityId) queryParams.cityId = cityId;
-  if (districtIds?.length) queryParams.districtIds = districtIds.join(",");
+  if (districtId) queryParams.districtId = districtId;
   if (minPrice) queryParams.minPrice = minPrice;
   if (maxPrice) queryParams.maxPrice = maxPrice;
-  if (minRating) queryParams.minRating = minRating;
+  if (rating) queryParams.rating = rating;
+  if (lang) queryParams.lang = lang;
+  if (sort) queryParams.sort = sort;
   queryParams.page = page;
   queryParams.limit = limit;
 
@@ -43,6 +47,19 @@ export const usePublicVendors = (params = {}, options = {}) => {
     ...options,
   });
 };
+
+export const usePublicVendor = (vendorId, options = {}) =>
+  useQuery({
+    queryKey: vendorsKeys.publicDetail(vendorId),
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.vendors.getPublicVendor(vendorId),
+      }),
+    enabled: Boolean(vendorId),
+    staleTime: 2 * 60 * 1000,
+    ...options,
+  });
 
 export const useVendorCategories = (options = {}) => {
   return useQuery({

@@ -216,6 +216,8 @@ module.exports = {
           fieldValues: {},
         };
       } else {
+        const previousTemplateRef = event.visualTemplate?.templateRef?.toString?.();
+        const incomingTemplateRef = settings.visualTemplate.templateRef?.toString?.();
         next = {
           ...(event.visualTemplate?.toObject?.() || event.visualTemplate || {}),
           ...settings.visualTemplate,
@@ -225,6 +227,18 @@ module.exports = {
         // flag off (spread alone would leave isCustomUpload=true).
         if (next.templateRef && !settings.visualTemplate.isCustomUpload) {
           next.isCustomUpload = false;
+        }
+        // A baked image belongs to one exact template + field-value snapshot.
+        // If the template changes without a new upload, retaining the previous
+        // image creates the mismatched-card bug seen by update clients.
+        if (
+          incomingTemplateRef &&
+          previousTemplateRef &&
+          incomingTemplateRef !== previousTemplateRef &&
+          !settings.visualTemplate.bakedImagePath
+        ) {
+          next.bakedImagePath = null;
+          if (!file) event.templateImage = null;
         }
       }
       // Validate fieldValues against Template.fields[] BEFORE save.

@@ -1,0 +1,146 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halaa" [ref=e5] [cursor=pointer]:
+        - /url: /ar
+        - img "Halaa" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /en/host/plans
+          - img [ref=e9]
+          - generic [ref=e12]: EN
+        - button "Notifications (1 unread)" [ref=e229] [cursor=pointer]:
+          - img "notifications" [ref=e15]
+          - generic [ref=e230]: "1"
+        - img "messages" [ref=e16]
+        - button "TestHost إدارة المناسبات" [ref=e231] [cursor=pointer]:
+          - generic [ref=e19]:
+            - generic [ref=e20]:
+              - img [ref=e21]
+              - generic [ref=e232]: TestHost
+            - generic [ref=e23]: إدارة المناسبات
+          - img [ref=e25]
+    - generic [ref=e27]:
+      - navigation [ref=e29]:
+        - list [ref=e30]:
+          - listitem [ref=e31] [cursor=pointer]:
+            - link "لوحة التحكم" [ref=e32]:
+              - /url: /ar/host
+              - img [ref=e33]
+              - generic [ref=e35]: لوحة التحكم
+          - listitem [ref=e36] [cursor=pointer]:
+            - link "المناسبات" [ref=e37]:
+              - /url: /ar/host/events
+              - img [ref=e38]
+              - generic [ref=e40]: المناسبات
+          - listitem [ref=e41] [cursor=pointer]:
+            - link "المدفوعات" [ref=e42]:
+              - /url: /ar/host/payments
+              - img [ref=e43]
+              - generic [ref=e45]: المدفوعات
+          - listitem [ref=e46] [cursor=pointer]:
+            - link "الشكاوى" [ref=e47]:
+              - /url: /ar/host/tickets
+              - img [ref=e48]
+              - generic [ref=e50]: الشكاوى
+          - listitem [ref=e51] [cursor=pointer]:
+            - link "الخدمات" [ref=e52]:
+              - /url: /ar/host/plans
+              - img [ref=e53]
+              - generic [ref=e55]: الخدمات
+          - listitem [ref=e56] [cursor=pointer]:
+            - link "سوق هلا" [ref=e57]:
+              - /url: /ar/host/market-place
+              - img [ref=e58]
+              - generic [ref=e60]: سوق هلا
+          - listitem [ref=e61] [cursor=pointer]:
+            - link "الإعدادات" [ref=e62]:
+              - /url: /ar/host/settings
+              - img [ref=e63]
+              - generic [ref=e66]: الإعدادات
+      - button "تسجيل الخروج" [ref=e68]:
+        - img [ref=e69]
+        - generic [ref=e71]: تسجيل الخروج
+    - generic [ref=e73]:
+      - generic [ref=e74]:
+        - heading "الإضافات" [level=1] [ref=e243]:
+          - img [ref=e76] [cursor=pointer]
+          - text: الإضافات
+        - paragraph [ref=e78]: حسّن باقتك بميزات إضافية اختيارية
+      - generic [ref=e79]:
+        - generic [ref=e244]:
+          - generic [ref=e246]:
+            - heading "الإضافات" [level=3] [ref=e247]
+            - paragraph [ref=e248]: حسّن باقتك بميزات إضافية اختيارية
+          - generic [ref=e249]:
+            - article [ref=e250]:
+              - generic [ref=e251]:
+                - img [ref=e253]
+                - generic [ref=e255]:
+                  - heading "دعوات إضافية" [level=4] [ref=e256]
+                  - paragraph [ref=e257]: أضف دعوات أكثر إلى باقتك
+              - generic [ref=e258]:
+                - button "+10 40ر.س" [ref=e259] [cursor=pointer]:
+                  - generic [ref=e260]: "+10"
+                  - generic [ref=e261]: 40ر.س
+                - button "+20 75ر.س" [ref=e262] [cursor=pointer]:
+                  - generic [ref=e263]: "+20"
+                  - generic [ref=e264]: 75ر.س
+                - button "+30 105ر.س" [ref=e265] [cursor=pointer]:
+                  - generic [ref=e266]: "+30"
+                  - generic [ref=e267]: 105ر.س
+                - button "+40 130ر.س" [ref=e268] [cursor=pointer]:
+                  - generic [ref=e269]: "+40"
+                  - generic [ref=e270]: 130ر.س
+                - button "+50 150ر.س" [ref=e271] [cursor=pointer]:
+                  - generic [ref=e272]: "+50"
+                  - generic [ref=e273]: 150ر.س
+            - article [ref=e274]:
+              - generic [ref=e275]:
+                - img [ref=e277]
+                - generic [ref=e279]:
+                  - heading "تذكيرات إضافية" [level=4] [ref=e280]
+                  - paragraph [ref=e281]: أرسل رسائل تذكير إضافية
+              - generic [ref=e282]:
+                - button "+10 40ر.س" [ref=e283] [cursor=pointer]:
+                  - generic [ref=e284]: "+10"
+                  - generic [ref=e285]: 40ر.س
+                - button "+20 75ر.س" [ref=e286] [cursor=pointer]:
+                  - generic [ref=e287]: "+20"
+                  - generic [ref=e288]: 75ر.س
+                - button "+30 105ر.س" [ref=e289] [cursor=pointer]:
+                  - generic [ref=e290]: "+30"
+                  - generic [ref=e291]: 105ر.س
+                - button "+40 130ر.س" [ref=e292] [cursor=pointer]:
+                  - generic [ref=e293]: "+40"
+                  - generic [ref=e294]: 130ر.س
+                - button "+50 150ر.س" [ref=e295] [cursor=pointer]:
+                  - generic [ref=e296]: "+50"
+                  - generic [ref=e297]: 150ر.س
+          - article [ref=e298]:
+            - generic [ref=e299]:
+              - img [ref=e301]
+              - generic [ref=e303]:
+                - heading "قالب تصميم" [level=4] [ref=e304]
+                - paragraph [ref=e305]: تصميم دعوة احترافي من فريقنا
+            - generic [ref=e306]:
+              - button "تصميم دعوات جاهزة (رجالي/نسائي) 200ر.س" [ref=e307] [cursor=pointer]:
+                - generic [ref=e309]: تصميم دعوات جاهزة (رجالي/نسائي)
+                - generic [ref=e310]: 200ر.س
+              - button "تصميم دعوات رجالية مخصصة 200ر.س" [ref=e311] [cursor=pointer]:
+                - generic [ref=e313]: تصميم دعوات رجالية مخصصة
+                - generic [ref=e314]: 200ر.س
+              - button "تصميم دعوات حسب ثيم المناسبة 275ر.س" [ref=e315] [cursor=pointer]:
+                - generic [ref=e317]: تصميم دعوات حسب ثيم المناسبة
+                - generic [ref=e318]: 275ر.س
+              - button "تصميم دعوات بخلفيات متحركة 350ر.س" [ref=e319] [cursor=pointer]:
+                - generic [ref=e321]: تصميم دعوات بخلفيات متحركة
+                - generic [ref=e322]: 350ر.س
+              - button "تصميم دعوات ثلاثية الأبعاد (3D) 500ر.س" [ref=e323] [cursor=pointer]:
+                - generic [ref=e325]: تصميم دعوات ثلاثية الأبعاد (3D)
+                - generic [ref=e326]: 500ر.س
+        - button "متابعة إلى الملخص" [ref=e327] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e238] [cursor=pointer]:
+    - img [ref=e239]
+  - alert [ref=e242]

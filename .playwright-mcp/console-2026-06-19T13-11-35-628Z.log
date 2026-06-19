@@ -1,0 +1,37 @@
+[     136ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[     200ms] [LOG] [Fast Refresh] done in 165ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[     440ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[     501ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3100/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[     778ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3100/favicon.ico:0
+[    3817ms] [WARNING] The resource http://localhost:3100/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3100/ar/preview-mp:0
+[  232782ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  232818ms] [LOG] [Fast Refresh] done in 47ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  233871ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  233933ms] [LOG] [Fast Refresh] done in 168ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  234312ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  234448ms] [LOG] [Fast Refresh] done in 250ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  237110ms] [WARNING] The resource http://localhost:3100/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3100/ar/preview-mp:0
+[  242007ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  242047ms] [LOG] [Fast Refresh] done in 21ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  242465ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3100/ar/preview-mp?_rsc=92G1_GvVgNnQs_c4:0
+[  243240ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  244835ms] [LOG] [Fast Refresh] done in 1698ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  244942ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  244975ms] [LOG] [Fast Refresh] done in 140ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  245077ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  245244ms] [LOG] [Fast Refresh] done in 268ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  245438ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3100/ar/preview-mp?_rsc=92G1_GvVgNnQs_c4:0
+[  246773ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[  246836ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3100/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[  247119ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3100/favicon.ico:0
+[  249496ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  249534ms] [LOG] [Fast Refresh] done in 38ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  250172ms] [WARNING] The resource http://localhost:3100/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3100/ar/preview-mp:0
+[  253625ms] [WARNING] The resource http://localhost:3100/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3100/ar/preview-mp:0
+[  259434ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[  259509ms] [LOG] [Fast Refresh] done in 181ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[  262709ms] [WARNING] The resource http://localhost:3100/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3100/ar/preview-mp:0
+[  288320ms] [WARNING] The resource http://localhost:3100/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3100/ar/preview-mp:0
+[  291372ms] [WARNING] Image with src "/marketplace/hero.jpg" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:1014
+[  294336ms] [WARNING] The resource http://localhost:3100/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3100/ar/preview-mp:0

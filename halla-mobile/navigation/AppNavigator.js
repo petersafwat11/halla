@@ -27,6 +27,7 @@ import AccountSettingsScreen from "../screens/host/AccountSettingsScreen";
 import NotificationSettingsScreen from "../screens/common/NotificationSettingsScreen";
 import TicketsScreen from "../screens/common/TicketsScreen";
 import Marketplace from "../screens/common/Marketplace";
+import VendorPublicProfileScreen from "../screens/common/VendorPublicProfileScreen";
 import EventsScreen from "../screens/host/EventsScreen";
 import CreateEventScreen from "../screens/common/CreateEventScreen";
 import EventDetailsScreen from "../screens/common/EventDetailsScreen";
@@ -304,6 +305,7 @@ function HostStack() {
       <Stack.Screen name="Invitation" component={InvitationScreen} />
       <Stack.Screen name="PaymentReturn" component={PaymentReturnScreen} />
       <Stack.Screen name="Payments" component={PaymentsScreen} />
+      <Stack.Screen name="VendorPublicProfile" component={VendorPublicProfileScreen} />
     </Stack.Navigator>
   );
 }
@@ -322,6 +324,7 @@ function VendorStack() {
       <Stack.Screen name="VendorSettings" component={VendorSettingsScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="Invitation" component={InvitationScreen} />
+      <Stack.Screen name="VendorPublicProfile" component={VendorPublicProfileScreen} />
     </Stack.Navigator>
   );
 }

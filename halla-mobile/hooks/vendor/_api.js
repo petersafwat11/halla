@@ -39,10 +39,11 @@ const _resolveMimeType = (image) => {
 const buildServiceFormData = (data) => {
   const formData = new FormData();
   if (data.name) formData.append("name", data.name);
+  if (data.nameAr) formData.append("nameAr", data.nameAr);
   if (data.category) formData.append("category", data.category);
   if (data.description) formData.append("description", data.description);
+  if (data.descriptionAr) formData.append("descriptionAr", data.descriptionAr);
   if (data.price != null) formData.append("price", String(data.price));
-  if (data.duration != null) formData.append("duration", String(data.duration));
   if (Array.isArray(data.included)) {
     formData.append("included", JSON.stringify(data.included));
   }

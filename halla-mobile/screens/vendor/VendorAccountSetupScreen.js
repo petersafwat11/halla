@@ -212,6 +212,10 @@ const VendorAccountSetupScreen = () => {
           <ServiceDetailsForm
             data={{
               serviceDescription: vendorData?.roleData?.serviceDescription || "",
+              taglineAr: vendorData?.roleData?.taglineAr || "",
+              taglineEn: vendorData?.roleData?.taglineEn || "",
+              aboutAr: vendorData?.roleData?.aboutAr || "",
+              aboutEn: vendorData?.roleData?.aboutEn || "",
               nationalId: vendorData?.roleData?.nationalId || "",
               nationalIdImage: vendorData?.roleData?.nationalIdImage,
               commercialRecordImage: vendorData?.roleData?.commercialRecordImage,
@@ -240,6 +244,7 @@ const VendorAccountSetupScreen = () => {
               facebook: vendorData?.roleData?.socialLinks?.facebook || "",
               twitter: vendorData?.roleData?.socialLinks?.twitter || "",
               tiktok: vendorData?.roleData?.socialLinks?.tiktok || "",
+              whatsapp: vendorData?.roleData?.socialLinks?.whatsapp || "",
             }}
             onSave={(data) => saveVendorSection(data)}
             loading={isSaving}

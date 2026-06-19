@@ -16,6 +16,7 @@ import { API_PATHS } from "@halla/shared/api/paths";
 // Backend base URL. Production VPS (Contabo, nginx → labbe-backend on :8000)
 // — see DEPLOYMENT_RECORD_2026-05-14.md
 export const API_BASE_URL = "https://halaa.com.sa/api/v2";
+export const WEB_BASE_URL = "https://halaa.com.sa";
 
 export const ENDPOINTS = {
   AUTH: {
@@ -142,6 +143,7 @@ export const ENDPOINTS = {
   VENDORS: {
     CATEGORIES: API_PATHS.vendors.getCategories,
     PUBLIC: API_PATHS.vendors.getPublicVendors,
+    PUBLIC_BY_ID: API_PATHS.vendors.getPublicVendor,
   },
 
   SERVICES: {
@@ -287,5 +289,6 @@ export const ENDPOINTS = {
 
 export default {
   API_BASE_URL,
+  WEB_BASE_URL,
   ENDPOINTS,
 };

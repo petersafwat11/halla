@@ -17,6 +17,7 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
       facebook: data?.facebook || "",
       twitter: data?.twitter || "",
       tiktok: data?.tiktok || "",
+      whatsapp: data?.whatsapp || "",
     },
   });
 
@@ -27,8 +28,9 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
       facebook: data?.facebook || "",
       twitter: data?.twitter || "",
       tiktok: data?.tiktok || "",
+      whatsapp: data?.whatsapp || "",
     });
-  }, [data?.website, data?.instagram, data?.facebook, data?.twitter, data?.tiktok]);
+  }, [data?.website, data?.instagram, data?.facebook, data?.twitter, data?.tiktok, data?.whatsapp]);
 
   const onSubmit = (formValues) => {
     onSave({ socialLinks: formValues });
@@ -44,6 +46,15 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
           <Text style={styles.sectionDescription}>
             {t("settings.additionalLinks.description")}
           </Text>
+
+          <View style={styles.inputGroup}>
+            <TextInput
+              name="whatsapp"
+              label={t("settings.additionalLinks.whatsapp", "WhatsApp")}
+              placeholder={t("settings.additionalLinks.whatsappPlaceholder", "+966 5XX XXX XXXX")}
+              keyboardType="phone-pad"
+            />
+          </View>
 
           <View style={styles.inputGroup}>
             <TextInput

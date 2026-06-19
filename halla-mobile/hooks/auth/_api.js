@@ -62,6 +62,9 @@ const _buildVendorFormData = (vendorData) => {
   if (serviceData?.serviceDescription) {
     formData.append("serviceDescription", serviceData.serviceDescription);
   }
+  ["taglineAr", "taglineEn", "aboutAr", "aboutEn"].forEach((field) => {
+    if (serviceData?.[field]) formData.append(field, serviceData[field]);
+  });
   if (serviceData?.otherData) formData.append("otherData", serviceData.otherData);
   if (serviceData?.serviceLocation && serviceData.serviceLocation.regionId) {
     formData.append("serviceLocation", JSON.stringify(serviceData.serviceLocation));

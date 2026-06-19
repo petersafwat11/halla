@@ -75,6 +75,25 @@ router.get('/public', validateZod(getPublicVendorsQuerySchema, 'query'), vendors
 
 /**
  * @swagger
+ * /vendors/public/{vendorId}:
+ *   get:
+ *     summary: Get a public vendor profile
+ *     description: Returns one approved vendor and their active public services using an allowlisted public DTO.
+ *     tags: [Vendors]
+ *     security: []
+ *     parameters:
+ *       - in: path
+ *         name: vendorId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Vendor profile retrieved successfully }
+ *       404: { description: Vendor not found }
+ */
+router.get('/public/:vendorId', vendorsController.getPublicVendor);
+
+/**
+ * @swagger
  * /vendors/categories:
  *   get:
  *     summary: Get vendor categories

@@ -20,13 +20,25 @@ exports.getPublicVendors = catchAsync(async (req, res) => {
   if (req.query.category) filters.category = req.query.category;
   if (req.query.regionId) filters.regionId = req.query.regionId;
   if (req.query.cityId) filters.cityId = req.query.cityId;
-  if (req.query.districtIds) filters.districtIds = req.query.districtIds;
-  if (req.query.minPrice) filters.minPrice = req.query.minPrice;
-  if (req.query.maxPrice) filters.maxPrice = req.query.maxPrice;
-  if (req.query.minRating) filters.minRating = req.query.minRating;
+  if (req.query.districtId) filters.districtId = req.query.districtId;
+  if (req.query.minPrice !== undefined) filters.minPrice = req.query.minPrice;
+  if (req.query.maxPrice !== undefined) filters.maxPrice = req.query.maxPrice;
+  if (req.query.rating !== undefined) filters.rating = req.query.rating;
+  if (req.query.sort) filters.sort = req.query.sort;
 
-  const result = await vendorsService.getPublicVendors(filters, { page, limit });
+  const language = req.query.lang || req.headers['accept-language'];
+  const result = await vendorsService.getPublicVendors(filters, { page, limit, language });
   sendPaginated(res, result.data, result.pagination);
+});
+
+/**
+ * Get one approved public vendor and their active public services.
+ * GET /api/v2/vendors/public/:vendorId
+ */
+exports.getPublicVendor = catchAsync(async (req, res) => {
+  const language = req.query.lang || req.headers['accept-language'];
+  const result = await vendorsService.getPublicVendorById(req.params.vendorId, { language });
+  sendSuccess(res, result);
 });
 
 /**

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -40,6 +40,25 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const mapRef = useRef(null);
   const searchTimeoutRef = useRef(null);
+
+  // Update forms hydrate after mount. Keep the modal marker/region aligned
+  // with the database value instead of retaining the create-flow default.
+  useEffect(() => {
+    if (!value) return;
+    const latitude = Number(value.latitude);
+    const longitude = Number(value.longitude);
+    setSelectedLocation(value);
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      const nextRegion = {
+        latitude,
+        longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+      setRegion(nextRegion);
+      if (isOpen) mapRef.current?.animateToRegion(nextRegion);
+    }
+  }, [isOpen, value]);
 
   const searchLocation = async (query) => {
     if (!query || query.trim().length < 3) {

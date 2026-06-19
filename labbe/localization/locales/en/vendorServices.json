@@ -58,12 +58,20 @@
       "placeholder": "Choose Service Type"
     },
     "serviceName": {
-      "label": "Service Name",
+      "label": "Service name (English)",
       "placeholder": "Enter Service Name"
     },
+    "serviceNameAr": {
+      "label": "Service name (Arabic)",
+      "placeholder": "أدخل اسم الخدمة بالعربية"
+    },
     "description": {
-      "label": "Service Description",
+      "label": "Service description (English)",
       "placeholder": "Enter Service Description"
+    },
+    "descriptionAr": {
+      "label": "Service description (Arabic)",
+      "placeholder": "أدخل وصف الخدمة بالعربية"
     },
     "price": {
       "label": "Service Price",

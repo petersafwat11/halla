@@ -30,6 +30,7 @@ import { handleError } from "@/services/errorHandlingService";
 const CreateEventV2 = () => {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showStaffPopup, setShowStaffPopup] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
   const router = useRouter();
 
   // Use unified event form hook
@@ -73,11 +74,17 @@ const CreateEventV2 = () => {
         void data;
 
         const eventPayload = buildEventPayload();
+        // Once the backend accepts this submission, the subscription query can
+        // legitimately report that the plan is exhausted. Keep the wizard in
+        // its completion state until navigation unmounts it instead of letting
+        // that refresh replace the page with the limit-reached view.
+        setIsCompleting(true);
         await createEvent.mutateAsync(eventPayload);
 
         toastUtils.success(t("success.event_created"));
-        router.push(`/${locale}/host`);
+        router.replace(`/${locale}/host`);
       } catch (error) {
+        setIsCompleting(false);
         handleError(error, t, { fallbackMessage: "errors.create_failed" });
       }
     },
@@ -166,14 +173,14 @@ const CreateEventV2 = () => {
   };
 
   // Show loading state while checking subscription
-  if (subscriptionLoading) {
+  if (subscriptionLoading && !isCompleting) {
     return (
       <SimpleLoading message={t("loading.checking_subscription")} />
     );
   }
 
   // Show event limit reached if user cannot create events
-  if (!canCreateEvent && subscriptionInfo) {
+  if (!isCompleting && !canCreateEvent && subscriptionInfo) {
     return (
       <div className={styles.page_container}>
         <div className={styles.main_content}>

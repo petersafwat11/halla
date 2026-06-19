@@ -1,23 +1,5 @@
 const { z } = require('zod');
-
-const SERVICE_CATEGORIES = [
-  'eventPlanning',
-  'mediaProduction',
-  'giftsAndGiveaways',
-  'foodAndBeverages',
-  'beautyAndFashion',
-  'logisticsAndDelivery',
-  'corporateServices',
-  'supportServices',
-  'technicalServices',
-  'soundLightingEntertainment',
-  'hallsAndVenues',
-];
-
-const districtIdsCsv = z
-  .string()
-  .optional()
-  .transform((v) => (v && v.trim() !== '' ? v : undefined));
+const { SERVICE_CATEGORIES } = require('../../shared/constants');
 
 const getPublicVendorsQuerySchema = z
   .object({
@@ -27,10 +9,12 @@ const getPublicVendorsQuerySchema = z
     category: z.enum(SERVICE_CATEGORIES).optional(),
     regionId: z.coerce.number().int().optional(),
     cityId: z.coerce.number().int().optional(),
-    districtIds: districtIdsCsv,
+    districtId: z.coerce.number().int().optional(),
     minPrice: z.coerce.number().min(0).optional(),
     maxPrice: z.coerce.number().min(0).optional(),
-    minRating: z.coerce.number().min(0).max(5).optional(),
+    rating: z.coerce.number().min(0).max(5).optional(),
+    sort: z.enum(['recommended', 'rating', 'price_asc', 'price_desc', 'newest']).optional(),
+    lang: z.enum(['ar', 'en']).optional(),
   })
   .partial();
 

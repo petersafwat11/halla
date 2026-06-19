@@ -13,6 +13,12 @@ const VendorStep5SocialLinks = () => {
 
       <SectionCard title={t('signupForm.vendor.socialLinks.sectionTitle')} icon="share-social-outline">
         <TextInput
+          name="socialLinks.whatsapp"
+          label={t('signupForm.vendor.socialLinks.whatsapp', 'WhatsApp')}
+          placeholder={t('signupForm.vendor.socialLinks.whatsappPlaceholder', '+966 5XX XXX XXXX')}
+          keyboardType="phone-pad"
+        />
+        <TextInput
           name="socialLinks.instagram"
           label={t('signupForm.vendor.socialLinks.instagram')}
           placeholder={t('signupForm.vendor.socialLinks.instagramPlaceholder')}

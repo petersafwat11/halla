@@ -93,8 +93,10 @@ const VendorHomeScreen = ({ navigation }) => {
     (formData) => {
       const payload = {
         name: formData.serviceName,
+        nameAr: formData.serviceNameAr,
         category: formData.serviceType,
         description: formData.description,
+        descriptionAr: formData.descriptionAr,
         price: formData.price,
         tags: formData.tags,
         image: formData.serviceImage,

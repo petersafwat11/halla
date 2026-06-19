@@ -32,6 +32,11 @@
     "minPrice": "From",
     "maxPrice": "To",
     "rating": "Rating",
+    "sort": "Sort by",
+    "sortRecommended": "Recommended",
+    "sortRating": "Highest rated",
+    "sortPrice": "Lowest starting price",
+    "sortNewest": "Newest",
     "allRatings": "All",
     "4stars": "4+ stars",
     "3stars": "3+ stars",
@@ -43,6 +48,8 @@
     "defaultName": "Service",
     "defaultLocation": "Saudi Arabia",
     "callNow": "Call Now",
+    "viewProfile": "View details",
+    "viewProfileFor": "View {{name}} profile",
     "moreInfo": "More Info",
     "users": "users",
     "sar": "SAR",
@@ -56,11 +63,31 @@
     "whatsapp": "WhatsApp",
     "aboutVendor": "About Vendor",
     "portfolio": "Portfolio",
-    "ourServices": "Our Services"
+    "ourServices": "Our Services",
+    "backToMarketplace": "Back to marketplace",
+    "share": "Share",
+    "meetVendor": "Meet {{name}}",
+    "servicesHeadline": "Services for your occasion",
+    "portfolioHeadline": "Selected work",
+    "contactHeadline": "Contact the vendor",
+    "contactDescription": "Contact the vendor directly to ask about availability, pricing, and your occasion.",
+    "website": "Website",
+    "noServices": "This vendor has not published services yet.",
+    "askAboutService": "Ask about service",
+    "requestService": "Request service",
+    "requestQuote": "Request a quote",
+    "email": "Email"
+  },
+  "results": {
+    "title": "{{count}} vendors",
+    "subtitle": "Approved providers for your occasion"
   },
   "noResults": "No results found",
   "loading": "Loading...",
   "errors": {
-    "loadFailed": "Failed to load vendors"
+    "loadFailed": "Failed to load vendors",
+    "profileLoadFailed": "This vendor profile is unavailable",
+    "retry": "Try again",
+    "categoriesLoadFailed": "Failed to load categories"
   }
 }

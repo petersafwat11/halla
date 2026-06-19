@@ -5,26 +5,26 @@ import { useTranslation } from "react-i18next";
 import { FaLock, FaApple } from "react-icons/fa";
 import styles from "./PaymentMethodSelector.module.css";
 
-// --- High-Quality SVG Icons ---
-const VisaLogo = ({ height = 24 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 7.5 22 8.5" width={Math.round(height * (22 / 8.5))} height={height} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-    <path fill="#1A1F71" d="M16.5 15.6h2.2l1.4-7.3h-2.2zM22 8.3c-.5-.2-1.2-.4-2.1-.4-2.2 0-3.8 1.2-3.8 2.9 0 1.2 1.1 1.9 2 2.4.9.4 1.2.7 1.2 1.1 0 .6-.7.9-1.3.9-.9 0-1.4-.1-2.1-.5l-.3-.1-.3 2c.5.2 1.5.5 2.5.5 2.3 0 3.9-1.2 3.9-3 0-1-.6-1.8-1.9-2.4-.9-.4-1.4-.7-1.4-1.2 0-.4.4-.8 1.3-.8.8 0 1.3.2 1.7.3l.2.1.3-2zM11.7 8.3H9.5c-.7 0-1.2.2-1.4.9l-3.3 6.4h2.4l.5-1.3h2.9l.3 1.3h2.1zm-3.2 5.5l1-2.6.5 2.6H8.5zM2.9 8.3L.6 9.8l-.02.09c1.4.4 2.7 1.2 3.6 2.1l.02-.08L2.1 8.3H0z" />
-  </svg>
-);
+// --- Card brand logos (official SVGs served from /public/svg/payment) ---
+const CARD_BRANDS = {
+  visa: { src: "/svg/payment/visa.svg", alt: "Visa" },
+  mastercard: { src: "/svg/payment/mastercard.svg", alt: "Mastercard" },
+  mada: { src: "/svg/payment/mada.svg", alt: "mada" },
+};
 
-const MastercardLogo = ({ height = 24 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="4 10 40 28" width={Math.round(height * (40 / 28))} height={height} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-    <circle cx="18" cy="24" r="14" fill="#eb001b" />
-    <circle cx="30" cy="24" r="14" fill="#ff5f00" fillOpacity="0.8" />
-  </svg>
-);
+const CARD_BRAND_ORDER = ["visa", "mastercard", "mada"];
 
-const MadaLogo = ({ height = 24 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="2 10 44 20" width={Math.round(height * (44 / 20))} height={height} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-    <path fill="#0075A0" d="M12.5,23.3C10.2,23.3,8,22,6.9,19.9c2.1-3.6,5.9-6,10.2-6c3.2,0,6.1,1.3,8.2,3.4l2.4-2.4C24.7,11.9,20.8,10,17.1,10C10.8,10,5.3,13.8,2.7,19.3c-0.2,0.4-0.2,0.8,0,1.2C5.3,26,10.8,29.8,17.1,29.8c3.7,0,7.6-1.9,10.6-4.9l-2.4-2.4C23.2,22,20.3,23.3,12.5,23.3z" />
-    <path fill="#54B948" d="M33.6,10c-3.7,0-7.6,1.9-10.6,4.9l2.4,2.4c2.1-2.1,5-3.4,12.8-3.4c2.3,0,4.5,1.3,5.6,3.4c-2.1,3.6-5.9,6-10.2,6c-3.2,0-6.1-1.3-8.2-3.4l-2.4,2.4c3,3,6.9,4.9,10.6,4.9c6.3,0,11.8-3.8,14.4-9.3c0.2-0.4,0.2-0.8,0-1.2C45.4,13.8,39.9,10,33.6,10z" />
-  </svg>
-);
+// A single brand logo normalized inside a uniform white "chip" so the three
+// logos (which have very different native aspect ratios) read consistently.
+const BrandChip = ({ brand }) => {
+  const meta = CARD_BRANDS[brand];
+  if (!meta) return null;
+  return (
+    <span className={styles.brandChip}>
+      <img src={meta.src} alt={meta.alt} className={styles.brandImg} loading="lazy" />
+    </span>
+  );
+};
 
 const StcPayLogo = ({ height = 24 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" width={Math.round(height * (100 / 40))} height={height} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
@@ -38,7 +38,16 @@ const ApplePayLogo = () => (
 );
 
 const METHODS = [
-  { key: "creditcard", Logo: () => <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><VisaLogo height={24} /><MastercardLogo height={24} /><MadaLogo height={24} /></div> },
+  {
+    key: "creditcard",
+    Logo: () => (
+      <div className={styles.brandChips}>
+        {CARD_BRAND_ORDER.map((brand) => (
+          <BrandChip key={brand} brand={brand} />
+        ))}
+      </div>
+    ),
+  },
   { key: "applepay",   Logo: ApplePayLogo },
   { key: "stcpay",     Logo: () => <StcPayLogo height={24} /> },
 ];
@@ -87,7 +96,8 @@ export default function PaymentMethodSelector({
       setCard(cardData);
       if (cardData.month && cardData.year) {
         const yy = cardData.year.toString().slice(-2);
-        setExpiryText(`${cardData.month}/${yy}`);
+        // Display order is YY/MM (year first), matching the input mask.
+        setExpiryText(`${yy}/${cardData.month}`);
       }
     }
   }, [cardData]);
@@ -111,35 +121,33 @@ export default function PaymentMethodSelector({
   };
 
   const handleExpiryChange = (e) => {
-    let val = e.target.value;
-    
-    if (val.length > 5) return;
+    const input = e.target.value;
+    // True when the edit shrank the field (backspace / delete / cut). Drives
+    // whether we auto-insert the "/" at the 2-digit boundary — re-adding it
+    // while deleting is what traps the caret and makes the old field "buggy".
+    const deleting = input.length < expiryText.length;
 
-    const clean = val.replace(/\D/g, "");
-    
-    let formatted = "";
-    if (clean.length > 0) {
-      if (clean.length <= 2) {
-        formatted = clean;
-        if (clean.length === 2 && (val.endsWith('/') || val.length > expiryText.length)) {
-          formatted = `${clean}/`;
-        }
-      } else {
-        formatted = `${clean.slice(0, 2)}/${clean.slice(2, 4)}`;
-      }
-    }
-    
-    if (expiryText.endsWith('/') && val === expiryText.slice(0, -1)) {
-      formatted = clean.slice(0, -1);
+    const digits = input.replace(/\D/g, "").slice(0, 4);
+
+    let formatted = digits;
+    if (digits.length >= 3) {
+      formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    } else if (digits.length === 2 && !deleting) {
+      formatted = `${digits}/`;
     }
 
     setExpiryText(formatted);
 
-    const month = clean.slice(0, 2);
-    const yy = clean.slice(2, 4);
-    const year = yy ? `20${yy}` : "";
-    
-    const next = { ...card, month, year };
+    // Display mask is YY/MM: first pair is the 2-digit year, second the month.
+    // The stored contract stays month="MM" + year="20YY" so checkout/Moyasar
+    // receive the real month and full year unchanged.
+    const yy = digits.slice(0, 2);
+    const mm = digits.slice(2, 4);
+    const next = {
+      ...card,
+      month: mm,
+      year: yy.length === 2 ? `20${yy}` : "",
+    };
     setCard(next);
     onCardChange?.(next);
   };
@@ -153,16 +161,13 @@ export default function PaymentMethodSelector({
   const activeCardBrand = detectCardBrand(card.number || "");
 
   const renderCardInputBrandIcon = () => {
-    switch (activeCardBrand) {
-      case "visa":
-        return <VisaLogo height={20} />;
-      case "mastercard":
-        return <MastercardLogo height={20} />;
-      case "mada":
-        return <MadaLogo height={20} />;
-      default:
-        return null;
-    }
+    const meta = CARD_BRANDS[activeCardBrand];
+    if (!meta) return null;
+    return (
+      <span className={styles.fieldBrandBox}>
+        <img src={meta.src} alt={meta.alt} className={styles.brandImg} />
+      </span>
+    );
   };
 
   return (
@@ -235,7 +240,7 @@ export default function PaymentMethodSelector({
               </label>
               <input
                 className={`${styles.input} ${errors.expiry ? styles.inputError : ""}`}
-                placeholder="MM/YY"
+                placeholder="YY/MM"
                 maxLength={5}
                 inputMode="numeric"
                 value={expiryText}

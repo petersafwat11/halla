@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
+import { FiEye } from "react-icons/fi";
 import { useEventMutation } from "@/hooks/events";
 import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import { useRouter, useParams } from "next/navigation";
@@ -104,7 +105,7 @@ export const useEventsTableActions = ({ t }) => {
   const getRowActions = (row) => [
     {
       type: "dropdown",
-      icon: "/svg/events/eye.svg",
+      icon: <FiEye size={16} />,
       text: t("table.actions.show", "عرض"),
       onClick: () => router.push(`/${lang}/host/events/${row.id}`),
     },

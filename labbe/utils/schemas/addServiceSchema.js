@@ -39,12 +39,24 @@ export const addServiceSchema = (t = idT) =>
       .trim()
       .min(2, t("addServicePopup.validation.serviceNameMinLength"))
       .max(100, t("addServicePopup.validation.serviceNameMaxLength")),
+    serviceNameAr: z
+      .string()
+      .trim()
+      .max(100, t("addServicePopup.validation.serviceNameMaxLength"))
+      .optional()
+      .or(z.literal("")),
     serviceType: z.string().min(1, t("addServicePopup.validation.serviceTypeRequired")),
     description: z
       .string()
       .trim()
       .min(10, t("addServicePopup.validation.descriptionMinLength"))
       .max(1000, t("addServicePopup.validation.descriptionMaxLength")),
+    descriptionAr: z
+      .string()
+      .trim()
+      .max(1000, t("addServicePopup.validation.descriptionMaxLength"))
+      .optional()
+      .or(z.literal("")),
     price: z
       .union([z.string(), z.number()])
       .refine((v) => v !== "" && v !== null && v !== undefined, {
@@ -53,21 +65,16 @@ export const addServiceSchema = (t = idT) =>
       .refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, {
         message: t("addServicePopup.validation.priceInvalid"),
       }),
-    duration: z
-      .string()
-      .trim()
-      .max(100, t("addServicePopup.validation.durationMaxLength"))
-      .optional()
-      .or(z.literal("")),
     image: z.any().optional(),
   });
 
 export const addServiceDefaultValues = {
   serviceName: "",
+  serviceNameAr: "",
   serviceType: "",
   description: "",
+  descriptionAr: "",
   price: "",
-  duration: "",
   image: undefined,
 };
 

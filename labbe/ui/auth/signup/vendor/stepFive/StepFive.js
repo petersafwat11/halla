@@ -27,6 +27,13 @@ const StepFive = ({ goToPreviousStep }) => {
           />
           <div className={styles.inputs}>
             <InputGroup
+              label={t("signupForm.vendor.otherLinksAndData.whatsapp.label", "WhatsApp number")}
+              type="tel"
+              placeholder={t("signupForm.vendor.otherLinksAndData.whatsapp.placeholder", "+966 5XX XXX XXXX")}
+              name="otherLinksAndData.whatsapp"
+              iconPath="auth/link.svg"
+            />
+            <InputGroup
               label={t(
                 "signupForm.vendor.otherLinksAndData.instagramLink.label"
               )}

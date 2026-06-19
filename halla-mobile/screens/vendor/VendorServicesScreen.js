@@ -53,10 +53,11 @@ const VendorServicesScreen = ({ navigation }) => {
       category: s.category,
       // Raw fields for edit pre-fill
       _raw: {
+        nameAr: s.nameAr || "",
         description: s.description || "",
+        descriptionAr: s.descriptionAr || "",
         serviceType: s.category || "",
         price: s.price != null ? String(s.price) : "",
-        duration: s.duration || "",
         included: s.included || [],
         tags: s.tags || [],
         image: s.image,
@@ -114,10 +115,11 @@ const VendorServicesScreen = ({ navigation }) => {
     (formData) => {
       const payload = {
         name: formData.serviceName,
+        nameAr: formData.serviceNameAr,
         category: formData.serviceType,
         description: formData.description,
+        descriptionAr: formData.descriptionAr,
         price: formData.price,
-        duration: formData.duration,
         included: formData.included,
         image: formData.serviceImage,
         tags: formData.tags,

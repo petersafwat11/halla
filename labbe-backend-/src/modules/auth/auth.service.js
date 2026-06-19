@@ -34,7 +34,7 @@ const RefreshToken = require('../../../models/RefreshTokenModel');
 const otpService = require('./otp.service');
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
-const { normalizePhoneNumber } = require('../../shared/utils/phone');
+const { normalizePhoneNumber, validateAndFormatPhone } = require('../../shared/utils/phone');
 const { processUploadedFiles, extractStoredRef } = require('../../shared/utils/s3Upload');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
@@ -528,14 +528,21 @@ class AuthService {
       }
     }
 
-    // validate social links as URLs
+    // Validate social links as URLs; WhatsApp is a phone number, not a URL.
     if (socialLinks && typeof socialLinks === 'object') {
-      const URL_FIELDS = ['instagram', 'facebook', 'tiktok', 'twitter', 'website', 'whatsapp'];
+      const URL_FIELDS = ['instagram', 'facebook', 'tiktok', 'twitter', 'website'];
       const urlRegex = /^https?:\/\/.+/i;
       for (const field of URL_FIELDS) {
         if (socialLinks[field] && !urlRegex.test(socialLinks[field])) {
           throw new ValidationError(`Invalid URL for social link: ${field}`);
         }
+      }
+      if (socialLinks.whatsapp) {
+        const parsedWhatsApp = validateAndFormatPhone(socialLinks.whatsapp);
+        if (!parsedWhatsApp.isValid) {
+          throw new ValidationError(parsedWhatsApp.error || 'Invalid WhatsApp number');
+        }
+        socialLinks.whatsapp = parsedWhatsApp.formatted;
       }
     }
 
@@ -544,6 +551,10 @@ class AuthService {
       ownerFullName,
       vendorStatus: VENDOR_STATUS.PENDING,
       serviceDescription: userData.serviceDescription || '',
+      taglineAr: userData.taglineAr || '',
+      taglineEn: userData.taglineEn || '',
+      aboutAr: userData.aboutAr || '',
+      aboutEn: userData.aboutEn || '',
       serviceCategories,
       serviceLocation,
       socialLinks,

@@ -64,6 +64,10 @@ export const serviceDetailsSchema = (t) => ({
     { name: "commercialRecordImage", type: FIELD_TYPES.FILE, labelKey: "serviceDetails.commercialRegister", labelAr: "السجل التجاري", required: false, accept: "image/*,application/pdf", multiple: false },
     { name: "nationalId", type: FIELD_TYPES.TEXT, labelKey: "serviceDetails.nationalIdLabel", labelAr: "رقم الهوية", placeholderKey: "serviceDetails.nationalIdPlaceholder", placeholderAr: "أدخل رقم الهوية", required: false },
     { name: "serviceDescription", type: FIELD_TYPES.TEXTAREA, labelKey: "serviceDetails.serviceDescription", labelAr: "وصف الخدمة", placeholderKey: "serviceDetails.serviceDescriptionPlaceholder", placeholderAr: "أدخل وصف الخدمة", required: false },
+    { name: "taglineAr", type: FIELD_TYPES.TEXT, labelKey: "serviceDetails.taglineAr", labelAr: "النبذة القصيرة بالعربية", required: false },
+    { name: "taglineEn", type: FIELD_TYPES.TEXT, labelKey: "serviceDetails.taglineEn", labelAr: "النبذة القصيرة بالإنجليزية", required: false },
+    { name: "aboutAr", type: FIELD_TYPES.TEXTAREA, labelKey: "serviceDetails.aboutAr", labelAr: "نبذة تفصيلية بالعربية", required: false },
+    { name: "aboutEn", type: FIELD_TYPES.TEXTAREA, labelKey: "serviceDetails.aboutEn", labelAr: "نبذة تفصيلية بالإنجليزية", required: false },
   ],
   locationFields: {
     region: { name: "regionId", labelKey: "serviceDetails.region", labelAr: "المنطقة" },
@@ -81,6 +85,7 @@ export const socialLinksSchema = (t) => ({
   titleAr: "روابط إضافية",
   zodSchema: socialLinksZodSchema(t),
   fields: [
+    { name: "whatsapp", type: FIELD_TYPES.TEL, labelKey: "additionalLinks.whatsapp", labelAr: "واتساب", placeholderKey: "additionalLinks.whatsappPlaceholder", placeholderAr: "+966 5XX XXX XXXX", required: false },
     { name: "website", type: FIELD_TYPES.URL, labelKey: "additionalLinks.websiteLink", labelAr: "رابط الموقع", placeholderKey: "additionalLinks.websitePlaceholder", placeholderAr: "https://example.com", required: false, icon: "globe", iconColor: "#6366f1" },
     { name: "instagram", type: FIELD_TYPES.URL, labelKey: "additionalLinks.instagramLink", labelAr: "انستجرام", placeholderKey: "additionalLinks.instagramPlaceholder", placeholderAr: "https://instagram.com/...", required: false, icon: "instagram", iconColor: "#E4405F" },
     { name: "facebook", type: FIELD_TYPES.URL, labelKey: "additionalLinks.facebookLink", labelAr: "فيسبوك", placeholderKey: "additionalLinks.facebookPlaceholder", placeholderAr: "https://facebook.com/...", required: false, icon: "facebook", iconColor: "#1877F2" },

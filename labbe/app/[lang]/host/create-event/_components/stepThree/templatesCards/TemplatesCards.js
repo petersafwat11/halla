@@ -1,18 +1,28 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { FaCheckCircle } from "react-icons/fa";
 import styles from "./templatesCards.module.css";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import useCarouselSnap from "@/ui/landing/_shared/useCarouselSnap";
 import CarouselDots from "@/ui/landing/_shared/CarouselDots";
 
-const GAP = 14;
-
 const TemplatesCards = ({ templates, selectedTemplate, onTemplateSelect }) => {
-  const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
-    gap: GAP,
-    totalItems: templates.length,
-  });
+  const isMobile = useMediaQuery("(max-width: 550px)");
+  const isTablet = useMediaQuery("(max-width: 768px)");
+  const GAP = isMobile || isTablet ? 12 : 24;
+
+  const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } =
+    useCarouselSnap({
+      gap: GAP,
+      totalItems: templates.length,
+    });
+
+  // Snap back to the first card whenever the visible set changes (e.g. the
+  // host switches category and the parent re-fetches a new template list).
+  useEffect(() => {
+    scrollToIdx(0);
+  }, [templates.length, scrollToIdx]);
 
   if (templates.length === 0) return null;
 
@@ -57,10 +67,7 @@ const TemplatesCards = ({ templates, selectedTemplate, onTemplateSelect }) => {
                     }
                   />
                 ) : (
-                  <div
-                    className={styles.templateImage}
-                    style={{ width: 129, height: 172, background: "#eee" }}
-                  />
+                  <div className={styles.templateImage} />
                 )}
               </div>
             </div>

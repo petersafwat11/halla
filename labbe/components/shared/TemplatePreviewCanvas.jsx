@@ -78,15 +78,16 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
     return () => ro.disconnect();
   }, [template?.naturalWidth, template?.naturalHeight, containerRef]);
 
-  const imageUrl = useMemo(() => {
-    if (!template?.imageUrl) return "";
-    if (template.imageUrl.startsWith("blob:") || template.imageUrl.startsWith("data:")) {
-      return template.imageUrl;
-    }
-    return `${template.imageUrl}${template.imageUrl.includes("?") ? "&" : "?"}cors=1`;
-  }, [template?.imageUrl]);
+  const preferredImageUrl =
+    template?.previewImageUrl || template?.imageUrl || template?.thumbnailUrl || "";
+  const fallbackImageUrl = template?.thumbnailUrl || "";
+  const [imageUrl, setImageUrl] = useState(preferredImageUrl);
 
-  if (!template?.imageUrl) return null;
+  useEffect(() => {
+    setImageUrl(preferredImageUrl);
+  }, [preferredImageUrl]);
+
+  if (!preferredImageUrl) return null;
 
   const decorations = [...(template.decorations || [])].sort(cmpZ);
   const overlays = [...(template.overlays || [])].sort(cmpZ);
@@ -110,7 +111,11 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
       <img
         src={imageUrl}
         alt=""
-        crossOrigin="anonymous"
+        onError={() => {
+          if (fallbackImageUrl && !imageUrl.startsWith(fallbackImageUrl)) {
+            setImageUrl(fallbackImageUrl);
+          }
+        }}
         style={{
           position: "absolute",
           inset: 0,

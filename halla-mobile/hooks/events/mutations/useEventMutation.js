@@ -2,6 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { ENDPOINTS } from "../../../config/api";
 import { apiFetch } from "../../../services/http";
+import { eventsKeys } from "../keys";
+import { dashboardKeys } from "../../dashboard/keys";
+import { subscriptionInfoKeys } from "../../users/keys";
 
 /**
  * Unified event mutation factory. Mirrors the web hook at
@@ -212,8 +215,10 @@ const ACTIONS = {
       return responseData;
     },
     onSuccess: (_data, _vars, _ctx, queryClient) => {
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "host"] });
+      queryClient.invalidateQueries({ queryKey: eventsKeys.userStats() });
+      queryClient.invalidateQueries({ queryKey: eventsKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: subscriptionInfoKeys.eventInfo() });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.host() });
     },
   },
 
@@ -329,17 +334,22 @@ const ACTIONS = {
   updateVisualTemplate: {
     mutationFn: ({ eventId, visualTemplate, fieldValues, templateImage }) => {
       const settings = {};
-      if (visualTemplate !== undefined) settings.visualTemplate = visualTemplate;
-      if (fieldValues !== undefined) settings.fieldValues = fieldValues;
-      if (
-        visualTemplate?.templateRef ||
-        visualTemplate?._id ||
-        visualTemplate?.id
-      ) {
-        settings.visualTemplateRef =
+      if (visualTemplate !== undefined && visualTemplate !== null) {
+        const templateRef =
           visualTemplate.templateRef ||
           visualTemplate._id ||
           visualTemplate.id;
+        settings.visualTemplate = visualTemplate.isCustomUpload
+          ? { isCustomUpload: true, fieldValues: {} }
+          : {
+              templateRef,
+              fieldValues:
+                fieldValues ||
+                visualTemplate.fieldValues ||
+                visualTemplate.data ||
+                {},
+              isCustomUpload: false,
+            };
       }
       if (templateImage !== undefined) settings.templateImage = templateImage;
       return _updateInvitationSettings(eventId, settings);

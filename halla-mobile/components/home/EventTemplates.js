@@ -8,11 +8,13 @@ import {
   Modal,
   Image,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import TemplateCategoryChips from "./_components/TemplateCategoryChips";
 import TemplateCard from "./_components/TemplateCard";
+import { useHostTemplates, useTemplateCategories } from "../../hooks/templates";
 
 const CARD_WIDTH = 123;
 const CARD_SPACING = 12;
@@ -152,19 +154,28 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const [previewTemplate, setPreviewTemplate] = useState(null);
   const scrollRef = useRef(null);
 
-  const loadingCats = false;
-  const catsError = false;
-  const loadingTemplates = false;
-  const tplError = false;
+  const {
+    data: categoriesData,
+    isLoading: loadingCats,
+    error: categoriesError,
+  } = useTemplateCategories();
+  const {
+    data: templatesData,
+    isLoading: loadingTemplates,
+    error: templatesError,
+  } = useHostTemplates({ category: selectedCategory || undefined });
 
-  const categories = LOCAL_CATEGORIES;
-  
+  const catsError = !!categoriesError;
+  const tplError = !!templatesError;
+  const categories = categoriesData?.data?.categories || LOCAL_CATEGORIES;
   const templates = React.useMemo(() => {
-    if (selectedCategory === null) return LOCAL_TEMPLATES;
-    return LOCAL_TEMPLATES.filter((tpl) =>
-      tpl.categories.includes(selectedCategory)
-    );
-  }, [selectedCategory]);
+    const remote = templatesData?.data?.templates;
+    if (Array.isArray(remote)) return remote;
+    // The local catalogue remains a home-screen-only offline fallback. The
+    // picker renders its request error instead of opening metadata-less cards.
+    if (templatesError) return LOCAL_TEMPLATES;
+    return [];
+  }, [templatesData, templatesError]);
 
   const maxIdx = Math.max(0, templates.length - 1);
 

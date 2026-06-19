@@ -10,10 +10,11 @@ const {
   SUBSCRIPTION_STATUS,
   PLAN_TYPES,
 } = require("../constants");
-const { isUnlimited, isPerEventPlan } = require("../constants/plans");
+const { isUnlimited, isPerEventPlan, isPoolPlan } = require("../constants/plans");
 const { isAdminRole } = require("../constants/roles");
 
 const Subscription = require("../../../models/SubscriptionModel");
+const Event = require("../../../models/EventModel");
 
 /**
  * Require active subscription
@@ -170,7 +171,55 @@ exports.checkGuestLimit = (getGuestCount) => {
     }
 
     const userId = req.user._id || req.user.id;
-    const capacitySub = await Subscription.getCapacityForEvent(userId, guestCount);
+    // Updates belong to the subscription already consumed by the event. A
+    // per-event/trial subscription is intentionally absent from
+    // getCapacityForEvent after creation, so asking for a fresh subscription
+    // incorrectly rejects edits to that same event.
+    let capacitySub = null;
+    if (req.params?.id) {
+      const event = await Event.findById(req.params.id)
+        .select("subscriptionId guestLimit guestList")
+        .lean();
+      let attachedSubscriptionId = event?.subscriptionId;
+      if (!attachedSubscriptionId && event?._id) {
+        const linked = await Subscription.findOne({ eventId: event._id })
+          .select("_id")
+          .lean();
+        attachedSubscriptionId = linked?._id;
+      }
+      if (attachedSubscriptionId) {
+        capacitySub = await Subscription.findOne({
+          _id: attachedSubscriptionId,
+          userId,
+          status: { $in: ["active", "trial"] },
+          $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+        }).populate("planId");
+
+        const frozenLimit = event.guestLimit;
+        if (
+          capacitySub &&
+          frozenLimit !== null &&
+          frozenLimit !== undefined &&
+          frozenLimit !== -1 &&
+          guestCount > frozenLimit
+        ) {
+          capacitySub = null;
+        }
+        if (capacitySub && isPoolPlan(capacitySub.planId?.planType)) {
+          const remaining =
+            (capacitySub.invitePool || 0) +
+            (capacitySub.compensationPool || 0) -
+            (capacitySub.invitesConsumed || 0);
+          const existingCount = event.guestList?.length || 0;
+          if (guestCount > existingCount + remaining) {
+            capacitySub = null;
+          }
+        }
+      }
+    }
+    if (!capacitySub) {
+      capacitySub = await Subscription.getCapacityForEvent(userId, guestCount);
+    }
     if (!capacitySub) {
       return res.status(403).json({ success: false, message: 'No active subscription with sufficient capacity' });
     }

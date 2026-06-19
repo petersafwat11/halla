@@ -120,6 +120,10 @@ export const serviceDetailsZodSchema = (t = idT) =>
       .trim()
       .max(1000, t("validation.descriptionMaxLength"))
       .optional(),
+    taglineAr: z.string().trim().max(160).optional(),
+    taglineEn: z.string().trim().max(160).optional(),
+    aboutAr: z.string().trim().max(2000).optional(),
+    aboutEn: z.string().trim().max(2000).optional(),
   });
 
 export const socialLinksZodSchema = (t = idT) =>
@@ -129,6 +133,7 @@ export const socialLinksZodSchema = (t = idT) =>
     facebook: optionalUrl(t).optional(),
     twitter: optionalUrl(t).optional(),
     tiktok: optionalUrl(t).optional(),
+    whatsapp: z.string().trim().max(20).optional(),
   });
 
 export const imagesAndPricingZodSchema = z.object({
@@ -169,6 +174,10 @@ export const mobileServiceDetailsSchema = (t = idT) =>
       .trim()
       .max(1000, t("validation.descriptionMaxLength"))
       .optional(),
+    taglineAr: z.string().trim().max(160).optional(),
+    taglineEn: z.string().trim().max(160).optional(),
+    aboutAr: z.string().trim().max(2000).optional(),
+    aboutEn: z.string().trim().max(2000).optional(),
     nationalId: z
       .string()
       .trim()
@@ -185,6 +194,7 @@ export const mobileSocialLinksSchema = (t = idT) =>
     facebook: optionalUrlEn(t),
     twitter: optionalUrlEn(t),
     tiktok: optionalUrlEn(t),
+    whatsapp: z.string().trim().max(20).optional(),
   });
 
 export const phoneChangeSchema = (t = idT) =>

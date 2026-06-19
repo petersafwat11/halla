@@ -1,0 +1,154 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halaa" [ref=e5] [cursor=pointer]:
+        - /url: /ar
+        - img "Halaa" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /en/host/plans
+          - img [ref=e9]
+          - generic [ref=e12]: EN
+        - button "Notifications (1 unread)" [ref=e229] [cursor=pointer]:
+          - img "notifications" [ref=e15]
+          - generic [ref=e230]: "1"
+        - img "messages" [ref=e16]
+        - button "TestHost إدارة المناسبات" [ref=e231] [cursor=pointer]:
+          - generic [ref=e19]:
+            - generic [ref=e20]:
+              - img [ref=e21]
+              - generic [ref=e232]: TestHost
+            - generic [ref=e23]: إدارة المناسبات
+          - img [ref=e25]
+    - generic [ref=e27]:
+      - navigation [ref=e29]:
+        - list [ref=e30]:
+          - listitem [ref=e31] [cursor=pointer]:
+            - link "لوحة التحكم" [ref=e32]:
+              - /url: /ar/host
+              - img [ref=e33]
+              - generic [ref=e35]: لوحة التحكم
+          - listitem [ref=e36] [cursor=pointer]:
+            - link "المناسبات" [ref=e37]:
+              - /url: /ar/host/events
+              - img [ref=e38]
+              - generic [ref=e40]: المناسبات
+          - listitem [ref=e41] [cursor=pointer]:
+            - link "المدفوعات" [ref=e42]:
+              - /url: /ar/host/payments
+              - img [ref=e43]
+              - generic [ref=e45]: المدفوعات
+          - listitem [ref=e46] [cursor=pointer]:
+            - link "الشكاوى" [ref=e47]:
+              - /url: /ar/host/tickets
+              - img [ref=e48]
+              - generic [ref=e50]: الشكاوى
+          - listitem [ref=e51] [cursor=pointer]:
+            - link "الخدمات" [ref=e52]:
+              - /url: /ar/host/plans
+              - img [ref=e53]
+              - generic [ref=e55]: الخدمات
+          - listitem [ref=e56] [cursor=pointer]:
+            - link "سوق هلا" [ref=e57]:
+              - /url: /ar/host/market-place
+              - img [ref=e58]
+              - generic [ref=e60]: سوق هلا
+          - listitem [ref=e61] [cursor=pointer]:
+            - link "الإعدادات" [ref=e62]:
+              - /url: /ar/host/settings
+              - img [ref=e63]
+              - generic [ref=e66]: الإعدادات
+      - button "تسجيل الخروج" [ref=e68]:
+        - img [ref=e69]
+        - generic [ref=e71]: تسجيل الخروج
+    - generic [ref=e328]:
+      - generic [ref=e329]:
+        - heading "ملخص الطلب" [level=1] [ref=e330]:
+          - img [ref=e331] [cursor=pointer]
+          - text: ملخص الطلب
+        - paragraph [ref=e333]: راجع طلبك قبل إتمام الدفع
+      - generic [ref=e335]:
+        - generic [ref=e336]:
+          - generic [ref=e337]:
+            - heading "تفاصيل الباقة" [level=2] [ref=e339]
+            - generic [ref=e340]:
+              - generic [ref=e341]:
+                - img [ref=e343]
+                - generic [ref=e345]:
+                  - heading "هلا بيسك 25 دعوة" [level=3] [ref=e346]
+                  - paragraph [ref=e347]: مناسبة واحدة
+                - generic [ref=e348]:
+                  - generic [ref=e349]: "95"
+                  - generic [ref=e350]: ر.س
+              - generic [ref=e351]:
+                - generic [ref=e352]:
+                  - img [ref=e353]
+                  - generic [ref=e355]: 25 دعوة
+                - generic [ref=e356]:
+                  - img [ref=e357]
+                  - generic [ref=e359]: مناسبة واحدة — 90 يوم
+                - generic [ref=e360]:
+                  - img [ref=e361]
+                  - generic [ref=e363]: 3 دعوات تعويضية
+              - generic [ref=e364]:
+                - generic [ref=e365]: "فترة الاشتراك:"
+                - generic [ref=e366]: 90 يوم (مناسبة واحدة)
+          - generic [ref=e367]:
+            - heading "كود الخصم" [level=2] [ref=e369]:
+              - img [ref=e370]
+              - text: كود الخصم
+            - generic [ref=e373]:
+              - textbox "أدخل كود الخصم" [ref=e374]
+              - button "تطبيق" [disabled] [ref=e375]
+          - generic [ref=e376]:
+            - heading "طريقة الدفع" [level=2] [ref=e378]
+            - generic [ref=e380]:
+              - radiogroup [ref=e381]:
+                - radio "Visa Mastercard mada" [checked] [ref=e382] [cursor=pointer]:
+                  - generic [ref=e385]:
+                    - img "Visa" [ref=e387]
+                    - img "Mastercard" [ref=e389]
+                    - img "mada" [ref=e391]
+                - radio [ref=e392] [cursor=pointer]:
+                  - img [ref=e395]
+                - radio [ref=e397] [cursor=pointer]:
+                  - img [ref=e400]:
+                    - generic [ref=e402]: stc pay
+              - generic [ref=e403]:
+                - generic [ref=e404]:
+                  - generic [ref=e405]: اسم حامل البطاقة
+                  - textbox "اسم حامل البطاقة" [ref=e406]
+                - generic [ref=e407]:
+                  - generic [ref=e408]: رقم البطاقة
+                  - textbox "1234 5678 9012 3456" [ref=e410]
+                - generic [ref=e411]:
+                  - generic [ref=e412]:
+                    - generic [ref=e413]: Expiry date
+                    - textbox "YY/MM" [ref=e414]
+                  - generic [ref=e415]:
+                    - generic [ref=e416]: CVC
+                    - textbox "•••" [ref=e417]
+                - paragraph [ref=e418]:
+                  - img [ref=e419]
+                  - generic [ref=e421]: Your card details are encrypted and processed securely.
+        - generic [ref=e422]:
+          - generic [ref=e423]:
+            - heading "ملخص الدفع" [level=2] [ref=e425]
+            - generic [ref=e427]:
+              - generic [ref=e428]:
+                - generic [ref=e429]: سعر الباقة
+                - generic [ref=e430]: 95 ر.س
+              - generic [ref=e432]:
+                - generic [ref=e433]: الإجمالي
+                - generic [ref=e434]: 95 ر.س
+          - button "تفعيل الاشتراك 95 ر.س" [ref=e435] [cursor=pointer]:
+            - generic [ref=e436]: تفعيل الاشتراك
+            - generic [ref=e437]: 95 ر.س
+          - generic [ref=e438]:
+            - img [ref=e439]
+            - generic [ref=e441]: بالضغط على إتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
+          - paragraph [ref=e442]: بالضغط على إتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
+  - button "Open Next.js Dev Tools" [ref=e323] [cursor=pointer]:
+    - img [ref=e324]
+  - alert [ref=e327]

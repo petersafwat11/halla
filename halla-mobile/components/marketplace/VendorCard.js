@@ -12,7 +12,7 @@ import { useTranslation } from "../../localization";
 
 const MAX_VISIBLE_TAGS = 3;
 
-const VendorCard = ({ vendor, onCallPress, index = 0 }) => {
+const VendorCard = ({ vendor, onPress, index = 0 }) => {
   const { t } = useTranslation("marketplace");
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(12)).current;
@@ -23,29 +23,28 @@ const VendorCard = ({ vendor, onCallPress, index = 0 }) => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        delay: index * 60,
+        delay: Math.min(index, 5) * 45,
         duration: 320,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        delay: index * 60,
+        delay: Math.min(index, 5) * 45,
         duration: 320,
         useNativeDriver: true,
       }),
     ]).start();
   }, [index, fadeAnim, slideAnim]);
 
-  const handleCallPress = () => {
-    onCallPress && onCallPress(vendor);
+  const handlePress = () => {
+    onPress && onPress(vendor);
   };
 
-  const coverImage = vendor.coverImage;
+  const coverImage = vendor.presentationImage || vendor.coverImage;
   const logo = vendor.logo;
   const hasImage = !!coverImage && !imageError;
   const hasLogo = !!logo && !logoError;
   const hasRating = vendor.rating != null && Number(vendor.rating) > 0;
-  const reviewCount = Number(vendor.reviewCount) || 0;
   const initial = (vendor.brandName || "?").trim().charAt(0).toUpperCase();
   const logoInitial = (vendor.brandName || "?").trim().charAt(0).toUpperCase();
   const visibleTags = (vendor.serviceCategories || []).slice(0, MAX_VISIBLE_TAGS);
@@ -60,8 +59,8 @@ const VendorCard = ({ vendor, onCallPress, index = 0 }) => {
         { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
       ]}
     >
-      {/* ────── Image with rating overlay ────── */}
-      <View style={styles.imageContainer}>
+      {/* ────── Image with logo medallion ────── */}
+      <TouchableOpacity style={styles.imageContainer} onPress={handlePress} activeOpacity={0.9} accessibilityRole="button" accessibilityLabel={t("vendor.viewProfileFor", { name: vendor.brandName })}>
         {hasImage ? (
           <Image
             source={{ uri: coverImage }}
@@ -89,33 +88,30 @@ const VendorCard = ({ vendor, onCallPress, index = 0 }) => {
             </View>
           )}
         </View>
-
-        {hasRating && (
-          <View style={styles.ratingBadge}>
-            <Ionicons name="star" size={11} color="#F5B342" />
-            <Text style={styles.ratingValue}>
-              {Number(vendor.rating).toFixed(1)}
-            </Text>
-          </View>
-        )}
-      </View>
+      </TouchableOpacity>
 
       {/* ────── Content ────── */}
       <View style={styles.content}>
-        <View style={styles.heading}>
-          <Text style={styles.title} numberOfLines={2}>
-            {vendor.brandName}
-          </Text>
-        </View>
+        <TouchableOpacity onPress={handlePress}><Text style={styles.title} numberOfLines={1}>{vendor.brandName}</Text></TouchableOpacity>
 
-        {vendor.location ? (
-          <View style={styles.locationRow}>
-            <Ionicons name="location-outline" size={14} color="#9A9A9A" />
-            <Text style={styles.location} numberOfLines={1}>
-              {vendor.location}
-            </Text>
-          </View>
+        {vendor.description ? (
+          <Text style={styles.description} numberOfLines={2}>{vendor.description}</Text>
         ) : null}
+
+        <View style={styles.meta}>
+          {hasRating ? (
+            <View style={styles.rating}>
+              <Ionicons name="star" size={14} color="#F5B342" />
+              <Text style={styles.ratingValue}>{Number(vendor.rating).toFixed(1)}</Text>
+            </View>
+          ) : null}
+          {vendor.location ? (
+            <View style={styles.locationRow}>
+              <Ionicons name="location-outline" size={14} color="#C0A483" />
+              <Text style={styles.location} numberOfLines={1}>{vendor.location}</Text>
+            </View>
+          ) : null}
+        </View>
 
         {translatedTags.length > 0 && (
           <View style={styles.tagsContainer}>
@@ -135,7 +131,7 @@ const VendorCard = ({ vendor, onCallPress, index = 0 }) => {
         <View style={styles.footer}>
           {hasPrice ? (
             <Text style={styles.price}>
-              {t("vendor.startsFrom")} {vendor.minPrice} {t("vendor.sar")}
+              {t("vendor.startsFrom")} {vendor.minPrice} {vendor.currency || t("vendor.sar")}
             </Text>
           ) : (
             <Text style={styles.priceOnRequest}>
@@ -145,11 +141,11 @@ const VendorCard = ({ vendor, onCallPress, index = 0 }) => {
 
           <TouchableOpacity
             style={styles.callButton}
-            onPress={handleCallPress}
+            onPress={handlePress}
             activeOpacity={0.85}
           >
-            <Ionicons name="call-outline" size={14} color="#FFF" />
-            <Text style={styles.callButtonText}>{t("vendor.callNow")}</Text>
+            <Ionicons name="arrow-up-back-outline" size={14} color="#FFF" />
+            <Text style={styles.callButtonText}>{t("vendor.viewProfile")}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -240,40 +236,10 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
 
-  /* ────── RATING ────── */
-  ratingBadge: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: "rgba(17,24,39,0.78)",
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  ratingValue: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: 12,
-    color: "#FFF",
-    lineHeight: 14,
-  },
-  reviewsCount: {
-    fontFamily: "Cairo_500Medium",
-    fontSize: 12,
-    color: "#FFF",
-    opacity: 0.85,
-    lineHeight: 14,
-  },
-
   /* ────── CONTENT ────── */
   content: {
     padding: 16,
-    gap: 12,
-  },
-  heading: {
-    gap: 4,
+    gap: 10,
   },
   title: {
     fontFamily: "Cairo_700Bold",
@@ -281,15 +247,40 @@ const styles = StyleSheet.create({
     color: "#1A1A1A",
     lineHeight: 22,
   },
+  description: {
+    fontFamily: "Cairo_400Regular",
+    fontSize: 13,
+    color: "#6B6B6B",
+    lineHeight: 20,
+  },
 
-  /* ────── LOCATION ────── */
-  locationRow: {
+  /* ────── META (rating + location) ────── */
+  meta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  rating: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
   },
+  ratingValue: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 13,
+    color: "#1A1A1A",
+    lineHeight: 16,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    flexShrink: 1,
+    minWidth: 0,
+  },
   location: {
-    flex: 1,
+    flexShrink: 1,
     fontFamily: "Cairo_500Medium",
     fontSize: 13,
     color: "#6B6B6B",

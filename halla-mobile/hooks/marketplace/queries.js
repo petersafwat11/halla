@@ -18,10 +18,12 @@ const _buildVendorsPath = (params) => {
   }
   if (params.regionId) queryParams.append("regionId", params.regionId);
   if (params.cityId) queryParams.append("cityId", params.cityId);
-  if (params.districtIds) queryParams.append("districtIds", params.districtIds);
+  if (params.districtId) queryParams.append("districtId", params.districtId);
   if (params.minPrice) queryParams.append("minPrice", params.minPrice);
   if (params.maxPrice) queryParams.append("maxPrice", params.maxPrice);
-  if (params.minRating) queryParams.append("minRating", params.minRating);
+  if (params.rating) queryParams.append("rating", params.rating);
+  if (params.lang) queryParams.append("lang", params.lang);
+  if (params.sort) queryParams.append("sort", params.sort);
   if (params.page) queryParams.append("page", params.page);
   if (params.limit) queryParams.append("limit", params.limit);
   const qs = queryParams.toString();
@@ -51,5 +53,14 @@ export function useVendorCategories() {
     queryKey: marketplaceKeys.categories(),
     queryFn: () => _request(ENDPOINTS.VENDORS.CATEGORIES, "Failed to fetch service types"),
     staleTime: 30 * 60 * 1000,
+  });
+}
+
+export function useMarketplaceVendor(vendorId, lang) {
+  return useQuery({
+    queryKey: [...marketplaceKeys.vendor(vendorId), lang],
+    queryFn: () => _request(`${ENDPOINTS.VENDORS.PUBLIC_BY_ID(vendorId)}?lang=${lang || "ar"}`, "Failed to fetch vendor"),
+    enabled: Boolean(vendorId),
+    staleTime: 5 * 60 * 1000,
   });
 }

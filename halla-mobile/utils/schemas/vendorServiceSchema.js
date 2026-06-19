@@ -30,19 +30,16 @@ export const addServiceSchema = (t = idT) =>
     serviceName: z
       .string()
       .min(2, t("services.validation.nameMinLength")),
+    serviceNameAr: z.string().trim().max(200).optional().or(z.literal("")),
     serviceType: z
       .string()
       .min(1, t("services.validation.typeRequired")),
     description: z
       .string()
       .min(10, t("services.validation.descriptionMinLength")),
+    descriptionAr: z.string().trim().max(2000).optional().or(z.literal("")),
     price: z
       .string()
       .min(1, t("services.validation.priceRequired")),
-    duration: z
-      .string()
-      .max(100, t("services.validation.durationMaxLength"))
-      .optional()
-      .or(z.literal("")),
     serviceImage: z.any().optional(),
   });

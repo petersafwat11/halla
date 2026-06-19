@@ -134,6 +134,17 @@ class UsersService {
       throw new ValidationError(`Invalid profile section: ${section}`);
     }
 
+    if (section === "vendorData" && data.socialLinks?.whatsapp) {
+      const parsedWhatsApp = validateAndFormatPhone(data.socialLinks.whatsapp);
+      if (!parsedWhatsApp.isValid) {
+        throw new ValidationError(parsedWhatsApp.error || "Invalid WhatsApp number");
+      }
+      data = {
+        ...data,
+        socialLinks: { ...data.socialLinks, whatsapp: parsedWhatsApp.formatted },
+      };
+    }
+
     if (!user.profile) user.profile = {};
     // `user.set(path, value)` instead of property assignment — mongoose
     // subdocs silently dropped direct `user.profile.vendorData = {...}` /

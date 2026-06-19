@@ -82,6 +82,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
   }, [skipHostSelector, isHostMode, hostSelection.createForSelf]);
   const [showPreview, setShowPreview] = useState(false);
   const [showInfoPopup, setShowInfoPopup] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const { data: subInfoData, isLoading: subInfoLoading } = useSubscriptionInfo();
   const selfSubscription = subInfoData ?? null;
@@ -165,9 +166,17 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
         // (hook signature is `mutateAsync(formData)`) and bounce back to
         // the events list on success.
         try {
+          // Creating the last event in a plan makes the refreshed entitlement
+          // false by design. Freeze this screen in its completion state so it
+          // cannot swap to LimitReachedView while navigation is committing.
+          setIsCompleting(true);
           await hostCreateMutation.mutateAsync(formDataObj);
-          navigation.goBack();
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "MainTabs", params: { screen: "Home" } }],
+          });
         } catch (err) {
+          setIsCompleting(false);
           Alert.alert(tCreate("error", "Error"), err?.message || String(err));
         }
         return;
@@ -238,7 +247,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
   }, [skipHostSelector, currentStep, t, tCreate]);
 
   // Host-mode hard stop when subscription doesn't allow event creation.
-  if (isHostMode && !subInfoLoading && !canCreateEvent) {
+  if (isHostMode && !isCompleting && !subInfoLoading && !canCreateEvent) {
     return (
       <LimitReachedView
         tEvents={tEvents}

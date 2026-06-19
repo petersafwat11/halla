@@ -40,6 +40,10 @@ const StepTwo = ({ goToPreviousStep }) => {
               name="serviceData.serviceDescription"
               iconPath="auth/quote-circle.svg"
             />
+            <InputGroup label={t("signupForm.vendor.serviceData.taglineAr", "النبذة القصيرة بالعربية")} type="text" name="serviceData.taglineAr" placeholder="مثال: نصنع لحظات تستحق أن تُروى" />
+            <InputGroup label={t("signupForm.vendor.serviceData.taglineEn", "Short tagline in English")} type="text" name="serviceData.taglineEn" placeholder="e.g. We turn moments into lasting memories" />
+            <InputGroup label={t("signupForm.vendor.serviceData.aboutAr", "نبذة تفصيلية بالعربية")} type="textarea" name="serviceData.aboutAr" placeholder="عرّف العملاء بخبرتك وخدماتك" />
+            <InputGroup label={t("signupForm.vendor.serviceData.aboutEn", "Detailed description in English")} type="textarea" name="serviceData.aboutEn" placeholder="Tell customers about your experience and services" />
           </div>
         </div>
 

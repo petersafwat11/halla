@@ -15,6 +15,7 @@ const {
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
+const { isPoolPlan } = require('../../shared/constants/plans');
 
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
 // Post-review polish — extracted error codes shared between
@@ -22,6 +23,40 @@ const { normalizePhoneNumber } = require('../../shared/utils/phone');
 const { GUEST_LIST_BELOW_CONFIRMED } = require('../../shared/constants/events');
 
 const logger = require('../../shared/utils/logger');
+
+async function adjustPoolInvites(subscriptionId, delta, session = null) {
+  if (!subscriptionId || !delta) return;
+
+  const query = { _id: subscriptionId };
+  if (delta > 0) {
+    query.$expr = {
+      $lte: [
+        { $add: [{ $ifNull: ['$invitesConsumed', 0] }, delta] },
+        {
+          $add: [
+            { $ifNull: ['$invitePool', 0] },
+            { $ifNull: ['$compensationPool', 0] },
+          ],
+        },
+      ],
+    };
+  } else {
+    query.invitesConsumed = { $gte: Math.abs(delta) };
+  }
+
+  const updated = await Subscription.findOneAndUpdate(
+    query,
+    { $inc: { invitesConsumed: delta } },
+    { new: true, ...(session ? { session } : {}) }
+  );
+  if (!updated) {
+    throw new PackageLimitError(
+      'guests',
+      0,
+      'No active subscription with sufficient capacity'
+    );
+  }
+}
 
 module.exports = {
   /**
@@ -68,6 +103,20 @@ module.exports = {
       throw new PackageLimitError("guests", limit,
         `Guest list exceeds the limit of ${limit}.`);
     }
+
+    // Existing pool-plan guests are already charged to this event. Apply
+    // only the net change so replacing a list never double-consumes quota.
+    let poolSubscriptionId = null;
+    if (event.subscriptionId) {
+      const attached = await Subscription.findById(event.subscriptionId)
+        .populate('planId');
+      if (attached && isPoolPlan(attached.planId?.planType)) {
+        poolSubscriptionId = attached._id;
+      }
+    }
+    const poolDelta = poolSubscriptionId
+      ? newCount - (event.guestList?.length || 0)
+      : 0;
 
     // Floor — never drop below confirmed/checked-in count.
     const confirmedCount = (event.guestList || []).filter((g) =>
@@ -150,6 +199,7 @@ module.exports = {
 
     try {
       if (useTransactions) {
+        await adjustPoolInvites(poolSubscriptionId, poolDelta, session);
         // Happy path — replica-set / sharded cluster.
         if (toDeleteIds.length > 0) {
           // Soft-delete tombstone
@@ -229,6 +279,7 @@ module.exports = {
         );
         const updatePreImages = new Map();
         const newGuestIds = [];
+        let positivePoolQuotaReserved = false;
 
         // Unified rollback handler.
         // The in-place updates (step 1) and the first event.save()
@@ -238,6 +289,12 @@ module.exports = {
         // had committed by the time the throw happened.
         const runCompensation = async (failedAt) => {
           try {
+            if (positivePoolQuotaReserved) {
+              try {
+                await adjustPoolInvites(poolSubscriptionId, -poolDelta);
+                positivePoolQuotaReserved = false;
+              } catch (_) { /* best-effort */ }
+            }
             // Always: drop the freshly-created guests (whatever step we
             // failed at, anything in newGuestIds is unwanted).
             if (newGuestIds.length > 0) {
@@ -279,6 +336,11 @@ module.exports = {
             );
           }
         };
+
+        if (poolDelta > 0) {
+          await adjustPoolInvites(poolSubscriptionId, poolDelta);
+          positivePoolQuotaReserved = true;
+        }
 
         // Step 1: in-place updates (with pre-image stash).
         try {
@@ -342,6 +404,10 @@ module.exports = {
           } catch (deleteErr) {
             logger.warn('[updateEventStep2] post-commit guest soft-delete failed', { err: deleteErr?.message });
           }
+        }
+
+        if (poolDelta < 0) {
+          await adjustPoolInvites(poolSubscriptionId, poolDelta);
         }
 
         // Revoke tokens for removed staff. Reaches here only after

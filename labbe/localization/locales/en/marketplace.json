@@ -1,7 +1,18 @@
 {
   "sections": {
     "all": "All",
-    "title": "Categories"
+    "title": "Categories",
+    "eventPlanning": "Event planning",
+    "mediaProduction": "Media production",
+    "giftsAndGiveaways": "Gifts & giveaways",
+    "foodAndBeverages": "Food & beverages",
+    "beautyAndFashion": "Beauty & fashion",
+    "logisticsAndDelivery": "Logistics & delivery",
+    "corporateServices": "Corporate services",
+    "supportServices": "Support services",
+    "technicalServices": "Technical services",
+    "soundLightingEntertainment": "Sound, lighting & entertainment",
+    "hallsAndVenues": "Halls & venues"
   },
   "previousPage": "Previous Page",
   "goToPage": "Go to page",
@@ -35,11 +46,17 @@
     "applyFilters": "Apply"
   },
   "search": {
-    "placeholder": "Search..."
+    "placeholder": "Search...",
+    "vendorPlaceholder": "Search by vendor, service, or occasion",
+    "clear": "Clear search",
+    "prompt": "What does your occasion need?",
+    "hint": "Try photography, venues, catering, gifts, or a vendor name"
   },
   "card": {
     "users": "Users",
     "callNow": "Call Now",
+    "viewProfile": "View details",
+    "viewProfileFor": "View {{name}} profile",
     "priceOnRequest": "Price on request"
   },
   "vendor": {
@@ -54,7 +71,22 @@
     "startsFrom": "Starts from",
     "ourServices": "Our Services",
     "aboutVendor": "About Vendor",
-    "portfolio": "Portfolio"
+    "portfolio": "Portfolio",
+    "backToMarketplace": "Back to marketplace",
+    "share": "Share",
+    "linkCopied": "Link copied",
+    "serviceCount": "{{count}} services",
+    "meetVendor": "Meet {{name}}",
+    "servicesHeadline": "Services for your occasion",
+    "portfolioHeadline": "Selected work",
+    "contactHeadline": "Contact the vendor",
+    "contactDescription": "Contact the vendor directly to ask about availability, pricing, and the details of your occasion.",
+    "website": "Website",
+    "noServices": "This vendor has not published services yet.",
+    "askAboutService": "Ask about service",
+    "requestService": "Request service",
+    "requestQuote": "Request a quote",
+    "email": "Email"
   },
   "currency": "SAR",
   "title": "Halla Marketplace",
@@ -70,6 +102,24 @@
   "noResults": {
     "title": "No results found",
     "description": "Try adjusting your filters or search terms"
+  },
+  "results": {
+    "title": "{{count}} vendors",
+    "subtitle": "Approved providers ready to help with your occasion"
+  },
+  "sort": {
+    "label": "Sort by",
+    "recommended": "Recommended",
+    "rating": "Highest rated",
+    "priceAsc": "Lowest starting price",
+    "priceDesc": "Highest starting price",
+    "newest": "Newest"
+  },
+  "errors": {
+    "loadFailed": "We could not load vendors right now.",
+    "loadFailedTitle": "Marketplace unavailable",
+    "retry": "Try again",
+    "categoriesLoadFailed": "Categories could not be loaded"
   },
   "services": {
     "defaultName": "Service",

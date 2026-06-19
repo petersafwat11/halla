@@ -195,6 +195,10 @@ export const vendorSignupSchema = (t = idT) =>
         .string()
         .min(10, t("signupForm.vendor.serviceData.errors.serviceDescriptionMinLength"))
         .max(500, t("signupForm.vendor.serviceData.errors.serviceDescriptionMaxLength")),
+      taglineAr: z.string().trim().max(160).optional(),
+      taglineEn: z.string().trim().max(160).optional(),
+      aboutAr: z.string().trim().max(2000).optional(),
+      aboutEn: z.string().trim().max(2000).optional(),
       categories: z.array(z.string()).optional(),
       serviceCategories: z
         .object({
@@ -266,6 +270,7 @@ export const vendorSignupSchema = (t = idT) =>
         tiktok: optionalUrl(),
         twitter: optionalUrl(),
         website: optionalUrl(),
+        whatsapp: z.string().trim().max(20).optional(),
       })
       .optional(),
   });

@@ -1,7 +1,18 @@
 {
   "sections": {
     "all": "الكل",
-    "title": "الفئات"
+    "title": "الفئات",
+    "eventPlanning": "تخطيط الفعاليات",
+    "mediaProduction": "الإنتاج الإعلامي",
+    "giftsAndGiveaways": "الهدايا والتوزيعات",
+    "foodAndBeverages": "الأطعمة والمشروبات",
+    "beautyAndFashion": "الجمال والأزياء",
+    "logisticsAndDelivery": "اللوجستيات والتوصيل",
+    "corporateServices": "خدمات الشركات",
+    "supportServices": "خدمات الدعم",
+    "technicalServices": "الخدمات التقنية",
+    "soundLightingEntertainment": "الصوت والإضاءة والترفيه",
+    "hallsAndVenues": "القاعات والأماكن"
   },
   "previousPage": "الصفحة السابقة",
   "goToPage": "اذهب إلى الصفحة",
@@ -35,11 +46,17 @@
     "applyFilters": "تطبيق"
   },
   "search": {
-    "placeholder": "بحث..."
+    "placeholder": "بحث...",
+    "vendorPlaceholder": "ابحث باسم المزود أو الخدمة أو المناسبة",
+    "clear": "مسح البحث",
+    "prompt": "ماذا تحتاج مناسبتك؟",
+    "hint": "جرّب التصوير أو القاعات أو الضيافة أو الهدايا أو اسم المزود"
   },
   "card": {
     "users": "مستخدمين",
     "callNow": "اتصل الآن",
+    "viewProfile": "عرض التفاصيل",
+    "viewProfileFor": "عرض ملف {{name}}",
     "priceOnRequest": "السعر عند الطلب"
   },
   "vendor": {
@@ -54,7 +71,22 @@
     "startsFrom": "يبدأ من",
     "ourServices": "خدماتنا",
     "aboutVendor": "عن المزود",
-    "portfolio": "معرض الأعمال"
+    "portfolio": "معرض الأعمال",
+    "backToMarketplace": "العودة إلى السوق",
+    "share": "مشاركة",
+    "linkCopied": "تم نسخ الرابط",
+    "serviceCount": "{{count}} خدمات",
+    "meetVendor": "تعرّف على {{name}}",
+    "servicesHeadline": "خدمات لمناسبتك",
+    "portfolioHeadline": "نماذج مختارة من الأعمال",
+    "contactHeadline": "تواصل مع المزود",
+    "contactDescription": "تواصل مباشرة مع المزود للاستفسار عن التوفر والأسعار وتفاصيل مناسبتك.",
+    "website": "الموقع الإلكتروني",
+    "noServices": "لم ينشر هذا المزود خدمات بعد.",
+    "askAboutService": "استفسر عن الخدمة",
+    "requestService": "طلب الخدمة",
+    "requestQuote": "طلب عرض سعر",
+    "email": "البريد الإلكتروني"
   },
   "currency": "ريال",
   "title": "سوق هلا",
@@ -70,6 +102,24 @@
   "noResults": {
     "title": "لا توجد نتائج",
     "description": "حاول تعديل التصفيات أو مصطلحات البحث"
+  },
+  "results": {
+    "title": "{{count}} مزود",
+    "subtitle": "مزودون معتمدون جاهزون لخدمة مناسبتك"
+  },
+  "sort": {
+    "label": "الترتيب",
+    "recommended": "موصى به",
+    "rating": "الأعلى تقييماً",
+    "priceAsc": "الأقل سعراً",
+    "priceDesc": "الأعلى سعراً",
+    "newest": "الأحدث"
+  },
+  "errors": {
+    "loadFailed": "تعذر تحميل المزودين حالياً.",
+    "loadFailedTitle": "السوق غير متاح",
+    "retry": "حاول مرة أخرى",
+    "categoriesLoadFailed": "تعذر تحميل الفئات"
   },
   "services": {
     "defaultName": "خدمة",

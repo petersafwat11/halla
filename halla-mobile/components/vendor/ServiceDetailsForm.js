@@ -81,6 +81,10 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
     resolver: zodResolver(serviceDetailsSchema(t)),
     defaultValues: {
       serviceDescription: data?.serviceDescription || "",
+      taglineAr: data?.taglineAr || "",
+      taglineEn: data?.taglineEn || "",
+      aboutAr: data?.aboutAr || "",
+      aboutEn: data?.aboutEn || "",
       nationalId: data?.nationalId || "",
     },
   });
@@ -100,6 +104,10 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
   useEffect(() => {
     methods.reset({
       serviceDescription: data?.serviceDescription || "",
+      taglineAr: data?.taglineAr || "",
+      taglineEn: data?.taglineEn || "",
+      aboutAr: data?.aboutAr || "",
+      aboutEn: data?.aboutEn || "",
       nationalId: data?.nationalId || "",
     });
     setServiceCategories(data?.serviceCategories || []);
@@ -110,6 +118,10 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
     setCommercialRecordFile(null);
   }, [
     data?.serviceDescription,
+    data?.taglineAr,
+    data?.taglineEn,
+    data?.aboutAr,
+    data?.aboutEn,
     data?.nationalId,
     data?.serviceCategories,
     data?.serviceLocation,
@@ -192,6 +204,10 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
   const onSubmit = (formValues) => {
     const submitData = {
       serviceDescription: formValues.serviceDescription,
+      taglineAr: formValues.taglineAr,
+      taglineEn: formValues.taglineEn,
+      aboutAr: formValues.aboutAr,
+      aboutEn: formValues.aboutEn,
       nationalId: formValues.nationalId,
     };
     if (serviceCategories?.length) {
@@ -259,6 +275,13 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
               placeholder={t("settings.serviceDetails.descriptionPlaceholder")}
               numberOfLines={4}
             />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <TextInput name="taglineAr" label={t("settings.serviceDetails.taglineAr", "النبذة القصيرة بالعربية")} maxLength={160} />
+            <TextInput name="taglineEn" label={t("settings.serviceDetails.taglineEn", "Short tagline in English")} maxLength={160} autoCapitalize="sentences" />
+            <TextAreaInput name="aboutAr" label={t("settings.serviceDetails.aboutAr", "نبذة تفصيلية بالعربية")} numberOfLines={5} maxLength={2000} />
+            <TextAreaInput name="aboutEn" label={t("settings.serviceDetails.aboutEn", "Detailed description in English")} numberOfLines={5} maxLength={2000} />
           </View>
 
           <View style={styles.inputGroup}>

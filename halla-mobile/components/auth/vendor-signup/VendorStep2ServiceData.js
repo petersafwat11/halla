@@ -37,6 +37,13 @@ const VendorStep2ServiceData = () => {
         />
       </SectionCard>
 
+      <SectionCard title={t('signupForm.vendor.serviceData.publicProfileTitle', 'Public profile copy')} icon="language-outline">
+        <TextInput name="serviceData.taglineAr" label={t('signupForm.vendor.serviceData.taglineAr', 'النبذة القصيرة بالعربية')} maxLength={160} />
+        <TextInput name="serviceData.taglineEn" label={t('signupForm.vendor.serviceData.taglineEn', 'Short tagline in English')} maxLength={160} autoCapitalize="sentences" />
+        <TextAreaInput name="serviceData.aboutAr" label={t('signupForm.vendor.serviceData.aboutAr', 'نبذة تفصيلية بالعربية')} numberOfLines={5} maxLength={2000} />
+        <TextAreaInput name="serviceData.aboutEn" label={t('signupForm.vendor.serviceData.aboutEn', 'Detailed description in English')} numberOfLines={5} maxLength={2000} />
+      </SectionCard>
+
       {CATEGORY_KEYS.map((key) => {
         const options = t(`signupForm.vendor.serviceData.${key}.options`, { returnObjects: true });
         if (!Array.isArray(options) || options.length === 0) return null;

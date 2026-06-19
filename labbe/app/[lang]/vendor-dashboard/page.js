@@ -69,10 +69,11 @@ const VendorServicesPage = () => {
       rating: service.rating || 0,
       category: service.category,
       _raw: {
+        nameAr: service.nameAr || "",
         description: service.description || "",
+        descriptionAr: service.descriptionAr || "",
         serviceType: service.category || "",
         price: service.price != null ? String(service.price) : "",
-        duration: service.duration || "",
         included: service.included || [],
         tags: service.tags || [],
         image: service.image,

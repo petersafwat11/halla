@@ -28,7 +28,7 @@ import { dateToTimeString } from "../../utils/timeFormat";
 import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 import { bakeCanvas } from "../../utils/canvasBake";
 import { renderTemplateField } from "./_components/TemplateFieldRenderer";
-import { API_BASE_URL } from "../../config/api";
+import { resolveMediaUri } from "../../utils/resolveMediaUri";
 
 // Server limit lives in s3Upload.js (uploadInvitationImage, 10MB).
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
@@ -39,21 +39,6 @@ const ACCEPTED_EXT = /\.(jpe?g|png|webp)$/i;
  * Freshly-baked images come as File-like objects with `uri`; saved
  * images from the backend may be bare paths like "uploads/…".
  */
-const resolveImageUri = (imageValue) => {
-  if (!imageValue) return null;
-  if (typeof imageValue === "object" && imageValue.uri) return imageValue.uri;
-  if (typeof imageValue !== "string") return null;
-  if (
-    imageValue.startsWith("http") ||
-    imageValue.startsWith("file://") ||
-    imageValue.startsWith("blob:") ||
-    imageValue.startsWith("data:")
-  )
-    return imageValue;
-  const base = (API_BASE_URL || "").replace(/\/api\/v\d+$/, "").replace(/\/api$/, "");
-  return `${base}/${imageValue}`;
-};
-
 /**
  * Step 3 (mobile) — visual template selection.
  *
@@ -209,7 +194,7 @@ const StepThree = () => {
   // Preview URI for the upload-mode tile. File pick → uri; saved
   // backend URL → resolve relative paths via the API base URL.
   const uploadPreviewUri = useMemo(() => {
-    return resolveImageUri(templateImage);
+    return resolveMediaUri(templateImage);
   }, [templateImage]);
 
   // ── Remove selection ──────────────────────────────────────────────
@@ -239,7 +224,7 @@ const StepThree = () => {
   // Resolved preview URI for the confirmed card.
   const confirmedPreviewUri = useMemo(() => {
     if (mode === "upload") return uploadPreviewUri;
-    return resolveImageUri(templateImage);
+    return resolveMediaUri(templateImage);
   }, [mode, templateImage, uploadPreviewUri]);
 
   // The "selected template" summary row should NOT appear in upload
@@ -257,13 +242,27 @@ const StepThree = () => {
               : t("confirmed_design_label", "Selected Design")}
           </Text>
           <View style={styles.confirmedCardImageWrapper}>
-            {confirmedPreviewUri && (
+            {mode === "template" &&
+            (selectedTemplate?.imageUrl || selectedTemplate?.thumbnailUrl) ? (
+              <TemplatePreviewCanvas
+                template={selectedTemplate}
+                data={
+                  selectedTemplate?.fieldValues ||
+                  selectedTemplate?.data ||
+                  {}
+                }
+                primaryColor={
+                  selectedTemplate?.fieldValues?.primaryColor ||
+                  selectedTemplate?.data?.primaryColor
+                }
+              />
+            ) : confirmedPreviewUri ? (
               <RNImage
                 source={{ uri: confirmedPreviewUri }}
                 style={styles.confirmedCardImg}
                 resizeMode="contain"
               />
-            )}
+            ) : null}
           </View>
           {mode === "template" && selectedTemplate && (
             <Text style={styles.confirmedCardTemplateName}>
@@ -469,6 +468,10 @@ const StepThree = () => {
             "visualTemplate",
             {
               ...selectedTemplate,
+              templateRef:
+                selectedTemplate?.templateRef ||
+                selectedTemplate?._id ||
+                selectedTemplate?.id,
               data: formValues,
               fieldValues: formValues,
               isCustomUpload: false,
@@ -503,7 +506,7 @@ const StepThree = () => {
  * The previous `methods.watch()` in the parent caused a re-render storm that
  * could interact badly with the keyboard manager and lose focus.
  */
-const LiveCanvas = ({ template, control, hasFields }) => {
+const LiveCanvas = ({ template, control, hasFields, onBackgroundReady }) => {
   const data = useWatch({ control });
   const primaryColor = useWatch({ control, name: "primaryColor" });
   return (
@@ -513,6 +516,7 @@ const LiveCanvas = ({ template, control, hasFields }) => {
       primaryColor={
         hasFields ? primaryColor : template?.data?.primaryColor
       }
+      onBackgroundReady={onBackgroundReady}
     />
   );
 };
@@ -536,6 +540,10 @@ const TemplateFormModal = ({
   const canvasRef = useRef(null);
   const [baking, setBaking] = useState(false);
   const [bakeError, setBakeError] = useState(null);
+  const [backgroundReady, setBackgroundReady] = useState(false);
+  const handleBackgroundReady = useCallback((ready) => {
+    setBackgroundReady(ready);
+  }, []);
 
   const fields = template?.fields || [];
   const hasFields = fields.length > 0;
@@ -553,6 +561,7 @@ const TemplateFormModal = ({
     if (visible && template?._id) {
       methods.reset(buildDefaultValues(template, eventDate, eventTime));
       setBakeError(null);
+      setBackgroundReady(false);
     }
     // Re-seed each time the modal opens for a new template; otherwise stale
     // values from a prior template can bleed in.
@@ -560,6 +569,10 @@ const TemplateFormModal = ({
   }, [visible, template?._id]);
 
   const onSubmit = methods.handleSubmit(async (data) => {
+    if (!backgroundReady) {
+      setBakeError("TEMPLATE_BACKGROUND_NOT_READY");
+      return;
+    }
     const converted = { ...data };
     for (const field of fields) {
       if (field.type === "time" && converted[field.key] instanceof Date) {
@@ -631,6 +644,7 @@ const TemplateFormModal = ({
                   template={template}
                   control={methods.control}
                   hasFields={hasFields}
+                  onBackgroundReady={handleBackgroundReady}
                 />
               </View>
 
@@ -664,11 +678,11 @@ const TemplateFormModal = ({
                 style={[
                   styles.footerBtn,
                   styles.footerBtnPrimary,
-                  baking && { opacity: 0.6 },
+                  (baking || !backgroundReady) && { opacity: 0.6 },
                 ]}
                 onPress={onSubmit}
                 activeOpacity={0.85}
-                disabled={baking}
+                disabled={baking || !backgroundReady}
               >
                 <Text style={styles.footerBtnPrimaryText}>
                   {baking ? t("saving") : t("save")}

@@ -26,9 +26,15 @@ const AdditionalLinksSection = ({ data, onSave }) => {
     facebook: data?.facebook || "",
     twitter: data?.twitter || "",
     tiktok: data?.tiktok || "",
+    whatsapp: data?.whatsapp || "",
   };
 
   const socialLinks = [
+    {
+      key: "whatsapp",
+      label: t("additionalLinks.whatsapp", "WhatsApp"),
+      icon: <FaGlobe size={16} color="#2a8c5b" />,
+    },
     {
       key: "website",
       label: t("additionalLinks.websiteLink", "رابط الموقع"),
@@ -75,6 +81,7 @@ const AdditionalLinksSection = ({ data, onSave }) => {
             facebook: formData.facebook || "",
             twitter: formData.twitter || "",
             tiktok: formData.tiktok || "",
+            whatsapp: formData.whatsapp || "",
           },
         });
       }

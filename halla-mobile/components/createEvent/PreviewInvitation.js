@@ -17,6 +17,7 @@ import {
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
+import { resolveMediaUri } from "../../utils/resolveMediaUri";
 
 /**
  * Invitation preview popup. Renders a WhatsApp-style bubble with the
@@ -96,12 +97,8 @@ const PreviewInvitation = ({
   }, [templateData, eventTitle, t]);
 
   const bakedImageSource = useMemo(() => {
-    if (!templateImage) return null;
-    if (typeof templateImage === "string") return { uri: templateImage };
-    if (typeof templateImage === "object" && templateImage.uri) {
-      return { uri: templateImage.uri };
-    }
-    return null;
+    const uri = resolveMediaUri(templateImage);
+    return uri ? { uri } : null;
   }, [templateImage]);
 
   const aspectRatio = useMemo(() => {

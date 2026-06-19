@@ -1,18 +1,5 @@
 const { z } = require('zod');
-
-const SERVICE_CATEGORIES = [
-  'eventPlanning',
-  'mediaProduction',
-  'giftsAndGiveaways',
-  'foodAndBeverages',
-  'beautyAndFashion',
-  'logisticsAndDelivery',
-  'corporateServices',
-  'supportServices',
-  'technicalServices',
-  'soundLightingEntertainment',
-  'hallsAndVenues',
-];
+const { SERVICE_CATEGORIES } = require('../../shared/constants');
 
 const tagsSchema = z.preprocess(
   (v) => (Array.isArray(v) ? v.map(String) : []),

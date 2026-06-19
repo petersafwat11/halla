@@ -24,6 +24,10 @@ const ServiceDetailsEditForm = ({
 
   const [formData, setFormData] = useState({
     description: data?.serviceDescription || "",
+    taglineAr: data?.taglineAr || "",
+    taglineEn: data?.taglineEn || "",
+    aboutAr: data?.aboutAr || "",
+    aboutEn: data?.aboutEn || "",
     nationalId: data?.nationalId || "",
   });
   const [errors, setErrors] = useState({});
@@ -84,6 +88,10 @@ const ServiceDetailsEditForm = ({
       {
         nationalId: formData.nationalId,
         serviceDescription: formData.description,
+        taglineAr: formData.taglineAr,
+        taglineEn: formData.taglineEn,
+        aboutAr: formData.aboutAr,
+        aboutEn: formData.aboutEn,
       },
       serviceDetailsSchema(t)
     );
@@ -98,6 +106,10 @@ const ServiceDetailsEditForm = ({
       if (onSave) {
         const payload = {
           serviceDescription: formData.description,
+          taglineAr: formData.taglineAr,
+          taglineEn: formData.taglineEn,
+          aboutAr: formData.aboutAr,
+          aboutEn: formData.aboutEn,
           nationalId: formData.nationalId,
         };
         if (nationalIdImages.length > 0) {
@@ -208,6 +220,22 @@ const ServiceDetailsEditForm = ({
             <span className={styles.error}>{errors.nationalId}</span>
           )}
         </div>
+
+        {[
+          ["taglineAr", t("serviceDetails.taglineAr", "النبذة القصيرة بالعربية"), 160, false, "rtl"],
+          ["taglineEn", t("serviceDetails.taglineEn", "Short tagline in English"), 160, false, "ltr"],
+          ["aboutAr", t("serviceDetails.aboutAr", "نبذة تفصيلية بالعربية"), 2000, true, "rtl"],
+          ["aboutEn", t("serviceDetails.aboutEn", "Detailed description in English"), 2000, true, "ltr"],
+        ].map(([key, label, maxLength, multiline, dir]) => (
+          <div className={styles.editFormField} key={key} dir={dir}>
+            <label className={styles.editFormLabel}>{label}</label>
+            {multiline ? (
+              <textarea className={styles.editFormTextarea} value={formData[key]} maxLength={maxLength} rows={5} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })} />
+            ) : (
+              <input className={styles.editFormInput} value={formData[key]} maxLength={maxLength} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })} />
+            )}
+          </div>
+        ))}
 
         <div className={styles.editFormField}>
           <label className={styles.editFormLabel}>{t("serviceDetails.serviceDescription")}</label>

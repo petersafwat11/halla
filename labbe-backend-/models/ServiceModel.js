@@ -4,6 +4,7 @@
  */
 
 const mongoose = require("mongoose");
+const { SERVICE_CATEGORIES } = require("../src/shared/constants");
 
 const serviceSchema = new mongoose.Schema(
   {
@@ -19,27 +20,27 @@ const serviceSchema = new mongoose.Schema(
       trim: true,
       maxlength: [200, "Service name cannot exceed 200 characters"],
     },
+    nameAr: {
+      type: String,
+      trim: true,
+      maxlength: [200, "Arabic service name cannot exceed 200 characters"],
+      default: null,
+    },
     description: {
       type: String,
       trim: true,
       maxlength: [2000, "Description cannot exceed 2000 characters"],
     },
+    descriptionAr: {
+      type: String,
+      trim: true,
+      maxlength: [2000, "Arabic description cannot exceed 2000 characters"],
+      default: null,
+    },
     category: {
       type: String,
       required: [true, "Service category is required"],
-      enum: [
-        "eventPlanning",
-        "mediaProduction",
-        "giftsAndGiveaways",
-        "foodAndBeverages",
-        "beautyAndFashion",
-        "logisticsAndDelivery",
-        "corporateServices",
-        "supportServices",
-        "technicalServices",
-        "soundLightingEntertainment",
-        "hallsAndVenues",
-      ],
+      enum: SERVICE_CATEGORIES,
     },
     image: {
       type: String,
@@ -146,6 +147,7 @@ const serviceSchema = new mongoose.Schema(
 
 // Indexes for efficient querying
 serviceSchema.index({ vendorId: 1, status: 1 });
+serviceSchema.index({ vendorId: 1, status: 1, isPublic: 1, price: 1 });
 serviceSchema.index({ category: 1, status: 1 });
 serviceSchema.index({ "serviceLocation.regionId": 1 });
 serviceSchema.index({ "serviceLocation.cityId": 1 });

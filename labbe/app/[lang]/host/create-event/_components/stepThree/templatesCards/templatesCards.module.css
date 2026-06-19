@@ -1,6 +1,10 @@
-/* Carousel wrapper */
+/* Carousel wrapper — mirrors the host home-page EventTemplatesSection so the
+   step-3 picker matches it visually. min-width:0 lets the flex track shrink
+   inside the wizard's narrow form column instead of forcing overflow. */
 .carouselWrapper {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1.6rem;
@@ -15,9 +19,13 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  gap: 14px;
-  padding: 4px 0 12px;
+  gap: 2.4rem;
+  /* Extra top padding so the card hover lift (translateY(-4px)) isn't shaved
+     by the parent section's overflow: clip. */
+  padding: 8px 0 12px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   align-items: stretch;
 }
 
@@ -55,7 +63,7 @@
   flex-direction: column;
   align-items: flex-start;
   border-radius: 4.66px;
-  background: #fff;
+  background: #fffaea;
   overflow: hidden;
   position: relative;
 }
@@ -72,7 +80,7 @@
 .checkmark {
   position: absolute;
   top: 0.6rem;
-  right: 0.6rem;
+  inset-inline-end: 0.6rem;
   z-index: 10;
   color: #2a8c5b;
   font-size: 2rem;
@@ -86,13 +94,14 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Carousel controls */
+/* Carousel controls (prev / dots / next) */
 .controls {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1.6rem;
   margin-top: 0.4rem;
+  width: 100%;
 }
 
 .ctrlBtn {
@@ -151,17 +160,10 @@
 }
 
 /* Tablet */
-@media (max-width: 1024px) {
-  .templatesTrack {
-    gap: 12px;
-  }
-}
-
-/* Mobile */
 @media (max-width: 768px) {
   .templatesTrack {
     gap: 1.2rem;
-    padding: 4px 0 8px;
+    padding: 8px 0 8px;
   }
 
   .templateCard {
@@ -172,6 +174,8 @@
   .templateImage {
     width: 100px;
     height: 133px;
+    margin: 6px auto;
+    border-radius: 6px;
   }
 
   .checkmark {
@@ -180,17 +184,14 @@
     height: 2rem;
   }
 
-  .controls {
-    gap: 1.2rem;
-  }
-
   .ctrlBtn {
     width: 3.2rem;
     height: 3.2rem;
   }
 }
 
-@media (max-width: 480px) {
+/* Mobile */
+@media (max-width: 550px) {
   .templateCard {
     width: 104px;
     height: 126px;
@@ -199,5 +200,7 @@
   .templateImage {
     width: 86px;
     height: 115px;
+    margin: 5px auto;
+    border-radius: 6px;
   }
 }

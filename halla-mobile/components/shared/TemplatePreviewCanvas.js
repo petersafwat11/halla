@@ -23,7 +23,7 @@
  * absolutely with a `translate(-50%, -50%)` centering offset.
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
 import * as LucideIcons from "lucide-react-native";
 import { useTranslation } from "../../localization";
@@ -162,11 +162,19 @@ export default function TemplatePreviewCanvas({
   data = {},
   primaryColor,
   width: widthProp,
+  onBackgroundReady,
 }) {
   const { t } = useTranslation("common");
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const preferredImageUrl = template?.imageUrl || template?.thumbnailUrl || null;
+  const [imageUrl, setImageUrl] = useState(preferredImageUrl);
 
-  if (!template?.imageUrl) return null;
+  useEffect(() => {
+    setImageUrl(preferredImageUrl);
+    onBackgroundReady?.(false);
+  }, [preferredImageUrl, onBackgroundReady]);
+
+  if (!preferredImageUrl) return null;
 
   const decorations = [...(template.decorations || [])].sort(cmpZ);
   const overlays = [...(template.overlays || [])].sort(cmpZ);
@@ -193,9 +201,15 @@ export default function TemplatePreviewCanvas({
       style={[styles.container, { width: widthProp || "100%", aspectRatio }]}
     >
       <Image
-        source={{ uri: template.imageUrl }}
+        source={{ uri: imageUrl }}
         style={styles.bgImage}
         resizeMode="cover"
+        onLoad={() => onBackgroundReady?.(true)}
+        onError={() => {
+          if (template?.thumbnailUrl && imageUrl !== template.thumbnailUrl) {
+            setImageUrl(template.thumbnailUrl);
+          }
+        }}
       />
       {decorations.map((d, i) => (
         <DecorationItem

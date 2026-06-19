@@ -1,0 +1,198 @@
+- generic [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halaa" [ref=e5] [cursor=pointer]:
+        - /url: /en
+        - img "Halaa" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /ar/host
+          - img [ref=e9]
+          - generic [ref=e254]: AR
+        - button "Notifications (1 unread)" [ref=e255] [cursor=pointer]:
+          - img "notifications" [ref=e256]
+          - generic [ref=e257]: "1"
+        - img "messages" [ref=e258]
+        - button "TestHost Event Management" [ref=e259] [cursor=pointer]:
+          - generic [ref=e15]:
+            - generic [ref=e16]:
+              - img [ref=e17]
+              - generic [ref=e260]: TestHost
+            - generic [ref=e19]: Event Management
+          - img [ref=e21]
+    - generic [ref=e24]:
+      - navigation [ref=e26]:
+        - list [ref=e27]:
+          - listitem [ref=e28] [cursor=pointer]:
+            - link "Dashboard" [ref=e29]:
+              - /url: /en/host
+              - img [ref=e30]
+              - generic [ref=e261]: Dashboard
+          - listitem [ref=e32] [cursor=pointer]:
+            - link "Events" [ref=e33]:
+              - /url: /en/host/events
+              - img [ref=e34]
+              - generic [ref=e262]: Events
+          - listitem [ref=e36] [cursor=pointer]:
+            - link "Payments" [ref=e37]:
+              - /url: /en/host/payments
+              - img [ref=e38]
+              - generic [ref=e263]: Payments
+          - listitem [ref=e40] [cursor=pointer]:
+            - link "Tickets" [ref=e41]:
+              - /url: /en/host/tickets
+              - img [ref=e42]
+              - generic [ref=e264]: Tickets
+          - listitem [ref=e44] [cursor=pointer]:
+            - link "Plans" [ref=e45]:
+              - /url: /en/host/plans
+              - img [ref=e46]
+              - generic [ref=e265]: Plans
+          - listitem [ref=e48] [cursor=pointer]:
+            - link "Halla Marketplace" [ref=e49]:
+              - /url: /en/host/market-place
+              - img [ref=e50]
+              - generic [ref=e266]: Halla Marketplace
+          - listitem [ref=e52] [cursor=pointer]:
+            - link "Settings" [ref=e53]:
+              - /url: /en/host/settings
+              - img [ref=e54]
+              - generic [ref=e267]: Settings
+      - button "Logout" [ref=e58]:
+        - img [ref=e59]
+        - generic [ref=e268]: Logout
+    - generic [ref=e101]:
+      - generic [ref=e102]:
+        - generic [ref=e103]:
+          - heading "Welcome! 👋" [level=1] [ref=e104]
+          - paragraph [ref=e105]: Manage your events and track your progress
+        - button "Create Event +" [ref=e106] [cursor=pointer]
+      - generic [ref=e107]:
+        - generic [ref=e109]:
+          - generic [ref=e110]:
+            - generic [ref=e111]:
+              - generic [ref=e112]: Total Events
+              - generic [ref=e113]: "1"
+            - img "total events" [ref=e114]
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - generic [ref=e117]: Active Events
+              - generic [ref=e118]: "0"
+            - img "active events" [ref=e119]
+          - generic [ref=e120]:
+            - generic [ref=e121]:
+              - generic [ref=e122]: Pending Scheduling
+              - generic [ref=e123]: "1"
+            - img "pending scheduling events" [ref=e124]
+          - generic [ref=e125]:
+            - generic [ref=e126]:
+              - generic [ref=e127]: Ended Events
+              - generic [ref=e128]: "0"
+            - img "ended events" [ref=e129]
+        - generic [ref=e130]:
+          - generic [ref=e131]:
+            - img [ref=e134]
+            - generic [ref=e136]:
+              - generic [ref=e137]:
+                - heading "testingwww" [level=3] [ref=e139]
+                - generic [ref=e269]: Pending Scheduling
+              - generic [ref=e141]:
+                - generic [ref=e142]:
+                  - img "guest" [ref=e143]
+                  - generic [ref=e144]: 2 Guests
+                - generic [ref=e145]:
+                  - img "date" [ref=e146]
+                  - generic [ref=e147]: Tuesday, June 23, 2026 - 02:00:AM
+                - generic [ref=e148]:
+                  - img "location" [ref=e149]
+                  - generic [ref=e150]: WVF2+2RG، شارع 26 يوليو، Madinet Samasta, Sumusta El Waqf, Beni Suef Governorate 2634313, Egypt
+          - img [ref=e152]
+          - generic [ref=e153]:
+            - generic [ref=e154]:
+              - generic [ref=e155]: No Response
+              - generic [ref=e156]: "2"
+            - generic [ref=e157]:
+              - generic [ref=e158]: Declined
+              - generic [ref=e159]: "0"
+            - generic [ref=e160]:
+              - generic [ref=e161]: Approved
+              - generic [ref=e162]: "0"
+          - img [ref=e164]
+          - generic [ref=e165]:
+            - generic [ref=e166]:
+              - generic [ref=e167]: Remaining Guests
+              - generic [ref=e168]: "3"
+            - generic [ref=e169]:
+              - generic [ref=e170]: Remaining Compensation Messages
+              - generic [ref=e171]: "0"
+          - img [ref=e173]
+          - generic [ref=e174]:
+            - button "Test Message test" [ref=e271] [cursor=pointer]:
+              - generic [ref=e272]: Test Message
+              - img "test" [ref=e176]
+            - button "View Statistics diagram" [ref=e273] [cursor=pointer]:
+              - generic [ref=e274]: View Statistics
+              - img "diagram" [ref=e178]
+            - generic [ref=e179]:
+              - button "edit Edit Event arrow-down" [active] [ref=e275] [cursor=pointer]:
+                - img "edit" [ref=e181]
+                - generic [ref=e276]: Edit Event
+                - img "arrow-down" [ref=e182]
+              - generic [ref=e300]:
+                - button "Event Details" [ref=e301] [cursor=pointer]
+                - button "Guest List" [ref=e302] [cursor=pointer]
+                - button "Invitation Design" [ref=e303] [cursor=pointer]
+                - button "Invitation Customization" [ref=e304] [cursor=pointer]
+      - generic [ref=e184]:
+        - generic [ref=e185]:
+          - heading "Event Templates" [level=2] [ref=e186]
+          - paragraph [ref=e187]: Choose the appropriate template that you think expresses the occasion
+        - generic [ref=e188]:
+          - generic [ref=e189]:
+            - button "All categories" [ref=e190] [cursor=pointer]
+            - button "Wedding" [ref=e191] [cursor=pointer]
+            - button "Engagement" [ref=e192] [cursor=pointer]
+            - button "Birthday" [ref=e193] [cursor=pointer]
+            - button "Baby Shower" [ref=e194] [cursor=pointer]
+            - button "Ladies' Event" [ref=e195] [cursor=pointer]
+            - button "General Event" [ref=e196] [cursor=pointer]
+          - generic [ref=e197]:
+            - img "Royal Groom" [ref=e200] [cursor=pointer]
+            - img "Pearl Da'wah Wedding" [ref=e203] [cursor=pointer]
+            - img "Royal Da'wah Wedding" [ref=e206] [cursor=pointer]
+            - img "Gulf Groom" [ref=e209] [cursor=pointer]
+            - img "Rose Garden Wedding" [ref=e212] [cursor=pointer]
+            - img "Burgundy Bloom Wedding" [ref=e215] [cursor=pointer]
+            - img "Floral Arch Wedding" [ref=e218] [cursor=pointer]
+            - img "Candle Engagement" [ref=e221] [cursor=pointer]
+            - img "Sacred Vows" [ref=e224] [cursor=pointer]
+            - img "Eid Al-Adha" [ref=e227] [cursor=pointer]
+            - img "Ramadan Iftar" [ref=e230] [cursor=pointer]
+            - img "Birthday Party" [ref=e233] [cursor=pointer]
+            - img "Newborn Boy" [ref=e236] [cursor=pointer]
+            - img "Newborn Girl" [ref=e239] [cursor=pointer]
+            - img "Graduation Celebration" [ref=e242] [cursor=pointer]
+            - img "Pearl Promise" [ref=e245] [cursor=pointer]
+          - generic [ref=e246]:
+            - button "Previous" [disabled] [ref=e247]:
+              - img [ref=e248]
+            - generic [ref=e250]:
+              - button "1" [ref=e277] [cursor=pointer]
+              - button "2" [ref=e278] [cursor=pointer]
+              - button "3" [ref=e279] [cursor=pointer]
+              - button "4" [ref=e280] [cursor=pointer]
+              - button "5" [ref=e281] [cursor=pointer]
+              - button "6" [ref=e282] [cursor=pointer]
+              - button "7" [ref=e283] [cursor=pointer]
+              - button "8" [ref=e284] [cursor=pointer]
+              - button "9" [ref=e285] [cursor=pointer]
+              - button "10" [ref=e286] [cursor=pointer]
+              - button "11" [ref=e287] [cursor=pointer]
+              - button "12" [ref=e288] [cursor=pointer]
+              - button "13" [ref=e289] [cursor=pointer]
+            - button "Next" [ref=e251] [cursor=pointer]:
+              - img [ref=e252]
+  - button "Open Next.js Dev Tools" [ref=e295] [cursor=pointer]:
+    - img [ref=e296]
+  - alert [ref=e299]

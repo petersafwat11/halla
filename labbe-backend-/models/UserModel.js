@@ -48,6 +48,10 @@ const vendorDataSchema = new mongoose.Schema(
 
     // Service information
     serviceDescription: String,
+    taglineAr: { type: String, trim: true, maxlength: 160 },
+    taglineEn: { type: String, trim: true, maxlength: 160 },
+    aboutAr: { type: String, trim: true, maxlength: 2000 },
+    aboutEn: { type: String, trim: true, maxlength: 2000 },
 
     // Service categories (from frontend)
     serviceCategories: {

@@ -39,10 +39,11 @@ const AddServicePopup = ({
     resolver: zodResolver(addServiceSchema(t)),
     defaultValues: {
       serviceName: "",
+      serviceNameAr: "",
       serviceType: "",
       description: "",
+      descriptionAr: "",
       price: "",
-      duration: "",
       serviceImage: undefined,
     },
   });
@@ -55,10 +56,11 @@ const AddServicePopup = ({
         // Pre-fill form with existing service data
         reset({
           serviceName: editingService.name || "",
+          serviceNameAr: editingService._raw.nameAr || "",
           serviceType: editingService._raw.serviceType || "",
           description: editingService._raw.description || "",
+          descriptionAr: editingService._raw.descriptionAr || "",
           price: editingService._raw.price || "",
-          duration: editingService._raw.duration || "",
           serviceImage: undefined,
         });
         setSelectedTags(editingService._raw.tags || []);
@@ -134,7 +136,6 @@ const AddServicePopup = ({
   const handleFormSubmit = (data) => {
     onSubmit?.({
       ...data,
-      duration: (data.duration || "").trim(),
       tags: selectedTags,
       included,
     });
@@ -191,6 +192,12 @@ const AddServicePopup = ({
                 placeholder={t("services.namePlaceholder")}
               />
 
+              <TextInput
+                name="serviceNameAr"
+                label={t("services.nameArLabel")}
+                placeholder={t("services.nameArPlaceholder")}
+              />
+
               <DropdownInput
                 name="serviceType"
                 label={t("services.typeLabel")}
@@ -208,17 +215,20 @@ const AddServicePopup = ({
               />
 
               <TextInput
+                name="descriptionAr"
+                label={t("services.descArLabel")}
+                placeholder={t("services.descArPlaceholder")}
+                multiline
+                numberOfLines={4}
+              />
+
+              <TextInput
                 name="price"
                 label={t("services.priceLabel")}
                 placeholder={t("services.pricePlaceholder")}
                 keyboardType="decimal-pad"
               />
 
-              <TextInput
-                name="duration"
-                label={t("services.durationLabel")}
-                placeholder={t("services.durationPlaceholder")}
-              />
 
               {/* Included */}
               <View style={styles.includedSection}>

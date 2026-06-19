@@ -259,6 +259,7 @@ const PATHS = {
   vendors: {
     getCategories: "/vendors/categories",
     getPublicVendors: "/vendors/public",
+    getPublicVendor: (id) => `/vendors/public/${id}`,
   },
 
   // ============================================

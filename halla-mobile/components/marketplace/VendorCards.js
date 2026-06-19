@@ -5,17 +5,18 @@ import {
   FlatList,
   Text,
   ActivityIndicator
+  ,TouchableOpacity
 } from "react-native";
 import VendorCard from "./VendorCard";
 import { useTranslation } from "../../localization";
 import { colors } from "../../styles/tokens";
 
-const VendorCards = ({ vendors, onVendorCallPress, loading, refreshing, onRefresh, onEndReached, isFetchingNextPage }) => {
+const VendorCards = ({ vendors, onVendorPress, loading, error, onRetry, refreshing, onRefresh, onEndReached, isFetchingNextPage }) => {
   const { t } = useTranslation("marketplace");
   const renderItem = ({ item, index }) => (
     <VendorCard
       vendor={item}
-      onCallPress={onVendorCallPress}
+      onPress={onVendorPress}
       index={index}
     />
   );
@@ -29,6 +30,12 @@ const VendorCards = ({ vendors, onVendorCallPress, loading, refreshing, onRefres
       );
     }
 
+    if (error) return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>{t("errors.loadFailed")}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={onRetry}><Text style={styles.retryText}>{t("errors.retry")}</Text></TouchableOpacity>
+      </View>
+    );
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>
@@ -66,7 +73,7 @@ const VendorCards = ({ vendors, onVendorCallPress, loading, refreshing, onRefres
 
 const styles = StyleSheet.create({
   listContent: {
-    padding: 24,
+    paddingHorizontal: 24,
     paddingTop: 10
   },
   emptyContainer: {
@@ -84,6 +91,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
   },
+  retryButton: { marginTop: 12, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: colors.primary[500] },
+  retryText: { fontFamily: "Cairo_600SemiBold", color: colors.natural[50] },
 });
 
 export default VendorCards;

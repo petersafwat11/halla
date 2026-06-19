@@ -1,2 +1,2 @@
-export { useVendorCategories, usePublicVendors } from "./queries";
+export { useVendorCategories, usePublicVendors, usePublicVendor } from "./queries";
 export { vendorsKeys } from "./keys";

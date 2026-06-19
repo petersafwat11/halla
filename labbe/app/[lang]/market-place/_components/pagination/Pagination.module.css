@@ -26,19 +26,19 @@
   min-width: 40px;
   height: 40px;
   padding: 0 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: white;
-  color: #374151;
+  border: 1px solid var(--border-gray-250);
+  border-radius: var(--radius-8);
+  background: var(--color-natural-50);
+  color: var(--text-body);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .button:hover:not(:disabled) {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-300);
 }
 
 .button:disabled {
@@ -47,9 +47,9 @@
 }
 
 .button.active {
-  background: #f59e0b;
-  border-color: #f59e0b;
-  color: white;
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: #fff;
 }
 
 .ellipsis {

@@ -1,0 +1,13 @@
+[     131ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[     563ms] [LOG] [Fast Refresh] done in 535ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[     679ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[     680ms] [LOG] [Fast Refresh] done in 114ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[    1227ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[    1268ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3100/_next/static/chunks/node_modules_5dfc3838._.js:3250
+[    1552ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3100/_next/image?url=https%3A%2F%2Fexample.com%2Fportfolio1.jpg&w=1920&q=75:0
+[    1697ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5956
+[    1746ms] [LOG] [Fast Refresh] done in 162ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5816
+[    1749ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3100/_next/image?url=https%3A%2F%2Fexample.com%2Fportfolio1.jpg&w=640&q=75:0
+[    1754ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3100/_next/image?url=https%3A%2F%2Fexample.com%2Fportfolio2.jpg&w=384&q=75:0
+[    1839ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3100/favicon.ico:0
+[    4896ms] [WARNING] The resource http://localhost:3100/_next/static/chunks/%5Broot-of-the-server%5D__ad960bb7._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3100/ar/market-place/vendors/6a242e4b3002caa95e9e5edb:0

@@ -94,6 +94,10 @@ export default function VendorSignupScreen({ navigation }) {
       identity: { brandName: '', ownerFullName: '', phoneNumber: '', email: '', password: '', passwordConfirm: '' },
       serviceData: {
         serviceDescription: '',
+        taglineAr: '',
+        taglineEn: '',
+        aboutAr: '',
+        aboutEn: '',
         eventPlanning: [],
         mediaProduction: [],
         giftsAndGiveaways: [],
@@ -110,7 +114,7 @@ export default function VendorSignupScreen({ navigation }) {
       },
       samplesAndPackages: { portfolioImages: [], businessLogo: null, pricePackages: [], profileFile: null },
       commercialVerification: { commercialRecordNumber: '', commercialRecordImage: null, nationalId: '', nationalIdImage: null },
-      socialLinks: { instagram: '', facebook: '', tiktok: '', twitter: '', website: '' },
+      socialLinks: { instagram: '', facebook: '', tiktok: '', twitter: '', website: '', whatsapp: '' },
     },
   });
 

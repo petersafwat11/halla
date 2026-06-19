@@ -1,0 +1,173 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T":
+    - alert [ref=e444] [cursor=pointer]:
+      - img [ref=e446]
+      - text: errors.network_error
+      - button "close" [ref=e448]:
+        - img [ref=e449]
+      - progressbar "notification timer" [ref=e453]
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Halaa" [ref=e5] [cursor=pointer]:
+        - /url: /en
+        - img "Halaa" [ref=e6]
+      - generic [ref=e7]:
+        - link "Switch language" [ref=e8] [cursor=pointer]:
+          - /url: /ar/host/plans
+          - img [ref=e9]
+          - generic [ref=e12]: AR
+        - button "Notifications (1 unread)" [ref=e229] [cursor=pointer]:
+          - img "notifications" [ref=e15]
+          - generic [ref=e230]: "1"
+        - img "messages" [ref=e16]
+        - button "TestHost Event Management" [ref=e231] [cursor=pointer]:
+          - generic [ref=e19]:
+            - generic [ref=e20]:
+              - img [ref=e21]
+              - generic [ref=e232]: TestHost
+            - generic [ref=e23]: Event Management
+          - img [ref=e25]
+    - generic [ref=e27]:
+      - navigation [ref=e29]:
+        - list [ref=e30]:
+          - listitem [ref=e31] [cursor=pointer]:
+            - link "Dashboard" [ref=e32]:
+              - /url: /en/host
+              - img [ref=e33]
+              - generic [ref=e35]: Dashboard
+          - listitem [ref=e36] [cursor=pointer]:
+            - link "Events" [ref=e37]:
+              - /url: /en/host/events
+              - img [ref=e38]
+              - generic [ref=e40]: Events
+          - listitem [ref=e41] [cursor=pointer]:
+            - link "Payments" [ref=e42]:
+              - /url: /en/host/payments
+              - img [ref=e43]
+              - generic [ref=e45]: Payments
+          - listitem [ref=e46] [cursor=pointer]:
+            - link "Tickets" [ref=e47]:
+              - /url: /en/host/tickets
+              - img [ref=e48]
+              - generic [ref=e50]: Tickets
+          - listitem [ref=e51] [cursor=pointer]:
+            - link "Plans" [ref=e52]:
+              - /url: /en/host/plans
+              - img [ref=e53]
+              - generic [ref=e55]: Plans
+          - listitem [ref=e56] [cursor=pointer]:
+            - link "Halla Marketplace" [ref=e57]:
+              - /url: /en/host/market-place
+              - img [ref=e58]
+              - generic [ref=e60]: Halla Marketplace
+          - listitem [ref=e61] [cursor=pointer]:
+            - link "Settings" [ref=e62]:
+              - /url: /en/host/settings
+              - img [ref=e63]
+              - generic [ref=e66]: Settings
+      - button "Logout" [ref=e68]:
+        - img [ref=e69]
+        - generic [ref=e71]: Logout
+    - generic [ref=e328]:
+      - generic [ref=e329]:
+        - heading "Order Summary" [level=1] [ref=e330]:
+          - img [ref=e331] [cursor=pointer]
+          - text: Order Summary
+        - paragraph [ref=e333]: Review your order before payment
+      - generic [ref=e335]:
+        - generic [ref=e336]:
+          - generic [ref=e337]:
+            - heading "Plan Details" [level=2] [ref=e339]
+            - generic [ref=e340]:
+              - generic [ref=e341]:
+                - img [ref=e343]
+                - generic [ref=e345]:
+                  - heading "Halaa Basic 25 Invites" [level=3] [ref=e346]
+                  - paragraph [ref=e347]: Single Event
+                - generic [ref=e348]:
+                  - generic [ref=e349]: "95"
+                  - generic [ref=e350]: SAR
+              - generic [ref=e351]:
+                - generic [ref=e352]:
+                  - img [ref=e353]
+                  - generic [ref=e355]: 25 invites
+                - generic [ref=e356]:
+                  - img [ref=e357]
+                  - generic [ref=e359]: 1 event — 90 days
+                - generic [ref=e360]:
+                  - img [ref=e361]
+                  - generic [ref=e363]: 3 compensation invites
+              - generic [ref=e364]:
+                - generic [ref=e365]: "Billing Period:"
+                - generic [ref=e366]: 90 days (1 event)
+          - generic [ref=e367]:
+            - heading "Discount Code" [level=2] [ref=e369]:
+              - img [ref=e370]
+              - text: Discount Code
+            - generic [ref=e373]:
+              - textbox "Enter discount code" [ref=e374]
+              - button "Apply" [disabled] [ref=e375]
+          - generic [ref=e376]:
+            - heading "Payment Method" [level=2] [ref=e378]
+            - generic [ref=e380]:
+              - radiogroup [ref=e381]:
+                - radio "Visa Mastercard mada" [checked] [ref=e382] [cursor=pointer]:
+                  - generic [ref=e385]:
+                    - img "Visa" [ref=e387]
+                    - img "Mastercard" [ref=e389]
+                    - img "mada" [ref=e391]
+                - radio [ref=e392] [cursor=pointer]:
+                  - img [ref=e395]
+                - radio [ref=e397] [cursor=pointer]:
+                  - img [ref=e400]:
+                    - generic [ref=e402]: stc pay
+              - generic [ref=e403]:
+                - generic [ref=e404]:
+                  - generic [ref=e405]: Cardholder name
+                  - textbox "Cardholder name" [ref=e406]: Mohammed Test
+                - generic [ref=e407]:
+                  - generic [ref=e408]: Card number
+                  - generic [ref=e409]:
+                    - generic:
+                      - generic:
+                        - img "Visa"
+                    - textbox "1234 5678 9012 3456" [ref=e410]: 4111 1111 1111 1111
+                - generic [ref=e411]:
+                  - generic [ref=e412]:
+                    - generic [ref=e413]: Expiry date
+                    - textbox "YY/MM" [ref=e414]: 30/12
+                  - generic [ref=e415]:
+                    - generic [ref=e416]: CVC
+                    - textbox "•••" [ref=e417]: "123"
+                - paragraph [ref=e418]:
+                  - img [ref=e419]
+                  - generic [ref=e421]: Your card details are encrypted and processed securely.
+        - generic [ref=e422]:
+          - generic [ref=e423]:
+            - heading "Payment Summary" [level=2] [ref=e425]
+            - generic [ref=e427]:
+              - generic [ref=e428]:
+                - generic [ref=e429]: Plan Price
+                - generic [ref=e430]: 95 SAR
+              - generic [ref=e432]:
+                - generic [ref=e433]: Total
+                - generic [ref=e434]: 95 SAR
+          - button "Activate Subscription 95 SAR" [ref=e435] [cursor=pointer]:
+            - generic [ref=e436]: Activate Subscription
+            - generic [ref=e454]: 95 SAR
+          - generic [ref=e438]:
+            - img [ref=e439]
+            - generic [ref=e441]: By clicking Complete Payment, you agree to our Terms of Service and Privacy Policy
+          - paragraph [ref=e442]: By clicking Complete Payment, you agree to our Terms of Service and Privacy Policy
+  - generic [ref=e322] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e323]:
+      - img [ref=e324]
+    - generic [ref=e455]:
+      - button "Open issues overlay" [ref=e456]:
+        - generic [ref=e457]:
+          - generic [ref=e458]: "0"
+          - generic [ref=e459]: "1"
+        - generic [ref=e460]: Issue
+      - button "Collapse issues badge" [ref=e461]:
+        - img [ref=e462]
+  - alert [ref=e327]

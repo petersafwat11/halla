@@ -142,7 +142,15 @@ export default function DynamicTemplateForm({
                 />
               </div>
             </form>
-            <div className={styles.leftPreview}>
+            <div
+              className={styles.leftPreview}
+              style={{
+                "--preview-ar":
+                  template?.naturalWidth && template?.naturalHeight
+                    ? template.naturalWidth / template.naturalHeight
+                    : 0.8,
+              }}
+            >
               <TemplatePreviewCanvas
                 ref={previewRef}
                 template={template}

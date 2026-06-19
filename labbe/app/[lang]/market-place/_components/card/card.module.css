@@ -2,50 +2,45 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 4px 12px rgba(17, 24, 39, 0.04);
   overflow: hidden;
+  background: var(--color-natural-50);
+  border: 1px solid var(--border-gray-200);
+  border-radius: var(--radius-16);
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 6px 16px rgba(17, 24, 39, 0.05);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 8px rgba(17, 24, 39, 0.06), 0 12px 24px rgba(17, 24, 39, 0.08);
-  border-color: rgba(194, 142, 92, 0.25);
+  border-color: var(--border-brand-200);
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.07), 0 18px 36px rgba(138, 101, 65, 0.1);
 }
 
-/* ============================================
-   IMAGE
-   ============================================ */
+/* ── Image ── */
 .imageContainer {
   position: relative;
+  display: block;
   width: 100%;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: #f4efe9;
+  background: var(--color-primary-50);
 }
 
 .image {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
 }
 
 .card:hover .image {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
-/* Fallback when no image / image fails to load */
 .imageFallback {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #c28e5c 0%, #a67749 100%);
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-700) 100%);
   overflow: hidden;
 }
 
@@ -55,7 +50,6 @@
   color: #fff;
   font-size: 64px;
   font-weight: 800;
-  letter-spacing: -0.02em;
   line-height: 1;
   text-transform: uppercase;
   user-select: none;
@@ -65,162 +59,137 @@
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.12) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.08) 0%, transparent 40%);
-  pointer-events: none;
+    radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.14) 0%, transparent 42%),
+    radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.08) 0%, transparent 42%);
 }
 
-/* ============================================
-   RATING BADGE
-   ============================================ */
-.ratingBadge {
-  position: absolute;
-  top: 12px;
-  inset-inline-end: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(17, 24, 39, 0.78);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #fff;
-}
-
-.ratingIcon {
-  width: 13px;
-  height: 13px;
-  color: #f5b342;
-  fill: #f5b342;
-}
-
-/* ============================================
-   LOGO BADGE
-   ============================================ */
 .logoBadge {
   position: absolute;
   bottom: 12px;
   inset-inline-start: 12px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
   overflow: hidden;
+  border-radius: 50%;
   background: #fff;
   border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .logoBadgeImg {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .logoBadgeFallback {
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #c28e5c;
+  background: var(--color-primary-500);
   color: #fff;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-.ratingValue {
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.reviewsCount {
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1;
-  opacity: 0.85;
-}
-
-/* ============================================
-   CONTENT
-   ============================================ */
+/* ── Content ── */
 .content {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px;
+  gap: var(--spacing-12);
+  padding: var(--spacing-16) var(--spacing-16) var(--spacing-20);
 }
 
-.heading {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
+.titleLink {
+  color: inherit;
+  text-decoration: none;
 }
 
-.vendorName {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-size: 12px;
-  font-weight: 600;
-  color: #c28e5c;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.titleLink:focus-visible,
+.imageContainer:focus-visible,
+.cta:focus-visible {
+  outline: 3px solid var(--color-primary-300);
+  outline-offset: 2px;
 }
 
 .title {
   margin: 0;
-  color: #1a1a1a;
+  color: var(--text-body);
   font-size: 17px;
   font-weight: 700;
   line-height: 1.35;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;
 }
 
-/* ============================================
-   LOCATION
-   ============================================ */
-.locationContainer {
-  display: inline-flex;
+.description {
+  margin: 0;
+  color: var(--text-description);
+  font-size: 13px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(1.6em * 2);
+}
+
+/* ── Meta (rating + location) ── */
+.meta {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  color: #6b6b6b;
+  justify-content: space-between;
+  gap: var(--spacing-12);
   min-width: 0;
 }
 
-.locationIcon {
-  width: 14px;
-  height: 14px;
+.rating {
+  display: inline-flex;
   flex-shrink: 0;
-  color: #9a9a9a;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-body);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ratingIcon {
+  width: 15px;
+  height: 15px;
+  color: #f5b342;
+  fill: #f5b342;
 }
 
 .location {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text-description);
+}
+
+.location svg {
+  flex-shrink: 0;
+  color: var(--color-primary-400);
+}
+
+.locationText {
   font-size: 13px;
   font-weight: 500;
-  line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* ============================================
-   TAGS
-   ============================================ */
+/* ── Tags ── */
 .tagsContainer {
   display: flex;
   flex-wrap: wrap;
@@ -232,110 +201,95 @@
   align-items: center;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #f5f1ec;
-  color: #4a4a4a;
+  background: var(--color-primary-50);
+  color: var(--color-primary-800);
   font-size: 11.5px;
   font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.01em;
   white-space: nowrap;
 }
 
 .tagMore {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: transparent;
-  color: #c28e5c;
+  padding: 4px 8px;
+  color: var(--color-primary-600);
   font-size: 11.5px;
   font-weight: 700;
-  line-height: 1.4;
 }
 
-/* ============================================
-   FOOTER
-   ============================================ */
+/* ── Footer ── */
 .footer {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding-top: 14px;
-  border-top: 1px solid #f0eae3;
+  justify-content: space-between;
+  gap: var(--spacing-12);
+  margin-top: 2px;
+  padding-top: var(--spacing-16);
+  border-top: 1px solid var(--border-gray-200);
+}
+
+.priceBlock {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.priceLabel {
+  color: var(--text-dimmed);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .price {
-  color: #1a1a1a;
+  color: var(--text-body);
   font-size: 18px;
   font-weight: 800;
   line-height: 1.2;
-  letter-spacing: -0.01em;
   white-space: nowrap;
 }
 
-.priceOnRequest {
-  color: #6b6b6b;
-  font-size: 13px;
-  font-weight: 600;
-  font-style: italic;
-}
-
-.callButton {
+.cta {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 10px;
-  background: #c28e5c;
-  border: none;
-  cursor: pointer;
+  min-height: 40px;
+  padding: 0 var(--spacing-16);
+  border-radius: var(--radius-12);
+  background: var(--color-primary-500);
   color: #fff;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(138, 101, 65, 0.25);
   transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-  box-shadow: 0 1px 2px rgba(194, 142, 92, 0.25);
 }
 
-.callButton:hover {
-  background: #a67749;
-  box-shadow: 0 4px 10px rgba(194, 142, 92, 0.3);
+.cta:hover {
+  background: var(--color-primary-600);
+  box-shadow: 0 6px 14px rgba(138, 101, 65, 0.28);
 }
 
-.callButton:active {
+.cta:active {
   transform: translateY(1px);
-  background: #8a6541;
-  box-shadow: 0 1px 2px rgba(194, 142, 92, 0.25);
+  background: var(--color-primary-800);
 }
 
-.callIcon {
-  width: 14px;
-  height: 14px;
-}
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
 @media (max-width: 600px) {
   .content {
-    padding: 16px;
-    gap: 12px;
+    padding: var(--spacing-16);
+    gap: 10px;
   }
-
   .title {
     font-size: 16px;
   }
-
   .price {
     font-size: 17px;
   }
-
-  .callButton {
-    height: 36px;
-    padding: 0 14px;
+  .cta {
+    min-height: 38px;
+    padding: 0 var(--spacing-12);
     font-size: 12.5px;
   }
 }

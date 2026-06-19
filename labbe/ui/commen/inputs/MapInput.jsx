@@ -67,6 +67,20 @@ const MapInputInner = ({
   const debounceRef = useRef(null);
   const searchContainerRef = useRef(null);
 
+  // React Hook Form resets update-mode values after the event request
+  // resolves. Mirror that late value into this component's local map state;
+  // useState's initializer only saw the empty create-event defaults.
+  useEffect(() => {
+    const lat = Number(value?.latitude);
+    const lng = Number(value?.longitude);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      const next = { lat, lng };
+      setMarkerPos(next);
+      setPanTarget(next);
+    }
+    setSearchQuery(value?.address || "");
+  }, [value?.address, value?.latitude, value?.longitude]);
+
   const getGeocoder = () => {
     if (!geocoderRef.current && window.google?.maps) {
       geocoderRef.current = new window.google.maps.Geocoder();

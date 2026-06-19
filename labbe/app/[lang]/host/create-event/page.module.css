@@ -3,6 +3,7 @@
   min-height: 100vh;
   background: var(--bg-artboard);
   padding: 2rem;
+  box-sizing: border-box;
 }
 
 .main_content {
@@ -27,6 +28,8 @@
   gap: 2.4rem;
   position: relative;
   justify-content: center;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .form_section {
@@ -58,6 +61,10 @@
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.05),
     0 10px 32px rgba(81, 60, 39, 0.08);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Preview column on step 4 — sticky so it tracks the form as you scroll. */
@@ -199,11 +206,16 @@
   font-size: 1.4rem;
 }
 
-/* Fieldset reset — removes browser default border/padding around step content */
+/* Fieldset reset — removes browser default border/padding around step content.
+   min-width: 0 is essential: a <fieldset> defaults to min-width: min-content,
+   which overrides width: 100% and lets inner horizontal scrollers (e.g. the
+   step-3 template carousel) balloon to their full content width and escape the
+   form card. Resetting it lets the flex chain shrink and the track scroll. */
 .fieldset_reset {
   border: 0;
   padding: 0;
   margin: 0;
   width: 100%;
+  min-width: 0;
   align-self: stretch;
 }

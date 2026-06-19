@@ -32,6 +32,11 @@
     "minPrice": "من",
     "maxPrice": "إلى",
     "rating": "التقييم",
+    "sort": "الترتيب",
+    "sortRecommended": "موصى به",
+    "sortRating": "الأعلى تقييماً",
+    "sortPrice": "الأقل سعراً",
+    "sortNewest": "الأحدث",
     "allRatings": "الكل",
     "4stars": "4+ نجوم",
     "3stars": "3+ نجوم",
@@ -43,6 +48,8 @@
     "defaultName": "خدمة",
     "defaultLocation": "المملكة العربية السعودية",
     "callNow": "اتصل الآن",
+    "viewProfile": "عرض التفاصيل",
+    "viewProfileFor": "عرض ملف {{name}}",
     "moreInfo": "المزيد من المعلومات",
     "users": "مستخدم",
     "sar": "ريال",
@@ -56,11 +63,31 @@
     "whatsapp": "واتساب",
     "aboutVendor": "عن المزود",
     "portfolio": "معرض الأعمال",
-    "ourServices": "خدماتنا"
+    "ourServices": "خدماتنا",
+    "backToMarketplace": "العودة إلى السوق",
+    "share": "مشاركة",
+    "meetVendor": "تعرّف على {{name}}",
+    "servicesHeadline": "خدمات لمناسبتك",
+    "portfolioHeadline": "نماذج مختارة من الأعمال",
+    "contactHeadline": "تواصل مع المزود",
+    "contactDescription": "تواصل مباشرة مع المزود للاستفسار عن التوفر والأسعار وتفاصيل مناسبتك.",
+    "website": "الموقع الإلكتروني",
+    "noServices": "لم ينشر هذا المزود خدمات بعد.",
+    "askAboutService": "استفسر عن الخدمة",
+    "requestService": "طلب الخدمة",
+    "requestQuote": "طلب عرض سعر",
+    "email": "البريد الإلكتروني"
+  },
+  "results": {
+    "title": "{{count}} مزود",
+    "subtitle": "مزودون معتمدون لمناسبتك"
   },
   "noResults": "لا توجد نتائج",
   "loading": "جاري التحميل...",
   "errors": {
-    "loadFailed": "فشل تحميل المزودين"
+    "loadFailed": "فشل تحميل المزودين",
+    "profileLoadFailed": "ملف هذا المزود غير متاح",
+    "retry": "حاول مرة أخرى",
+    "categoriesLoadFailed": "تعذر تحميل الفئات"
   }
 }

@@ -273,6 +273,9 @@ export const buildVendorFormData = (formValues) => {
   // Service data - flat fields
   if (serviceData?.serviceDescription)
     formData.append("serviceDescription", serviceData.serviceDescription);
+  ["taglineAr", "taglineEn", "aboutAr", "aboutEn"].forEach((field) => {
+    if (serviceData?.[field]) formData.append(field, serviceData[field]);
+  });
   if (serviceData?.otherData)
     formData.append("otherData", serviceData.otherData);
 
@@ -327,6 +330,7 @@ export const buildVendorFormData = (formValues) => {
     tiktok: links.tiktok || links.tiktokLink || "",
     twitter: links.twitter || links.twitterLink || "",
     website: links.website || links.websiteLink || "",
+    whatsapp: links.whatsapp || links.whatsappNumber || "",
   };
   formData.append("socialLinks", JSON.stringify(socialLinksData));
 
