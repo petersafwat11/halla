@@ -9,8 +9,9 @@ const { connectDB } = require('./config/database');
 const createApp = require('./app');
 const { initScheduledTasks } = require('./shared/utils/scheduledTasks');
 
-// Ensure BusinessSetupFeeModel is registered with Mongoose before app starts
+// Ensure business-account models are registered with Mongoose before app starts
 require('../models/BusinessSetupFeeModel');
+require('../models/BusinessPlanAssignmentModel');
 
 /**
  * Start the server
@@ -19,6 +20,11 @@ const startServer = async () => {
   try {
     // Connect to database
     await connectDB();
+
+    // Fail-closed account-type assertion (non-blocking). Surfaces any
+    // {role:host, accountType:null} docs for monitoring. [#13]
+    const { assertNoNullAccountTypeHosts } = require('./shared/utils/accountTypeAssertion');
+    assertNoNullAccountTypeHosts().catch(() => {});
 
     // Start all cron jobs (event lifecycle, bulk send, reminders, template polling)
     initScheduledTasks();

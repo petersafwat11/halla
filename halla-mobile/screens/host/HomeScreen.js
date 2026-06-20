@@ -18,8 +18,9 @@ import {
   ScheduleSendingModal,
 } from "../../components/home";
 import { TopBar } from "../../components/plans";
-import { useHostDashboard } from "../../hooks";
+import { useHostDashboard, useBusinessCreateEventGate } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
+import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";
 import NotificationBell from "../../components/notifications/NotificationBell";
 import HomeHeaderContent from "../../components/home/HomeHeaderContent";
@@ -27,6 +28,10 @@ import HomeHeaderContent from "../../components/home/HomeHeaderContent";
 const HomeScreen = ({ navigation }) => {
   const { user } = useAuthStore();
   const { t } = useTranslation("home");
+  const toast = useToast();
+  // Business accounts with no active subscription cannot create events
+  // (subscription-gated server-side). Reflect that in the create-event entry.
+  const { blocked: createEventBlocked } = useBusinessCreateEventGate();
   const [testMessageModalVisible, setTestMessageModalVisible] = useState(false);
   const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
 
@@ -54,7 +59,15 @@ const HomeScreen = ({ navigation }) => {
   const handleSchedulePress = () => setScheduleModalVisible(true);
 
   const handleCreateEvent = () => {
-    if (navigation) navigation.navigate("CreateEventScreen");
+    if (!navigation) return;
+    // No active subscription (business) → route to the business plans screen
+    // for activation instead of opening a wizard that would 403 on submit.
+    if (createEventBlocked) {
+      toast.info(t("createEvent.businessActivationRequired", "فعّل اشتراكك لإنشاء مناسبة"));
+      navigation.navigate("MainTabs", { screen: "Plans" });
+      return;
+    }
+    navigation.navigate("CreateEventScreen");
   };
 
   const handlePostEventPress = () => {

@@ -14,6 +14,8 @@ const {
   PERMISSIONS,
   getDefaultPermissions,
   VENDOR_STATUS,
+  ACCOUNT_TYPES,
+  ACCOUNT_TYPE_VALUES,
 } = require("../src/shared/constants");
 const { mongoosePhoneValidator } = require("../src/shared/utils/phone");
 const { signStoredImage, signStoredImages } = require("../src/shared/utils/s3Upload");
@@ -33,6 +35,22 @@ const hostDataSchema = new mongoose.Schema(
     bio: String,
     company: String,
     position: String,
+  },
+  { _id: false }
+);
+
+/**
+ * Business-account profile data (role:host + accountType:'business').
+ *
+ * Minimal + server-owned: the public-facing organization name IS the user's
+ * top-level `name`, and the logo IS the top-level `avatar` (S3 key). Only the
+ * free-text description lives here. No colors/website (global tokens, owner
+ * decision). Event branding is SNAPSHOTTED onto the event at creation, never
+ * read live from here.
+ */
+const businessDataSchema = new mongoose.Schema(
+  {
+    description: { type: String, trim: true, maxlength: 2000 },
   },
   { _id: false }
 );
@@ -247,6 +265,35 @@ const userSchema = new mongoose.Schema(
       default: ROLES.GUEST,
     },
 
+    // Account-type discriminator for `role:'host'` users. 'personal' = ordinary
+    // host; 'business' = Halaa Business org account. FAIL-CLOSED: a host MUST
+    // carry an explicit value (validator below); `null` is reserved for
+    // non-host roles. Immutable via the normal profile endpoints — admin-set.
+    accountType: {
+      type: String,
+      enum: { values: [...ACCOUNT_TYPE_VALUES, null], message: "Invalid accountType" },
+      default: null,
+      validate: {
+        validator: function (v) {
+          // Only enforce on the save/create path (this === document). On
+          // query-level updates `this` is the query; those paths set
+          // accountType explicitly via $set and are covered by service code.
+          if (this instanceof mongoose.Document && this.role === ROLES.HOST) {
+            return v === ACCOUNT_TYPES.PERSONAL || v === ACCOUNT_TYPES.BUSINESS;
+          }
+          return true;
+        },
+        message:
+          'A host account must have accountType "personal" or "business" (fail-closed).',
+      },
+    },
+
+    // Server-enforced first-login password change. Set true when an admin
+    // creates a business (admin-chosen password); cleared on first change.
+    // Enforcement is a server-side gate (see requirePasswordChanged middleware),
+    // not just a client prompt.
+    mustChangePassword: { type: Boolean, default: false },
+
     // Granular permissions (for moderators)
     permissions: {
       type: [String],
@@ -284,6 +331,7 @@ const userSchema = new mongoose.Schema(
     // ============ ROLE-SPECIFIC PROFILE DATA ============
     profile: {
       hostData: hostDataSchema,
+      businessData: businessDataSchema,
       vendorData: vendorDataSchema,
       adminData: adminDataSchema,
       guestData: guestDataSchema,
@@ -328,6 +376,8 @@ const userSchema = new mongoose.Schema(
 // Compound indexes for common queries
 userSchema.index({ role: 1, status: 1 });
 userSchema.index({ role: 1, createdAt: -1 });
+// Account-type segregation (personal vs business host queries). [#5]
+userSchema.index({ role: 1, accountType: 1, status: 1 });
 userSchema.index({ "profile.vendorData.serviceCategories": 1 });
 userSchema.index({ "profile.vendorData.vendorStatus": 1 });
 userSchema.index({ email: 1, role: 1 });
@@ -665,6 +715,14 @@ userSchema.methods.toPublicJSON = async function () {
     if (relevantData && obj.profile[relevantData]) {
       obj.roleData = obj.profile[relevantData];
     }
+
+    // Business accounts (role:host + accountType:'business') need their
+    // `businessData` surfaced alongside `roleData` (=hostData). The whole
+    // `profile` is dropped below, so copy it out explicitly. [#6]
+    if (obj.accountType === ACCOUNT_TYPES.BUSINESS && obj.profile.businessData) {
+      obj.businessData = obj.profile.businessData;
+    }
+
     delete obj.profile;
   }
 

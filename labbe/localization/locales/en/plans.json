@@ -13,6 +13,65 @@
     },
     "applepay": {
       "note": "You'll be prompted by Apple Pay on the next step."
+    },
+    "errors": {
+      "nameRequired": "Cardholder name is required",
+      "nameTooShort": "Please enter full cardholder name",
+      "numberRequired": "Card number is required",
+      "numberLength": "Card number must be 15 or 16 digits",
+      "numberInvalid": "Invalid card number",
+      "expiryRequired": "Expiry date is required",
+      "expiryMonthInvalid": "Invalid month (01-12)",
+      "expiryExpired": "Card has expired",
+      "cvcRequired": "CVC is required",
+      "cvcLength": "CVC must be 3 or 4 digits",
+      "mobileRequired": "Mobile number is required",
+      "mobileFormat": "Must be a valid Saudi number (e.g. 05xxxxxxxx)"
+    }
+  },
+  "business": {
+    "subtitle": "Browse and upgrade your business subscription plan",
+    "noPlans": "No business plans are available in this billing period.",
+    "updatedSuccessfully": "Business settings updated successfully",
+    "updateFailed": "Failed to update business settings",
+    "logo": "Business Logo",
+    "noLogo": "No logo",
+    "changeLogo": "Change logo",
+    "description": "Business Description",
+    "descriptionPlaceholder": "Describe your business for guests and invitations…",
+    "billing": {
+      "event": "Per Event",
+      "quarterly": "Quarterly",
+      "annual": "Annual"
+    },
+    "noSub": {
+      "title": "No active subscription",
+      "message": "Your business account doesn't have an active plan yet. An administrator must activate one before you can create events or upgrade. Please contact your account manager.",
+      "cta": "Contact admin",
+      "purchaseBlocked": "Your account has no active subscription. An admin must activate your first plan."
+    },
+    "checkout": {
+      "title": "Complete your subscription",
+      "subtitle": "Review your plan and pay securely to activate it",
+      "planLabel": "Plan",
+      "setupFee": "One-time setup fee",
+      "total": "Total",
+      "pay": "Pay now",
+      "processing": "Processing…",
+      "success": "Payment received — activating your subscription.",
+      "failed": "Payment failed. Please try again.",
+      "linkUnavailableTitle": "This checkout link is no longer available",
+      "linkUnavailable": "This link may have expired, already been used, or is invalid. Please contact your account manager for a new link.",
+      "return": {
+        "confirming": "Confirming your payment…",
+        "pendingTitle": "Awaiting payment confirmation",
+        "pendingText": "We're still confirming your payment with the bank. This can take a moment.",
+        "recheck": "Check again",
+        "doneTitle": "Payment received",
+        "doneText": "Your subscription is being activated. You'll receive a confirmation email shortly. You can now sign in to your business account.",
+        "goToLogin": "Go to login",
+        "reference": "Reference"
+      }
     }
   },
   "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
@@ -20,7 +79,7 @@
   "pageTitle": "Choose Your Plan",
   "pageSubtitle": "Select the right plan for your event",
   "loading": "Loading...",
-  "planFamilies": { "basic": "Halaa Basic", "premium": "Halaa Premium" },
+  "planFamilies": { "basic": "Halaa Basic", "premium": "Halaa Premium", "business": "Halaa Business" },
   "planFamilyDescriptions": {
     "basic": "You manage everything yourself — we handle the tech",
     "premium": "Our team manages everything for you"

@@ -43,7 +43,7 @@ export const billingTypeEnum = z.enum([
 ]);
 export const availabilityEnum = z.enum([
   "host",
-  "whitelabel",
+  "business",
   "platform_admin",
 ]);
 export const currencyEnum = z.enum([

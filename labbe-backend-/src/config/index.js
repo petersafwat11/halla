@@ -75,6 +75,10 @@ const config = {
 
   frontend: {
     url: env.FRONTEND_URL,
+    // Canonical public URL for WhatsApp buttons / SMS / web routes / mobile
+    // universal links. Reconciles the historical `halaa.sa` backend fallback
+    // to the real production host `halaa.com.sa`. [#26]
+    canonicalUrl: env.FRONTEND_URL || 'https://halaa.com.sa',
   },
 
   backend: {

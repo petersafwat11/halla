@@ -398,6 +398,23 @@ export const useAuthStore = create((set, get) => ({
   isAdminDashboardRole: () =>
     ["super_admin", "admin", "moderator"].includes(get().role),
   getRole: () => get().role,
+
+  /**
+   * Business-account getters (B4-MOBILE).
+   *
+   * A business account is `role:host` + `accountType:'business'`. The
+   * `accountType`, `businessData`, and `mustChangePassword` fields ride on the
+   * `user` object returned by login / refresh / /auth/me and are already
+   * persisted to the secure-store shadow via `saveUserShadow`, so they survive
+   * cold-launch. We derive them strictly from the live `user` snapshot rather
+   * than mirroring them into top-level store state — there is exactly one
+   * source of truth, reconciled by every auth round-trip.
+   */
+  getAccountType: () => get().user?.accountType || null,
+  isBusiness: () =>
+    get().role === "host" && get().user?.accountType === "business",
+  getBusinessData: () => get().user?.businessData || null,
+  mustChangePassword: () => get().user?.mustChangePassword === true,
 }));
 
 // Optional helper for legacy code paths that previewed the cached user before

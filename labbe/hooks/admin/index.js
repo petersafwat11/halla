@@ -2,6 +2,8 @@ export {
   useAdminDashboard,
   useAdminHosts,
   useAdminHost,
+  useAdminBusinesses,
+  useAdminBusiness,
   useVerifyHostPhone,
   useAdminVendors,
   useAdminVendor,
@@ -16,6 +18,7 @@ export {
 } from "./queries";
 export {
   useAdminHostMutation,
+  useAdminBusinessMutation,
   useAdminVendorMutation,
   useAdminModeratorMutation,
   useAdminEventMutation,

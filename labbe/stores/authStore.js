@@ -74,6 +74,17 @@ const useAuthStore = create(
 
       isVendor: () => get().user?.role === USER_ROLES.VENDOR,
 
+      // Business accounts are hosts with accountType:'business'. The server
+      // returns `accountType`, `businessData` and `mustChangePassword` on the
+      // user DTO; since the DTO is stored as-is they are available here.
+      getAccountType: () => get().user?.accountType || null,
+
+      isBusiness: () => get().user?.accountType === "business",
+
+      getBusinessData: () => get().user?.businessData || null,
+
+      mustChangePassword: () => get().user?.mustChangePassword === true,
+
       getSubscription: () => get().subscription,
 
       isProfileComplete: () => get().user?.roleData?.profileCompleted ?? true,

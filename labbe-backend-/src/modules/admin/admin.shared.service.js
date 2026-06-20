@@ -43,6 +43,7 @@ function formatUserResponse(user) {
     email: user.email,
     phoneNumber: user.phoneNumber,
     role: user.role,
+    accountType: user.accountType || null,
     status: user.status,
     profileCompleted: user.profile?.hostData?.profileCompleted || user.profile?.vendorData?.profileCompleted,
     emailVerified: user.profile?.hostData?.emailVerified || user.emailVerified || false,
@@ -70,6 +71,15 @@ function formatUserResponse(user) {
     base.rating = vd?.rating ?? null;
     base.ratingComment = vd?.ratingComment || null;
     base.serviceCategories = vd?.serviceCategories || null;
+  }
+
+  // Business-account fields (role:host + accountType:'business')
+  if (user.accountType === 'business') {
+    base.businessData = {
+      description: user.profile?.businessData?.description || null,
+    };
+    base.avatar = user.avatar || null;
+    base.mustChangePassword = !!user.mustChangePassword;
   }
 
   return base;

@@ -1,0 +1,183 @@
+{
+  "header": {
+    "title": "Businesses",
+    "subtitle": "Manage business accounts and their subscriptions",
+    "addBusiness": "Add Business"
+  },
+  "stats": {
+    "total": "Total Businesses",
+    "allTime": "All Time",
+    "active": "Active",
+    "activeNow": "Active Now",
+    "suspended": "Suspended",
+    "temporarilySuspended": "Temporarily Suspended",
+    "inactive": "Inactive",
+    "notActivated": "Not Activated"
+  },
+  "table": {
+    "title": "Manage Businesses",
+    "selectRows": "Please select businesses to delete",
+    "viewDetails": "View Details",
+    "activate": "Activate",
+    "suspend": "Suspend",
+    "delete": "Delete",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "status": "Status",
+      "subscription": "Subscription",
+      "createdAt": "Created At"
+    },
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "suspended": "Suspended",
+      "inactive": "Inactive"
+    }
+  },
+  "status": {
+    "active": "Active",
+    "suspended": "Suspended",
+    "inactive": "Inactive"
+  },
+  "form": {
+    "name": "Business Name",
+    "namePlaceholder": "Enter business name",
+    "email": "Email",
+    "emailPlaceholder": "example@email.com",
+    "phone": "Phone Number",
+    "phonePlaceholder": "05xxxxxxxx",
+    "password": "Password",
+    "passwordPlaceholder": "Set an initial password",
+    "description": "Description",
+    "descriptionPlaceholder": "Brief description of the business",
+    "logo": "Logo",
+    "logoHint": "Optional. PNG or JPG."
+  },
+  "addBusiness": {
+    "title": "Add New Business",
+    "success": "Business created successfully"
+  },
+  "details": {
+    "backToBusinesses": "Back to Businesses",
+    "contactInfo": "Contact Info",
+    "phoneNumber": "Phone",
+    "email": "Email",
+    "joinDate": "Join Date",
+    "description": "Description",
+    "noDescription": "No description provided",
+    "totalEvents": "Total Events",
+    "editProfile": "Edit Profile",
+    "replaceLogo": "Replace Logo",
+    "profile": "Profile",
+    "setupFee": "Setup Fee",
+    "setupFeeStatus": "Setup Fee Status",
+    "setupFeeSettled": "Settled",
+    "setupFeeUnsettled": "Pending",
+    "amount": "Amount"
+  },
+  "editProfile": {
+    "title": "Edit Business Profile",
+    "success": "Business updated successfully"
+  },
+  "logo": {
+    "title": "Replace Logo",
+    "select": "Select Image",
+    "success": "Logo updated successfully",
+    "noFile": "Please select an image"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "plan": "Plan",
+    "status": "Status",
+    "expiresAt": "Expires At",
+    "none": "No active subscription",
+    "active": "Active",
+    "expired": "Expired",
+    "cancelled": "Cancelled",
+    "trial": "Trial",
+    "inactive": "Inactive"
+  },
+  "assignments": {
+    "title": "Plan Assignments",
+    "empty": "No assignments yet",
+    "assignPlan": "Assign Plan",
+    "columns": {
+      "plan": "Plan",
+      "mode": "Mode",
+      "status": "Status",
+      "total": "Total",
+      "expiresAt": "Expires At",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "mode": {
+      "grant": "Direct Grant",
+      "checkout": "Checkout Link"
+    },
+    "status": {
+      "pending_payment": "Pending Payment",
+      "payment_processing": "Processing",
+      "paid": "Paid",
+      "active": "Active",
+      "activation_failed": "Activation Failed",
+      "failed": "Failed",
+      "expired": "Expired",
+      "cancelled": "Cancelled",
+      "superseded": "Superseded",
+      "refunded": "Refunded"
+    },
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied to clipboard",
+    "regenerate": "Regenerate",
+    "regenerateSuccess": "Link regenerated",
+    "revoke": "Revoke",
+    "revokeSuccess": "Assignment revoked",
+    "confirmRevoke": "Are you sure you want to revoke this assignment?"
+  },
+  "assignPlan": {
+    "title": "Assign Plan",
+    "modeLabel": "Assignment Mode",
+    "modeGrant": "Direct Grant",
+    "modeCheckout": "Checkout Link",
+    "grantReason": "Grant Reason",
+    "grantReasonPlaceholder": "Optional reason for the grant",
+    "discountCode": "Discount Code",
+    "discountCodePlaceholder": "Optional discount code",
+    "plan": "Plan",
+    "selectPlan": "Select Plan",
+    "loadingPlans": "Loading plans...",
+    "errorLoadingPlans": "Failed to load plans. Please try again.",
+    "retry": "Retry",
+    "noPlanSelected": "Please select a plan",
+    "grantSuccess": "Plan granted successfully",
+    "checkoutSuccess": "Checkout link generated",
+    "checkoutLinkLabel": "Checkout Link",
+    "copyLink": "Copy",
+    "linkCopied": "Link copied to clipboard",
+    "submit": "Assign",
+    "submitting": "Assigning...",
+    "done": "Done"
+  },
+  "actions": {
+    "managePlan": "Assign Plan",
+    "activate": "Activate",
+    "suspend": "Suspend",
+    "delete": "Delete",
+    "confirmSuspend": "Are you sure you want to suspend this business?",
+    "confirmActivate": "Are you sure you want to activate this business?",
+    "confirmDelete": "Are you sure you want to delete this business?",
+    "suspendSuccess": "Business suspended successfully",
+    "activateSuccess": "Business activated successfully",
+    "deleteSuccess": "Business deleted successfully"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "add": "Add",
+    "loading": "Loading...",
+    "close": "Close"
+  }
+}

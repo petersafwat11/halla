@@ -72,6 +72,16 @@ class UsersService {
       user.preferredLanguage = updateData.preferredLanguage;
     }
 
+    // Business accounts may edit their public description (and logo via the
+    // `avatar` upload field handled below). `accountType` is immutable here.
+    if (user.accountType === "business") {
+      const description =
+        updateData.description ?? updateData?.businessData?.description;
+      if (description !== undefined) {
+        user.set("profile.businessData.description", description);
+      }
+    }
+
     // Email change resets the verification flag — the existing
     // /auth/send-verification-code flow re-verifies.
     if (
@@ -114,6 +124,9 @@ class UsersService {
 
     user.password = newPassword;
     user.passwordChangedAt = Date.now() - 1000;
+    // Clear the first-login forced-change flag once the user picks their own
+    // password (business accounts created by an admin).
+    if (user.mustChangePassword) user.mustChangePassword = false;
     await user.save();
 
     return { success: true };

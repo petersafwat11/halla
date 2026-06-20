@@ -4,7 +4,17 @@
   "page_description": "Manage your account settings and preferences",
   "tabs": {
     "account": "Account Settings",
+    "business": "Business Settings",
     "notifications": "Notifications"
+  },
+  "business": {
+    "logo": "Business Logo",
+    "noLogo": "No logo",
+    "changeLogo": "Change logo",
+    "description": "Business Description",
+    "descriptionPlaceholder": "Describe your business for guests and invitations…",
+    "updatedSuccessfully": "Business settings updated successfully",
+    "updateFailed": "Failed to update business settings"
   },
   "account_settings": "Account Settings",
   "permissions": "Permissions",

@@ -7,7 +7,8 @@
     "date": "Date",
     "time": "Time",
     "location": "Location",
-    "guests": "Guests"
+    "guests": "Guests",
+    "businessActivationRequired": "Activate your subscription to create an event"
   },
   "eventDetails": {
     "title": "Event Details",

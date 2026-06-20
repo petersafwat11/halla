@@ -304,6 +304,29 @@ const eventSchema = new mongoose.Schema(
       ref: "Plan",
     },
 
+    // ─── Business-account branding + delivery SNAPSHOT (business-account #9/#23/#24)
+    // Server-owned, snapshotted at creation, NEVER read live and NEVER client-
+    // submitted. For business hosts the logo is copied to an event-owned
+    // immutable S3 key and the business NAME is snapshotted too, so a later
+    // rename/logo-swap does not change already-issued invitations.
+    branding: {
+      logoKey: { type: String, default: null }, // event-owned S3 key (signed on read)
+      businessName: { type: String, default: null },
+    },
+    // Deterministic delivery mode (no per-business choice v1):
+    //   personal event → 'quick_reply'; business event → 'portal_link'.
+    invitationDeliveryMode: {
+      type: String,
+      enum: ["quick_reply", "portal_link", null],
+      default: null,
+    },
+    // Snapshot of the provider template id/version/capability used to send.
+    invitationTemplate: {
+      id: { type: String, default: null },
+      version: { type: String, default: null },
+      provider: { type: String, default: null },
+    },
+
     // Per-event single-active-event guard. Set to `subscriptionId` ONLY while a
     // per-event plan's event occupies the slot (i.e. not cancelled/deleted/
     // completed); null otherwise and for all pool plans. A partial UNIQUE index

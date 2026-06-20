@@ -4,7 +4,7 @@ import { API_PATHS } from "@halla/shared/api/paths";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import { subscriptionsKeys } from "@/hooks/subscriptions/keys";
 import { plansKeys } from "@/hooks/plans/keys";
-import PlansPage from "./PlansPage";
+import PlansPageRouter from "./PlansPageRouter";
 
 export default async function PlansPageServer({ params }) {
   const cookieStore = await cookies();
@@ -13,7 +13,9 @@ export default async function PlansPageServer({ params }) {
 
   if (token) {
     try {
-      // Prefetch host plans
+      // The account type (personal host vs business) is resolved client-side
+      // from the auth store, so prefetch BOTH plan sources best-effort. The
+      // unused branch's cache is simply ignored after hydration.
       await prefetchServerData({
         queryClient,
         queryKey: plansKeys.host(),
@@ -21,7 +23,14 @@ export default async function PlansPageServer({ params }) {
         token,
       });
 
-      // Prefetch user subscription
+      await prefetchServerData({
+        queryClient,
+        queryKey: plansKeys.business(),
+        path: API_PATHS.plans.getBusinessPlans,
+        token,
+      });
+
+      // Prefetch user subscription (shared by both variants)
       await prefetchServerData({
         queryClient,
         queryKey: subscriptionsKeys.mine(),
@@ -36,7 +45,7 @@ export default async function PlansPageServer({ params }) {
   return (
     <QueryClientServerProvider queryClient={queryClient}>
       <ErrorBoundary>
-        <PlansPage />
+        <PlansPageRouter />
       </ErrorBoundary>
     </QueryClientServerProvider>
   );

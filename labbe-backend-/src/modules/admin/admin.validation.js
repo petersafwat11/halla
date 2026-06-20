@@ -37,6 +37,31 @@ const bulkDeleteHostsSchema = z.object({
   ids: z.array(objectId).min(1).max(200),
 });
 
+// ── Businesses ───────────────────────────────────────────────────────────────
+const createBusinessSchema = z.object({
+  name: z.string().min(2).max(100),
+  phoneNumber: phonePattern,
+  email: z.string().email().optional(),
+  password: z.string().min(8).max(128).optional(),
+  description: z.string().max(2000).optional(),
+});
+
+const updateBusinessSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  description: z.string().max(2000).optional(),
+});
+
+const assignBusinessPlanSchema = z.object({
+  mode: z.enum(['grant', 'checkout']),
+  planCode: z.string().min(1),
+  discountCode: z.string().optional(),
+  grantReason: z.string().max(500).optional(),
+});
+
+const updateBusinessStatusSchema = z.object({
+  status: z.enum(['active', 'suspended', 'inactive']),
+});
+
 // ── Vendors ────────────────────────────────────────────────────────────────
 const updateVendorStatusSchema = z.object({
   status: z.enum(['approved', 'rejected', 'pending', 'suspended']),
@@ -112,6 +137,10 @@ module.exports = {
   updateHostStatusSchema,
   updateHostSubscriptionSchema,
   bulkDeleteHostsSchema,
+  createBusinessSchema,
+  updateBusinessSchema,
+  assignBusinessPlanSchema,
+  updateBusinessStatusSchema,
   updateVendorStatusSchema,
   updateVendorRatingSchema,
   bulkDeleteVendorsSchema,

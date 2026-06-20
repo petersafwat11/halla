@@ -7,7 +7,8 @@
     "date": "التاريخ",
     "time": "الوقت",
     "location": "الموقع",
-    "guests": "الضيوف"
+    "guests": "الضيوف",
+    "businessActivationRequired": "فعّل اشتراكك لإنشاء مناسبة"
   },
   "eventDetails": {
     "title": "تفاصيل المناسبة",

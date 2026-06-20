@@ -17,6 +17,10 @@ const {
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
+const User = require("../../../models/UserModel");
+const { ACCOUNT_TYPES } = require("../../shared/constants");
+const { copyS3Object, deleteFromS3 } = require("../../shared/utils/s3Upload");
+const mongoose = require("mongoose");
 const {
   isTrialFromPlan,
   eventInstantOf,
@@ -482,8 +486,41 @@ module.exports = {
         );
       }
 
+      // ─── Business-account branding + delivery SNAPSHOT (server-owned) ───
+      // Deterministic delivery mode + (for business hosts) an immutable logo
+      // copy + snapshotted business name. Pre-generate the event _id so the
+      // copied S3 key is event-owned. Reject creation if the copy fails; the
+      // copied object is cleaned up if the event create later throws. [#9 #23]
+      const owner = await User.findById(userId).select('accountType name avatar');
+      const preEventId = new mongoose.Types.ObjectId();
+      eventData._id = preEventId;
+      let copiedLogoKey = null;
+      if (owner?.accountType === ACCOUNT_TYPES.BUSINESS) {
+        eventData.invitationDeliveryMode = 'portal_link';
+        let logoKey = null;
+        if (owner.avatar) {
+          const ext = owner.avatar.includes('.') ? owner.avatar.split('.').pop() : 'png';
+          const destKey = `events/${preEventId}/branding/logo.${ext}`;
+          logoKey = await copyS3Object(owner.avatar, destKey);
+          if (!logoKey) {
+            throw new ValidationError('Failed to snapshot business logo; please retry');
+          }
+          copiedLogoKey = logoKey === owner.avatar ? null : logoKey; // only clean up real copies
+        }
+        eventData.branding = { logoKey, businessName: owner.name || null };
+      } else {
+        eventData.invitationDeliveryMode = 'quick_reply';
+      }
+
       // Create event
-      const event = await Event.create(eventData);
+      let event;
+      try {
+        event = await Event.create(eventData);
+      } catch (createErr) {
+        // Roll back the copied logo object so we don't orphan it.
+        if (copiedLogoKey) await deleteFromS3(copiedLogoKey).catch(() => {});
+        throw createErr;
+      }
 
       // Create guests
       const guestIds = await this.createGuestsFromList(

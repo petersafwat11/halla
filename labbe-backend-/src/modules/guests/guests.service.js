@@ -8,6 +8,7 @@ const config = require('../../config');
 const { NotFoundError, ValidationError, ForbiddenError } = require('../../shared/errors');
 const { ROLES } = require('../../shared/constants');
 const logger = require('../../shared/utils/logger');
+const { signStoredImage } = require('../../shared/utils/s3Upload');
 
 // Import existing models during migration
 const Event = require('../../../models/EventModel');
@@ -35,7 +36,7 @@ class GuestsService {
       qrcode: code,
     }).populate({
       path: 'event',
-      select: 'eventDetails status host',
+      select: 'eventDetails status host branding invitationDeliveryMode',
       populate: { path: 'host', select: 'username name' },
     });
 
@@ -45,7 +46,7 @@ class GuestsService {
 
     return {
       guest: this._formatGuestPortal(guest),
-      event: this._formatEventForGuest(guest.event),
+      event: await this._formatEventForGuest(guest.event),
     };
   }
 
@@ -585,8 +586,23 @@ class GuestsService {
     };
   }
 
-  _formatEventForGuest(event) {
+  /**
+   * Public guest-facing event DTO. ASYNC: signs the snapshotted business logo
+   * key (~1h pre-signed URL) on read and exposes only branding-safe fields —
+   * no internal fields. [business-account #9 #16]
+   */
+  async _formatEventForGuest(event) {
     if (!event) return null;
+
+    let branding = null;
+    const b = event.branding;
+    if (b && (b.logoKey || b.businessName)) {
+      branding = {
+        logoUrl: b.logoKey ? await signStoredImage(b.logoKey) : null,
+        businessName: b.businessName || null,
+      };
+    }
+
     return {
       id: event._id,
       title: event.eventDetails?.title,
@@ -595,6 +611,8 @@ class GuestsService {
       location: event.eventDetails?.location,
       description: event.eventDetails?.description,
       hostName: event.host?.name || event.host?.username,
+      deliveryMode: event.invitationDeliveryMode || null,
+      branding,
     };
   }
 

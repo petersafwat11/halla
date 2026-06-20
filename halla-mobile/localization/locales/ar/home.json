@@ -1,6 +1,9 @@
 {
   "welcome": "مرحباً",
   "guest": "ضيف",
+  "createEvent": {
+    "businessActivationRequired": "فعّل اشتراكك لإنشاء مناسبة"
+  },
   "dashboard": {
     "title": "لوحة التحكم",
     "stats": {

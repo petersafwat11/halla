@@ -22,6 +22,10 @@ export const adminKeys = {
     phoneNumber,
   ],
 
+  businesses: (filters) => [...adminKeys.all, "businesses", filters],
+  businessesAll: () => [...adminKeys.all, "businesses"],
+  businessDetail: (businessId) => [...adminKeys.all, "businesses", businessId],
+
   vendors: (filters) => [...adminKeys.all, "vendors", filters],
   vendorsAll: () => [...adminKeys.all, "vendors"],
   vendorDetail: (vendorId) => [...adminKeys.all, "vendors", vendorId],

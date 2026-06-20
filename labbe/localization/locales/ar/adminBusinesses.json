@@ -1,0 +1,183 @@
+{
+  "header": {
+    "title": "حسابات الأعمال",
+    "subtitle": "إدارة حسابات الأعمال واشتراكاتها",
+    "addBusiness": "إضافة حساب أعمال"
+  },
+  "stats": {
+    "total": "إجمالي الحسابات",
+    "allTime": "جميع الأوقات",
+    "active": "نشط",
+    "activeNow": "نشط الآن",
+    "suspended": "موقوف",
+    "temporarilySuspended": "موقوف مؤقتاً",
+    "inactive": "غير نشط",
+    "notActivated": "غير مُفعّل"
+  },
+  "table": {
+    "title": "إدارة حسابات الأعمال",
+    "selectRows": "الرجاء تحديد الحسابات المراد حذفها",
+    "viewDetails": "عرض التفاصيل",
+    "activate": "تفعيل",
+    "suspend": "إيقاف",
+    "delete": "حذف",
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "status": "الحالة",
+      "subscription": "الاشتراك",
+      "createdAt": "تاريخ الإنشاء"
+    },
+    "filter": {
+      "all": "الكل",
+      "active": "نشط",
+      "suspended": "موقوف",
+      "inactive": "غير نشط"
+    }
+  },
+  "status": {
+    "active": "نشط",
+    "suspended": "موقوف",
+    "inactive": "غير نشط"
+  },
+  "form": {
+    "name": "اسم الحساب",
+    "namePlaceholder": "أدخل اسم حساب الأعمال",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "example@email.com",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "05xxxxxxxx",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "حدّد كلمة مرور مبدئية",
+    "description": "الوصف",
+    "descriptionPlaceholder": "وصف مختصر لحساب الأعمال",
+    "logo": "الشعار",
+    "logoHint": "اختياري. PNG أو JPG."
+  },
+  "addBusiness": {
+    "title": "إضافة حساب أعمال جديد",
+    "success": "تم إنشاء حساب الأعمال بنجاح"
+  },
+  "details": {
+    "backToBusinesses": "العودة إلى الحسابات",
+    "contactInfo": "معلومات التواصل",
+    "phoneNumber": "الهاتف",
+    "email": "البريد الإلكتروني",
+    "joinDate": "تاريخ الانضمام",
+    "description": "الوصف",
+    "noDescription": "لا يوجد وصف",
+    "totalEvents": "إجمالي المناسبات",
+    "editProfile": "تعديل الملف",
+    "replaceLogo": "تغيير الشعار",
+    "profile": "الملف التعريفي",
+    "setupFee": "رسوم التأسيس",
+    "setupFeeStatus": "حالة رسوم التأسيس",
+    "setupFeeSettled": "مسددة",
+    "setupFeeUnsettled": "قيد الانتظار",
+    "amount": "المبلغ"
+  },
+  "editProfile": {
+    "title": "تعديل ملف حساب الأعمال",
+    "success": "تم تحديث حساب الأعمال بنجاح"
+  },
+  "logo": {
+    "title": "تغيير الشعار",
+    "select": "اختر صورة",
+    "success": "تم تحديث الشعار بنجاح",
+    "noFile": "الرجاء اختيار صورة"
+  },
+  "subscription": {
+    "title": "الاشتراك",
+    "plan": "الباقة",
+    "status": "الحالة",
+    "expiresAt": "ينتهي في",
+    "none": "لا يوجد اشتراك نشط",
+    "active": "نشط",
+    "expired": "منتهٍ",
+    "cancelled": "ملغى",
+    "trial": "تجريبي",
+    "inactive": "غير نشط"
+  },
+  "assignments": {
+    "title": "تعيينات الباقات",
+    "empty": "لا توجد تعيينات بعد",
+    "assignPlan": "تعيين باقة",
+    "columns": {
+      "plan": "الباقة",
+      "mode": "النوع",
+      "status": "الحالة",
+      "total": "الإجمالي",
+      "expiresAt": "ينتهي في",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "mode": {
+      "grant": "منح مباشر",
+      "checkout": "رابط دفع"
+    },
+    "status": {
+      "pending_payment": "بانتظار الدفع",
+      "payment_processing": "قيد المعالجة",
+      "paid": "مدفوع",
+      "active": "نشط",
+      "activation_failed": "فشل التفعيل",
+      "failed": "فشل",
+      "expired": "منتهٍ",
+      "cancelled": "ملغى",
+      "superseded": "مُستبدل",
+      "refunded": "مُسترد"
+    },
+    "copyLink": "نسخ الرابط",
+    "linkCopied": "تم نسخ الرابط",
+    "regenerate": "إعادة إنشاء",
+    "regenerateSuccess": "تم إعادة إنشاء الرابط",
+    "revoke": "إلغاء",
+    "revokeSuccess": "تم إلغاء التعيين",
+    "confirmRevoke": "هل أنت متأكد من إلغاء هذا التعيين؟"
+  },
+  "assignPlan": {
+    "title": "تعيين باقة",
+    "modeLabel": "نوع التعيين",
+    "modeGrant": "منح مباشر",
+    "modeCheckout": "رابط دفع",
+    "grantReason": "سبب المنح",
+    "grantReasonPlaceholder": "سبب اختياري للمنح",
+    "discountCode": "كود الخصم",
+    "discountCodePlaceholder": "كود خصم اختياري",
+    "plan": "الباقة",
+    "selectPlan": "اختر باقة",
+    "loadingPlans": "جاري تحميل الباقات...",
+    "errorLoadingPlans": "فشل تحميل الباقات. حاول مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "noPlanSelected": "الرجاء اختيار باقة",
+    "grantSuccess": "تم منح الباقة بنجاح",
+    "checkoutSuccess": "تم إنشاء رابط الدفع",
+    "checkoutLinkLabel": "رابط الدفع",
+    "copyLink": "نسخ",
+    "linkCopied": "تم نسخ الرابط",
+    "submit": "تعيين",
+    "submitting": "جاري التعيين...",
+    "done": "تم"
+  },
+  "actions": {
+    "managePlan": "تعيين باقة",
+    "activate": "تفعيل",
+    "suspend": "إيقاف",
+    "delete": "حذف",
+    "confirmSuspend": "هل أنت متأكد من إيقاف حساب الأعمال هذا؟",
+    "confirmActivate": "هل أنت متأكد من تفعيل حساب الأعمال هذا؟",
+    "confirmDelete": "هل أنت متأكد من حذف حساب الأعمال هذا؟",
+    "suspendSuccess": "تم إيقاف حساب الأعمال بنجاح",
+    "activateSuccess": "تم تفعيل حساب الأعمال بنجاح",
+    "deleteSuccess": "تم حذف حساب الأعمال بنجاح"
+  },
+  "common": {
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "saving": "جاري الحفظ...",
+    "add": "إضافة",
+    "loading": "جاري التحميل...",
+    "close": "إغلاق"
+  }
+}

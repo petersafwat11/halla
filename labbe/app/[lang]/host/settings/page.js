@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { IoIosArrowForward } from "react-icons/io";
 import Tabs from "@/ui/commen/tabs/Tabs";
 import AccountSettings from "./_components/AccountSettings";
+import BusinessSettings from "./_components/BusinessSettings";
 import NotificationPreferences from "@/ui/settings/notificationsPrefrences/NotificationPreferences";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import ErrorFallback from "@/ui/common/error/ErrorFallback";
@@ -24,9 +25,14 @@ const HostSettingsPage = () => {
   const { data: notificationPrefsData, isLoading: notifLoading } = useNotificationPreferences();
 
   const user = profileData?.data?.user;
+  const isBusiness = user?.accountType === "business";
 
   const tabs = [
     { key: "account", label: t("tabs.account", "إعدادات الحساب") },
+    // Business accounts get a dedicated tab to edit their description + logo.
+    ...(isBusiness
+      ? [{ key: "business", label: t("tabs.business", "إعدادات الأعمال") }]
+      : []),
     { key: "notifications", label: t("tabs.notifications", "الإشعارات") },
   ];
 
@@ -85,6 +91,9 @@ const HostSettingsPage = () => {
                     phoneNumber: user?.phoneNumber || "",
                   }}
                 />
+              )}
+              {activeTab === "business" && isBusiness && (
+                <BusinessSettings user={user} />
               )}
               {activeTab === "notifications" && (
                 <NotificationPreferences

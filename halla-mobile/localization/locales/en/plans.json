@@ -3,6 +3,16 @@
   "loading": "Loading plans...",
   "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
   "noActiveSubscription": { "title": "No active subscription", "subtitle": "Choose a plan below to activate your subscription" },
+  "business": {
+    "pageTitle": "Business Plans",
+    "currentBadge": "Current Plan",
+    "upgradeAction": "Upgrade to this plan",
+    "contactAdminShort": "Assigned by your account manager",
+    "pendingActivation": {
+      "title": "Pending activation",
+      "subtitle": "Your account manager will assign and activate a plan for you. You can upgrade between business plans once active."
+    }
+  },
   "tabs": {
     "event": "Per Event",
     "quarterly": "3-Month Pool",
@@ -32,7 +42,8 @@
     "hint": "1 event per plan — valid 90 days · 1,200 SAR one-time setup fee",
     "validity": "Valid 90 days",
     "priceSuffix": "SAR / event",
-    "invitesSuffix": "invites / event"
+    "invitesSuffix": "invites / event",
+    "noPlans": "No per-event plan available"
   },
   "quarterlyTab": {
     "hint": "Shared invite pool for unlimited events — 90 days",

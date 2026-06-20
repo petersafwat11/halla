@@ -827,7 +827,7 @@ const swaggerOptions = {
             },
             availableFor: {
               type: 'string',
-              enum: ['host', 'whitelabel', 'platform_admin'],
+              enum: ['host', 'business', 'platform_admin'],
             },
             name: {
               type: 'object',
@@ -964,7 +964,7 @@ const swaggerOptions = {
             },
             availableFor: {
               type: 'string',
-              enum: ['host', 'whitelabel', 'platform_admin'],
+              enum: ['host', 'business', 'platform_admin'],
             },
             planFamily: {
               type: 'string',
@@ -1034,7 +1034,7 @@ const swaggerOptions = {
             },
             availableFor: {
               type: 'string',
-              enum: ['host', 'whitelabel', 'platform_admin'],
+              enum: ['host', 'business', 'platform_admin'],
             },
             planFamily: {
               type: 'string',

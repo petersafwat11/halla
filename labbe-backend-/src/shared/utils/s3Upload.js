@@ -9,6 +9,7 @@ const {
   PutObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  CopyObjectCommand,
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const multer = require("multer");
@@ -325,6 +326,37 @@ const deleteFromS3 = async (key) => {
   } catch (error) {
     console.error("Error deleting from S3:", error);
     return false;
+  }
+};
+
+/**
+ * Copy an S3 object to a new key (server-side copy). Used to snapshot a
+ * business logo into an event-owned immutable key so a later logo swap/delete
+ * on the source doesn't break already-issued invitations. [business-account #9]
+ *
+ * @param {string} sourceKey
+ * @param {string} destKey
+ * @returns {Promise<string|null>} destKey on success, null if not copied.
+ */
+const copyS3Object = async (sourceKey, destKey) => {
+  if (!sourceKey || !destKey) return null;
+  if (!isS3Configured() || !s3Client) {
+    // Dev/local without S3: fall back to referencing the source key. The
+    // immutability guarantee is a no-op locally (no real object to delete).
+    return sourceKey;
+  }
+  try {
+    const command = new CopyObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET,
+      CopySource: `${process.env.AWS_S3_BUCKET}/${sourceKey}`,
+      Key: destKey,
+      ACL: "private",
+    });
+    await s3Client.send(command);
+    return destKey;
+  } catch (error) {
+    console.error("Error copying S3 object:", error);
+    return null;
   }
 };
 
@@ -840,6 +872,7 @@ module.exports = {
   // Direct S3 operations
   uploadToS3,
   uploadMultipleToS3,
+  copyS3Object,
   deleteFromS3,
   deleteFromS3ByUrl,
   getSignedUrlForKey,

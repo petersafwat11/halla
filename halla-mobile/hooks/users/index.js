@@ -3,6 +3,7 @@ export {
   useNotificationSettings,
   useMySubscription,
   useSubscriptionInfo,
+  useBusinessCreateEventGate,
 } from "./queries";
 export {
   useUpdateProfile,

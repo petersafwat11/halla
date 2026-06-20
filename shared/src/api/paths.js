@@ -322,6 +322,14 @@ const PATHS = {
   },
 
   // ============================================
+  // BUSINESS (public hosted checkout — token based)
+  // ============================================
+  business: {
+    checkoutSummary: (token) => `/business/checkout/${token}`,
+    checkoutSubmit: (token) => `/business/checkout/${token}/submit`,
+  },
+
+  // ============================================
   // PAYMENTS (admin)
   // ============================================
   payments: {
@@ -388,6 +396,21 @@ const PATHS = {
       verifyPhone: "/admin/hosts/verify-phone",
       findOrCreate: "/admin/hosts/find-or-create",
       export: "/admin/hosts/export",
+    },
+    businesses: {
+      getAll: "/admin/businesses",
+      getById: (id) => `/admin/businesses/${id}`,
+      create: "/admin/businesses",
+      update: (id) => `/admin/businesses/${id}`,
+      updateLogo: (id) => `/admin/businesses/${id}/logo`,
+      assignPlan: (id) => `/admin/businesses/${id}/assign-plan`,
+      revokeAssignment: (assignmentId) =>
+        `/admin/businesses/assignments/${assignmentId}/revoke`,
+      regenerateAssignment: (assignmentId) =>
+        `/admin/businesses/assignments/${assignmentId}/regenerate`,
+      suspend: (id) => `/admin/businesses/${id}/suspend`,
+      activate: (id) => `/admin/businesses/${id}/activate`,
+      delete: (id) => `/admin/businesses/${id}`,
     },
     vendors: {
       getAll: "/admin/vendors",

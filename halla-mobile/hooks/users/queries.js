@@ -75,3 +75,31 @@ export function useSubscriptionInfo() {
     staleTime: 2 * 60 * 1000,
   });
 }
+
+/**
+ * Business create-event gate (B4-MOBILE).
+ *
+ * Create-event is subscription-gated server-side (a business with no active
+ * subscription gets a 403). This hook surfaces that to the UI so the
+ * create-event entry can be disabled/redirected instead of bouncing the user
+ * into the wizard only to fail on submit.
+ *
+ * Only business accounts with no active subscription are blocked here. Personal
+ * hosts (and active businesses) keep their existing event-limit checks
+ * downstream; this gate intentionally does NOT duplicate per-plan usage limits.
+ *
+ * Returns `{ blocked, isLoading }`. `blocked` is conservative: while the
+ * subscription query is still in flight we report `false` so we never wrongly
+ * block a personal host on a slow network.
+ */
+export function useBusinessCreateEventGate() {
+  const isBusiness = useAuthStore((state) => state.isBusiness());
+  const { data: subscriptionData, isLoading } = useMySubscription();
+
+  const hasActiveSubscription = !!subscriptionData?.data?.subscription;
+
+  return {
+    blocked: isBusiness && !isLoading && !hasActiveSubscription,
+    isLoading,
+  };
+}

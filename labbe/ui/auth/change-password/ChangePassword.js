@@ -8,6 +8,8 @@ import ConfirmBtn from "../../commen/confirmButton/ConfirmBtn";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { useAuthMutation } from "@/hooks/auth";
+import { useUserMutation } from "@/hooks/users";
+import useAuthStore from "@/stores/authStore";
 import useLanguageChange from "@/hooks/UseLanguageChange";
 import { getAuthErrorMessage } from "@/services/errorHandlingService";
 
@@ -18,13 +20,25 @@ const ChangePassword = () => {
   const { t } = useTranslation("changePassword");
   const { t: tCommon } = useTranslation("common");
 
-  // Auth mutation hook
+  // Authenticated "must change password" flow (business accounts provisioned by
+  // an admin): the user is logged in with no reset token, so we rotate the
+  // password via the authenticated endpoint instead of the token reset.
+  const user = useAuthStore((state) => state.user);
+  const mustChangePassword = user?.mustChangePassword === true;
+
+  // Auth mutation hook (token-based reset — forgot-password flow)
   const {
     mutate: resetPassword,
-    isPending: isLoading,
+    isPending: isResetting,
     error: mutationError,
     isSuccess,
   } = useAuthMutation("resetPassword");
+
+  // Authenticated password update (must-change-password flow)
+  const { mutateAsync: updatePassword, isPending: isUpdating } =
+    useUserMutation("updatePassword");
+
+  const isLoading = isResetting || isUpdating;
 
   const {
     handleSubmit,
@@ -36,19 +50,24 @@ const ChangePassword = () => {
   const [passwordChanged, setPasswordChanged] = useState(false);
   const [tokenError, setTokenError] = useState("");
   const [token, setToken] = useState("");
+  // Current (temporary) password — only used in the authenticated
+  // must-change-password flow, where the backend requires it.
+  const [currentPassword, setCurrentPassword] = useState("");
 
   const password = watch("password");
   const passwordConfirm = watch("passwordConfirm");
 
-  // Extract token from URL on component mount
+  // Extract token from URL on component mount. In the authenticated
+  // must-change-password flow there is no token — that is expected, so we skip
+  // the invalid-token error in that case.
   useEffect(() => {
     const tokenFromUrl = searchParams.get("token");
-    if (!tokenFromUrl) {
-      setTokenError(t("changePasswordForm.errors.invalidToken"));
-    } else {
+    if (tokenFromUrl) {
       setToken(tokenFromUrl);
+    } else if (!mustChangePassword) {
+      setTokenError(t("changePasswordForm.errors.invalidToken"));
     }
-  }, [searchParams, t]);
+  }, [searchParams, t, mustChangePassword]);
 
   // Password validation rules for display
   const passwordValidations = [
@@ -65,12 +84,44 @@ const ChangePassword = () => {
   ];
 
   const onSubmit = async (data) => {
+    setTokenError("");
+
+    // Authenticated must-change-password flow: rotate via the authenticated
+    // endpoint, then send the user to their dashboard.
+    if (mustChangePassword) {
+      if (!currentPassword) {
+        setError("password", {
+          message: t("changePasswordForm.currentPassword.required", {
+            defaultValue: tCommon("authErrors.currentPasswordRequired", {
+              defaultValue: "Current password is required",
+            }),
+          }),
+        });
+        return;
+      }
+      try {
+        await updatePassword({
+          currentPassword,
+          newPassword: data.password,
+          passwordConfirm: data.passwordConfirm,
+        });
+        setPasswordChanged(true);
+        router.replace(`/${currentLocale}/host`);
+      } catch (error) {
+        const resolved = getAuthErrorMessage(error.parsedError || null, tCommon);
+        const errorMessage =
+          resolved?.message ||
+          error.message ||
+          t("changePasswordForm.errors.generic");
+        setError("password", { message: errorMessage });
+      }
+      return;
+    }
+
     if (!token) {
       setTokenError(t("changePasswordForm.errors.invalidToken"));
       return;
     }
-
-    setTokenError("");
 
     try {
       await resetPassword({
@@ -203,6 +254,22 @@ const ChangePassword = () => {
         )}
 
         <div className={styles.inputs_container}>
+          {mustChangePassword && (
+            <InputGroup
+              label={t("changePasswordForm.currentPassword.label", {
+                defaultValue: "Current password",
+              })}
+              type="password"
+              placeholder={t("changePasswordForm.currentPassword.placeholder", {
+                defaultValue: "Enter your current password",
+              })}
+              required
+              name="currentPassword"
+              iconPath="auth/password.svg"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          )}
           <InputGroup
             label={t("changePasswordForm.newPassword.label")}
             type="password"

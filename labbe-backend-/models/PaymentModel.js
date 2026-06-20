@@ -54,6 +54,37 @@ const PAYMENT_STATUS = Object.freeze({
   VOIDED: "voided",
 });
 
+/**
+ * Durable money line item (business-account plan #4/#21). A payment that
+ * activates a business plan carries an immutable ledger of what was charged:
+ * plan, setup_fee, addon(s), discount, tax. Refunds allocate against these
+ * line-item IDs so partial/setup-aware refunds are auditable.
+ *
+ * All amounts SAR major-unit Number. `subtotal = quantity * unitAmount`.
+ * `total = subtotal - discountAllocation + taxAmount`. `refundableAmount`
+ * starts at `total` and is decremented as refunds are allocated.
+ */
+const lineItemSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ["plan", "setup_fee", "addon", "discount", "tax"],
+      required: true,
+    },
+    referenceId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    label: { type: String, default: "" },
+    quantity: { type: Number, default: 1 },
+    unitAmount: { type: Number, default: 0 },
+    subtotal: { type: Number, default: 0 },
+    discountAllocation: { type: Number, default: 0 },
+    taxAmount: { type: Number, default: 0 },
+    total: { type: Number, default: 0 },
+    refundableAmount: { type: Number, default: 0 },
+    refundedAmount: { type: Number, default: 0 },
+  },
+  { _id: true }
+);
+
 const paymentMethodSchema = new mongoose.Schema(
   {
     type: { type: String }, // creditcard | applepay | samsungpay | stcpay | token
@@ -100,6 +131,10 @@ const paymentSchema = new mongoose.Schema(
     // ─── MONEY ───
     amount: { type: Number, required: true }, // SAR major units
     currency: { type: String, default: "SAR" },
+
+    // Durable line-item ledger (business-account quotes). Empty for legacy
+    // host checkouts, which charge a single `amount`. [#4]
+    lineItems: { type: [lineItemSchema], default: undefined },
     refundedAmount: { type: Number, default: 0 }, // SAR major units
     capturedAmount: { type: Number, default: 0 }, // SAR major units
     fee: { type: Number, default: 0 }, // estimated by Moyasar, halalas
@@ -157,6 +192,20 @@ const paymentSchema = new mongoose.Schema(
           // Invite clawback applied alongside this (partial) refund — number
           // of invites debited from the linked subscription's pool.
           deductInvites: { type: Number, default: 0 },
+          // Line-item-aware allocation: which line items this refund draws
+          // against and how much from each. Sums to `amount`. [#3]
+          allocations: {
+            type: [
+              new mongoose.Schema(
+                {
+                  lineItemId: { type: mongoose.Schema.Types.ObjectId },
+                  amount: { type: Number, required: true },
+                },
+                { _id: false }
+              ),
+            ],
+            default: undefined,
+          },
         },
         { _id: true }
       ),

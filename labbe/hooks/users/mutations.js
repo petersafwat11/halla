@@ -1,8 +1,10 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Cookies from "js-cookie";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
+import useAuthStore from "@/stores/authStore";
 import { usersKeys } from "./keys";
 
 export const useUserMutation = (action) => {
@@ -46,6 +48,13 @@ export const useUserMutation = (action) => {
           path: API_PATHS.users.updateMyPassword,
           data: passwordData,
         }),
+      onSuccess: () => {
+        // Clear the must-change-password gate (cookie drives the middleware
+        // redirect; store flag drives any client guard) now that the user has
+        // rotated their password.
+        Cookies.remove("mustChangePassword");
+        useAuthStore.getState().updateUser({ mustChangePassword: false });
+      },
     },
 
     sendPhoneChangeOtp: {

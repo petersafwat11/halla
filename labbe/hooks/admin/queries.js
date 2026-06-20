@@ -47,6 +47,34 @@ export const useAdminHost = (hostId, options = {}) => {
   });
 };
 
+export const useAdminBusinesses = (filters = {}, options = {}) => {
+  return useQuery({
+    queryKey: adminKeys.businesses(filters),
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.admin.businesses.getAll,
+        params: filters,
+      }),
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
+export const useAdminBusiness = (businessId, options = {}) => {
+  return useQuery({
+    queryKey: adminKeys.businessDetail(businessId),
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.admin.businesses.getById(businessId),
+      }),
+    enabled: !!businessId,
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
 export const useVerifyHostPhone = (phoneNumber, options = {}) => {
   return useQuery({
     queryKey: adminKeys.hostVerifyPhone(phoneNumber),
