@@ -14,6 +14,7 @@ import {
   IoSettings,
   IoPeople,
   IoPersonAdd,
+  IoBriefcase,
   IoBusiness,
   IoPricetag,
   IoGift,
@@ -126,6 +127,13 @@ export const adminNavItems = [
     icon: IoPersonAdd,
     labelKey: "adminSidebar.hosts",
     defaultLabel: "المضيفون",
+  },
+  {
+    key: "businesses",
+    path: "/admin-dash/businesses",
+    icon: IoBriefcase,
+    labelKey: "adminSidebar.businesses",
+    defaultLabel: "حسابات الأعمال",
   },
   {
     key: "vendors",
@@ -251,6 +259,7 @@ const ROLE_NAV_ACCESS = {
     "dashboard",
     "moderators",
     "hosts",
+    "businesses",
     "vendors",
     "events",
     "tickets",
@@ -267,6 +276,7 @@ const ROLE_NAV_ACCESS = {
     "dashboard",
     "moderators",
     "hosts",
+    "businesses",
     "vendors",
     "events",
     "tickets",
@@ -300,6 +310,7 @@ export const ROLE_PAGE_ACCESS = {
   [USER_ROLES.SUPER_ADMIN]: {
     dashboard: ACCESS_LEVELS.FULL,
     hosts: ACCESS_LEVELS.FULL,
+    businesses: ACCESS_LEVELS.FULL,
     vendors: ACCESS_LEVELS.FULL,
     events: ACCESS_LEVELS.FULL,
     tickets: ACCESS_LEVELS.FULL,
@@ -315,6 +326,7 @@ export const ROLE_PAGE_ACCESS = {
   [USER_ROLES.ADMIN]: {
     dashboard: ACCESS_LEVELS.FULL,
     hosts: ACCESS_LEVELS.FULL,
+    businesses: ACCESS_LEVELS.FULL,
     vendors: ACCESS_LEVELS.FULL,
     events: ACCESS_LEVELS.FULL,
     tickets: ACCESS_LEVELS.FULL,
