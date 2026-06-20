@@ -35,6 +35,11 @@
       "subtitle": "{{count}} نشط",
       "highlight": "+{{count}} جديد"
     },
+    "businesses": {
+      "title": "إجمالي المنشآت",
+      "subtitle": "{{count}} نشط",
+      "highlight": "+{{count}} جديد"
+    },
     "vendors": {
       "title": "إجمالي المزودين",
       "subtitle": "{{count}} قيد الموافقة",

@@ -4,5 +4,6 @@ export { default as DiscountCodeCard } from "./DiscountCodeCard";
 export { default as PaymentSummaryCard } from "./PaymentSummaryCard";
 export { default as CurrentPlanCard } from "./CurrentPlanCard";
 export { default as HostPlanCard } from "./HostPlanCard";
+export { default as BusinessPlanCard } from "./BusinessPlanCard";
 export { default as AddonsSection } from "./AddonsSection";
 export { default as AddonsSummaryCard } from "./AddonsSummaryCard";

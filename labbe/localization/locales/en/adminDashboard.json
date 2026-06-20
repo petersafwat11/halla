@@ -35,6 +35,11 @@
       "subtitle": "{{count}} active",
       "highlight": "+{{count}} new"
     },
+    "businesses": {
+      "title": "Total Businesses",
+      "subtitle": "{{count}} active",
+      "highlight": "+{{count}} new"
+    },
     "vendors": {
       "title": "Total Vendors",
       "subtitle": "{{count}} pending approval",
