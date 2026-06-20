@@ -38,6 +38,17 @@
     "emailVerified": "تم التحقق من البريد الإلكتروني بنجاح",
     "verificationError": "فشل التحقق من البريد الإلكتروني"
   },
+  "business": {
+    "title": "الملف التجاري",
+    "subtitle": "يظهر شعارك ووصفك على الدعوات التي ترسلها.",
+    "logo": "شعار النشاط التجاري",
+    "changeLogo": "تغيير الشعار",
+    "noLogo": "لا يوجد شعار",
+    "description": "وصف النشاط التجاري",
+    "descriptionPlaceholder": "عرّف ضيوفك بنشاطك التجاري",
+    "updateSuccess": "تم تحديث الملف التجاري بنجاح",
+    "updateError": "فشل تحديث الملف التجاري"
+  },
   "notifications": {
     "appNotifications": "الإشعارات المرسلة على التطبيق",
     "appNotificationsDescription": "لا تفوت أي إشعار مع تمكين خيار الإشعارات الفورية داخل التطبيق",

@@ -19,6 +19,7 @@ const AccountSettings = ({
   onProfileUpdate,
   onPasswordChange,
   initialUser,
+  children,
 }) => {
   const { t } = useTranslation("settings");
   const toast = useToast();
@@ -164,6 +165,8 @@ const AccountSettings = ({
               </Text>
             </TouchableOpacity>
           </View>
+
+          {children}
         </ScrollView>
       </View>
     </FormProvider>

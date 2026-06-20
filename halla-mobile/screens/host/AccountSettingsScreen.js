@@ -1,9 +1,10 @@
 import React from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { View, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import AccountSettings from "../../components/settings/AccountSettings";
+import BusinessSettings from "../../components/settings/BusinessSettings";
 import { useProfile, useUpdateProfile, useChangePassword } from "../../hooks";
 import { TopBar } from "../../components/plans";
 
@@ -45,7 +46,14 @@ export default function AccountSettingsScreen() {
             initialUser={profileUser}
             onProfileUpdate={handleProfileUpdate}
             onPasswordChange={handlePasswordChange}
-          />
+          >
+            {profileUser?.accountType === "business" && (
+              <BusinessSettings
+                user={profileUser}
+                onProfileUpdate={handleProfileUpdate}
+              />
+            )}
+          </AccountSettings>
         )}
       </View>
     </SafeAreaView>
