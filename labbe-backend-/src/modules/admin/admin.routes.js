@@ -18,6 +18,7 @@ const { protect } = require('../../shared/middleware/auth');
 router.use(protect);
 
 router.use(require('./admin.hosts.routes'));
+router.use(require('./admin.businesses.routes'));
 router.use(require('./admin.vendors.routes'));
 router.use(require('./admin.moderators.routes'));
 router.use(require('./admin.events.routes'));
