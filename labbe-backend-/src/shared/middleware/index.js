@@ -28,7 +28,6 @@ module.exports = {
   checkEventLimit: subscription.checkEventLimit,
   checkGuestLimit: subscription.checkGuestLimit,
   checkMessageLimit: subscription.checkMessageLimit,
-  incrementEventUsage: subscription.incrementEventUsage,
 
   // WhiteLabel
   filterByWhitelabel: whitelabel.filterByWhitelabel,

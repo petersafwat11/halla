@@ -16,7 +16,6 @@ const testMessageSchema = (t) =>
       .string()
       .min(1, t("testMessage.validation.phoneRequired"))
       .regex(/^5[0-9]{8}$/, t("testMessage.validation.phoneFormat")),
-    channel: z.enum(["whatsapp", "sms"]).default("whatsapp"),
   });
 
 const TestMessagePopup = ({ onConfirm, onCancel, eventId }) => {
@@ -28,25 +27,19 @@ const TestMessagePopup = ({ onConfirm, onCancel, eventId }) => {
     mode: "onChange",
     defaultValues: {
       phoneNumber: "",
-      channel: "whatsapp",
     },
   });
 
   const {
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors, isSubmitting },
   } = methods;
-
-  const channel = watch("channel");
 
   const onSubmit = async (data) => {
     try {
       await sendTestMessage.mutateAsync({
         eventId,
         phoneNumber: data.phoneNumber,
-        channel: data.channel,
       });
       toast.success(
         t("testMessage.success") || "Test message sent successfully"
@@ -70,23 +63,6 @@ const TestMessagePopup = ({ onConfirm, onCancel, eventId }) => {
         </div>
 
         <div className={styles.content}>
-          <div className={styles.channelSelector}>
-            <button
-              type="button"
-              className={`${styles.channelButton} ${channel === "whatsapp" ? styles.active : ""}`}
-              onClick={() => setValue("channel", "whatsapp")}
-            >
-              {t("messaging.whatsapp")}
-            </button>
-            <button
-              type="button"
-              className={`${styles.channelButton} ${channel === "sms" ? styles.active : ""}`}
-              onClick={() => setValue("channel", "sms")}
-            >
-              {t("messaging.sms")}
-            </button>
-          </div>
-
           <InputGroup
             name="phoneNumber"
             label={t("testMessage.phoneLabel")}

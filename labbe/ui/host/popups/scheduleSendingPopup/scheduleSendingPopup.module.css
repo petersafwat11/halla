@@ -50,6 +50,13 @@
   gap: 16px;
 }
 
+.windowHint {
+  color: #888;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: -8px;
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;

@@ -14,6 +14,7 @@ export const SETTINGS_ACTIONS = [
   "updateReminderSettings",
   "retryLaunch",
   "resendInvite",
+  "extraReminder",
 ];
 
 const buildMutations = (queryClient) => ({
@@ -126,25 +127,59 @@ const buildMutations = (queryClient) => ({
     },
   },
 
-  // One-time resend invite — re-invites guests who haven't responded
-  // or said "maybe". Available only 48h after the bulk send completed.
-  // Server enforces the one-time constraint via resendInviteSentAt flag.
+  // Resend invite — pool-charged, REPEATABLE, no gates. Targets the
+  // non-responders / maybe audience; pass `guestIds` to scope the send to a
+  // specific selection (else the backend defaults to all non-responders).
+  // The server charges the host's invite pool and 402s INSUFFICIENT_INVITES
+  // when the selection exceeds remaining invites.
   resendInvite: {
-    mutationFn: ({ eventId, channel = "sms" }) => {
+    mutationFn: ({ eventId, channel = "sms", guestIds }) => {
       const idempotencyKey =
         typeof crypto !== "undefined" && crypto.randomUUID
           ? `resend-${eventId}-${crypto.randomUUID()}`
           : `resend-${eventId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const data = { channel };
+      if (Array.isArray(guestIds) && guestIds.length > 0) {
+        data.guestIds = guestIds;
+      }
       return apiRequest({
         method: "POST",
         path: API_PATHS.events.resendInvite(eventId),
-        data: { channel },
+        data,
         headers: { "Idempotency-Key": idempotencyKey },
       });
     },
     onSuccess: (_, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: ["events", eventId] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["guests", "events", eventId] });
+    },
+  },
+
+  // Extra reminder — pool-charged, immediate, CONFIRMED guests only, using the
+  // approved `reminder_confirmed` template. Pass `guestIds` to scope the send.
+  // The server 402s INSUFFICIENT_INVITES and 400s NO_REMINDER_TEMPLATE.
+  extraReminder: {
+    mutationFn: ({ eventId, guestIds }) => {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? `extra-reminder-${eventId}-${crypto.randomUUID()}`
+          : `extra-reminder-${eventId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const data = {};
+      if (Array.isArray(guestIds) && guestIds.length > 0) {
+        data.guestIds = guestIds;
+      }
+      return apiRequest({
+        method: "POST",
+        path: API_PATHS.events.extraReminder(eventId),
+        data,
+        headers: { "Idempotency-Key": idempotencyKey },
+      });
+    },
+    onSuccess: (_, { eventId }) => {
+      queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["guests", "events", eventId] });
     },
   },
 });

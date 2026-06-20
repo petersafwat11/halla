@@ -14,6 +14,13 @@ const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
 const { guardExportMaxRows } = require('../../shared/utils/excelExport');
 const { buildDateRangeQuery, formatTargetSubscription } = require('./admin.shared.service');
+const {
+  isTrialFromPlan,
+  eventInstantOf,
+  assertEventDateFloor,
+  isSendInWindow,
+  storedSendInstant,
+} = require('../../shared/utils/schedulingWindow');
 
 /**
  * Get event by ID (admin - with whitelabel filter)
@@ -45,7 +52,8 @@ async function updateEventFull(eventId, updateData, context = {}) {
     query.whitelabelId = context.whitelabelId;
   }
 
-  const event = await Event.findOne(query);
+  // Populate planId so trial-vs-paid scheduling windows resolve correctly.
+  const event = await Event.findOne(query).populate('planId', 'code planType');
   if (!event) {
     throw new NotFoundError('Event');
   }
@@ -75,6 +83,44 @@ async function updateEventFull(eventId, updateData, context = {}) {
       }
     }
   });
+
+  // Event-date floor + stored-schedule re-validation — the admin path must
+  // NOT bypass the date gate that host edits enforce. `eventDetails` was
+  // assigned wholesale above, so the new date/time is already on the doc.
+  // Gate on date/time actually changing so a cosmetic admin edit on a
+  // near-term event isn't rejected.
+  const newDetails = updateData.eventDetails || {};
+  const dateTimeChanging = newDetails.date !== undefined || newDetails.time !== undefined;
+  if (dateTimeChanging) {
+    const isTrial = isTrialFromPlan(event.planId);
+    const newEventInstant = eventInstantOf(event);
+
+    // Floor: a valid send window must still exist for the new event date.
+    assertEventDateFloor({ eventInstant: newEventInstant, isTrial });
+
+    // If a stored launch schedule now violates [now+minLead, newEvent−3d],
+    // clear it and revert to pending_scheduling.
+    const sendInstant = storedSendInstant(event);
+    if (sendInstant && !isSendInWindow({ scheduledInstant: sendInstant, eventInstant: newEventInstant, isTrial })) {
+      event.launchSettings = { ...event.launchSettings, scheduledDate: undefined, scheduledTime: undefined };
+      if (event.status === EVENT_STATUS.SCHEDULED) {
+        event.status = EVENT_STATUS.PENDING_SCHEDULING;
+      }
+    }
+
+    // Reminder reset — mirror updateEventDetails. If a custom reminder now
+    // sits at/after the new (earlier) event time, drop customReminderTime so
+    // the pre-save recomputes the default; otherwise a reminder would fire
+    // after the event (the pre-save skips while customReminderTime===true).
+    if (event.reminderSettings?.customReminderTime) {
+      const { parseReminderTime, parseDateTime } = require('../../shared/utils/timezone');
+      const reminderTime = parseReminderTime(event);
+      const newEventTimeUtc = parseDateTime(event.eventDetails.date, event.eventDetails.time);
+      if (reminderTime && newEventTimeUtc && reminderTime.getTime() >= newEventTimeUtc.getTime()) {
+        event.reminderSettings.customReminderTime = false;
+      }
+    }
+  }
 
   // Handle guest list update inside a transaction so deleteMany + insertMany are atomic
   if (updateData.guestList) {

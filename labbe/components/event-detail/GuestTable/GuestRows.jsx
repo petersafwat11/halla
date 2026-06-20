@@ -1,12 +1,11 @@
 "use client";
 import React from "react";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiSend, FiBell } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import {
   renderSentViaBadge,
   renderStatusBadge,
   renderAutoReminderBadge,
-  renderExtraReminderBadge,
 } from "./guestCellRenderers";
 
 export default function GuestRows({
@@ -21,6 +20,8 @@ export default function GuestRows({
   onSendInvitation,
   onSendReminder,
   onExportGuests,
+  onBulkResend,
+  onBulkExtraReminder,
 }) {
   const guestsList = guests || [];
 
@@ -30,6 +31,10 @@ export default function GuestRows({
     { label: t("singleEvent.stats.declined"), value: "declined" },
     { label: t("singleEvent.stats.maybe", "ربما"), value: "maybe" },
     { label: t("singleEvent.stats.noResponse"), value: "noResponse" },
+    {
+      label: t("singleEvent.stats.noResponseOrMaybe", "Didn't respond or maybe"),
+      value: "noResponseOrMaybe",
+    },
     { label: t("singleEvent.stats.checkedIn"), value: "checkedIn" },
   ].map((opt) => ({
     ...opt,
@@ -38,6 +43,26 @@ export default function GuestRows({
 
   const activeDropdownValue =
     statusFilter && statusFilter !== "totalGuests" ? statusFilter : null;
+
+  // Two pool-charged bulk actions. The handlers receive the selected row
+  // ids from the Table; the parent re-filters them to the right audience
+  // (non-responders/maybe for resend, confirmed for extra reminder) and
+  // confirms the cost before sending.
+  const bulkActions = [];
+  if (onBulkResend) {
+    bulkActions.push({
+      icon: <FiSend size={16} />,
+      text: t("singleEvent.bulkActions.resend", "Resend invitation"),
+      onClick: (selectedIds) => onBulkResend(selectedIds),
+    });
+  }
+  if (onBulkExtraReminder) {
+    bulkActions.push({
+      icon: <FiBell size={16} />,
+      text: t("singleEvent.bulkActions.extraReminder", "Extra reminder"),
+      onClick: (selectedIds) => onBulkExtraReminder(selectedIds),
+    });
+  }
 
   // Column keys must match `headers` 1:1 in the same order. The Table
   // component falls back to `Object.keys(row)` when `headerKeys` isn't
@@ -51,7 +76,6 @@ export default function GuestRows({
     "status",
     "sentVia",
     "autoReminder",
-    "extraReminder",
     "responseTime",
   ];
 
@@ -65,7 +89,6 @@ export default function GuestRows({
         t("table.columns.status", "الحالة"),
         t("table.columns.sentVia", "أُرسل عبر"),
         t("table.columns.autoReminder", "تذكير تلقائي"),
-        t("table.columns.extraReminder", "تذكير إضافي"),
         t("table.columns.responseTime", "وقت الرد"),
       ]}
       headerKeys={columnKeys}
@@ -79,14 +102,10 @@ export default function GuestRows({
           guest.invitation?.effectiveChannel || guest.invitation?.method || null,
         smsFallback: guest.invitation?.smsFallback || false,
         // Pass the raw invitation sub-object through so the renderers
-        // (which are pure cell-level) can read auto/extra fields without
-        // us having to flatten every flag onto the row shape.
+        // (which are pure cell-level) can read auto fields without us
+        // having to flatten every flag onto the row shape.
         invitation: guest.invitation || {},
         autoReminder: guest.invitation?.autoReminderSent || false,
-        extraReminder:
-          guest.invitation?.extraReminderSent ||
-          guest.invitation?.extraReminderScheduled ||
-          false,
         responseTime: guest.rsvp?.respondedAt,
       }))}
       actions={[
@@ -109,6 +128,8 @@ export default function GuestRows({
           },
         },
       ]}
+      bulkActions={bulkActions}
+      showCheckboxes={bulkActions.length > 0}
       moreOptions={[
         {
           text: t("messaging.sendInvitations", "إرسال الدعوات"),
@@ -123,7 +144,6 @@ export default function GuestRows({
         if (key === "sentVia") return renderSentViaBadge(value, row, t);
         if (key === "status") return renderStatusBadge(value, t);
         if (key === "autoReminder") return renderAutoReminderBadge(row, t, formatDateTime || formatDate);
-        if (key === "extraReminder") return renderExtraReminderBadge(row, t, formatDateTime || formatDate);
         if (key === "responseTime" && value) {
           // Show full date+time so the host can see exactly when the
           // guest replied — date alone is ambiguous after 24h.

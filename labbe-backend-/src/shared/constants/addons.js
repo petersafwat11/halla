@@ -1,20 +1,10 @@
 const ADDON_TYPES = {
   EXTRA_INVITES: 'extra_invites',
-  EXTRA_REMINDERS: 'extra_reminders',
   DESIGN_TEMPLATE: 'design_template',
   BUSINESS_CUSTOMIZATION: 'business_customization',
 };
 
 const EXTRA_INVITES_TIERS = [
-  { quantity: 10, price: 40 },
-  { quantity: 20, price: 75 },
-  { quantity: 30, price: 105 },
-  { quantity: 40, price: 130 },
-  { quantity: 50, price: 150 },
-];
-
-// Mirror EXTRA_INVITES_TIERS exactly. 1 reminder = 1 guest message.
-const EXTRA_REMINDERS_TIERS = [
   { quantity: 10, price: 40 },
   { quantity: 20, price: 75 },
   { quantity: 30, price: 105 },
@@ -39,4 +29,4 @@ const BUSINESS_CUSTOMIZATION = {
   descriptionEn: 'Custom webpage + 4 official WhatsApp templates + delivered in 1 week',
 };
 
-module.exports = { ADDON_TYPES, EXTRA_INVITES_TIERS, EXTRA_REMINDERS_TIERS, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION };
+module.exports = { ADDON_TYPES, EXTRA_INVITES_TIERS, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION };

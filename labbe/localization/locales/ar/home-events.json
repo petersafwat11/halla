@@ -105,11 +105,11 @@
     "loadFailed": "تعذّر تحميل لوحة التحكم"
   },
   "staff": {
-    "notifyStaff": "إشعار فريق العمل",
+    "notifyStaff": "إشعار مشرفين البوابة",
     "notifying": "جارٍ الإرسال...",
-    "notifySuccess": "تم الإرسال إلى {{sent}} من {{total}} من فريق العمل",
+    "notifySuccess": "تم الإرسال إلى {{sent}} من {{total}} من مشرفين البوابة",
     "notifyPartial": "تم الإرسال إلى {{sent}} من {{total}}. السبب: {{error}}",
-    "notifyError": "فشل إشعار فريق العمل"
+    "notifyError": "فشل إشعار مشرفين البوابة"
   },
   "subscription": {
     "eventLimitReached": "تم الوصول للحد الأقصى من المناسبات",
@@ -184,8 +184,7 @@
       "status": "الحالة",
       "respondAt": "تاريخ الرد",
       "actions": "الإجراءات",
-      "autoReminder": "تذكير تلقائي",
-      "extraReminder": "تذكير إضافي"
+      "autoReminder": "تذكير تلقائي"
     },
     "cell": {
       "sent": "تم الإرسال",
@@ -221,56 +220,44 @@
     }
   },
   "singleEvent": {
-    "autoReminderInfo": "يتم ارسال تذكيراً تلقائياً للضيوف قبل المناسبة بـ 48 ساعة.",
-    "autoReminderInfoCustom": "يتم إرسال تذكير تلقائي لضيوفك في {{date}} الساعة {{time}}.",
+    "autoReminderInfo": "نرسل تذكيراً مجانياً لضيوفك المؤكدين قبل المناسبة.",
+    "autoReminderInfoCustom": "نرسل تذكيراً مجانياً لضيوفك المؤكدين في {{date}} الساعة {{time}}.",
     "customizeReminder": "تخصيص",
     "customizeReminderModalTitle": "تخصيص التذكير التلقائي",
     "customReminderCheckbox": "تخصيص وقت التذكير",
     "saveSuccess": "تم حفظ إعدادات التذكير بنجاح",
     "save": "حفظ",
-    "scheduleReminder": {
-      "heading": "تذكيرات إضافية",
-      "button": "جدولة تذكير إضافي",
-      "modalTitle": "جدولة تذكير إضافي",
-      "typeLabel": "نوع التذكير",
-      "typeConfirmed": "للضيوف الذين أكدوا الحضور",
-      "typePending": "للضيوف الذين لم يردّوا أو اختاروا ربما",
-      "type": {
-        "reminder_confirmed": "مؤكدو الحضور",
-        "reminder_pending": "لم يردّ / ربما"
-      },
-      "guestsLabel": "اختر الضيوف",
-      "selectAll": "تحديد الكل",
-      "deselectAll": "إلغاء التحديد",
-      "noEligibleGuests": "لا يوجد ضيوف مؤهلون لهذا النوع من التذكير.",
-      "dateLabel": "إرسال في",
-      "dateMin": "أقرب موعد: بعد 5 دقائق",
-      "dateMax": "أقصى موعد: قبل 24 ساعة من الحدث",
-      "quotaLabel": "الرصيد",
-      "quotaValue": "{{used}} من {{remaining}} متاح",
-      "guestCount": "{{count}} ضيف",
-      "submit": "جدولة",
+    "reminderCustomize": {
+      "description": "نرسل تذكيراً مجانياً لضيوفك المؤكدين قبل المناسبة.",
+      "trialInfo": "في الباقة التجريبية، يُرسل التذكير تلقائياً بعد 10 دقائق من بدء إرسال الدعوات ولا يمكن تخصيصه.",
+      "dateLabel": "التاريخ",
+      "timeLabel": "الوقت",
+      "selectDate": "اختر التاريخ",
+      "windowHint": "اختر وقتاً بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل.",
       "cancel": "إلغاء",
-      "cancelAction": "إلغاء التذكير",
-      "cancelConfirm": "هل تريد إلغاء هذا التذكير المجدول؟ سيتم استرجاع الرصيد.",
-      "scheduledList": "التذكيرات المجدولة",
-      "noScheduled": "لا توجد تذكيرات إضافية مجدولة",
-      "scheduledFor": "مجدول لـ {{when}}",
-      "scheduledOk": "تمت جدولة التذكير",
-      "cancelledOk": "تم إلغاء التذكير",
       "errors": {
-        "dateOutOfRange": "يجب أن يكون التاريخ بين 5 دقائق من الآن و 24 ساعة قبل الحدث",
-        "noGuests": "اختر ضيفاً واحداً على الأقل",
-        "insufficientQuota": "لا يوجد رصيد كافٍ للتذكيرات",
-        "noTemplate": "لا يوجد قالب تذكير مهيأ لهذه الفئة. تواصل مع الدعم.",
-        "generic": "تعذّر جدولة التذكير",
-        "cancelFailed": "تعذّر إلغاء التذكير"
+        "dateTimeRequired": "التاريخ والوقت مطلوبان للتذكير المخصص",
+        "outOfRange": "يجب أن يكون وقت التذكير بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل.",
+        "generic": "تعذّر حفظ إعدادات التذكير"
       }
+    },
+    "bulkActions": {
+      "resend": "إعادة إرسال الدعوة",
+      "extraReminder": "تذكير إضافي",
+      "resendTitle": "إعادة إرسال الدعوة",
+      "extraReminderTitle": "تذكير إضافي",
+      "costSummary": "سيُرسل إلى {{count}} · يكلّف {{count}} دعوة · المتبقّي {{remaining}}",
+      "sentResult": "تم إرسال {{successful}}/{{total}}",
+      "insufficientInvites": "الدعوات غير كافية — اشترِ المزيد من الباقات.",
+      "noReminderTemplate": "لا يوجد قالب تذكير مهيأ لهذه الفئة. تواصل مع الدعم.",
+      "noEligibleResend": "لا يمكن إعادة دعوة أي من الضيوف المحددين (فقط من لم يردّ أو ربما).",
+      "noEligibleReminder": "لا يوجد ضيوف مؤكدون ضمن المحددين.",
+      "error": "تعذّر إكمال الإجراء"
     },
     "header": {
       "eventDetails": "تفاصيل المناسبة",
       "editGuests": "تعديل الضيوف",
-      "staffDetails": "تفاصيل فريق العمل",
+      "staffDetails": "تفاصيل مشرفين البوابة",
       "ourInvitation": "دعوتك علينا",
       "ourInvitationTitle": "خدمة مميزة",
       "ourInvitationDesc": "دعنا نهتم بكل تفاصيل مناسبتك",
@@ -282,14 +269,15 @@
       "declined": "اعتذر",
       "confirmed": "تم التأكيد",
       "noResponse": "لم يرد",
+      "noResponseOrMaybe": "لم يرد أو ربما",
       "maybe": "ربما",
       "checkedIn": "حضر",
       "totalGuests": "إجمالي الضيوف"
     },
     "staff": {
-      "title": "فريق العمل",
-      "noStaff": "لا يوجد فريق عمل",
-      "addStaff": "إضافة فريق عمل"
+      "title": "مشرفين البوابة",
+      "noStaff": "لا يوجد مشرفين بوابة",
+      "addStaff": "إضافة مشرفين بوابة"
     },
     "staffTokens": {
       "revoke": "إلغاء الصلاحية",
@@ -346,7 +334,7 @@
       "error": "فشل في إضافة الموظف"
     },
     "staffCard": {
-      "title": "فريق العمل",
+      "title": "مشرفين البوابة",
       "add": "إضافة موظف",
       "mainStaff": "الموظف الرئيسي",
       "phone": "الهاتف",
@@ -360,6 +348,11 @@
     "required": "هذا الحقل مطلوب",
     "send": "إرسال",
     "sending": "جاري الإرسال..."
+  },
+  "remainingInvites": {
+    "label": "الدعوات المتبقية",
+    "unlimited": "غير محدود",
+    "tooltip": "الدعوات المتبقية = الرصيد + الإضافات + التعويض − المُرسل. إضافة الضيوف مجانية؛ تُحتسب الدعوة فقط عند إرسال دعوة أو تذكير."
   },
   "reminderPopup": {
     "title": "إرسال تذكير",
@@ -429,16 +422,5 @@
       "dateRequired": "التاريخ مطلوب",
       "timeRequired": "الوقت مطلوب"
     }
-  },
-  "resendInvite": {
-    "button": "إعادة إرسال الدعوات",
-    "buttonCooldown": "متاح بعد {{hours}}س",
-    "sending": "جاري الإرسال...",
-    "success": "تم إعادة إرسال الدعوات إلى {{sent}}/{{total}} ضيف",
-    "error": "فشل في إعادة إرسال الدعوات",
-    "notLive": "إعادة الإرسال متاحة فقط للمناسبات النشطة",
-    "alreadyUsed": "تم إعادة إرسال الدعوات لهذه المناسبة مسبقاً",
-    "notSent": "انتظر حتى يتم إرسال رسائل الدعوة الأولية",
-    "cooldown": "متاح بعد {{hours}}س من إرسال الدعوات"
   }
 }

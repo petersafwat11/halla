@@ -23,7 +23,6 @@ const _buildVendorsPath = (params) => {
   if (params.maxPrice) queryParams.append("maxPrice", params.maxPrice);
   if (params.rating) queryParams.append("rating", params.rating);
   if (params.lang) queryParams.append("lang", params.lang);
-  if (params.sort) queryParams.append("sort", params.sort);
   if (params.page) queryParams.append("page", params.page);
   if (params.limit) queryParams.append("limit", params.limit);
   const qs = queryParams.toString();

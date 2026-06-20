@@ -23,7 +23,7 @@ const formatPrice = (n) => (n || 0).toLocaleString();
 
 function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSelect, onSubscribe, t, lang }) {
   const selectedPlan = plans.find((p) => p.code === selectedCode) || plans[0];
-  const selectedInvites = selectedPlan?.limits?.maxInvitesPerEvent || 0;
+  const selectedInvites = selectedPlan?.limits?.invitePool || 0;
 
   return (
     <div className={styles.hostCard}>
@@ -36,7 +36,7 @@ function EventPlanSelector({ plans, selectedCode, isCurrent, isSubscribing, onSe
             onClick={() => onSelect(plan.code)}
           >
             <span className={styles.guestNum}>
-              {plan.limits?.maxInvitesPerEvent || 0}
+              {plan.limits?.invitePool || 0}
             </span>
             <span className={styles.guestUnit}>{t("plansPage.inviteUnit")}</span>
           </button>
@@ -177,8 +177,8 @@ const PlansPageInner = () => {
     () =>
       [...(businessPlansData?.event || [])].sort(
         (a, b) =>
-          (a.limits?.maxInvitesPerEvent || 0) -
-          (b.limits?.maxInvitesPerEvent || 0)
+          (a.limits?.invitePool || 0) -
+          (b.limits?.invitePool || 0)
       ),
     [businessPlansData]
   );

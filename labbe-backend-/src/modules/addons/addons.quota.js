@@ -4,9 +4,8 @@ const { ADDON_TYPES } = require('../../shared/constants/addons');
 
 /**
  * Apply an addon's quantity to the right counter for its scope.
- * EXTRA_INVITES bumps invitePool (scope-dependent); EXTRA_REMINDERS bumps the
- * subscription's remindersPool. Templates and business customization track
- * usage elsewhere.
+ * EXTRA_INVITES bumps invitePool (scope-dependent). Templates and business
+ * customization track usage elsewhere.
  *
  * For event scope, an unlimited event (guestLimit null/-1) is a no-op — the
  * purchase guard upstream rejects this case before charging, so reaching it
@@ -15,16 +14,6 @@ const { ADDON_TYPES } = require('../../shared/constants/addons');
  */
 async function applyQuota(addon, { targetEvent } = {}) {
   const { scope, addonType, quantity = 1 } = addon;
-
-  if (addonType === ADDON_TYPES.EXTRA_REMINDERS) {
-    // Always subscription-scoped — reminders are a pool counter on the
-    // owner's subscription, not per-event.
-    if (!addon.subscriptionId) return;
-    await Subscription.findByIdAndUpdate(addon.subscriptionId, {
-      $inc: { remindersPool: quantity },
-    });
-    return;
-  }
 
   if (addonType !== ADDON_TYPES.EXTRA_INVITES) return;
 

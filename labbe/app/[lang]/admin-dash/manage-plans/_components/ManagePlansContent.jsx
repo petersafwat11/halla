@@ -21,16 +21,6 @@ const PLAN_TYPE_KEYS = [
   'business_event', 'business_quarterly', 'business_annual', 'trial', 'unlimited',
 ];
 
-const POOL_PLAN_TYPES = new Set([
-  'business_quarterly',
-  'business_annual',
-  'basic_monthly',
-  'premium_monthly',
-  'unlimited',
-]);
-
-const isPoolPlan = (planType) => POOL_PLAN_TYPES.has(planType);
-
 const getAccentColor = (planType) => {
   if (planType === "trial") return "#2a8c5b";
   if (planType?.startsWith("business_")) return "var(--c-s500, #524438)";
@@ -115,9 +105,7 @@ export default function ManagePlansContent() {
             const accent = getAccentColor(planType);
             const planName = getLocalized(plan, "name", i18n.language);
             const price = plan.pricing?.oneTime || 0;
-            const maxGuests = isPoolPlan(planType)
-              ? plan.limits?.invitePool
-              : plan.limits?.maxInvitesPerEvent;
+            const maxGuests = plan.limits?.invitePool;
             const maxEvents = plan.limits?.maxEvents;
 
             return (

@@ -40,8 +40,16 @@ const PlanDescription = ({
     billingType === "quarterly" ||
     billingType === "annual";
   const invitePool = plan.invitePool ?? plan.limits?.invitePool ?? null;
+  // Per-event plans now carry an `invitePool` too — prefer it as the base,
+  // keeping legacy fields as a fallback. For a per-event plan this equals the
+  // old `maxInvitesPerEvent`, so display is unchanged; pool plans use the
+  // `invitePool` branch above and are unaffected.
   const perEventInvites =
-    plan.invites ?? plan.limits?.maxInvitesPerEvent ?? 0;
+    plan.invitePool ??
+    plan.limits?.invitePool ??
+    plan.invites ??
+    plan.limits?.maxInvitesPerEvent ??
+    0;
 
   const compensationBase = isPool
     ? invitePool || 0

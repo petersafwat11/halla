@@ -22,7 +22,6 @@ const purchaseAddonSchema = z
   .object({
     addonType: z.enum([
       ADDON_TYPES.EXTRA_INVITES,
-      ADDON_TYPES.EXTRA_REMINDERS,
       ADDON_TYPES.DESIGN_TEMPLATE,
       ADDON_TYPES.BUSINESS_CUSTOMIZATION,
     ]),
@@ -45,9 +44,7 @@ const purchaseAddonSchema = z
   .strict()
   .superRefine((val, ctx) => {
     // quantity: required for tiered addons, forbidden for the rest
-    const tiered =
-      val.addonType === ADDON_TYPES.EXTRA_INVITES
-      || val.addonType === ADDON_TYPES.EXTRA_REMINDERS;
+    const tiered = val.addonType === ADDON_TYPES.EXTRA_INVITES;
     if (tiered && val.quantity === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

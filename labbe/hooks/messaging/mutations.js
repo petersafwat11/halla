@@ -168,11 +168,11 @@ export const useScheduleSend = () => {
 export const useSendTestMessage = () => {
   const invalidate = useMessagingInvalidations();
   return useMutation({
-    mutationFn: ({ eventId, phoneNumber, channel }) =>
+    mutationFn: ({ eventId, phoneNumber }) =>
       apiRequest({
         method: "PATCH",
         path: API_PATHS.events.sendTestMessage(eventId),
-        data: { phoneNumber, channel },
+        data: { phoneNumber },
         config: {
           headers: {
             "Idempotency-Key": newIdempotencyKey(`test-${eventId}`),

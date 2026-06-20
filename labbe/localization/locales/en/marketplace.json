@@ -107,14 +107,6 @@
     "title": "{{count}} vendors",
     "subtitle": "Approved providers ready to help with your occasion"
   },
-  "sort": {
-    "label": "Sort by",
-    "recommended": "Recommended",
-    "rating": "Highest rated",
-    "priceAsc": "Lowest starting price",
-    "priceDesc": "Highest starting price",
-    "newest": "Newest"
-  },
   "errors": {
     "loadFailed": "We could not load vendors right now.",
     "loadFailedTitle": "Marketplace unavailable",

@@ -57,8 +57,12 @@
   "buttons": { "subscribeNow": "Subscribe Now", "retry": "Retry", "continueToSummary": "Continue to Summary" },
   "addons": {
     "title": "Add-Ons", "subtitle": "Enhance your plan with optional extras",
-    "extraInvites": { "title": "Extra Invites", "description": "Add more invites to your plan" },
-    "extraReminders": { "title": "Extra Reminders", "description": "Send additional reminder messages" },
+    "extraInvites": {
+      "title": "Extra Invites",
+      "description": "Add more invites to your plan",
+      "stackHint": "Select multiple packages to stack them — they add up. Extra invite packages don't earn compensation.",
+      "stackHintSelected": "Stacked: +{{count}} extra invites. Extra invite packages don't earn compensation."
+    },
     "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
     "addButton": "Add", "removeButton": "Remove", "addedBadge": "Added",
     "selectedCount_one": "1 selected", "selectedCount_other": "{{count}} selected", "clearAll": "Clear all",
@@ -108,6 +112,13 @@
     "unlimitedEvents": "Unlimited events",
     "singleEvent90Days": "1 event — 90 days",
     "compensationInvitesLabel": "{{count}} compensation invites",
+    "totalInvitesLabel": "Total invites",
+    "totalInvitesBreakdown": "{{base}} plan invites + {{compensation}} bonus (15% compensation).",
+    "totalInvitesBreakdownWithExtras": "{{base}} plan + {{extras}} extra packages + {{compensation}} bonus (15% on base only).",
+    "compensationHint": "+15% bonus invites on your base plan invites — free. Extra invite packages don't earn compensation.",
+    "totalPoolHint": "Base invites + extra packages + compensation = the total invites you can send.",
+    "poolModelHint": "Pool plan: many events share this invite pool.",
+    "perEventModelHint": "Per-event plan: 1 event with these total invites.",
     "billingPeriodLabel": "Billing Period:",
     "periods": {
       "monthly": "30 days",
@@ -136,7 +147,6 @@
     "terms": "By clicking Complete Payment, you agree to our Terms of Service and Privacy Policy",
     "addonItems": {
       "extra_invites": "Extra Invites +{{quantity}}",
-      "extra_reminders": "Extra Reminders +{{quantity}}",
       "design_template": "Design Template"
     },
     "invitePool": "Invite Pool",

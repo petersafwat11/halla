@@ -113,6 +113,7 @@ function LastEventStats() {
           eventId={data.id}
           onSuccess={() => router.refresh()}
           existingSchedule={data.launchSettings}
+          eventDate={data.eventDetails?.date}
         />
       </PopupWrapper>
     </div>

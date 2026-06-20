@@ -20,20 +20,32 @@ import Button from "../commen/Button";
 import { useScheduleSend } from "../../hooks/messaging";
 import { useMySubscription } from "../../hooks/users";
 
-const getTwoDaysFromNow = () => {
-  const date = new Date();
-  date.setDate(date.getDate() + 2);
-  date.setHours(0, 0, 0, 0);
-  return date;
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
+// Floor a date to local calendar midnight — the picker is day-granular.
+const toDay = (d) => {
+  const c = new Date(d);
+  c.setHours(0, 0, 0, 0);
+  return c;
 };
 
-const buildSchema = (t) =>
+// Live scheduling window lower bound: now + minLead.
+//   minLead: trial = 15min, paid = 24h.
+const getMinSendDate = (isTrial) => {
+  const leadMs = isTrial ? 15 * 60 * 1000 : 24 * 60 * 60 * 1000;
+  return toDay(new Date(Date.now() + leadMs));
+};
+
+// Schema is plan-aware: validate against the same min-send day used by the
+// picker bound, NOT a hardcoded "2 days from now" (which previously blocked
+// trial hosts from scheduling inside the 2-day window).
+const buildSchema = (t, isTrial) =>
   z
     .object({
       scheduledDate: z.date({ required_error: t("scheduleSend.validation.dateRequired") }),
       scheduledTime: z.date({ required_error: t("scheduleSend.validation.timeRequired") }),
     })
-    .refine((data) => data.scheduledDate >= getTwoDaysFromNow(), {
+    .refine((data) => toDay(data.scheduledDate) >= getMinSendDate(isTrial), {
       message: t("scheduleSend.validation.minDate"),
       path: ["scheduledDate"],
     });
@@ -65,6 +77,7 @@ const ScheduleSendingModal = ({
   onSuccess,
   eventId,
   existingSchedule,
+  eventDate,
 }) => {
   const { t } = useTranslation("events");
   const scheduleSend = useScheduleSend();
@@ -72,7 +85,7 @@ const ScheduleSendingModal = ({
   const isTrial = subData?.data?.subscription?.[0]?.planCode === "trial";
 
   const methods = useForm({
-    resolver: zodResolver(buildSchema(t)),
+    resolver: zodResolver(buildSchema(t, isTrial)),
     mode: "onChange",
     defaultValues: {
       scheduledDate: existingSchedule?.scheduledDate
@@ -90,18 +103,26 @@ const ScheduleSendingModal = ({
 
   const isPending = isSubmitting || scheduleSend.isPending;
 
-  const minDate = useMemo(() => {
-    if (isTrial) return null;
-    return getTwoDaysFromNow();
-  }, [isTrial]);
+  // Live scheduling window: [now + minLead, event − 3d]. The picker is
+  // day-granular; the backend is authoritative and returns SCHEDULE_TOO_SOON /
+  // SCHEDULE_TOO_LATE for boundary cases.
+  const minDate = useMemo(() => getMinSendDate(isTrial), [isTrial]);
+  const maxDate = useMemo(() => {
+    if (!eventDate) return undefined;
+    const ev = new Date(eventDate);
+    if (Number.isNaN(ev.getTime())) return undefined;
+    return toDay(new Date(ev.getTime() - THREE_DAYS_MS));
+  }, [eventDate]);
 
   const onSubmit = async (data) => {
-    if (!isTrial) {
-      const min = getTwoDaysFromNow();
-      if (min && new Date(data.scheduledDate) < min) {
-        Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.minDate"));
-        return;
-      }
+    const chosenDay = toDay(new Date(data.scheduledDate));
+    if (minDate && chosenDay < minDate) {
+      Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.tooSoon"));
+      return;
+    }
+    if (maxDate && chosenDay > maxDate) {
+      Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.tooLate"));
+      return;
     }
     try {
       await scheduleSend.mutateAsync({
@@ -114,7 +135,13 @@ const ScheduleSendingModal = ({
       onClose();
       Alert.alert(t("scheduleSend.title"), t("scheduleSend.success"));
     } catch (error) {
-      Alert.alert(t("common.error", "خطأ"), error?.message || t("scheduleSend.error"));
+      if (error?.code === "SCHEDULE_TOO_SOON" || error?.code === "EVENT_DATE_TOO_SOON") {
+        Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.tooSoon"));
+      } else if (error?.code === "SCHEDULE_TOO_LATE") {
+        Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.tooLate"));
+      } else {
+        Alert.alert(t("common.error", "خطأ"), error?.message || t("scheduleSend.error"));
+      }
     }
   };
 
@@ -159,7 +186,8 @@ const ScheduleSendingModal = ({
                 name="scheduledDate"
                 label={t("scheduleSend.date")}
                 placeholder={t("scheduleSend.datePlaceholder")}
-                minimumDate={getTwoDaysFromNow()}
+                minimumDate={minDate}
+                maximumDate={maxDate}
               />
 
               {/* Time Picker */}
@@ -169,10 +197,10 @@ const ScheduleSendingModal = ({
                 placeholder={t("scheduleSend.timePlaceholder")}
               />
 
-              {/* Minimum date note */}
+              {/* Scheduling-window note */}
               <View style={styles.infoBox}>
                 <Ionicons name="time-outline" size={16} color="#C28E5C" />
-                <Text style={styles.infoText}>{t("scheduleSend.minDateNote")}</Text>
+                <Text style={styles.infoText}>{t("scheduleSend.windowNote")}</Text>
               </View>
             </ScrollView>
 

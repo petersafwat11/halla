@@ -10,7 +10,7 @@ import {
   GuestTable,
   SubscriptionInfo,
   AutoReminderInfoText,
-  ScheduleReminderSection,
+  RemainingInvitesBanner,
 } from "@/components/event-detail";
 import styles from "./EventDetailsContent.module.css";
 
@@ -55,8 +55,8 @@ export default function EventDetailsContent({ eventId }) {
           <SubscriptionInfo subscription={eventData.subscription} />
         )}
 
+        <RemainingInvitesBanner eventId={eventId} />
         <AutoReminderInfoText eventId={eventId} />
-        <ScheduleReminderSection eventId={eventId} />
 
         <EventStats
           eventId={eventId}

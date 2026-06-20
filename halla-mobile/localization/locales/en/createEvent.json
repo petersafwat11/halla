@@ -278,6 +278,8 @@
   "event_time_label": "Event Time",
   "event_date_label": "Event Date",
   "event_date_placeholder": "Select event date",
+  "event_date_hint": "Earlier dates are disabled — your event must be at least 4 days away so invitations and the reminder have time to send.",
+  "event_date_hint_trial": "Earlier dates are disabled — your event must be at least 3 days away so invitations and the reminder have time to send.",
   "address_label": "Address",
   "event_types": {
     "wedding": "Wedding",

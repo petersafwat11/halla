@@ -45,7 +45,7 @@ export default function AutoReminderInfoText({ eventId }) {
 
   let infoText = t(
     "singleEvent.autoReminderInfo",
-    "We automatically send a reminder to your guests 48 hours before the event."
+    "We send a free reminder to your confirmed guests before the event."
   );
 
   if (hasCustom && customDate && customTime) {
@@ -54,7 +54,7 @@ export default function AutoReminderInfoText({ eventId }) {
     infoText = t(
       "singleEvent.autoReminderInfoCustom",
       {
-        defaultValue: "We automatically send a reminder to your guests on {{date}} at {{time}}.",
+        defaultValue: "We send a free reminder to your confirmed guests on {{date}} at {{time}}.",
         date: formattedDate,
         time: formattedTime,
       }
@@ -82,6 +82,7 @@ export default function AutoReminderInfoText({ eventId }) {
       <PopupWrapper isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)}>
         <CustomizeReminderPopup
           eventId={eventId}
+          event={event}
           existingSettings={event.reminderSettings}
           onClose={() => setIsPopupOpen(false)}
         />

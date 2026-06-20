@@ -7,7 +7,7 @@ import {
   EventStatsAndTableWrapper,
   EventFailureBannerClient,
   AutoReminderInfoText,
-  ScheduleReminderSection,
+  RemainingInvitesBanner,
 } from "@/components/event-detail";
 
 export default async function SingleEventPage({ params }) {
@@ -43,8 +43,8 @@ export default async function SingleEventPage({ params }) {
       <div className={styles.page}>
         <HostEventHeader eventId={id} />
         <EventFailureBannerClient eventId={id} />
+        <RemainingInvitesBanner eventId={id} />
         <AutoReminderInfoText eventId={id} />
-        <ScheduleReminderSection eventId={id} />
         <EventStatsAndTableWrapper eventId={id} />
       </div>
     </QueryClientServerProvider>

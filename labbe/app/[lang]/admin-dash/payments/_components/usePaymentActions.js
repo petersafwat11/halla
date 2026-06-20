@@ -43,7 +43,7 @@ export default function usePaymentActions() {
     setActionPayment(null);
   };
 
-  const submit = async ({ amount, reason } = {}) => {
+  const submit = async ({ amount, reason, deductInvites } = {}) => {
     if (!actionPayment) return;
     const { payment, type } = actionPayment;
     try {
@@ -52,6 +52,7 @@ export default function usePaymentActions() {
           id: payment._id,
           amount,
           reason: reason || undefined,
+          deductInvites,
           idempotencyKey,
         });
         toastUtils.success(t("refund.success", "Refund issued"));

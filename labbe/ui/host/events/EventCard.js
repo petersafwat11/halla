@@ -229,7 +229,12 @@ function EventCard({ event }) {
         isOpen={isSchedulePopupOpen}
         onClose={handleCloseSchedulePopup}
       >
-        <ScheduleSendingPopup onClose={handleCloseSchedulePopup} />
+        <ScheduleSendingPopup
+          onClose={handleCloseSchedulePopup}
+          eventId={event?._id}
+          existingSchedule={event?.launchSettings}
+          eventDate={event?.eventDetails?.date}
+        />
       </PopupWrapper>
     </>
   );

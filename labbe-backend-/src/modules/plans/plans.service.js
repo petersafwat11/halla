@@ -388,8 +388,11 @@ class PlansService {
       currency: plan.currency || 'SAR',
       limits: plan.limits,
       invites: isPool ? null : (plan.limits?.maxInvitesPerEvent || 0),
-      invitePool: isPool ? invitePool : null,
-      compensationPool: isPool && invitePool !== null
+      // Per-event plans now carry an invitePool (= base invites) just like pool
+      // plans — the only structural difference is maxEvents. Report the pool and
+      // its 15% compensation for both so the unified "total invites" surfaces.
+      invitePool,
+      compensationPool: invitePool !== null
         ? Math.floor(invitePool * (COMPENSATION_PERCENTAGE / 100))
         : null,
       features,

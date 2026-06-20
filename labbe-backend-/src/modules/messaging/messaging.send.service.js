@@ -6,6 +6,8 @@
 const taqnyat = require('../../infrastructure/taqnyat');
 const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
+const Subscription = require('../../../models/SubscriptionModel');
+const { maybeNotifyPlanLimit } = require('../../shared/utils/planLimitWarning');
 const config = require('../../config');
 const { runBatched } = require('../../shared/utils/runBatched');
 const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
@@ -28,7 +30,7 @@ async function sendSMS(phoneNumber, message) {
  * Send a test message for an event. Throws on failure (rate limit, missing
  * event, or no template). Returns the underlying provider result on success.
  */
-async function sendTestMessage({ eventId, phoneNumber, channel = 'sms', isAdmin = false }) {
+async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isAdmin = false }) {
   const event = await Event.findById(eventId).populate('host', 'name username');
   if (!event) {
     throw new NotFoundError('Event');
@@ -256,7 +258,47 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
     updateData['invitation.lastError'] = result.error;
   }
 
-  await Guest.findByIdAndUpdate(guestId, updateData);
+  if (result.success) {
+    // Consume one invite per guest, exactly once, at send time. Guard the
+    // sent:false->true transition so retries / idempotent replays / concurrent
+    // sends can never double-charge — only the update that actually flips
+    // `sent` debits the pool. (finalizeWaResult guarantees success ⇒ a real
+    // messageId, so we never charge for an undelivered message.)
+    const flip = await Guest.updateOne(
+      { _id: guestId, 'invitation.sent': { $ne: true } },
+      { $set: updateData }
+    );
+    if (flip.modifiedCount === 1 && event.subscriptionId) {
+      // Unified pool: per-event and pool subscriptions both carry an
+      // invitePool. Skip unlimited plans (invitePool null). The batch-level
+      // send-budget pre-check enforces the ceiling, so a plain $inc is safe.
+      // Guard the $inc so concurrent batches can't push invitesConsumed past
+      // capacity (the batch-level budget pre-check is not atomic across
+      // simultaneous sends on the same pool). If already at capacity the
+      // message still went out — we just don't over-charge.
+      await Subscription.updateOne(
+        {
+          _id: event.subscriptionId,
+          invitePool: { $ne: null },
+          $expr: {
+            $lt: [
+              { $ifNull: ['$invitesConsumed', 0] },
+              { $add: [{ $ifNull: ['$invitePool', 0] }, { $ifNull: ['$compensationPool', 0] }] },
+            ],
+          },
+        },
+        { $inc: { invitesConsumed: 1 } }
+      ).catch((err) =>
+        logger.warn('[sendToGuest] invite consume failed', { guestId, err: err?.message })
+      );
+    }
+  } else {
+    // Never clobber an already-sent guest with a failure write (stale retry).
+    await Guest.updateOne(
+      { _id: guestId, 'invitation.sent': { $ne: true } },
+      { $set: updateData }
+    );
+  }
 
   try {
     await logAudit({
@@ -326,6 +368,33 @@ async function sendBulk({
     });
   }
   const effectiveGuestIds = filteredGuestIds;
+
+  // Send-budget gate: a send consumes one invite per delivered guest. Block the
+  // batch up front when the not-yet-sent guests would exceed the subscription's
+  // remaining invites (pool or per-event — both carry an invitePool now).
+  // Unlimited plans (invitePool null) are never gated. Retries only re-send
+  // already-failed guests, and `notYetSent` reflects prior successes via the
+  // per-guest consume, so this stays correct across attempts.
+  if (event.subscriptionId) {
+    const sub = await Subscription.findById(event.subscriptionId)
+      .select('invitePool compensationPool invitesConsumed');
+    if (sub && sub.invitePool !== null && sub.invitePool !== undefined) {
+      const remaining =
+        (sub.invitePool || 0) + (sub.compensationPool || 0) - (sub.invitesConsumed || 0);
+      const notYetSent = await Guest.countDocuments({
+        _id: { $in: effectiveGuestIds },
+        event: eventId,
+        'invitation.sent': { $ne: true },
+      });
+      if (notYetSent > remaining) {
+        throw new AppError(
+          `Insufficient invites: ${notYetSent} to send but ${Math.max(0, remaining)} remaining in your plan.`,
+          402,
+          'INSUFFICIENT_INVITES'
+        );
+      }
+    }
+  }
 
   await Event.findByIdAndUpdate(eventId, {
     'messagingStatus.bulkSendStarted': true,
@@ -399,6 +468,15 @@ async function sendBulk({
       effectiveGuestIds.length - successful - failed,
     'messagingStatus.bulkSendCompletedAt': new Date(),
   });
+
+  // Plan-usage warning fires here now that consumption lives on the send path.
+  // Best-effort; never blocks the response.
+  if (event.subscriptionId && successful > 0) {
+    Subscription.findById(event.subscriptionId)
+      .select('userId invitePool compensationPool invitesConsumed')
+      .then((sub) => sub && maybeNotifyPlanLimit(sub.userId, sub))
+      .catch(() => {});
+  }
 
   logger.info('[sendBulk] complete', {
     eventId,

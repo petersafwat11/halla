@@ -24,7 +24,6 @@ const buildSchema = (t) =>
       .string()
       .min(1, t("testMessage.validation.phoneRequired"))
       .regex(/^5[0-9]{8}$/, t("testMessage.validation.phoneFormat")),
-    channel: z.enum(["whatsapp", "sms"]),
   });
 
 const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
@@ -36,19 +35,15 @@ const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
     mode: "onChange",
     defaultValues: {
       phoneNumber: "",
-      channel: "whatsapp",
     },
   });
 
   const {
     handleSubmit,
-    watch,
-    setValue,
     reset,
     formState: { isSubmitting },
   } = methods;
 
-  const channel = watch("channel");
   const isPending = isSubmitting || sendTestMessage.isPending;
 
   const onSubmit = async (data) => {
@@ -56,7 +51,6 @@ const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
       await sendTestMessage.mutateAsync({
         eventId,
         phoneNumber: data.phoneNumber,
-        channel: data.channel,
       });
       reset();
       if (onSuccess) onSuccess();
@@ -103,56 +97,6 @@ const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.contentInner}
             >
-              {/* Channel Selector */}
-              <Text style={styles.fieldLabel}>{t("messaging.channel")}</Text>
-              <View style={styles.channelSelector}>
-                <TouchableOpacity
-                  style={[
-                    styles.channelButton,
-                    channel === "whatsapp" && styles.channelButtonActive,
-                  ]}
-                  onPress={() => setValue("channel", "whatsapp")}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name="logo-whatsapp"
-                    size={16}
-                    color={channel === "whatsapp" ? "#FFF" : "#C28E5C"}
-                  />
-                  <Text
-                    style={[
-                      styles.channelButtonText,
-                      channel === "whatsapp" && styles.channelButtonTextActive,
-                    ]}
-                  >
-                    {t("messaging.whatsapp")}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.channelButton,
-                    channel === "sms" && styles.channelButtonActive,
-                  ]}
-                  onPress={() => setValue("channel", "sms")}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name="chatbubble-ellipses-outline"
-                    size={16}
-                    color={channel === "sms" ? "#FFF" : "#C28E5C"}
-                  />
-                  <Text
-                    style={[
-                      styles.channelButtonText,
-                      channel === "sms" && styles.channelButtonTextActive,
-                    ]}
-                  >
-                    {t("messaging.sms")}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
               {/* Phone Number Input */}
               <MobileInput
                 name="phoneNumber"
@@ -250,44 +194,6 @@ const styles = StyleSheet.create({
   contentInner: {
     paddingTop: 20,
     paddingBottom: 8,
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#2C2C2C",
-    marginBottom: 10,
-    textAlign: "right",
-  },
-  channelSelector: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 20,
-  },
-  channelButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#D6B392",
-    backgroundColor: "#FFF",
-  },
-  channelButtonActive: {
-    backgroundColor: "#C28E5C",
-    borderColor: "#C28E5C",
-  },
-  channelButtonText: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#C28E5C",
-    lineHeight: 20,
-  },
-  channelButtonTextActive: {
-    color: "#FFF",
   },
   infoBox: {
     flexDirection: "row",

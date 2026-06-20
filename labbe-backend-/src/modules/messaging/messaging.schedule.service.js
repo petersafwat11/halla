@@ -5,14 +5,16 @@
 
 const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
-const config = require('../../config');
-const { parseEventTime } = require('../../shared/utils/timezone');
+const { toRiyadhComponents } = require('../../shared/utils/timezone');
+const {
+  isTrialFromPlan,
+  eventInstantOf,
+  parseSendInstant,
+  assertSendWindow,
+  TRIAL_REMINDER_OFFSET_MS,
+} = require('../../shared/utils/schedulingWindow');
 const { logAudit } = require('../../shared/utils/auditLog');
 const { AppError, NotFoundError, ForbiddenError } = require('../../shared/errors');
-const {
-  SCHEDULE_TOO_SOON,
-  SCHEDULE_INVALID,
-} = require('../../shared/constants/events');
 
 /**
  * Schedule an event launch.
@@ -21,10 +23,14 @@ const {
  * through `scheduleEventLaunch` regardless of channel — single retry
  * path, idempotency contract, and lock semantics.
  *
- * Backend lower bound: reject any schedule whose absolute UTC instant
- * is < `now + scheduleMinLeadHours` away (default 48h). The picker
- * enforces the same floor; the backend check exists so a crafted POST
- * cannot bypass it.
+ * Scheduling window: the absolute UTC send instant must fall within
+ * `[ now + minLead(plan), eventInstant − 3 days ]`. minLead is 15min
+ * (trial) / 24h (paid). Below min → SCHEDULE_TOO_SOON, above max (too
+ * close to the event) → SCHEDULE_TOO_LATE. The picker enforces the same
+ * bounds; the backend check exists so a crafted POST cannot bypass it.
+ *
+ * After validating, a TRIAL event's normal reminder is pinned to
+ * `scheduledSend + 10min` (paid keeps the pre-save default event−48h).
  */
 async function scheduleBulkSend({
   eventId,
@@ -54,44 +60,20 @@ async function scheduleBulkSend({
     );
   }
 
-  const isTrial = event.planId?.code === 'trial' || event.planId?.planType === 'trial';
-  const minLeadMs = isTrial
-    ? (config?.events?.trialScheduleMinLeadMinutes ?? 15) * 60 * 1000
-    : (config?.events?.scheduleMinLeadHours ?? 48) * 60 * 60 * 1000;
+  const isTrial = isTrialFromPlan(event.planId);
 
-  const minLeadHours = isTrial
-    ? Math.ceil((config?.events?.trialScheduleMinLeadMinutes ?? 15) / 60)
-    : (config?.events?.scheduleMinLeadHours ?? 48);
+  // The send instant — same Asia/Riyadh wall-clock → UTC interpretation
+  // as the cron's `isDue` check. Throws SCHEDULE_INVALID if unparseable.
+  const scheduledInstant = parseSendInstant(new Date(scheduledDate), scheduledTime);
 
-  // Reuse parseEventTime so the wall-clock interpretation matches the
-  // cron's `isDue` check (Asia/Riyadh, UTC+3, no DST).
-  const scheduledInstant = parseEventTime(
-    {
-      launchSettings: {
-        scheduledDate: new Date(scheduledDate),
-        scheduledTime,
-      },
-    },
-    'Asia/Riyadh'
-  );
-  if (!scheduledInstant) {
-    throw new AppError(
-      'Invalid scheduledDate or scheduledTime format',
-      400,
-      SCHEDULE_INVALID
-    );
-  }
-  const leadMs = scheduledInstant.getTime() - Date.now();
-  if (leadMs < minLeadMs) {
-    const unit = isTrial ? 'minutes' : 'hours';
-    throw new AppError(
-      `Schedule must be at least ${minLeadHours} ${unit} from now.`,
-      400,
-      SCHEDULE_TOO_SOON
-    );
-  }
+  // The event's real UTC instant (date + time), used for the upper bound.
+  const eventInstant = eventInstantOf(event);
 
-  await Event.findByIdAndUpdate(eventId, {
+  // Window: [ now + minLead(plan), eventInstant − 3 days ].
+  //   below min → SCHEDULE_TOO_SOON,  above max → SCHEDULE_TOO_LATE.
+  assertSendWindow({ scheduledInstant, eventInstant, isTrial });
+
+  const update = {
     status: 'scheduled',
     'launchSettings.scheduledDate': new Date(scheduledDate),
     'launchSettings.scheduledTime': scheduledTime,
@@ -100,7 +82,24 @@ async function scheduleBulkSend({
     'messagingStatus.pendingCount': guests.length,
     attemptCount: 0,
     failureReason: null,
-  });
+  };
+
+  // Normal/auto reminder. TRIAL: pin it to scheduledSend + 10 minutes and
+  // mark it custom so the EventModel pre-save (which recomputes
+  // event−48h when customReminderTime===false) can't clobber it. This
+  // update goes through findByIdAndUpdate (no pre-save hook), but a later
+  // `.save()` elsewhere would, hence customReminderTime:true is required.
+  // PAID: leave the reminder untouched — the pre-save default (event−48h)
+  // applies unless the host customized it.
+  if (isTrial) {
+    const reminderInstant = new Date(scheduledInstant.getTime() + TRIAL_REMINDER_OFFSET_MS);
+    const comps = toRiyadhComponents(reminderInstant);
+    update['reminderSettings.scheduledDate'] = comps.date;
+    update['reminderSettings.scheduledTime'] = comps.time;
+    update['reminderSettings.customReminderTime'] = true;
+  }
+
+  await Event.findByIdAndUpdate(eventId, update);
 
   try {
     await logAudit({

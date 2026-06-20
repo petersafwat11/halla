@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { SlidersHorizontal, ArrowUpDown, X } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "next/navigation";
 import { usePublicVendors, useVendorCategories } from "@/hooks/vendors";
@@ -36,7 +36,6 @@ export default function MarketplaceView() {
     maxPrice: state.maxPrice,
     rating: state.minRating,
     lang,
-    sort: state.sort,
     page: state.currentPage,
     limit: ITEMS_PER_PAGE,
   });
@@ -97,23 +96,11 @@ export default function MarketplaceView() {
             <strong>{t("results.title", { count: total })}</strong>
             <span>{t("results.subtitle")}</span>
           </div>
-          <div className={styles.toolbarActions}>
-            <label className={styles.sortControl}>
-              <ArrowUpDown size={16} aria-hidden="true" />
-              <select value={state.sort} onChange={(event) => state.updateFilter("sort", event.target.value)} aria-label={t("sort.label")}>
-                <option value="recommended">{t("sort.recommended")}</option>
-                <option value="rating">{t("sort.rating")}</option>
-                <option value="price_asc">{t("sort.priceAsc")}</option>
-                <option value="price_desc">{t("sort.priceDesc")}</option>
-                <option value="newest">{t("sort.newest")}</option>
-              </select>
-            </label>
-            <button type="button" className={styles.filterButton} onClick={() => setFiltersOpen(true)}>
-              <SlidersHorizontal size={18} aria-hidden="true" />
-              {t("filters.title")}
-              {state.activeFilters.length > 0 && <span className={styles.filterCount}>{state.activeFilters.length}</span>}
-            </button>
-          </div>
+          <button type="button" className={styles.filterButton} onClick={() => setFiltersOpen(true)}>
+            <SlidersHorizontal size={20} aria-hidden="true" />
+            {t("filters.title")}
+            {state.activeFilters.length > 0 && <span className={styles.filterCount}>{state.activeFilters.length}</span>}
+          </button>
         </div>
 
         {state.activeFilters.length > 0 && (

@@ -52,7 +52,7 @@ const TicketsHeader = ({
           />
           <Button
             variant="primary"
-            title={t("createTicket") || "انشئ شكوى"}
+            title={t("createTicket") || "انشاء شكوى"}
             onClick={onCreateTicket}
           />
         </div>

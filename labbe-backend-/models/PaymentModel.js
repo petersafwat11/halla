@@ -160,6 +160,9 @@ const paymentSchema = new mongoose.Schema(
           createdAt: { type: Date, default: Date.now },
           createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
           moyasarRefundResponseStatus: { type: String },
+          // Invite clawback applied alongside this (partial) refund — number
+          // of invites debited from the linked subscription's pool.
+          deductInvites: { type: Number, default: 0 },
         },
         { _id: true }
       ),

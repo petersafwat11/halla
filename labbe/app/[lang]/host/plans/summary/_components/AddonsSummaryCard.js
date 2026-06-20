@@ -10,9 +10,6 @@ const AddonsSummaryCard = ({ addonItems = [], t }) => {
     if (type === "extra_invites") {
       return t("summary.addonItems.extra_invites", { quantity: item.quantity });
     }
-    if (type === "extra_reminders") {
-      return t("summary.addonItems.extra_reminders", { quantity: item.quantity });
-    }
     if (type === "design_template") {
       return t("summary.addonItems.design_template");
     }

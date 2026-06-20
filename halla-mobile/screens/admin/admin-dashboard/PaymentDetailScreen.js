@@ -93,6 +93,7 @@ const PaymentDetailScreen = () => {
   const [actionType, setActionType] = useState(null); // "refund" | "capture" | "void"
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
+  const [deductInvites, setDeductInvites] = useState("");
 
   // Re-mounting the modal mints a fresh key; double-submit from the same
   // modal reuses it so the backend dedupes.
@@ -114,10 +115,20 @@ const PaymentDetailScreen = () => {
   const showCapture = canWrite && CAPTURABLE.has(status);
   const showVoid = canWrite && VOIDABLE.has(status);
 
+  // A partial refund = an explicit amount that's > 0 and below the remaining
+  // refundable amount. Only then do we offer the optional deductInvites input.
+  const numericAmount = amount ? Number(amount) : NaN;
+  const isPartialRefund =
+    actionType === "refund" &&
+    Number.isFinite(numericAmount) &&
+    numericAmount > 0 &&
+    numericAmount < remainingAmount;
+
   const closeModal = () => {
     setActionType(null);
     setAmount("");
     setReason("");
+    setDeductInvites("");
   };
 
   const submitAction = async () => {
@@ -126,10 +137,17 @@ const PaymentDetailScreen = () => {
     try {
       if (actionType === "refund") {
         const numeric = amount ? Number(amount) : undefined;
+        // Only thread deductInvites on a partial refund where the admin set it.
+        const deduct = Number(deductInvites);
+        const deductInvitesValue =
+          isPartialRefund && deductInvites !== "" && Number.isFinite(deduct) && deduct > 0
+            ? deduct
+            : undefined;
         await refund.mutateAsync({
           id,
           amount: Number.isFinite(numeric) ? numeric : undefined,
           reason: reason || undefined,
+          deductInvites: deductInvitesValue,
           idempotencyKey,
         });
         toast.success(t("paymentDetail.refund.success"));
@@ -351,6 +369,25 @@ const PaymentDetailScreen = () => {
               </>
             ) : null}
 
+            {isPartialRefund ? (
+              <>
+                <Text style={styles.fieldLabel}>
+                  {t("paymentDetail.deductInvitesLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={deductInvites}
+                  onChangeText={setDeductInvites}
+                  placeholder={t("paymentDetail.deductInvitesPlaceholder")}
+                  placeholderTextColor={colors.natural[400]}
+                />
+                <Text style={styles.fieldHint}>
+                  {t("paymentDetail.deductInvitesHint")}
+                </Text>
+              </>
+            ) : null}
+
             <View style={styles.modalButtons}>
               <TouchableOpacity style={[styles.modalBtn, styles.modalCancel]} onPress={closeModal} disabled={busy}>
                 <Text style={styles.modalCancelText}>{t("common.cancel")}</Text>
@@ -473,6 +510,7 @@ const styles = StyleSheet.create({
     color: colors.natural[900],
   },
   fieldLabel: { ...textStyles.bodySmall, color: colors.natural[600], marginTop: spacing[8] },
+  fieldHint: { ...textStyles.caption, color: colors.natural[400], marginTop: spacing[4] },
   input: {
     borderWidth: 1,
     borderColor: colors.natural[200],

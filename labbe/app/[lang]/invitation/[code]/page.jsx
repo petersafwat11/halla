@@ -76,6 +76,11 @@ export default function GuestPortalPage() {
   const handleRsvp = async (response, optional) => {
     try {
       await rsvpMutation.mutateAsync({
+        // `/guests/:id/rsvp` validates `:id` as an ObjectId — send the guest
+        // id here, NOT the qrcode `code`. The qrcode stays as `invitationCode`
+        // in the body (the route's authz proof) and as `token` for cache
+        // invalidation (the portal query is keyed by the code).
+        id: guest?.id || guest?._id,
         token: code,
         response,
         data: {

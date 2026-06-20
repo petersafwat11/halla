@@ -5,7 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
-import { useNotifyStaff, useDeleteEvent, useEventMutation } from "../../hooks/events/mutations/useEventMutation";
+import { useNotifyStaff, useDeleteEvent } from "../../hooks/events/mutations/useEventMutation";
 import { useToast } from "../../contexts/ToastContext";
 import { useEventActionGate } from "@halla/shared/hooks/useEventActionGate";
 
@@ -66,10 +66,8 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
   // platforms can't drift. Visibility rules now require an active
   // template before test/schedule, and an actual staff entry before
   // Notify Staff (previously this only checked event status).
-  const { canSendTest, canSchedule, hasStaff, isCompleted, canResendInvite, resendInviteTooltip } =
+  const { canSendTest, canSchedule, hasStaff, isCompleted } =
     useEventActionGate({ event, testMessageSent });
-
-  const resendInviteMutation = useEventMutation("resendInvite");
 
   const handleEditStep = (step) => {
     setShowManageMenu(false);
@@ -88,22 +86,6 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
       );
     } catch (error) {
       toast.error(error?.message || t("staff.notifyError", "Failed to notify staff"));
-    }
-  };
-
-  const handleResendInvite = async () => {
-    if (!eventId) return;
-    try {
-      const result = await resendInviteMutation.mutateAsync({ eventId });
-      const data = result?.data || result;
-      toast.success(
-        t("resendInvite.success", {
-          sent: data?.successful || 0,
-          total: data?.reminded || 0,
-        }) || `Re-invitations sent to ${data?.successful || 0}/${data?.reminded || 0} guests`
-      );
-    } catch (error) {
-      toast.error(error?.message || t("resendInvite.error", "Failed to resend invitations"));
     }
   };
 
@@ -136,7 +118,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
     );
   };
 
-  const hasAnyOutlineAction = canSendTest || canSchedule || hasStaff || isCompleted || canResendInvite || resendInviteTooltip;
+  const hasAnyOutlineAction = canSendTest || canSchedule || hasStaff || isCompleted;
 
   return (
     <>
@@ -201,37 +183,6 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
               </TouchableOpacity>
             )}
 
-            {(canResendInvite || resendInviteTooltip) && (
-              <TouchableOpacity
-                style={[
-                  styles.outlineButton,
-                  (!canResendInvite || resendInviteMutation.isPending) && styles.outlineButtonDisabled,
-                ]}
-                onPress={canResendInvite ? handleResendInvite : undefined}
-                activeOpacity={canResendInvite ? 0.7 : 1}
-                disabled={!canResendInvite || resendInviteMutation.isPending}
-              >
-                <Ionicons
-                  name={canResendInvite ? "paper-plane-outline" : "time-outline"}
-                  size={14}
-                  color={!canResendInvite ? "#B5A691" : "#6B4E33"}
-                />
-                <Text
-                  style={[
-                    styles.outlineButtonText,
-                    !canResendInvite && styles.outlineButtonTextDisabled,
-                  ]}
-                >
-                  {resendInviteMutation.isPending
-                    ? t("resendInvite.sending", "جاري الإرسال...")
-                    : canResendInvite
-                      ? t("resendInvite.button", "إعادة إرسال الدعوات")
-                      : typeof resendInviteTooltip === "object"
-                        ? t("resendInvite.buttonCooldown", { hours: resendInviteTooltip.hoursLeft })
-                        : t("resendInvite.button", "إعادة إرسال الدعوات")}
-                </Text>
-              </TouchableOpacity>
-            )}
           </View>
         )}
 
@@ -312,6 +263,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
         eventId={eventId}
         onClose={() => setShowScheduleModal(false)}
         existingSchedule={event?.launchSettings}
+        eventDate={event?.eventDetails?.date || event?.date}
       />
     </>
   );
@@ -350,16 +302,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF6F1",
     borderColor: "#E6D6C2",
     opacity: 0.65,
-  },
-  outlineButtonTextDisabled: {
-    color: "#B5A691",
-  },
-  tooltipHint: {
-    fontSize: 10,
-    fontFamily: "Cairo_500Medium",
-    color: "#9CA3AF",
-    textAlign: "center",
-    marginTop: 2,
   },
   primaryRow: {
     flexDirection: "column",

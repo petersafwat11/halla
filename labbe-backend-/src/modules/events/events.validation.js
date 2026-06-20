@@ -140,6 +140,15 @@ const updateReminderSettingsSchema = z.object({
 
 const resendInviteSchema = z.object({
   channel: z.enum(['sms', 'whatsapp']).optional(),
+  // Optional explicit target set. When present, exactly these guests are
+  // re-invited (still restricted to the event in the service); when absent the
+  // default non-responder / "maybe" audience is used.
+  guestIds: z.array(objectId).optional(),
+}).passthrough();
+
+const extraReminderSchema = z.object({
+  // Optional explicit target set, narrowed to confirmed guests in the service.
+  guestIds: z.array(objectId).optional(),
 }).passthrough();
 
 module.exports = {
@@ -159,4 +168,5 @@ module.exports = {
   notifyStaffSchema,
   updateReminderSettingsSchema,
   resendInviteSchema,
+  extraReminderSchema,
 };

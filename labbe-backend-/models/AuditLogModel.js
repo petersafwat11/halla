@@ -74,9 +74,6 @@ const auditLogSchema = new mongoose.Schema(
         // reconcile / pending_refund all target a Payment row.
         "payment",
         "discount",
-        // Reminder pipeline: scheduled extra reminders curated from the
-        // single-event page (host or admin-on-behalf-of).
-        "scheduled_extra_reminder",
       ],
       index: true,
     },

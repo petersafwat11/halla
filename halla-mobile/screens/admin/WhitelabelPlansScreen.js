@@ -37,12 +37,12 @@ const WhitelabelPlansScreen = () => {
 
   useEffect(() => {
     if (eventPlans.length > 0 && selectedEventInvites === null) {
-      setSelectedEventInvites(eventPlans[0].limits?.maxInvitesPerEvent);
+      setSelectedEventInvites(eventPlans[0].limits?.invitePool);
     }
   }, [eventPlans, selectedEventInvites]);
 
   const selectedEventPlan =
-    eventPlans.find((p) => p.limits?.maxInvitesPerEvent === selectedEventInvites) ||
+    eventPlans.find((p) => p.limits?.invitePool === selectedEventInvites) ||
     eventPlans[0] ||
     null;
 
@@ -122,7 +122,7 @@ const WhitelabelPlansScreen = () => {
 
               <View style={styles.inviteRow}>
                 {eventPlans.map((p) => {
-                  const inv = p.limits?.maxInvitesPerEvent || 0;
+                  const inv = p.limits?.invitePool || 0;
                   const isActive = selectedEventInvites === inv;
                   return (
                     <TouchableOpacity

@@ -44,7 +44,6 @@ const buildState = (plan) => ({
   descriptionEn: plan?.descriptionEn ?? "",
   oneTime: plan?.pricing?.oneTime ?? 0,
   maxEvents: plan?.limits?.maxEvents ?? 1,
-  maxInvitesPerEvent: plan?.limits?.maxInvitesPerEvent ?? null,
   invitePool: plan?.limits?.invitePool ?? null,
   durationDays: plan?.limits?.durationDays ?? 90,
   maxHosts: plan?.limits?.maxHosts ?? null,
@@ -132,6 +131,12 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
       toast.warning(t("plans.fields.nameAr") + " / " + t("plans.fields.nameEn"));
       return;
     }
+    // invitePool is required for every plan type now (per-event plans carry
+    // a pool too). Reject empty/zero/negative before hitting the API.
+    if (!(Number(form.invitePool) > 0)) {
+      toast.warning(t("plans.fields.invitePoolRequired"));
+      return;
+    }
     try {
       const payload = {
         nameAr: form.nameAr.trim(),
@@ -141,8 +146,7 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
         pricing: { oneTime: Number(form.oneTime) || 0 },
         limits: {
           maxEvents: Number(form.maxEvents),
-          maxInvitesPerEvent: form.maxInvitesPerEvent,
-          invitePool: form.invitePool,
+          invitePool: Number(form.invitePool),
           durationDays: Number(form.durationDays),
           maxHosts: form.maxHosts,
         },
@@ -275,16 +279,11 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
                 hint={t("plans.fields.maxEventsHint")}
               />
               <NumberField
-                label={t("plans.fields.maxInvitesPerEvent")}
-                value={form.maxInvitesPerEvent}
-                onChangeText={(txt) => setField("maxInvitesPerEvent", toNum(txt))}
-                placeholder={t("plans.fields.unlimited")}
-              />
-              <NumberField
                 label={t("plans.fields.invitePool")}
                 value={form.invitePool}
                 onChangeText={(txt) => setField("invitePool", toNum(txt))}
-                placeholder={t("plans.fields.unlimited")}
+                placeholder="0"
+                hint={t("plans.fields.invitePoolHint")}
               />
               <NumberField
                 label={t("plans.fields.durationDays")}

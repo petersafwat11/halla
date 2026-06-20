@@ -124,7 +124,6 @@ export const sendNotificationSchema = z.object({
 export const TAQNYAT_TEMPLATE_TYPES = [
   "invite",
   "reminder_confirmed",
-  "reminder_pending",
   "post_event",
   "staff_access",
 ];

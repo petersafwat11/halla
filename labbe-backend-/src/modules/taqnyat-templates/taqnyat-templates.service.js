@@ -209,7 +209,6 @@ async function listForAdmin({ search, includeInactive = true } = {}) {
 // previous active doc in a single updateMany before flipping the new one.
 const UNIQUE_TYPES = new Set([
   'reminder_confirmed',
-  'reminder_pending',
   'post_event',
   'staff_access',
 ]);

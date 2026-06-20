@@ -6,7 +6,7 @@ import styles from "./stepper.module.css";
 // 5-step wizard: details → guests+staff → visual template → taqnyat+replies → summary
 const STEP_DEFAULTS = [
   { id: 1, key: "step1_title", fallback: "تفاصيل المناسبة" },
-  { id: 2, key: "step2_title", fallback: "الضيوف وفريق العمل" },
+  { id: 2, key: "step2_title", fallback: "الضيوف ومشرفين البوابة" },
   { id: 3, key: "step3_title", fallback: "تصميم الدعوة" },
   { id: 4, key: "step4_title", fallback: "قالب الواتساب والردود" },
   { id: 5, key: "step5_title", fallback: "مراجعة وإطلاق" },

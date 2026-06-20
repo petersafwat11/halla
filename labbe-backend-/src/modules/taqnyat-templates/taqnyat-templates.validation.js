@@ -41,7 +41,6 @@ const createTemplateSchema = z
 const TEMPLATE_TYPES = [
   'invite',
   'reminder_confirmed',
-  'reminder_pending',
   'post_event',
   'staff_access',
 ];

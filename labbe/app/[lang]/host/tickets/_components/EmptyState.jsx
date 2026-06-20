@@ -43,7 +43,7 @@ const EmptyState = ({ onCreateTicket, t }) => {
       </div>
       <Button
         variant="primary"
-        title={t("noTickets.action") || "انشئ شكوى"}
+        title={t("noTickets.action") || "انشاء شكوى"}
         onClick={onCreateTicket}
         className={styles.button}
       />

@@ -1,15 +1,15 @@
 {
   "pageTitle": "الشكاوى",
-  "createTicket": "انشئ شكوى",
+  "createTicket": "انشاء شكوى",
   "searchPlaceholder": "ابحث في الشكاوى...",
   "loading": "جاري التحميل...",
   "noTickets": {
     "title": "لا توجد شكاوى سابقة",
     "message": "إذا كنت بحاجة إلى إخبارنا بأي شيء، أرسل شكوى وسنهتم بها على الفور",
-    "action": "انشئ شكوى"
+    "action": "انشاء شكوى"
   },
   "popup": {
-    "createTitle": "انشئ شكوى",
+    "createTitle": "انشاء شكوى",
     "editTitle": "تعديل الشكوى",
     "subjectLabel": "موضوع الشكوى",
     "subjectPlaceholder": "ادخل موضوع الشكوى",

@@ -5,7 +5,6 @@ const Payment = require('../../../models/PaymentModel');
 const {
   ADDON_TYPES,
   EXTRA_INVITES_TIERS,
-  EXTRA_REMINDERS_TIERS,
   DESIGN_TEMPLATE_TIERS,
   BUSINESS_CUSTOMIZATION,
 } = require('../../shared/constants/addons');
@@ -22,7 +21,6 @@ class AddonsService {
   getAvailableAddons() {
     return {
       extra_invites: EXTRA_INVITES_TIERS,
-      extra_reminders: EXTRA_REMINDERS_TIERS,
       design_template: DESIGN_TEMPLATE_TIERS,
       business_customization: BUSINESS_CUSTOMIZATION,
     };

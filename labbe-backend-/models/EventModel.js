@@ -387,6 +387,15 @@ const eventSchema = new mongoose.Schema(
       default: null,
     },
 
+    // Soft-delete timestamp. Set alongside `status = 'deleted'` by the host
+    // and admin delete paths (events.crud.service / admin.events.service).
+    // Events are soft-deleted (never hard-removed) so guests, QR codes, and
+    // history are preserved; this field records when the deletion happened.
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+
     // Test Message Status
     testMessageSent: {
       type: Boolean,
@@ -394,12 +403,6 @@ const eventSchema = new mongoose.Schema(
     },
     // FLOW-16-F03: last test message timestamp for per-event throttle
     lastTestAt: { type: Date },
-
-    // Resend invite — one-time operation to re-invite guests who
-    // haven't responded or said "maybe". Set when the host triggers
-    // the resend; null means the action has never been used.
-    resendInviteSentAt: { type: Date, default: null },
-
 
     // Messaging Status (for bulk sending tracking)
     messagingStatus: {

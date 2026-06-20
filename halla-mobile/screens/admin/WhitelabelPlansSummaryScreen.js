@@ -135,14 +135,6 @@ const WhitelabelPlansSummaryScreen = () => {
                   {t("summary.invitePool")}
                 </Text>
               </View>
-            ) : selectedPlan?.limits?.maxInvitesPerEvent != null ? (
-              <View style={styles.featureItem}>
-                <Ionicons name="people-outline" size={18} color="#C28E5C" />
-                <Text style={styles.featureText}>
-                  {selectedPlan.limits.maxInvitesPerEvent}{" "}
-                  {t("eventTab.invitesSuffix")}
-                </Text>
-              </View>
             ) : null}
             validityInfo={
               <View style={styles.featureItem}>

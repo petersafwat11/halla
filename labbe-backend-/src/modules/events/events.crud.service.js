@@ -18,6 +18,12 @@ const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
 const { isPoolPlan, isPerEventPlan } = require('../../shared/constants/plans');
+const {
+  isTrialFromPlan,
+  eventInstantOf,
+  assertEventDateFloor,
+} = require('../../shared/utils/schedulingWindow');
+const { countsAgainstPlanStatusFilter } = require('../../shared/constants/events');
 
 // File upload helper
 const { getFileUrl } = require('../../shared/utils/fileUpload');
@@ -26,32 +32,6 @@ const notificationService = require('../notifications/notifications.service');
 const SubscriptionsService = require('../subscriptions/subscriptions.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
-
-// PLAN_LIMIT_WARNING emitter — fires when pool usage crosses 80% / 95%.
-// Idempotency in createNotification dedupes repeated ticks within window.
-async function _maybeNotifyPlanLimit(userId, sub) {
-  if (!sub) return;
-  const pool = (sub.invitePool || 0) + (sub.compensationPool || 0);
-  if (pool <= 0) return;
-  const used = sub.invitesConsumed || 0;
-  const ratio = used / pool;
-  if (ratio < 0.8) return;
-  const remaining = Math.max(0, pool - used);
-  const band = ratio >= 0.95 ? '95' : '80';
-  await notificationService.sendToUser(userId, {
-    type: 'plan_limit_warning',
-    title: 'Plan Usage Warning',
-    titleAr: 'تنبيه استهلاك الباقة',
-    message: `You've used ${Math.round(ratio * 100)}% of your invite quota (${remaining} remaining).`,
-    messageAr: `استهلكت ${Math.round(ratio * 100)}% من رصيد الدعوات (${remaining} متبقية).`,
-    data: {
-      entityType: 'subscription',
-      entityId: sub._id,
-      metadata: { used, pool, remaining, band },
-    },
-    priority: band === '95' ? 'high' : 'normal',
-  });
-}
 
 module.exports = {
   /**
@@ -258,21 +238,19 @@ module.exports = {
       throw new NotFoundError("Event");
     }
 
-    // Attach the event-OWNER's subscription summary so the UI gates the
-    // "Schedule extra reminder" button on the host's quota — not on the
-    // viewing admin's own subscription. Critical for admin-on-behalf flows.
+    // Attach the event-OWNER's subscription summary so the UI gates
+    // pool-charged actions (resend invite / extra reminder) on the host's
+    // remaining invites — not on the viewing admin's own subscription.
+    // Critical for admin-on-behalf flows.
     if (event.subscriptionId) {
       try {
         const sub = await Subscription.findById(event.subscriptionId)
           .select(
-            "remindersPool remindersConsumed remindersReserved invitePool compensationPool invitesConsumed status expiresAt"
+            "invitePool compensationPool invitesConsumed status expiresAt planId"
           )
+          .populate("planId", "planType code")
           .lean();
         if (sub) {
-          const remindersRemaining =
-            (sub.remindersPool || 0) -
-            (sub.remindersConsumed || 0) -
-            (sub.remindersReserved || 0);
           const invitesRemaining =
             sub.invitePool === null
               ? null
@@ -283,11 +261,12 @@ module.exports = {
             _id: sub._id,
             status: sub.status,
             expiresAt: sub.expiresAt,
-            remindersPool: sub.remindersPool || 0,
-            remindersConsumed: sub.remindersConsumed || 0,
-            remindersReserved: sub.remindersReserved || 0,
-            remindersRemaining,
             invitesRemaining,
+            // Event-scoped trial flag so the reminder-customize UI knows the
+            // trial reminder is auto (send+10min) for THIS event's plan,
+            // instead of failing open on account-level data.
+            planType: sub.planId?.planType || null,
+            isTrial: isTrialFromPlan(sub.planId),
           };
         }
       } catch (err) {
@@ -426,7 +405,6 @@ module.exports = {
     }
 
     const guestCount = guestList.length;
-    let poolConsumed = false;
     let capacitySub = null;
 
     if (!skipSubscriptionCheck) {
@@ -439,7 +417,7 @@ module.exports = {
         const whitelabelEventCount = await Event.countDocuments({
           whitelabelId,
           createdAt: { $gte: periodStart },
-          status: { $nin: ['cancelled', 'pending_scheduling'] },
+          ...countsAgainstPlanStatusFilter(),
         });
         if (whitelabelEventCount >= (subscription.limits?.maxEvents || 1)) {
           throw new PackageLimitError(
@@ -478,26 +456,35 @@ module.exports = {
         );
       }
 
-      // Consume invites and create the event with a compensating return on
-      // failure. We track whether we consumed (poolConsumed) and how much; if
-      // anything between consumption and the final save throws, we release
-      // the invites and rethrow.
-      if (isPoolPlan(capacitySub.planId?.planType)) {
-        const updated = await Subscription.consumeInvites(capacitySub._id, guestCount);
-        poolConsumed = true;
-        _maybeNotifyPlanLimit(userId, updated).catch((err) =>
-          logger.warn('plan_limit_warning notify failed', { err: err?.message })
-        );
-      } else if (isPerEventPlan(capacitySub.planId?.planType)) {
-        const maxInvites = capacitySub.planId?.limits?.maxInvitesPerEvent;
-        if (maxInvites !== null && maxInvites !== undefined && guestCount > maxInvites) {
+      // List cap (NO consumption): a guest is free to add. Capacity is the
+      // subscription's total pool (invitePool + compensation) for both
+      // per-event and pool plans (they differ only by maxEvents). Sending is
+      // what consumes, gated separately at send time. Unlimited plans
+      // (invitePool null) have no cap.
+      if (capacitySub.invitePool !== null && capacitySub.invitePool !== undefined) {
+        const capacity = (capacitySub.invitePool || 0) + (capacitySub.compensationPool || 0);
+        if (guestCount > capacity) {
           throw new PackageLimitError(
             'guests',
-            maxInvites,
-            `Guest count exceeds plan limit of ${maxInvites}`
+            capacity,
+            `Guest count (${guestCount}) exceeds your plan capacity of ${capacity} invites`
           );
         }
       }
+    }
+
+    // Event-date floor: a valid scheduling window must exist for this plan,
+    // i.e. eventInstant ≥ now + minLead(plan) + 3 days. Trial gets the looser
+    // bound (now+3d+15min); paid ≈ now+4d. Indeterminate plan (skipped
+    // subscription check) → fail-closed to paid. Throws EVENT_DATE_TOO_SOON.
+    {
+      const planLike =
+        subscription?.planId?.planType !== undefined
+          ? subscription.planId
+          : capacitySub?.planId;
+      const isTrial = isTrialFromPlan(planLike);
+      const eventInstant = eventInstantOf({ eventDetails: eventData.eventDetails });
+      assertEventDateFloor({ eventInstant, isTrial });
     }
 
     try {
@@ -559,19 +546,14 @@ module.exports = {
         eventData.whitelabelId = whitelabelId;
       }
 
-      // Set subscription reference and freeze guest limit (Bugs 4, 7)
+      // Set subscription reference. Event-level guestLimit is no longer the
+      // capacity source — the subscription pool (invitePool + compensation)
+      // governs for both per-event and pool plans, so freeze it to -1
+      // (unlimited at the event level).
       if (subscription) {
         eventData.subscriptionId = subscription._id;
         eventData.planId = subscription.planId?._id || subscription.planId;
-        // Freeze guest limit from current subscription for this event
-        const plan = subscription.planId;
-        if (isPoolPlan(plan?.planType)) {
-          // Pool plans: unlimited per event; pool tracks capacity via invitesConsumed
-          eventData.guestLimit = -1;
-        } else {
-          // Per-event plans: use the plan's maxInvitesPerEvent directly (no addon or compensation added here)
-          eventData.guestLimit = plan?.limits?.maxInvitesPerEvent ?? null;
-        }
+        eventData.guestLimit = -1;
       } else if (skipSubscriptionCheck) {
         eventData.guestLimit = -1;
       }
@@ -624,56 +606,8 @@ module.exports = {
 
       return { event: populatedEvent };
     } catch (err) {
-      // Compensating return: roll back the pool debit so the user isn't
-      // billed for an event that never landed. Failure here is logged but
-      // does not mask the original error.
-      if (poolConsumed) {
-        try {
-          await Subscription.releaseInvites(capacitySub._id, guestCount);
-        } catch (releaseErr) {
-          // When the compensating release ALSO fails, the pool stays
-          // debited for an event that was never created. Without
-          // reconciliation hooks, that capacity is silently lost. We:
-          //   1. log loudly with both errors so on-call gets paged
-          //   2. emit a `subscription.invite_pool_reconcile_pending` audit
-          //      row that an admin reconciliation script can pick up
-          //   3. notify admins out-of-band so the host doesn't lose
-          //      capacity quietly
-          logger.error(
-            `[events.createEvent] FAILED to release ${guestCount} invites on subscription ${capacitySub._id} after Event.save error`,
-            { err: releaseErr.message, originalError: err?.message }
-          );
-          try {
-            await logAudit({
-              action: "subscription.invite_pool_reconcile_pending",
-              actor: { _id: userId, role: userRole || "host" },
-              targetType: "subscription",
-              targetId: capacitySub._id,
-              metadata: {
-                guestCount,
-                originalError: err?.message,
-                releaseError: releaseErr?.message,
-              },
-              status: "failure",
-            });
-          } catch (_) { /* swallow audit failure */ }
-          try {
-            const notificationService = require("../notifications/notifications.service");
-            await notificationService.sendToAdmins({
-              type: "invite_pool_reconcile_pending",
-              title: "Invite pool reconciliation needed",
-              titleAr: "حاجة إلى مطابقة رصيد الدعوات",
-              message: `Subscription ${capacitySub._id} has ${guestCount} orphaned invites after a failed event creation.`,
-              data: {
-                entityType: "subscription",
-                entityId: capacitySub._id,
-                metadata: { guestCount },
-              },
-              priority: "high",
-            });
-          } catch (_) { /* swallow notify failure */ }
-        }
-      }
+      // Consumption happens at SEND time (per-guest), never at create time, so
+      // there is no pool debit to roll back here — just surface the error.
       throw err;
     }
   },
@@ -705,18 +639,10 @@ module.exports = {
     }
     await event.save();
 
-    // Release pool invites if event is cancelled and subscription is a pool plan
-    if (status === EVENT_STATUS.CANCELLED && event.subscriptionId) {
-      try {
-        const sub = await Subscription.findById(event.subscriptionId).populate('planId');
-        if (sub && isPoolPlan(sub.planId?.planType)) {
-          const guestCount = event.guestList?.length || 0;
-          if (guestCount > 0) await Subscription.releaseInvites(event.subscriptionId, guestCount);
-        }
-      } catch (e) {
-        logger.warn('Failed to release pool invites on cancellation', { err: e.message });
-      }
-    }
+    // NOTE: cancellation does NOT release invites. `invitesConsumed` now
+    // reflects actually-sent messages (charged at send time), which are
+    // non-refundable. Per-event re-creation after cancel/delete is handled by
+    // the event-creation gate (Phase 4), not by releasing the pool here.
 
     // Notify about status change (non-blocking)
     this._notifyEventStatusChange(event, status, userId, isAdmin).catch((e) =>
@@ -778,12 +704,20 @@ module.exports = {
       }).catch((e) => logger.warn('host notify on event delete failed', { err: e?.message }));
     }
 
-    // Use transaction for atomic deletion
+    // Soft delete: mark the event `deleted` rather than removing the document.
+    // Guests are intentionally left in place — they're filtered out by the
+    // event's `deleted` status, and keeping them preserves QR codes / RSVP /
+    // check-in history. Invites are never released (consumption = sent
+    // messages, which are non-refundable). Wrapped in a transaction to keep
+    // the structure consistent with the rest of the module.
     const session = await require('mongoose').startSession();
     try {
       await session.withTransaction(async () => {
-        await Guest.deleteMany({ event: eventId }, { session });
-        await Event.findByIdAndDelete(eventId, { session });
+        await Event.findByIdAndUpdate(
+          eventId,
+          { status: EVENT_STATUS.DELETED, deletedAt: new Date() },
+          { session }
+        );
       });
     } finally {
       await session.endSession();
@@ -816,12 +750,13 @@ module.exports = {
     let deletedCount = 0;
     try {
       await session.withTransaction(async () => {
-        await Guest.deleteMany({ event: { $in: validIds } }, { session });
-        const result = await Event.deleteMany(
+        // Soft delete: mark events `deleted`; leave guest docs in place.
+        const result = await Event.updateMany(
           { _id: { $in: validIds } },
+          { $set: { status: EVENT_STATUS.DELETED, deletedAt: new Date() } },
           { session }
         );
-        deletedCount = result.deletedCount;
+        deletedCount = result.modifiedCount;
       });
     } finally {
       await session.endSession();
@@ -880,8 +815,6 @@ module.exports = {
         staffFailedCount: event.messagingStatus.staffFailedCount || 0,
         bulkSendCompletedAt: event.messagingStatus.bulkSendCompletedAt || null,
       } : null,
-      // One-time resend-invite flag
-      resendInviteSentAt: event.resendInviteSentAt || null,
       // Multi-tenant context (3c failure-banner RBAC needs this)
       whitelabelId: event.whitelabelId || null,
       host: event.host || null,

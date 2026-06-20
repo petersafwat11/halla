@@ -592,18 +592,11 @@ class GuestsService {
         status: guest.invitation.status,
         deliveredAt: guest.invitation.deliveredAt,
         readAt: guest.invitation.readAt,
-        // Reminder tracking — auto (24h cron, free) + extra (manually
-        // scheduled, consumes Subscription.remindersPool). Surfaced as
-        // badges in the GuestTable on both host and admin views.
+        // Reminder tracking — free auto-reminder (cron, confirmed guests).
+        // Surfaced as badges in the GuestTable on both host and admin views.
         autoReminderSent: guest.invitation.autoReminderSent || false,
         autoReminderSentAt: guest.invitation.autoReminderSentAt || null,
         autoReminderType: guest.invitation.autoReminderType || null,
-        extraReminderScheduled: guest.invitation.extraReminderScheduled || false,
-        extraReminderScheduledFor:
-          guest.invitation.extraReminderScheduledFor || null,
-        extraReminderSent: guest.invitation.extraReminderSent || false,
-        extraReminderSentAt: guest.invitation.extraReminderSentAt || null,
-        extraReminderType: guest.invitation.extraReminderType || null,
       } : null,
       addedBy: guest.addedBy ? {
         id: guest.addedBy._id,

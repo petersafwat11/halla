@@ -107,14 +107,6 @@
     "title": "{{count}} مزود",
     "subtitle": "مزودون معتمدون جاهزون لخدمة مناسبتك"
   },
-  "sort": {
-    "label": "الترتيب",
-    "recommended": "موصى به",
-    "rating": "الأعلى تقييماً",
-    "priceAsc": "الأقل سعراً",
-    "priceDesc": "الأعلى سعراً",
-    "newest": "الأحدث"
-  },
   "errors": {
     "loadFailed": "تعذر تحميل المزودين حالياً.",
     "loadFailedTitle": "السوق غير متاح",

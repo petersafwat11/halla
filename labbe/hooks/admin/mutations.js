@@ -431,13 +431,20 @@ export const useAdminPlanMutation = () => {
 export const useAdminPaymentRefund = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, amount, reason, idempotencyKey }) =>
-      apiRequest({
+    mutationFn: ({ id, amount, reason, deductInvites, idempotencyKey }) => {
+      const data = { amount, reason };
+      // Only send deductInvites when set (partial refunds) so a full refund
+      // never accidentally carries a pool deduction.
+      if (deductInvites != null && Number(deductInvites) > 0) {
+        data.deductInvites = Number(deductInvites);
+      }
+      return apiRequest({
         method: "POST",
         path: API_PATHS.payments.refund(id),
-        data: { amount, reason },
+        data,
         config: { headers: { "Idempotency-Key": idempotencyKey } },
-      }),
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.paymentsAll() });
     },

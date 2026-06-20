@@ -804,14 +804,18 @@ export function useUpdatePlan() {
 export function useAdminPaymentRefund() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, amount, reason, idempotencyKey }) => {
+    mutationFn: async ({ id, amount, reason, deductInvites, idempotencyKey }) => {
       const headers = idempotencyKey
         ? { "Idempotency-Key": idempotencyKey }
         : null;
+      const body = { amount, reason };
+      // Only thread deductInvites when the admin set it on a partial refund —
+      // it claws back invites from the host's pool alongside the refund.
+      if (deductInvites != null) body.deductInvites = deductInvites;
       const response = await adminRequest(
         ENDPOINTS.PAYMENTS.REFUND(id),
         "POST",
-        { amount, reason },
+        body,
         headers,
       );
       if (!response.success) throw new Error(response.error);

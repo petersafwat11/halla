@@ -4,8 +4,8 @@
 // reference their keys as literal arrays (`["events", eventId]` etc.) — the
 // factory is byte-identical to those literals, so it interoperates without
 // any cache migration. The individual files can adopt the factory
-// incrementally; cross-domain callers (checkout, scheduledExtraReminders,
-// post-event, etc.) use the factory exclusively per the Phase 5 convention.
+// incrementally; cross-domain callers (checkout, post-event, etc.) use the
+// factory exclusively per the Phase 5 convention.
 export const eventsKeys = {
   all: ["events"],
   myEvents: () => [...eventsKeys.all, "my-events"],

@@ -187,6 +187,7 @@ const Summary = ({
                 planFamily={planFamily}
                 billingType={billingType}
                 planPrice={planPrice}
+                addonItems={addonItems}
                 t={t}
               />
 

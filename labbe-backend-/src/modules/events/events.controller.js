@@ -422,11 +422,11 @@ exports.retryLaunch = catchAsync(async (req, res) => {
 // ============================================
 
 /**
- * Resend invitation to guests who haven't responded or said "maybe".
- * POST /api/v2/events/:id/resend-invite
+ * Resend invitation to non-responders / "maybe" guests (or an explicit
+ * guestIds set). POST /api/v2/events/:id/resend-invite
  *
- * Only available 48h after the initial bulk send completed and
- * fires at most once per event (idempotent via DB flag).
+ * Pool-charged (one invite per successful send) and repeatable — no
+ * live/cooldown/once-only gates.
  */
 exports.resendInvite = catchAsync(async (req, res) => {
   const result = await eventsService.resendInvite(
@@ -435,6 +435,24 @@ exports.resendInvite = catchAsync(async (req, res) => {
     req.user
   );
   sendSuccess(res, result, "Re-invitations sent");
+});
+
+// ============================================
+// EXTRA REMINDER
+// ============================================
+
+/**
+ * Send an immediate pool-charged reminder to CONFIRMED guests using the
+ * approved reminder_confirmed template.
+ * POST /api/v2/events/:id/extra-reminder
+ */
+exports.extraReminder = catchAsync(async (req, res) => {
+  const result = await eventsService.extraReminder(
+    req.params.id,
+    req.body,
+    req.user
+  );
+  sendSuccess(res, result, "Extra reminders sent");
 });
 
 // ============================================

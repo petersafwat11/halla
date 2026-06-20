@@ -37,65 +37,43 @@
   font-size: 13px;
 }
 
-.toolbarActions {
-  display: flex;
-  flex-shrink: 0;
-  gap: var(--spacing-12);
-}
-
-.sortControl {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-8);
-  height: 44px;
-  padding-inline-start: var(--spacing-12);
-  border: 1px solid var(--border-gray-250);
-  border-radius: var(--radius-12);
-  background: var(--color-natural-50);
-  color: var(--color-primary-600);
-}
-
-.sortControl select {
-  height: 100%;
-  padding-inline: 4px var(--spacing-12);
-  border: 0;
-  background: transparent;
-  color: var(--text-body);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .filterButton {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   gap: var(--spacing-8);
-  height: 44px;
-  padding: 0 var(--spacing-16);
+  height: 48px;
+  padding: 0 var(--spacing-20);
   border: 1px solid var(--border-gray-250);
   border-radius: var(--radius-12);
   background: var(--color-natural-50);
   color: var(--text-body);
   font: inherit;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
   transition: border-color 0.18s ease, background 0.18s ease;
 }
 
+.filterButton svg {
+  color: var(--color-primary-600);
+}
+
 .filterButton:hover {
   border-color: var(--color-primary-300);
+  background: var(--color-primary-50);
 }
 
 .filterCount {
   display: grid;
   place-items: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
   border-radius: 999px;
   background: var(--color-primary-500);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -208,12 +186,10 @@
     gap: var(--spacing-20);
   }
   .toolbar {
-    flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: var(--spacing-12);
   }
-  .toolbarActions { width: 100%; }
-  .sortControl { flex: 1; }
+  .filterButton { height: 44px; padding: 0 var(--spacing-16); font-size: 14px; }
   .grid { grid-template-columns: 1fr; gap: var(--spacing-16); }
 }
 

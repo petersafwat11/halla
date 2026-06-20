@@ -120,7 +120,7 @@ class PaymentsService {
     }
   }
 
-  async issueRefund({ paymentId, amount, reason, actorUserId, actorRole }) {
+  async issueRefund({ paymentId, amount, reason, actorUserId, actorRole, deductInvites }) {
     const payment = await Payment.findById(paymentId);
     if (!payment) throw new NotFoundError('Payment');
     if (
@@ -148,12 +148,19 @@ class PaymentsService {
       throw new ValidationError(result.error || 'Refund failed at provider');
     }
 
+    // Invite clawback (PARTIAL refunds only). Non-negative integer; on a FULL
+    // refund the subscription is cancelled below (whole pool blocked) so we
+    // never additionally deduct.
+    const deduct =
+      Number.isInteger(deductInvites) && deductInvites > 0 ? deductInvites : 0;
+
     const refundEntry = {
       amount: typeof amount === 'number' ? amount : remaining,
       reason: reason || null,
       createdAt: new Date(),
       createdBy: actorUserId || null,
       moyasarRefundResponseStatus: result.providerStatus,
+      deductInvites: deduct,
     };
 
     // Provider has already moved the funds — wrap the local writes in a
@@ -188,6 +195,28 @@ class PaymentsService {
           sub.status = SUBSCRIPTION_STATUS.CANCELLED;
           sub.cancelledAt = new Date();
           sub.cancelReason = 'refund_issued';
+          await sub.save(session ? { session } : undefined);
+        }
+      } else if (
+        // PARTIAL refund + invite clawback: debit the pool by increasing
+        // invitesConsumed, clamped so it never exceeds total capacity
+        // (invitePool + compensationPool). Only pool-bearing subs (invitePool
+        // not null) are affected. On a FULL refund the sub is already
+        // cancelled above, so we skip the clawback entirely.
+        payment.status === Payment.PAYMENT_STATUS.PARTIALLY_REFUNDED &&
+        deduct > 0 &&
+        payment.subscriptionId
+      ) {
+        const sub = session
+          ? await Subscription.findById(payment.subscriptionId).session(session)
+          : await Subscription.findById(payment.subscriptionId);
+        if (sub && sub.invitePool !== null && sub.invitePool !== undefined) {
+          const capacity = (sub.invitePool || 0) + (sub.compensationPool || 0);
+          const newConsumed = Math.min(
+            (sub.invitesConsumed || 0) + deduct,
+            capacity
+          );
+          sub.invitesConsumed = newConsumed;
           await sub.save(session ? { session } : undefined);
         }
       }
@@ -254,6 +283,7 @@ class PaymentsService {
         amount: refundEntry.amount,
         reason,
         moyasarPaymentId: payment.moyasarPaymentId,
+        deductInvites: deduct,
       },
     });
 

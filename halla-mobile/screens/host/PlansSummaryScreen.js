@@ -29,9 +29,6 @@ const buildCheckoutAddons = (items = []) =>
     if (type === "extra_invites") {
       return { ...base, scope: "pool", quantity: item.quantity };
     }
-    if (type === "extra_reminders") {
-      return { ...base, quantity: item.quantity };
-    }
     if (type === "design_template") {
       return { ...base, templateType: item.templateType };
     }
@@ -274,6 +271,7 @@ const PlansSummaryScreen = () => {
             billingType={billingType}
             locale={currentLanguage}
             planPrice={planPrice}
+            addonItems={addonItems}
             t={t}
           />
 

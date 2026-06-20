@@ -10,16 +10,18 @@ import { useMemo } from "react";
  * Inputs:
  *   event           — { status, invitationSettings, staffList,
  *                       messagingStatus, attemptCount, host, whitelabelId,
- *                       taqnyatTemplate, bulkSendCompletedAt,
- *                       resendInviteSentAt }
+ *                       taqnyatTemplate }
  *   testMessageSent — local UI state set by the test-message popup
  *   currentUser     — { _id, role, whitelabelId }; gates manual retry
  *
  * Outputs: hasTemplate, canSendTest, canSchedule, hasStaff, isCompleted,
  * isLive, isFailed, isScheduled, hasFailedSends, failedCount,
  * canManualRetry (RBAC mirror of EventFailureBanner / PartialFailureBanner;
- * server still enforces), canResendInvite (one-time re-invite for
- * non-responded / maybe guests, 48h after bulk send).
+ * server still enforces).
+ *
+ * NOTE: resend-invite is no longer gated here. It became a pool-charged,
+ * repeatable guest-table bulk action (no live/cooldown/once-only gates); the
+ * table enforces "enough invites remaining" + a non-empty selection instead.
  */
 export function useEventActionGate({
   event,
@@ -40,8 +42,6 @@ export function useEventActionGate({
         hasFailedSends: false,
         failedCount: 0,
         canManualRetry: false,
-        canResendInvite: false,
-        resendInviteTooltip: null,
       };
     }
 
@@ -74,37 +74,6 @@ export function useEventActionGate({
           userWlId &&
           eventWlId.toString() === userWlId.toString()));
 
-    // Resend-invite gating:
-    //   - Already used? -> disabled (one-time only)
-    //   - Not live? -> hidden
-    //   - No bulkSendCompletedAt? -> disabled (messages not yet sent)
-    //   - < 48h since bulkSendCompletedAt? -> disabled (cooldown)
-    //   - Otherwise -> enabled
-    const resendAlreadyUsed = !!event.resendInviteSentAt;
-    const bulkCompletedAt = event.messagingStatus?.bulkSendCompletedAt
-      ? new Date(event.messagingStatus.bulkSendCompletedAt).getTime()
-      : null;
-    const now = Date.now();
-    const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
-
-    let canResendInvite = false;
-    let resendInviteTooltip = null;
-
-    if (!isLive) {
-      resendInviteTooltip = "resendInvite.notLive";
-    } else if (resendAlreadyUsed) {
-      resendInviteTooltip = "resendInvite.alreadyUsed";
-    } else if (!bulkCompletedAt) {
-      resendInviteTooltip = "resendInvite.notSent";
-    } else if (now - bulkCompletedAt < FORTY_EIGHT_HOURS_MS) {
-      const hoursLeft = Math.ceil(
-        (FORTY_EIGHT_HOURS_MS - (now - bulkCompletedAt)) / (3600 * 1000)
-      );
-      resendInviteTooltip = { key: "resendInvite.cooldown", hoursLeft };
-    } else {
-      canResendInvite = true;
-    }
-
     return {
       hasTemplate,
       canSendTest: hasTemplate && !testMessageSent && !isCompleted && !isFailed,
@@ -118,8 +87,6 @@ export function useEventActionGate({
       hasFailedSends,
       failedCount,
       canManualRetry,
-      canResendInvite,
-      resendInviteTooltip,
     };
   }, [event, testMessageSent, currentUser]);
 }

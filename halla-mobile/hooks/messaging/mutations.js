@@ -24,7 +24,12 @@ const _messagingRequest = async (suffix, options = {}) => {
   }
   const response = await apiFetch(path, fetchOpts);
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.message || "API request failed");
+  if (!response.ok) {
+    const err = new Error(data.message || "API request failed");
+    err.code = data.code;
+    err.status = response.status;
+    throw err;
+  }
   return data;
 };
 
@@ -42,10 +47,10 @@ export function useSendTestMessage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ eventId, phoneNumber, channel }) => {
+    mutationFn: async ({ eventId, phoneNumber }) => {
       const response = await apiFetch(ENDPOINTS.EVENTS.TEST_MESSAGE(eventId), {
         method: "PATCH",
-        body: { phoneNumber, channel },
+        body: { phoneNumber },
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "API request failed");
@@ -70,7 +75,12 @@ export function useScheduleSend() {
         body: { eventId, scheduledDate, scheduledTime },
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.message || "Failed to schedule message");
+      if (!response.ok) {
+        const err = new Error(data.message || "Failed to schedule message");
+        err.code = data.code;
+        err.status = response.status;
+        throw err;
+      }
       return data;
     },
     onSuccess: (_data, variables) => {

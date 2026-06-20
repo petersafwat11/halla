@@ -14,6 +14,7 @@ const PlanSummaryCard = ({
   billingType,
   locale,
   planPrice,
+  addonItems = [],
   t,
 }) => {
   const monthly = isMonthly(billingType);
@@ -25,28 +26,37 @@ const PlanSummaryCard = ({
     ? t("summary.unlimitedEvents")
     : t("summary.singleEvent");
 
-  const inviteCount = monthly
+  // Base invites: per-event plans now also expose `invitePool`, so prefer
+  // it everywhere (falling back to legacy fields) — keeps the "base" used by
+  // the invites row, compensation and total perfectly consistent.
+  const baseInvites = monthly
     ? selectedPlan?.invitePool || 0
-    : selectedPlan?.invites ?? selectedPlan?.limits?.maxInvitesPerEvent ?? 0;
+    : selectedPlan?.invitePool ??
+      selectedPlan?.invites ??
+      selectedPlan?.limits?.maxInvitesPerEvent ??
+      0;
 
   const inviteLabel = monthly
-    ? `${inviteCount} ${t("summary.invitePool") || t("inviteSelector.poolLabel")}`
-    : `${inviteCount} ${t("summary.invitesLabel")}`;
+    ? `${baseInvites} ${t("summary.invitePool") || t("inviteSelector.poolLabel")}`
+    : `${baseInvites} ${t("summary.invitesLabel")}`;
 
   const eventLabel = monthly
     ? t("summary.unlimitedEvents")
     : t("summary.oneEvent");
 
-  const compensationCount = (() => {
-    const pct = COMPENSATION_PERCENTAGE / 100;
-    if (monthly) {
-      return (
-        selectedPlan?.compensationPool ??
-        Math.floor((selectedPlan?.invitePool || 0) * pct)
-      );
-    }
-    return Math.floor(inviteCount * pct);
-  })();
+  // Compensation is 15% of BASE invites only — purchased extras never earn
+  // compensation. Per-event plans expose `compensationPool` too now.
+  const compensationCount =
+    selectedPlan?.compensationPool ??
+    Math.floor(baseInvites * (COMPENSATION_PERCENTAGE / 100));
+
+  // Extras = sum of every selected `extra_invites` line-item quantity.
+  const extraInvites = addonItems
+    .filter((item) => (item.addonType || item.type) === "extra_invites")
+    .reduce((acc, item) => acc + (item.quantity || 0), 0);
+
+  // Total pool the host actually gets = base + extras + compensation.
+  const totalInvites = baseInvites + extraInvites + compensationCount;
 
   return (
     <View style={styles.card}>
@@ -80,6 +90,12 @@ const PlanSummaryCard = ({
             iconName="people-outline"
             text={inviteLabel}
           />
+          {extraInvites > 0 ? (
+            <FeatureRow
+              iconName="add-circle-outline"
+              text={`${extraInvites} ${t("summary.extraInvites")}`}
+            />
+          ) : null}
           <FeatureRow
             iconName="calendar-outline"
             text={eventLabel}
@@ -89,6 +105,30 @@ const PlanSummaryCard = ({
             text={`${compensationCount} ${t("summary.compensationInvites")}`}
           />
         </View>
+
+        {/* Unified total: base + purchased extras + 15% compensation */}
+        <View style={styles.totalRow}>
+          <View style={styles.totalRowHead}>
+            <Ionicons
+              name="people"
+              size={18}
+              color={colors.primary[700]}
+            />
+            <Text style={styles.totalLabel}>{t("summary.totalInvites")}</Text>
+          </View>
+          <Text style={styles.totalValue}>{totalInvites}</Text>
+        </View>
+        <Text style={styles.totalHint}>
+          {t("summary.totalInvitesHint")}
+        </Text>
+        <Text style={styles.totalHint}>
+          {t("summary.compensationHint")}
+        </Text>
+        <Text style={styles.totalHint}>
+          {monthly
+            ? t("summary.poolPlanHint")
+            : t("summary.perEventPlanHint")}
+        </Text>
       </View>
     </View>
   );
@@ -193,6 +233,42 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.body.small,
     color: colors.secondary[700],
     flex: 1,
+  },
+  totalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing[8],
+    paddingVertical: spacing[12],
+    paddingHorizontal: spacing[12],
+    backgroundColor: colors.primary[50],
+    borderRadius: borderRadius[12],
+    borderWidth: 1,
+    borderColor: colors.primary[200],
+  },
+  totalRowHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
+    flexShrink: 1,
+  },
+  totalLabel: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.body.medium,
+    color: colors.primary[800],
+    flexShrink: 1,
+  },
+  totalValue: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 20,
+    color: colors.primary[700],
+    letterSpacing: -0.3,
+  },
+  totalHint: {
+    fontFamily: "Cairo_400Regular",
+    fontSize: typography.fontSize.label.small,
+    color: colors.natural[450],
+    lineHeight: 16,
   },
 });
 

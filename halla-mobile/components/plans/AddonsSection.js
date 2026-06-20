@@ -31,43 +31,33 @@ const AddonsSection = ({ onAddonsChange }) => {
   const tiers = useMemo(
     () => ({
       extraInvites: catalog?.extra_invites || [],
-      extraReminders: catalog?.extra_reminders || [],
       designTemplate: catalog?.design_template || [],
     }),
     [catalog]
   );
 
-  const [extraInvites, setExtraInvites] = useState(null);
-  const [extraReminders, setExtraReminders] = useState(null);
+  // Extra-invite tiers stack: the user can pick MULTIPLE tiers that add up.
+  // We track the selected tiers by their (unique) `quantity` so each one
+  // becomes its own `extra_invites` line item at checkout. Design template
+  // stays single-select (mutually-exclusive radio choice).
+  const [extraInvites, setExtraInvites] = useState([]);
   const [designTemplate, setDesignTemplate] = useState(null);
 
-  const selectedCount =
-    (extraInvites ? 1 : 0) +
-    (extraReminders ? 1 : 0) +
-    (designTemplate ? 1 : 0);
-  const total =
-    (extraInvites?.price || 0) +
-    (extraReminders?.price || 0) +
-    (designTemplate?.price || 0);
+  const invitesSubtotal = extraInvites.reduce(
+    (acc, tier) => acc + (tier.price || 0),
+    0
+  );
 
-  const notify = (inv, rem, des) => {
-    const items = [];
-    if (inv) {
-      items.push({
-        addonType: "extra_invites",
-        type: "extra_invites",
-        quantity: inv.quantity,
-        price: inv.price,
-      });
-    }
-    if (rem) {
-      items.push({
-        addonType: "extra_reminders",
-        type: "extra_reminders",
-        quantity: rem.quantity,
-        price: rem.price,
-      });
-    }
+  const selectedCount = extraInvites.length + (designTemplate ? 1 : 0);
+  const total = invitesSubtotal + (designTemplate?.price || 0);
+
+  const notify = (invList, des) => {
+    const items = invList.map((tier) => ({
+      addonType: "extra_invites",
+      type: "extra_invites",
+      quantity: tier.quantity,
+      price: tier.price,
+    }));
     if (des) {
       items.push({
         addonType: "design_template",
@@ -77,29 +67,28 @@ const AddonsSection = ({ onAddonsChange }) => {
         price: des.price,
       });
     }
-    const sum = (inv?.price || 0) + (rem?.price || 0) + (des?.price || 0);
+    const sum =
+      invList.reduce((acc, tier) => acc + (tier.price || 0), 0) +
+      (des?.price || 0);
     onAddonsChange?.(items, sum);
   };
 
   const toggleInv = (tier) => {
-    const next = extraInvites?.quantity === tier.quantity ? null : tier;
+    const isSelected = extraInvites.some((t) => t.quantity === tier.quantity);
+    const next = isSelected
+      ? extraInvites.filter((t) => t.quantity !== tier.quantity)
+      : [...extraInvites, tier];
     setExtraInvites(next);
-    notify(next, extraReminders, designTemplate);
-  };
-  const toggleRem = (tier) => {
-    const next = extraReminders?.quantity === tier.quantity ? null : tier;
-    setExtraReminders(next);
-    notify(extraInvites, next, designTemplate);
+    notify(next, designTemplate);
   };
   const toggleDes = (tier) => {
     const next = designTemplate?.type === tier.type ? null : tier;
     setDesignTemplate(next);
-    notify(extraInvites, extraReminders, next);
+    notify(extraInvites, next);
   };
 
   const clearAll = () => {
-    setExtraInvites(null);
-    setExtraReminders(null);
+    setExtraInvites([]);
     setDesignTemplate(null);
     onAddonsChange?.([], 0);
   };
@@ -144,15 +133,15 @@ const AddonsSection = ({ onAddonsChange }) => {
         iconColor={colors.primary[700]}
         title={t("addons.extraInvites.title")}
         description={t("addons.extraInvites.description")}
-        isActive={!!extraInvites}
-        activePrice={extraInvites?.price}
+        isActive={extraInvites.length > 0}
+        activePrice={extraInvites.length > 0 ? invitesSubtotal : null}
         t={t}
       >
         <View style={styles.tierRow}>
           {tiers.extraInvites.map((tier) => (
             <TierTile
               key={tier.quantity}
-              active={extraInvites?.quantity === tier.quantity}
+              active={extraInvites.some((s) => s.quantity === tier.quantity)}
               onPress={() => toggleInv(tier)}
               quantity={tier.quantity}
               price={tier.price}
@@ -160,29 +149,13 @@ const AddonsSection = ({ onAddonsChange }) => {
             />
           ))}
         </View>
-      </AddonCard>
-
-      <AddonCard
-        icon="notifications-outline"
-        iconBgGradient={[colors.primary[50], colors.primary[300]]}
-        iconColor={colors.primary[800]}
-        title={t("addons.extraReminders.title")}
-        description={t("addons.extraReminders.description")}
-        isActive={!!extraReminders}
-        activePrice={extraReminders?.price}
-        t={t}
-      >
-        <View style={styles.tierRow}>
-          {tiers.extraReminders.map((tier) => (
-            <TierTile
-              key={tier.quantity}
-              active={extraReminders?.quantity === tier.quantity}
-              onPress={() => toggleRem(tier)}
-              quantity={tier.quantity}
-              price={tier.price}
-              t={t}
-            />
-          ))}
+        <View style={styles.hintRow}>
+          <Ionicons
+            name="information-circle-outline"
+            size={14}
+            color={colors.primary[600]}
+          />
+          <Text style={styles.hintText}>{t("addons.extraInvites.stackHint")}</Text>
         </View>
       </AddonCard>
 
@@ -535,6 +508,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing[8],
+  },
+  hintRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing[4],
+    marginTop: spacing[4],
+  },
+  hintText: {
+    flex: 1,
+    fontFamily: "Cairo_400Regular",
+    fontSize: typography.fontSize.caption.large,
+    color: colors.natural[450],
+    lineHeight: 16,
   },
   tileWrap: {
     flexBasis: "22%",

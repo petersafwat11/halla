@@ -4,6 +4,7 @@ import { useMemo, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { usePageAccess } from "@/hooks/usePageAccess";
+import useAuthStore, { USER_ROLES } from "@/stores/authStore";
 import {
   useAdminPayments,
   useAdminPaymentsExport,
@@ -46,6 +47,12 @@ export default function PaymentsTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { canUpdate, canDelete } = usePageAccess("payments");
+  // Refunds are restricted to platform super-admin / admin — the backend 403s
+  // whitelabel_admin even though they have generic `canUpdate` on payments.
+  // Gate the refund button to match so it doesn't render a guaranteed-403.
+  const userRole = useAuthStore((s) => s.user?.role);
+  const canRefund =
+    userRole === USER_ROLES.SUPER_ADMIN || userRole === USER_ROLES.ADMIN;
 
   const [detailId, setDetailId] = useState(null);
   const actions = usePaymentActions();
@@ -125,7 +132,7 @@ export default function PaymentsTable() {
         const captureable = row.providerStatus === "authorized";
         const voidable = row.providerStatus === "authorized";
 
-        if (refundable) {
+        if (refundable && canRefund) {
           actionsList.push({
             type: "dropdown",
             text: t("actions.refund", "Refund"),
@@ -153,7 +160,7 @@ export default function PaymentsTable() {
 
       return actionsList;
     },
-    [canUpdate, t, actions]
+    [canUpdate, canRefund, t, actions]
   );
 
   const renderCell = useCallback(

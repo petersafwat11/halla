@@ -125,7 +125,7 @@ const AddGuestOrModeratorPopup = ({
             {itemsList.length > 0 && (
               <View style={styles.listSection}>
                 <Text style={styles.listTitle}>
-                  {isGuest ? "الضيوف الحاليون" : "فريق العمل الحالي"} ({itemsList.length})
+                  {isGuest ? "الضيوف الحاليون" : "مشرفين البوابة الحالي"} ({itemsList.length})
                 </Text>
                 {itemsList.map((item) => {
                   const itemId = item._id || item.id;

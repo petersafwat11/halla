@@ -9,7 +9,7 @@ const status = require('./status');
 const permissions = require('./permissions');
 const plans = require('./plans');
 const { PLAN_DEFAULTS } = require('./planDefaults');
-const { ADDON_TYPES, EXTRA_INVITES_TIERS, EXTRA_REMINDERS_TIERS, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION } = require('./addons');
+const { ADDON_TYPES, EXTRA_INVITES_TIERS, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION } = require('./addons');
 const { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } = require('./serviceCategories');
 const {
   isPerEventPlan, isPoolPlan, isManagedPlan, getPlanFamily, getBillingType,
@@ -24,7 +24,6 @@ module.exports = {
   PLAN_DEFAULTS,
   ADDON_TYPES,
   EXTRA_INVITES_TIERS,
-  EXTRA_REMINDERS_TIERS,
   DESIGN_TEMPLATE_TIERS,
   BUSINESS_CUSTOMIZATION,
   SERVICE_CATEGORIES,

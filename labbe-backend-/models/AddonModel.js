@@ -8,7 +8,6 @@ const addonSchema = new mongoose.Schema(
     eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', default: null },
     addonType: { type: String, enum: Object.values(ADDON_TYPES), required: true },
     // For extra_invites: quantity = number of extra invites
-    // For extra_reminders: quantity = number of extra reminder sends
     // For design_template: quantity = 1, templateType holds the tier
     // For business_customization: quantity = 1
     quantity: { type: Number, default: 1 },

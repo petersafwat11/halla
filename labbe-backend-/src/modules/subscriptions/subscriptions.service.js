@@ -18,6 +18,7 @@ const Plan = require('../../../models/PlanModel');
 const User = require('../../../models/UserModel');
 const Payment = require('../../../models/PaymentModel');
 const { isPerEventPlan, isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
+const { countsAgainstPlanStatusFilter } = require('../../shared/constants/events');
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const paymentProvider = require('../../infrastructure/paymentProvider');
@@ -49,6 +50,35 @@ class SubscriptionsService {
         reason: `Subscription is ${subscription.status}. Please activate your subscription to create events.`,
         limits: null,
       };
+    }
+
+    // Per-event re-creation gate (Phase 4). A per-event plan is "used up" the
+    // moment sending starts (even one guest), so:
+    //   - invitesConsumed > 0  → permanently blocked (cancel/delete never frees it)
+    //   - an active event already exists under this subscription → blocked
+    //     (active = status NOT IN ['cancelled','deleted'])
+    // Combined: a per-event host can re-create after cancel/delete IFF nothing
+    // was ever sent on the subscription.
+    if (isPerEventPlan(subscription.planId?.planType || subscription.planType)) {
+      if ((subscription.invitesConsumed || 0) > 0) {
+        return {
+          allowed: false,
+          reason: 'This event plan has already been used to send invitations. Please purchase a new plan.',
+          limits: this._getPackageLimits(subscription),
+        };
+      }
+      const Event = require('../../../models/EventModel');
+      const activeEventCount = await Event.countDocuments({
+        subscriptionId: subscription._id,
+        ...countsAgainstPlanStatusFilter(),
+      });
+      if (activeEventCount > 0) {
+        return {
+          allowed: false,
+          reason: 'You already have an active event on this plan. Cancel or delete it before creating a new one.',
+          limits: this._getPackageLimits(subscription),
+        };
+      }
     }
 
     // Dynamic event count only matters when the plan caps total events (maxEvents > 0).
@@ -91,7 +121,7 @@ class SubscriptionsService {
     return Event.countDocuments({
       host: userId,
       createdAt: { $gte: billingStart },
-      status: { $ne: 'deleted' },
+      ...countsAgainstPlanStatusFilter(),
     });
   }
 

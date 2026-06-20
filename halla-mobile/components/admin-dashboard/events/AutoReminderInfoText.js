@@ -15,7 +15,28 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import { useUpdateReminderSettings } from "../../../hooks/events/mutations/useEventMutation";
+import { useMySubscription } from "../../../hooks/users";
 import { colors, spacing, textStyles } from "../../../styles/tokens";
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+// Combine a Date (or date string) with a 24h "HH:mm" string into one local
+// Date. Used to resolve the scheduled-send instant (the lower bound of the
+// free reminder window).
+const combineDateTime = (date, hhmm) => {
+  if (!date) return null;
+  const base = date instanceof Date ? new Date(date) : new Date(date);
+  if (Number.isNaN(base.getTime())) return null;
+  if (typeof hhmm === "string") {
+    const m = hhmm.match(/^(\d{1,2}):(\d{2})$/);
+    if (m) {
+      base.setHours(parseInt(m[1], 10), parseInt(m[2], 10), 0, 0);
+      return base;
+    }
+  }
+  base.setHours(0, 0, 0, 0);
+  return base;
+};
 
 /**
  * Small inline banner reminding the user that the platform auto-sends a
@@ -28,6 +49,12 @@ const AutoReminderInfoText = ({ event }) => {
   const { t, i18n } = useTranslation("events");
   const toast = useToast();
   const updateReminderMutation = useUpdateReminderSettings();
+  // No event-scoped plan flag is exposed on the event payload — fall back to
+  // the host's current plan code (same heuristic the web popup uses). This is
+  // advisory only; the backend is authoritative for trial reminders.
+  const { data: subData } = useMySubscription();
+  const isTrial =
+    subData?.data?.subscription?.[0]?.planCode === "trial";
 
   const [modalOpen, setModalOpen] = useState(false);
   const [customReminderTime, setCustomReminderTime] = useState(false);
@@ -93,9 +120,10 @@ const AutoReminderInfoText = ({ event }) => {
   const customDate = event.reminderSettings?.scheduledDate;
   const customTime = event.reminderSettings?.scheduledTime;
 
+  // Free reminder to CONFIRMED guests (no "48h" / pending wording anymore).
   let infoText = t(
     "autoReminderInfo",
-    "We automatically send a reminder to your guests 48 hours before the event."
+    "نرسل تذكيراً مجانياً لضيوفك الذين أكدوا الحضور قبل المناسبة."
   );
 
   if (hasCustom && customDate && customTime) {
@@ -104,12 +132,35 @@ const AutoReminderInfoText = ({ event }) => {
     infoText = t(
       "autoReminderInfoCustom",
       {
-        defaultValue: "We automatically send a reminder to your guests on {{date}} at {{time}}.",
+        defaultValue: "نرسل تذكيراً مجانياً لضيوفك الذين أكدوا الحضور في {{date}} الساعة {{time}}.",
         date: formattedDate,
         time: formattedTime,
       }
     );
   }
+
+  // Free reminder window: [scheduledSend, event − 24h]. Lower bound is the
+  // launch send time when scheduled, otherwise "now". Upper bound is 24h
+  // before the event start. The backend is authoritative and returns
+  // REMINDER_OUT_OF_RANGE if the chosen instant falls outside.
+  const sendInstant = combineDateTime(
+    event?.launchSettings?.scheduledDate,
+    event?.launchSettings?.scheduledTime
+  );
+  const eventInstant = (() => {
+    const d = event?.eventDetails?.date
+      ? new Date(event.eventDetails.date)
+      : event?.date
+      ? new Date(event.date)
+      : null;
+    return d && !Number.isNaN(d.getTime()) ? d : null;
+  })();
+  const nowTs = Date.now();
+  const lowerBound =
+    sendInstant && sendInstant.getTime() > nowTs ? sendInstant : new Date(nowTs);
+  const upperBound = eventInstant
+    ? new Date(eventInstant.getTime() - ONE_DAY_MS)
+    : null;
 
   const handleDatePress = () => {
     setShowDatePicker((prev) => !prev);
@@ -128,7 +179,35 @@ const AutoReminderInfoText = ({ event }) => {
 
     if (customReminderTime) {
       if (!date || !time) {
-        toast.error(t("scheduleReminder.errors.dateOutOfRange", "Date and time are required"));
+        toast.error(
+          t(
+            "reminderCustomize.errors.dateTimeRequired",
+            "التاريخ والوقت مطلوبان لتخصيص التذكير"
+          )
+        );
+        return;
+      }
+
+      // Convert time to Riyadh wall clock 24h format "HH:mm"
+      const hour = time.getHours();
+      const minute = time.getMinutes();
+      const time24 = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+
+      // Client-side guard against the window [scheduledSend, event−24h]. The
+      // backend is authoritative (REMINDER_OUT_OF_RANGE) but catching it here
+      // saves a round-trip.
+      const chosenInstant = combineDateTime(date, time24);
+      if (
+        chosenInstant &&
+        ((lowerBound && chosenInstant.getTime() < lowerBound.getTime()) ||
+          (upperBound && chosenInstant.getTime() > upperBound.getTime()))
+      ) {
+        toast.error(
+          t(
+            "reminderCustomize.errors.outOfRange",
+            "يجب أن يكون وقت التذكير بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل."
+          )
+        );
         return;
       }
 
@@ -136,11 +215,6 @@ const AutoReminderInfoText = ({ event }) => {
       const utcMidnight = new Date(
         Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
       ).toISOString();
-
-      // Convert time to Riyadh wall clock 24h format "HH:mm"
-      const hour = time.getHours();
-      const minute = time.getMinutes();
-      const time24 = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 
       payload.scheduledDate = utcMidnight;
       payload.scheduledTime = time24;
@@ -154,13 +228,22 @@ const AutoReminderInfoText = ({ event }) => {
         eventId: event._id || event.id,
         data: payload,
       });
-      toast.success(t("saveSuccess", "Reminder settings saved successfully"));
+      toast.success(t("saveSuccess", "تم حفظ إعدادات التذكير بنجاح"));
       setModalOpen(false);
     } catch (err) {
-      console.error(err);
-      toast.error(
-        err?.message || t("scheduleReminder.errors.generic", "Failed to save reminder settings")
-      );
+      if (err?.code === "REMINDER_OUT_OF_RANGE") {
+        toast.error(
+          t(
+            "reminderCustomize.errors.outOfRange",
+            "يجب أن يكون وقت التذكير بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل."
+          )
+        );
+      } else {
+        toast.error(
+          err?.message ||
+            t("reminderCustomize.errors.generic", "تعذّر حفظ إعدادات التذكير")
+        );
+      }
     }
   };
 
@@ -205,9 +288,28 @@ const AutoReminderInfoText = ({ event }) => {
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
+              <Text style={styles.modalDescription}>
+                {t(
+                  "reminderCustomize.description",
+                  "نرسل تذكيراً مجانياً لضيوفك الذين أكدوا الحضور قبل المناسبة."
+                )}
+              </Text>
+
+              {isTrial && (
+                // Advisory only — derived from the host's current plan, not the
+                // event's. Trial reminders are auto (send + 10min) and can't be
+                // customized; the backend is authoritative.
+                <Text style={styles.trialInfo}>
+                  {t(
+                    "reminderCustomize.trialInfo",
+                    "في الباقة التجريبية، يُرسل التذكير تلقائياً بعد 10 دقائق من إرسال الدعوات ولا يمكن تخصيصه."
+                  )}
+                </Text>
+              )}
+
               <View style={styles.switchRow}>
                 <Text style={styles.switchLabel}>
-                  {t("customReminderCheckbox", "Customize reminder time")}
+                  {t("customReminderCheckbox", "تخصيص وقت التذكير")}
                 </Text>
                 <Switch
                   value={customReminderTime}
@@ -226,7 +328,7 @@ const AutoReminderInfoText = ({ event }) => {
               {customReminderTime && (
                 <View style={styles.pickerSection}>
                   <Text style={styles.pickerLabel}>
-                    {t("scheduleReminder.dateLabel", "Date")}
+                    {t("reminderCustomize.dateLabel", "التاريخ")}
                   </Text>
                   <TouchableOpacity
                     style={styles.pickerButton}
@@ -241,6 +343,8 @@ const AutoReminderInfoText = ({ event }) => {
                       value={date}
                       mode="date"
                       display={Platform.OS === "ios" ? "spinner" : "default"}
+                      minimumDate={lowerBound || undefined}
+                      maximumDate={upperBound || undefined}
                       onChange={(event, selectedDate) => {
                         if (Platform.OS === "android") setShowDatePicker(false);
                         if (selectedDate) setDate(selectedDate);
@@ -250,7 +354,7 @@ const AutoReminderInfoText = ({ event }) => {
                   )}
 
                   <Text style={styles.pickerLabel}>
-                    {t("scheduleReminder.timeLabel", "Time")}
+                    {t("reminderCustomize.timeLabel", "الوقت")}
                   </Text>
                   <TouchableOpacity
                     style={styles.pickerButton}
@@ -272,6 +376,13 @@ const AutoReminderInfoText = ({ event }) => {
                       textColor={colors.natural[900]}
                     />
                   )}
+
+                  <Text style={styles.windowHint}>
+                    {t(
+                      "reminderCustomize.windowHint",
+                      "اختر وقتاً بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل."
+                    )}
+                  </Text>
                 </View>
               )}
 
@@ -282,7 +393,7 @@ const AutoReminderInfoText = ({ event }) => {
                   disabled={updateReminderMutation.isPending}
                 >
                   <Text style={styles.secondaryBtnText}>
-                    {t("scheduleReminder.cancel", "Cancel")}
+                    {t("reminderCustomize.cancel", "إلغاء")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -389,6 +500,36 @@ const styles = StyleSheet.create({
     color: colors.natural[900],
     fontFamily: "Cairo_500Medium",
     fontSize: 15,
+  },
+  modalDescription: {
+    ...textStyles.bodyMedium,
+    color: colors.natural[500] || "#656565",
+    fontFamily: "Cairo_400Regular",
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 12,
+    textAlign: "right",
+  },
+  trialInfo: {
+    ...textStyles.bodySmall,
+    color: colors.primary[700],
+    backgroundColor: colors.primary[50],
+    fontFamily: "Cairo_500Medium",
+    fontSize: 12,
+    lineHeight: 18,
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 16,
+    textAlign: "right",
+  },
+  windowHint: {
+    ...textStyles.bodySmall,
+    color: colors.natural[400],
+    fontFamily: "Cairo_400Regular",
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 4,
+    textAlign: "right",
   },
   pickerSection: {
     marginBottom: 20,

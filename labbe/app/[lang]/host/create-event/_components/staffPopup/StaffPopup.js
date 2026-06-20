@@ -14,7 +14,7 @@ const StaffPopup = ({
   onEdit,
   onDelete,
   onClose,
-  title = "فريق العمل",
+  title = "مشرفين البوابة",
 }) => {
   const [currentItem, setCurrentItem] = useState({ name: "", phone: "" });
   const [localErrors, setLocalErrors] = useState({});
@@ -133,7 +133,7 @@ const StaffPopup = ({
 
         <div className={styles.content}>
           <p className={styles.description}>
-            أضف فريق العمل المسؤول عن تسجيل حضور الضيوف. سيتمكنون من الوصول
+            أضف مشرفين البوابة المسؤولين عن تسجيل حضور الضيوف. سيتمكنون من الوصول
             لصفحة تسجيل الحضور عبر رابط خاص.
           </p>
 

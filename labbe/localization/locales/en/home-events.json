@@ -180,8 +180,7 @@
       "phone": "Phone",
       "status": "Status",
       "respondAt": "Response Date",
-      "autoReminder": "Auto reminder",
-      "extraReminder": "Extra reminder"
+      "autoReminder": "Auto reminder"
     },
     "cell": {
       "sent": "Sent",
@@ -217,54 +216,43 @@
     }
   },
   "singleEvent": {
-    "autoReminderInfo": "We automatically send a reminder to your guests 48 hours before the event.",
-    "autoReminderInfoCustom": "We automatically send a reminder to your guests on {{date}} at {{time}}.",
+    "autoReminderInfo": "We send a free reminder to your confirmed guests before the event.",
+    "autoReminderInfoCustom": "We send a free reminder to your confirmed guests on {{date}} at {{time}}.",
     "customizeReminder": "Customize",
     "customizeReminderModalTitle": "Customize automatic reminder",
     "customReminderCheckbox": "Customize reminder time",
     "saveSuccess": "Reminder settings saved successfully",
     "save": "Save",
-    "scheduleReminder": {
-      "heading": "Extra reminders",
-      "button": "Schedule extra reminder",
-      "modalTitle": "Schedule extra reminder",
-      "typeLabel": "Reminder type",
-      "typeConfirmed": "For guests who confirmed",
-      "typePending": "For guests who did not respond or chose maybe",
-      "type": {
-        "reminder_confirmed": "Confirmed guests",
-        "reminder_pending": "No-response / maybe"
-      },
-      "guestsLabel": "Select guests",
-      "selectAll": "Select all",
-      "deselectAll": "Deselect all",
-      "noEligibleGuests": "No eligible guests for this reminder type.",
-      "dateLabel": "Send at",
-      "dateMin": "Earliest: in 5 minutes",
-      "dateMax": "Latest: 24 hours before the event",
-      "quotaLabel": "Quota",
-      "quotaValue": "{{used}} of {{remaining}} available",
-      "guestCount": "{{count}} guest(s)",
-      "submit": "Schedule",
+    "reminderCustomize": {
+      "description": "We send a free reminder to your confirmed guests before the event.",
+      "trialInfo": "On the trial plan, the reminder is sent automatically 10 minutes after invitations go out and can't be customized.",
+      "dateLabel": "Date",
+      "timeLabel": "Time",
+      "selectDate": "Select date",
+      "windowHint": "Choose a time after sending starts and at least 24 hours before the event.",
       "cancel": "Cancel",
-      "cancelAction": "Cancel reminder",
-      "cancelConfirm": "Cancel this scheduled reminder? Quota will be refunded.",
-      "scheduledList": "Scheduled reminders",
-      "noScheduled": "No scheduled extra reminders",
-      "scheduledFor": "Scheduled for {{when}}",
-      "scheduledOk": "Reminder scheduled",
-      "cancelledOk": "Reminder cancelled",
       "errors": {
-        "dateOutOfRange": "Date must be between 5 minutes from now and 24 hours before the event",
-        "noGuests": "Select at least one guest",
-        "insufficientQuota": "You don't have enough reminder quota",
-        "noTemplate": "No reminder template is configured for this category. Contact support.",
-        "generic": "Could not schedule the reminder",
-        "cancelFailed": "Could not cancel the reminder"
+        "dateTimeRequired": "Date and time are required for a custom reminder",
+        "outOfRange": "The reminder time must be after sending starts and at least 24 hours before the event.",
+        "generic": "Failed to save reminder settings"
       }
+    },
+    "bulkActions": {
+      "resend": "Resend invitation",
+      "extraReminder": "Extra reminder",
+      "resendTitle": "Resend invitation",
+      "extraReminderTitle": "Extra reminder",
+      "costSummary": "Will send to {{count}} · costs {{count}} invites · {{remaining}} remaining",
+      "sentResult": "{{successful}}/{{total}} sent",
+      "insufficientInvites": "Not enough invites — buy more in Plans.",
+      "noReminderTemplate": "No reminder template is configured for this category. Contact support.",
+      "noEligibleResend": "None of the selected guests can be re-invited (only non-responders or maybe).",
+      "noEligibleReminder": "None of the selected guests are confirmed.",
+      "error": "Could not complete the action"
     },
     "header": {
       "eventDetails": "Event Details",
+      "editGuests": "Edit Guests",
       "ourInvitation": "Our Invitation",
       "ourInvitationTitle": "Premium Service",
       "ourInvitationDesc": "Let us handle all your event details",
@@ -277,6 +265,7 @@
       "declined": "Excused",
       "confirmed": "Confirmed",
       "noResponse": "No Response",
+      "noResponseOrMaybe": "Didn't respond or maybe",
       "maybe": "Maybe",
       "checkedIn": "Checked In",
       "totalGuests": "Total Guests"
@@ -356,6 +345,11 @@
     "send": "Send",
     "sending": "Sending..."
   },
+  "remainingInvites": {
+    "label": "Invites left",
+    "unlimited": "Unlimited",
+    "tooltip": "Invites left = pool + extras + compensation − sent. Adding guests is free; you're charged only when an invitation or reminder is sent."
+  },
   "reminderPopup": {
     "title": "Send Reminder",
     "guestsToRemind": "Number of guests to remind",
@@ -424,16 +418,5 @@
       "dateRequired": "Date is required",
       "timeRequired": "Time is required"
     }
-  },
-  "resendInvite": {
-    "button": "Resend Invitations",
-    "buttonCooldown": "Available in {{hours}}h",
-    "sending": "Sending...",
-    "success": "Re-invitations sent to {{sent}}/{{total}} guests",
-    "error": "Failed to resend invitations",
-    "notLive": "Resend is only available for live events",
-    "alreadyUsed": "Re-invitations have already been sent for this event",
-    "notSent": "Wait until the initial invitation messages have been sent",
-    "cooldown": "Available {{hours}}h after invitations are sent"
   }
 }

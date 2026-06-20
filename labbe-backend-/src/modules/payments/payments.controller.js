@@ -41,11 +41,12 @@ exports.poll3ds = catchAsync(async (req, res) => {
 });
 
 exports.refund = catchAsync(async (req, res) => {
-  const { amount, reason } = req.body || {};
+  const { amount, reason, deductInvites } = req.body || {};
   const payment = await paymentsService.issueRefund({
     paymentId: req.params.id,
     amount,
     reason,
+    deductInvites,
     actorUserId: req.user._id,
     actorRole: req.user.role,
   });

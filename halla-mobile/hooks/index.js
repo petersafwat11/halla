@@ -25,7 +25,6 @@ export * from "./notifications";
 export * from "./payments";
 export * from "./plans";
 export * from "./postEvent";
-export * from "./scheduledExtraReminders";
 export * from "./staff";
 export * from "./subscriptions";
 export * from "./taqnyatTemplates";

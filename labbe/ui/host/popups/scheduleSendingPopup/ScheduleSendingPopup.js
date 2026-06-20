@@ -12,32 +12,53 @@ import { toast } from "react-toastify";
 import { useScheduleSend } from "@/hooks/messaging";
 import useAuthStore from "@/stores/authStore";
 
-const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule }) => {
-  const { t } = useTranslation("common");
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
+const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule, eventDate }) => {
+  const { t, i18n } = useTranslation("common");
   const scheduleSend = useScheduleSend();
   const subscription = useAuthStore((s) => s.subscription);
   const isTrial = subscription?.planCode === "trial";
 
-  // Picker hint: minimum allowed day is two days out (00:00) for paid
-  // plans. Trial users get a relaxed floor — the backend enforces the
-  // shorter TRIAL_SCHEDULE_MIN_LEAD_MINUTES threshold.
-  // If the combined date+time still falls under the backend lower bound,
-  // the API returns SCHEDULE_TOO_SOON and the toast surfaces that message.
+  // Live scheduling window: [now + minLead, event − 3d].
+  //   minLead: trial = 15min, paid = 24h.
+  //   upper bound: 3 days before the event start.
+  // The picker is day-granular, so we floor each bound to its calendar day;
+  // the backend is authoritative on the exact instant and returns
+  // SCHEDULE_TOO_SOON / SCHEDULE_TOO_LATE for boundary cases.
+  const toDay = (d) => {
+    const c = new Date(d);
+    c.setHours(0, 0, 0, 0);
+    return c;
+  };
+
   const minDate = useMemo(() => {
-    if (isTrial) return null;
-    const date = new Date();
-    date.setDate(date.getDate() + 2);
-    date.setHours(0, 0, 0, 0);
-    return date;
+    const leadMs = isTrial ? 15 * 60 * 1000 : 24 * 60 * 60 * 1000;
+    return toDay(new Date(Date.now() + leadMs));
   }, [isTrial]);
 
-  const getTwoDaysFromNow = () => {
-    if (isTrial) return null;
-    const date = new Date();
-    date.setDate(date.getDate() + 2);
-    date.setHours(0, 0, 0, 0);
-    return date;
-  };
+  const maxDate = useMemo(() => {
+    if (!eventDate) return undefined;
+    const ev = new Date(eventDate);
+    if (Number.isNaN(ev.getTime())) return undefined;
+    return toDay(new Date(ev.getTime() - THREE_DAYS_MS));
+  }, [eventDate]);
+
+  // Human-readable window for the live hint under the date input.
+  const windowText = useMemo(() => {
+    const fmt = (d) =>
+      d
+        ? new Date(d).toLocaleDateString(
+            i18n.language === "ar" ? "ar-SA" : "en-US",
+            { year: "numeric", month: "short", day: "numeric" }
+          )
+        : null;
+    const from = fmt(minDate);
+    const to = fmt(maxDate);
+    if (from && to) return { from, to };
+    if (from) return { from, to: null };
+    return null;
+  }, [minDate, maxDate, i18n.language]);
 
   // Build a UTC-midnight ISO string from a Date's local Y/M/D
   // components. The DatePicker emits a Date at local 00:00; calling
@@ -93,12 +114,14 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
       return;
     }
 
-    if (!isTrial) {
-      const min = getTwoDaysFromNow();
-      if (min && new Date(data.date) < min) {
-        toast.error(t("schedule_min_days_error"));
-        return;
-      }
+    const chosenDay = toDay(new Date(data.date));
+    if (minDate && chosenDay < minDate) {
+      toast.error(t("schedule_too_soon"));
+      return;
+    }
+    if (maxDate && chosenDay > maxDate) {
+      toast.error(t("schedule_too_late"));
+      return;
     }
 
     const time24 = to24h(data.time);
@@ -119,9 +142,16 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
       onClose();
     } catch (error) {
       console.error("Error scheduling message:", error);
-      toast.error(
-        error?.response?.data?.message || t("schedule_message_failed")
-      );
+      const code = error?.response?.data?.code;
+      if (code === "SCHEDULE_TOO_SOON" || code === "EVENT_DATE_TOO_SOON") {
+        toast.error(t("schedule_too_soon"));
+      } else if (code === "SCHEDULE_TOO_LATE") {
+        toast.error(t("schedule_too_late"));
+      } else {
+        toast.error(
+          error?.response?.data?.message || t("schedule_message_failed")
+        );
+      }
     }
   };
 
@@ -153,6 +183,7 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
               placeholder={t("select_date") || "Select date"}
               required
               minDate={minDate}
+              maxDate={maxDate}
             />
 
             <TimePicker
@@ -161,6 +192,21 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule })
               required
             />
           </div>
+
+          {windowText && (
+            <small className={styles.windowHint}>
+              {windowText.to
+                ? t("schedule_window_range", {
+                    defaultValue: "You can schedule between {{from}} and {{to}}.",
+                    from: windowText.from,
+                    to: windowText.to,
+                  })
+                : t("schedule_window_from", {
+                    defaultValue: "Earliest you can schedule: {{from}}.",
+                    from: windowText.from,
+                  })}
+            </small>
+          )}
 
           <div className={styles.actions}>
             <Button

@@ -6,7 +6,7 @@
 // single shared implementation that both pages import.
 
 export { default as AutoReminderInfoText } from "./AutoReminderInfoText";
-export { default as ScheduleReminderSection } from "./ScheduleReminderSection";
+export { default as RemainingInvitesBanner } from "./RemainingInvitesBanner";
 export { default as EventStats } from "./EventStats";
 export { default as EventStatsAndTableWrapper } from "./EventStatsAndTableWrapper";
 export { default as EventFailureBanner } from "./EventFailureBanner";

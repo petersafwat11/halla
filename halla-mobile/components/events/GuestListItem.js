@@ -12,7 +12,18 @@ import { Ionicons } from "@expo/vector-icons";
  * Edit and delete remain on the inline action row for parity with the
  * pre-Phase-4 UX.
  */
-const GuestListItem = ({ guest, onEdit, onDelete, onRotateQr, onRevokeAccess }) => {
+const GuestListItem = ({
+  guest,
+  onEdit,
+  onDelete,
+  onRotateQr,
+  onRevokeAccess,
+  // Select-mode props. When `selectable`, the row toggles selection on press
+  // (and shows a checkbox) instead of exposing the per-row edit/delete actions.
+  selectable = false,
+  selected = false,
+  onToggle,
+}) => {
   const getStatusStyle = (status) => {
     switch (status) {
       case "confirmed":
@@ -76,32 +87,41 @@ const GuestListItem = ({ guest, onEdit, onDelete, onRotateQr, onRevokeAccess }) 
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, selectable && selected && styles.containerSelected]}
       activeOpacity={0.85}
-      onLongPress={handleLongPress}
+      onPress={selectable ? () => onToggle?.(guest) : undefined}
+      onLongPress={selectable ? undefined : handleLongPress}
       delayLongPress={350}
     >
-      {/* Header — actions on the left, name/phone on the right */}
+      {/* Header — actions (or selection checkbox) on the left, name/phone on the right */}
       <View style={styles.header}>
         <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => onDelete?.(guest)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.deleteButton}>
-              <Ionicons name="trash-outline" size={16} color="#C0392B" />
+          {selectable ? (
+            <View style={[styles.checkbox, selected && styles.checkboxChecked]}>
+              {selected ? <Ionicons name="checkmark" size={16} color="#FFF" /> : null}
             </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => onEdit?.(guest)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.editButton}>
-              <Ionicons name="create-outline" size={16} color="#6B4E33" />
-            </View>
-          </TouchableOpacity>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => onDelete?.(guest)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.deleteButton}>
+                  <Ionicons name="trash-outline" size={16} color="#C0392B" />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => onEdit?.(guest)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.editButton}>
+                  <Ionicons name="create-outline" size={16} color="#6B4E33" />
+                </View>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         <View style={styles.guestInfo}>
@@ -166,6 +186,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     alignItems: "center",
+  },
+  containerSelected: {
+    borderColor: "#C28E5C",
+    borderWidth: 2,
+    borderEndWidth: 6,
+    backgroundColor: "#FBF6F0",
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#C28E5C",
+    backgroundColor: "#FFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkboxChecked: {
+    backgroundColor: "#C28E5C",
   },
   actionButton: {},
   deleteButton: {

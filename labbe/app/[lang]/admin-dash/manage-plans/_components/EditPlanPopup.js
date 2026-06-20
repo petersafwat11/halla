@@ -27,7 +27,6 @@ const buildDefaults = (plan) => ({
   pricing: { oneTime: plan?.pricing?.oneTime ?? 0 },
   limits: {
     maxEvents: plan?.limits?.maxEvents ?? 1,
-    maxInvitesPerEvent: plan?.limits?.maxInvitesPerEvent ?? null,
     invitePool: plan?.limits?.invitePool ?? null,
     durationDays: plan?.limits?.durationDays ?? 90,
     maxHosts: plan?.limits?.maxHosts ?? null,

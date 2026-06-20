@@ -20,6 +20,11 @@ import { backgrounds, borderRadius, colors, spacing } from "../../styles/tokens"
 
 const SOCIAL_ICONS = { instagram: "logo-instagram", facebook: "logo-facebook", tiktok: "logo-tiktok", twitter: "logo-twitter" };
 
+const displayHost = (value) => { try { return new URL(value).hostname; } catch { return value; } };
+const displayHandle = (value) => {
+  try { const url = new URL(value); const seg = url.pathname.split("/").filter(Boolean).pop(); return seg ? `@${seg}` : url.hostname; } catch { return value; }
+};
+
 const Action = ({ icon, label, onPress, secondary = false }) => (
   <TouchableOpacity style={[styles.action, secondary && styles.actionSecondary]} onPress={onPress} activeOpacity={0.82} accessibilityRole="button">
     <Ionicons name={icon} size={18} color={colors.natural[50]} />
@@ -112,15 +117,15 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
           }) : <Text style={styles.body}>{t("vendor.noServices")}</Text>}
         </View>
 
-        {portfolio.length ? <View style={styles.section}><Text style={styles.eyebrow}>{t("vendor.portfolio")}</Text><Text style={styles.sectionTitle}>{t("vendor.portfolioHeadline")}</Text><View style={styles.gallery}>{portfolio.map((uri, index) => <TouchableOpacity key={uri} style={[styles.galleryItem, index === 0 && styles.galleryLead]} onPress={() => Linking.openURL(uri)}><Image source={{ uri }} style={styles.galleryImage} /></TouchableOpacity>)}</View></View> : null}
+        {portfolio.length ? <View style={styles.section}><Text style={styles.eyebrow}>{t("vendor.portfolio")}</Text><Text style={styles.sectionTitle}>{t("vendor.portfolioHeadline")}</Text><View style={styles.gallery}>{portfolio.map((uri, index) => <TouchableOpacity key={`${index}-${uri}`} style={styles.galleryItem} onPress={() => Linking.openURL(uri)}><Image source={{ uri }} style={styles.galleryImage} /></TouchableOpacity>)}</View></View> : null}
 
         <View style={styles.section}>
           <Text style={styles.eyebrow}>{t("vendor.contactInfo")}</Text><Text style={styles.sectionTitle}>{t("vendor.contactHeadline")}</Text><Text style={styles.body}>{t("vendor.contactDescription")}</Text>
           <View style={styles.contactLinks}>
             {contact.phone ? <TouchableOpacity style={styles.contactRow} onPress={call}><Ionicons name="call-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{contact.phone}</Text></TouchableOpacity> : null}
             {contact.email ? <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL(`mailto:${contact.email}`)}><Ionicons name="mail-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{contact.email}</Text></TouchableOpacity> : null}
-            {vendor.socialLinks?.website ? <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL(vendor.socialLinks.website)}><Ionicons name="globe-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{t("vendor.website")}</Text></TouchableOpacity> : null}
-            {socialEntries.map(([key, url]) => <TouchableOpacity key={key} style={styles.contactRow} onPress={() => Linking.openURL(url)}><Ionicons name={SOCIAL_ICONS[key] || "link-outline"} size={19} color={colors.primary[700]} /><Text style={[styles.contactText, styles.contactCapitalize]}>{key}</Text></TouchableOpacity>)}
+            {vendor.socialLinks?.website ? <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL(vendor.socialLinks.website)}><Ionicons name="globe-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{displayHost(vendor.socialLinks.website)}</Text></TouchableOpacity> : null}
+            {socialEntries.map(([key, url]) => <TouchableOpacity key={key} style={styles.contactRow} onPress={() => Linking.openURL(url)}><Ionicons name={SOCIAL_ICONS[key] || "link-outline"} size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{displayHandle(url)}</Text></TouchableOpacity>)}
             {location ? <View style={styles.contactRow}><Ionicons name="location-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{location}</Text></View> : null}
           </View>
         </View>
@@ -183,13 +188,11 @@ const styles = StyleSheet.create({
   serviceContact: { minHeight: 40, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingHorizontal: spacing[14] || 14, borderRadius: borderRadius[12], backgroundColor: colors.primary[500] },
   serviceContactText: { fontFamily: "Cairo_700Bold", fontSize: 11, color: colors.natural[50] },
   gallery: { flexDirection: "row", flexWrap: "wrap", gap: spacing[8] },
-  galleryItem: { width: "48.5%", height: 125, borderRadius: borderRadius[12], overflow: "hidden" },
-  galleryLead: { width: "100%", height: 210 },
+  galleryItem: { width: "48.5%", height: 140, borderRadius: borderRadius[16], overflow: "hidden" },
   galleryImage: { width: "100%", height: "100%" },
   contactLinks: { marginTop: spacing[16], borderTopWidth: 1, borderTopColor: colors.natural[200] },
   contactRow: { flexDirection: "row", alignItems: "center", gap: spacing[10] || 10, paddingVertical: spacing[12], borderBottomWidth: 1, borderBottomColor: colors.natural[200] },
   contactText: { flex: 1, fontFamily: "Cairo_500Medium", fontSize: 13, color: colors.natural[500] },
-  contactCapitalize: { textTransform: "capitalize" },
   sticky: { position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", gap: spacing[8], paddingHorizontal: spacing[14] || 14, paddingTop: spacing[12], borderTopWidth: 1, borderTopColor: colors.natural[200], backgroundColor: colors.natural[50] },
   action: { flex: 1, minHeight: 49, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: spacing[8], borderRadius: borderRadius[12], backgroundColor: colors.primary[500] },
   actionSecondary: { backgroundColor: colors.success[500] },

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import styles from "./CustomizeReminderPopup.module.css";
@@ -10,10 +10,64 @@ import DatePicker from "@/ui/commen/inputs/datePicker";
 import TimePicker from "@/ui/commen/inputs/TimePicker";
 import { toast } from "react-toastify";
 import { useUpdateReminderSettings } from "@/hooks/events";
+import useAuthStore from "@/stores/authStore";
 
-const CustomizeReminderPopup = ({ onClose, eventId, existingSettings, onSuccess }) => {
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+// Combine a YYYY-MM-DD-ish date and a 24h "HH:mm" string into a single
+// local-time Date. Used to resolve the scheduled-send instant (the lower
+// bound of the paid reminder window).
+const combineDateTime = (date, hhmm) => {
+  if (!date) return null;
+  const base = date instanceof Date ? new Date(date) : new Date(date);
+  if (Number.isNaN(base.getTime())) return null;
+  if (typeof hhmm === "string") {
+    const m = hhmm.match(/^(\d{1,2}):(\d{2})$/);
+    if (m) {
+      base.setHours(parseInt(m[1], 10), parseInt(m[2], 10), 0, 0);
+      return base;
+    }
+  }
+  base.setHours(0, 0, 0, 0);
+  return base;
+};
+
+const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onSuccess }) => {
   const { t } = useTranslation("home-events");
   const updateReminderSettings = useUpdateReminderSettings();
+  const subscription = useAuthStore((s) => s.subscription);
+  // No event-scoped plan flag is exposed on `event.subscription`; fall back to
+  // the host's current plan code (same heuristic as ScheduleSendingPopup).
+  const isTrial = subscription?.planCode === "trial";
+
+  // Paid reminder window: [scheduledSend, event − 24h]. Lower bound is the
+  // launch send time when scheduled, otherwise "now". Upper bound is 24h
+  // before the event start. The backend is the source of truth and returns
+  // REMINDER_OUT_OF_RANGE if the chosen instant falls outside.
+  const sendInstant = useMemo(
+    () =>
+      combineDateTime(
+        event?.launchSettings?.scheduledDate,
+        event?.launchSettings?.scheduledTime
+      ),
+    [event?.launchSettings?.scheduledDate, event?.launchSettings?.scheduledTime]
+  );
+
+  const eventInstant = useMemo(() => {
+    const d = event?.eventDetails?.date ? new Date(event.eventDetails.date) : null;
+    return d && !Number.isNaN(d.getTime()) ? d : null;
+  }, [event?.eventDetails?.date]);
+
+  const lowerBound = useMemo(() => {
+    const now = new Date();
+    if (sendInstant && sendInstant.getTime() > now.getTime()) return sendInstant;
+    return now;
+  }, [sendInstant]);
+
+  const upperBound = useMemo(
+    () => (eventInstant ? new Date(eventInstant.getTime() - ONE_DAY_MS) : null),
+    [eventInstant]
+  );
 
   const toUtcMidnightIso = (d) => {
     const date = d instanceof Date ? d : new Date(d);
@@ -66,18 +120,30 @@ const CustomizeReminderPopup = ({ onClose, eventId, existingSettings, onSuccess 
 
     if (data.customReminderTime) {
       if (!data.date || !data.time) {
-        toast.error(t("singleEvent.scheduleReminder.errors.dateOutOfRange", "Date and time are required for custom reminder"));
+        toast.error(t("singleEvent.reminderCustomize.errors.dateTimeRequired", "Date and time are required for custom reminder"));
         return;
       }
 
-      const selectedDate = new Date(data.date);
       const time24 = to24h(data.time);
       if (!time24) {
-        toast.error(t("singleEvent.scheduleReminder.errors.generic", "Invalid time selected"));
+        toast.error(t("singleEvent.reminderCustomize.errors.generic", "Invalid time selected"));
         return;
       }
 
-      payload.scheduledDate = toUtcMidnightIso(selectedDate);
+      // Client-side guard against the paid window [scheduledSend, event−24h].
+      // The backend is authoritative and returns REMINDER_OUT_OF_RANGE, but
+      // catching it here saves a round-trip and reads clearer.
+      const chosenInstant = combineDateTime(new Date(data.date), time24);
+      if (
+        chosenInstant &&
+        ((lowerBound && chosenInstant.getTime() < lowerBound.getTime()) ||
+          (upperBound && chosenInstant.getTime() > upperBound.getTime()))
+      ) {
+        toast.error(t("singleEvent.reminderCustomize.errors.outOfRange", "The reminder time must be after sending starts and at least 24 hours before the event."));
+        return;
+      }
+
+      payload.scheduledDate = toUtcMidnightIso(new Date(data.date));
       payload.scheduledTime = time24;
     } else {
       payload.scheduledDate = null;
@@ -95,9 +161,14 @@ const CustomizeReminderPopup = ({ onClose, eventId, existingSettings, onSuccess 
       onClose();
     } catch (error) {
       console.error("Error updating reminder settings:", error);
-      toast.error(
-        error?.response?.data?.message || t("singleEvent.scheduleReminder.errors.generic", "Failed to save reminder settings")
-      );
+      const code = error?.response?.data?.code;
+      if (code === "REMINDER_OUT_OF_RANGE") {
+        toast.error(t("singleEvent.reminderCustomize.errors.outOfRange", "The reminder time must be after sending starts and at least 24 hours before the event."));
+      } else {
+        toast.error(
+          error?.response?.data?.message || t("singleEvent.reminderCustomize.errors.generic", "Failed to save reminder settings")
+        );
+      }
     }
   };
 
@@ -114,6 +185,28 @@ const CustomizeReminderPopup = ({ onClose, eventId, existingSettings, onSuccess 
 
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.content}>
+          <p className={styles.description}>
+            {t(
+              "singleEvent.reminderCustomize.description",
+              "We send a free reminder to your confirmed guests before the event."
+            )}
+          </p>
+
+          {isTrial && (
+            // The event's plan isn't exposed on the event payload, so this is
+            // derived from the host's *current* account plan and may be a hint
+            // rather than ground truth for per-event plans. Show it as
+            // advisory text only — never block saving on it. The backend is
+            // authoritative: trial events get an auto reminder (send + 10min)
+            // and reject customization with REMINDER_OUT_OF_RANGE if needed.
+            <p className={styles.trialInfo}>
+              {t(
+                "singleEvent.reminderCustomize.trialInfo",
+                "On the trial plan, the reminder is sent automatically 10 minutes after invitations go out and can't be customized."
+              )}
+            </p>
+          )}
+
           <div className={styles.checkboxContainer}>
             <label className={styles.checkboxLabel}>
               <input
@@ -128,26 +221,36 @@ const CustomizeReminderPopup = ({ onClose, eventId, existingSettings, onSuccess 
           </div>
 
           {customReminderTime && (
-            <div className={styles.inputContainer}>
-              <DatePicker
-                name="date"
-                label={t("singleEvent.scheduleReminder.dateLabel", "Date")}
-                placeholder={t("singleEvent.scheduleReminder.selectAll", "Select date")}
-                required
-              />
+            <>
+              <div className={styles.inputContainer}>
+                <DatePicker
+                  name="date"
+                  label={t("singleEvent.reminderCustomize.dateLabel", "Date")}
+                  placeholder={t("singleEvent.reminderCustomize.selectDate", "Select date")}
+                  required
+                  minDate={lowerBound}
+                  maxDate={upperBound || undefined}
+                />
 
-              <TimePicker
-                name="time"
-                label={t("singleEvent.scheduleReminder.timeLabel", "Time")}
-                required
-              />
-            </div>
+                <TimePicker
+                  name="time"
+                  label={t("singleEvent.reminderCustomize.timeLabel", "Time")}
+                  required
+                />
+              </div>
+              <small className={styles.windowHint}>
+                {t(
+                  "singleEvent.reminderCustomize.windowHint",
+                  "Choose a time after sending starts and at least 24 hours before the event."
+                )}
+              </small>
+            </>
           )}
 
           <div className={styles.actions}>
             <Button
               variant="outline"
-              title={t("singleEvent.scheduleReminder.cancel", "Cancel")}
+              title={t("singleEvent.reminderCustomize.cancel", "Cancel")}
               onClick={onClose}
               type="button"
               disabled={updateReminderSettings.isPending}

@@ -207,7 +207,7 @@ async function sendBulkAccessLinks(
   let whatsappCount = 0;
   let smsCount = 0;
   for (const r of batched.results) {
-    if (r.ok && r.value?.success !== false) {
+    if (r.ok && r.value?.success === true) {
       const channel = r.value?.status === 'sms' ? 'sms' : 'whatsapp';
       sent.push({
         guestId: r.item.guest._id,

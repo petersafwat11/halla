@@ -116,13 +116,13 @@ const PATHS = {
     // Manual launch retry
     retryLaunch: (id) => `/events/${id}/retry-launch`,
 
-    // One-time resend invite (48h after bulk send, for non-responded / maybe guests)
+    // Resend invite — pool-charged, repeatable, no gates. Optional guestIds
+    // (else defaults to non-responded / maybe guests). Uses the invite template.
     resendInvite: (id) => `/events/${id}/resend-invite`,
 
-    // Scheduled extra reminders
-    scheduledRemindersList: (id) => `/events/${id}/scheduled-reminders`,
-    scheduledRemindersCreate: (id) => `/events/${id}/scheduled-reminders`,
-    scheduledRemindersCancel: (id, rid) => `/events/${id}/scheduled-reminders/${rid}`,
+    // Extra reminder — pool-charged, immediate, CONFIRMED guests only, using the
+    // approved reminder_confirmed template. Optional guestIds.
+    extraReminder: (id) => `/events/${id}/extra-reminder`,
   },
 
   // ============================================

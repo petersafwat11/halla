@@ -185,16 +185,12 @@ class VendorsService {
 
     const candidateDocs = await User.find(query).select(PUBLIC_VENDOR_SELECT).lean();
     const summaries = await this._getServiceSummaries(candidateDocs.map((vendor) => vendor._id));
-    const sort = filters.sort || "recommended";
+    // Single deterministic ordering: admin rating → active public services → recent activity.
     candidateDocs.sort((a, b) => {
       const av = a.profile?.vendorData || {};
       const bv = b.profile?.vendorData || {};
       const as = summaries.get(String(a._id));
       const bs = summaries.get(String(b._id));
-      if (sort === "rating") return (bv.rating ?? -1) - (av.rating ?? -1) || String(a._id).localeCompare(String(b._id));
-      if (sort === "price_asc") return (as?.minPrice ?? Infinity) - (bs?.minPrice ?? Infinity) || String(a._id).localeCompare(String(b._id));
-      if (sort === "price_desc") return (bs?.minPrice ?? -1) - (as?.minPrice ?? -1) || String(a._id).localeCompare(String(b._id));
-      if (sort === "newest") return new Date(b.createdAt) - new Date(a.createdAt) || String(a._id).localeCompare(String(b._id));
       return (bv.rating ?? -1) - (av.rating ?? -1)
         || (bs?.serviceCount || 0) - (as?.serviceCount || 0)
         || new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)

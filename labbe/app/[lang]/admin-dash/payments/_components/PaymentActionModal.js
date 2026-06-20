@@ -19,6 +19,13 @@ const buildSchema = (type, remainingAmount) => {
       z.number().positive().optional()
     ),
     reason: z.string().trim().max(500).optional(),
+    // Optional pool deduction applied on a PARTIAL refund — lets the admin
+    // claw back invites from the host's pool alongside the money refund.
+    deductInvites: z.preprocess(
+      (val) =>
+        val === "" || val === undefined || val === null ? undefined : Number(val),
+      z.number().int().nonnegative().optional()
+    ),
   });
 
   if (type === "refund") {
@@ -70,17 +77,28 @@ export default function PaymentActionModal({
     defaultValues: {
       amount: "",
       reason: "",
+      deductInvites: "",
     },
   });
 
-  const { reset, handleSubmit, formState } = methods;
+  const { reset, handleSubmit, formState, watch } = methods;
 
   // Reset form whenever the modal opens with a new payment/type
   useEffect(() => {
     if (actionPayment) {
-      reset({ amount: "", reason: "" });
+      reset({ amount: "", reason: "", deductInvites: "" });
     }
   }, [actionPayment, reset]);
+
+  // A PARTIAL refund is one where the admin entered an amount below the full
+  // remaining. The pool-deduction input only makes sense in that case.
+  const enteredAmount = watch("amount");
+  const isPartialRefund =
+    type === "refund" &&
+    enteredAmount !== "" &&
+    enteredAmount != null &&
+    Number(enteredAmount) > 0 &&
+    Number(enteredAmount) < remainingAmount;
 
   if (!actionPayment) return null;
 
@@ -89,6 +107,16 @@ export default function PaymentActionModal({
       amount: data.amount,
       reason: data.reason,
     };
+    // Only thread deductInvites on a partial refund where the admin set it.
+    if (
+      type === "refund" &&
+      isPartialRefund &&
+      data.deductInvites != null &&
+      data.deductInvites !== "" &&
+      Number(data.deductInvites) > 0
+    ) {
+      payload.deductInvites = Number(data.deductInvites);
+    }
     onConfirm(payload);
   };
 
@@ -187,6 +215,25 @@ export default function PaymentActionModal({
                         "Leave empty to capture the full authorized amount"
                       )
                 }
+              />
+            )}
+
+            {isPartialRefund && (
+              <InputGroup
+                label={t(
+                  "actions.deductInvites",
+                  "Invites to deduct from the host's pool"
+                )}
+                placeholder={t(
+                  "actions.deductInvitesPlaceholder",
+                  "Leave blank to deduct none"
+                )}
+                type="number"
+                name="deductInvites"
+                hintMessage={t(
+                  "actions.deductInvitesHint",
+                  "Optional. Claws back this many invites from the host's pool alongside the partial refund."
+                )}
               />
             )}
 

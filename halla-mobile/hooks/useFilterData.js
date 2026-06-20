@@ -10,7 +10,6 @@ const DEFAULT_FILTERS = {
   minPrice: "",
   maxPrice: "",
   minRating: "",
-  sort: "recommended",
 };
 
 const pickLabel = (lang, ar, en) => (lang === "ar" ? ar || en : en || ar);

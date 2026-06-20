@@ -24,7 +24,6 @@ const checkoutAddonItem = z
   .object({
     addonType: z.enum([
       ADDON_TYPES.EXTRA_INVITES,
-      ADDON_TYPES.EXTRA_REMINDERS,
       ADDON_TYPES.DESIGN_TEMPLATE,
       ADDON_TYPES.BUSINESS_CUSTOMIZATION,
     ]),
@@ -36,9 +35,7 @@ const checkoutAddonItem = z
   })
   .strict()
   .superRefine((val, ctx) => {
-    const tiered =
-      val.addonType === ADDON_TYPES.EXTRA_INVITES
-      || val.addonType === ADDON_TYPES.EXTRA_REMINDERS;
+    const tiered = val.addonType === ADDON_TYPES.EXTRA_INVITES;
     if (tiered && val.quantity === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

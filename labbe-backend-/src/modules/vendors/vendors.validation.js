@@ -13,7 +13,6 @@ const getPublicVendorsQuerySchema = z
     minPrice: z.coerce.number().min(0).optional(),
     maxPrice: z.coerce.number().min(0).optional(),
     rating: z.coerce.number().min(0).max(5).optional(),
-    sort: z.enum(['recommended', 'rating', 'price_asc', 'price_desc', 'newest']).optional(),
     lang: z.enum(['ar', 'en']).optional(),
   })
   .partial();

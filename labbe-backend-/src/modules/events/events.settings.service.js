@@ -13,6 +13,15 @@ const {
 // Every export/notification helper uses formatRiyadh so we don't
 // re-render UTC server-locale dates as the previous local day.
 const { parseEventTime } = require("../../shared/utils/timezone");
+const {
+  isTrialFromPlan,
+  eventInstantOf,
+  assertEventDateFloor,
+  isSendInWindow,
+  storedSendInstant,
+  TRIAL_REMINDER_OFFSET_MS,
+  PAID_REMINDER_MIN_GAP_MS,
+} = require("../../shared/utils/schedulingWindow");
 
 // Import existing models during migration
 const Event = require("../../../models/EventModel");
@@ -25,7 +34,7 @@ const Template = require('../../../models/TemplateModel');
 const { validateTemplateData } = require('./templateDataValidator');
 // Post-review polish — extracted error codes shared between
 // updateGuestList and updateEventStep2 so they can't drift.
-const { EVENT_EDIT_LOCKED } = require('../../shared/constants/events');
+const { EVENT_EDIT_LOCKED, REMINDER_OUT_OF_RANGE } = require('../../shared/constants/events');
 
 const { logAudit } = require('../../shared/utils/auditLog');
 
@@ -126,7 +135,10 @@ module.exports = {
    * @returns {Promise<Object>}
    */
   async updateEventDetails(eventId, details, userContext) {
-    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
+    // Populate planId so trial-vs-paid scheduling windows resolve correctly;
+    // a bare ObjectId would make isTrialFromPlan() fall through to paid.
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext))
+      .populate('planId', 'code planType');
     if (!event) throw new NotFoundError("Event");
 
     // Live/published events are immutable
@@ -138,7 +150,31 @@ module.exports = {
     // 24h pre-launch edit lock
     this._checkEditLock(event, details);
 
+    // Does this edit touch the event date/time? Floor + schedule
+    // re-validation only run when it does (a title-only edit on a
+    // near-term event must not be rejected). Mirrors _checkEditLock.
+    const dateTimeChanging = details.date !== undefined || details.time !== undefined;
+
     event.eventDetails = { ...event.eventDetails, ...details };
+
+    if (dateTimeChanging) {
+      const isTrial = isTrialFromPlan(event.planId);
+      const newEventInstant = eventInstantOf(event);
+
+      // Event-date floor: a valid send window must still exist for the new date.
+      assertEventDateFloor({ eventInstant: newEventInstant, isTrial });
+
+      // Re-validate any stored launch schedule against the new event instant.
+      // If the scheduled send now violates [now+minLead, newEvent−3d], clear
+      // it and revert to pending_scheduling (mirrors the reminder reset below).
+      const sendInstant = storedSendInstant(event);
+      if (sendInstant && !isSendInWindow({ scheduledInstant: sendInstant, eventInstant: newEventInstant, isTrial })) {
+        event.launchSettings = { ...event.launchSettings, scheduledDate: undefined, scheduledTime: undefined };
+        if (event.status === EVENT_STATUS.SCHEDULED) {
+          event.status = EVENT_STATUS.PENDING_SCHEDULING;
+        }
+      }
+    }
 
     // Rescheduling edge case: if custom reminder exists and new event start time occurs before it, reset customReminderTime to false
     const newEventDate = details.date || event.eventDetails.date;
@@ -339,7 +375,7 @@ module.exports = {
     const result = await messagingService.sendTestMessage({
       eventId,
       phoneNumber: messageData.phoneNumber || messageData.phone,
-      channel: messageData.channel || 'sms',
+      channel: messageData.channel || 'whatsapp',
     });
 
     const userId =
@@ -354,7 +390,7 @@ module.exports = {
       targetId: eventId,
       metadata: {
         phoneNumber: messageData.phoneNumber || messageData.phone,
-        channel: result.channel || messageData.channel || 'sms',
+        channel: result.channel || messageData.channel || 'whatsapp',
         templateName: result.templateName || null,
         imageUrl: result.imageUrl || null,
         success: !!result.success,
@@ -364,6 +400,20 @@ module.exports = {
       },
       status: result.success ? 'success' : 'failure',
     }).catch(() => {});
+
+    // Surface provider soft-failures (e.g. a 200 response with no message_id)
+    // instead of reporting a false success. The audit row above already
+    // recorded the failure; throwing here makes the API return a non-2xx so the
+    // client shows the real outcome and the HTTP idempotency layer drops the
+    // pending row and lets the host retry. (finalizeWaResult already guarantees
+    // result.success === false whenever no message_id came back.)
+    if (!result.success) {
+      throw new AppError(
+        result.error || 'Test message could not be delivered. Please try again.',
+        502,
+        result.code || 'TEST_MESSAGE_FAILED'
+      );
+    }
 
     return result;
   },
@@ -431,21 +481,49 @@ module.exports = {
       if (!settings.scheduledDate || !settings.scheduledTime) {
         throw new ValidationError("Scheduled date and time are required for custom reminders");
       }
-      const { parseReminderTime, parseDateTime } = require("../../shared/utils/timezone");
+      const { parseReminderTime } = require("../../shared/utils/timezone");
       const reminderTime = parseReminderTime({ reminderSettings: settings });
       if (!reminderTime || Number.isNaN(reminderTime.getTime())) {
         throw new ValidationError("Invalid scheduled date or time");
       }
 
+      // Customize range: [ scheduledSendInstant, eventInstant − 24h ].
+      // Lower bound is the stored launch (send) instant if one is set;
+      // otherwise `now` (a reminder can never fire in the past). Upper
+      // bound is 24h before the event. Outside → REMINDER_OUT_OF_RANGE.
       const now = new Date();
-      if (reminderTime.getTime() <= now.getTime()) {
-        throw new ValidationError("Reminder time must be in the future");
-      }
+      const sendInstant = storedSendInstant(event);
+      const lowerBound = sendInstant && sendInstant.getTime() > now.getTime()
+        ? sendInstant
+        : now;
+      const eventInstant = eventInstantOf(event);
+      const upperBound = eventInstant
+        ? new Date(eventInstant.getTime() - PAID_REMINDER_MIN_GAP_MS)
+        : null;
 
-      // Also ensure reminder time is before the event start time
-      const eventTime = parseDateTime(event.eventDetails.date, event.eventDetails.time);
-      if (eventTime && reminderTime.getTime() >= eventTime.getTime()) {
-        throw new ValidationError("Reminder time must be before the event time");
+      if (reminderTime.getTime() < lowerBound.getTime()) {
+        const err = new AppError(
+          'Reminder time must be on or after the scheduled invitation send.',
+          400,
+          REMINDER_OUT_OF_RANGE
+        );
+        err.details = {
+          reminderInstant: reminderTime.toISOString(),
+          lowerBound: lowerBound.toISOString(),
+        };
+        throw err;
+      }
+      if (upperBound && reminderTime.getTime() > upperBound.getTime()) {
+        const err = new AppError(
+          'Reminder time must be at least 24 hours before the event.',
+          400,
+          REMINDER_OUT_OF_RANGE
+        );
+        err.details = {
+          reminderInstant: reminderTime.toISOString(),
+          upperBound: upperBound.toISOString(),
+        };
+        throw err;
       }
     }
 

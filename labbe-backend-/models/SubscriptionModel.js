@@ -93,14 +93,6 @@ const subscriptionSchema = new mongoose.Schema(
     compensationPool: { type: Number, default: null },
     invitesConsumed:  { type: Number, default: 0 },
 
-    // Extra-reminder quota — fed by purchased EXTRA_REMINDERS addons.
-    // 1 reminder = 1 message to 1 guest. `remindersReserved` is the count
-    // currently held by pending scheduled-extra-reminder docs; consume on
-    // successful send moves Reserved → Consumed, failure refunds Reserved.
-    remindersPool:     { type: Number, default: 0 },
-    remindersConsumed: { type: Number, default: 0 },
-    remindersReserved: { type: Number, default: 0 },
-
     activatedAt:      { type: Date, default: null },
     expiresAt:        { type: Date, default: null },
 
@@ -108,14 +100,6 @@ const subscriptionSchema = new mongoose.Schema(
     cancelledAt: Date,
     cancelReason: String,
     cancelAtPeriodEnd: { type: Boolean, default: false },
-
-    // ============ SINGLE EVENT LINK ============
-    // For single event plans, link to the specific event
-    eventId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Event",
-      default: null,
-    },
 
     // ============ PRICING ============
     pricePaid: {
@@ -170,7 +154,6 @@ subscriptionSchema.index({ userId: 1, status: 1 });
 subscriptionSchema.index({ status: 1, expiresAt: 1 });
 subscriptionSchema.index({ whitelabelId: 1, status: 1 });
 subscriptionSchema.index({ planId: 1, status: 1 });
-subscriptionSchema.index({ eventId: 1 }, { sparse: true });
 
 // ============================================
 // VIRTUALS
@@ -201,10 +184,6 @@ subscriptionSchema.virtual("isPoolSubscription").get(function () {
 subscriptionSchema.virtual("invitesRemaining").get(function () {
   if (this.invitePool === null) return null;
   return (this.invitePool || 0) + (this.compensationPool || 0) - (this.invitesConsumed || 0);
-});
-
-subscriptionSchema.virtual("remindersRemaining").get(function () {
-  return (this.remindersPool || 0) - (this.remindersConsumed || 0) - (this.remindersReserved || 0);
 });
 
 // Days remaining in current period
@@ -280,13 +259,18 @@ subscriptionSchema.methods.canCreateEvent = function () {
 
   const planType = this.planId?.planType;
 
-  // Per-event plans - 1 event only
+  // Per-event plans: "used up" the moment sending starts (even one guest).
+  // `invitesConsumed > 0` means at least one invitation/resend/extra-reminder
+  // message was actually sent on this subscription — permanently blocked, even
+  // after the event is cancelled or deleted. The "no currently-active event"
+  // part is a dynamic count handled in the async service layer
+  // (subscriptions.service.validateEventCreation).
   if (isPerEventPlan(planType)) {
-    if (this.eventId) {
-      return { allowed: false, reason: "This plan has already been used for an event" };
-    }
-    if ((this.usage?.eventsCreated || 0) >= 1) {
-      return { allowed: false, reason: "Per-event plan already used" };
+    if ((this.invitesConsumed || 0) > 0) {
+      return {
+        allowed: false,
+        reason: "This event plan has already been used to send invitations",
+      };
     }
     return { allowed: true };
   }
@@ -331,25 +315,6 @@ subscriptionSchema.methods.canAddGuests = function (guestCount) {
 };
 
 /**
- * Track event creation with timestamp
- * @param {ObjectId} eventId - For single event plans
- * @returns {Promise}
- */
-subscriptionSchema.methods.trackEventCreation = async function (
-  eventId = null
-) {
-  this.usage.eventsCreated = (this.usage.eventsCreated || 0) + 1;
-  this.usage.lastEventDate = new Date();
-
-  // For per-event plans, link the event
-  if (isPerEventPlan(this.planId?.planType) && eventId) {
-    this.eventId = eventId;
-  }
-
-  return this.save();
-};
-
-/**
  * Track guest addition across events
  * @param {number} count - Number of guests to track
  * @returns {Promise}
@@ -357,36 +322,6 @@ subscriptionSchema.methods.trackEventCreation = async function (
 subscriptionSchema.methods.trackGuestAddition = async function (count) {
   this.usage.guestsUsed = (this.usage.guestsUsed || 0) + count;
   this.usage.totalGuests = (this.usage.totalGuests || 0) + count;
-  return this.save();
-};
-
-/**
- * Increment event usage
- * @param {ObjectId} eventId - For single event plans
- * @returns {Promise}
- */
-subscriptionSchema.methods.incrementEventUsage = async function (
-  eventId = null
-) {
-  this.usage.eventsCreated = (this.usage.eventsCreated || 0) + 1;
-
-  // For per-event plans, link the event
-  if (isPerEventPlan(this.planId?.planType) && eventId) {
-    this.eventId = eventId;
-  }
-
-  return this.save();
-};
-
-/**
- * Reset usage counters
- * @returns {Promise}
- */
-subscriptionSchema.methods.resetUsage = async function () {
-  this.usage.eventsCreated = 0;
-  this.usage.totalGuests = 0;
-  this.usage.guestsUsed = 0;
-  this.usage.lastEventDate = null;
   return this.save();
 };
 
@@ -476,10 +411,6 @@ subscriptionSchema.methods.getSummary = function () {
     compensationPool: this.compensationPool,
     invitesConsumed: this.invitesConsumed,
     invitesRemaining: this.invitesRemaining,
-    remindersPool: this.remindersPool || 0,
-    remindersConsumed: this.remindersConsumed || 0,
-    remindersReserved: this.remindersReserved || 0,
-    remindersRemaining: this.remindersRemaining,
     activatedAt: this.activatedAt,
     expiresAt: this.expiresAt,
     pricePaid: this.pricePaid,
@@ -610,66 +541,6 @@ subscriptionSchema.statics.releaseInvites = async function (subscriptionId, coun
 };
 
 /**
- * Reserve N extra reminders. Atomic — throws INSUFFICIENT_REMINDER_QUOTA
- * when remindersPool - consumed - reserved < count. Used at schedule time.
- */
-subscriptionSchema.statics.reserveReminders = async function (subscriptionId, count) {
-  const res = await this.findOneAndUpdate(
-    {
-      _id: subscriptionId,
-      $expr: {
-        $gte: [
-          {
-            $subtract: [
-              {
-                $subtract: [
-                  { $ifNull: ['$remindersPool', 0] },
-                  { $ifNull: ['$remindersConsumed', 0] },
-                ],
-              },
-              { $ifNull: ['$remindersReserved', 0] },
-            ],
-          },
-          count,
-        ],
-      },
-    },
-    { $inc: { remindersReserved: count } },
-    { new: true }
-  );
-  if (!res) {
-    const err = new Error('INSUFFICIENT_REMINDER_QUOTA');
-    err.code = 'INSUFFICIENT_REMINDER_QUOTA';
-    throw err;
-  }
-  return res;
-};
-
-/**
- * Release N previously-reserved extra reminders (cancel or send-failed).
- */
-subscriptionSchema.statics.releaseReservedReminders = async function (subscriptionId, count) {
-  if (!count) return null;
-  return this.findByIdAndUpdate(
-    subscriptionId,
-    { $inc: { remindersReserved: -count } },
-    { new: true }
-  );
-};
-
-/**
- * Move N from reserved → consumed (successful send).
- */
-subscriptionSchema.statics.consumeReservedReminders = async function (subscriptionId, count) {
-  if (!count) return null;
-  return this.findByIdAndUpdate(
-    subscriptionId,
-    { $inc: { remindersReserved: -count, remindersConsumed: count } },
-    { new: true }
-  );
-};
-
-/**
  * Get best subscription to use for an event with specified guest count
  * @param {ObjectId} userId
  * @param {number} guestCount
@@ -686,7 +557,7 @@ subscriptionSchema.statics.getCapacityForEvent = async function (userId, guestCo
   };
 
   const perEvent = subs
-    .filter(s => isPerEventPlan(s.planId?.planType) && !s.eventId && (s.usage?.eventsCreated || 0) < 1)
+    .filter(s => isPerEventPlan(s.planId?.planType) && (s.invitesConsumed || 0) === 0)
     .sort(byExpiry);
 
   const pool = subs

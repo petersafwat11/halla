@@ -49,7 +49,15 @@ const jsonRequest = async (path, options = {}) => {
   }
   const res = await apiFetch(path, fetchOpts);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "API request failed");
+  if (!res.ok) {
+    // Preserve the backend error `code` + HTTP `status` on the thrown Error so
+    // callers can map specific codes (INSUFFICIENT_INVITES, NO_REMINDER_TEMPLATE,
+    // SCHEDULE_TOO_SOON, …) instead of falling through to a generic message.
+    const err = new Error(data.message || "API request failed");
+    err.code = data.code;
+    err.status = res.status;
+    throw err;
+  }
   return data;
 };
 
@@ -414,18 +422,56 @@ const ACTIONS = {
       invalidateSingleEvent(queryClient, vars?.eventId),
   },
 
-  // One-time resend invite — re-invites guests who haven't responded
-  // or said "maybe". Available only 48h after the bulk send completed.
-  // Server enforces the one-time constraint via resendInviteSentAt flag.
+  // Resend invite — pool-charged, REPEATABLE, no gates. Targets the
+  // non-responders / maybe audience; pass `guestIds` to scope the send to a
+  // specific selection (else the backend defaults to all non-responders).
+  // Server charges the host's invite pool and 402s INSUFFICIENT_INVITES when
+  // the selection exceeds remaining invites.
   resendInvite: {
-    mutationFn: async ({ eventId, channel = "sms" }) => {
+    mutationFn: async ({ eventId, channel = "sms", guestIds }) => {
+      const body = { channel };
+      if (Array.isArray(guestIds) && guestIds.length > 0) {
+        body.guestIds = guestIds;
+      }
       const response = await apiFetch(ENDPOINTS.EVENTS.RESEND_INVITE(eventId), {
         method: "POST",
-        body: { channel },
+        body,
+        headers: { "Idempotency-Key": newIdempotencyKey(`resend-${eventId}`) },
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok)
-        throw new Error(data.message || "Failed to resend invitations");
+      if (!response.ok) {
+        const err = new Error(data.message || "Failed to resend invitations");
+        err.code = data.code;
+        err.status = response.status;
+        throw err;
+      }
+      return data;
+    },
+    onSuccess: (_data, vars, _ctx, queryClient) =>
+      invalidateSingleEvent(queryClient, vars?.eventId),
+  },
+
+  // Extra reminder — pool-charged, immediate, CONFIRMED guests only, using the
+  // approved `reminder_confirmed` template. Pass `guestIds` to scope the send.
+  // Server 402s INSUFFICIENT_INVITES and 400s NO_REMINDER_TEMPLATE.
+  extraReminder: {
+    mutationFn: async ({ eventId, guestIds }) => {
+      const body = {};
+      if (Array.isArray(guestIds) && guestIds.length > 0) {
+        body.guestIds = guestIds;
+      }
+      const response = await apiFetch(ENDPOINTS.EVENTS.EXTRA_REMINDER(eventId), {
+        method: "POST",
+        body,
+        headers: { "Idempotency-Key": newIdempotencyKey(`extra-reminder-${eventId}`) },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const err = new Error(data.message || "Failed to send extra reminder");
+        err.code = data.code;
+        err.status = response.status;
+        throw err;
+      }
       return data;
     },
     onSuccess: (_data, vars, _ctx, queryClient) =>
@@ -505,6 +551,10 @@ export const useUpdateMessagingContent = () =>
 export const useRetryLaunch = () => useEventMutation("retryLaunch");
 export const useUpdateReminderSettings = () =>
   useEventMutation("updateReminderSettings");
+// Pool-charged, repeatable resend to non-responders / maybe (optional guestIds).
+export const useResendInvite = () => useEventMutation("resendInvite");
+// Pool-charged extra reminder to CONFIRMED guests (optional guestIds).
+export const useExtraReminder = () => useEventMutation("extraReminder");
 
 // Exports
 export const useExportEvents = () => useEventMutation("exportEvents");

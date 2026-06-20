@@ -268,6 +268,72 @@
   color: var(--color-secondary-900);
 }
 
+/* ---------- Compensation helper note ---------- */
+.compensationNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--font-ar);
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: var(--color-natural-450);
+}
+
+.compensationNoteIcon {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--color-primary-400);
+  font-size: 1.15rem;
+}
+
+/* ---------- Total invites row ---------- */
+.totalInvitesRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.2rem;
+  background: var(--color-primary-50, #faf5ee);
+  border: 1px solid var(--color-primary-200, #e6d3bd);
+  border-radius: var(--radius-8);
+}
+
+.totalInvitesHead {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.totalInvitesIcon {
+  color: var(--color-primary-500);
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.totalInvitesLabel {
+  font-family: var(--font-ar);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-secondary-900);
+}
+
+.totalInvitesValue {
+  margin-inline-start: auto;
+  font-family: var(--font-ar);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-primary-700);
+  letter-spacing: -0.3px;
+}
+
+.totalInvitesHint {
+  margin: 0;
+  font-family: var(--font-ar);
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: var(--color-natural-450);
+}
+
 /* ---------- Discount section ---------- */
 .discountInputWrapper {
   display: flex;

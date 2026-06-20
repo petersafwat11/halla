@@ -1,15 +1,26 @@
 "use client";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import { handleError } from "@/services/errorHandlingService";
 import { downloadExportFile } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
 import { useSendReminder } from "@/hooks/messaging";
+import { useResendInvite, useExtraReminder } from "@/hooks/events";
+
+// Audience the resend action targets: guests who haven't responded or said
+// "maybe". The combined `noResponseOrMaybe` table filter maps to the same set.
+const RESEND_STATUSES = ["invited", "pending", "maybe"];
+// Extra reminder targets CONFIRMED guests only (matches the backend, which
+// uses the approved `reminder_confirmed` template). `checked_in` guests have
+// already arrived, so they're excluded.
+const EXTRA_REMINDER_STATUSES = ["confirmed"];
 
 export default function useGuestTableActions({
   t,
   eventId,
   guests,
+  invitesRemaining,
   deleteGuestMutation,
   updateGuestMutation,
   deleteModal,
@@ -24,6 +35,20 @@ export default function useGuestTableActions({
 }) {
   const queryClient = useQueryClient();
   const sendReminderMutation = useSendReminder();
+  const resendInviteMutation = useResendInvite();
+  const extraReminderMutation = useExtraReminder();
+
+  // Bulk-action confirmation modal state. We snapshot the resolved guestIds
+  // here because the shared Table clears its own selection immediately after
+  // firing the bulk action — the modal can't re-read it later.
+  const [bulkModal, setBulkModal] = useState({
+    isOpen: false,
+    type: null, // "resend" | "extraReminder"
+    guestIds: [],
+  });
+
+  const closeBulkModal = () =>
+    setBulkModal({ isOpen: false, type: null, guestIds: [] });
 
   const handleExportGuests = async () => {
     try {
@@ -160,6 +185,91 @@ export default function useGuestTableActions({
     setSelectedGuests([]);
   };
 
+  // ── Bulk pool-charged actions ───────────────────────────────────────────
+  // Re-filter the selected ids to the right audience for each action so the
+  // host can "select all" after filtering and we still only charge for the
+  // eligible guests.
+  const resolveBulkGuestIds = (selectedIds, allowedStatuses) => {
+    const idSet = new Set((selectedIds || []).map((id) => String(id)));
+    return guests
+      .filter(
+        (g) =>
+          idSet.has(String(g.id)) &&
+          allowedStatuses.includes(g.status || "invited")
+      )
+      .map((g) => g.id);
+  };
+
+  const handleBulkResend = (selectedIds) => {
+    const guestIds = resolveBulkGuestIds(selectedIds, RESEND_STATUSES);
+    if (guestIds.length === 0) {
+      toast.error(
+        t(
+          "singleEvent.bulkActions.noEligibleResend",
+          "None of the selected guests can be re-invited (only non-responders or maybe)."
+        )
+      );
+      return;
+    }
+    setBulkModal({ isOpen: true, type: "resend", guestIds });
+  };
+
+  const handleBulkExtraReminder = (selectedIds) => {
+    const guestIds = resolveBulkGuestIds(selectedIds, EXTRA_REMINDER_STATUSES);
+    if (guestIds.length === 0) {
+      toast.error(
+        t(
+          "singleEvent.bulkActions.noEligibleReminder",
+          "None of the selected guests are confirmed."
+        )
+      );
+      return;
+    }
+    setBulkModal({ isOpen: true, type: "extraReminder", guestIds });
+  };
+
+  const handleConfirmBulkAction = async () => {
+    const { type, guestIds } = bulkModal;
+    if (!guestIds || guestIds.length === 0) return;
+    const mutation =
+      type === "resend" ? resendInviteMutation : extraReminderMutation;
+    try {
+      const result = await mutation.mutateAsync({ eventId, guestIds });
+      const data = result?.data || result || {};
+      const successful = data.successful ?? data.reminded ?? guestIds.length;
+      const total = data.reminded ?? guestIds.length;
+      toast.success(
+        t("singleEvent.bulkActions.sentResult", {
+          defaultValue: "{{successful}}/{{total}} sent",
+          successful,
+          total,
+        })
+      );
+      closeBulkModal();
+    } catch (error) {
+      const code = error?.response?.data?.code;
+      if (code === "INSUFFICIENT_INVITES") {
+        toast.error(
+          t(
+            "singleEvent.bulkActions.insufficientInvites",
+            "Not enough invites — buy more in Plans."
+          )
+        );
+      } else if (code === "NO_REMINDER_TEMPLATE") {
+        toast.error(
+          t(
+            "singleEvent.bulkActions.noReminderTemplate",
+            "No reminder template is configured for this category. Contact support."
+          )
+        );
+      } else {
+        handleError(error, t, {
+          fallbackMessage: "singleEvent.bulkActions.error",
+        });
+      }
+    }
+  };
+
   return {
     handleExportGuests,
     handleEditGuest,
@@ -174,5 +284,14 @@ export default function useGuestTableActions({
     handleSendInvitation,
     handleConfirmSendInvitation,
     handleCloseInvitationPopup,
+    // Bulk actions
+    handleBulkResend,
+    handleBulkExtraReminder,
+    handleConfirmBulkAction,
+    closeBulkModal,
+    bulkModal,
+    invitesRemaining,
+    isBulkPending:
+      resendInviteMutation.isPending || extraReminderMutation.isPending,
   };
 }

@@ -49,8 +49,6 @@ const GuestList = ({ guests = [], onRefresh, loading }) => {
     // the data comes from `getEventById` we still get the same shape.
     const inv = item.invitation || {};
     const autoSent = inv.autoReminderSent;
-    const extraSent = inv.extraReminderSent;
-    const extraScheduled = inv.extraReminderScheduled;
 
     return (
       <View style={styles.guestRow}>
@@ -63,34 +61,15 @@ const GuestList = ({ guests = [], onRefresh, loading }) => {
               {item.email || item.user?.email}
             </Text>
           ) : null}
-          {(autoSent || extraSent || extraScheduled) ? (
+          {autoSent ? (
             <View style={styles.reminderBadgesRow}>
-              {autoSent ? (
-                <View style={[styles.reminderBadge, styles.reminderBadgeSent]}>
-                  <Ionicons name="time-outline" size={10} color="#2A8C5B" />
-                  <Text style={styles.reminderBadgeText}>
-                    {t("guestTableExtras.autoReminder", "Auto reminder")} ·{" "}
-                    {t("guestTableExtras.sent", "Sent")}
-                  </Text>
-                </View>
-              ) : null}
-              {extraSent ? (
-                <View style={[styles.reminderBadge, styles.reminderBadgeSent]}>
-                  <Ionicons name="alarm-outline" size={10} color="#2A8C5B" />
-                  <Text style={styles.reminderBadgeText}>
-                    {t("guestTableExtras.extraReminder", "Extra reminder")} ·{" "}
-                    {t("guestTableExtras.sent", "Sent")}
-                  </Text>
-                </View>
-              ) : extraScheduled ? (
-                <View style={[styles.reminderBadge, styles.reminderBadgeScheduled]}>
-                  <Ionicons name="alarm-outline" size={10} color="#1F6FB6" />
-                  <Text style={[styles.reminderBadgeText, { color: "#1F6FB6" }]}>
-                    {t("guestTableExtras.extraReminder", "Extra reminder")} ·{" "}
-                    {t("guestTableExtras.scheduled", "Scheduled")}
-                  </Text>
-                </View>
-              ) : null}
+              <View style={[styles.reminderBadge, styles.reminderBadgeSent]}>
+                <Ionicons name="time-outline" size={10} color="#2A8C5B" />
+                <Text style={styles.reminderBadgeText}>
+                  {t("guestTableExtras.autoReminder", "Auto reminder")} ·{" "}
+                  {t("guestTableExtras.sent", "Sent")}
+                </Text>
+              </View>
             </View>
           ) : null}
         </View>
@@ -283,7 +262,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius[20],
   },
   reminderBadgeSent: { backgroundColor: "#EAF4EF" },
-  reminderBadgeScheduled: { backgroundColor: "#E8F4FD" },
   reminderBadgeText: { fontSize: 10, fontWeight: "600", color: "#2A8C5B" },
 });
 

@@ -57,6 +57,7 @@ const {
   notifyStaffSchema,
   updateReminderSettingsSchema,
   resendInviteSchema,
+  extraReminderSchema,
 } = require("./events.validation");
 
 const adminRouter = require("./events.admin.routes");
@@ -968,28 +969,32 @@ router.post(
 );
 
 // ============================================
-// RESEND INVITE — one-time re-invitation for guests who didn't
-// respond or said "maybe". Available only 48h after the initial
-// bulk send completed. Idempotent — fires at most once per event.
+// RESEND INVITE — pool-charged re-invitation for non-responders / "maybe"
+// guests (or an explicit guestIds set). Repeatable: NO idempotency
+// middleware so each explicit host action genuinely re-sends. A double-tap
+// would double-charge/double-send, which is acceptable for an explicit,
+// user-initiated, repeatable action.
 // ============================================
 router.post(
   "/:id/resend-invite",
   validateObjectId("id"),
   requireSubscription,
-  idempotency({ scope: "events.resend_invite" }),
   validateZod(resendInviteSchema),
   eventsController.resendInvite
 );
 
 // ============================================
-// NESTED: /events/:id/scheduled-reminders
+// EXTRA REMINDER — immediate pool-charged reminder to CONFIRMED guests
+// using the approved reminder_confirmed template. Repeatable (no
+// idempotency middleware), same tradeoff as resend-invite above.
 // ============================================
-// Auth is already enforced by the parent `protect` use; access to the
-// specific event is enforced inside the service via getEventById's
-// _buildScopedEventQuery, which covers super_admin, tenant-scoped admins,
-// whitelabel users, and hosts.
-const scheduledExtraRemindersRoutes = require("../scheduled-extra-reminders/scheduled-extra-reminders.routes");
-router.use("/:id/scheduled-reminders", scheduledExtraRemindersRoutes);
+router.post(
+  "/:id/extra-reminder",
+  validateObjectId("id"),
+  requireSubscription,
+  validateZod(extraReminderSchema),
+  eventsController.extraReminder
+);
 
 // ============================================
 // ADMIN EVENT ROUTES — extracted to events.admin.routes.js

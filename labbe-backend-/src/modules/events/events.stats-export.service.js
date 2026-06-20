@@ -17,6 +17,7 @@ const { formatRiyadh } = require("../../shared/utils/timezone");
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const { isPoolPlan, isPerEventPlan } = require('../../shared/constants/plans');
+const { countsAgainstPlanStatusFilter } = require('../../shared/constants/events');
 
 module.exports = {
   /**
@@ -27,7 +28,10 @@ module.exports = {
   async getEventStats(userId) {
     const [eventStats, guestStats] = await Promise.all([
       Event.aggregate([
-        { $match: { host: new (require('mongoose').Types.ObjectId)(userId) } },
+        // Exclude soft-deleted events. Events are now soft-deleted (status
+        // 'deleted') rather than hard-removed, so they must be filtered out
+        // here or `totalEvents` would inflate with deleted events.
+        { $match: { host: new (require('mongoose').Types.ObjectId)(userId), status: { $ne: EVENT_STATUS.DELETED } } },
         { $group: {
           _id: null,
           totalEvents: { $sum: 1 },
@@ -38,7 +42,9 @@ module.exports = {
       Guest.aggregate([
         { $lookup: { from: 'events', localField: 'event', foreignField: '_id', as: 'evt' } },
         { $unwind: '$evt' },
-        { $match: { 'evt.host': new (require('mongoose').Types.ObjectId)(userId) } },
+        // Same soft-delete exclusion: guests of deleted events are kept in the
+        // collection but must not count toward host guest stats.
+        { $match: { 'evt.host': new (require('mongoose').Types.ObjectId)(userId), 'evt.status': { $ne: EVENT_STATUS.DELETED } } },
         { $group: {
           _id: null,
           totalGuests: { $sum: 1 },
@@ -80,14 +86,17 @@ module.exports = {
         ? subscription.getBillingPeriodStart()
         : (subscription.startDate || subscription.createdAt);
       eventsThisPeriod = await Event.countDocuments({
-        host: userId, createdAt: { $gte: billingStart }, status: { $ne: "deleted" },
+        host: userId, createdAt: { $gte: billingStart }, ...countsAgainstPlanStatusFilter(),
       });
     }
 
-    // canCreateEvent: per-event plans allow 1 event, pool plans (-1) unlimited
+    // canCreateEvent (capability hint for the FE — must match the real gate in
+    // subscriptions.service.validateEventCreation). Per-event plans are "used
+    // up" the moment sending starts: blocked once invitesConsumed > 0, even
+    // after cancel/delete. Pool plans (-1) are unlimited.
     let canCreateEvent;
     if (isPerEvent) {
-      canCreateEvent = (subscription.usage?.eventsCreated || 0) < 1 && !subscription.eventId;
+      canCreateEvent = (subscription.invitesConsumed || 0) === 0;
     } else {
       canCreateEvent = maxEvents === -1 ? true : eventsThisPeriod < maxEvents;
     }
@@ -95,10 +104,19 @@ module.exports = {
     // Normalized guest limits — single source of truth for frontend
     let guestLimit, isGuestUnlimited, invitePool, invitesRemaining;
     if (isPerEvent) {
-      guestLimit = limits?.maxInvitesPerEvent ?? 50;
-      isGuestUnlimited = guestLimit === -1;
-      invitePool = null;
-      invitesRemaining = null;
+      // Unified model: per-event plans now carry an invitePool just like pool
+      // plans (they differ only by maxEvents). Surface the real pool + remaining
+      // and expose total capacity (base + 15% compensation) as guestLimit so
+      // create-event step 2 caps at total capacity for per-event plans.
+      invitePool = subscription.invitePool ?? null;
+      invitesRemaining = subscription.invitesRemaining ?? null;
+      if (invitePool !== null) {
+        guestLimit = invitePool + (subscription.compensationPool || 0);
+        isGuestUnlimited = false;
+      } else {
+        guestLimit = limits?.maxInvitesPerEvent ?? 50;
+        isGuestUnlimited = guestLimit === -1;
+      }
     } else if (isPool) {
       guestLimit = -1;
       isGuestUnlimited = true;
@@ -172,8 +190,6 @@ module.exports = {
         taqnyatTemplate: eventObj.taqnyatTemplate || null,
         staffList: eventObj.staffList || [],
         messagingStatus: eventObj.messagingStatus || null,
-        // One-time resend-invite tracking
-        resendInviteSentAt: eventObj.resendInviteSentAt || null,
         host: eventObj.host || null,
         whitelabelId: eventObj.whitelabelId || null,
       },

@@ -8,7 +8,7 @@ import styles from "../EditPlanPopup.module.css";
 /**
  * `unlimitedSentinel` differs per backend field:
  *   - maxEvents → -1 (the schema rejects null, accepts -1 sentinel)
- *   - maxInvitesPerEvent / invitePool / maxHosts → null (nullable)
+ *   - invitePool / maxHosts → null (nullable)
  */
 const LimitField = ({
   fieldName,
@@ -97,15 +97,6 @@ const PlanLimitsSection = () => {
         helpKey="managePlans.editPopup.fields.maxEvents.help"
         unlimitedSentinel={-1}
         defaultEditableValue={1}
-      />
-
-      <LimitField
-        fieldName="limits.maxInvitesPerEvent"
-        labelKey="managePlans.editPopup.fields.maxInvitesPerEvent.label"
-        placeholderKey="managePlans.editPopup.fields.maxInvitesPerEvent.placeholder"
-        helpKey="managePlans.editPopup.fields.maxInvitesPerEvent.help"
-        unlimitedSentinel={null}
-        defaultEditableValue={50}
       />
 
       <LimitField

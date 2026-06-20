@@ -2,18 +2,9 @@
 import { FaCalendarAlt, FaUsers, FaCheckCircle, FaCrown, FaRocket } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { getLocalized } from "@halla/shared/utils/locale";
+import { isPoolPlan } from "@halla/shared/constants/plans";
 import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import styles from "../page.module.css";
-
-const POOL_PLAN_TYPES = new Set([
-  "business_quarterly",
-  "business_annual",
-  "basic_monthly",
-  "premium_monthly",
-  "unlimited",
-]);
-
-const isPoolPlan = (planType) => POOL_PLAN_TYPES.has(planType);
 
 export default function CurrentPlanCard({ subscription, plans }) {
   const { t, i18n } = useTranslation("businessPlans");
@@ -34,9 +25,7 @@ export default function CurrentPlanCard({ subscription, plans }) {
   const planType = fullPlan?.planType || currentPlan?.planType;
   const pool = isPoolPlan(planType);
   const eventValue = displayLimits?.maxEvents;
-  const inviteValue = pool
-    ? displayLimits?.invitePool
-    : displayLimits?.maxInvitesPerEvent;
+  const inviteValue = displayLimits?.invitePool;
   const pricePaid = subscription?.pricePaid?.amount ?? fullPlan?.pricing?.oneTime ?? 0;
   const unlimited = t("plansPage.currentPlan.unlimited");
 

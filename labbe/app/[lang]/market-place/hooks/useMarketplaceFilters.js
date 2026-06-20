@@ -26,7 +26,6 @@ export const useMarketplaceFilters = () => {
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
   const minRating = searchParams.get("minRating") || "";
-  const sort = searchParams.get("sort") || "recommended";
   const currentPage = parseInt(searchParams.get("page")) || 1;
 
   // Local state for search input before debounce
@@ -164,14 +163,13 @@ export const useMarketplaceFilters = () => {
     minPrice,
     maxPrice,
     minRating,
-    sort,
     currentPage,
     // Local state
     searchInput,
     setSearchInput,
     // Computed
     activeFilters,
-    filters: { regionId, cityId, districtIds, minPrice, maxPrice, minRating, sort },
+    filters: { regionId, cityId, districtIds, minPrice, maxPrice, minRating },
     // Handlers
     handleSectionChange,
     updateFilter,

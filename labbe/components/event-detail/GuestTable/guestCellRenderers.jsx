@@ -87,32 +87,6 @@ export function renderAutoReminderBadge(row, t, formatDateTime) {
   });
 }
 
-export function renderExtraReminderBadge(row, t, formatDateTime) {
-  const inv = row?.invitation || {};
-  if (inv.extraReminderSent) {
-    const when = inv.extraReminderSentAt
-      ? (formatDateTime?.(inv.extraReminderSentAt) || new Date(inv.extraReminderSentAt).toLocaleString())
-      : "";
-    return reminderPill({
-      tone: "success",
-      label: t("table.cell.sent", "تم الإرسال"),
-      title: when,
-    });
-  }
-  if (inv.extraReminderScheduled) {
-    const when = inv.extraReminderScheduledFor
-      ? (formatDateTime?.(inv.extraReminderScheduledFor) ||
-          new Date(inv.extraReminderScheduledFor).toLocaleString())
-      : "";
-    return reminderPill({
-      tone: "info",
-      label: t("table.cell.scheduled", "مجدول"),
-      title: when,
-    });
-  }
-  return <span style={{ color: "#9CA3AF" }}>—</span>;
-}
-
 export function renderStatusBadge(value, t) {
   const statusConfig = {
     confirmed: {

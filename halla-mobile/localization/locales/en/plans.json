@@ -61,8 +61,11 @@
     "selectedCount_one": "1 selected",
     "selectedCount_other": "{{count}} selected",
     "clearAll": "Clear all",
-    "extraInvites": { "title": "Extra Invites", "description": "Add more invites to your plan" },
-    "extraReminders": { "title": "Extra Reminders", "description": "Send additional reminder messages" },
+    "extraInvites": {
+      "title": "Extra Invites",
+      "description": "Add more invites to your plan",
+      "stackHint": "Pick multiple packages — they add up. Extra packages don't earn the 15% compensation bonus."
+    },
     "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
     "designTypes": {
       "ready_made": "Ready-made design (male/female)",
@@ -90,6 +93,12 @@
     "singleEvent": "Single event",
     "unlimitedEvents": "Unlimited events",
     "compensationInvites": "compensation invites",
+    "extraInvites": "extra invites",
+    "totalInvites": "Total invites",
+    "totalInvitesHint": "Total pool = base invites + extra packages + 15% compensation.",
+    "compensationHint": "+15% bonus invites on your base plan invites — free. Extra packages don't earn compensation.",
+    "perEventPlanHint": "Per-event plan: 1 event with this invite count.",
+    "poolPlanHint": "Pool plan: many events sharing one invite pool.",
     "activateButton": "Activate Subscription",
     "activating": "Activating...",
     "total": "Total",
@@ -98,7 +107,6 @@
     "addonsTitle": "Selected Add-Ons",
     "addonItems": {
       "extra_invites": "Extra Invites +{{quantity}}",
-      "extra_reminders": "Extra Reminders +{{quantity}}",
       "design_template": "Design Template"
     },
     "periods": {

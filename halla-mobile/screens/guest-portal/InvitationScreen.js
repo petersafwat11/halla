@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -30,6 +31,11 @@ const InvitationScreen = ({ route }) => {
   // the loaded guest. This makes the post-submit transition immediate
   // without having to re-fetch.
   const [submitChoice, setSubmitChoice] = useState(null);
+  // Optional RSVP details — mirrors the web portal so a guest who opens the
+  // invitation link in the app (universal link) can add the same info.
+  const [message, setMessage] = useState("");
+  const [dietaryRestrictions, setDietaryRestrictions] = useState("");
+  const [plusOnes, setPlusOnes] = useState("");
 
   const guest = data?.data?.guest || data?.guest;
   const event = data?.data?.event || data?.event;
@@ -105,10 +111,16 @@ const InvitationScreen = ({ route }) => {
 
   const handleRsvp = async (response) => {
     try {
+      const trimmedMessage = message.trim();
+      const trimmedDiet = dietaryRestrictions.trim();
+      const extraGuests = Number(plusOnes) || 0;
       const result = await submit.mutateAsync({
         guestId: guest._id || guest.id,
         response,
         invitationCode: code,
+        ...(trimmedMessage ? { message: trimmedMessage } : {}),
+        ...(trimmedDiet ? { dietaryRestrictions: trimmedDiet } : {}),
+        ...(extraGuests > 0 ? { plusOnes: extraGuests } : {}),
       });
       setSubmitChoice(response);
       // If the backend reported a replay (409/410 on idempotency) we still
@@ -181,6 +193,38 @@ const InvitationScreen = ({ route }) => {
         </Text>
         <Text style={styles.prompt}>{t("guest.portal.rsvpPrompt")}</Text>
 
+        <View style={styles.optionalForm}>
+          <Text style={styles.fieldLabel}>{t("guest.portal.messageLabel")}</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={message}
+            onChangeText={setMessage}
+            placeholder={t("guest.portal.messagePlaceholder")}
+            placeholderTextColor="#9CA3AF"
+            multiline
+            numberOfLines={3}
+            editable={!submit.isPending}
+          />
+          <Text style={styles.fieldLabel}>{t("guest.portal.dietaryLabel")}</Text>
+          <TextInput
+            style={styles.input}
+            value={dietaryRestrictions}
+            onChangeText={setDietaryRestrictions}
+            placeholderTextColor="#9CA3AF"
+            editable={!submit.isPending}
+          />
+          <Text style={styles.fieldLabel}>{t("guest.portal.plusOnesLabel")}</Text>
+          <TextInput
+            style={styles.input}
+            value={plusOnes}
+            onChangeText={(v) => setPlusOnes(v.replace(/[^0-9]/g, ""))}
+            keyboardType="number-pad"
+            placeholder="0"
+            placeholderTextColor="#9CA3AF"
+            editable={!submit.isPending}
+          />
+        </View>
+
         <TouchableOpacity
           style={[styles.button, themedStyles.primaryButton]}
           disabled={submit.isPending}
@@ -252,6 +296,33 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_500Medium",
     color: "#6B6B6B",
     marginBottom: 8,
+  },
+  optionalForm: {
+    width: "100%",
+    gap: 6,
+    marginBottom: 8,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#4B5563",
+    alignSelf: "flex-start",
+  },
+  input: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 15,
+    fontFamily: "Cairo_500Medium",
+    color: "#2C2C2C",
+    backgroundColor: "#FFF",
+  },
+  textArea: {
+    minHeight: 72,
+    textAlignVertical: "top",
   },
   button: {
     width: "100%",

@@ -1,6 +1,6 @@
 // Mobile event key factory. Codifies the literal keys already used by
 // existing event mutation files in hooks/events/mutations/ and by
-// cross-domain callers (messaging, guests, staff, scheduledExtraReminders).
+// cross-domain callers (messaging, guests, staff).
 //
 // Existing event-mutation files still use literal arrays; they're byte-
 // identical to the factory output so the cache is consistent. New code

@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FaPaperPlane, FaBell, FaPalette, FaCheck, FaTimes } from "react-icons/fa";
+import { FaPaperPlane, FaPalette, FaCheck, FaTimes, FaInfoCircle } from "react-icons/fa";
 import { useAvailableAddons } from "@/hooks/addons";
 import styles from "./AddonsSection.module.css";
 
@@ -9,6 +9,10 @@ import styles from "./AddonsSection.module.css";
  * Addon picker. Selections are bubbled up via `onAddonsChange` — purchases
  * happen inside the bundled checkout (Summary → useCheckout). This component
  * never calls the addons-purchase endpoint directly.
+ *
+ * Extra invites STACK: the user can select multiple tiers and they add up.
+ * `extraInvites` is therefore an array of selected tier objects
+ * (`[{ quantity, price }]`); each becomes its own `extra_invites` line item.
  */
 const AddonsSection = ({ onAddonsChange }) => {
   const { t, i18n } = useTranslation("plans");
@@ -20,41 +24,34 @@ const AddonsSection = ({ onAddonsChange }) => {
   const tiers = useMemo(
     () => ({
       extraInvites: catalog?.extra_invites || [],
-      extraReminders: catalog?.extra_reminders || [],
       designTemplate: catalog?.design_template || [],
     }),
     [catalog]
   );
 
-  const [extraInvites, setExtraInvites] = useState(null);
-  const [extraReminders, setExtraReminders] = useState(null);
+  // Stacked: array of selected extra-invite tiers ([{ quantity, price }]).
+  const [extraInvites, setExtraInvites] = useState([]);
   const [designTemplate, setDesignTemplate] = useState(null);
 
-  const selectedCount =
-    (extraInvites ? 1 : 0) + (extraReminders ? 1 : 0) + (designTemplate ? 1 : 0);
-  const total =
-    (extraInvites?.price || 0) +
-    (extraReminders?.price || 0) +
-    (designTemplate?.price || 0);
+  const extraInvitesTotal = extraInvites.reduce(
+    (sum, tier) => sum + (tier.price || 0),
+    0
+  );
+  const extraInvitesQuantity = extraInvites.reduce(
+    (sum, tier) => sum + (tier.quantity || 0),
+    0
+  );
 
-  const notify = (inv, rem, des) => {
-    const items = [];
-    if (inv) {
-      items.push({
-        addonType: "extra_invites",
-        type: "extra_invites",
-        quantity: inv.quantity,
-        price: inv.price,
-      });
-    }
-    if (rem) {
-      items.push({
-        addonType: "extra_reminders",
-        type: "extra_reminders",
-        quantity: rem.quantity,
-        price: rem.price,
-      });
-    }
+  const selectedCount = extraInvites.length + (designTemplate ? 1 : 0);
+  const total = extraInvitesTotal + (designTemplate?.price || 0);
+
+  const notify = (invList, des) => {
+    const items = invList.map((inv) => ({
+      addonType: "extra_invites",
+      type: "extra_invites",
+      quantity: inv.quantity,
+      price: inv.price,
+    }));
     if (des) {
       items.push({
         addonType: "design_template",
@@ -64,29 +61,28 @@ const AddonsSection = ({ onAddonsChange }) => {
         price: des.price,
       });
     }
-    const sum = (inv?.price || 0) + (rem?.price || 0) + (des?.price || 0);
+    const sum =
+      invList.reduce((s, inv) => s + (inv.price || 0), 0) + (des?.price || 0);
     onAddonsChange?.(items, sum);
   };
 
+  // Add or remove a tier from the stack (toggles each tier independently).
   const toggleInv = (tier) => {
-    const next = extraInvites?.quantity === tier.quantity ? null : tier;
+    const exists = extraInvites.some((sel) => sel.quantity === tier.quantity);
+    const next = exists
+      ? extraInvites.filter((sel) => sel.quantity !== tier.quantity)
+      : [...extraInvites, { quantity: tier.quantity, price: tier.price }];
     setExtraInvites(next);
-    notify(next, extraReminders, designTemplate);
-  };
-  const toggleRem = (tier) => {
-    const next = extraReminders?.quantity === tier.quantity ? null : tier;
-    setExtraReminders(next);
-    notify(extraInvites, next, designTemplate);
+    notify(next, designTemplate);
   };
   const toggleDes = (tier) => {
     const next = designTemplate?.type === tier.type ? null : tier;
     setDesignTemplate(next);
-    notify(extraInvites, extraReminders, next);
+    notify(extraInvites, next);
   };
 
   const clearAll = () => {
-    setExtraInvites(null);
-    setExtraReminders(null);
+    setExtraInvites([]);
     setDesignTemplate(null);
     onAddonsChange?.([], 0);
   };
@@ -130,15 +126,15 @@ const AddonsSection = ({ onAddonsChange }) => {
           iconClass={styles.iconInvites}
           title={t("addons.extraInvites.title")}
           description={t("addons.extraInvites.description")}
-          isActive={!!extraInvites}
-          activePrice={extraInvites?.price}
+          isActive={extraInvites.length > 0}
+          activePrice={extraInvites.length > 0 ? extraInvitesTotal : null}
           t={t}
         >
           <div className={styles.tierGrid}>
             {tiers.extraInvites.map((tier) => (
               <TierTile
                 key={tier.quantity}
-                active={extraInvites?.quantity === tier.quantity}
+                active={extraInvites.some((sel) => sel.quantity === tier.quantity)}
                 onClick={() => toggleInv(tier)}
                 quantity={tier.quantity}
                 price={tier.price}
@@ -146,29 +142,18 @@ const AddonsSection = ({ onAddonsChange }) => {
               />
             ))}
           </div>
-        </AddonCard>
-
-        <AddonCard
-          icon={<FaBell />}
-          iconClass={styles.iconReminders}
-          title={t("addons.extraReminders.title")}
-          description={t("addons.extraReminders.description")}
-          isActive={!!extraReminders}
-          activePrice={extraReminders?.price}
-          t={t}
-        >
-          <div className={styles.tierGrid}>
-            {tiers.extraReminders.map((tier) => (
-              <TierTile
-                key={tier.quantity}
-                active={extraReminders?.quantity === tier.quantity}
-                onClick={() => toggleRem(tier)}
-                quantity={tier.quantity}
-                price={tier.price}
-                t={t}
-              />
-            ))}
-          </div>
+          <p className={styles.cardHint}>
+            <FaInfoCircle className={styles.cardHintIcon} aria-hidden="true" />
+            {extraInvites.length > 0
+              ? t("addons.extraInvites.stackHintSelected", {
+                  count: extraInvitesQuantity,
+                  defaultValue: `Stacked: +${extraInvitesQuantity} extra invites. Extra invite packages don't earn compensation.`,
+                })
+              : t("addons.extraInvites.stackHint", {
+                  defaultValue:
+                    "Select multiple packages to stack them — they add up. Extra invite packages don't earn compensation.",
+                })}
+          </p>
         </AddonCard>
       </div>
 

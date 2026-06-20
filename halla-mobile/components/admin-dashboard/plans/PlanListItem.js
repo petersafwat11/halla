@@ -46,7 +46,6 @@ const PlanListItem = ({ plan, canEdit, onEdit }) => {
 
   const oneTimePrice = plan.pricing?.oneTime ?? 0;
   const maxEvents = plan.limits?.maxEvents;
-  const maxInvitesPerEvent = plan.limits?.maxInvitesPerEvent;
   const invitePool = plan.limits?.invitePool;
 
   // Events line — pool plans share an invite pool across unlimited
@@ -59,9 +58,8 @@ const PlanListItem = ({ plan, canEdit, onEdit }) => {
       ? `${t("plans.labels.max")} ${maxEvents} ${maxEvents === 1 ? t("plans.labels.event") : t("plans.labels.events")}`
       : t("plans.labels.oneEvent");
 
-  const invitesLabel = isPool
-    ? `${t("plans.fields.invitePool")}: ${invitePool ?? t("plans.labels.unlimited")}`
-    : `${t("plans.fields.maxInvitesPerEvent")}: ${maxInvitesPerEvent ?? t("plans.labels.unlimited")}`;
+  // All plan types (pool and per-event) carry an `invitePool` now.
+  const invitesLabel = `${t("plans.fields.invitePool")}: ${invitePool ?? t("plans.labels.unlimited")}`;
 
   // ── Chips: type tag + pricing ──
   const chips = [

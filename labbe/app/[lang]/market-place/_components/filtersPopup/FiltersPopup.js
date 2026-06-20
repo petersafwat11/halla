@@ -100,33 +100,11 @@ const FiltersPopup = ({
     >
       <div className={styles.popup} ref={popupRef}>
         <div className={styles.header}>
-          <button
-            ref={firstFocusableRef}
-            className={styles.backButton}
-            onClick={onClose}
-            aria-label={t("filtersPopup.close")}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M18 6L6 18"
-                stroke="#2C2C2C"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M6 6L18 18"
-                stroke="#2C2C2C"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
           <h2 id="filters-title" className={styles.title}>
             {t("filters.title")}
           </h2>
           <button
+            ref={firstFocusableRef}
             className={styles.closeBtn}
             onClick={onClose}
             aria-label={t("filtersPopup.close")}
@@ -174,7 +152,7 @@ const FiltersPopup = ({
               <SearchableSelect
                 label={t("filters.city")}
                 options={cities.map((city) => ({
-                  value: city.city_id,
+                  value: String(city.city_id),
                   label: city.name_ar,
                 }))}
                 value={filters.cityId}
@@ -193,7 +171,7 @@ const FiltersPopup = ({
               <SearchableSelect
                 label={t("filters.district")}
                 options={districts.map((d) => ({
-                  value: d.district_id,
+                  value: String(d.district_id),
                   label: d.name_ar,
                 }))}
                 value={filters.districtIds}

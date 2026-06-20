@@ -61,8 +61,11 @@
     "selectedCount_one": "إضافة واحدة",
     "selectedCount_other": "{{count}} إضافات",
     "clearAll": "إزالة الكل",
-    "extraInvites": { "title": "دعوات إضافية", "description": "أضف دعوات أكثر إلى باقتك" },
-    "extraReminders": { "title": "تذكيرات إضافية", "description": "أرسل رسائل تذكير إضافية" },
+    "extraInvites": {
+      "title": "دعوات إضافية",
+      "description": "أضف دعوات أكثر إلى باقتك",
+      "stackHint": "اختر أكثر من باقة — تُجمع معاً. الباقات الإضافية لا تحصل على مكافأة التعويض بنسبة ١٥٪."
+    },
     "designTemplate": { "title": "قالب تصميم", "description": "تصميم دعوة احترافي من فريقنا" },
     "designTypes": {
       "ready_made": "تصميم دعوات جاهزة (رجالي/نسائي)",
@@ -90,6 +93,12 @@
     "singleEvent": "مناسبة واحدة",
     "unlimitedEvents": "مناسبات غير محدودة",
     "compensationInvites": "دعوات تعويضية",
+    "extraInvites": "دعوة إضافية",
+    "totalInvites": "إجمالي الدعوات",
+    "totalInvitesHint": "إجمالي الرصيد = الدعوات الأساسية + الباقات الإضافية + تعويض ١٥٪.",
+    "compensationHint": "‎+١٥٪ دعوات إضافية مجانية على دعوات باقتك الأساسية. الباقات الإضافية لا تحصل على تعويض.",
+    "perEventPlanHint": "باقة لكل مناسبة: مناسبة واحدة بهذا العدد من الدعوات.",
+    "poolPlanHint": "باقة رصيد: عدة مناسبات تتشارك رصيد دعوات واحد.",
     "activateButton": "تفعيل الاشتراك",
     "activating": "جار التفعيل...",
     "total": "الإجمالي",
@@ -98,7 +107,6 @@
     "addonsTitle": "الإضافات المختارة",
     "addonItems": {
       "extra_invites": "دعوات إضافية +{{quantity}}",
-      "extra_reminders": "تذكيرات إضافية +{{quantity}}",
       "design_template": "تصميم الدعوة"
     },
     "periods": {

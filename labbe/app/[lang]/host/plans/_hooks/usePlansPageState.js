@@ -117,9 +117,6 @@ export const usePlansPageState = () => {
         if (type === "extra_invites") {
           return { ...base, scope: "pool", quantity: item.quantity };
         }
-        if (type === "extra_reminders") {
-          return { ...base, quantity: item.quantity };
-        }
         if (type === "design_template") {
           return { ...base, templateType: item.templateType };
         }

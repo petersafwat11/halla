@@ -9,7 +9,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useMarketplaceVendors, useVendorCategories } from "../../hooks/marketplace";
 import { backgrounds, colors, spacing } from "../../styles/tokens";
 
-const EMPTY_FILTERS = { serviceType: "all", regionId: "", cityId: "", districtIds: [], minPrice: "", maxPrice: "", minRating: "", sort: "recommended" };
+const EMPTY_FILTERS = { serviceType: "all", regionId: "", cityId: "", districtIds: [], minPrice: "", maxPrice: "", minRating: "" };
 
 // Canonical service-category → Ionicons map (mirrors the web category strip).
 const CATEGORY_ICONS = {

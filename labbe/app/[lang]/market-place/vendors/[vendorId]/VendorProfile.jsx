@@ -3,8 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, ArrowRight, ExternalLink, FileText, Globe2, Mail, MapPin,
-  MessageCircle, Phone, Star,
+  ArrowLeft, ArrowRight, Facebook, FileText, Globe2, Instagram, Link2, Mail, MapPin,
+  MessageCircle, Phone, Star, Twitter,
 } from "lucide-react";
 import { buildVendorContactMessage, buildWhatsAppUrl } from "@halla/shared/utils/marketplace";
 import en from "@/localization/locales/en/marketplace.json";
@@ -13,8 +13,24 @@ import ShareButton from "./ShareButton";
 import SafeImage from "./SafeImage";
 import styles from "./page.module.css";
 
+const SOCIAL_ICONS = { instagram: Instagram, facebook: Facebook, twitter: Twitter };
+
 const isSafeUrl = (value) => {
   try { return ["http:", "https:"].includes(new URL(value).protocol); } catch { return false; }
+};
+
+// "https://www.ebdaastudio.com" → "www.ebdaastudio.com"
+const displayHost = (value) => {
+  try { return new URL(value).hostname; } catch { return value; }
+};
+
+// "https://instagram.com/ebdaastudio" → "@ebdaastudio"; falls back to host.
+const displayHandle = (value) => {
+  try {
+    const url = new URL(value);
+    const segment = url.pathname.split("/").filter(Boolean).pop();
+    return segment ? `@${segment}` : url.hostname;
+  } catch { return value; }
 };
 
 /**
@@ -45,6 +61,9 @@ export default function VendorProfile({ vendor, lang, vendorUrl }) {
   const telHref = contact.phone ? `tel:${contact.phone}` : null;
   const primaryFallback = telHref || (contact.email ? `mailto:${contact.email}` : vendor.socialLinks?.website || null);
   const initial = vendor.brandName?.charAt(0);
+  const websiteUrl = vendor.socialLinks?.website && isSafeUrl(vendor.socialLinks.website) ? vendor.socialLinks.website : null;
+  const socialEntries = Object.entries(vendor.socialLinks || {}).filter(([key, value]) => key !== "website" && value && isSafeUrl(value));
+  const displayPhone = contact.phone ? (contact.phone.startsWith("+") ? contact.phone : `+${contact.phone}`) : null;
 
   return (
     <main className={styles.page} dir={rtl ? "rtl" : "ltr"}>
@@ -54,9 +73,12 @@ export default function VendorProfile({ vendor, lang, vendorUrl }) {
       </div>
 
       <section className={styles.hero}>
-        <SafeImage src={vendor.heroImage || vendor.coverImage} alt={vendor.brandName} fill priority sizes="(max-width: 1280px) 100vw, 1240px" className={styles.coverImage} fallbackClassName={styles.coverFallback} fallbackText={initial} />
+        <SafeImage src={vendor.heroImage || vendor.coverImage} alt={vendor.brandName} fill priority sizes="(max-width: 1280px) 100vw, 1240px" className={styles.coverImage} fallbackClassName={styles.coverFallback} fallbackText="" />
         <div className={styles.coverShade} />
         <div className={styles.heroInner}>
+          <div className={styles.heroLogo}>
+            <SafeImage src={vendor.logo} alt={`${vendor.brandName} logo`} fill sizes="120px" fallbackClassName={styles.logoFallback} fallbackText={initial} />
+          </div>
           <div className={styles.heroText}>
             <h1>{vendor.brandName}</h1>
             {vendor.tagline && <p className={styles.heroTagline}>{vendor.tagline}</p>}
@@ -65,9 +87,6 @@ export default function VendorProfile({ vendor, lang, vendorUrl }) {
               {categoryNames.slice(0, 2).map((name) => <span key={name} className={styles.heroChip}>{name}</span>)}
               {location && <span className={styles.heroChip}><MapPin size={14} />{location}</span>}
             </div>
-          </div>
-          <div className={styles.heroLogo}>
-            <SafeImage src={vendor.logo} alt={`${vendor.brandName} logo`} fill sizes="120px" fallbackClassName={styles.logoFallback} fallbackText={initial} />
           </div>
         </div>
       </section>
@@ -89,12 +108,15 @@ export default function VendorProfile({ vendor, lang, vendorUrl }) {
             {!whatsapp && !telHref && contact.email && <a className={styles.callButton} href={`mailto:${contact.email}`}><Mail size={18} />{contact.email}</a>}
           </div>
           <div className={styles.contactLinks}>
-            {contact.phone && <a href={telHref}><Phone size={17} /><span dir="ltr">{contact.phone}</span></a>}
-            {contact.email && <a href={`mailto:${contact.email}`}><Mail size={17} /><span>{contact.email}</span></a>}
-            {vendor.socialLinks?.website && isSafeUrl(vendor.socialLinks.website) && <a href={vendor.socialLinks.website} target="_blank" rel="noreferrer"><Globe2 size={17} /><span>{copy.vendor?.website}</span><ExternalLink size={13} /></a>}
-            {Object.entries(vendor.socialLinks || {}).filter(([key, value]) => key !== "website" && value && isSafeUrl(value)).map(([key, value]) => <a key={key} href={value} target="_blank" rel="noreferrer"><ExternalLink size={17} /><span>{key}</span></a>)}
-            {location && <span className={styles.coverage}><MapPin size={17} />{location}</span>}
+            {displayPhone && <a href={telHref}><Phone size={18} /><span dir="ltr">{displayPhone}</span></a>}
+            {contact.email && <a href={`mailto:${contact.email}`}><Mail size={18} /><span dir="ltr">{contact.email}</span></a>}
+            {websiteUrl && <a href={websiteUrl} target="_blank" rel="noreferrer"><Globe2 size={18} /><span dir="ltr">{displayHost(websiteUrl)}</span></a>}
+            {socialEntries.map(([key, value]) => {
+              const Icon = SOCIAL_ICONS[key] || Link2;
+              return <a key={key} href={value} target="_blank" rel="noreferrer"><Icon size={18} /><span dir="ltr">{displayHandle(value)}</span></a>;
+            })}
           </div>
+          {location && <p className={styles.coverage}>{location}</p>}
         </aside>
       </div>
 
@@ -144,8 +166,8 @@ export default function VendorProfile({ vendor, lang, vendorUrl }) {
           <div className={styles.blockHead}><div><p className={styles.kicker}>{copy.vendor?.portfolio}</p><h2>{copy.vendor?.portfolioHeadline}</h2></div></div>
           <div className={styles.portfolioGrid}>
             {portfolio.map((image, index) => (
-              <a key={`${index}-${image}`} href={image} target="_blank" rel="noreferrer" className={index === 0 ? styles.portfolioLead : ""}>
-                <SafeImage src={image} alt={`${copy.vendor?.portfolio} ${index + 1}`} fill sizes={index === 0 ? "(max-width: 700px) 100vw, 520px" : "260px"} fallbackClassName={styles.portfolioFallback} fallbackText={initial} />
+              <a key={`${index}-${image}`} href={image} target="_blank" rel="noreferrer" className={styles.portfolioItem}>
+                <SafeImage src={image} alt={`${copy.vendor?.portfolio} ${index + 1}`} fill sizes="(max-width: 700px) 50vw, 280px" fallbackClassName={styles.portfolioFallback} fallbackText={initial} />
               </a>
             ))}
           </div>

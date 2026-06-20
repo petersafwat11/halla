@@ -67,6 +67,11 @@ const PLAN_AVAILABILITY = {
 const COMPENSATION_PERCENTAGE = 15;
 
 const isUnlimited    = (value) => value === -1;
+// Trial detection — accepts EITHER the plan `planType` OR the plan `code`,
+// since both are `'trial'` for the trial plan. Single source of truth so
+// scheduling-window code stops doing ad-hoc `code === 'trial' ||
+// planType === 'trial'` checks that drift apart.
+const isTrialPlan    = (planTypeOrCode) => planTypeOrCode === 'trial';
 const isPerEventPlan = (planType) => ['basic_event', 'premium_event', 'business_event', 'trial'].includes(planType);
 const isPoolPlan     = (planType) => ['basic_monthly', 'premium_monthly', 'business_quarterly', 'business_annual'].includes(planType);
 const isManagedPlan  = (planType) => ['premium_event', 'premium_monthly', 'business_event', 'business_quarterly', 'business_annual'].includes(planType);
@@ -87,5 +92,5 @@ const getBillingType = (planType) => {
 module.exports = {
   PLAN_TYPES, PLAN_FAMILIES, BILLING_TYPES, PLAN_CODES, PLAN_AVAILABILITY,
   COMPENSATION_PERCENTAGE,
-  isUnlimited, isPerEventPlan, isPoolPlan, isManagedPlan, getPlanFamily, getBillingType,
+  isUnlimited, isTrialPlan, isPerEventPlan, isPoolPlan, isManagedPlan, getPlanFamily, getBillingType,
 };

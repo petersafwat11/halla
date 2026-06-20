@@ -16,7 +16,7 @@ import { eventsKeys } from "@/hooks/events/keys";
  *   - rotateQr     → POST   /guests/events/:eventId/guests/:guestId/rotate-qr
  *   - revokeAccess → POST   /guests/events/:eventId/guests/:guestId/revoke-access
  *   - export       → GET    /guests/events/:eventId/export (file download)
- *   - rsvp         → POST   /guests/:id/rsvp (public, whitelabel portal)
+ *   - rsvp         → POST   /guests/:id/rsvp (public guest portal; :id = guest ObjectId, code in body)
  */
 export const useGuestMutation = (action) => {
   const queryClient = useQueryClient();
@@ -84,15 +84,22 @@ export const useGuestMutation = (action) => {
     },
 
     rsvp: {
-      mutationFn: ({ token, response, data }) =>
+      // `id` is the guest's ObjectId, used for the `/guests/:id/rsvp` route
+      // slot (the route runs `validateObjectId('id')`). `token` is the public
+      // qrcode/invitation code — it stays in the body as `invitationCode`
+      // (the route's authz proof) and is the cache-invalidation key (the
+      // portal query is keyed by the code, not the ObjectId).
+      mutationFn: ({ id, token, response, data }) =>
         apiRequest({
           method: "POST",
-          path: API_PATHS.guests.submitRSVP(token),
+          path: API_PATHS.guests.submitRSVP(id ?? token),
           data: { response, ...(data || {}) },
         }),
-      onSuccess: (_, { token }) => {
-        queryClient.invalidateQueries({ queryKey: guestsKeys.byToken(token) });
-        queryClient.invalidateQueries({ queryKey: guestsKeys.byInvitation(token) });
+      onSuccess: (_, { token, data }) => {
+        const code = token ?? data?.invitationCode;
+        if (!code) return;
+        queryClient.invalidateQueries({ queryKey: guestsKeys.byToken(code) });
+        queryClient.invalidateQueries({ queryKey: guestsKeys.byInvitation(code) });
       },
     },
   };

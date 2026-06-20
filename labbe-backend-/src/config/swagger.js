@@ -1780,7 +1780,7 @@ const swaggerOptions = {
           required: ['phoneNumber'],
           properties: {
             phoneNumber: { type: 'string', example: '501234567' },
-            channel: { type: 'string', enum: ['sms', 'whatsapp'] },
+            channel: { type: 'string', enum: ['sms', 'whatsapp'], default: 'whatsapp' },
           },
         },
 
@@ -1972,10 +1972,6 @@ const swaggerOptions = {
               type: 'array',
               items: { $ref: '#/components/schemas/AddonTier' },
             },
-            extra_reminders: {
-              type: 'array',
-              items: { $ref: '#/components/schemas/AddonTier' },
-            },
             design_template: {
               type: 'array',
               items: { $ref: '#/components/schemas/AddonDesignTier' },
@@ -1994,7 +1990,6 @@ const swaggerOptions = {
               type: 'string',
               enum: [
                 'extra_invites',
-                'extra_reminders',
                 'design_template',
                 'business_customization',
               ],
@@ -2029,14 +2024,13 @@ const swaggerOptions = {
               type: 'string',
               enum: [
                 'extra_invites',
-                'extra_reminders',
                 'design_template',
                 'business_customization',
               ],
             },
             quantity: {
               type: 'integer',
-              description: 'Required for extra_invites and extra_reminders',
+              description: 'Required for extra_invites',
               minimum: 1,
               maximum: 50,
             },
@@ -2114,7 +2108,6 @@ const swaggerOptions = {
               type: 'string',
               enum: [
                 'extra_invites',
-                'extra_reminders',
                 'design_template',
                 'business_customization',
               ],

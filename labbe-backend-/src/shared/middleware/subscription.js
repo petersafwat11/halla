@@ -10,8 +10,9 @@ const {
   SUBSCRIPTION_STATUS,
   PLAN_TYPES,
 } = require("../constants");
-const { isUnlimited, isPerEventPlan, isPoolPlan } = require("../constants/plans");
+const { isUnlimited, isPerEventPlan } = require("../constants/plans");
 const { isAdminRole } = require("../constants/roles");
+const { countsAgainstPlanStatusFilter } = require("../constants/events");
 
 const Subscription = require("../../../models/SubscriptionModel");
 const Event = require("../../../models/EventModel");
@@ -109,32 +110,37 @@ exports.checkEventLimit = catchAsync(async (req, res, next) => {
     return next(new AppError("Subscription required to create events", 402));
   }
 
+  // canCreateEvent() encodes the static gate: for per-event plans it blocks
+  // when invitesConsumed > 0 (sending happened → permanently used). Pool /
+  // unlimited plans always pass here (their cap is the invite pool).
   const canCreate = subscription.canCreateEvent();
 
   if (!canCreate.allowed) {
     return next(new AppError(canCreate.reason, 402));
   }
 
-  // Check event limit based on activatedAt (billingCycle field removed)
   const plan = subscription.planId;
   const maxEvents = plan?.limits?.maxEvents;
+  const Event = require("../../../models/EventModel");
 
-  // unlimited or pool plan → no event limit
+  // unlimited or pool plan → no event-count limit (cap is the invite pool).
   if (!maxEvents || maxEvents === -1) {
     req.remainingEvents = subscription.eventsRemaining;
     return next();
   }
 
-  // per-event plan: check how many events created since activatedAt
-  const Event = require("../../../models/EventModel");
-  const periodStart = subscription.activatedAt || subscription.createdAt;
-  const eventCount = await Event.countDocuments({
-    host: req.user._id,
-    createdAt: { $gte: periodStart },
-    status: { $nin: ['cancelled', 'pending_scheduling'] },
+  // per-event plan: in addition to the invitesConsumed gate above, block when
+  // an event is currently active under this subscription. Active = status NOT
+  // IN ['cancelled','deleted'] (the unified "counts against the plan" filter),
+  // scoped to this subscription — no date bound. Combined with the
+  // invitesConsumed check, a per-event host can only re-create after
+  // cancel/delete if nothing was ever sent.
+  const activeEventCount = await Event.countDocuments({
+    subscriptionId: subscription._id,
+    ...countsAgainstPlanStatusFilter(),
   });
 
-  if (eventCount >= maxEvents) {
+  if (activeEventCount >= maxEvents) {
     return res.status(403).json({
       success: false,
       message: 'Event limit reached for your current subscription',
@@ -180,13 +186,7 @@ exports.checkGuestLimit = (getGuestCount) => {
       const event = await Event.findById(req.params.id)
         .select("subscriptionId guestLimit guestList")
         .lean();
-      let attachedSubscriptionId = event?.subscriptionId;
-      if (!attachedSubscriptionId && event?._id) {
-        const linked = await Subscription.findOne({ eventId: event._id })
-          .select("_id")
-          .lean();
-        attachedSubscriptionId = linked?._id;
-      }
+      const attachedSubscriptionId = event?.subscriptionId;
       if (attachedSubscriptionId) {
         capacitySub = await Subscription.findOne({
           _id: attachedSubscriptionId,
@@ -195,23 +195,20 @@ exports.checkGuestLimit = (getGuestCount) => {
           $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
         }).populate("planId");
 
-        const frozenLimit = event.guestLimit;
+        // List cap: a guest is free to add — capacity is the subscription's
+        // total invite pool (invitePool + compensation), independent of how
+        // much has been sent/consumed (sending is gated separately at send
+        // time). The service layer enforces this authoritatively; here we just
+        // reject obviously-over-capacity requests early. Unlimited plans
+        // (invitePool null) have no cap.
         if (
           capacitySub &&
-          frozenLimit !== null &&
-          frozenLimit !== undefined &&
-          frozenLimit !== -1 &&
-          guestCount > frozenLimit
+          capacitySub.invitePool !== null &&
+          capacitySub.invitePool !== undefined
         ) {
-          capacitySub = null;
-        }
-        if (capacitySub && isPoolPlan(capacitySub.planId?.planType)) {
-          const remaining =
-            (capacitySub.invitePool || 0) +
-            (capacitySub.compensationPool || 0) -
-            (capacitySub.invitesConsumed || 0);
-          const existingCount = event.guestList?.length || 0;
-          if (guestCount > existingCount + remaining) {
+          const capacity =
+            (capacitySub.invitePool || 0) + (capacitySub.compensationPool || 0);
+          if (guestCount > capacity) {
             capacitySub = null;
           }
         }
@@ -260,39 +257,5 @@ exports.checkMessageLimit = catchAsync(async (req, res, next) => {
   }
 
   req.remainingMessages = maxMessages - currentMessages;
-  next();
-});
-
-/**
- * Increment event usage counter
- * Call this after successfully creating an event
- */
-exports.incrementEventUsage = catchAsync(async (req, res, next) => {
-  if (isAdminRole(req.user?.role)) {
-    return next();
-  }
-
-  const subscription = req.subscription;
-
-  if (subscription) {
-    const maxEvents = subscription.limits?.maxEvents;
-    const query = { _id: subscription._id };
-
-    // For plans with a finite cap, atomically guard against overshooting.
-    if (maxEvents && !isUnlimited(maxEvents)) {
-      query['usage.eventsCreated'] = { $lt: maxEvents };
-    }
-
-    const result = await Subscription.findOneAndUpdate(
-      query,
-      { $inc: { "usage.eventsCreated": 1 } },
-      { new: true }
-    );
-
-    if (!result && maxEvents && !isUnlimited(maxEvents)) {
-      return next(new AppError("Event limit reached", 402));
-    }
-  }
-
   next();
 });

@@ -157,19 +157,6 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
               />
             </FilterField>
 
-            <FilterField label={t("filters.sort")}>
-              <FilterDropdown
-                value={localFilters.sort || "recommended"}
-                onSelect={(v) => updateFilter("sort", v)}
-                placeholder={t("filters.sortRecommended")}
-                options={[
-                  { label: t("filters.sortRecommended"), value: "recommended" },
-                  { label: t("filters.sortRating"), value: "rating" },
-                  { label: t("filters.sortPrice"), value: "price_asc" },
-                  { label: t("filters.sortNewest"), value: "newest" },
-                ]}
-              />
-            </FilterField>
           </ScrollView>
 
           <View style={styles.footer}>

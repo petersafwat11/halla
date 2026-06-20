@@ -8,6 +8,7 @@ import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
 import styles from "@/app/[lang]/host/events/[id]/singleEvent.module.css";
 import GuestRows from "./GuestRows";
 import GuestPopups from "./GuestPopups";
+import BulkActionConfirmModal from "./BulkActionConfirmModal";
 import useGuestTableActions from "./useGuestTableActions";
 
 const STATUS_FILTER_MAP = {
@@ -15,6 +16,8 @@ const STATUS_FILTER_MAP = {
   declined: ["declined"],
   maybe: ["maybe"],
   noResponse: ["invited", "pending"],
+  // Combined audience for a one-shot "filter → select-all → resend" flow.
+  noResponseOrMaybe: ["invited", "pending", "maybe"],
   checkedIn: ["checked_in"],
 };
 
@@ -29,6 +32,9 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
 
   const event = eventData?.data?.event || null;
   const guests = guestsData?.data || [];
+  // Remaining invites in the host's pool (real number for per-event plans
+  // too; `null` = truly unlimited). Drives the bulk-action cost/disable logic.
+  const invitesRemaining = event?.subscription?.invitesRemaining ?? null;
 
   const filteredGuests = useMemo(() => {
     if (!statusFilter || statusFilter === "totalGuests") return guests;
@@ -51,6 +57,7 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
     t,
     eventId,
     guests,
+    invitesRemaining,
     deleteGuestMutation,
     updateGuestMutation,
     deleteModal,
@@ -79,8 +86,21 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
           onSendInvitation={actions.handleSendInvitation}
           onSendReminder={actions.handleSendReminder}
           onExportGuests={actions.handleExportGuests}
+          onBulkResend={actions.handleBulkResend}
+          onBulkExtraReminder={actions.handleBulkExtraReminder}
         />
       </div>
+
+      <BulkActionConfirmModal
+        isOpen={actions.bulkModal.isOpen}
+        type={actions.bulkModal.type}
+        count={actions.bulkModal.guestIds.length}
+        invitesRemaining={actions.invitesRemaining}
+        isLoading={actions.isBulkPending}
+        onConfirm={actions.handleConfirmBulkAction}
+        onClose={actions.closeBulkModal}
+        t={t}
+      />
 
       <GuestPopups
         eventId={eventId}

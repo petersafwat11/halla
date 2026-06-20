@@ -13,6 +13,7 @@ import TextInput from "../commen/TextInput";
 import MapPicker from "../commen/MapPicker";
 import EventTypeModal from "./eventTypeModal";
 import Svg, { Path } from "react-native-svg";
+import { useMySubscription } from "../../hooks/users";
 
 const CalendarIcon = () => (
   <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -83,10 +84,22 @@ const EVENT_TYPE_EMOJIS = {
 const StepOne = () => {
   const { control, setValue, watch } = useFormContext();
   const { t } = useTranslation("createEvent");
+  const { data: subData } = useMySubscription();
+  const isTrial = subData?.data?.subscription?.[0]?.planCode === "trial";
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() + 2);
+  // Earliest selectable event date enforces the backend event-date floor:
+  //   event date ≥ now + minLead + 3d  (trial minLead = 15min → ~now+3d;
+  //   paid minLead = 24h → now+4d). The picker is day-granular; the backend
+  //   (assertEventDateFloor) is the source of truth and rejects
+  //   EVENT_DATE_TOO_SOON for boundary cases.
+  const minDate = useMemo(() => {
+    const days = isTrial ? 3 : 4;
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [isTrial]);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showEventTypeModal, setShowEventTypeModal] = useState(false);
 
@@ -198,6 +211,18 @@ const StepOne = () => {
         />
       )}
 
+      <Text style={styles.dateHint}>
+        {isTrial
+          ? t(
+              "event_date_hint_trial",
+              "التواريخ الأقرب معطّلة — يجب أن تكون مناسبتك بعد 3 أيام على الأقل ليتسنى إرسال الدعوات والتذكير."
+            )
+          : t(
+              "event_date_hint",
+              "التواريخ الأقرب معطّلة — يجب أن تكون مناسبتك بعد 4 أيام على الأقل ليتسنى إرسال الدعوات والتذكير."
+            )}
+      </Text>
+
       {/* Event Time */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>{t("event_time_label")}</Text>
@@ -291,6 +316,15 @@ const styles = StyleSheet.create({
   },
   selectButtonPlaceholder: {
     color: "#999",
+  },
+  dateHint: {
+    fontSize: 12,
+    fontFamily: "Cairo_400Regular",
+    color: "#9CA3AF",
+    lineHeight: 18,
+    marginTop: -8,
+    marginBottom: 16,
+    textAlign: "right",
   },
 });
 
