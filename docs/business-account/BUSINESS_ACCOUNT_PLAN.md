@@ -145,10 +145,16 @@ keys/queries/mutations. **Page UI + i18n: delivered via UI build (see B3/B4 fron
 commits).**
 
 **B5 — event delivery** ✅ Event `branding{logoKey,businessName}` +
-`invitationDeliveryMode` (deterministic) + `invitationTemplate` snapshot; `createEvent`
-copies logo to event-owned immutable S3 key (rollback on fail) + snapshots name;
-`_formatEventForGuest` async-signs branding; centralized **dispatch-policy gate** wired
-into the cron launch path; hourly cron expires stale links.
+`invitationDeliveryMode` (deterministic) + `invitationTemplate{id,version,provider}`
+snapshot; `createEvent` copies the logo to an event-owned immutable S3 key (rollback on
+fail) + snapshots name (covers self- AND admin-created via `createEventForHost`→
+`createEvent`); `_formatEventForGuest` async-signs branding; centralized **dispatch-policy
+gate** wired into cron **launch + retry + guest-reminder** paths (HTTP sends already carry
+`requireSubscription`); hourly cron expires stale links. **Follow-up (gated on B0
+Meta-template approval):** the guest WhatsApp send still resolves the host-selected
+template; deterministic `portal_link`-vs-`quick_reply` template *selection* off the
+snapshot should be flipped on once both approved provider templates exist. The branded
+invite *page* (the main visible business value) is fully delivered.
 
 **B4 — business dashboard (web + mobile)** — frontend UI (plans/self-upgrade/settings/
 no-sub/hosted-checkout page + mobile parity) delivered via the frontend build.
