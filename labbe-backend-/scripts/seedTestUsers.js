@@ -23,7 +23,7 @@ dotenv.config({ path: path.join(__dirname, "..", "config.env") });
 const User = require("../models/UserModel");
 const Plan = require("../models/PlanModel");
 const Subscription = require("../models/SubscriptionModel");
-const { ROLES, USER_STATUS, VENDOR_STATUS, SUBSCRIPTION_STATUS } = require("../src/shared/constants");
+const { ROLES, USER_STATUS, VENDOR_STATUS, SUBSCRIPTION_STATUS, ACCOUNT_TYPES } = require("../src/shared/constants");
 
 const TEST_PASSWORD = "password123";
 
@@ -35,6 +35,7 @@ const testUsers = {
     name: "محمد أحمد الحربي",
     password: TEST_PASSWORD,
     role: ROLES.HOST,
+    accountType: ACCOUNT_TYPES.PERSONAL,
     status: USER_STATUS.ACTIVE,
     emailVerified: true,
     profile: {
