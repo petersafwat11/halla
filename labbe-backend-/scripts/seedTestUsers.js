@@ -5,11 +5,9 @@
  * Users created:
  * 1. Host - with trial subscription, complete profile
  * 2. Vendor - accepted status, complete business data
- * 3. WhiteLabel Admin - with business_quarterly subscription active
- * 4. Super Admin - full access (unlimited plan)
- * 5. Admin - platform admin (unlimited plan)
- * 6. Moderator - support role (unlimited plan)
- * 7. WhiteLabel Moderator - belongs to whitelabel
+ * 3. Super Admin - full access (unlimited plan)
+ * 4. Admin - platform admin (unlimited plan)
+ * 5. Moderator - support role (unlimited plan)
  *
  * All users have password: password123
  *
@@ -106,44 +104,6 @@ const testUsers = {
     },
   },
 
-  whitelabelAdmin: {
-    email: "test.whitelabel@labbe.sa",
-    phoneNumber: "534567890",
-    username: "TestWhiteLabel",
-    name: "خالد عبدالله العتيبي",
-    password: TEST_PASSWORD,
-    role: ROLES.WHITELABEL_ADMIN,
-    status: USER_STATUS.ACTIVE,
-    emailVerified: true,
-    profile: {
-      whitelabelData: {
-        arabicName: "منصة الفخامة للمناسبات",
-        englishName: "Luxury Events Platform",
-        platformName: "Luxury Events",
-        companyName: "شركة الفخامة للتقنية",
-        logo: "https://example.com/whitelabel-logo.png",
-        favicon: "https://example.com/favicon.ico",
-        requirements: {
-          numberOfEventsMonthly: 15,
-          numberOfGuestsMonthly: 3000,
-          eventTypes: ["wedding", "corporate", "conference", "graduation"],
-        },
-        address: {
-          city: "الرياض",
-          neighborhood: "العليا",
-          street: "شارع الملك فهد",
-          buildingNumber: "1234",
-        },
-        licenseNumber: "7012345678",
-        taxNumber: "300123456789012",
-        planSelection: {
-          planCode: "business_quarterly",
-        },
-        applicationStatus: "approved",
-      },
-    },
-  },
-
   superAdmin: {
     email: "test.superadmin@labbe.sa",
     phoneNumber: "545678901",
@@ -204,25 +164,6 @@ const testUsers = {
     },
   },
 
-  whitelabelModerator: {
-    email: "test.wlmoderator@labbe.sa",
-    phoneNumber: "578901234",
-    username: "TestWLModerator",
-    name: "ناصر سعود الشمري",
-    password: TEST_PASSWORD,
-    role: ROLES.WHITELABEL_MODERATOR,
-    status: USER_STATUS.ACTIVE,
-    emailVerified: true,
-    profile: {
-      adminData: {
-        title: "مشرف منصة الفخامة",
-        department: "إدارة المنصة",
-        lastLogin: new Date(),
-        loginAttempts: 0,
-        actionsCount: 0,
-      },
-    },
-  },
 };
 
 const seedTestUsers = async () => {
@@ -243,15 +184,10 @@ const seedTestUsers = async () => {
 
     // Fetch required plans
     const trialPlan = await Plan.findOne({ code: "trial" });
-    const businessQuarterlyPlan = await Plan.findOne({ code: "business_quarterly" });
     const unlimitedPlan = await Plan.findOne({ code: "unlimited" });
 
     if (!trialPlan) {
       console.error("❌ 'trial' plan not found. Please run seedPlans.js first.");
-      process.exit(1);
-    }
-    if (!businessQuarterlyPlan) {
-      console.error("❌ 'business_quarterly' plan not found. Please run seedPlans.js first.");
       process.exit(1);
     }
     if (!unlimitedPlan) {
@@ -282,42 +218,10 @@ const seedTestUsers = async () => {
     await createdUsers.superAdmin.save({ validateBeforeSave: false });
     console.log(`   ✅ ${createdUsers.superAdmin.email} (Unlimited subscription)`);
 
-    // H-23: Phase 0 made `whitelabelId` REQUIRED on ADMIN / MODERATOR /
-    // WHITELABEL_ADMIN / WHITELABEL_MODERATOR rows. The previous seed
-    // order created admin/moderator BEFORE whitelabelAdmin, with no
-    // tenant attached — every fresh dev DB therefore booted with broken
-    // admins (`Admin tenant configuration error` 500 on every admin
-    // endpoint, `audit-admin-whitelabel.js` flagging both as orphans).
-    //
-    // Fix: create the whitelabel-admin tenant first, then scope the
-    // platform admin + moderator to that tenant. Real production has a
-    // dedicated "platform" tenant doc; for the dev seeder, reusing the
-    // whitelabelAdmin's _id as a tenant root is enough — SUPER_ADMIN is
-    // still the only cross-tenant role.
-
-    // 2. WhiteLabel Admin + business_quarterly subscription (created first
-    //    so subsequent admin/moderator rows can attach to its tenant).
-    console.log("📝 Creating WhiteLabel Admin...");
-    createdUsers.whitelabelAdmin = await User.create(testUsers.whitelabelAdmin);
-    const whitelabelSub = await Subscription.createForUser(
-      createdUsers.whitelabelAdmin._id,
-      businessQuarterlyPlan,
-      {
-        status: SUBSCRIPTION_STATUS.ACTIVE,
-        pricePaid: businessQuarterlyPlan.pricing?.oneTime || 3500,
-        currency: "SAR",
-        whitelabelId: createdUsers.whitelabelAdmin._id,
-      }
-    );
-    createdUsers.whitelabelAdmin.subscription = whitelabelSub._id;
-    await createdUsers.whitelabelAdmin.save({ validateBeforeSave: false });
-    console.log(`   ✅ ${createdUsers.whitelabelAdmin.email} (Business Quarterly — invitePool: 500)`);
-
-    // 3. Admin + unlimited subscription, scoped to the whitelabelAdmin tenant.
+    // 2. Admin + unlimited subscription.
     console.log("📝 Creating Admin...");
     createdUsers.admin = await User.create({
       ...testUsers.admin,
-      whitelabelId: createdUsers.whitelabelAdmin._id,
     });
     const adminSub = await Subscription.createForUser(
       createdUsers.admin._id,
@@ -326,13 +230,12 @@ const seedTestUsers = async () => {
     );
     createdUsers.admin.subscription = adminSub._id;
     await createdUsers.admin.save({ validateBeforeSave: false });
-    console.log(`   ✅ ${createdUsers.admin.email} (Unlimited subscription, whitelabel-scoped)`);
+    console.log(`   ✅ ${createdUsers.admin.email} (Unlimited subscription)`);
 
-    // 4. Moderator + unlimited subscription, scoped to the same tenant.
+    // 3. Moderator + unlimited subscription.
     console.log("📝 Creating Moderator...");
     createdUsers.moderator = await User.create({
       ...testUsers.moderator,
-      whitelabelId: createdUsers.whitelabelAdmin._id,
     });
     const moderatorSub = await Subscription.createForUser(
       createdUsers.moderator._id,
@@ -341,17 +244,9 @@ const seedTestUsers = async () => {
     );
     createdUsers.moderator.subscription = moderatorSub._id;
     await createdUsers.moderator.save({ validateBeforeSave: false });
-    console.log(`   ✅ ${createdUsers.moderator.email} (Unlimited subscription, whitelabel-scoped)`);
+    console.log(`   ✅ ${createdUsers.moderator.email} (Unlimited subscription)`);
 
-    // 5. WhiteLabel Moderator (linked to whitelabel admin tenant)
-    console.log("📝 Creating WhiteLabel Moderator...");
-    createdUsers.whitelabelModerator = await User.create({
-      ...testUsers.whitelabelModerator,
-      whitelabelId: createdUsers.whitelabelAdmin._id,
-    });
-    console.log(`   ✅ ${createdUsers.whitelabelModerator.email}`);
-
-    // 6. Host + trial subscription
+    // 4. Host + trial subscription
     console.log("📝 Creating Host...");
     createdUsers.host = await User.create(testUsers.host);
     const hostSub = await Subscription.createForUser(
@@ -363,7 +258,7 @@ const seedTestUsers = async () => {
     await createdUsers.host.save({ validateBeforeSave: false });
     console.log(`   ✅ ${createdUsers.host.email} (Trial — 1 event, 5 invites)`);
 
-    // 7. Vendor (no subscription needed)
+    // 5. Vendor (no subscription needed)
     console.log("📝 Creating Vendor...");
     createdUsers.vendor = await User.create(testUsers.vendor);
     console.log(`   ✅ ${createdUsers.vendor.email}`);
@@ -381,8 +276,6 @@ const seedTestUsers = async () => {
       { key: "superAdmin",          label: "Super Admin" },
       { key: "admin",               label: "Admin" },
       { key: "moderator",           label: "Moderator" },
-      { key: "whitelabelAdmin",     label: "WhiteLabel Admin" },
-      { key: "whitelabelModerator", label: "WhiteLabel Moderator" },
       { key: "host",                label: "Host" },
       { key: "vendor",              label: "Vendor" },
     ];
@@ -395,7 +288,6 @@ const seedTestUsers = async () => {
     console.log("-".repeat(70));
     console.log("\n📌 Subscription Notes:");
     console.log("   - Super Admin / Admin / Moderator: Unlimited (no expiry)");
-    console.log("   - WhiteLabel Admin: Business Quarterly (invitePool: 500 + 75 compensation, 90 days)");
     console.log("   - Host: Trial (1 event, 5 invites, 90 days)");
     console.log("   - Vendor: No subscription");
     console.log("=".repeat(70));

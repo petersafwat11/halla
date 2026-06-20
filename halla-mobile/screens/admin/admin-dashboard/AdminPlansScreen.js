@@ -26,7 +26,7 @@ import {
 // Match planType prefixes for the tabs:
 //   "host_event"   → per-event host plans (basic_event, premium_event)
 //   "host_monthly" → recurring host plans (basic_monthly, premium_monthly)
-//   "business"     → whitelabel plans     (business_event, business_quarterly, business_annual)
+//   "business"     → business plans      (business_event, business_quarterly, business_annual)
 //   "trial"        → exact match on planType === "trial" (handled below)
 const TYPE_PREFIX_BY_TAB = {
   host_event: ["basic_event", "premium_event"],

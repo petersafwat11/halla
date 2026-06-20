@@ -7,16 +7,14 @@ const adminService = require('./admin.service');
 const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess } = require('../../shared/utils/responseHelper');
 const { generateExcel } = require('../../shared/utils/excelExport');
-const { getWhitelabelIdFromFilter } = require('./admin.controller.shared');
 
 exports.getModerators = catchAsync(async (req, res) => {
   const { page, limit, search, status, from, to } = req.query;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
 
   const result = await adminService.getModerators({
     page: parseInt(page) || 1,
     limit: parseInt(limit) || 10,
-    search, status, from, to, whitelabelId,
+    search, status, from, to,
   });
 
   sendSuccess(res, result, 'Moderators retrieved successfully');
@@ -24,12 +22,10 @@ exports.getModerators = catchAsync(async (req, res) => {
 
 exports.createModerator = catchAsync(async (req, res) => {
   const { email, phoneNumber, name, username, password, permissions, role } = req.body;
-  const filterWhitelabelId = getWhitelabelIdFromFilter(req);
 
   const moderator = await adminService.createModerator({
     email, phoneNumber, name, username, password, permissions, role,
     actorRole: req.user.role,
-    filterWhitelabelId,
   });
 
   sendSuccess(res, { moderator }, 'Moderator created successfully', 201);
@@ -37,47 +33,41 @@ exports.createModerator = catchAsync(async (req, res) => {
 
 exports.updateModerator = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
-  const moderator = await adminService.updateModerator(id, req.body, whitelabelId);
+  const moderator = await adminService.updateModerator(id, req.body);
   sendSuccess(res, { moderator }, 'Moderator updated successfully');
 });
 
 exports.updateModeratorStatus = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  const moderator = await adminService.updateModeratorStatus(id, status, whitelabelId);
+  const moderator = await adminService.updateModeratorStatus(id, status);
   sendSuccess(res, { moderator }, 'Moderator status updated successfully');
 });
 
 exports.deleteModerator = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
-  const result = await adminService.deleteModerator(id, whitelabelId);
+  const result = await adminService.deleteModerator(id);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkDeleteModerators = catchAsync(async (req, res) => {
   const { ids } = req.body;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  const result = await adminService.bulkDeleteModerators(ids, whitelabelId);
+  const result = await adminService.bulkDeleteModerators(ids);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkUpdateModeratorStatus = catchAsync(async (req, res) => {
   const { ids, status } = req.body;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  const result = await adminService.bulkUpdateModeratorStatus(ids, status, whitelabelId);
+  const result = await adminService.bulkUpdateModeratorStatus(ids, status);
   sendSuccess(res, result, result.message);
 });
 
 exports.exportModerators = catchAsync(async (req, res) => {
   const { search, status, from, to } = req.query;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
-  const data = await adminService.exportModerators(whitelabelId, { search, status, from, to });
+  const data = await adminService.exportModerators({ search, status, from, to });
   const buffer = generateExcel(data, 'moderators');
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', 'attachment; filename=moderators.xlsx');

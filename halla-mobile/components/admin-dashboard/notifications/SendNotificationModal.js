@@ -14,14 +14,6 @@ import { useTranslation } from "../../../localization";
 import { useSendNotification, useBroadcastNotification } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 
-const ROLE_OPTIONS = [
-  { value: "host", labelKey: "sendNotification.roles.host" },
-  { value: "vendor", labelKey: "sendNotification.roles.vendor" },
-  { value: "moderator", labelKey: "sendNotification.roles.moderator" },
-  { value: "admin", labelKey: "sendNotification.roles.admin" },
-  { value: "whitelabel_admin", labelKey: "sendNotification.roles.whitelabel" },
-];
-
 const SendNotificationModal = ({
   visible,
   onClose,

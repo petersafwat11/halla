@@ -85,14 +85,6 @@
     "tickets": {
       "title": "التذاكر المفتوحة",
       "subtitle": "{{count}} محلولة هذه الفترة"
-    },
-    "whitelabel": {
-      "totalEvents": "إجمالي المناسبات",
-      "activeEvents": "المناسبات النشطة",
-      "totalClients": "إجمالي العملاء",
-      "totalGuests": "إجمالي الضيوف",
-      "activeEventsCount": "{{count}} نشطة",
-      "scheduledCount": "{{count}} مجدولة"
     }
   },
   "hosts": {
@@ -278,9 +270,7 @@
     },
     "roles": {
       "moderator": "مشرف",
-      "admin": "مسؤول",
-      "whitelabel_moderator": "مشرف وايت ليبل",
-      "whitelabel_admin": "مسؤول وايت ليبل"
+      "admin": "مسؤول"
     },
     "actions": {
       "edit": "تعديل",
@@ -603,8 +593,7 @@
       "subtitle": "اختر الحساب الذي سيتم إنشاء المناسبة تحته",
       "tabs": {
         "self": "لنفسي",
-        "host": "لمضيف",
-        "whitelabel": "لوايت ليبل"
+        "host": "لمضيف"
       },
       "searchPlaceholder": "البحث برقم الهاتف",
       "verify": "تحقق",
@@ -875,127 +864,6 @@
       "voided": "تم إلغاء الدفعة",
       "refunded": "تم استرداد الدفعة",
       "partially_refunded": "مسترد جزئياً"
-    }
-  },
-  "whitelabelDetails": {
-    "title": "تفاصيل الوايت ليبل",
-    "loading": "جاري تحميل تفاصيل الوايت ليبل…",
-    "notFound": "لم يتم العثور على الوايت ليبل",
-    "contactInfo": "معلومات الاتصال",
-    "phone": "رقم الهاتف",
-    "email": "البريد الإلكتروني",
-    "joinDate": "تاريخ الانضمام",
-    "username": "اسم المستخدم",
-    "subscription": "تفاصيل الاشتراك",
-    "plan": "الخطة",
-    "status": "الحالة",
-    "expires": "ينتهي في",
-    "teamMembersLimit": "حد أعضاء الفريق",
-    "eventsPerMonthLimit": "حد المناسبات / شهر",
-    "unlimited": "غير محدود",
-    "noPlanSet": "لم يتم تعيين خطة اشتراك بعد",
-    "assignPlan": "تعيين خطة",
-    "assignPlanFirst": "يرجى تعيين خطة قبل تفعيل هذا الوايت ليبل.",
-    "adminActions": "إجراءات الإدارة",
-    "manageSubscription": "إدارة الاشتراك",
-    "manageSubscriptionSublabel": "تغيير خطة الأعمال أو الحالة",
-    "approveWhitelabel": "الموافقة على الوايت ليبل",
-    "approveSublabel": "الموافقة على هذا الوايت ليبل المعلق",
-    "suspendWhitelabel": "إيقاف الحساب",
-    "activateWhitelabel": "تفعيل الحساب",
-    "suspendSublabel": "تقييد الوصول إلى هذا الوايت ليبل",
-    "activateSublabel": "استعادة الوصول إلى هذا الوايت ليبل",
-    "suspendConfirmTitle": "إيقاف الوايت ليبل",
-    "suspendConfirmMessage": "سيتم إيقاف هذا الوايت ليبل وفقدان الوصول.",
-    "activateConfirmTitle": "تفعيل الوايت ليبل",
-    "activateConfirmMessage": "إعادة تفعيل هذا الوايت ليبل؟",
-    "suspended": "تم إيقاف الوايت ليبل",
-    "activated": "تم تفعيل الوايت ليبل",
-    "updateStatusFailed": "فشل تحديث الحالة",
-    "loadFailed": "فشل تحميل تفاصيل الوايت ليبل",
-    "registeredHosts": "المضيفون المسجلون",
-    "hosts": "المضيفون",
-    "events": "المناسبات",
-    "moderators": "المشرفون",
-    "subscriptionPlan": "خطة الاشتراك",
-    "planNone": "لا يوجد",
-    "approveDialog": {
-      "title": "تأكيد الموافقة",
-      "body": "أنت على وشك الموافقة على هذه المنصة. سيتم تنشيط الحساب فوراً.",
-      "platform": "المنصة",
-      "email": "البريد",
-      "dispatchEmail": "إرسال رابط إعداد كلمة المرور بالبريد",
-      "dispatchEmailHint": "عند التفعيل، سيتم إنشاء رمز جديد وإرسال البريد فوراً. الرمز السابق (إن وجد) سيصبح غير صالح.",
-      "cancel": "إلغاء",
-      "confirm": "موافقة وإرسال",
-      "confirmNoEmail": "موافقة",
-      "submitting": "جارٍ الموافقة...",
-      "successWithEmail": "تمت الموافقة على الوايت ليبل وتم إرسال بريد الإعداد.",
-      "successPasswordAlreadySet": "تمت الموافقة على الوايت ليبل. كلمة المرور معينة بالفعل — لم يتم إرسال البريد.",
-      "successNoEmailOnFile": "تمت الموافقة على الوايت ليبل، لكن لا يوجد بريد إلكتروني مسجل — لم يتم إرسال رابط الإعداد.",
-      "successEmailFailed": "تمت الموافقة على الوايت ليبل، لكن فشل إرسال بريد الإعداد."
-    }
-  },
-  "whitelabels": {
-    "title": "الوايت ليبل",
-    "searchPlaceholder": "البحث عن الوايت ليبل...",
-    "filters": {
-      "all": "جميع الوايت ليبل",
-      "active": "نشط",
-      "pending": "قيد الانتظار",
-      "suspended": "موقوف"
-    },
-    "status": {
-      "active": "نشط",
-      "pending": "قيد الانتظار",
-      "suspended": "موقوف",
-      "expired": "منتهي",
-      "cancelled": "ملغي"
-    },
-    "actions": {
-      "activate": "تفعيل",
-      "suspend": "إيقاف",
-      "managePlan": "إدارة الخطة",
-      "delete": "حذف",
-      "bulkSuspendMessage": "إيقاف {{count}} وايت ليبل؟",
-      "bulkDeleteMessage": "حذف {{count}} وايت ليبل؟ لا يمكن التراجع عن هذا الإجراء."
-    },
-    "labels": {
-      "unnamed": "بدون اسم"
-    },
-    "subscription": {
-      "manageTitle": "إدارة الاشتراك",
-      "businessPlan": "خطة الأعمال",
-      "statusLabel": "الحالة",
-      "loadingPlans": "جاري تحميل الخطط...",
-      "errorLoadingPlans": "فشل تحميل الخطط",
-      "retry": "إعادة المحاولة",
-      "selectPlan": "اختر خطة الأعمال",
-      "validation": "الرجاء اختيار خطة وحالة",
-      "noPlansAvailable": "لا توجد خطط متاحة",
-      "noPlanSelected": "الرجاء اختيار خطة أعمال",
-      "updated": "تم تحديث الاشتراك بنجاح",
-      "updateFailed": "فشل تحديث الاشتراك",
-      "update": "تحديث",
-      "updating": "جاري التحديث...",
-      "cancel": "إلغاء",
-      "statusActive": "نشط",
-      "statusExpired": "منتهي",
-      "statusCancelled": "ملغي",
-      "selectStatus": "اختر الحالة",
-      "status": "الحالة",
-      "plan": "الخطة",
-      "sections": {
-        "event": "خطط لكل مناسبة",
-        "quarterly": "رصيد ربع سنوي",
-        "annual": "رصيد سنوي"
-      },
-      "invitesPool": "{{count}} دعوة (رصيد)",
-      "invitesPerEvent": "{{count}} دعوة/مناسبة"
-    },
-    "empty": {
-      "title": "لا يوجد وايت ليبل",
-      "message": "لا يوجد تطبيقات وايت ليبل للعرض"
     }
   },
   "plans": {
@@ -1313,9 +1181,7 @@
     "payments": "المدفوعات",
     "moderators": "المشرفون",
     "vendors": "مزودو الخدمات",
-    "whitelabels": "الوايت ليبل",
     "plans": "الباقات",
-    "myPlans": "باقاتي",
     "discounts": "أكواد الخصم",
     "settings": "الإعدادات"
   },
@@ -1375,8 +1241,7 @@
       "host": "المضيفين",
       "vendor": "مزودي الخدمات",
       "moderator": "المشرفين",
-      "admin": "المديرين",
-      "whitelabel_admin": "مديري الوايت ليبل"
+      "admin": "المديرين"
     }
   }
 }

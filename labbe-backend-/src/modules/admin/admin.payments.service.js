@@ -39,12 +39,11 @@ async function buildPaymentSearchClause(search) {
  * backfilled into the Payment collection (status: paid, backfilledFrom:
  * 'subscription'), so all data is queryable via Payment directly.
  */
-async function getPayments({ page = 1, limit = 10, status, search, from, to, whitelabelId } = {}) {
+async function getPayments({ page = 1, limit = 10, status, search, from, to } = {}) {
   const Payment = require('../../../models/PaymentModel');
   const skip = (page - 1) * limit;
 
   const match = {};
-  if (whitelabelId !== undefined) match.whitelabelId = whitelabelId;
 
   if (status && status !== 'all') {
     const map = {
@@ -60,7 +59,7 @@ async function getPayments({ page = 1, limit = 10, status, search, from, to, whi
   const dateRange = buildDateRangeQuery(from, to);
   if (Object.keys(dateRange).length > 0) match.createdAt = dateRange;
 
-  const baseMatch = whitelabelId !== undefined ? { whitelabelId } : {};
+  const baseMatch = {};
   const [rows, total, statsAgg] = await Promise.all([
     Payment.find(match)
       .populate('userId', 'name email phoneNumber')
@@ -121,9 +120,9 @@ async function getPayments({ page = 1, limit = 10, status, search, from, to, whi
 }
 
 /** Payment summary widget — same stats block as getPayments without paginating rows. */
-async function getPaymentSummary({ whitelabelId } = {}) {
+async function getPaymentSummary() {
   const Payment = require('../../../models/PaymentModel');
-  const baseMatch = whitelabelId !== undefined ? { whitelabelId } : {};
+  const baseMatch = {};
   const statsAgg = await Payment.aggregate([
     { $match: baseMatch },
     { $group: { _id: '$status', count: { $sum: 1 }, revenue: { $sum: '$amount' } } },
@@ -145,7 +144,7 @@ async function getPaymentSummary({ whitelabelId } = {}) {
   return { totalRevenue, pending, completed, failed };
 }
 
-/** Single payment detail. Whitelabel scope is enforced by the controller. */
+/** Single payment detail. */
 async function getPaymentDetail(paymentId) {
   const Payment = require('../../../models/PaymentModel');
   const detail = await Payment.findById(paymentId)
@@ -162,10 +161,9 @@ async function getPaymentDetail(paymentId) {
 /**
  * Export payments
  */
-async function exportPayments(whitelabelId, { status, search, from, to } = {}) {
+async function exportPayments({ status, search, from, to } = {}) {
   const Payment = require('../../../models/PaymentModel');
   const match = {};
-  if (whitelabelId !== undefined) match.whitelabelId = whitelabelId;
   if (status && status !== 'all') {
     const map = {
       completed: { $in: ['paid', 'captured', 'partially_refunded'] },

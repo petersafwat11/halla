@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../../stores/authStore";
-import { canViewPage, PAGES, ROLES } from "../../../utils/adminPermissions";
+import { canViewPage, PAGES } from "../../../utils/adminPermissions";
 import { colors, backgrounds, textStyles } from "../../../styles/tokens";
 import { useTranslation } from "../../../localization";
 
@@ -33,24 +33,10 @@ const MENU_ITEMS = [
     screen: "AdminVendorsList",
   },
   {
-    key: PAGES.WHITELABELS,
-    labelKey: "more.whitelabels",
-    icon: "business-outline",
-    screen: "AdminWhitelabelsList",
-  },
-  {
     key: PAGES.PLANS,
     labelKey: "more.plans",
     icon: "cube-outline",
     screen: "AdminPlans",
-    excludeRoles: [ROLES.WHITELABEL_ADMIN, ROLES.WHITELABEL_MODERATOR],
-  },
-  {
-    key: PAGES.PLANS,
-    labelKey: "more.myPlans",
-    icon: "cube-outline",
-    screen: "WhitelabelPlans",
-    onlyRoles: [ROLES.WHITELABEL_ADMIN],
   },
   {
     key: PAGES.DISCOUNTS,
@@ -71,12 +57,9 @@ const AdminMoreScreen = ({ navigation }) => {
   const { user } = useAuthStore();
   const userRole = user?.role;
 
-  const visibleItems = MENU_ITEMS.filter((item) => {
-    if (!canViewPage(userRole, item.key)) return false;
-    if (item.excludeRoles && item.excludeRoles.includes(userRole)) return false;
-    if (item.onlyRoles && !item.onlyRoles.includes(userRole)) return false;
-    return true;
-  });
+  const visibleItems = MENU_ITEMS.filter((item) =>
+    canViewPage(userRole, item.key)
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>

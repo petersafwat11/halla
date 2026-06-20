@@ -36,8 +36,7 @@
     "cancel": "الغاء",
     "saving": "جاري الحفظ...",
     "success": "تم إضافة المشرف بنجاح",
-    "error": "فشل في إضافة المشرف",
-    "whitelabelRequired": "اختيار العلامة البيضاء مطلوب"
+    "error": "فشل في إضافة المشرف"
   },
   "editModerator": {
     "title": "تعديل مشرف",
@@ -123,8 +122,6 @@
       "inactive": "غير نشط"
     },
     "roles": {
-      "whitelabelModerator": "مشرف علامة بيضاء",
-      "whitelabelAdmin": "مدير علامة بيضاء",
       "moderator": "مشرف",
       "admin": "مدير"
     },
@@ -138,9 +135,7 @@
       "password": "كلمة المرور",
       "passwordPlaceholder": "اتركه فارغاً للإنشاء التلقائي",
       "role": "الدور",
-      "selectRole": "اختر الدور",
-      "whitelabel": "العلامة البيضاء",
-      "selectWhitelabel": "اختر العلامة البيضاء"
+      "selectRole": "اختر الدور"
     }
   }
 }

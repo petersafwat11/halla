@@ -14,24 +14,11 @@ const { normalizePhoneNumber } = require('../../shared/utils/phone');
 /**
  * Get all moderators with pagination and filters
  */
-async function getModerators({ page = 1, limit = 10, search, status, from, to, whitelabelId }) {
+async function getModerators({ page = 1, limit = 10, search, status, from, to }) {
   const skip = (page - 1) * limit;
 
-  // Tenant-isolated query:
-  // - Whitelabel users see only their own whitelabel_moderators/whitelabel_admins
-  // - Platform users (super_admin, admin, moderator — all have whitelabelId: null)
-  //   see only platform moderators/admins (no whitelabelId)
-  let query = {};
-  if (whitelabelId !== undefined && whitelabelId !== null) {
-    // Whitelabel user — only their whitelabel_moderators and whitelabel_admins
-    query = { role: { $in: [ROLES.WHITELABEL_MODERATOR, ROLES.WHITELABEL_ADMIN] }, whitelabelId };
-  } else if (whitelabelId === null) {
-    // Platform admin/super_admin — only platform moderators and admins
-    query = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] }, whitelabelId: null };
-  } else {
-    // Fallback (whitelabelId === undefined): safety net, should not occur after middleware fix
-    query = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] }, whitelabelId: null };
-  }
+  // Platform moderators and admins.
+  let query = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
 
   if (search) {
     const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
@@ -71,19 +58,8 @@ async function getModerators({ page = 1, limit = 10, search, status, from, to, w
 /**
  * Create new moderator
  */
-async function createModerator({ email, phoneNumber, name, username, password, permissions, role: requestedRole, actorRole, filterWhitelabelId }) {
-  // Whitelabel is derived from the actor, not selected in the UI:
-  //  - super_admin / admin → platform-wide moderator (whitelabelId: null)
-  //  - whitelabel_admin    → inherits the creator's whitelabelId
-  let whitelabelId;
-  if (actorRole === ROLES.SUPER_ADMIN || actorRole === ROLES.ADMIN) {
-    whitelabelId = null;
-  } else if (actorRole === ROLES.WHITELABEL_ADMIN) {
-    whitelabelId = filterWhitelabelId;
-    if (!whitelabelId) {
-      throw new ValidationError('Creator has no whitelabel scope; cannot create moderator');
-    }
-  } else {
+async function createModerator({ email, phoneNumber, name, username, password, permissions, role: requestedRole, actorRole }) {
+  if (actorRole !== ROLES.SUPER_ADMIN && actorRole !== ROLES.ADMIN) {
     throw new ValidationError('Not authorized to create moderators');
   }
 
@@ -104,17 +80,9 @@ async function createModerator({ email, phoneNumber, name, username, password, p
     }
   }
 
-  // Pin the role to the actor's scope so a whitelabel admin can't escalate to
-  // a platform role (or vice versa) by tampering with the request body.
-  const WHITELABEL_ALLOWED = [ROLES.WHITELABEL_MODERATOR, ROLES.WHITELABEL_ADMIN];
+  // Pin the role to a platform role so a tampered request body can't escalate.
   const PLATFORM_ALLOWED = [ROLES.MODERATOR, ROLES.ADMIN];
-
-  let moderatorRole;
-  if (whitelabelId === null) {
-    moderatorRole = PLATFORM_ALLOWED.includes(requestedRole) ? requestedRole : ROLES.MODERATOR;
-  } else {
-    moderatorRole = WHITELABEL_ALLOWED.includes(requestedRole) ? requestedRole : ROLES.WHITELABEL_MODERATOR;
-  }
+  const moderatorRole = PLATFORM_ALLOWED.includes(requestedRole) ? requestedRole : ROLES.MODERATOR;
 
   const moderator = await User.create({
     email: email?.toLowerCase(),
@@ -124,7 +92,6 @@ async function createModerator({ email, phoneNumber, name, username, password, p
     password,
     role: moderatorRole,
     status: USER_STATUS.ACTIVE,
-    whitelabelId,
     ...(Array.isArray(permissions) && permissions.length > 0 ? { permissions } : {}),
   });
 
@@ -144,11 +111,8 @@ async function createModerator({ email, phoneNumber, name, username, password, p
 /**
  * Update moderator
  */
-async function updateModerator(moderatorId, updateData, whitelabelId) {
-  const query = { _id: moderatorId, role: { $in: [ROLES.MODERATOR, ROLES.WHITELABEL_MODERATOR, ROLES.ADMIN, ROLES.WHITELABEL_ADMIN] } };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
+async function updateModerator(moderatorId, updateData) {
+  const query = { _id: moderatorId, role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
 
   const allowedUpdates = ['name', 'email', 'phoneNumber', 'permissions', 'role'];
   const updates = {};
@@ -161,13 +125,8 @@ async function updateModerator(moderatorId, updateData, whitelabelId) {
 
   // Validate role change if requested
   if (updates.role) {
-    const WHITELABEL_ALLOWED = [ROLES.WHITELABEL_MODERATOR, ROLES.WHITELABEL_ADMIN];
     const PLATFORM_ALLOWED = [ROLES.MODERATOR, ROLES.ADMIN];
-    if (whitelabelId !== undefined && whitelabelId !== null) {
-      if (!WHITELABEL_ALLOWED.includes(updates.role)) delete updates.role;
-    } else {
-      if (!PLATFORM_ALLOWED.includes(updates.role)) delete updates.role;
-    }
+    if (!PLATFORM_ALLOWED.includes(updates.role)) delete updates.role;
   }
 
   if (updates.email) {
@@ -190,11 +149,8 @@ async function updateModerator(moderatorId, updateData, whitelabelId) {
 /**
  * Update moderator status
  */
-async function updateModeratorStatus(moderatorId, status, whitelabelId) {
-  const query = { _id: moderatorId, role: { $in: [ROLES.MODERATOR, ROLES.WHITELABEL_MODERATOR, ROLES.ADMIN, ROLES.WHITELABEL_ADMIN] } };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
+async function updateModeratorStatus(moderatorId, status) {
+  const query = { _id: moderatorId, role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
 
   const moderator = await User.findOneAndUpdate(
     query,
@@ -222,11 +178,8 @@ async function updateModeratorStatus(moderatorId, status, whitelabelId) {
 /**
  * Delete moderator
  */
-async function deleteModerator(moderatorId, whitelabelId) {
-  const query = { _id: moderatorId, role: { $in: [ROLES.MODERATOR, ROLES.WHITELABEL_MODERATOR, ROLES.ADMIN, ROLES.WHITELABEL_ADMIN] } };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
+async function deleteModerator(moderatorId) {
+  const query = { _id: moderatorId, role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
 
   const moderator = await User.findOne(query);
   if (!moderator) {
@@ -243,14 +196,11 @@ async function deleteModerator(moderatorId, whitelabelId) {
 /**
  * Bulk delete moderators
  */
-async function bulkDeleteModerators(moderatorIds, whitelabelId) {
+async function bulkDeleteModerators(moderatorIds) {
   const query = {
     _id: { $in: moderatorIds },
-    role: { $in: [ROLES.MODERATOR, ROLES.WHITELABEL_MODERATOR, ROLES.ADMIN, ROLES.WHITELABEL_ADMIN] },
+    role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] },
   };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const result = await User.updateMany(
     query,
@@ -270,21 +220,11 @@ async function bulkDeleteModerators(moderatorIds, whitelabelId) {
 /**
  * Bulk update moderator status
  */
-async function bulkUpdateModeratorStatus(moderatorIds, status, whitelabelId) {
-  const query = { _id: { $in: moderatorIds } };
-
-  if (whitelabelId !== undefined && whitelabelId !== null) {
-    // Whitelabel user — only their whitelabel moderators
-    query.role = { $in: [ROLES.WHITELABEL_MODERATOR, ROLES.WHITELABEL_ADMIN] };
-    query.whitelabelId = whitelabelId;
-  } else if (whitelabelId === null) {
-    // Platform admin/super_admin — only platform moderators (no whitelabelId)
-    query.role = { $in: [ROLES.MODERATOR, ROLES.ADMIN] };
-    query.whitelabelId = null;
-  } else {
-    // No filter set (should not happen after middleware fix, kept as safety net)
-    query.role = { $in: [ROLES.MODERATOR, ROLES.WHITELABEL_MODERATOR, ROLES.ADMIN, ROLES.WHITELABEL_ADMIN] };
-  }
+async function bulkUpdateModeratorStatus(moderatorIds, status) {
+  const query = {
+    _id: { $in: moderatorIds },
+    role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] },
+  };
 
   const result = await User.updateMany(query, { status });
 
@@ -298,13 +238,8 @@ async function bulkUpdateModeratorStatus(moderatorIds, status, whitelabelId) {
 /**
  * Export moderators
  */
-async function exportModerators(whitelabelId, { search, status, from, to } = {}) {
-  let query = { role: { $in: [ROLES.MODERATOR, ROLES.WHITELABEL_MODERATOR, ROLES.ADMIN, ROLES.WHITELABEL_ADMIN] } };
-  if (whitelabelId !== undefined && whitelabelId !== null) {
-    query = { role: { $in: [ROLES.WHITELABEL_MODERATOR, ROLES.WHITELABEL_ADMIN] }, whitelabelId };
-  } else if (whitelabelId === null) {
-    query = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] }, whitelabelId: null };
-  }
+async function exportModerators({ search, status, from, to } = {}) {
+  let query = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
   if (search) {
     const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
     query = { ...query, ...searchQuery };

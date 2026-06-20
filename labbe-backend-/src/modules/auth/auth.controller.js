@@ -14,16 +14,13 @@
  * @module modules/auth/auth.controller
  */
 
-const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const catchAsync = require("../../shared/utils/catchAsync");
 const {
   sendSuccess,
 } = require("../../shared/utils/responseHelper");
-const { ValidationError } = require("../../shared/errors");
 const authService = require("./auth.service");
 const config = require("../../config");
-const User = require("../../../models/UserModel");
 const { logAudit } = require("../../shared/utils/auditLog");
 
 const ACCESS_COOKIE = "access_token";
@@ -233,23 +230,6 @@ exports.vendorSignup = catchAsync(async (req, res) => {
     additionalData: { pendingApproval: result.pendingApproval },
     statusCode: 201,
     message: "Vendor application submitted successfully",
-  });
-});
-
-/**
- * Whitelabel signup — pending approval, no token issued.
- * POST /api/v2/auth/signup/whitelabel
- */
-exports.whitelabelSignup = catchAsync(async (req, res) => {
-  const result = await authService.signupWhitelabel(req.body, req.file);
-
-  sendAuthResponse(res, {
-    user: result.user,
-    accessToken: null,
-    refreshToken: null,
-    additionalData: { pendingApproval: result.pendingApproval },
-    statusCode: 201,
-    message: "Whitelabel application submitted successfully",
   });
 });
 
@@ -484,128 +464,3 @@ exports.verifyEmail = catchAsync(async (req, res) => {
   sendSuccess(res, null, "Email verified successfully");
 });
 
-// ============================================
-// PASSWORD SETUP (Whitelabel)
-// ============================================
-
-/**
- * Validate setup token
- * GET /api/v2/auth/validate-setup-token/:token
- */
-exports.validateSetupToken = catchAsync(async (req, res) => {
-  const hashedToken = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
-
-  const user = await User.findOne({
-    passwordSetupToken: hashedToken,
-    passwordSetupExpires: { $gt: Date.now() },
-  }).select("email username role");
-
-  if (!user) {
-    const err = new ValidationError("Token is invalid or has expired");
-    err.code = "TOKEN_INVALID_OR_EXPIRED";
-    throw err;
-  }
-
-  sendSuccess(res, {
-    valid: true,
-    user: { email: user.email, username: user.username, role: user.role },
-  });
-});
-
-/**
- * Setup password (first time for whitelabel)
- * POST /api/v2/auth/setup-password
- *
- * Returns a full token pair through the cookie + body shape.
- */
-exports.setupPassword = catchAsync(async (req, res) => {
-  // Token presence + password rules + confirm match are enforced by
-  // setupPasswordSchema (Zod). The controller only owns the lookup +
-  // hand-over to issueTokenPair.
-  const { token, password } = req.body;
-
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-  const user = await User.findOne({
-    passwordSetupToken: hashedToken,
-    passwordSetupExpires: { $gt: Date.now() },
-  });
-
-  if (!user) {
-    const err = new ValidationError("Token is invalid or has expired");
-    err.code = "TOKEN_INVALID_OR_EXPIRED";
-    throw err;
-  }
-
-  user.password = password;
-  user.passwordSetupToken = undefined;
-  user.passwordSetupExpires = undefined;
-  user.passwordChangedAt = Date.now() - 1000;
-  // activate the whitelabel account once they set their password
-  if (user.status !== 'active') {
-    user.status = 'active';
-  }
-
-  await user.save();
-
-  // setupPassword is effectively a credentials handover (the temp password
-  // is replaced with one the user controls). Invalidate any refresh tokens
-  // issued under the temp credential before minting a fresh pair, so a
-  // stolen interim session cannot survive the setup ceremony.
-  await authService.revokeAllForUser(user._id);
-
-  const tokens = await authService.issueTokenPair(user, requestContext(req));
-  setAuthCookies(res, tokens);
-
-  sendAuthResponse(res, {
-    user: user.toPublicJSON ? await user.toPublicJSON() : user,
-    accessToken: tokens.accessToken,
-    refreshToken: tokens.refreshToken,
-    statusCode: 200,
-    message: "Password set successfully",
-  });
-});
-
-/**
- * Resend setup email
- * POST /api/v2/auth/resend-setup-email
- */
-exports.resendSetupEmail = catchAsync(async (req, res) => {
-  const emailModule = require("../../infrastructure/email");
-  const { email } = req.body;
-
-  const user = await User.findOne({ email });
-
-  if (!user) {
-    sendSuccess(res, null, "If that email exists, a setup link has been sent");
-    return;
-  }
-
-  if (user.password && !user.passwordSetupToken) {
-    throw new ValidationError(
-      "Password is already set. Please use forgot password instead."
-    );
-  }
-
-  const setupToken = user.createPasswordSetupToken();
-  await user.save({ validateBeforeSave: false });
-
-  const setupURL = `${config.frontend.url}/setup-password/${setupToken}`;
-
-  try {
-    await emailModule.send.passwordSetup(user.email, {
-      userName: user.username || user.email,
-      setupUrl: setupURL,
-    });
-  } catch (err) {
-    user.passwordSetupToken = undefined;
-    user.passwordSetupExpires = undefined;
-    await user.save({ validateBeforeSave: false });
-    throw err;
-  }
-
-  sendSuccess(res, null, "Setup email sent successfully");
-});

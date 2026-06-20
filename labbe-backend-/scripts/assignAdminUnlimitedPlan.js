@@ -2,7 +2,7 @@
  * Script: Assign Unlimited Plan to Platform Admins
  *
  * Creates or assigns the UNLIMITED plan to platform admins
- * (super_admin, admin, moderator without whitelabelId)
+ * (super_admin, admin, moderator)
  *
  * Usage: node scripts/assignAdminUnlimitedPlan.js
  */
@@ -52,12 +52,11 @@ async function assignUnlimitedPlan() {
       console.log(`Found existing UNLIMITED plan with ID: ${unlimitedPlan._id}`);
     }
 
-    // Step 2: Find all platform admins without whitelabelId
+    // Step 2: Find all platform admins
     console.log("\n--- Step 2: Finding Platform Admins ---");
     const platformAdminRoles = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR];
     const platformAdmins = await User.find({
       role: { $in: platformAdminRoles },
-      $or: [{ whitelabelId: null }, { whitelabelId: { $exists: false } }],
     });
 
     console.log(`Found ${platformAdmins.length} platform admins`);

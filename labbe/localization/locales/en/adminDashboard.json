@@ -52,14 +52,6 @@
     "tickets": {
       "title": "Open Tickets",
       "subtitle": "{{count}} resolved this period"
-    },
-    "whitelabel": {
-      "totalEvents": "Total Events",
-      "activeEventsCount": "{{count}} active",
-      "activeEvents": "Active Events",
-      "scheduledCount": "{{count}} scheduled",
-      "totalClients": "Total Clients",
-      "totalGuests": "Total Guests"
     }
   },
   "errors": {
@@ -84,12 +76,7 @@
     "thisperiod": "This Period",
     "previousperiod": "Previous Period",
     "change": "Change",
-    "currency": "Currency",
-    "whitelabel": {
-      "monthlyEvents": "Monthly Events",
-      "eventsByStatus": "Events by Status",
-      "events": "Events"
-    }
+    "currency": "Currency"
   },
   "bottom": {
     "topVendors": "Top Vendors",

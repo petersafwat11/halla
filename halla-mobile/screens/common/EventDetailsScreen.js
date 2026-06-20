@@ -88,7 +88,7 @@ import {
  * Data flows through a single `useSingleEventStats(eventId)` which the
  * service-layer fans out to `GET /events/stats/:id` + `GET /events/:id`
  * — both backend endpoints role-scope by the requester, so the same
- * hook works for host, admin, and whitelabel without any
+ * hook works for host and admin without any
  * branch-on-role on the client.
  */
 
@@ -128,7 +128,7 @@ const EventDetailsScreen = () => {
   const toast = useToast();
   const role = useAuthStore((s) => s.user?.role);
   // Inverse check — hosts get the host UX, everyone else (admin / super_admin /
-  // moderator / whitelabel_admin / whitelabel_moderator) gets the admin UX.
+  // moderator) gets the admin UX.
   // This matches the web split between host/events/[id] and admin-dash/events/[id].
   const isAdmin = !!role && role !== "host";
   const canEdit = canEditPage(role, PAGES.EVENTS);

@@ -6,7 +6,7 @@ import { API_PATHS } from "@halla/shared/api/paths";
 import { guestsKeys } from "./keys";
 
 /**
- * Fetch a guest record by their public invitation code (whitelabel portal).
+ * Fetch a guest record by their public invitation code (guest portal).
  */
 export const useGuestByToken = (token, options = {}) => {
   return useQuery({

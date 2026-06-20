@@ -111,16 +111,12 @@ const mapApiToFormValues = (eventData) => {
  * UX message and avoids a wasted round-trip on the wizard load.
  *
  * Mirrors the same scopes used on the backend:
- *   - SUPER_ADMIN / ADMIN — can edit any event the API returns.
- *   - WHITELABEL_ADMIN / WHITELABEL_MODERATOR / MODERATOR — only events
- *     under their `whitelabelId`.
+ *   - SUPER_ADMIN / ADMIN / MODERATOR — can edit any event the API returns.
  *   - HOST — only events they own.
  */
-// Normalise an id-or-populated-ref to a comparable string. The auth layer
-// can populate `user.whitelabelId` into a full document, so a bare
-// `.toString()` on it yields "[object Object]" and silently broke the
-// whitelabel admin/moderator gate. `event.host` from getEventById is also
-// populated. Pull `_id` first whenever the value is an object.
+// Normalise an id-or-populated-ref to a comparable string. `event.host`
+// from getEventById is populated, so pull `_id` first whenever the value
+// is an object.
 const idOf = (val) => {
   if (!val) return null;
   if (typeof val === "object") return (val._id ?? val.id ?? "").toString();
@@ -131,17 +127,10 @@ const canEditEvent = (event, user) => {
   if (!event || !user) return false;
   const role = user.role;
   const userId = idOf(user._id ?? user.id);
-  const userWl = idOf(user.whitelabelId);
   const eventHostId = idOf(event.host);
-  const eventWl = idOf(event.whitelabelId);
 
-  if (role === "super_admin" || role === "admin") return true;
-  if (
-    role === "whitelabel_admin" ||
-    role === "whitelabel_moderator" ||
-    role === "moderator"
-  ) {
-    return Boolean(userWl) && userWl === eventWl;
+  if (role === "super_admin" || role === "admin" || role === "moderator") {
+    return true;
   }
   // Default: host. Match by ownership.
   return Boolean(eventHostId) && eventHostId === userId;

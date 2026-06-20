@@ -7,13 +7,8 @@
   min-width: 0;
 }
 
-.whitelabelGrid {
-  grid-template-columns: repeat(2, 1fr);
-}
-
 @media (max-width: 900px) {
-  .chartsGrid,
-  .whitelabelGrid {
+  .chartsGrid {
     grid-template-columns: 1fr;
     gap: 1.4rem;
     margin: 1.4rem 0;
@@ -41,30 +36,6 @@
   .chartBox {
     padding: 1.2rem 0.8rem;
   }
-}
-
-/* Whitelabel analytics styles */
-.chartHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1.6rem;
-}
-
-.chartTitle {
-  color: #656565;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 16px;
-  font-family: Cairo, sans-serif;
-}
-
-.chartTotal {
-  color: #2c2c2c;
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 28px;
-  font-family: Cairo, sans-serif;
 }
 
 .error {

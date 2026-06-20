@@ -20,7 +20,6 @@ router.use(protect);
 router.use(require('./admin.hosts.routes'));
 router.use(require('./admin.vendors.routes'));
 router.use(require('./admin.moderators.routes'));
-router.use(require('./admin.whitelabels.routes'));
 router.use(require('./admin.events.routes'));
 router.use(require('./admin.payments.routes'));
 

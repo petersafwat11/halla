@@ -9,10 +9,10 @@ import { useMemo } from "react";
  *
  * Inputs:
  *   event           — { status, invitationSettings, staffList,
- *                       messagingStatus, attemptCount, host, whitelabelId,
+ *                       messagingStatus, attemptCount, host,
  *                       taqnyatTemplate }
  *   testMessageSent — local UI state set by the test-message popup
- *   currentUser     — { _id, role, whitelabelId }; gates manual retry
+ *   currentUser     — { _id, role }; gates manual retry
  *
  * Outputs: hasTemplate, canSendTest, canSchedule, hasStaff, isCompleted,
  * isLive, isFailed, isScheduled, hasFailedSends, failedCount,
@@ -60,19 +60,13 @@ export function useEventActionGate({
     const userRole = currentUser?.role;
     const userId =
       currentUser?._id?.toString?.() || currentUser?._id || currentUser?.id;
-    const userWlId = currentUser?.whitelabelId;
-    const eventWlId = event.whitelabelId;
     const eventHostId = event.host?._id || event.host;
 
     const canManualRetry =
       isFailed &&
       (eventHostId?.toString?.() === userId?.toString?.() ||
         userRole === "admin" ||
-        userRole === "super_admin" ||
-        (userRole === "whitelabel_admin" &&
-          eventWlId &&
-          userWlId &&
-          eventWlId.toString() === userWlId.toString()));
+        userRole === "super_admin");
 
     return {
       hasTemplate,

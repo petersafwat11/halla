@@ -19,7 +19,7 @@ const Subscription = require('../../../models/SubscriptionModel');
 const Ticket = require('../../../models/TicketModel');
 const Guest = require('../../../models/GuestModel');
 const Service = require('../../../models/ServiceModel');
-const { isPoolPlan, isPerEventPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
+const { isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
 
 class DashboardService {
   /**
@@ -74,11 +74,10 @@ class DashboardService {
   /**
    * Get main dashboard statistics
    * @param {string} period
-   * @param {Object} whitelabelFilter
    * @param {Object|null} dateRange - Optional { from, to } to override period-based range
    * @returns {Promise<Object>}
    */
-  async getDashboardStats(period = 'month', whitelabelFilter = {}, dateRange = null) {
+  async getDashboardStats(period = 'month', dateRange = null) {
     let startDate;
     let endDate;
 
@@ -117,28 +116,28 @@ class DashboardService {
       totalTickets,
       resolvedTicketsTotal,
     ] = await Promise.all([
-      User.countDocuments({ role: ROLES.HOST, ...whitelabelFilter }),
-      User.countDocuments({ role: ROLES.HOST, status: USER_STATUS.ACTIVE, ...whitelabelFilter }),
-      User.countDocuments({ role: ROLES.HOST, createdAt: { $gte: startDate, $lte: endDate }, ...whitelabelFilter }),
-      User.countDocuments({ role: ROLES.HOST, createdAt: { $gte: previousStartDate, $lt: startDate }, ...whitelabelFilter }),
-      User.countDocuments({ role: ROLES.VENDOR, ...whitelabelFilter }),
-      User.countDocuments({ role: ROLES.VENDOR, status: USER_STATUS.PENDING, ...whitelabelFilter }),
-      User.countDocuments({ role: ROLES.VENDOR, createdAt: { $gte: startDate, $lte: endDate }, ...whitelabelFilter }),
-      Event.countDocuments({ ...whitelabelFilter }),
-      Event.countDocuments({ status: { $in: [EVENT_STATUS.SCHEDULED, EVENT_STATUS.LIVE] }, ...whitelabelFilter }),
-      Event.countDocuments({ createdAt: { $gte: startDate, $lte: endDate }, ...whitelabelFilter }),
-      Event.countDocuments({ createdAt: { $gte: previousStartDate, $lt: startDate }, ...whitelabelFilter }),
-      Subscription.countDocuments({ status: SUBSCRIPTION_STATUS.ACTIVE, ...whitelabelFilter }),
+      User.countDocuments({ role: ROLES.HOST }),
+      User.countDocuments({ role: ROLES.HOST, status: USER_STATUS.ACTIVE }),
+      User.countDocuments({ role: ROLES.HOST, createdAt: { $gte: startDate, $lte: endDate } }),
+      User.countDocuments({ role: ROLES.HOST, createdAt: { $gte: previousStartDate, $lt: startDate } }),
+      User.countDocuments({ role: ROLES.VENDOR }),
+      User.countDocuments({ role: ROLES.VENDOR, status: USER_STATUS.PENDING }),
+      User.countDocuments({ role: ROLES.VENDOR, createdAt: { $gte: startDate, $lte: endDate } }),
+      Event.countDocuments({}),
+      Event.countDocuments({ status: { $in: [EVENT_STATUS.SCHEDULED, EVENT_STATUS.LIVE] } }),
+      Event.countDocuments({ createdAt: { $gte: startDate, $lte: endDate } }),
+      Event.countDocuments({ createdAt: { $gte: previousStartDate, $lt: startDate } }),
+      Subscription.countDocuments({ status: SUBSCRIPTION_STATUS.ACTIVE }),
       Subscription.aggregate([
-        { $match: { status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] }, ...whitelabelFilter } },
+        { $match: { status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } } },
         { $lookup: { from: 'plans', localField: 'planId', foreignField: '_id', as: 'plan' } },
         { $unwind: { path: '$plan', preserveNullAndEmptyArrays: true } },
         { $group: { _id: '$plan.planType', count: { $sum: 1 } } },
       ]),
-      Ticket.countDocuments({ status: { $in: [TICKET_STATUS.OPEN, TICKET_STATUS.IN_PROGRESS] }, ...whitelabelFilter }),
-      Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED, updatedAt: { $gte: startDate, $lte: endDate }, ...whitelabelFilter }),
-      User.find({ role: ROLES.HOST, ...whitelabelFilter }).select('username name email createdAt status').sort({ createdAt: -1 }).limit(5).lean(),
-      Event.find({ ...whitelabelFilter }).select('eventDetails.title eventDetails.date status host').populate('host', 'username name').sort({ createdAt: -1 }).limit(5).lean(),
+      Ticket.countDocuments({ status: { $in: [TICKET_STATUS.OPEN, TICKET_STATUS.IN_PROGRESS] } }),
+      Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED, updatedAt: { $gte: startDate, $lte: endDate } }),
+      User.find({ role: ROLES.HOST }).select('username name email createdAt status').sort({ createdAt: -1 }).limit(5).lean(),
+      Event.find({}).select('eventDetails.title eventDetails.date status host').populate('host', 'username name').sort({ createdAt: -1 }).limit(5).lean(),
       Service.aggregate([
         { $group: { _id: '$vendor', totalViews: { $sum: { $ifNull: ['$views', 0] } } } },
         { $sort: { totalViews: -1 } },
@@ -157,17 +156,11 @@ class DashboardService {
           },
         },
       ]),
-      (async () => {
-        const matchStage = whitelabelFilter?.whitelabelId
-          ? { event: { $in: await Event.find(whitelabelFilter).distinct('_id') } }
-          : {};
-        return Guest.aggregate([
-          { $match: matchStage },
-          { $group: { _id: '$status', count: { $sum: 1 } } },
-        ]);
-      })(),
-      Ticket.countDocuments({ ...whitelabelFilter }),
-      Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED, ...whitelabelFilter }),
+      Guest.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
+      Ticket.countDocuments({}),
+      Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED }),
     ]);
 
     const subscriptionsByPlanFormatted = {};
@@ -176,58 +169,7 @@ class DashboardService {
       subscriptionsByPlanFormatted[key] = (subscriptionsByPlanFormatted[key] || 0) + item.count;
     });
 
-    // Only runs for whitelabel tenants (whitelabelId is a real ObjectId, not null).
-    let analytics = null;
-    const isWhitelabelTenant = whitelabelFilter?.whitelabelId != null;
-
-    if (isWhitelabelTenant) {
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-      const [monthlyEventsAgg, eventsByStatusAgg, allEventIds] = await Promise.all([
-        Event.aggregate([
-          { $match: { ...whitelabelFilter, createdAt: { $gte: sixMonthsAgo } } },
-          {
-            $group: {
-              _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
-              count: { $sum: 1 },
-            },
-          },
-          { $sort: { '_id.year': 1, '_id.month': 1 } },
-        ]),
-        Event.aggregate([
-          { $match: whitelabelFilter },
-          { $group: { _id: '$status', count: { $sum: 1 } } },
-        ]),
-        Event.find(whitelabelFilter).distinct('_id'),
-      ]);
-
-      const totalGuests = await Guest.countDocuments({ event: { $in: allEventIds } });
-
-      const arabicMonths = [
-        'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-      ];
-
-      const statusMap = {};
-      eventsByStatusAgg.forEach((item) => { statusMap[item._id] = item.count; });
-
-      analytics = {
-        monthlyEvents: monthlyEventsAgg.map((item) => ({
-          month: arabicMonths[item._id.month - 1],
-          year: item._id.year,
-          count: item.count,
-        })),
-        eventsByStatus: {
-          pending_scheduling: statusMap.pending_scheduling || 0,
-          scheduled: statusMap.scheduled || 0,
-          live: statusMap.live || 0,
-          completed: statusMap.completed || 0,
-        },
-        totalGuests,
-        activeEvents: (statusMap.scheduled || 0) + (statusMap.live || 0),
-      };
-    }
+    const analytics = null;
 
     const totalSubscriptionsByPlan = Object.values(subscriptionsByPlanFormatted).reduce((a, b) => a + b, 0);
 

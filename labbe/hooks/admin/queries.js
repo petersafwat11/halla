@@ -104,34 +104,6 @@ export const useAdminModerators = (filters = {}, options = {}) => {
   });
 };
 
-export const useAdminWhitelabels = (filters = {}, options = {}) => {
-  return useQuery({
-    queryKey: adminKeys.whitelabels(filters),
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.admin.whitelabels.getAll,
-        params: filters,
-      }),
-    staleTime: 5 * 60 * 1000,
-    ...options,
-  });
-};
-
-export const useAdminWhitelabel = (whitelabelId, options = {}) => {
-  return useQuery({
-    queryKey: adminKeys.whitelabelDetail(whitelabelId),
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.admin.whitelabels.getById(whitelabelId),
-      }),
-    enabled: !!whitelabelId,
-    staleTime: 5 * 60 * 1000,
-    ...options,
-  });
-};
-
 export const useAdminPlans = (filters = {}, options = {}) => {
   return useQuery({
     queryKey: adminKeys.plans(filters),
@@ -226,20 +198,6 @@ export const useAdminUserSubscriptionInfo = (userId, options = {}) => {
       }),
     enabled: !!userId,
     staleTime: 2 * 60 * 1000,
-    ...options,
-  });
-};
-
-export const useAdminWhitelabelFeatures = (whitelabelId, options = {}) => {
-  return useQuery({
-    queryKey: adminKeys.whitelabelFeatures(whitelabelId),
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.admin.whitelabels.features(whitelabelId),
-      }),
-    enabled: !!whitelabelId,
-    staleTime: 5 * 60 * 1000,
     ...options,
   });
 };

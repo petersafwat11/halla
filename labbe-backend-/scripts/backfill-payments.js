@@ -60,7 +60,6 @@ const backfillSubscriptions = async () => {
     if (!payment) {
       const doc = {
         userId: sub.userId,
-        whitelabelId: sub.whitelabelId || null,
         subscriptionId: sub._id,
         amount: sub.pricePaid?.amount ?? sub.pricePaid ?? 0,
         currency: sub.pricePaid?.currency || sub.currency || 'SAR',

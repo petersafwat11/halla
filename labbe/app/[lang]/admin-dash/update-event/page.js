@@ -12,10 +12,6 @@ import styles from "./page.module.css";
 /**
  * Admin update-event route — thin wrapper around the shared UpdateEventWizard.
  * Same wizard, same per-step PATCH dispatch, role-aware branches inside.
- *
- * The whitelabel-admin / whitelabel-moderator users currently navigate
- * here too (their admin surface lives under `/admin-dash/`); when their
- * own route space ships, that page can re-use the same wrapper.
  */
 export default async function AdminUpdateEventPage({ params, searchParams }) {
   const resolvedParams = await params;

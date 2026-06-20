@@ -127,7 +127,7 @@ staffAccessTokenSchema.statics.validateToken = async function (token) {
 
   const tokenDoc = await this.findOne({ token }).populate(
     "event",
-    "eventDetails host status whitelabelId"
+    "eventDetails host status"
   );
 
   if (!tokenDoc) {

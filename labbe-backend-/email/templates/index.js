@@ -8,7 +8,6 @@ const authTemplates = require("./auth");
 const eventsTemplates = require("./events");
 const subscriptionsTemplates = require("./subscriptions");
 const vendorsTemplates = require("./vendors");
-const whitelabelsTemplates = require("./whitelabels");
 const reportsTemplates = require("./reports");
 const supportTemplates = require("./support");
 const staffTemplates = require("./staff");
@@ -21,7 +20,6 @@ const staffTemplates = require("./staff");
  * Authentication Templates
  * - welcomeEmail
  * - passwordResetEmail
- * - passwordSetupEmail
  * - emailVerificationEmail
  * - passwordChangedEmail
  * - accountDeactivatedEmail
@@ -66,19 +64,6 @@ const subscriptions = subscriptionsTemplates;
  * - vendorRejectionEmail
  */
 const vendors = vendorsTemplates;
-
-/**
- * Whitelabel Templates
- * - whitelabelApplicationPendingEmail
- * - whitelabelApprovalEmail
- * - whitelabelRejectionEmail
- * - whitelabelNewHostEmail
- * - hostSubscriptionAssignedEmail
- * - whitelabelWeeklyReportEmail
- * - whitelabelSubscriptionExpiringEmail
- * - moderatorAddedEmail
- */
-const whitelabels = whitelabelsTemplates;
 
 /**
  * Report Templates
@@ -127,8 +112,6 @@ const allTemplates = {
   ...subscriptionsTemplates,
   // Vendors
   ...vendorsTemplates,
-  // Whitelabels
-  ...whitelabelsTemplates,
   // Reports
   ...reportsTemplates,
   // Support
@@ -145,7 +128,6 @@ const TEMPLATE_REGISTRY = {
   // Auth templates
   welcome: authTemplates.welcomeEmail,
   passwordReset: authTemplates.passwordResetEmail,
-  passwordSetup: authTemplates.passwordSetupEmail,
   emailVerification: authTemplates.emailVerificationEmail,
   passwordChanged: authTemplates.passwordChangedEmail,
   accountDeactivated: authTemplates.accountDeactivatedEmail,
@@ -176,18 +158,6 @@ const TEMPLATE_REGISTRY = {
   vendorApplicationPending: vendorsTemplates.vendorApplicationPendingEmail,
   vendorApproval: vendorsTemplates.vendorApprovalEmail,
   vendorRejection: vendorsTemplates.vendorRejectionEmail,
-
-  // Whitelabel templates
-  whitelabelApplicationPending:
-    whitelabelsTemplates.whitelabelApplicationPendingEmail,
-  whitelabelApproval: whitelabelsTemplates.whitelabelApprovalEmail,
-  whitelabelRejection: whitelabelsTemplates.whitelabelRejectionEmail,
-  whitelabelNewHost: whitelabelsTemplates.whitelabelNewHostEmail,
-  hostSubscriptionAssigned: whitelabelsTemplates.hostSubscriptionAssignedEmail,
-  whitelabelWeeklyReport: whitelabelsTemplates.whitelabelWeeklyReportEmail,
-  whitelabelSubscriptionExpiring:
-    whitelabelsTemplates.whitelabelSubscriptionExpiringEmail,
-  moderatorAdded: whitelabelsTemplates.moderatorAddedEmail,
 
   // Report templates
   dailyReport: reportsTemplates.dailyReportEmail,
@@ -251,7 +221,6 @@ module.exports = {
   events,
   subscriptions,
   vendors,
-  whitelabels,
   reports,
   support,
   staff,

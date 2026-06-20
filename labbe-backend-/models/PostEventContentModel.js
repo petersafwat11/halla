@@ -231,12 +231,6 @@ const postEventContentSchema = new mongoose.Schema(
         audience: String,
       },
     },
-
-    whitelabelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "WhiteLabel",
-      default: null,
-    },
   },
   {
     timestamps: true,
@@ -247,7 +241,6 @@ const postEventContentSchema = new mongoose.Schema(
 
 postEventContentSchema.index({ host: 1, createdAt: -1 });
 postEventContentSchema.index({ "settings.isPublished": 1 });
-postEventContentSchema.index({ whitelabelId: 1 });
 
 postEventContentSchema.virtual("uniqueVisitorCount").get(function () {
   return this.stats?.uniqueVisitors?.length || 0;

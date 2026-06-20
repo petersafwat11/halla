@@ -6,21 +6,12 @@ export default function PortalThankYou({
   response,
   guestName,
   event,
-  whitelabel,
-  logoUrl,
   onChangeResponse,
   t,
 }) {
   const isDeclined = response === "declined";
   return (
     <div className={styles.card}>
-      {logoUrl ? (
-        <img
-          src={logoUrl}
-          alt={whitelabel.name || event.title || ""}
-          className={styles.logo}
-        />
-      ) : null}
       <h1 className={styles.successHeading}>
         {isDeclined
           ? t("guestPortal.declined.title", "Thank you for letting us know")

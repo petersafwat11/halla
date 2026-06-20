@@ -4,7 +4,6 @@ import { useAdminDashboard } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useCallback } from "react";
-import useAuthStore from "@/stores/authStore";
 import Table from "@/ui/commen/new-table/Table";
 import Bottom from "@/ui/admin/dashboard/bottom/Bottom";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -48,7 +47,6 @@ function formatDate(value, locale = "ar-SA") {
 export default function RecentActivity() {
   const { t, i18n } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
-  const { user } = useAuthStore();
 
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -60,8 +58,6 @@ export default function RecentActivity() {
 
   const { data: responseData, isLoading, error } = useAdminDashboard(filters);
   const data = responseData?.data;
-
-  const isWhitelabelAdmin = user?.role === "whitelabel_admin";
 
   const renderStatusCell = useCallback(
     (key, value) => {
@@ -159,7 +155,7 @@ export default function RecentActivity() {
           showCheckboxes={false}
         />
       </div>
-      {!isWhitelabelAdmin && <Bottom bestVendors={data?.bestVendors} />}
+      <Bottom bestVendors={data?.bestVendors} />
     </div>
   );
 }

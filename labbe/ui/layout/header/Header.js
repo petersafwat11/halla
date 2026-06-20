@@ -69,8 +69,6 @@ function Header({ dashboardType: propDashboardType }) {
         return t("header.adminRole", "مدير النظام");
       case DASHBOARD_TYPES.VENDOR:
         return t("header.vendorRole", "تاجر");
-      case DASHBOARD_TYPES.WHITELABEL:
-        return t("header.whitelabelRole", "مدير المنصة");
       case DASHBOARD_TYPES.HOST:
       default:
         return t("header.userRole", "إدارة فعاليات");

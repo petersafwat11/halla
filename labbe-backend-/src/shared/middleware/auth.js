@@ -88,8 +88,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 3. Find user in unified User model
   const user = await User.findById(decoded.id)
     .select("+password")
-    .populate("subscription")
-    .populate("whitelabelId", "identity.names domain status");
+    .populate("subscription");
 
   if (!user) {
     return next(
@@ -135,12 +134,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.isAuthenticated = true;
   req.userId = user._id;
   req.userRole = user.role;
-  req.whitelabelId = user.whitelabelId?._id || user.whitelabelId || null;
-
-  // 8. Extract and attach tenant context for white-label support
-  const tenant = await extractTenantContext(req, user);
-  req.tenant = tenant;
-  req.isWhitelabel = tenant.isWhitelabel;
 
   next();
 });
@@ -173,111 +166,11 @@ exports.optionalAuth = catchAsync(async (req, res, next) => {
       req.isAuthenticated = true;
       req.userId = user._id;
       req.userRole = user.role;
-      req.whitelabelId = user.whitelabelId || null;
-
-      const tenant = await extractTenantContext(req, user);
-      req.tenant = tenant;
-      req.isWhitelabel = tenant.isWhitelabel;
     } else {
       req.isAuthenticated = false;
     }
   } catch (err) {
     req.isAuthenticated = false;
-  }
-
-  next();
-});
-
-/**
- * Extract tenant context from request
- * Supports subdomain and custom domain detection
- */
-async function extractTenantContext(req, user) {
-  const tenant = {
-    id: null,
-    domain: null,
-    subdomain: null,
-    isWhitelabel: false,
-    config: null,
-  };
-
-  if (user.whitelabelId) {
-    tenant.id = user.whitelabelId._id || user.whitelabelId;
-    tenant.isWhitelabel = true;
-
-    if (user.whitelabelId.domain) {
-      tenant.domain = user.whitelabelId.domain.customDomain || null;
-      tenant.subdomain = user.whitelabelId.domain.subdomain || null;
-      tenant.config = user.whitelabelId;
-    }
-  }
-
-  const hostname = req.hostname || req.get("host")?.split(":")[0];
-  if (hostname) {
-    const subdomainMatch = hostname.match(/^([^.]+)\.halaa\.sa$/);
-    if (
-      subdomainMatch &&
-      subdomainMatch[1] !== "www" &&
-      subdomainMatch[1] !== "api"
-    ) {
-      tenant.subdomain = subdomainMatch[1];
-      tenant.isWhitelabel = true;
-
-      if (!tenant.id) {
-        const WhiteLabel = require("../../../models/UserModel");
-        const whitelabel = await WhiteLabel.findOne({
-          "domain.subdomain": tenant.subdomain,
-          role: "whitelabel_admin",
-          status: "active",
-        }).select("_id domain identity");
-
-        if (whitelabel) {
-          tenant.id = whitelabel._id;
-          tenant.config = whitelabel;
-        }
-      }
-    } else if (
-      !hostname.includes("halaa.sa") &&
-      !hostname.includes("localhost")
-    ) {
-      tenant.domain = hostname;
-      tenant.isWhitelabel = true;
-
-      if (!tenant.id) {
-        const WhiteLabel = require("../../../models/UserModel");
-        const whitelabel = await WhiteLabel.findOne({
-          "domain.customDomain": tenant.domain,
-          role: "whitelabel_admin",
-          status: "active",
-        }).select("_id domain identity");
-
-        if (whitelabel) {
-          tenant.id = whitelabel._id;
-          tenant.config = whitelabel;
-        }
-      }
-    }
-  }
-
-  return tenant;
-}
-
-/**
- * Validate tenant context — ensures user belongs to the correct tenant
- */
-exports.validateTenant = catchAsync(async (req, res, next) => {
-  if (!req.tenant || !req.tenant.isWhitelabel) {
-    return next();
-  }
-
-  if (
-    req.tenant.id &&
-    req.whitelabelId &&
-    req.tenant.id.toString() !== req.whitelabelId.toString()
-  ) {
-    return next(
-      new AppError("Access denied. You do not belong to this tenant", 403)
-    );
   }
 
   next();

@@ -57,7 +57,6 @@ const getIconComponent = (type) => {
     vendor_pending_approval: IoPersonOutline,
     vendor_approved: IoCheckmarkCircleOutline,
     vendor_rejected: IoAlertCircleOutline,
-    whitelabel_registered: IoPersonOutline,
     profile_incomplete: IoPersonOutline,
     welcome: IoCheckmarkCircleOutline,
 

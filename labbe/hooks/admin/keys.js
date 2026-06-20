@@ -1,5 +1,5 @@
 // Admin namespace covers the cross-resource management surface:
-// hosts, vendors, moderators, whitelabels, plans, payments, events, etc.
+// hosts, vendors, moderators, plans, payments, events, etc.
 //
 // Note: `adminEventsList` (uses the `useAdminEvents` hook) intentionally lives
 // under the `events` namespace (`["events", "admin", filters]`), not under
@@ -28,20 +28,6 @@ export const adminKeys = {
 
   moderators: (filters) => [...adminKeys.all, "moderators", filters],
   moderatorsAll: () => [...adminKeys.all, "moderators"],
-
-  whitelabels: (filters) => [...adminKeys.all, "whitelabels", filters],
-  whitelabelsAll: () => [...adminKeys.all, "whitelabels"],
-  whitelabelDetail: (whitelabelId) => [
-    ...adminKeys.all,
-    "whitelabels",
-    whitelabelId,
-  ],
-  whitelabelFeatures: (whitelabelId) => [
-    ...adminKeys.all,
-    "whitelabels",
-    whitelabelId,
-    "features",
-  ],
 
   plans: (filters) => [...adminKeys.all, "plans", filters],
   plansAll: () => [...adminKeys.all, "plans"],

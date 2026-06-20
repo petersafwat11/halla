@@ -77,7 +77,6 @@ const AdminHostsScreen = ({ navigation }) => {
           visible={subModalVisible}
           onClose={() => { setSubModalVisible(false); setSelectedHostForSub(null); }}
           entity={selectedHostForSub}
-          entityType="host"
           onSave={() => refetch()}
         />
       </View>

@@ -82,7 +82,6 @@ const getFolderForField = (fieldname, req) => {
 
     // Vendor files
     businessLogo: `vendors/logos/${vendorId}`,
-    logo: `whitelabels/logos/${userId}`,
     portfolioImages: `vendors/portfolios/${vendorId}`,
     pricePackages: `vendors/packages/${vendorId}`,
     commercialRecordImage: `vendors/documents/${vendorId}`,

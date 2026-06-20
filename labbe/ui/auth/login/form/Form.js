@@ -115,10 +115,6 @@ const Form = () => {
       case USER_ROLES.MODERATOR:
         path = `/${currentLocale}/admin-dash`;
         break;
-      case USER_ROLES.WHITELABEL_ADMIN:
-      case USER_ROLES.WHITELABEL_MODERATOR:
-        path = `/${currentLocale}/admin-dash`;
-        break;
       case USER_ROLES.VENDOR:
         path = `/${currentLocale}/vendor-dashboard`;
         break;

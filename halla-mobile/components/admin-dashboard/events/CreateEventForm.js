@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   ScrollView,
@@ -17,8 +17,6 @@ import {
   useSubscriptionInfo,
   useCreateEvent,
 } from "../../../hooks";
-import { useAuthStore } from "../../../stores/authStore";
-import { WHITELABEL_ROLES } from "@halla/shared/constants/roles";
 import StepOne from "../../createEvent/StepOne";
 import StepTwo from "../../createEvent/StepTwo";
 import StepThree from "../../createEvent/StepThree";
@@ -60,26 +58,10 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
   const navigation = useNavigation();
   const isHostMode = mode === "host";
 
-  // Whitelabel admins/moderators no longer manage hosts — they create events
-  // only for themselves, so the admin flow for them collapses to the same
-  // 5-step wizard as host mode (no HostSelector step).
-  const userRole = useAuthStore((s) => s.user?.role);
-  const isWhitelabelRole = WHITELABEL_ROLES.includes(userRole);
-  const skipHostSelector = isHostMode || (!isHostMode && isWhitelabelRole);
-
-  const TOTAL_STEPS = skipHostSelector ? 5 : 6;
+  const TOTAL_STEPS = isHostMode ? 5 : 6;
   const [currentStep, setCurrentStep] = useState(1);
-  const [hostSelection, setHostSelection] = useState(
-    skipHostSelector && !isHostMode
-      ? { createForSelf: true, targetUserId: null, targetType: "self" }
-      : {},
-  );
+  const [hostSelection, setHostSelection] = useState({});
 
-  useEffect(() => {
-    if (skipHostSelector && !isHostMode && !hostSelection.createForSelf) {
-      setHostSelection({ createForSelf: true, targetUserId: null, targetType: "self" });
-    }
-  }, [skipHostSelector, isHostMode, hostSelection.createForSelf]);
   const [showPreview, setShowPreview] = useState(false);
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
@@ -101,13 +83,13 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
   // admin mode uses self when "create for self" is chosen, otherwise the
   // host that admin selected.
   const gatingSubscription = useMemo(() => {
-    if (skipHostSelector) return selfSubscription;
+    if (isHostMode) return selfSubscription;
     if (hostSelection.createForSelf) return selfSubscription;
     return hostSelection.subscription ?? null;
-  }, [skipHostSelector, hostSelection, selfSubscription]);
+  }, [isHostMode, hostSelection, selfSubscription]);
 
   const canCreateEvent = useMemo(() => {
-    if (skipHostSelector) {
+    if (isHostMode) {
       return selfSubscription?.canCreateEvent !== false;
     }
     if (!hostSelection.createForSelf && !hostSelection.targetUserId) return true;
@@ -115,17 +97,17 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     if (gatingSubscription.isUnlimited) return true;
     if (gatingSubscription.eventsRemaining === -1) return true;
     return gatingSubscription.eventsRemaining > 0;
-  }, [skipHostSelector, hostSelection, gatingSubscription, selfSubscription]);
+  }, [isHostMode, hostSelection, gatingSubscription, selfSubscription]);
 
   const isStepValid = useMemo(() => {
-    if (!skipHostSelector && currentStep === 1) {
+    if (!isHostMode && currentStep === 1) {
       return !!(hostSelection.createForSelf || hostSelection.targetUserId);
     }
     // Admin step (2-6) maps to EventsService step (1-5);
-    // host mode + whitelabel-admin steps already align (1-5).
-    const eventsServiceStep = skipHostSelector ? currentStep : currentStep - 1;
+    // host mode steps already align (1-5).
+    const eventsServiceStep = isHostMode ? currentStep : currentStep - 1;
     return EventsService.validateStepData(eventsServiceStep, formData);
-  }, [skipHostSelector, currentStep, formData, hostSelection]);
+  }, [isHostMode, currentStep, formData, hostSelection]);
 
   const handleFinalSubmit = useCallback(
     async (data) => {
@@ -225,11 +207,10 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     setShowInfoPopup(false);
   }, []);
 
-  // Step info: admin mode includes a step 1 for HostSelector; host mode and
-  // whitelabel-admin (which skips the selector) start directly with event
-  // details.
+  // Step info: admin mode includes a step 1 for HostSelector; host mode
+  // skips the selector and starts directly with event details.
   const stepInfo = useMemo(() => {
-    if (skipHostSelector) {
+    if (isHostMode) {
       return {
         title: tCreate(`step${currentStep}_title`),
         description: tCreate(`step${currentStep}_description`),
@@ -244,7 +225,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
       { title: t("events.steps.review"), description: "" },
     ];
     return adminList[currentStep - 1] || { title: "", description: "" };
-  }, [skipHostSelector, currentStep, t, tCreate]);
+  }, [isHostMode, currentStep, t, tCreate]);
 
   // Host-mode hard stop when subscription doesn't allow event creation.
   if (isHostMode && !isCompleting && !subInfoLoading && !canCreateEvent) {
@@ -258,9 +239,8 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
   }
 
   // Admin-mode hard stop after host selection narrows down to a target
-  // without remaining events. For whitelabel-admins (skipHostSelector) we
-  // gate from step 1 onward since the target is implicitly themselves.
-  if (!isHostMode && !canCreateEvent && (skipHostSelector || currentStep > 1)) {
+  // without remaining events.
+  if (!isHostMode && !canCreateEvent && currentStep > 1) {
     return (
       <LimitReachedView
         tEvents={tEvents}
@@ -271,7 +251,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
   }
 
   const renderStepContent = () => {
-    if (!skipHostSelector && currentStep === 1) {
+    if (!isHostMode && currentStep === 1) {
       return (
         <HostSelectorStep
           value={hostSelection}
@@ -281,7 +261,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     }
 
     // Map current step to the createEvent wizard step (1-5).
-    const wizardStep = skipHostSelector ? currentStep : currentStep - 1;
+    const wizardStep = isHostMode ? currentStep : currentStep - 1;
     switch (wizardStep) {
       case 1:
         return <StepOne />;

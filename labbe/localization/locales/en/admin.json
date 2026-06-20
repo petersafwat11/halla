@@ -223,7 +223,6 @@
       "host": "Hosts",
       "vendor": "Vendors",
       "moderator": "Moderators",
-      "whitelabel_admin": "Whitelabel Admins",
       "admin": "Admins"
     }
   },

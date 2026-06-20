@@ -17,7 +17,6 @@
     "userRole": "Event Management",
     "adminRole": "Admin",
     "vendorRole": "Vendor",
-    "whitelabelRole": "Platform Manager",
     "searchPlaceholder": "Search"
   },
   "toolbar": {

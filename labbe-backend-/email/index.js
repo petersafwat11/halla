@@ -60,16 +60,6 @@ const send = {
     return sender.sendEmail(to, subject, html);
   },
 
-  /**
-   * Send password setup email (post-approval)
-   * @param {string} to - Recipient email
-   * @param {Object} data - { name, setupUrl, email, planName, expiresIn }
-   * @param {string} lang - Language (ar/en)
-   */
-  passwordSetup: async (to, data, lang = "ar") => {
-    const { subject, html } = templates.auth.passwordSetupEmail(data, lang);
-    return sender.sendEmail(to, subject, html);
-  },
 
   /**
    * Send email verification email
@@ -272,7 +262,7 @@ const send = {
   /**
    * Send vendor approval email
    * @param {string} to - Recipient email
-   * @param {Object} data - { vendorName, brandName, dashboardUrl, setupPasswordUrl }
+   * @param {Object} data - { vendorName, brandName, dashboardUrl }
    * @param {string} lang - Language (ar/en)
    */
   vendorApproval: async (to, data, lang = "ar") => {
@@ -288,64 +278,6 @@ const send = {
    */
   vendorRejection: async (to, data, lang = "ar") => {
     const { subject, html } = templates.vendors.vendorRejectionEmail(
-      data,
-      lang
-    );
-    return sender.sendEmail(to, subject, html);
-  },
-
-  // ==========================================
-  // WHITELABEL EMAILS
-  // ==========================================
-
-  /**
-   * Send whitelabel application pending email
-   * @param {string} to - Recipient email
-   * @param {Object} data - { platformName, email, planName, contactPerson }
-   * @param {string} lang - Language (ar/en)
-   */
-  whitelabelApplicationPending: async (to, data, lang = "ar") => {
-    const { subject, html } =
-      templates.whitelabels.whitelabelApplicationPendingEmail(data, lang);
-    return sender.sendEmail(to, subject, html);
-  },
-
-  /**
-   * Send whitelabel approval email
-   * @param {string} to - Recipient email
-   * @param {Object} data - { platformName, email, planName, setupPasswordUrl, dashboardUrl, features }
-   * @param {string} lang - Language (ar/en)
-   */
-  whitelabelApproval: async (to, data, lang = "ar") => {
-    const { subject, html } = templates.whitelabels.whitelabelApprovalEmail(
-      data,
-      lang
-    );
-    return sender.sendEmail(to, subject, html);
-  },
-
-  /**
-   * Send whitelabel rejection email
-   * @param {string} to - Recipient email
-   * @param {Object} data - { platformName, reason, supportEmail, reapplyUrl }
-   * @param {string} lang - Language (ar/en)
-   */
-  whitelabelRejection: async (to, data, lang = "ar") => {
-    const { subject, html } = templates.whitelabels.whitelabelRejectionEmail(
-      data,
-      lang
-    );
-    return sender.sendEmail(to, subject, html);
-  },
-
-  /**
-   * Send moderator added email
-   * @param {string} to - Recipient email
-   * @param {Object} data - { moderatorName, platformName, addedBy, permissions, setupPasswordUrl, dashboardUrl }
-   * @param {string} lang - Language (ar/en)
-   */
-  moderatorAdded: async (to, data, lang = "ar") => {
-    const { subject, html } = templates.whitelabels.moderatorAddedEmail(
       data,
       lang
     );

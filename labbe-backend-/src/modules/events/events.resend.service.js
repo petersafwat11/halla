@@ -390,7 +390,6 @@ module.exports = {
         actor: { _id: user?._id || null, role: user?.role || "unknown" },
         targetType: "event",
         targetId: eventId,
-        whitelabelId: event.whitelabelId || null,
         metadata: {
           category,
           total: targetGuests.length,

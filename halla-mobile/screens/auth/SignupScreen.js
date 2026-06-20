@@ -48,8 +48,6 @@ export default function SignupScreen({ navigation }) {
       setStep("mobile");
     } else if (role === "vendor") {
       navigation.navigate("VendorSignup");
-    } else if (role === "whitelabel") {
-      navigation.navigate("WhitelabelSignup");
     }
   };
 

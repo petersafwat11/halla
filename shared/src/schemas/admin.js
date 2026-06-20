@@ -69,15 +69,6 @@ export const vendorRatingSchema = z.object({
 });
 
 // ============================================
-// WHITELABEL
-// ============================================
-
-export const whitelabelSubscriptionSchema = z.object({
-  planCode: z.string().min(1, "الرجاء اختيار خطة"),
-  status: z.enum(["active", "expired", "cancelled"]),
-});
-
-// ============================================
 // TICKET
 // ============================================
 

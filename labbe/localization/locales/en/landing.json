@@ -32,7 +32,7 @@
       { "title": "Push Notifications", "description": "Instant alerts for every important update in your events via the app." },
       { "title": "Compensation Credits", "description": "Receive extra credits as compensation for cancellations from your invitation count." },
       { "title": "Service Marketplace", "description": "Browse hundreds of vendors — photography, catering, decor, etc. — and book directly." },
-      { "title": "Enterprise Solution", "description": "White-label system with full customization and multi-user management." }
+      { "title": "Enterprise Solution", "description": "A complete enterprise-grade events platform with full customization and multi-user management." }
     ]
   },
   "invitations": {

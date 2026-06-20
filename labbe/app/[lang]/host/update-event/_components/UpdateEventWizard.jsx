@@ -29,10 +29,9 @@ import useStepConfig from "../_hooks/useStepConfig";
 import useUpdateEventActions from "../_hooks/useUpdateEventActions";
 
 /**
- * Shared update-event wizard used by host, admin-dash, and (in the
- * future) any whitelabel-scoped route. Role-aware behaviour lives
- * inside this component as branches rather than a separate component
- * tree.
+ * Shared update-event wizard used by host and admin-dash routes.
+ * Role-aware behaviour lives inside this component as branches rather
+ * than a separate component tree.
  *
  * Props
  *   returnPath  — relative locale-less path to push on save / cancel

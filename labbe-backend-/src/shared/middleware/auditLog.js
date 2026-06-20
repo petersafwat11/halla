@@ -107,7 +107,6 @@ const auditLog = (opts) => {
         actor: req.user,
         targetType: opts.targetType,
         targetId,
-        whitelabelId: req.whitelabelId || req.user?.whitelabelId || null,
         changes,
         metadata,
         request: {

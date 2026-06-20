@@ -3,22 +3,19 @@ import React from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import styles from "../page.module.css";
 
-// Our platform logo (same asset as the landing page header). Whitelabel
-// logo overrides it when present.
+// Our platform logo (same asset as the landing page header).
 const DEFAULT_LOGO = "/logo.png";
 
 export default function PortalConfirmed({
   guestName,
   event,
-  whitelabel,
-  logoUrl,
   code,
   guestsCount = 1,
   formatDate,
   onChangeResponse,
   t,
 }) {
-  const passLogo = logoUrl || whitelabel?.logo || DEFAULT_LOGO;
+  const passLogo = DEFAULT_LOGO;
   const dateLine = event.date
     ? `${formatDate(event.date)}${event.time ? ` · ${event.time}` : ""}`
     : "";
@@ -56,7 +53,7 @@ export default function PortalConfirmed({
           <div className={styles.passLogoWrap}>
             <img
               src={passLogo}
-              alt={whitelabel?.name || event.title || "logo"}
+              alt={event.title || "logo"}
               className={styles.passLogo}
             />
           </div>

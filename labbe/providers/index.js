@@ -32,7 +32,6 @@ const i18nNamespaces = [
   "staff",
   "postEvent",
   "businessPlans",
-  "adminWhitelabels",
   "adminDiscounts",
   "landing",
   "marketplace",

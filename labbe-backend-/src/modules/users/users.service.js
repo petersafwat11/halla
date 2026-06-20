@@ -51,7 +51,7 @@ class UsersService {
   async getMyProfile(userId) {
     const user = await User.findById(userId)
       .select(
-        "-password -passwordResetToken -passwordResetExpires -passwordSetupToken -passwordSetupExpires"
+        "-password -passwordResetToken -passwordResetExpires"
       )
       .populate("subscription");
 

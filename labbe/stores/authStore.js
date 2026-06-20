@@ -10,8 +10,6 @@ export const USER_ROLES = {
   SUPER_ADMIN: "super_admin",
   ADMIN: "admin",
   MODERATOR: "moderator",
-  WHITELABEL_ADMIN: "whitelabel_admin",
-  WHITELABEL_MODERATOR: "whitelabel_moderator",
   HOST: "host",
   VENDOR: "vendor",
 };
@@ -60,10 +58,6 @@ const useAuthStore = create(
       resetTokenSent: false,
       resetEmail: null,
 
-      // Setup Token State (Whitelabel)
-      setupTokenValid: false,
-      setupTokenData: null,
-
       // ============ COMPUTED GETTERS ============
       getUserRole: () => get().user?.role || null,
 
@@ -79,14 +73,6 @@ const useAuthStore = create(
       isHost: () => get().user?.role === USER_ROLES.HOST,
 
       isVendor: () => get().user?.role === USER_ROLES.VENDOR,
-
-      isWhitelabel: () => {
-        const role = get().user?.role;
-        return [
-          USER_ROLES.WHITELABEL_ADMIN,
-          USER_ROLES.WHITELABEL_MODERATOR,
-        ].includes(role);
-      },
 
       getSubscription: () => get().subscription,
 
@@ -116,13 +102,6 @@ const useAuthStore = create(
 
       clearResetState: () =>
         set({ resetTokenSent: false, resetEmail: null }),
-
-      // Setup Token Setters
-      setSetupTokenValid: (data) =>
-        set({ setupTokenValid: true, setupTokenData: data }),
-
-      clearSetupState: () =>
-        set({ setupTokenValid: false, setupTokenData: null }),
 
       // ============ AUTH STATE ACTIONS ============
 
@@ -185,8 +164,6 @@ const useAuthStore = create(
           otpType: null,
           resetTokenSent: false,
           resetEmail: null,
-          setupTokenValid: false,
-          setupTokenData: null,
         });
 
         if (typeof window !== "undefined") {

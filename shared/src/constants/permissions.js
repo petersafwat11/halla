@@ -18,7 +18,6 @@ export const ADMIN_PAGES = Object.freeze({
   TICKETS: "tickets",
   PAYMENTS: "payments",
   MODERATORS: "moderators",
-  WHITELABELS: "whitelabels",
   MANAGE_PLANS: "manage_plans",
   SETTINGS: "settings",
   DISCOUNTS: "discounts",
@@ -41,5 +40,4 @@ export const PERMISSIONS = Object.freeze({
   MANAGE_TICKETS: "manage_tickets",
   MANAGE_PAYMENTS: "manage_payments",
   MANAGE_TEAM: "manage_team",
-  MANAGE_WHITELABELS: "manage_whitelabels",
 });

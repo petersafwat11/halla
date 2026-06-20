@@ -94,7 +94,7 @@ const vendorApplicationPendingEmail = (data, lang = "ar") => {
 
 /**
  * Vendor approval email
- * @param {Object} data - { vendorName, brandName, dashboardUrl, setupPasswordUrl }
+ * @param {Object} data - { vendorName, brandName, dashboardUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -121,29 +121,12 @@ const vendorApprovalEmail = (data, lang = "ar") => {
     }
     </p>
     
-    ${
-      data.setupPasswordUrl
-        ? `
-      <p><strong>${isAr ? "الخطوة التالية:" : "Next Step:"}</strong></p>
-      <p>${
-        isAr
-          ? "قم بإعداد كلمة المرور الخاصة بك للوصول إلى لوحة التحكم:"
-          : "Set up your password to access your dashboard:"
-      }
-      </p>
-      ${getButton(
-        isAr ? "إعداد كلمة المرور" : "Set Up Password",
-        data.setupPasswordUrl,
-        "success"
-      )}
-    `
-        : getButton(
-            isAr ? "الذهاب للوحة التحكم" : "Go to Dashboard",
-            data.dashboardUrl,
-            "success"
-          )
-    }
-    
+    ${getButton(
+      isAr ? "الذهاب للوحة التحكم" : "Go to Dashboard",
+      data.dashboardUrl,
+      "success"
+    )}
+
     <div class="divider"></div>
     
     <p><strong>${isAr ? "ما يمكنك فعله الآن:" : "What you can do now:"}</strong></p>

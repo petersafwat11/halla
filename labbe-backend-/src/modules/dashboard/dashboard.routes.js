@@ -16,7 +16,6 @@ const router = express.Router();
 const dashboardController = require('./dashboard.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { restrictTo, requirePageAccess } = require('../../shared/middleware/rbac');
-const { whitelabelIsolation } = require('../../shared/middleware/whitelabel');
 const { validateZod } = require('../../shared/middleware/validation');
 const { ROLES, ADMIN_PAGES } = require('../../shared/constants');
 const { adminDashboardQuery } = require('./dashboard.validation');
@@ -71,7 +70,6 @@ router.use(protect);
 router.get(
   '/admin',
   requirePageAccess(ADMIN_PAGES.DASHBOARD, 'view'),
-  whitelabelIsolation,
   validateZod(adminDashboardQuery, 'query'),
   dashboardController.getAdminDashboard
 );

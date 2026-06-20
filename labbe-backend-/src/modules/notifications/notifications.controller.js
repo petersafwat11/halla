@@ -10,7 +10,6 @@ const {
   sendDeleted,
 } = require("../../shared/utils/responseHelper");
 const notificationsService = require("./notifications.service");
-const { ROLES } = require("../../shared/constants");
 const { logAudit } = require("../../shared/utils/auditLog");
 
 /**
@@ -134,18 +133,10 @@ exports.sendNotification = catchAsync(async (req, res) => {
  * POST /api/v2/notifications/broadcast
  */
 exports.broadcastNotification = catchAsync(async (req, res) => {
-  const { role, title, titleAr, message, messageAr, type, whitelabelId } =
-    req.body;
-
-  // TENANT-F03: non-SUPER_ADMIN users can only broadcast within their own tenant
-  const effectiveWhitelabelId =
-    req.user.role === ROLES.SUPER_ADMIN
-      ? whitelabelId || null
-      : req.user.whitelabelId || null;
+  const { role, title, titleAr, message, messageAr, type } = req.body;
 
   const result = await notificationsService.broadcast({
     role,
-    whitelabelId: effectiveWhitelabelId,
     type: type || "announcement",
     title,
     titleAr,
@@ -159,7 +150,6 @@ exports.broadcastNotification = catchAsync(async (req, res) => {
     targetType: 'notification',
     metadata: {
       targetRole: role || 'all',
-      whitelabelId: effectiveWhitelabelId,
       recipientCount: result?.count,
     },
   }).catch(() => {});

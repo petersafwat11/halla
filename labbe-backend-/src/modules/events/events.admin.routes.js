@@ -11,7 +11,6 @@ const router = express.Router();
 const eventsController = require("./events.controller");
 
 const { requirePageAccess } = require("../../shared/middleware/rbac");
-const { filterByWhitelabel } = require("../../shared/middleware/whitelabel");
 const {
   validateObjectId,
   validateZod,
@@ -42,7 +41,6 @@ const { adminUpdateStatusSchema } = require("./events.validation");
 router.get(
   "/all",
   requirePageAccess(ADMIN_PAGES.EVENTS, "view"),
-  filterByWhitelabel,
   eventsController.getAllEvents
 );
 

@@ -221,65 +221,6 @@ export const useAdminModeratorMutation = (action) => {
   return useMutation(mutations[action]);
 };
 
-export const useAdminWhitelabelMutation = (action) => {
-  const queryClient = useQueryClient();
-
-  const mutations = {
-    updateStatus: {
-      mutationFn: ({ whitelabelId, status, dispatchSetupEmail }) =>
-        apiRequest({
-          method: "PATCH",
-          path: API_PATHS.admin.whitelabels.updateStatus(whitelabelId),
-          data: {
-            status,
-            ...(dispatchSetupEmail !== undefined && { dispatchSetupEmail }),
-          },
-        }),
-      onSuccess: (_, { whitelabelId }) => {
-        queryClient.invalidateQueries({ queryKey: adminKeys.whitelabelsAll() });
-        queryClient.invalidateQueries({ queryKey: adminKeys.whitelabelDetail(whitelabelId) });
-      },
-    },
-    updateSubscription: {
-      mutationFn: ({ whitelabelId, planCode, status }) =>
-        apiRequest({
-          method: "PATCH",
-          path: API_PATHS.admin.whitelabels.updateSubscription(whitelabelId),
-          data: { planCode, status },
-        }),
-      onSuccess: (_, { whitelabelId }) => {
-        queryClient.invalidateQueries({ queryKey: adminKeys.whitelabelDetail(whitelabelId) });
-        queryClient.invalidateQueries({ queryKey: adminKeys.whitelabelsAll() });
-      },
-    },
-    delete: {
-      mutationFn: (whitelabelId) =>
-        apiRequest({
-          method: "DELETE",
-          path: API_PATHS.admin.whitelabels.delete(whitelabelId),
-        }),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: adminKeys.whitelabelsAll() });
-        queryClient.invalidateQueries({ queryKey: dashboardAll() });
-      },
-    },
-    bulkDelete: {
-      mutationFn: (whitelabelIds) =>
-        apiRequest({
-          method: "POST",
-          path: API_PATHS.admin.whitelabels.bulkDelete,
-          data: { whitelabelIds },
-        }),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: adminKeys.whitelabelsAll() });
-        queryClient.invalidateQueries({ queryKey: dashboardAll() });
-      },
-    },
-  };
-
-  return useMutation(mutations[action]);
-};
-
 export const useAdminEventMutation = (action) => {
   const queryClient = useQueryClient();
 
@@ -387,11 +328,6 @@ export const useAdminVendorsExport = () =>
 export const useAdminModeratorsExport = () =>
   useMutation(
     buildExportMutation(API_PATHS.admin.moderators.export, "moderators"),
-  );
-
-export const useAdminWhitelabelsExport = () =>
-  useMutation(
-    buildExportMutation(API_PATHS.admin.whitelabels.export, "whitelabels"),
   );
 
 export const useAdminEventsExport = () =>
@@ -507,23 +443,6 @@ export const useAdminPaymentsExport = () => {
       a.remove();
       window.URL.revokeObjectURL(url);
       return { ok: true };
-    },
-  });
-};
-
-export const useAdminWhitelabelFeatureMutation = (whitelabelId) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ feature, enabled }) =>
-      apiRequest({
-        method: "PATCH",
-        path: API_PATHS.admin.whitelabels.features(whitelabelId),
-        data: { feature, enabled },
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: adminKeys.whitelabelFeatures(whitelabelId),
-      });
     },
   });
 };

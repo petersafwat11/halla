@@ -6,5 +6,4 @@ Object.assign(exports, require('./admin.hosts.controller'));
 Object.assign(exports, require('./admin.vendors.controller'));
 Object.assign(exports, require('./admin.moderators.controller'));
 Object.assign(exports, require('./admin.events.controller'));
-Object.assign(exports, require('./admin.whitelabels.controller'));
 Object.assign(exports, require('./admin.payments.controller'));

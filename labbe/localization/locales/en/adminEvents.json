@@ -137,7 +137,6 @@
       "description": "Choose who this event is for",
       "createForSelf": "Create for Myself",
       "createForHost": "Create for Client",
-      "createForWhitelabel": "Create for Organization",
       "createForYourself": "Create Event for Yourself",
       "unlimitedDescription": "As a platform admin, you have unlimited events and guests",
       "unlimited": "Unlimited",
@@ -148,17 +147,13 @@
       "hostNotFound": "Client not found",
       "searchError": "Search failed",
       "noHostsFound": "No clients found",
-      "noWhitelabelsFound": "No organizations found",
       "selectedHost": "Selected Client:",
       "selectedTarget": "Selected:",
       "creatingForSelf": "Creating for yourself",
       "noSubscription": "No subscription",
       "inactiveSubscription": "Inactive",
       "subscriptionRequired": "Subscription required",
-      "eventsRemaining": "remaining",
-      "whitelabelAdmin": "Whitelabel Admin",
-      "whitelabelDescription": "Create an event using your organization subscription",
-      "createEventAsWhitelabel": "Create event as whitelabel"
+      "eventsRemaining": "remaining"
     },
     "steps": {
       "eventDetails": "Event Details",

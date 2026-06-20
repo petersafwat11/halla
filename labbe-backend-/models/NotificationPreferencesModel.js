@@ -33,8 +33,6 @@ const notificationsSchema = new mongoose.Schema(
         "admin",
         "super_admin",
         "moderator",
-        "whitelabel_admin",
-        "whitelabel_moderator",
         "guest",
       ],
       default: "host",
@@ -165,16 +163,6 @@ function getDefaultAppNotifications(role) {
         paymentAlerts: true,
         subscriptionAlerts: true,
       };
-    case "whitelabel_admin":
-    case "whitelabel_moderator":
-      return {
-        newHosts: true,
-        eventActivity: true,
-        subscriptionAlerts: true,
-        paymentAlerts: true,
-        systemUpdates: true,
-        supportTickets: true, // For ticket notifications
-      };
     default:
       return {
         systemUpdates: true,
@@ -200,14 +188,6 @@ function getDefaultEmailNotifications(role) {
         weeklyReport: true,
         vendorApprovals: true,
         supportTickets: false,
-        criticalAlerts: true,
-      };
-    case "whitelabel_admin":
-    case "whitelabel_moderator":
-      return {
-        dailyReport: false,
-        weeklyReport: true,
-        subscriptionAlerts: true,
         criticalAlerts: true,
       };
     default:

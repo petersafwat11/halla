@@ -139,45 +139,6 @@ export function useAdminTicketById(id) {
   });
 }
 
-/**
- * @param {Object} [params] - server filter params
- * @param {Object} [opts]
- * @param {boolean} [opts.enabled=true] - mirror of react-query's `enabled`
- *   so callers can gate the request on role. Without this, every
- *   non-super-admin opening a screen that imports the hook fires
- *   `GET /admin/whitelabels` and the backend responds 403/401.
- */
-export function useAdminWhitelabels(params = {}, opts = {}) {
-  const token = useAuthStore((state) => state.token);
-  const callerEnabled = opts.enabled !== false;
-  return useQuery({
-    queryKey: adminKeys.whitelabels(params),
-    queryFn: async () => {
-      const response = await adminRequest(
-        `${ENDPOINTS.ADMIN.WHITELABELS.BASE}${adminQs(params)}`,
-      );
-      return response.data;
-    },
-    enabled: !!token && callerEnabled,
-    staleTime: 2 * 60 * 1000,
-  });
-}
-
-export function useAdminWhitelabelById(id) {
-  const token = useAuthStore((state) => state.token);
-  return useQuery({
-    queryKey: adminKeys.whitelabelDetail(id),
-    queryFn: async () => {
-      const response = await adminRequest(
-        ENDPOINTS.ADMIN.WHITELABELS.BY_ID(id),
-      );
-      return response.data;
-    },
-    enabled: !!token && !!id,
-    staleTime: 2 * 60 * 1000,
-  });
-}
-
 export function useAdminPlans(filters = {}) {
   const token = useAuthStore((state) => state.token);
   return useQuery({
@@ -238,24 +199,9 @@ export function useAdminPaymentById(paymentId) {
   });
 }
 
-export function useAdminWhitelabelFeatures(whitelabelId) {
-  const token = useAuthStore((state) => state.token);
-  return useQuery({
-    queryKey: adminKeys.whitelabelFeatures(whitelabelId),
-    queryFn: async () => {
-      const response = await adminRequest(
-        ENDPOINTS.ADMIN.WHITELABELS.FEATURES(whitelabelId),
-      );
-      return response.data;
-    },
-    enabled: !!token && !!whitelabelId,
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
 /**
- * Hosts + whitelabels listing used by the admin "create event for host"
- * flow's HostSelectorStep. Backend: GET /admin/event-targets?type=host|whitelabel
+ * Hosts listing used by the admin "create event for host" flow's
+ * HostSelectorStep. Backend: GET /admin/event-targets?type=host
  */
 export function useAdminEventTargets(type) {
   const token = useAuthStore((state) => state.token);

@@ -1,6 +1,6 @@
 /**
  * Unified User Model
- * Single source of truth for all user types: Host, Admin, Vendor, WhiteLabel, Guest
+ * Single source of truth for all user types: Host, Admin, Vendor, Guest
  * Role-based discrimination with role-specific data stored in profile sub-documents
  */
 
@@ -157,67 +157,6 @@ const adminDataSchema = new mongoose.Schema(
 );
 
 /**
- * WhiteLabel-specific profile data
- */
-const whitelabelDataSchema = new mongoose.Schema(
-  {
-    // Brand identity
-    arabicName: { type: String, trim: true },
-    englishName: { type: String, trim: true },
-    platformName: String,
-    companyName: String, // For payment/invoice purposes
-    logo: String,
-    favicon: String,
-
-    // System requirements
-    requirements: {
-      numberOfEventsMonthly: Number,
-      numberOfGuestsMonthly: Number,
-      eventTypes: [String],
-      eventsTypesOther: String,
-    },
-
-    // Address Information
-    address: {
-      city: String,
-      neighborhood: String,
-      street: String,
-      buildingNumber: String,
-      additionalNumber: String,
-      placeType: String,
-      placeNumber: String,
-    },
-
-    // Tax & License
-    licenseNumber: String,
-    taxNumber: String,
-
-    // Plan selection during signup — accept any plan code; the actual list
-    // is enforced by the Plan collection. Keeping this open avoids
-    // schema churn every time a tier is added or removed.
-    planSelection: {
-      planCode: { type: String },
-      billingCycle: {
-        type: String,
-        enum: ["monthly", "yearly", "once"],
-      },
-      needsCustomBranding: {
-        type: Boolean,
-        default: false,
-      },
-    },
-
-    // Application status
-    applicationStatus: {
-      type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
-    },
-  },
-  { _id: false }
-);
-
-/**
  * Guest-specific profile data (for event attendees)
  */
 const guestDataSchema = new mongoose.Schema(
@@ -294,8 +233,6 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
-    passwordSetupToken: String,
-    passwordSetupExpires: Date,
 
     // Email verification
     emailVerificationCode: String,
@@ -329,28 +266,13 @@ const userSchema = new mongoose.Schema(
     // ============ NOTIFICATION PREFERENCES ============
     // Shape mirrors the role-aware schemas in
     // `@halla/shared/schemas/settings`. Mixed because keys vary by role
-    // (host has appNotifications only; admin/whitelabel have both app +
+    // (host has appNotifications only; admin has both app +
     // email; vendor has neither — vendor prefs were removed). The active
     // notifications service reads `appNotifications[<key>]` to decide
     // whether to create an in-app notification.
     notificationPreferences: {
       type: mongoose.Schema.Types.Mixed,
       default: undefined,
-    },
-
-    // ============ MULTI-TENANT ============
-    // References another User with role whitelabel_admin (the whitelabel owner)
-    whitelabelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-      index: true,
-    },
-
-    // FLOW-04-F04: whitelabel subdomain / custom domain config
-    domain: {
-      subdomain: { type: String, lowercase: true, trim: true, default: null },
-      customDomain: { type: String, lowercase: true, trim: true, default: null },
     },
 
     // ============ SUBSCRIPTION ============
@@ -364,7 +286,6 @@ const userSchema = new mongoose.Schema(
       hostData: hostDataSchema,
       vendorData: vendorDataSchema,
       adminData: adminDataSchema,
-      whitelabelData: whitelabelDataSchema,
       guestData: guestDataSchema,
     },
 
@@ -406,20 +327,12 @@ const userSchema = new mongoose.Schema(
 
 // Compound indexes for common queries
 userSchema.index({ role: 1, status: 1 });
-userSchema.index({ whitelabelId: 1, role: 1 });
 userSchema.index({ role: 1, createdAt: -1 });
 userSchema.index({ "profile.vendorData.serviceCategories": 1 });
 userSchema.index({ "profile.vendorData.vendorStatus": 1 });
 userSchema.index({ email: 1, role: 1 });
 userSchema.index({ mobile: 1, role: 1 });
 userSchema.index({ phoneNumber: 1, role: 1 }); // Legacy support
-
-// FLOW-04-F04: unique partial index for whitelabel subdomain
-// Only enforces uniqueness when subdomain is a non-null string value
-userSchema.index(
-  { "domain.subdomain": 1 },
-  { unique: true, partialFilterExpression: { "domain.subdomain": { $type: "string" } } }
-);
 
 // Unique compound indexes for better duplicate detection
 userSchema.index(
@@ -456,14 +369,7 @@ userSchema.virtual("isAdmin").get(function () {
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.MODERATOR,
-    ROLES.WHITELABEL_ADMIN,
-    ROLES.WHITELABEL_MODERATOR,
   ].includes(this.role);
-});
-
-// Check if user belongs to whitelabel
-userSchema.virtual("isWhitelabelUser").get(function () {
-  return !!this.whitelabelId;
 });
 
 // ============================================
@@ -586,23 +492,6 @@ userSchema.methods.createPasswordResetToken = function () {
   this.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour (FLOW-06-F01)
 
   return resetToken;
-};
-
-/**
- * Generate password setup token (for whitelabel first-time setup)
- * @returns {string} Plain setup token
- */
-userSchema.methods.createPasswordSetupToken = function () {
-  const setupToken = crypto.randomBytes(32).toString("hex");
-
-  this.passwordSetupToken = crypto
-    .createHash("sha256")
-    .update(setupToken)
-    .digest("hex");
-
-  this.passwordSetupExpires = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days (FLOW-04-F02)
-
-  return setupToken;
 };
 
 /**
@@ -753,8 +642,6 @@ userSchema.methods.toPublicJSON = async function () {
   delete obj.password;
   delete obj.passwordResetToken;
   delete obj.passwordResetExpires;
-  delete obj.passwordSetupToken;
-  delete obj.passwordSetupExpires;
   delete obj.emailVerificationCode;
   delete obj.emailVerificationExpires;
   delete obj.__v;
@@ -771,8 +658,6 @@ userSchema.methods.toPublicJSON = async function () {
       [ROLES.ADMIN]: "adminData",
       [ROLES.SUPER_ADMIN]: "adminData",
       [ROLES.MODERATOR]: "adminData",
-      [ROLES.WHITELABEL_ADMIN]: "whitelabelData",
-      [ROLES.WHITELABEL_MODERATOR]: "whitelabelData",
       [ROLES.GUEST]: "guestData",
     };
 
@@ -794,18 +679,11 @@ userSchema.methods.toPublicJSON = async function () {
       rd.cv = await signStoredImage(rd.cv);
       rd.portfolioImages = await signStoredImages(rd.portfolioImages);
       rd.pricePackages = await signStoredImages(rd.pricePackages);
-    } else if (obj.role === ROLES.WHITELABEL_ADMIN || obj.role === ROLES.WHITELABEL_MODERATOR) {
-      rd.logo = await signStoredImage(rd.logo);
-      rd.favicon = await signStoredImage(rd.favicon);
     }
   }
 
   if (!obj.permissions) {
     obj.permissions = this.permissions || [];
-  }
-
-  if (this.whitelabelId) {
-    obj.whitelabelId = this.whitelabelId;
   }
 
   return obj;
@@ -888,10 +766,6 @@ userSchema.statics.mobileExists = async function (
 userSchema.statics.findByRole = async function (role, options = {}) {
   const query = this.find({ role, status: USER_STATUS.ACTIVE });
 
-  if (options.whitelabelId) {
-    query.where("whitelabelId").equals(options.whitelabelId);
-  }
-
   if (options.limit) {
     query.limit(options.limit);
   }
@@ -906,27 +780,19 @@ userSchema.statics.findByRole = async function (role, options = {}) {
 /**
  * Count users by role
  * @param {string} role
- * @param {ObjectId} whitelabelId - Optional
  * @returns {Promise<number>}
  */
-userSchema.statics.countByRole = async function (role, whitelabelId = null) {
+userSchema.statics.countByRole = async function (role) {
   const filter = { role, status: USER_STATUS.ACTIVE };
-  if (whitelabelId !== undefined) {
-    filter.whitelabelId = whitelabelId;
-  }
   return this.countDocuments(filter);
 };
 
 /**
  * Get user stats for dashboard
- * @param {ObjectId} whitelabelId - Optional
  * @returns {Promise<Object>}
  */
-userSchema.statics.getStats = async function (whitelabelId = null) {
+userSchema.statics.getStats = async function () {
   const matchStage = { status: { $ne: USER_STATUS.INACTIVE } };
-  if (whitelabelId !== undefined) {
-    matchStage.whitelabelId = whitelabelId;
-  }
 
   const stats = await this.aggregate([
     { $match: matchStage },
@@ -972,10 +838,6 @@ userSchema.statics.search = async function (searchTerm, filters = {}) {
 
   if (filters.status) {
     query.status = filters.status;
-  }
-
-  if (filters.whitelabelId !== undefined) {
-    query.whitelabelId = filters.whitelabelId;
   }
 
   return this.find(query)

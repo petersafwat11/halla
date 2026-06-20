@@ -29,7 +29,6 @@ const PATHS = {
     // Signup
     hostSignup: "/auth/signup/host",
     vendorSignup: "/auth/signup/vendor",
-    whitelabelSignup: "/auth/signup/whitelabel",
 
     // Login
     login: "/auth/login",
@@ -44,11 +43,6 @@ const PATHS = {
     // Password
     forgotPassword: "/auth/forgot-password",
     resetPassword: (token) => `/auth/reset-password/${token}`,
-
-    // Password Setup (Whitelabel)
-    validateSetupToken: (token) => `/auth/validate-setup-token/${token}`,
-    setupPassword: "/auth/setup-password",
-    resendSetupEmail: "/auth/resend-setup-email",
 
     // Session
     refresh: "/auth/refresh",
@@ -414,17 +408,6 @@ const PATHS = {
       bulkDelete: "/admin/moderators/bulk-delete",
       bulkStatus: "/admin/moderators/bulk-status",
       export: "/admin/moderators/export",
-    },
-    whitelabels: {
-      getAll: "/admin/whitelabels",
-      getById: (id) => `/admin/whitelabels/${id}`,
-      updateStatus: (id) => `/admin/whitelabels/${id}/status`,
-      updateSubscription: (id) => `/admin/whitelabels/${id}/subscription`,
-      features: (id) => `/admin/whitelabels/${id}/features`,
-      delete: (id) => `/admin/whitelabels/${id}`,
-      bulkDelete: "/admin/whitelabels/bulk-delete",
-      bulkStatus: "/admin/whitelabels/bulk-status",
-      export: "/admin/whitelabels/export",
     },
     events: {
       getAll: "/events/admin/all",

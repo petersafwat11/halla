@@ -1,7 +1,7 @@
 /**
  * Notification Model
  * Handles all notification-related data storage and retrieval
- * Supports role-based notifications with multi-tenant (whitelabel) support
+ * Supports role-based notifications
  */
 
 const mongoose = require("mongoose");
@@ -43,7 +43,6 @@ const NOTIFICATION_TYPES = {
   VENDOR_PENDING_APPROVAL: "vendor_pending_approval",
   VENDOR_APPROVED: "vendor_approved",
   VENDOR_REJECTED: "vendor_rejected",
-  WHITELABEL_REGISTERED: "whitelabel_registered",
   PROFILE_INCOMPLETE: "profile_incomplete",
   WELCOME: "welcome",
 
@@ -91,14 +90,6 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Notification must have a recipient"],
-      index: true,
-    },
-
-    // Multi-tenant support
-    whitelabelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
       index: true,
     },
 
@@ -248,7 +239,6 @@ const notificationSchema = new mongoose.Schema(
 // Compound indexes for common queries
 notificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
 notificationSchema.index({ userId: 1, type: 1, createdAt: -1 });
-notificationSchema.index({ whitelabelId: 1, type: 1, createdAt: -1 });
 notificationSchema.index({ isScheduled: 1, scheduledFor: 1 });
 
 // TTL index for auto-deletion
@@ -427,15 +417,10 @@ notificationSchema.statics.createForUsers = async function (userIds, data) {
  */
 notificationSchema.statics.createForRole = async function (
   role,
-  data,
-  whitelabelId = null
+  data
 ) {
   const User = mongoose.model("User");
   const query = { role, status: "active" };
-
-  if (whitelabelId) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const users = await User.find(query).select("_id").lean();
 
@@ -443,7 +428,6 @@ notificationSchema.statics.createForRole = async function (
 
   const notifications = users.map((user) => ({
     userId: user._id,
-    whitelabelId,
     ...data,
     deliveryStatus: {
       app: { sent: true, sentAt: new Date() },

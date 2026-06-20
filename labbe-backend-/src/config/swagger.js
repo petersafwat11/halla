@@ -340,35 +340,6 @@ const swaggerOptions = {
                 },
               },
             },
-            analytics: {
-              type: 'object',
-              nullable: true,
-              description: 'Whitelabel-tenant-only analytics block',
-              properties: {
-                monthlyEvents: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      month: { type: 'string' },
-                      year: { type: 'integer' },
-                      count: { type: 'integer' },
-                    },
-                  },
-                },
-                eventsByStatus: {
-                  type: 'object',
-                  properties: {
-                    pending_scheduling: { type: 'integer' },
-                    scheduled: { type: 'integer' },
-                    live: { type: 'integer' },
-                    completed: { type: 'integer' },
-                  },
-                },
-                totalGuests: { type: 'integer' },
-                activeEvents: { type: 'integer' },
-              },
-            },
             period: { type: 'string', example: 'month' },
           },
         },
@@ -457,7 +428,7 @@ const swaggerOptions = {
             },
             role: {
               type: 'string',
-              enum: ['host', 'vendor', 'moderator', 'admin', 'super_admin', 'whitelabel_admin'],
+              enum: ['host', 'vendor', 'moderator', 'admin', 'super_admin'],
               example: 'host',
             },
             status: {
@@ -2234,7 +2205,6 @@ const swaggerOptions = {
           properties: {
             _id: { type: 'string' },
             userId: { type: 'string' },
-            whitelabelId: { type: 'string', nullable: true },
             subscriptionId: { type: 'string', nullable: true },
             addonId: { type: 'string', nullable: true },
             amount: { type: 'number' },

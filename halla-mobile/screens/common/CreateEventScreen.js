@@ -22,7 +22,7 @@ import { backgrounds } from "../../styles/tokens";
 // Role split:
 //   - host → 5-step wizard, CreateEventForm owns chrome + submit
 //     (`mode="host"`), so we just render the form.
-//   - everyone else (super_admin / admin / moderator / whitelabel_*) →
+//   - everyone else (super_admin / admin / moderator) →
 //     6-step wizard with HostSelector. The screen owns the TopBar and
 //     delegates submit to `useCreateEventForHost` / `useUpdateAdminEvent`.
 const CreateEventScreen = () => {

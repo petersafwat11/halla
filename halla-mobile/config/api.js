@@ -23,7 +23,6 @@ export const ENDPOINTS = {
     LOGIN: API_PATHS.auth.login,
     SIGNUP_HOST: API_PATHS.auth.hostSignup,
     SIGNUP_VENDOR: API_PATHS.auth.vendorSignup,
-    SIGNUP_WHITELABEL: API_PATHS.auth.whitelabelSignup,
     OTP_SEND_LOGIN: API_PATHS.auth.sendLoginOTP,
     OTP_SEND_SIGNUP: API_PATHS.auth.sendSignupOTP,
     OTP_VERIFY_LOGIN: API_PATHS.auth.verifyLoginOTP,
@@ -40,8 +39,6 @@ export const ENDPOINTS = {
     SEND_VERIFICATION_CODE: API_PATHS.auth.sendVerificationCode,
     VERIFY_EMAIL: API_PATHS.auth.verifyEmail,
     UPDATE_PUSH_TOKEN: API_PATHS.auth.updatePushToken,
-    SETUP_PASSWORD: API_PATHS.auth.setupPassword,
-    RESEND_SETUP_EMAIL: API_PATHS.auth.resendSetupEmail,
   },
 
   DASHBOARD: {
@@ -263,16 +260,6 @@ export const ENDPOINTS = {
     },
     SUBSCRIPTIONS: {
       ASSIGN: API_PATHS.subscriptions.adminAssign,
-    },
-    WHITELABELS: {
-      BASE: API_PATHS.admin.whitelabels.getAll,
-      BY_ID: API_PATHS.admin.whitelabels.getById,
-      STATUS: API_PATHS.admin.whitelabels.updateStatus,
-      SUBSCRIPTION: API_PATHS.admin.whitelabels.updateSubscription,
-      FEATURES: API_PATHS.admin.whitelabels.features,
-      BULK_DELETE: API_PATHS.admin.whitelabels.bulkDelete,
-      BULK_STATUS: API_PATHS.admin.whitelabels.bulkStatus,
-      EXPORT: API_PATHS.admin.whitelabels.export,
     },
     DISCOUNTS: {
       BASE: API_PATHS.discounts.list,

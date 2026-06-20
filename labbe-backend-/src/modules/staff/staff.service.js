@@ -244,7 +244,7 @@ class StaffService {
 
   /**
    * RBAC check shared by `listStaffTokens` and `revokeStaffToken`.
-   * Allowed: event host, owning whitelabel admin, platform admin, super_admin.
+   * Allowed: event host, platform admin, super_admin.
    */
   _assertStaffTokensRBAC(event, actor) {
     const actorId = actor?._id?.toString?.() || actor?._id;
@@ -252,13 +252,8 @@ class StaffService {
 
     const isHost = event.host?.toString() === actorId;
     const isAdmin = STAFF_TOKEN_RBAC_ROLES.includes(role);
-    const isWhitelabelAdmin =
-      role === ROLES.WHITELABEL_ADMIN &&
-      event.whitelabelId &&
-      actor?.whitelabelId &&
-      event.whitelabelId.toString() === actor.whitelabelId.toString();
 
-    if (!isHost && !isAdmin && !isWhitelabelAdmin) {
+    if (!isHost && !isAdmin) {
       throw new ForbiddenError(
         'Not authorized to manage staff tokens for this event'
       );
@@ -342,7 +337,6 @@ class StaffService {
       actor,
       targetType: 'staff_access_token',
       targetId: staffMember._id,
-      whitelabelId: event.whitelabelId || null,
       metadata: {
         eventId,
         staffMemberId,

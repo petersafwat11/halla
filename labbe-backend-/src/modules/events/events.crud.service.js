@@ -17,13 +17,11 @@ const {
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
-const { isPoolPlan, isPerEventPlan } = require('../../shared/constants/plans');
 const {
   isTrialFromPlan,
   eventInstantOf,
   assertEventDateFloor,
 } = require('../../shared/utils/schedulingWindow');
-const { countsAgainstPlanStatusFilter } = require('../../shared/constants/events');
 
 // File upload helper
 const { getFileUrl } = require('../../shared/utils/fileUpload');
@@ -130,43 +128,20 @@ module.exports = {
   /**
    * Build a scoped Mongo query for a single event lookup.
    *
-   * Host-facing endpoints used to filter on `{ host: userId }` only, so a
-   * whitelabel admin/moderator viewing the same event got 404 instead of
-   * being scoped by their tenant. Roles:
+   * Host-facing endpoints used to filter on `{ host: userId }` only, so an
+   * admin/moderator viewing the same event got 404. Roles:
    *
    *   - HOST                          → own event only
-   *   - SUPER_ADMIN                   → any event
-   *   - ADMIN, MODERATOR              → events whose `whitelabelId` matches
-   *                                      the caller's `whitelabelId`
-   *                                      (admin filters scope this way;
-   *                                      we mirror the single-doc query
-   *                                      for consistency).
-   *   - WHITELABEL_ADMIN,
-   *     WHITELABEL_MODERATOR          → same tenant scope
-   *
-   * Tenant-scoped roles MUST have a `whitelabelId`; otherwise we throw
-   * 403 (fail closed). Mirrors the `filterByWhitelabel` middleware.
+   *   - SUPER_ADMIN, ADMIN, MODERATOR → any event (platform-wide)
    *
    * @param {string} eventId
-   * @param {Object} userContext - req.user shape: { _id, role, whitelabelId }
+   * @param {Object} userContext - req.user shape: { _id, role }
    * @returns {Object} Mongo query
    * @private
    */
   _buildScopedEventQuery(eventId, userContext) {
     const role = userContext?.role;
     const userId = userContext?._id?.toString?.() || userContext?._id;
-    // `whitelabelId` may arrive as a raw ObjectId/string OR as a *populated*
-    // Whitelabel document — `auth.service` populates it (`identity domain
-    // status`) on the `protect` path. A populated doc has a `._id`; using the
-    // doc directly in the query made Mongoose throw `CastError: Invalid
-    // whitelabelId` (400), which silently broke every tenant-scoped event read
-    // for admin / whitelabel roles. Normalise to the id string in all shapes.
-    const rawWhitelabel = userContext?.whitelabelId;
-    const whitelabelId = rawWhitelabel
-      ? rawWhitelabel._id?.toString?.() ||
-        rawWhitelabel.toString?.() ||
-        rawWhitelabel
-      : null;
 
     // Defense in depth: callers always come through `protect` so this
     // should never fire, but if both role + id are absent we'd otherwise
@@ -178,23 +153,11 @@ module.exports = {
       throw new ForbiddenError("Authentication context is required");
     }
 
-    if (role === ROLES.SUPER_ADMIN) {
+    // super_admin / admin / moderator may view or edit ANY event
+    // platform-wide.
+    const platformWide = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR];
+    if (platformWide.includes(role)) {
       return { _id: eventId };
-    }
-
-    const tenantScoped = [
-      ROLES.ADMIN,
-      ROLES.MODERATOR,
-      ROLES.WHITELABEL_ADMIN,
-      ROLES.WHITELABEL_MODERATOR,
-    ];
-    if (tenantScoped.includes(role)) {
-      if (!whitelabelId) {
-        throw new ForbiddenError(
-          "Tenant configuration error. Contact a super admin to assign a whitelabel."
-        );
-      }
-      return { _id: eventId, whitelabelId };
     }
 
     // Default: host (or any other authenticated role) sees only their own.
@@ -204,8 +167,8 @@ module.exports = {
   /**
    * Get event by ID.
    *
-   * Accepts the full user context so admins / whitelabel tier roles can
-   * read events under their scope, not just the event host.
+   * Accepts the full user context so admins / moderators / super_admin can
+   * read any event, not just the event host.
    *
    * @param {string} eventId
    * @param {Object} userContext - req.user
@@ -285,27 +248,14 @@ module.exports = {
    * Get all events (admin)
    * @param {Object} filters
    * @param {Object} options
-   * @param {Object} [whitelabelFilter]
    * @returns {Promise<{data: Array, pagination: Object}>}
    */
-  async getAllEvents(filters = {}, options = {}, whitelabelFilter = null) {
+  async getAllEvents(filters = {}, options = {}) {
     const { search, status, hostId, from, to } = filters;
     const { page = 1, limit = 10 } = options;
     const skip = (page - 1) * limit;
 
     let query = { status: { $ne: 'deleted' } };
-
-    if (
-      whitelabelFilter &&
-      whitelabelFilter.whitelabelId !== undefined &&
-      whitelabelFilter.whitelabelId !== null
-    ) {
-      // Restrict to events hosted by users of this whitelabel
-      query["host"] = {
-        $in: await this._getWhitelabelHostIds(whitelabelFilter),
-      };
-    }
-    // whitelabelId === null means platform admin → show ALL events (no host filter)
 
     if (search) {
       const searchQuery = this.buildSearchQuery(search, [
@@ -324,17 +274,7 @@ module.exports = {
       }
     }
     if (hostId) {
-      // If whitelabel filter is active, ensure hostId is within the whitelabel scope
-      if (query.host && query.host.$in) {
-        const hostIdStr = hostId.toString();
-        if (!query.host.$in.some(id => id.toString() === hostIdStr)) {
-          // hostId not in whitelabel scope, keep the whitelabel restriction
-        } else {
-          query.host = hostId;
-        }
-      } else {
-        query.host = hostId;
-      }
+      query.host = hostId;
     }
     if (from || to) {
       query["eventDetails.date"] = {};
@@ -393,7 +333,7 @@ module.exports = {
    * @returns {Promise<Object>}
    */
   async createEvent(eventData, guestList, context) {
-    const { userId, userRole, subscription, file, skipSubscriptionCheck, whitelabelId, adminId } = context;
+    const { userId, userRole, subscription, file, skipSubscriptionCheck, adminId } = context;
 
     // Validate event data
     if (!eventData.eventDetails) {
@@ -408,26 +348,6 @@ module.exports = {
     let capacitySub = null;
 
     if (!skipSubscriptionCheck) {
-      // Whitelabel contexts with per-event plans: enforce the event limit
-      // across ALL hosts under the whitelabel umbrella, not per-host.
-      if (whitelabelId && subscription && isPerEventPlan(subscription.planId?.planType)) {
-        const periodStart = subscription.getBillingPeriodStart
-          ? subscription.getBillingPeriodStart()
-          : subscription.activatedAt || subscription.createdAt;
-        const whitelabelEventCount = await Event.countDocuments({
-          whitelabelId,
-          createdAt: { $gte: periodStart },
-          ...countsAgainstPlanStatusFilter(),
-        });
-        if (whitelabelEventCount >= (subscription.limits?.maxEvents || 1)) {
-          throw new PackageLimitError(
-            'events',
-            subscription.limits?.maxEvents || 1,
-            'This whitelabel has reached its event limit for the current period'
-          );
-        }
-      }
-
       // Validate subscription limits (async — dynamic event counting)
       if (subscription) {
         const validation = await SubscriptionsService.validateEventCreation(
@@ -540,11 +460,6 @@ module.exports = {
         role: userRole || "host",
         isSelf: true,
       };
-
-      // Set whitelabelId from context when provided (admin/whitelabel creation)
-      if (whitelabelId !== undefined) {
-        eventData.whitelabelId = whitelabelId;
-      }
 
       // Set subscription reference. Event-level guestLimit is no longer the
       // capacity source — the subscription pool (invitePool + compensation)
@@ -826,8 +741,6 @@ module.exports = {
         staffFailedCount: event.messagingStatus.staffFailedCount || 0,
         bulkSendCompletedAt: event.messagingStatus.bulkSendCompletedAt || null,
       } : null,
-      // Multi-tenant context (3c failure-banner RBAC needs this)
-      whitelabelId: event.whitelabelId || null,
       host: event.host || null,
       createdAt: event.createdAt,
     };
@@ -851,23 +764,4 @@ module.exports = {
     };
   },
 
-  /**
-   * Get host IDs for whitelabel
-   * @private
-   */
-  async _getWhitelabelHostIds(whitelabelFilter) {
-    const User = require("../../../models/UserModel");
-    const { whitelabelId, ...rest } = whitelabelFilter;
-
-    let roleFilter;
-    if (whitelabelId === null) {
-      const { PLATFORM_ADMIN_ROLES } = require("../../shared/constants/roles");
-      roleFilter = { $in: [...PLATFORM_ADMIN_ROLES, "host"] };
-    } else {
-      roleFilter = "host";
-    }
-
-    const hosts = await User.find({ whitelabelId, ...rest, role: roleFilter }).select("_id");
-    return hosts.map((h) => h._id);
-  },
 };

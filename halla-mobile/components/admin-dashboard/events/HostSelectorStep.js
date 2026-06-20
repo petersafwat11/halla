@@ -14,15 +14,10 @@ import { useAuthStore } from '../../../stores/authStore';
 import ActionButton from '../common/ActionButton';
 import SectionCard from '../../commen/SectionCard';
 
-const PLATFORM_ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
-const WHITELABEL_ROLES = ['whitelabel_admin', 'whitelabel_moderator'];
-
 const HostSelectorStep = ({ value = {}, onChange }) => {
   const { t } = useTranslation('admin');
   const user = useAuthStore((state) => state.user);
-  const isPlatformAdmin = PLATFORM_ADMIN_ROLES.includes(user?.role) && !user?.whitelabelId;
-  const isWhitelabelAdmin = WHITELABEL_ROLES.includes(user?.role);
-  const TABS = isPlatformAdmin ? ['self', 'host', 'whitelabel'] : ['self', 'host'];
+  const TABS = ['self', 'host'];
   const [activeTab, setActiveTab] = useState('self');
   const [phoneSearch, setPhoneSearch] = useState('');
   const [searchResult, setSearchResult] = useState(null);
@@ -31,10 +26,6 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
 
   const { data: hostsData, isLoading: hostsLoading } = useAdminEventTargets(
     activeTab === 'host' ? 'host' : undefined,
-  );
-
-  const { data: whitelabelsData, isLoading: whitelabelsLoading } = useAdminEventTargets(
-    activeTab === 'whitelabel' ? 'whitelabel' : undefined,
   );
 
   const verifyHostPhone = useVerifyHostPhone();
@@ -64,10 +55,6 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
 
   const handleSelectHost = (host) => {
     onChange({ createForSelf: false, targetUserId: host._id || host.id, targetType: 'host', subscription: host.subscription || null });
-  };
-
-  const handleSelectWhitelabel = (wl) => {
-    onChange({ createForSelf: false, targetUserId: wl._id || wl.id, targetType: 'whitelabel', subscription: wl.subscription || null });
   };
 
   const isSelected = (id, type) => {
@@ -121,7 +108,6 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
   };
 
   const hosts = hostsData?.hosts || hostsData?.data || (Array.isArray(hostsData) ? hostsData : []);
-  const whitelabels = whitelabelsData?.whitelabels || whitelabelsData?.data || (Array.isArray(whitelabelsData) ? whitelabelsData : []);
 
   return (
     <View style={styles.container}>
@@ -187,21 +173,6 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
               data={hosts}
               keyExtractor={(item) => String(item._id || item.id)}
               renderItem={({ item }) => renderHostCard(item, handleSelectHost, 'host')}
-              scrollEnabled={false}
-            />
-          )}
-        </View>
-      )}
-      {activeTab === 'whitelabel' && (
-        <View>
-          <Text style={styles.sectionLabel}>{t('events.hostSelector.hostList')}</Text>
-          {whitelabelsLoading ? (
-            <ActivityIndicator color="#C28E5C" style={{ margin: 16 }} />
-          ) : (
-            <FlatList
-              data={whitelabels}
-              keyExtractor={(item) => String(item._id || item.id)}
-              renderItem={({ item }) => renderHostCard(item, handleSelectWhitelabel, 'whitelabel')}
               scrollEnabled={false}
             />
           )}

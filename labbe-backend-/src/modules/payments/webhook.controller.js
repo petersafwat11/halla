@@ -314,12 +314,10 @@ async function sendInvoiceNotifications(eventType, sub, amount, currency) {
       adminMessageAr = `فشلت عملية دفع تجديد اشتراك بقيمة ${amountStr} من ${payerName} لـ ${planDetailsAr}.`;
     }
 
-    const payerActionUrl = payer.role === 'whitelabel_admin'
-      ? `${frontendUrl}/ar/admin-dash`
-      : `${frontendUrl}/ar/host/subscription`;
+    const payerActionUrl = `${frontendUrl}/ar/host/subscription`;
 
-    // 1. Notify the payer (host or whitelabel admin)
-    if (payer.role === 'host' || payer.role === 'whitelabel_admin') {
+    // 1. Notify the payer (host)
+    if (payer.role === 'host') {
       await notificationService.sendToUser(payer._id, {
         type,
         title,

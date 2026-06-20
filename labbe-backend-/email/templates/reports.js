@@ -14,7 +14,6 @@ const {
   getDivider,
   COLORS,
 } = require("../layout");
-const { getConfig } = require("../config");
 
 // ============================================
 // DAILY REPORT EMAIL (Admin)
@@ -92,7 +91,7 @@ const dailyReportEmail = (data, lang = "ar") => {
     }
     
     ${
-      stats.pendingVendors > 0 || stats.pendingWhitelabels > 0
+      stats.pendingVendors > 0
         ? `
       ${getDivider()}
       <p><strong>${isAr ? "طلبات معلقة:" : "Pending Applications:"}</strong></p>
@@ -104,20 +103,6 @@ const dailyReportEmail = (data, lang = "ar") => {
             isAr
               ? `${stats.pendingVendors} طلب مزود خدمة بانتظار الموافقة`
               : `${stats.pendingVendors} vendor applications pending approval`
-          }
-          </p>
-        </div>
-      `
-          : ""
-      }
-      ${
-        stats.pendingWhitelabels > 0
-          ? `
-        <div class="highlight-box warning-box">
-          <p style="margin: 0;">⏳ ${
-            isAr
-              ? `${stats.pendingWhitelabels} طلب منصة بانتظار الموافقة`
-              : `${stats.pendingWhitelabels} whitelabel applications pending approval`
           }
           </p>
         </div>

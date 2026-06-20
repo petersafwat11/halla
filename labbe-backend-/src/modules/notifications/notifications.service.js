@@ -153,7 +153,7 @@ class NotificationsService {
   }
 
   /**
-   * Send notification to all platform-wide admins, super admins, and moderators (no whitelabelId)
+   * Send notification to all platform-wide admins, super admins, and moderators
    * @param {Object} notificationData - Notification data
    * @returns {Promise<Object>}
    */
@@ -161,14 +161,10 @@ class NotificationsService {
     const User = require("../../../models/UserModel");
     const { ROLES, USER_STATUS } = require("../../shared/constants");
 
-    // Find active platform admins/super admins/moderators who do not have a whitelabelId
+    // Find active platform admins/super admins/moderators
     const platformAdmins = await User.find({
       role: { $in: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR] },
       status: USER_STATUS.ACTIVE,
-      $or: [
-        { whitelabelId: null },
-        { whitelabelId: { $exists: false } }
-      ]
     }).select("_id");
 
     if (platformAdmins.length === 0) {
@@ -210,7 +206,7 @@ class NotificationsService {
    * Check if should send email based on user preferences. Host email
    * preferences were removed (plan/payment emails always fire and do not
    * route through this service), so this is now only consulted by
-   * admin/whitelabel-targeted email flows that may layer in their own
+   * admin-targeted email flows that may layer in their own
    * preference keys later.
    * @private
    */
@@ -433,12 +429,11 @@ class NotificationsService {
    * @returns {Promise<Object>}
    */
   async broadcast(broadcastData) {
-    const { role, whitelabelId, ...notificationData } = broadcastData;
+    const { role, ...notificationData } = broadcastData;
     const User = require("../../../models/UserModel");
 
     let query = { status: USER_STATUS.ACTIVE };
     if (role) query.role = role;
-    if (whitelabelId) query.whitelabelId = whitelabelId;
 
     // Use cursor-based batching to avoid loading all users into memory
     const BATCH_SIZE = 500;

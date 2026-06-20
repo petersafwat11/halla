@@ -85,14 +85,6 @@
     "tickets": {
       "title": "Open Tickets",
       "subtitle": "{{count}} resolved this period"
-    },
-    "whitelabel": {
-      "totalEvents": "Total Events",
-      "activeEvents": "Active Events",
-      "totalClients": "Total Clients",
-      "totalGuests": "Total Guests",
-      "activeEventsCount": "{{count}} active",
-      "scheduledCount": "{{count}} scheduled"
     }
   },
   "hosts": {
@@ -278,9 +270,7 @@
     },
     "roles": {
       "moderator": "Moderator",
-      "admin": "Admin",
-      "whitelabel_moderator": "Whitelabel Moderator",
-      "whitelabel_admin": "Whitelabel Admin"
+      "admin": "Admin"
     },
     "actions": {
       "edit": "Edit",
@@ -603,8 +593,7 @@
       "subtitle": "Select the account this event will be created under",
       "tabs": {
         "self": "For Myself",
-        "host": "For a Host",
-        "whitelabel": "For Whitelabel"
+        "host": "For a Host"
       },
       "searchPlaceholder": "Search by phone number",
       "verify": "Verify",
@@ -875,127 +864,6 @@
       "voided": "Payment voided",
       "refunded": "Payment refunded",
       "partially_refunded": "Partially refunded"
-    }
-  },
-  "whitelabelDetails": {
-    "title": "Whitelabel Details",
-    "loading": "Loading whitelabel details…",
-    "notFound": "Whitelabel not found",
-    "contactInfo": "Contact Information",
-    "phone": "Phone Number",
-    "email": "Email",
-    "joinDate": "Join Date",
-    "username": "Username",
-    "subscription": "Subscription Details",
-    "plan": "Plan",
-    "status": "Status",
-    "expires": "Expires On",
-    "teamMembersLimit": "Team Members Limit",
-    "eventsPerMonthLimit": "Events / Month Limit",
-    "unlimited": "Unlimited",
-    "noPlanSet": "No subscription plan set yet",
-    "assignPlan": "Assign Plan",
-    "assignPlanFirst": "Please assign a plan before activating this whitelabel.",
-    "adminActions": "Admin Actions",
-    "manageSubscription": "Manage Subscription",
-    "manageSubscriptionSublabel": "Change business plan or status",
-    "approveWhitelabel": "Approve Whitelabel",
-    "approveSublabel": "Approve this pending whitelabel",
-    "suspendWhitelabel": "Suspend Account",
-    "activateWhitelabel": "Activate Account",
-    "suspendSublabel": "Restrict access to this whitelabel",
-    "activateSublabel": "Restore access to this whitelabel",
-    "suspendConfirmTitle": "Suspend Whitelabel",
-    "suspendConfirmMessage": "This whitelabel will be suspended and lose access.",
-    "activateConfirmTitle": "Activate Whitelabel",
-    "activateConfirmMessage": "Reactivate this whitelabel?",
-    "suspended": "Whitelabel suspended",
-    "activated": "Whitelabel activated",
-    "updateStatusFailed": "Failed to update status",
-    "loadFailed": "Failed to load whitelabel details",
-    "registeredHosts": "Registered Hosts",
-    "hosts": "Hosts",
-    "events": "Events",
-    "moderators": "Moderators",
-    "subscriptionPlan": "Subscription Plan",
-    "planNone": "None",
-    "approveDialog": {
-      "title": "Confirm Approval",
-      "body": "You are about to approve this whitelabel. The account will be activated immediately.",
-      "platform": "Platform",
-      "email": "Email",
-      "dispatchEmail": "Send password setup link by email",
-      "dispatchEmailHint": "When enabled, a fresh token is generated and the email is sent immediately. Any previous token becomes invalid.",
-      "cancel": "Cancel",
-      "confirm": "Approve & Send",
-      "confirmNoEmail": "Approve",
-      "submitting": "Approving…",
-      "successWithEmail": "Whitelabel approved and setup email sent.",
-      "successPasswordAlreadySet": "Whitelabel approved. Password is already set — email not sent.",
-      "successNoEmailOnFile": "Whitelabel approved, but no email on file — setup link not sent.",
-      "successEmailFailed": "Whitelabel approved, but the setup email failed to send."
-    }
-  },
-  "whitelabels": {
-    "title": "Whitelabels",
-    "searchPlaceholder": "Search whitelabels...",
-    "filters": {
-      "all": "All Whitelabels",
-      "active": "Active",
-      "pending": "Pending",
-      "suspended": "Suspended"
-    },
-    "status": {
-      "active": "Active",
-      "pending": "Pending",
-      "suspended": "Suspended",
-      "expired": "Expired",
-      "cancelled": "Cancelled"
-    },
-    "actions": {
-      "activate": "Activate",
-      "suspend": "Suspend",
-      "managePlan": "Manage Plan",
-      "delete": "Delete",
-      "bulkSuspendMessage": "Suspend {{count}} whitelabel(s)?",
-      "bulkDeleteMessage": "Delete {{count}} whitelabel(s)? This action cannot be undone."
-    },
-    "labels": {
-      "unnamed": "Unnamed"
-    },
-    "subscription": {
-      "manageTitle": "Manage Subscription",
-      "businessPlan": "Business Plan",
-      "statusLabel": "Status",
-      "loadingPlans": "Loading Plans...",
-      "errorLoadingPlans": "Failed to load plans",
-      "retry": "Retry",
-      "selectPlan": "Select Business Plan",
-      "validation": "Please select both a plan and status",
-      "noPlansAvailable": "No plans available",
-      "noPlanSelected": "Please select a business plan",
-      "updated": "Subscription updated successfully",
-      "updateFailed": "Failed to update subscription",
-      "update": "Update",
-      "updating": "Updating...",
-      "cancel": "Cancel",
-      "statusActive": "Active",
-      "statusExpired": "Expired",
-      "statusCancelled": "Cancelled",
-      "selectStatus": "Select Status",
-      "status": "Status",
-      "plan": "Plan",
-      "sections": {
-        "event": "Event Plans",
-        "quarterly": "Quarterly Pool",
-        "annual": "Annual Pool"
-      },
-      "invitesPool": "{{count}} invites (pool)",
-      "invitesPerEvent": "{{count}} invites/event"
-    },
-    "empty": {
-      "title": "No Whitelabels Found",
-      "message": "There are no whitelabels to display"
     }
   },
   "plans": {
@@ -1313,9 +1181,7 @@
     "payments": "Payments",
     "moderators": "Moderators",
     "vendors": "Vendors",
-    "whitelabels": "Whitelabels",
     "plans": "Plans",
-    "myPlans": "My Plans",
     "discounts": "Discount Codes",
     "settings": "Settings"
   },
@@ -1375,8 +1241,7 @@
       "host": "Hosts",
       "vendor": "Vendors",
       "moderator": "Moderators",
-      "admin": "Admins",
-      "whitelabel_admin": "Whitelabel Admins"
+      "admin": "Admins"
     }
   }
 }

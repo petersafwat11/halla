@@ -22,8 +22,7 @@ const Event = require("../../../models/EventModel");
  * Blocks access if user doesn't have an active subscription
  */
 exports.requireSubscription = catchAsync(async (req, res, next) => {
-  const isPlatformAdmin =
-    isAdminRole(req.user?.role) && !req.user?.whitelabelId;
+  const isPlatformAdmin = isAdminRole(req.user?.role);
   const isCreatingForSelf =
     !req.body.targetUserId && !req.body.hostId && !req.body.phoneNumber;
 
@@ -99,7 +98,7 @@ exports.requireSubscription = catchAsync(async (req, res, next) => {
  * Verifies user hasn't exceeded event limit based on plan type
  */
 exports.checkEventLimit = catchAsync(async (req, res, next) => {
-  const isPlatformAdmin = isAdminRole(req.user?.role) && !req.user?.whitelabelId;
+  const isPlatformAdmin = isAdminRole(req.user?.role);
   if (isPlatformAdmin) {
     return next();
   }
@@ -158,8 +157,8 @@ exports.checkEventLimit = catchAsync(async (req, res, next) => {
  */
 exports.checkGuestLimit = (getGuestCount) => {
   return catchAsync(async (req, res, next) => {
-    // Only platform admins bypass — whitelabel moderators must respect limits (Bug 9)
-    const isPlatformAdmin = isAdminRole(req.user?.role) && !req.user?.whitelabelId;
+    // Only platform admins bypass subscription limits
+    const isPlatformAdmin = isAdminRole(req.user?.role);
     if (isPlatformAdmin) {
       return next();
     }

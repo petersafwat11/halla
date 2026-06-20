@@ -11,7 +11,6 @@ import {
   getNavItemsForRole,
   canViewPage,
   PAGES,
-  isSuperAdmin,
 } from "../utils/adminPermissions";
 
 // Auth store
@@ -23,10 +22,8 @@ import AdminDashboardScreen from "../screens/admin/admin-dashboard/AdminDashboar
 import AdminHostsScreen from "../screens/admin/admin-dashboard/AdminHostsScreen";
 import AdminModeratorsScreen from "../screens/admin/admin-dashboard/AdminModeratorsScreen";
 import AdminVendorsScreen from "../screens/admin/admin-dashboard/AdminVendorsScreen";
-import AdminWhitelabelsScreen from "../screens/admin/admin-dashboard/AdminWhitelabelsScreen";
 import HostDetailsScreen from "../screens/admin/admin-dashboard/HostDetailsScreen";
 import VendorDetailsScreen from "../screens/admin/admin-dashboard/VendorDetailsScreen";
-import WhitelabelDetailsScreen from "../screens/admin/admin-dashboard/WhitelabelDetailsScreen";
 import AdminEventsScreen from "../screens/admin/admin-dashboard/AdminEventsScreen";
 import EventDetailsScreen from "../screens/common/EventDetailsScreen";
 import CreateEventScreen from "../screens/common/CreateEventScreen";
@@ -46,8 +43,6 @@ import AdminNotificationSettingsScreen from "../screens/admin/admin-dashboard/Ad
 import AdminMoreScreen from "../screens/admin/admin-dashboard/AdminMoreScreen";
 import AdminDiscountsScreen from "../screens/admin/admin-dashboard/AdminDiscountsScreen";
 import AdminTemplatesScreen from "../screens/admin/admin-dashboard/AdminTemplatesScreen";
-import WhitelabelPlansScreen from "../screens/admin/WhitelabelPlansScreen";
-import WhitelabelPlansSummaryScreen from "../screens/admin/WhitelabelPlansSummaryScreen";
 
 // Create navigators
 const Tab = createBottomTabNavigator();
@@ -262,19 +257,6 @@ function MoreStackNavigator() {
         component={VendorDetailsScreen}
       />
 
-      {isSuperAdmin(userRole) && (
-        <MoreStack.Screen
-          name="AdminWhitelabelsList"
-          component={AdminWhitelabelsScreen}
-        />
-      )}
-      {isSuperAdmin(userRole) && (
-        <MoreStack.Screen
-          name="WhitelabelDetails"
-          component={WhitelabelDetailsScreen}
-        />
-      )}
-
       {canViewPage(userRole, PAGES.DISCOUNTS) && (
         <MoreStack.Screen
           name="AdminDiscounts"
@@ -287,21 +269,6 @@ function MoreStackNavigator() {
         <MoreStack.Screen
           name="AdminTemplates"
           component={AdminTemplatesScreen}
-          options={{ headerShown: false }}
-        />
-      )}
-
-      {canViewPage(userRole, PAGES.PLANS) && (
-        <MoreStack.Screen
-          name="WhitelabelPlans"
-          component={WhitelabelPlansScreen}
-          options={{ headerShown: false }}
-        />
-      )}
-      {canViewPage(userRole, PAGES.PLANS) && (
-        <MoreStack.Screen
-          name="WhitelabelPlansSummary"
-          component={WhitelabelPlansSummaryScreen}
           options={{ headerShown: false }}
         />
       )}
@@ -363,7 +330,6 @@ export default function AdminNavigator() {
     canViewPage(userRole, PAGES.SETTINGS) ||
     canViewPage(userRole, PAGES.MODERATORS) ||
     canViewPage(userRole, PAGES.VENDORS) ||
-    canViewPage(userRole, PAGES.WHITELABELS) ||
     canViewPage(userRole, PAGES.TEMPLATES);
 
   return (

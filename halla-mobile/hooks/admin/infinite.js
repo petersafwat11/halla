@@ -166,21 +166,6 @@ export function useAdminTicketsInfinite(filters = {}) {
   });
 }
 
-export function useAdminWhitelabelsInfinite(filters = {}, opts = {}) {
-  const token = useAuthStore((state) => state.token);
-  const callerEnabled = opts.enabled !== false;
-  const cleanFilters = _normalizeFilters(filters);
-  return _buildInfinite({
-    queryKey: adminKeys.whitelabelsInfinite(cleanFilters),
-    fetchPage: ({ page, limit }) =>
-      adminRequest(
-        `${ENDPOINTS.ADMIN.WHITELABELS.BASE}${adminQs({ ...cleanFilters, page, limit })}`,
-      ),
-    collectionKey: "whitelabels",
-    enabled: !!token && callerEnabled,
-  });
-}
-
 export function useAdminPaymentsInfinite(filters = {}) {
   const token = useAuthStore((state) => state.token);
   const cleanFilters = _normalizeFilters(filters);

@@ -52,14 +52,6 @@
     "tickets": {
       "title": "الشكاوى المفتوحة",
       "subtitle": "{{count}} محلولة هذه الفترة"
-    },
-    "whitelabel": {
-      "totalEvents": "إجمالي المناسبات",
-      "activeEventsCount": "{{count}} نشطة",
-      "activeEvents": "المناسبات النشطة",
-      "scheduledCount": "{{count}} مجدولة",
-      "totalClients": "إجمالي العملاء",
-      "totalGuests": "إجمالي الضيوف"
     }
   },
   "errors": {
@@ -84,12 +76,7 @@
     "thisperiod": "هذه الفترة",
     "previousperiod": "الفترة السابقة",
     "change": "التغيير",
-    "currency": "العملة",
-    "whitelabel": {
-      "monthlyEvents": "المناسبات الشهرية",
-      "eventsByStatus": "المناسبات حسب الحالة",
-      "events": "مناسبة"
-    }
+    "currency": "العملة"
   },
   "bottom": {
     "topVendors": "التجار الأكثر تميزاً",

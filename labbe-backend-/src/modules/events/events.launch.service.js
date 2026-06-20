@@ -23,9 +23,9 @@ module.exports = {
   /**
    * Manual launch retry.
    *
-   * Permitted for the host (event creator), the whitelabel-admin who owns
-   * the event's whitelabel, or any global admin / super-admin (the route
-   * already restricts to those roles via `restrictTo`).
+   * Permitted for the host (event creator), or any global admin /
+   * super-admin / moderator (the route already restricts to those roles
+   * via `restrictTo`).
    *
    * Behavior: clears `attemptCount` and `failureReason`, flips status from
    * `failed` → `scheduled`, then immediately runs the launch sequence.
@@ -40,14 +40,9 @@ module.exports = {
     const role = userContext.role;
 
     const isHost = event.host?.toString() === userId;
-    const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN].includes(role);
-    const isWhitelabelAdmin =
-      role === ROLES.WHITELABEL_ADMIN &&
-      event.whitelabelId &&
-      userContext.whitelabelId &&
-      event.whitelabelId.toString() === userContext.whitelabelId.toString();
+    const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.MODERATOR].includes(role);
 
-    if (!isHost && !isAdmin && !isWhitelabelAdmin) {
+    if (!isHost && !isAdmin) {
       throw new ForbiddenError("Not authorized to retry this event");
     }
 
@@ -84,7 +79,6 @@ module.exports = {
       actor: userContext,
       targetType: "event",
       targetId: event._id,
-      whitelabelId: event.whitelabelId || null,
       metadata: {
         triggeredBy: userId,
         triggeredByRole: role,

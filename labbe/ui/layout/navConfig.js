@@ -1,7 +1,7 @@
 /**
  * Navigation configuration for different dashboard types
  * Each dashboard type has its own set of navigation items
- * Supports role-based filtering for admin, moderator, and whitelabel users
+ * Supports role-based filtering for admin and moderator users
  */
 
 import {
@@ -15,7 +15,6 @@ import {
   IoPeople,
   IoPersonAdd,
   IoBusiness,
-  IoStatsChart,
   IoPricetag,
   IoGift,
   IoImagesOutline,
@@ -25,9 +24,7 @@ import {
 import {
   USER_ROLES,
   ADMIN_ROLES,
-  WHITELABEL_ROLES,
   isAdminRole,
-  isWhitelabelRole,
 } from "@halla/shared/constants/roles";
 import { ACCESS_LEVELS } from "@halla/shared/constants/permissions";
 
@@ -37,7 +34,7 @@ import { ACCESS_LEVELS } from "@halla/shared/constants/permissions";
  * existing consumer imports `from "@/ui/layout/navConfig"` continue to
  * work without churn.
  */
-export { USER_ROLES, ADMIN_ROLES, WHITELABEL_ROLES, isAdminRole, isWhitelabelRole, ACCESS_LEVELS };
+export { USER_ROLES, ADMIN_ROLES, isAdminRole, ACCESS_LEVELS };
 
 /**
  * Dashboard types
@@ -46,7 +43,6 @@ export const DASHBOARD_TYPES = {
   HOST: "host",
   ADMIN: "admin",
   VENDOR: "vendor",
-  WHITELABEL: "whitelabel",
 };
 
 /**
@@ -139,13 +135,6 @@ export const adminNavItems = [
     defaultLabel: "التجار",
   },
   {
-    key: "whitelabels",
-    path: "/admin-dash/whitelabels",
-    icon: IoStatsChart,
-    labelKey: "adminSidebar.whitelabels",
-    defaultLabel: "الوايت ليبل",
-  },
-  {
     key: "events",
     path: "/admin-dash/events",
     icon: IoCalendar,
@@ -165,13 +154,6 @@ export const adminNavItems = [
     icon: IoCard,
     labelKey: "adminSidebar.payments",
     defaultLabel: "المدفوعات",
-  },
-  {
-    key: "plans",
-    path: "/admin-dash/plans",
-    icon: IoCube,
-    labelKey: "adminSidebar.plans",
-    defaultLabel: "الباقات",
   },
   {
     key: "manage-plans",
@@ -258,65 +240,11 @@ export const vendorNavItems = [
 ];
 
 /**
- * Navigation items for WhiteLabel users (subset of admin items)
- * WhiteLabel users access admin-dash but with filtered nav items
- * @deprecated Use getNavItemsForRole instead - whitelabel now uses admin-dash
- */
-export const whitelabelNavItems = [
-  {
-    key: "dashboard",
-    path: "/admin-dash",
-    icon: IoGrid,
-    labelKey: "adminSidebar.dashboard",
-    defaultLabel: "لوحة التحكم",
-    exactMatch: true,
-  },
-  {
-    key: "moderators",
-    path: "/admin-dash/moderators",
-    icon: IoPeople,
-    labelKey: "adminSidebar.moderators",
-    defaultLabel: "المديرون",
-  },
-  {
-    key: "events",
-    path: "/admin-dash/events",
-    icon: IoCalendar,
-    labelKey: "adminSidebar.events",
-    defaultLabel: "المناسبات",
-  },
-  {
-    key: "payments",
-    path: "/admin-dash/payments",
-    icon: IoCard,
-    labelKey: "adminSidebar.payments",
-    defaultLabel: "المدفوعات",
-  },
-  {
-    key: "plans",
-    path: "/admin-dash/plans",
-    icon: IoCube,
-    labelKey: "adminSidebar.plans",
-    defaultLabel: "الباقات",
-  },
-  {
-    key: "settings",
-    path: "/admin-dash/settings",
-    icon: IoSettings,
-    labelKey: "adminSidebar.settings",
-    defaultLabel: "الإعدادات",
-  },
-];
-
-
-/**
  * Nav items accessible by each role in admin-dash
  * Synced with backend ROLE_PAGE_ACCESS
  * - super_admin: All items (full access)
- * - admin: All items except whitelabels (full access)
+ * - admin: All items (full access)
  * - moderator: dashboard(view), hosts(edit), vendors(view), events(edit), tickets(full), payments(view)
- * - whitelabel_admin: All whitelabel items (full access within tenant) + plans + settings
- * - whitelabel_moderator: dashboard(view), hosts(edit), events(edit), tickets(full), payments(view), plans(view), settings
  */
 const ROLE_NAV_ACCESS = {
   [USER_ROLES.SUPER_ADMIN]: [
@@ -324,11 +252,9 @@ const ROLE_NAV_ACCESS = {
     "moderators",
     "hosts",
     "vendors",
-    "whitelabels",
     "events",
     "tickets",
     "payments",
-    "plans",
     "manage-plans",
     "discounts",
     "settings",
@@ -345,7 +271,6 @@ const ROLE_NAV_ACCESS = {
     "events",
     "tickets",
     "payments",
-    "plans",
     "discounts",
     "settings",
     // Phase 4c W1-VISUAL + W1-TAQNYAT-ADMIN
@@ -366,23 +291,6 @@ const ROLE_NAV_ACCESS = {
     "templates",
     "template_categories",
   ],
-  [USER_ROLES.WHITELABEL_ADMIN]: [
-    "dashboard",
-    "moderators",
-    "events",
-    "tickets",
-    "payments",
-    "plans",
-    "settings",
-  ],
-  [USER_ROLES.WHITELABEL_MODERATOR]: [
-    "dashboard",
-    "events", // EDIT access (create/update, no delete)
-    "tickets", // FULL access
-    "payments", // VIEW access
-    "plans", // VIEW access
-    "settings",
-  ],
 };
 
 /**
@@ -397,8 +305,6 @@ export const ROLE_PAGE_ACCESS = {
     tickets: ACCESS_LEVELS.FULL,
     payments: ACCESS_LEVELS.FULL,
     moderators: ACCESS_LEVELS.FULL,
-    whitelabels: ACCESS_LEVELS.FULL,
-    plans: ACCESS_LEVELS.NONE,
     "manage-plans": ACCESS_LEVELS.FULL,
     discounts: ACCESS_LEVELS.FULL,
     settings: ACCESS_LEVELS.FULL,
@@ -414,8 +320,6 @@ export const ROLE_PAGE_ACCESS = {
     tickets: ACCESS_LEVELS.FULL,
     payments: ACCESS_LEVELS.FULL,
     moderators: ACCESS_LEVELS.FULL,
-    whitelabels: ACCESS_LEVELS.NONE,
-    plans: ACCESS_LEVELS.NONE,
     "manage-plans": ACCESS_LEVELS.NONE,
     discounts: ACCESS_LEVELS.FULL,
     settings: ACCESS_LEVELS.FULL,
@@ -431,40 +335,12 @@ export const ROLE_PAGE_ACCESS = {
     tickets: ACCESS_LEVELS.FULL,
     payments: ACCESS_LEVELS.VIEW,
     moderators: ACCESS_LEVELS.NONE,
-    whitelabels: ACCESS_LEVELS.NONE,
-    plans: ACCESS_LEVELS.NONE,
     "manage-plans": ACCESS_LEVELS.NONE,
     discounts: ACCESS_LEVELS.FULL,
     settings: ACCESS_LEVELS.VIEW,
     templates: ACCESS_LEVELS.EDIT,
     template_categories: ACCESS_LEVELS.VIEW,
     taqnyat_templates: ACCESS_LEVELS.NONE,
-  },
-  [USER_ROLES.WHITELABEL_ADMIN]: {
-    dashboard: ACCESS_LEVELS.FULL,
-    hosts: ACCESS_LEVELS.NONE,
-    vendors: ACCESS_LEVELS.NONE,
-    events: ACCESS_LEVELS.FULL,
-    tickets: ACCESS_LEVELS.NONE,
-    payments: ACCESS_LEVELS.FULL,
-    moderators: ACCESS_LEVELS.FULL,
-    whitelabels: ACCESS_LEVELS.NONE,
-    plans: ACCESS_LEVELS.FULL,
-    "manage-plans": ACCESS_LEVELS.NONE,
-    settings: ACCESS_LEVELS.FULL,
-  },
-  [USER_ROLES.WHITELABEL_MODERATOR]: {
-    dashboard: ACCESS_LEVELS.VIEW,
-    hosts: ACCESS_LEVELS.NONE,
-    vendors: ACCESS_LEVELS.NONE,
-    events: ACCESS_LEVELS.EDIT,
-    tickets: ACCESS_LEVELS.NONE,
-    payments: ACCESS_LEVELS.VIEW,
-    moderators: ACCESS_LEVELS.NONE,
-    whitelabels: ACCESS_LEVELS.NONE,
-    plans: ACCESS_LEVELS.VIEW,
-    "manage-plans": ACCESS_LEVELS.NONE,
-    settings: ACCESS_LEVELS.VIEW,
   },
 };
 
@@ -515,7 +391,6 @@ const PERMISSION_TO_NAV_KEY = {
   manage_tickets: "tickets",
   manage_payments: "payments",
   manage_moderators: "moderators",
-  manage_whitelabels: "whitelabels",
 };
 
 /**
@@ -547,13 +422,6 @@ export const getNavItemsForRole = (userRole, userPermissions = []) => {
       return false;
     }
 
-    // Whitelabel roles should not see vendors and whitelabels pages
-    if (isWhitelabelRole(userRole)) {
-      if (["vendors", "whitelabels"].includes(item.key)) {
-        return false;
-      }
-    }
-
     return true;
   });
 };
@@ -561,7 +429,7 @@ export const getNavItemsForRole = (userRole, userPermissions = []) => {
 /**
  * Check if a user role can access a specific admin page
  * @param {string} userRole - The user's role
- * @param {string} pageKey - The page key (e.g., 'vendors', 'whitelabels')
+ * @param {string} pageKey - The page key (e.g., 'vendors', 'events')
  * @param {Array} userPermissions - Optional array of user permissions
  * @returns {boolean} Whether the user can access the page
  */
@@ -570,26 +438,13 @@ export const canAccessPage = (userRole, pageKey, userPermissions = []) => {
   let allowedKeys = [...(ROLE_NAV_ACCESS[userRole] || [])];
 
   // For moderator roles, add keys based on permissions
-  if (
-    userRole === USER_ROLES.MODERATOR ||
-    userRole === USER_ROLES.WHITELABEL_MODERATOR
-  ) {
+  if (userRole === USER_ROLES.MODERATOR) {
     userPermissions.forEach((permission) => {
       const navKey = PERMISSION_TO_NAV_KEY[permission];
       if (navKey && !allowedKeys.includes(navKey)) {
         allowedKeys.push(navKey);
       }
     });
-  }
-
-  // Whitelabel roles cannot access certain pages
-  if (
-    userRole === USER_ROLES.WHITELABEL_ADMIN ||
-    userRole === USER_ROLES.WHITELABEL_MODERATOR
-  ) {
-    if (["vendors", "whitelabels"].includes(pageKey)) {
-      return false;
-    }
   }
 
   return allowedKeys.includes(pageKey);
@@ -618,12 +473,6 @@ export const getNavItems = (
       return adminNavItems;
     case DASHBOARD_TYPES.VENDOR:
       return vendorNavItems;
-    case DASHBOARD_TYPES.WHITELABEL:
-      // Whitelabel now uses admin-dash with filtered items
-      if (userRole) {
-        return getNavItemsForRole(userRole, userPermissions);
-      }
-      return whitelabelNavItems;
     default:
       return hostNavItems;
   }
@@ -649,9 +498,6 @@ export const getDashboardTypeFromPath = (pathname) => {
   if (dashSegment === "vendor-dashboard") {
     return DASHBOARD_TYPES.VENDOR;
   }
-  if (dashSegment === "whitelabel-dash") {
-    return DASHBOARD_TYPES.WHITELABEL;
-  }
   if (dashSegment === "host") {
     return DASHBOARD_TYPES.HOST;
   }
@@ -670,8 +516,6 @@ export const getBasePath = (dashboardType) => {
       return "admin-dash";
     case DASHBOARD_TYPES.VENDOR:
       return "vendor-dashboard";
-    case DASHBOARD_TYPES.WHITELABEL:
-      return "whitelabel-dash";
     case DASHBOARD_TYPES.HOST:
     default:
       return "host";

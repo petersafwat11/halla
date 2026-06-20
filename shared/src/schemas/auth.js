@@ -9,10 +9,6 @@ import {
   email,
   password,
   otpCode,
-  ARABIC_TEXT_REGEX,
-  ENGLISH_TEXT_REGEX,
-  LICENSE_REGEX,
-  TAX_REGEX,
   SAUDI_NATIONAL_ID_REGEX,
   SAUDI_COMMERCIAL_REG_REGEX,
   optionalUrl,
@@ -276,93 +272,6 @@ export const vendorSignupSchema = (t = idT) =>
   });
 
 // ============================================================
-// SIGNUP — WHITELABEL
-// ============================================================
-
-export const whitelabelSignupSchema = (t = idT) =>
-  z.object({
-    identity: z.object({
-      arabicName: z
-        .string()
-        .min(2, t("signupForm.whiteLabel.identity.errors.arabicNameMinLength"))
-        .max(100, t("signupForm.whiteLabel.identity.errors.arabicNameMaxLength"))
-        .regex(ARABIC_TEXT_REGEX, t("signupForm.whiteLabel.identity.errors.arabicNameFormat")),
-      englishName: z
-        .string()
-        .min(2, t("signupForm.whiteLabel.identity.errors.englishNameMinLength"))
-        .max(100, t("signupForm.whiteLabel.identity.errors.englishNameMaxLength"))
-        .regex(ENGLISH_TEXT_REGEX, t("signupForm.whiteLabel.identity.errors.englishNameFormat")),
-      companyName: z
-        .string()
-        .min(1, t("signupForm.whiteLabel.payment.errors.companyNameRequired")),
-      licenseNumber: z
-        .string()
-        .min(1, t("signupForm.whiteLabel.payment.errors.licenseNumberRequired"))
-        .regex(LICENSE_REGEX, t("signupForm.whiteLabel.payment.errors.licenseNumberInvalid")),
-      taxNumber: z
-        .string()
-        .optional()
-        .refine(
-          (val) => !val || val === "" || TAX_REGEX.test(val),
-          t("signupForm.whiteLabel.payment.errors.taxNumberInvalid")
-        ),
-      address: z.object({
-        city: z
-          .string()
-          .min(1, t("signupForm.whiteLabel.payment.errors.cityRequired")),
-        neighborhood: z
-          .string()
-          .min(1, t("signupForm.whiteLabel.payment.errors.neighborhoodRequired")),
-        street: z
-          .string()
-          .min(1, t("signupForm.whiteLabel.payment.errors.streetRequired")),
-        buildingNumber: z
-          .string()
-          .min(1, t("signupForm.whiteLabel.payment.errors.buildingNumberRequired"))
-          .regex(/^\d{1,4}$/, t("signupForm.whiteLabel.payment.errors.buildingNumberRequired")),
-        additionalNumber: z
-          .string()
-          .min(1, t("signupForm.whiteLabel.payment.errors.additionalNumberRequired"))
-          .regex(/^\d{1,4}$/, t("signupForm.whiteLabel.payment.errors.additionalNumberRequired")),
-        placeType: z.string().optional(),
-        placeNumber: z
-          .string()
-          .optional()
-          .refine(
-            (val) => !val || /^\d{1,4}$/.test(val),
-            t("signupForm.whiteLabel.payment.errors.buildingNumberRequired")
-          ),
-      }),
-    }),
-
-    loginData: z.object({
-      email: email(t),
-      phoneNumber: saudiPhone(t),
-    }),
-
-    systemRequirements: z.object({
-      numberOfEventsMonthly: z
-        .string()
-        .min(1, t("signupForm.whiteLabel.requirements.errors.numberOfEventsRequired"))
-        .regex(/^\d+$/, t("signupForm.whiteLabel.requirements.errors.numberOfEventsInvalid")),
-      numberOfGuestsMonthly: z
-        .string()
-        .min(1, t("signupForm.whiteLabel.requirements.errors.numberOfGuestsRequired"))
-        .regex(/^\d+$/, t("signupForm.whiteLabel.requirements.errors.numberOfGuestsInvalid")),
-      eventTypes: z
-        .array(z.string())
-        .min(1, t("signupForm.whiteLabel.requirements.errors.eventsTypesRequired")),
-      eventsTypesOther: z.string().optional(),
-    }),
-
-    planSelection: z.object({
-      planCode: z.string().min(1, t("signupForm.whiteLabel.planSelection.planRequired")),
-      billingCycle: z.enum(["monthly", "yearly"]).default("yearly"),
-      needsCustomBranding: z.boolean().default(false),
-    }),
-  });
-
-// ============================================================
 // PROFILE
 // ============================================================
 
@@ -444,7 +353,6 @@ export const authSchemas = {
   hostProfileCompletion: hostProfileCompletionSchema,
   completeProfile: completeProfileSchema,
   vendorSignup: vendorSignupSchema,
-  whitelabelSignup: whitelabelSignupSchema,
 
   updateProfile: updateProfileSchema,
 

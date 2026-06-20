@@ -30,18 +30,6 @@ export const SAUDI_NATIONAL_ID_REGEX = /^[12]\d{9}$/;
 // Saudi Commercial Registration (10 digits).
 export const SAUDI_COMMERCIAL_REG_REGEX = /^\d{10}$/;
 
-// Arabic-only text (used by whitelabel arabicName).
-export const ARABIC_TEXT_REGEX = /^[؀-ۿ\s]+$/;
-
-// English-only text (used by whitelabel englishName).
-export const ENGLISH_TEXT_REGEX = /^[a-zA-Z\s]+$/;
-
-// Whitelabel license number (`70XXXXXXXX`).
-export const LICENSE_REGEX = /^70\d{8}$/;
-
-// Whitelabel tax number (`30XXXXXXXXXXXXX`).
-export const TAX_REGEX = /^30\d{13}$/;
-
 const idT = (k) => k;
 
 export const saudiPhone = (t = idT) =>

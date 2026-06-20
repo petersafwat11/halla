@@ -1,7 +1,7 @@
 /**
  * Unified update-event wizard for every role (host edits own events,
- * admin/super-admin any event, whitelabel admin/moderator any event in
- * their tenant — role check inside `useEventLoadAndGate`). Four steps
+ * admin/super-admin/moderator any event — role check inside
+ * `useEventLoadAndGate`). Four steps
  * mirror the create wizard; each step dispatches its own scoped
  * mutation. On a `live` event only step 2 stays interactive (allow-
  * add-only); other steps render the lockout banner and freeze content.

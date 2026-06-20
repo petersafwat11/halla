@@ -36,7 +36,6 @@ const {
   loginSchema,
   hostSignupSchema,
   vendorSignupSchema,
-  whitelabelSignupSchema,
   otpSendSchema,
   otpVerifySchema,
   otpResendSchema,
@@ -44,9 +43,7 @@ const {
   resetPasswordSchema,
   updatePasswordSchema,
   completeProfileSchema,
-  setupPasswordSchema,
   verifyEmailSchema,
-  resendSetupEmailSchema,
   verifyEmailLinkSchema,
   resendEmailVerificationSchema,
 } = require("./auth.validation");
@@ -59,7 +56,7 @@ const {
 } = require("../../shared/middleware/rateLimiter");
 
 // File upload (using shared utils)
-const { uploadLogo, uploadVendorFiles } = require("../../shared/utils/fileUpload");
+const { uploadVendorFiles } = require("../../shared/utils/fileUpload");
 
 const { AppError } = require("../../shared/errors");
 const catchAsync = require("../../shared/utils/catchAsync");
@@ -72,18 +69,15 @@ const checkDuplicates = catchAsync(async (req, res, next) => {
   const { email, phoneNumber, mobile } = req.body;
   const mobileToCheck = (mobile || phoneNumber || "").replace(/[^\d+]/g, "");
   const normalizedEmail = email?.toLowerCase().trim();
-  const whitelabelId = req.user?.whitelabelId;
 
   if (normalizedEmail) {
     const query = { email: normalizedEmail };
-    if (whitelabelId) query.whitelabelId = whitelabelId;
     const existing = await User.findOne(query).select("email").lean();
     if (existing) return next(new AppError("This email address is already registered. Please use a different email or try logging in.", 409));
   }
 
   if (mobileToCheck) {
     const query = { mobile: mobileToCheck };
-    if (whitelabelId) query.whitelabelId = whitelabelId;
     const existing = await User.findOne(query).select("mobile").lean();
     if (existing) return next(new AppError("This mobile number is already registered. Please use a different number or try logging in.", 409));
   }
@@ -169,50 +163,6 @@ router.post(
   validateZod(vendorSignupSchema),
   checkDuplicates,
   authController.vendorSignup
-);
-
-// WhiteLabel Signup
-/**
- * @swagger
- * /auth/signup/whitelabel:
- *   post:
- *     summary: Register a new whitelabel account
- *     description: Create a new whitelabel partner account
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               phoneNumber:
- *                 type: string
- *               englishName:
- *                 type: string
- *               arabicName:
- *                 type: string
- *               password:
- *                 type: string
- *               logo:
- *                 type: string
- *                 format: binary
- *     responses:
- *       201:
- *         description: Whitelabel application submitted (pending approval)
- *       400:
- *         $ref: '#/components/responses/BadRequest'
- */
-router.post(
-  "/signup/whitelabel",
-  authLimiter,
-  uploadLogo,
-  validateZod(whitelabelSignupSchema),
-  checkDuplicates,
-  authController.whitelabelSignup
 );
 
 // ============================================
@@ -477,103 +427,6 @@ router.patch(
   authLimiter,
   validateZod(resetPasswordSchema),
   authController.resetPassword
-);
-
-// ============================================
-// PASSWORD SETUP (Whitelabel - Post Approval)
-// ============================================
-
-/**
- * @swagger
- * /auth/validate-setup-token/{token}:
- *   get:
- *     summary: Validate setup token
- *     description: Validate password setup token for whitelabel accounts
- *     tags: [Authentication]
- *     parameters:
- *       - in: path
- *         name: token
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Token is valid
- *       400:
- *         $ref: '#/components/responses/BadRequest'
- */
-// Defense-in-depth rate limit. Setup tokens are sha256(32 random bytes)
-// and computationally infeasible to enumerate, but rate-limiting blocks
-// stuffing-style probes from generating server load.
-router.get("/validate-setup-token/:token", authLimiter, authController.validateSetupToken);
-
-/**
- * @swagger
- * /auth/setup-password:
- *   post:
- *     summary: Setup password
- *     description: Set initial password for whitelabel accounts
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [token, password]
- *             properties:
- *               token:
- *                 type: string
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *     responses:
- *       200:
- *         description: Password setup successful
- *       400:
- *         $ref: '#/components/responses/BadRequest'
- *       429:
- *         $ref: '#/components/responses/TooManyRequests'
- */
-router.post(
-  "/setup-password",
-  authLimiter,
-  validateZod(setupPasswordSchema),
-  authController.setupPassword
-);
-
-/**
- * @swagger
- * /auth/resend-setup-email:
- *   post:
- *     summary: Resend setup email
- *     description: Resend password setup email for whitelabel accounts
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email]
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *     responses:
- *       200:
- *         description: Setup email resent
- *       400:
- *         $ref: '#/components/responses/BadRequest'
- *       429:
- *         $ref: '#/components/responses/TooManyRequests'
- */
-router.post(
-  "/resend-setup-email",
-  passwordResetLimiter,
-  validateZod(resendSetupEmailSchema),
-  authController.resendSetupEmail
 );
 
 // ============================================

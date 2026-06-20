@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAdminHostMutation, useAdminWhitelabelMutation, useAdminPlans, adminKeys } from "@/hooks/admin";
+import { useAdminHostMutation, useAdminPlans, adminKeys } from "@/hooks/admin";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
@@ -17,23 +17,18 @@ import styles from "./SubscriptionAssignmentPopup.module.css";
 
 export default function SubscriptionAssignmentPopup({
   entity,
-  entityType = "host",
   onClose,
 }) {
-  const tNamespace = entityType === "host" ? "adminHosts" : "adminWhitelabels";
-  const { t, i18n } = useTranslation(tNamespace);
+  const { t, i18n } = useTranslation("adminHosts");
   const queryClient = useQueryClient();
 
-  const hostMutation = useAdminHostMutation("updateSubscription");
-  const whitelabelMutation = useAdminWhitelabelMutation("updateSubscription");
-  const updateSubscription =
-    entityType === "host" ? hostMutation : whitelabelMutation;
+  const updateSubscription = useAdminHostMutation("updateSubscription");
 
   const {
     data: plansData,
     isLoading: isLoadingPlans,
     error: plansError,
-  } = useAdminPlans({ availableFor: entityType });
+  } = useAdminPlans({ availableFor: "host" });
 
   const planOptions = useMemo(() => {
     const plans = plansData?.data?.plans || [];
@@ -63,9 +58,8 @@ export default function SubscriptionAssignmentPopup({
 
   const onSubmit = async (data) => {
     try {
-      const idKey = entityType === "host" ? "hostId" : "whitelabelId";
       await updateSubscription.mutateAsync({
-        [idKey]: entity.id,
+        hostId: entity.id,
         planCode: data.planCode,
         status: data.status,
       });
@@ -77,7 +71,7 @@ export default function SubscriptionAssignmentPopup({
   };
 
   const handleRetryPlans = () => {
-    queryClient.invalidateQueries({ queryKey: adminKeys.plans({ availableFor: entityType }) });
+    queryClient.invalidateQueries({ queryKey: adminKeys.plans({ availableFor: "host" }) });
   };
 
   return (
@@ -90,7 +84,7 @@ export default function SubscriptionAssignmentPopup({
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.form}>
             <div className={styles.formGroup}>
-              <label>{t(entityType === "host" ? "subscription.hostName" : "subscription.whitelabel")}</label>
+              <label>{t("subscription.hostName")}</label>
               <input
                 type="text"
                 value={entity?.name || entity?.username || ""}
