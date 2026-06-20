@@ -5,8 +5,6 @@ import styles from "../page.module.css";
 export default function PortalRsvpForm({
   guest,
   event,
-  whitelabel,
-  logoUrl,
   isPending,
   onSubmit,
   errorCopy,
@@ -28,13 +26,6 @@ export default function PortalRsvpForm({
 
   return (
     <div className={styles.card}>
-      {logoUrl ? (
-        <img
-          src={logoUrl}
-          alt={whitelabel.name || event.title || ""}
-          className={styles.logo}
-        />
-      ) : null}
       <h1 className={styles.eventName}>{event.title}</h1>
       {event.hostName ? (
         <p className={styles.hostLine}>

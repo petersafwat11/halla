@@ -34,54 +34,34 @@ const dispatchService = require('./post-event.dispatch.service');
 // ============================================
 
 /**
- * Build a tenant/role-scoped query for an event. Mirrors
+ * Build a role-scoped query for an event. Mirrors
  * `events.crud.service._buildScopedEventQuery` so post-event endpoints
- * accept the same set of authorized roles (host owner, super_admin,
- * tenant-scoped admin/moderator/whitelabel_admin/whitelabel_moderator).
+ * accept the same set of authorized roles:
+ *
+ *   - HOST                          → own event only
+ *   - SUPER_ADMIN, ADMIN, MODERATOR → any event (platform-wide)
  *
  * Centralized here so every host-facing post-event method opts into the
  * same authorization model rather than the bare `host: userId` check
  * which silently 404s for any role that isn't the event owner.
  *
  * @param {string} eventId
- * @param {Object} user - req.user shape: { _id, role, whitelabelId }
+ * @param {Object} user - req.user shape: { _id, role }
  * @returns {Object} Mongo query
  */
 const buildScopedEventQuery = (eventId, user) => {
   const role = user?.role;
   const userId = user?._id?.toString?.() || user?._id;
-  // `whitelabelId` may be a populated Whitelabel doc (auth populates it) or a
-  // raw ObjectId/string. A populated doc used directly makes Mongoose throw
-  // `CastError: Invalid whitelabelId` (400). Normalise to the id in all shapes
-  // — mirrors `events.crud.service._buildScopedEventQuery`.
-  const rawWhitelabel = user?.whitelabelId;
-  const whitelabelId = rawWhitelabel
-    ? rawWhitelabel._id?.toString?.() ||
-      rawWhitelabel.toString?.() ||
-      rawWhitelabel
-    : null;
 
   if (!role && !userId) {
     throw new ForbiddenError('Authentication context is required');
   }
 
-  if (role === ROLES.SUPER_ADMIN) {
+  // super_admin / admin / moderator may view or edit ANY event
+  // platform-wide.
+  const platformWide = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR];
+  if (platformWide.includes(role)) {
     return { _id: eventId };
-  }
-
-  const tenantScoped = [
-    ROLES.ADMIN,
-    ROLES.MODERATOR,
-    ROLES.WHITELABEL_ADMIN,
-    ROLES.WHITELABEL_MODERATOR,
-  ];
-  if (tenantScoped.includes(role)) {
-    if (!whitelabelId) {
-      throw new ForbiddenError(
-        'Tenant configuration error. Contact a super admin to assign a whitelabel.'
-      );
-    }
-    return { _id: eventId, whitelabelId };
   }
 
   // Default: host (and any other authenticated role) sees only their own.
@@ -115,8 +95,8 @@ class PostEventService {
   /**
    * Get post-event content for an event (host or guest view).
    * Reads event + content in parallel. Authorization is scoped via
-   * `buildScopedEventQuery` so admins / whitelabel managers can view the
-   * content for events under their scope, not just the event owner.
+   * `buildScopedEventQuery` so admins / moderators can view the content
+   * for any event, not just the event owner.
    */
   async getPostEventContent(eventId, user) {
     const [event, content] = await Promise.all([

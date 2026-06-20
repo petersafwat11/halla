@@ -207,44 +207,6 @@ export const flattenVendorData = (formValues) => {
 };
 
 /**
- * Flattens whitelabel form data for backend submission
- * @param {Object} formValues - The nested form values from react-hook-form
- * @returns {Object} - Flattened data matching backend expectations
- */
-export const flattenWhitelabelData = (formValues) => {
-  const { identity, loginData, systemRequirements } = formValues;
-
-  return {
-    // Core user fields (flat)
-    email: loginData?.email,
-    phoneNumber: loginData?.phoneNumber,
-    companyName: identity?.companyName,
-
-    // Whitelabel data
-    arabicName: identity?.arabicName,
-    englishName: identity?.englishName,
-    platformName: identity?.englishName, // Use English name as platform name
-
-    // Requirements (nested is OK for backend)
-    requirements: {
-      numberOfEventsMonthly:
-        parseInt(systemRequirements?.numberOfEventsMonthly) || 0,
-      numberOfGuestsMonthly:
-        parseInt(systemRequirements?.numberOfGuestsMonthly) || 0,
-      eventTypes: systemRequirements?.eventTypes || [],
-      eventsTypesOther: systemRequirements?.eventsTypesOther,
-    },
-
-    // Address
-    address: identity?.address || {},
-
-    // Payment
-    licenseNumber: identity?.licenseNumber,
-    taxNumber: identity?.taxNumber,
-  };
-};
-
-/**
  * Builds FormData for vendor signup with files
  * Backend expects flat fields at root level, not nested objects
  * @param {Object} formValues - Form values
@@ -401,63 +363,6 @@ export const buildVendorFormData = (formValues) => {
   return formData;
 };
 
-/**
- * Builds FormData for whitelabel signup with files
- * @param {Object} formValues - Form values
- * @returns {FormData} - FormData ready for submission
- */
-export const buildWhitelabelFormData = (formValues) => {
-  const formData = new FormData();
-  const { identity, loginData, systemRequirements, planSelection } = formValues;
-
-  // Core user fields
-  if (loginData?.email) formData.append("email", loginData.email);
-  if (loginData?.phoneNumber)
-    formData.append("phoneNumber", loginData.phoneNumber);
-
-  // Identity fields
-  if (identity?.companyName)
-    formData.append("companyName", identity.companyName);
-  if (identity?.arabicName) formData.append("arabicName", identity.arabicName);
-  if (identity?.englishName)
-    formData.append("englishName", identity.englishName);
-  if (identity?.englishName)
-    formData.append("platformName", identity.englishName);
-  if (identity?.licenseNumber)
-    formData.append("licenseNumber", identity.licenseNumber);
-  if (identity?.taxNumber) formData.append("taxNumber", identity.taxNumber);
-
-  // Address as JSON
-  if (identity?.address) {
-    formData.append("address", JSON.stringify(identity.address));
-  }
-
-  // Requirements as JSON
-  const requirements = {
-    numberOfEventsMonthly:
-      parseInt(systemRequirements?.numberOfEventsMonthly) || 0,
-    numberOfGuestsMonthly:
-      parseInt(systemRequirements?.numberOfGuestsMonthly) || 0,
-    eventTypes: systemRequirements?.eventTypes || [],
-    eventsTypesOther: systemRequirements?.eventsTypesOther || "",
-  };
-  formData.append("requirements", JSON.stringify(requirements));
-
-  // Plan selection as JSON (includes needsCustomBranding)
-  if (planSelection) {
-    formData.append(
-      "planSelection",
-      JSON.stringify({
-        planCode: planSelection.planCode,
-        billingCycle: planSelection.billingCycle || "yearly",
-        needsCustomBranding: planSelection.needsCustomBranding || false,
-      })
-    );
-  }
-
-  return formData;
-};
-
 // ============================================
 // HELPER UTILITIES
 // ============================================
@@ -499,30 +404,15 @@ export const VENDOR_STEP_FIELDS = {
   5: ["socialLinks"],
 };
 
-/**
- * Step field mappings for whitelabel signup
- * Steps: 1-Identity, 2-LoginData, 3-Requirements, 4-PlanSelection, 5-Summary
- */
-export const WHITELABEL_STEP_FIELDS = {
-  1: ["identity"],
-  2: ["loginData"],
-  3: ["systemRequirements"],
-  4: ["planSelection"],
-  5: [], // Summary step - no validation needed
-};
-
 const authService = {
   validateFormStep,
   handleNextStep,
   handlePrevStep,
   flattenVendorData,
-  flattenWhitelabelData,
   buildVendorFormData,
-  buildWhitelabelFormData,
   getNestedValue,
   setNestedValue,
   VENDOR_STEP_FIELDS,
-  WHITELABEL_STEP_FIELDS,
 };
 
 export default authService;

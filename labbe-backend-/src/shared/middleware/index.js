@@ -6,21 +6,18 @@
 const auth = require("./auth");
 const rbac = require("./rbac");
 const subscription = require("./subscription");
-const whitelabel = require("./whitelabel");
 const validation = require("./validation");
 
 module.exports = {
   // Authentication (Phase 1a — token issuance moved to authService.issueTokenPair)
   protect: auth.protect,
   optionalAuth: auth.optionalAuth,
-  validateTenant: auth.validateTenant,
 
   // RBAC
   restrictTo: rbac.restrictTo,
   requirePageAccess: rbac.requirePageAccess,
   requirePermission: rbac.requirePermission,
   superAdminOnly: rbac.superAdminOnly,
-  checkFeature: rbac.checkFeature,
   checkAccess: rbac.checkAccess,
 
   // Subscription
@@ -28,12 +25,6 @@ module.exports = {
   checkEventLimit: subscription.checkEventLimit,
   checkGuestLimit: subscription.checkGuestLimit,
   checkMessageLimit: subscription.checkMessageLimit,
-
-  // WhiteLabel
-  filterByWhitelabel: whitelabel.filterByWhitelabel,
-  whitelabelIsolation: whitelabel.whitelabelIsolation,
-  injectWhitelabel: whitelabel.injectWhitelabel,
-  whitelabelAdminOnly: whitelabel.whitelabelAdminOnly,
 
   // Validation
   validateObjectId: validation.validateObjectId,
@@ -51,6 +42,5 @@ module.exports = {
   auth,
   rbac,
   subscription,
-  whitelabel,
   validation,
 };

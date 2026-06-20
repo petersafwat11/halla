@@ -93,26 +93,6 @@ const vendorSignupSchema = z
   })
   .passthrough();
 
-const whitelabelSignupSchema = z
-  .object({
-    email: email.optional(),
-    phoneNumber: phoneNumber.optional(),
-    englishName: z.string().trim().min(2).max(100).optional(),
-    arabicName: z.string().trim().min(2).max(100).optional(),
-    platformName: z.string().max(100).optional(),
-    companyName: z.string().max(100).optional(),
-    requirements: stringOrJson.optional(),
-    address: stringOrJson.optional(),
-    planSelection: stringOrJson.optional(),
-    licenseNumber: z.string().optional(),
-    taxNumber: z.string().optional(),
-  })
-  .passthrough()
-  .refine((data) => data.email || data.phoneNumber, {
-    message: 'Email or phone number is required',
-    path: ['email'],
-  });
-
 const otpSendSchema = z.object({
   phoneNumber,
 });
@@ -163,23 +143,11 @@ const completeProfileSchema = z
     }
   });
 
-const setupPasswordSchema = z
-  .object({
-    token: z.string().min(1, 'Token is required'),
-    password,
-    passwordConfirm: z.string(),
-  })
-  .superRefine(passwordsMatch('password', 'passwordConfirm'));
-
 const verifyEmailSchema = z.object({
   code: z
     .string()
     .length(6, 'Verification code must be 6 digits')
     .regex(/^\d+$/, 'Verification code must contain only digits'),
-});
-
-const resendSetupEmailSchema = z.object({
-  email,
 });
 
 const verifyEmailLinkSchema = z.object({
@@ -194,7 +162,6 @@ module.exports = {
   loginSchema,
   hostSignupSchema,
   vendorSignupSchema,
-  whitelabelSignupSchema,
   otpSendSchema,
   otpVerifySchema,
   otpResendSchema,
@@ -202,9 +169,7 @@ module.exports = {
   resetPasswordSchema,
   updatePasswordSchema,
   completeProfileSchema,
-  setupPasswordSchema,
   verifyEmailSchema,
-  resendSetupEmailSchema,
   verifyEmailLinkSchema,
   resendEmailVerificationSchema,
 };

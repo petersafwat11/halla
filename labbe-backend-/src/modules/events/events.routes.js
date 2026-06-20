@@ -30,10 +30,6 @@ const {
   checkEventLimit,
   checkGuestLimit,
 } = require("../../shared/middleware/subscription");
-const {
-  filterByWhitelabel,
-  injectWhitelabel,
-} = require("../../shared/middleware/whitelabel");
 const { uploadTemplateImage } = require("../../shared/utils/fileUpload");
 const { idempotency } = require("../../shared/middleware/idempotency");
 const {
@@ -67,7 +63,7 @@ const { ROLES } = require("../../shared/constants");
 // All routes require authentication
 router.use(protect);
 router.use(
-  restrictTo(ROLES.HOST, ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.WHITELABEL_ADMIN, ROLES.MODERATOR, ROLES.WHITELABEL_MODERATOR)
+  restrictTo(ROLES.HOST, ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.MODERATOR)
 );
 
 // ============================================
@@ -109,7 +105,7 @@ router.use(
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.get("/my-events", filterByWhitelabel, eventsController.getMyEvents);
+router.get("/my-events", eventsController.getMyEvents);
 
 /**
  * @swagger
@@ -126,7 +122,7 @@ router.get("/my-events", filterByWhitelabel, eventsController.getMyEvents);
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.get("/stats", filterByWhitelabel, eventsController.getEventStats);
+router.get("/stats", eventsController.getEventStats);
 
 /**
  * @swagger
@@ -254,7 +250,6 @@ router.post(
       return 0;
     }
   }),
-  injectWhitelabel,
   uploadTemplateImage,
   parseFormDataJsonFields([
     "eventDetails",
@@ -938,8 +933,8 @@ router.get(
  *   post:
  *     summary: Manually retry a failed launch
  *     description: |
- *       Only the host (event creator), whitelabel admin (own whitelabel),
- *       admin or super_admin can retry. Resets attemptCount to 0 and
+ *       Only the host (event creator), admin, moderator or super_admin
+ *       can retry. Resets attemptCount to 0 and
  *       fires the launch flow immediately. Returns 409 if the event
  *       is not in `failed` or `scheduled` state.
  *     tags: [Events]
@@ -960,9 +955,9 @@ router.post(
   validateObjectId("id"),
   restrictTo(
     ROLES.HOST,
-    ROLES.WHITELABEL_ADMIN,
     ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
+    ROLES.SUPER_ADMIN,
+    ROLES.MODERATOR
   ),
   idempotency({ scope: "events.retry_launch" }),
   eventsController.retryLaunch

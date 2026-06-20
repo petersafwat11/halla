@@ -9,7 +9,6 @@ import { handleError } from "@/services/errorHandlingService";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
 import { addModeratorSchema } from "@halla/shared/schemas/admin";
-import useAuthStore from "@/stores/authStore";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import styles from "./AddModeratorPopup.module.css";
@@ -17,20 +16,13 @@ import styles from "./AddModeratorPopup.module.css";
 export default function AddModeratorPopup({ onClose }) {
   const { t } = useTranslation("adminModerators");
   const createModerator = useAdminModeratorMutation("create");
-  const { user } = useAuthStore();
-  const isWhitelabel = ["whitelabel_admin", "whitelabel_moderator"].includes(user?.role);
 
-  const roleOptions = isWhitelabel
-    ? [
-        { label: t("moderators.roles.whitelabelModerator", "مشرف علامة بيضاء"), value: "whitelabel_moderator" },
-        { label: t("moderators.roles.whitelabelAdmin", "مدير علامة بيضاء"), value: "whitelabel_admin" },
-      ]
-    : [
-        { label: t("moderators.roles.moderator", "مشرف"), value: "moderator" },
-        { label: t("moderators.roles.admin", "مدير"), value: "admin" },
-      ];
+  const roleOptions = [
+    { label: t("moderators.roles.moderator", "مشرف"), value: "moderator" },
+    { label: t("moderators.roles.admin", "مدير"), value: "admin" },
+  ];
 
-  const defaultRole = isWhitelabel ? "whitelabel_moderator" : "moderator";
+  const defaultRole = "moderator";
 
   const methods = useForm({
     resolver: zodResolver(addModeratorSchema),

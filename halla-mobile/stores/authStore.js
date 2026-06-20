@@ -395,11 +395,8 @@ export const useAuthStore = create((set, get) => ({
   isHost: () => get().role === "host",
   isVendor: () => get().role === "vendor",
   isAdmin: () => ["super_admin", "admin", "moderator"].includes(get().role),
-  isWhitelabel: () => ["whitelabel_admin", "whitelabel_moderator"].includes(get().role),
   isAdminDashboardRole: () =>
-    ["super_admin", "admin", "moderator", "whitelabel_admin", "whitelabel_moderator"].includes(
-      get().role,
-    ),
+    ["super_admin", "admin", "moderator"].includes(get().role),
   getRole: () => get().role,
 }));
 

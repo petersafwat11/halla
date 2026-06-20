@@ -129,13 +129,6 @@ const subscriptionSchema = new mongoose.Schema(
       expiryYear: Number,
     },
 
-    // ============ MULTI-TENANT ============
-    whitelabelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-
     // ============ CREATED BY ============
     createdBy: {
       type: createdBySchema,
@@ -159,7 +152,6 @@ const subscriptionSchema = new mongoose.Schema(
 
 subscriptionSchema.index({ userId: 1, status: 1 });
 subscriptionSchema.index({ status: 1, expiresAt: 1 });
-subscriptionSchema.index({ whitelabelId: 1, status: 1 });
 subscriptionSchema.index({ planId: 1, status: 1 });
 
 // ============================================
@@ -523,7 +515,7 @@ subscriptionSchema.statics.findExpiring = async function (daysFromNow = 7) {
  * Create subscription for user
  * @param {ObjectId} userId
  * @param {Object} plan - Populated plan document
- * @param {Object} options - { activatedAt, status, pricePaid, currency, whitelabelId, createdBy }
+ * @param {Object} options - { activatedAt, status, pricePaid, currency, createdBy }
  * @returns {Promise<Subscription>}
  */
 subscriptionSchema.statics.createForUser = async function (userId, plan, options = {}) {
@@ -542,7 +534,7 @@ subscriptionSchema.statics.createForUser = async function (userId, plan, options
     userId, planId: plan._id, status: options.status || 'active',
     activatedAt: now, expiresAt, invitePool, compensationPool, invitesConsumed: 0,
     pricePaid: { amount: options.pricePaid || 0, currency: options.currency || 'SAR' },
-    whitelabelId: options.whitelabelId || null, createdBy: options.createdBy || {},
+    createdBy: options.createdBy || {},
   });
 };
 
@@ -586,14 +578,10 @@ subscriptionSchema.statics.getCapacityForEvent = async function (userId, guestCo
 
 /**
  * Get subscription stats
- * @param {ObjectId} whitelabelId - Optional
  * @returns {Promise<Object>}
  */
-subscriptionSchema.statics.getStats = async function (whitelabelId = null) {
+subscriptionSchema.statics.getStats = async function () {
   const matchStage = {};
-  if (whitelabelId !== undefined) {
-    matchStage.whitelabelId = whitelabelId;
-  }
 
   const stats = await this.aggregate([
     { $match: matchStage },
@@ -610,20 +598,6 @@ subscriptionSchema.statics.getStats = async function (whitelabelId = null) {
   ]);
 
   return stats;
-};
-
-/**
- * Get whitelabel subscriptions
- * @param {ObjectId} whitelabelId
- * @returns {Promise<Subscription[]>}
- */
-subscriptionSchema.statics.findForWhitelabel = async function (whitelabelId) {
-  return this.find({
-    whitelabelId,
-    status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
-  })
-    .populate("planId")
-    .populate("userId", "name email phoneNumber");
 };
 
 // ============================================

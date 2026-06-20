@@ -11,7 +11,6 @@ export {
   signupMobileSchema,
   completeProfileSchema,
   vendorSignupSchema,
-  whitelabelSignupSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "@halla/shared/schemas/auth";

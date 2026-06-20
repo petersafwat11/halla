@@ -129,11 +129,8 @@ function AppContent() {
     );
   }
 
-  // Deep-link config for the whitelabel setup-password flow. The email
-  // link uses the `halla://` scheme (declared in app.json) and follows
-  // the same path shape as the web route (`/setup-password/<token>`).
-  // When the user taps the link, React Navigation routes them straight
-  // to SetupPassword with the token in the route params.
+  // Deep-link config. Links use the `halla://` scheme (declared in
+  // app.json) plus universal-link variants for the production domain.
   //
   // Universal-link variants for the production domain land in a follow
   // up (requires apple-app-site-association + assetlinks.json hosting).
@@ -142,7 +139,6 @@ function AppContent() {
       prefixes: ["halla://", "https://halaa.com.sa"],
       config: {
         screens: {
-          SetupPassword: "setup-password/:token",
           // Phase 4b: forgot-password completion. Backend's email links
           // point to `https://halaa.com.sa/reset-password/<token>`; the
           // universal link variant carries the user into this screen
@@ -150,7 +146,7 @@ function AppContent() {
           // (`halla://reset-password/<token>`) is also supported for
           // dev/QA flows.
           ResetPassword: "reset-password/:token",
-          // Whitelabel guest portal — `halla://invitation/<code>`. The
+          // Guest invitation portal — `halla://invitation/<code>`. The
           // screen is registered on AuthStack so SMS/WhatsApp taps from
           // an unauthenticated device land directly without forcing a
           // login first.

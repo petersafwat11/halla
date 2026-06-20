@@ -47,8 +47,8 @@ export default function PaymentsTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { canUpdate, canDelete } = usePageAccess("payments");
-  // Refunds are restricted to platform super-admin / admin — the backend 403s
-  // whitelabel_admin even though they have generic `canUpdate` on payments.
+  // Refunds are restricted to platform super-admin / admin — other roles get
+  // a backend 403 even when they have generic `canUpdate` on payments.
   // Gate the refund button to match so it doesn't render a guaranteed-403.
   const userRole = useAuthStore((s) => s.user?.role);
   const canRefund =

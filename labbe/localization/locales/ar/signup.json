@@ -20,12 +20,10 @@
         "label": "أختر الخدمة المقدمة",
         "placeholder": "اختر نوع الخدمة",
         "options": {
-          "whiteLabel": "دعوتك عبر منصتك",
           "hosted": "دعوتك علينا",
           "selfService": "دعوتك بيدك"
         },
         "descriptions": {
-          "whiteLabel": "حل احترافي للجهات: لوحة تحكم مخصصة ومزايا متعددة",
           "hosted": "فريق هلا يتولى كل شيء من تصميم وإرسال ومتابعة الحضور وتذكير الضيوف",
           "selfService": "صمم وارسل دعوتك بسهولة عبر الواتساب مع كود QR خاص لكل ضيف!"
         },
@@ -74,20 +72,38 @@
         "serviceType": {
           "title": "نوع النشاط",
           "options": [
-            { "value": "eventPlanning", "label": "تخطيط الفعاليات" },
-            { "value": "mediaProduction", "label": "الإنتاج الإعلامي" },
+            {
+              "value": "eventPlanning",
+              "label": "تخطيط الفعاليات"
+            },
+            {
+              "value": "mediaProduction",
+              "label": "الإنتاج الإعلامي"
+            },
             {
               "value": "giftsAndPromotionalBags",
               "label": "الهدايا والحقائب الترويجية"
             },
-            { "value": "foodAndBeverages", "label": "الطعام والمشروبات" },
-            { "value": "beautyAndFashion", "label": "الجمال والأزياء" },
+            {
+              "value": "foodAndBeverages",
+              "label": "الطعام والمشروبات"
+            },
+            {
+              "value": "beautyAndFashion",
+              "label": "الجمال والأزياء"
+            },
             {
               "value": "logisticsAndDelivery",
               "label": "الخدمات اللوجستية والتوصيل"
             },
-            { "value": "corporateServices", "label": "الخدمات المؤسسية" },
-            { "value": "other", "label": "أخرى" }
+            {
+              "value": "corporateServices",
+              "label": "الخدمات المؤسسية"
+            },
+            {
+              "value": "other",
+              "label": "أخرى"
+            }
           ]
         },
         "contactInfo": {
@@ -133,7 +149,6 @@
       "serviceData": {
         "title": "تفاصيل الخدمة أو سوق هلا",
         "description": "عرّف الزوار على خدماتك والمناطق التي تغطيها.",
-
         "serviceDescription": {
           "title": "نبذة عن الخدمة",
           "label": "وصف مختصر للخدمة",
@@ -175,12 +190,18 @@
               "value": "photoAndVideoForOccasions",
               "label": "التصوير والفيديو للمناسبات"
             },
-            { "value": "eventVideoEditing", "label": "مونتاج فيديو الفعاليات" },
+            {
+              "value": "eventVideoEditing",
+              "label": "مونتاج فيديو الفعاليات"
+            },
             {
               "value": "aerialDronePhotography",
               "label": "التصوير الجوي بالطائرات المسيرة"
             },
-            { "value": "eventVideoMontage", "label": "مونتاج فيديو الفعاليات" }
+            {
+              "value": "eventVideoMontage",
+              "label": "مونتاج فيديو الفعاليات"
+            }
           ]
         },
         "giftsAndGiveaways": {
@@ -215,7 +236,10 @@
               "value": "traditionalOrInternationalCuisine",
               "label": "المأكولات التقليدية أو العالمية"
             },
-            { "value": "slaughterAndRice", "label": "الذبح والأرز" },
+            {
+              "value": "slaughterAndRice",
+              "label": "الذبح والأرز"
+            },
             {
               "value": "mobileFoodTrucks",
               "label": "شاحنات الطعام المتنقلة (قهوة، فشار)"
@@ -245,7 +269,10 @@
               "value": "barberAndGroomingSalons",
               "label": "صالونات الحلاقة والتجميل"
             },
-            { "value": "mensClothingTailoring", "label": "خياطة ملابس الرجال" }
+            {
+              "value": "mensClothingTailoring",
+              "label": "خياطة ملابس الرجال"
+            }
           ]
         },
         "logisticsAndDelivery": {
@@ -369,9 +396,18 @@
         "coverageArea": {
           "title": "منطقة التغطية",
           "options": [
-            { "value": "local", "label": "محلي داخل المملكة" },
-            { "value": "regional", "label": "إقليمي" },
-            { "value": "specificAreas", "label": "مناطق محددة" }
+            {
+              "value": "local",
+              "label": "محلي داخل المملكة"
+            },
+            {
+              "value": "regional",
+              "label": "إقليمي"
+            },
+            {
+              "value": "specificAreas",
+              "label": "مناطق محددة"
+            }
           ]
         },
         "location": {
@@ -467,17 +503,35 @@
         "payment_type": {
           "title": "سياسة الاسترداد",
           "options": [
-            { "value": "full_refund", "label": "استرداد كامل خلال 24 ساعة" },
-            { "value": "partial_refund", "label": "استرداد جزئي" },
-            { "value": "no_refund", "label": "لا يوجد استرداد" }
+            {
+              "value": "full_refund",
+              "label": "استرداد كامل خلال 24 ساعة"
+            },
+            {
+              "value": "partial_refund",
+              "label": "استرداد جزئي"
+            },
+            {
+              "value": "no_refund",
+              "label": "لا يوجد استرداد"
+            }
           ]
         },
         "payment_options_list": {
           "title": "خيارات الدفع",
           "options": [
-            { "value": "cash", "label": "نقداً" },
-            { "value": "bank_transfer", "label": "تحويل بنكي" },
-            { "value": "visa", "label": "فيزا" }
+            {
+              "value": "cash",
+              "label": "نقداً"
+            },
+            {
+              "value": "bank_transfer",
+              "label": "تحويل بنكي"
+            },
+            {
+              "value": "visa",
+              "label": "فيزا"
+            }
           ]
         },
         "refundPolicy": {
@@ -515,8 +569,14 @@
         "address": {
           "title": "العنوان الوطني",
           "fields": {
-            "city": { "label": "المدينة", "placeholder": "اختر اسم المدينة" },
-            "neighborhood": { "label": "الحي", "placeholder": "اختر الحي" },
+            "city": {
+              "label": "المدينة",
+              "placeholder": "اختر اسم المدينة"
+            },
+            "neighborhood": {
+              "label": "الحي",
+              "placeholder": "اختر الحي"
+            },
             "street": {
               "label": "اسم الشارع",
               "placeholder": "ادخل اسم الشارع"
@@ -546,9 +606,18 @@
         "paymentMethods": {
           "title": "خيارات الدفع",
           "options": [
-            { "label": "مدى", "value": "mada" },
-            { "label": "تحويل بنكي", "value": "bank_transfer" },
-            { "label": "فاتورة", "value": "invoice" }
+            {
+              "label": "مدى",
+              "value": "mada"
+            },
+            {
+              "label": "تحويل بنكي",
+              "value": "bank_transfer"
+            },
+            {
+              "label": "فاتورة",
+              "value": "invoice"
+            }
           ]
         },
         "paymentMechanism": {
@@ -557,9 +626,18 @@
         "paymentOptions": {
           "title": "خيارات الدفع",
           "options": [
-            { "label": "مدى", "value": "mada" },
-            { "label": "تحويل بنكي", "value": "bank_transfer" },
-            { "label": "فاتورة", "value": "invoice" }
+            {
+              "label": "مدى",
+              "value": "mada"
+            },
+            {
+              "label": "تحويل بنكي",
+              "value": "bank_transfer"
+            },
+            {
+              "label": "فاتورة",
+              "value": "invoice"
+            }
           ]
         },
         "errors": {
@@ -624,444 +702,6 @@
       "submitting": "جاري الإرسال...",
       "successMessage": "تم إنشاء الحساب بنجاح",
       "errorMessage": "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى."
-    },
-    "whiteLabel": {
-      "title": "أنشئ منصتك بهويتك الخاصة",
-      "description": "اتبع الخطوات التالية لتخصيص منصتك ضمن حلول هلا وبدء تفعيلها بالشكل الذي يناسب علامتك التجارية",
-      "steps": {
-        "identity": "معلومات المنشأة",
-        "login": "بيانات الدخول والتخصص",
-        "requirements": "تفاصيل الاستخدام ونوع النشاط",
-        "choosePlan": "اختيار الباقة",
-        "services": "خدمات إضافية",
-        "payment": "معلومات المنشأة والدفع",
-        "summary": "ملخص الطلب"
-      },
-      "identity": {
-        "title": "معلومات المنشأة",
-        "description": "أدخل معلوماتك المنشأة لبدء إنشاء حسابك كمقدم خدمة.",
-        "facilityInfo": "معلومات المنشأة",
-
-        "arabicName": {
-          "label": "اسم الجهة أو العلامة التجارية (بالعربية)",
-          "placeholder": "أدخل اسم المنظمة بالعربية"
-        },
-        "englishName": {
-          "label": "اسم الجهة أو العلامة التجارية (بالانجليزية)",
-          "placeholder": "أدخل اسم المنظمة بالانجليزية"
-        },
-        "logo": {
-          "title": "الشعار",
-          "label": "الشعار",
-          "description": "ارفع الشعار بصيغة عالية الجودة",
-          "button": "اختر ملف",
-          "dragAndDropHint": "اسحب الصور هنا أو انقر للتحديد"
-        },
-        "colors": {
-          "title": "ألوان العلامة التجارية",
-          "description": "اختر الألوان الرئيسية والثانوية لمنصتك",
-          "placeholder": "اختر اللون",
-          "customColor": "ادخل كود اللون المخصص"
-        },
-        "primaryColor": {
-          "label": "اللون الرئيسي"
-        },
-        "secondaryColor": {
-          "label": "اللون الثانوي"
-        },
-        "theme": {
-          "title": "نمط الواجهة",
-          "label": "اختر نمط الواجهة",
-          "placeholder": "اختر النمط",
-          "options": [
-            { "value": "light", "label": "فاتح" },
-            { "value": "dark", "label": "داكن" }
-          ]
-        },
-        "fontFamily": {
-          "label": "اسم الخط",
-          "placeholder": "اختر نوع الخط",
-          "options": [
-            { "value": "Roboto", "label": "Roboto" },
-            { "value": "Inter", "label": "Inter" },
-            { "value": "Cairo", "label": "Cairo" },
-            { "value": "Tajawal", "label": "Tajawal" },
-            { "value": "Almarai", "label": "Almarai" },
-            {
-              "value": "IBM Plex Sans Arabic",
-              "label": "IBM Plex Sans Arabic"
-            },
-            { "value": "Noto Sans Arabic", "label": "Noto Sans Arabic" },
-            { "value": "Montserrat", "label": "Montserrat" },
-            { "value": "Poppins", "label": "Poppins" },
-            { "value": "Open Sans", "label": "Open Sans" }
-          ]
-        },
-        "errors": {
-          "arabicNameRequired": "اسم الجهة بالعربية مطلوب",
-          "arabicNameMinLength": "يجب أن يتكون الاسم العربي من حرفين على الأقل",
-          "arabicNameMaxLength": "يجب أن يتكون الاسم العربي من أقل من 50 حرفًا",
-          "arabicNameFormat": "يجب أن يحتوي الاسم العربي على أحرف عربية ومسافات فقط",
-          "englishNameRequired": "اسم الجهة بالانجليزية مطلوب",
-          "englishNameMinLength": "يجب أن يتكون الاسم الإنجليزي من حرفين على الأقل",
-          "englishNameMaxLength": "يجب أن يتكون الاسم الإنجليزي من أقل من 50 حرفًا",
-          "englishNameFormat": "يجب أن يحتوي الاسم الإنجليزي على أحرف إنجليزية ومسافات فقط",
-          "logoRequired": "الشعار مطلوب",
-          "primaryColorRequired": "اللون الأساسي مطلوب",
-          "invalidColorFormat": "صيغة اللون غير صالحة",
-          "secondaryColorRequired": "اللون الثانوي مطلوب",
-          "fontFamilyRequired": "اسم الخط مطلوب",
-          "invalidFontFamily": "صيغة اسم الخط غير صالحة"
-        },
-        "brandingOptions": {
-          "favicon": {
-            "label": "أيقونة الموقع (اختياري)",
-            "placeholder": "ارفع الأيقونة"
-          },
-          "themeStyle": {
-            "label": "نمط الواجهة",
-            "options": ["فاتح", "داكن", "تلقائي"]
-          }
-        },
-        "language": {
-          "label": "لغة المنصة",
-          "options": ["العربية", "الإنجليزية"]
-        }
-      },
-      "login": {
-        "title": "تسجيل الدخول والتخصيص",
-        "description": "قم بتخصيص وصول منصتك وتحديد تفضيلات النطاق واللغة.",
-        "fields": {
-          "email": {
-            "label": "البريد الإلكتروني",
-            "placeholder": "أدخل عنوان البريد الإلكتروني",
-            "required": "البريد الإلكتروني مطلوب",
-            "invalid": "يرجى إدخال عنوان بريد إلكتروني صحيح"
-          },
-          "phoneNumber": {
-            "label": "رقم الجوال",
-            "placeholder": "أدخل رقم الجوال",
-            "required": "رقم الجوال مطلوب",
-            "invalid": "يرجى إدخال رقم جوال صحيح"
-          },
-          "domain": {
-            "label": "النطاق الفرعي المفضل",
-            "placeholder": "أدخل النطاق الفرعي",
-            "required": "النطاق مطلوب",
-            "invalid": "يرجى إدخال نطاق صحيح (مثال: example.com)"
-          },
-          "password": {
-            "title": "كلمة المرور",
-            "label": "كلمة المرور",
-            "placeholder": "أدخل كلمة المرور",
-            "required": "كلمة المرور مطلوبة",
-            "minLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل"
-          },
-          "passwordConfirm": {
-            "label": "تأكيد كلمة المرور",
-            "placeholder": "أعد إدخال كلمة المرور",
-            "required": "تأكيد كلمة المرور مطلوب",
-            "mismatch": "كلمات المرور غير متطابقة"
-          }
-        }
-      },
-      "requirements": {
-        "title": "تفاصيل الاستخدام ونوع النشاط",
-        "description": "شارك تفاصيل الاستخدام لمساعدتنا في تهيئة المنصة بما يناسب احتياجاتك",
-        "fields": {
-          "numberOfEventsMonthly": {
-            "label": "عدد الفعاليات المتوقعة شهريا",
-            "placeholder": "ادخل عدد الفعاليات"
-          },
-          "numberOfGuestsMonthly": {
-            "label": "عدد الضيوف المتوقع شهريا",
-            "placeholder": "ادخل عدد الضيوف"
-          },
-          "numberOfEvents": {
-            "label": "عدد الفعاليات المتوقعة شهريا"
-          },
-          "numberOfGuestsPerEvent": {
-            "label": "عدد الضيوف المتوقع شهريا"
-          },
-          "events": {
-            "label": "عدد الفعاليات المتوقعة",
-            "placeholder": "ادخل عدد الفعاليات"
-          },
-          "guests": {
-            "label": "عدد الضيوف المتوقعة لكل فعالية",
-            "placeholder": "ادخل عدد الضيوف"
-          },
-          "eventsTypes": {
-            "label": "أنواع الفعاليات",
-            "placeholder": "اختر أنواع الفعاليات"
-          },
-          "services": {
-            "label": "تكامل النظام",
-            "placeholder": "اختر الأنظمة للتكامل"
-          }
-        },
-        "usage": {
-          "title": "تفاصيل الاستخدام",
-          "description": "شارك تفاصيل الاستخدام لمساعدتنا في تهيئة المنصة بما يناسب احتياجاتك",
-          "fields": {
-            "events": {
-              "label": "عدد الفعاليات المتوقعة",
-              "placeholder": "ادخل عدد الفعاليات"
-            },
-            "guests": {
-              "label": "عدد الضيوف المتوقع لكل فعالية",
-              "placeholder": "ادخل عدد الضيوف"
-            }
-          }
-        },
-        "eventTypes": {
-          "title": "نوع الفعاليات",
-          "otherLabel": "اذكر نوع الفعالية",
-          "otherPlaceholder": "ادخل نوع الفعالية",
-          "options": [
-            {
-              "value": "Workshops",
-              "label": "ورش عمل"
-            },
-            {
-              "value": "Conferences",
-              "label": "مؤتمرات"
-            },
-            {
-              "value": "Celebrations",
-              "label": "مناسبات"
-            },
-            {
-              "value": "Meetings",
-              "label": "اجتماعات"
-            },
-            {
-              "value": "Training Courses",
-              "label": "دورات تدريبية"
-            },
-            {
-              "value": "Exhibitions",
-              "label": "معارض"
-            },
-            {
-              "value": "Parties",
-              "label": "حفلات"
-            },
-            {
-              "value": "Weddings",
-              "label": "زفاف وأعراس"
-            },
-            {
-              "value": "other",
-              "label": "أخرى"
-            }
-          ]
-        },
-        "systemIntegration": {
-          "title": "الربط مع الأنظمة الداخلية",
-          "options": [
-            {
-              "value": "CRM System",
-              "label": "نظام إدارة العملاء (CRM)"
-            },
-            {
-              "value": "SMS Gateway",
-              "label": "بوابة الرسائل النصية (SMS)"
-            },
-            {
-              "value": "Email",
-              "label": "البريد الإلكتروني"
-            },
-            {
-              "value": "Calendar (Google/Outlook)",
-              "label": "التقويم (Google/Outlook)"
-            },
-            {
-              "value": "Payment Gateways",
-              "label": "بوابات الدفع"
-            },
-            {
-              "value": "Analytics Tools",
-              "label": "أدوات التحليل"
-            }
-          ]
-        },
-        "errors": {
-          "numberOfEventsRequired": "عدد الفعاليات مطلوب",
-          "numberOfEventsInvalid": "عدد الفعاليات يجب أن يكون رقمًا صحيحًا",
-          "numberOfGuestsRequired": "عدد الضيوف لكل فعالية مطلوب",
-          "numberOfGuestsInvalid": "عدد الضيوف يجب أن يكون رقمًا صحيحًا",
-          "eventsTypesRequired": "يرجى اختيار نوع فعالية واحد على الأقل",
-          "servicesRequired": "يرجى اختيار نظام تكامل واحد على الأقل"
-        }
-      },
-      "services": {
-        "title": "خدمات إضافية",
-        "description": "اختر ما يناسبك من الإعدادات والخيارات التكميلية",
-        "selectedServices": "الخدمات المختارة",
-        "options": [
-          {
-            "value": "Enable post-event congratulations/comments page",
-            "label": "تفعيل صفحة تهنئة/تعليقات بعد الفعالية"
-          },
-          {
-            "value": "Custom invitation web page",
-            "label": "إضافة (تخصيص صفحة ويب للدعوة بلون هوية التاجرمع إضافة الشعار وتصميم الواجهة وربطها مع عنوان الموقع الإلكتروني المحدد من قبل التاجر)"
-          },
-          {
-            "value": "Rush implementation fee",
-            "label": "في حال الرغبة في سرعة التنفيذ يتم إضافة نسبة 20% إضافية على المبلغ النهائي للفاتورة"
-          }
-        ]
-      },
-      "summary": {
-        "title": "ملخص الطلب",
-        "description": "يرجى مراجعة جميع المعلومات التي قدمتها قبل إرسال طلبك",
-        "submit": "إرسال الطلب",
-        "contactInfo": "معلومات التواصل",
-        "phoneNumber": "رقم الجوال",
-        "orderSummary": "ملخص الطلب",
-        "planLine": "باقة {{name}}",
-        "setupFee": "رسوم الإعداد لمرة واحدة",
-        "included": "مشمولة",
-        "total": "الإجمالي",
-        "currency": "ر.س",
-        "billingNote": "سيتواصل معك فريقنا بعد التسجيل لإتمام عملية الدفع ومناقشة احتياجاتك."
-      },
-      "payment": {
-        "title": "معلومات المنشأة والدفع",
-        "description": "أدخل المعلومات التفصيلية للمنشأة والدفع لتستطيع تلقي الدفعات والعمل القانوني",
-        "company": {
-          "title": "معلومات المنشأة",
-          "fields": {
-            "name": {
-              "label": "اسم الجهة/المنشأة الرسمية",
-              "placeholder": "الاسم الرسمي للشركة"
-            },
-            "license": {
-              "label": "رقم السجل التجاري",
-              "placeholder": "رقم السجل التجاري",
-              "hint": "يجب أن يكون 10 أرقام تبدأ بـ 70"
-            },
-            "tax": {
-              "label": "الرقم الضريبي (اختياري)",
-              "placeholder": "ادخل الرقم الضريبي",
-              "hint": "يجب أن يكون 15 رقم تبدأ بـ 30"
-            }
-          }
-        },
-        "address": {
-          "title": "العنوان الوطني",
-          "fields": {
-            "city": {
-              "label": "المدينة",
-              "placeholder": "ادخل اسم المدينة"
-            },
-            "neighborhood": {
-              "label": "الحي",
-              "placeholder": "ادخل اسم الحي"
-            },
-            "street": {
-              "label": "الشارع",
-              "placeholder": "ادخل اسم الشارع"
-            },
-            "buildingNumber": {
-              "label": "رقم المبنى",
-              "placeholder": "ادخل رقم المبنى"
-            },
-            "additionalNumber": {
-              "label": "الرقم الإضافي",
-              "placeholder": "ادخل الرقم الإضافي"
-            },
-            "placeType": {
-              "label": "نوع الوحدة (اختياري)",
-              "placeholder": "ادخل نوع الوحدة"
-            },
-            "placeNumber": {
-              "label": "رقم الوحدة (اختياري)",
-              "placeholder": "ادخل رقم الوحدة"
-            }
-          }
-        },
-        "paymentMethods": {
-          "title": "طرق الدفع",
-          "options": [
-            {
-              "value": "Fatoorah Platform",
-              "label": "منصة فاتورة"
-            },
-            {
-              "value": "Apple Pay",
-              "label": "أبل باي"
-            },
-            {
-              "value": "Credit Card",
-              "label": "بطاقة إئتمانية"
-            },
-            {
-              "value": "Mada",
-              "label": "مدى"
-            },
-            {
-              "value": "Bank Transfer",
-              "label": "تحويل بنكي"
-            }
-          ]
-        },
-        "errors": {
-          "companyNameRequired": "اسم الشركة مطلوب",
-          "licenseNumberRequired": "رقم السجل التجاري أو الترخيص مطلوب",
-          "licenseNumberInvalid": "رقم السجل التجاري يجب أن يكون 10 أرقام تبدأ بـ 70",
-          "taxNumberInvalid": "الرقم الضريبي يجب أن يكون 15 رقم تبدأ بـ 30",
-          "cityRequired": "المدينة مطلوبة",
-          "neighborhoodRequired": "الحي مطلوب",
-          "streetRequired": "الشارع مطلوب",
-          "buildingNumberRequired": "رقم المبنى مطلوب",
-          "additionalNumberRequired": "الرقم الإضافي مطلوب",
-          "paymentMethodRequired": "يرجى اختيار طريقة دفع واحدة على الأقل"
-        }
-      },
-      "buttons": {
-        "continue": "متابعة"
-      },
-      "planSelection": {
-        "title": "اختر الباقة المناسبة",
-        "description": "اختر الباقة التي تناسب احتياجات منصتك",
-        "loadingPlans": "جاري تحميل الباقات...",
-        "loadError": "فشل في تحميل الباقات. يرجى المحاولة مرة أخرى.",
-        "retry": "إعادة المحاولة",
-        "planRequired": "اختيار الباقة مطلوب",
-        "perEventPlans": "باقات لكل مناسبة",
-        "perEventDescription": "— باقة واحدة لكل مناسبة · صالحة ٩٠ يوماً",
-        "threeMonthPool": "رصيد ٣ أشهر",
-        "threeMonthPoolDescription": "— رصيد دعوات مشترك · مناسبات غير محدودة",
-        "annualPool": "رصيد سنوي",
-        "annualPoolDescription": "— رصيد دعوات مشترك · مناسبات غير محدودة",
-        "currency": "ر.س",
-        "invitesPerEvent": "دعوة / مناسبة",
-        "oneEvent": "مناسبة واحدة",
-        "invitesPool": "دعوة (رصيد)",
-        "unlimitedEvents": "مناسبات غير محدودة · ٩٠ يوماً",
-        "unlimitedEventsAnnual": "مناسبات غير محدودة · ٣٦٥ يوماً",
-        "selectPlan": "اختر هذه الباقة",
-        "selected": "✓ تم الاختيار",
-        "features": "المميزات المشتركة",
-        "compensationMessages": "رسائل تعويضية",
-        "perEventLimit": "{{invites}} دعوة / مناسبة · صالحة ٩٠ يوماً",
-        "poolLimit": "{{pool}} دعوة (رصيد) · مناسبات غير محدودة · {{days}} يوماً",
-        "selectInvites": "اختر عدد الدعوات",
-        "inviteUnit": "دعوة",
-        "pricePerEvent": "لكل مناسبة",
-        "pricePerQuarter": "لكل ربع سنة",
-        "pricePerYear": "لسنة كاملة",
-        "validDays90": "صالحة ٩٠ يوماً",
-        "validDays365": "صالحة ٣٦٥ يوماً",
-        "poolLabel": "رصيد الدعوات",
-        "featuresTitle": "المميزات",
-        "setupFeeIncluded": "رسوم الإعداد مشمولة"
-      },
-      "success": "تم إنشاء منصتك المخصصة بنجاح",
-      "errorMessage": "حدث خطأ أثناء إنشاء المنصة. يرجى المحاولة مرة أخرى."
     },
     "host": {
       "account": {

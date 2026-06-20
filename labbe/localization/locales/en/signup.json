@@ -20,12 +20,10 @@
         "label": "Choose the service",
         "placeholder": "Select service type",
         "options": {
-          "whiteLabel": "Your invitation through your platform",
           "hosted": "We handle your invitation",
           "selfService": "Handle it yourself"
         },
         "descriptions": {
-          "whiteLabel": "Professional solution: Custom dashboard and multiple features.",
           "hosted": "Halaa team handles everything from design to sending and tracking attendance.",
           "selfService": "Design and send your invitation easily via WhatsApp with a unique QR code for each guest!"
         },
@@ -72,20 +70,38 @@
         "serviceType": {
           "title": "Service Type",
           "options": [
-            { "value": "eventPlanning", "label": "Event Planning" },
-            { "value": "mediaProduction", "label": "Media Production" },
+            {
+              "value": "eventPlanning",
+              "label": "Event Planning"
+            },
+            {
+              "value": "mediaProduction",
+              "label": "Media Production"
+            },
             {
               "value": "giftsAndPromotionalBags",
               "label": "Gifts & Promotional Bags"
             },
-            { "value": "foodAndBeverages", "label": "Food & Beverages" },
-            { "value": "beautyAndFashion", "label": "Beauty & Fashion" },
+            {
+              "value": "foodAndBeverages",
+              "label": "Food & Beverages"
+            },
+            {
+              "value": "beautyAndFashion",
+              "label": "Beauty & Fashion"
+            },
             {
               "value": "logisticsAndDelivery",
               "label": "Logistics & Delivery"
             },
-            { "value": "corporateServices", "label": "Corporate Services" },
-            { "value": "other", "label": "Other" }
+            {
+              "value": "corporateServices",
+              "label": "Corporate Services"
+            },
+            {
+              "value": "other",
+              "label": "Other"
+            }
           ]
         },
         "contactInfo": {
@@ -131,7 +147,6 @@
       "serviceData": {
         "title": "Service or Halla Marketplace Details",
         "description": "Introduce visitors to your services and the areas you cover.",
-
         "serviceDescription": {
           "title": "Service Overview",
           "label": "Brief Service Description",
@@ -173,12 +188,18 @@
               "value": "photoAndVideoForOccasions",
               "label": "Photography and Video for Occasions"
             },
-            { "value": "eventVideoEditing", "label": "Event Video Editing" },
+            {
+              "value": "eventVideoEditing",
+              "label": "Event Video Editing"
+            },
             {
               "value": "aerialDronePhotography",
               "label": "Aerial Drone Photography"
             },
-            { "value": "eventVideoMontage", "label": "Event Video Montage" }
+            {
+              "value": "eventVideoMontage",
+              "label": "Event Video Montage"
+            }
           ]
         },
         "giftsAndGiveaways": {
@@ -213,7 +234,10 @@
               "value": "traditionalOrInternationalCuisine",
               "label": "Traditional or International Cuisine"
             },
-            { "value": "slaughterAndRice", "label": "Slaughter and Rice" },
+            {
+              "value": "slaughterAndRice",
+              "label": "Slaughter and Rice"
+            },
             {
               "value": "mobileFoodTrucks",
               "label": "Mobile Food Trucks (Coffee Bar, Popcorn)"
@@ -370,9 +394,18 @@
         "coverageArea": {
           "title": "Coverage Area",
           "options": [
-            { "value": "local", "label": "Local in Saudi Arabia" },
-            { "value": "regional", "label": "Regional" },
-            { "value": "specificAreas", "label": "Specific Areas" }
+            {
+              "value": "local",
+              "label": "Local in Saudi Arabia"
+            },
+            {
+              "value": "regional",
+              "label": "Regional"
+            },
+            {
+              "value": "specificAreas",
+              "label": "Specific Areas"
+            }
           ]
         },
         "location": {
@@ -468,17 +501,35 @@
         "payment_type": {
           "title": "Refund Policy",
           "options": [
-            { "value": "full_refund", "label": "Full refund within 24 hours" },
-            { "value": "partial_refund", "label": "Partial refund" },
-            { "value": "no_refund", "label": "No refund" }
+            {
+              "value": "full_refund",
+              "label": "Full refund within 24 hours"
+            },
+            {
+              "value": "partial_refund",
+              "label": "Partial refund"
+            },
+            {
+              "value": "no_refund",
+              "label": "No refund"
+            }
           ]
         },
         "payment_options_list": {
           "title": "Payment Options",
           "options": [
-            { "value": "cash", "label": "Cash" },
-            { "value": "bank_transfer", "label": "Bank Transfer" },
-            { "value": "visa", "label": "Visa" }
+            {
+              "value": "cash",
+              "label": "Cash"
+            },
+            {
+              "value": "bank_transfer",
+              "label": "Bank Transfer"
+            },
+            {
+              "value": "visa",
+              "label": "Visa"
+            }
           ]
         },
         "refundPolicy": {
@@ -516,12 +567,18 @@
         "address": {
           "title": "National Address",
           "fields": {
-            "city": { "label": "City", "placeholder": "Enter city" },
+            "city": {
+              "label": "City",
+              "placeholder": "Enter city"
+            },
             "neighborhood": {
               "label": "Neighborhood",
               "placeholder": "Enter neighborhood"
             },
-            "street": { "label": "Street", "placeholder": "Enter street name" },
+            "street": {
+              "label": "Street",
+              "placeholder": "Enter street name"
+            },
             "buildingNumber": {
               "label": "Building Number",
               "placeholder": "Enter building number"
@@ -547,9 +604,18 @@
         "paymentMethods": {
           "title": "Payment Options",
           "options": [
-            { "label": "Mada", "value": "mada" },
-            { "label": "Bank Transfer", "value": "bank_transfer" },
-            { "label": "Invoice", "value": "invoice" }
+            {
+              "label": "Mada",
+              "value": "mada"
+            },
+            {
+              "label": "Bank Transfer",
+              "value": "bank_transfer"
+            },
+            {
+              "label": "Invoice",
+              "value": "invoice"
+            }
           ]
         },
         "paymentMechanism": {
@@ -558,9 +624,18 @@
         "paymentOptions": {
           "title": "Payment Options",
           "options": [
-            { "label": "Mada", "value": "mada" },
-            { "label": "Bank Transfer", "value": "bank_transfer" },
-            { "label": "Invoice", "value": "invoice" }
+            {
+              "label": "Mada",
+              "value": "mada"
+            },
+            {
+              "label": "Bank Transfer",
+              "value": "bank_transfer"
+            },
+            {
+              "label": "Invoice",
+              "value": "invoice"
+            }
           ]
         },
         "errors": {
@@ -626,430 +701,6 @@
       "successMessage": "Account created successfully",
       "errorMessage": "An error occurred while creating your account. Please try again."
     },
-    "whiteLabel": {
-      "title": "Create Your Platform with Your Identity",
-      "description": "Follow these steps to customize your platform within Halaa's solutions and start activating it in a way that suits your brand.",
-      "steps": {
-        "identity": "Visual Identity",
-        "login": "Login Details",
-        "requirements": "System Requirements",
-        "choosePlan": "Choose Plan",
-        "services": "Additional Services",
-        "payment": "Payment & Billing",
-        "summary": "Application Summary"
-      },
-      "identity": {
-        "title": "Visual Identity",
-        "description": "Enter your brand details accurately to be displayed on your platform.",
-        "facilityInfo": "Facility Information",
-        "arabicName": {
-          "label": "Organization or Brand Name (in Arabic)",
-          "placeholder": "Enter organization name in Arabic"
-        },
-        "englishName": {
-          "label": "Organization or Brand Name (in English)",
-          "placeholder": "Enter organization name in English"
-        },
-        "logo": {
-          "title": "Logo",
-          "label": "Logo",
-          "description": "Upload a high-quality logo",
-          "button": "Choose File",
-          "dragAndDropHint": "Drag images here or click to select"
-        },
-        "colors": {
-          "title": "Brand Colors",
-          "description": "Select the primary and secondary colors for your platform.",
-          "placeholder": "Choose color",
-          "customColor": "Enter custom color code"
-        },
-        "primaryColor": {
-          "label": "Primary Color"
-        },
-        "secondaryColor": {
-          "label": "Secondary Color"
-        },
-        "theme": {
-          "title": "Theme Style",
-          "label": "Select Theme Style",
-          "placeholder": "Select theme",
-          "options": [
-            { "value": "light", "label": "Light" },
-            { "value": "dark", "label": "Dark" }
-          ]
-        },
-        "fontFamily": {
-          "label": "Font Name",
-          "placeholder": "Select font type",
-          "options": [
-            { "value": "Roboto", "label": "Roboto" },
-            { "value": "Inter", "label": "Inter" },
-            { "value": "Cairo", "label": "Cairo" },
-            { "value": "Tajawal", "label": "Tajawal" },
-            { "value": "Almarai", "label": "Almarai" },
-            {
-              "value": "IBM Plex Sans Arabic",
-              "label": "IBM Plex Sans Arabic"
-            },
-            { "value": "Noto Sans Arabic", "label": "Noto Sans Arabic" },
-            { "value": "Montserrat", "label": "Montserrat" },
-            { "value": "Poppins", "label": "Poppins" },
-            { "value": "Open Sans", "label": "Open Sans" }
-          ]
-        },
-        "errors": {
-          "arabicNameRequired": "Arabic name is required",
-          "arabicNameMinLength": "Arabic name must be at least 2 characters",
-          "arabicNameMaxLength": "Arabic name cannot exceed 50 characters",
-          "arabicNameFormat": "Arabic name must contain Arabic letters and spaces only",
-          "englishNameRequired": "English name is required",
-          "englishNameMinLength": "English name must be at least 2 characters",
-          "englishNameMaxLength": "English name cannot exceed 50 characters",
-          "englishNameFormat": "English name must contain English letters and spaces only",
-          "logoRequired": "Logo is required",
-          "primaryColorRequired": "Primary color is required",
-          "invalidColorFormat": "Invalid color format",
-          "secondaryColorRequired": "Secondary color is required",
-          "fontFamilyRequired": "Font name is required",
-          "invalidFontFamily": "Invalid font family format"
-        }
-      },
-      "login": {
-        "title": "Login and Customization",
-        "description": "Customize your platform access and specify domain and language preferences.",
-        "fields": {
-          "email": {
-            "label": "Email",
-            "placeholder": "Enter email address",
-            "required": "Email is required",
-            "invalid": "Please enter a valid email address"
-          },
-          "phoneNumber": {
-            "label": "Phone Number",
-            "placeholder": "Enter phone number",
-            "required": "Phone number is required",
-            "invalid": "Please enter a valid phone number"
-          },
-          "domain": {
-            "label": "Preferred Subdomain",
-            "placeholder": "Enter subdomain",
-            "required": "Domain is required",
-            "invalid": "Please enter a valid domain (e.g., example.com)"
-          },
-          "password": {
-            "title": "Password",
-            "label": "Password",
-            "placeholder": "Enter password",
-            "required": "Password is required",
-            "minLength": "Password must be at least 8 characters"
-          },
-          "passwordConfirm": {
-            "label": "Confirm Password",
-            "placeholder": "Re-enter password",
-            "required": "Password confirmation is required",
-            "mismatch": "Passwords do not match"
-          }
-        }
-      },
-      "requirements": {
-        "title": "System Requirements",
-        "description": "Share usage details to help us configure the platform to suit your needs.",
-        "fields": {
-          "numberOfEventsMonthly": {
-            "label": "Expected Number of Events Monthly",
-            "placeholder": "Enter number of events"
-          },
-          "numberOfGuestsMonthly": {
-            "label": "Expected Number of Guests Monthly",
-            "placeholder": "Enter number of guests"
-          },
-          "numberOfEvents": {
-            "label": "Expected Number of Events Monthly"
-          },
-          "numberOfGuestsPerEvent": {
-            "label": "Expected Number of Guests Monthly"
-          },
-          "events": {
-            "label": "Expected Number of Events",
-            "placeholder": "Enter number of events"
-          },
-          "guests": {
-            "label": "Expected Guests per Event",
-            "placeholder": "Enter number of guests"
-          },
-          "eventsTypes": {
-            "label": "Event Types",
-            "placeholder": "Select event types"
-          },
-          "services": {
-            "label": "System Integration",
-            "placeholder": "Select systems to integrate"
-          }
-        },
-        "usage": {
-          "title": "Usage Details",
-          "description": "Select the types of events you plan to organize and the systems you want to integrate with.",
-          "fields": {
-            "eventTypes": {
-              "label": "Event Types",
-              "placeholder": "Select event types"
-            },
-            "systemIntegration": {
-              "label": "Internal Systems Integration",
-              "placeholder": "Select systems to integrate"
-            }
-          }
-        },
-        "eventTypes": {
-          "title": "Event Types",
-          "otherLabel": "Specify Event Type",
-          "otherPlaceholder": "Enter event type",
-          "options": [
-            {
-              "value": "Workshops",
-              "label": "Workshops"
-            },
-            {
-              "value": "Conferences",
-              "label": "Conferences"
-            },
-            {
-              "value": "Celebrations",
-              "label": "Celebrations"
-            },
-            {
-              "value": "Meetings",
-              "label": "Meetings"
-            },
-            {
-              "value": "Training Courses",
-              "label": "Training Courses"
-            },
-            {
-              "value": "Exhibitions",
-              "label": "Exhibitions"
-            },
-            {
-              "value": "Parties",
-              "label": "Parties"
-            },
-            {
-              "value": "Weddings",
-              "label": "Weddings"
-            },
-            {
-              "value": "other",
-              "label": "Other"
-            }
-          ]
-        },
-        "systemIntegration": {
-          "title": "Internal Systems Integration",
-          "options": [
-            {
-              "value": "CRM System",
-              "label": "CRM System"
-            },
-            {
-              "value": "SMS Gateway",
-              "label": "SMS Gateway"
-            },
-            {
-              "value": "Email",
-              "label": "Email"
-            },
-            {
-              "value": "Calendar (Google/Outlook)",
-              "label": "Calendar (Google/Outlook)"
-            },
-            {
-              "value": "Payment Gateways",
-              "label": "Payment Gateways"
-            },
-            {
-              "value": "Analytics Tools",
-              "label": "Analytics Tools"
-            }
-          ]
-        },
-        "errors": {
-          "numberOfEventsRequired": "Number of events is required",
-          "numberOfEventsInvalid": "Number of events must be a valid number",
-          "numberOfGuestsRequired": "Number of guests per event is required",
-          "numberOfGuestsInvalid": "Number of guests must be a valid number",
-          "eventsTypesRequired": "Please select at least one event type",
-          "servicesRequired": "Please select at least one system integration"
-        }
-      },
-      "services": {
-        "title": "Additional Services",
-        "description": "Choose suitable settings and complementary options.",
-        "selectedServices": "Selected Services",
-        "options": [
-          {
-            "value": "Enable post-event congratulations/comments page",
-            "label": "Enable post-event congratulations/comments page"
-          },
-          {
-            "value": "Custom invitation web page",
-            "label": "Add (Custom invitation web page with merchant's brand colors, logo, interface design, and link to specified website)"
-          },
-          {
-            "value": "Rush implementation fee",
-            "label": "For rush implementation, an additional 20% fee will be added to the final invoice amount"
-          }
-        ]
-      },
-      "summary": {
-        "title": "Application Summary",
-        "description": "Please review all the information you've provided before submitting your application.",
-        "submit": "Submit Application",
-        "contactInfo": "Contact Information",
-        "phoneNumber": "Phone Number",
-        "orderSummary": "Order Summary",
-        "planLine": "{{name}} Plan",
-        "setupFee": "One-time Setup Fee",
-        "included": "Included",
-        "total": "Total",
-        "currency": "SAR",
-        "billingNote": "Our team will contact you after registration to complete payment and discuss your needs."
-      },
-      "payment": {
-        "title": "Create Your Own Environment",
-        "description": "Enter detailed information about the establishment and payment to be able to receive payments and legal work.",
-        "company": {
-          "title": "Company Information",
-          "fields": {
-            "name": {
-              "label": "Official Company/Entity Name",
-              "placeholder": "Enter official company name"
-            },
-            "license": {
-              "label": "Commercial Register Number",
-              "placeholder": "Enter commercial register number",
-              "hint": "Must be 10 digits starting with 70"
-            },
-            "tax": {
-              "label": "Tax Number (Optional)",
-              "placeholder": "Enter tax number",
-              "hint": "Must be 15 digits starting with 30"
-            }
-          }
-        },
-        "address": {
-          "title": "National Address",
-          "fields": {
-            "city": {
-              "label": "City",
-              "placeholder": "Enter city name"
-            },
-            "neighborhood": {
-              "label": "Neighborhood",
-              "placeholder": "Enter neighborhood"
-            },
-            "street": {
-              "label": "Street",
-              "placeholder": "Enter street name"
-            },
-            "buildingNumber": {
-              "label": "Building Number",
-              "placeholder": "Enter building number"
-            },
-            "additionalNumber": {
-              "label": "Additional Number",
-              "placeholder": "Enter additional number"
-            },
-            "placeType": {
-              "label": "Unit Type (Optional)",
-              "placeholder": "Enter unit type"
-            },
-            "placeNumber": {
-              "label": "Unit Number (Optional)",
-              "placeholder": "Enter unit number"
-            }
-          }
-        },
-        "paymentMethods": {
-          "title": "Payment Methods",
-          "options": [
-            {
-              "value": "Fatoorah Platform",
-              "label": "Fatoorah Platform"
-            },
-            {
-              "value": "Apple Pay",
-              "label": "Apple Pay"
-            },
-            {
-              "value": "Credit Card",
-              "label": "Credit Card"
-            },
-            {
-              "value": "Mada",
-              "label": "Mada"
-            },
-            {
-              "value": "Bank Transfer",
-              "label": "Bank Transfer"
-            }
-          ]
-        },
-        "errors": {
-          "companyNameRequired": "Company name is required",
-          "licenseNumberRequired": "License number is required",
-          "licenseNumberInvalid": "License number must be 10 digits starting with 70",
-          "taxNumberInvalid": "Tax number must be 15 digits starting with 30",
-          "cityRequired": "City is required",
-          "neighborhoodRequired": "Neighborhood is required",
-          "streetRequired": "Street is required",
-          "buildingNumberRequired": "Building number is required",
-          "additionalNumberRequired": "Additional number is required",
-          "postalCodeRequired": "Postal code is required",
-          "paymentMethodRequired": "Please select at least one payment method"
-        }
-      },
-      "buttons": {
-        "continue": "Continue"
-      },
-      "planSelection": {
-        "title": "Choose Your Plan",
-        "description": "Select the plan that fits your platform needs",
-        "loadingPlans": "Loading plans...",
-        "loadError": "Failed to load plans. Please try again.",
-        "retry": "Try Again",
-        "planRequired": "Plan selection is required",
-        "perEventPlans": "Per-Event Plans",
-        "perEventDescription": "— 1 event per plan · valid 90 days",
-        "threeMonthPool": "3-Month Pool",
-        "threeMonthPoolDescription": "— shared invite pool · unlimited events",
-        "annualPool": "Annual Pool",
-        "annualPoolDescription": "— shared invite pool · unlimited events",
-        "currency": "SAR",
-        "invitesPerEvent": "invites / event",
-        "oneEvent": "1 event",
-        "invitesPool": "invites (pool)",
-        "unlimitedEvents": "Unlimited events · 90 days",
-        "unlimitedEventsAnnual": "Unlimited events · 365 days",
-        "selectPlan": "Select Plan",
-        "selected": "✓ Selected",
-        "features": "Features",
-        "compensationMessages": "compensation messages",
-        "perEventLimit": "{{invites}} invites / event · valid 90 days",
-        "poolLimit": "{{pool}} invite pool · unlimited events · {{days}} days",
-        "selectInvites": "Select Invites",
-        "inviteUnit": "invite",
-        "pricePerEvent": "per event",
-        "pricePerQuarter": "per quarter",
-        "pricePerYear": "per year",
-        "validDays90": "Valid 90 days",
-        "validDays365": "Valid 365 days",
-        "poolLabel": "Invite pool",
-        "featuresTitle": "Features",
-        "setupFeeIncluded": "Setup fee included"
-      },
-      "success": "Your white-label platform has been created successfully",
-      "errorMessage": "An error occurred while creating your platform. Please try again."
-    },
     "host": {
       "account": {
         "title": "Account Information",
@@ -1104,12 +755,19 @@
       },
       "themeStyle": {
         "label": "Theme Style",
-        "options": ["Light", "Dark", "Auto"]
+        "options": [
+          "Light",
+          "Dark",
+          "Auto"
+        ]
       }
     },
     "language": {
       "label": "Platform Language",
-      "options": ["Arabic", "English"]
+      "options": [
+        "Arabic",
+        "English"
+      ]
     },
     "hostSignup": {
       "greeting": {

@@ -112,8 +112,8 @@ router.post(
  *     summary: Get payment by id (host-self only)
  *     description: |
  *       Returns the caller's own payment. Admin reads MUST go through
- *       `/admin/payments/{id}` which enforces whitelabel scope; this
- *       endpoint rejects admin-class roles with 403.
+ *       `/admin/payments/{id}`; this endpoint rejects admin-class roles
+ *       with 403.
  *     tags: [Payments]
  *     security: [{ bearerAuth: [] }]
  *     parameters:
@@ -164,8 +164,7 @@ router.get('/:id', paymentsController.getById);
 // not a Mongo ObjectId, so we cannot statically validate its format here.
 router.get('/:id/poll', paymentsController.poll3ds);
 
-// Sensitive global actions — use the `manage` verb so WHITELABEL_ADMIN
-// (who has PAYMENTS:FULL on their own org) cannot pass. `manage` resolves
+// Sensitive global actions — use the `manage` verb. `manage` resolves
 // to FULL access AND role ∈ {SUPER_ADMIN, ADMIN}.
 /**
  * @swagger

@@ -17,15 +17,11 @@ export {
   hostAppNotificationsSchema,
   adminAppNotificationsSchema,
   adminEmailNotificationsSchema,
-  whitelabelAppNotificationsSchema,
-  whitelabelEmailNotificationsSchema,
   hostNotificationPreferencesSchema,
   adminNotificationPreferencesSchema,
-  whitelabelNotificationPreferencesSchema,
   getNotificationSchemaForRole,
   hostNotificationDefaults,
   adminNotificationDefaults,
-  whitelabelNotificationDefaults,
   getNotificationDefaultsForRole,
 } from "@halla/shared/schemas/settings";
 
@@ -72,21 +68,6 @@ export const getNotificationOptionsForRole = (role, t) => {
         { key: "criticalAlerts", labelKey: "notifications.criticalAlerts", defaultLabel: "التنبيهات الحرجة" },
       ],
     },
-    whitelabel: {
-      appNotifications: [
-        { key: "newHosts", labelKey: "notifications.newHosts", defaultLabel: "المضيفين الجدد" },
-        { key: "eventActivity", labelKey: "notifications.eventActivity", defaultLabel: "نشاط الفعاليات" },
-        { key: "subscriptionAlerts", labelKey: "notifications.subscriptionAlerts", defaultLabel: "تنبيهات الاشتراك" },
-        { key: "paymentAlerts", labelKey: "notifications.paymentAlerts", defaultLabel: "تنبيهات المدفوعات" },
-        { key: "systemUpdates", labelKey: "notifications.systemUpdates", defaultLabel: "تحديثات النظام" },
-      ],
-      emailNotifications: [
-        { key: "dailyReport", labelKey: "notifications.dailyReport", defaultLabel: "التقرير اليومي" },
-        { key: "weeklyReport", labelKey: "notifications.weeklyReport", defaultLabel: "التقرير الأسبوعي" },
-        { key: "subscriptionAlerts", labelKey: "notifications.subscriptionAlerts", defaultLabel: "تنبيهات الاشتراك" },
-        { key: "criticalAlerts", labelKey: "notifications.criticalAlerts", defaultLabel: "التنبيهات الحرجة" },
-      ],
-    },
   };
 
   let configKey = "host";
@@ -95,10 +76,6 @@ export const getNotificationOptionsForRole = (role, t) => {
     case USER_ROLES.ADMIN:
     case USER_ROLES.MODERATOR:
       configKey = "admin";
-      break;
-    case USER_ROLES.WHITELABEL_ADMIN:
-    case USER_ROLES.WHITELABEL_MODERATOR:
-      configKey = "whitelabel";
       break;
     default:
       configKey = "host";

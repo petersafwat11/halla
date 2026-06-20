@@ -66,7 +66,6 @@ const createModeratorSchema = z.object({
   username: z.string().optional(),
   permissions: z.array(z.string()).optional(),
   pageAccess: z.record(z.any()).optional(),
-  whitelabelId: objectId.optional(),
   role: z.string().optional(),
 });
 
@@ -77,7 +76,7 @@ const updateModeratorSchema = z.object({
   permissions: z.array(z.string()).optional(),
   pageAccess: z.record(z.any()).optional(),
   username: z.string().optional(),
-  role: z.enum(['moderator', 'admin', 'whitelabel_moderator', 'whitelabel_admin']).optional(),
+  role: z.enum(['moderator', 'admin']).optional(),
 });
 
 const updateModeratorStatusSchema = z.object({
@@ -89,31 +88,6 @@ const bulkDeleteModeratorsSchema = z.object({
 });
 
 const bulkModeratorStatusSchema = z.object({
-  ids: z.array(objectId).min(1).max(200),
-  status: z.enum(['active', 'suspended', 'inactive']),
-});
-
-// ── Whitelabels ────────────────────────────────────────────────────────────
-const updateWhitelabelStatusSchema = z.object({
-  status: z.enum(['active', 'suspended', 'pending', 'inactive', 'rejected']),
-  dispatchSetupEmail: z.boolean().optional(),
-});
-
-const updateWhitelabelSubscriptionSchema = z.object({
-  planCode: z.string().min(1),
-  status: z.string().optional(),
-});
-
-const updateWhitelabelFeatureSchema = z.object({
-  feature: z.string().min(1),
-  enabled: z.boolean(),
-});
-
-const bulkDeleteWhitelabelsSchema = z.object({
-  ids: z.array(objectId).min(1).max(200),
-});
-
-const bulkWhitelabelStatusSchema = z.object({
   ids: z.array(objectId).min(1).max(200),
   status: z.enum(['active', 'suspended', 'inactive']),
 });
@@ -147,11 +121,6 @@ module.exports = {
   updateModeratorStatusSchema,
   bulkDeleteModeratorsSchema,
   bulkModeratorStatusSchema,
-  updateWhitelabelStatusSchema,
-  updateWhitelabelSubscriptionSchema,
-  updateWhitelabelFeatureSchema,
-  bulkDeleteWhitelabelsSchema,
-  bulkWhitelabelStatusSchema,
   updateEventStatusSchema,
   bulkDeleteEventsSchema,
   bulkEventStatusSchema,

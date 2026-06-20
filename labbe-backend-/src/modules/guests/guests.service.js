@@ -122,9 +122,9 @@ class GuestsService {
   }
 
   /**
-   * Brand bits for the entry pass. No per-whitelabel colours exist in the
-   * model, so we use our platform logo (the same asset as the landing page)
-   * and derive the website from the configured frontend URL.
+   * Brand bits for the entry pass. We use our platform logo (the same asset
+   * as the landing page) and derive the website from the configured frontend
+   * URL.
    */
   _brandForPass() {
     const url = config.frontend?.url || 'https://halaa.sa';
@@ -142,10 +142,10 @@ class GuestsService {
   }
 
   /**
-   * Get event guests for host / admin / whitelabel tier.
+   * Get event guests for host / admin tier.
    *
    * @param {string} eventId
-   * @param {Object} userContext - req.user shape: { _id, role, whitelabelId }
+   * @param {Object} userContext - req.user shape: { _id, role }
    * @param {Object} filters
    * @param {Object} options
    * @returns {Promise<{data: Array, pagination: Object}>}
@@ -157,33 +157,15 @@ class GuestsService {
 
     const role = userContext?.role;
     const userId = userContext?._id?.toString?.() || userContext?._id;
-    // `whitelabelId` may be a populated Whitelabel doc (auth populates it) or a
-    // raw ObjectId/string — normalise to the id so the Mongoose query can cast
-    // it (a populated doc throws `CastError: Invalid whitelabelId`, 400). See
-    // `events.crud.service._buildScopedEventQuery`.
-    const rawWhitelabel = userContext?.whitelabelId;
-    const whitelabelId = rawWhitelabel
-      ? rawWhitelabel._id?.toString?.() ||
-        rawWhitelabel.toString?.() ||
-        rawWhitelabel
-      : null;
 
     let eventQuery = { _id: eventId };
 
-    if (role === ROLES.SUPER_ADMIN) {
-      // no additional scope filter
-    } else if (
+    if (
+      role === ROLES.SUPER_ADMIN ||
       role === ROLES.ADMIN ||
-      role === ROLES.MODERATOR ||
-      role === ROLES.WHITELABEL_ADMIN ||
-      role === ROLES.WHITELABEL_MODERATOR
+      role === ROLES.MODERATOR
     ) {
-      if (!whitelabelId) {
-        throw new ForbiddenError(
-          "Tenant configuration error. Contact a super admin to assign a whitelabel."
-        );
-      }
-      eventQuery.whitelabelId = whitelabelId;
+      // platform admins: no additional scope filter
     } else {
       eventQuery.host = userId;
     }
@@ -418,12 +400,7 @@ class GuestsService {
     const role = actor?.role;
     const isHost = event.host?.toString() === actorId;
     const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN].includes(role);
-    const isWhitelabelAdmin =
-      role === ROLES.WHITELABEL_ADMIN &&
-      event.whitelabelId &&
-      actor?.whitelabelId &&
-      event.whitelabelId.toString() === actor.whitelabelId.toString();
-    if (!isHost && !isAdmin && !isWhitelabelAdmin) {
+    if (!isHost && !isAdmin) {
       throw new ForbiddenError('Not authorized to rotate this QR');
     }
 
@@ -487,7 +464,6 @@ class GuestsService {
       actor,
       targetType: 'guest_access_token',
       targetId: fresh._id,
-      whitelabelId: event.whitelabelId || null,
       metadata: { eventId, guestId, expiresAt, delivery },
     });
 
@@ -512,12 +488,7 @@ class GuestsService {
     const role = actor?.role;
     const isHost = event.host?.toString() === actorId;
     const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN].includes(role);
-    const isWhitelabelAdmin =
-      role === ROLES.WHITELABEL_ADMIN &&
-      event.whitelabelId &&
-      actor?.whitelabelId &&
-      event.whitelabelId.toString() === actor.whitelabelId.toString();
-    if (!isHost && !isAdmin && !isWhitelabelAdmin) {
+    if (!isHost && !isAdmin) {
       throw new ForbiddenError('Not authorized to revoke this QR');
     }
 
@@ -548,7 +519,6 @@ class GuestsService {
       actor,
       targetType: 'guest_access_token',
       targetId: guestId,
-      whitelabelId: event.whitelabelId || null,
       metadata: { eventId, guestId, affected },
     });
 

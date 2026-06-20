@@ -15,8 +15,6 @@ const {
   canAccessPage,
   isAdminRole,
 } = require("../constants");
-const User = require("../../../models/UserModel");
-const Subscription = require("../../../models/SubscriptionModel");
 
 /**
  * Restrict access to specific roles
@@ -201,56 +199,6 @@ exports.superAdminOnly = (req, res, next) => {
   }
 
   next();
-};
-
-/**
- * Check if user has access to a specific feature
- * @param {string} featureName - Feature to check
- * @returns {Function} Express middleware
- */
-exports.checkFeature = (featureName) => {
-  return async (req, res, next) => {
-    if (!req.user) {
-      return next(new AppError("Please log in to access this resource", 401));
-    }
-
-    try {
-      if (req.user.role === ROLES.SUPER_ADMIN) {
-        req.hasFeature = true;
-        return next();
-      }
-
-      const whitelabelId = req.user.whitelabelId || null;
-
-      // Platform-level users have all features
-      let hasAccess = true;
-      if (whitelabelId) {
-        const whitelabel = await User.findById(whitelabelId);
-        const features = { ...(whitelabel?.features || {}) };
-        const sub = await Subscription.findOne({ userId: whitelabel?.adminId, status: "active" }).populate("planId");
-        if (sub?.planId?.features) Object.assign(features, sub.planId.features);
-        hasAccess = features[featureName] === true;
-      }
-
-      if (!hasAccess) {
-        return next(
-          new AppError(
-            `This feature is not available in your current plan. Please upgrade to access ${featureName}.`,
-            403
-          )
-        );
-      }
-
-      req.hasFeature = true;
-      req.featureName = featureName;
-
-      next();
-    } catch (error) {
-      return next(
-        new AppError(`Error checking feature access: ${error.message}`, 500)
-      );
-    }
-  };
 };
 
 // Export constants for convenience

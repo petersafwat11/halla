@@ -38,10 +38,6 @@ const welcomeEmail = (data, lang = "ar") => {
       ar: "يمكنك الآن البدء في عرض خدماتك والتواصل مع العملاء.",
       en: "You can now start showcasing your services and connecting with customers.",
     },
-    whitelabel_admin: {
-      ar: "يمكنك الآن إدارة منصتك الخاصة وإضافة المضيفين.",
-      en: "You can now manage your own platform and add hosts.",
-    },
     default: {
       ar: "يمكنك الآن البدء في استخدام جميع ميزات المنصة.",
       en: "You can now start using all platform features.",
@@ -151,86 +147,6 @@ const passwordResetEmail = (data, lang = "ar") => {
     headerTitle: isAr ? "إعادة تعيين كلمة المرور" : "Password Reset",
     headerBgColor: COLORS.warning,
     preheader: isAr ? "طلب إعادة تعيين كلمة المرور" : "Password reset request",
-  });
-
-  return { subject, html };
-};
-
-// ============================================
-// PASSWORD SETUP EMAIL (Post-Approval)
-// ============================================
-
-/**
- * Password setup email for approved accounts
- * @param {Object} data - { name, setupUrl, email, planName, expiresIn }
- * @param {string} lang - Language code (ar/en)
- * @returns {Object} { subject, html }
- */
-const passwordSetupEmail = (data, lang = "ar") => {
-  const isAr = lang === "ar";
-  const config = getConfig();
-  const expiresIn = data.expiresIn || "24 ساعة";
-
-  const subject = isAr
-    ? "تهانينا! تمت الموافقة على حسابك - قم بإعداد كلمة المرور"
-    : "Congratulations! Your Account is Approved - Set Up Your Password";
-
-  const content = `
-    ${getGreeting(data.name, lang)}
-    <div class="highlight-box success-box">
-      <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.success};">
-        🎉 ${isAr ? "تمت الموافقة على حسابك!" : "Your account has been approved!"}
-      </p>
-    </div>
-    
-    <p>${
-      isAr
-        ? "نحن سعداء بإعلامك أنه تمت الموافقة على طلبك. للبدء في استخدام حسابك، يرجى إعداد كلمة المرور الخاصة بك."
-        : "We're pleased to inform you that your application has been approved. To start using your account, please set up your password."
-    }
-    </p>
-    
-    ${
-      data.planName
-        ? getHighlightBox(`
-      ${getKeyValue(isAr ? "البريد الإلكتروني" : "Email", data.email)}
-      ${getKeyValue(isAr ? "الباقة" : "Plan", data.planName)}
-    `)
-        : ""
-    }
-    
-    ${getButton(
-      isAr ? "إعداد كلمة المرور" : "Set Up Password",
-      data.setupUrl,
-      "success"
-    )}
-    
-    <p style="color: ${COLORS.text.secondary}; font-size: 14px;">
-      ${
-        isAr
-          ? `هذا الرابط صالح لمدة ${expiresIn}. بعد انتهاء الصلاحية، يمكنك طلب رابط جديد من صفحة تسجيل الدخول.`
-          : `This link is valid for ${expiresIn}. After expiration, you can request a new link from the login page.`
-      }
-    </p>
-    
-    <div class="divider"></div>
-    
-    <p style="font-size: 14px;"><strong>${isAr ? "ماذا بعد؟" : "What's next?"}</strong>
-    </p>
-    <ul style="color: ${COLORS.text.secondary}; font-size: 14px; padding-${isAr ? "right" : "left"}: 20px;">
-      <li>${isAr ? "قم بإعداد كلمة المرور الخاصة بك" : "Set up your password"}</li>
-      <li>${isAr ? "سجل الدخول إلى لوحة التحكم" : "Log in to your dashboard"}</li>
-      <li>${isAr ? "ابدأ في استخدام جميع الميزات" : "Start using all features"}</li>
-    </ul>
-  `;
-
-  const html = getBaseLayout(content, {
-    lang,
-    headerTitle: isAr ? "تمت الموافقة على حسابك!" : "Account Approved!",
-    headerBgColor: COLORS.success,
-    preheader: isAr
-      ? "تمت الموافقة على حسابك - قم بإعداد كلمة المرور"
-      : "Your account is approved - set up your password",
   });
 
   return { subject, html };
@@ -525,8 +441,6 @@ const getRoleNameAr = (role) => {
   const roles = {
     host: "مضيف",
     vendor: "مزود خدمة",
-    whitelabel_admin: "مدير منصة",
-    whitelabel_moderator: "مشرف منصة",
     admin: "مدير",
     super_admin: "مدير عام",
   };
@@ -542,8 +456,6 @@ const getRoleNameEn = (role) => {
   const roles = {
     host: "Host",
     vendor: "Vendor",
-    whitelabel_admin: "Platform Admin",
-    whitelabel_moderator: "Platform Moderator",
     admin: "Admin",
     super_admin: "Super Admin",
   };
@@ -557,7 +469,6 @@ const getRoleNameEn = (role) => {
 module.exports = {
   welcomeEmail,
   passwordResetEmail,
-  passwordSetupEmail,
   emailVerificationEmail,
   passwordChangedEmail,
   accountDeactivatedEmail,

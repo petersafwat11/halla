@@ -17,8 +17,7 @@ const locationsService = require('../locations/locations.service');
 class ServicesService {
   /**
    * Get public services (marketplace)
-   * Intentionally cross-tenant: no whitelabelId filter — the marketplace is
-   * a single global directory of approved vendors regardless of tenant.
+   * The marketplace is a single global directory of approved vendors.
    */
   async getPublicServices(filters = {}, options = {}) {
     const { page = 1, limit = 20 } = options;

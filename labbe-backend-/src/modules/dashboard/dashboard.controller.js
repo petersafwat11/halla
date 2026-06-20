@@ -15,7 +15,7 @@ const dashboardService = require('./dashboard.service');
 exports.getAdminDashboard = catchAsync(async (req, res) => {
   const { period = 'month', from, to } = req.query;
   const dateRange = (from || to) ? { from, to } : null;
-  const stats = await dashboardService.getDashboardStats(period, req.whitelabelFilter, dateRange);
+  const stats = await dashboardService.getDashboardStats(period, dateRange);
   sendSuccess(res, stats);
 });
 

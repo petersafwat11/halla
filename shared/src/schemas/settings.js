@@ -274,21 +274,6 @@ export const adminEmailNotificationsSchema = z.object({
   criticalAlerts: z.boolean().default(true),
 });
 
-export const whitelabelAppNotificationsSchema = z.object({
-  newHosts: z.boolean().default(true),
-  eventActivity: z.boolean().default(true),
-  subscriptionAlerts: z.boolean().default(true),
-  paymentAlerts: z.boolean().default(true),
-  systemUpdates: z.boolean().default(true),
-});
-
-export const whitelabelEmailNotificationsSchema = z.object({
-  dailyReport: z.boolean().default(false),
-  weeklyReport: z.boolean().default(true),
-  subscriptionAlerts: z.boolean().default(true),
-  criticalAlerts: z.boolean().default(true),
-});
-
 export const hostNotificationPreferencesSchema = z.object({
   appNotifications: hostAppNotificationsSchema,
 });
@@ -298,11 +283,6 @@ export const adminNotificationPreferencesSchema = z.object({
   emailNotifications: adminEmailNotificationsSchema,
 });
 
-export const whitelabelNotificationPreferencesSchema = z.object({
-  appNotifications: whitelabelAppNotificationsSchema,
-  emailNotifications: whitelabelEmailNotificationsSchema,
-});
-
 // Role constants — duplicated here for back-compat with consumers that
 // imported `USER_ROLES` from the original schema file. New code should
 // import from `@halla/shared/constants/roles` once that lands.
@@ -310,8 +290,6 @@ export const USER_ROLES = {
   SUPER_ADMIN: "super_admin",
   ADMIN: "admin",
   MODERATOR: "moderator",
-  WHITELABEL_ADMIN: "whitelabel_admin",
-  WHITELABEL_MODERATOR: "whitelabel_moderator",
   HOST: "host",
   VENDOR: "vendor",
   GUEST: "guest",
@@ -323,9 +301,6 @@ export const getNotificationSchemaForRole = (role) => {
     case USER_ROLES.ADMIN:
     case USER_ROLES.MODERATOR:
       return adminNotificationPreferencesSchema;
-    case USER_ROLES.WHITELABEL_ADMIN:
-    case USER_ROLES.WHITELABEL_MODERATOR:
-      return whitelabelNotificationPreferencesSchema;
     case USER_ROLES.HOST:
       return hostNotificationPreferencesSchema;
     default:
@@ -364,31 +339,12 @@ export const adminNotificationDefaults = {
   },
 };
 
-export const whitelabelNotificationDefaults = {
-  appNotifications: {
-    newHosts: true,
-    eventActivity: true,
-    subscriptionAlerts: true,
-    paymentAlerts: true,
-    systemUpdates: true,
-  },
-  emailNotifications: {
-    dailyReport: false,
-    weeklyReport: true,
-    subscriptionAlerts: true,
-    criticalAlerts: true,
-  },
-};
-
 export const getNotificationDefaultsForRole = (role) => {
   switch (role) {
     case USER_ROLES.SUPER_ADMIN:
     case USER_ROLES.ADMIN:
     case USER_ROLES.MODERATOR:
       return adminNotificationDefaults;
-    case USER_ROLES.WHITELABEL_ADMIN:
-    case USER_ROLES.WHITELABEL_MODERATOR:
-      return whitelabelNotificationDefaults;
     case USER_ROLES.HOST:
       return hostNotificationDefaults;
     default:

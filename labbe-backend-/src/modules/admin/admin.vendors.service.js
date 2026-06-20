@@ -16,14 +16,10 @@ const { buildSearchQuery, buildDateRangeQuery, formatUserResponse } = require('.
 /**
  * Get all vendors with pagination and filters
  */
-async function getVendors({ page = 1, limit = 10, search, status, category, from, to, whitelabelId }) {
+async function getVendors({ page = 1, limit = 10, search, status, category, from, to }) {
   const skip = (page - 1) * limit;
 
   let query = { role: ROLES.VENDOR };
-
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   if (search) {
     const searchQuery = buildSearchQuery(search, [
@@ -72,11 +68,8 @@ async function getVendors({ page = 1, limit = 10, search, status, category, from
 /**
  * Get vendor by ID
  */
-async function getVendorById(vendorId, whitelabelId) {
+async function getVendorById(vendorId) {
   const query = { _id: vendorId, role: ROLES.VENDOR };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const vendor = await User.findOne(query)
     .select('-password -passwordResetToken')
@@ -109,11 +102,8 @@ async function getVendorById(vendorId, whitelabelId) {
 /**
  * Update vendor status (approve/reject/suspend)
  */
-async function updateVendorStatus(vendorId, vendorStatus, whitelabelId, actorId = null) {
+async function updateVendorStatus(vendorId, vendorStatus, actorId = null) {
   const query = { _id: vendorId, role: ROLES.VENDOR };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const vendor = await User.findOne(query);
   if (!vendor) {
@@ -211,11 +201,8 @@ async function updateVendorStatus(vendorId, vendorStatus, whitelabelId, actorId 
 /**
  * Update vendor rating
  */
-async function updateVendorRating(vendorId, rating, comment, whitelabelId) {
+async function updateVendorRating(vendorId, rating, comment) {
   const query = { _id: vendorId, role: ROLES.VENDOR };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   if (rating < 0 || rating > 5) {
     throw new ValidationError('Rating must be between 0 and 5');
@@ -241,11 +228,8 @@ async function updateVendorRating(vendorId, rating, comment, whitelabelId) {
 /**
  * Delete vendor
  */
-async function deleteVendor(vendorId, whitelabelId) {
+async function deleteVendor(vendorId) {
   const query = { _id: vendorId, role: ROLES.VENDOR };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const vendor = await User.findOne(query);
   if (!vendor) {
@@ -262,14 +246,11 @@ async function deleteVendor(vendorId, whitelabelId) {
 /**
  * Bulk delete vendors
  */
-async function bulkDeleteVendors(vendorIds, whitelabelId) {
+async function bulkDeleteVendors(vendorIds) {
   const query = {
     _id: { $in: vendorIds },
     role: ROLES.VENDOR,
   };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const result = await User.updateMany(
     query,
@@ -289,14 +270,11 @@ async function bulkDeleteVendors(vendorIds, whitelabelId) {
 /**
  * Bulk update vendor status
  */
-async function bulkUpdateVendorStatus(vendorIds, vendorStatus, whitelabelId) {
+async function bulkUpdateVendorStatus(vendorIds, vendorStatus) {
   const query = {
     _id: { $in: vendorIds },
     role: ROLES.VENDOR,
   };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const updateData = {
     'profile.vendorData.vendorStatus': vendorStatus,
@@ -323,9 +301,8 @@ async function bulkUpdateVendorStatus(vendorIds, vendorStatus, whitelabelId) {
 /**
  * Export vendors
  */
-async function exportVendors(whitelabelId, { search, status, category, from, to } = {}) {
+async function exportVendors({ search, status, category, from, to } = {}) {
   let query = { role: ROLES.VENDOR };
-  if (whitelabelId !== undefined) query.whitelabelId = whitelabelId;
   if (search) {
     const searchQuery = buildSearchQuery(search, ['name', 'email', 'phoneNumber', 'profile.vendorData.brandName']);
     query = { ...query, ...searchQuery };

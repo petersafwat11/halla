@@ -77,12 +77,6 @@ const paymentSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    whitelabelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-      index: true,
-    },
 
     // ─── ACTIVATION TARGETS (sparse) ───
     // A payment may activate either a subscription, an addon, or both
@@ -180,7 +174,6 @@ paymentSchema.index(
 );
 paymentSchema.index({ userId: 1, status: 1, createdAt: -1 });
 paymentSchema.index({ status: 1, createdAt: -1 });
-paymentSchema.index({ whitelabelId: 1, status: 1, createdAt: -1 });
 paymentSchema.index(
   { status: 1, initiatedAt: 1 },
   { partialFilterExpression: { status: { $in: ["pending", "pending_3ds"] } } }
@@ -369,12 +362,10 @@ async function sendPaymentNotifications(payment) {
     }
 
     // Determine target URL for payer
-    const payerActionUrl = payer.role === "whitelabel_admin"
-      ? `${frontendUrl}/ar/admin-dash`
-      : `${frontendUrl}/ar/host/subscription`;
+    const payerActionUrl = `${frontendUrl}/ar/host/subscription`;
 
-    // 1. Notify the payer (either a host or whitelabel admin)
-    if (payer.role === "host" || payer.role === "whitelabel_admin") {
+    // 1. Notify the payer (a host)
+    if (payer.role === "host") {
       await notificationsService.sendToUser(payer._id, {
         type,
         title,
@@ -395,7 +386,7 @@ async function sendPaymentNotifications(payment) {
       });
     }
 
-    // 2. Notify Platform-Wide Admins, Super Admins, and Moderators (no whitelabelId)
+    // 2. Notify Platform-Wide Admins, Super Admins, and Moderators
     let adminTitle = "";
     let adminTitleAr = "";
     let adminMessage = "";

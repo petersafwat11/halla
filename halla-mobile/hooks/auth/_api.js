@@ -142,43 +142,6 @@ export const signupVendor = async (vendorData) => {
   };
 };
 
-export const signupWhitelabel = async (whitelabelData) => {
-  const { identity, loginData, systemRequirements, planSelection } = whitelabelData;
-  dlog("[AUTH] Whitelabel signup:", loginData?.email);
-
-  const formData = new FormData();
-  if (loginData?.email) formData.append("email", loginData.email);
-  if (loginData?.phoneNumber) formData.append("phoneNumber", loginData.phoneNumber);
-  if (identity?.arabicName) formData.append("arabicName", identity.arabicName);
-  if (identity?.englishName) {
-    formData.append("englishName", identity.englishName);
-    formData.append("platformName", identity.englishName);
-  }
-  if (identity?.companyName) formData.append("companyName", identity.companyName);
-  if (identity?.licenseNumber) formData.append("licenseNumber", identity.licenseNumber);
-  if (identity?.taxNumber) formData.append("taxNumber", identity.taxNumber);
-  if (identity?.address) formData.append("address", JSON.stringify(identity.address));
-
-  formData.append("requirements", JSON.stringify({
-    numberOfEventsMonthly: parseInt(systemRequirements?.numberOfEventsMonthly) || 0,
-    numberOfGuestsMonthly: parseInt(systemRequirements?.numberOfGuestsMonthly) || 0,
-    eventTypes: systemRequirements?.eventTypes || [],
-    eventsTypesOther: systemRequirements?.eventsTypesOther || "",
-  }));
-  formData.append("planSelection", JSON.stringify({
-    planCode: planSelection?.planCode || "pro",
-    billingCycle: planSelection?.billingCycle || "yearly",
-    needsCustomBranding: planSelection?.needsCustomBranding || false,
-  }));
-
-  const data = await postForm(ENDPOINTS.AUTH.SIGNUP_WHITELABEL, formData);
-  return {
-    token: data.token,
-    refreshToken: data.refreshToken,
-    user: data.data?.user,
-  };
-};
-
 export const sendOTP = async ({ mobile, type = "login" }) => {
   const endpoint =
     type === "signup" ? ENDPOINTS.AUTH.OTP_SEND_SIGNUP : ENDPOINTS.AUTH.OTP_SEND_LOGIN;
@@ -291,27 +254,6 @@ export const refreshTokens = async (refreshToken) => {
 
 export const resetPassword = async ({ token, password, passwordConfirm }) => {
   const data = await patchJson(ENDPOINTS.AUTH.RESET_PASSWORD(token), {
-    password,
-    passwordConfirm,
-  });
-  return {
-    accessToken: data.token,
-    refreshToken: data.refreshToken,
-    user: data.data?.user,
-  };
-};
-
-/**
- * Set the initial password for a whitelabel admin (or any user holding a
- * one-time setup token) after they tap the email link.
- * Backend: POST /auth/setup-password.
- */
-export const setupPassword = async ({ token, password, passwordConfirm }) => {
-  if (!token || !password) {
-    throw new Error("Token and password are required");
-  }
-  const data = await postJson(ENDPOINTS.AUTH.SETUP_PASSWORD, {
-    token,
     password,
     passwordConfirm,
   });

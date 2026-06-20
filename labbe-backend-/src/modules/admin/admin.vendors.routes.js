@@ -4,7 +4,6 @@ const adminController = require('./admin.controller');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { ADMIN_PAGES } = require('../../shared/constants');
 const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
-const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
 const { auditLog } = require('../../shared/middleware/auditLog');
 const { bulkOperationLimiter } = require('../../shared/middleware/rateLimiter');
 const adminValidation = require('./admin.validation');
@@ -45,7 +44,6 @@ const adminValidation = require('./admin.validation');
  */
 router.get('/vendors',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'view'),
-  filterByWhitelabel,
   adminController.getVendors
 );
 
@@ -99,14 +97,12 @@ router.get('/vendors',
  */
 router.get('/vendors/export',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'view'),
-  filterByWhitelabel,
   adminController.exportVendors
 );
 
 router.get('/vendors/:id',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'view'),
   validateObjectId('id'),
-  filterByWhitelabel,
   adminController.getVendorById
 );
 
@@ -146,7 +142,6 @@ router.get('/vendors/:id',
 router.patch('/vendors/:id/status',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'update'),
   validateObjectId('id'),
-  filterByWhitelabel,
   validateZod(adminValidation.updateVendorStatusSchema),
   auditLog({
     action: 'vendor.status_change',
@@ -198,7 +193,6 @@ router.patch('/vendors/:id/status',
 router.patch('/vendors/:id/rating',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'update'),
   validateObjectId('id'),
-  filterByWhitelabel,
   validateZod(adminValidation.updateVendorRatingSchema),
   auditLog({
     action: 'vendor.rating_change',
@@ -236,7 +230,6 @@ router.patch('/vendors/:id/rating',
 router.delete('/vendors/:id',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'delete'),
   validateObjectId('id'),
-  filterByWhitelabel,
   auditLog({
     action: 'vendor.delete',
     targetType: 'user',
@@ -276,7 +269,6 @@ router.delete('/vendors/:id',
 router.post('/vendors/bulk-delete',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'delete'),
   bulkOperationLimiter,
-  filterByWhitelabel,
   validateZod(adminValidation.bulkDeleteVendorsSchema),
   auditLog({
     action: 'vendor.bulk_delete',
@@ -318,7 +310,6 @@ router.post('/vendors/bulk-delete',
 router.post('/vendors/bulk-status',
   requirePageAccess(ADMIN_PAGES.VENDORS, 'update'),
   bulkOperationLimiter,
-  filterByWhitelabel,
   validateZod(adminValidation.bulkVendorStatusSchema),
   auditLog({
     action: 'vendor.bulk_status_change',

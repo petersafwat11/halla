@@ -60,8 +60,7 @@ const SCHEDULE_INVALID = "SCHEDULE_INVALID";
 const EVENT_EDIT_LOCKED = "EVENT_EDIT_LOCKED";
 
 /**
- * FLOW-04-F03: Thrown when a whitelabel admin attempts to create a host
- * but the whitelabel's plan maxHosts limit would be exceeded.
+ * Generic host-limit error code (reserved for plan-based host caps).
  */
 const HOST_LIMIT_EXCEEDED = "HOST_LIMIT_EXCEEDED";
 

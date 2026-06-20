@@ -19,7 +19,6 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 import { useCreateModerator, useUpdateModerator } from "../../../hooks";
-import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 
@@ -30,22 +29,13 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
   const toast = useToast();
   const createModerator = useCreateModerator();
   const updateModerator = useUpdateModerator();
-  const currentUser = useAuthStore((s) => s.user);
-  const isWhitelabel = ["whitelabel_admin", "whitelabel_moderator"].includes(
-    currentUser?.role
-  );
 
-  const ROLE_OPTIONS = isWhitelabel
-    ? [
-        { id: "whitelabel_moderator", label: t("moderators.roles.whitelabelModerator"), description: t("moderators.add.moderatorDesc") },
-        { id: "whitelabel_admin",     label: t("moderators.roles.whitelabelAdmin"),     description: t("moderators.add.adminDesc") },
-      ]
-    : [
-        { id: "moderator", label: t("moderators.roles.moderator"),  description: t("moderators.add.moderatorDesc") },
-        { id: "admin",     label: t("moderators.roles.admin"),      description: t("moderators.add.adminDesc") },
-      ];
+  const ROLE_OPTIONS = [
+    { id: "moderator", label: t("moderators.roles.moderator"),  description: t("moderators.add.moderatorDesc") },
+    { id: "admin",     label: t("moderators.roles.admin"),      description: t("moderators.add.adminDesc") },
+  ];
 
-  const defaultRole = isWhitelabel ? "whitelabel_moderator" : "moderator";
+  const defaultRole = "moderator";
 
   const isEdit = !!moderator;
   const saving = createModerator.isPending || updateModerator.isPending;

@@ -50,9 +50,9 @@ exports.getEventStats = catchAsync(async (req, res) => {
  * GET /api/v2/events/subscription-info
  */
 exports.getSubscriptionInfo = catchAsync(async (req, res) => {
-  // Platform admins (admin/super_admin without a whitelabelId) bypass plan gating —
-  // matches the middleware bypass in createEvent.
-  const isPlatformAdmin = isAdminRole(req.user?.role) && !req.user?.whitelabelId;
+  // Platform admins (admin/super_admin) bypass plan gating — matches the
+  // middleware bypass in createEvent.
+  const isPlatformAdmin = isAdminRole(req.user?.role);
   if (isPlatformAdmin) {
     return sendSuccess(res, {
       hasSubscription: true,
@@ -65,17 +65,12 @@ exports.getSubscriptionInfo = catchAsync(async (req, res) => {
     });
   }
 
-  // Resolve the subscription that gates event creation:
-  //   host / whitelabel_admin: their own user subscription
-  //   whitelabel_moderator: no own sub — fall back to the whitelabel's sub
+  // Resolve the subscription that gates event creation: the host's own
+  // user subscription.
   let subscription = null;
   const subscriptionId = req.user.subscription?._id || req.user.subscription;
   if (subscriptionId) {
     subscription = await Subscription.findById(subscriptionId).populate("planId");
-  }
-  if (!subscription && req.user.whitelabelId) {
-    const wlSubs = await Subscription.findActiveForUser(req.user.whitelabelId);
-    subscription = wlSubs?.[0] || null;
   }
   const info = await eventsService.getSubscriptionInfo(
     req.user._id,
@@ -89,9 +84,8 @@ exports.getSubscriptionInfo = catchAsync(async (req, res) => {
  * GET /api/v2/events/stats/:id
  *
  * Scope is resolved inside the service via the full user context
- * (role + whitelabelId), so admin / moderator / whitelabel tier roles
- * see events under their tenant scope without needing a separate
- * admin route.
+ * (role), so admin / moderator / super_admin see any event without
+ * needing a separate admin route.
  */
 exports.getSingleEventStats = catchAsync(async (req, res) => {
   const stats = await eventsService.getSingleEventStats(
@@ -166,7 +160,6 @@ exports.createEvent = catchAsync(async (req, res) => {
     userRole: req.user.role,
     subscription: req.subscription,
     file: req.file,
-    whitelabelId: req.body.whitelabelId,
   };
 
   const result = await eventsService.createEvent(eventData, guestList, context);
@@ -201,8 +194,8 @@ exports.bulkDeleteEvents = catchAsync(async (req, res) => {
  * PATCH /api/v2/events/:id/event-details
  *
  * Scope resolved from req.user inside the service so the unified update
- * wizard works for admin / whitelabel-admin / whitelabel-moderator on
- * the SAME endpoint as the host.
+ * wizard works for admin / moderator / super_admin on the SAME
+ * endpoint as the host.
  */
 exports.updateEventDetails = catchAsync(async (req, res) => {
   const result = await eventsService.updateEventDetails(
@@ -409,7 +402,7 @@ exports.notifyStaff = catchAsync(async (req, res) => {
 // ============================================
 
 /**
- * Manual launch retry — host, whitelabel-admin, admin, super_admin only.
+ * Manual launch retry — host, admin, super_admin, moderator only.
  * POST /api/v2/events/:id/retry-launch
  */
 exports.retryLaunch = catchAsync(async (req, res) => {

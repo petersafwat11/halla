@@ -6,7 +6,6 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import useAuthStore from "@/stores/authStore";
 import {
   FaUsers,
   FaStore,
@@ -49,7 +48,6 @@ function getIconElement(iconKey) {
 export default function DashboardStats() {
   const { t } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
-  const { user } = useAuthStore();
 
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -62,54 +60,8 @@ export default function DashboardStats() {
   const { data: responseData, isLoading, error } = useAdminDashboard(filters);
   const data = responseData?.data;
 
-  const isWhitelabelRole =
-    user?.role === "whitelabel_admin" || user?.role === "whitelabel_moderator";
-
   const statsCards = useMemo(() => {
     const backendCards = data?.statsCards || [];
-
-    if (isWhitelabelRole) {
-      const eventsCard = backendCards.find((c) => c.id === "events") || {};
-      const hostsCard = backendCards.find((c) => c.id === "hosts") || {};
-      const analytics = data?.analytics || {};
-
-      return [
-        {
-          id: "total-events",
-          src: getIconElement("calendar"),
-          alt: "total-events",
-          title: t("stats.whitelabel.totalEvents", "Total Events"),
-          value: eventsCard.value ?? 0,
-          subtitle: t("stats.whitelabel.activeEventsCount", "{{count}} active", { count: analytics.activeEvents ?? 0 }),
-        },
-        {
-          id: "active-events",
-          src: getIconElement("calendar-check"),
-          alt: "active-events",
-          title: t("stats.whitelabel.activeEvents", "Active Events"),
-          value: analytics.activeEvents ?? 0,
-          subtitle: t("stats.whitelabel.scheduledCount", "{{count}} scheduled", { count: analytics.eventsByStatus?.scheduled ?? 0 }),
-        },
-        {
-          id: "total-hosts",
-          src: getIconElement("users"),
-          alt: "total-hosts",
-          title: t("stats.whitelabel.totalClients", "Total Clients"),
-          value: hostsCard.value ?? 0,
-          subtitle: hostsCard.subtitle
-            ? t(hostsCard.subtitle.labelKey, { count: hostsCard.subtitle.count })
-            : "",
-        },
-        {
-          id: "total-guests",
-          src: getIconElement("guests"),
-          alt: "total-guests",
-          title: t("stats.whitelabel.totalGuests", "Total Guests"),
-          value: analytics.totalGuests ?? 0,
-          subtitle: "",
-        },
-      ];
-    }
 
     return backendCards.map((card) => ({
       id: card.id,
@@ -124,7 +76,7 @@ export default function DashboardStats() {
         ? t(card.highlight.labelKey, { count: card.highlight.count })
         : null,
     }));
-  }, [data, t, isWhitelabelRole]);
+  }, [data, t]);
 
   if (isLoading) return <SimpleLoading />;
 

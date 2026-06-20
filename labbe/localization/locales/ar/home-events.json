@@ -17,7 +17,6 @@
     "userRole": "إدارة المناسبات",
     "adminRole": "مدير النظام",
     "vendorRole": "تاجر",
-    "whitelabelRole": "مدير المنصة",
     "searchPlaceholder": "بحث"
   },
   "toolbar": {

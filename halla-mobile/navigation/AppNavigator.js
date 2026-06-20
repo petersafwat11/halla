@@ -41,13 +41,11 @@ import VendorServicesScreen from "../screens/vendor/VendorServicesScreen";
 import VendorSettingsScreen from "../screens/vendor/VendorSettingsScreen";
 import VendorAccountSetupScreen from "../screens/vendor/VendorAccountSetupScreen";
 import VendorSignupScreen from "../screens/auth/VendorSignupScreen";
-import WhitelabelSignupScreen from "../screens/auth/WhitelabelSignupScreen";
 import PostEventScreen from "../screens/host/PostEventScreen";
 import StaffPortalScreen from "../screens/common/StaffPortalScreen";
 import ManagePostEventScreen from "../screens/common/ManagePostEventScreen";
 import PaymentReturnScreen from "../screens/host/PaymentReturnScreen";
 import PaymentsScreen from "../screens/host/PaymentsScreen";
-import SetupPasswordScreen from "../screens/auth/SetupPasswordScreen";
 import InvitationScreen from "../screens/guest-portal/InvitationScreen";
 
 const Stack = createStackNavigator();
@@ -273,12 +271,9 @@ function AuthStack() {
       <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
       <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
       <Stack.Screen name="VendorSignup" component={VendorSignupScreen} />
-      <Stack.Screen name="WhitelabelSignup" component={WhitelabelSignupScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
       <Stack.Screen name="StaffPortal" component={StaffPortalScreen} />
-      {/* Phase 4 W3-WL — also reachable via halla://setup-password/<token> */}
-      <Stack.Screen name="SetupPassword" component={SetupPasswordScreen} />
-      {/* Whitelabel guest invitation — public, deep-linkable via
+      {/* Guest invitation — public, deep-linkable via
           halla://invitation/<code>. No auth required; the invitation
           code itself is the proof of identity. */}
       <Stack.Screen name="Invitation" component={InvitationScreen} />
@@ -329,7 +324,7 @@ function VendorStack() {
   );
 }
 
-// Admin Stack Navigator (for authenticated admins/moderators/whitelabel)
+// Admin Stack Navigator (for authenticated admins/moderators)
 function AdminStack() {
   return (
     <Stack.Navigator
@@ -372,8 +367,6 @@ export default function AppNavigator() {
     case "super_admin":
     case "admin":
     case "moderator":
-    case "whitelabel_admin":
-    case "whitelabel_moderator":
       return <AdminStack />;
     default:
       // FLOW-05-F03: never silently route to HostStack. An unmapped role is

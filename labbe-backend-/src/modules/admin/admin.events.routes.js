@@ -4,7 +4,6 @@ const adminController = require('./admin.controller');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { ADMIN_PAGES } = require('../../shared/constants');
 const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
-const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
 const { auditLog } = require('../../shared/middleware/auditLog');
 const { bulkOperationLimiter } = require('../../shared/middleware/rateLimiter');
 const adminValidation = require('./admin.validation');
@@ -43,7 +42,6 @@ const { uploadTemplateImage } = require('../../shared/utils/fileUpload');
  */
 router.post('/events/create-for-host',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'create'),
-  filterByWhitelabel,
   uploadTemplateImage,
   adminController.createEventForHost
 );
@@ -75,7 +73,6 @@ router.post('/events/create-for-host',
 router.patch('/events/:id/status',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'update'),
   validateObjectId('id'),
-  filterByWhitelabel,
   validateZod(adminValidation.updateEventStatusSchema),
   auditLog({
     action: 'event.status_change',
@@ -113,7 +110,6 @@ router.patch('/events/:id/status',
 router.delete('/events/:id',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'delete'),
   validateObjectId('id'),
-  filterByWhitelabel,
   auditLog({
     action: 'event.delete',
     targetType: 'event',
@@ -153,7 +149,6 @@ router.delete('/events/:id',
 router.post('/events/bulk-delete',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'delete'),
   bulkOperationLimiter,
-  filterByWhitelabel,
   validateZod(adminValidation.bulkDeleteEventsSchema),
   auditLog({
     action: 'event.bulk_delete',
@@ -196,7 +191,6 @@ router.post('/events/bulk-delete',
 router.post('/events/bulk-status',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'update'),
   bulkOperationLimiter,
-  filterByWhitelabel,
   validateZod(adminValidation.bulkEventStatusSchema),
   auditLog({
     action: 'event.bulk_status_change',
@@ -211,14 +205,14 @@ router.post('/events/bulk-status',
  * /admin/event-targets:
  *   get:
  *     summary: Get event targets
- *     description: Retrieve hosts or whitelabels available as event targets for admin event creation. Admin only.
+ *     description: Retrieve hosts available as event targets for admin event creation. Admin only.
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: type
- *         schema: { type: string, enum: [hosts, whitelabels] }
+ *         schema: { type: string, enum: [hosts] }
  *     responses:
  *       200:
  *         description: List of event targets
@@ -229,7 +223,6 @@ router.post('/events/bulk-status',
  */
 router.get('/event-targets',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'view'),
-  filterByWhitelabel,
   adminController.getEventTargets
 );
 
@@ -292,7 +285,6 @@ router.get('/users/:id/subscription-info',
  */
 router.get('/events/export',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'view'),
-  filterByWhitelabel,
   adminController.exportEvents
 );
 
@@ -323,7 +315,6 @@ router.get('/events/export',
 router.get('/events/:id',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'view'),
   validateObjectId('id'),
-  filterByWhitelabel,
   adminController.getEventById
 );
 
@@ -362,7 +353,6 @@ router.get('/events/:id',
 router.patch('/events/:id',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'update'),
   validateObjectId('id'),
-  filterByWhitelabel,
   uploadTemplateImage,
   auditLog({
     action: 'event.update',

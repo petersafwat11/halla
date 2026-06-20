@@ -7,14 +7,12 @@ import {
   FaCheck,
   FaExclamationTriangle,
   FaUserShield,
-  FaBuilding,
 } from "react-icons/fa";
 import { toastUtils } from "@/utils/toastUtils";
 import { useAdminEventTargets, useVerifyHostPhoneMutation } from "@/hooks/admin";
 import styles from "./hostSelector.module.css";
 
 const PLATFORM_ADMIN_ROLES = ["super_admin", "admin", "moderator"];
-const WHITELABEL_ADMIN_ROLES = ["whitelabel_admin", "whitelabel_moderator"];
 
 const HostSelector = ({
   onHostSelect,
@@ -30,24 +28,14 @@ const HostSelector = ({
   const [searchResult, setSearchResult] = useState(null);
   const [searchError, setSearchError] = useState(null);
 
-  // Platform admins — super_admin / admin / moderator. The role string
-  // already discriminates platform vs whitelabel-scoped (whitelabel_admin
-  // and whitelabel_moderator are separate role values), so no `whitelabelId`
-  // check is needed. These roles can create events for themselves, for any
-  // host, or for any whitelabel — the tabs below render the choices.
+  // Platform admins — super_admin / admin / moderator. These roles can
+  // create events for themselves or for any host — the tabs below render
+  // the choices.
   const isPlatformAdmin =
     currentUser && PLATFORM_ADMIN_ROLES.includes(currentUser.role);
 
-  // Whitelabel-scoped admins (whitelabel_admin / whitelabel_moderator).
-  // The wrapper (AdminCreateEvent) actually skips this step entirely for
-  // them now, but the flags are still used inside the component to drive
-  // the "create for self" copy and to hide the whitelabel tab.
-  const isWhitelabelAdmin =
-    currentUser && WHITELABEL_ADMIN_ROLES.includes(currentUser.role);
-
-  const targetsType = targetType === "whitelabel" ? "whitelabel" : "host";
   const { data: targetsData, isLoading: isLoadingTargets } = useAdminEventTargets(
-    targetsType,
+    "host",
     { enabled: targetType !== "self" }
   );
   const targets = targetsData?.data?.targets || targetsData?.targets || [];
@@ -104,22 +92,10 @@ const HostSelector = ({
 
   const handleSelectSelf = useCallback(() => {
     if (onHostSelect && currentUser) {
-      // Platform admins (super_admin, admin, moderator without whitelabelId): unlimited
-      // Whitelabel admins: use their actual subscription
-      // Whitelabel moderators: use the whitelabel's subscription (fetched from auth store)
-      let subscription;
-      if (isPlatformAdmin) {
-        subscription = { isUnlimited: true };
-      } else if (isWhitelabelAdmin) {
-        subscription = currentUser.subscription || null;
-      } else if (currentUser.role === 'whitelabel_moderator' && currentUser.whitelabelId) {
-        // Whitelabel moderator shares the whitelabel admin's plan
-        // The whitelabel subscription should be available via currentUser.whitelabelSubscription
-        // or we use the currentUser.subscription if the backend already resolved it
-        subscription = currentUser.whitelabelSubscription || currentUser.subscription || null;
-      } else {
-        subscription = currentUser.subscription || null;
-      }
+      // Platform admins (super_admin, admin, moderator): unlimited
+      const subscription = isPlatformAdmin
+        ? { isUnlimited: true }
+        : currentUser.subscription || null;
 
       onHostSelect({
         ...currentUser,
@@ -128,7 +104,7 @@ const HostSelector = ({
         subscription,
       });
     }
-  }, [onHostSelect, currentUser, isPlatformAdmin, isWhitelabelAdmin]);
+  }, [onHostSelect, currentUser, isPlatformAdmin]);
 
   const hasActiveSubscription = (target) => {
     if (target?.subscription?.isUnlimited) return true;
@@ -190,8 +166,8 @@ const HostSelector = ({
         </h3>
       </div>
 
-      {/* Show tabs for both platform admins AND whitelabel admins */}
-      {(isPlatformAdmin || isWhitelabelAdmin) && (
+      {/* Show tabs for platform admins */}
+      {isPlatformAdmin && (
         <div className={styles.targetTypeToggle}>
           <button
             type="button"
@@ -213,24 +189,11 @@ const HostSelector = ({
             <FaUser />
             <span>{t("createEvent.selectHost.createForHost")}</span>
           </button>
-          {/* Only show whitelabel tab for platform admins (not whitelabel admins) */}
-          {isPlatformAdmin && (
-            <button
-              type="button"
-              className={`${styles.targetTypeButton} ${
-                targetType === "whitelabel" ? styles.active : ""
-              }`}
-              onClick={() => setTargetType("whitelabel")}
-            >
-              <FaBuilding />
-              <span>{t("createEvent.selectHost.createForWhitelabel")}</span>
-            </button>
-          )}
         </div>
       )}
 
-      {/* Self option - show for both platform admins and whitelabel admins */}
-      {targetType === "self" && (isPlatformAdmin || isWhitelabelAdmin) && (
+      {/* Self option - show for platform admins */}
+      {targetType === "self" && isPlatformAdmin && (
         <div className={styles.contentArea}>
           <div className={styles.selfOption}>
             <div className={styles.selfCard} onClick={handleSelectSelf}>
@@ -242,27 +205,13 @@ const HostSelector = ({
                   {t("createEvent.selectHost.createForYourself")}
                 </h4>
                 <p className={styles.selfCardDescription}>
-                  {isPlatformAdmin
-                    ? t("createEvent.selectHost.unlimitedDescription")
-                    : t("createEvent.selectHost.whitelabelDescription") ||
-                      t("createEvent.selectHost.createEventAsWhitelabel") ||
-                      "Create an event using your whitelabel subscription"}
+                  {t("createEvent.selectHost.unlimitedDescription")}
                 </p>
               </div>
-              {isPlatformAdmin ? (
-                <div className={styles.unlimitedBadge}>
-                  <FaCheck className={styles.badgeIcon} />
-                  {t("createEvent.selectHost.unlimited")}
-                </div>
-              ) : (
-                <div
-                  className={`${styles.subscriptionBadge} ${
-                    styles[getSubscriptionInfo(currentUser).type]
-                  }`}
-                >
-                  {getSubscriptionInfo(currentUser).text}
-                </div>
-              )}
+              <div className={styles.unlimitedBadge}>
+                <FaCheck className={styles.badgeIcon} />
+                {t("createEvent.selectHost.unlimited")}
+              </div>
             </div>
           </div>
         </div>
@@ -356,12 +305,10 @@ const HostSelector = ({
               ) : targets.length === 0 ? (
                 <div className={styles.emptyState}>
                   <div className={styles.emptyIcon}>
-                    {targetType === "whitelabel" ? <FaBuilding /> : <FaUser />}
+                    <FaUser />
                   </div>
                   <p className={styles.emptyText}>
-                    {targetType === "whitelabel"
-                      ? t("createEvent.selectHost.noWhitelabelsFound")
-                      : t("createEvent.selectHost.noHostsFound")}
+                    {t("createEvent.selectHost.noHostsFound")}
                   </p>
                 </div>
               ) : (
@@ -395,7 +342,6 @@ const TargetCard = ({
   getSubscriptionInfo,
   hasActiveSubscription,
   t,
-  targetType = "host",
 }) => {
   const subscriptionInfo = getSubscriptionInfo(target);
   const canSelect = hasActiveSubscription(target);
@@ -408,7 +354,7 @@ const TargetCard = ({
       onClick={() => canSelect && onSelect()}
     >
       <div className={styles.hostAvatar}>
-        {targetType === "whitelabel" ? <FaBuilding /> : <FaUser />}
+        <FaUser />
       </div>
       <div className={styles.hostInfo}>
         <div className={styles.hostName}>
@@ -420,11 +366,6 @@ const TargetCard = ({
         <div className={styles.hostEmail}>{target.email || "-"}</div>
       </div>
       <div className={styles.hostSubscription}>
-        {targetType === "whitelabel" && (
-          <div className={styles.hostRole}>
-            {t("createEvent.selectHost.whitelabelAdmin") || "Whitelabel Admin"}
-          </div>
-        )}
         <span
           className={`${styles.subscriptionBadge} ${
             styles[subscriptionInfo.type]

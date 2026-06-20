@@ -262,7 +262,6 @@ class SubscriptionsService {
           actor: { _id: adminUserId, role: ROLES.SUPER_ADMIN },
           targetType: 'subscription',
           targetId: existing._id,
-          whitelabelId: existing.whitelabelId || null,
           changes: { before, after: { status: SUBSCRIPTION_STATUS.CANCELLED } },
           metadata: {
             userId,
@@ -282,7 +281,6 @@ class SubscriptionsService {
       pricePaid: 0,
       currency: plan?.currency || 'SAR',
       status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
-      whitelabelId: targetUser.whitelabelId || null,
       createdBy: { user: adminUserId, role: ROLES.SUPER_ADMIN, onBehalfOf: true },
     });
 

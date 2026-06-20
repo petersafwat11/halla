@@ -119,15 +119,6 @@ const NOTIFICATION_STATUS = {
 // constant in this file was unused and has been removed (§15.3).
 
 /**
- * Whitelabel application status
- */
-const WHITELABEL_APPLICATION_STATUS = {
-  PENDING: 'pending',
-  APPROVED: 'approved',
-  REJECTED: 'rejected',
-};
-
-/**
  * Service status
  */
 const SERVICE_STATUS = {
@@ -173,7 +164,6 @@ const GUEST_STATUS = {
  */
 const TICKET_SOURCE = {
   HOST: 'host',
-  WHITELABEL: 'whitelabel',
   GUEST: 'guest',
   VENDOR: 'vendor',
   SYSTEM: 'system',
@@ -200,7 +190,6 @@ module.exports = {
   RSVP_STATUS,
   CHECKIN_STATUS,
   NOTIFICATION_STATUS,
-  WHITELABEL_APPLICATION_STATUS,
   SERVICE_STATUS,
   WHATSAPP_TEMPLATE_STATUS,
   SUPERVISOR_STATUS,

@@ -292,13 +292,6 @@ const eventSchema = new mongoose.Schema(
       required: [true, "Event must belong to a host"],
     },
 
-    // Multi-tenant support
-    whitelabelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "WhiteLabel",
-      default: null,
-    },
-
     // Subscription that created this event (for usage tracking)
     subscriptionId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -349,8 +342,6 @@ const eventSchema = new mongoose.Schema(
         type: String,
         enum: [
           "host",
-          "whitelabel_admin",
-          "whitelabel_moderator",
           "admin",
           "super_admin",
           "moderator",
@@ -380,8 +371,6 @@ const eventSchema = new mongoose.Schema(
         type: String,
         enum: [
           "host",
-          "whitelabel_admin",
-          "whitelabel_moderator",
           "admin",
           "super_admin",
           "moderator",
@@ -465,9 +454,6 @@ const eventSchema = new mongoose.Schema(
 
 // Indexes for better performance
 eventSchema.index({ host: 1 }); // For finding events by host
-eventSchema.index({ whitelabelId: 1 }); // For multi-tenant filtering
-eventSchema.index({ whitelabelId: 1, host: 1 });
-eventSchema.index({ whitelabelId: 1, status: 1 });
 eventSchema.index({ "eventDetails.date": 1 });
 eventSchema.index({ "reminderSettings.scheduledDate": 1 });
 eventSchema.index({ status: 1 });

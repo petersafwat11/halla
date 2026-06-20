@@ -4,7 +4,6 @@ const adminController = require('./admin.controller');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { ADMIN_PAGES } = require('../../shared/constants');
 const { validateObjectId } = require('../../shared/middleware/validation');
-const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
 
 // ============================================
 // PAYMENT MANAGEMENT
@@ -17,7 +16,7 @@ const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
  *     summary: Get all payments
  *     description: |
  *       Retrieve a paginated list of payment records, with stats and pagination
- *       envelope. Whitelabel-scoped via `filterByWhitelabel`. Optional `search`
+ *       envelope. Optional `search`
  *       matches against host name / email / Moyasar payment id (case-insensitive).
  *     tags: [Admin]
  *     security:
@@ -48,7 +47,6 @@ const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
  */
 router.get('/payments',
   requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
-  filterByWhitelabel,
   adminController.getPayments
 );
 
@@ -78,7 +76,6 @@ router.get('/payments',
  */
 router.get('/payments/summary',
   requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
-  filterByWhitelabel,
   adminController.getPaymentSummary
 );
 
@@ -111,7 +108,6 @@ router.get('/payments/summary',
  */
 router.get('/payments/export',
   requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
-  filterByWhitelabel,
   adminController.exportPayments
 );
 
@@ -144,7 +140,6 @@ router.get('/payments/export',
 router.get('/payments/:id',
   requirePageAccess(ADMIN_PAGES.PAYMENTS, 'view'),
   validateObjectId('id'),
-  filterByWhitelabel,
   adminController.getPaymentDetail
 );
 

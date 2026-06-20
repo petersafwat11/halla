@@ -21,20 +21,17 @@ import {
 import {
   useAdminPlans,
   useUpdateHostSubscription,
-  useUpdateWhitelabelSubscription,
 } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { getLocalized } from "@halla/shared/utils/locale";
 
 /**
- * Shared "Manage Subscription" modal for the admin dashboard. Mirrors the
+ * Host "Manage Subscription" modal for the admin dashboard. Mirrors the
  * web `SubscriptionAssignmentPopup` — the same UI, payload, and `{ planCode,
- * status }` schema for both host and whitelabel users — and dispatches to
- * the entity-type-specific endpoint:
+ * status }` schema — and dispatches to:
  *
- *   - host       → PATCH /admin/hosts/:id/subscription
- *   - whitelabel → PATCH /admin/whitelabels/:id/subscription
+ *   - host → PATCH /admin/hosts/:id/subscription
  */
 const PickDropdown = ({ label, options, selectedValue, onSelect }) => (
   <View style={styles.field}>
@@ -70,27 +67,22 @@ const SubscriptionAssignmentModal = ({
   visible,
   onClose,
   entity,
-  entityType,
   onSave,
 }) => {
   const { t, i18n } = useTranslation("admin");
   const locale = i18n.language;
   const toast = useToast();
 
-  const nsPrefix = entityType === "host" ? "hosts" : "whitelabels";
-  const tk = (key) => t(`${nsPrefix}.subscription.${key}`);
+  const tk = (key) => t(`hosts.subscription.${key}`);
 
-  const hostMutation = useUpdateHostSubscription();
-  const whitelabelMutation = useUpdateWhitelabelSubscription();
-  const updateSubscription =
-    entityType === "host" ? hostMutation : whitelabelMutation;
+  const updateSubscription = useUpdateHostSubscription();
 
   const {
     data: plansData,
     isLoading: isLoadingPlans,
     error: plansError,
     refetch: refetchPlans,
-  } = useAdminPlans({ availableFor: entityType });
+  } = useAdminPlans({ availableFor: "host" });
 
   const [selectedPlan, setSelectedPlan] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("active");
@@ -121,7 +113,7 @@ const SubscriptionAssignmentModal = ({
       { label: tk("statusExpired"), value: "expired" },
       { label: tk("statusCancelled"), value: "cancelled" },
     ],
-    [t, entityType] // eslint-disable-line react-hooks/exhaustive-deps
+    [t] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const handleSave = async () => {
@@ -131,10 +123,7 @@ const SubscriptionAssignmentModal = ({
     }
 
     const entityId = entity._id || entity.id;
-    const payload =
-      entityType === "host"
-        ? { hostId: entityId, planCode: selectedPlan, status: selectedStatus }
-        : { whitelabelId: entityId, planCode: selectedPlan, status: selectedStatus };
+    const payload = { hostId: entityId, planCode: selectedPlan, status: selectedStatus };
 
     try {
       await updateSubscription.mutateAsync(payload);
@@ -149,15 +138,8 @@ const SubscriptionAssignmentModal = ({
   if (!visible || !entity) return null;
 
   const entityName =
-    entity.name ||
-    entity.username ||
-    (entityType === "host"
-      ? t("hosts.labels.unnamed")
-      : t("whitelabels.labels.unnamed"));
-  const entitySubLabel =
-    entityType === "host"
-      ? entity.email || entity.phoneNumber
-      : entity.domain || entity.email;
+    entity.name || entity.username || t("hosts.labels.unnamed");
+  const entitySubLabel = entity.email || entity.phoneNumber;
 
   return (
     <Modal
@@ -256,7 +238,6 @@ SubscriptionAssignmentModal.propTypes = {
   visible: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   entity: PropTypes.object,
-  entityType: PropTypes.oneOf(["host", "whitelabel"]).isRequired,
   onSave: PropTypes.func,
 };
 

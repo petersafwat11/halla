@@ -30,8 +30,6 @@ const auditLogSchema = new mongoose.Schema(
         "super_admin",
         "admin",
         "moderator",
-        "whitelabel_admin",
-        "whitelabel_moderator",
         "host",
         "vendor",
         "guest",
@@ -54,7 +52,6 @@ const auditLogSchema = new mongoose.Schema(
         "guest",
         "ticket",
         "subscription",
-        "whitelabel",
         "service",
         "notification",
         "system",
@@ -81,13 +78,6 @@ const auditLogSchema = new mongoose.Schema(
     // ID of the affected resource
     targetId: {
       type: mongoose.Schema.Types.ObjectId,
-      index: true,
-    },
-
-    // For multi-tenant filtering
-    whitelabelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "WhiteLabel",
       index: true,
     },
 
@@ -153,7 +143,6 @@ const auditLogSchema = new mongoose.Schema(
 auditLogSchema.index({ timestamp: -1, action: 1 });
 auditLogSchema.index({ performedBy: 1, timestamp: -1 });
 auditLogSchema.index({ targetType: 1, targetId: 1, timestamp: -1 });
-auditLogSchema.index({ whitelabelId: 1, timestamp: -1 });
 
 // TTL index - auto-delete logs older than 2 years (optional, comment out if you need permanent retention)
 // auditLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 2 * 365 * 24 * 60 * 60 });

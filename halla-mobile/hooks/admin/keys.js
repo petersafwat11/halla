@@ -32,17 +32,6 @@ export const adminKeys = {
   ticketDetail: (ticketId) => [...adminKeys.all, "tickets", ticketId],
   ticketsInfinite: (cleanFilters) => [...adminKeys.all, "tickets", "infinite", cleanFilters],
 
-  whitelabels: (params) => [...adminKeys.all, "whitelabels", params],
-  whitelabelsAll: () => [...adminKeys.all, "whitelabels"],
-  whitelabelDetail: (whitelabelId) => [...adminKeys.all, "whitelabels", whitelabelId],
-  whitelabelsInfinite: (cleanFilters) => [...adminKeys.all, "whitelabels", "infinite", cleanFilters],
-  whitelabelFeatures: (whitelabelId) => [
-    ...adminKeys.all,
-    "whitelabels",
-    whitelabelId,
-    "features",
-  ],
-
   plans: (filters) => [...adminKeys.all, "plans", filters],
   plansAll: () => [...adminKeys.all, "plans"],
   hostPlans: () => [...adminKeys.all, "plans", "host"],

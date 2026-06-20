@@ -88,14 +88,6 @@ emailService.sendVendorApplicationPendingEmail = async (
   return emailModule.send.vendorApplicationPending(to, data, lang);
 };
 
-emailService.sendWhitelabelApplicationPendingEmail = async (
-  to,
-  data,
-  lang = "ar"
-) => {
-  return emailModule.send.whitelabelApplicationPending(to, data, lang);
-};
-
 emailService.sendStaffAccessEmail = async (to, data, lang = "ar") => {
   return emailModule.send.staffAccess(to, data, lang);
 };

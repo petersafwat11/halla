@@ -156,17 +156,11 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
 
   const userRole = currentUser?.role;
   const userId = currentUser?._id || currentUser?.id;
-  const userWhitelabelId = currentUser?.whitelabelId;
-  const eventWhitelabelId = event?.whitelabelId;
   const eventHostId = event?.host?._id || event?.host;
   const canRetry =
     eventHostId?.toString?.() === userId?.toString?.() ||
     userRole === 'admin' ||
-    userRole === 'super_admin' ||
-    (userRole === 'whitelabel_admin' &&
-      eventWhitelabelId &&
-      userWhitelabelId &&
-      eventWhitelabelId.toString() === userWhitelabelId.toString());
+    userRole === 'super_admin';
 
   const handleRetry = async () => {
     if (!onRetry) {

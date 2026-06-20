@@ -218,7 +218,6 @@ async function runEventLaunch(event, workerId) {
           actor: { _id: null, role: "system" },
           targetType: "event",
           targetId: event._id,
-          whitelabelId: event.whitelabelId || null,
           metadata: {
             reason: "all_guests_already_marked_sent",
             attemptCount: att,
@@ -318,7 +317,6 @@ async function runEventLaunch(event, workerId) {
           actor: { _id: null, role: "system" },
           targetType: "event",
           targetId: fresh._id,
-          whitelabelId: fresh.whitelabelId || null,
           metadata: { reason, subscriptionId: String(fresh.subscriptionId), workerId },
           status: "failure",
         });
@@ -359,7 +357,6 @@ async function runEventLaunch(event, workerId) {
       actor: { _id: null, role: "system" },
       targetType: "event",
       targetId: fresh._id,
-      whitelabelId: fresh.whitelabelId || null,
       changes: { after: { status: "live", launchedAt: fresh.launchedAt } },
       metadata: {
         sentTo: sendResult.successful ?? guestIds.length,
@@ -390,7 +387,6 @@ async function runEventLaunch(event, workerId) {
         actor: { _id: null, role: "system" },
         targetType: "event",
         targetId: event._id,
-        whitelabelId: event.whitelabelId || null,
         metadata: { reason, message: err.message, workerId },
         status: "failure",
       });
@@ -794,7 +790,6 @@ async function _runAutoReminderForEvent(event) {
         actor: { _id: null, role: "system" },
         targetType: "event",
         targetId: eventId,
-        whitelabelId: event.whitelabelId || null,
         metadata: {
           category,
           type: "reminder_confirmed",
@@ -851,7 +846,6 @@ async function _runAutoReminderForEvent(event) {
     actor: { _id: null, role: "system" },
     targetType: "event",
     targetId: eventId,
-    whitelabelId: event.whitelabelId || null,
     metadata: {
       category,
       confirmedCount: confirmedGuests.length,
@@ -888,7 +882,7 @@ const scheduleSubscriptionStatusUpdate = () => {
       const expired = await Subscription.find({
         status: { $in: ["active", "trial"] },
         expiresAt: { $ne: null, $lt: now },
-      }).select("_id userId planId status expiresAt whitelabelId");
+      }).select("_id userId planId status expiresAt");
 
       if (expired.length === 0) {
         return;
@@ -906,7 +900,6 @@ const scheduleSubscriptionStatusUpdate = () => {
           actor: { _id: null, role: "system" },
           targetType: "subscription",
           targetId: sub._id,
-          whitelabelId: sub.whitelabelId || null,
           changes: {
             before: { status: sub.status },
             after: { status: "expired" },
@@ -1045,7 +1038,6 @@ const _markFailedAndNotify = async (event, reason) => {
     actor: { _id: null, role: "system" },
     targetType: "event",
     targetId: eventId,
-    whitelabelId: event.whitelabelId || null,
     changes: { after: { status: "failed", failedAt: event.failedAt } },
     metadata: {
       attemptCount: event.attemptCount,

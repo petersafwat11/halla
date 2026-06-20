@@ -162,20 +162,6 @@ export const useAuthMutation = (action) => {
         }),
     },
 
-    signupWhiteLabel: {
-      mutationFn: (formData) =>
-        apiRequest({
-          method: "POST",
-          path: API_PATHS.auth.whitelabelSignup,
-          data: formData,
-          config: {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          },
-        }),
-    },
-
     completeProfile: {
       mutationFn: (profileData) =>
         apiRequest({
@@ -187,32 +173,6 @@ export const useAuthMutation = (action) => {
         const user = response.data?.user;
         Cookies.set("profileCompleted", "true", { expires: 7, sameSite: "lax" });
         useAuthStore.getState().updateUser(user);
-        return { user };
-      },
-    },
-
-    validateSetupToken: {
-      mutationFn: (token) =>
-        apiRequest({
-          method: "GET",
-          path: API_PATHS.auth.validateSetupToken(token),
-        }),
-    },
-
-    setupPassword: {
-      mutationFn: ({ token, password, passwordConfirm }) =>
-        apiRequest({
-          method: "POST",
-          path: API_PATHS.auth.setupPassword,
-          data: { token, password, passwordConfirm },
-        }),
-      onSuccess: (response) => {
-        const user = response.data?.user;
-        const subscription = response.data?.subscription || null;
-        if (user) {
-          setAuthRoutingCookies(user.role, true);
-          setAuth(user, subscription);
-        }
         return { user };
       },
     },

@@ -14,9 +14,7 @@ const dashboardPathForRole = (role) => {
   if (
     role === "super_admin" ||
     role === "admin" ||
-    role === "moderator" ||
-    role === "whitelabel_admin" ||
-    role === "whitelabel_moderator"
+    role === "moderator"
   ) {
     return "/admin-dash";
   }

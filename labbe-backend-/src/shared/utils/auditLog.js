@@ -19,7 +19,6 @@ const AuditLog = require("../../../models/AuditLogModel");
  * @param {Object} [params.actor]      - user document or { _id, role }
  * @param {string} [params.targetType] - one of the AuditLogModel enum values
  * @param {string} [params.targetId]
- * @param {string} [params.whitelabelId]
  * @param {Object} [params.changes]
  * @param {Object} [params.metadata]
  * @param {Object} [params.request]    - { method, path, requestId }
@@ -34,7 +33,6 @@ async function logAudit(params = {}) {
     actor,
     targetType,
     targetId,
-    whitelabelId,
     changes,
     metadata,
     request,
@@ -52,7 +50,6 @@ async function logAudit(params = {}) {
     performedByRole: actor?.role || "system",
     targetType,
     targetId,
-    whitelabelId,
     changes,
     metadata,
     request,

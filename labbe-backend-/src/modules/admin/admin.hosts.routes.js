@@ -4,7 +4,6 @@ const adminController = require('./admin.controller');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { ADMIN_PAGES } = require('../../shared/constants');
 const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
-const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
 const { auditLog } = require('../../shared/middleware/auditLog');
 const { bulkOperationLimiter } = require('../../shared/middleware/rateLimiter');
 const adminValidation = require('./admin.validation');
@@ -43,10 +42,9 @@ const adminValidation = require('./admin.validation');
  *       403:
  *         description: Forbidden
  */
-// Super Admin, Admin, and Whitelabel Admin can manage hosts
+// Super Admin and Admin can manage hosts
 router.get('/hosts',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'view'),
-  filterByWhitelabel,
   adminController.getHosts
 );
 
@@ -74,7 +72,6 @@ router.get('/hosts',
  */
 router.get('/hosts/verify-phone',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'view'),
-  filterByWhitelabel,
   adminController.verifyHostByPhone
 );
 
@@ -107,7 +104,6 @@ router.get('/hosts/verify-phone',
  */
 router.post('/hosts/find-or-create',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'create'),
-  filterByWhitelabel,
   validateZod(adminValidation.findOrCreateHostSchema),
   adminController.findOrCreateHost
 );
@@ -162,14 +158,12 @@ router.post('/hosts/find-or-create',
  */
 router.get('/hosts/export',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'view'),
-  filterByWhitelabel,
   adminController.exportHosts
 );
 
 router.get('/hosts/:id',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'view'),
   validateObjectId('id'),
-  filterByWhitelabel,
   adminController.getHostById
 );
 
@@ -203,7 +197,6 @@ router.get('/hosts/:id',
  */
 router.post('/hosts',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'create'),
-  filterByWhitelabel,
   validateZod(adminValidation.createHostSchema),
   auditLog({ action: 'host.create', targetType: 'user', targetIdFrom: (_req, res) => res.locals?.createdId }),
   adminController.createHost
@@ -245,7 +238,6 @@ router.post('/hosts',
 router.patch('/hosts/:id/status',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'update'),
   validateObjectId('id'),
-  filterByWhitelabel,
   validateZod(adminValidation.updateHostStatusSchema),
   auditLog({
     action: 'host.status_change',
@@ -297,7 +289,6 @@ router.patch('/hosts/:id/status',
 router.patch('/hosts/:id/subscription',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'update'),
   validateObjectId('id'),
-  filterByWhitelabel,
   validateZod(adminValidation.updateHostSubscriptionSchema),
   auditLog({
     action: 'host.subscription_change',
@@ -335,7 +326,6 @@ router.patch('/hosts/:id/subscription',
 router.delete('/hosts/:id',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'delete'),
   validateObjectId('id'),
-  filterByWhitelabel,
   auditLog({
     action: 'host.delete',
     targetType: 'user',
@@ -375,7 +365,6 @@ router.delete('/hosts/:id',
 router.post('/hosts/bulk-delete',
   requirePageAccess(ADMIN_PAGES.HOSTS, 'delete'),
   bulkOperationLimiter,
-  filterByWhitelabel,
   validateZod(adminValidation.bulkDeleteHostsSchema),
   auditLog({
     action: 'host.bulk_delete',

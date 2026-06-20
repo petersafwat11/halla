@@ -22,11 +22,7 @@ exports.getAllEvents = catchAsync(async (req, res) => {
   const { page, limit, ...filters } = req.query;
   const options = { page: parseInt(page) || 1, limit: parseInt(limit) || 10 };
 
-  const result = await eventsService.getAllEvents(
-    filters,
-    options,
-    req.whitelabelFilter
-  );
+  const result = await eventsService.getAllEvents(filters, options);
   sendPaginated(res, result.data, result.pagination);
 });
 

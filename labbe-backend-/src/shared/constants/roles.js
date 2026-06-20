@@ -11,8 +11,6 @@ const ROLES = {
   SUPER_ADMIN: 'super_admin',
   ADMIN: 'admin',
   MODERATOR: 'moderator',
-  WHITELABEL_ADMIN: 'whitelabel_admin',
-  WHITELABEL_MODERATOR: 'whitelabel_moderator',
   HOST: 'host',
   VENDOR: 'vendor',
   GUEST: 'guest',
@@ -25,21 +23,12 @@ const ROLE_HIERARCHY = {
   [ROLES.SUPER_ADMIN]: [
     ROLES.ADMIN,
     ROLES.MODERATOR,
-    ROLES.WHITELABEL_ADMIN,
-    ROLES.WHITELABEL_MODERATOR,
     ROLES.HOST,
     ROLES.VENDOR,
     ROLES.GUEST,
   ],
   [ROLES.ADMIN]: [ROLES.MODERATOR, ROLES.HOST, ROLES.VENDOR, ROLES.GUEST],
   [ROLES.MODERATOR]: [],
-  [ROLES.WHITELABEL_ADMIN]: [
-    ROLES.WHITELABEL_MODERATOR,
-    ROLES.HOST,
-    ROLES.VENDOR,
-    ROLES.GUEST,
-  ],
-  [ROLES.WHITELABEL_MODERATOR]: [],
   [ROLES.HOST]: [ROLES.GUEST],
   [ROLES.VENDOR]: [],
   [ROLES.GUEST]: [],
@@ -48,21 +37,10 @@ const ROLE_HIERARCHY = {
 /**
  * Roles that can access admin panel
  */
-const ADMIN_ROLES = [
-  ROLES.SUPER_ADMIN,
-  ROLES.ADMIN,
-  ROLES.MODERATOR,
-  ROLES.WHITELABEL_ADMIN,
-  ROLES.WHITELABEL_MODERATOR,
-];
+const ADMIN_ROLES = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR];
 
 /**
- * Roles that belong to whitelabel organizations
- */
-const WHITELABEL_ROLES = [ROLES.WHITELABEL_ADMIN, ROLES.WHITELABEL_MODERATOR];
-
-/**
- * Main platform admin roles (not whitelabel)
+ * Main platform admin roles
  */
 const PLATFORM_ADMIN_ROLES = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR];
 
@@ -74,14 +52,7 @@ const PLATFORM_ADMIN_ROLES = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR];
 const isAdminRole = (role) => ADMIN_ROLES.includes(role);
 
 /**
- * Check if role is a whitelabel role
- * @param {string} role
- * @returns {boolean}
- */
-const isWhitelabelRole = (role) => WHITELABEL_ROLES.includes(role);
-
-/**
- * Check if role is a platform admin (not whitelabel)
+ * Check if role is a platform admin
  * @param {string} role
  * @returns {boolean}
  */
@@ -111,10 +82,8 @@ module.exports = {
   ROLES,
   ROLE_HIERARCHY,
   ADMIN_ROLES,
-  WHITELABEL_ROLES,
   PLATFORM_ADMIN_ROLES,
   isAdminRole,
-  isWhitelabelRole,
   isPlatformAdmin,
   hasRoleAccess,
   getManageableRoles,

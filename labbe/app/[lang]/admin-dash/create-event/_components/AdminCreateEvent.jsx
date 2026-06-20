@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { FormProvider } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -25,8 +25,6 @@ import { useEventForm, buildEventPayload } from "@/hooks/events/useEventForm";
 import { useAdminEventMutation } from "@/hooks/admin";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
-
-const WHITELABEL_ADMIN_ROLES = ["whitelabel_admin", "whitelabel_moderator"];
 
 /**
  * Normalize subscription from any source into the canonical shape
@@ -109,34 +107,13 @@ export default function AdminCreateEvent() {
 
   const { user, subscription: authSubscription } = useAuthStore();
 
-  const isWhitelabelUser = user && WHITELABEL_ADMIN_ROLES.includes(user.role);
-
   // Merge subscription from auth store into user object for HostSelector
   const currentUserWithSubscription = user ? { ...user, subscription: authSubscription } : null;
 
   // Step 0 = HostSelector, steps 1-5 = event form.
-  // Whitelabel admins/moderators no longer manage hosts — they always create
-  // events for themselves, so the HostSelector step is skipped entirely.
-  const [adminStep, setAdminStep] = useState(isWhitelabelUser ? 1 : 0);
+  const [adminStep, setAdminStep] = useState(0);
   const [selectedHost, setSelectedHost] = useState(null);
 
-  useEffect(() => {
-    if (!isWhitelabelUser || !currentUserWithSubscription) return;
-    setSelectedHost((prev) =>
-      prev
-        ? prev
-        : {
-            ...currentUserWithSubscription,
-            targetType: "self",
-            createForSelf: true,
-            subscription:
-              currentUserWithSubscription.subscription ||
-              currentUserWithSubscription.whitelabelSubscription ||
-              null,
-          },
-    );
-    setAdminStep((s) => (s === 0 ? 1 : s));
-  }, [isWhitelabelUser, currentUserWithSubscription]);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showStaffPopup, setShowStaffPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -227,12 +204,11 @@ export default function AdminCreateEvent() {
 
   const onPrevious = useCallback(() => {
     if (currentStep === 1) {
-      // Whitelabel roles don't have the HostSelector step to go back to.
-      if (!isWhitelabelUser) setAdminStep(0);
+      setAdminStep(0);
     } else {
       goToPreviousStep();
     }
-  }, [currentStep, goToPreviousStep, isWhitelabelUser]);
+  }, [currentStep, goToPreviousStep]);
 
   // Step 0: HostSelector
   if (adminStep === 0) {
@@ -277,11 +253,7 @@ export default function AdminCreateEvent() {
             planType: sub?.planType || "none",
           }}
             onUpgrade={() => {
-              if (isWhitelabelUser) {
-                router.push(`/${locale}/admin-dash/plans`);
-              } else {
-                setAdminStep(0);
-              }
+              setAdminStep(0);
             }}
           />
         </div>
@@ -370,7 +342,7 @@ export default function AdminCreateEvent() {
                   onNext={onNext}
                   onPrevious={onPrevious}
                   isNextDisabled={!isStepValid || isSubmitting}
-                  showPrevious={!(isWhitelabelUser && currentStep === 1)}
+                  showPrevious={true}
                   isLoading={isSubmitting}
                 />
               </form>

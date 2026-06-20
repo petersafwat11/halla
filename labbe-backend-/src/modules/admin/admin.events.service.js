@@ -8,7 +8,7 @@ const Guest = require('../../../models/GuestModel');
 const Subscription = require('../../../models/SubscriptionModel');
 const User = require('../../../models/UserModel');
 const { NotFoundError } = require('../../shared/errors');
-const { ROLES, WHITELABEL_ROLES, USER_STATUS, EVENT_STATUS } = require('../../shared/constants');
+const { ROLES, USER_STATUS, EVENT_STATUS } = require('../../shared/constants');
 const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
@@ -23,13 +23,10 @@ const {
 } = require('../../shared/utils/schedulingWindow');
 
 /**
- * Get event by ID (admin - with whitelabel filter)
+ * Get event by ID (admin)
  */
-async function getEventById(eventId, whitelabelId = undefined) {
+async function getEventById(eventId) {
   const query = { _id: eventId };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const event = await Event.findOne(query)
     .populate('host', 'username email phoneNumber name')
@@ -48,9 +45,6 @@ async function getEventById(eventId, whitelabelId = undefined) {
  */
 async function updateEventFull(eventId, updateData, context = {}) {
   const query = { _id: eventId };
-  if (context.whitelabelId !== undefined) {
-    query.whitelabelId = context.whitelabelId;
-  }
 
   // Populate planId so trial-vs-paid scheduling windows resolve correctly.
   const event = await Event.findOne(query).populate('planId', 'code planType');
@@ -177,31 +171,13 @@ async function updateEventFull(eventId, updateData, context = {}) {
 }
 
 /**
- * Get event targets (hosts or whitelabel_admins with subscription info)
- * Filters by whitelabelId based on requesting user's role:
- * - Whitelabel admins: only see hosts belonging to their whitelabel
- * - Platform admins: see all hosts except whitelabel-owned ones
- * - Super admin: sees everything
+ * Get event targets (hosts with subscription info)
  */
 async function getEventTargets(type = 'host', requestingUser = null) {
-  const role = type === 'whitelabel' ? ROLES.WHITELABEL_ADMIN : ROLES.HOST;
-
-  const query = { role, status: { $ne: USER_STATUS.DELETED } };
-
-  // Apply whitelabel filtering
-  if (requestingUser) {
-    const isWhitelabelUser = WHITELABEL_ROLES.includes(requestingUser.role);
-    const isSuperAdmin = requestingUser.role === ROLES.SUPER_ADMIN;
-
-    if (isWhitelabelUser && requestingUser.whitelabelId) {
-      query.whitelabelId = requestingUser.whitelabelId;
-    } else if (!isSuperAdmin) {
-      query.whitelabelId = null;
-    }
-  }
+  const query = { role: ROLES.HOST, status: { $ne: USER_STATUS.DELETED } };
 
   const users = await User.find(query)
-    .select('username name email phoneNumber role status whitelabelId')
+    .select('username name email phoneNumber role status')
     .lean();
 
   const userIds = users.map(u => u._id);
@@ -212,20 +188,8 @@ async function getEventTargets(type = 'host', requestingUser = null) {
   const subMap = {};
   subscriptions.forEach(s => { subMap[s.userId.toString()] = s; });
 
-  // When whitelabel admin queries for their hosts, hosts share the whitelabel's plan.
-  // Fetch the whitelabel's subscription once and apply it to all their hosts.
-  let whitelabelSub = null;
-  if (type === 'host' && requestingUser && WHITELABEL_ROLES.includes(requestingUser.role) && requestingUser.whitelabelId) {
-    const wlSubs = await Subscription.findActiveForUser(requestingUser.whitelabelId);
-    whitelabelSub = wlSubs[0] || null;
-  }
-
   const targets = users.map(u => {
-    // For whitelabel admin querying hosts: use whitelabel's subscription
-    // For all other cases: use the user's own subscription
-    const sub = (type === 'host' && whitelabelSub)
-      ? whitelabelSub
-      : subMap[u._id.toString()];
+    const sub = subMap[u._id.toString()];
 
     return {
       ...u,
@@ -241,22 +205,7 @@ async function getEventTargets(type = 'host', requestingUser = null) {
  * Create event for host (admin action) - rewritten to use eventsService pattern
  */
 async function createEventForHost(eventData, guestList, context) {
-  let subscriptionOwnerId = context.userId;
-
-  // Whitelabel contexts: hosts and whitelabel moderators share the
-  // whitelabel admin's subscription.  Resolve the real subscription owner.
-  if (context.whitelabelId) {
-    const targetUser = await User.findById(context.userId)
-      .select('role whitelabelId')
-      .lean();
-
-    if (
-      (targetUser?.role === ROLES.HOST && targetUser.whitelabelId) ||
-      (targetUser?.role === ROLES.WHITELABEL_MODERATOR && targetUser.whitelabelId)
-    ) {
-      subscriptionOwnerId = targetUser.whitelabelId;
-    }
-  }
+  const subscriptionOwnerId = context.userId;
 
   const activeSubs = await Subscription.findActiveForUser(subscriptionOwnerId);
   const subscription = activeSubs[0] || null;
@@ -267,11 +216,8 @@ async function createEventForHost(eventData, guestList, context) {
 /**
  * Update event status (admin action)
  */
-async function updateEventStatus(eventId, status, whitelabelId = undefined) {
+async function updateEventStatus(eventId, status) {
   const query = { _id: eventId };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const current = await Event.findOne(query).select('status previousStatus');
   if (!current) {
@@ -314,11 +260,8 @@ async function updateEventStatus(eventId, status, whitelabelId = undefined) {
 /**
  * Delete event (admin action)
  */
-async function deleteEvent(eventId, whitelabelId = undefined) {
+async function deleteEvent(eventId) {
   const query = { _id: eventId };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const event = await Event.findOne(query);
   if (!event) {
@@ -335,11 +278,8 @@ async function deleteEvent(eventId, whitelabelId = undefined) {
 /**
  * Bulk delete events
  */
-async function bulkDeleteEvents(eventIds, whitelabelId = undefined) {
+async function bulkDeleteEvents(eventIds) {
   const query = { _id: { $in: eventIds } };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const result = await Event.updateMany(
     query,
@@ -360,9 +300,8 @@ async function bulkDeleteEvents(eventIds, whitelabelId = undefined) {
 /**
  * Export events
  */
-async function exportEvents(whitelabelId, { search, status, from, to } = {}) {
+async function exportEvents({ search, status, from, to } = {}) {
   const query = { status: { $ne: 'deleted' } };
-  if (whitelabelId !== undefined) query.whitelabelId = whitelabelId;
   if (search) {
     const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     query['eventDetails.eventName'] = { $regex: escaped, $options: 'i' };

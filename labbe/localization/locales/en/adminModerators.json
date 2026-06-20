@@ -36,8 +36,7 @@
     "cancel": "Cancel",
     "saving": "Saving...",
     "success": "Moderator added successfully",
-    "error": "Failed to add moderator",
-    "whitelabelRequired": "Whitelabel selection required"
+    "error": "Failed to add moderator"
   },
   "editModerator": {
     "title": "Edit Moderator",
@@ -123,8 +122,6 @@
       "inactive": "Inactive"
     },
     "roles": {
-      "whitelabelModerator": "Whitelabel Moderator",
-      "whitelabelAdmin": "Whitelabel Admin",
       "moderator": "Moderator",
       "admin": "Admin"
     },
@@ -138,9 +135,7 @@
       "password": "Password",
       "passwordPlaceholder": "Leave empty for auto-generation",
       "role": "Role",
-      "selectRole": "Select role",
-      "whitelabel": "Whitelabel",
-      "selectWhitelabel": "Select whitelabel"
+      "selectRole": "Select role"
     }
   }
 }

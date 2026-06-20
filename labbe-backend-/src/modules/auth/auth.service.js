@@ -611,94 +611,6 @@ class AuthService {
     };
   }
 
-  /**
-   * Whitelabel signup
-   * @param {Object} userData
-   * @param {Object} [logoFile] - Uploaded logo file from multer.single (req.file)
-   * @returns {Promise<{user: Object, token: string}>}
-   */
-   async signupWhitelabel(userData, logoFile = null) {
-     const { email, phoneNumber, englishName, arabicName, planSelection } = userData;
-
-     if (!phoneNumber && !email) {
-       throw new ValidationError('Email or phone number is required');
-     }
-
-     const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : undefined;
-     await this._checkDuplicates(email, normalizedPhone);
-
-    const requirements = this._parseJsonField(userData.requirements);
-    const address = this._parseJsonField(userData.address);
-    const parsedPlanSelection = this._parseJsonField(planSelection);
-
-    // Store the S3 key — toPublicJSON signs it on read.
-    const logoUrl = logoFile ? extractStoredRef(logoFile) : null;
-
-    const whitelabelData = {
-      englishName,
-      arabicName,
-      platformName: userData.platformName || englishName,
-      companyName: userData.companyName || arabicName,
-      requirements,
-      address,
-      licenseNumber: userData.licenseNumber || '',
-      taxNumber: userData.taxNumber || '',
-      ...(logoUrl && { logo: logoUrl }),
-      planSelection: {
-        planCode: parsedPlanSelection?.planCode || 'business_quarterly',
-        billingCycle: parsedPlanSelection?.billingCycle || 'yearly',
-      },
-      applicationStatus: VENDOR_STATUS.PENDING,
-    };
-
-    // Generate temp password
-    const tempPassword = crypto.randomBytes(16).toString('hex');
-
-     const whitelabel = await User.create({
-       email: email?.toLowerCase(),
-       phoneNumber: normalizedPhone,
-       password: tempPassword,
-       username: englishName?.replace(/\s+/g, '_').toLowerCase() || `wl_${Date.now()}`,
-       name: arabicName || englishName,
-       role: ROLES.WHITELABEL_ADMIN,
-       status: USER_STATUS.PENDING,
-       profile: { whitelabelData },
-     });
-
-    whitelabel.whitelabelId = whitelabel._id;
-    await whitelabel.save({ validateBeforeSave: false });
-
-    // Notifications
-    this._notifyAdminsNewWhitelabel(whitelabel, englishName, arabicName).catch((err) =>
-      logger.error('whitelabel signup: notify admins failed', err)
-    );
-    if (email) {
-      const planName = parsedPlanSelection?.planCode || 'Business';
-      emailModule.send.whitelabelApplicationPending(email, {
-        platformName: englishName || arabicName,
-        email,
-        planName,
-      }).catch((err) =>
-        logger.error('whitelabel signup: pending email failed', err)
-      );
-    }
-
-    logAudit({
-      action: 'whitelabel_signup',
-      actor: whitelabel._id,
-      targetType: 'User',
-      targetId: whitelabel._id,
-      whitelabelId: whitelabel._id,
-      metadata: { englishName, arabicName, planCode: parsedPlanSelection?.planCode },
-      status: 'success',
-    }).catch((err) => logger.error('whitelabel signup: audit log failed', err));
-
-    return {
-      user: await this.sanitizeUser(whitelabel),
-      token: null,
-      pendingApproval: true,
-    };
-  }
 
   // ============================================
   // EMAIL VERIFICATION LINK
@@ -1170,13 +1082,12 @@ class AuthService {
    */
   async getMe(userId) {
     const user = await User.findById(userId)
-      .select('-password -passwordResetToken -passwordResetExpires -passwordSetupToken -passwordSetupExpires -emailVerificationCode -emailVerificationExpires')
+      .select('-password -passwordResetToken -passwordResetExpires -emailVerificationCode -emailVerificationExpires')
       .populate({
         path: 'subscription',
         select: 'status planId currentPeriodEnd trialEndsAt cancelAtPeriodEnd',
         populate: { path: 'planId', select: 'code name price billingCycle features' },
-      })
-      .populate('whitelabelId', 'identity domain status');
+      });
 
     if (!user) {
       throw new NotFoundError('User');
@@ -1354,26 +1265,6 @@ class AuthService {
     });
   }
 
-  /**
-   * Notify admins of new whitelabel application
-   * @private
-   */
-  async _notifyAdminsNewWhitelabel(whitelabel, englishName, arabicName) {
-    const frontendUrl = config.frontend.url;
-    await notificationService.sendToAdmins({
-      type: 'whitelabel_application',
-      title: 'New Whitelabel Application',
-      titleAr: 'طلب علامة بيضاء جديد',
-      message: `New whitelabel application from "${englishName || arabicName}". Please review.`,
-      messageAr: `طلب علامة بيضاء جديد من "${arabicName || englishName}". يرجى المراجعة.`,
-      actionUrl: `${frontendUrl}/ar/admin-dash/whitelabels/${whitelabel._id}`,
-      data: {
-        entityType: 'user',
-        entityId: whitelabel._id,
-        metadata: { whitelabelId: whitelabel._id, platformName: englishName || arabicName },
-      },
-    });
-  }
 }
 
 module.exports = new AuthService();

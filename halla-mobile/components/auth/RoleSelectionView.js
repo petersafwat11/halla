@@ -26,14 +26,6 @@ const ROLES = [
     accentColor: "#2a8c5b",
     bgColor: "#e6f4ed",
   },
-  {
-    id: "whitelabel",
-    icon: "business-outline",
-    titleKey: "signup.businessRole",
-    descKey: "signup.businessRoleDescription",
-    accentColor: "#3d6fcc",
-    bgColor: "#eaf0fb",
-  },
 ];
 
 function RoleCard({ role, index, onPress, isRTL }) {

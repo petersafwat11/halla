@@ -61,17 +61,14 @@ export default function GuestPortalPage() {
 
   const guest = data?.data?.guest || data?.guest || null;
   const event = data?.data?.event || data?.event || null;
-  const whitelabel = event?.whitelabel || {};
 
   const cssVars = useMemo(
     () => ({
-      "--portal-primary": whitelabel.primaryColor || DEFAULT_PRIMARY,
-      "--portal-bg": whitelabel.backgroundColor || DEFAULT_BG,
+      "--portal-primary": DEFAULT_PRIMARY,
+      "--portal-bg": DEFAULT_BG,
     }),
-    [whitelabel.primaryColor, whitelabel.backgroundColor]
+    []
   );
-
-  const logoUrl = whitelabel.logo || whitelabel.logoUrl || null;
 
   const handleRsvp = async (response, optional) => {
     try {
@@ -137,8 +134,6 @@ export default function GuestPortalPage() {
         <PortalConfirmed
           guestName={guest.name}
           event={event}
-          whitelabel={whitelabel}
-          logoUrl={logoUrl}
           code={code}
           guestsCount={guestsCount}
           formatDate={formatDate}
@@ -156,8 +151,6 @@ export default function GuestPortalPage() {
           response={finalResponse}
           guestName={guest.name}
           event={event}
-          whitelabel={whitelabel}
-          logoUrl={logoUrl}
           onChangeResponse={handleChangeResponse}
           t={t}
         />
@@ -175,8 +168,6 @@ export default function GuestPortalPage() {
       <PortalRsvpForm
         guest={guest}
         event={event}
-        whitelabel={whitelabel}
-        logoUrl={logoUrl}
         isPending={rsvpMutation.isPending}
         onSubmit={handleRsvp}
         errorCopy={errorCopy}

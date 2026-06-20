@@ -4,7 +4,6 @@ const adminController = require('./admin.controller');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { ADMIN_PAGES } = require('../../shared/constants');
 const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
-const { filterByWhitelabel } = require('../../shared/middleware/whitelabel');
 const { auditLog } = require('../../shared/middleware/auditLog');
 const { bulkOperationLimiter } = require('../../shared/middleware/rateLimiter');
 const adminValidation = require('./admin.validation');
@@ -32,7 +31,6 @@ const adminValidation = require('./admin.validation');
  */
 router.get('/moderators',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'view'),
-  filterByWhitelabel,
   adminController.getModerators
 );
 
@@ -67,7 +65,6 @@ router.get('/moderators',
  */
 router.post('/moderators',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'create'),
-  filterByWhitelabel,
   validateZod(adminValidation.createModeratorSchema),
   auditLog({ action: 'moderator.create', targetType: 'user' }),
   adminController.createModerator
@@ -100,7 +97,6 @@ router.post('/moderators',
 router.patch('/moderators/:id',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'update'),
   validateObjectId('id'),
-  filterByWhitelabel,
   validateZod(adminValidation.updateModeratorSchema),
   auditLog({
     action: 'moderator.update',
@@ -137,7 +133,6 @@ router.patch('/moderators/:id',
 router.patch('/moderators/:id/status',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'update'),
   validateObjectId('id'),
-  filterByWhitelabel,
   validateZod(adminValidation.updateModeratorStatusSchema),
   auditLog({
     action: 'moderator.status_change',
@@ -180,7 +175,6 @@ router.patch('/moderators/:id/status',
 router.delete('/moderators/:id',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'delete'),
   validateObjectId('id'),
-  filterByWhitelabel,
   auditLog({
     action: 'moderator.delete',
     targetType: 'user',
@@ -220,7 +214,6 @@ router.delete('/moderators/:id',
 router.post('/moderators/bulk-delete',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'delete'),
   bulkOperationLimiter,
-  filterByWhitelabel,
   validateZod(adminValidation.bulkDeleteModeratorsSchema),
   auditLog({
     action: 'moderator.bulk_delete',
@@ -264,7 +257,6 @@ router.post('/moderators/bulk-delete',
 router.post('/moderators/bulk-status',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'update'),
   bulkOperationLimiter,
-  filterByWhitelabel,
   validateZod(adminValidation.bulkModeratorStatusSchema),
   auditLog({
     action: 'moderator.bulk_status_change',
@@ -297,7 +289,6 @@ router.post('/moderators/bulk-status',
  */
 router.get('/moderators/export',
   requirePageAccess(ADMIN_PAGES.MODERATORS, 'view'),
-  filterByWhitelabel,
   adminController.exportModerators
 );
 

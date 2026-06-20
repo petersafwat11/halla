@@ -8,8 +8,7 @@ const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess } = require('../../shared/utils/responseHelper');
 const { ValidationError } = require('../../shared/errors');
 const { generateExcel } = require('../../shared/utils/excelExport');
-const { getWhitelabelIdFromFilter } = require('./admin.controller.shared');
-const { PLATFORM_ADMIN_ROLES, WHITELABEL_ROLES } = require('../../shared/constants/roles');
+const { PLATFORM_ADMIN_ROLES } = require('../../shared/constants/roles');
 
 exports.createEventForHost = catchAsync(async (req, res) => {
   // Parse FormData JSON fields (same pattern as events.controller.createEvent)
@@ -33,47 +32,26 @@ exports.createEventForHost = catchAsync(async (req, res) => {
   let createForSelf = req.body.createForSelf === 'true' || req.body.createForSelf === true;
   let skipSubscriptionCheck = false;
 
-  // Whitelabel admins/moderators can only create events for themselves.
-  // Host management has been removed from these roles, so any client-supplied
-  // targetUserId/targetType must be ignored server-side.
-  if (WHITELABEL_ROLES.includes(req.user.role)) {
-    createForSelf = true;
-    targetUserId = null;
-  }
-
   if (createForSelf) {
     targetUserId = req.user._id;
     // Platform admins creating for themselves have unlimited access
-    if (PLATFORM_ADMIN_ROLES.includes(req.user.role) && !req.user.whitelabelId) {
+    if (PLATFORM_ADMIN_ROLES.includes(req.user.role)) {
       skipSubscriptionCheck = true;
     }
   } else if (req.body.phoneNumber && !targetUserId) {
     const result = await adminService.findOrCreateHost({
       phoneNumber: req.body.phoneNumber,
       name: req.body.hostName || 'Host',
-      whitelabelId: getWhitelabelIdFromFilter(req),
     });
     targetUserId = result.host.id || result.host._id;
   }
 
   if (!targetUserId) throw new ValidationError('Target user is required');
 
-  // Resolve whitelabelId from target user when not provided (e.g. platform admin
-  // creating for a whitelabel target where the frontend sends targetType=whitelabel)
-  let resolvedWhitelabelId = req.body.whitelabelId || getWhitelabelIdFromFilter(req);
-  if (resolvedWhitelabelId === null && targetUserId && targetUserId !== req.user._id) {
-    const User = require('../../../models/UserModel');
-    const targetUser = await User.findById(targetUserId).select('whitelabelId role').lean();
-    if (targetUser?.whitelabelId) {
-      resolvedWhitelabelId = targetUser.whitelabelId;
-    }
-  }
-
   const context = {
     userId: targetUserId,
     userRole: req.user.role,
     file: req.file,
-    whitelabelId: resolvedWhitelabelId,
     skipSubscriptionCheck,
     adminId: req.user._id,
   };
@@ -85,42 +63,37 @@ exports.createEventForHost = catchAsync(async (req, res) => {
 exports.updateEventStatus = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
 
   if (!status) throw new ValidationError('Status is required');
 
-  const event = await adminService.updateEventStatus(id, status, whitelabelId);
+  const event = await adminService.updateEventStatus(id, status);
   sendSuccess(res, { event }, 'Event status updated successfully');
 });
 
 exports.deleteEvent = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
-  const result = await adminService.deleteEvent(id, whitelabelId);
+  const result = await adminService.deleteEvent(id);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkDeleteEvents = catchAsync(async (req, res) => {
   const { ids } = req.body;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
 
-  const result = await adminService.bulkDeleteEvents(ids, whitelabelId);
+  const result = await adminService.bulkDeleteEvents(ids);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkUpdateEventStatus = catchAsync(async (req, res) => {
   const { ids, status } = req.body;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
 
   const results = await Promise.all(
-    ids.map((id) => adminService.updateEventStatus(id, status, whitelabelId))
+    ids.map((id) => adminService.updateEventStatus(id, status))
   );
   sendSuccess(res, { updated: results.length }, `${results.length} event(s) updated to ${status}`);
 });
 
 exports.getEventById = catchAsync(async (req, res) => {
-  const whitelabelId = getWhitelabelIdFromFilter(req);
-  const result = await adminService.getEventById(req.params.id, whitelabelId);
+  const result = await adminService.getEventById(req.params.id);
   sendSuccess(res, result, 'Event retrieved successfully');
 });
 
@@ -138,18 +111,13 @@ exports.updateEventFull = catchAsync(async (req, res) => {
     throw new ValidationError(`Invalid JSON format: ${error.message}`);
   }
 
-  const context = { adminId: req.user._id, file: req.file, whitelabelId: getWhitelabelIdFromFilter(req) };
+  const context = { adminId: req.user._id, file: req.file };
   const result = await adminService.updateEventFull(req.params.id, updateData, context);
   sendSuccess(res, result, 'Event updated successfully');
 });
 
 exports.getEventTargets = catchAsync(async (req, res) => {
   const { type } = req.query;
-  // Whitelabel roles no longer manage hosts — they can only create events
-  // for themselves, so there are no other targets to list.
-  if (WHITELABEL_ROLES.includes(req.user.role)) {
-    return sendSuccess(res, { targets: [] }, 'Event targets retrieved successfully');
-  }
   const result = await adminService.getEventTargets(type, req.user);
   sendSuccess(res, result, 'Event targets retrieved successfully');
 });
@@ -161,8 +129,7 @@ exports.getUserSubscriptionInfo = catchAsync(async (req, res) => {
 
 exports.exportEvents = catchAsync(async (req, res) => {
   const { search, status, from, to } = req.query;
-  const whitelabelId = getWhitelabelIdFromFilter(req);
-  const data = await adminService.exportEvents(whitelabelId, { search, status, from, to });
+  const data = await adminService.exportEvents({ search, status, from, to });
   const buffer = generateExcel(data, 'events');
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', 'attachment; filename=events.xlsx');

@@ -137,7 +137,6 @@
       "description": "اختر لمن تريد إنشاء هذه المناسبة",
       "createForSelf": "إنشاء لنفسي",
       "createForHost": "إنشاء لعميل",
-      "createForWhitelabel": "إنشاء لمؤسسة",
       "createForYourself": "إنشاء مناسبة لنفسك",
       "unlimitedDescription": "كمسؤول منصة، لديك مناسبات وضيوف غير محدودة",
       "unlimited": "غير محدود",
@@ -148,17 +147,13 @@
       "hostNotFound": "لم يتم العثور على العميل",
       "searchError": "فشل البحث",
       "noHostsFound": "لم يتم العثور على عملاء",
-      "noWhitelabelsFound": "لم يتم العثور على مؤسسات",
       "selectedHost": "العميل المختار:",
       "selectedTarget": "الهدف المختار:",
       "creatingForSelf": "إنشاء لنفسك",
       "noSubscription": "لا يوجد اشتراك",
       "inactiveSubscription": "غير نشط",
       "subscriptionRequired": "الاشتراك مطلوب",
-      "eventsRemaining": "مناسبة متبقية",
-      "whitelabelAdmin": "مسؤول علامة بيضاء",
-      "whitelabelDescription": "أنشئ مناسبة باستخدام اشتراك المؤسسة الخاصة بك",
-      "createEventAsWhitelabel": "إنشاء مناسبة كعلامة بيضاء"
+      "eventsRemaining": "مناسبة متبقية"
     },
     "steps": {
       "eventDetails": "تفاصيل المناسبة",

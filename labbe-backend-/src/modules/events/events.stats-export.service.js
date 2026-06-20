@@ -155,8 +155,8 @@ module.exports = {
   /**
    * Get single event stats.
    *
-   * Tenant-scoped via `_buildScopedEventQuery` so
-   * whitelabel-admin/moderator can poll stats for their own events.
+   * Scoped via `_buildScopedEventQuery` so admin/moderator/super_admin
+   * can poll stats for any event, while hosts see only their own.
    *
    * @param {string} eventId
    * @param {Object} userContext - req.user
@@ -191,7 +191,6 @@ module.exports = {
         staffList: eventObj.staffList || [],
         messagingStatus: eventObj.messagingStatus || null,
         host: eventObj.host || null,
-        whitelabelId: eventObj.whitelabelId || null,
       },
       host: host
         ? {
@@ -234,24 +233,10 @@ module.exports = {
     const { generateExcel, guardExportMaxRows } = require("../../shared/utils/excelExport");
 
     const userId = user._id || user;
-    const query = { host: userId };
-    // Whitelabel admins/moderators may only export rows inside their tenant.
-    // Super-admin / platform contexts are unscoped.
-    if (
-      user?.role === ROLES.WHITELABEL_ADMIN ||
-      user?.role === ROLES.WHITELABEL_MODERATOR ||
-      user?.role === ROLES.ADMIN ||
-      user?.role === ROLES.MODERATOR
-    ) {
-      // `whitelabelId` may be a populated Whitelabel doc (auth populates it);
-      // normalise to the id so Mongoose can cast the query (see
-      // `_buildScopedEventQuery`).
-      const rawWl = user.whitelabelId;
-      const wlId = rawWl
-        ? rawWl._id?.toString?.() || rawWl.toString?.() || rawWl
-        : null;
-      if (wlId) query.whitelabelId = wlId;
-    }
+    // admin / moderator / super_admin may export ANY event platform-wide;
+    // hosts export only their own.
+    const platformWide = [ROLES.ADMIN, ROLES.MODERATOR, ROLES.SUPER_ADMIN];
+    const query = platformWide.includes(user?.role) ? {} : { host: userId };
 
     const count = await Event.countDocuments(query);
     guardExportMaxRows(count, 'events');

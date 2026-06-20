@@ -10,9 +10,7 @@ export {
   DASHBOARD_TYPES,
   USER_ROLES,
   ADMIN_ROLES,
-  WHITELABEL_ROLES,
   isAdminRole,
-  isWhitelabelRole,
   getNavItems,
   getNavItemsForRole,
   canAccessPage,
@@ -22,5 +20,4 @@ export {
   hostNavItems,
   adminNavItems,
   vendorNavItems,
-  whitelabelNavItems,
 } from "./navConfig";

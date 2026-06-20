@@ -126,7 +126,7 @@ module.exports = {
    * Update event details.
    *
    * Accepts the full user context so the unified update wizard works for
-   * admin / whitelabel-admin / whitelabel-moderator, not only the host.
+   * admin / moderator / super_admin, not only the host.
    * Scope resolution mirrors `getEventById` via `_buildScopedEventQuery`.
    *
    * @param {string} eventId

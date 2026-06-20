@@ -43,8 +43,8 @@ class CheckoutService {
 
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError('User');
-    if (plan.availableFor === 'whitelabel' && user.role !== ROLES.WHITELABEL_ADMIN) {
-      throw new ValidationError('This plan is only available for whitelabel accounts');
+    if (plan.availableFor === 'whitelabel') {
+      throw new ValidationError('This plan is reserved for business accounts');
     }
     if (plan.availableFor === 'host' && user.role !== ROLES.HOST) {
       throw new ValidationError('This plan is not available for your account type');
@@ -185,7 +185,6 @@ class CheckoutService {
 
     const paymentRecord = await Payment.create({
       userId,
-      whitelabelId: user.whitelabelId || null,
       amount: total,
       currency: plan?.currency || 'SAR',
       provider: 'moyasar',

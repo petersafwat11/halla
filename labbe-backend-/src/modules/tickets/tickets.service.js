@@ -29,7 +29,6 @@ const logger = require('../../shared/utils/logger');
 
 // Ticket source constants
 const TICKET_SOURCE = {
-  WHITELABEL: "whitelabel",
   ADMIN: "admin",
   HOST: "host",
   VENDOR: "vendor",
@@ -54,13 +53,6 @@ class TicketsService {
    */
   getTicketSourceAndPriority(user) {
     const role = user?.role;
-
-    if ([ROLES.WHITELABEL_ADMIN, ROLES.WHITELABEL_MODERATOR].includes(role)) {
-      return {
-        source: TICKET_SOURCE.WHITELABEL,
-        priority: TICKET_PRIORITY.HIGH,
-      };
-    }
 
     if ([ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.MODERATOR].includes(role)) {
       return { source: TICKET_SOURCE.ADMIN, priority: TICKET_PRIORITY.MEDIUM };
@@ -112,12 +104,6 @@ class TicketsService {
 
     if (!isAdmin) {
       query.user = userId;
-    }
-
-    // Whitelabel admins see only their tenant's tickets
-    if (isAdmin && requestingUser?.whitelabelId &&
-        [ROLES.WHITELABEL_ADMIN, ROLES.WHITELABEL_MODERATOR].includes(requestingUser.role)) {
-      query.whitelabelId = requestingUser.whitelabelId;
     }
 
     if (status) query.status = status;
@@ -187,7 +173,6 @@ class TicketsService {
       user: user._id,
       source,
       priority: ticketData.priority || priority,
-      whitelabelId: user.whitelabelId || null,
     });
 
     // Notify user

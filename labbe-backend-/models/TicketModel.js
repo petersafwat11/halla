@@ -57,14 +57,6 @@ const TicketSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Multi-tenant support
-    whitelabelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-      index: true,
-    },
-
     // Ticket source - who created the ticket
     source: {
       type: String,
@@ -89,7 +81,6 @@ const TicketSchema = new mongoose.Schema(
       resolvedAt: Date,
     },
 
-    // Priority - whitelabel tickets are automatically HIGH
     priority: {
       type: String,
       enum: Object.values(TICKET_PRIORITY),
@@ -125,23 +116,11 @@ const TicketSchema = new mongoose.Schema(
 
 // Helpful compound indexes
 TicketSchema.index({ status: 1, type: 1, createdAt: -1 });
-TicketSchema.index({ whitelabelId: 1, status: 1 });
 TicketSchema.index({ user: 1, status: 1 });
 TicketSchema.index({ assignedTo: 1, status: 1 });
 TicketSchema.index({ source: 1, priority: 1, status: 1 });
 
-// Pre-save middleware: Auto-set HIGH priority for whitelabel tickets
-TicketSchema.pre("save", function (next) {
-  if (this.isNew) {
-    // If source is whitelabel, automatically set priority to HIGH
-    if (this.source === TICKET_SOURCE.WHITELABEL) {
-      this.priority = TICKET_PRIORITY.HIGH;
-    }
-  }
-  next();
-});
-
-// Static method to get tickets sorted by priority (whitelabel first)
+// Static method to get tickets sorted by priority
 TicketSchema.statics.getTicketsByPriority = async function (filters = {}) {
   const query = { ...filters };
 
@@ -149,26 +128,13 @@ TicketSchema.statics.getTicketsByPriority = async function (filters = {}) {
     .sort({
       // Sort by priority (urgent first, then high, medium, low)
       priority: -1,
-      // Then by source (whitelabel first)
+      // Then by source
       source: -1,
       // Then by creation date (newest first)
       createdAt: -1,
     })
     .populate("user", "name email phoneNumber role")
     .populate("assignedTo", "name email");
-};
-
-// Static method to get whitelabel tickets with high priority
-TicketSchema.statics.getWhitelabelTickets = async function (status = null) {
-  const query = { source: TICKET_SOURCE.WHITELABEL };
-  if (status) {
-    query.status = status;
-  }
-
-  return this.find(query)
-    .sort({ createdAt: -1 })
-    .populate("user", "name email phoneNumber")
-    .populate("whitelabelId", "username");
 };
 
 module.exports = mongoose.model("Ticket", TicketSchema);

@@ -6,8 +6,6 @@ import AdminListItem from "../common/AdminListItem";
 const ROLE_LABEL_KEYS = {
   moderator:             "moderators.roles.moderator",
   admin:                 "moderators.roles.admin",
-  whitelabel_moderator:  "moderators.roles.whitelabel_moderator",
-  whitelabel_admin:      "moderators.roles.whitelabel_admin",
 };
 
 const ModeratorListItem = ({

@@ -57,7 +57,6 @@ const NOTIFICATION_ICON_MAP = {
   vendor_pending_approval: "user-clock",
   vendor_approved: "badge-check",
   vendor_rejected: "user-minus",
-  whitelabel_registered: "building",
   profile_incomplete: "user-edit",
   welcome: "sparkles",
 

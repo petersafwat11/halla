@@ -39,25 +39,17 @@ const InvitationScreen = ({ route }) => {
 
   const guest = data?.data?.guest || data?.guest;
   const event = data?.data?.event || data?.event;
-  // Whitelabel branding can arrive populated under `event.whitelabel`
-  // (when the backend populates the WhiteLabel ref) or fall back to the
-  // event's own `eventDetails.primaryColor` / `themeColor` for non-
-  // whitelabel events. Defaults below preserve a sensible look without
-  // either source.
-  const whitelabel = event?.whitelabel || {};
+  // Event branding comes from the event's own `eventDetails.primaryColor`.
+  // Defaults below preserve a sensible look without that source.
   const brandColor =
-    whitelabel.brandColor ||
-    whitelabel.primaryColor ||
-    event?.eventDetails?.primaryColor ||
-    FALLBACK_BRAND_COLOR;
-  const accentColor =
-    whitelabel.accentColor || whitelabel.secondaryColor || FALLBACK_ACCENT_COLOR;
-  const logoUri = whitelabel.logoUrl || whitelabel.logo || null;
+    event?.eventDetails?.primaryColor || FALLBACK_BRAND_COLOR;
+  const accentColor = FALLBACK_ACCENT_COLOR;
+  const logoUri = event?.eventDetails?.logoUrl || null;
 
   const currentStatus = submitChoice || guest?.status || "invited";
   const hasResponded = ["confirmed", "declined", "maybe"].includes(currentStatus);
 
-  // Memo'd styles that depend on whitelabel colors. The base palette is
+  // Memo'd styles that depend on the brand colors. The base palette is
   // copied verbatim into a static StyleSheet below; this overlay only
   // re-keys the brand-color surfaces so React Native can dedupe the
   // common slabs.

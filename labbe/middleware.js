@@ -10,8 +10,6 @@ const USER_ROLES = {
   SUPER_ADMIN: "super_admin",
   ADMIN: "admin",
   MODERATOR: "moderator",
-  WHITELABEL_ADMIN: "whitelabel_admin",
-  WHITELABEL_MODERATOR: "whitelabel_moderator",
   HOST: "host",
   VENDOR: "vendor",
 };
@@ -25,7 +23,6 @@ const AUTH_ROUTES = [
   "/login",
   "/signup",
   "/signup/vendor",
-  "/signup/whitelabel",
   "/forget-password",
   "/change-password",
 ];
@@ -35,7 +32,6 @@ const PROTECTED_ROUTES = {
   host: "/host",
   admin: "/admin-dash",
   vendor: "/vendor-dashboard",
-  whitelabel: "/whitelabel-dash",
 };
 
 // Public routes (no auth required)
@@ -60,30 +56,10 @@ const isMainAdminRole = (role) => {
 };
 
 /**
- * Check if role is a whitelabel role
- */
-const isWhitelabelRole = (role) => {
-  return [
-    USER_ROLES.WHITELABEL_ADMIN,
-    USER_ROLES.WHITELABEL_MODERATOR,
-  ].includes(role);
-};
-
-/**
- * Check if role can access admin dashboard (both main admins and whitelabel)
- * All admin-type roles now use admin-dash with role-based filtering
- */
-const canAccessAdminDash = (role) => {
-  return isMainAdminRole(role) || isWhitelabelRole(role);
-};
-
-/**
  * Get redirect path based on user role
- * NOTE: Whitelabel users now redirect to admin-dash (unified dashboard)
  */
 const getRedirectPath = (role) => {
-  // Both main admins and whitelabel users go to admin-dash
-  if (canAccessAdminDash(role)) return PROTECTED_ROUTES.admin;
+  if (isMainAdminRole(role)) return PROTECTED_ROUTES.admin;
   if (role === USER_ROLES.VENDOR) return PROTECTED_ROUTES.vendor;
   if (role === USER_ROLES.HOST) return PROTECTED_ROUTES.host;
   return "/";
@@ -137,9 +113,8 @@ export async function middleware(request) {
   const isHostRoute = routePath.startsWith(PROTECTED_ROUTES.host);
   const isAdminRoute = routePath.startsWith(PROTECTED_ROUTES.admin);
   const isVendorDashRoute = routePath.startsWith(PROTECTED_ROUTES.vendor);
-  const isWhitelabelRoute = routePath.startsWith(PROTECTED_ROUTES.whitelabel);
   const isProtectedRoute =
-    isHostRoute || isAdminRoute || isVendorDashRoute || isWhitelabelRoute;
+    isHostRoute || isAdminRoute || isVendorDashRoute;
 
   // Special routes
   const isContinueSignup = routePath.startsWith("/signup/continue-signup");
@@ -198,9 +173,8 @@ export async function middleware(request) {
 
     // Check role-based access to protected routes
     if (isProtectedRoute) {
-      // Admin routes - allow both main admins AND whitelabel roles
-      // Whitelabel users now use admin-dash with role-based nav filtering
-      if (isAdminRoute && !canAccessAdminDash(userType)) {
+      // Admin routes - only platform admin roles
+      if (isAdminRoute && !isMainAdminRole(userType)) {
         return NextResponse.redirect(
           new URL(`/${locale}${getRedirectPath(userType)}`, request.url)
         );
@@ -217,16 +191,6 @@ export async function middleware(request) {
       if (isVendorDashRoute && userType !== USER_ROLES.VENDOR) {
         return NextResponse.redirect(
           new URL(`/${locale}${getRedirectPath(userType)}`, request.url)
-        );
-      }
-
-      // Whitelabel routes - redirect to admin-dash (unified dashboard)
-      // Whitelabel users should use admin-dash now
-      if (isWhitelabelRoute) {
-        // Redirect whitelabel-dash to admin-dash
-        const newPath = routePath.replace("/whitelabel-dash", "/admin-dash");
-        return NextResponse.redirect(
-          new URL(`/${locale}${newPath}`, request.url)
         );
       }
     }

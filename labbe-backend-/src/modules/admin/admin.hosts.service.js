@@ -9,7 +9,6 @@ const Subscription = require('../../../models/SubscriptionModel');
 const Plan = require('../../../models/PlanModel');
 const Guest = require('../../../models/GuestModel');
 const { NotFoundError, ValidationError, ConflictError } = require('../../shared/errors');
-const AppError = require('../../shared/errors/AppError');
 const { ROLES, USER_STATUS, EVENT_STATUS, SUBSCRIPTION_STATUS } = require('../../shared/constants');
 const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
@@ -20,15 +19,10 @@ const { normalizePhoneNumber } = require('../../shared/utils/phone');
 /**
  * Get all hosts with pagination and filters
  */
-async function getHosts({ page = 1, limit = 10, search, status, from, to, whitelabelId }) {
+async function getHosts({ page = 1, limit = 10, search, status, from, to }) {
   const skip = (page - 1) * limit;
 
   let query = { role: ROLES.HOST };
-
-  // Whitelabel filter
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   // Search filter
   if (search) {
@@ -48,7 +42,6 @@ async function getHosts({ page = 1, limit = 10, search, status, from, to, whitel
   }
 
   const baseQuery = { role: ROLES.HOST };
-  if (whitelabelId !== undefined) baseQuery.whitelabelId = whitelabelId;
 
   const [hosts, total, statusCounts] = await Promise.all([
     User.find(query)
@@ -91,11 +84,8 @@ async function getHosts({ page = 1, limit = 10, search, status, from, to, whitel
 /**
  * Get host by ID
  */
-async function getHostById(hostId, whitelabelId) {
+async function getHostById(hostId) {
   const query = { _id: hostId, role: ROLES.HOST };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const host = await User.findOne(query)
     .select('-password -passwordResetToken')
@@ -165,7 +155,7 @@ async function getHostById(hostId, whitelabelId) {
 /**
  * Create new host
  */
-async function createHost({ email, phoneNumber, name, username, password, whitelabelId }) {
+async function createHost({ email, phoneNumber, name, username, password }) {
   // Check for duplicates
   const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : undefined;
   const existingUser = await User.findOne({
@@ -184,32 +174,6 @@ async function createHost({ email, phoneNumber, name, username, password, whitel
     }
   }
 
-  if (whitelabelId) {
-    const whitelabelAdmin = await User.findById(whitelabelId).lean();
-    if (whitelabelAdmin?.subscription) {
-      const sub = await Subscription.findById(whitelabelAdmin.subscription).populate('planId');
-      if (sub?.planId?.limits?.maxHosts != null) {
-        const maxHosts = sub.planId.limits.maxHosts;
-        if (maxHosts > 0) {
-          const currentHostCount = await User.countDocuments({
-            role: ROLES.HOST,
-            whitelabelId,
-          });
-          if (currentHostCount >= maxHosts) {
-            const { HOST_LIMIT_EXCEEDED } = require('../../shared/constants/events');
-            const err = new AppError(
-              `Cannot create host: whitelabel has reached its plan limit of ${maxHosts} host(s).`,
-              422,
-              HOST_LIMIT_EXCEEDED
-            );
-            err.details = { currentHostCount, maxHosts, whitelabelId };
-            throw err;
-          }
-        }
-      }
-    }
-  }
-
   // Create host
   const host = await User.create({
     email: email?.toLowerCase(),
@@ -219,7 +183,6 @@ async function createHost({ email, phoneNumber, name, username, password, whitel
     password,
     role: ROLES.HOST,
     status: USER_STATUS.ACTIVE,
-    whitelabelId: whitelabelId || null,
     profile: {
       hostData: {
         profileCompleted: true,
@@ -265,11 +228,8 @@ async function createHost({ email, phoneNumber, name, username, password, whitel
 /**
  * Update host status
  */
-async function updateHostStatus(hostId, status, whitelabelId) {
+async function updateHostStatus(hostId, status) {
   const query = { _id: hostId, role: ROLES.HOST };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const host = await User.findOneAndUpdate(
     query,
@@ -297,11 +257,8 @@ async function updateHostStatus(hostId, status, whitelabelId) {
 /**
  * Update host subscription
  */
-async function updateHostSubscription(hostId, { planCode, status: subscriptionStatus }, whitelabelId) {
+async function updateHostSubscription(hostId, { planCode, status: subscriptionStatus }) {
   const query = { _id: hostId, role: ROLES.HOST };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const host = await User.findOne(query);
   if (!host) {
@@ -357,11 +314,8 @@ async function updateHostSubscription(hostId, { planCode, status: subscriptionSt
 /**
  * Delete host
  */
-async function deleteHost(hostId, whitelabelId) {
+async function deleteHost(hostId) {
   const query = { _id: hostId, role: ROLES.HOST };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const host = await User.findOne(query);
   if (!host) {
@@ -385,14 +339,11 @@ async function deleteHost(hostId, whitelabelId) {
 /**
  * Bulk delete hosts
  */
-async function bulkDeleteHosts(hostIds, whitelabelId) {
+async function bulkDeleteHosts(hostIds) {
   const query = {
     _id: { $in: hostIds },
     role: ROLES.HOST,
   };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   // Check for active events
   const hostsWithActiveEvents = await Event.distinct('host', {
@@ -422,11 +373,8 @@ async function bulkDeleteHosts(hostIds, whitelabelId) {
 /**
  * Verify host by phone number
  */
-async function verifyHostByPhone(phoneNumber, whitelabelId) {
+async function verifyHostByPhone(phoneNumber) {
   const query = { phoneNumber, role: ROLES.HOST };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   const host = await User.findOne(query).select('_id username name email phoneNumber status').lean();
 
@@ -439,11 +387,8 @@ async function verifyHostByPhone(phoneNumber, whitelabelId) {
 /**
  * Find or create host
  */
-async function findOrCreateHost({ phoneNumber, name, email, whitelabelId }) {
+async function findOrCreateHost({ phoneNumber, name, email }) {
   const query = { phoneNumber, role: ROLES.HOST };
-  if (whitelabelId !== undefined) {
-    query.whitelabelId = whitelabelId;
-  }
 
   let host = await User.findOne(query);
 
@@ -461,7 +406,6 @@ async function findOrCreateHost({ phoneNumber, name, email, whitelabelId }) {
     email,
     username: `host_${Date.now()}`,
     password: require('crypto').randomBytes(16).toString('hex'), // Secure random password
-    whitelabelId,
   });
 
   return {
@@ -473,9 +417,8 @@ async function findOrCreateHost({ phoneNumber, name, email, whitelabelId }) {
 /**
  * Export hosts
  */
-async function exportHosts(whitelabelId, { search, status, from, to } = {}) {
+async function exportHosts({ search, status, from, to } = {}) {
   let query = { role: ROLES.HOST };
-  if (whitelabelId !== undefined) query.whitelabelId = whitelabelId;
   if (search) {
     const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
     query = { ...query, ...searchQuery };

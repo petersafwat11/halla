@@ -148,17 +148,11 @@ function mapSubStatusToPayment(subscriptionStatus) {
  * Get user subscription info
  */
 async function getUserSubscriptionInfo(userId) {
-  const user = await User.findById(userId).select('role name whitelabelId').lean();
+  const user = await User.findById(userId).select('role name').lean();
   if (!user) throw new NotFoundError('User');
 
   const activeSubs = await Subscription.findActiveForUser(userId);
   let subscription = activeSubs[0] || null;
-
-  // If user is a whitelabel moderator (no own sub), use the whitelabel's subscription
-  if (!subscription && user.whitelabelId && user.role === ROLES.WHITELABEL_MODERATOR) {
-    const wlSubs = await Subscription.findActiveForUser(user.whitelabelId);
-    subscription = wlSubs[0] || null;
-  }
 
   if (!subscription) {
     return { subscription: null };

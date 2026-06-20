@@ -8,10 +8,9 @@
  * announcement when an in-flight retry is detected (status `scheduled`
  * with `attemptCount > 0`).
  *
- * The retry button shows for the host (creator), the whitelabel-admin
- * who owns the event's whitelabel, admin and super_admin. The backend
- * route enforces RBAC again — the UI gate is just to keep the button
- * out of the way for unauthorized users.
+ * The retry button shows for the host (creator), admin and super_admin.
+ * The backend route enforces RBAC again — the UI gate is just to keep
+ * the button out of the way for unauthorized users.
  */
 
 import React, { useEffect, useState } from "react";

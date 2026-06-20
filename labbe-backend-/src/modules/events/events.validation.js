@@ -57,7 +57,6 @@ const createEventSchema = z.object({
   taqnyatTemplate: z.object({}).passthrough().optional(),
   guestReplies: z.object({}).passthrough().optional(),
   launchSettings: z.object({}).passthrough().optional(),
-  whitelabelId: objectId.nullable().optional(),
 }).passthrough();
 
 const updateEventDetailsSchema = eventDetailsSchema.partial().refine(

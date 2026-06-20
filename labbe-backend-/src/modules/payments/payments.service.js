@@ -23,14 +23,12 @@ const ADMIN_LIKE_ROLES = new Set([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
   ROLES.MODERATOR,
-  ROLES.WHITELABEL_ADMIN,
-  ROLES.WHITELABEL_MODERATOR,
 ]);
 
 class PaymentsService {
   /**
-   * Host-self read. Admin-class roles MUST go through `/admin/payments/:id`
-   * (which enforces whitelabel scope); they get a typed 403 here.
+   * Host-self read. Admin-class roles MUST go through `/admin/payments/:id`;
+   * they get a typed 403 here.
    *
    * The id may be either a Mongo `_id` (24-char hex, used by admin tooling
    * and canonical fetches) OR a Moyasar payment id (UUID-like, sent by the

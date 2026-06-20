@@ -1,6 +1,6 @@
 /**
  * Unified Notification Preferences Component
- * Works for all roles: host, vendor, admin, whitelabel
+ * Works for all roles: host, vendor, admin
  */
 
 "use client";
