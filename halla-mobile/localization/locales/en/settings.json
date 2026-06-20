@@ -38,6 +38,17 @@
     "emailVerified": "Email verified successfully",
     "verificationError": "Failed to verify email"
   },
+  "business": {
+    "title": "Business Profile",
+    "subtitle": "Your logo and description appear on the invitations you send.",
+    "logo": "Business Logo",
+    "changeLogo": "Change Logo",
+    "noLogo": "No logo",
+    "description": "Business Description",
+    "descriptionPlaceholder": "Tell guests about your business",
+    "updateSuccess": "Business profile updated successfully",
+    "updateError": "Failed to update business profile"
+  },
   "notifications": {
     "appNotifications": "App Notifications",
     "appNotificationsDescription": "Never miss any notification with instant in-app alerts enabled",
