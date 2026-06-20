@@ -177,6 +177,20 @@ async function runEventLaunch(event, workerId) {
     return { launched: false, reason: "no_guests" };
   }
 
+  // Centralized dispatch-policy gate (business-account #11). The cron path
+  // historically skipped the subscription/owner checks that HTTP routes
+  // enforce — a subscription active at schedule time that lapses before the
+  // cron fires would still send. Consult the single guard here.
+  const dispatchPolicy = require("../../modules/messaging/messaging.dispatchPolicy.service");
+  const decision = await dispatchPolicy.assertCanDispatch(
+    event,
+    { workerId, path: "cron-launch" },
+    { requireInvites: true }
+  );
+  if (!decision.allowed) {
+    return { launched: false, reason: `dispatch_blocked:${decision.reason}` };
+  }
+
   // B-5: filter out guests whose invitation has already been delivered.
   // Previously every retry called sendBulk over the FULL guestList. The
   // per-attempt idempotency fingerprint (`event.lastAttemptAt.getTime()`)
@@ -1340,6 +1354,19 @@ const scheduleSubscriptionRenewal = () => {
   });
 };
 
+// Expire stale business checkout links hourly (business-account #1). Retained
+// records — `expireStale` only flips pending_payment → expired, never deletes.
+const scheduleBusinessLinkExpiry = () => {
+  cron.schedule("30 * * * *", async () => {
+    try {
+      const assignmentService = require("../../modules/business/business.assignment.service");
+      await assignmentService.expireStale(new Date());
+    } catch (err) {
+      console.error("[Cron] business link expiry failed:", err?.message);
+    }
+  });
+};
+
 const initScheduledTasks = () => {
   console.log("[Cron] Initializing scheduled tasks...");
 
@@ -1355,6 +1382,7 @@ const initScheduledTasks = () => {
   scheduleNotificationDelivery();
   schedulePaymentReconcile();
   scheduleSubscriptionRenewal();
+  scheduleBusinessLinkExpiry();
 
   console.log("[Cron] Scheduled tasks initialized:");
   console.log("  - Event reminders (host): Daily at 8:00 AM");
