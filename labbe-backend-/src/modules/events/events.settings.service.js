@@ -165,10 +165,12 @@ module.exports = {
       assertEventDateFloor({ eventInstant: newEventInstant, isTrial });
 
       // Re-validate any stored launch schedule against the new event instant.
-      // If the scheduled send now violates [now+minLead, newEvent−3d], clear
-      // it and revert to pending_scheduling (mirrors the reminder reset below).
+      // Only the event-relative upper bound (≤ event − maxLead) and "still in
+      // the future" matter here — we must NOT re-impose the original min-lead,
+      // or a still-valid schedule would be silently cleared just because time
+      // passed since it was set (requireMinLead: false).
       const sendInstant = storedSendInstant(event);
-      if (sendInstant && !isSendInWindow({ scheduledInstant: sendInstant, eventInstant: newEventInstant, isTrial })) {
+      if (sendInstant && !isSendInWindow({ scheduledInstant: sendInstant, eventInstant: newEventInstant, isTrial, requireMinLead: false })) {
         event.launchSettings = { ...event.launchSettings, scheduledDate: undefined, scheduledTime: undefined };
         if (event.status === EVENT_STATUS.SCHEDULED) {
           event.status = EVENT_STATUS.PENDING_SCHEDULING;

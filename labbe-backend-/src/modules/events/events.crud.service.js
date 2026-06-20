@@ -606,6 +606,17 @@ module.exports = {
 
       return { event: populatedEvent };
     } catch (err) {
+      // A duplicate-key on the per-event guard means a concurrent request won
+      // the single-active-event slot first (the TOCTOU race the partial unique
+      // index is there to close). Translate it to the same typed conflict the
+      // countDocuments pre-check would have thrown.
+      if (err && err.code === 11000 && /perEventGuardKey/.test(err.message || "")) {
+        throw new PackageLimitError(
+          "events",
+          1,
+          "You already have an active event on this plan. Cancel or delete it before creating a new one."
+        );
+      }
       // Consumption happens at SEND time (per-guest), never at create time, so
       // there is no pool debit to roll back here — just surface the error.
       throw err;
@@ -715,7 +726,7 @@ module.exports = {
       await session.withTransaction(async () => {
         await Event.findByIdAndUpdate(
           eventId,
-          { status: EVENT_STATUS.DELETED, deletedAt: new Date() },
+          { status: EVENT_STATUS.DELETED, deletedAt: new Date(), perEventGuardKey: null },
           { session }
         );
       });
@@ -753,7 +764,7 @@ module.exports = {
         // Soft delete: mark events `deleted`; leave guest docs in place.
         const result = await Event.updateMany(
           { _id: { $in: validIds } },
-          { $set: { status: EVENT_STATUS.DELETED, deletedAt: new Date() } },
+          { $set: { status: EVENT_STATUS.DELETED, deletedAt: new Date(), perEventGuardKey: null } },
           { session }
         );
         deletedCount = result.modifiedCount;
