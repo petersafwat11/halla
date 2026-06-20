@@ -50,7 +50,7 @@ const config = require('../../config');
 async function sendPaymentFailedEmail({ userId, amount, currency, planName, reason }) {
   try {
     if (!userId) return;
-    const user = await User.findById(userId).select('email name username');
+    const user = await User.findById(userId).select('email name username role');
     if (!user?.email) return;
     const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
     await email.send.paymentFailed(user.email, {
@@ -59,7 +59,7 @@ async function sendPaymentFailedEmail({ userId, amount, currency, planName, reas
       currency: currency || 'SAR',
       planName: planName || '',
       reason: reason || '',
-      retryUrl: `${frontendUrl}/ar/host/subscription`,
+      retryUrl: `${frontendUrl}/ar/${user.role || 'host'}/plans`,
     });
   } catch (e) {
     logger.warn('[moyasar.webhook] paymentFailed email failed', { error: e?.message });
@@ -314,7 +314,7 @@ async function sendInvoiceNotifications(eventType, sub, amount, currency) {
       adminMessageAr = `فشلت عملية دفع تجديد اشتراك بقيمة ${amountStr} من ${payerName} لـ ${planDetailsAr}.`;
     }
 
-    const payerActionUrl = `${frontendUrl}/ar/host/subscription`;
+    const payerActionUrl = `${frontendUrl}/ar/${payer.role || 'host'}/plans`;
 
     // 1. Notify the payer (host)
     if (payer.role === 'host') {

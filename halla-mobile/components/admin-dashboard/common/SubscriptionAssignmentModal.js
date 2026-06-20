@@ -85,7 +85,6 @@ const SubscriptionAssignmentModal = ({
   } = useAdminPlans({ availableFor: "host" });
 
   const [selectedPlan, setSelectedPlan] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("active");
 
   useEffect(() => {
     if (visible && entity) {
@@ -94,7 +93,6 @@ const SubscriptionAssignmentModal = ({
           entity.subscription?.planType ||
           ""
       );
-      setSelectedStatus(entity.subscription?.status || "active");
     }
   }, [visible, entity]);
 
@@ -107,28 +105,19 @@ const SubscriptionAssignmentModal = ({
     }));
   }, [plansData, locale]);
 
-  const statusOptions = useMemo(
-    () => [
-      { label: tk("statusActive"), value: "active" },
-      { label: tk("statusExpired"), value: "expired" },
-      { label: tk("statusCancelled"), value: "cancelled" },
-    ],
-    [t] // eslint-disable-line react-hooks/exhaustive-deps
-  );
-
   const handleSave = async () => {
-    if (!selectedPlan || !selectedStatus) {
+    if (!selectedPlan) {
       toast.warning(tk("validation"));
       return;
     }
 
     const entityId = entity._id || entity.id;
-    const payload = { hostId: entityId, planCode: selectedPlan, status: selectedStatus };
+    const payload = { hostId: entityId, planCode: selectedPlan };
 
     try {
       await updateSubscription.mutateAsync(payload);
       toast.success(tk("updated"));
-      onSave?.({ planCode: selectedPlan, status: selectedStatus });
+      onSave?.({ planCode: selectedPlan });
       onClose();
     } catch (error) {
       toast.error(error.message || tk("updateFailed"));
@@ -195,12 +184,6 @@ const SubscriptionAssignmentModal = ({
               />
             )}
 
-            <PickDropdown
-              label={tk("selectStatus")}
-              options={statusOptions}
-              selectedValue={selectedStatus}
-              onSelect={setSelectedStatus}
-            />
           </View>
 
           <View style={styles.footer}>

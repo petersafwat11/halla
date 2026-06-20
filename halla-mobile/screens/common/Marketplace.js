@@ -81,7 +81,7 @@ export default function Marketplace({ navigation }) {
           })}
         </ScrollView>
         <View style={styles.resultRow}><Text style={styles.resultTitle}>{t("results.title", { count: total })}</Text><Text style={styles.resultHint}>{t("results.subtitle")}</Text></View>
-        <VendorCards vendors={vendors} onVendorPress={(vendor) => navigation.navigate("VendorPublicProfile", { vendorId: vendor.id })} loading={isLoading} error={error} onRetry={refetch} refreshing={isRefetching} onRefresh={refetch} onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()} isFetchingNextPage={isFetchingNextPage} />
+        <VendorCards vendors={vendors} onVendorPress={(vendor) => navigation.navigate("VendorPublicProfile", { vendorId: vendor.id })} loading={isLoading} error={error} onRetry={refetch} onReset={() => { setFilters(EMPTY_FILTERS); setSearchInput(""); setSearch(""); }} refreshing={isRefetching} onRefresh={refetch} onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()} isFetchingNextPage={isFetchingNextPage} />
       </View>
       <FilterPopup visible={filtersOpen} onClose={() => setFiltersOpen(false)} filters={filters} onApplyFilters={setFilters} onResetFilters={() => setFilters(EMPTY_FILTERS)} />
     </SafeAreaView>

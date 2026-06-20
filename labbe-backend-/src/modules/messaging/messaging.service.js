@@ -29,8 +29,8 @@ class MessagingService {
   sendBulk(params) {
     return send.sendBulk(params);
   }
-  retryFailed(eventId, channel, userId) {
-    return send.retryFailed(eventId, channel, userId);
+  retryFailed(eventId, channel, userId, isAdmin = false, actorRole) {
+    return send.retryFailed(eventId, channel, userId, isAdmin, actorRole);
   }
 
   // ---- reminder ----

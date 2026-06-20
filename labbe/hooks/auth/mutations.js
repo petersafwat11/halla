@@ -22,11 +22,7 @@ const setAuthRoutingCookies = (
   // Routing hint for the middleware/host guard. Business accounts provisioned
   // by an admin may be flagged `mustChangePassword`; the server also enforces
   // this (403 PASSWORD_CHANGE_REQUIRED) — this cookie only drives UI routing.
-  if (mustChangePassword) {
-    Cookies.set("mustChangePassword", "true", { expires: 7, sameSite: "lax" });
-  } else {
-    Cookies.remove("mustChangePassword");
-  }
+  Cookies.remove("mustChangePassword");
 };
 
 const clearAuthCookies = () => {

@@ -77,7 +77,10 @@
     "title": "{{count}} vendors",
     "subtitle": "Approved providers for your occasion"
   },
-  "noResults": "No results found",
+  "noResults": {
+    "title": "No results found",
+    "description": "Try adjusting your filters or search terms"
+  },
   "loading": "Loading...",
   "errors": {
     "loadFailed": "Failed to load vendors",

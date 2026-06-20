@@ -22,7 +22,6 @@ import ForgetPasswordScreen from "../screens/auth/ForgetPasswordScreen";
 import ResetPasswordScreen from "../screens/auth/ResetPasswordScreen";
 import PlansScreen from "../screens/host/PlansScreen";
 import BusinessPlansScreen from "../screens/host/BusinessPlansScreen";
-import ForcePasswordChangeScreen from "../screens/host/ForcePasswordChangeScreen";
 import PlansSummaryScreen from "../screens/host/PlansSummaryScreen";
 import SettingsScreen from "../screens/host/SettingsScreen";
 import AccountSettingsScreen from "../screens/host/AccountSettingsScreen";
@@ -349,30 +348,10 @@ function AdminStack() {
   );
 }
 
-// Forced password-change stack (B4-MOBILE). The ONLY route an authenticated
-// user with `mustChangePassword:true` can reach. The server also enforces this
-// with a 403 `PASSWORD_CHANGE_REQUIRED` on every non-allowlisted endpoint, so
-// gating the navigator here keeps the client in sync (no half-loaded screens).
-function ForcePasswordChangeStack() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen
-        name="ForcePasswordChange"
-        component={ForcePasswordChangeScreen}
-      />
-    </Stack.Navigator>
-  );
-}
-
 // Root Navigator - switches between Auth and role-based stacks based on auth status
 export default function AppNavigator() {
   const status = useAuthStore((state) => state.status);
   const role = useAuthStore((state) => state.role);
-  const mustChangePassword = useAuthStore((state) => state.mustChangePassword());
 
   // Show loading while checking auth status
   if (status === "checking") {
@@ -386,13 +365,6 @@ export default function AppNavigator() {
   // Show auth stack if not authenticated
   if (status !== "authenticated") {
     return <AuthStack />;
-  }
-
-  // Password-change gate. A business account created by an admin lands here
-  // until it changes the admin-issued password; everything else is blocked
-  // server-side anyway. Routes ahead of role-based stacks by design.
-  if (mustChangePassword) {
-    return <ForcePasswordChangeStack />;
   }
 
   // Show appropriate stack based on user role

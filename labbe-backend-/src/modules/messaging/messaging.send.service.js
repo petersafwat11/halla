@@ -137,7 +137,7 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
  * `runBatched`'s 429 handler can treat it as a controlled retry signal
  * rather than a permanent failure.
  */
-async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
+async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin = false }) {
   const [guest, event] = await Promise.all([
     Guest.findById(guestId),
     Event.findById(eventId).populate('host', 'name username'),
@@ -158,7 +158,7 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
     throw new ForbiddenError('Guest does not belong to this event');
   }
 
-  if (event.host && userId && event.host._id.toString() !== userId.toString()) {
+  if (!isAdmin && event.host && userId && event.host._id.toString() !== userId.toString()) {
     throw new ForbiddenError('Not authorized for this event');
   }
 
@@ -375,6 +375,8 @@ async function sendBulk({
   eventId,
   channel = 'sms',
   userId,
+  isAdmin = false,
+  actorRole,
   scope = 'event_launch',
   attemptId,
 }) {
@@ -382,7 +384,7 @@ async function sendBulk({
   if (!event) {
     throw new NotFoundError('Event');
   }
-  if (event.host && userId && event.host.toString() !== userId.toString()) {
+  if (!isAdmin && event.host && userId && event.host.toString() !== userId.toString()) {
     throw new ForbiddenError('Not authorized for this event');
   }
 
@@ -539,7 +541,7 @@ async function sendBulk({
   try {
     await logAudit({
       action: 'messaging.bulk_send',
-      actor: { _id: userId || null, role: userId ? 'host' : 'system' },
+      actor: { _id: userId || null, role: actorRole || (userId ? 'host' : 'system') },
       targetType: 'event',
       targetId: eventId,
       metadata: {
@@ -585,13 +587,13 @@ async function sendBulk({
  * `attemptId` is bumped per-call so cached failures from earlier attempts
  * don't short-circuit the resend.
  */
-async function retryFailed(eventId, channel = 'sms', userId = null) {
+async function retryFailed(eventId, channel = 'sms', userId = null, isAdmin = false, actorRole) {
   if (userId) {
     const event = await Event.findById(eventId);
     if (!event) {
       throw new NotFoundError('Event');
     }
-    if (event.host && event.host.toString() !== userId.toString()) {
+    if (!isAdmin && event.host && event.host.toString() !== userId.toString()) {
       throw new ForbiddenError('Not authorized for this event');
     }
   }
@@ -631,6 +633,8 @@ async function retryFailed(eventId, channel = 'sms', userId = null) {
     eventId,
     channel,
     userId,
+    isAdmin,
+    actorRole,
     // retryFailed runs outside the runEventLaunch lifecycle, so the
     // event's `lastAttemptAt` may still point at the original cron
     // attempt that produced the cached failures. Pass a fresh

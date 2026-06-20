@@ -19,11 +19,10 @@ const TextArea = ({
   maxLength,
   rows = 4,
 }) => {
-  const {
-    register,
-    formState: { errors },
-    watch,
-  } = useFormContext() || {};
+  const formContext = useFormContext();
+  const register = formContext?.register;
+  const errors = formContext?.formState?.errors || {};
+  const watch = formContext?.watch;
 
   const formError = get(errors, name)?.message;
   const formValue = watch?.(name);

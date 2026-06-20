@@ -135,42 +135,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.userId = user._id;
   req.userRole = user.role;
 
-  // 8. mustChangePassword gate (server-enforced, not just a client prompt).
-  // A business user created by an admin with an admin-chosen password MUST
-  // change it on first login. Until then, allow only identity/self-service
-  // endpoints: view self, change password, logout, refresh. Everything else
-  // is blocked with a machine-readable code so clients can route to the
-  // change-password screen.
-  if (user.mustChangePassword && !isPasswordChangeAllowlisted(req)) {
-    const err = new AppError(
-      "You must change your password before continuing",
-      403
-    );
-    err.code = "PASSWORD_CHANGE_REQUIRED";
-    return next(err);
-  }
-
   next();
 });
-
-/**
- * Endpoints reachable while `mustChangePassword` is still set. Matched against
- * `req.originalUrl` (mount-prefix included) so it works regardless of where
- * `protect` is applied.
- */
-const PASSWORD_CHANGE_ALLOWLIST = [
-  "/auth/me",
-  "/auth/logout",
-  "/auth/refresh",
-  "/auth/update-password",
-  "/users/password",
-  "/users/me",
-];
-
-const isPasswordChangeAllowlisted = (req) => {
-  const url = (req.originalUrl || req.url || "").split("?")[0];
-  return PASSWORD_CHANGE_ALLOWLIST.some((p) => url.includes(p));
-};
 
 /**
  * Optional authentication - doesn't fail if no token

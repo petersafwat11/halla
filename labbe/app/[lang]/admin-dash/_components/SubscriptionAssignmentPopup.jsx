@@ -39,12 +39,6 @@ export default function SubscriptionAssignmentPopup({
     }));
   }, [plansData, i18n.language]);
 
-  const statusOptions = [
-    { label: t("subscription.statusActive"), value: "active" },
-    { label: t("subscription.statusExpired"), value: "expired" },
-    { label: t("subscription.statusCancelled"), value: "cancelled" },
-  ];
-
   const methods = useForm({
     resolver: zodResolver(subscriptionAssignmentSchema),
     defaultValues: {
@@ -52,7 +46,6 @@ export default function SubscriptionAssignmentPopup({
         entity?.subscription?.planId?.code ||
         entity?.subscription?.planType ||
         "",
-      status: entity?.subscription?.status || "active",
     },
   });
 
@@ -61,7 +54,6 @@ export default function SubscriptionAssignmentPopup({
       await updateSubscription.mutateAsync({
         hostId: entity.id,
         planCode: data.planCode,
-        status: data.status,
       });
       toastUtils.success(t("subscription.updateSuccess"));
       onClose();
@@ -75,7 +67,7 @@ export default function SubscriptionAssignmentPopup({
   };
 
   return (
-    <PopupLayout isOpen={true} onClose={onClose}>
+    <PopupLayout isOpen={true} onClose={onClose} size="auto">
       <div className={styles.popup}>
         <div className={styles.header}>
           <h2>{t("subscription.manageTitle")}</h2>
@@ -114,14 +106,6 @@ export default function SubscriptionAssignmentPopup({
                 required
               />
             )}
-
-            <InputSelect
-              label={t("subscription.status")}
-              placeholder={t("subscription.selectStatus")}
-              name="status"
-              options={statusOptions}
-              required
-            />
 
             <div className={styles.actions}>
               <Button

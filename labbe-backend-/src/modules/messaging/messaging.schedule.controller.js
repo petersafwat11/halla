@@ -6,6 +6,7 @@
 const messagingService = require('./messaging.service');
 const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess } = require('../../shared/utils/responseHelper');
+const { isAdminRole } = require('../../shared/constants/roles');
 
 /**
  * @swagger
@@ -39,6 +40,8 @@ exports.scheduleSend = catchAsync(async (req, res) => {
     scheduledDate,
     scheduledTime,
     userId: req.user._id,
+    isAdmin: isAdminRole(req.user.role),
+    actorRole: req.user.role,
   });
   sendSuccess(res, result);
 });

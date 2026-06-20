@@ -216,7 +216,7 @@ class GuestsService {
    */
   async addGuest(eventId, guestData, actor) {
     const userId = this._actorId(actor);
-    const event = await Event.findOne({ _id: eventId, host: userId });
+    const event = await Event.findOne(this._eventScope(eventId, actor));
     if (!event) {
       throw new NotFoundError('Event');
     }
@@ -262,8 +262,7 @@ class GuestsService {
    * @returns {Promise<Object>}
    */
   async updateGuest(eventId, guestId, updateData, actor) {
-    const userId = this._actorId(actor);
-    const event = await Event.findOne({ _id: eventId, host: userId });
+    const event = await Event.findOne(this._eventScope(eventId, actor));
     if (!event) {
       throw new NotFoundError('Event');
     }
@@ -313,8 +312,7 @@ class GuestsService {
    * @returns {Promise<void>}
    */
   async deleteGuest(eventId, guestId, actor) {
-    const userId = this._actorId(actor);
-    const event = await Event.findOne({ _id: eventId, host: userId });
+    const event = await Event.findOne(this._eventScope(eventId, actor));
     if (!event) {
       throw new NotFoundError('Event');
     }
@@ -344,8 +342,7 @@ class GuestsService {
    * @returns {Promise<Buffer>}
    */
   async exportGuestsExcel(eventId, actor) {
-    const userId = this._actorId(actor);
-    const event = await Event.findOne({ _id: eventId, host: userId })
+    const event = await Event.findOne(this._eventScope(eventId, actor))
       .populate({
         path: 'guestList',
         select: 'name phone status rsvp checkIn invitation addedBy',
@@ -400,7 +397,7 @@ class GuestsService {
     const actorId = actor?._id?.toString?.() || actor?._id;
     const role = actor?.role;
     const isHost = event.host?.toString() === actorId;
-    const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN].includes(role);
+    const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.MODERATOR].includes(role);
     if (!isHost && !isAdmin) {
       throw new ForbiddenError('Not authorized to rotate this QR');
     }
@@ -488,7 +485,7 @@ class GuestsService {
     const actorId = actor?._id?.toString?.() || actor?._id;
     const role = actor?.role;
     const isHost = event.host?.toString() === actorId;
-    const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN].includes(role);
+    const isAdmin = [ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.MODERATOR].includes(role);
     if (!isHost && !isAdmin) {
       throw new ForbiddenError('Not authorized to revoke this QR');
     }
@@ -538,6 +535,13 @@ class GuestsService {
     if (!actor) return undefined;
     if (typeof actor === 'string') return actor;
     return actor._id?.toString?.() || actor._id;
+  }
+
+  _eventScope(eventId, actor) {
+    const adminRoles = [ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.MODERATOR];
+    return adminRoles.includes(actor?.role)
+      ? { _id: eventId }
+      : { _id: eventId, host: this._actorId(actor) };
   }
 
   _actorRef(actor) {

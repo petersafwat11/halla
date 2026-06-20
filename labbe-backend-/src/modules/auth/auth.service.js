@@ -302,9 +302,19 @@ class AuthService {
     // Issue token pair and get subscription
     const tokens = await this.issueTokenPair(user, context);
     const subscription = await this.getUserSubscription(user._id);
+    const passwordUpdateRecommended = user.mustChangePassword === true;
+    const sanitizedUser = await this.sanitizeUser(user);
+
+    // This flag now drives a one-time recommendation, not an access gate.
+    // Return it for this successful login, then consume it so dismissing the
+    // prompt is a valid permanent choice.
+    if (passwordUpdateRecommended) {
+      await User.findByIdAndUpdate(user._id, { mustChangePassword: false });
+      sanitizedUser.mustChangePassword = true;
+    }
 
     return {
-      user: await this.sanitizeUser(user),
+      user: sanitizedUser,
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       subscription,

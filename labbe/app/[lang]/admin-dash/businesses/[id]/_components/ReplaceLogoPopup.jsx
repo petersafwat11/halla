@@ -32,7 +32,7 @@ export default function ReplaceLogoPopup({ businessId, onClose }) {
   };
 
   return (
-    <PopupLayout isOpen={true} onClose={onClose}>
+    <PopupLayout isOpen={true} onClose={onClose} size="auto">
       <div className={styles.popup}>
         <div className={styles.header}>
           <h2>{t("logo.title")}</h2>

@@ -29,7 +29,7 @@ export default function EditBusinessPopup({ business, onClose }) {
   };
 
   return (
-    <PopupLayout isOpen={true} onClose={onClose}>
+    <PopupLayout isOpen={true} onClose={onClose} size="auto">
       <div className={styles.popup}>
         <div className={styles.header}>
           <h2>{t("editProfile.title")}</h2>

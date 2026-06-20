@@ -184,9 +184,17 @@ module.exports = {
     const targetGuests = await Guest.find(guestQuery);
 
     if (targetGuests.length === 0) {
+      // Distinguish "you haven't sent yet" from "everyone already responded" so
+      // resending before the initial send gives a clear message, not a vague one.
+      const noSendYet = !event.messagingStatus?.bulkSendStarted;
       return {
         success: true,
-        message: "No eligible guests to re-invite",
+        // `code` lets the client localize the toast; `message` is the English
+        // fallback for non-i18n callers.
+        code: noSendYet ? "SEND_INVITES_FIRST" : "NO_ELIGIBLE_GUESTS",
+        message: noSendYet
+          ? "Send the invitations to your guests first — there's nothing to resend yet."
+          : "No eligible guests to re-invite",
         reminded: 0,
         successful: 0,
         failed: 0,

@@ -58,7 +58,6 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
   const { t, i18n } = useTranslation("admin");
   const locale = i18n.language;
   const [selectedPlan, setSelectedPlan] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("active");
   const updateSubscription = useUpdateHostSubscription();
   const {
     data: plansData,
@@ -67,12 +66,6 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
     refetch: refetchPlans,
   } = useAdminPlans({ availableFor: "host" });
   const toast = useToast();
-
-  const statusOptions = [
-    { label: t("hosts.status.active"),                  value: "active" },
-    { label: t("hosts.subscription.statusExpired"),     value: "expired" },
-    { label: t("hosts.subscription.statusCancelled"),   value: "cancelled" },
-  ];
 
   const planOptions = useMemo(() => {
     const list = plansData?.data?.plans || [];
@@ -86,12 +79,11 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
   useEffect(() => {
     if (visible && host) {
       setSelectedPlan(host.subscription?.planId?.code || "");
-      setSelectedStatus(host.subscription?.status || "active");
     }
   }, [visible, host]);
 
   const handleSave = async () => {
-    if (!selectedPlan || !selectedStatus) {
+    if (!selectedPlan) {
       toast.warning(t("hosts.subscription.validation"));
       return;
     }
@@ -100,7 +92,6 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
       await updateSubscription.mutateAsync({
         hostId: host.id,
         planCode: selectedPlan,
-        status: selectedStatus,
       });
       toast.success(t("hosts.subscription.updated"));
       onClose();
@@ -164,14 +155,6 @@ const SubscriptionModal = ({ visible, onClose, host }) => {
                 onSelect={setSelectedPlan}
               />
             )}
-
-            <PickDropdown
-              label={t("hosts.subscription.selectStatus")}
-              options={statusOptions}
-              selectedValue={selectedStatus}
-              onSelect={setSelectedStatus}
-            />
-
 
           </View>
 

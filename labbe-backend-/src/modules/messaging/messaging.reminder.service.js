@@ -42,12 +42,14 @@ async function sendReminder({
   customMessage = null,
   reminderTemplateName,
   userId,
+  isAdmin = false,
+  actorRole,
 }) {
   const event = await Event.findById(eventId).populate('host', 'name username');
   if (!event) {
     throw new NotFoundError('Event');
   }
-  if (event.host && userId && event.host._id.toString() !== userId.toString()) {
+  if (!isAdmin && event.host && userId && event.host._id.toString() !== userId.toString()) {
     throw new ForbiddenError('Not authorized for this event');
   }
 
@@ -127,7 +129,7 @@ async function sendReminder({
   try {
     await logAudit({
       action: 'messaging.reminder',
-      actor: { _id: userId || null, role: userId ? 'host' : 'system' },
+      actor: { _id: userId || null, role: actorRole || (userId ? 'host' : 'system') },
       targetType: 'event',
       targetId: eventId,
       metadata: {

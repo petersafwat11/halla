@@ -9,7 +9,14 @@ const Subscription = require('../../../models/SubscriptionModel');
 const Plan = require('../../../models/PlanModel');
 const Guest = require('../../../models/GuestModel');
 const { NotFoundError, ValidationError, ConflictError } = require('../../shared/errors');
-const { ROLES, USER_STATUS, EVENT_STATUS, SUBSCRIPTION_STATUS, ACCOUNT_TYPES } = require('../../shared/constants');
+const {
+  ROLES,
+  USER_STATUS,
+  EVENT_STATUS,
+  SUBSCRIPTION_STATUS,
+  ACCOUNT_TYPES,
+  COMPENSATION_PERCENTAGE,
+} = require('../../shared/constants');
 const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
@@ -49,7 +56,7 @@ async function getHosts({ page = 1, limit = 10, search, status, from, to }) {
       .select('-password -passwordResetToken -__v')
       .populate({
         path: 'subscription',
-        select: 'status endDate planId billingCycle',
+        select: 'status activatedAt expiresAt planId',
         populate: { path: 'planId', select: 'features limits name nameAr nameEn code planType' },
       })
       .sort({ createdAt: -1 })
@@ -92,7 +99,7 @@ async function getHostById(hostId) {
     .select('-password -passwordResetToken')
     .populate({
       path: 'subscription',
-      select: 'status endDate planId billingCycle',
+      select: 'status activatedAt expiresAt planId',
       populate: { path: 'planId', select: 'features limits name nameAr nameEn code planType' },
     })
     .lean();
@@ -193,19 +200,27 @@ async function createHost({ email, phoneNumber, name, username, password }) {
     },
   });
 
-  // Create trial subscription and link to user atomically
+  // Use the canonical factory so current entitlement and expiry fields are set.
+  // The old startDate/currentPeriodEnd fields are not in the Subscription schema.
   const trialPlan = await Plan.findOne({ code: 'trial' });
   if (trialPlan) {
     const session = await mongoose.startSession();
     try {
       await session.withTransaction(async () => {
+        const activatedAt = new Date();
+        const invitePool = trialPlan.limits?.invitePool ?? null;
         const [subscription] = await Subscription.create([{
           userId: host._id,
           planId: trialPlan._id,
-          planType: 'trial',
-          status: 'trial',
-          startDate: new Date(),
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          status: SUBSCRIPTION_STATUS.TRIAL,
+          activatedAt,
+          // Preserve the existing 30-day policy for admin-created hosts.
+          expiresAt: new Date(activatedAt.getTime() + 30 * 24 * 60 * 60 * 1000),
+          invitePool,
+          compensationPool: invitePool === null
+            ? null
+            : Math.floor(invitePool * COMPENSATION_PERCENTAGE / 100),
+          invitesConsumed: 0,
         }], { session });
         await User.findByIdAndUpdate(host._id, { subscription: subscription._id }, { session });
       });
@@ -259,7 +274,7 @@ async function updateHostStatus(hostId, status) {
 /**
  * Update host subscription
  */
-async function updateHostSubscription(hostId, { planCode, status: subscriptionStatus }) {
+async function updateHostSubscription(hostId, { planCode }) {
   const query = personalHostFilter({ _id: hostId });
 
   const host = await User.findOne(query);
@@ -272,6 +287,16 @@ async function updateHostSubscription(hostId, { planCode, status: subscriptionSt
     throw new NotFoundError('Plan');
   }
 
+  const activatedAt = new Date();
+  const durationDays = plan.limits?.durationDays;
+  const expiresAt = durationDays && durationDays > 0
+    ? new Date(activatedAt.getTime() + durationDays * 24 * 60 * 60 * 1000)
+    : null;
+  const invitePool = plan.limits?.invitePool ?? null;
+  const compensationPool = invitePool === null
+    ? null
+    : Math.floor(invitePool * COMPENSATION_PERCENTAGE / 100);
+
   const activeSubs = await Subscription.findActiveForUser(hostId);
   const subscription = activeSubs[0] || null;
 
@@ -282,8 +307,14 @@ async function updateHostSubscription(hostId, { planCode, status: subscriptionSt
         const [newSub] = await Subscription.create([{
           userId: hostId,
           planId: plan._id,
-          status: subscriptionStatus || SUBSCRIPTION_STATUS.ACTIVE,
-          startDate: new Date(),
+          // Upgrading a host's plan always activates the subscription — an
+          // admin would never assign a plan in an inactive/expired state.
+          status: SUBSCRIPTION_STATUS.ACTIVE,
+          activatedAt,
+          expiresAt,
+          invitePool,
+          compensationPool,
+          invitesConsumed: 0,
         }], { session });
         await User.findByIdAndUpdate(hostId, { subscription: newSub._id }, { session });
       });
@@ -291,11 +322,16 @@ async function updateHostSubscription(hostId, { planCode, status: subscriptionSt
       session.endSession();
     }
   } else {
-    // Update existing subscription
+    // Update existing subscription. Upgrading always (re)activates it.
     subscription.planId = plan._id;
-    if (subscriptionStatus) {
-      subscription.status = subscriptionStatus;
-    }
+    subscription.status = SUBSCRIPTION_STATUS.ACTIVE;
+    subscription.activatedAt = activatedAt;
+    subscription.expiresAt = expiresAt;
+    subscription.invitePool = invitePool;
+    subscription.compensationPool = compensationPool;
+    subscription.invitesConsumed = 0;
+    subscription.firstSendAt = null;
+    subscription.usage = {};
 
     await subscription.save();
   }

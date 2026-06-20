@@ -383,16 +383,9 @@ class CheckoutService {
           'event-scoped addons cannot be combined with checkout; purchase them after the event is created.'
         );
       }
-      // extra_invites + per-event plan would silently waste — per-event plans
-      // don't read invitePool. Reject before charging.
-      if (
-        item.addonType === ADDON_TYPES.EXTRA_INVITES
-        && isPerEventPlan(plan.planType)
-      ) {
-        throw new ValidationError(
-          'extra_invites cannot be added to a per-event plan; the addon would be wasted.'
-        );
-      }
+      // NOTE: extra_invites ARE valid on per-event plans under the unified-pool
+      // model — per-event plans now carry an invitePool (Phase 0), and the
+      // addon folds straight into it via applyQuota. Do NOT reject here.
       return { ...item, price, scope };
     });
   }
@@ -527,7 +520,7 @@ class CheckoutService {
     // `_fulfillBundle` only receives `userId`, so load the user here (the
     // outer `checkout()` `user` binding is not in scope on this path, which
     // previously threw a ReferenceError on the confirmation-email block).
-    const user = await User.findById(userId).select('email name username');
+    const user = await User.findById(userId).select('email name username role');
     if (user?.email) {
       const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
       email.send.paymentConfirmation(user.email, {
@@ -538,7 +531,7 @@ class CheckoutService {
         paymentDate: new Date(),
         invoiceNumber: paymentRecord?.moyasarPaymentId || String(paymentRecord?._id || ''),
         paymentMethod: paymentRecord?.paymentMethod || paymentRecord?.metadata?.source || 'card',
-        invoiceUrl: `${frontendUrl}/ar/host/subscription`,
+        invoiceUrl: `${frontendUrl}/ar/${user.role || 'host'}/plans`,
       }).catch((e) =>
         logger.warn('[checkout] payment confirmation email failed', { error: e?.message })
       );

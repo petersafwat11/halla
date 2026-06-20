@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useCallback } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import styles from "./staffPopup.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
@@ -16,6 +17,7 @@ const StaffPopup = ({
   onClose,
   title = "مشرفين البوابة",
 }) => {
+  const { t } = useTranslation("createEvent");
   const [currentItem, setCurrentItem] = useState({ name: "", phone: "" });
   const [localErrors, setLocalErrors] = useState({});
   const [showValidationErrors, setShowValidationErrors] = useState(false);
@@ -45,13 +47,13 @@ const StaffPopup = ({
     const phone = (currentItem.phone || "").trim();
 
     if (!name) {
-      newErrors.name = "اسم الموظف مطلوب";
+      newErrors.name = t("staff_name_required", "اسم الموظف مطلوب");
     }
 
     if (!phone) {
-      newErrors.phone = "رقم الجوال مطلوب";
+      newErrors.phone = t("staff_phone_required", "رقم الجوال مطلوب");
     } else if (!/^5[0-9]{8}$/.test(phone)) {
-      newErrors.phone = "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5";
+      newErrors.phone = t("staff_phone_invalid_pattern", "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5");
     }
 
     // Check for duplicate phone (exclude current item when editing)
@@ -60,14 +62,14 @@ const StaffPopup = ({
         (item) => item.phone === phone && item.id !== currentItem.id
       );
       if (phoneExists) {
-        newErrors.phone = "هذا الرقم موجود بالفعل في القائمة";
+        newErrors.phone = t("staff_phone_duplicate", "هذا الرقم موجود بالفعل في القائمة");
       }
     }
 
     setLocalErrors(newErrors);
     setShowValidationErrors(Object.keys(newErrors).length > 0);
     return Object.keys(newErrors).length === 0;
-  }, [currentItem, staffList]);
+  }, [currentItem, staffList, t]);
 
   // Add handler
   const handleAdd = () => {
@@ -125,7 +127,7 @@ const StaffPopup = ({
     <FormProvider {...methods}>
       <div className={styles.popup}>
         <div className={styles.header}>
-          <h2 className={styles.title}>{title}</h2>
+          <h2 className={styles.title}>{t("staff_popup_title", title)}</h2>
           <button className={styles.closeButton} onClick={onClose}>
             ×
           </button>
@@ -133,15 +135,14 @@ const StaffPopup = ({
 
         <div className={styles.content}>
           <p className={styles.description}>
-            أضف مشرفين البوابة المسؤولين عن تسجيل حضور الضيوف. سيتمكنون من الوصول
-            لصفحة تسجيل الحضور عبر رابط خاص.
+            {t("staff_popup_desc", "أضف مشرفين البوابة المسؤولين عن تسجيل حضور الضيوف. سيتمكنون من الوصول لصفحة تسجيل الحضور عبر رابط خاص.")}
           </p>
 
           <div className={styles.formSection}>
             <div className={styles.formGrid}>
               <MobileInputGroup
-                label="رقم الجوال"
-                placeholder="5xxxxxxxx"
+                label={t("staff_phone", "رقم الجوال")}
+                placeholder={t("staff_phone_placeholder", "5xxxxxxxx")}
                 type="tel"
                 required
                 value={currentItem.phone || ""}
@@ -149,8 +150,8 @@ const StaffPopup = ({
                 error={showValidationErrors ? localErrors.phone : ""}
               />
               <InputGroup
-                label="اسم الموظف"
-                placeholder="ادخل اسم الموظف"
+                label={t("staff_name", "اسم الموظف")}
+                placeholder={t("staff_name_placeholder", "ادخل اسم الموظف")}
                 required
                 value={currentItem.name || ""}
                 onChange={(e) => handleInputChange("name", e.target.value)}
@@ -163,19 +164,19 @@ const StaffPopup = ({
                 <>
                   <Button
                     variant="primary"
-                    title="تحديث"
+                    title={t("staff_update", "تحديث")}
                     onClick={handleEditSubmit}
                   />
                   <Button
                     variant="secondary"
-                    title="إلغاء"
+                    title={t("staff_cancel", "إلغاء")}
                     onClick={resetCurrentItem}
                   />
                 </>
               ) : (
                 <Button
                   variant="primary"
-                  title="إضافة إلى القائمة"
+                  title={t("staff_add_to_list", "إضافة إلى القائمة")}
                   onClick={handleAdd}
                 />
               )}
@@ -185,18 +186,18 @@ const StaffPopup = ({
           {staffList.length > 0 && (
             <div className={styles.tableSection}>
               <Table
-                title={title}
-                headers={["رقم الجوال", "الاسم"]}
+                title={t("staff_popup_title", title)}
+                headers={[t("staff_phone", "رقم الجوال"), t("name", "الاسم")]}
                 data={staffList}
                 actions={[
                   {
                     icon: <FiEdit2 size={18} />,
-                    text: "تعديل",
+                    text: t("staff_edit", "تعديل"),
                     onClick: (row) => handleEditClick(row.id),
                   },
                   {
                     icon: <FiTrash2 size={18} />,
-                    text: "حذف",
+                    text: t("staff_delete", "حذف"),
                     onClick: (row) => onDelete(row.id),
                   },
                 ]}

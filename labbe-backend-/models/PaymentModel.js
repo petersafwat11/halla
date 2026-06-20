@@ -411,7 +411,7 @@ async function sendPaymentNotifications(payment) {
     }
 
     // Determine target URL for payer
-    const payerActionUrl = `${frontendUrl}/ar/host/subscription`;
+    const payerActionUrl = `${frontendUrl}/ar/${payer.role || "host"}/plans`;
 
     // 1. Notify the payer (a host)
     if (payer.role === "host") {

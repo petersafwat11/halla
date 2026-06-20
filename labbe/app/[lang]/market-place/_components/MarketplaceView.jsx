@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, SearchX, AlertCircle, RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "next/navigation";
 import { usePublicVendors, useVendorCategories } from "@/hooks/vendors";
@@ -16,7 +16,7 @@ import styles from "./marketplaceView.module.css";
 
 const ITEMS_PER_PAGE = 12;
 
-export default function MarketplaceView() {
+export default function MarketplaceView({ vendorRoutePrefix = "market-place" }) {
   const { t, i18n } = useTranslation("marketplace");
   const { lang } = useParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -120,15 +120,20 @@ export default function MarketplaceView() {
           </div>
         ) : query.isError ? (
           <div className={styles.state}>
+            <span className={styles.stateIcon}><AlertCircle size={30} aria-hidden="true" /></span>
             <h2>{t("errors.loadFailedTitle")}</h2>
             <p>{t("errors.loadFailed")}</p>
-            <button type="button" onClick={() => query.refetch()}>{t("errors.retry")}</button>
+            <button type="button" onClick={() => query.refetch()}><RotateCcw size={16} aria-hidden="true" />{t("errors.retry")}</button>
           </div>
         ) : mappedVendors.length ? (
           <>
             <div className={styles.grid}>
               {mappedVendors.map((vendor) => (
-                <VendorCard key={vendor.id} vendor={vendor} href={`/${lang}/market-place/vendors/${vendor.id}`} />
+                <VendorCard
+                  key={vendor.id}
+                  vendor={vendor}
+                  href={`/${lang}/${vendorRoutePrefix}/vendors/${vendor.id}`}
+                />
               ))}
             </div>
             {totalPages > 1 && (
@@ -137,9 +142,10 @@ export default function MarketplaceView() {
           </>
         ) : (
           <div className={styles.state}>
+            <span className={styles.stateIcon}><SearchX size={30} aria-hidden="true" /></span>
             <h2>{t("noResults.title")}</h2>
             <p>{t("noResults.description")}</p>
-            <button type="button" onClick={state.handleResetFilters}>{t("buttons.resetFilters")}</button>
+            <button type="button" onClick={state.handleResetFilters}><RotateCcw size={16} aria-hidden="true" />{t("buttons.resetFilters")}</button>
           </div>
         )}
       </div>

@@ -49,9 +49,9 @@ exports.updateHostStatus = catchAsync(async (req, res) => {
 
 exports.updateHostSubscription = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { planCode, status } = req.body;
+  const { planCode } = req.body;
 
-  const result = await adminService.updateHostSubscription(id, { planCode, status });
+  const result = await adminService.updateHostSubscription(id, { planCode });
   sendSuccess(res, result, result.message);
 });
 

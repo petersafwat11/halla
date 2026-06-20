@@ -236,8 +236,37 @@ export default function useGuestTableActions({
     try {
       const result = await mutation.mutateAsync({ eventId, guestIds });
       const data = result?.data || result || {};
-      const successful = data.successful ?? data.reminded ?? guestIds.length;
       const total = data.reminded ?? guestIds.length;
+
+      // Nothing was sent. The backend filters resend to guests who were already
+      // sent an invitation (`invitation.sent: true`), so a host who never sent
+      // the initial invites lands here even though the status filter matched.
+      // Surface *why* instead of a misleading "0/0 sent" success toast.
+      if (total === 0) {
+        if (data.code === "SEND_INVITES_FIRST") {
+          toast.error(
+            t(
+              "singleEvent.bulkActions.sendInvitesFirst",
+              "Send the initial invitations first, then use resend for guests who haven't responded or chose maybe."
+            )
+          );
+        } else {
+          toast.info(
+            t(
+              type === "resend"
+                ? "singleEvent.bulkActions.noEligibleNow"
+                : "singleEvent.bulkActions.noConfirmedNow",
+              type === "resend"
+                ? "Everyone has already responded — no one left to re-invite."
+                : "No confirmed guests to remind yet."
+            )
+          );
+        }
+        closeBulkModal();
+        return;
+      }
+
+      const successful = data.successful ?? guestIds.length;
       toast.success(
         t("singleEvent.bulkActions.sentResult", {
           defaultValue: "{{successful}}/{{total}} sent",

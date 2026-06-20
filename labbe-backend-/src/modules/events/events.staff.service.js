@@ -132,9 +132,10 @@ module.exports = {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async addStaffToEvent(eventId, staffData, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async addStaffToEvent(eventId, staffData, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
+    const userId = typeof userContext === 'object' ? userContext._id : userContext;
 
     if (!event.staffList) event.staffList = [];
 
@@ -169,9 +170,10 @@ module.exports = {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async updateStaff(eventId, staffId, updateData, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async updateStaff(eventId, staffId, updateData, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
+    const userId = typeof userContext === 'object' ? userContext._id : userContext;
 
     const staffIndex = event.staffList?.findIndex(
       (s) => s._id?.toString() === staffId
@@ -209,8 +211,8 @@ module.exports = {
    * @param {string} userId
    * @returns {Promise<Object>}
    */
-  async updateStaffStatus(eventId, staffId, status, userId) {
-    return this.updateStaff(eventId, staffId, { status }, userId);
+  async updateStaffStatus(eventId, staffId, status, userContext) {
+    return this.updateStaff(eventId, staffId, { status }, userContext);
   },
 
   /**
@@ -220,9 +222,10 @@ module.exports = {
    * @param {string} userId
    * @returns {Promise<void>}
    */
-  async deleteStaff(eventId, staffId, userId) {
-    const event = await Event.findOne({ _id: eventId, host: userId });
+  async deleteStaff(eventId, staffId, userContext) {
+    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
+    const userId = typeof userContext === 'object' ? userContext._id : userContext;
 
     const removed = (event.staffList || []).find(
       (s) => s._id?.toString() === staffId

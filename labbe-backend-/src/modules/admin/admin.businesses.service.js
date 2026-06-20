@@ -189,7 +189,7 @@ async function createBusiness({ name, email, phoneNumber, password, description,
       type: 'welcome',
       title: 'Welcome to Halaa Business!',
       titleAr: 'مرحباً بك في هلا أعمال!',
-      message: 'Your business account has been created. Please change your password on first login.',
+      message: 'Your business account has been created. We recommend updating your password from Settings after your first login.',
       messageAr: 'تم إنشاء حساب منشأتك. يرجى تغيير كلمة المرور عند أول تسجيل دخول.',
       data: { entityType: 'user', entityId: business._id },
     })

@@ -39,8 +39,14 @@ async function canDispatch(event, opts = {}) {
     return deny(`event_terminal:${event.status}`);
   }
 
+  // `event.host` may be a populated User doc (resend/reminder paths load it with
+  // .populate("host", ...)) OR a raw ObjectId. Normalize to the id so lookups
+  // and the owner comparison don't false-mismatch a populated doc (whose
+  // String() is not an id) against an id string.
+  const hostId = event.host && event.host._id ? event.host._id : event.host;
+
   // Owner must be active and not soft-deleted/suspended.
-  const owner = await User.findById(event.host).select(
+  const owner = await User.findById(hostId).select(
     'status deletedAt accountType subscription'
   );
   if (!owner) return deny('owner_missing');
@@ -49,7 +55,7 @@ async function canDispatch(event, opts = {}) {
   if (owner.status === USER_STATUS.INACTIVE) return deny('owner_inactive');
 
   // Subscription must exist, belong to the host, be active & unexpired.
-  const subs = await Subscription.findActiveForUser(event.host);
+  const subs = await Subscription.findActiveForUser(hostId);
   const sub =
     (event.subscriptionId &&
       subs.find((s) => String(s._id) === String(event.subscriptionId))) ||
@@ -57,7 +63,7 @@ async function canDispatch(event, opts = {}) {
     null;
 
   if (!sub) return deny('no_active_subscription');
-  if (String(sub.userId) !== String(event.host)) return deny('subscription_owner_mismatch');
+  if (String(sub.userId) !== String(hostId)) return deny('subscription_owner_mismatch');
   if (
     ![SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL].includes(sub.status)
   ) {
@@ -69,7 +75,7 @@ async function canDispatch(event, opts = {}) {
 
   // Not under refund (business assignment in a refund/failed state).
   const underRefund = await BusinessPlanAssignment.findOne({
-    businessUserId: event.host,
+    businessUserId: hostId,
     subscriptionId: sub._id,
     status: { $in: [ASSIGNMENT_STATUS.REFUND_PENDING, ASSIGNMENT_STATUS.ACTIVATION_FAILED] },
   }).select('_id');

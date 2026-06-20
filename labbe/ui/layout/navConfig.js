@@ -143,6 +143,13 @@ export const adminNavItems = [
     defaultLabel: "التجار",
   },
   {
+    key: "marketplace",
+    path: "/admin-dash/market-place",
+    icon: IoStorefront,
+    labelKey: "adminSidebar.marketplace",
+    defaultLabel: "سوق هلا",
+  },
+  {
     key: "events",
     path: "/admin-dash/events",
     icon: IoCalendar,
@@ -226,7 +233,7 @@ export const vendorNavItems = [
   },
   {
     key: "marketplace",
-    path: "/market-place",
+    path: "/vendor-dashboard/market-place",
     icon: IoStorefront,
     labelKey: "vendorSidebar.marketplace",
     defaultLabel: "سوق هلا",
@@ -261,6 +268,7 @@ const ROLE_NAV_ACCESS = {
     "hosts",
     "businesses",
     "vendors",
+    "marketplace",
     "events",
     "tickets",
     "payments",
@@ -278,6 +286,7 @@ const ROLE_NAV_ACCESS = {
     "hosts",
     "businesses",
     "vendors",
+    "marketplace",
     "events",
     "tickets",
     "payments",
@@ -292,6 +301,7 @@ const ROLE_NAV_ACCESS = {
     "dashboard",
     "hosts", // EDIT access (create/update, no delete)
     "vendors", // VIEW access
+    "marketplace",
     "events", // EDIT access (create/update, no delete)
     "tickets", // FULL access
     "payments", // VIEW access
@@ -312,6 +322,7 @@ export const ROLE_PAGE_ACCESS = {
     hosts: ACCESS_LEVELS.FULL,
     businesses: ACCESS_LEVELS.FULL,
     vendors: ACCESS_LEVELS.FULL,
+    marketplace: ACCESS_LEVELS.VIEW,
     events: ACCESS_LEVELS.FULL,
     tickets: ACCESS_LEVELS.FULL,
     payments: ACCESS_LEVELS.FULL,
@@ -328,6 +339,7 @@ export const ROLE_PAGE_ACCESS = {
     hosts: ACCESS_LEVELS.FULL,
     businesses: ACCESS_LEVELS.FULL,
     vendors: ACCESS_LEVELS.FULL,
+    marketplace: ACCESS_LEVELS.VIEW,
     events: ACCESS_LEVELS.FULL,
     tickets: ACCESS_LEVELS.FULL,
     payments: ACCESS_LEVELS.FULL,
@@ -343,6 +355,7 @@ export const ROLE_PAGE_ACCESS = {
     dashboard: ACCESS_LEVELS.VIEW,
     hosts: ACCESS_LEVELS.EDIT,
     vendors: ACCESS_LEVELS.VIEW,
+    marketplace: ACCESS_LEVELS.VIEW,
     events: ACCESS_LEVELS.EDIT,
     tickets: ACCESS_LEVELS.FULL,
     payments: ACCESS_LEVELS.VIEW,

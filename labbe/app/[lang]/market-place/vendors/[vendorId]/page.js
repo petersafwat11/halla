@@ -1,22 +1,14 @@
 import { notFound } from "next/navigation";
 import VendorProfile from "./VendorProfile";
+import { getPublicVendor } from "../_lib/getPublicVendor";
 
 export const dynamic = "force-dynamic";
-const apiBase = process.env.INTERNAL_API_URL || "http://localhost:8000/api/v2";
 const appBase = process.env.NEXT_PUBLIC_APP_URL || "https://halaa.com.sa";
-
-async function getVendor(vendorId, lang = "ar") {
-  const response = await fetch(`${apiBase}/vendors/public/${vendorId}?lang=${lang}`, { cache: "no-store" });
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error("Unable to load vendor");
-  const payload = await response.json();
-  return payload?.data?.vendor || null;
-}
 
 export async function generateMetadata({ params }) {
   const { vendorId, lang } = await params;
   try {
-    const vendor = await getVendor(vendorId, lang);
+    const vendor = await getPublicVendor(vendorId, lang);
     if (!vendor) return {};
     const description = vendor.about?.slice(0, 155) || vendor.tagline || (lang === "ar" ? "ملف مزود خدمات في سوق هلا" : "Vendor profile on Halla Marketplace");
     const canonical = `${appBase}/${lang}/market-place/vendors/${vendorId}`;
@@ -31,7 +23,7 @@ export async function generateMetadata({ params }) {
 
 export default async function VendorPublicPage({ params }) {
   const { vendorId, lang } = await params;
-  const vendor = await getVendor(vendorId, lang);
+  const vendor = await getPublicVendor(vendorId, lang);
   if (!vendor) notFound();
 
   const vendorUrl = `${appBase}/${lang}/market-place/vendors/${vendor.id}`;

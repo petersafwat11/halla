@@ -109,12 +109,8 @@
 /* ── Grid ── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--spacing-24);
-}
-
-@media (max-width: 1180px) {
-  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 900px) {
@@ -152,33 +148,64 @@
 
 @keyframes pulse { 50% { opacity: 0.45; } }
 
-/* ── States ── */
+/* ── States (empty / error) ── */
 .state {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: var(--spacing-8);
-  min-height: 300px;
-  padding: var(--spacing-40);
+  min-height: 340px;
+  padding: var(--spacing-56) var(--spacing-24);
   border: 1px solid var(--border-brand-100);
-  border-radius: var(--radius-16);
+  border-radius: var(--radius-20);
   background: var(--color-natural-50);
   text-align: center;
 }
 
-.state h2,
-.state p { margin: 0; }
-.state p { color: var(--text-description); }
+.stateIcon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--spacing-8);
+  border-radius: 50%;
+  background: var(--color-primary-50);
+  color: var(--color-primary-600);
+}
+
+.state h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-body);
+}
+
+.state p {
+  margin: 0;
+  max-width: 400px;
+  color: var(--text-description);
+  font-size: 15px;
+  line-height: 1.6;
+}
 
 .state button {
-  margin-top: var(--spacing-8);
-  padding: 10px 18px;
-  border-radius: var(--radius-8);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--spacing-12);
+  padding: 11px 22px;
+  border: none;
+  border-radius: var(--radius-12);
   background: var(--color-primary-500);
   color: #fff;
-  font: inherit;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
+  transition: background 0.18s ease;
 }
+
+.state button:hover { background: var(--color-primary-600); }
 
 @media (max-width: 600px) {
   .shell {

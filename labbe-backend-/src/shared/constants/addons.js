@@ -4,13 +4,16 @@ const ADDON_TYPES = {
   BUSINESS_CUSTOMIZATION: 'business_customization',
 };
 
+// Standard flat rate: 4 SAR per extra invite. price === quantity * 4 for
+// every tier. Keep this invariant when adding/editing tiers.
+const EXTRA_INVITES_PRICE_PER_INVITE = 4;
+
 const EXTRA_INVITES_TIERS = [
-  { quantity: 10, price: 40 },
-  { quantity: 20, price: 75 },
-  { quantity: 30, price: 105 },
-  { quantity: 40, price: 130 },
-  { quantity: 50, price: 150 },
-];
+  10, 20, 30, 40, 50, 75, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500,
+].map((quantity) => ({
+  quantity,
+  price: quantity * EXTRA_INVITES_PRICE_PER_INVITE,
+}));
 
 const DESIGN_TEMPLATE_TIERS = [
   { type: 'ready_made',    nameAr: 'تصميم دعوات جاهزة (رجالي/نسائي)', nameEn: 'Ready-made design (male/female)', price: 200 },
@@ -29,4 +32,4 @@ const BUSINESS_CUSTOMIZATION = {
   descriptionEn: 'Custom webpage + 4 official WhatsApp templates + delivered in 1 week',
 };
 
-module.exports = { ADDON_TYPES, EXTRA_INVITES_TIERS, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION };
+module.exports = { ADDON_TYPES, EXTRA_INVITES_TIERS, EXTRA_INVITES_PRICE_PER_INVITE, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION };

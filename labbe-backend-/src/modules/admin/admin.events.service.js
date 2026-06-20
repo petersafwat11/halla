@@ -268,9 +268,16 @@ async function deleteEvent(eventId) {
     throw new NotFoundError('Event');
   }
 
+  const prevStatus = event.status;
   event.status = EVENT_STATUS.DELETED;
   event.deletedAt = new Date();
   await event.save();
+
+  // Free the event slot (mirror the host delete path) when it was still active,
+  // so the owner's "events X/Y" reflects an admin-initiated deletion too.
+  if (![EVENT_STATUS.DELETED, EVENT_STATUS.CANCELLED].includes(prevStatus)) {
+    await require('../events/events.service')._freeEventSlot(event.subscriptionId);
+  }
 
   return { success: true, message: 'Event deleted successfully' };
 }

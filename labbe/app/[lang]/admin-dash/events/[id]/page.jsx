@@ -1,4 +1,4 @@
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import { requirePageAccess } from "@/services/serverAuth";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
@@ -7,7 +7,7 @@ import ClientComponentsTranslationsProvider from "@/providers/ClientCompTrans";
 import EventDetailsContent from "./_components/EventDetailsContent";
 import styles from "./singleEvent.module.css";
 
-const i18nNamespaces = ["adminEvents", "adminDashboard", "home-events"];
+const i18nNamespaces = ["adminEvents", "adminDashboard", "home-events", "common"];
 
 export default async function AdminEventDetailsPage({ params }) {
   const { lang, id } = await params;

@@ -92,11 +92,12 @@ module.exports = {
 
     // canCreateEvent (capability hint for the FE — must match the real gate in
     // subscriptions.service.validateEventCreation). Per-event plans are "used
-    // up" the moment sending starts: blocked once invitesConsumed > 0, even
-    // after cancel/delete. Pool plans (-1) are unlimited.
+    // up" the moment sending starts: blocked once `firstSendAt` is set, even
+    // after cancel/delete. (NOT invitesConsumed — a refund clawback bumps that
+    // without a send and must not lock an unsent plan.) Pool plans (-1) unlimited.
     let canCreateEvent;
     if (isPerEvent) {
-      canCreateEvent = (subscription.invitesConsumed || 0) === 0;
+      canCreateEvent = !subscription.firstSendAt;
     } else {
       canCreateEvent = maxEvents === -1 ? true : eventsThisPeriod < maxEvents;
     }

@@ -38,7 +38,12 @@ const displayHandle = (value) => {
  * stay in the server page; this renders the reference layout:
  * hero → [about | contact] → full-width services → full-width portfolio.
  */
-export default function VendorProfile({ vendor, lang, vendorUrl }) {
+export default function VendorProfile({
+  vendor,
+  lang,
+  vendorUrl,
+  marketplaceHref = `/${lang}/market-place`,
+}) {
   const copy = lang === "ar" ? ar : en;
   const rtl = lang === "ar";
   const BackIcon = rtl ? ArrowRight : ArrowLeft;
@@ -68,7 +73,7 @@ export default function VendorProfile({ vendor, lang, vendorUrl }) {
   return (
     <main className={styles.page} dir={rtl ? "rtl" : "ltr"}>
       <div className={styles.topbar}>
-        <Link href={`/${lang}/market-place`} className={styles.backLink}><BackIcon size={18} />{copy.vendor?.backToMarketplace}</Link>
+        <Link href={marketplaceHref} className={styles.backLink}><BackIcon size={18} />{copy.vendor?.backToMarketplace}</Link>
         <ShareButton label={copy.vendor?.share} copiedLabel={copy.vendor?.linkCopied} title={vendor.brandName} />
       </div>
 
@@ -91,16 +96,18 @@ export default function VendorProfile({ vendor, lang, vendorUrl }) {
         </div>
       </section>
 
-      <div className={styles.topRow}>
-        <section className={styles.aboutPanel}>
+      <section className={styles.infoCard}>
+        <div className={styles.aboutBlock}>
           <p className={styles.kicker}>{copy.vendor?.aboutVendor}</p>
           <h2>{copy.vendor?.meetVendor?.replace("{{name}}", vendor.brandName)}</h2>
           <p className={styles.about}>{vendor.about || vendor.tagline}</p>
-        </section>
+        </div>
 
-        <aside className={styles.contactCard}>
-          <h2>{copy.vendor?.contactHeadline}</h2>
-          <p className={styles.contactIntro}>{copy.vendor?.contactDescription}</p>
+        <div className={styles.contactBlock}>
+          <div className={styles.contactHead}>
+            <h3>{copy.vendor?.contactHeadline}</h3>
+            <p className={styles.contactIntro}>{copy.vendor?.contactDescription}</p>
+          </div>
           <div className={styles.primaryActions}>
             {whatsapp && <a className={styles.waButton} href={whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={18} />{copy.vendor?.whatsapp}</a>}
             {telHref && <a className={styles.callButton} href={telHref}><Phone size={18} />{copy.card?.callNow}</a>}
@@ -116,9 +123,9 @@ export default function VendorProfile({ vendor, lang, vendorUrl }) {
               return <a key={key} href={value} target="_blank" rel="noreferrer"><Icon size={18} /><span dir="ltr">{displayHandle(value)}</span></a>;
             })}
           </div>
-          {location && <p className={styles.coverage}>{location}</p>}
-        </aside>
-      </div>
+          {location && <p className={styles.coverage}><MapPin size={16} />{location}</p>}
+        </div>
+      </section>
 
       <section className={styles.block}>
         <div className={styles.blockHead}>

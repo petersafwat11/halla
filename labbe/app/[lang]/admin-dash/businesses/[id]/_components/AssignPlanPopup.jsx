@@ -81,7 +81,7 @@ export default function AssignPlanPopup({ businessId, onClose }) {
   };
 
   return (
-    <PopupLayout isOpen={true} onClose={onClose}>
+    <PopupLayout isOpen={true} onClose={onClose} size="auto">
       <div className={styles.popup}>
         <div className={styles.header}>
           <h2>{t("assignPlan.title")}</h2>

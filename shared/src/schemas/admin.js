@@ -30,7 +30,6 @@ export const addHostSchema = z.object({
 
 export const hostSubscriptionSchema = z.object({
   planCode: z.string().min(1, "الرجاء اختيار خطة"),
-  status: z.enum(["active", "expired", "cancelled"]),
 });
 
 export const subscriptionAssignmentSchema = hostSubscriptionSchema;

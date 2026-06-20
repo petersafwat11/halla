@@ -37,6 +37,8 @@ async function scheduleBulkSend({
   scheduledDate,
   scheduledTime,
   userId,
+  isAdmin = false,
+  actorRole,
 }) {
   const event = await Event.findById(eventId)
     .populate('host', 'name username')
@@ -44,7 +46,7 @@ async function scheduleBulkSend({
   if (!event) {
     throw new NotFoundError('Event');
   }
-  if (event.host && userId && event.host._id.toString() !== userId.toString()) {
+  if (!isAdmin && event.host && userId && event.host._id.toString() !== userId.toString()) {
     throw new ForbiddenError('Not authorized for this event');
   }
 
@@ -104,7 +106,7 @@ async function scheduleBulkSend({
   try {
     await logAudit({
       action: 'messaging.schedule',
-      actor: { _id: userId || null, role: userId ? 'host' : 'system' },
+      actor: { _id: userId || null, role: actorRole || (userId ? 'host' : 'system') },
       targetType: 'event',
       targetId: eventId,
       metadata: {

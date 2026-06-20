@@ -18,6 +18,8 @@
     "title": "Manage Businesses",
     "selectRows": "Please select businesses to delete",
     "viewDetails": "View Details",
+    "managePlan": "Assign Plan",
+    "editProfile": "Edit Data",
     "activate": "Activate",
     "suspend": "Suspend",
     "delete": "Delete",

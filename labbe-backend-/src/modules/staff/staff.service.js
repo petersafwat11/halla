@@ -25,7 +25,11 @@ const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 
-const STAFF_TOKEN_RBAC_ROLES = [ROLES.ADMIN, ROLES.SUPER_ADMIN];
+const STAFF_TOKEN_RBAC_ROLES = [
+  ROLES.ADMIN,
+  ROLES.SUPER_ADMIN,
+  ROLES.MODERATOR,
+];
 
 const escapeRegex = (s) =>
   String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

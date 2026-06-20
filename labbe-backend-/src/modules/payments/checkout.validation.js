@@ -27,7 +27,7 @@ const checkoutAddonItem = z
       ADDON_TYPES.DESIGN_TEMPLATE,
       ADDON_TYPES.BUSINESS_CUSTOMIZATION,
     ]),
-    quantity: z.number().int().min(1).max(50).optional(),
+    quantity: z.number().int().min(1).max(500).optional(),
     templateType: z
       .enum(['ready_made', 'custom_male', 'custom_themed', 'animated', '3d'])
       .optional(),

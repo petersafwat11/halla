@@ -497,8 +497,38 @@ const EventDetailsScreen = () => {
     try {
       const result = await mutation.mutateAsync({ eventId, guestIds });
       const data = result?.data || result || {};
-      const successful = data.successful ?? data.reminded ?? guestIds.length;
       const total = data.reminded ?? guestIds.length;
+
+      // Nothing was sent. Resend only targets guests already sent an invitation
+      // (`invitation.sent: true`), so a host who never sent the initial invites
+      // lands here even though the status filter matched. Surface *why* instead
+      // of a misleading "0/0 sent".
+      if (total === 0) {
+        if (data.code === "SEND_INVITES_FIRST") {
+          toast.error(
+            t(
+              "events:bulkActions.sendInvitesFirst",
+              "أرسِل الدعوات الأولية أولًا، ثم استخدم إعادة الإرسال لمن لم يردّ أو اختار ربما."
+            )
+          );
+        } else {
+          toast.info(
+            t(
+              type === "resend"
+                ? "events:bulkActions.noEligibleNow"
+                : "events:bulkActions.noConfirmedNow",
+              type === "resend"
+                ? "لقد ردّ الجميع — لا يوجد من يمكن إعادة دعوته."
+                : "لا يوجد ضيوف مؤكدون للتذكير بعد."
+            )
+          );
+        }
+        setBulkModal({ open: false, type: null, count: 0, guestIds: [] });
+        exitSelectMode();
+        return;
+      }
+
+      const successful = data.successful ?? guestIds.length;
       toast.success(
         t("events:bulkActions.sentResult", {
           defaultValue: "{{successful}}/{{total}} تم الإرسال",

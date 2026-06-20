@@ -7,6 +7,7 @@ import styles from './datePicker.module.css';
 import Image from 'next/image';
 import Calendar from './Calendar';
 import { formatTemplateDate } from '@halla/shared/utils/formatTemplateDate';
+import { ar } from 'date-fns/locale';
 
 // Normalize a date to midnight so time-of-day never affects day comparisons
 const toDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -21,7 +22,7 @@ const DatePicker = ({
   minDate,
   maxDate,
 }) => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const { control, clearErrors } = useFormContext();
   const {
     field: { onChange, value },
@@ -133,6 +134,7 @@ const DatePicker = ({
             className={styles.calendar}
             month={calendarMonth}
             onMonthChange={setCalendarMonth}
+            locale={i18n.language === 'ar' ? ar : undefined}
           />
         </div>
       </div>

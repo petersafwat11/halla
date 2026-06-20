@@ -105,8 +105,24 @@ const EventsTable = () => {
                 color: "#C0392B",
                 text: t("eventStatus.cancelled", "ملغية"),
               },
+              failed: {
+                bg: "#FEE2E2",
+                color: "#B91C1C",
+                text: t("eventStatus.failed", "فشل الإرسال"),
+              },
+              deleted: {
+                bg: "#F3F4F6",
+                color: "#6B7280",
+                text: t("eventStatus.deleted", "محذوفة"),
+              },
             };
-            const config = statusConfig[value] || statusConfig.pending_scheduling;
+            // Unknown status → neutral chip showing the real status, never a
+            // misleading "pending scheduling" fallback.
+            const config = statusConfig[value] || {
+              bg: "#E5E7EB",
+              color: "#374151",
+              text: t(`eventStatus.${value}`, value || "-"),
+            };
             return (
               <div
                 style={{

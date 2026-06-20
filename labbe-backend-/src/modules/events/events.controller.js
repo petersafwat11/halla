@@ -330,7 +330,7 @@ exports.addStaffToEvent = catchAsync(async (req, res) => {
   const result = await eventsService.addStaffToEvent(
     req.params.eventId,
     req.body,
-    req.user._id
+    req.user
   );
   sendCreated(res, result, "Staff added successfully");
 });
@@ -345,7 +345,7 @@ exports.updateStaff = catchAsync(async (req, res) => {
     eventId,
     staffId,
     req.body,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Staff updated successfully");
 });
@@ -361,7 +361,7 @@ exports.updateStaffStatus = catchAsync(async (req, res) => {
     eventId,
     staffId,
     status,
-    req.user._id
+    req.user
   );
   sendSuccess(res, result, "Staff status updated");
 });
@@ -372,7 +372,7 @@ exports.updateStaffStatus = catchAsync(async (req, res) => {
  */
 exports.deleteStaff = catchAsync(async (req, res) => {
   const { eventId, staffId } = req.params;
-  await eventsService.deleteStaff(eventId, staffId, req.user._id);
+  await eventsService.deleteStaff(eventId, staffId, req.user);
   sendDeleted(res, "Staff deleted successfully");
 });
 

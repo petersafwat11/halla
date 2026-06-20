@@ -14,16 +14,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import TextInput from "../commen/TextInput";
 import MobileInput from "../commen/MobileInput";
+import { useTranslation } from "../../localization";
 
-// Validation schemas
-const guestSchema = z.object({
-  name: z.string().min(2, "الاسم يجب أن يكون حرفين على الأقل"),
-  phone: z.string().min(9, "رقم الجوال غير صحيح")
+// Validation schemas factory functions
+const buildGuestSchema = (t) => z.object({
+  name: z.string().min(2, t("guest_name_error_min", "الاسم يجب أن يكون حرفين على الأقل")),
+  phone: z.string().min(9, t("guest_phone_error_invalid", "رقم الجوال غير صحيح"))
 });
 
-const moderatorSchema = z.object({
-  name: z.string().min(2, "الاسم يجب أن يكون حرفين على الأقل"),
-  phone: z.string().min(9, "رقم الجوال غير صحيح")
+const buildModeratorSchema = (t) => z.object({
+  name: z.string().min(2, t("staff_name_error_min", "الاسم يجب أن يكون حرفين على الأقل")),
+  phone: z.string().min(9, t("staff_phone_error_invalid", "رقم الجوال غير صحيح"))
 });
 
 const AddGuestOrModeratorPopup = ({
@@ -41,11 +42,16 @@ const AddGuestOrModeratorPopup = ({
   onEditItem,
   onDeleteItem
 }) => {
+  const { t } = useTranslation(["createEvent", "common"]);
   const isGuest = type === "guest";
   const isEdit = !!initialData;
 
+  const schema = React.useMemo(() => {
+    return isGuest ? buildGuestSchema(t) : buildModeratorSchema(t);
+  }, [isGuest, t]);
+
   const methods = useForm({
-    resolver: zodResolver(isGuest ? guestSchema : moderatorSchema),
+    resolver: zodResolver(schema),
     defaultValues: initialData || {
       name: "",
       phone: ""
@@ -83,11 +89,11 @@ const AddGuestOrModeratorPopup = ({
             <Text style={styles.title}>
               {isEdit
                 ? isGuest
-                  ? "تعديل ضيف"
-                  : "تعديل مشرف"
+                  ? t("edit_guest", "تعديل ضيف")
+                  : t("edit_moderator", "تعديل مشرف")
                 : isGuest
-                ? "إضافة ضيف جديد"
-                : "إضافة مشرف جديد"}
+                ? t("add_guest_new", "إضافة ضيف جديد")
+                : t("add_moderator", "إضافة مشرف جديد")}
             </Text>
             <TouchableOpacity
               onPress={handleClose}
@@ -108,15 +114,15 @@ const AddGuestOrModeratorPopup = ({
             <FormProvider {...methods}>
               <TextInput
                 name="name"
-                label={isGuest ? "اسم الضيف" : "اسم المشرف"}
-                placeholder="أدخل الاسم الكامل"
+                label={isGuest ? t("guest_name", "اسم الضيف") : t("moderator_name", "اسم المشرف")}
+                placeholder={t("enter_full_name", "أدخل الاسم الكامل")}
                 disabled={loading}
               />
 
               <MobileInput
                 name="phone"
-                label="رقم الجوال"
-                placeholder="5xxxxxxxx"
+                label={t("staff_phone", "رقم الجوال")}
+                placeholder={t("staff_phone_placeholder", "5xxxxxxxx")}
                 disabled={loading}
                 countryCode="+966"
               />
@@ -125,7 +131,7 @@ const AddGuestOrModeratorPopup = ({
             {itemsList.length > 0 && (
               <View style={styles.listSection}>
                 <Text style={styles.listTitle}>
-                  {isGuest ? "الضيوف الحاليون" : "مشرفين البوابة الحالي"} ({itemsList.length})
+                  {isGuest ? t("current_guests", "الضيوف الحاليون") : t("current_moderators", "مشرفين البوابة الحالي")} ({itemsList.length})
                 </Text>
                 {itemsList.map((item) => {
                   const itemId = item._id || item.id;
@@ -178,7 +184,7 @@ const AddGuestOrModeratorPopup = ({
               disabled={loading}
             >
               <Text style={[styles.buttonText, styles.cancelButtonText]}>
-                إلغاء
+                {t("buttons.cancel", "إلغاء")}
               </Text>
             </TouchableOpacity>
 
@@ -194,7 +200,7 @@ const AddGuestOrModeratorPopup = ({
                 <ActivityIndicator color="#FFF" size="small" />
               ) : (
                 <Text style={[styles.buttonText, styles.saveButtonText]}>
-                  {isEdit ? "حفظ التعديلات" : "إضافة"}
+                  {isEdit ? t("save_changes", "حفظ التعديلات") : t("buttons.add", "إضافة")}
                 </Text>
               )}
             </TouchableOpacity>

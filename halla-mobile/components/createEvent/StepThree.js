@@ -130,17 +130,11 @@ const StepThree = () => {
   // ── Picker ──────────────────────────────────────────────────────────
   const pickInvitationImage = useCallback(async () => {
     try {
-      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (perm.status !== "granted") {
-        Alert.alert(
-          t("upload_card_permission_title", "Permission needed"),
-          t(
-            "upload_card_permission_msg",
-            "Halaa needs access to your photos to upload an invitation card.",
-          ),
-        );
-        return;
-      }
+      // No explicit permission request: the expo-image-picker (v17) system
+      // photo picker needs no media-library permission, and gating on
+      // requestMediaLibraryPermissionsAsync() silently bailed here when the
+      // OS returned anything but "granted" — so the picker never opened.
+      // Matches the working ImageInput / MultiImageInput / BusinessSettings.
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: false,

@@ -5,12 +5,13 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { usePoll3DS } from "@/hooks/payments";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import useAuthStore from "@/stores/authStore";
 import styles from "./PaymentReturnClient.module.css";
 
-const PURPOSE_REDIRECT = (lang, purpose) => {
+const PURPOSE_REDIRECT = (lang, purpose, role = "host") => {
   switch (purpose) {
     case "subscription":
-      return `/${lang}/host/subscription`;
+      return `/${lang}/${role}/plans`;
     case "addon":
       return `/${lang}/host/events`;
     case "checkout":
@@ -28,6 +29,8 @@ export default function PaymentReturnClient() {
   const { lang } = useParams();
   const searchParams = useSearchParams();
   const moyasarId = searchParams.get("id");
+  const user = useAuthStore((state) => state.user);
+  const role = user?.role || "host";
 
   const {
     payment,
@@ -41,10 +44,10 @@ export default function PaymentReturnClient() {
   useEffect(() => {
     if (!isTerminal || !payment) return;
     if (SUCCESS_STATUSES.has(status)) {
-      const target = PURPOSE_REDIRECT(lang, payment.metadata?.purpose);
+      const target = PURPOSE_REDIRECT(lang, payment.metadata?.purpose, role);
       router.replace(target);
     }
-  }, [isTerminal, status, payment, lang, router]);
+  }, [isTerminal, status, payment, lang, router, role]);
 
   if (!moyasarId) {
     return (

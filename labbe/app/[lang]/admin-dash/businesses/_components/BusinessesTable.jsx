@@ -4,11 +4,14 @@ import { useAdminBusinesses, useAdminBusinessMutation } from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { FiEye, FiCheckCircle, FiSlash, FiTrash2 } from "react-icons/fi";
+import { useState } from "react";
+import { FiEye, FiCheckCircle, FiSlash, FiTrash2, FiCreditCard, FiEdit2 } from "react-icons/fi";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import Table from "@/ui/commen/new-table/Table";
 import AddBusinessPopup from "./AddBusinessPopup";
+import EditBusinessPopup from "../[id]/_components/EditBusinessPopup";
+import AssignPlanPopup from "../[id]/_components/AssignPlanPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./BusinessesTable.module.css";
 
@@ -33,6 +36,35 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
   const suspend = useAdminBusinessMutation("suspend");
   const activate = useAdminBusinessMutation("activate");
   const deleteBusiness = useAdminBusinessMutation("delete");
+
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
+  const [showAssignPopup, setShowAssignPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+
+  // The row carries only display fields; the popups need the full business
+  // object (e.g. businessData.description), so we look it up from the list.
+  const findFullBusiness = (id) =>
+    (data?.data?.businesses || []).find((b) => (b.id || b._id) === id) || null;
+
+  const openAssignPlan = (id) => {
+    const business = findFullBusiness(id);
+    if (!business) return;
+    setSelectedBusiness(business);
+    setShowAssignPopup(true);
+  };
+
+  const openEditProfile = (id) => {
+    const business = findFullBusiness(id);
+    if (!business) return;
+    setSelectedBusiness(business);
+    setShowEditPopup(true);
+  };
+
+  const closePopups = () => {
+    setShowAssignPopup(false);
+    setShowEditPopup(false);
+    setSelectedBusiness(null);
+  };
 
   const handleToggleStatus = async (id, isSuspended) => {
     const msg = isSuspended ? t("actions.confirmActivate") : t("actions.confirmSuspend");
@@ -71,6 +103,18 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
     ];
 
     if (canUpdate) {
+      actions.push({
+        type: "dropdown",
+        icon: <FiCreditCard size={16} />,
+        text: t("table.managePlan", "تعيين باقة"),
+        onClick: (r) => openAssignPlan(r.id),
+      });
+      actions.push({
+        type: "dropdown",
+        icon: <FiEdit2 size={16} />,
+        text: t("table.editProfile", "تعديل البيانات"),
+        onClick: (r) => openEditProfile(r.id),
+      });
       actions.push({
         type: "dropdown",
         icon: row.status === "suspended" ? <FiCheckCircle size={16} /> : <FiSlash size={16} />,
@@ -171,6 +215,17 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
       </div>
 
       {showAddPopup && <AddBusinessPopup onClose={() => setShowAddPopup(false)} />}
+
+      {showAssignPopup && selectedBusiness && (
+        <AssignPlanPopup
+          businessId={selectedBusiness.id || selectedBusiness._id}
+          onClose={closePopups}
+        />
+      )}
+
+      {showEditPopup && selectedBusiness && (
+        <EditBusinessPopup business={selectedBusiness} onClose={closePopups} />
+      )}
     </>
   );
 }

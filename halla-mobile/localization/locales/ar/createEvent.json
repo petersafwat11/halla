@@ -353,6 +353,18 @@
   "schedule_launches_immediately": "ينطلق فور التأكيد",
   "template_details_title": "تفاصيل القالب",
   "event_details_title": "تفاصيل المناسبة",
+  "edit_moderator": "تعديل مشرف",
+  "add_moderator": "إضافة مشرف جديد",
+  "add_guest_new": "إضافة ضيف جديد",
+  "moderator_name": "اسم المشرف",
+  "enter_full_name": "أدخل الاسم الكامل",
+  "current_guests": "الضيوف الحاليون",
+  "current_moderators": "مشرفين البوابة الحالي",
+  "save_changes": "حفظ التعديلات",
+  "guest_name_error_min": "الاسم يجب أن يكون حرفين على الأقل",
+  "guest_phone_error_invalid": "رقم الجوال غير صحيح",
+  "staff_name_error_min": "الاسم يجب أن يكون حرفين على الأقل",
+  "staff_phone_error_invalid": "رقم الجوال غير صحيح",
   "templates": {
     "fields": {
       "validation": {

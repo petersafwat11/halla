@@ -353,6 +353,18 @@
   "schedule_launches_immediately": "Launches immediately on submit",
   "template_details_title": "Template Details",
   "event_details_title": "Event Details",
+  "edit_moderator": "Edit Supervisor",
+  "add_moderator": "Add New Supervisor",
+  "add_guest_new": "Add New Guest",
+  "moderator_name": "Supervisor Name",
+  "enter_full_name": "Enter full name",
+  "current_guests": "Current Guests",
+  "current_moderators": "Current Gate Supervisors",
+  "save_changes": "Save Changes",
+  "guest_name_error_min": "Name must be at least 2 characters",
+  "guest_phone_error_invalid": "Mobile number is invalid",
+  "staff_name_error_min": "Name must be at least 2 characters",
+  "staff_phone_error_invalid": "Mobile number is invalid",
   "templates": {
     "fields": {
       "validation": {

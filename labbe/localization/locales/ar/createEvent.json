@@ -319,6 +319,17 @@
   "maybe_auto_reply_label": "رد تلقائي لربما",
   "absence_auto_reply_label": "رد تلقائي للغياب",
   "add_note_label": "أضف ملاحظتك",
+  "staff_popup_title": "مشرفين البوابة",
+  "staff_popup_desc": "أضف مشرفين البوابة المسؤولين عن تسجيل حضور الضيوف. سيتمكنون من الوصول لصفحة تسجيل الحضور عبر رابط خاص.",
+  "staff_phone_placeholder": "5xxxxxxxx",
+  "staff_name_placeholder": "ادخل اسم الموظف",
+  "staff_phone_invalid_pattern": "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5",
+  "staff_phone_duplicate": "هذا الرقم موجود بالفعل في القائمة",
+  "staff_update": "تحديث",
+  "staff_cancel": "إلغاء",
+  "staff_add_to_list": "إضافة إلى القائمة",
+  "staff_edit": "تعديل",
+  "staff_delete": "حذف",
   "templates": {
     "fields": {
       "validation": {

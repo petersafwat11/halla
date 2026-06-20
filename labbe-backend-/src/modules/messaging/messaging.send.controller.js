@@ -6,6 +6,7 @@
 const messagingService = require('./messaging.service');
 const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess } = require('../../shared/utils/responseHelper');
+const { isAdminRole } = require('../../shared/constants/roles');
 
 /**
  * @swagger
@@ -35,6 +36,8 @@ exports.sendToGuest = catchAsync(async (req, res) => {
     eventId,
     channel,
     userId: req.user._id,
+    isAdmin: isAdminRole(req.user.role),
+    actorRole: req.user.role,
   });
   sendSuccess(res, result);
 });
@@ -67,6 +70,8 @@ exports.sendBulk = catchAsync(async (req, res) => {
     eventId,
     channel,
     userId: req.user._id,
+    isAdmin: isAdminRole(req.user.role),
+    actorRole: req.user.role,
   });
   sendSuccess(res, result);
 });
@@ -94,7 +99,13 @@ exports.sendBulk = catchAsync(async (req, res) => {
  */
 exports.retryFailed = catchAsync(async (req, res) => {
   const { eventId, channel } = req.body;
-  const result = await messagingService.retryFailed(eventId, channel, req.user._id);
+  const result = await messagingService.retryFailed(
+    eventId,
+    channel,
+    req.user._id,
+    isAdminRole(req.user.role),
+    req.user.role
+  );
   sendSuccess(res, result);
 });
 
@@ -129,6 +140,8 @@ exports.sendReminder = catchAsync(async (req, res) => {
     customMessage,
     reminderTemplateName,
     userId: req.user._id,
+    isAdmin: isAdminRole(req.user.role),
+    actorRole: req.user.role,
   });
   sendSuccess(res, result, `Sent reminders to ${result.successful || 0} guests`);
 });

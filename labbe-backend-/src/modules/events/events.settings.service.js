@@ -37,6 +37,7 @@ const { validateTemplateData } = require('./templateDataValidator');
 const { EVENT_EDIT_LOCKED, REMINDER_OUT_OF_RANGE } = require('../../shared/constants/events');
 
 const { logAudit } = require('../../shared/utils/auditLog');
+const { isAdminRole } = require('../../shared/constants/roles');
 
 module.exports = {
   /**
@@ -378,6 +379,7 @@ module.exports = {
       eventId,
       phoneNumber: messageData.phoneNumber || messageData.phone,
       channel: messageData.channel || 'whatsapp',
+      isAdmin: isAdminRole(userContext?.role),
     });
 
     const userId =

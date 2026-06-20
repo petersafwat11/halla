@@ -20,6 +20,7 @@ const Ticket = require('../../../models/TicketModel');
 const Guest = require('../../../models/GuestModel');
 const Service = require('../../../models/ServiceModel');
 const { isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
+const { signStoredImage } = require('../../shared/utils/s3Upload');
 const {
   personalHostFilter,
   businessHostFilter,
@@ -318,12 +319,12 @@ class DashboardService {
       subscription,
       lastEvent,
     ] = await Promise.all([
-      Event.countDocuments({ host: userId }),
+      Event.countDocuments({ host: userId, status: { $ne: EVENT_STATUS.DELETED } }),
       Event.countDocuments({ host: userId, status: { $in: [EVENT_STATUS.SCHEDULED, EVENT_STATUS.LIVE] } }),
       Event.countDocuments({ host: userId, status: EVENT_STATUS.COMPLETED }),
       Event.countDocuments({ host: userId, status: EVENT_STATUS.PENDING_SCHEDULING }),
       Subscription.findOne({ userId, status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } }).populate('planId').lean(),
-      Event.findOne({ host: userId })
+      Event.findOne({ host: userId, status: { $nin: [EVENT_STATUS.DELETED, EVENT_STATUS.CANCELLED] } })
         .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings testMessageSent templateImage visualTemplate taqnyatTemplate guestReplies')
         .sort({ createdAt: -1 })
         .populate('guestList')
@@ -381,6 +382,14 @@ class DashboardService {
             : 0;
       }
 
+      // Step-3 invitation image (baked template or custom upload). Stored as a
+      // bare S3 key / path → sign it into a renderable URL for the dashboard card.
+      const templateImage = await signStoredImage(
+        lastEvent.visualTemplate?.bakedImagePath ||
+          lastEvent.templateImage ||
+          null
+      );
+
       lastEventData = {
         id: lastEvent._id,
         title: lastEvent.eventDetails?.title || '',
@@ -399,10 +408,7 @@ class DashboardService {
         },
         testMessageSent: lastEvent.testMessageSent || false,
         launchSettings: lastEvent.launchSettings || null,
-        templateImage:
-          lastEvent.visualTemplate?.bakedImagePath ||
-          lastEvent.templateImage ||
-          null,
+        templateImage,
         visualTemplate: lastEvent.visualTemplate || null,
         taqnyatTemplate: lastEvent.taqnyatTemplate || null,
       };

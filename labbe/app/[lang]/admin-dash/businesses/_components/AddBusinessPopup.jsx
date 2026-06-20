@@ -40,7 +40,7 @@ export default function AddBusinessPopup({ onClose }) {
   };
 
   return (
-    <PopupLayout isOpen={true} onClose={onClose}>
+    <PopupLayout isOpen={true} onClose={onClose} size="auto">
       <div className={styles.popup}>
         <div className={styles.header}>
           <h2>{t("addBusiness.title")}</h2>

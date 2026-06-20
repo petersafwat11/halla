@@ -36,6 +36,9 @@ export default function LastEventHeader({ event, locale = "ar-SA" }) {
   const guestCount = event.guestCount || 0;
   const location = event.locationName || "";
   const status = STATUS_STYLE[event.status] || DEFAULT_STATUS;
+  // Step-3 invitation image, signed by the dashboard endpoint. Fall back to the
+  // legacy `image` field for any older payload shape.
+  const image = event.templateImage || event.image;
 
   return (
     <View style={styles.contentRow}>
@@ -70,8 +73,8 @@ export default function LastEventHeader({ event, locale = "ar-SA" }) {
       </View>
 
       <View style={styles.imageContainer}>
-        {event.image ? (
-          <Image source={{ uri: event.image }} style={styles.image} />
+        {image ? (
+          <Image source={{ uri: image }} style={styles.image} />
         ) : (
           <View style={styles.placeholderImage} />
         )}

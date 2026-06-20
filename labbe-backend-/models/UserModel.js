@@ -288,10 +288,8 @@ const userSchema = new mongoose.Schema(
       },
     },
 
-    // Server-enforced first-login password change. Set true when an admin
-    // creates a business (admin-chosen password); cleared on first change.
-    // Enforcement is a server-side gate (see requirePasswordChanged middleware),
-    // not just a client prompt.
+    // One-time password-update recommendation for admin-created businesses.
+    // It is advisory only and is consumed after the first successful login.
     mustChangePassword: { type: Boolean, default: false },
 
     // Granular permissions (for moderators)

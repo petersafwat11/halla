@@ -63,7 +63,10 @@ module.exports = {
     const { page = 1, limit = 10 } = options;
     const skip = (page - 1) * limit;
 
-    let query = { host: userId };
+    // Soft-deleted events are tombstones — never surface them in the host's
+    // list. A status filter (below) never asks for 'deleted', so it's safe to
+    // let an explicit status override this.
+    let query = { host: userId, status: { $ne: EVENT_STATUS.DELETED } };
 
     if (search) {
       const searchQuery = this.buildSearchQuery(search, [
@@ -596,11 +599,22 @@ module.exports = {
       throw new ValidationError("Invalid status value");
     }
 
+    const prevStatus = event.status;
     event.status = status;
     if (status === EVENT_STATUS.CANCELLED) {
       event.cancelledAt = new Date();
     }
     await event.save();
+
+    // Free the event slot when cancelling a still-active event (mirrors delete)
+    // so "events X/Y" reflects the cancellation. A per-event plan that already
+    // sent stays permanently used — _freeEventSlot keeps its slot occupied.
+    if (
+      status === EVENT_STATUS.CANCELLED &&
+      ![EVENT_STATUS.DELETED, EVENT_STATUS.CANCELLED].includes(prevStatus)
+    ) {
+      await this._freeEventSlot(event.subscriptionId);
+    }
 
     // NOTE: cancellation does NOT release invites. `invitesConsumed` now
     // reflects actually-sent messages (charged at send time), which are
@@ -623,6 +637,40 @@ module.exports = {
     }).catch(() => {});
 
     return { event };
+  },
+
+  /**
+   * Free one "event slot" on a subscription when an event is removed
+   * (soft-deleted or cancelled). `usage.eventsCreated` is a display counter
+   * (the real create-gate keys off invitesConsumed + active-event count), so it
+   * must drop when an event goes away or the host's "events X/Y" never frees.
+   *
+   * Exception: a per-event plan that has ALREADY SENT (invitesConsumed > 0) is
+   * permanently used — keep the slot occupied so it can't be reused. Floored at
+   * 0 and idempotent (callers only invoke it on a still-active event).
+   * @private
+   */
+  async _freeEventSlot(subscriptionId) {
+    if (!subscriptionId) return;
+    try {
+      const sub = await Subscription.findById(subscriptionId)
+        .populate('planId', 'planType')
+        .lean();
+      if (!sub) return;
+      // A per-event plan is permanently used once SENDING has started — gate on
+      // `firstSendAt` (the authoritative signal the rest of the codebase uses),
+      // NOT invitesConsumed: a partial-refund clawback bumps invitesConsumed
+      // without any send, and must not lock an unsent plan's slot.
+      if (isPerEventPlan(sub.planId?.planType) && sub.firstSendAt) {
+        return; // per-event plan already used by a send — slot stays occupied
+      }
+      await Subscription.updateOne(
+        { _id: subscriptionId, 'usage.eventsCreated': { $gt: 0 } },
+        { $inc: { 'usage.eventsCreated': -1 } }
+      );
+    } catch (e) {
+      logger.warn('[events] failed to free event slot', { subscriptionId: String(subscriptionId), err: e?.message });
+    }
   },
 
   /**
@@ -686,6 +734,12 @@ module.exports = {
       await session.endSession();
     }
 
+    // Free the event slot ("events X/Y") — only when this was still an active
+    // event, so a re-delete of an already-tombstoned event can't double-count.
+    if (![EVENT_STATUS.DELETED, EVENT_STATUS.CANCELLED].includes(event.status)) {
+      await this._freeEventSlot(event.subscriptionId);
+    }
+
     // Audit event deletion
     logAudit({
       action: 'event.deleted',
@@ -704,7 +758,7 @@ module.exports = {
    */
   async bulkDeleteEvents(eventIds, userId) {
     const events = await Event.find({ _id: { $in: eventIds }, host: userId })
-      .select('_id eventDetails.title')
+      .select('_id eventDetails.title subscriptionId status')
       .lean();
     const validIds = events.map((e) => e._id);
     if (validIds.length === 0) return { deletedCount: 0 };
@@ -723,6 +777,13 @@ module.exports = {
       });
     } finally {
       await session.endSession();
+    }
+
+    // Free a slot for each event that was still active before this delete.
+    for (const e of events) {
+      if (![EVENT_STATUS.DELETED, EVENT_STATUS.CANCELLED].includes(e.status)) {
+        await this._freeEventSlot(e.subscriptionId);
+      }
     }
 
     logAudit({
