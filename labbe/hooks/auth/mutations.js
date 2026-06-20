@@ -9,18 +9,31 @@ import { usersKeys } from "@/hooks/users/keys";
 
 // Routing hints only — server is authoritative. Access/refresh tokens live in
 // HttpOnly cookies set by the backend; JS must never read them.
-const setAuthRoutingCookies = (userRole, profileCompleted = true) => {
+const setAuthRoutingCookies = (
+  userRole,
+  profileCompleted = true,
+  mustChangePassword = false
+) => {
   Cookies.set("userType", userRole || "host", { expires: 7, sameSite: "lax" });
   Cookies.set("profileCompleted", profileCompleted ? "true" : "false", {
     expires: 7,
     sameSite: "lax",
   });
+  // Routing hint for the middleware/host guard. Business accounts provisioned
+  // by an admin may be flagged `mustChangePassword`; the server also enforces
+  // this (403 PASSWORD_CHANGE_REQUIRED) — this cookie only drives UI routing.
+  if (mustChangePassword) {
+    Cookies.set("mustChangePassword", "true", { expires: 7, sameSite: "lax" });
+  } else {
+    Cookies.remove("mustChangePassword");
+  }
 };
 
 const clearAuthCookies = () => {
   Cookies.remove("token");
   Cookies.remove("userType");
   Cookies.remove("profileCompleted");
+  Cookies.remove("mustChangePassword");
 };
 
 export const useAuthMutation = (action) => {
@@ -40,7 +53,7 @@ export const useAuthMutation = (action) => {
         const user = data?.user;
         const subscription = data?.subscription;
         const profileCompleted = user?.roleData?.profileCompleted ?? true;
-        setAuthRoutingCookies(user?.role, profileCompleted);
+        setAuthRoutingCookies(user?.role, profileCompleted, user?.mustChangePassword === true);
         setAuth(user, subscription);
         return { user, profileCompleted };
       },
@@ -71,7 +84,7 @@ export const useAuthMutation = (action) => {
         const user = data?.user;
         const subscription = data?.subscription;
         const profileCompleted = data?.profileCompleted ?? true;
-        setAuthRoutingCookies(user?.role, profileCompleted);
+        setAuthRoutingCookies(user?.role, profileCompleted, user?.mustChangePassword === true);
         setAuth(user, subscription);
         clearOTPState();
         return { user, isNewUser: false, profileCompleted };
@@ -141,7 +154,7 @@ export const useAuthMutation = (action) => {
         const user = data?.user;
         const subscription = data?.subscription;
         const profileCompleted = data?.profileCompleted ?? true;
-        setAuthRoutingCookies(user?.role, profileCompleted);
+        setAuthRoutingCookies(user?.role, profileCompleted, user?.mustChangePassword === true);
         setAuth(user, subscription);
         clearOTPState();
         return { user, isNewUser: true, profileCompleted };

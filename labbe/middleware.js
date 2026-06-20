@@ -148,6 +148,21 @@ export async function middleware(request) {
   if (userType) {
     // User is logged in
 
+    // Business accounts provisioned by an admin may be flagged
+    // `mustChangePassword`. Force them onto the change-password screen and
+    // block every other route until they rotate the temporary password. The
+    // server also enforces this (403 PASSWORD_CHANGE_REQUIRED); this is just a
+    // graceful client-side route. The cookie is cleared after a successful
+    // password update (see hooks/users/mutations.js → updatePassword).
+    const mustChangePassword =
+      request.cookies.get("mustChangePassword")?.value === "true";
+    const isChangePasswordRoute = routePath.startsWith("/change-password");
+    if (mustChangePassword && !isChangePasswordRoute) {
+      return NextResponse.redirect(
+        new URL(`/${locale}/change-password`, request.url)
+      );
+    }
+
     // Check if user profile is complete (from cookie set during login)
     const profileCompleted = request.cookies.get("profileCompleted")?.value;
 

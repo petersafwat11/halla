@@ -25,6 +25,8 @@ const updateProfileSchema = z
     name: z.string().min(1).max(100).optional(),
     email: z.string().email().optional(),
     preferredLanguage: z.enum(["ar", "en"]).optional(),
+    // Business accounts edit their public description here.
+    description: z.string().max(2000).optional(),
   })
   .strict();
 

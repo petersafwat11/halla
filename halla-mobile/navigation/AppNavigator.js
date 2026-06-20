@@ -21,6 +21,8 @@ import SignupScreen from "../screens/auth/SignupScreen";
 import ForgetPasswordScreen from "../screens/auth/ForgetPasswordScreen";
 import ResetPasswordScreen from "../screens/auth/ResetPasswordScreen";
 import PlansScreen from "../screens/host/PlansScreen";
+import BusinessPlansScreen from "../screens/host/BusinessPlansScreen";
+import ForcePasswordChangeScreen from "../screens/host/ForcePasswordChangeScreen";
 import PlansSummaryScreen from "../screens/host/PlansSummaryScreen";
 import SettingsScreen from "../screens/host/SettingsScreen";
 import AccountSettingsScreen from "../screens/host/AccountSettingsScreen";
