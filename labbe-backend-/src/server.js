@@ -9,8 +9,9 @@ const { connectDB } = require('./config/database');
 const createApp = require('./app');
 const { initScheduledTasks } = require('./shared/utils/scheduledTasks');
 
-// Ensure BusinessSetupFeeModel is registered with Mongoose before app starts
+// Ensure business-account models are registered with Mongoose before app starts
 require('../models/BusinessSetupFeeModel');
+require('../models/BusinessPlanAssignmentModel');
 
 /**
  * Start the server

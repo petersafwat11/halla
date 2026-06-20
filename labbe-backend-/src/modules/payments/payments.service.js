@@ -108,6 +108,25 @@ class PaymentsService {
       ) {
         const checkoutService = require('./checkout.service');
         await checkoutService.finalizePending3ds(payment._id);
+      } else if (purpose === 'business_checkout' && payment.metadata?.assignmentId) {
+        // Business plan checkout link: mark paid + activate idempotently.
+        // The assignment's compare-and-set makes this safe to call from
+        // webhook, browser callback, and reconcile alike. [#2]
+        const assignmentService = require('../business/business.assignment.service');
+        const BusinessPlanAssignment = require('../../../models/BusinessPlanAssignmentModel');
+        const { ASSIGNMENT_STATUS } = BusinessPlanAssignment;
+        const a = await BusinessPlanAssignment.findById(payment.metadata.assignmentId);
+        if (a && a.status === ASSIGNMENT_STATUS.PAYMENT_PROCESSING) {
+          await BusinessPlanAssignment.transition(
+            a._id,
+            ASSIGNMENT_STATUS.PAYMENT_PROCESSING,
+            a.version,
+            ASSIGNMENT_STATUS.PAID
+          );
+        }
+        await assignmentService.finalizeActivation(payment.metadata.assignmentId, {
+          paymentRecord: payment,
+        });
       }
     } catch (err) {
       logger.error('[payments.finalize] failed', {
