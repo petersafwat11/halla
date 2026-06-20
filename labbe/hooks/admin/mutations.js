@@ -88,6 +88,80 @@ export const useAdminHostMutation = (action) => {
   return useMutation(mutations[action]);
 };
 
+export const useAdminBusinessMutation = (action) => {
+  const queryClient = useQueryClient();
+
+  const invalidateAll = (businessId) => {
+    queryClient.invalidateQueries({ queryKey: adminKeys.businessesAll() });
+    queryClient.invalidateQueries({ queryKey: dashboardAll() });
+    if (businessId) {
+      queryClient.invalidateQueries({ queryKey: adminKeys.businessDetail(businessId) });
+    }
+  };
+
+  const mutations = {
+    // `data` is FormData (name, phoneNumber, email, password, description, logo).
+    create: {
+      mutationFn: (data) =>
+        apiRequest({ method: "POST", path: API_PATHS.admin.businesses.create, data }),
+      onSuccess: () => invalidateAll(),
+    },
+    update: {
+      mutationFn: ({ businessId, ...data }) =>
+        apiRequest({ method: "PATCH", path: API_PATHS.admin.businesses.update(businessId), data }),
+      onSuccess: (_r, { businessId }) => invalidateAll(businessId),
+    },
+    // `data` is FormData with a single `logo` field.
+    updateLogo: {
+      mutationFn: ({ businessId, data }) =>
+        apiRequest({ method: "PATCH", path: API_PATHS.admin.businesses.updateLogo(businessId), data }),
+      onSuccess: (_r, { businessId }) => invalidateAll(businessId),
+    },
+    assignPlan: {
+      mutationFn: ({ businessId, mode, planCode, discountCode, grantReason }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.admin.businesses.assignPlan(businessId),
+          data: { mode, planCode, discountCode, grantReason },
+        }),
+      onSuccess: (_r, { businessId }) => invalidateAll(businessId),
+    },
+    revokeAssignment: {
+      mutationFn: ({ businessId, assignmentId }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.admin.businesses.revokeAssignment(assignmentId),
+        }),
+      onSuccess: (_r, { businessId }) => invalidateAll(businessId),
+    },
+    regenerateAssignment: {
+      mutationFn: ({ businessId, assignmentId }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.admin.businesses.regenerateAssignment(assignmentId),
+        }),
+      onSuccess: (_r, { businessId }) => invalidateAll(businessId),
+    },
+    suspend: {
+      mutationFn: (businessId) =>
+        apiRequest({ method: "PATCH", path: API_PATHS.admin.businesses.suspend(businessId) }),
+      onSuccess: (_r, businessId) => invalidateAll(businessId),
+    },
+    activate: {
+      mutationFn: (businessId) =>
+        apiRequest({ method: "PATCH", path: API_PATHS.admin.businesses.activate(businessId) }),
+      onSuccess: (_r, businessId) => invalidateAll(businessId),
+    },
+    delete: {
+      mutationFn: (businessId) =>
+        apiRequest({ method: "DELETE", path: API_PATHS.admin.businesses.delete(businessId) }),
+      onSuccess: () => invalidateAll(),
+    },
+  };
+
+  return useMutation(mutations[action]);
+};
+
 export const useAdminVendorMutation = (action) => {
   const queryClient = useQueryClient();
 
