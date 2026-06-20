@@ -15,6 +15,7 @@ const i18nNamespaces = [
   "plans",
   "adminEvents",
   "adminHosts",
+  "adminBusinesses",
   "adminVendors",
   "adminVendorDetails",
   "adminPayments",

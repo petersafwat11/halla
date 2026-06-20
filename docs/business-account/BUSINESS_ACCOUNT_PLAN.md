@@ -107,3 +107,57 @@ Concurrent checkout submissions; callback/webhook race (no double-activate); exp
 ## Open sub-items
 1. Event-target selector: combined list + account-type badge (assumed) vs separate tab.
 2. Whether admins manage businesses on **mobile** (business *users* on mobile are in scope).
+
+---
+
+## Implementation status (Rev 5 — 2026-06-20)
+
+Implemented end-to-end on branch `claude/business-account-plan-impl-6qqexv`.
+
+**B1 — availability rename** ✅ `whitelabel`→`business` across `PLAN_AVAILABILITY`,
+planDefaults, `PlanModel` enum, `plans.service` query, swagger, shared zod enum.
+Idempotent migration `scripts/migrate-plan-availability-whitelabel-to-business.js`.
+Prereq bug fixed: `checkout.service` `_fulfillBundle` `user` ReferenceError.
+
+**B2A — account model** ✅ `accountType` (fail-closed host validator) +
+`mustChangePassword` + `profile.businessData` + `{role,accountType,status}` index on
+`UserModel`. `toPublicJSON`/admin `formatUserResponse` surface businessData/accountType/
+mustChangePassword. Central `accountScope` helpers applied to admin.hosts (12) +
+dashboard host counts (segregated) + business reporting counts/stat card. All host
+creates set accountType. Server-enforced mustChangePassword gate in `protect` (+self-
+service allowlist; cleared on password change). `ADMIN_PAGES.BUSINESSES` RBAC. Startup
+fail-closed assertion + `scripts/migrate-host-account-type-backfill.js`.
+
+**B2B — state machines** ✅ `BusinessPlanAssignment` model (full status machine,
+compare-and-set `transition()`, partial unique index = one actionable per business,
+hashed token). `Payment.lineItems[]` + refund `allocations[]`. `BusinessSetupFee`
+entitlement (unique-per-business, settle-on-first-activation). `money` util (round2 +
+proportional discount allocation; fee after discount). `business` module: setupFee,
+quote, and assignment services (grant A + checkout B, idempotent activation, invite-pool
+carryover, paid-but-activation-failed refund, revoke/regenerate/expire-stale). Payment
+finalization routes `business_checkout` → idempotent activation. Canonical URL config.
+
+**B3 — admin Businesses** ✅ backend: `admin.businesses` service/controller/routes
+(list/detail/create+logo/update/logo-replace/assign-plan A·B/revoke·regenerate/suspend·
+activate·delete), zod schemas, barrels + mount; public `/business/checkout/:token`
+summary+submit; `business_checkout` WhatsApp+SMS delivery. Web: api/paths + admin query
+keys/queries/mutations. **Page UI + i18n: delivered via UI build (see B3/B4 frontend
+commits).**
+
+**B5 — event delivery** ✅ Event `branding{logoKey,businessName}` +
+`invitationDeliveryMode` (deterministic) + `invitationTemplate` snapshot; `createEvent`
+copies logo to event-owned immutable S3 key (rollback on fail) + snapshots name;
+`_formatEventForGuest` async-signs branding; centralized **dispatch-policy gate** wired
+into the cron launch path; hourly cron expires stale links.
+
+**B4 — business dashboard (web + mobile)** — frontend UI (plans/self-upgrade/settings/
+no-sub/hosted-checkout page + mobile parity) delivered via the frontend build.
+
+**B6 — verification** — unit tests for money rules + account-scope fail-closed
+(`test/business-money.test.js`, `test/account-scope.test.js`, 9 passing). DB-integration
+tests require an environment with deps installed (`link:../shared` workspace).
+
+**Operator runbook (deploy order):** run both migrations with `--apply`
+(plan-availability + host-accountType backfill), reseed plans if needed, approve the two
+Meta templates (`business_checkout`, invite link), set `FRONTEND_URL`,
+`WA_BUSINESS_CHECKOUT_TEMPLATE`/`_LANG`.
