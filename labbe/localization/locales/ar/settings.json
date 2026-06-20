@@ -4,7 +4,17 @@
   "page_description": "إدارة إعدادات حسابك وتفضيلاتك",
   "tabs": {
     "account": "إعدادات الحساب",
+    "business": "إعدادات الأعمال",
     "notifications": "الإشعارات"
+  },
+  "business": {
+    "logo": "شعار الأعمال",
+    "noLogo": "لا يوجد شعار",
+    "changeLogo": "تغيير الشعار",
+    "description": "وصف الأعمال",
+    "descriptionPlaceholder": "صف نشاطك التجاري للضيوف والدعوات…",
+    "updatedSuccessfully": "تم تحديث إعدادات الأعمال بنجاح",
+    "updateFailed": "فشل تحديث إعدادات الأعمال"
   },
   "account_settings": "إعدادات الحساب",
   "permissions": "الصلاحيات",

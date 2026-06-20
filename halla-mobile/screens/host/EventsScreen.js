@@ -6,8 +6,9 @@ import { useTranslation } from "../../localization";
 import EventList from "../../components/events/EventList";
 import MakeYourFirst from "../../components/home/MakeYourFirst";
 import { TopBar } from "../../components/plans";
-import { useEventStats } from "../../hooks";
+import { useEventStats, useBusinessCreateEventGate } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
+import { useToast } from "../../contexts/ToastContext";
 
 /**
  * Host events list. Tapping an event pushes the shared `EventDetails`
@@ -19,6 +20,10 @@ import { useAuthStore } from "../../stores/authStore";
 const EventsScreen = ({ navigation }) => {
   const { t } = useTranslation("events");
   const { token } = useAuthStore();
+  const toast = useToast();
+  // Business accounts with no active subscription cannot create events
+  // (subscription-gated server-side). Reflect that in the create-event entry.
+  const { blocked: createEventBlocked } = useBusinessCreateEventGate();
 
   const { data: eventsData, isLoading: loading, error } = useEventStats();
 
@@ -29,6 +34,19 @@ const EventsScreen = ({ navigation }) => {
     },
     [navigation]
   );
+
+  const handleCreateEvent = useCallback(() => {
+    // No active subscription (business) → route to the business plans screen
+    // for activation instead of opening a wizard that would 403 on submit.
+    if (createEventBlocked) {
+      toast.info(
+        t("createEvent.businessActivationRequired", "فعّل اشتراكك لإنشاء مناسبة")
+      );
+      navigation.navigate("MainTabs", { screen: "Plans" });
+      return;
+    }
+    navigation.navigate("CreateEventScreen");
+  }, [createEventBlocked, navigation, toast, t]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -45,9 +63,7 @@ const EventsScreen = ({ navigation }) => {
           </View>
         ) : (eventsData?.events?.length ?? 0) === 0 ? (
           <View style={styles.emptyContainer}>
-            <MakeYourFirst
-              onCreatePress={() => navigation.navigate("CreateEventScreen")}
-            />
+            <MakeYourFirst onCreatePress={handleCreateEvent} />
           </View>
         ) : (
           <EventList
@@ -60,7 +76,7 @@ const EventsScreen = ({ navigation }) => {
         )}
         <TouchableOpacity
           style={styles.createEventFab}
-          onPress={() => navigation.navigate("CreateEventScreen")}
+          onPress={handleCreateEvent}
           activeOpacity={0.8}
         >
           <Ionicons name="add" size={20} color="#FFF" />

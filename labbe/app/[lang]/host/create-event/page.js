@@ -23,6 +23,8 @@ import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { useTranslation } from "react-i18next";
 import EventLimitReached from "@/ui/host/subscription/EventLimitReached";
+import NoSubscriptionBanner from "@/ui/host/subscription/NoSubscriptionBanner";
+import useAuthStore from "@/stores/authStore";
 import { toastUtils } from "@/utils/toastUtils";
 
 import { handleError } from "@/services/errorHandlingService";
@@ -57,8 +59,16 @@ const CreateEventV2 = () => {
     useEventSubscriptionInfo();
   const createEvent = useCreateEvent();
 
+  // Business accounts have no subscription until an admin activates one, and
+  // create-event is subscription-gated server-side (403). Reflect that here so
+  // the business user sees the "activate a plan / contact admin" banner instead
+  // of bouncing off a server error mid-wizard.
+  const user = useAuthStore((state) => state.user);
+  const isBusiness = user?.accountType === "business";
+
   // Derived state - backend returns { data: { hasSubscription, limits, usage, canCreateEvent } }
   const subscriptionInfo = subscriptionData?.data;
+  const businessNoSub = isBusiness && subscriptionInfo?.hasSubscription === false;
   const canCreateEvent =
     !subscriptionInfo?.hasSubscription || subscriptionInfo?.canCreateEvent !== false;
 
@@ -176,6 +186,17 @@ const CreateEventV2 = () => {
   if (subscriptionLoading && !isCompleting) {
     return (
       <SimpleLoading message={t("loading.checking_subscription")} />
+    );
+  }
+
+  // Business account with no active subscription — admin must activate a plan.
+  if (!isCompleting && businessNoSub) {
+    return (
+      <div className={styles.page_container}>
+        <div className={styles.main_content}>
+          <NoSubscriptionBanner showAction />
+        </div>
+      </div>
     );
   }
 

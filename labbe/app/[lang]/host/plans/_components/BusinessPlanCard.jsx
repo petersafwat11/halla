@@ -1,5 +1,6 @@
 "use client";
 import { useTranslation } from "react-i18next";
+import { getLocalized } from "@halla/shared/utils/locale";
 import PlanCard from "@/ui/plans/PlanCard/PlanCard";
 
 /**
@@ -21,17 +22,27 @@ const BusinessPlanCard = ({
   ctaLabel,
   onSelect,
 }) => {
-  const { t } = useTranslation("plans");
+  const { t, i18n } = useTranslation("plans");
 
   if (!plan) return null;
 
   const cardBillingType = billingType === "event" ? "event" : "monthly";
 
+  // Each business plan has a distinct name, so render the plan's own localized
+  // name rather than a shared family label. Passing planFamily falsy makes the
+  // shared PlanCard fall back to matchedPlan.name.
+  const localizedName =
+    getLocalized(plan, "name", i18n.language) ||
+    plan.name ||
+    plan.nameEn ||
+    plan.nameAr;
+  const planForCard = { ...plan, name: localizedName };
+
   return (
     <PlanCard
-      planFamily="business"
-      matchedPlan={plan}
-      plans={[plan]}
+      planFamily={null}
+      matchedPlan={planForCard}
+      plans={[planForCard]}
       billingType={cardBillingType}
       selectedInvites={null}
       onInviteChange={() => {}}

@@ -43,8 +43,12 @@ export const useBusinessPlansPageState = () => {
   const subscription = subscriptionData?.data?.subscription ?? null;
   const usage = subscription?.usage || null;
 
-  // A business may only self-upgrade once it already has an active subscription.
-  const hasActiveSubscription = subscription?.status === "active";
+  // A business may only self-upgrade once it already has an active (or trial)
+  // subscription. /subscriptions/my only ever returns an active/trial row, so
+  // the mere presence of a subscription with one of those statuses is enough.
+  const hasActiveSubscription =
+    !!subscription &&
+    ["active", "trial"].includes(subscription.status);
 
   const plansByFamily = useMemo(() => {
     const out = {};

@@ -1,6 +1,9 @@
 {
   "welcome": "Welcome",
   "guest": "Guest",
+  "createEvent": {
+    "businessActivationRequired": "Activate your subscription to create an event"
+  },
   "dashboard": {
     "title": "Dashboard",
     "stats": {
