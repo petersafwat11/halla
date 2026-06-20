@@ -778,6 +778,15 @@ async function _runAutoReminderForEvent(event) {
   const category = event.eventDetails?.type || null;
   const eventId = event._id;
 
+  // Centralized dispatch-policy gate (business-account #11) — reminders are a
+  // guest-facing send path, so a suspended owner / lapsed-or-refunding
+  // subscription / terminal event must NOT trigger reminder dispatch.
+  const dispatchPolicy = require("../../modules/messaging/messaging.dispatchPolicy.service");
+  const decision = await dispatchPolicy.assertCanDispatch(event, { path: "cron-reminder" });
+  if (!decision.allowed) {
+    return { reminded: false, reason: `dispatch_blocked:${decision.reason}` };
+  }
+
   const allGuests = await Guest.find({
     event: eventId,
     "invitation.sent": true,

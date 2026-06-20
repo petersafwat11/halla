@@ -47,8 +47,21 @@ class CheckoutService {
     // account (self-upgrade among business plans). A no-subscription business
     // is admin-assigned only — that path goes through the assignment service,
     // not this self-checkout. A personal host can never buy a business plan.
-    if (plan.availableFor === 'business' && user.accountType !== 'business') {
-      throw new ValidationError('This plan is reserved for business accounts');
+    if (plan.availableFor === 'business') {
+      if (user.accountType !== 'business') {
+        throw new ValidationError('This plan is reserved for business accounts');
+      }
+      // No self-purchase before the first admin activation. Require an existing
+      // active/trial business subscription (self-upgrade only). [#6 #29]
+      const activeBusinessSub = await Subscription.findOne({
+        userId,
+        status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
+      });
+      if (!activeBusinessSub) {
+        throw new ValidationError(
+          'Your business plan must be activated by an administrator before you can change it.'
+        );
+      }
     }
     if (plan.availableFor === 'host' && user.role !== ROLES.HOST) {
       throw new ValidationError('This plan is not available for your account type');
@@ -608,6 +621,29 @@ class CheckoutService {
         );
       }
       throw createErr;
+    }
+
+    // Business self-upgrade: carry remaining (base+compensation−consumed)
+    // invites from the subscription(s) being replaced onto the new one's
+    // compensation pool, per the merged-pool carryover rule. [#7] Only for
+    // business plans; host checkout behaviour is unchanged.
+    if (plan.availableFor === 'business' && existingActive.length > 0) {
+      let carried = 0;
+      for (const old of existingActive) {
+        if (old.invitePool === null || old.invitePool === undefined) continue;
+        carried += Math.max(
+          0,
+          (old.invitePool || 0) + (old.compensationPool || 0) - (old.invitesConsumed || 0)
+        );
+      }
+      if (
+        carried > 0 &&
+        subscription.invitePool !== null &&
+        subscription.invitePool !== undefined
+      ) {
+        subscription.compensationPool = (subscription.compensationPool || 0) + carried;
+        await subscription.save();
+      }
     }
 
     // Subscription is up — now cancel old actives.

@@ -127,14 +127,24 @@ class BusinessAssignmentService {
         assignment,
         paymentRecord: null,
       });
-      await setupFeeService.settleWaived(businessUserId, {
-        plan,
-        assignmentId: assignment._id,
-        waivedBy: createdBy,
-        reason: grantReason || 'direct_grant',
-      });
       assignment.subscriptionId = subscription._id;
       await assignment.save();
+
+      // Waive the setup fee permanently. Best-effort: the grant (no payment)
+      // is already active, so a settle hiccup must not fail the grant.
+      try {
+        await setupFeeService.settleWaived(businessUserId, {
+          plan,
+          assignmentId: assignment._id,
+          waivedBy: createdBy,
+          reason: grantReason || 'direct_grant',
+        });
+      } catch (settleErr) {
+        logger.error('[business.assignment] setup-fee waive failed post-grant', {
+          assignmentId: String(assignment._id),
+          error: settleErr?.message,
+        });
+      }
 
       await logAudit({
         action: 'business.plan.granted',
@@ -519,15 +529,9 @@ class BusinessAssignmentService {
         paymentRecord: payment,
       });
 
-      // Settle setup fee PAID permanently (amount = setup line on the quote).
-      const setupLine = (assignment.lineItems || []).find((li) => li.type === 'setup_fee');
-      await setupFeeService.settlePaid(assignment.businessUserId, {
-        plan: planDoc,
-        amount: assignment.setupFeeSnapshot,
-        paymentId: payment?._id || null,
-        assignmentId: assignment._id,
-      });
-
+      // Flip PAID → ACTIVE FIRST (compare-and-set). The subscription now
+      // exists, so activation has effectively succeeded — anything after this
+      // is best-effort and must NOT trigger the activation-failure refund.
       const activated = await BusinessPlanAssignment.transition(
         assignment._id,
         ASSIGNMENT_STATUS.PAID,
@@ -543,6 +547,27 @@ class BusinessAssignmentService {
       if (payment) {
         payment.subscriptionId = subscription._id;
         await payment.save().catch(() => {});
+      }
+
+      // Settle the setup fee PAID permanently. Best-effort: a failure here does
+      // NOT roll back the (already active) subscription — it is logged for
+      // reconciliation. amount = the snapshotted setup line (0 for q/a). [#5]
+      try {
+        const setupLine = payment
+          ? (payment.lineItems || []).find((li) => li.type === 'setup_fee')
+          : null;
+        await setupFeeService.settlePaid(assignment.businessUserId, {
+          plan: planDoc,
+          amount: assignment.setupFeeSnapshot,
+          paymentId: payment?._id || null,
+          lineItemId: setupLine?._id || null,
+          assignmentId: assignment._id,
+        });
+      } catch (settleErr) {
+        logger.error('[business.assignment] setup-fee settle failed post-activation', {
+          assignmentId: String(assignment._id),
+          error: settleErr?.message,
+        });
       }
 
       await logAudit({
