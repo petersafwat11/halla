@@ -516,6 +516,31 @@ class BusinessAssignmentService {
       );
     }
 
+    // CLAIM FIRST: compare-and-set PAID → ACTIVE *before* any destructive side
+    // effect. A Moyasar webhook and the browser return-callback (and the
+    // reconciliation cron) can all reach here with status=PAID within
+    // milliseconds; only the version-matching winner proceeds to create the
+    // subscription, carry invites, and cancel old subs. Losers return idempotent
+    // success. (Previously _activateSubscription ran BEFORE the CAS, so two
+    // concurrent callers could each create a subscription / double-carry invites
+    // / double-cancel old subs before the CAS picked a winner.)
+    const claimed = await BusinessPlanAssignment.transition(
+      assignment._id,
+      ASSIGNMENT_STATUS.PAID,
+      assignment.version,
+      ASSIGNMENT_STATUS.ACTIVE,
+      { completedAt: new Date() }
+    );
+    if (!claimed) {
+      // Lost the race — another actor already claimed activation. Idempotent
+      // success; re-read to return the subscription if it is already linked.
+      const fresh = await BusinessPlanAssignment.findById(assignment._id);
+      const sub = fresh?.subscriptionId
+        ? await Subscription.findById(fresh.subscriptionId)
+        : null;
+      return { assignment: fresh || assignment, subscription: sub, alreadyActive: true };
+    }
+
     const planDoc = plan || (await Plan.findById(assignment.planId));
     const payment =
       paymentRecord ||
@@ -529,20 +554,14 @@ class BusinessAssignmentService {
         paymentRecord: payment,
       });
 
-      // Flip PAID → ACTIVE FIRST (compare-and-set). The subscription now
-      // exists, so activation has effectively succeeded — anything after this
-      // is best-effort and must NOT trigger the activation-failure refund.
-      const activated = await BusinessPlanAssignment.transition(
-        assignment._id,
-        ASSIGNMENT_STATUS.PAID,
-        assignment.version,
-        ASSIGNMENT_STATUS.ACTIVE,
-        { subscriptionId: subscription._id, completedAt: new Date() }
+      // Activation succeeded — link the subscription onto the already-ACTIVE
+      // assignment so the idempotent re-entry above can return it. Everything
+      // below is best-effort and must NOT trigger the activation-failure refund.
+      const activated = await BusinessPlanAssignment.findByIdAndUpdate(
+        claimed._id,
+        { subscriptionId: subscription._id },
+        { new: true }
       );
-      if (!activated) {
-        // Lost the race — another actor already activated. Idempotent success.
-        return { assignment, subscription, alreadyActive: true };
-      }
 
       if (payment) {
         payment.subscriptionId = subscription._id;
@@ -580,11 +599,13 @@ class BusinessAssignmentService {
 
       return { assignment: activated, subscription };
     } catch (err) {
-      // Paid-but-activation-failed: full refund incl. setup, re-open eligibility.
+      // Paid-but-activation-failed: we already claimed ACTIVE above, so move
+      // ACTIVE → ACTIVATION_FAILED (using the claimed version), then full refund
+      // incl. setup + re-open eligibility.
       await BusinessPlanAssignment.transition(
-        assignment._id,
-        ASSIGNMENT_STATUS.PAID,
-        assignment.version,
+        claimed._id,
+        ASSIGNMENT_STATUS.ACTIVE,
+        claimed.version,
         ASSIGNMENT_STATUS.ACTIVATION_FAILED,
         { failureCode: err?.message || 'activation_failed' }
       );

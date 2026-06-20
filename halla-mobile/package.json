@@ -12,7 +12,7 @@
   "dependencies": {
     "@expo-google-fonts/cairo": "^0.4.1",
     "@expo/vector-icons": "^15.0.3",
-    "@halla/shared": "link:../shared",
+    "@halla/shared": "*",
     "@hookform/resolvers": "^5.2.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",

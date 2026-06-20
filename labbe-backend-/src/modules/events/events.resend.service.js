@@ -19,12 +19,31 @@ const { logAudit } = require("../../shared/utils/auditLog");
 const logger = require("../../shared/utils/logger");
 const taqnyatTemplatesService = require("../taqnyat-templates/taqnyat-templates.service");
 const messagingReminderService = require("../messaging/messaging.reminder.service");
+const dispatchPolicy = require("../messaging/messaging.dispatchPolicy.service");
 const {
   TAQNYAT_SENDER,
   getEventBodyParams,
   getEventImageUrl,
   buildSmsBody,
 } = require("../messaging/messaging.formatting");
+
+/**
+ * Centralized dispatch-policy gate for HTTP send paths (resend / extra-reminder).
+ * `requireSubscription` middleware only checks the caller has *a* subscription;
+ * it does NOT block sends on terminal events, owner-mismatched subscriptions, or
+ * assignments under refund. assertCanDispatch covers all of those — wire it into
+ * every send path, not just the cron. Throws 403 when a send is not allowed.
+ * @private
+ */
+async function _assertDispatchAllowed(event, path) {
+  const decision = await dispatchPolicy.assertCanDispatch(event, { path });
+  if (!decision.allowed) {
+    throw new AppError(
+      `Invitations can no longer be sent for this event (${decision.reason}).`,
+      403
+    );
+  }
+}
 
 /**
  * Budget pre-check: throws 402 INSUFFICIENT_INVITES when `selectedCount`
@@ -139,6 +158,11 @@ module.exports = {
     if (!event) {
       throw new NotFoundError("Event");
     }
+
+    // Dispatch-policy gate: terminal event / suspended-deleted owner / no active
+    // subscription / owner mismatch / under-refund all block the send here, not
+    // just on the cron path.
+    await _assertDispatchAllowed(event, "resend-invite");
 
     // ---------- Find target guests ----------
     // Resend is ONLY for the permitted audience: guests already sent an
@@ -297,6 +321,8 @@ module.exports = {
     if (!event) {
       throw new NotFoundError("Event");
     }
+
+    await _assertDispatchAllowed(event, "extra-reminder");
 
     // ---------- Confirmed audience ----------
     // A guest is "confirmed" via either the guest status (confirmed/checked_in)

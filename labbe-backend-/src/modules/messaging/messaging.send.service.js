@@ -14,6 +14,7 @@ const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { AppError, NotFoundError, ForbiddenError } = require('../../shared/errors');
+const dispatchPolicy = require('./messaging.dispatchPolicy.service');
 const {
   TAQNYAT_SENDER,
   resolveTaqnyatTemplate,
@@ -383,6 +384,19 @@ async function sendBulk({
   }
   if (event.host && userId && event.host.toString() !== userId.toString()) {
     throw new ForbiddenError('Not authorized for this event');
+  }
+
+  // Dispatch-policy gate for every send path that funnels through sendBulk
+  // (HTTP bulk send + retryFailed). Blocks terminal events, suspended/deleted
+  // owners, missing/owner-mismatched/expired subscriptions, and under-refund
+  // assignments. The cron launch/reminder paths already gate upstream; a second
+  // check here is idempotent and keeps the gate centralized for all callers.
+  const decision = await dispatchPolicy.assertCanDispatch(event, { path: `sendBulk:${scope}` });
+  if (!decision.allowed) {
+    throw new AppError(
+      `Invitations can no longer be sent for this event (${decision.reason}).`,
+      403
+    );
   }
 
   // Validate that all guestIds belong to the event before sending.
