@@ -43,7 +43,11 @@ class CheckoutService {
 
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError('User');
-    if (plan.availableFor === 'whitelabel') {
+    // Business plans are self-purchasable ONLY by an already-active business
+    // account (self-upgrade among business plans). A no-subscription business
+    // is admin-assigned only — that path goes through the assignment service,
+    // not this self-checkout. A personal host can never buy a business plan.
+    if (plan.availableFor === 'business' && user.accountType !== 'business') {
       throw new ValidationError('This plan is reserved for business accounts');
     }
     if (plan.availableFor === 'host' && user.role !== ROLES.HOST) {
@@ -507,7 +511,11 @@ class CheckoutService {
     }).catch((e) => logger.warn('[checkout] notify user failed', { error: e?.message }));
 
     // Plan/payment emails always fire — host has no opt-out for these.
-    if (user.email) {
+    // `_fulfillBundle` only receives `userId`, so load the user here (the
+    // outer `checkout()` `user` binding is not in scope on this path, which
+    // previously threw a ReferenceError on the confirmation-email block).
+    const user = await User.findById(userId).select('email name username');
+    if (user?.email) {
       const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
       email.send.paymentConfirmation(user.email, {
         userName: user.name || user.username || '',

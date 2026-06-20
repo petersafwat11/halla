@@ -98,7 +98,7 @@ const planSchema = new mongoose.Schema(
     billingType: { type: String, enum: ['event', 'monthly', 'quarterly', 'annual', null], default: null },
 
     // Target audience
-    availableFor: { type: String, enum: ['host', 'whitelabel', 'platform_admin'], default: 'host' },
+    availableFor: { type: String, enum: ['host', 'business', 'platform_admin'], default: 'host' },
 
     // Names
     nameAr: {

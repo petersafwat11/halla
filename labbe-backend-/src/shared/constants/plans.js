@@ -60,7 +60,7 @@ const PLAN_CODES = {
 
 const PLAN_AVAILABILITY = {
   HOST: 'host',
-  WHITELABEL: 'whitelabel',
+  BUSINESS: 'business',
   PLATFORM_ADMIN: 'platform_admin',
 };
 

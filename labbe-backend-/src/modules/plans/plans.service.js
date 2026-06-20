@@ -32,7 +32,7 @@ class PlansService {
    */
   async getBusinessPlans() {
     const plans = await Plan.find({
-      availableFor: 'whitelabel',
+      availableFor: 'business',
       isActive: true,
       planType: { $in: ['business_event', 'business_quarterly', 'business_annual'] },
     }).sort({ sortOrder: 1, 'pricing.oneTime': 1 });
