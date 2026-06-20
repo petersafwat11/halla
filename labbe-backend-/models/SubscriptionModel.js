@@ -93,6 +93,13 @@ const subscriptionSchema = new mongoose.Schema(
     compensationPool: { type: Number, default: null },
     invitesConsumed:  { type: Number, default: 0 },
 
+    // Set the first time a real message is dispatched on this subscription
+    // (initial send, resend, or extra reminder). This is the authoritative
+    // "sending has started" signal for the per-event re-creation gate —
+    // distinct from `invitesConsumed`, which an admin partial-refund clawback
+    // can also increase WITHOUT any message having been sent.
+    firstSendAt:      { type: Date, default: null },
+
     activatedAt:      { type: Date, default: null },
     expiresAt:        { type: Date, default: null },
 
@@ -233,14 +240,18 @@ subscriptionSchema.virtual("eventsRemaining").get(function () {
   return Math.max(0, (maxEvents || 1) - (this.usage?.eventsCreated || 0));
 });
 
-// Get max invites from plan (requires populated planId)
+// Total invite capacity under the unified pool model: invitePool +
+// compensationPool. `maxInvitesPerEvent` is obsolete and no longer read here.
+// invitePool === null/undefined means an unlimited plan → -1.
 subscriptionSchema.virtual("maxInvites").get(function () {
-  return this.limits.maxInvitesPerEvent || 50;
+  if (this.invitePool === null || this.invitePool === undefined) return -1;
+  return (this.invitePool || 0) + (this.compensationPool || 0);
 });
 
-// Alias for backward compatibility
+// Alias kept for callers (e.g. canAddGuests) — same total-capacity semantics.
 subscriptionSchema.virtual("maxGuests").get(function () {
-  return this.limits.maxInvitesPerEvent || 50;
+  if (this.invitePool === null || this.invitePool === undefined) return -1;
+  return (this.invitePool || 0) + (this.compensationPool || 0);
 });
 
 // ============================================
@@ -260,13 +271,15 @@ subscriptionSchema.methods.canCreateEvent = function () {
   const planType = this.planId?.planType;
 
   // Per-event plans: "used up" the moment sending starts (even one guest).
-  // `invitesConsumed > 0` means at least one invitation/resend/extra-reminder
-  // message was actually sent on this subscription — permanently blocked, even
-  // after the event is cancelled or deleted. The "no currently-active event"
-  // part is a dynamic count handled in the async service layer
-  // (subscriptions.service.validateEventCreation).
+  // `firstSendAt` is set the first time a real message goes out on this
+  // subscription — permanently blocked thereafter, even after the event is
+  // cancelled or deleted. We key on `firstSendAt` (NOT `invitesConsumed`)
+  // because an admin partial-refund clawback bumps `invitesConsumed` without
+  // any send, and must not lock an otherwise-unused per-event plan. The "no
+  // currently-active event" part is a dynamic count handled in the async
+  // service layer (subscriptions.service.validateEventCreation).
   if (isPerEventPlan(planType)) {
-    if ((this.invitesConsumed || 0) > 0) {
+    if (this.firstSendAt) {
       return {
         allowed: false,
         reason: "This event plan has already been used to send invitations",
@@ -335,7 +348,19 @@ subscriptionSchema.methods.renew = async function () {
   if (!durationDays || durationDays <= 0) return this;
   this.activatedAt = new Date();
   this.expiresAt = new Date(this.activatedAt.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
+  // Rebuild the pool from the plan's BASE entitlement. Previously renewal only
+  // reset `invitesConsumed`, leaving `invitePool` at whatever value purchased
+  // extra-invite add-ons had inflated it to — so one-time extras silently
+  // carried over period after period. Renewal restores base + base-derived
+  // compensation; the host must re-purchase extras for the new period.
+  const basePool = plan?.limits?.invitePool ?? null;
+  if (basePool !== null) {
+    this.invitePool = basePool;
+    this.compensationPool = Math.floor((basePool * COMPENSATION_PERCENTAGE) / 100);
+  }
   this.invitesConsumed = 0;
+  this.firstSendAt = null;
   this.status = 'active';
   return this.save();
 };
@@ -384,6 +409,25 @@ subscriptionSchema.methods.upgradeTo = async function (
 
   if (pricePaid) {
     this.pricePaid.amount = pricePaid;
+  }
+
+  // Rebuild the pool from the NEW plan's base entitlement. Without this an
+  // upgrade swapped `planId` but left `invitePool`/`compensationPool` at the
+  // old plan's values, so the host kept paying for the new tier while still
+  // capped at the old one. Carry forward already-consumed invites (clamped to
+  // the new capacity) so an upgrade never resurrects spent invites.
+  const Plan = mongoose.model('Plan');
+  const plan = await Plan.findById(newPlanId).select('limits');
+  const basePool = plan?.limits?.invitePool ?? null;
+  if (basePool !== null) {
+    this.invitePool = basePool;
+    this.compensationPool = Math.floor((basePool * COMPENSATION_PERCENTAGE) / 100);
+    const capacity = this.invitePool + this.compensationPool;
+    this.invitesConsumed = Math.min(this.invitesConsumed || 0, capacity);
+  } else {
+    // Upgrading to an unlimited plan.
+    this.invitePool = null;
+    this.compensationPool = null;
   }
 
   return this.save();
@@ -502,43 +546,12 @@ subscriptionSchema.statics.createForUser = async function (userId, plan, options
   });
 };
 
-/**
- * Consume invites from a subscription
- * @param {ObjectId} subscriptionId
- * @param {number} count
- * @returns {Promise<Subscription>}
- */
-subscriptionSchema.statics.consumeInvites = async function (subscriptionId, count) {
-  const sub = await this.findOneAndUpdate(
-    {
-      _id: subscriptionId,
-      $expr: {
-        $lte: [
-          { $add: ['$invitesConsumed', count] },
-          { $add: [{ $ifNull: ['$invitePool', 0] }, { $ifNull: ['$compensationPool', 0] }] },
-        ],
-      },
-    },
-    { $inc: { invitesConsumed: count } },
-    { new: true }
-  );
-  if (!sub) throw new Error('Insufficient invites or subscription not found');
-  return sub;
-};
-
-/**
- * Release invites back to a subscription
- * @param {ObjectId} subscriptionId
- * @param {number} count
- * @returns {Promise<Subscription>}
- */
-subscriptionSchema.statics.releaseInvites = async function (subscriptionId, count) {
-  return this.findByIdAndUpdate(
-    subscriptionId,
-    { $inc: { invitesConsumed: -count } },
-    { new: true }
-  );
-};
+// NOTE: the legacy `consumeInvites` / `releaseInvites` statics were removed.
+// They had zero callers under the unified-pool model, and `releaseInvites`
+// could drive `invitesConsumed` below zero (no floor). Consumption now happens
+// inline at send time (messaging.send.service / events.resend.service) with a
+// capacity clamp; there is no "release" — `invitesConsumed` reflects only
+// actually-sent, non-refundable messages.
 
 /**
  * Get best subscription to use for an event with specified guest count
@@ -557,7 +570,7 @@ subscriptionSchema.statics.getCapacityForEvent = async function (userId, guestCo
   };
 
   const perEvent = subs
-    .filter(s => isPerEventPlan(s.planId?.planType) && (s.invitesConsumed || 0) === 0)
+    .filter(s => isPerEventPlan(s.planId?.planType) && !s.firstSendAt)
     .sort(byExpiry);
 
   const pool = subs

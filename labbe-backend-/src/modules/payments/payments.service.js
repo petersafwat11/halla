@@ -140,11 +140,50 @@ class PaymentsService {
       throw new ValidationError(`Refund amount ${amount} exceeds remaining ${remaining}`);
     }
 
-    const result = await paymentProvider.refund({
-      moyasarPaymentId: payment.moyasarPaymentId,
-      amount,
-    });
+    // Durable refund-intent: persist BEFORE calling the provider. Moyasar moves
+    // the money inside `refund()`, so if the process dies after the provider
+    // succeeds but before the local writes commit, this record is the only
+    // evidence a refund is in flight. A reconciliation job can find payments
+    // with a lingering `metadata.pendingRefund`, confirm against the provider,
+    // and finish (or roll back) the local state. The intentId also doubles as a
+    // provider-facing idempotency token for the (future) reconcile path.
+    const refundIntentId = new mongoose.Types.ObjectId().toString();
+    const intentAmount = typeof amount === 'number' ? amount : remaining;
+    payment.metadata = {
+      ...(payment.metadata || {}),
+      pendingRefund: {
+        intentId: refundIntentId,
+        amount: intentAmount,
+        reason: reason || null,
+        deductInvites:
+          Number.isInteger(deductInvites) && deductInvites > 0 ? deductInvites : 0,
+        createdBy: actorUserId || null,
+        createdAt: new Date().toISOString(),
+      },
+    };
+    payment.markModified('metadata');
+    await payment.save();
+
+    let result;
+    try {
+      result = await paymentProvider.refund({
+        moyasarPaymentId: payment.moyasarPaymentId,
+        amount,
+        idempotencyKey: refundIntentId,
+      });
+    } catch (providerErr) {
+      // Provider call threw before returning — clear the intent so a retry
+      // starts clean (no money moved on a thrown request).
+      payment.metadata = { ...(payment.metadata || {}), pendingRefund: null };
+      payment.markModified('metadata');
+      await payment.save().catch(() => {});
+      throw providerErr;
+    }
     if (!result.success) {
+      // Provider rejected the refund — no funds moved. Clear the intent.
+      payment.metadata = { ...(payment.metadata || {}), pendingRefund: null };
+      payment.markModified('metadata');
+      await payment.save().catch(() => {});
       throw new ValidationError(result.error || 'Refund failed at provider');
     }
 
@@ -174,6 +213,9 @@ class PaymentsService {
       payment.refundedAmount = (payment.refundedAmount || 0) + refundEntry.amount;
       payment.refundedAt = new Date();
       payment.providerStatus = result.providerStatus;
+      // Intent settled locally — clear the in-flight marker.
+      payment.metadata = { ...(payment.metadata || {}), pendingRefund: null };
+      payment.markModified('metadata');
       payment.status =
         payment.refundedAmount >= payment.amount
           ? Payment.PAYMENT_STATUS.REFUNDED

@@ -61,6 +61,14 @@ async function run() {
       consumedRecomputed += 1;
     }
 
+    // Stamp firstSendAt when this subscription has ever sent (so the per-event
+    // re-creation gate keys on real sends, not on invitesConsumed which a
+    // refund clawback can also bump). Best-effort timestamp = now; the exact
+    // instant doesn't matter, only presence.
+    if (sentCount > 0 && !sub.firstSendAt) {
+      set.firstSendAt = new Date();
+    }
+
     if (Object.keys(set).length > 0) {
       await Subscription.updateOne({ _id: sub._id }, { $set: set });
     }

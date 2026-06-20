@@ -149,6 +149,14 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
     throw new NotFoundError('Event');
   }
 
+  // The guest MUST belong to the event being sent. Without this a caller could
+  // pair a guest from one event with another event's template/content (and
+  // charge the wrong subscription's pool). `sendBulk` validates this for the
+  // batch path; this is the single-send equivalent.
+  if (!guest.event || guest.event.toString() !== eventId.toString()) {
+    throw new ForbiddenError('Guest does not belong to this event');
+  }
+
   if (event.host && userId && event.host._id.toString() !== userId.toString()) {
     throw new ForbiddenError('Not authorized for this event');
   }
@@ -269,6 +277,17 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
       { $set: updateData }
     );
     if (flip.modifiedCount === 1 && event.subscriptionId) {
+      // Stamp `firstSendAt` once, on the first real dispatch on this
+      // subscription. This is the authoritative "sending started" signal for
+      // the per-event re-creation gate (set even at capacity, when the message
+      // still goes out but isn't charged below).
+      await Subscription.updateOne(
+        { _id: event.subscriptionId, firstSendAt: null },
+        { $set: { firstSendAt: new Date() } }
+      ).catch((err) =>
+        logger.error('[sendToGuest] firstSendAt stamp failed', { guestId, err: err?.message })
+      );
+
       // Unified pool: per-event and pool subscriptions both carry an
       // invitePool. Skip unlimited plans (invitePool null). The batch-level
       // send-budget pre-check enforces the ceiling, so a plain $inc is safe.
@@ -276,7 +295,7 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
       // capacity (the batch-level budget pre-check is not atomic across
       // simultaneous sends on the same pool). If already at capacity the
       // message still went out — we just don't over-charge.
-      await Subscription.updateOne(
+      const consume = await Subscription.updateOne(
         {
           _id: event.subscriptionId,
           invitePool: { $ne: null },
@@ -288,9 +307,25 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId }) {
           },
         },
         { $inc: { invitesConsumed: 1 } }
-      ).catch((err) =>
-        logger.warn('[sendToGuest] invite consume failed', { guestId, err: err?.message })
-      );
+      ).catch((err) => {
+        // A consume failure means a message went out UNCHARGED — surface it
+        // loudly (error, not warn) so it can be reconciled, not silently lost.
+        logger.error('[sendToGuest] invite consume failed — message sent but UNCHARGED', {
+          guestId,
+          subscriptionId: String(event.subscriptionId),
+          err: err?.message,
+        });
+        return null;
+      });
+      // matchedCount 0 (without an error) = the clamp rejected the charge
+      // because the pool was already at capacity: an oversend. Log it so the
+      // gap between sent and charged is observable.
+      if (consume && consume.matchedCount === 0) {
+        logger.error('[sendToGuest] invite NOT charged — pool already at capacity (oversend)', {
+          guestId,
+          subscriptionId: String(event.subscriptionId),
+        });
+      }
     }
   } else {
     // Never clobber an already-sent guest with a failure write (stale retry).

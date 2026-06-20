@@ -1,5 +1,14 @@
 const mongoose = require("mongoose");
 const { EVENT_STATUS, SUPERVISOR_STATUS } = require("../src/shared/constants");
+const { isPerEventPlan } = require("../src/shared/constants/plans");
+
+// Statuses that FREE the per-event single-active-event slot (the event no
+// longer counts as "active" for re-creation purposes).
+const PER_EVENT_SLOT_FREEING_STATUSES = [
+  EVENT_STATUS.CANCELLED,
+  EVENT_STATUS.DELETED,
+  EVENT_STATUS.COMPLETED,
+];
 
 // Staff sub-schema (specific to events, not a separate model)
 const staffSchema = new mongoose.Schema(
@@ -302,6 +311,18 @@ const eventSchema = new mongoose.Schema(
       ref: "Plan",
     },
 
+    // Per-event single-active-event guard. Set to `subscriptionId` ONLY while a
+    // per-event plan's event occupies the slot (i.e. not cancelled/deleted/
+    // completed); null otherwise and for all pool plans. A partial UNIQUE index
+    // on this field makes "at most one active event per per-event subscription"
+    // an atomic DB invariant, closing the create→create TOCTOU race that a
+    // countDocuments pre-check cannot. Maintained by the pre-save hooks below
+    // and cleared by the hook-bypassing soft-delete writes.
+    perEventGuardKey: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
+
     // Package type: event (single event), subscription (monthly)
     packageType: {
       type: String,
@@ -458,6 +479,20 @@ eventSchema.index({ subscriptionId: 1 }); // For subscription usage tracking
 eventSchema.index({ planId: 1 }); // For plan-based queries
 eventSchema.index({ packageType: 1 }); // For package type filtering
 
+// Atomic "one active event per per-event subscription" guard. Partial so it
+// only applies to rows where the guard key is actually set (active per-event
+// events) — pool plans and freed/cancelled/deleted events keep it null and are
+// unaffected. Two concurrent per-event creates resolve to a single winner; the
+// loser gets an E11000 the create path translates into a typed 409 conflict.
+eventSchema.index(
+  { perEventGuardKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { perEventGuardKey: { $type: "objectId" } },
+    name: "perEventGuardKey_unique_active",
+  }
+);
+
 // Virtual for checking if event is upcoming
 eventSchema.virtual("isUpcoming").get(function () {
   return this.eventDetails.date > new Date();
@@ -513,12 +548,37 @@ eventSchema.pre("save", async function (next) {
       if (!this.packageType && subscription.packageType) {
         this.packageType = subscription.packageType;
       }
+
+      // Claim the per-event single-active-event slot atomically via the unique
+      // partial index. Only per-event plans participate; pool plans leave the
+      // key null. A freshly-created event always occupies the slot (its initial
+      // status is never one of the freeing statuses).
+      if (
+        isPerEventPlan(subscription.planId?.planType) &&
+        !PER_EVENT_SLOT_FREEING_STATUSES.includes(this.status)
+      ) {
+        this.perEventGuardKey = this.subscriptionId;
+      }
     }
 
     next();
   } catch (error) {
     next(error);
   }
+});
+
+// Free the per-event slot whenever the event moves to a slot-freeing status on
+// a save()-based path (host/admin cancel + single-delete go through save()).
+// Hook-bypassing bulk update writes clear the key inline at their call sites.
+eventSchema.pre("save", function (next) {
+  if (
+    !this.isNew &&
+    this.isModified("status") &&
+    PER_EVENT_SLOT_FREEING_STATUSES.includes(this.status)
+  ) {
+    this.perEventGuardKey = null;
+  }
+  next();
 });
 
 // ============================================

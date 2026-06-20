@@ -286,6 +286,48 @@ async function runEventLaunch(event, workerId) {
     return { launched: false, reason: "stale" };
   }
 
+  // Re-check subscription validity at dispatch time. The cron candidate query
+  // only filters on event status, so a subscription that was cancelled /
+  // refunded / expired AFTER the event was scheduled would otherwise still
+  // fire. (Invite balance is separately enforced inside sendBulk's budget
+  // pre-check; here we gate on active/trial status + not-expired.)
+  if (fresh.subscriptionId) {
+    const sub = await Subscription.findById(fresh.subscriptionId).select(
+      "status expiresAt"
+    );
+    const valid =
+      sub &&
+      ["active", "trial"].includes(sub.status) &&
+      (!sub.expiresAt || new Date(sub.expiresAt).getTime() > Date.now());
+    if (!valid) {
+      const reason = !sub
+        ? "subscription_missing"
+        : sub.status !== "active" && sub.status !== "trial"
+        ? `subscription_${sub.status}`
+        : "subscription_expired";
+      console.warn(
+        `[Cron] Event ${eventId} NOT launched — ${reason}; skipping scheduled send.`
+      );
+      await Event.updateOne(
+        { _id: eventId, $or: [{ failureReason: null }, { failureReason: { $exists: false } }] },
+        { $set: { failureReason: reason } }
+      ).catch(() => {});
+      try {
+        await logAudit({
+          action: "event.launch_blocked",
+          actor: { _id: null, role: "system" },
+          targetType: "event",
+          targetId: fresh._id,
+          whitelabelId: fresh.whitelabelId || null,
+          metadata: { reason, subscriptionId: String(fresh.subscriptionId), workerId },
+          status: "failure",
+        });
+      } catch (_) { /* swallow audit failure */ }
+      await _safeReleaseLock(eventId, workerId);
+      return { launched: false, reason };
+    }
+  }
+
   console.log(`[Cron] Launching event: ${eventId} (${fresh.eventDetails?.title}) attempt ${(fresh.attemptCount || 0) + 1}`);
 
   try {

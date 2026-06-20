@@ -178,11 +178,19 @@ function assertSendWindow({ scheduledInstant, eventInstant, isTrial, now = new D
  * @param {Date|null} params.eventInstant - event instant (UTC)
  * @param {boolean} params.isTrial
  * @param {Date} [params.now]
+ * @param {boolean} [params.requireMinLead=true] - when true the send must
+ *   still be at least the full min-lead in the future (use for a BRAND NEW
+ *   schedule). When false only require the send to still be in the future —
+ *   use when RE-validating an already-accepted schedule after the event date
+ *   moved: the original lead was satisfied when it was set, so the natural
+ *   passage of time alone must not silently invalidate it.
  * @returns {boolean}
  */
-function isSendInWindow({ scheduledInstant, eventInstant, isTrial, now = new Date() }) {
+function isSendInWindow({ scheduledInstant, eventInstant, isTrial, now = new Date(), requireMinLead = true }) {
   if (!scheduledInstant) return false;
-  const earliestSend = now.getTime() + minLeadMs(isTrial);
+  const earliestSend = requireMinLead
+    ? now.getTime() + minLeadMs(isTrial)
+    : now.getTime();
   if (scheduledInstant.getTime() < earliestSend) return false;
   if (eventInstant) {
     const latestSend = eventInstant.getTime() - maxLeadMs();

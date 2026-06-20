@@ -98,10 +98,11 @@ async function updateEventFull(eventId, updateData, context = {}) {
     // Floor: a valid send window must still exist for the new event date.
     assertEventDateFloor({ eventInstant: newEventInstant, isTrial });
 
-    // If a stored launch schedule now violates [now+minLead, newEvent−3d],
-    // clear it and revert to pending_scheduling.
+    // Re-validate against the new event date only on the upper bound + "still
+    // in the future"; do not re-impose the original min-lead (requireMinLead:
+    // false), so a valid schedule isn't cleared just because time passed.
     const sendInstant = storedSendInstant(event);
-    if (sendInstant && !isSendInWindow({ scheduledInstant: sendInstant, eventInstant: newEventInstant, isTrial })) {
+    if (sendInstant && !isSendInWindow({ scheduledInstant: sendInstant, eventInstant: newEventInstant, isTrial, requireMinLead: false })) {
       event.launchSettings = { ...event.launchSettings, scheduledDate: undefined, scheduledTime: undefined };
       if (event.status === EVENT_STATUS.SCHEDULED) {
         event.status = EVENT_STATUS.PENDING_SCHEDULING;
@@ -345,6 +346,7 @@ async function bulkDeleteEvents(eventIds, whitelabelId = undefined) {
     {
       status: EVENT_STATUS.DELETED,
       deletedAt: new Date(),
+      perEventGuardKey: null,
     }
   );
 

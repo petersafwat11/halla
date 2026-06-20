@@ -65,9 +65,24 @@ async function _assertInviteBudget(subscriptionId, selectedCount) {
  */
 async function _chargeInvites(subscriptionId, count) {
   if (!subscriptionId || !count) return;
+
+  // Stamp `firstSendAt` once — these messages went out, so sending has started
+  // on this subscription (authoritative signal for the per-event gate).
+  await Subscription.updateOne(
+    { _id: subscriptionId, firstSendAt: null },
+    { $set: { firstSendAt: new Date() } }
+  ).catch((err) =>
+    logger.error("[resend/extra-reminder] firstSendAt stamp failed", {
+      subscriptionId: String(subscriptionId),
+      err: err?.message,
+    })
+  );
+
   // Clamp invitesConsumed at capacity (invitePool + compensation). The budget
   // pre-check is not atomic across simultaneous batches, so clamp here to keep
   // the pool from going negative if two sends race on the same subscription.
+  // A failure here means messages went out UNCHARGED — log at error level so
+  // the sent/charged gap is observable and reconcilable, not silently lost.
   await Subscription.updateOne(
     { _id: subscriptionId, invitePool: { $ne: null } },
     [
@@ -88,7 +103,7 @@ async function _chargeInvites(subscriptionId, count) {
       },
     ]
   ).catch((err) =>
-    logger.warn("[resend/extra-reminder] invite consume failed", {
+    logger.error("[resend/extra-reminder] invite consume failed — messages sent but UNCHARGED", {
       subscriptionId: String(subscriptionId),
       count,
       err: err?.message,
@@ -126,15 +141,20 @@ module.exports = {
     }
 
     // ---------- Find target guests ----------
-    // Explicit guestIds → exactly those (restricted to this event, no status
-    // filter). Otherwise the default audience: guests already sent an
-    // invitation who haven't responded or said "maybe".
-    const guestQuery = { event: eventId, deleted: { $ne: true } };
+    // Resend is ONLY for the permitted audience: guests already sent an
+    // invitation who haven't responded or said "maybe". This audience is
+    // enforced on the backend regardless of what the client sends — explicit
+    // `guestIds` may only NARROW the audience, never bypass the status gate
+    // (UI filtering is not authorization). A crafted request can therefore
+    // not resend to confirmed/declined guests.
+    const guestQuery = {
+      event: eventId,
+      deleted: { $ne: true },
+      "invitation.sent": true,
+      status: { $in: ["invited", "pending", "maybe"] },
+    };
     if (Array.isArray(body.guestIds) && body.guestIds.length > 0) {
       guestQuery._id = { $in: body.guestIds };
-    } else {
-      guestQuery["invitation.sent"] = true;
-      guestQuery.status = { $in: ["invited", "pending", "maybe"] };
     }
 
     const targetGuests = await Guest.find(guestQuery);

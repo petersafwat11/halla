@@ -54,13 +54,15 @@ class SubscriptionsService {
 
     // Per-event re-creation gate (Phase 4). A per-event plan is "used up" the
     // moment sending starts (even one guest), so:
-    //   - invitesConsumed > 0  → permanently blocked (cancel/delete never frees it)
+    //   - firstSendAt set      → permanently blocked (cancel/delete never frees it)
     //   - an active event already exists under this subscription → blocked
     //     (active = status NOT IN ['cancelled','deleted'])
     // Combined: a per-event host can re-create after cancel/delete IFF nothing
-    // was ever sent on the subscription.
+    // was ever sent on the subscription. We key on `firstSendAt` rather than
+    // `invitesConsumed` so an admin partial-refund clawback (which bumps
+    // invitesConsumed without sending) does not lock an unused plan.
     if (isPerEventPlan(subscription.planId?.planType || subscription.planType)) {
-      if ((subscription.invitesConsumed || 0) > 0) {
+      if (subscription.firstSendAt) {
         return {
           allowed: false,
           reason: 'This event plan has already been used to send invitations. Please purchase a new plan.',
@@ -79,6 +81,14 @@ class SubscriptionsService {
           limits: this._getPackageLimits(subscription),
         };
       }
+      // Self-heal: with zero active events, no event may legitimately hold the
+      // per-event guard key (an active one would have been counted above). Clear
+      // any lingering key so a missed soft-delete path can never permanently
+      // lock the host out of re-creation via the unique index.
+      await Event.updateMany(
+        { subscriptionId: subscription._id, perEventGuardKey: { $ne: null } },
+        { $set: { perEventGuardKey: null } }
+      );
     }
 
     // Dynamic event count only matters when the plan caps total events (maxEvents > 0).
