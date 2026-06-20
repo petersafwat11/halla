@@ -20,6 +20,11 @@ const Ticket = require('../../../models/TicketModel');
 const Guest = require('../../../models/GuestModel');
 const Service = require('../../../models/ServiceModel');
 const { isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
+const {
+  personalHostFilter,
+  businessHostFilter,
+  allCustomerHostsFilter,
+} = require('../../shared/utils/accountScope');
 
 class DashboardService {
   /**
@@ -115,11 +120,15 @@ class DashboardService {
       guestStatsAgg,
       totalTickets,
       resolvedTicketsTotal,
+      totalBusinesses,
+      activeBusinesses,
+      newBusinessesThisPeriod,
+      totalCustomerAccounts,
     ] = await Promise.all([
-      User.countDocuments({ role: ROLES.HOST }),
-      User.countDocuments({ role: ROLES.HOST, status: USER_STATUS.ACTIVE }),
-      User.countDocuments({ role: ROLES.HOST, createdAt: { $gte: startDate, $lte: endDate } }),
-      User.countDocuments({ role: ROLES.HOST, createdAt: { $gte: previousStartDate, $lt: startDate } }),
+      User.countDocuments(personalHostFilter()),
+      User.countDocuments(personalHostFilter({ status: USER_STATUS.ACTIVE })),
+      User.countDocuments(personalHostFilter({ createdAt: { $gte: startDate, $lte: endDate } })),
+      User.countDocuments(personalHostFilter({ createdAt: { $gte: previousStartDate, $lt: startDate } })),
       User.countDocuments({ role: ROLES.VENDOR }),
       User.countDocuments({ role: ROLES.VENDOR, status: USER_STATUS.PENDING }),
       User.countDocuments({ role: ROLES.VENDOR, createdAt: { $gte: startDate, $lte: endDate } }),
@@ -136,7 +145,7 @@ class DashboardService {
       ]),
       Ticket.countDocuments({ status: { $in: [TICKET_STATUS.OPEN, TICKET_STATUS.IN_PROGRESS] } }),
       Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED, updatedAt: { $gte: startDate, $lte: endDate } }),
-      User.find({ role: ROLES.HOST }).select('username name email createdAt status').sort({ createdAt: -1 }).limit(5).lean(),
+      User.find(personalHostFilter()).select('username name email createdAt status').sort({ createdAt: -1 }).limit(5).lean(),
       Event.find({}).select('eventDetails.title eventDetails.date status host').populate('host', 'username name').sort({ createdAt: -1 }).limit(5).lean(),
       Service.aggregate([
         { $group: { _id: '$vendor', totalViews: { $sum: { $ifNull: ['$views', 0] } } } },
@@ -161,6 +170,11 @@ class DashboardService {
       ]),
       Ticket.countDocuments({}),
       Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED }),
+      // Business-account reporting (segregated from personal hosts). [#16]
+      User.countDocuments(businessHostFilter()),
+      User.countDocuments(businessHostFilter({ status: USER_STATUS.ACTIVE })),
+      User.countDocuments(businessHostFilter({ createdAt: { $gte: startDate, $lte: endDate } })),
+      User.countDocuments(allCustomerHostsFilter()),
     ]);
 
     const subscriptionsByPlanFormatted = {};
@@ -201,6 +215,16 @@ class DashboardService {
           subtitle: { count: activeHosts, labelKey: 'stats.hosts.subtitle' },
           highlight: newHostsThisPeriod > 0
             ? { count: newHostsThisPeriod, labelKey: 'stats.hosts.highlight' }
+            : null,
+        },
+        {
+          id: 'businesses',
+          icon: 'briefcase',
+          titleKey: 'stats.businesses.title',
+          value: totalBusinesses,
+          subtitle: { count: activeBusinesses, labelKey: 'stats.businesses.subtitle' },
+          highlight: newBusinessesThisPeriod > 0
+            ? { count: newBusinessesThisPeriod, labelKey: 'stats.businesses.highlight' }
             : null,
         },
         {
@@ -268,6 +292,14 @@ class DashboardService {
         numberOfClicks: v.numberOfClicks || 0,
       })),
       analytics,
+      // Account-type segregated reporting totals. [#16]
+      reporting: {
+        totalPersonalHosts: totalHosts,
+        totalBusinesses,
+        activeBusinesses,
+        newBusinessesThisPeriod,
+        totalCustomerAccounts,
+      },
       period,
     };
   }

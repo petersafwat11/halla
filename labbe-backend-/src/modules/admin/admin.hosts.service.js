@@ -9,12 +9,13 @@ const Subscription = require('../../../models/SubscriptionModel');
 const Plan = require('../../../models/PlanModel');
 const Guest = require('../../../models/GuestModel');
 const { NotFoundError, ValidationError, ConflictError } = require('../../shared/errors');
-const { ROLES, USER_STATUS, EVENT_STATUS, SUBSCRIPTION_STATUS } = require('../../shared/constants');
+const { ROLES, USER_STATUS, EVENT_STATUS, SUBSCRIPTION_STATUS, ACCOUNT_TYPES } = require('../../shared/constants');
 const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
 const { buildSearchQuery, buildDateRangeQuery, formatUserResponse } = require('./admin.shared.service');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
+const { personalHostFilter } = require('../../shared/utils/accountScope');
 
 /**
  * Get all hosts with pagination and filters
@@ -22,7 +23,7 @@ const { normalizePhoneNumber } = require('../../shared/utils/phone');
 async function getHosts({ page = 1, limit = 10, search, status, from, to }) {
   const skip = (page - 1) * limit;
 
-  let query = { role: ROLES.HOST };
+  let query = personalHostFilter();
 
   // Search filter
   if (search) {
@@ -41,7 +42,7 @@ async function getHosts({ page = 1, limit = 10, search, status, from, to }) {
     query.createdAt = dateRange;
   }
 
-  const baseQuery = { role: ROLES.HOST };
+  const baseQuery = personalHostFilter();
 
   const [hosts, total, statusCounts] = await Promise.all([
     User.find(query)
@@ -85,7 +86,7 @@ async function getHosts({ page = 1, limit = 10, search, status, from, to }) {
  * Get host by ID
  */
 async function getHostById(hostId) {
-  const query = { _id: hostId, role: ROLES.HOST };
+  const query = personalHostFilter({ _id: hostId });
 
   const host = await User.findOne(query)
     .select('-password -passwordResetToken')
@@ -182,6 +183,7 @@ async function createHost({ email, phoneNumber, name, username, password }) {
     username: username || `host_${Date.now()}`,
     password,
     role: ROLES.HOST,
+    accountType: ACCOUNT_TYPES.PERSONAL,
     status: USER_STATUS.ACTIVE,
     profile: {
       hostData: {
@@ -229,7 +231,7 @@ async function createHost({ email, phoneNumber, name, username, password }) {
  * Update host status
  */
 async function updateHostStatus(hostId, status) {
-  const query = { _id: hostId, role: ROLES.HOST };
+  const query = personalHostFilter({ _id: hostId });
 
   const host = await User.findOneAndUpdate(
     query,
@@ -258,7 +260,7 @@ async function updateHostStatus(hostId, status) {
  * Update host subscription
  */
 async function updateHostSubscription(hostId, { planCode, status: subscriptionStatus }) {
-  const query = { _id: hostId, role: ROLES.HOST };
+  const query = personalHostFilter({ _id: hostId });
 
   const host = await User.findOne(query);
   if (!host) {
@@ -315,7 +317,7 @@ async function updateHostSubscription(hostId, { planCode, status: subscriptionSt
  * Delete host
  */
 async function deleteHost(hostId) {
-  const query = { _id: hostId, role: ROLES.HOST };
+  const query = personalHostFilter({ _id: hostId });
 
   const host = await User.findOne(query);
   if (!host) {
@@ -340,10 +342,7 @@ async function deleteHost(hostId) {
  * Bulk delete hosts
  */
 async function bulkDeleteHosts(hostIds) {
-  const query = {
-    _id: { $in: hostIds },
-    role: ROLES.HOST,
-  };
+  const query = personalHostFilter({ _id: { $in: hostIds } });
 
   // Check for active events
   const hostsWithActiveEvents = await Event.distinct('host', {
@@ -418,7 +417,7 @@ async function findOrCreateHost({ phoneNumber, name, email }) {
  * Export hosts
  */
 async function exportHosts({ search, status, from, to } = {}) {
-  let query = { role: ROLES.HOST };
+  let query = personalHostFilter();
   if (search) {
     const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
     query = { ...query, ...searchQuery };

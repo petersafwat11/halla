@@ -114,6 +114,9 @@ class UsersService {
 
     user.password = newPassword;
     user.passwordChangedAt = Date.now() - 1000;
+    // Clear the first-login forced-change flag once the user picks their own
+    // password (business accounts created by an admin).
+    if (user.mustChangePassword) user.mustChangePassword = false;
     await user.save();
 
     return { success: true };

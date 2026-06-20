@@ -7,6 +7,7 @@
 const roles = require('./roles');
 const status = require('./status');
 const permissions = require('./permissions');
+const accounts = require('./accounts');
 const plans = require('./plans');
 const { PLAN_DEFAULTS } = require('./planDefaults');
 const { ADDON_TYPES, EXTRA_INVITES_TIERS, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION } = require('./addons');
@@ -20,6 +21,7 @@ module.exports = {
   ...roles,
   ...status,
   ...permissions,
+  ...accounts,
   ...plans,
   PLAN_DEFAULTS,
   ADDON_TYPES,

@@ -20,6 +20,11 @@ const startServer = async () => {
     // Connect to database
     await connectDB();
 
+    // Fail-closed account-type assertion (non-blocking). Surfaces any
+    // {role:host, accountType:null} docs for monitoring. [#13]
+    const { assertNoNullAccountTypeHosts } = require('./shared/utils/accountTypeAssertion');
+    assertNoNullAccountTypeHosts().catch(() => {});
+
     // Start all cron jobs (event lifecycle, bulk send, reminders, template polling)
     initScheduledTasks();
 

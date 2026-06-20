@@ -11,7 +11,8 @@ const {
   ROLES,
   USER_STATUS,
   VENDOR_STATUS,
-  SUBSCRIPTION_STATUS
+  SUBSCRIPTION_STATUS,
+  ACCOUNT_TYPES,
 } = require('../../shared/constants');
 const {
   UnauthorizedError,
@@ -412,6 +413,7 @@ class AuthService {
       username: username || `host_${normalizedPhone.slice(-6)}`,
       name,
       role: ROLES.HOST,
+      accountType: ACCOUNT_TYPES.PERSONAL,
       status: USER_STATUS.ACTIVE,
       profile: {
         hostData: {
@@ -787,6 +789,7 @@ class AuthService {
         phoneNumber: normalizedPhone,
         username: `host_${normalizedPhone.slice(-6)}`,
         role: ROLES.HOST,
+        accountType: ACCOUNT_TYPES.PERSONAL,
         status: USER_STATUS.ACTIVE,
         profile: {
           hostData: {
@@ -1056,6 +1059,8 @@ class AuthService {
 
     user.password = newPassword;
     user.passwordChangedAt = Date.now() - 1000;
+    // Clear first-login forced-change flag (admin-created business accounts).
+    if (user.mustChangePassword) user.mustChangePassword = false;
     await user.save();
 
     // a password change must invalidate all other sessions immediately.
