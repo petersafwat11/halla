@@ -14,16 +14,13 @@
  * @module modules/auth/auth.controller
  */
 
-const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const catchAsync = require("../../shared/utils/catchAsync");
 const {
   sendSuccess,
 } = require("../../shared/utils/responseHelper");
-const { ValidationError } = require("../../shared/errors");
 const authService = require("./auth.service");
 const config = require("../../config");
-const User = require("../../../models/UserModel");
 const { logAudit } = require("../../shared/utils/auditLog");
 
 const ACCESS_COOKIE = "access_token";

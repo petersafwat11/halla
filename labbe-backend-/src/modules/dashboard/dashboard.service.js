@@ -19,7 +19,7 @@ const Subscription = require('../../../models/SubscriptionModel');
 const Ticket = require('../../../models/TicketModel');
 const Guest = require('../../../models/GuestModel');
 const Service = require('../../../models/ServiceModel');
-const { isPoolPlan, isPerEventPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
+const { isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
 
 class DashboardService {
   /**

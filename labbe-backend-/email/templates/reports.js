@@ -14,7 +14,6 @@ const {
   getDivider,
   COLORS,
 } = require("../layout");
-const { getConfig } = require("../config");
 
 // ============================================
 // DAILY REPORT EMAIL (Admin)

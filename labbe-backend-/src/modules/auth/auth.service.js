@@ -35,7 +35,7 @@ const otpService = require('./otp.service');
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
 const { normalizePhoneNumber, validateAndFormatPhone } = require('../../shared/utils/phone');
-const { processUploadedFiles, extractStoredRef } = require('../../shared/utils/s3Upload');
+const { processUploadedFiles } = require('../../shared/utils/s3Upload');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 
