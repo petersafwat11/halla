@@ -970,28 +970,35 @@ router.post(
 
 // ============================================
 // RESEND INVITE — pool-charged re-invitation for non-responders / "maybe"
-// guests (or an explicit guestIds set). Repeatable: NO idempotency
-// middleware so each explicit host action genuinely re-sends. A double-tap
-// would double-charge/double-send, which is acceptable for an explicit,
-// user-initiated, repeatable action.
+// guests (or an explicit guestIds set). Repeatable BUT idempotent on a
+// client-supplied `Idempotency-Key` header (optional): a NEW key starts a
+// genuinely new re-send, the SAME key replays the cached result instead of
+// re-charging/re-sending. This kills the double-charge-on-retry risk
+// (double-tap, mobile/proxy retry, timeout) without an outbox. No header =
+// legacy repeatable behavior (executes every time), so existing clients are
+// unaffected.
 // ============================================
 router.post(
   "/:id/resend-invite",
   validateObjectId("id"),
   requireSubscription,
+  idempotency({ scope: "events.resend_invite" }),
   validateZod(resendInviteSchema),
   eventsController.resendInvite
 );
 
 // ============================================
 // EXTRA REMINDER — immediate pool-charged reminder to CONFIRMED guests
-// using the approved reminder_confirmed template. Repeatable (no
-// idempotency middleware), same tradeoff as resend-invite above.
+// using the approved reminder_confirmed template. Same idempotency contract
+// as resend-invite above: an optional client-supplied `Idempotency-Key`
+// makes a retry a safe replay; a new key is a new reminder; no header =
+// repeatable.
 // ============================================
 router.post(
   "/:id/extra-reminder",
   validateObjectId("id"),
   requireSubscription,
+  idempotency({ scope: "events.extra_reminder" }),
   validateZod(extraReminderSchema),
   eventsController.extraReminder
 );
