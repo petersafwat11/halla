@@ -1,0 +1,236 @@
+- generic [ref=e1]:
+  - region "Notifications Alt+T"
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - img "Logo" [ref=e5]
+      - navigation [ref=e6]:
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "الرئيسية" [ref=e9] [cursor=pointer]:
+              - /url: /ar
+          - listitem [ref=e10]:
+            - link "سوق هلا" [ref=e11] [cursor=pointer]:
+              - /url: /ar/market-place
+      - generic [ref=e12]:
+        - link "Switch language" [ref=e13] [cursor=pointer]:
+          - /url: /en/market-place
+          - img [ref=e14]
+          - generic [ref=e17]: EN
+        - link "لوحة التحكم" [ref=e165] [cursor=pointer]:
+          - /url: /ar/host
+          - button "لوحة التحكم" [ref=e166]
+  - main [ref=e22]:
+    - generic [ref=e23]:
+      - generic [ref=e27]:
+        - generic [ref=e28]: سوق هلا
+        - heading "اكتشف مزودي خدمات المناسبات" [level=1] [ref=e29]
+        - paragraph [ref=e30]: تصفّح خدمات موثوقة من مزودين معتمدين لإنجاح مناسبتك القادمة
+        - search [ref=e31]:
+          - img [ref=e32]
+          - searchbox "ابحث باسم المزود أو الخدمة أو المناسبة" [ref=e35]
+      - tablist "الفئات" [ref=e36]:
+        - tab "الكل" [selected] [ref=e37] [cursor=pointer]:
+          - img [ref=e38]
+          - generic [ref=e43]: الكل
+        - tab "تخطيط الفعاليات" [ref=e167] [cursor=pointer]:
+          - img [ref=e168]
+          - generic [ref=e171]: تخطيط الفعاليات
+        - tab "الإنتاج الإعلامي" [ref=e172] [cursor=pointer]:
+          - img [ref=e173]
+          - generic [ref=e178]: الإنتاج الإعلامي
+        - tab "الهدايا والتوزيعات" [ref=e179] [cursor=pointer]:
+          - img [ref=e180]
+          - generic [ref=e184]: الهدايا والتوزيعات
+        - tab "الأطعمة والمشروبات" [ref=e185] [cursor=pointer]:
+          - img [ref=e186]
+          - generic [ref=e191]: الأطعمة والمشروبات
+        - tab "الجمال والأزياء" [ref=e192] [cursor=pointer]:
+          - img [ref=e193]
+          - generic [ref=e196]: الجمال والأزياء
+        - tab "اللوجستيات والتوصيل" [ref=e197] [cursor=pointer]:
+          - img [ref=e198]
+          - generic [ref=e203]: اللوجستيات والتوصيل
+        - tab "خدمات الشركات" [ref=e204] [cursor=pointer]:
+          - img [ref=e205]
+          - generic [ref=e208]: خدمات الشركات
+        - tab "خدمات الدعم" [ref=e209] [cursor=pointer]:
+          - img [ref=e210]
+          - generic [ref=e217]: خدمات الدعم
+        - tab "الخدمات التقنية" [ref=e218] [cursor=pointer]:
+          - img [ref=e219]
+          - generic [ref=e221]: الخدمات التقنية
+        - tab "الصوت والإضاءة والترفيه" [ref=e222] [cursor=pointer]:
+          - img [ref=e223]
+          - generic [ref=e229]: الصوت والإضاءة والترفيه
+        - tab "القاعات والأماكن" [ref=e230] [cursor=pointer]:
+          - img [ref=e231]
+          - generic [ref=e235]: القاعات والأماكن
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - strong [ref=e46]: 1 مزود
+          - generic [ref=e47]: مزودون معتمدون جاهزون لخدمة مناسبتك
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - img [ref=e50]
+            - combobox "الترتيب" [ref=e53] [cursor=pointer]:
+              - option "موصى به" [selected]
+              - option "الأعلى تقييماً"
+              - option "الأقل سعراً"
+              - option "الأعلى سعراً"
+              - option "الأحدث"
+          - button "التصفيات 1" [ref=e54] [cursor=pointer]:
+            - img [ref=e55]
+            - text: التصفيات
+            - generic [ref=e56]: "1"
+      - generic [ref=e57]:
+        - button "المنطقة" [ref=e58] [cursor=pointer]:
+          - text: المنطقة
+          - img [ref=e59]
+        - button "إعادة ضبط" [ref=e62] [cursor=pointer]
+      - article [ref=e237]:
+        - link "عرض ملف استوديو الإبداع للتصوير" [ref=e238] [cursor=pointer]:
+          - /url: /ar/market-place/vendors/6a242e4b3002caa95e9e5edb
+          - generic [ref=e240]: ا
+        - generic [ref=e243]:
+          - link "استوديو الإبداع للتصوير" [ref=e244] [cursor=pointer]:
+            - /url: /ar/market-place/vendors/6a242e4b3002caa95e9e5edb
+            - heading "استوديو الإبداع للتصوير" [level=2] [ref=e245]
+          - paragraph [ref=e246]: نقدم خدمات التصوير الاحترافي للمناسبات والأفراح بأحدث المعدات وفريق متخصص.
+          - generic [ref=e247]:
+            - generic [ref=e248]:
+              - img [ref=e249]
+              - text: "4.8"
+            - generic [ref=e251]:
+              - img [ref=e252]
+              - generic [ref=e255]: الرياض، منطقة الرياض
+          - generic [ref=e256]:
+            - generic [ref=e257]: تخطيط الفعاليات
+            - generic [ref=e258]: الإنتاج الإعلامي
+          - generic [ref=e259]:
+            - generic [ref=e260]:
+              - generic [ref=e261]: يبدأ من
+              - generic [ref=e262]: 1000 SAR
+            - link "عرض التفاصيل" [ref=e263] [cursor=pointer]:
+              - /url: /ar/market-place/vendors/6a242e4b3002caa95e9e5edb
+              - generic [ref=e264]: عرض التفاصيل
+              - img [ref=e265]
+    - dialog "التصفيات" [ref=e267]:
+      - generic [ref=e268]:
+        - generic [ref=e269]:
+          - button "إغلاق التصفيات" [active] [ref=e270] [cursor=pointer]:
+            - img [ref=e271]
+          - heading "التصفيات" [level=2] [ref=e274]
+          - button "إغلاق التصفيات" [ref=e275] [cursor=pointer]:
+            - img [ref=e276]
+        - generic [ref=e279]:
+          - generic [ref=e280]:
+            - generic [ref=e281]: المنطقة
+            - combobox [ref=e282] [cursor=pointer]:
+              - option "جميع المناطق"
+              - option "منطقة الرياض" [selected]
+              - option "منطقة مكة المكرمة"
+              - option "منطقة المدينة المنورة"
+              - option "منطقة القصيم"
+              - option "المنطقة الشرقية"
+              - option "منطقة عسير"
+              - option "منطقة تبوك"
+              - option "منطقة حائل"
+              - option "منطقة الحدود الشمالية"
+              - option "منطقة جازان"
+              - option "منطقة نجران"
+              - option "منطقة الباحة"
+              - option "منطقة الجوف"
+          - generic [ref=e284]:
+            - generic [ref=e285]: المدينة
+            - button "جميع المدن" [ref=e286] [cursor=pointer]:
+              - generic [ref=e287]: جميع المدن
+              - img [ref=e288]
+          - generic [ref=e290]:
+            - generic [ref=e291]: نطاق السعر
+            - generic [ref=e292]:
+              - spinbutton [ref=e293]
+              - generic [ref=e294]: "-"
+              - spinbutton [ref=e295]
+          - generic [ref=e296]:
+            - generic [ref=e297]: التقييم
+            - combobox [ref=e298] [cursor=pointer]:
+              - option "جميع التقييمات" [selected]
+              - option "4 نجوم فأكثر"
+              - option "3 نجوم فأكثر"
+              - option "2 نجوم فأكثر"
+          - generic [ref=e299]:
+            - heading "التصفيات النشطة" [level=3] [ref=e300]
+            - generic [ref=e302]:
+              - generic [ref=e303]: المنطقة
+              - button "filters.removeFilter" [ref=e304] [cursor=pointer]:
+                - img [ref=e305]
+        - generic [ref=e308]:
+          - button "إعادة ضبط" [ref=e309] [cursor=pointer]
+          - button "تطبيق" [ref=e310] [cursor=pointer]
+  - contentinfo [ref=e104]:
+    - generic [ref=e105]:
+      - generic [ref=e106]:
+        - heading "معلومات التواصل" [level=3] [ref=e107]
+        - generic [ref=e108]:
+          - link "phone +966 55 261 9282" [ref=e109] [cursor=pointer]:
+            - /url: tel:+966552619282
+            - img "phone" [ref=e110]
+            - generic [ref=e111]: +966 55 261 9282
+          - link "email support@halaa.net" [ref=e112] [cursor=pointer]:
+            - /url: mailto:support@halaa.net
+            - img "email" [ref=e113]
+            - generic [ref=e114]: support@halaa.net
+          - generic [ref=e115]:
+            - img "location" [ref=e116]
+            - generic [ref=e117]: شارع المتحف - جدة - الرمز البريدي 23326
+          - generic [ref=e118]:
+            - link "WhatsApp" [ref=e119] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e120]
+            - link "Twitter" [ref=e122] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e123]
+            - link "Instagram" [ref=e125] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e126]
+            - link "YouTube" [ref=e129] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e130]
+            - link "Snapchat" [ref=e132] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e133]
+      - generic [ref=e135]:
+        - heading "الصفحات المهمة" [level=3] [ref=e136]
+        - navigation [ref=e137]:
+          - link "arrow الشروط والأحكام" [ref=e138] [cursor=pointer]:
+            - /url: /ar/terms
+            - img "arrow" [ref=e139]
+            - generic [ref=e140]: الشروط والأحكام
+          - link "arrow سياسة الخصوصية" [ref=e141] [cursor=pointer]:
+            - /url: /ar/privacy
+            - img "arrow" [ref=e142]
+            - generic [ref=e143]: سياسة الخصوصية
+          - link "arrow سياسة الإلغاء والاسترداد" [ref=e144] [cursor=pointer]:
+            - /url: /ar/refund
+            - img "arrow" [ref=e145]
+            - generic [ref=e146]: سياسة الإلغاء والاسترداد
+      - generic [ref=e148]:
+        - heading "حمل التطبيق" [level=3] [ref=e149]
+        - paragraph [ref=e150]: هلا منصة ذكية لإدارة المناسبات — أنشئ فعالياتك، أرسل دعوات رقمية مخصصة عبر واتساب، وتتبع الحضور في الوقت الفعلي.
+        - generic [ref=e152]:
+          - link "App Store تنزيل من App Store" [ref=e153] [cursor=pointer]:
+            - /url: "#"
+            - img "App Store" [ref=e154]
+            - generic [ref=e155]:
+              - generic [ref=e156]: تنزيل من
+              - generic [ref=e157]: App Store
+          - link "Google Play احصل عليه من Google Play" [ref=e158] [cursor=pointer]:
+            - /url: "#"
+            - img "Google Play" [ref=e159]
+            - generic [ref=e160]:
+              - generic [ref=e161]: احصل عليه من
+              - generic [ref=e162]: Google Play
+    - generic [ref=e164]: جميع الحقوق محفوظة © 2026 هلا
+  - button "Open Next.js Dev Tools" [ref=e316] [cursor=pointer]:
+    - img [ref=e317]
+  - alert [ref=e320]

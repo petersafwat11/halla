@@ -1,0 +1,52 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - banner [ref=e5]:
+        - generic [ref=e6]:
+          - link "Halaa" [ref=e7] [cursor=pointer]:
+            - /url: /en
+            - img "Halaa" [ref=e8]
+          - link "Switch language" [ref=e9] [cursor=pointer]:
+            - /url: /ar/login
+            - img [ref=e10]
+            - generic [ref=e13]: AR
+      - generic [ref=e54]:
+        - heading "Welcome to Halaa" [level=2] [ref=e56]
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - generic [ref=e60]: Email*
+              - generic [ref=e61]:
+                - textbox "Email*" [ref=e62]:
+                  - /placeholder: Enter your email
+                  - text: test.host@labbe.sa
+                - img "icon" [ref=e63]
+            - generic [ref=e64]:
+              - generic [ref=e65]: Password*
+              - generic [ref=e66]:
+                - textbox "Password*" [ref=e67]:
+                  - /placeholder: Enter your password
+                  - text: password123
+                - img "icon" [ref=e68]
+                - button "Show password" [ref=e69] [cursor=pointer]:
+                  - img [ref=e70]
+          - generic [ref=e73]:
+            - button "Forgot Password" [ref=e74] [cursor=pointer]
+            - generic [ref=e75]:
+              - paragraph [ref=e76]: Remember Me
+              - checkbox [ref=e77] [cursor=pointer]
+        - button "Login" [ref=e78] [cursor=pointer]
+        - generic [ref=e79]:
+          - button "Login with temporary password arrow" [ref=e80] [cursor=pointer]:
+            - text: Login with temporary password
+            - img "arrow" [ref=e81]
+          - button "Don't have an account? Create account" [ref=e82] [cursor=pointer]
+    - generic [ref=e31]:
+      - img "image1" [ref=e83]
+      - generic [ref=e34]:
+        - heading "Halaa هلا" [level=1] [ref=e35]
+        - paragraph [ref=e36]: region's most distinguished gatherings.
+  - button "Open Next.js Dev Tools" [ref=e48] [cursor=pointer]:
+    - img [ref=e49]
+  - alert [ref=e52]

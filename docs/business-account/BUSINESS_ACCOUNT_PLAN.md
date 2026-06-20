@@ -1,89 +1,109 @@
 # Business Account — Feature Plan (post-removal phases)
 
-**Status:** Spec / future · **Created:** 2026-06-20 · **Rev 2** (folds in the Codex review + `round2-codex-verification.md` + owner decisions)
-**Depends on:** [whitelabel removal](../whitelabel-removal/FINAL_MIGRATION_PLAN.md) fully complete first.
-**Research/verification:** [research-account-and-dashboard.md](research-account-and-dashboard.md) · [research-invites-and-event-page.md](research-invites-and-event-page.md) · [round2-codex-verification.md](round2-codex-verification.md).
+**Status:** Spec / future · **Rev 4** (2026-06-20) — folds in Codex reviews #2+#3 + [round2-](round2-codex-verification.md)/[round3-codex-verification.md](round3-codex-verification.md) + owner decisions.
+**Depends on:** [whitelabel removal](../whitelabel-removal/FINAL_MIGRATION_PLAN.md) complete; **invite-accounting rework already merged** (commit `b0f28680`, `docs/invites-plans-rework/PLAN.md` — consume-on-send, unified invite pool, refund clawback). The only invite-side gaps left for this feature are the **cron subscription re-check** and **upgrade/renewal behaviour**, folded in below.
 
-## The core model decision (changed)
-A business account is **`role: 'host'` + `accountType: 'business'`** — **NOT** a new `role: 'business'`. Role = authorization; `accountType` = product behaviour / plan eligibility / branding. This gives business accounts all host authorization for free (event ownership/editing, host dashboard endpoint, tickets, add-ons, payments, post-event, templates, mobile host nav, host audit). Verification confirmed a separate `role:'business'` would break **~10 hard sites** (403s + Mongoose enum rejects) + ~6 soft branches; the `accountType` pivot sidesteps all of them.
+## Core model
+`role:'host'` + `accountType:'business'` (NOT a new role). Inherits host authorization; never reintroduces `whitelabelId`/tenancy.
 
-### The mirror risk this introduces (the key new concern)
-Because business stays `role:'host'`, it **leaks into ~18 host-scoped queries** that must be **segregated by `accountType`**:
-- **`admin.hosts.service.js` (~12 sites)** — the admin **Hosts** page would list business accounts. Filter to `accountType: 'personal'` (or `{$ne:'business'}`).
-- **`dashboard.service.js` (~5 sites)** — host metrics would count businesses. Same filter.
-- **`getEventTargets` (`admin.events.service.js:185`)** — under the pivot this now **includes** business automatically (Codex's "must add them" inverts to "must label/segregate them"): show a **combined host+business list with an account-type badge** so admins can create events for either.
+## Six cross-cutting principles
+1. **Segregate by accountType** (shared `personalHostFilter()`/`businessHostFilter()`/`allCustomerHostsFilter()`; 12 sites in `admin.hosts.service.js`, 5 in `dashboard.service.js`; IDOR tests both ways). [#14]
+2. **Explicit serialization** — `toPublicJSON` does `delete obj.profile` (`UserModel.js:783`); a business DTO must surface `businessData` on login/refresh/`/me`/admin/auth-store. [#6]
+3. **Server-owned, snapshotted state** — branding (logo **key** + business name), price/fee/currency, delivery mode + template id/version are all snapshotted at creation, never read live, never client-submitted. [#9 #10 #22 #23 #24]
+4. **Authoritative server money** — a server **quote** with **durable line items** is the source of truth; setup fee added **after** discount; refunds allocate against line-item IDs. Money stays **SAR major-unit `Number`** (consistent with the whole payment system) with explicit 2-dp rounding + discount-allocation rules. [#3 #4 #14 #21]
+5. **Durable assignment + entitlement state machines** — the "checkout link" and the setup fee are persisted records with compare-and-set transitions, not a URL + a boolean. [#1 #2 #5]
+6. **One centralized dispatch-policy gate** — every send path (initial/retry/resend/reminder/cron) consults a single guard, not ad-hoc per-endpoint checks. [#11]
 
-## Locked owner decisions (2026-06-20)
-1. **Model:** `role:host` + `accountType:'business'` (above).
-2. **Mobile:** **full parity** — business users use the mobile host stack too; `accountType` must be handled in mobile routing / `isHost`-style gates / plans / settings / nav (not just web).
-3. **Subscription lifecycle:** a business is created with **NO subscription**. An admin then **assigns a plan**, choosing one of **two modes**:
-   - **(A) Direct grant** — admin activates the assigned plan immediately, no payment (comp/manual); setup fee waived. (Optionally notify the business "your plan is active" via WhatsApp/in-app.)
-   - **(B) Checkout link** — admin generates a link to a **hosted checkout page** showing the **summary = assigned plan + the initial setup fee**; the business pays there and the subscription activates on success.
-   **Delivery (decided): the business receives the mode-B link over WhatsApp** — the platform already sends user-directed Taqnyat messages (OTP to users; **staff-access links** to staff). The link is delivered the same way, with **SMS fallback** (plain-text link, no template approval) and optionally an email copy as a paper-trail.
-   The account is **gated** (cannot send invites) until a subscription is active.
-4. **Setup fee (1,200 SAR — today defined but never charged):** charged **only on the mode-B checkout link**, as an authoritative line item (`subtotal = planPrice + setupFee + addons`). Mode-A grant waives it. Charged **once** (first business-plan checkout), not on every purchase. (Sub-rules defaulted: non-refundable, not discountable, idempotent per account; B mode marks it paid; A mode marks it waived. Adjust in B0 if wanted.)
-5. **Branding:** **minimal — logo only.** **No colors** (the invite page uses global Halaa tokens/CSS vars; the whitelabel removal already strips the color plumbing — do not re-add). The **business logo** is **snapshotted** onto the event at creation (`event.branding.logoUrl`) so old invitations don't change when the business edits settings. The "message about the event" is the **existing `event.description`** (rendered). Remove website / displayName / custom-message / colors from any branding model.
+## Locked owner decisions
+- Model `role:host`+`accountType:'business'`; **mobile full parity**.
+- **Plan ownership:** admin assigns the initial plan (no-sub businesses are **admin-assigned only** — no self-purchase); once active, the business may **self-upgrade among business plans, immediately, with proration + invite-pool carryover**. (Resolves the rev-3 hybrid contradiction. [#6])
+- **Assignment delivery:** mode A = direct grant (no payment; setup waived; audited); mode B = WhatsApp checkout link (+ SMS fallback) → hosted summary (plan + setup fee).
+- **Setup fee: once per account; settles on the FIRST activation of ANY business plan** (a zero-fee quarterly/annual or a grant settles it permanently → a later event plan is never charged). Amount = the activating plan's `setupFeeAmount` (event=1200, q/a=0). Not discountable. [#2 #5]
+- **Identity:** reject duplicate email/phone (no conversion v1). [#15]
+- **Branding:** logo + business name snapshotted (immutable); no colors (global tokens); "message" = `event.eventDetails.description`. [#16 terminology + #15-branding]
+- **RBAC:** super_admin/admin manage Businesses; **moderators none** (locked).
+- **Password:** admin-set in popup + **server-enforced `mustChangePassword`** on first login.
 
-## Minimal branding + invite-page model (per decision #5)
-- **Business profile:** `User.accountType:'business'` + `User.avatar` (logo, signed on read like hosts) + `profile.businessData.description` (account-level text, for the admin page/settings). **No** color/website/displayName/invitationMessage fields.
-- **Event snapshot:** at business-event creation, copy the business logo → `event.branding = { logoUrl }` (snapshot; nothing else). Personal-host events get no logo.
-- **Public DTO:** extend `_formatEventForGuest` (`guests.service.js:618`) to return `branding: { logoUrl }` **only** (no colors, no internal fields) + it already returns `description` (the "message").
-- **Invite page (web `PortalRsvpForm` + mobile `InvitationScreen`):** render the snapshot **logo** + business **name** (= existing `hostName`) + event **title** + event **description** (the message) + the RSVP form (3 buttons + "+1" + guest message — now on both platforms). Styled with global tokens; **no per-event colors.**
+## Branding + invite-page model (minimal, immutable, server-owned)
+- **Profile:** `accountType:'business'` + `avatar` (logo S3 key) + `profile.businessData.description`. No colors/website.
+- **Event snapshot:** `event.branding = { logoKey, businessName }` (logo copied to an event-owned immutable key; business **name** snapshotted too so a later rename doesn't change old invitations [#15-name]) + `event.invitationDeliveryMode` + `event.invitationTemplate = { id, version }`.
+- **Public DTO:** `_formatEventForGuest` → **async**, signs `logoKey` (~1h), returns `branding:{ logoUrl, businessName }` + `description`. No internal fields.
+- **Invite page (web+mobile):** logo + business name + title + description + RSVP (3 buttons + "+1" + message). Global tokens.
 
 ## Hard prerequisites
 1. Whitelabel removal merged + verified.
-2. **Web RSVP-submit fix + mobile +1/message parity** — code-level done 2026-06-20 (`page.jsx` + `hooks/guests/mutations.js`; mobile `InvitationScreen`). **Per Codex: these live in the uncommitted working tree — mark truly complete only after they are committed and live-tested.** B5 relies on the web page-submit path.
+2. Web RSVP-submit fix + mobile +1/message parity — done 2026-06-20 (**uncommitted**; commit + live-test before B5).
+3. **Fix existing bug** `checkout.service.js:511` (`user` ReferenceError in `_fulfillBundle`) before B2B builds on checkout.
 
 ---
 
-## Phase order (B0–B6)
+## Phases (reordered per Codex — schema before payment state)
 
-### B0 — Domain decisions & contracts (decide before code)
-The decisions above are locked; B0 finalises the remaining contracts: the **host-query segregation policy** (filter `accountType` in `admin.hosts.service` + `dashboard.service`; combined event-target list with badge), the **setup-fee sub-rules** (refund/idempotency/how A-grant marks waived, whether to use the existing **`BusinessSetupFeeModel`** — *registered at `server.js:13` but has zero consumers* — vs a flag on the subscription/payment), and the **Taqnyat template delivery contract** (see B5). **Start Meta/Taqnyat approval for BOTH link templates here** — the **`business_checkout`** template (mode-B checkout link, B2) and the **invite link** template (B5) — approval can take longer than the code. Both follow the proven `staff_access` link-template shape.
+### B0 — Lock schema, policy, money & contracts (no code)
+- **Account schema:** `accountType ∈ ['personal','business', null]` default `null`; required `personal|business` when `role==='host'`; admin-controlled + immutable via normal profile endpoints; index `{role,accountType,status}`. **Fail-closed for `null`** [#13]: every host create/import/seed sets `personal`; a startup/static assertion + a test forbid `{role:'host', accountType:null}`; monitoring alert on any; scope helpers **never** treat `null` as personal. Identity prechecks are backed by **DB uniqueness** (two concurrent creates can both pass a service check).
+- **Money** [#14]: SAR major-unit `Number` everywhere (decided); define rounding (2-dp), tax inclusion, and discount-allocation rules once, centrally.
+- **Setup-fee semantics** [#2 #5]: settle-on-first-activation (above); a grant waiver settles permanently; a zero-fee first plan settles permanently; refund of a setup fee re-opens eligibility **only** in the paid-but-activation-failed case (no setup delivered); **non-refundable after successful activation**.
+- **Refund rules (line-item aware)** [#3]: customer-after-activation / paid-but-activation-failed (full incl. setup) / admin-cancel / fraud-duplicate / partial-plan — each allocates against line-item IDs.
+- **Upgrade rules** [#7]: immediate + prorated — define proration formula (daily on plan price → credit), **invite-pool carryover** (carry remaining base+compensation invites per the merged pool model; a per-event plan with `invitesConsumed>0` is "used" but is being replaced, so carry its remaining pool to the new subscription), old-subscription cancellation, per-event↔quarterly/annual both directions, add-on carryover, and the **concurrent admin-grant-vs-self-checkout** guard (the assignment state machine + the one-actionable-assignment unique index).
+- **Identity/conversion:** reject duplicates; `findOrCreateHost` handles the conflict explicitly (don't silently filter `accountType:'personal'`, miss a business, then ConflictError).
+- **RBAC:** `ADMIN_PAGES.BUSINESSES` + matrices + nav + route protection; moderators none.
+- **Canonical URL** [#26]: one `FRONTEND_URL` config for WhatsApp buttons / SMS / web route / mobile universal links (reconcile `halaa.sa` backend fallback vs `halaa.com.sa`).
+- **Checkout-token contract** [security]: ≥256-bit random; store **hash + unique index**; rate-limit by IP **and** token; **consumed on successful checkout submission, not on page view**; CSRF/replay handling; **no sensitive business data on the public summary page**; rotation + revocation semantics.
+- **Template contract:** `deliveryMode` rule is **deterministic** — personal event → `quick_reply`, business event → `portal_link` (no per-business choice v1); snapshot the provider template **id/version/capability** on the event; **centralize message construction in ONE formatter** (don't patch every send impl). Approve both Meta templates (`business_checkout`, invite link) now — longest lead time.
+- **Plan cleanup:** moderator access = none (locked, no longer "open"); setup-fee storage = a dedicated entitlement record (B2A), decided here.
 
-### B1 — Rename plan availability `'whitelabel'` → `'business'` (~13 files)
-Do this **immediately after** whitelabel removal + the dev DB reset (no live data to migrate). Files (from verification): backend `constants/plans.js:63`, `PlanModel.js:101`, `planDefaults.js:210`, `plans.service.js`, backend plan schemas, `shared/src/schemas/plans.js:46`, `checkout.service.js:46`, swagger (3 enums), web `SubscriptionAssignmentPopup.jsx`, mobile subscription modals, the seed script + seeded business Plan docs. After this, `availableFor:'business'` is the canonical tag and the legacy string is gone.
+### B1 — Rename `availableFor:'whitelabel'`→`'business'` (~13 files) + dev reset/reseed
+(Right after whitelabel removal + DB reset; no live data.)
 
-### B2 — Backend: account model, management, eligibility, assignment
-- **Model:** add `accountType: 'personal' | 'business'` to `UserModel` (default `'personal'`) + `profile.businessData.description`. **No `whitelabelId`.**
-- **Segregation:** add the `accountType` filter to the ~12 `admin.hosts.service.js` host-list sites + ~5 `dashboard.service.js` host-metric sites so business doesn't leak into host surfaces.
-- **CRUD module** `src/modules/admin/admin.business.{service,routes,controller}.js` (clone `admin.hosts.*`): list/get/create (`role:host`+`accountType:business`, no whitelabelId, `description→businessData`, **no auto-subscription** per decision #3)/update/suspend/activate/delete. Mount in `admin.routes.js`. Plural route naming: `/admin/businesses`, `/admin/businesses/:id`.
-- **Subscription assignment** endpoint with **two modes**: (A) direct grant (activate now, mark setup fee waived); (B) generate a checkout link/token for the assigned plan **and deliver it to the business over WhatsApp**. Reuse the existing user-send pattern — model on `events.staff.service.js:258+` (`staff_access` global Taqnyat template: token → `${frontendUrl}/...` link → `taqnyat.sendWhatsAppTemplate` with the link in the body via the `getEventBodyParams` `accessUrl`-style ctx → SMS/no-capability fallback). Needs a `business_checkout` managed template (B0 approval) + a checkout token model/route.
-- **Authoritative checkout (the real fix):** `checkout.service.js` currently does `subtotal = planPrice + addonsTotal` (`:77`) and **never reads `setupFeeAmount`**. For a business-plan checkout via mode B, add the **setup fee** as a line item (idempotent, charged once per account). Decide `BusinessSetupFeeModel` vs a subscription/payment flag (B0).
-- **Server-side eligibility (both checkout + admin assignment):** enforce `plan.availableFor === 'business' && account.accountType === 'business'`; personal hosts cannot buy business plans, business cannot get host-only plans. Do **not** rely on the UI showing only business plans.
-- **Event targets:** `getEventTargets` returns host **and** business with an account-type badge.
-- API/eligibility/amount **tests**.
+### B2A — Account model, DTO, scope helpers, lifecycle guard (before any payment code)
+- `accountType` + `profile.businessData.description`; **initialize BOTH** `hostData.{profileCompleted:true}` and `businessData` at admin creation [#8]; index [#5].
+- **Serialization DTO** [#6]: surface `businessData` when business; update login/refresh/`/me`/admin list+detail/web+mobile auth-store; expose `mustChangePassword`.
+- **`mustChangePassword` enforcement** [security]: server-side gate — until changed, allow only `/me`, change-password, logout/refresh (a frontend prompt is bypassable).
+- **Scope helpers** [#14] applied to the 12+5 sites; **IDOR tests**.
+- **Reporting/targeting** [#16]: add `totalPersonalHosts`/`totalBusinesses`/`totalCustomerAccounts`/recent/revenue; daily reports + notification broadcasts gain account-type grouping/targeting.
+- **Lifecycle** [#12]: suspend (revoke sessions + checkout links, pause sends, preserve data/sub) / soft-delete (revoke links/sessions, cancel future sends, retain financial+event history) / reactivate (don't auto-revive expired links). Define impact on pending links, active sub, scheduled events, pending reminders, refresh tokens/sessions, add-ons, setup-fee entitlement, existing RSVP links.
 
-### B3 — Admin "Businesses" management page (web; mobile-admin optional)
-A dedicated **`admin-dash/businesses`** page (full management) mirroring the Hosts page:
-- Web page `app/[lang]/admin-dash/businesses/` + `_components/` (`BusinessesTable`, `PageHeader`, optional stats/detail); **Add/Edit** popups (clone `AddHostPopup`) with fields **email, name, description, phone, logo, password**; row actions **assign-plan (2 modes)**, **suspend/activate**, **delete**.
-- **Full plumbing** (verified real, mirror the Hosts feature): `shared/src/api/paths.js` entries; web admin **keys/queries/mutations/index** + exports; backend **validation schema** (`addBusinessSchema`/`updateBusinessSchema`/`assignBusinessSubscriptionSchema` in `shared/src/schemas/admin.js`); controller/service **barrels + route mount**; `providers/index.js` **namespace** registration; **`adminBusinesses.json`** (en + ar); **cache invalidation** after create/edit/status/subscription/delete.
-- **Subscription-assignment UI:** the whitelabel removal collapsed `SubscriptionAssignmentPopup`/`Modal` to host-only — **re-add a clean `entityType:'business'` variant** (lists `availableFor:'business'` plans; offers the A/B modes). Do not revive whitelabel code.
-- **Logo upload (Codex was right — option B fails):** `PATCH /users/profile` updates the *authenticated* user, so an admin can't use it to set someone else's logo. Use **multipart `POST /admin/businesses`** or a dedicated **`PATCH /admin/businesses/:id/logo`**, with MIME/size/dimension validation + old-image cleanup.
+### B2B — Assignment + payment + entitlement state machines
+- **`BusinessPlanAssignment`** [#1 #2]: fields `{ businessUserId, planId, mode:'grant'|'checkout', status, version (optimistic lock), failureCode, planPriceSnapshot, setupFeeSnapshot, currency, lineItems (immutable), tokenHash, expiresAt, usedAt, supersededBy, createdBy, paymentId, subscriptionId, completedAt, deliveryAttempts[] }`.
+  - **States:** `pending_payment → payment_processing → paid → active`; off-happy: `paid → activation_failed → refund_pending → refunded`, `payment_processing → failed`, `pending_payment → expired` (cron, **retained — never TTL-deleted**, financial/audit), `pending_payment|payment_processing → cancelled`, `pending_payment → superseded`. Mode A grant → `active` directly. **`paid` ≠ `active`** (a paid-but-not-activated assignment is `activation_failed`, not ambiguously `failed`).
+  - **Compare-and-set transitions** on `version` so webhook + browser callback + reconciliation can never activate twice. [#2]
+  - **Supersede rules** [#3-of-review]: only `pending_payment` may be superseded; an in-flight `payment_processing`/`paid` must NOT be cancelled by a new assignment. Enforce a **partial unique index** = one *actionable* assignment per business (`status ∈ {pending_payment, payment_processing, paid}`).
+- **`Payment.lineItems[]`** [#4]: `{ id, type:'plan'|'setup_fee'|'addon'|'discount'|'tax', referenceId, quantity, unitAmount, subtotal, discountAllocation, taxAmount, total, refundableAmount, refundedAmount }`. Refunds carry `allocations[]:{ lineItemId, amount }`. (Existing `refunds[]` already has `amount/reason/deductInvites` — extend it; it is NOT yet a line-item ledger.)
+- **Setup-fee entitlement record** [#5]: dedicated, **unique per business** (replace/extend `BusinessSetupFeeModel`, which is only `pending|paid` + non-unique). Status: `not_applicable | waived | pending | processing | paid | refund_pending | refunded | failed`, with `settled` flag + `paymentId`/`assignmentId`/`lineItemId`/audit refs. Settle-on-first-activation rule wired here.
+- **Server quote** [#21]: `{ lineItems[], plan, addons, discount, setupFee, tax, total, currency, quoteExpiresAt }`; `discountable = plan+addons`; `total = discountable − discount + setupFee` (fee not discounted). Frontend never recomputes; snapshot at assignment; quote expiry; plan edits don't mutate an issued link.
+- **Payment finalization:** idempotent webhook+callback (compare-and-set); paid-but-activation-failed → `refund_pending` → refund incl. setup line; reconcile.
+- **Direct-grant semantics** [#13]: grantedBy, reason, nominal price, setup=`waived`, start/end, prior-sub cancellation, audit; distinguishable from paid.
+- **Link delivery** [#20]: `business_checkout` WhatsApp template (model on `events.staff.service.js:258+`) + SMS fallback + admin copy button; record `deliveryAttempts`.
 
-### B4 — Business-user dashboard, settings, plans (web + mobile, full parity)
-- **Routing:** `accountType`-aware so a business user lands on the host stack (web `middleware.js getRedirectPath:88` + host gate `:210`; the mobile equivalent — full parity, decision #2).
-- **Settings:** business edits **description + logo**; hide host-only sections that don't apply.
-- **Plans:** show **business** plans (`useBusinessPlans` / `/plans/business`) instead of host plans, same components/styles. **SSR fix:** `host/plans/page.js:15` unconditionally prefetches host plans — branch the prefetch on `accountType` so a business user gets the business query/endpoint server-side (no wasted host fetch + double client fetch). Shapes differ (`{event,quarterly,annual}` vs host `{basic,premium}×{event,monthly}`) → a business variant of `usePlansPageState`, not a drop-in swap.
-- **Checkout-link page:** the hosted summary page (plan + setup fee) the business opens from the admin's mode-B link; authoritative amounts from B2.
+### B3 — Admin Businesses page + checkout-link operations (web; mobile-admin optional)
+Full-management `admin-dash/businesses` (list/add/edit/assign-plan A·B/suspend·activate/delete). Full plumbing: shared `api/paths`, web admin keys/queries/mutations/index, **backend CommonJS zod schemas IN the backend validation module AND shared schemas for forms** [#18], controller/service barrels + route mount, `providers` namespace, `adminBusinesses.json` (en+ar), cache invalidation. **Logo upload** = multipart `POST /admin/businesses` or `PATCH /admin/businesses/:id/logo` (NOT self `/users/profile`); MIME/size/dimension validation + old-image cleanup [#9]. **Checkout-link UI states:** pending/payment-pending/expired/active/failed/waived + regenerate/revoke + copy button [#20]. Clean `entityType:'business'` subscription-assignment variant. Plural naming `/admin/businesses`.
 
-### B5 — Invitation delivery (link template) + minimal logo branding
-- **Branding:** snapshot `event.branding.logoUrl` at creation; render logo + `event.description` on the invite page (web + mobile); **no colors**. Public DTO returns only `branding.logoUrl`.
-- **All send paths (not just `sendToGuest`):** apply the business link behaviour to single send, **bulk/launch**, **test message**, **retry** (note: `events.resend.service.js` is a **separate** send implementation — must be covered), **resend**, **scheduled**, and the **SMS fallback** (the SMS body already carries the link).
-- **Template contract (B0-approved):** a Meta URL-button template needs an exact component payload — define `deliveryMode: 'quick_reply' | 'portal_link'`, whether the URL is a body var or a dynamic URL-button suffix, the exact Taqnyat component payload, how synced templates expose their button structure, and how the event wizard **prevents a business from selecting an incompatible template**. **Approved Meta template is a release prerequisite** (started in B0).
-- The branch predicate is the **event owner's `accountType === 'business'`** (clean; available on the loaded event/owner).
+### B4 — Business-user dashboard, settings, plans, upgrade, no-sub UX (web + mobile)
+- **Routing** [#27]: no change (business is `role:host`); work is in plans/settings/gating/auth-store `accountType`.
+- **Settings** [#7]: edit description + logo (web+mobile forms + backend `businessData` validation/authz/service + logo update-delete + cache + auth-store).
+- **Plans + self-upgrade** [#4 #7]: business plans (`useBusinessPlans`/`/plans/business`); **SSR fix** `host/plans/page.js:15` branch on `accountType`; business variant of `usePlansPageState`; immediate+prorated self-upgrade per the B0 rules (proration/credit, invite carryover, old-sub cancel) gated by the assignment state machine.
+- **Mobile business plans** [#28]: real new screen/state (list, assigned-plan, checkout-link open, payment return/deep-link, current sub, setup-fee summary, pending/failed).
+- **No-sub UX** [#29]: create-event is already subscription-gated → no-sub = can't create. Banner ("activate a plan"), create-event nav disabled, pending-checkout status, contact-admin; **no self-purchase before activation** (admin-assigned only until active).
+- **Checkout-link page:** hosted summary (plan + setup fee) from the B2B quote; consumes token on submit, not view.
+
+### B5 — Event delivery-mode + immutable snapshots + provider template + cron gating
+- **Branding snapshot (server-owned, with failure semantics)** [#9 #10 #S3]: pre-generate `event._id`; **copy the logo to a versioned event-owned key BEFORE committing the event**; reject creation if the copy fails; delete the copied object if event/guest creation fails; content-type/extension handling; retention/cleanup after soft-delete; **upload/swap/delete-after-grace** to avoid the race where live-logo replacement deletes the source mid-copy. Snapshot `businessName` too. `_formatEventForGuest` async-signs on read. Cover self-created AND admin-created; updates don't silently replace.
+- **Delivery mode + template snapshot** [#23 #24]: `event.invitationDeliveryMode` + `event.invitationTemplate{id,version}` set at creation (owner `accountType` not populated on send paths); send branches on the snapshot via the single formatter.
+- **All send paths** [#25]: one formatter applied to `sendToGuest`, bulk/launch, test message, retry (`events.resend.service`), resend, scheduled (`messaging.reminder.service`+cron), SMS fallback. Post-event/staff links stay separate.
+- **Centralized dispatch-policy gate** [#11 #dispatch]: ONE service checked before every send (user active/not-deleted, correct subscription owner, subscription active/unexpired, event non-terminal, assignment/subscription not under refund, invite availability). Wire into initial/retry/resend/reminder/cron (`scheduledTasks.js:171→:300` currently skips it).
+- **Canonical URL** [#26]: single config everywhere; test cold/warm/not-installed app, ar/en, expired/invalid codes.
 
 ### B6 — Verification
-- **Personal-host regression** (segregation + accountType changes don't break existing hosts).
-- **Business e2e:** create → assign (mode A and mode B) → pay plan + setup fee → branded (logo) invite → RSVP with +1/message.
-- **Payment-amount tests:** checkout charges plan + setup fee exactly (no UI/server mismatch).
-- **Invite URL/template tests;** eligibility tests (personal host can't buy business plans; business excluded from Hosts page/metrics).
+Concurrent checkout submissions; callback/webhook race (no double-activate); expired/revoked/superseded links; admin changes plan after link; mode A then B; quarterly/annual (0) + settle-on-first-activation; **immediate+prorated upgrade** (credit + invite carryover + old-sub cancel + per-event↔q/a both ways + concurrent grant-vs-checkout); full+partial refunds with line-item allocation; paid-but-activation-failed; suspend before scheduled launch; cron subscription-lapse gate; logo replacement doesn't break old events + signed-URL expiry/regen + copy-fail rollback; business-name rename doesn't change old invites; personal/business IDOR; `{role:host,accountType:null}` fail-closed; duplicate email/phone reject; business serialization + `mustChangePassword` enforcement; admin RBAC; reporting/targeting; residual `availableFor:'whitelabel'` zero-match; personal-host regression.
 
 ---
 
-## Open sub-items (resolve in B0)
-1. Setup-fee mechanism: reuse `BusinessSetupFeeModel` (currently unused) vs a flag on subscription/payment; exact idempotency + how mode-A marks it waived.
-2. Host-query segregation: confirm `accountType:'personal'` vs `{$ne:'business'}` filter and every host-list/metric site.
-3. Event-target UI: combined list + badge (assumed) vs a separate "Businesses" tab.
-4. Whether admins manage businesses on **mobile** too (business *users* on mobile are already in scope per decision #2; admin-side mobile management is optional).
-5. Taqnyat link-template payload + Meta approval timeline (start in B0).
+## Corrected/overstated Codex points (record)
+- Per-line refunds exist only as a *pattern* (addon clawback + `deductInvites`); there is **no money line-item ledger** yet — B2B adds it.
+- `getEventTargets` inverts under the pivot (auto-includes business; the work is labelling).
+- Invite-accounting (#8) is **largely merged** (`b0f28680`); only cron-sub-check + upgrade behaviour remain (folded into B5/B0).
+- `createHost` throws a service `ConflictError`, not a raw dup-key.
+
+## Open sub-items
+1. Event-target selector: combined list + account-type badge (assumed) vs separate tab.
+2. Whether admins manage businesses on **mobile** (business *users* on mobile are in scope).

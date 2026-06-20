@@ -1,0 +1,209 @@
+- generic [active] [ref=e1]:
+  - region "Notifications Alt+T"
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - img "Logo" [ref=e5]
+      - navigation [ref=e6]:
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "Home" [ref=e9] [cursor=pointer]:
+              - /url: /en
+          - listitem [ref=e10]:
+            - link "Halla Marketplace" [ref=e11] [cursor=pointer]:
+              - /url: /en/market-place
+      - generic [ref=e12]:
+        - link "Switch language" [ref=e13] [cursor=pointer]:
+          - /url: /ar/market-place/vendors/6a242e4b3002caa95e9e5edb
+          - img [ref=e14]
+          - generic [ref=e17]: AR
+        - link "Dashboard" [ref=e18] [cursor=pointer]:
+          - /url: /en/host
+          - button "Dashboard" [ref=e19]
+  - main [ref=e20]:
+    - generic [ref=e21]:
+      - link "Back to marketplace" [ref=e22] [cursor=pointer]:
+        - /url: /en/market-place
+        - img [ref=e23]
+        - text: Back to marketplace
+      - button "Share" [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+        - text: Share
+    - generic [ref=e32]:
+      - img "استوديو الإبداع للتصوير" [ref=e33]
+      - generic [ref=e35]:
+        - img "استوديو الإبداع للتصوير logo" [ref=e37]
+        - generic [ref=e38]:
+          - heading "استوديو الإبداع للتصوير" [level=1] [ref=e39]
+          - paragraph [ref=e40]: نقدم خدمات التصوير الاحترافي للمناسبات والأفراح بأحدث المعدات وفريق متخصص.
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - img [ref=e43]
+              - text: "4.8"
+            - generic [ref=e45]: Event planning
+            - generic [ref=e46]: Media production
+            - generic [ref=e47]:
+              - img [ref=e48]
+              - text: Riyadh، Riyadh
+    - generic [ref=e51]:
+      - generic [ref=e52]:
+        - paragraph [ref=e53]: About Vendor
+        - heading "Meet استوديو الإبداع للتصوير" [level=2] [ref=e54]
+        - paragraph [ref=e55]: نقدم خدمات التصوير الاحترافي للمناسبات والأفراح بأحدث المعدات وفريق متخصص.
+      - complementary [ref=e56]:
+        - heading "Contact the vendor" [level=2] [ref=e57]
+        - paragraph [ref=e58]: Contact the vendor directly to ask about availability, pricing, and the details of your occasion.
+        - generic [ref=e59]:
+          - link "WhatsApp" [ref=e60] [cursor=pointer]:
+            - /url: https://wa.me/966523456789?text=Hello%2C%20I%20would%20like%20to%20ask%20about%20the%20services%20offered%20by%20%D8%A7%D8%B3%D8%AA%D9%88%D8%AF%D9%8A%D9%88%20%D8%A7%D9%84%D8%A5%D8%A8%D8%AF%D8%A7%D8%B9%20%D9%84%D9%84%D8%AA%D8%B5%D9%88%D9%8A%D8%B1.%20I%20found%20you%20on%20Halla%3A%20https%3A%2F%2Fhalaa.com.sa%2Fen%2Fmarket-place%2Fvendors%2F6a242e4b3002caa95e9e5edb
+            - img [ref=e61]
+            - text: WhatsApp
+          - link "Call Now" [ref=e63] [cursor=pointer]:
+            - /url: tel:966523456789
+            - img [ref=e64]
+            - text: Call Now
+          - link "Request a quote" [ref=e66] [cursor=pointer]:
+            - /url: https://wa.me/966523456789?text=Hello%2C%20I%20would%20like%20to%20ask%20about%20the%20services%20offered%20by%20%D8%A7%D8%B3%D8%AA%D9%88%D8%AF%D9%8A%D9%88%20%D8%A7%D9%84%D8%A5%D8%A8%D8%AF%D8%A7%D8%B9%20%D9%84%D9%84%D8%AA%D8%B5%D9%88%D9%8A%D8%B1.%20I%20found%20you%20on%20Halla%3A%20https%3A%2F%2Fhalaa.com.sa%2Fen%2Fmarket-place%2Fvendors%2F6a242e4b3002caa95e9e5edb
+            - img [ref=e67]
+            - text: Request a quote
+        - generic [ref=e70]:
+          - link "966523456789" [ref=e71] [cursor=pointer]:
+            - /url: tel:966523456789
+            - img [ref=e72]
+            - generic [ref=e74]: "966523456789"
+          - link "test.vendor@labbe.sa" [ref=e75] [cursor=pointer]:
+            - /url: mailto:test.vendor@labbe.sa
+            - img [ref=e76]
+            - generic [ref=e79]: test.vendor@labbe.sa
+          - link "Website" [ref=e80] [cursor=pointer]:
+            - /url: https://creativestudio.sa/
+            - img [ref=e81]
+            - generic [ref=e86]: Website
+            - img [ref=e87]
+          - link "instagram" [ref=e91] [cursor=pointer]:
+            - /url: https://instagram.com/creative_studio_sa
+            - img [ref=e92]
+            - generic [ref=e96]: instagram
+          - generic [ref=e97]:
+            - img [ref=e98]
+            - text: Riyadh، Riyadh
+    - generic [ref=e101]:
+      - generic [ref=e102]:
+        - generic [ref=e103]:
+          - paragraph [ref=e104]: Our Services
+          - heading "Services for your occasion" [level=2] [ref=e105]
+        - generic [ref=e106]: "2"
+      - generic [ref=e107]:
+        - article [ref=e108]:
+          - generic [ref=e110]: ا
+          - generic [ref=e111]:
+            - generic [ref=e112]: Media production
+            - heading "اااااا" [level=3] [ref=e113]
+            - paragraph [ref=e114]: تتتتتتنننتتتن
+            - generic [ref=e116]: weddings
+            - generic [ref=e117]:
+              - generic [ref=e118]:
+                - generic [ref=e119]: Starts from
+                - strong [ref=e120]: 50000 SAR
+              - link "Request service" [ref=e121] [cursor=pointer]:
+                - /url: https://wa.me/966523456789?text=Hello%2C%20I%20would%20like%20to%20ask%20about%20%E2%80%9C%D8%A7%D8%A7%D8%A7%D8%A7%D8%A7%D8%A7%E2%80%9D%20(50000%20SAR)%20from%20%D8%A7%D8%B3%D8%AA%D9%88%D8%AF%D9%8A%D9%88%20%D8%A7%D9%84%D8%A5%D8%A8%D8%AF%D8%A7%D8%B9%20%D9%84%D9%84%D8%AA%D8%B5%D9%88%D9%8A%D8%B1.%20I%20found%20the%20service%20on%20Halla%3A%20https%3A%2F%2Fhalaa.com.sa%2Fen%2Fmarket-place%2Fvendors%2F6a242e4b3002caa95e9e5edb
+                - img [ref=e122]
+                - generic [ref=e124]: Request service
+        - article [ref=e125]:
+          - generic [ref=e127]: ح
+          - generic [ref=e128]:
+            - generic [ref=e129]: Sound, lighting & entertainment
+            - heading "حفلات" [level=3] [ref=e130]
+            - paragraph [ref=e131]: فعاليات موسيقيه
+            - generic [ref=e132]:
+              - generic [ref=e133]: weddings
+              - generic [ref=e134]: graduation
+              - generic [ref=e135]: engagement
+            - generic [ref=e136]:
+              - generic [ref=e137]:
+                - generic [ref=e138]: Starts from
+                - strong [ref=e139]: 1000 SAR
+              - link "Request service" [ref=e140] [cursor=pointer]:
+                - /url: https://wa.me/966523456789?text=Hello%2C%20I%20would%20like%20to%20ask%20about%20%E2%80%9C%D8%AD%D9%81%D9%84%D8%A7%D8%AA%E2%80%9D%20(1000%20SAR)%20from%20%D8%A7%D8%B3%D8%AA%D9%88%D8%AF%D9%8A%D9%88%20%D8%A7%D9%84%D8%A5%D8%A8%D8%AF%D8%A7%D8%B9%20%D9%84%D9%84%D8%AA%D8%B5%D9%88%D9%8A%D8%B1.%20I%20found%20the%20service%20on%20Halla%3A%20https%3A%2F%2Fhalaa.com.sa%2Fen%2Fmarket-place%2Fvendors%2F6a242e4b3002caa95e9e5edb
+                - img [ref=e141]
+                - generic [ref=e143]: Request service
+    - generic [ref=e144]:
+      - generic [ref=e146]:
+        - paragraph [ref=e147]: Portfolio
+        - heading "Selected work" [level=2] [ref=e148]
+      - generic [ref=e149]:
+        - link "Portfolio 1" [ref=e150] [cursor=pointer]:
+          - /url: https://example.com/portfolio1.jpg
+          - img "Portfolio 1" [ref=e151]
+        - link "Portfolio 2" [ref=e152] [cursor=pointer]:
+          - /url: https://example.com/portfolio2.jpg
+          - img "Portfolio 2" [ref=e153]
+        - link "Portfolio 3" [ref=e154] [cursor=pointer]:
+          - /url: https://hallamangement.s3.eu-north-1.amazonaws.com/vendors/portfolios/6a242e4b3002caa95e9e5edb/differences-1780757824358-f8b94598a35e69a9.jpg
+          - img "Portfolio 3" [ref=e155]
+  - contentinfo [ref=e156]:
+    - generic [ref=e157]:
+      - generic [ref=e158]:
+        - heading "Contact Info" [level=3] [ref=e159]
+        - generic [ref=e160]:
+          - link "phone +966 55 261 9282" [ref=e161] [cursor=pointer]:
+            - /url: tel:+966552619282
+            - img "phone" [ref=e162]
+            - generic [ref=e163]: +966 55 261 9282
+          - link "email support@halaa.net" [ref=e164] [cursor=pointer]:
+            - /url: mailto:support@halaa.net
+            - img "email" [ref=e165]
+            - generic [ref=e166]: support@halaa.net
+          - generic [ref=e167]:
+            - img "location" [ref=e168]
+            - generic [ref=e169]: شارع المتحف - جدة - الرمز البريدي 23326
+          - generic [ref=e170]:
+            - link "WhatsApp" [ref=e171] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e172]
+            - link "Twitter" [ref=e174] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e175]
+            - link "Instagram" [ref=e177] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e178]
+            - link "YouTube" [ref=e181] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e182]
+            - link "Snapchat" [ref=e184] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e185]
+      - generic [ref=e187]:
+        - heading "Important Pages" [level=3] [ref=e188]
+        - navigation [ref=e189]:
+          - link "arrow Terms & Conditions" [ref=e190] [cursor=pointer]:
+            - /url: /en/terms
+            - img "arrow" [ref=e191]
+            - generic [ref=e192]: Terms & Conditions
+          - link "arrow Privacy Policy" [ref=e193] [cursor=pointer]:
+            - /url: /en/privacy
+            - img "arrow" [ref=e194]
+            - generic [ref=e195]: Privacy Policy
+          - link "arrow Cancellation & Refund" [ref=e196] [cursor=pointer]:
+            - /url: /en/refund
+            - img "arrow" [ref=e197]
+            - generic [ref=e198]: Cancellation & Refund
+      - generic [ref=e200]:
+        - heading "Download App" [level=3] [ref=e201]
+        - paragraph [ref=e202]: Halaa is a smart event management platform — create your events, send personalized digital invitations via WhatsApp, and track attendance in real time.
+        - generic [ref=e204]:
+          - link "App Store Download on App Store" [ref=e205] [cursor=pointer]:
+            - /url: "#"
+            - img "App Store" [ref=e206]
+            - generic [ref=e207]:
+              - generic [ref=e208]: Download on
+              - generic [ref=e209]: App Store
+          - link "Google Play Get it on Google Play" [ref=e210] [cursor=pointer]:
+            - /url: "#"
+            - img "Google Play" [ref=e211]
+            - generic [ref=e212]:
+              - generic [ref=e213]: Get it on
+              - generic [ref=e214]: Google Play
+    - generic [ref=e216]: © 2026 Halaa. All rights reserved.
+  - button "Open Next.js Dev Tools" [ref=e222] [cursor=pointer]:
+    - img [ref=e223]
+  - alert [ref=e226]
