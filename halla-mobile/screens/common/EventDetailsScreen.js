@@ -127,6 +127,7 @@ const EventDetailsScreen = () => {
   const { t } = useTranslation(["admin", "events", "home"]);
   const toast = useToast();
   const role = useAuthStore((s) => s.user?.role);
+  const currentUser = useAuthStore((s) => s.user);
   // Inverse check — hosts get the host UX, everyone else (admin / super_admin /
   // moderator) gets the admin UX.
   // This matches the web split between host/events/[id] and admin-dash/events/[id].
@@ -728,7 +729,11 @@ const EventDetailsScreen = () => {
         ) : null}
 
         {/* Failure / retry banner (mobile parity with web's EventFailureBannerClient) */}
-        <EventFailureBanner event={event} onRetry={() => refetch()} />
+        <EventFailureBanner
+          event={event}
+          currentUser={currentUser}
+          onRetry={() => refetch()}
+        />
 
         {/* Action bar — test message, schedule, notify staff, share post-event, manage dropdown, delete (admin) */}
         <View style={styles.actionsWrapper}>
