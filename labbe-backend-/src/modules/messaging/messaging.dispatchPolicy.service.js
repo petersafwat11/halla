@@ -46,9 +46,7 @@ async function canDispatch(event, opts = {}) {
   if (!owner) return deny('owner_missing');
   if (owner.deletedAt) return deny('owner_deleted');
   if (owner.status === USER_STATUS.SUSPENDED) return deny('owner_suspended');
-  if (owner.status === USER_STATUS.DELETED || owner.status === USER_STATUS.INACTIVE) {
-    return deny(`owner_status:${owner.status}`);
-  }
+  if (owner.status === USER_STATUS.INACTIVE) return deny('owner_inactive');
 
   // Subscription must exist, belong to the host, be active & unexpired.
   const subs = await Subscription.findActiveForUser(event.host);

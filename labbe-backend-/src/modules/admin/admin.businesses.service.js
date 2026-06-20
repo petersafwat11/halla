@@ -286,7 +286,10 @@ async function activateBusiness(businessId) {
 /** Soft-delete: revoke links/sessions; retain financial/event history. [#12] */
 async function deleteBusiness(businessId, actorId) {
   const business = await assertBusiness(businessId);
-  business.status = USER_STATUS.DELETED;
+  // Canonical soft-delete: status INACTIVE + deletedAt (matches UserModel
+  // softDelete; there is no USER_STATUS.DELETED). Financial/event history
+  // is retained.
+  business.status = USER_STATUS.INACTIVE;
   business.deletedAt = new Date();
   business.deletedBy = actorId;
   await business.save();
