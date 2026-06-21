@@ -39,6 +39,16 @@
   font-family: var(--font-ar);
 }
 
+/* Selected-count + total tally, pinned to the bottom of the section
+   (just above the page's continue button). */
+.summaryBar {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--color-primary-100);
+}
+
 .summaryChip {
   display: inline-flex;
   align-items: center;

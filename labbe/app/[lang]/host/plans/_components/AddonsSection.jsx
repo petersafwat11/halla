@@ -90,7 +90,7 @@ const AddonsSection = ({ onAddonsChange }) => {
   if (isLoading) {
     return (
       <section className={styles.section} aria-busy="true">
-        <SectionHeader t={t} selectedCount={0} total={0} />
+        <SectionHeader t={t} />
         <div className={styles.skeletonGrid}>
           <div className={styles.skeletonCard} />
           <div className={styles.skeletonCard} />
@@ -102,7 +102,7 @@ const AddonsSection = ({ onAddonsChange }) => {
   if (error || !catalog) {
     return (
       <section className={styles.section}>
-        <SectionHeader t={t} selectedCount={0} total={0} />
+        <SectionHeader t={t} />
         <div className={styles.errorState} role="alert">
           <FaTimes className={styles.errorIcon} aria-hidden="true" />
           <p>{t("addons.loadFailed", { defaultValue: "Could not load add-ons." })}</p>
@@ -113,12 +113,7 @@ const AddonsSection = ({ onAddonsChange }) => {
 
   return (
     <section className={styles.section}>
-      <SectionHeader
-        t={t}
-        selectedCount={selectedCount}
-        total={total}
-        onClear={clearAll}
-      />
+      <SectionHeader t={t} />
 
       <div className={styles.grid}>
         <AddonCard
@@ -195,17 +190,31 @@ const AddonsSection = ({ onAddonsChange }) => {
           })}
         </div>
       </AddonCard>
+
+      <SummaryBar
+        t={t}
+        selectedCount={selectedCount}
+        total={total}
+        onClear={clearAll}
+      />
     </section>
   );
 };
 
-const SectionHeader = ({ t, selectedCount, total, onClear }) => (
+const SectionHeader = ({ t }) => (
   <header className={styles.sectionHead}>
     <div className={styles.sectionHeadText}>
       <h3 className={styles.sectionTitle}>{t("addons.title")}</h3>
       <p className={styles.sectionSubtitle}>{t("addons.subtitle")}</p>
     </div>
-    {selectedCount > 0 ? (
+  </header>
+);
+
+// Selected count + running total, shown at the bottom of the section (just
+// above the page's continue button) so the user sees the tally where they act.
+const SummaryBar = ({ t, selectedCount, total, onClear }) =>
+  selectedCount > 0 ? (
+    <div className={styles.summaryBar}>
       <div className={styles.summaryChip}>
         <span className={styles.summaryCount}>
           {t("addons.selectedCount", {
@@ -229,9 +238,8 @@ const SectionHeader = ({ t, selectedCount, total, onClear }) => (
           </button>
         ) : null}
       </div>
-    ) : null}
-  </header>
-);
+    </div>
+  ) : null;
 
 const AddonCard = ({
   icon,

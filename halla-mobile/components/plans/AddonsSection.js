@@ -96,7 +96,7 @@ const AddonsSection = ({ onAddonsChange }) => {
   if (isLoading) {
     return (
       <View style={styles.section}>
-        <SectionHeader t={t} selectedCount={0} total={0} />
+        <SectionHeader t={t} />
         <View style={styles.loadingCard}>
           <ActivityIndicator color={colors.primary[500]} />
         </View>
@@ -107,7 +107,7 @@ const AddonsSection = ({ onAddonsChange }) => {
   if (error || !catalog) {
     return (
       <View style={styles.section}>
-        <SectionHeader t={t} selectedCount={0} total={0} />
+        <SectionHeader t={t} />
         <View style={styles.errorState}>
           <Ionicons name="alert-circle" size={18} color="#B91C1C" />
           <Text style={styles.errorText}>
@@ -120,12 +120,7 @@ const AddonsSection = ({ onAddonsChange }) => {
 
   return (
     <View style={styles.section}>
-      <SectionHeader
-        t={t}
-        selectedCount={selectedCount}
-        total={total}
-        onClear={clearAll}
-      />
+      <SectionHeader t={t} />
 
       <AddonCard
         icon="paper-plane-outline"
@@ -207,17 +202,31 @@ const AddonsSection = ({ onAddonsChange }) => {
           })}
         </View>
       </AddonCard>
+
+      <SummaryBar
+        t={t}
+        selectedCount={selectedCount}
+        total={total}
+        onClear={clearAll}
+      />
     </View>
   );
 };
 
-const SectionHeader = ({ t, selectedCount, total, onClear }) => (
+const SectionHeader = ({ t }) => (
   <View style={styles.sectionHead}>
     <View style={styles.sectionHeadText}>
       <Text style={styles.sectionTitle}>{t("addons.title")}</Text>
       <Text style={styles.sectionSubtitle}>{t("addons.subtitle")}</Text>
     </View>
-    {selectedCount > 0 ? (
+  </View>
+);
+
+// Selected count + running total, shown at the bottom of the section (just
+// above the screen's continue button) so the user sees the tally where they act.
+const SummaryBar = ({ t, selectedCount, total, onClear }) =>
+  selectedCount > 0 ? (
+    <View style={styles.summaryBar}>
       <LinearGradient
         colors={[colors.primary[100], colors.primary[50]]}
         start={{ x: 0, y: 0 }}
@@ -249,9 +258,8 @@ const SectionHeader = ({ t, selectedCount, total, onClear }) => (
           </TouchableOpacity>
         ) : null}
       </LinearGradient>
-    ) : null}
-  </View>
-);
+    </View>
+  ) : null;
 
 const AddonCard = ({
   icon,
@@ -375,6 +383,18 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     fontSize: typography.fontSize.body.small,
     color: colors.natural[400],
+  },
+
+  // Selected-count + total tally, pinned to the bottom of the section
+  // (just above the screen's continue button).
+  summaryBar: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: spacing[12],
+    marginTop: spacing[4],
+    borderTopWidth: 1,
+    borderTopColor: colors.primary[100],
   },
 
   summaryChip: {
