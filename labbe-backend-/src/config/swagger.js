@@ -2472,6 +2472,8 @@ const swaggerOptions = {
             leftPct: { type: 'number' },
             widthPct: { type: 'number' },
             fontSizeVh: { type: 'number' },
+            lineHeight: { type: 'number', minimum: 0.5, maximum: 3 },
+            maxLines: { type: 'integer', minimum: 1, maximum: 10 },
             fontWeight: { type: 'string' },
             textAlign: { type: 'string', enum: ['left', 'center', 'right'] },
             colorBinding: { type: 'string', enum: ['primary', 'custom'] },

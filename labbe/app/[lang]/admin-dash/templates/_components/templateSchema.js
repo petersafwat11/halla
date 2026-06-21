@@ -68,6 +68,8 @@ export const overlaySchema = z.object({
   leftPct:      reqPct,
   widthPct:     optPct,
   fontSizeVh:   z.preprocess(toOptNum, z.number().min(0).optional()),
+  lineHeight:   z.preprocess(toOptNum, z.number().min(0.5).max(3).optional()),
+  maxLines:     z.preprocess(toOptNum, z.number().int().min(1).max(10).optional()),
   fontWeight: z.preprocess(
     toOptStr,
     z.enum(["normal","bold","100","200","300","400","500","600","700","800","900"]).optional()

@@ -1,4 +1,4 @@
-import { Tajawal, Cairo, Great_Vibes } from "next/font/google";
+import { Tajawal, Cairo, Great_Vibes, Amiri } from "next/font/google";
 
 export const tajawal = Tajawal({
   subsets: ["latin"],
@@ -7,8 +7,16 @@ export const tajawal = Tajawal({
 });
 
 export const cairo = Cairo({
-  subsets: ["latin"],
+  subsets: ["arabic", "latin"],
   display: "swap",
+  variable: "--font-cairo",
+});
+
+export const amiri = Amiri({
+  subsets: ["arabic", "latin"],
+  display: "swap",
+  weight: ["400", "700"],
+  variable: "--font-amiri",
 });
 
 export const greatVibes = Great_Vibes({

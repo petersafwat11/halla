@@ -114,7 +114,7 @@ const TEMPLATE_PATCHES = [
     drop: ["groomName"],
     renames: { groomFamilyName: "groomName" },
     fieldOverrides: {
-      groomName: { labelEn: "Groom Name", labelAr: "اسم العريس", placeholderEn: "e.g. Khalid Al-Saud", placeholderAr: "مثل خالد آل سعود", required: true },
+      groomName: { labelEn: "Groom Name", labelAr: "اسم العريس", placeholderEn: "e.g. Khalid", placeholderAr: "مثل خالد", required: true },
     },
   },
   {
@@ -123,7 +123,7 @@ const TEMPLATE_PATCHES = [
     drop: ["groomName"],
     renames: { groomFamilyName: "groomName" },
     fieldOverrides: {
-      groomName: { labelEn: "Groom Name", labelAr: "اسم العريس", placeholderEn: "e.g. Khalid Al-Saud", placeholderAr: "مثل خالد آل سعود", required: true },
+      groomName: { labelEn: "Groom Name", labelAr: "اسم العريس", placeholderEn: "e.g. Khalid", placeholderAr: "مثل خالد", required: true },
     },
   },
   {
@@ -132,7 +132,7 @@ const TEMPLATE_PATCHES = [
     drop: ["groomName"],
     renames: { groomFamilyName: "groomName" },
     fieldOverrides: {
-      groomName: { labelEn: "Groom Name", labelAr: "اسم العريس", placeholderEn: "e.g. Khalid Al-Saud", placeholderAr: "مثل خالد آل سعود", required: true },
+      groomName: { labelEn: "Groom Name", labelAr: "اسم العريس", placeholderEn: "e.g. Khalid", placeholderAr: "مثل خالد", required: true },
     },
   },
   {
@@ -141,7 +141,7 @@ const TEMPLATE_PATCHES = [
     drop: ["groomName"],
     renames: { groomFamilyName: "groomName" },
     fieldOverrides: {
-      groomName: { labelEn: "Groom Name", labelAr: "اسم العريس", placeholderEn: "e.g. Khalid Al-Saud", placeholderAr: "مثل خالد آل سعود", required: true },
+      groomName: { labelEn: "Groom Name", labelAr: "اسم العريس", placeholderEn: "e.g. Khalid", placeholderAr: "مثل خالد", required: true },
     },
   },
   {

@@ -73,7 +73,7 @@ Fields:
 
 | key | T | labelEn / labelAr | placeholder (EN) | req | default |
 |---|---|---|---|---|---|
-| groomFamilyName | txt | Groom Family / `عائلة العريس` | e.g. Al-Saud | Y | — |
+| groomFamilyName | txt | Groom Family / `عائلة العريس` | e.g. Al-Qahtani | Y | — |
 | brideFamilyName | txt | Bride Family / `عائلة العروس` | e.g. Al-Qahtani | Y | — |
 | eventDate | dat | Wedding Date / `تاريخ الزفاف` | — | Y | — |
 | eventTime | tim | Time / `الوقت` | — | Y | 20:00 |

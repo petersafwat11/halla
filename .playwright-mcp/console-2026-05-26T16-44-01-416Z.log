@@ -1,4 +1,0 @@
-[    6762ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/5e42e_next_dist_compiled_react-dom_effb6805._.js:14537
-[    7134ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0
-[    7757ms] [LOG] [API] GET /plans/landing - 200 (757ms) @ http://localhost:3000/_next/static/chunks/labbe_1c18403e._.js:2502
-[   12980ms] [WARNING] The resource http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__61e466ba._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/ar:0

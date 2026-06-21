@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { cairo, greatVibes } from "@/app/[lang]/fonts";
+import { amiri, cairo, greatVibes } from "@/app/[lang]/fonts";
 import GlobalProvider from "@/providers";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import { i18nRouterConfig } from "@/localization/i18nRouterConfig";
@@ -33,7 +33,7 @@ export default async function RootLayout(props) {
         <GlobalProvider lang={lang}>
           <body
             // style={{ backgroundColor: "#f4efe9" }}
-            className={`${cairo.className} ${greatVibes.variable}`}
+            className={`${cairo.className} ${cairo.variable} ${amiri.variable} ${greatVibes.variable}`}
           >
             <ToastContainer
               position="top-right"

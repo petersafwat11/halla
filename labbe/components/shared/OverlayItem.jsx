@@ -23,6 +23,7 @@ export function OverlayItem({
   primaryColor,
   selected = false,
   onClick,
+  dir,
   style,
 }) {
   const left = (overlay.leftPct / 100) * containerWidth;
@@ -51,6 +52,18 @@ export function OverlayItem({
         textAlign: overlay.textAlign || "center",
         fontFamily: fontFamilyOverride || overlay.fontFamily || "inherit",
         fontWeight: overlay.fontWeight || "normal",
+        lineHeight: overlay.lineHeight || 1.35,
+        whiteSpace: "pre-wrap",
+        overflowWrap: "anywhere",
+        direction: dir && dir !== "auto" ? dir : undefined,
+        ...(overlay.maxLines
+          ? {
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: overlay.maxLines,
+              overflow: "hidden",
+            }
+          : {}),
         color,
         fontSize,
         zIndex: overlay.zIndex || 0,

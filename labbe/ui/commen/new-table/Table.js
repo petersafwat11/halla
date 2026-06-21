@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import styles from "./table.module.css";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
-import { FiDownload } from "react-icons/fi";
+import { FiDownload, FiX } from "react-icons/fi";
 import Pagination from "@/ui/commen/pagination/Pagination";
 
 const Table = ({
@@ -27,6 +27,11 @@ const Table = ({
   exportLabel = null,
   bulkActions = [],
   showCheckboxes = true,
+  // When true, the selected-row bulk actions render as inline labeled
+  // buttons beside the export button instead of being hidden behind a
+  // 3-dots dropdown. Opt-in so existing tables keep the dropdown; the
+  // guest table turns this on for a clearer resend/reminder UX.
+  inlineBulkActions = false,
   pagination = null,
 }) => {
   const { t } = useTranslation("table");
@@ -320,6 +325,12 @@ const Table = ({
     setSelectedRows([]);
   };
 
+  const handleClearSelection = (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    setSelectedRows([]);
+  };
+
   const renderActions = (row) => {
     // Support dynamic row-based actions via getRowActions prop
     const rowActions = getRowActions ? getRowActions(row) : actions;
@@ -433,7 +444,13 @@ const Table = ({
           <div className={styles.headerContent}>
             {title && <h2 className={styles.tableTitle}>{title}</h2>}
 
-            <div className={styles.headerActions}>
+            <div
+              className={`${styles.headerActions} ${
+                inlineBulkActions && selectedRows.length > 0
+                  ? styles.headerActionsWithSelection
+                  : ""
+              }`}
+            >
               {showSearch && (
                 <div className={styles.searchContainer}>
                   <Image
@@ -520,7 +537,53 @@ const Table = ({
               )}
               {bulkActions &&
                 bulkActions.length > 0 &&
-                selectedRows.length > 0 && (
+                selectedRows.length > 0 &&
+                (inlineBulkActions ? (
+                  // Inline mode — show each bulk action as a clear labeled
+                  // button right beside the export button, plus a selected
+                  // count chip and a clear-selection control. No hidden menu.
+                  <div className={styles.selectionToolbar}>
+                    <span className={styles.selectedCount}>
+                      {t("selected", "{{count}} selected", {
+                        count: selectedRows.length,
+                      })}
+                    </span>
+                    {bulkActions.map((action, index) => (
+                      <button
+                        type="button"
+                        key={`bulk-${action.text || index}`}
+                        className={`${styles.bulkActionButton} ${
+                          action.destructive ? styles.bulkActionButtonDanger : ""
+                        }`}
+                        onClick={(e) => handleBulkActionClick(action, e)}
+                      >
+                        {action.icon &&
+                          (typeof action.icon === "string" ? (
+                            <Image
+                              src={action.icon}
+                              alt=""
+                              width={16}
+                              height={16}
+                            />
+                          ) : (
+                            <span className={styles.iconWrapper}>
+                              {action.icon}
+                            </span>
+                          ))}
+                        <span>{action.text}</span>
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className={styles.clearSelectionButton}
+                      onClick={handleClearSelection}
+                      aria-label={t("clearSelection", "Clear selection")}
+                      title={t("clearSelection", "Clear selection")}
+                    >
+                      <FiX size={16} />
+                    </button>
+                  </div>
+                ) : (
                   <div
                     className={styles.bulkActionsWrapper}
                     ref={bulkActionsRef}
@@ -573,7 +636,7 @@ const Table = ({
                       </div>
                     )}
                   </div>
-                )}
+                ))}
             </div>
           </div>
         </div>

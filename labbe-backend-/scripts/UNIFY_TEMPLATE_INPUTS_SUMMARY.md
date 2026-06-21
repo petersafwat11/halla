@@ -92,7 +92,7 @@ Before running it, here's the summary of the inputs and what the script will cha
 
 ## ⚠ One judgment call to confirm
 
-For the five groom-side wedding cards (Royal Navy, Pearl Frame, Royal Da'wah, Pearl Da'wah, Gulf Groom), the script renames `groomFamilyName → groomName`. This means the BIG centerpiece text on those cards will now read as a personal name (e.g. "Khalid") rather than a family name (e.g. "Al-Saud"). That follows the instruction literally — but those cards were originally designed around family-name display. If family names should be preserved on those specific cards, the script needs adjusting.
+For the five groom-side wedding cards (Royal Navy, Pearl Frame, Royal Da'wah, Pearl Da'wah, Gulf Groom), the script renames `groomFamilyName → groomName`. This means the BIG centerpiece text on those cards now reads as a personal name rather than a family name. If family names should be preserved on those specific cards, the script needs adjusting.
 
 ## How to run
 

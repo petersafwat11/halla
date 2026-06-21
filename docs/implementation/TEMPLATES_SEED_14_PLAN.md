@@ -102,7 +102,7 @@ Fields:
 | key | T | labelEn / labelAr | placeholder | req | default |
 |---|---|---|---|---|---|
 | invitationHeader | txt | Header / `العنوان` | e.g. "دعوة" | N | `دعوة` |
-| groomFamilyName | txt | Groom Family / `عائلة العريس` | e.g. آل سعود | Y | — |
+| groomFamilyName | txt | Groom Family / `عائلة العريس` | مثال: القحطاني | Y | — |
 | groomName | txt | Groom Name / `اسم العريس` | optional | N | — |
 | eventDate | dat | Wedding Date / `تاريخ الزفاف` | — | Y | — |
 | eventTime | tim | Time / `الوقت` | — | Y | 20:30 |

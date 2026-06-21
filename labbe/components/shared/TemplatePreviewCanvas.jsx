@@ -152,6 +152,7 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
             text={display}
             primaryColor={primaryColor}
             fontFamilyOverride={fontFamilyOverride}
+            dir={field?.dir}
           />
         );
       })}

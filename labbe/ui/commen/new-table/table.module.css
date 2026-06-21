@@ -391,6 +391,89 @@
   padding: 0.4rem 0.8rem;
   background: var(--color-primary-bg, #f9f4ef);
   border-radius: 0.6rem;
+  white-space: nowrap;
+}
+
+/* Inline selection toolbar — opt-in via `inlineBulkActions`. Renders the
+   selected-row actions as clear labeled buttons beside the export button
+   instead of a hidden 3-dots dropdown. Uses logical properties so the
+   divider sits on the correct side in both LTR and RTL. */
+.selectionToolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding-inline-start: 1.2rem;
+  margin-inline-start: 0.4rem;
+  border-inline-start: 1px solid #ececec;
+}
+
+.bulkActionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.8rem;
+  border: 1px solid #e7d8c6;
+  background: var(--color-primary-bg, #f9f4ef);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.bulkActionButton span {
+  color: #6b4e33;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+}
+
+.bulkActionButton .iconWrapper {
+  color: var(--color-primary, #c28e5c);
+  font-size: 1.6rem;
+}
+
+.bulkActionButton:hover {
+  background: #f1e6d8;
+  border-color: var(--color-primary, #c28e5c);
+}
+
+/* Optional destructive variant (e.g. a future bulk-delete opt-in). */
+.bulkActionButtonDanger {
+  background: #fbeeec;
+  border-color: #f0c8c2;
+}
+
+.bulkActionButtonDanger span {
+  color: #b23b2e;
+}
+
+.bulkActionButtonDanger .iconWrapper {
+  color: #c0392b;
+}
+
+.bulkActionButtonDanger:hover {
+  background: #f7e0dc;
+  border-color: #c0392b;
+}
+
+.clearSelectionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.8rem;
+  border: none;
+  background: transparent;
+  color: #656565;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.clearSelectionButton:hover {
+  background: #f2f2f2;
+  color: #2c2c2c;
 }
 
 /* Action button icons in rows */
@@ -412,6 +495,19 @@
   .headerActions {
     flex-wrap: wrap;
     gap: 1.2rem;
+  }
+
+  /* Selection actions drop to their own full-width row below search/export
+     and the divider moves to the top edge. */
+  .headerActionsWithSelection .selectionToolbar {
+    flex-basis: 100%;
+    width: 100%;
+    border-inline-start: none;
+    padding-inline-start: 0;
+    margin-inline-start: 0;
+    border-top: 1px solid #f2f2f2;
+    padding-top: 1.2rem;
+    margin-top: 0.4rem;
   }
 
   .tableTitle {
@@ -453,6 +549,22 @@
     flex-wrap: nowrap;
     justify-content: stretch;
     gap: 0.8rem;
+  }
+
+  /* In selection mode let the row wrap so the action buttons can fill a
+     dedicated line and stretch evenly to fit the narrow viewport. */
+  .headerActions.headerActionsWithSelection {
+    flex-wrap: wrap;
+  }
+
+  .headerActionsWithSelection .selectionToolbar .selectedCount {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+
+  .headerActionsWithSelection .selectionToolbar .bulkActionButton {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   .searchContainer {

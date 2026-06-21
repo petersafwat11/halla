@@ -1,6 +1,0 @@
-[     314ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
-[     361ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:3001/_next/static/chunks/node_modules_5dfc3838._.js:3250
-[     416ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/api/v2/auth/logout:0
-[     417ms] [ERROR] [API Error] POST /auth/logout - 500 (12ms): Not allowed by CORS @ http://localhost:3001/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2405
-[     417ms] [WARNING] [authStore.logout] backend revoke failed: Not allowed by CORS @ http://localhost:3001/_next/static/chunks/_b89a6c7c._.js:3431
-[     593ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/favicon.ico:0

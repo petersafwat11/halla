@@ -19,6 +19,15 @@
 // at the call site adds the per-card flags (required, sortOrder-equivalent).
 
 const VOCAB = {
+  invitationTitle: {
+    type: "text",
+    labelEn: "Invitation Title",
+    labelAr: "عنوان الدعوة",
+    placeholderEn: 'e.g. "Invitation"',
+    placeholderAr: 'مثل: "دعوة"',
+    maxLength: 30,
+    dir: "rtl",
+  },
   invitationHeader: {
     type: "text",
     labelEn: "Header",
@@ -35,7 +44,48 @@ const VOCAB = {
     placeholderEn: "e.g. We are honoured to invite you…",
     placeholderAr: "مثل: يتشرف بدعوتكم لحضور…",
     rows: 3,
-    maxLength: 240,
+    maxLength: 180,
+    dir: "rtl",
+  },
+
+  eventNote: {
+    type: "text",
+    labelEn: "Event Note",
+    labelAr: "عبارة المناسبة",
+    placeholderEn: "e.g. We would be delighted by your presence",
+    placeholderAr: "مثل: يسعدنا ويشرفنا حضوركم",
+    maxLength: 90,
+    dir: "rtl",
+  },
+
+  mealNote: {
+    type: "text",
+    labelEn: "Meal Note",
+    labelAr: "عبارة الضيافة",
+    placeholderEn: "e.g. Dinner will be served",
+    placeholderAr: "مثل: يتبع الحفل تناول طعام العشاء",
+    maxLength: 80,
+    dir: "rtl",
+  },
+
+  attendanceNote: {
+    type: "text",
+    labelEn: "Attendance Note",
+    labelAr: "ملاحظة الحضور",
+    placeholderEn: "e.g. This invitation is personal",
+    placeholderAr: "مثل: الدعوة شخصية",
+    maxLength: 60,
+    dir: "rtl",
+  },
+
+  closingMessage: {
+    type: "text",
+    labelEn: "Closing Message",
+    labelAr: "العبارة الختامية",
+    placeholderEn: "e.g. Your presence completes our joy",
+    placeholderAr: "مثل: بحضوركم تكتمل فرحتنا",
+    maxLength: 100,
+    dir: "rtl",
   },
 
   openingVerse: {
@@ -45,6 +95,7 @@ const VOCAB = {
     placeholderEn: "e.g. Quranic verse or short blessing",
     placeholderAr: "مثل: آية قرآنية أو دعاء قصير",
     maxLength: 160,
+    dir: "rtl",
   },
 
   announcement: {
@@ -61,9 +112,10 @@ const VOCAB = {
     type: "text",
     labelEn: "Groom",
     labelAr: "العريس",
-    placeholderEn: "e.g. Khalid Al-Saud",
-    placeholderAr: "مثل خالد آل سعود",
-    maxLength: 60,
+    placeholderEn: "e.g. Khalid",
+    placeholderAr: "مثل: خالد",
+    maxLength: 40,
+    dir: "rtl",
   },
 
   brideName: {
@@ -73,6 +125,27 @@ const VOCAB = {
     placeholderEn: "e.g. Sara Al-Qahtani",
     placeholderAr: "مثل سارة القحطاني",
     maxLength: 60,
+    dir: "rtl",
+  },
+
+  groomNameLatin: {
+    type: "text",
+    labelEn: "Groom Name (Latin)",
+    labelAr: "اسم العريس بالإنجليزية",
+    placeholderEn: "e.g. Khalid",
+    placeholderAr: "مثال: Khalid",
+    maxLength: 40,
+    dir: "ltr",
+  },
+
+  brideNameLatin: {
+    type: "text",
+    labelEn: "Bride Name (Latin)",
+    labelAr: "اسم العروس بالإنجليزية",
+    placeholderEn: "e.g. Sara",
+    placeholderAr: "مثال: Sara",
+    maxLength: 40,
+    dir: "ltr",
   },
 
   brideFatherName: {
@@ -120,6 +193,28 @@ const VOCAB = {
     maxLength: 40,
   },
 
+  babyInitial: {
+    type: "text",
+    labelEn: "Baby Initial",
+    labelAr: "الحرف الأول من اسم المولود",
+    placeholderEn: "e.g. H",
+    placeholderAr: "مثال: H",
+    minLength: 1,
+    maxLength: 1,
+    dir: "ltr",
+    autoCapitalize: "characters",
+  },
+
+  babyNameLatin: {
+    type: "text",
+    labelEn: "Baby Name (Latin)",
+    labelAr: "اسم المولود بالإنجليزية",
+    placeholderEn: "e.g. Yara",
+    placeholderAr: "مثال: Yara",
+    maxLength: 40,
+    dir: "ltr",
+  },
+
   parents: {
     type: "text",
     labelEn: "Parents",
@@ -127,6 +222,16 @@ const VOCAB = {
     placeholderEn: "e.g. Ahmad & Reem",
     placeholderAr: "مثل أحمد وريم",
     maxLength: 80,
+  },
+
+  parentsNames: {
+    type: "text",
+    labelEn: "Parents",
+    labelAr: "اسما الوالدين",
+    placeholderEn: "e.g. Ahmad & Reem",
+    placeholderAr: "مثل: أحمد وريم",
+    maxLength: 60,
+    dir: "rtl",
   },
 
   // ── event title (used by general_event / conference) ─────────────────

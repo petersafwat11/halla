@@ -57,7 +57,7 @@ Single canonical key set used across every template. Already locked by `unifyTem
 |---|---|---|---|---|---|---|
 | `invitationHeader` | text | Header | العنوان | e.g. "دعوة" | مثل "دعوة" | default `"دعوة"` |
 | `invitationMessage` | textarea | Invitation Message | رسالة الدعوة | — | — | rows: 3, maxLength: 240 |
-| `groomName` | text | Groom | العريس | e.g. Khalid Al-Saud | مثل خالد آل سعود | required (when used) |
+| `groomName` | text | Groom | العريس | e.g. Khalid | مثل خالد | required (when used) |
 | `brideName` | text | Bride | العروس | e.g. Sara Al-Qahtani | مثل سارة القحطاني | required (when used) |
 | `brideFatherName` | text | Bride's Father | والد العروسة | optional | اختياري | — |
 | `hostessName` | text | Hostess | المضيفة | e.g. Um Sara | مثل أم سارة | — |

@@ -2,8 +2,13 @@ const sharp = require("sharp");
 const fs = require("fs/promises");
 const path = require("path");
 
-const inputDir = path.join(__dirname, "git-parent", "template-cards");
-const output = path.join(__dirname, "clean-source-overview.png");
+const requestedDir = process.argv[2];
+const inputDir = requestedDir
+  ? path.resolve(requestedDir)
+  : path.join(__dirname, "git-parent", "template-cards");
+const output = process.argv[3]
+  ? path.resolve(process.argv[3])
+  : path.join(__dirname, "clean-source-overview.png");
 
 async function main() {
   const files = (await fs.readdir(inputDir)).filter((name) => /\.(jpe?g|png)$/i.test(name));

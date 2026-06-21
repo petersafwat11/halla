@@ -150,7 +150,7 @@ const COUPLE_WEDDING_FIELDS = () => [
   ...styleTail(),
 ];
 
-const TEMPLATES = [
+const LEGACY_TEMPLATE_SPECS = [
   // ── #1 Royal Groom (Dark) ──────────────────────────────────────────────
   {
     file: "marriage.jpg",
@@ -659,6 +659,12 @@ const TEMPLATES = [
   },
 ];
 
+// The reviewed precision definitions are isolated from the seed runner so the
+// same data can drive proof rendering and the id-preserving update migration.
+// Keep the previous array above temporarily for historical diff readability;
+// it is intentionally not consumed.
+const { TEMPLATES } = require("./precisionTemplateSpecs");
+
 // ── Legacy template names to soft-delete on every run ──────────────────────
 //
 // Old Wave-1 + Wave-2 + the original junk row names. Anything still in
@@ -785,15 +791,19 @@ async function connect() {
 
 // ── 1. Soft-clean legacy templates and junk category ───────────────────────
 //
-// Every legacy row gets soft-deleted unconditionally — even names that
-// match a current spec (e.g. "Royal Da'wah Wedding"). The new row is
-// then created from scratch with the polished field set and overlay
-// positions. `nameEn` has no unique constraint, so a soft-deleted +
-// live pair coexists fine.
+// Legacy aliases that are not final precision names are soft-deleted. Rows
+// whose names already match a final spec are updated in place by
+// ensureTemplate, which makes repeat runs idempotent and avoids duplicate IDs.
 async function cleanupLegacy() {
   console.log("[seed] step 1 — legacy cleanup");
 
+  const currentNames = new Set(TEMPLATES.map((item) => item.nameEn));
+
   for (const name of LEGACY_TEMPLATE_NAMES) {
+    if (currentNames.has(name)) {
+      if (VERBOSE) console.log(`  - "${name}": retained for in-place precision update`);
+      continue;
+    }
     const t = await Template.findOne({ nameEn: name, deletedAt: null });
     if (!t) {
       if (VERBOSE) console.log(`  - "${name}": not found`);
@@ -867,14 +877,36 @@ async function ensureCategories(actor) {
 async function ensureTemplate(spec, actor) {
   parityCheck(spec);
 
-  const existing = await Template.findOne({ nameEn: spec.nameEn });
+  const existing = await Template.findOne({ nameEn: spec.nameEn, deletedAt: null });
   if (existing && !existing.deletedAt) {
-    if (VERBOSE) {
-      console.log(`  - "${spec.nameEn}" exists (${existing._id}, active=${existing.active}) — skipping`);
-    } else {
-      console.log(`  - "${spec.nameEn}": kept`);
+    const desired = {
+      nameEn: spec.nameEn,
+      nameAr: spec.nameAr,
+      categories: spec.categories,
+      fields: spec.fields,
+      overlays: spec.overlays,
+      decorations: spec.decorations,
+      sortOrder: spec.sortOrder,
+      active: true,
+    };
+    const comparable = (value) => JSON.stringify(JSON.parse(JSON.stringify(value ?? null)));
+    const differs = Object.entries(desired).some(([key, value]) => comparable(existing[key]) !== comparable(value));
+    if (!differs) {
+      if (VERBOSE) console.log(`  - "${spec.nameEn}" exists (${existing._id}) — unchanged`);
+      else console.log(`  - "${spec.nameEn}": kept`);
+      return { existing: true, updated: false, doc: existing };
     }
-    return { existing: true, doc: existing };
+    if (DRY) {
+      console.log(`  [dry] would update "${spec.nameEn}" in place (${existing._id}) — fields=${spec.fields.length}, overlays=${spec.overlays.length}, deco=${spec.decorations.length}`);
+      return { existing: true, updated: true, doc: existing };
+    }
+    const updated = await service.updateTemplate(
+      String(existing._id),
+      { ...desired, expectedVersion: existing.version || 0 },
+      actor
+    );
+    console.log(`  - updated "${spec.nameEn}" in place (${updated._id})`);
+    return { existing: true, updated: true, doc: updated };
   }
 
   const filePath = path.join(CARDS_DIR, spec.file);

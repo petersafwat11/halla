@@ -58,6 +58,8 @@ export default function OverlaysSection({ fonts, t }) {
               leftPct: 50,
               widthPct: 60,
               fontSizeVh: 4,
+              lineHeight: 1.35,
+              maxLines: 1,
               textAlign: "center",
               colorBinding: "primary",
               zIndex: 0,
@@ -165,6 +167,20 @@ export default function OverlaysSection({ fonts, t }) {
                       name={`overlays.${idx}.textAlign`}
                       placeholder="Center"
                       options={TEXT_ALIGN_OPTIONS}
+                    />
+                  </div>
+                  <div className={styles.formGrid2}>
+                    <InputGroup
+                      label="Line Height"
+                      placeholder="1.35"
+                      name={`overlays.${idx}.lineHeight`}
+                      type="number"
+                    />
+                    <InputGroup
+                      label="Maximum Lines"
+                      placeholder="1"
+                      name={`overlays.${idx}.maxLines`}
+                      type="number"
                     />
                   </div>
                   {fontOptions.length > 0 && (

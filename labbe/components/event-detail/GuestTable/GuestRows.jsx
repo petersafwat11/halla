@@ -129,6 +129,7 @@ export default function GuestRows({
         },
       ]}
       bulkActions={bulkActions}
+      inlineBulkActions={true}
       showCheckboxes={bulkActions.length > 0}
       moreOptions={[
         {

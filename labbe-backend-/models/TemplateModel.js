@@ -47,6 +47,8 @@ const overlaySchema = new mongoose.Schema(
     leftPct: { type: Number, required: true, min: 0, max: 100 },
     widthPct: { type: Number, min: 0, max: 100 },
     fontSizeVh: { type: Number, min: 0 },
+    lineHeight: { type: Number, min: 0.5, max: 3 },
+    maxLines: { type: Number, min: 1, max: 10 },
     fontWeight: {
       type: String,
       enum: ["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"],

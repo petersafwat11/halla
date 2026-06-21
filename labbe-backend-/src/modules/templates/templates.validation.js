@@ -65,6 +65,8 @@ const overlaySchema = z
     leftPct: z.number().min(0).max(100),
     widthPct: z.number().min(0).max(100).optional(),
     fontSizeVh: z.number().nonnegative().optional(),
+    lineHeight: z.number().min(0.5).max(3).optional(),
+    maxLines: z.number().int().min(1).max(10).optional(),
     fontWeight: z.enum(FONT_WEIGHTS).optional(),
     textAlign: z.enum(TEXT_ALIGNS).optional(),
     colorBinding: z.enum(COLOR_BINDINGS).optional(),

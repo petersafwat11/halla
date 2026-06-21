@@ -3,5 +3,7 @@
   "actions": "Actions",
   "filter": "Filter",
   "export": "Export Data",
-  "moreOptions": "More Options"
+  "moreOptions": "More Options",
+  "selected": "{{count}} selected",
+  "clearSelection": "Clear selection"
 }
