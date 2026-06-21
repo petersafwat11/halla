@@ -588,6 +588,11 @@
     padding: 0 16px;
   }
 
+  .actionsContainer .outlineButton,
+  .actionsContainer .primaryButton {
+    width: 100%;
+  }
+
   .dropdownWrapper {
     width: 100%;
   }

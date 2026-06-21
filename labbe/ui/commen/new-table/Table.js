@@ -442,7 +442,16 @@ const Table = ({
         {/* Table Header with Actions */}
         <div className={styles.tableHeader}>
           <div className={styles.headerContent}>
-            {title && <h2 className={styles.tableTitle}>{title}</h2>}
+            <div className={styles.titleRow}>
+              {title && <h2 className={styles.tableTitle}>{title}</h2>}
+              {bulkActions &&
+                bulkActions.length > 0 &&
+                selectedRows.length > 0 && (
+                  <span className={styles.selectedCount}>
+                    {selectedRows.length} محدد
+                  </span>
+                )}
+            </div>
 
             <div
               className={`${styles.headerActions} ${
@@ -540,14 +549,10 @@ const Table = ({
                 selectedRows.length > 0 &&
                 (inlineBulkActions ? (
                   // Inline mode — show each bulk action as a clear labeled
-                  // button right beside the export button, plus a selected
-                  // count chip and a clear-selection control. No hidden menu.
+                  // button right beside the export button, plus a
+                  // clear-selection control. The selected count is shown
+                  // beside the table title instead of here.
                   <div className={styles.selectionToolbar}>
-                    <span className={styles.selectedCount}>
-                      {t("selected", "{{count}} selected", {
-                        count: selectedRows.length,
-                      })}
-                    </span>
                     {bulkActions.map((action, index) => (
                       <button
                         type="button"
@@ -588,9 +593,6 @@ const Table = ({
                     className={styles.bulkActionsWrapper}
                     ref={bulkActionsRef}
                   >
-                    <span className={styles.selectedCount}>
-                      {selectedRows.length} محدد
-                    </span>
                     <button
                       type="button"
                       className={styles.moreButton}
