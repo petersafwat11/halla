@@ -8,17 +8,25 @@
 
 .header {
   display: flex;
+  width: 100%;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
 .title {
+  flex: 1 1 auto;
   color: #2c2c2c;
   font-size: 20px;
   font-weight: 600;
   line-height: 28px;
   margin: 0;
+  white-space: nowrap;
+}
+
+.closeButton {
+  flex-shrink: 0;
 }
 
 .closeButton {
