@@ -17,11 +17,11 @@
  */
 
 const User = require('../../../models/UserModel');
-const Subscription = require('../../../models/SubscriptionModel');
 const BusinessPlanAssignment = require('../../../models/BusinessPlanAssignmentModel');
 const { ASSIGNMENT_STATUS } = require('../../../models/BusinessPlanAssignmentModel');
 const { USER_STATUS, SUBSCRIPTION_STATUS } = require('../../shared/constants');
 const logger = require('../../shared/utils/logger');
+const subscriptionEventAccess = require('../subscriptions/subscriptionEventAccess.service');
 
 const TERMINAL_EVENT_STATUSES = ['cancelled', 'completed', 'deleted', 'archived'];
 
@@ -54,18 +54,16 @@ async function canDispatch(event, opts = {}) {
   if (owner.status === USER_STATUS.SUSPENDED) return deny('owner_suspended');
   if (owner.status === USER_STATUS.INACTIVE) return deny('owner_inactive');
 
-  // Subscription must exist, belong to the host, be active & unexpired.
-  const subs = await Subscription.findActiveForUser(hostId);
-  const sub =
-    (event.subscriptionId &&
-      subs.find((s) => String(s._id) === String(event.subscriptionId))) ||
-    subs[0] ||
-    null;
+  // Subscription must exist, belong to the host, and be usable for this event.
+  // Replaced subscriptions are not available for new event creation, but an
+  // event that already points at one may still spend that event-owned pool.
+  const sub = await subscriptionEventAccess.findForEvent(event, hostId);
 
   if (!sub) return deny('no_active_subscription');
   if (String(sub.userId) !== String(hostId)) return deny('subscription_owner_mismatch');
   if (
-    ![SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL].includes(sub.status)
+    ![SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL].includes(sub.status) &&
+    !subscriptionEventAccess.isReplacedSubscriptionForEvent(sub, event)
   ) {
     return deny(`subscription_status:${sub.status}`);
   }

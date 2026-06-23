@@ -799,7 +799,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     marginBottom: 12,
-    textAlign: "right",
   },
   selectedRow: {
     backgroundColor: "#FFF",
@@ -813,7 +812,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Cairo_500Medium",
     color: "#656565",
-    textAlign: "right",
   },
   selectedName: {
     fontFamily: "Cairo_700Bold",
@@ -932,7 +930,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     flex: 1,
-    textAlign: "right",
   },
   modalCloseBtn: {
     width: 36,

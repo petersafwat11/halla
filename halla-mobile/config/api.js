@@ -50,6 +50,9 @@ export const ENDPOINTS = {
     ALL: API_PATHS.plans.getPlans,
     HOST_PLANS: API_PATHS.plans.getHostPlans,
     BUSINESS: API_PATHS.plans.getBusinessPlans,
+    // Admin-assignable active plans (gated by admin role, NOT Manage Plans
+    // permission) — feeds the host/business "change plan" dropdowns.
+    ASSIGNABLE: API_PATHS.plans.assignable,
     BY_CODE: API_PATHS.plans.getPlanByCode,
     BY_ID: API_PATHS.plans.getPlanById,
   },
@@ -221,6 +224,21 @@ export const ENDPOINTS = {
       EXPORT: API_PATHS.admin.hosts.export,
       VERIFY_PHONE: API_PATHS.admin.hosts.verifyPhone,
       FIND_OR_CREATE: API_PATHS.admin.hosts.findOrCreate,
+      GRANT_EXTRA_INVITES: API_PATHS.admin.hosts.grantExtraInvites,
+    },
+    BUSINESSES: {
+      BASE: API_PATHS.admin.businesses.getAll,
+      BY_ID: API_PATHS.admin.businesses.getById,
+      CREATE: API_PATHS.admin.businesses.create,
+      UPDATE: API_PATHS.admin.businesses.update,
+      UPDATE_LOGO: API_PATHS.admin.businesses.updateLogo,
+      ASSIGN_PLAN: API_PATHS.admin.businesses.assignPlan,
+      GRANT_EXTRA_INVITES: API_PATHS.admin.businesses.grantExtraInvites,
+      REVOKE_ASSIGNMENT: API_PATHS.admin.businesses.revokeAssignment,
+      REGENERATE_ASSIGNMENT: API_PATHS.admin.businesses.regenerateAssignment,
+      SUSPEND: API_PATHS.admin.businesses.suspend,
+      ACTIVATE: API_PATHS.admin.businesses.activate,
+      DELETE: API_PATHS.admin.businesses.delete,
     },
     MODERATORS: {
       BASE: API_PATHS.admin.moderators.getAll,
@@ -257,6 +275,14 @@ export const ENDPOINTS = {
       ALL: API_PATHS.plans.adminGetAll,
       BY_CODE: API_PATHS.plans.adminUpdate,
       CREATE: API_PATHS.plans.adminCreate,
+    },
+    // Admin ticket management re-uses the host-facing /tickets endpoints
+    // (the backend scopes results by role). Without this block,
+    // `ENDPOINTS.ADMIN.TICKETS` is undefined and the listing hooks throw.
+    TICKETS: {
+      BASE: API_PATHS.tickets.getMyTickets,
+      BY_ID: API_PATHS.tickets.getTicketById,
+      EXPORT: API_PATHS.tickets.exportTickets,
     },
     SUBSCRIPTIONS: {
       ASSIGN: API_PATHS.subscriptions.adminAssign,

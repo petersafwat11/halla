@@ -1,5 +1,6 @@
 import React from "react";
 import { Text, StyleSheet, View } from "react-native";
+import { resolveTemplateFont } from "../../utils/cairoFont";
 
 export default function OverlayItem({ overlay, value, containerWidth, containerHeight }) {
   if (!value || !containerWidth || !containerHeight) return null;
@@ -13,6 +14,8 @@ export default function OverlayItem({ overlay, value, containerWidth, containerH
   const left = (leftPct / 100) * containerWidth;
   const width = (widthPct / 100) * containerWidth;
   const fontSize = (fontSizeVh / 100) * containerHeight;
+  // Force Cairo regardless of the stored overlay font (incl. legacy ids).
+  const cairoFontFamily = resolveTemplateFont(fontFamily, fontWeight);
 
   return (
     <View style={[styles.container, { position: "absolute", top, left, width }]}>
@@ -22,7 +25,7 @@ export default function OverlayItem({ overlay, value, containerWidth, containerH
           fontWeight,
           textAlign,
           color,
-          fontFamily,
+          fontFamily: cairoFontFamily,
         }}
         numberOfLines={1}
         adjustsFontSizeToFit

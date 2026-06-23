@@ -134,7 +134,7 @@ const HostDetailsScreen = () => {
     if (error) toast.error(t("hostDetails.loadFailed"));
   }, [error, t, toast]);
 
-  const host = hostResp?.data?.data?.host || hostResp?.data?.data || null;
+  const host = hostResp?.data?.host || hostResp?.data || null;
 
   if (isLoading || !host) {
     return (

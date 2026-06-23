@@ -259,7 +259,12 @@
       "saveChanges": "Save Changes",
       "cancel": "Cancel",
       "moderatorDesc": "Standard moderation access",
-      "adminDesc": "Full admin access"
+      "adminDesc": "Full admin access",
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "saveFailed": "Failed to save moderator"
     },
     "permissions": {
       "manageHosts": "Manage Hosts",
@@ -586,7 +591,8 @@
       "guestList": "Guest List",
       "template": "Invitation Design",
       "messages": "Messages",
-      "review": "Review & Launch"
+      "review": "Review & Launch",
+      "incompleteFields": "Please complete all required fields before continuing."
     },
     "hostSelector": {
       "title": "Who is this event for?",
@@ -650,7 +656,8 @@
           "description": "Write the invitation copy and auto-replies"
         }
       }
-    }
+    },
+    "create": "Create Event"
   },
   "ticketDetails": {
     "title": "Ticket Details",
@@ -750,7 +757,11 @@
       "selectModerator": "Select Moderator",
       "notes": "Notes",
       "assign": "Assign",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "validationSelectModerator": "Please select a moderator",
+      "notesPlaceholder": "Add notes for the moderator (optional)",
+      "notesHelper": "These notes will be visible to the assigned moderator",
+      "noModeratorsAvailable": "No moderators available"
     },
     "resolve": {
       "title": "Resolve Ticket",
@@ -768,7 +779,9 @@
     "empty": {
       "title": "No Tickets Found",
       "message": "There are no support tickets to display"
-    }
+    },
+    "bulkResolveConfirm": "Are you sure you want to resolve {{count}} tickets?",
+    "bulkDeleteConfirm": "Are you sure you want to delete {{count}} tickets?"
   },
   "payments": {
     "title": "Payments",
@@ -794,7 +807,8 @@
       "date": "Date",
       "host": "Host",
       "plan": "Plan",
-      "refund": "Refund Payment"
+      "refund": "Refund Payment",
+      "currency": "SAR"
     },
     "stats": {
       "totalRevenue": "Total Revenue",
@@ -882,7 +896,8 @@
       "featureToggles": "Feature Toggles",
       "featureNumerics": "Compensation & Priority",
       "display": "Display",
-      "visibility": "Visibility"
+      "visibility": "Visibility",
+      "featureBullets": "Feature List"
     },
     "fields": {
       "code": "Code",
@@ -990,7 +1005,8 @@
       "sessionTimeout": "Session Timeout",
       "passwordPolicy": "Password Policy",
       "save": "Save Changes"
-    }
+    },
+    "comingSoon": "Coming soon"
   },
   "common": {
     "search": "Search",
@@ -1043,7 +1059,10 @@
     "activateConfirmTitle": "Confirm Activate",
     "noSearchResults": "Try adjusting your search or filter",
     "joined": "Joined",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "admin": "Admin",
+    "bulkSuspendModerators": "Are you sure you want to suspend {{count}} moderators?",
+    "bulkDeleteModerators": "Are you sure you want to delete {{count}} moderators?"
   },
   "discounts": {
     "title": "Discount Codes",
@@ -1088,7 +1107,10 @@
       "planTypes": "Applicable Plans (empty = all plans)",
       "save": "Save",
       "saving": "Saving...",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "percent": "Percentage (%)",
+      "amount": "Amount (SAR)",
+      "datePlaceholder": "Select date"
     },
     "planTypes": {
       "trial": "Trial",
@@ -1178,6 +1200,7 @@
   },
   "more": {
     "title": "More",
+    "businesses": "Businesses",
     "payments": "Payments",
     "moderators": "Moderators",
     "vendors": "Vendors",
@@ -1243,5 +1266,180 @@
       "moderator": "Moderators",
       "admin": "Admins"
     }
+  },
+  "hostDetails": {
+    "title": "Host Details",
+    "loadFailed": "Failed to load host details",
+    "notFound": "Host not found",
+    "trial": "Trial",
+    "eventsCount": "Events",
+    "plan": "Plan",
+    "guestsLimit": "Guests Limit",
+    "subStatus": "Subscription",
+    "contactInfo": "Contact Info",
+    "phone": "Phone Number",
+    "email": "Email",
+    "joinDate": "Join Date",
+    "subscriptionInfo": "Subscription Info",
+    "status": "Status",
+    "eventsLimit": "Events Limit",
+    "expiresAt": "Expires At",
+    "noPlan": "No active subscription",
+    "adminActions": "Admin Actions",
+    "manageSubscription": "Manage Subscription",
+    "managePlanSublabel": "Change plan, status, or billing cycle",
+    "activateHost": "Activate Host",
+    "suspendHost": "Suspend Host",
+    "activateSublabel": "Re-enable this host's account",
+    "suspendSublabel": "Temporarily disable this host's account",
+    "activateMessage": "Are you sure you want to activate this host?",
+    "suspendMessage": "Are you sure you want to suspend this host?",
+    "activated": "Host activated successfully",
+    "suspended": "Host suspended successfully",
+    "updateStatusFailed": "Failed to update host status"
+  },
+  "hostEvents": {
+    "title": "Events",
+    "empty": "No events yet",
+    "untitled": "Untitled Event",
+    "guests": "{{count}} Guests",
+    "confirmed": "{{count}} Confirmed",
+    "declined": "{{count}} Declined",
+    "statuses": {
+      "published": "Published",
+      "scheduled": "Scheduled",
+      "pending_scheduling": "Pending Scheduling",
+      "live": "Live",
+      "draft": "Draft",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "ended": "Ended"
+    }
+  },
+  "businesses": {
+    "title": "Businesses",
+    "searchPlaceholder": "Search businesses...",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "suspended": "Suspended",
+      "inactive": "Inactive"
+    },
+    "empty": {
+      "title": "No businesses found",
+      "message": "Try adjusting your search or filter"
+    },
+    "labels": {
+      "unnamed": "Unnamed business",
+      "noPlan": "No plan",
+      "joined": "Joined"
+    },
+    "actions": {
+      "managePlan": "Manage Plan",
+      "statusUpdated": "Status updated",
+      "statusUpdateFailed": "Failed to update status",
+      "deleted": "Business deleted",
+      "deleteFailed": "Failed to delete business"
+    },
+    "deleteConfirm": {
+      "title": "Delete Business",
+      "message": "Are you sure you want to delete this business?"
+    }
+  },
+  "businessDetails": {
+    "title": "Business Details",
+    "loadFailed": "Failed to load business",
+    "notFound": "Business not found",
+    "totalEvents": "Total Events",
+    "subStatus": "Subscription",
+    "setupFee": "Setup Fee",
+    "setupFeeSettled": "Settled",
+    "setupFeeUnsettled": "Pending",
+    "remaining": "Remaining Invites",
+    "contactInfo": "Contact Info",
+    "phone": "Phone",
+    "email": "Email",
+    "description": "Description",
+    "noDescription": "No description provided",
+    "joinDate": "Join Date",
+    "subscriptionInfo": "Subscription",
+    "plan": "Plan",
+    "status": "Status",
+    "expiresAt": "Expires At",
+    "noPlan": "No active subscription",
+    "managePlan": "Manage Plan",
+    "managePlanSublabel": "Change plan or add extra invites",
+    "adminActions": "Admin Actions",
+    "activate": "Activate Business",
+    "suspend": "Suspend Business",
+    "activateSublabel": "Restore access",
+    "suspendSublabel": "Temporarily disable access",
+    "activateMessage": "Are you sure you want to activate this business?",
+    "suspendMessage": "Are you sure you want to suspend this business?",
+    "activated": "Business activated",
+    "suspended": "Business suspended",
+    "updateStatusFailed": "Failed to update status",
+    "assignments": {
+      "title": "Plan Assignments",
+      "empty": "No assignments yet",
+      "copyLink": "Share Link",
+      "regenerate": "Regenerate",
+      "regenerateSuccess": "Link regenerated",
+      "revoke": "Revoke",
+      "revokeSuccess": "Assignment revoked",
+      "confirmRevoke": "Are you sure you want to revoke this assignment?",
+      "mode": {
+        "grant": "Direct Grant",
+        "checkout": "Checkout Link"
+      },
+      "status": {
+        "pending_payment": "Pending Payment",
+        "payment_processing": "Processing",
+        "paid": "Paid",
+        "active": "Active",
+        "activation_failed": "Activation Failed",
+        "failed": "Failed",
+        "expired": "Expired",
+        "cancelled": "Cancelled",
+        "superseded": "Superseded",
+        "refunded": "Refunded"
+      }
+    }
+  },
+  "managePlan": {
+    "title": "Manage Plan",
+    "host": "Host",
+    "business": "Business",
+    "currentPlan": "Current plan",
+    "status": "Status",
+    "remaining": "Remaining invites",
+    "none": "None",
+    "unlimited": "Unlimited",
+    "invites": "invites",
+    "changePlan": "Change plan",
+    "extraInvites": "Extra invites",
+    "plan": "Plan",
+    "selectPlan": "Select a plan",
+    "loadingPlans": "Loading plans...",
+    "planLoadError": "Could not load plans.",
+    "retry": "Retry",
+    "grant": "Grant",
+    "checkout": "Checkout",
+    "discountCode": "Discount code",
+    "discountPlaceholder": "Optional",
+    "reason": "Reason",
+    "reasonPlaceholder": "Optional",
+    "addExtraAfterChange": "Add extra invites after update",
+    "quantity": "Quantity",
+    "invalidQuantity": "Enter 1 to 500 invites.",
+    "checkoutLink": "Checkout link",
+    "copy": "Share",
+    "checkoutReady": "Checkout link created.",
+    "extraSuccess": "Extra invites added.",
+    "changeSuccess": "Plan updated.",
+    "updatePlan": "Update plan",
+    "addInvites": "Add invites",
+    "saving": "Saving...",
+    "done": "Done"
   }
 }

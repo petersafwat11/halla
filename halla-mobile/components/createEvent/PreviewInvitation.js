@@ -8,6 +8,7 @@ import {
   ScrollView,
   Image,
   SafeAreaView,
+  I18nManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -240,7 +241,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     flex: 1,
-    textAlign: "right",
   },
   closeButton: {
     width: 36,
@@ -293,7 +293,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#656565",
     flex: 1,
-    textAlign: "right",
   },
   actionButtons: {
     flexDirection: "row",
@@ -326,7 +325,9 @@ const styles = StyleSheet.create({
     color: "#8E8E8E",
     paddingHorizontal: 16,
     paddingBottom: 10,
-    textAlign: "left",
+    // Sent-message timestamp sits at the message's END edge and follows
+    // the UI direction (left in RTL, right in LTR).
+    textAlign: I18nManager.isRTL ? "left" : "right",
   },
 });
 

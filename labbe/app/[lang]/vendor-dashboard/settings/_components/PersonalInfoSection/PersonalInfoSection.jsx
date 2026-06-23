@@ -1,28 +1,33 @@
 "use client";
 import React, { useState } from "react";
-import styles from "./personalInfoSection.module.css";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import { toast } from "react-toastify";
 
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import DynamicForm from "@/ui/vendor/dynamicForm/DynamicForm";
+import ImagePreviewModal from "@/ui/vendor/modals/ImagePreviewModal";
 import PhoneChangeOtpModal from "../PhoneChangeOtpModal/PhoneChangeOtpModal";
 import { personalInfoSchema } from "@/utils/schemas/vendorSettings";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
+import {
+  SectionCard,
+  FieldGrid,
+  ReadField,
+  DocThumb,
+  EmptyState,
+} from "../_shared/SettingsPrimitives";
+import styles from "./personalInfoSection.module.css";
 
 /**
- * Personal Info — single consolidated section.
+ * Personal Info — vendor identity edit surface: logo (businessLogo), owner
+ * full name, brand name, email, phone (OTP-gated), and password change.
  *
- * Owns the full vendor identity edit surface: logo (businessLogo), owner full
- * name, brand name, email, phone (OTP-gated), and password change. The phone
- * field is collected by the form but committed via the separate OTP flow, not
- * by the form's submit handler.
- *
- * The store logo is a single-value image: new uploads overwrite, and the
- * inline "×" calls the shared DELETE endpoint (`field: businessLogo`, no key)
- * which wipes the value and the underlying S3 object server-side.
+ * The phone field is collected by the form but committed via the separate
+ * OTP flow (PhoneChangeOtpModal), not by the form's submit handler. The store
+ * logo is single-value: new uploads overwrite, and the inline "×" calls the
+ * shared DELETE endpoint (`field: businessLogo`, no key).
  */
 const PersonalInfoSection = ({ data, onSave, onPhoneVerified, onRefetch }) => {
   const { t } = useTranslation("vendorSettings");
@@ -40,17 +45,8 @@ const PersonalInfoSection = ({ data, onSave, onPhoneVerified, onRefetch }) => {
     avatar: data?.avatar || null,
   };
 
-  const handleEditClick = () => setIsPopupOpen(true);
-  const handleClosePopup = () => setIsPopupOpen(false);
-  const handleImageClick = (src) => setPreviewImage(src);
-  const closePreview = () => setPreviewImage(null);
-
   const handleDeleteLogo = async () => {
-    if (
-      !window.confirm(
-        t("personalInfo.confirmDeleteLogo", "Delete this logo?")
-      )
-    ) {
+    if (!window.confirm(t("personalInfo.confirmDeleteLogo", "Delete this logo?"))) {
       return;
     }
     setIsDeletingLogo(true);
@@ -95,9 +91,7 @@ const PersonalInfoSection = ({ data, onSave, onPhoneVerified, onRefetch }) => {
 
       if (onSave) await onSave(updateData);
 
-      // Close the form popup BEFORE opening the OTP modal so they don't
-      // stack (the form's overlay would otherwise sit on top of the OTP
-      // modal and the user would see a flash).
+      // Close the form popup BEFORE opening the OTP modal so they don't stack.
       setIsPopupOpen(false);
       if (phoneChanged && formData.phoneNumber) {
         setOtpCandidate(formData.phoneNumber.trim());
@@ -123,130 +117,59 @@ const PersonalInfoSection = ({ data, onSave, onPhoneVerified, onRefetch }) => {
 
   return (
     <>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <div className={styles.title}>
-            {t("personalInfo.title", "المعلومات الشخصية")}
-          </div>
-          <button
-            type="button"
-            className={styles.editButton}
-            onClick={handleEditClick}
-          >
-            <Image
-              src="/svg/vendor/edit.svg"
-              alt={t("buttons.edit")}
-              width={24}
-              height={24}
+      <SectionCard
+        title={t("personalInfo.title", "المعلومات الشخصية")}
+        onEdit={() => setIsPopupOpen(true)}
+      >
+        <div className={styles.logoBlock}>
+          <span className={styles.blockLabel}>{t("personalInfo.storeLogo")}</span>
+          {displayData.avatar ? (
+            <DocThumb
+              src={displayData.avatar}
+              onView={() => setPreviewImage(displayData.avatar)}
+              onDelete={handleDeleteLogo}
+              isDeleting={isDeletingLogo}
+              viewLabel={t("personalInfo.clickToView", "اضغط للعرض")}
             />
-          </button>
+          ) : (
+            <EmptyState>{t("personalInfo.noLogo", "لا يوجد شعار")}</EmptyState>
+          )}
         </div>
 
-        <div className={styles.content}>
-          <div className={styles.logoSection}>
-            <label className={styles.label}>
-              {t("personalInfo.storeLogo")}
-            </label>
-            {displayData.avatar ? (
-              <div className={styles.logoWrapper}>
-                <div
-                  className={styles.imagePreview}
-                  onClick={() => handleImageClick(displayData.avatar)}
-                >
-                  <Image
-                    src={displayData.avatar}
-                    alt="Logo"
-                    width={80}
-                    height={80}
-                    className={styles.thumbnailImage}
-                    unoptimized
-                  />
-                  <span className={styles.viewText}>
-                    {t("personalInfo.clickToView", "اضغط للعرض")}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  className={styles.inlineDeleteBtn}
-                  onClick={handleDeleteLogo}
-                  disabled={isDeletingLogo}
-                  aria-label={t("buttons.delete", "حذف")}
-                >
-                  {isDeletingLogo ? "…" : "×"}
-                </button>
-              </div>
-            ) : (
-              <div className={styles.noLogo}>
-                {t("personalInfo.noLogo", "لا يوجد شعار")}
-              </div>
-            )}
-          </div>
+        <FieldGrid>
+          <ReadField
+            label={t("personalInfo.fullName", "الاسم بالكامل")}
+            value={displayData.ownerFullName}
+            placeholder={t("personalInfo.fullNamePlaceholder", "-")}
+            icon={
+              <Image src="/svg/auth/profile.svg" alt="" width={20} height={20} />
+            }
+          />
+          <ReadField
+            label={t("personalInfo.businessName", "اسم النشاط التجاري")}
+            value={displayData.brandName}
+          />
+          <ReadField
+            label={t("personalInfo.email")}
+            value={displayData.email}
+            placeholder={t("personalInfo.emailPlaceholder", "-")}
+            icon={
+              <Image src="/svg/auth/email.svg" alt="" width={20} height={20} />
+            }
+          />
+          <ReadField
+            label={t("personalInfo.phoneWhatsapp", "رقم الهاتف / واتساب")}
+            value={displayData.phoneNumber}
+          />
+        </FieldGrid>
+      </SectionCard>
 
-          <div className={styles.fieldsRow}>
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                {t("personalInfo.fullName", "الاسم بالكامل")}
-              </label>
-              <div className={styles.inputContainer}>
-                <Image
-                  src="/svg/auth/profile.svg"
-                  alt="profile"
-                  width={24}
-                  height={24}
-                />
-                <div className={styles.inputValue}>
-                  {displayData.ownerFullName ||
-                    t("personalInfo.fullNamePlaceholder")}
-                </div>
-              </div>
-            </div>
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                {t("personalInfo.businessName", "اسم النشاط التجاري")}
-              </label>
-              <div className={styles.inputContainer}>
-                <div className={styles.inputValue}>
-                  {displayData.brandName || "-"}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.fieldsRow}>
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>{t("personalInfo.email")}</label>
-              <div className={styles.inputContainer}>
-                <Image
-                  src="/svg/auth/email.svg"
-                  alt="email"
-                  width={24}
-                  height={24}
-                />
-                <div className={styles.inputValue}>
-                  {displayData.email || t("personalInfo.emailPlaceholder")}
-                </div>
-              </div>
-            </div>
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                {t("personalInfo.phoneWhatsapp", "رقم الهاتف / واتساب")}
-              </label>
-              <div className={styles.inputContainer}>
-                <div className={styles.inputValue}>
-                  {displayData.phoneNumber || "-"}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <PopupLayout isOpen={isPopupOpen} onClose={handleClosePopup}>
+      <PopupLayout isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)}>
         <DynamicForm
           schema={personalInfoSchema(t)}
           initialData={displayData}
           onSubmit={handleFormSubmit}
-          onCancel={handleClosePopup}
+          onCancel={() => setIsPopupOpen(false)}
           isLoading={isLoading}
           fileHandlers={fileHandlers}
         />
@@ -259,27 +182,11 @@ const PersonalInfoSection = ({ data, onSave, onPhoneVerified, onRefetch }) => {
         onSuccess={handleOtpSuccess}
       />
 
-      {previewImage && (
-        <div className={styles.modalOverlay} onClick={closePreview}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className={styles.closeButton} onClick={closePreview}>
-              ×
-            </button>
-            <Image
-              src={previewImage}
-              alt="Preview"
-              width={600}
-              height={400}
-              className={styles.previewImage}
-              style={{ objectFit: "contain" }}
-              unoptimized
-            />
-          </div>
-        </div>
-      )}
+      <ImagePreviewModal
+        imageUrl={previewImage}
+        onClose={() => setPreviewImage(null)}
+        alt={t("personalInfo.storeLogo", "Logo")}
+      />
     </>
   );
 };

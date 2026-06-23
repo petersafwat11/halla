@@ -292,9 +292,11 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                   disabled={isRTL ? activeIdx >= maxIdx : activeIdx <= 0}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.ctrlIcon}>
-                    {isRTL ? "›" : "‹"}
-                  </Text>
+                  <Ionicons
+                    name={isRTL ? "chevron-forward" : "chevron-back"}
+                    size={18}
+                    color="#6B4E33"
+                  />
                 </TouchableOpacity>
 
                 <View style={styles.dots}>
@@ -320,9 +322,11 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                   disabled={isRTL ? activeIdx <= 0 : activeIdx >= maxIdx}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.ctrlIcon}>
-                    {isRTL ? "‹" : "›"}
-                  </Text>
+                  <Ionicons
+                    name={isRTL ? "chevron-back" : "chevron-forward"}
+                    size={18}
+                    color="#6B4E33"
+                  />
                 </TouchableOpacity>
               </View>
             )}
@@ -476,8 +480,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderRadius: 12,
     width: "100%",
-    maxWidth: 340,
-    maxHeight: "80%",
+    maxWidth: 360,
+    maxHeight: "90%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
@@ -515,7 +519,7 @@ const styles = StyleSheet.create({
   },
   modalImage: {
     width: "100%",
-    height: 320,
+    height: 480,
     borderRadius: 8,
   },
 });

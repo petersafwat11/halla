@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, I18nManager } from 'react-native';
 import { useFormContext } from 'react-hook-form';
 import SectionCard from '../../commen/SectionCard';
 import { useTranslation } from '../../../localization';
@@ -25,7 +25,7 @@ const CATEGORY_KEYS = [
 const summaryStyles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   label: { fontSize: 13, fontFamily: 'Cairo_400Regular', color: '#888', flex: 1 },
-  value: { fontSize: 13, fontFamily: 'Cairo_600SemiBold', color: '#2c2c2c', flex: 2, textAlign: 'right' },
+  value: { fontSize: 13, fontFamily: 'Cairo_600SemiBold', color: '#2c2c2c', flex: 2, textAlign: I18nManager.isRTL ? 'left' : 'right' },
 });
 
 const VendorStep6Summary = () => {

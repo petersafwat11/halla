@@ -303,8 +303,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
-    marginBottom: 4,
-    textAlign: "right"
+    marginBottom: 4
   },
   listRow: {
     flexDirection: "row",
@@ -328,14 +327,13 @@ const styles = StyleSheet.create({
   listName: {
     fontSize: 13,
     fontFamily: "Cairo_600SemiBold",
-    color: "#2C2C2C",
-    textAlign: "right"
+    color: "#2C2C2C"
   },
   listPhone: {
     fontSize: 12,
     fontFamily: "Cairo_500Medium",
     color: "#656565",
-    textAlign: "right"
+    writingDirection: "ltr"
   },
   listActions: {
     flexDirection: "row",

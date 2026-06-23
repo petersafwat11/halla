@@ -51,8 +51,17 @@ function formatUserResponse(user) {
       planType: user.subscription.planId?.planType || user.subscription.planType,
       planId: user.subscription.planId,
       status: user.subscription.status,
-      currentPeriodEnd: user.subscription.endDate || user.subscription.currentPeriodEnd,
+      currentPeriodEnd: user.subscription.expiresAt || user.subscription.endDate || user.subscription.currentPeriodEnd,
       billingType: user.subscription.planId?.billingType || null,
+      invitePool: user.subscription.invitePool ?? null,
+      compensationPool: user.subscription.compensationPool ?? null,
+      invitesConsumed: user.subscription.invitesConsumed || 0,
+      invitesRemaining:
+        user.subscription.invitePool === null || user.subscription.invitePool === undefined
+          ? null
+          : (user.subscription.invitePool || 0)
+            + (user.subscription.compensationPool || 0)
+            - (user.subscription.invitesConsumed || 0),
       limits: {
         maxEvents: user.subscription.planId?.limits?.maxEvents ?? null,
         maxInvitesPerEvent: user.subscription.planId?.limits?.maxInvitesPerEvent ?? null,

@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
   },

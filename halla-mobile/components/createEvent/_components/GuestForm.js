@@ -48,7 +48,7 @@ export default function GuestForm({ isLimitReached }) {
       <View style={styles.inputWrapper}>
         <Text style={styles.inputLabel}>{t("guest_phone")}</Text>
         <TextInput
-          style={[styles.textInput, guestErrors.phone && styles.textInputError, isLimitReached && styles.textInputDisabled]}
+          style={[styles.textInput, { writingDirection: "ltr" }, guestErrors.phone && styles.textInputError, isLimitReached && styles.textInputDisabled]}
           placeholder={t("guest_phone_placeholder")}
           placeholderTextColor="#999"
           value={guestPhone}
@@ -82,7 +82,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c",
-    textAlign: "right",
   },
   textInputError: { borderColor: "#e74c3c" },
   textInputDisabled: { backgroundColor: "#F5F5F5", borderColor: "#E0E0E0", color: "#AAAAAA" },

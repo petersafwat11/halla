@@ -79,7 +79,15 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
     }
   };
 
-  const handleSubscriptionClick = (host) => { setSelectedHost(host); setShowSubscriptionPopup(true); };
+  const findFullHost = (id) =>
+    (data?.data?.hosts || []).find((host) => (host.id || host._id) === id) || null;
+
+  const handleSubscriptionClick = (host) => {
+    const id = host?.id || host?._id;
+    const fullHost = id ? findFullHost(id) : null;
+    setSelectedHost(fullHost ? { ...host, ...fullHost } : host);
+    setShowSubscriptionPopup(true);
+  };
 
   const handleExport = async () => {
     try {

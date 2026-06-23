@@ -458,8 +458,8 @@ const styles = StyleSheet.create({
     gap: spacing[12],
   },
   rowLabel: { ...textStyles.bodySmall, color: colors.natural[450], flexShrink: 0 },
-  rowValue: { ...textStyles.bodySmall, color: colors.natural[900], flexShrink: 1, textAlign: "right" },
-  mono: { fontFamily: "Courier" },
+  rowValue: { ...textStyles.bodySmall, color: colors.natural[900], flexShrink: 1, writingDirection: "ltr" },
+  mono: { fontFamily: "Cairo_400Regular" },
 
   refundRow: {
     flexDirection: "row",

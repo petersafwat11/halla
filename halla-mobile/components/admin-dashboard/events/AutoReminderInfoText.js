@@ -508,7 +508,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     marginBottom: 12,
-    textAlign: "right",
   },
   trialInfo: {
     ...textStyles.bodySmall,
@@ -520,7 +519,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     marginBottom: 16,
-    textAlign: "right",
   },
   windowHint: {
     ...textStyles.bodySmall,
@@ -529,7 +527,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 16,
     marginTop: 4,
-    textAlign: "right",
   },
   pickerSection: {
     marginBottom: 20,

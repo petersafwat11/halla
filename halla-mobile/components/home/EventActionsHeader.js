@@ -365,7 +365,6 @@ const styles = StyleSheet.create({
     color: "#2C2C2C",
     paddingHorizontal: 8,
     paddingVertical: 10,
-    textAlign: "right",
   },
   menuItem: {
     flexDirection: "row",
@@ -381,7 +380,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Cairo_600SemiBold",
     color: "#2C2C2C",
-    textAlign: "right",
   },
   menuCloseButton: {
     marginTop: 8,

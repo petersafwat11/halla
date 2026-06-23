@@ -92,7 +92,6 @@ const styles = StyleSheet.create({
     color: colors.natural[900],
     fontWeight: typography.fontWeight.semibold,
     width: 28,
-    textAlign: "right",
   },
 });
 

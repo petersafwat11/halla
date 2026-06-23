@@ -77,12 +77,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   row: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     gap: 12,
   },
   card: {
     flex: 1,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "flex-start",
     gap: 12,
     padding: 12,
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.06,
   },
   valueRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
   },

@@ -10,6 +10,7 @@ import Constants from "expo-constants";
 import {
   Cairo_300Light,
   Cairo_400Regular,
+  Cairo_500Medium,
   Cairo_600SemiBold,
   Cairo_700Bold,
   Cairo_900Black,
@@ -87,6 +88,7 @@ async function loadAssets() {
   await Font.loadAsync({
     Cairo_300Light,
     Cairo_400Regular,
+    Cairo_500Medium,
     Cairo_600SemiBold,
     Cairo_700Bold,
     Cairo_900Black,

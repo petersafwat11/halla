@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../../localization";
 import {
   colors,
   spacing,
@@ -10,9 +11,9 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 
-const formatDate = (d) => {
+const formatDate = (d, locale) => {
   if (!d) return null;
-  return new Date(d).toLocaleDateString("en-US", {
+  return new Date(d).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -29,7 +30,12 @@ const getStatusColor = (status) => {
 };
 
 const EventCard = ({ event, onPress }) => {
+  const { t, currentLanguage } = useTranslation("admin");
   const statusColor = getStatusColor(event.status);
+  const rawStatus = event.status || "pending_scheduling";
+  const humanizedStatus = rawStatus
+    .replace(/[_-]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
@@ -38,11 +44,11 @@ const EventCard = ({ event, onPress }) => {
         {/* Title + status chip */}
         <View style={styles.topRow}>
           <Text style={styles.eventTitle} numberOfLines={1}>
-            {event.title || "Untitled Event"}
+            {event.title || t("hostEvents.untitled")}
           </Text>
           <View style={[styles.statusChip, { backgroundColor: `${statusColor}20` }]}>
             <Text style={[styles.statusText, { color: statusColor }]}>
-              {(event.status || "pending_scheduling").replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              {t(`hostEvents.statuses.${rawStatus}`, humanizedStatus)}
             </Text>
           </View>
         </View>
@@ -52,7 +58,7 @@ const EventCard = ({ event, onPress }) => {
           <View style={styles.meta}>
             <Ionicons name="calendar-outline" size={12} color={colors.natural[450]} />
             <Text style={styles.metaText}>
-              {formatDate(event.date)}{event.time ? `  •  ${event.time}` : ""}
+              {formatDate(event.date, currentLanguage)}{event.time ? `  •  ${event.time}` : ""}
             </Text>
           </View>
         )}
@@ -71,18 +77,18 @@ const EventCard = ({ event, onPress }) => {
         <View style={styles.statsRow}>
           <View style={styles.stat}>
             <Ionicons name="people-outline" size={12} color={colors.primary[500]} />
-            <Text style={styles.statText}>{event.guestListLength ?? 0} Guests</Text>
+            <Text style={styles.statText}>{t("hostEvents.guests", { count: event.guestListLength ?? 0 })}</Text>
           </View>
           <View style={styles.stat}>
             <Ionicons name="checkmark-circle-outline" size={12} color={colors.success[500]} />
             <Text style={[styles.statText, { color: colors.success[500] }]}>
-              {event.totalConfirmed ?? 0} Confirmed
+              {t("hostEvents.confirmed", { count: event.totalConfirmed ?? 0 })}
             </Text>
           </View>
           <View style={styles.stat}>
             <Ionicons name="close-circle-outline" size={12} color={colors.error[500]} />
             <Text style={[styles.statText, { color: colors.error[500] }]}>
-              {event.totalDeclined ?? 0} Declined
+              {t("hostEvents.declined", { count: event.totalDeclined ?? 0 })}
             </Text>
           </View>
         </View>
@@ -91,33 +97,36 @@ const EventCard = ({ event, onPress }) => {
   );
 };
 
-const HostEventsList = ({ events = [], onEventPress }) => (
-  <View style={styles.section}>
-    {/* Section header */}
-    <View style={styles.header}>
-      <Text style={styles.headerTitle}>Events</Text>
-      <View style={styles.countBadge}>
-        <Text style={styles.countText}>{events.length}</Text>
+const HostEventsList = ({ events = [], onEventPress }) => {
+  const { t } = useTranslation("admin");
+  return (
+    <View style={styles.section}>
+      {/* Section header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>{t("hostEvents.title")}</Text>
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>{events.length}</Text>
+        </View>
       </View>
-    </View>
 
-    {/* Empty state */}
-    {events.length === 0 ? (
-      <View style={styles.empty}>
-        <Ionicons name="calendar-outline" size={36} color={colors.natural[300]} />
-        <Text style={styles.emptyText}>No events yet</Text>
-      </View>
-    ) : (
-      events.map((ev) => (
-        <EventCard
-          key={ev.id || ev._id}
-          event={ev}
-          onPress={() => onEventPress?.(ev)}
-        />
-      ))
-    )}
-  </View>
-);
+      {/* Empty state */}
+      {events.length === 0 ? (
+        <View style={styles.empty}>
+          <Ionicons name="calendar-outline" size={36} color={colors.natural[300]} />
+          <Text style={styles.emptyText}>{t("hostEvents.empty")}</Text>
+        </View>
+      ) : (
+        events.map((ev) => (
+          <EventCard
+            key={ev.id || ev._id}
+            event={ev}
+            onPress={() => onEventPress?.(ev)}
+          />
+        ))
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   section: { gap: spacing[8] },

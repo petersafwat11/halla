@@ -1,0 +1,304 @@
+.popup {
+  width: min(58rem, 92vw);
+  max-height: min(82vh, 76rem);
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 8px;
+  padding: 2.4rem;
+  color: var(--text-primary, #212121);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.6rem;
+  align-items: flex-start;
+  margin-bottom: 1.8rem;
+}
+
+.header h2 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.header span,
+.kicker {
+  color: var(--text-secondary, #686868);
+  font-size: 1.3rem;
+}
+
+.kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+.closeBtn {
+  width: 3.6rem;
+  height: 3.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e2de;
+  border-radius: 8px;
+  background: #fff;
+  color: #4f4f4f;
+  cursor: pointer;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1.6rem;
+}
+
+.summaryItem {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #ebe7e1;
+  border-radius: 8px;
+  background: #fbfaf8;
+}
+
+.summaryItem span {
+  display: block;
+  color: #777;
+  font-size: 1.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.summaryItem strong {
+  display: block;
+  min-width: 0;
+  color: #222;
+  font-size: 1.35rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.tabs,
+.segmented,
+.presetRow {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.tabs {
+  margin-bottom: 1.6rem;
+}
+
+.tab,
+.tabActive,
+.segment,
+.segmentActive,
+.preset,
+.presetActive {
+  border: 1px solid #ded8d1;
+  border-radius: 8px;
+  background: #fff;
+  color: #555;
+  font-family: "Cairo", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.tab,
+.tabActive {
+  flex: 1;
+  min-height: 4.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+}
+
+.tabActive,
+.segmentActive,
+.presetActive {
+  border-color: #b68456;
+  background: #f7efe8;
+  color: #9a6538;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.segmented {
+  padding: 0.4rem;
+  border-radius: 8px;
+  background: #f5f6f7;
+}
+
+.segment,
+.segmentActive {
+  flex: 1;
+  min-height: 3.8rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.field span,
+.checkoutBox label {
+  color: #333;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.field input,
+.field select,
+.copyRow input {
+  width: 100%;
+  min-height: 4.3rem;
+  border: 1px solid #ded8d1;
+  border-radius: 8px;
+  padding: 0 1.2rem;
+  background: #fff;
+  color: #222;
+  font: inherit;
+  font-size: 1.35rem;
+}
+
+.field input:focus,
+.field select:focus,
+.copyRow input:focus {
+  outline: none;
+  border-color: #b68456;
+  box-shadow: 0 0 0 3px rgba(182, 132, 86, 0.14);
+}
+
+.inlineState {
+  margin: 0;
+  color: #686868;
+  font-size: 1.3rem;
+}
+
+.inlineError {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #fff2f0;
+  color: #9f2f24;
+  font-size: 1.3rem;
+}
+
+.inlineError button,
+.iconTextBtn {
+  border: 1px solid #ded8d1;
+  border-radius: 8px;
+  background: #fff;
+  color: #7a5738;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.inlineError button {
+  padding: 0.6rem 1rem;
+}
+
+.planPreview {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #eff6f7;
+  color: #24454b;
+  font-size: 1.3rem;
+}
+
+.planPreview strong,
+.planPreview span {
+  overflow-wrap: anywhere;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: #333;
+  font-size: 1.35rem;
+  font-weight: 650;
+}
+
+.checkRow input {
+  width: 1.7rem;
+  height: 1.7rem;
+  accent-color: #b68456;
+}
+
+.presetRow {
+  flex-wrap: wrap;
+}
+
+.preset,
+.presetActive {
+  min-width: 6.4rem;
+  min-height: 3.6rem;
+}
+
+.checkoutBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.copyRow {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.copyRow input {
+  flex: 1;
+}
+
+.iconTextBtn {
+  min-width: 9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0 1.2rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 2rem;
+}
+
+.actions > * {
+  flex: 1;
+}
+
+@media (max-width: 720px) {
+  .popup {
+    width: 94vw;
+    padding: 1.8rem;
+  }
+
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tabs,
+  .copyRow,
+  .actions {
+    flex-direction: column;
+  }
+}

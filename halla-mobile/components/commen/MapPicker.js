@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: "#E0E0E0",
   },
   searchInput: {
-    flex: 1, fontSize: 14, fontFamily: "Cairo_400Regular", color: "#2C2C2C", textAlign: "right",
+    flex: 1, fontSize: 14, fontFamily: "Cairo_400Regular", color: "#2C2C2C",
   },
   searchResultsContainer: {
     maxHeight: 250, backgroundColor: "#FFF", borderBottomWidth: 1, borderBottomColor: "#F0F0F0",

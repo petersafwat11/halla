@@ -16,14 +16,8 @@ const INPUT_MODE_TO_KEYBOARD = {
   url: Platform.OS === "ios" ? "url" : "default",
 };
 
-const FONT_OPTIONS = [
-  { label: "Cairo", value: "cairo" },
-  { label: "Inter", value: "inter" },
-  { label: "Lato", value: "lato" },
-  { label: "Amiri", value: "amiri" },
-  { label: "IBM Plex Sans Arabic", value: "ibm_plex_arabic" },
-  { label: "Noto Sans Arabic", value: "noto_sans_arabic" },
-];
+// The mobile app renders in Cairo only, so Cairo is the sole font option.
+const FONT_OPTIONS = [{ label: "Cairo", value: "cairo" }];
 
 export const renderTemplateField = (field, locale, t) => {
   const label = locale === "ar" ? field.labelAr : field.labelEn;

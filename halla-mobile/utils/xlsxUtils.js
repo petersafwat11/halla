@@ -9,15 +9,16 @@ import * as XLSX from "xlsx";
 // `readAsStringAsync` / `EncodingType`. Without `/legacy`, template export and
 // XLSX import both threw on `EncodingType.Base64`.
 import * as FileSystem from "expo-file-system/legacy";
-import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import {
   buildWorkbook,
   parseXlsxRowsToObjects,
 } from "@halla/shared/utils/xlsx";
+import { saveBase64ToDevice } from "./download";
 
 /**
- * Export a template XLSX file and trigger the native share/save sheet.
+ * Export a template XLSX file to the user's device (download on Android,
+ * "Save to Files" on iOS — see utils/download.js).
  */
 export const exportTemplateXLSX = async (
   headers,
@@ -27,25 +28,9 @@ export const exportTemplateXLSX = async (
   try {
     const wb = buildWorkbook(headers, sampleData);
     const base64 = XLSX.write(wb, { type: "base64", bookType: "xlsx" });
-    const fileUri = FileSystem.cacheDirectory + filename + ".xlsx";
-
-    await FileSystem.writeAsStringAsync(fileUri, base64, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
-    const canShare = await Sharing.isAvailableAsync();
-    if (!canShare) {
-      return { success: false, message: "المشاركة غير متاحة على هذا الجهاز" };
-    }
-
-    await Sharing.shareAsync(fileUri, {
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    return await saveBase64ToDevice(base64, `${filename}.xlsx`, {
       dialogTitle: "حفظ القالب",
-      UTI: "com.microsoft.excel.xlsx",
     });
-
-    return { success: true, message: "تم تصدير القالب بنجاح" };
   } catch (error) {
     console.error("exportTemplateXLSX error:", error);
     return { success: false, message: "حدث خطأ أثناء تصدير القالب" };

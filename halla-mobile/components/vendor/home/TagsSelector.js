@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   tagsContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },

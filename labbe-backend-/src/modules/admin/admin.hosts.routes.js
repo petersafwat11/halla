@@ -299,6 +299,19 @@ router.patch('/hosts/:id/subscription',
   adminController.updateHostSubscription
 );
 
+router.post('/hosts/:id/subscription/extra-invites',
+  requirePageAccess(ADMIN_PAGES.HOSTS, 'update'),
+  validateObjectId('id'),
+  validateZod(adminValidation.grantExtraInvitesSchema),
+  auditLog({
+    action: 'host.subscription_extra_invites',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    metadataFrom: (req) => ({ quantity: req.body?.quantity, reason: req.body?.reason }),
+  }),
+  adminController.grantHostExtraInvites
+);
+
 /**
  * @swagger
  * /admin/hosts/{id}:

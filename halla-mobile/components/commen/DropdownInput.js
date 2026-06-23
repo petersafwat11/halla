@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   modalTitleContainer: {
     flex: 1,
-    alignItems: "flex-end",
+    alignItems: "flex-start",
   },
   modalTitle: {
     fontSize: 24,
@@ -260,7 +260,6 @@ const styles = StyleSheet.create({
   },
   optionContent: {
     flexDirection: "row",
-    justifyContent: "flex-end",
     alignItems: "center",
     gap: 16,
   },

@@ -146,6 +146,20 @@ export const useAdminPlans = (filters = {}, options = {}) => {
   });
 };
 
+export const useAssignablePlans = (filters = {}, options = {}) => {
+  return useQuery({
+    queryKey: adminKeys.assignablePlans(filters),
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.plans.assignable,
+        params: filters,
+      }),
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
 export const useAdminPayments = (filters = {}, options = {}) => {
   return useQuery({
     queryKey: adminKeys.payments(filters),

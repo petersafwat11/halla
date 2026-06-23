@@ -64,12 +64,12 @@ const SendInvitationModal = ({
 
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={handleClose} hitSlop={8} disabled={isPending}>
-              <Ionicons name="close" size={24} color="#2C2C2C" />
-            </TouchableOpacity>
             <View style={styles.titleWrapper}>
               <Text style={styles.title}>{t("messaging.sendInvitation")}</Text>
             </View>
+            <TouchableOpacity onPress={handleClose} hitSlop={8} disabled={isPending}>
+              <Ionicons name="close" size={24} color="#2C2C2C" />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.content}>
@@ -204,14 +204,13 @@ const styles = StyleSheet.create({
   },
   titleWrapper: {
     flex: 1,
-    alignItems: "flex-end",
+    alignItems: "flex-start",
   },
   title: {
     fontSize: 20,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     lineHeight: 28,
-    textAlign: "right",
   },
   content: {
     paddingHorizontal: 24,
@@ -226,13 +225,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5ECE4",
     borderRadius: 10,
     padding: 12,
-    justifyContent: "flex-end",
   },
   guestCountText: {
     fontSize: 14,
     fontFamily: "Cairo_400Regular",
     color: "#2C2C2C",
-    textAlign: "right",
   },
   guestCountLabel: {
     fontFamily: "Cairo_400Regular",
@@ -247,7 +244,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#2C2C2C",
-    textAlign: "right",
     marginTop: 4,
   },
   channelOption: {
@@ -288,7 +284,7 @@ const styles = StyleSheet.create({
   channelInfo: {
     flex: 1,
     gap: 4,
-    alignItems: "flex-end",
+    alignItems: "flex-start",
   },
   channelNameRow: {
     flexDirection: "row",
@@ -309,7 +305,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#A0A0A0",
     lineHeight: 18,
-    textAlign: "right",
   },
   actions: {
     flexDirection: "row",

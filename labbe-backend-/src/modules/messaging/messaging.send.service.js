@@ -162,6 +162,18 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
     throw new ForbiddenError('Not authorized for this event');
   }
 
+  const decision = await dispatchPolicy.assertCanDispatch(
+    event,
+    { path: 'sendToGuest' },
+    { requireInvites: !guest.invitation?.sent }
+  );
+  if (!decision.allowed) {
+    throw new AppError(
+      `Invitations can no longer be sent for this event (${decision.reason}).`,
+      403
+    );
+  }
+
   // Points at the live guest portal, keyed by the guest's qrcode
   // (route: app/[lang]/invitation/[code]). The old /rsvp/:eventId/:guestId
   // path had no corresponding page and 404'd.

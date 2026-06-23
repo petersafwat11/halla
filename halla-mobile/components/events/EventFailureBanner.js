@@ -49,12 +49,11 @@ const formatCountdown = (ms) => {
   return parts.join(' ');
 };
 
-export default function EventFailureBanner({ event, currentUser, onRetry, lang = 'ar' }) {
+export default function EventFailureBanner({ event, currentUser, onRetry }) {
   const { t } = useTranslation('events');
   const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState(null);
   const [, setTick] = useState(0);
-  const isRtl = lang !== 'en';
   const spin = useRef(new Animated.Value(0)).current;
 
   // Tick the countdown every second while we're in the retrying state.
@@ -104,25 +103,25 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
     return (
       <View style={[styles.banner, styles.retrying]}>
         <View style={styles.topStripe} />
-        <View style={[styles.titleRow, !isRtl && styles.titleRowLtr]}>
+        <View style={styles.titleRow}>
           <View style={[styles.iconWrap, styles.iconWrapRetrying]}>
             <Animated.View style={{ transform: [{ rotate: spinDeg }] }}>
               <Ionicons name="sync" size={20} color="#965c00" />
             </Animated.View>
           </View>
           <Text
-            style={[styles.title, styles.titleRetrying, !isRtl && styles.titleLtr]}
+            style={[styles.title, styles.titleRetrying]}
             numberOfLines={2}
           >
             {t('failureBanner.retrying.title')}
           </Text>
         </View>
 
-        <Text style={[styles.message, styles.messageRetrying, !isRtl && styles.messageLtr]}>
+        <Text style={[styles.message, styles.messageRetrying]}>
           {t('failureBanner.retrying.attemptCount', { attempt: attemptCount, max: MAX_VISIBLE_ATTEMPTS })}
         </Text>
 
-        <View style={[styles.progress, !isRtl && styles.progressLtr]}>
+        <View style={styles.progress}>
           {Array.from({ length: MAX_VISIBLE_ATTEMPTS }).map((_, i) => {
             const idx = i + 1;
             const isPast = idx < attemptCount;
@@ -141,7 +140,7 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
         </View>
 
         {countdownStr && countdownMs > 0 ? (
-          <View style={[styles.countdownPill, !isRtl && styles.countdownPillLtr]}>
+          <View style={styles.countdownPill}>
             <View style={styles.countdownDot} />
             <Text style={styles.countdownText}>
               {t('failureBanner.retrying.nextAttempt', { countdown: countdownStr })}
@@ -189,20 +188,20 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
   return (
     <View style={[styles.banner, styles.failed]}>
       <View style={[styles.topStripe, styles.topStripeFailed]} />
-      <View style={[styles.titleRow, !isRtl && styles.titleRowLtr]}>
+      <View style={styles.titleRow}>
         <View style={styles.iconWrap}>
           <Ionicons name="alert-circle" size={20} color="#88281f" />
         </View>
-        <Text style={[styles.title, !isRtl && styles.titleLtr]} numberOfLines={2}>
+        <Text style={styles.title} numberOfLines={2}>
           {t('failureBanner.failed.title')}
         </Text>
       </View>
-      <Text style={[styles.message, !isRtl && styles.messageLtr]}>
+      <Text style={styles.message}>
         {t('failureBanner.failed.message')}
       </Text>
       {failureReason ? (
         <View style={styles.reason}>
-          <Text style={[styles.reasonText, !isRtl && styles.messageLtr]}>
+          <Text style={styles.reasonText}>
             {t('failureBanner.failed.reason')}{failureReason}
           </Text>
         </View>
@@ -227,7 +226,7 @@ export default function EventFailureBanner({ event, currentUser, onRetry, lang =
         <WhatsAppContactButton contextMessage={contextMessage} />
       </View>
 
-      {error ? <Text style={[styles.error, !isRtl && styles.messageLtr]}>{error}</Text> : null}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
 }
@@ -268,11 +267,10 @@ const styles = StyleSheet.create({
     borderColor: '#f1d8b0',
   },
   titleRow: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-  titleRowLtr: { flexDirection: 'row' },
   iconWrap: {
     width: 36,
     height: 36,
@@ -287,29 +285,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#6a1f18',
-    textAlign: 'right',
     fontFamily: 'Cairo_700Bold',
   },
   titleRetrying: { color: '#593700' },
-  titleLtr: { textAlign: 'left' },
   message: {
     fontSize: 13,
     color: '#88281f',
     lineHeight: 20,
-    textAlign: 'right',
     marginTop: 10,
     fontFamily: 'Cairo_400Regular',
   },
   messageRetrying: { color: '#744800' },
-  messageLtr: { textAlign: 'left' },
 
   progress: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     marginTop: 12,
   },
-  progressLtr: { flexDirection: 'row' },
   dot: {
     width: 8,
     height: 8,
@@ -327,8 +320,8 @@ const styles = StyleSheet.create({
   },
 
   countdownPill: {
-    alignSelf: 'flex-end',
-    flexDirection: 'row-reverse',
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: '#ffffff',
@@ -338,10 +331,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     marginTop: 12,
-  },
-  countdownPillLtr: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
   },
   countdownDot: {
     width: 6,
@@ -365,12 +354,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     marginTop: 12,
-    alignSelf: 'flex-end',
+    alignSelf: 'flex-start',
   },
   reasonText: {
     fontSize: 12,
     color: '#6a1f18',
-    textAlign: 'right',
   },
   actions: {
     marginTop: 14,
@@ -395,7 +383,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
     color: '#6a1f18',
-    textAlign: 'right',
     backgroundColor: '#ffffff',
     borderColor: '#ebc2bd',
     borderWidth: 1,

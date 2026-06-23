@@ -82,13 +82,13 @@ const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
 
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={handleClose} hitSlop={8} disabled={isPending}>
-              <Ionicons name="close" size={24} color="#2C2C2C" />
-            </TouchableOpacity>
             <View style={styles.titleWrapper}>
               <Text style={styles.title}>{t("testMessage.title")}</Text>
               <Text style={styles.description}>{t("testMessage.description")}</Text>
             </View>
+            <TouchableOpacity onPress={handleClose} hitSlop={8} disabled={isPending}>
+              <Ionicons name="close" size={24} color="#2C2C2C" />
+            </TouchableOpacity>
           </View>
 
           <FormProvider {...methods}>
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   titleWrapper: {
     flex: 1,
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     gap: 4,
   },
   title: {
@@ -179,14 +179,12 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     lineHeight: 28,
-    textAlign: "right",
   },
   description: {
     fontSize: 13,
     fontFamily: "Cairo_400Regular",
     color: "#656565",
     lineHeight: 20,
-    textAlign: "right",
   },
   content: {
     paddingHorizontal: 24,

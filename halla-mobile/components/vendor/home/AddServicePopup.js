@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   footer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     gap: 12,
     paddingHorizontal: 24,
     paddingVertical: 24,

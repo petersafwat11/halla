@@ -184,8 +184,8 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  title: { fontSize: 18, fontFamily: 'Cairo_700Bold', color: '#1a1a1a', marginBottom: 4, textAlign: 'right' },
-  subtitle: { fontSize: 14, fontFamily: 'Cairo_400Regular', color: '#666', marginBottom: 16, textAlign: 'right' },
+  title: { fontSize: 18, fontFamily: 'Cairo_700Bold', color: '#1a1a1a', marginBottom: 4 },
+  subtitle: { fontSize: 14, fontFamily: 'Cairo_400Regular', color: '#666', marginBottom: 16 },
   tabs: { flexDirection: 'row', borderRadius: 8, backgroundColor: '#f0f0f0', padding: 4, marginBottom: 16 },
   tab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 6 },
   tabActive: { backgroundColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
@@ -204,9 +204,9 @@ const styles = StyleSheet.create({
   hostCardExhausted: { opacity: 0.6 },
   searchRow: { flexDirection: 'row', gap: 8, marginBottom: 12, alignItems: 'center' },
   searchInput: { flex: 1, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12, fontSize: 14, fontFamily: 'Cairo_400Regular', color: '#1a1a1a', backgroundColor: '#fff' },
-  searchError: { color: '#e74c3c', fontSize: 13, fontFamily: 'Cairo_400Regular', marginBottom: 8, textAlign: 'right' },
+  searchError: { color: '#e74c3c', fontSize: 13, fontFamily: 'Cairo_400Regular', marginBottom: 8 },
   searchResultSection: { marginBottom: 12 },
-  sectionLabel: { fontSize: 14, fontFamily: 'Cairo_700Bold', color: '#444', marginBottom: 8, textAlign: 'right' },
+  sectionLabel: { fontSize: 14, fontFamily: 'Cairo_700Bold', color: '#444', marginBottom: 8 },
 });
 
 export default HostSelectorStep;

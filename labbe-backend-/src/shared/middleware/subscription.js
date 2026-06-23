@@ -16,6 +16,7 @@ const { countsAgainstPlanStatusFilter } = require("../constants/events");
 
 const Subscription = require("../../../models/SubscriptionModel");
 const Event = require("../../../models/EventModel");
+const subscriptionEventAccess = require("../../modules/subscriptions/subscriptionEventAccess.service");
 
 /**
  * Require active subscription
@@ -46,10 +47,22 @@ exports.requireSubscription = catchAsync(async (req, res, next) => {
   }
 
   const userId = user._id || user.id;
-  const subscriptions = await Subscription.findActiveForUser(userId);
+  let subscriptions = await Subscription.findActiveForUser(userId);
 
   if (!subscriptions || subscriptions.length === 0) {
-    return res.status(403).json({ success: false, message: 'No active subscription found' });
+    const eventId = req.params?.id || req.params?.eventId;
+    const event = eventId
+      ? await Event.findById(eventId).select('subscriptionId host').lean()
+      : null;
+    const eventSubscription = event
+      ? await subscriptionEventAccess.findForEvent(event, userId, { allowFallback: false })
+      : null;
+
+    if (eventSubscription) {
+      subscriptions = [eventSubscription];
+    } else {
+      return res.status(403).json({ success: false, message: 'No active subscription found' });
+    }
   }
 
   req.subscriptions = subscriptions;
@@ -181,18 +194,17 @@ exports.checkGuestLimit = (getGuestCount) => {
     // getCapacityForEvent after creation, so asking for a fresh subscription
     // incorrectly rejects edits to that same event.
     let capacitySub = null;
+    let hasAttachedSubscription = false;
     if (req.params?.id) {
       const event = await Event.findById(req.params.id)
-        .select("subscriptionId guestLimit guestList")
+        .select("subscriptionId guestLimit guestList host")
         .lean();
       const attachedSubscriptionId = event?.subscriptionId;
+      hasAttachedSubscription = !!attachedSubscriptionId;
       if (attachedSubscriptionId) {
-        capacitySub = await Subscription.findOne({
-          _id: attachedSubscriptionId,
-          userId,
-          status: { $in: ["active", "trial"] },
-          $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
-        }).populate("planId");
+        capacitySub = await subscriptionEventAccess.findForEvent(event, userId, {
+          allowFallback: false,
+        });
 
         // List cap: a guest is free to add — capacity is the subscription's
         // total invite pool (invitePool + compensation), independent of how
@@ -213,7 +225,7 @@ exports.checkGuestLimit = (getGuestCount) => {
         }
       }
     }
-    if (!capacitySub) {
+    if (!capacitySub && !hasAttachedSubscription) {
       capacitySub = await Subscription.getCapacityForEvent(userId, guestCount);
     }
     if (!capacitySub) {

@@ -199,6 +199,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Cairo_500Medium",
     color: "#2C2C2C",
-    textAlign: "right",
   },
 });

@@ -72,6 +72,15 @@ exports.getAllPlansAdmin = catchAsync(async (req, res) => {
 });
 
 /**
+ * Get active plans assignable by admins to users.
+ * GET /api/v2/plans/assignable?availableFor=host|business
+ */
+exports.getAssignablePlans = catchAsync(async (req, res) => {
+  const result = await plansService.getAssignablePlans(req.query);
+  sendSuccess(res, result);
+});
+
+/**
  * Update plan by code (admin)
  * PATCH /api/v2/plans/admin/:code
  *

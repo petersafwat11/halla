@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Cairo_500Medium",
     color: COLORS.textDark,
-    textAlign: "right",
     lineHeight: 22,
   },
   dropdownPlaceholder: {
@@ -134,7 +133,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   dropdownOption: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 14,

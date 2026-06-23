@@ -9,6 +9,7 @@ export {
   useAdminVendor,
   useAdminModerators,
   useAdminPlans,
+  useAssignablePlans,
   useAdminPayments,
   useAdminPaymentDetail,
   useAdminEvents,

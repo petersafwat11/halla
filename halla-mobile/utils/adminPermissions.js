@@ -35,7 +35,13 @@ export { ACCESS_LEVELS };
  * its visibility via `canViewPage(role, PAGES.PLANS)` against the
  * `ACCESS_MATRIX` below. Keep the alias here so those gates resolve.
  */
-export const PAGES = { ...ADMIN_PAGES, PLANS: "plans" };
+export const PAGES = {
+  ...ADMIN_PAGES,
+  PLANS: "plans",
+  // Admin "Businesses" area (mobile parity with web). Falls back to the
+  // "businesses" literal if shared ADMIN_PAGES doesn't define it.
+  BUSINESSES: ADMIN_PAGES.BUSINESSES || "businesses",
+};
 
 /**
  * Mobile access matrix — keep in sync with backend `ROLE_PAGE_ACCESS`
@@ -48,6 +54,7 @@ const ACCESS_MATRIX = {
   [ROLES.SUPER_ADMIN]: {
     [PAGES.DASHBOARD]: ACCESS_LEVELS.FULL,
     [PAGES.HOSTS]: ACCESS_LEVELS.FULL,
+    [PAGES.BUSINESSES]: ACCESS_LEVELS.FULL,
     [PAGES.VENDORS]: ACCESS_LEVELS.FULL,
     [PAGES.EVENTS]: ACCESS_LEVELS.FULL,
     [PAGES.TICKETS]: ACCESS_LEVELS.FULL,
@@ -61,6 +68,7 @@ const ACCESS_MATRIX = {
   [ROLES.ADMIN]: {
     [PAGES.DASHBOARD]: ACCESS_LEVELS.FULL,
     [PAGES.HOSTS]: ACCESS_LEVELS.FULL,
+    [PAGES.BUSINESSES]: ACCESS_LEVELS.FULL,
     [PAGES.VENDORS]: ACCESS_LEVELS.FULL,
     [PAGES.EVENTS]: ACCESS_LEVELS.FULL,
     [PAGES.TICKETS]: ACCESS_LEVELS.FULL,
@@ -74,6 +82,7 @@ const ACCESS_MATRIX = {
   [ROLES.MODERATOR]: {
     [PAGES.DASHBOARD]: ACCESS_LEVELS.VIEW,
     [PAGES.HOSTS]: ACCESS_LEVELS.EDIT,
+    [PAGES.BUSINESSES]: ACCESS_LEVELS.NONE,
     [PAGES.VENDORS]: ACCESS_LEVELS.VIEW,
     [PAGES.EVENTS]: ACCESS_LEVELS.EDIT,
     [PAGES.TICKETS]: ACCESS_LEVELS.FULL,
@@ -107,6 +116,7 @@ export const canDeleteOnPage = (role, pageKey) =>
 const NAV_ITEMS = [
   { key: PAGES.DASHBOARD, label: "Dashboard", icon: "dashboard", path: "/admin/dashboard", requiredRoles: ADMIN_ROLES },
   { key: PAGES.HOSTS, label: "Hosts", icon: "people", path: "/admin/hosts", requiredRoles: ADMIN_ROLES },
+  { key: PAGES.BUSINESSES, label: "Businesses", icon: "briefcase", path: "/admin/businesses", requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
   { key: PAGES.VENDORS, label: "Vendors", icon: "store", path: "/admin/vendors", requiredRoles: PLATFORM_ADMIN_ROLES },
   { key: PAGES.EVENTS, label: "Events", icon: "calendar", path: "/admin/events", requiredRoles: ADMIN_ROLES },
   { key: PAGES.TICKETS, label: "Tickets", icon: "support", path: "/admin/tickets", requiredRoles: PLATFORM_ADMIN_ROLES },

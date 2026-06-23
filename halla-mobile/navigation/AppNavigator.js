@@ -53,6 +53,9 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const SettingsStackNav = createStackNavigator();
 const VendorSettingsStackNav = createStackNavigator();
+const HomeStackNav = createStackNavigator();
+const VendorHomeStackNav = createStackNavigator();
+const MarketplaceStackNav = createStackNavigator();
 
 // Plans tab — branches on account type (B4-MOBILE). A business account is still
 // `role:host` (so it uses host navigation), but its "Plans" tab must show the
@@ -80,6 +83,36 @@ function VendorSettingsStackNavigator() {
       <VendorSettingsStackNav.Screen name="VendorSettingsMain" component={VendorSettingsScreen} />
       <VendorSettingsStackNav.Screen name="VendorAccountSetup" component={VendorAccountSetupScreen} />
     </VendorSettingsStackNav.Navigator>
+  );
+}
+
+// Home/Marketplace stacks nested inside the tabs so screens pushed from them
+// (Notifications, vendor public profile) keep the bottom tab bar visible —
+// same pattern as the Settings stacks above.
+function HostHomeStackNavigator() {
+  return (
+    <HomeStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStackNav.Screen name="HomeMain" component={HomeScreen} />
+      <HomeStackNav.Screen name="Notifications" component={NotificationsScreen} />
+    </HomeStackNav.Navigator>
+  );
+}
+
+function VendorHomeStackNavigator() {
+  return (
+    <VendorHomeStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <VendorHomeStackNav.Screen name="VendorHomeMain" component={VendorHomeScreen} />
+      <VendorHomeStackNav.Screen name="Notifications" component={NotificationsScreen} />
+    </VendorHomeStackNav.Navigator>
+  );
+}
+
+function MarketplaceStackNavigator() {
+  return (
+    <MarketplaceStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <MarketplaceStackNav.Screen name="MarketplaceMain" component={Marketplace} />
+      <MarketplaceStackNav.Screen name="VendorPublicProfile" component={VendorPublicProfileScreen} />
+    </MarketplaceStackNav.Navigator>
   );
 }
 
@@ -125,7 +158,7 @@ function HostTabNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HostHomeStackNavigator}
         options={{ tabBarLabel: t("navigation.home") }}
       />
       <Tab.Screen
@@ -135,7 +168,7 @@ function HostTabNavigator() {
       />
       <Tab.Screen
         name="Marketplace"
-        component={Marketplace}
+        component={MarketplaceStackNavigator}
         options={{ tabBarLabel: t("navigation.marketplace") }}
       />
       <Tab.Screen
@@ -195,7 +228,7 @@ function VendorTabNavigator() {
     >
       <Tab.Screen
         name="VendorHome"
-        component={VendorHomeScreen}
+        component={VendorHomeStackNavigator}
         options={{ tabBarLabel: t("navigation.home") }}
       />
       <Tab.Screen
@@ -205,7 +238,7 @@ function VendorTabNavigator() {
       />
       <Tab.Screen
         name="Marketplace"
-        component={Marketplace}
+        component={MarketplaceStackNavigator}
         options={{ tabBarLabel: t("navigation.marketplace") }}
       />
       <Tab.Screen

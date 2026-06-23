@@ -86,6 +86,6 @@ const priceInput = {
   paddingVertical: 12,
   fontSize: 14,
   fontFamily: "Cairo_400Regular",
-  textAlign: "right",
+  writingDirection: "ltr",
 };
 const priceSeparator = { fontSize: 16, color: COLORS.textDark };

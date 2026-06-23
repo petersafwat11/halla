@@ -1,3 +1,4 @@
+import "./utils/fontOverride";
 import { registerRootComponent } from "expo";
 
 import App from "./App";

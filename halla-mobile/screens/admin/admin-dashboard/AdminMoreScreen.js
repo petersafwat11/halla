@@ -15,6 +15,12 @@ import { useTranslation } from "../../../localization";
 
 const MENU_ITEMS = [
   {
+    key: PAGES.BUSINESSES,
+    labelKey: "more.businesses",
+    icon: "briefcase-outline",
+    screen: "AdminBusinessesList",
+  },
+  {
     key: PAGES.PAYMENTS,
     labelKey: "more.payments",
     icon: "card-outline",

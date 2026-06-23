@@ -275,7 +275,7 @@ const StepFour = () => {
             multiline
             numberOfLines={4}
             maxLength={500}
-            style={[styles.textArea, { writingDirection: "rtl" }]}
+            style={styles.textArea}
           />
         </View>
       </ScrollView>
@@ -402,8 +402,6 @@ const styles = StyleSheet.create({
     color: "#4A3D33",
     lineHeight: 22,
     fontFamily: "Cairo_400Regular",
-    textAlign: "right",
-    writingDirection: "rtl",
   },
   checkBadge: {
     position: "absolute",
@@ -427,7 +425,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#EEE",
   },
-  hint: { fontSize: 12, color: "#666", marginBottom: 12, textAlign: "right" },
+  hint: { fontSize: 12, color: "#666", marginBottom: 12 },
   textArea: {
     borderWidth: 1,
     borderColor: "#DDD",
@@ -439,7 +437,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     minHeight: 80,
     textAlignVertical: "top",
-    textAlign: "right",
   },
   tabsRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
   tabBtn: {

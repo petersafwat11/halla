@@ -115,7 +115,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flexDirection: "row",
-    justifyContent: "flex-end",
     alignItems: "center",
     gap: 16,
     alignSelf: "stretch",
@@ -123,7 +122,7 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     flexDirection: "column",
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     gap: 4,
   },
   title: {
@@ -132,7 +131,6 @@ const styles = StyleSheet.create({
     color: "#2C2C2C",
     lineHeight: 24,
     letterSpacing: 0.08,
-    textAlign: "right",
   },
   subtitle: {
     fontSize: 14,
@@ -140,7 +138,6 @@ const styles = StyleSheet.create({
     color: "#656565",
     lineHeight: 20,
     letterSpacing: 0.014,
-    textAlign: "right",
   },
   subcreateButton: {
     flexDirection: "row",

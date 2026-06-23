@@ -116,6 +116,20 @@ class PlansService {
     return { plans: plans.map((p) => this._formatPlan(p)) };
   }
 
+  async getAssignablePlans(filters = {}) {
+    const { availableFor } = filters;
+    if (!['host', 'business'].includes(availableFor)) {
+      throw new ValidationError('availableFor must be "host" or "business"');
+    }
+
+    const plans = await Plan.find({
+      availableFor,
+      isActive: true,
+    }).sort({ sortOrder: 1, 'pricing.oneTime': 1, createdAt: 1 });
+
+    return { plans: plans.map((p) => this._formatPlan(p)) };
+  }
+
   /**
    * Create a new plan. SUPER_ADMIN-only at the route layer (now via
    * `requirePageAccess(MANAGE_PLANS, 'create')`). Hard-rejects duplicate

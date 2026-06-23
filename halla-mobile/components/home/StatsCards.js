@@ -238,38 +238,39 @@ const StatsCards = ({ totalEvents = 0, activeEvents = 0, endedEvents = 0, draftE
       label: t("dashboard.stats.all"),
       value: totalEvents,
       icon: <CalendarIcon color="#C28E5C" />,
-      bgColor: "#F9F4EF",
+      tint: "#F9F4EF",
     },
     {
       label: t("dashboard.stats.activeEvents"),
       value: activeEvents,
       icon: <CalendarTickIcon color="#2A8C5B" />,
-      bgColor: "#EAF4EF",
+      tint: "#EAF4EF",
     },
     {
       label: t("dashboard.stats.draftEvents"),
       value: draftEvents,
       icon: <CalendarIcon color="#D38200" />,
-      bgColor: "#FBF3E6",
+      tint: "#FBF3E6",
     },
     {
       label: t("dashboard.stats.endedEvents"),
       value: endedEvents,
       icon: <CalendarRemoveIcon color="#C0392B" />,
-      bgColor: "#F9EBEA",
+      tint: "#F9EBEA",
     },
   ];
 
   return (
     <View style={styles.container}>
       {cards.map((card, index) => (
-        <View
-          key={index}
-          style={[styles.card, { backgroundColor: card.bgColor }]}
-        >
-          <View style={styles.iconContainer}>{card.icon}</View>
-          <Text style={styles.label} numberOfLines={1} adjustsFontSizeToFit>{card.label}</Text>
+        <View key={index} style={styles.card}>
+          <View style={[styles.iconContainer, { backgroundColor: card.tint }]}>
+            {card.icon}
+          </View>
           <Text style={styles.value}>{card.value}</Text>
+          <Text style={styles.label} numberOfLines={1} adjustsFontSizeToFit>
+            {card.label}
+          </Text>
         </View>
       ))}
     </View>
@@ -280,17 +281,17 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "stretch",
-    gap: 16,
+    gap: 10,
     paddingHorizontal: 24,
   },card: {
     flex: 1,
-    padding: 12,
+    padding: 10,
     flexDirection: "column",
-    alignItems: "center",
-    gap: 8,
+    alignItems: "flex-start",
+    gap: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#F2F2F2",
+    borderColor: "#F0EBE5",
     backgroundColor: "#FFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -299,24 +300,24 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   iconContainer: {
-    padding: 4,
+    width: 32,
+    height: 32,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 7.385,
+    borderRadius: 8,
   },
   label: {
-    fontSize: 12,
-    fontFamily: "Cairo_700Bold",
+    fontSize: 11,
+    fontFamily: "Cairo_500Medium",
     color: "#656565",
     lineHeight: 16,
     letterSpacing: 0.06,
-    textAlign: "center",
   },
   value: {
     fontSize: 18,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
-    lineHeight: 28,
+    lineHeight: 26,
   },
 });
 

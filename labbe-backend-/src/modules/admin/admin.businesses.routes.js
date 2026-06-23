@@ -70,6 +70,19 @@ router.post('/businesses/:id/assign-plan',
   controller.assignPlan
 );
 
+router.post('/businesses/:id/subscription/extra-invites',
+  requirePageAccess(ADMIN_PAGES.BUSINESSES, 'update'),
+  validateObjectId('id'),
+  validateZod(adminValidation.grantExtraInvitesSchema),
+  auditLog({
+    action: 'business.subscription_extra_invites',
+    targetType: 'user',
+    targetIdFrom: (req) => req.params.id,
+    metadataFrom: (req) => ({ quantity: req.body?.quantity, reason: req.body?.reason }),
+  }),
+  controller.grantBusinessExtraInvites
+);
+
 // ── Checkout-link operations ──────────────────────────────────────────────────
 router.post('/businesses/assignments/:assignmentId/revoke',
   requirePageAccess(ADMIN_PAGES.BUSINESSES, 'update'),

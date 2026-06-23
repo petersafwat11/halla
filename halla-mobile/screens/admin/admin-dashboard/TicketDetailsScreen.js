@@ -81,10 +81,12 @@ const TicketDetailsScreen = () => {
   const handleDelete = () => {
     Alert.alert(t("ticketDetails.deleteConfirmTitle"), t("ticketDetails.deleteConfirmMessage"), [
       { text: t("common.cancel"), style: "cancel" },
-      { text: t("common.delete"), style: "destructive", onPress: async () => {
-        try { await deleteTicket.mutateAsync(ticket.id); toast.success(t("ticketDetails.ticketDeleted")); navigation.goBack(); }
-        catch { toast.error(t("ticketDetails.deleteFailed")); }
-      }},
+      {
+        text: t("common.delete"), style: "destructive", onPress: async () => {
+          try { await deleteTicket.mutateAsync(ticket.id); toast.success(t("ticketDetails.ticketDeleted")); navigation.goBack(); }
+          catch { toast.error(t("ticketDetails.deleteFailed")); }
+        }
+      },
     ]);
   };
 

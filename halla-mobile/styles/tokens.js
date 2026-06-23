@@ -344,8 +344,8 @@ export const borderRadius = {
 
 export const typography = {
   fontFamily: {
-    english: "Inter",
-    arabic: "Cairo",
+    english: "Cairo_400Regular",
+    arabic: "Cairo_400Regular",
   },
   fontSize: {
     huge: {

@@ -1,4 +1,5 @@
 {
+  "error": "Error",
   "validation": {
     "invalidSaudiPhone": "Phone must start with 5 and be 9 digits",
     "invalidEmail": "Please enter a valid email address",

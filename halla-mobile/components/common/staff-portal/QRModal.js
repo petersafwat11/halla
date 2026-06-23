@@ -36,13 +36,12 @@ const QRModal = ({ visible, onClose, onSubmit, t }) => {
             <View style={styles.inputRow}>
               <Ionicons name="qr-code-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { writingDirection: "ltr" }]}
                 placeholder={t("checkIn.qrPlaceholder")}
                 placeholderTextColor="#9CA3AF"
                 value={code}
                 onChangeText={setCode}
                 autoCapitalize="none"
-                textAlign="right"
               />
             </View>
             <TouchableOpacity

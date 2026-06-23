@@ -1250,11 +1250,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+    flexShrink: 1,
+    maxWidth: "100%",
   },
   titleMetaText: {
     fontSize: 12,
     fontFamily: "Cairo_500Medium",
     color: colors.natural[500] || "#656565",
+    flexShrink: 1,
   },
 
   actionsWrapper: {
@@ -1424,7 +1427,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#9CA3AF",
     lineHeight: 16,
-    textAlign: "right",
   },
 
   bulkBar: {
@@ -1444,7 +1446,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_600SemiBold",
     color: "#656565",
-    textAlign: "right",
   },
   bulkBarActions: {
     flexDirection: "row",

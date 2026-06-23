@@ -92,7 +92,7 @@ const StepFive = () => {
         multiline
         numberOfLines={3}
         maxLength={500}
-        style={[styles.textArea, { writingDirection: "rtl" }]}
+        style={styles.textArea}
       />
 
       <Text style={[styles.sectionLabel, { marginTop: 24 }]}>{t("auto_replies")}</Text>
@@ -121,7 +121,7 @@ const StepFive = () => {
         multiline
         numberOfLines={4}
         maxLength={500}
-        style={[styles.textArea, { writingDirection: "rtl" }]}
+        style={styles.textArea}
       />
 
       <Text style={[styles.sectionLabel, { marginTop: 24 }]}>
@@ -133,7 +133,7 @@ const StepFive = () => {
         placeholder={t("add_note_placeholder")}
         placeholderTextColor="#999"
         maxLength={300}
-        style={[styles.textInput, { writingDirection: "rtl" }]}
+        style={styles.textInput}
       />
     </ScrollView>
   );
@@ -146,10 +146,9 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     marginBottom: 6,
-    textAlign: "right",
   },
   optional: { color: "#999", fontSize: 13, fontFamily: "Cairo_400Regular" },
-  hint: { fontSize: 12, color: "#666", marginBottom: 8, textAlign: "right" },
+  hint: { fontSize: 12, color: "#666", marginBottom: 8 },
   textInput: {
     borderWidth: 1,
     borderColor: "#DDD",
@@ -159,7 +158,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#2C2C2C",
     fontFamily: "Cairo_400Regular",
-    textAlign: "right",
   },
   textArea: {
     borderWidth: 1,
@@ -172,7 +170,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     minHeight: 80,
     textAlignVertical: "top",
-    textAlign: "right",
   },
   tabsRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
   tabBtn: {

@@ -32,9 +32,15 @@ export const adminKeys = {
   ticketDetail: (ticketId) => [...adminKeys.all, "tickets", ticketId],
   ticketsInfinite: (cleanFilters) => [...adminKeys.all, "tickets", "infinite", cleanFilters],
 
+  businesses: (params) => [...adminKeys.all, "businesses", params],
+  businessesAll: () => [...adminKeys.all, "businesses"],
+  businessDetail: (businessId) => [...adminKeys.all, "businesses", businessId],
+  businessesInfinite: (cleanFilters) => [...adminKeys.all, "businesses", "infinite", cleanFilters],
+
   plans: (filters) => [...adminKeys.all, "plans", filters],
   plansAll: () => [...adminKeys.all, "plans"],
   hostPlans: () => [...adminKeys.all, "plans", "host"],
+  assignablePlans: (filters) => [...adminKeys.all, "plans", "assignable", filters],
 
   payments: (params) => [...adminKeys.all, "payments", params],
   paymentsAll: () => [...adminKeys.all, "payments"],

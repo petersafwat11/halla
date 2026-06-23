@@ -90,15 +90,34 @@ export const useCheckout = () => {
           discountCode: discountCode || null,
         });
         // Run 3DS in an in-app browser sheet that auto-closes on return.
-        const { moyasarId, browserType } = await runThreeDsSession(
-          inner.redirectUrl,
-          inner.paymentId
-        );
+        //
+        // This browser handoff is the ONE mobile-only leg with no web
+        // analogue (web completes 3DS via a same-origin redirect). Isolate
+        // its failures so callers can surface the real reason instead of the
+        // generic "subscription failed" fallback. In particular, Expo Go does
+        // not register the `halla://` return scheme, so openAuthSessionAsync
+        // can reject here — which a dev/standalone build fixes. Tagging the
+        // error makes that diagnosable from the toast/console.
+        let session;
+        try {
+          session = await runThreeDsSession(inner.redirectUrl, inner.paymentId);
+        } catch (threeDsErr) {
+          const reason =
+            threeDsErr?.message ||
+            threeDsErr?.name ||
+            String(threeDsErr) ||
+            "unknown";
+          const err = new Error(`3DS_LAUNCH_FAILED: ${reason}`);
+          err.code = "THREE_DS_LAUNCH_FAILED";
+          err.cause = threeDsErr;
+          err.paymentId = inner.paymentId;
+          throw err;
+        }
         return {
           requiresAction: true,
           paymentId: inner.paymentId,
-          moyasarId,
-          browserType,
+          moyasarId: session.moyasarId,
+          browserType: session.browserType,
         };
       }
       return inner;

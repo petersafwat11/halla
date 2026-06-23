@@ -47,38 +47,38 @@ const EventListItem = ({ event, onPress }) => {
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Top row: info + image */}
+      {/* Top row: image + info on the start (right in RTL), status at the end */}
       <View style={styles.topRow}>
-        <View style={styles.info}>
-          <View style={styles.titleRow}>
-            <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
-              <Text style={[styles.statusText, { color: status.color }]}>
-                {status.label}
-              </Text>
-            </View>
+        <View style={styles.mainGroup}>
+          <View style={styles.imageContainer}>
+            {event.image ? (
+              <Image source={{ uri: event.image }} style={styles.image} />
+            ) : (
+              <View style={styles.placeholderImage}>
+                <Ionicons name="image-outline" size={22} color="#C28E5C" />
+              </View>
+            )}
+          </View>
+
+          <View style={styles.info}>
             <Text style={styles.title} numberOfLines={1}>
               {event.title || "مناسبة بدون عنوان"}
             </Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Ionicons name="calendar-outline" size={12} color="#9CA3AF" />
-            <Text style={styles.detailText}>{formatDateTime()}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Ionicons name="people-outline" size={12} color="#9CA3AF" />
-            <Text style={styles.detailText}>{guestCount} ضيف</Text>
+            <View style={styles.detailRow}>
+              <Ionicons name="calendar-outline" size={12} color="#9CA3AF" />
+              <Text style={styles.detailText}>{formatDateTime()}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Ionicons name="people-outline" size={12} color="#9CA3AF" />
+              <Text style={styles.detailText}>{guestCount} ضيف</Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.imageContainer}>
-          {event.image ? (
-            <Image source={{ uri: event.image }} style={styles.image} />
-          ) : (
-            <View style={styles.placeholderImage}>
-              <Ionicons name="image-outline" size={22} color="#C28E5C" />
-            </View>
-          )}
+        <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
+          <Text style={[styles.statusText, { color: status.color }]}>
+            {status.label}
+          </Text>
         </View>
       </View>
 
@@ -113,8 +113,16 @@ const styles = StyleSheet.create({
   },
   topRow: {
     flexDirection: "row",
-    gap: 12,
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 8,
     marginBottom: 10,
+  },
+  mainGroup: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   imageContainer: {
     width: 56,
@@ -137,26 +145,21 @@ const styles = StyleSheet.create({
   info: {
     flex: 1,
     justifyContent: "center",
+    alignItems: "flex-start",
     gap: 3,
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 8,
   },
   title: {
     fontSize: 14,
     fontFamily: "Cairo_700Bold",
     color: "#1F2937",
     lineHeight: 22,
-    flex: 1,
-    textAlign: "right",
+    alignSelf: "stretch",
   },
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 1,
     borderRadius: 99,
+    marginTop: 2,
   },
   statusText: {
     fontSize: 10,
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
     gap: 4,
   },
   detailText: {

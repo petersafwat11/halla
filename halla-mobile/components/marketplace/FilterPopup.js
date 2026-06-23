@@ -183,7 +183,7 @@ const FilterField = ({ label, children }) => (
 const filterGroup = { marginBottom: 24 };
 const filterLabel = {
   fontSize: 14, fontFamily: "Cairo_600SemiBold",
-  color: COLORS.textDark, marginBottom: 8, textAlign: "right",
+  color: COLORS.textDark, marginBottom: 8,
 };
 
 const styles = StyleSheet.create({

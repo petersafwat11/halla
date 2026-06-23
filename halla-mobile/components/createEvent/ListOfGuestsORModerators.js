@@ -226,8 +226,7 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 14,
     fontFamily: "Cairo_400Regular",
-    color: "#656565",
-    textAlign: "right"
+    color: "#656565"
   },
   headerSublistContent: {
     padding: 24
@@ -263,13 +262,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Cairo_600SemiBold",
     color: "#2C2C2C",
-    marginBottom: 4,
-    textAlign: "right"
+    marginBottom: 4
   },  listItemPhone: {
     fontSize: 14,
     fontFamily: "Cairo_400Regular",
     color: "#656565",
-    textAlign: "right"
+    writingDirection: "ltr"
   },  listItemActions: {
     flexDirection: "row",
     gap: 12

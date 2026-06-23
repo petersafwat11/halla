@@ -15,7 +15,7 @@ const {
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
-const { isPoolPlan, isPerEventPlan } = require('../../shared/constants/plans');
+const subscriptionEventAccess = require('../subscriptions/subscriptionEventAccess.service');
 
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
 // Post-review polish — extracted error codes shared between
@@ -82,9 +82,10 @@ module.exports = {
     // capacity (invitePool + compensation) and applies to both per-event and
     // pool plans (they now differ only by maxEvents). Unlimited plans
     // (invitePool null) have no cap.
+    const ownerId = event.host?._id || event.host || userId;
     const capacitySub = event.subscriptionId
-      ? await Subscription.findById(event.subscriptionId).populate('planId')
-      : await Subscription.getCapacityForEvent(userId, newGuestCount);
+      ? await subscriptionEventAccess.findForEvent(event, ownerId, { allowFallback: false })
+      : await Subscription.getCapacityForEvent(ownerId, newGuestCount);
 
     if (!capacitySub) {
       throw new PackageLimitError(
@@ -176,8 +177,17 @@ module.exports = {
     // have no cap.
     const newCount = guestList?.length || 0;
     if (event.subscriptionId) {
-      const capSub = await Subscription.findById(event.subscriptionId)
-        .select('invitePool compensationPool');
+      const ownerId = event.host?._id || event.host || userId;
+      const capSub = await subscriptionEventAccess.findForEvent(event, ownerId, {
+        allowFallback: false,
+      });
+      if (!capSub) {
+        throw new PackageLimitError(
+          'subscription',
+          0,
+          'This event subscription is no longer available'
+        );
+      }
       if (capSub && capSub.invitePool !== null && capSub.invitePool !== undefined) {
         const capacity = (capSub.invitePool || 0) + (capSub.compensationPool || 0);
         if (newCount > capacity) {

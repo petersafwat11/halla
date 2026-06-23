@@ -362,6 +362,9 @@ const styles = StyleSheet.create({
   },actions: {
     flexDirection: "row",
     paddingHorizontal: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
     gap: 12
   },  cancelButton: {
     flex: 1,

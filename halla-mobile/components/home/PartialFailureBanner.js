@@ -38,7 +38,7 @@ const PartialFailureBanner = ({ event, currentUser = null }) => {
 
 const styles = StyleSheet.create({
   banner: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "flex-start",
     gap: 8,
     backgroundColor: "#FFF7E6",

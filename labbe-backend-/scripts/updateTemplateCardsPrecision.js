@@ -56,7 +56,22 @@ const LEGACY_NAME_BY_FILE = {
 const WRITABLE = ["nameEn", "nameAr", "categories", "fields", "overlays", "decorations", "sortOrder", "active"];
 
 const plain = (value) => JSON.parse(JSON.stringify(value ?? null));
-const same = (a, b) => JSON.stringify(plain(a)) === JSON.stringify(plain(b));
+
+// Mongoose materialises schema defaults (for example rows=3, dir="auto" and
+// zIndex=0) that are intentionally omitted from concise specs. Treat those
+// additional stored properties as compatible while requiring every desired
+// property, array item and ordering decision to match.
+function containsDesired(actualValue, desiredValue) {
+  const actual = plain(actualValue);
+  const desired = plain(desiredValue);
+  if (Array.isArray(desired)) {
+    return Array.isArray(actual) && actual.length === desired.length && desired.every((item, index) => containsDesired(actual[index], item));
+  }
+  if (desired && typeof desired === "object") {
+    return actual && typeof actual === "object" && Object.entries(desired).every(([key, value]) => containsDesired(actual[key], value));
+  }
+  return actual === desired;
+}
 
 async function connect() {
   let database = process.env.DATABASE;
@@ -88,7 +103,7 @@ function desiredPayload(spec) {
 function diffDocument(doc, desired) {
   const changes = {};
   for (const key of WRITABLE) {
-    if (!same(doc[key], desired[key])) {
+    if (!containsDesired(doc[key], desired[key])) {
       changes[key] = key === "fields" || key === "overlays" || key === "decorations"
         ? { from: doc[key]?.length || 0, to: desired[key]?.length || 0 }
         : { from: plain(doc[key]), to: plain(desired[key]) };
@@ -177,4 +192,3 @@ main()
   .finally(async () => {
     await mongoose.disconnect().catch(() => {});
   });
-

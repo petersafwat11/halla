@@ -246,7 +246,24 @@ const PlansSummaryScreen = () => {
       }
       navigation.navigate("MainTabs", { screen: "Home" });
     } catch (error) {
-      toast.error(error?.message || t("toasts.subscriptionFailed"));
+      // Surface the real reason instead of masking every failure behind the
+      // generic fallback. Three distinct cases must stay distinguishable:
+      //   - backend rejected the charge  -> error.data.message
+      //   - 3DS in-app browser failed    -> error.code === THREE_DS_LAUNCH_FAILED
+      //     (the Expo Go custom-scheme limitation; needs a dev/standalone build)
+      //   - anything else                -> error.message
+      // The console line keeps the raw cause visible in Metro/QA logs.
+      // eslint-disable-next-line no-console
+      console.error("[checkout] payment failed", {
+        code: error?.code,
+        status: error?.status,
+        message: error?.message,
+        data: error?.data,
+        cause: error?.cause?.message || error?.cause,
+      });
+      const detail =
+        error?.data?.message || error?.message || t("toasts.subscriptionFailed");
+      toast.error(detail);
     }
   };
 

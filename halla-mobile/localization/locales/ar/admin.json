@@ -259,7 +259,12 @@
       "saveChanges": "حفظ التغييرات",
       "cancel": "إلغاء",
       "moderatorDesc": "صلاحيات الإشراف الأساسية",
-      "adminDesc": "صلاحيات المسؤول الكاملة"
+      "adminDesc": "صلاحيات المسؤول الكاملة",
+      "nameRequired": "الاسم مطلوب",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "invalidEmail": "يرجى إدخال بريد إلكتروني صالح",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "saveFailed": "فشل حفظ المشرف"
     },
     "permissions": {
       "manageHosts": "إدارة المضيفين",
@@ -586,7 +591,8 @@
       "guestList": "قائمة الضيوف",
       "template": "تصميم الدعوة",
       "messages": "الرسائل",
-      "review": "المراجعة والإطلاق"
+      "review": "المراجعة والإطلاق",
+      "incompleteFields": "يرجى إكمال جميع الحقول المطلوبة قبل المتابعة."
     },
     "hostSelector": {
       "title": "لمن هذه المناسبة؟",
@@ -650,7 +656,8 @@
           "description": "اكتب نص الدعوة والردود التلقائية"
         }
       }
-    }
+    },
+    "create": "إنشاء مناسبة"
   },
   "ticketDetails": {
     "title": "تفاصيل التذكرة",
@@ -750,7 +757,11 @@
       "selectModerator": "اختر مشرف",
       "notes": "ملاحظات",
       "assign": "إسناد",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "validationSelectModerator": "يرجى اختيار مشرف",
+      "notesPlaceholder": "أضف ملاحظات للمشرف (اختياري)",
+      "notesHelper": "ستكون هذه الملاحظات مرئية للمشرف المُسنَد إليه",
+      "noModeratorsAvailable": "لا يوجد مشرفون متاحون"
     },
     "resolve": {
       "title": "حل التذكرة",
@@ -768,7 +779,9 @@
     "empty": {
       "title": "لا توجد تذاكر",
       "message": "لا توجد تذاكر دعم للعرض"
-    }
+    },
+    "bulkResolveConfirm": "هل أنت متأكد من حل {{count}} تذكرة؟",
+    "bulkDeleteConfirm": "هل أنت متأكد من حذف {{count}} تذكرة؟"
   },
   "payments": {
     "title": "المدفوعات",
@@ -794,7 +807,8 @@
       "date": "التاريخ",
       "host": "المضيف",
       "plan": "الخطة",
-      "refund": "استرداد الدفعة"
+      "refund": "استرداد الدفعة",
+      "currency": "ر.س"
     },
     "stats": {
       "totalRevenue": "إجمالي الإيرادات",
@@ -882,7 +896,8 @@
       "featureToggles": "المميزات",
       "featureNumerics": "التعويض والأولوية",
       "display": "العرض",
-      "visibility": "الظهور"
+      "visibility": "الظهور",
+      "featureBullets": "قائمة المميزات"
     },
     "fields": {
       "code": "الرمز",
@@ -990,7 +1005,8 @@
       "sessionTimeout": "مهلة الجلسة",
       "passwordPolicy": "سياسة كلمة المرور",
       "save": "حفظ التغييرات"
-    }
+    },
+    "comingSoon": "قريباً"
   },
   "common": {
     "search": "بحث",
@@ -1043,7 +1059,10 @@
     "activateConfirmTitle": "تأكيد التفعيل",
     "noSearchResults": "حاول تعديل البحث أو الفلتر",
     "joined": "انضم في",
-    "viewAll": "عرض الكل"
+    "viewAll": "عرض الكل",
+    "admin": "مسؤول",
+    "bulkSuspendModerators": "هل أنت متأكد من إيقاف {{count}} مشرف؟",
+    "bulkDeleteModerators": "هل أنت متأكد من حذف {{count}} مشرف؟"
   },
   "discounts": {
     "title": "أكواد الخصم",
@@ -1088,7 +1107,10 @@
       "planTypes": "الباقات المطبقة (فارغ = جميع الباقات)",
       "save": "حفظ",
       "saving": "جاري الحفظ...",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "percent": "النسبة (%)",
+      "amount": "المبلغ (ر.س)",
+      "datePlaceholder": "اختر التاريخ"
     },
     "planTypes": {
       "trial": "تجريبي",
@@ -1178,6 +1200,7 @@
   },
   "more": {
     "title": "المزيد",
+    "businesses": "حسابات الأعمال",
     "payments": "المدفوعات",
     "moderators": "المشرفون",
     "vendors": "مزودو الخدمات",
@@ -1243,5 +1266,180 @@
       "moderator": "المشرفين",
       "admin": "المديرين"
     }
+  },
+  "hostDetails": {
+    "title": "تفاصيل المضيف",
+    "loadFailed": "فشل تحميل تفاصيل المضيف",
+    "notFound": "المضيف غير موجود",
+    "trial": "تجريبي",
+    "eventsCount": "المناسبات",
+    "plan": "الباقة",
+    "guestsLimit": "حد الضيوف",
+    "subStatus": "الاشتراك",
+    "contactInfo": "معلومات التواصل",
+    "phone": "رقم الهاتف",
+    "email": "البريد الإلكتروني",
+    "joinDate": "تاريخ الانضمام",
+    "subscriptionInfo": "معلومات الاشتراك",
+    "status": "الحالة",
+    "eventsLimit": "حد المناسبات",
+    "expiresAt": "ينتهي في",
+    "noPlan": "لا يوجد اشتراك نشط",
+    "adminActions": "إجراءات المسؤول",
+    "manageSubscription": "إدارة الاشتراك",
+    "managePlanSublabel": "تغيير الباقة أو الحالة أو دورة الفوترة",
+    "activateHost": "تنشيط المضيف",
+    "suspendHost": "إيقاف المضيف",
+    "activateSublabel": "إعادة تفعيل حساب هذا المضيف",
+    "suspendSublabel": "تعطيل حساب هذا المضيف مؤقتاً",
+    "activateMessage": "هل أنت متأكد من تنشيط هذا المضيف؟",
+    "suspendMessage": "هل أنت متأكد من إيقاف هذا المضيف؟",
+    "activated": "تم تنشيط المضيف بنجاح",
+    "suspended": "تم إيقاف المضيف بنجاح",
+    "updateStatusFailed": "فشل تحديث حالة المضيف"
+  },
+  "hostEvents": {
+    "title": "المناسبات",
+    "empty": "لا توجد مناسبات بعد",
+    "untitled": "مناسبة بدون عنوان",
+    "guests": "{{count}} ضيف",
+    "confirmed": "{{count}} مؤكد",
+    "declined": "{{count}} رفض",
+    "statuses": {
+      "published": "منشورة",
+      "scheduled": "مجدولة",
+      "pending_scheduling": "بانتظار الجدولة",
+      "live": "مباشرة",
+      "draft": "مسودة",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة",
+      "ended": "منتهية"
+    }
+  },
+  "businesses": {
+    "title": "حسابات الأعمال",
+    "searchPlaceholder": "ابحث عن حساب أعمال...",
+    "filter": {
+      "all": "الكل",
+      "active": "نشط",
+      "suspended": "موقوف",
+      "inactive": "غير نشط"
+    },
+    "empty": {
+      "title": "لا توجد حسابات أعمال",
+      "message": "حاول تعديل البحث أو التصفية"
+    },
+    "labels": {
+      "unnamed": "حساب بدون اسم",
+      "noPlan": "لا توجد باقة",
+      "joined": "انضم في"
+    },
+    "actions": {
+      "managePlan": "إدارة الباقة",
+      "statusUpdated": "تم تحديث الحالة",
+      "statusUpdateFailed": "فشل تحديث الحالة",
+      "deleted": "تم حذف الحساب",
+      "deleteFailed": "فشل حذف الحساب"
+    },
+    "deleteConfirm": {
+      "title": "حذف حساب الأعمال",
+      "message": "هل أنت متأكد من حذف حساب الأعمال هذا؟"
+    }
+  },
+  "businessDetails": {
+    "title": "تفاصيل حساب الأعمال",
+    "loadFailed": "فشل تحميل بيانات حساب الأعمال",
+    "notFound": "حساب الأعمال غير موجود",
+    "totalEvents": "إجمالي المناسبات",
+    "subStatus": "الاشتراك",
+    "setupFee": "رسوم التأسيس",
+    "setupFeeSettled": "مسددة",
+    "setupFeeUnsettled": "معلّقة",
+    "remaining": "الدعوات المتبقية",
+    "contactInfo": "معلومات التواصل",
+    "phone": "الهاتف",
+    "email": "البريد الإلكتروني",
+    "description": "الوصف",
+    "noDescription": "لا يوجد وصف",
+    "joinDate": "تاريخ الانضمام",
+    "subscriptionInfo": "الاشتراك",
+    "plan": "الباقة",
+    "status": "الحالة",
+    "expiresAt": "تنتهي في",
+    "noPlan": "لا يوجد اشتراك نشط",
+    "managePlan": "إدارة الباقة",
+    "managePlanSublabel": "تغيير الباقة أو إضافة دعوات",
+    "adminActions": "إجراءات المسؤول",
+    "activate": "تفعيل الحساب",
+    "suspend": "إيقاف الحساب",
+    "activateSublabel": "استعادة الوصول",
+    "suspendSublabel": "تعطيل الوصول مؤقتاً",
+    "activateMessage": "هل أنت متأكد من تفعيل حساب الأعمال هذا؟",
+    "suspendMessage": "هل أنت متأكد من إيقاف حساب الأعمال هذا؟",
+    "activated": "تم تفعيل حساب الأعمال",
+    "suspended": "تم إيقاف حساب الأعمال",
+    "updateStatusFailed": "فشل تحديث الحالة",
+    "assignments": {
+      "title": "تخصيصات الباقات",
+      "empty": "لا توجد تخصيصات بعد",
+      "copyLink": "مشاركة الرابط",
+      "regenerate": "إعادة إنشاء",
+      "regenerateSuccess": "تم إعادة إنشاء الرابط",
+      "revoke": "إلغاء",
+      "revokeSuccess": "تم إلغاء التخصيص",
+      "confirmRevoke": "هل أنت متأكد من إلغاء هذا التخصيص؟",
+      "mode": {
+        "grant": "منح مباشر",
+        "checkout": "رابط دفع"
+      },
+      "status": {
+        "pending_payment": "بانتظار الدفع",
+        "payment_processing": "قيد المعالجة",
+        "paid": "مدفوع",
+        "active": "نشط",
+        "activation_failed": "فشل التفعيل",
+        "failed": "فشل",
+        "expired": "منتهٍ",
+        "cancelled": "ملغى",
+        "superseded": "مُستبدل",
+        "refunded": "مسترد"
+      }
+    }
+  },
+  "managePlan": {
+    "title": "إدارة الباقة",
+    "host": "منظّم",
+    "business": "حساب أعمال",
+    "currentPlan": "الباقة الحالية",
+    "status": "الحالة",
+    "remaining": "الدعوات المتبقية",
+    "none": "لا يوجد",
+    "unlimited": "غير محدود",
+    "invites": "دعوة",
+    "changePlan": "تغيير الباقة",
+    "extraInvites": "دعوات إضافية",
+    "plan": "الباقة",
+    "selectPlan": "اختر باقة",
+    "loadingPlans": "جارٍ تحميل الباقات...",
+    "planLoadError": "تعذّر تحميل الباقات.",
+    "retry": "إعادة المحاولة",
+    "grant": "منح",
+    "checkout": "رابط دفع",
+    "discountCode": "كود الخصم",
+    "discountPlaceholder": "اختياري",
+    "reason": "السبب",
+    "reasonPlaceholder": "اختياري",
+    "addExtraAfterChange": "إضافة دعوات إضافية بعد التحديث",
+    "quantity": "الكمية",
+    "invalidQuantity": "أدخل من 1 إلى 500 دعوة.",
+    "checkoutLink": "رابط الدفع",
+    "copy": "مشاركة",
+    "checkoutReady": "تم إنشاء رابط الدفع.",
+    "extraSuccess": "تمت إضافة الدعوات الإضافية.",
+    "changeSuccess": "تم تحديث الباقة.",
+    "updatePlan": "تحديث الباقة",
+    "addInvites": "إضافة دعوات",
+    "saving": "جارٍ الحفظ...",
+    "done": "تم"
   }
 }

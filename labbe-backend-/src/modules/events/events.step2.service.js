@@ -15,6 +15,7 @@ const {
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
+const subscriptionEventAccess = require('../subscriptions/subscriptionEventAccess.service');
 
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
 // Post-review polish — extracted error codes shared between
@@ -68,8 +69,17 @@ module.exports = {
     // no cap.
     const newCount = guestList.length;
     if (event.subscriptionId) {
-      const capSub = await Subscription.findById(event.subscriptionId)
-        .select('invitePool compensationPool');
+      const ownerId = event.host?._id || event.host || userId;
+      const capSub = await subscriptionEventAccess.findForEvent(event, ownerId, {
+        allowFallback: false,
+      });
+      if (!capSub) {
+        throw new PackageLimitError(
+          'subscription',
+          0,
+          'This event subscription is no longer available'
+        );
+      }
       if (capSub && capSub.invitePool !== null && capSub.invitePool !== undefined) {
         const capacity = (capSub.invitePool || 0) + (capSub.compensationPool || 0);
         if (newCount > capacity) {

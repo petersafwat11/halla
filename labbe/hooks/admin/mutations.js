@@ -49,11 +49,23 @@ export const useAdminHostMutation = (action) => {
       },
     },
     updateSubscription: {
-      mutationFn: ({ hostId, planCode, status }) =>
+      mutationFn: ({ hostId, planCode, status, reason }) =>
         apiRequest({
           method: "PATCH",
           path: API_PATHS.admin.hosts.updateSubscription(hostId),
-          data: { planCode, status },
+          data: { planCode, status, reason },
+        }),
+      onSuccess: (_, { hostId }) => {
+        queryClient.invalidateQueries({ queryKey: adminKeys.hostDetail(hostId) });
+        queryClient.invalidateQueries({ queryKey: adminKeys.hostsAll() });
+      },
+    },
+    grantExtraInvites: {
+      mutationFn: ({ hostId, quantity, reason }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.admin.hosts.grantExtraInvites(hostId),
+          data: { quantity, reason },
         }),
       onSuccess: (_, { hostId }) => {
         queryClient.invalidateQueries({ queryKey: adminKeys.hostDetail(hostId) });
@@ -123,6 +135,15 @@ export const useAdminBusinessMutation = (action) => {
           method: "POST",
           path: API_PATHS.admin.businesses.assignPlan(businessId),
           data: { mode, planCode, discountCode, grantReason },
+        }),
+      onSuccess: (_r, { businessId }) => invalidateAll(businessId),
+    },
+    grantExtraInvites: {
+      mutationFn: ({ businessId, quantity, reason }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.admin.businesses.grantExtraInvites(businessId),
+          data: { quantity, reason },
         }),
       onSuccess: (_r, { businessId }) => invalidateAll(businessId),
     },

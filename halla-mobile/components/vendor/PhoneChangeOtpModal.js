@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     letterSpacing: 6,
     textAlign: "center",
     color: "#2c2c2c",
-    fontFamily: "monospace",
+    fontFamily: "Cairo_700Bold",
     marginBottom: 16,
   },
   primaryBtn: {

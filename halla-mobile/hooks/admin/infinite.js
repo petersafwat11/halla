@@ -124,6 +124,20 @@ export function useAdminHostsInfinite(filters = {}) {
   });
 }
 
+export function useAdminBusinessesInfinite(filters = {}) {
+  const token = useAuthStore((state) => state.token);
+  const cleanFilters = _normalizeFilters(filters);
+  return _buildInfinite({
+    queryKey: adminKeys.businessesInfinite(cleanFilters),
+    fetchPage: ({ page, limit }) =>
+      adminRequest(
+        `${ENDPOINTS.ADMIN.BUSINESSES.BASE}${adminQs({ ...cleanFilters, page, limit })}`,
+      ),
+    collectionKey: "businesses",
+    enabled: !!token,
+  });
+}
+
 export function useAdminVendorsInfinite(filters = {}) {
   const token = useAuthStore((state) => state.token);
   const cleanFilters = _normalizeFilters(filters);

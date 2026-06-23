@@ -37,9 +37,10 @@ export function useUpdateHostStatus() {
 export function useUpdateHostSubscription() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ hostId, planCode, status }) => {
+    mutationFn: async ({ hostId, planCode, status, reason }) => {
       const body = { planCode };
       if (status !== undefined) body.status = status;
+      if (reason) body.reason = reason;
       const response = await adminRequest(
         ENDPOINTS.ADMIN.HOSTS.SUBSCRIPTION(hostId),
         "PATCH",
@@ -47,8 +48,38 @@ export function useUpdateHostSubscription() {
       );
       return assertOk(response);
     },
-    onSuccess: async () => {
+    onSuccess: async (_data, { hostId }) => {
       await queryClient.invalidateQueries({ queryKey: adminKeys.hostsAll() });
+      if (hostId) {
+        await queryClient.invalidateQueries({ queryKey: adminKeys.hostDetail(hostId) });
+      }
+    },
+  });
+}
+
+/**
+ * Admin grant of extra invites to a host (no charge). Mirrors self-service
+ * add-ons: increments the subscription invite pool and writes an audit row.
+ * Backend: POST /admin/hosts/:id/subscription/extra-invites { quantity, reason }
+ */
+export function useGrantHostExtraInvites() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ hostId, quantity, reason }) => {
+      const body = { quantity };
+      if (reason) body.reason = reason;
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.HOSTS.GRANT_EXTRA_INVITES(hostId),
+        "POST",
+        body,
+      );
+      return assertOk(response);
+    },
+    onSuccess: async (_data, { hostId }) => {
+      await queryClient.invalidateQueries({ queryKey: adminKeys.hostsAll() });
+      if (hostId) {
+        await queryClient.invalidateQueries({ queryKey: adminKeys.hostDetail(hostId) });
+      }
     },
   });
 }
@@ -125,6 +156,178 @@ export function useVerifyHostPhone() {
         `${ENDPOINTS.ADMIN.HOSTS.VERIFY_PHONE}?phoneNumber=${encodeURIComponent(phoneNumber)}`,
       );
       return assertOk(response);
+    },
+  });
+}
+
+// ============================================
+// BUSINESSES
+// ============================================
+
+/** Invalidate the business list + a specific detail after a write. */
+const _invalidateBusiness = async (queryClient, businessId) => {
+  await queryClient.invalidateQueries({ queryKey: adminKeys.businessesAll() });
+  if (businessId) {
+    await queryClient.invalidateQueries({
+      queryKey: adminKeys.businessDetail(businessId),
+    });
+  }
+};
+
+export function useCreateBusiness() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (businessData) => {
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.CREATE,
+        "POST",
+        businessData,
+      );
+      return assertOk(response);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: adminKeys.businessesAll() });
+    },
+  });
+}
+
+export function useUpdateBusiness() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ businessId, name, description }) => {
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.UPDATE(businessId),
+        "PATCH",
+        { name, description },
+      );
+      return assertOk(response);
+    },
+    onSuccess: async (_data, { businessId }) =>
+      _invalidateBusiness(queryClient, businessId),
+  });
+}
+
+export function useUpdateBusinessLogo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ businessId, data }) => {
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.UPDATE_LOGO(businessId),
+        "PATCH",
+        data,
+      );
+      return assertOk(response);
+    },
+    onSuccess: async (_data, { businessId }) =>
+      _invalidateBusiness(queryClient, businessId),
+  });
+}
+
+/**
+ * Assign / change a business plan. mode 'grant' activates immediately
+ * (setup fee waived); mode 'checkout' returns a payment link in
+ * `result.data.link`. Mirrors web's useAdminBusinessMutation("assignPlan").
+ */
+export function useAssignBusinessPlan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ businessId, mode, planCode, discountCode, grantReason }) => {
+      const body = { mode, planCode };
+      if (discountCode) body.discountCode = discountCode;
+      if (grantReason) body.grantReason = grantReason;
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.ASSIGN_PLAN(businessId),
+        "POST",
+        body,
+      );
+      return assertOk(response);
+    },
+    onSuccess: async (_data, { businessId }) =>
+      _invalidateBusiness(queryClient, businessId),
+  });
+}
+
+/** Admin grant of extra invites to a business (no charge). */
+export function useGrantBusinessExtraInvites() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ businessId, quantity, reason }) => {
+      const body = { quantity };
+      if (reason) body.reason = reason;
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.GRANT_EXTRA_INVITES(businessId),
+        "POST",
+        body,
+      );
+      return assertOk(response);
+    },
+    onSuccess: async (_data, { businessId }) =>
+      _invalidateBusiness(queryClient, businessId),
+  });
+}
+
+export function useRevokeBusinessAssignment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ assignmentId }) => {
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.REVOKE_ASSIGNMENT(assignmentId),
+        "POST",
+      );
+      return assertOk(response);
+    },
+    onSuccess: async (_data, { businessId }) =>
+      _invalidateBusiness(queryClient, businessId),
+  });
+}
+
+export function useRegenerateBusinessAssignment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ assignmentId }) => {
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.REGENERATE_ASSIGNMENT(assignmentId),
+        "POST",
+      );
+      return assertOk(response);
+    },
+    onSuccess: async (_data, { businessId }) =>
+      _invalidateBusiness(queryClient, businessId),
+  });
+}
+
+/**
+ * Suspend / activate a business. Unlike hosts (single /status endpoint),
+ * businesses use separate /suspend and /activate routes.
+ */
+export function useUpdateBusinessStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ businessId, status }) => {
+      const endpoint =
+        status === "suspended"
+          ? ENDPOINTS.ADMIN.BUSINESSES.SUSPEND(businessId)
+          : ENDPOINTS.ADMIN.BUSINESSES.ACTIVATE(businessId);
+      const response = await adminRequest(endpoint, "PATCH");
+      return assertOk(response);
+    },
+    onSuccess: async (_data, { businessId }) =>
+      _invalidateBusiness(queryClient, businessId),
+  });
+}
+
+export function useDeleteBusiness() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (businessId) => {
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.DELETE(businessId),
+        "DELETE",
+      );
+      return assertOk(response);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: adminKeys.businessesAll() });
     },
   });
 }

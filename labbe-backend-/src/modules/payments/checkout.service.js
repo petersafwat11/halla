@@ -21,6 +21,7 @@ const { recordPendingRefund } = require('../addons/addons.refund');
 const notificationService = require('../notifications/notifications.service');
 const email = require('../../../email');
 const config = require('../../config');
+const subscriptionLifecycle = require('../subscriptions/subscriptionLifecycle.service');
 
 class CheckoutService {
   /**
@@ -546,7 +547,7 @@ class CheckoutService {
     };
   }
 
-  async _createSubscriptionFromCheckout({ userId, plan, planCode, paymentRecord }) {
+  async _createSubscriptionFromCheckoutLegacy({ userId, plan, planCode, paymentRecord }) {
     // Mirrors subscribe()'s post-charge ordering: cancel existing actives only
     // AFTER we know the charge succeeded (paymentRecord is set or the plan is
     // free). On creation failure with a paid charge, raise pending_refund and
@@ -655,6 +656,45 @@ class CheckoutService {
     }
 
     return subscription;
+  }
+
+  async _createSubscriptionFromCheckout({ userId, plan, planCode, paymentRecord }) {
+    const planPrice = plan?.pricing?.oneTime ?? 0;
+    const isFreePlan = planCode === 'trial' || planPrice <= 0;
+
+    try {
+      const { subscription } = await subscriptionLifecycle.changePlan(userId, plan, {
+        actor: { _id: userId, role: ROLES.HOST, onBehalfOf: false },
+        reason: 'self_service_checkout',
+        pricePaid: isFreePlan ? 0 : planPrice,
+        currency: plan?.currency || 'SAR',
+        status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
+        createdBy: { user: userId, onBehalfOf: false },
+        paymentRecord,
+        metadata: {
+          checkoutPlanCode: planCode,
+        },
+        cancelReason: `Auto-cancelled on checkout to ${planCode}`,
+      });
+
+      return subscription;
+    } catch (createErr) {
+      if (paymentRecord) {
+        await recordPendingRefund({
+          userId,
+          amount: paymentRecord.amount,
+          currency: paymentRecord.currency || 'SAR',
+          paymentId: paymentRecord._id,
+          reason: 'checkout_subscribe_create_failed',
+          detail: createErr?.message,
+        });
+        throw new ValidationError(
+          'Payment was processed but the subscription could not be activated. '
+          + 'Our team has been notified - please contact support with your transaction reference.'
+        );
+      }
+      throw createErr;
+    }
   }
 
   async _createAddonFromCheckout({ userId, item, subscriptionId, paymentRecord }) {

@@ -134,7 +134,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_600SemiBold",
     color: "#2c2c2c",
     marginBottom: 8,
-    textAlign: "left",
     width: "100%",
   },
   inputContainer: {
@@ -177,7 +176,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",
     marginTop: 4,
-    textAlign: "left",
   },
 });
 

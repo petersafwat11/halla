@@ -25,6 +25,7 @@ const paymentProvider = require('../../infrastructure/paymentProvider');
 const Addon = require('../../../models/AddonModel');
 const { ADDON_TYPES } = require('../../shared/constants/addons');
 const logger = require('../../shared/utils/logger');
+const subscriptionLifecycle = require('./subscriptionLifecycle.service');
 
 class SubscriptionsService {
   // ============================================
@@ -232,7 +233,7 @@ class SubscriptionsService {
    * subscription for the target user. Designed to be called from a
    * SUPER_ADMIN-only route with audit + idempotency middleware wired in.
    */
-  async assignSubscription(adminUserId, input) {
+  async assignSubscriptionLegacy(adminUserId, input) {
     const { userId, planCode, notes } = input || {};
     if (!userId) throw new ValidationError('userId is required');
     if (!planCode) throw new ValidationError('planCode is required');
@@ -301,6 +302,37 @@ class SubscriptionsService {
     await subscription.save();
 
     await User.findByIdAndUpdate(userId, { subscription: subscription._id });
+
+    notificationService.sendToUser(userId, {
+      type: 'subscription_activated',
+      title: 'Subscription Activated',
+      titleAr: 'تم تفعيل الاشتراك',
+      message: `An administrator activated your ${planCode} subscription.`,
+      messageAr: `قام أحد المسؤولين بتفعيل اشتراك ${planCode} الخاص بك.`,
+      data: { entityType: 'subscription', entityId: subscription._id, metadata: { planCode } },
+    }).catch((err) => logger.warn('[assignSubscription] notify failed', { error: err?.message }));
+
+    return subscription.getSummary();
+  }
+
+  async assignSubscription(adminUserId, input) {
+    const { userId, planCode, notes } = input || {};
+    if (!userId) throw new ValidationError('userId is required');
+    if (!planCode) throw new ValidationError('planCode is required');
+
+    const { subscription } = await subscriptionLifecycle.changePlan(userId, planCode, {
+      actor: { _id: adminUserId, role: ROLES.SUPER_ADMIN, onBehalfOf: true },
+      reason: 'admin_assign',
+      pricePaid: 0,
+      status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
+      createdBy: { user: adminUserId, role: ROLES.SUPER_ADMIN, onBehalfOf: true },
+      notes,
+      metadata: {
+        assignedBy: adminUserId,
+        assignedAt: new Date().toISOString(),
+      },
+      cancelReason: `Auto-cancelled on admin-assign to ${planCode}`,
+    });
 
     notificationService.sendToUser(userId, {
       type: 'subscription_activated',

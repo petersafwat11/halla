@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
   titleRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
     alignItems: "center",
     gap: 12,
   },
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   details: {
     gap: 8,
-    alignItems: "flex-end",
+    alignItems: "flex-start",
   },
   detailItem: {
     flexDirection: "row",

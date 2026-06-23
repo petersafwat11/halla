@@ -324,7 +324,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: -8,
     marginBottom: 16,
-    textAlign: "right",
   },
 });
 

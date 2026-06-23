@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF7E6", borderWidth: 1, borderColor: "#FFD591",
   },
   lockoutText: {
-    fontSize: 13, color: "#7A4F01", fontFamily: "Cairo_500Medium", textAlign: "right",
+    fontSize: 13, color: "#7A4F01", fontFamily: "Cairo_500Medium",
   },
 });
 

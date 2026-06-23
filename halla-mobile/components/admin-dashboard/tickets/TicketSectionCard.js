@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
     color: colors.natural[800],
     fontWeight: "500",
     maxWidth: "55%",
-    textAlign: "right",
   },
 });
 

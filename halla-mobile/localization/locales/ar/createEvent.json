@@ -1,4 +1,5 @@
 {
+  "error": "خطأ",
   "validation": {
     "invalidSaudiPhone": "رقم الهاتف يجب أن يبدأ بـ 5 ويتكون من 9 أرقام",
     "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",

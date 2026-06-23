@@ -23,6 +23,7 @@ const logger = require('../../shared/utils/logger');
 const { buildSearchQuery, buildDateRangeQuery, formatUserResponse } = require('./admin.shared.service');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
 const { personalHostFilter } = require('../../shared/utils/accountScope');
+const subscriptionLifecycle = require('../subscriptions/subscriptionLifecycle.service');
 
 /**
  * Get all hosts with pagination and filters
@@ -56,7 +57,7 @@ async function getHosts({ page = 1, limit = 10, search, status, from, to }) {
       .select('-password -passwordResetToken -__v')
       .populate({
         path: 'subscription',
-        select: 'status activatedAt expiresAt planId',
+        select: 'status activatedAt expiresAt invitePool compensationPool invitesConsumed planId',
         populate: { path: 'planId', select: 'features limits name nameAr nameEn code planType' },
       })
       .sort({ createdAt: -1 })
@@ -99,7 +100,7 @@ async function getHostById(hostId) {
     .select('-password -passwordResetToken')
     .populate({
       path: 'subscription',
-      select: 'status activatedAt expiresAt planId',
+      select: 'status activatedAt expiresAt invitePool compensationPool invitesConsumed planId',
       populate: { path: 'planId', select: 'features limits name nameAr nameEn code planType' },
     })
     .lean();
@@ -274,7 +275,7 @@ async function updateHostStatus(hostId, status) {
 /**
  * Update host subscription
  */
-async function updateHostSubscription(hostId, { planCode }) {
+async function updateHostSubscription(hostId, { planCode, actorId, reason }) {
   const query = personalHostFilter({ _id: hostId });
 
   const host = await User.findOne(query);
@@ -282,59 +283,13 @@ async function updateHostSubscription(hostId, { planCode }) {
     throw new NotFoundError('Host');
   }
 
-  const plan = await Plan.findOne({ code: planCode });
-  if (!plan) {
-    throw new NotFoundError('Plan');
-  }
-
-  const activatedAt = new Date();
-  const durationDays = plan.limits?.durationDays;
-  const expiresAt = durationDays && durationDays > 0
-    ? new Date(activatedAt.getTime() + durationDays * 24 * 60 * 60 * 1000)
-    : null;
-  const invitePool = plan.limits?.invitePool ?? null;
-  const compensationPool = invitePool === null
-    ? null
-    : Math.floor(invitePool * COMPENSATION_PERCENTAGE / 100);
-
-  const activeSubs = await Subscription.findActiveForUser(hostId);
-  const subscription = activeSubs[0] || null;
-
-  if (!subscription) {
-    const session = await mongoose.startSession();
-    try {
-      await session.withTransaction(async () => {
-        const [newSub] = await Subscription.create([{
-          userId: hostId,
-          planId: plan._id,
-          // Upgrading a host's plan always activates the subscription — an
-          // admin would never assign a plan in an inactive/expired state.
-          status: SUBSCRIPTION_STATUS.ACTIVE,
-          activatedAt,
-          expiresAt,
-          invitePool,
-          compensationPool,
-          invitesConsumed: 0,
-        }], { session });
-        await User.findByIdAndUpdate(hostId, { subscription: newSub._id }, { session });
-      });
-    } finally {
-      session.endSession();
-    }
-  } else {
-    // Update existing subscription. Upgrading always (re)activates it.
-    subscription.planId = plan._id;
-    subscription.status = SUBSCRIPTION_STATUS.ACTIVE;
-    subscription.activatedAt = activatedAt;
-    subscription.expiresAt = expiresAt;
-    subscription.invitePool = invitePool;
-    subscription.compensationPool = compensationPool;
-    subscription.invitesConsumed = 0;
-    subscription.firstSendAt = null;
-    subscription.usage = {};
-
-    await subscription.save();
-  }
+  const { subscription } = await subscriptionLifecycle.changePlan(hostId, planCode, {
+    actor: { _id: actorId, role: ROLES.ADMIN, onBehalfOf: true },
+    reason: reason || 'admin_host_plan_change',
+    pricePaid: 0,
+    status: planCode === 'trial' ? SUBSCRIPTION_STATUS.TRIAL : SUBSCRIPTION_STATUS.ACTIVE,
+    cancelReason: `Replaced by admin host plan ${planCode}`,
+  });
 
   // Notify host of subscription update (non-blocking)
   notificationService.sendToUser(hostId, {
@@ -346,7 +301,49 @@ async function updateHostSubscription(hostId, { planCode }) {
     data: { entityType: 'subscription', metadata: { planCode } },
   }).catch((err) => logger.error('admin.service notify failed', err));
 
-  return { success: true, message: 'Subscription updated successfully' };
+  return {
+    success: true,
+    message: 'Subscription updated successfully',
+    subscriptionId: subscription._id,
+  };
+}
+
+async function grantHostExtraInvites(hostId, { quantity, reason, actorId }) {
+  const host = await User.findOne(personalHostFilter({ _id: hostId }));
+  if (!host) {
+    throw new NotFoundError('Host');
+  }
+
+  const result = await subscriptionLifecycle.grantExtraInvites(
+    { userId: hostId },
+    quantity,
+    {
+      actor: { _id: actorId, role: ROLES.ADMIN },
+      reason: reason || 'admin_host_extra_invites',
+    }
+  );
+
+  notificationService.sendToUser(hostId, {
+    type: 'subscription_updated',
+    title: 'Extra Invites Added',
+    titleAr: 'تمت إضافة دعوات إضافية',
+    message: `${quantity} extra invites were added to your plan.`,
+    messageAr: `تمت إضافة ${quantity} دعوة إضافية إلى باقتك.`,
+    data: {
+      entityType: 'subscription',
+      entityId: result.subscription?._id,
+      metadata: { quantity },
+    },
+  }).catch((err) => logger.error('admin.service extra invite notify failed', err));
+
+  return {
+    success: true,
+    message: 'Extra invites granted successfully',
+    subscription: result.subscription?.getSummary
+      ? result.subscription.getSummary()
+      : result.subscription,
+    addonId: result.addon._id,
+  };
 }
 
 /**
@@ -484,6 +481,7 @@ module.exports = {
   createHost,
   updateHostStatus,
   updateHostSubscription,
+  grantHostExtraInvites,
   deleteHost,
   bulkDeleteHosts,
   verifyHostByPhone,

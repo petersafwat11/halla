@@ -99,6 +99,5 @@ const styles = StyleSheet.create({
     color: colors.natural[800],
     fontWeight: typography.fontWeight.medium,
     maxWidth: "55%",
-    textAlign: "right",
   },
 });

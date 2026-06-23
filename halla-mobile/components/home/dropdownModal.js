@@ -79,14 +79,14 @@ const DropdownModal = ({ visible, onClose, onStepSelect }) => {
         <Pressable style={styles.modalContainer} onPress={(e) => e.stopPropagation()}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <Ionicons name="close" size={24} color="#000" />
-            </TouchableOpacity>
             <View style={styles.titleContainer}>
               <Text style={styles.modalTitle}>
                 اختر الخطوة
               </Text>
             </View>
+            <TouchableOpacity onPress={onClose} hitSlop={8}>
+              <Ionicons name="close" size={24} color="#000" />
+            </TouchableOpacity>
           </View>
 
           {/* Steps List */}
@@ -170,15 +170,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16
   },titleContainer: {
     flex: 1,
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     gap: 4
   },
   modalTitle: {
     fontSize: 24,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
-    lineHeight: 32,
-    textAlign: "right"
+    lineHeight: 32
   },listContainer: {
     paddingHorizontal: 24
   },
@@ -199,7 +198,7 @@ const styles = StyleSheet.create({
     gap: 16
   },  stepText: {
     flex: 1,
-    alignItems: "flex-end"
+    alignItems: "stretch"
   },  stepTitle: {
     fontSize: 16,
     fontFamily: "Cairo_700Bold",

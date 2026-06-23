@@ -60,6 +60,15 @@ exports.assignPlan = catchAsync(async (req, res) => {
   sendSuccess(res, result, 'Plan assignment processed');
 });
 
+exports.grantBusinessExtraInvites = catchAsync(async (req, res) => {
+  const { quantity, reason } = req.body;
+  const result = await businessesService.grantBusinessExtraInvites(
+    req.params.id,
+    { quantity, reason, actorId: req.user?._id }
+  );
+  sendSuccess(res, result, result.message);
+});
+
 exports.revokeAssignment = catchAsync(async (req, res) => {
   const result = await businessesService.revokeAssignment(req.params.assignmentId, req.user._id);
   sendSuccess(res, { assignment: result }, 'Checkout link revoked');

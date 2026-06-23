@@ -145,10 +145,7 @@ export function useAdminPlans(filters = {}) {
     queryKey: adminKeys.plans(filters),
     queryFn: async () => {
       const response = await adminRequest(
-        ENDPOINTS.ADMIN.PLANS.ALL,
-        "GET",
-        null,
-        { params: filters },
+        `${ENDPOINTS.ADMIN.PLANS.ALL}${adminQs(filters)}`,
       );
       return response.data;
     },
@@ -167,6 +164,54 @@ export function useAdminHostPlans() {
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Active plans an admin may assign to a host/business. Gated server-side by
+ * admin role (NOT the Manage Plans page permission), so plain admins managing
+ * hosts/businesses can load the dropdown. Mirrors web's `useAssignablePlans`.
+ */
+export function useAssignablePlans(filters = {}) {
+  const token = useAuthStore((state) => state.token);
+  return useQuery({
+    queryKey: adminKeys.assignablePlans(filters),
+    queryFn: async () => {
+      const response = await adminRequest(
+        `${ENDPOINTS.PLANS.ASSIGNABLE}${adminQs(filters)}`,
+      );
+      return response.data;
+    },
+    enabled: !!token,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAdminBusinesses(params = {}) {
+  const token = useAuthStore((state) => state.token);
+  return useQuery({
+    queryKey: adminKeys.businesses(params),
+    queryFn: async () => {
+      const response = await adminRequest(
+        `${ENDPOINTS.ADMIN.BUSINESSES.BASE}${adminQs(params)}`,
+      );
+      return response.data;
+    },
+    enabled: !!token,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useAdminBusinessById(id) {
+  const token = useAuthStore((state) => state.token);
+  return useQuery({
+    queryKey: adminKeys.businessDetail(id),
+    queryFn: async () => {
+      const response = await adminRequest(ENDPOINTS.ADMIN.BUSINESSES.BY_ID(id));
+      return response.data;
+    },
+    enabled: !!token && !!id,
+    staleTime: 2 * 60 * 1000,
   });
 }
 

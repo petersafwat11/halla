@@ -219,6 +219,7 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
       {showAssignPopup && selectedBusiness && (
         <AssignPlanPopup
           businessId={selectedBusiness.id || selectedBusiness._id}
+          business={selectedBusiness}
           onClose={closePopups}
         />
       )}

@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   buttonContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "space-between",
     marginTop: spacing[24],
     gap: spacing[12],

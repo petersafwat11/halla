@@ -19,8 +19,14 @@ const { protect } = require('../../shared/middleware/auth');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { auditLog } = require('../../shared/middleware/auditLog');
 const { ADMIN_PAGES } = require('../../shared/constants');
+const { isAdminRole } = require('../../shared/constants/roles');
 const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
 const { createPlanSchema, updatePlanSchema } = require('./plans.schemas');
+
+const requireAdminRole = (req, res, next) => {
+  if (isAdminRole(req.user?.role)) return next();
+  return res.status(403).json({ success: false, message: 'Admin role required' });
+};
 
 // ============================================
 // ADMIN ROUTES (protected)
@@ -256,6 +262,13 @@ router.patch(
     }),
   }),
   plansController.updatePlanByCode
+);
+
+router.get(
+  '/assignable',
+  protect,
+  requireAdminRole,
+  plansController.getAssignablePlans
 );
 
 // ============================================

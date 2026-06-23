@@ -1,25 +1,18 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import styles from "./additionalLinksSection.module.css";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import Image from "next/image";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import DynamicForm from "@/ui/vendor/dynamicForm/DynamicForm";
 import { socialLinksSchema } from "@/utils/schemas/vendorSettings";
-import {
-  FaGlobe,
-  FaInstagram,
-  FaFacebookF,
-  FaSnapchatGhost,
-} from "react-icons/fa";
+import { FaGlobe, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter, FaTiktok } from "react-icons/fa6";
+import { SectionCard, FieldGrid, ReadField } from "../_shared/SettingsPrimitives";
 
 const AdditionalLinksSection = ({ data, onSave }) => {
   const { t } = useTranslation("vendorSettings");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Use data directly as passed from parent
   const displayData = {
     website: data?.website || "",
     instagram: data?.instagram || "",
@@ -33,7 +26,7 @@ const AdditionalLinksSection = ({ data, onSave }) => {
     {
       key: "whatsapp",
       label: t("additionalLinks.whatsapp", "WhatsApp"),
-      icon: <FaGlobe size={16} color="#2a8c5b" />,
+      icon: <FaWhatsapp size={16} color="#25D366" />,
     },
     {
       key: "website",
@@ -62,14 +55,6 @@ const AdditionalLinksSection = ({ data, onSave }) => {
     },
   ];
 
-  const handleEditClick = () => {
-    setIsPopupOpen(true);
-  };
-
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-  };
-
   const handleFormSubmit = async (formData) => {
     setIsLoading(true);
     try {
@@ -95,42 +80,28 @@ const AdditionalLinksSection = ({ data, onSave }) => {
 
   return (
     <>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <div className={styles.title}>{t("additionalLinks.title")}</div>
-          <button
-            type="button"
-            className={styles.editButton}
-            onClick={handleEditClick}
-          >
-            <Image
-              src="/svg/vendor/edit.svg"
-              alt={t("buttons.edit")}
-              width={24}
-              height={24}
-            />
-          </button>
-        </div>
-
-        <div className={styles.content}>
+      <SectionCard
+        title={t("additionalLinks.title")}
+        onEdit={() => setIsPopupOpen(true)}
+      >
+        <FieldGrid>
           {socialLinks.map((link) => (
-            <div key={link.key} className={styles.fieldGroup}>
-              <label className={styles.label}>
-                <span className={styles.icon}>{link.icon}</span> {link.label}
-              </label>
-              <div className={styles.value}>{displayData[link.key] || "-"}</div>
-            </div>
+            <ReadField
+              key={link.key}
+              label={link.label}
+              value={displayData[link.key]}
+              icon={link.icon}
+            />
           ))}
-        </div>
-      </div>
+        </FieldGrid>
+      </SectionCard>
 
-      {/* Edit Popup */}
-      <PopupLayout isOpen={isPopupOpen} onClose={handleClosePopup}>
+      <PopupLayout isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)}>
         <DynamicForm
           schema={socialLinksSchema(t)}
           initialData={displayData}
           onSubmit={handleFormSubmit}
-          onCancel={handleClosePopup}
+          onCancel={() => setIsPopupOpen(false)}
           isLoading={isLoading}
         />
       </PopupLayout>

@@ -31,6 +31,12 @@ const updateHostStatusSchema = z.object({
 const updateHostSubscriptionSchema = z.object({
   planCode: z.string().min(1),
   status: z.string().optional(),
+  reason: z.string().max(500).optional(),
+});
+
+const grantExtraInvitesSchema = z.object({
+  quantity: z.coerce.number().int().min(1).max(500),
+  reason: z.string().max(500).optional(),
 });
 
 const bulkDeleteHostsSchema = z.object({
@@ -136,6 +142,7 @@ module.exports = {
   findOrCreateHostSchema,
   updateHostStatusSchema,
   updateHostSubscriptionSchema,
+  grantExtraInvitesSchema,
   bulkDeleteHostsSchema,
   createBusinessSchema,
   updateBusinessSchema,

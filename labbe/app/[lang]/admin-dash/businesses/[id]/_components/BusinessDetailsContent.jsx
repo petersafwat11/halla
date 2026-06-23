@@ -411,7 +411,11 @@ export default function BusinessDetailsContent({ businessId }) {
         <ReplaceLogoPopup businessId={businessId} onClose={() => setLogoOpen(false)} />
       )}
       {assignOpen && (
-        <AssignPlanPopup businessId={businessId} onClose={() => setAssignOpen(false)} />
+        <AssignPlanPopup
+          businessId={businessId}
+          business={business}
+          onClose={() => setAssignOpen(false)}
+        />
       )}
     </>
   );

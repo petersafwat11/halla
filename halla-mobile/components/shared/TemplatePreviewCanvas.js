@@ -28,6 +28,7 @@ import { View, Image, Text, StyleSheet } from "react-native";
 import * as LucideIcons from "lucide-react-native";
 import { useTranslation } from "../../localization";
 import { formatTemplateDate } from "@halla/shared/utils/formatTemplateDate";
+import { resolveTemplateFont } from "../../utils/cairoFont";
 
 const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
 
@@ -59,22 +60,11 @@ function formatFieldValue(field, raw, t) {
   return typeof raw === "string" ? raw : String(raw);
 }
 
-const FONT_FAMILY_MAP = {
-  cairo: "Cairo_400Regular",
-  cairo_bold: "Cairo_700Bold",
-  inter: undefined, // system fallback
-  lato: undefined,
-  amiri: undefined,
-  ibm_plex_arabic: undefined,
-  noto_sans_arabic: undefined,
-};
-
+// Every template font id renders in Cairo now (incl. legacy non-Cairo ids
+// like inter/lato/amiri). Always returns a loaded Cairo variant, never
+// undefined, so old templates keep rendering without a system fallback.
 function resolveFontFamily(name, fontWeight) {
-  if (!name) return undefined;
-  if (name === "cairo" && (fontWeight === "bold" || fontWeight === "700")) {
-    return FONT_FAMILY_MAP.cairo_bold;
-  }
-  return FONT_FAMILY_MAP[name];
+  return resolveTemplateFont(name, fontWeight);
 }
 
 function DecorationItem({ decoration, containerWidth, containerHeight, primaryColor }) {

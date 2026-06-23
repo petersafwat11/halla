@@ -43,7 +43,7 @@ export default function ModeratorForm() {
       <View style={styles.inputWrapper}>
         <Text style={styles.inputLabel}>{t("staff_phone")}</Text>
         <TextInput
-          style={[styles.textInput, moderatorErrors.phone && styles.textInputError]}
+          style={[styles.textInput, { writingDirection: "ltr" }, moderatorErrors.phone && styles.textInputError]}
           placeholder={t("staff_phone_placeholder")}
           placeholderTextColor="#999"
           value={moderatorPhone}
@@ -76,7 +76,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c",
-    textAlign: "right",
   },
   textInputError: { borderColor: "#e74c3c" },
   errorText: { fontSize: 12, fontFamily: "Cairo_400Regular", color: "#e74c3c", marginTop: 4 },

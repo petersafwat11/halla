@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   },
   greetingContainer: {
     flexDirection: "column",
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     gap: 4,
   },
   greetingText: {
@@ -234,7 +234,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#FFF",
     lineHeight: 16,
-    textAlign: "right",
   },
   organizationName: {
     fontSize: 16,
@@ -242,7 +241,6 @@ const styles = StyleSheet.create({
     color: "#FFF",
     lineHeight: 24,
     letterSpacing: 0.08,
-    textAlign: "right",
   },
   header: {
     backgroundColor: "#C28E5C",
@@ -285,7 +283,7 @@ const styles = StyleSheet.create({
     top: 0,
   },
   headerContent: {
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     zIndex: 1,
     marginBottom: 20,
   },

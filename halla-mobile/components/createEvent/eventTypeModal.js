@@ -118,13 +118,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
-    marginBottom: 4,
-    textAlign: "right"
+    marginBottom: 4
   },  headerSubtitle: {
     fontSize: 14,
     fontFamily: "Cairo_400Regular",
-    color: "#656565",
-    textAlign: "right"
+    color: "#656565"
   },
   headerSublistContainer: {
     paddingHorizontal: 24,

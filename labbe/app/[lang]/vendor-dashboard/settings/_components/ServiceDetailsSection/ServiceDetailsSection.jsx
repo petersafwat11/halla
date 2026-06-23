@@ -1,11 +1,17 @@
 "use client";
 import React, { useState } from "react";
-import styles from "./serviceDetailsSection.module.css";
 import { useTranslation } from "react-i18next";
-import Image from "next/image";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import ImagePreviewModal from "@/ui/vendor/modals/ImagePreviewModal";
 import ServiceDetailsEditForm from "./ServiceDetailsEditForm";
+import {
+  SectionCard,
+  FieldGrid,
+  ReadField,
+  DocThumb,
+  EmptyState,
+} from "../_shared/SettingsPrimitives";
+import styles from "./serviceDetailsSection.module.css";
 
 const ServiceDetailsSection = ({ data, onSave, onRefetch }) => {
   const { t } = useTranslation("vendorSettings");
@@ -14,7 +20,6 @@ const ServiceDetailsSection = ({ data, onSave, onRefetch }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
 
-  // Use data directly as passed from parent
   const displayData = {
     serviceDescription: data?.serviceDescription || "",
     nationalId: data?.nationalId || "",
@@ -24,191 +29,102 @@ const ServiceDetailsSection = ({ data, onSave, onRefetch }) => {
     serviceCategories: data?.serviceCategories || [],
   };
 
-  const activities = displayData.serviceCategories.length > 0 ? displayData.serviceCategories : [];
+  const activities = displayData.serviceCategories;
+  const loc = displayData.serviceLocation || {};
+  const districtNames = loc.districtNames?.length
+    ? loc.districtNames.map((d) => d.nameEn || d.nameAr).join("، ")
+    : t("serviceDetails.allDistricts", "جميع الأحياء");
 
-  const handleEditClick = () => setIsPopupOpen(true);
-  const handleClosePopup = () => setIsPopupOpen(false);
-  const handleImageClick = (imageSrc) => setPreviewImage(imageSrc);
-  const closePreview = () => setPreviewImage(null);
+  const renderDoc = (label, src) => (
+    <div className={styles.docField}>
+      <span className={styles.docLabel}>{label}</span>
+      {src ? (
+        <DocThumb
+          src={src}
+          onView={() => setPreviewImage(src)}
+          viewLabel={t("serviceDetails.clickToView", "اضغط للعرض")}
+        />
+      ) : (
+        <EmptyState>{t("serviceDetails.noImage", "لا توجد صورة")}</EmptyState>
+      )}
+    </div>
+  );
 
   return (
     <>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <div className={styles.title}>{t("serviceDetails.title")}</div>
-          <button
-            type="button"
-            className={styles.editButton}
-            onClick={handleEditClick}
-          >
-            <Image
-              src="/svg/vendor/edit.svg"
-              alt={t("buttons.edit")}
-              width={24}
-              height={24}
+      <SectionCard
+        title={t("serviceDetails.title")}
+        onEdit={() => setIsPopupOpen(true)}
+      >
+        <div className={styles.docRow}>
+          {renderDoc(
+            t("serviceDetails.otherLicenses"),
+            displayData.nationalIdImage
+          )}
+          {renderDoc(
+            t("serviceDetails.commercialRegister"),
+            displayData.commercialRecordImage
+          )}
+        </div>
+
+        <FieldGrid>
+          <ReadField
+            label={t("serviceDetails.nationalIdLabel")}
+            value={displayData.nationalId}
+          />
+        </FieldGrid>
+
+        <ReadField
+          block
+          label={t("serviceDetails.serviceDescription")}
+          value={displayData.serviceDescription}
+          placeholder={t("serviceDetails.serviceDescriptionPlaceholder", "-")}
+        />
+
+        <div className={styles.field}>
+          <span className={styles.label}>{t("serviceDetails.activities")}</span>
+          {activities.length > 0 ? (
+            <div className={styles.tags}>
+              {activities.map((activity, index) => (
+                <span key={index} className={styles.tag}>
+                  {typeof activity === "string"
+                    ? activity
+                    : activity?.name || activity}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <EmptyState>{t("serviceDetails.noActivities", "-")}</EmptyState>
+          )}
+        </div>
+
+        <div className={styles.field}>
+          <span className={styles.label}>
+            {t("serviceDetails.serviceLocation", "موقع الخدمة")}
+          </span>
+          <FieldGrid>
+            <ReadField
+              label={t("serviceDetails.region", "المنطقة")}
+              value={loc.regionNameAr || loc.regionNameEn}
             />
-          </button>
+            <ReadField
+              label={t("serviceDetails.city", "المدينة")}
+              value={loc.cityNameAr || loc.cityNameEn}
+              placeholder={t("serviceDetails.allCities", "جميع المدن")}
+            />
+            <ReadField
+              label={t("serviceDetails.districts", "الأحياء")}
+              value={districtNames}
+            />
+          </FieldGrid>
         </div>
+      </SectionCard>
 
-        <div className={styles.content}>
-          {/* Document Images Row */}
-          <div className={styles.documentsRow}>
-            {/* Other Licenses */}
-            <div className={styles.uploadField}>
-              <label className={styles.label}>
-                {t("serviceDetails.otherLicenses")}
-              </label>
-              {displayData.nationalIdImage ? (
-                <div
-                  className={styles.imagePreview}
-                  onClick={() => handleImageClick(displayData.nationalIdImage)}
-                >
-                  <Image
-                    src={displayData.nationalIdImage}
-                    alt="License"
-                    width={80}
-                    height={60}
-                    className={styles.thumbnailImage}
-                    unoptimized
-                  />
-                  <span className={styles.viewText}>
-                    {t("serviceDetails.clickToView", "اضغط للعرض")}
-                  </span>
-                </div>
-              ) : (
-                <div className={styles.noImage}>
-                  {t("serviceDetails.noImage", "لا توجد صورة")}
-                </div>
-              )}
-            </div>
-
-            {/* Commercial Register */}
-            <div className={styles.uploadField}>
-              <label className={styles.label}>
-                {t("serviceDetails.commercialRegister")}
-              </label>
-              {displayData.commercialRecordImage ? (
-                <div
-                  className={styles.imagePreview}
-                  onClick={() =>
-                    handleImageClick(displayData.commercialRecordImage)
-                  }
-                >
-                  <Image
-                    src={displayData.commercialRecordImage}
-                    alt="Commercial Record"
-                    width={80}
-                    height={60}
-                    className={styles.thumbnailImage}
-                    unoptimized
-                  />
-                  <span className={styles.viewText}>
-                    {t("serviceDetails.clickToView", "اضغط للعرض")}
-                  </span>
-                </div>
-              ) : (
-                <div className={styles.noImage}>
-                  {t("serviceDetails.noImage", "لا توجد صورة")}
-                </div>
-              )}
-            </div>
-
-            {/* National ID Number */}
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                {t("serviceDetails.nationalIdLabel")}
-              </label>
-              <div className={styles.value}>
-                {displayData.nationalId || "-"}
-              </div>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className={styles.fullWidthRow}>
-            <div className={styles.fullWidthField}>
-              <label className={styles.label}>
-                {t("serviceDetails.serviceDescription")}
-              </label>
-              <div className={styles.descriptionValue}>
-                {displayData.serviceDescription ||
-                  t("serviceDetails.serviceDescriptionPlaceholder")}
-              </div>
-            </div>
-          </div>
-
-          {/* Activities - Non-editable */}
-          <div className={styles.row}>
-            <div className={styles.activitiesField}>
-              <label className={styles.label}>
-                {t("serviceDetails.activities")}
-              </label>
-              <div className={styles.activitiesContainer}>
-                <div className={styles.activitiesRow}>
-                  {activities.map((activity, index) => (
-                    <div key={index} className={styles.activityTag}>
-                      {typeof activity === "string"
-                        ? activity
-                        : activity?.name || activity}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Location Section */}
-          <div className={styles.locationSection}>
-            <label className={styles.sectionLabel}>
-              {t("serviceDetails.serviceLocation", "موقع الخدمة")}
-            </label>
-
-            <div className={styles.locationRow}>
-              <div className={styles.locationField}>
-                <label className={styles.label}>
-                  {t("serviceDetails.region", "المنطقة")}
-                </label>
-                <div className={styles.value}>
-                  {displayData.serviceLocation?.regionNameAr ||
-                    displayData.serviceLocation?.regionNameEn ||
-                    "-"}
-                </div>
-              </div>
-
-              <div className={styles.locationField}>
-                <label className={styles.label}>
-                  {t("serviceDetails.city", "المدينة")}
-                </label>
-                <div className={styles.value}>
-                  {displayData.serviceLocation?.cityNameAr ||
-                    displayData.serviceLocation?.cityNameEn ||
-                    t("serviceDetails.allCities", "جميع المدن")}
-                </div>
-              </div>
-
-              <div className={styles.locationField}>
-                <label className={styles.label}>
-                  {t("serviceDetails.districts", "الأحياء")}
-                </label>
-                <div className={styles.value}>
-                  {displayData.serviceLocation?.districtNames?.length > 0
-                    ? displayData.serviceLocation.districtNames
-                      .map((d) => (d.nameEn || d.nameAr))
-                      .join(", ")
-                    : t("serviceDetails.allDistricts", "جميع الأحياء")}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Edit Popup */}
-      <PopupLayout isOpen={isPopupOpen} onClose={handleClosePopup}>
+      <PopupLayout isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)}>
         <ServiceDetailsEditForm
           data={displayData}
           onSave={onSave}
-          onClose={handleClosePopup}
+          onClose={() => setIsPopupOpen(false)}
           isLoading={isLoading}
           setIsLoading={setIsLoading}
           onRefetch={onRefetch}
@@ -217,7 +133,7 @@ const ServiceDetailsSection = ({ data, onSave, onRefetch }) => {
 
       <ImagePreviewModal
         imageUrl={previewImage}
-        onClose={closePreview}
+        onClose={() => setPreviewImage(null)}
         alt={t("serviceDetails.documentPreview", "Document Preview")}
       />
     </>

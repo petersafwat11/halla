@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 12,
     right: 12,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 6,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.035,
   },
   categoriesContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 4,
   },
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   bottomSection: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 8,
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#F2F2F2",
   },
   priceContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
   },
@@ -281,7 +281,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.08,
   },
   priceWithCurrency: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
+    direction: "ltr",
     alignItems: "center",
     gap: 4,
   },

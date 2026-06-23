@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   },
   publishedBanner: { backgroundColor: "#EAF4EF", borderColor: "#B2D8C4" },
   draftBanner: { backgroundColor: "#FDF6EE", borderColor: "#E8D4C4" },
-  statusText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", flex: 1, textAlign: "right" },
+  statusText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", flex: 1 },
   section: {
     backgroundColor: "#FFF", borderRadius: 12, padding: 16, gap: 12,
     shadowColor: "#000", shadowOffset: { width: 0, height: 1 },

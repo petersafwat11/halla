@@ -316,6 +316,7 @@ const PATHS = {
     getPlanById: (id) => `/plans/${id}`,
     getPlanByCode: (code) => `/plans/code/${code}`,
     adminGetAll: "/plans/admin/all",
+    assignable: "/plans/assignable",
     adminCreate: "/plans/admin",
     adminUpdate: (code) => `/plans/admin/${code}`,
     adminDelete: (code) => `/plans/admin/${code}`,
@@ -391,6 +392,7 @@ const PATHS = {
       create: "/admin/hosts",
       updateStatus: (id) => `/admin/hosts/${id}/status`,
       updateSubscription: (id) => `/admin/hosts/${id}/subscription`,
+      grantExtraInvites: (id) => `/admin/hosts/${id}/subscription/extra-invites`,
       delete: (id) => `/admin/hosts/${id}`,
       bulkDelete: "/admin/hosts/bulk-delete",
       verifyPhone: "/admin/hosts/verify-phone",
@@ -404,6 +406,7 @@ const PATHS = {
       update: (id) => `/admin/businesses/${id}`,
       updateLogo: (id) => `/admin/businesses/${id}/logo`,
       assignPlan: (id) => `/admin/businesses/${id}/assign-plan`,
+      grantExtraInvites: (id) => `/admin/businesses/${id}/subscription/extra-invites`,
       revokeAssignment: (assignmentId) =>
         `/admin/businesses/assignments/${assignmentId}/revoke`,
       regenerateAssignment: (assignmentId) =>

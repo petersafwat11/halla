@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   searchAndAddContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   searchInputContainer: {
     flex: 1,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 12,
     paddingHorizontal: 12,
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.06,
   },
   filtersContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     gap: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     backgroundColor: "#F2F2F2",
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     marginTop: 24,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 8,
     paddingHorizontal: 24,

@@ -27,6 +27,7 @@ const notificationService = require('../notifications/notifications.service');
 const assignmentService = require('../business/business.assignment.service');
 const setupFeeService = require('../business/business.setupFee.service');
 const logger = require('../../shared/utils/logger');
+const subscriptionLifecycle = require('../subscriptions/subscriptionLifecycle.service');
 
 const safeDeleteOldKey = async (oldKey) => {
   if (!oldKey) return;
@@ -56,7 +57,7 @@ async function getBusinesses({ page = 1, limit = 10, search, status, from, to })
       .select('-password -passwordResetToken -__v')
       .populate({
         path: 'subscription',
-        select: 'status expiresAt planId',
+        select: 'status expiresAt invitePool compensationPool invitesConsumed planId',
         populate: { path: 'planId', select: 'nameAr nameEn code planType billingType' },
       })
       .sort({ createdAt: -1 })
@@ -252,6 +253,43 @@ async function assignPlan(businessId, { mode, planCode, discountCode, grantReaso
   throw new ValidationError('mode must be "grant" or "checkout"');
 }
 
+async function grantBusinessExtraInvites(businessId, { quantity, reason, actorId }) {
+  await assertBusiness(businessId);
+
+  const result = await subscriptionLifecycle.grantExtraInvites(
+    { userId: businessId },
+    quantity,
+    {
+      actor: { _id: actorId, role: ROLES.ADMIN },
+      reason: reason || 'admin_business_extra_invites',
+    }
+  );
+
+  notificationService
+    .sendToUser(businessId, {
+      type: 'subscription_updated',
+      title: 'Extra Invites Added',
+      titleAr: 'تمت إضافة دعوات إضافية',
+      message: `${quantity} extra invites were added to your business plan.`,
+      messageAr: `تمت إضافة ${quantity} دعوة إضافية إلى باقة منشأتك.`,
+      data: {
+        entityType: 'subscription',
+        entityId: result.subscription?._id,
+        metadata: { quantity },
+      },
+    })
+    .catch((err) => logger.warn('[admin.businesses] extra invite notify failed', { error: err?.message }));
+
+  return {
+    success: true,
+    message: 'Extra invites granted successfully',
+    subscription: result.subscription?.getSummary
+      ? result.subscription.getSummary()
+      : result.subscription,
+    addonId: result.addon._id,
+  };
+}
+
 async function revokeAssignment(assignmentId, actorId) {
   const a = await assignmentService.revoke(assignmentId, actorId);
   return formatAssignment(a);
@@ -330,6 +368,7 @@ module.exports = {
   updateBusiness,
   updateBusinessLogo,
   assignPlan,
+  grantBusinessExtraInvites,
   revokeAssignment,
   regenerateAssignment,
   suspendBusiness,

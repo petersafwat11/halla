@@ -186,14 +186,14 @@ const styles = StyleSheet.create({
   },
   topBarActions: { flexDirection: "row", alignItems: "center", gap: 16 },
   iconButton: { width: 32, height: 32, justifyContent: "center", alignItems: "center" },
-  greetingContainer: { flexDirection: "column", alignItems: "flex-end", gap: 4 },
+  greetingContainer: { flexDirection: "column", alignItems: "flex-start", gap: 4 },
   greetingText: {
     fontSize: 12, fontFamily: "Cairo_400Regular", color: "#FFF",
-    lineHeight: 16, textAlign: "right",
+    lineHeight: 16,
   },
   organizationName: {
     fontSize: 16, fontFamily: "Cairo_700Bold", color: "#FFF",
-    lineHeight: 24, letterSpacing: 0.08, textAlign: "right",
+    lineHeight: 24, letterSpacing: 0.08,
   },
   headerContent: { paddingHorizontal: 24, paddingTop: 0, paddingBottom: 24 },
   scrollView: { flex: 1 },

@@ -130,20 +130,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
-    textAlign: "right",
   },
   summary: {
     fontSize: 13,
     fontFamily: "Cairo_500Medium",
     color: "#656565",
     lineHeight: 20,
-    textAlign: "right",
   },
   warning: {
     fontSize: 12,
     fontFamily: "Cairo_600SemiBold",
     color: "#C0392B",
-    textAlign: "right",
   },
   actions: {
     flexDirection: "row",

@@ -6,8 +6,6 @@
  */
 
 export { default as StatCard } from "./StatCard";
-export { default as DataList } from "./DataList";
-export { default as DataListItem } from "./DataListItem";
 export { default as SearchBar } from "./SearchBar";
 export { default as FilterBar } from "./FilterBar";
 export { default as StatusBadge } from "./StatusBadge";
@@ -20,3 +18,4 @@ export { default as ExportButton } from "./ExportButton";
 export { default as BulkActionsBar } from "./BulkActionsBar";
 export { default as AdminListItem } from "./AdminListItem";
 export { default as SubscriptionAssignmentModal } from "./SubscriptionAssignmentModal";
+export { default as ManagePlanModal } from "./ManagePlanModal";

@@ -889,8 +889,19 @@ async function ensureTemplate(spec, actor) {
       sortOrder: spec.sortOrder,
       active: true,
     };
-    const comparable = (value) => JSON.stringify(JSON.parse(JSON.stringify(value ?? null)));
-    const differs = Object.entries(desired).some(([key, value]) => comparable(existing[key]) !== comparable(value));
+    const plain = (value) => JSON.parse(JSON.stringify(value ?? null));
+    const containsDesired = (actualValue, desiredValue) => {
+      const actual = plain(actualValue);
+      const wanted = plain(desiredValue);
+      if (Array.isArray(wanted)) {
+        return Array.isArray(actual) && actual.length === wanted.length && wanted.every((item, index) => containsDesired(actual[index], item));
+      }
+      if (wanted && typeof wanted === "object") {
+        return actual && typeof actual === "object" && Object.entries(wanted).every(([key, value]) => containsDesired(actual[key], value));
+      }
+      return actual === wanted;
+    };
+    const differs = Object.entries(desired).some(([key, value]) => !containsDesired(existing[key], value));
     if (!differs) {
       if (VERBOSE) console.log(`  - "${spec.nameEn}" exists (${existing._id}) — unchanged`);
       else console.log(`  - "${spec.nameEn}": kept`);

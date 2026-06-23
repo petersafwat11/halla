@@ -49,9 +49,25 @@ exports.updateHostStatus = catchAsync(async (req, res) => {
 
 exports.updateHostSubscription = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { planCode } = req.body;
+  const { planCode, reason } = req.body;
 
-  const result = await adminService.updateHostSubscription(id, { planCode });
+  const result = await adminService.updateHostSubscription(id, {
+    planCode,
+    reason,
+    actorId: req.user?._id,
+  });
+  sendSuccess(res, result, result.message);
+});
+
+exports.grantHostExtraInvites = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { quantity, reason } = req.body;
+
+  const result = await adminService.grantHostExtraInvites(id, {
+    quantity,
+    reason,
+    actorId: req.user?._id,
+  });
   sendSuccess(res, result, result.message);
 });
 

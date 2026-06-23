@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   guestHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
     paddingHorizontal: spacing[16],
     paddingVertical: spacing[8],
     borderBottomWidth: 1,

@@ -6,6 +6,7 @@ import {
   Animated,
   StyleSheet,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import { useAuthStore } from "../../../stores/authStore";
@@ -88,9 +89,8 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
 
         {user?.emailVerified && (
           <View style={styles.verifiedBadge}>
-            <Text style={styles.verifiedText}>
-              ✓ {t("account.emailVerified")}
-            </Text>
+            <Ionicons name="checkmark-circle" size={16} color="#2A8C5B" />
+            <Text style={styles.verifiedText}>{t("account.emailVerified")}</Text>
           </View>
         )}
 
@@ -143,16 +143,21 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_600SemiBold",
   },
   verifiedBadge: {
-    backgroundColor: "#4caf50",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    flexDirection: "row",
     alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 6,
+    backgroundColor: "#EAF4EF",
+    borderWidth: 1,
+    borderColor: "#CDE7D8",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
     marginTop: 8,
   },
   verifiedText: {
-    color: "#fff",
-    fontSize: 14,
+    color: "#2A8C5B",
+    fontSize: 13,
     fontFamily: "Cairo_600SemiBold",
   },
   verificationGroup: {

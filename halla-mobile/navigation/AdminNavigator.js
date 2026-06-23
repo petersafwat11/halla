@@ -23,6 +23,8 @@ import AdminHostsScreen from "../screens/admin/admin-dashboard/AdminHostsScreen"
 import AdminModeratorsScreen from "../screens/admin/admin-dashboard/AdminModeratorsScreen";
 import AdminVendorsScreen from "../screens/admin/admin-dashboard/AdminVendorsScreen";
 import HostDetailsScreen from "../screens/admin/admin-dashboard/HostDetailsScreen";
+import AdminBusinessesScreen from "../screens/admin/admin-dashboard/AdminBusinessesScreen";
+import BusinessDetailsScreen from "../screens/admin/admin-dashboard/BusinessDetailsScreen";
 import VendorDetailsScreen from "../screens/admin/admin-dashboard/VendorDetailsScreen";
 import AdminEventsScreen from "../screens/admin/admin-dashboard/AdminEventsScreen";
 import EventDetailsScreen from "../screens/common/EventDetailsScreen";
@@ -239,6 +241,21 @@ function MoreStackNavigator() {
         />
       )}
 
+      {canViewPage(userRole, PAGES.BUSINESSES) && (
+        <MoreStack.Screen
+          name="AdminBusinessesList"
+          component={AdminBusinessesScreen}
+          options={{ headerShown: false }}
+        />
+      )}
+      {canViewPage(userRole, PAGES.BUSINESSES) && (
+        <MoreStack.Screen
+          name="BusinessDetails"
+          component={BusinessDetailsScreen}
+          options={{ headerShown: false }}
+        />
+      )}
+
       {canViewPage(userRole, PAGES.MODERATORS) && (
         <MoreStack.Screen
           name="AdminModeratorsList"
@@ -330,6 +347,7 @@ export default function AdminNavigator() {
     canViewPage(userRole, PAGES.SETTINGS) ||
     canViewPage(userRole, PAGES.MODERATORS) ||
     canViewPage(userRole, PAGES.VENDORS) ||
+    canViewPage(userRole, PAGES.BUSINESSES) ||
     canViewPage(userRole, PAGES.TEMPLATES);
 
   return (

@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   searchRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 8,
     marginBottom: 12,
@@ -358,7 +358,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c",
-    textAlign: "right",
     paddingVertical: 0,
   },
   filterContainer: {

@@ -93,39 +93,11 @@ const GuestListItem = ({
       onLongPress={selectable ? undefined : handleLongPress}
       delayLongPress={350}
     >
-      {/* Header — actions (or selection checkbox) on the left, name/phone on the right */}
+      {/* Header — name/phone on the start (right in RTL), actions on the end */}
       <View style={styles.header}>
-        <View style={styles.actions}>
-          {selectable ? (
-            <View style={[styles.checkbox, selected && styles.checkboxChecked]}>
-              {selected ? <Ionicons name="checkmark" size={16} color="#FFF" /> : null}
-            </View>
-          ) : (
-            <>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => onDelete?.(guest)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.deleteButton}>
-                  <Ionicons name="trash-outline" size={16} color="#C0392B" />
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => onEdit?.(guest)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.editButton}>
-                  <Ionicons name="create-outline" size={16} color="#6B4E33" />
-                </View>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-
         <View style={styles.guestInfo}>
           <View style={styles.nameRow}>
+            <Text style={styles.name}>{guest.name || "ضيف"}</Text>
             {guest?.accessRevoked ? (
               <View style={[styles.guestBadge, styles.guestBadgeMuted]}>
                 <Text style={styles.guestBadgeText}>صلاحية مُلغاة</Text>
@@ -135,11 +107,39 @@ const GuestListItem = ({
                 <Text style={styles.guestBadgeText}>QR محدّث</Text>
               </View>
             ) : null}
-            <Text style={styles.name}>{guest.name || "ضيف"}</Text>
           </View>
 
           {!!guest.phone && (
             <Text style={styles.contactText}>{guest.phone}</Text>
+          )}
+        </View>
+
+        <View style={styles.actions}>
+          {selectable ? (
+            <View style={[styles.checkbox, selected && styles.checkboxChecked]}>
+              {selected ? <Ionicons name="checkmark" size={16} color="#FFF" /> : null}
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => onEdit?.(guest)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.editButton}>
+                  <Ionicons name="create-outline" size={16} color="#6B4E33" />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => onDelete?.(guest)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.deleteButton}>
+                  <Ionicons name="trash-outline" size={16} color="#C0392B" />
+                </View>
+              </TouchableOpacity>
+            </>
           )}
         </View>
       </View>
@@ -147,8 +147,8 @@ const GuestListItem = ({
       {/* Response */}
       <View style={styles.responseCard}>
         <View style={styles.responseRow}>
-          <Text style={styles.responseDate}>{guest.responseDate || "لم يرد بعد"}</Text>
           <Text style={styles.responseLabel}>حالة الردود</Text>
+          <Text style={styles.responseDate}>{guest.responseDate || "لم يرد بعد"}</Text>
         </View>
 
         <View style={[styles.statusBadge, { backgroundColor: statusStyle.backgroundColor }]}>
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   guestInfo: {
     flex: 1,
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     gap: 4,
   },
   nameRow: {
@@ -238,14 +238,12 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     lineHeight: 20,
-    textAlign: "right",
   },
   contactText: {
     fontSize: 12,
     fontFamily: "Cairo_500Medium",
     color: "#656565",
     lineHeight: 16,
-    textAlign: "right",
   },
   responseCard: {
     backgroundColor: "#FDFDFD",
@@ -287,7 +285,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 3,
     borderRadius: 9999,
-    alignSelf: "flex-end",
+    alignSelf: "flex-start",
   },
   statusText: {
     fontSize: 12,

@@ -37,6 +37,7 @@ const setupFeeService = require('./business.setupFee.service');
 const paymentProvider = require('../../infrastructure/paymentProvider');
 const { recordPendingRefund } = require('../addons/addons.refund');
 const notificationService = require('../notifications/notifications.service');
+const subscriptionLifecycle = require('../subscriptions/subscriptionLifecycle.service');
 
 const LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -642,7 +643,7 @@ class BusinessAssignmentService {
    * business subscription (merged-pool carryover), then cancel the old one.
    * [#7 invite-pool carryover]
    */
-  async _activateSubscription({ businessUserId, plan, assignment, paymentRecord }) {
+  async _activateSubscriptionLegacy({ businessUserId, plan, assignment, paymentRecord }) {
     const existingActive = await Subscription.find({
       userId: businessUserId,
       status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
@@ -700,6 +701,35 @@ class BusinessAssignmentService {
   // ─── lifecycle ops ───────────────────────────────────────────────────
 
   /** Revoke an open checkout link (admin). pending_payment → cancelled. */
+  async _activateSubscription({ businessUserId, plan, assignment, paymentRecord }) {
+    const { subscription } = await subscriptionLifecycle.changePlan(
+      businessUserId,
+      plan,
+      {
+        actor: {
+          _id: assignment?.createdBy || businessUserId,
+          role: assignment?.createdBy ? 'admin' : 'host',
+          onBehalfOf: true,
+        },
+        reason: assignment?.mode === ASSIGNMENT_MODE.GRANT
+          ? 'business_admin_grant'
+          : 'business_checkout_activation',
+        pricePaid: assignment?.planPriceSnapshot ?? plan?.pricing?.oneTime ?? 0,
+        currency: plan?.currency || 'SAR',
+        status: SUBSCRIPTION_STATUS.ACTIVE,
+        createdBy: { user: assignment?.createdBy || businessUserId, onBehalfOf: true },
+        paymentRecord,
+        metadata: {
+          assignmentId: assignment?._id || null,
+          businessAssignmentMode: assignment?.mode || null,
+        },
+        cancelReason: `Replaced by business plan ${plan?.code}`,
+      }
+    );
+
+    return subscription;
+  }
+
   async revoke(assignmentId, actorId) {
     const a = await BusinessPlanAssignment.findById(assignmentId);
     if (!a) throw new NotFoundError('Assignment');

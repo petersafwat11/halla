@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderEndWidth: 6,
     borderColor: "#C28E5C",
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   leftContent: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 8,
     flex: 1,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   nameRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },

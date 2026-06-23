@@ -288,7 +288,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF6EF",
     borderBottomWidth: 1,
     borderBottomColor: "#F5ECE4",
-    textAlign: "right",
   },
   detailsContent: {
     padding: 16,
@@ -298,13 +297,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
-    textAlign: "right",
   },
   invitationText: {
     fontSize: 13,
     fontFamily: "Cairo_400Regular",
     color: "#2C2C2C",
-    textAlign: "right",
     lineHeight: 22,
   },
   eventDetails: {
@@ -326,7 +323,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Cairo_500Medium",
     color: "#2C2C2C",
-    textAlign: "right",
   },
   linkValue: {
     color: "#C28E5C",
@@ -369,7 +365,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_500Medium",
     color: "#2C2C2C",
     lineHeight: 20,
-    textAlign: "right",
   },
 });
 

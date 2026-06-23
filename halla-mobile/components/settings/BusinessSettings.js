@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   buttonContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 24,
     gap: 12,

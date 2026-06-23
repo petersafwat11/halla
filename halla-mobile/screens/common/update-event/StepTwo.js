@@ -48,7 +48,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#7A4F01",
     fontFamily: "Cairo_500Medium",
-    textAlign: "right",
   },
 });
 

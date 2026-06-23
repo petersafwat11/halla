@@ -115,7 +115,8 @@ const PaymentMethodSelector = ({
       setCard(cardData);
       if (cardData.month && cardData.year) {
         const yy = cardData.year.toString().slice(-2);
-        setExpiryText(`${cardData.month}/${yy}`);
+        // Display order is YY/MM (year first), matching the web input mask.
+        setExpiryText(`${yy}/${cardData.month}`);
       }
     }
   }, [cardData]);
@@ -138,18 +139,31 @@ const PaymentMethodSelector = ({
   };
 
   const handleExpiryChange = (text) => {
-    const clean = text.replace(/\D/g, "").slice(0, 4);
-    let formatted = clean;
-    if (clean.length > 2) {
-      formatted = `${clean.slice(0, 2)}/${clean.slice(2, 4)}`;
+    // True when the edit shrank the field (backspace / delete). Drives whether
+    // we auto-insert the "/" at the 2-digit boundary — re-adding it while
+    // deleting is what traps the caret and makes the field feel buggy.
+    const deleting = text.length < expiryText.length;
+
+    const digits = text.replace(/\D/g, "").slice(0, 4);
+
+    let formatted = digits;
+    if (digits.length >= 3) {
+      formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    } else if (digits.length === 2 && !deleting) {
+      formatted = `${digits}/`;
     }
     setExpiryText(formatted);
 
-    const month = clean.slice(0, 2);
-    const yy = clean.slice(2, 4);
-    const year = yy ? `20${yy}` : "";
-
-    const next = { ...card, month, year };
+    // Display mask is YY/MM: first pair is the 2-digit year, second the month.
+    // The stored contract stays month="MM" + year="20YY" so checkout/Moyasar
+    // receive the real month and full year unchanged.
+    const yy = digits.slice(0, 2);
+    const mm = digits.slice(2, 4);
+    const next = {
+      ...card,
+      month: mm,
+      year: yy.length === 2 ? `20${yy}` : "",
+    };
     setCard(next);
     onCardChange?.(next);
   };
@@ -229,6 +243,7 @@ const PaymentMethodSelector = ({
                 style={[
                   styles.input,
                   styles.inputWithIconField,
+                  styles.ltrInput,
                   errors.number && styles.inputError,
                 ]}
                 placeholder="1234 5678 9012 3456"
@@ -248,8 +263,8 @@ const PaymentMethodSelector = ({
             <View style={[styles.field, styles.fieldExpiry]}>
               <Text style={styles.label}>{t("checkout.card.expiry", "Expiry date")}</Text>
               <TextInput
-                style={[styles.input, errors.expiry && styles.inputError]}
-                placeholder="MM/YY"
+                style={[styles.input, styles.ltrInput, errors.expiry && styles.inputError]}
+                placeholder="YY/MM"
                 placeholderTextColor={colors.natural[350]}
                 keyboardType="number-pad"
                 maxLength={5}
@@ -261,8 +276,8 @@ const PaymentMethodSelector = ({
             <View style={[styles.field, styles.fieldCvc]}>
               <Text style={styles.label}>{t("checkout.card.cvc")}</Text>
               <TextInput
-                style={[styles.input, errors.cvc && styles.inputError]}
-                placeholder="CVC"
+                style={[styles.input, styles.ltrInput, errors.cvc && styles.inputError]}
+                placeholder="•••"
                 placeholderTextColor={colors.natural[350]}
                 keyboardType="number-pad"
                 maxLength={4}
@@ -289,7 +304,7 @@ const PaymentMethodSelector = ({
           <View style={styles.field}>
             <Text style={styles.label}>{t("checkout.stcpay.mobile")}</Text>
             <TextInput
-              style={[styles.input, errors.stcMobile && styles.inputError]}
+              style={[styles.input, styles.ltrInput, errors.stcMobile && styles.inputError]}
               placeholder="05XXXXXXXX"
               placeholderTextColor={colors.natural[350]}
               keyboardType="phone-pad"
@@ -470,6 +485,10 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.body.medium,
     color: colors.natural[900],
     backgroundColor: colors.natural[50],
+  },
+  ltrInput: {
+    textAlign: "left",
+    writingDirection: "ltr",
   },
   inputError: {
     borderColor: colors.error ? colors.error[500] : "#F43F5E",
