@@ -28,7 +28,7 @@ const VENDOR_STATUS = {
 /**
  * Event status
  *
- * `failed` (PIPELINE-F04 / FLOW-15-F01): set by the launch-retry cron
+ * `failed`: set by the launch-retry cron
  * after `maxAttempts` retries OR when the 24h pre-launch retry window
  * expires without a successful bulk send. The host (or admin) can flip
  * the event back to `scheduled` via the manual-retry endpoint, which
@@ -115,8 +115,7 @@ const NOTIFICATION_STATUS = {
 // Payment status enum lives on the PaymentModel as a static
 // (`Payment.PAYMENT_STATUS`) — the single source of truth with the
 // full lifecycle (pending | pending_3ds | authorized | paid | captured
-// | failed | refunded | partially_refunded | voided). The legacy
-// constant in this file was unused and has been removed (§15.3).
+// | failed | refunded | partially_refunded | voided).
 
 /**
  * Service status

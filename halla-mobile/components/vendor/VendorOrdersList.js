@@ -8,26 +8,14 @@ import {
   Image,
 } from "react-native";
 import { useTranslation } from "../../localization/hooks/useTranslation";
+import { getStatusVisual } from "../../constants/statusColors";
 
 const VendorOrdersList = ({ orders, onOrderPress }) => {
   const { t } = useTranslation("vendor");
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "#FFA500";
-      case "confirmed":
-        return "#4CAF50";
-      case "completed":
-        return "#2196F3";
-      case "cancelled":
-        return "#F44336";
-      default:
-        return "#666666";
-    }
-  };
-
-  const renderOrderItem = ({ item }) => (
+  const renderOrderItem = ({ item }) => {
+    const statusVisual = getStatusVisual(item.status);
+    return (
     <TouchableOpacity
       style={styles.orderCard}
       onPress={() => onOrderPress && onOrderPress(item)}
@@ -42,10 +30,10 @@ const VendorOrdersList = ({ orders, onOrderPress }) => {
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: getStatusColor(item.status) },
+            { backgroundColor: statusVisual.bg },
           ]}
         >
-          <Text style={styles.statusText}>
+          <Text style={[styles.statusText, { color: statusVisual.fg }]}>
             {t(`orderStatus.${item.status}`)}
           </Text>
         </View>
@@ -70,7 +58,8 @@ const VendorOrdersList = ({ orders, onOrderPress }) => {
         </View>
       </View>
     </TouchableOpacity>
-  );
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
@@ -171,7 +160,6 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#FFFFFF",
   },
   orderDetails: {
     borderTopWidth: 1,

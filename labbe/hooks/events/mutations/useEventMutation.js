@@ -34,9 +34,9 @@ for (const a of SETTINGS_ACTIONS) ACTION_GROUPS[a] = "settings";
 
 /**
  * Unified event mutation factory. Dispatches to the right sub-hook based
- * on `action`. Callers must keep `action` stable across renders (same
- * contract as before — each call-site uses a literal action key, so this
- * is automatic for the convenience hooks below).
+ * on `action`. Callers must keep `action` stable across renders — each
+ * call-site uses a literal action key, so this is automatic for the
+ * convenience hooks below.
  *
  * @param {string} action - The event action to perform.
  * @returns {import("@tanstack/react-query").UseMutationResult}
@@ -46,9 +46,9 @@ export const useEventMutation = (action) => {
   if (!group) {
     throw new Error(`Unknown event action: ${action}`);
   }
-  // Rules of Hooks: each call site passes a stable literal action (see header
-  // doc), so the runtime path through this switch is constant per consumer —
-  // the rule's invariant holds even though ESLint can't statically prove it.
+  // Rules of Hooks: each call site passes a stable literal action, so the
+  // runtime path through this switch is constant per consumer — the rule's
+  // invariant holds even though ESLint can't statically prove it.
   switch (group) {
     case "crud":
       // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -72,7 +72,7 @@ export const useEventMutation = (action) => {
 // CONVENIENCE HOOKS
 // ============================================
 // Each convenience hook calls its owning sub-hook directly with a literal
-// action. Existing imports across the codebase keep working unchanged.
+// action.
 
 // CRUD
 export const useCreateEvent = () => useEventCrudMutation("createEvent");

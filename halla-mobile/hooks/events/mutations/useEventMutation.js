@@ -7,9 +7,7 @@ import { dashboardKeys } from "../../dashboard/keys";
 import { subscriptionInfoKeys } from "../../users/keys";
 
 /**
- * Unified event mutation factory. Mirrors the web hook at
- * `labbe/hooks/events/mutations/useEventMutation.js`. Collapses the prior
- * six `useEvent*Mutations.js` files into a single config-map driven hook.
+ * Unified event mutation factory. Config-map driven hook.
  *
  * Caller passes a stable `action` literal; the factory looks up the
  * `mutationFn` + invalidation keys in `ACTIONS` and returns a configured
@@ -253,8 +251,8 @@ const ACTIONS = {
       _updateEventStep2(eventId, { guestList, staffList }),
     onSuccess: (_data, vars, _ctx, queryClient) => {
       invalidateSingleEvent(queryClient, vars?.eventId);
-      // Mirror web's `["guests", "events", eventId]` invalidation so any
-      // guest-list query under that key refetches.
+      // Invalidate `["guests", "events", eventId]` so any guest-list query
+      // under that key refetches.
       if (vars?.eventId) {
         queryClient.invalidateQueries({
           queryKey: ["guests", "events", vars.eventId],
@@ -517,8 +515,7 @@ export const useEventMutation = (action) => {
 // CONVENIENCE HOOKS
 // =====================================================================
 // Each calls the factory with a literal action so the action arg is stable
-// across renders. Existing imports across the codebase keep working under
-// the new path.
+// across renders.
 
 // CRUD
 export const useCreateEvent = () => useEventMutation("createEvent");

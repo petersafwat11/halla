@@ -16,14 +16,8 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import PaymentActionModal from "./PaymentActionModal";
 import PaymentDetailModal from "./PaymentDetailModal";
 import usePaymentActions from "./usePaymentActions";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./PaymentsTable.module.css";
-
-const STATUS_COLOR = {
-  completed: { background: "#e8f5e9", color: "#2e7d32" },
-  pending: { background: "#fff3e0", color: "#e65100" },
-  failed: { background: "#ffebee", color: "#c62828" },
-  refunded: { background: "#e3f2fd", color: "#1565c0" },
-};
 
 const formatCurrency = (amount, currency = "SAR", isArabic) =>
   new Intl.NumberFormat(isArabic ? "ar-SA" : "en-US", {
@@ -71,7 +65,7 @@ export default function PaymentsTable() {
   );
 
   const { data, isLoading, error } = useAdminPayments(filters);
-  // Phase 8 — wrap the `|| []` default in its own `useMemo` so the
+  // Wrap the `|| []` default in its own `useMemo` so the
   // `tableData` memo at the bottom of the file actually caches across
   // renders. The bare `data?.data?.payments || []` form returns a new
   // array reference every render and defeats memoization.
@@ -166,10 +160,7 @@ export default function PaymentsTable() {
   const renderCell = useCallback(
     (key, value, row) => {
       if (key === "status") {
-        const badgeStyle = STATUS_COLOR[value] || {
-          background: "#f5f5f5",
-          color: "#666",
-        };
+        const { fg, bg } = getStatusVisual(value, "payment");
         return (
           <span
             style={{
@@ -178,8 +169,8 @@ export default function PaymentsTable() {
               borderRadius: "999px",
               fontSize: "1.2rem",
               fontWeight: 500,
-              background: badgeStyle.background,
-              color: badgeStyle.color,
+              background: bg,
+              color: fg,
             }}
           >
             {t(`table.status.${value}`, value)}

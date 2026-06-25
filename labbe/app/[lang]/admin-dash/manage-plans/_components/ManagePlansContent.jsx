@@ -14,6 +14,7 @@ import SearchableSelect from "@/ui/commen/inputs/SearchableSelect/SearchableSele
 import EditPlanPopup from "./EditPlanPopup";
 import { getLocalized } from "@halla/shared/utils/locale";
 import SarIcon from "@/ui/commen/SarIcon/SarIcon";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./ManagePlansContent.module.css";
 
 const PLAN_TYPE_KEYS = [
@@ -107,6 +108,7 @@ export default function ManagePlansContent() {
             const price = plan.pricing?.oneTime || 0;
             const maxGuests = plan.limits?.invitePool;
             const maxEvents = plan.limits?.maxEvents;
+            const statusVisual = getStatusVisual(plan.isActive ? "active" : "inactive");
 
             return (
               <div
@@ -123,7 +125,10 @@ export default function ManagePlansContent() {
                     <span className={styles.typeBadge} style={{ background: accent }}>
                       {t(`managePlans.planTypes.${planType}`)}
                     </span>
-                    <span className={`${styles.statusBadge} ${plan.isActive ? styles.activeBadge : styles.inactiveBadge}`}>
+                    <span
+                      className={styles.statusBadge}
+                      style={{ background: statusVisual.bg, color: statusVisual.fg }}
+                    >
                       {plan.isActive
                         ? t("managePlans.cards.statusActive")
                         : t("managePlans.cards.statusDisabled")}

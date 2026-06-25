@@ -1,12 +1,15 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { getStatusVisual } from "../../constants/statusColors";
+
+// Revoked = neutral/inactive status — route badge colors through the shared helper.
+const revokedVisual = getStatusVisual("inactive");
 
 /**
- * Phase 4 W2-STAFF: long-press menu now offers "Revoke access" in
- * addition to edit / delete. The host can revoke a moderator's QR
- * scanner token without removing the moderator from the event roster
- * (delete still removes them entirely).
+ * Long-press menu offers "Revoke access" in addition to edit / delete.
+ * The host can revoke a moderator's QR scanner token without removing
+ * the moderator from the event roster (delete still removes them entirely).
  */
 const ModeratorListItem = ({ moderator, onEdit, onDelete, onRevoke }) => {
   const handleDelete = () => {
@@ -75,8 +78,8 @@ const ModeratorListItem = ({ moderator, onEdit, onDelete, onRevoke }) => {
           <View style={styles.nameRow}>
             <Text style={styles.name}>{moderator.name || "مشرف"}</Text>
             {moderator?.isRevoked ? (
-              <View style={styles.revokedBadge}>
-                <Text style={styles.revokedBadgeText}>مُلغى</Text>
+              <View style={[styles.revokedBadge, { backgroundColor: revokedVisual.bg }]}>
+                <Text style={[styles.revokedBadgeText, { color: revokedVisual.fg }]}>مُلغى</Text>
               </View>
             ) : null}
           </View>
@@ -178,12 +181,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 9999,
-    backgroundColor: "#F0F0F0",
   },
   revokedBadgeText: {
     fontSize: 10,
     fontFamily: "Cairo_500Medium",
-    color: "#9CA3AF",
   },
 });
 

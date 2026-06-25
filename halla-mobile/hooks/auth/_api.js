@@ -1,7 +1,6 @@
 /**
- * Auth API helpers. Replaces `services/authService.js` after the hooks
- * migration. Lives inside `hooks/auth/` because the auth store + auth
- * mutation hooks are the only consumers — there's no domain-service
+ * Auth API helpers. Lives inside `hooks/auth/` because the auth store +
+ * auth mutation hooks are the only consumers — there's no domain-service
  * indirection to keep around.
  *
  * Uses the throwing helpers in `services/authErrors.js` (`postJson`,

@@ -8,7 +8,6 @@ const { NotFoundError } = require("../../shared/errors");
 const { USER_STATUS } = require("../../shared/constants");
 const { withIdempotency, sha256 } = require("../../shared/utils/idempotency");
 
-// Import existing models during migration
 const Notification = require("../../../models/NotificationModel");
 
 // ============================================
@@ -78,13 +77,12 @@ class NotificationsService {
     // Send email if requested and user has email preference enabled
     if (sendEmail) {
       if (user?.email && this._shouldSendEmail(user, notificationData.type)) {
-        // FLOW-27-F04: attempt email delivery and write status back to the
-        // Notification record. The existing NotificationModel already has a
-        // structured deliveryStatus.email sub-document ({ sent, sentAt, error })
-        // so we use that shape rather than adding a conflicting flat string field.
-        // The email provider (SMTP via nodemailer) does not expose delivery
-        // receipts synchronously; we record `sent:true/sentAt:now` on a
-        // successful API call and `error` on failure.
+        // Attempt email delivery and write status back to the Notification
+        // record. NotificationModel has a structured deliveryStatus.email
+        // sub-document ({ sent, sentAt, error }), so we use that shape rather
+        // than a flat string field. The email provider (SMTP via nodemailer)
+        // does not expose delivery receipts synchronously; we record
+        // `sent:true/sentAt:now` on a successful API call and `error` on failure.
         const emailModule = require("../../infrastructure/email");
         let emailSent = false;
         let emailError = null;
@@ -220,7 +218,7 @@ class NotificationsService {
   /**
    * Create notification for a user
    *
-   * FLOW-27-F01: idempotency guard via withIdempotency utility.
+   * Idempotency guard via withIdempotency utility.
    * Key: `notification:<userId>:<type>:<targetId>` (targetId = data.entityId).
    * TTL is managed by the IdempotencyKeyModel (24h default).
    * Prevents duplicate notifications from double-firing cron ticks or retries.

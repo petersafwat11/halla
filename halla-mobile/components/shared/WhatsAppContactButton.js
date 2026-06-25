@@ -1,9 +1,7 @@
 /**
- * WhatsApp customer-service contact button — mobile (Phase 3c.3).
+ * WhatsApp customer-service contact button — mobile.
  *
- * Mirrors the web component in `labbe/ui/commen/whatsappButton`. Used by
- * the mobile failure UI (3c.5) and reusable for Phase 4 mobile-parity
- * work. Generates a `wa.me/<number>?text=<msg>` link and opens it via
+ * Generates a `wa.me/<number>?text=<msg>` link and opens it via
  * `Linking.openURL`.
  *
  * Replace `WHATSAPP_CONTACT_NUMBER` (or set EXPO_PUBLIC_HALLA_WHATSAPP_NUMBER

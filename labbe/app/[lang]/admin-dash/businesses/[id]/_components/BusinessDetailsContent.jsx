@@ -23,6 +23,7 @@ import EditBusinessPopup from "./EditBusinessPopup";
 import ReplaceLogoPopup from "./ReplaceLogoPopup";
 import AssignPlanPopup from "./AssignPlanPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./BusinessDetailsContent.module.css";
 
 const initials = (name) =>
@@ -31,33 +32,16 @@ const initials = (name) =>
 const fmtDate = (d, locale) =>
   d ? new Date(d).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
-const statusMeta = (status, t) =>
-  ({
-    active: { label: t("status.active"), color: "#2a8c5b", bg: "#eaf4ef" },
-    suspended: { label: t("status.suspended"), color: "#c0392b", bg: "#f9ebea" },
-    inactive: { label: t("status.inactive"), color: "#767676", bg: "#f2f2f2" },
-  }[status] || { label: status || "—", color: "#767676", bg: "#f2f2f2" });
+const statusMeta = (status, t) => {
+  const label = ({ active: t("status.active"), suspended: t("status.suspended"), inactive: t("status.inactive") }[status]) || status || "—";
+  const { fg, bg } = getStatusVisual(status);
+  return { label, color: fg, bg };
+};
 
-const subStatusMeta = (status, t) =>
-  ({
-    active: { label: t("subscription.active"), color: "#2a8c5b", bg: "#eaf4ef" },
-    trial: { label: t("subscription.trial"), color: "#9B59B6", bg: "#f5eef8" },
-    expired: { label: t("subscription.expired"), color: "#c0392b", bg: "#f9ebea" },
-    cancelled: { label: t("subscription.cancelled"), color: "#767676", bg: "#f2f2f2" },
-    inactive: { label: t("subscription.inactive"), color: "#767676", bg: "#f2f2f2" },
-  }[status] || { label: status || "—", color: "#767676", bg: "#f2f2f2" });
-
-const ASSIGNMENT_STATUS_META = {
-  pending_payment: { color: "#d38200", bg: "#fbf3e6" },
-  payment_processing: { color: "#d38200", bg: "#fbf3e6" },
-  paid: { color: "#3498db", bg: "#e8f4fd" },
-  active: { color: "#2a8c5b", bg: "#eaf4ef" },
-  activation_failed: { color: "#c0392b", bg: "#f9ebea" },
-  failed: { color: "#c0392b", bg: "#f9ebea" },
-  expired: { color: "#767676", bg: "#f2f2f2" },
-  cancelled: { color: "#767676", bg: "#f2f2f2" },
-  superseded: { color: "#767676", bg: "#f2f2f2" },
-  refunded: { color: "#9B59B6", bg: "#f5eef8" },
+const subStatusMeta = (status, t) => {
+  const label = ({ active: t("subscription.active"), trial: t("subscription.trial"), expired: t("subscription.expired"), cancelled: t("subscription.cancelled"), inactive: t("subscription.inactive") }[status]) || status || "—";
+  const { fg, bg } = getStatusVisual(status, "subscription");
+  return { label, color: fg, bg };
 };
 
 // Checkout assignments awaiting payment can still be acted on
@@ -338,7 +322,7 @@ export default function BusinessDetailsContent({ businessId }) {
                 </thead>
                 <tbody>
                   {assignments.map((a) => {
-                    const sm = ASSIGNMENT_STATUS_META[a.status] || { color: "#767676", bg: "#f2f2f2" };
+                    const sm = getStatusVisual(a.status, "assignment");
                     const isCheckout = a.mode === "checkout";
                     const actionable = isCheckout && ACTIONABLE_STATUSES.includes(a.status);
                     return (
@@ -350,7 +334,7 @@ export default function BusinessDetailsContent({ businessId }) {
                           </span>
                         </td>
                         <td>
-                          <span className={styles.statusBadge} style={{ color: sm.color, background: sm.bg }}>
+                          <span className={styles.statusBadge} style={{ color: sm.fg, background: sm.bg }}>
                             {t(`assignments.status.${a.status}`, a.status)}
                           </span>
                         </td>

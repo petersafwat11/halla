@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
  *
  * Used by both apps' search inputs (admin list screens, marketplace
  * filters) where every keystroke would otherwise refetch from the
- * backend. 500 ms is the conservative default agreed in the Phase 8
- * unification — long enough for typeahead, short enough to feel snappy.
+ * backend. 500 ms is the conservative default — long enough for
+ * typeahead, short enough to feel snappy.
  *
  * @template T
  * @param {T} value
@@ -22,9 +22,7 @@ export function useDebounce(value, delayMs = 500) {
   return debounced;
 }
 
-// Mobile previously used the name `useDebouncedValue`; alias kept so
-// the rename can happen incrementally without touching every consumer
-// in this slice.
+// Alias for the alternate name `useDebouncedValue`.
 export { useDebounce as useDebouncedValue };
 
 export default useDebounce;

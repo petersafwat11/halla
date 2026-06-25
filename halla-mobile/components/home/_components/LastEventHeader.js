@@ -2,18 +2,18 @@ import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
+import { getStatusVisual } from "../../../constants/statusColors";
 
 const STATUS_STYLE = {
-  draft:     { backgroundColor: "#E9ECEF", color: "#6C757D", textKey: "lastEvent.status.draft" },
-  scheduled: { backgroundColor: "#FFF3E0", color: "#F57C00", textKey: "lastEvent.status.scheduled" },
-  live:      { backgroundColor: "#EAF4EF", color: "#2A8C5B", textKey: "lastEvent.status.live" },
-  completed: { backgroundColor: "#F2F2F2", color: "#656565", textKey: "lastEvent.status.completed" },
-  suspended: { backgroundColor: "#FFEBEE", color: "#C62828", textKey: "lastEvent.status.suspended" },
+  draft:     { ...getStatusVisual("draft"), textKey: "lastEvent.status.draft" },
+  scheduled: { ...getStatusVisual("scheduled"), textKey: "lastEvent.status.scheduled" },
+  live:      { ...getStatusVisual("live"), textKey: "lastEvent.status.live" },
+  completed: { ...getStatusVisual("completed"), textKey: "lastEvent.status.completed" },
+  suspended: { ...getStatusVisual("suspended"), textKey: "lastEvent.status.suspended" },
 };
 
 const DEFAULT_STATUS = {
-  backgroundColor: "#F9F4EF",
-  color: "#C28E5C",
+  ...getStatusVisual("invited"),
   textKey: "lastEvent.status.default",
 };
 
@@ -45,8 +45,8 @@ export default function LastEventHeader({ event, locale = "ar-SA" }) {
       <View style={styles.textContent}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>{title}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: status.backgroundColor }]}>
-            <Text style={[styles.statusText, { color: status.color }]}>
+          <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
+            <Text style={[styles.statusText, { color: status.fg }]}>
               {t(status.textKey)}
             </Text>
           </View>

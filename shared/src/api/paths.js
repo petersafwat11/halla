@@ -5,10 +5,7 @@
  * Update paths here when the backend changes. All call sites resolve
  * paths through this object so a route rename is one diff, not 200.
  *
- * Field names follow camelCase. Mobile's legacy UPPER_SNAKE_CASE
- * `ENDPOINTS` map (`halla-mobile/config/api.js`) is a thin wrapper that
- * delegates here — Phase 8 will retire the wrapper and migrate
- * call sites to import API_PATHS directly.
+ * Field names follow camelCase.
  */
 
 const deepFreeze = (obj) => {
@@ -143,6 +140,9 @@ const PATHS = {
   guests: {
     getByInvitationCode: (code) => `/guests/invitation/${code}`,
     submitRSVP: (id) => `/guests/${id}/rsvp`,
+
+    // Guest book — the host's reusable past guests across all their events.
+    getMyContacts: () => `/guests/my-contacts`,
 
     getEventGuests: (eventId) => `/guests/events/${eventId}`,
     addGuest: (eventId) => `/guests/events/${eventId}`,

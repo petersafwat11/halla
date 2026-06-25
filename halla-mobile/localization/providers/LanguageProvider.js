@@ -16,14 +16,14 @@ const LanguageContext = createContext({});
 const LANGUAGE_STORAGE_KEY = "@app_language";
 
 /**
- * Phase 4 W0-RTL: detect whether we're in Expo Go (forceRTL is a no-op
+ * Detect whether we're in Expo Go (forceRTL is a no-op
  * there and triggers a benign warning). In a dev client / standalone
  * build, calling `I18nManager.forceRTL(true)` flips the layout for
  * Arabic. The change requires app reload to take effect on iOS.
  *
- * Reviewed for SDK 54: `Constants.appOwnership === "expo"` is the
- * official Expo Constants API; `Constants.executionEnvironment` is its
- * newer cousin. We check both for safety.
+ * `Constants.appOwnership === "expo"` is the official Expo Constants
+ * API; `Constants.executionEnvironment` is its newer cousin. We check
+ * both for safety.
  */
 const _isExpoGo = () => {
   try {
@@ -110,9 +110,9 @@ export const LanguageProvider = ({ children }) => {
       }
       console.log("[LanguageProvider] Selected language:", selectedLang);
 
-      // Phase 4 W0-RTL: opportunistically call I18nManager.forceRTL so
-      // dev-client / production builds get native RTL layout. Expo Go
-      // ignores it (the `_isExpoGo` guard avoids the warning). The
+      // Opportunistically call I18nManager.forceRTL so dev-client /
+      // production builds get native RTL layout. Expo Go ignores it
+      // (the `_isExpoGo` guard avoids the warning). The
       // flexDirection-based RTL fallback in the context still applies
       // as a safety net.
       const shouldBeRTL = i18nConfig.isRTL(selectedLang);

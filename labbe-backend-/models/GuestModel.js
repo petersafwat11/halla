@@ -24,6 +24,17 @@ const guestSchema = new mongoose.Schema(
       length: [9, "Phone number must be 9 digits"],
     },
 
+    // Optional free-text grouping label (e.g. "Family", "Work", "VIP").
+    // No fixed enum — hosts create labels on the fly. Reusable across the
+    // host's events via GET /guests/my-contacts (the guest book).
+    // See docs/feature-planning/03-FEATURE-PLAN-guest-categories-and-reuse.md
+    category: {
+      type: String,
+      trim: true,
+      maxlength: [60, "Category cannot exceed 60 characters"],
+      default: undefined,
+    },
+
     // Event Reference
     event: {
       type: mongoose.Schema.Types.ObjectId,
@@ -230,6 +241,9 @@ guestSchema.index({ createdAt: -1 });
 // Compound indexes
 guestSchema.index({ event: 1, status: 1 });
 guestSchema.index({ event: 1, "checkIn.checkedIn": 1 });
+// Reuse guest-book: a host's past guests are resolved by their events
+// (Event.host → event ids → guests here), optionally filtered by category.
+guestSchema.index({ event: 1, category: 1 });
 
 // Virtual for full contact info
 guestSchema.virtual("contactInfo").get(function () {

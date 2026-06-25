@@ -38,10 +38,10 @@ const { discountsRoutes } = require("./modules/discounts");
 const addonsRoutes = require("./modules/addons/addons.routes");
 const { routes: paymentsRoutes } = require("./modules/payments");
 const businessRoutes = require("./modules/business/business.routes");
-// Phase 4c W0-MODEL: Taqnyat-template cache + sync + admin assignment
+// Taqnyat-template cache + sync + admin assignment
 // (public list + admin sub-router under /admin/taqnyat-templates).
 const taqnyatTemplatesModule = require("./modules/taqnyat-templates");
-// Phase 4c W0-VISUAL-BACKEND: visual templates + categories + fonts.
+// Visual templates + categories + fonts.
 const templatesModule = require("./modules/templates");
 
 /**
@@ -63,8 +63,6 @@ const createApp = () => {
   );
 
   // CORS configuration
-  //
-  // M-12 (re-evaluated after deployment topology decision):
   //
   // PRODUCTION: web frontend (Next.js) and backend (Express) are deployed
   // to the SAME VPS — typically behind a single nginx reverse proxy on
@@ -133,7 +131,7 @@ const createApp = () => {
   // BODY PARSING
   // ============================================
 
-  // H-19: WhatsApp webhook signature is computed by Meta over the *raw*
+  // WhatsApp webhook signature is computed by Meta over the *raw*
   // request bytes. Once `express.json()` re-serialises the parsed body,
   // key ordering and whitespace diverge from what Meta signed and HMAC
   // verification false-negatives on legit traffic. We capture the raw
@@ -215,8 +213,7 @@ const createApp = () => {
   // API ROUTES (New Modular Structure)
   // ============================================
 
-  // Mount routes under /api/v2 only. Legacy /api prefix removed in Phase 5
-  // (FLOW-01-F05): web and mobile were migrated to /api/v2 in Phase 1a.
+  // Mount routes under /api/v2 only.
   const mountRoutes = (prefix) => {
     app.use(`${prefix}/auth`, authRoutes);
     app.use(`${prefix}/users`, usersRoutes);
@@ -238,7 +235,7 @@ const createApp = () => {
     app.use(`${prefix}/addons`, addonsRoutes);
     app.use(`${prefix}/payments`, paymentsRoutes);
     app.use(`${prefix}/business`, businessRoutes);
-    // Phase 4c: visual templates + categories + Taqnyat templates.
+    // Visual templates + categories + Taqnyat templates.
     // Admin sub-routers are mounted under /admin/<resource> alongside
     // the public host-facing routers under /<resource>.
     app.use(`${prefix}/templates`, templatesModule.routes);

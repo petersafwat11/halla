@@ -2,7 +2,7 @@
  * Migration: PostEventContent — `posts[]` → `media[]` + canonical `taqnyatTemplate.templateRef`
  * ──────────────────────────────────────────────────────────────────────────
  *
- * Context (post-event-fullstack-review-plan §2.11):
+ * Context:
  *   The post-event module previously stored uploaded photos and videos in a
  *   polymorphic `posts[]` array under PostEventContent, with each subdoc
  *   carrying `{ type, content: { mediaUrl, ... } }`. The new shape flattens

@@ -34,9 +34,8 @@ const dispatchService = require('./post-event.dispatch.service');
 // ============================================
 
 /**
- * Build a role-scoped query for an event. Mirrors
- * `events.crud.service._buildScopedEventQuery` so post-event endpoints
- * accept the same set of authorized roles:
+ * Build a role-scoped query for an event. Post-event endpoints accept the
+ * same set of authorized roles as the events CRUD service:
  *
  *   - HOST                          → own event only
  *   - SUPER_ADMIN, ADMIN, MODERATOR → any event (platform-wide)
@@ -171,10 +170,6 @@ class PostEventService {
    * view/visitor stats, strips raw like/comment arrays, and returns
    * post-level `userLiked` / `likesCount` / `commentsCount` plus the caption
    * (`title`) and a clean media gallery.
-   *
-   * NOTE: This replaces the previous (broken) path where the guest route ran
-   * through `getPostEventContent` with a bare guestId string, which threw a
-   * ForbiddenError in `buildScopedEventQuery`.
    */
   async getGuestContent(eventId, guestId) {
     const content = await PostEventContent.getForGuest(eventId, guestId);
@@ -303,13 +298,12 @@ class PostEventService {
   }
 
   // ============================================
-  // HOST: MESSAGING TEMPLATE (StepFour-pattern)
+  // HOST: MESSAGING TEMPLATE
   // ============================================
 
   /**
    * Save the host's chosen Taqnyat WhatsApp template for access-link
-   * dispatch. Mirrors `events.settings.service.updateInvitationSettings`
-   * for the canonical-only path.
+   * dispatch.
    */
   async updateMessagingTemplate(eventId, { taqnyatTemplateRef }, user) {
     const event = await Event.findOne(buildScopedEventQuery(eventId, user));
@@ -396,9 +390,8 @@ class PostEventService {
    *      fresh event this MUST run first or the send half throws NotFound)
    *   3. dispatch the access links (also persists `stats.lastSend`)
    *
-   * Distinct from `publishContent` (which is left untouched for the mobile
-   * app): this never triggers the publish-scope auto-notify, so there is no
-   * double-send.
+   * Distinct from `publishContent` (used by the mobile app): this never
+   * triggers the publish-scope auto-notify, so there is no double-send.
    */
   async publishAndNotify(eventId, user, { filter = 'attended', taqnyatTemplateRef } = {}) {
     const event = await Event.findOne(buildScopedEventQuery(eventId, user)).select('_id');

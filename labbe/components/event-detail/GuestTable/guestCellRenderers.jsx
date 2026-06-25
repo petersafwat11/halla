@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { getStatusVisual } from "@/utils/statusColors";
 
 export function renderSentViaBadge(value, row, t) {
   if (!value) return <span style={{ color: "#9CA3AF" }}>—</span>;
@@ -88,34 +89,18 @@ export function renderAutoReminderBadge(row, t, formatDateTime) {
 }
 
 export function renderStatusBadge(value, t) {
-  const statusConfig = {
-    confirmed: {
-      bg: "#EAF4EF",
-      color: "#2A8C5B",
-      text: t("table.status.confirmed", "مؤكد"),
-    },
-    checked_in: {
-      bg: "#DBEAFE",
-      color: "#1E40AF",
-      text: t("table.status.checkedIn", "حضر"),
-    },
-    declined: {
-      bg: "#F9EBEA",
-      color: "#C0392B",
-      text: t("table.status.declined", "معتذر"),
-    },
-    maybe: {
-      bg: "#F8FAFC",
-      color: "#64748B",
-      text: t("table.status.maybe", "ربما"),
-    },
-    invited: {
-      bg: "#FBF3E6",
-      color: "#D38200",
-      text: t("table.status.invited", "مدعو"),
-    },
+  const statusText = {
+    confirmed: t("table.status.confirmed", "مؤكد"),
+    checked_in: t("table.status.checkedIn", "حضر"),
+    declined: t("table.status.declined", "معتذر"),
+    maybe: t("table.status.maybe", "ربما"),
+    invited: t("table.status.invited", "مدعو"),
   };
-  const config = statusConfig[value] || statusConfig.invited;
+  // Unknown status falls back to the "invited" label/colors, matching the
+  // previous behavior.
+  const resolvedStatus = statusText[value] ? value : "invited";
+  const { fg, bg } = getStatusVisual(resolvedStatus);
+  const text = statusText[resolvedStatus];
   return (
     <div
       style={{
@@ -124,17 +109,17 @@ export function renderStatusBadge(value, t) {
         justifyContent: "center",
         alignItems: "center",
         borderRadius: "9999px",
-        background: config.bg,
+        background: bg,
       }}
     >
       <span
         style={{
-          color: config.color,
+          color: fg,
           fontFamily: "Cairo",
           fontSize: "1.2rem",
         }}
       >
-        {config.text}
+        {text}
       </span>
     </div>
   );

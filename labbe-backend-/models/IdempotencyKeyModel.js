@@ -1,13 +1,13 @@
 /**
  * IdempotencyKey Model
  *
- * Phase 1b foundation. Stores the result of a successful state-mutating
+ * Stores the result of a successful state-mutating
  * request keyed by an `Idempotency-Key` header. A duplicate request that
  * presents the same key replays the cached response instead of running the
  * handler again, guaranteeing at-most-once semantics for external side
  * effects (charge, SMS send, RSVP submission).
  *
- * Uniqueness contract (post-H-5 fix):
+ * Uniqueness contract:
  *   The combination `{ userId, scope, key }` is unique — NOT `key` alone.
  *   Two different users may legitimately submit the same client-supplied
  *   Idempotency-Key value; partitioning by userId+scope prevents
@@ -15,7 +15,7 @@
  *   null for unauthenticated flows; in that case the partitioning is by
  *   `{ scope, key }` (with `userId` literally null).
  *
- * Status state machine (post-H-6 fix):
+ * Status state machine:
  *   - `pending`   : a row was inserted up-front by the first caller; the
  *                    handler is still running. Concurrent callers with the
  *                    same `requestHash` poll until the row transitions.
@@ -64,9 +64,6 @@ const idempotencyKeySchema = new mongoose.Schema(
 );
 
 // Compound unique index — partition the keyspace per-user-per-scope.
-// See H-5 in PRODUCTION_READINESS_REVIEW.md; the migration script
-// `scripts/migrate-idempotency-key-index.js` drops the legacy `key_1`
-// global-unique index and creates this one.
 idempotencyKeySchema.index({ userId: 1, scope: 1, key: 1 }, { unique: true });
 
 idempotencyKeySchema.index({ createdAt: 1 }, { expireAfterSeconds: 24 * 60 * 60 });

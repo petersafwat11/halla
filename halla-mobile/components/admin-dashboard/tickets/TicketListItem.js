@@ -3,21 +3,15 @@ import { useAuthStore } from "../../../stores/authStore";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import { useTranslation } from "../../../localization";
 import { colors } from "../../../styles/tokens";
+import { getStatusVisual } from "../../../constants/statusColors";
 import AdminListItem from "../common/AdminListItem";
 
-const PRIORITY_CONFIG = {
-  low:    { color: colors.success[600], bg: colors.success[50], labelKey: "tickets.priority.low" },
-  medium: { color: colors.warning[600], bg: colors.warning[50], labelKey: "tickets.priority.medium" },
-  high:   { color: colors.error[600], bg: colors.error[50], labelKey: "tickets.priority.high" },
-  urgent: { color: colors.error[500], bg: colors.error[50], labelKey: "tickets.priority.urgent" },
-};
-
-// Priority avatar tints the circle to signal urgency immediately
-const PRIORITY_AVATAR_COLOR = {
-  low:    "#2A8C5B",
-  medium: "#D38200",
-  high:   "#C0392B",
-  urgent: "#E74C3C",
+// Priority → i18n label key (colors come from getStatusVisual(priority)).
+const PRIORITY_LABEL_KEY = {
+  low:    "tickets.priority.low",
+  medium: "tickets.priority.medium",
+  high:   "tickets.priority.high",
+  urgent: "tickets.priority.urgent",
 };
 
 const formatDate = (d, t) => {
@@ -34,7 +28,8 @@ const TicketListItem = ({ ticket, onPress, onResolve, onAssign, selected = false
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = canEditPage(role, PAGES.TICKETS);
 
-  const priorityCfg = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.medium;
+  const priorityVisual = getStatusVisual(ticket.priority);
+  const priorityLabelKey = PRIORITY_LABEL_KEY[ticket.priority] || PRIORITY_LABEL_KEY.medium;
   const isResolved = ticket.status === "resolved" || ticket.status === "closed";
 
   const submitter =
@@ -56,13 +51,13 @@ const TicketListItem = ({ ticket, onPress, onResolve, onAssign, selected = false
       ? `${ticket.message.slice(0, 55)}${ticket.message.length > 55 ? "…" : ""}`
       : t("tickets.noSubject"));
 
-  const avatarColor = PRIORITY_AVATAR_COLOR[ticket.priority] || colors.natural[450];
+  const avatarColor = priorityVisual.fg;
 
   const chips = [
     {
-      label: t(priorityCfg.labelKey),
-      color: priorityCfg.color,
-      bg: priorityCfg.bg,
+      label: t(priorityLabelKey),
+      color: priorityVisual.fg,
+      bg: priorityVisual.bg,
     },
     assignedTo && {
       label: assignedTo,

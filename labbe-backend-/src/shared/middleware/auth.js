@@ -1,15 +1,13 @@
 /**
  * Authentication Middleware
  *
- * Phase 1a (FLOW-01-F01..F07): the legacy 90-day single-cookie JWT model is
- * gone. Access tokens are short-lived (15 min) and live in the `access_token`
+ * Access tokens are short-lived (15 min) and live in the `access_token`
  * cookie on web (HttpOnly, Path=/) or in the `Authorization: Bearer …` header
  * on mobile. Refresh tokens never reach `protect`; they only flow through
  * `POST /auth/refresh`.
  *
- * The legacy `signToken` / `createSendToken` exports were removed. All token
- * issuance goes through `authService.issueTokenPair` so there is one source
- * of truth for TTLs and cookie shapes.
+ * All token issuance goes through `authService.issueTokenPair` so there is one
+ * source of truth for TTLs and cookie shapes.
  */
 
 const {
@@ -43,13 +41,10 @@ const ACCESS_COOKIE = "access_token";
  *   1. `Authorization: Bearer <token>` (preferred for mobile)
  *   2. `access_token` cookie (web)
  *
- * M-11 fix: the legacy `jwt` cookie fallback was removed. Phase 0/1a
- * deployments have rolled long enough that any session minted under the old
- * cookie name would have aged out (90-day TTL was the legacy max; we are
- * past that horizon). Continuing to honour the legacy name is a recognized
- * downgrade attack surface — if an attacker can plant a `jwt=` cookie via
- * any subdomain or compromised dependency, the server would accept it as
- * authoritative. Refusing it is the only safe behaviour.
+ * The legacy `jwt` cookie name is deliberately not honoured: continuing to
+ * accept it is a downgrade attack surface — if an attacker can plant a `jwt=`
+ * cookie via any subdomain or compromised dependency, the server would accept
+ * it as authoritative. Refusing it is the only safe behaviour.
  */
 const extractAccessToken = (req) => {
   if (req.headers.authorization?.startsWith("Bearer")) {
@@ -155,8 +150,7 @@ exports.optionalAuth = catchAsync(async (req, res, next) => {
     const user = await User.findById(decoded.id).populate("subscription");
 
     if (user && user.status === USER_STATUS.ACTIVE) {
-      // Honour password-change revocation on optional-auth routes too
-      // (closes the FLOW-01-F04 / Flow-01 note about silent bypass).
+      // Honour password-change revocation on optional-auth routes too.
       if (user.changedPasswordAfter && user.changedPasswordAfter(decoded.iat)) {
         req.isAuthenticated = false;
         return next();

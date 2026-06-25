@@ -26,9 +26,9 @@ import {
 } from "../../../styles/tokens";
 
 /**
- * Build form state from a plan record. After the rev. 2 cleanup the only
- * surviving feature numeric is `whatsAppTemplates`; bullet copy lives in
- * `featureBullets.{ar,en}`. `setupFeeAmount` is a top-level numeric.
+ * Build form state from a plan record. The only feature numeric is
+ * `whatsAppTemplates`; bullet copy lives in `featureBullets.{ar,en}`.
+ * `setupFeeAmount` is a top-level numeric.
  */
 const bulletsToText = (arr) => (Array.isArray(arr) ? arr.join("\n") : "");
 const bulletsToArr = (text) =>

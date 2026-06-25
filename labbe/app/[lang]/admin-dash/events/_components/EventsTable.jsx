@@ -13,6 +13,7 @@ import { toastUtils } from "@/utils/toastUtils";
 import { FiEye, FiCheckCircle, FiSlash, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./EventsTable.module.css";
 
 export default function EventsTable() {
@@ -130,14 +131,18 @@ export default function EventsTable() {
 
   const renderCell = (key, value, row) => {
     if (key === "status") {
-      const statusConfig = {
-        scheduled: { bg: "#E8F4FD", color: "#3498DB", text: t("events.status.scheduled", "مجدول") },
-        live: { bg: "#EAF4EF", color: "#2A8C5B", text: t("events.status.live", "مباشر") },
-        completed: { bg: "#F5F5F5", color: "#666666", text: t("events.status.completed", "منتهي") },
-        pending_scheduling: { bg: "#FBF3E6", color: "#D38200", text: t("events.status.pending_scheduling", "في انتظار الجدولة") },
-        cancelled: { bg: "#F9EBEA", color: "#C0392B", text: t("events.status.cancelled", "ملغي") },
+      const statusText = {
+        scheduled: t("events.status.scheduled", "مجدول"),
+        live: t("events.status.live", "مباشر"),
+        completed: t("events.status.completed", "منتهي"),
+        pending_scheduling: t("events.status.pending_scheduling", "في انتظار الجدولة"),
+        cancelled: t("events.status.cancelled", "ملغي"),
       };
-      const config = statusConfig[value] || statusConfig.pending_scheduling;
+      // Unknown status falls back to the pending_scheduling label/colors,
+      // matching the previous behavior.
+      const resolvedStatus = statusText[value] ? value : "pending_scheduling";
+      const { fg, bg } = getStatusVisual(resolvedStatus);
+      const text = statusText[resolvedStatus];
       return (
         <div
           style={{
@@ -146,11 +151,11 @@ export default function EventsTable() {
             justifyContent: "center",
             alignItems: "center",
             borderRadius: "9999px",
-            background: config.bg,
+            background: bg,
           }}
         >
-          <span style={{ color: config.color, fontFamily: "Cairo", fontSize: "1.2rem" }}>
-            {config.text}
+          <span style={{ color: fg, fontFamily: "Cairo", fontSize: "1.2rem" }}>
+            {text}
           </span>
         </div>
       );

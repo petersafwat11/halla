@@ -1,15 +1,15 @@
 /**
  * Plans validation schemas (Zod).
- * Wired into plans.routes.js via `validateZod(schema)` from
- * `shared/middleware/validation`. Joi is forbidden for new code.
+ * Wired into plans.routes.js via `validateZod(schema)`. Joi is forbidden
+ * for new code.
  *
- * Field set mirrors the service's `safeUpdate` whitelist in
+ * Field set matches the service's `safeUpdate` whitelist in
  * `plans.service.js` and the `PlanModel` shape in `models/PlanModel.js`.
  *
- * The features schema is intentionally narrow: only `whatsAppTemplates`
- * survives the rev. 2 cleanup. Bullet copy lives in `featureBullets`,
- * compensation is universal via `COMPENSATION_PERCENTAGE`, and the
- * business setup fee is a top-level numeric field per plan.
+ * The features schema is intentionally narrow: only `whatsAppTemplates`.
+ * Bullet copy lives in `featureBullets`, compensation is universal via
+ * `COMPENSATION_PERCENTAGE`, and the business setup fee is a top-level
+ * numeric field per plan.
  */
 
 const { z } = require('zod');
@@ -41,7 +41,6 @@ const planCode = z
   );
 
 // SAR major-units: non-negative number with at most 2 decimal places.
-// Mirrors the validator in PlanModel.pricingSchema.
 const sarAmount = z
   .number()
   .nonnegative('must be ≥ 0')

@@ -14,9 +14,8 @@
  *
  * So the round-trip is:
  *   - We hand Moyasar a PUBLIC backend bounce endpoint as `callback_url`
- *     (BOUNCE_URL). The web `/host/*` pages are auth-gated, which is why
- *     the old web-default callback stranded mobile users on the login page;
- *     this endpoint is unauthenticated and does one thing.
+ *     (BOUNCE_URL). The web `/host/*` pages are auth-gated; this endpoint
+ *     is unauthenticated and does one thing.
  *   - Moyasar redirects there with `?id=<moyasarId>&status=…` appended.
  *   - The endpoint 302s to `halla://host/payments/return?id=…&status=…`.
  *   - openAuthSessionAsync sees that custom-scheme hop, auto-closes the

@@ -1,5 +1,5 @@
 /**
- * Non-hook event-form helpers extracted from the prior `services/EventsService.js`.
+ * Non-hook event-form helpers.
  *
  * Mobile-only by design: error and CSV-header strings are returned as i18n
  * keys (e.g. `events:validation.phoneRequired`) and the consuming components
@@ -344,8 +344,8 @@ export const getDefaultFormValues = () => ({
 });
 
 // ============================================================================
-// Aggregated default export — matches the prior `EventsService` shape so the
-// `EventsService.validateStepData(...)` style of call site keeps working.
+// Aggregated default export so the `EventsService.validateStepData(...)`
+// style of call site keeps working.
 // ============================================================================
 
 const eventForm = {

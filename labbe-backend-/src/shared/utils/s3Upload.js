@@ -20,8 +20,7 @@ const fs = require("fs");
 
 // `@aws-sdk/lib-storage` provides streaming multipart upload for buffers /
 // streams larger than the 5 MB single-part threshold. Loaded lazily so the
-// module still works in dev environments where the dependency is missing
-// (M-6 — fix buffered uploads).
+// module still works in dev environments where the dependency is missing.
 let LibStorageUpload = null;
 try {
   LibStorageUpload = require("@aws-sdk/lib-storage").Upload;
@@ -153,14 +152,13 @@ const createLocalStorage = (baseDir) => {
 /**
  * Create multer-S3 storage configuration.
  *
- * Phase 1b (FLOW-25-F05): S3 must fail closed. The previous behaviour
- * silently fell back to local disk on missing credentials; that mode
- * produced "uploaded" files that disappear on the next deploy. We now
- * raise at boot if S3 isn't configured **in production**. In development
- * we still allow a local-disk storage so contributors can run the server
- * without AWS keys, but the fallback is opt-in via `ALLOW_LOCAL_UPLOADS`
- * and is logged loudly. There is no per-request S3-error → local
- * fallback any more — multer-s3 errors propagate to the caller.
+ * S3 must fail closed: a silent local-disk fallback on missing credentials
+ * produces "uploaded" files that disappear on the next deploy. We raise at
+ * boot if S3 isn't configured **in production**. In development we still
+ * allow a local-disk storage so contributors can run the server without AWS
+ * keys, but the fallback is opt-in via `ALLOW_LOCAL_UPLOADS` and is logged
+ * loudly. There is no per-request S3-error → local fallback — multer-s3
+ * errors propagate to the caller.
  *
  * @returns {Object} Multer storage configuration
  */
@@ -188,11 +186,11 @@ const createS3Storage = () => {
   return multerS3({
     s3: s3Client,
     bucket: process.env.AWS_S3_BUCKET,
-    // H-8: bucket is private. Force the ACL on every PutObject so a
+    // bucket is private. Force the ACL on every PutObject so a
     // misconfigured bucket policy can't accidentally publish uploads. Reads
     // go through `getSignedUrlForKey` / `getFileUrl`.
     acl: "private",
-    // M-7: AUTO_CONTENT_TYPE sniffs magic bytes from the upload stream, so
+    // AUTO_CONTENT_TYPE sniffs magic bytes from the upload stream, so
     // the stored S3 Content-Type may differ from what the multer file
     // filter saw declared. The `fileFilter` already validates the declared
     // MIME for routing/limits; consumers that read the object back must
@@ -214,7 +212,7 @@ const createS3Storage = () => {
   });
 };
 
-// M-6: anything larger than this goes through `@aws-sdk/lib-storage`'s
+// Anything larger than this goes through `@aws-sdk/lib-storage`'s
 // multipart Upload helper so we don't hold the entire buffer in memory.
 // 5 MiB is also the S3 minimum part size.
 const STREAMING_PART_SIZE = 5 * 1024 * 1024;
@@ -222,12 +220,12 @@ const STREAMING_PART_SIZE = 5 * 1024 * 1024;
 /**
  * Upload a single file to S3 programmatically.
  *
- * H-8: always uploads with `ACL: 'private'`. The returned `url` is a
+ * Always uploads with `ACL: 'private'`. The returned `url` is a
  * **signed** GET URL with a 1-hour TTL — never a public bucket URL.
  * Persist the `key` and call `getSignedUrlForKey(key)` at read time to
  * mint a fresh URL.
  *
- * M-6: for buffers/streams larger than 5 MiB we use the lib-storage
+ * For buffers/streams larger than 5 MiB we use the lib-storage
  * `Upload` helper, which performs streaming multipart uploads instead of
  * holding the entire body in memory.
  *
@@ -332,7 +330,7 @@ const deleteFromS3 = async (key) => {
 /**
  * Copy an S3 object to a new key (server-side copy). Used to snapshot a
  * business logo into an event-owned immutable key so a later logo swap/delete
- * on the source doesn't break already-issued invitations. [business-account #9]
+ * on the source doesn't break already-issued invitations.
  *
  * @param {string} sourceKey
  * @param {string} destKey
@@ -437,10 +435,10 @@ const isS3Url = (url) => {
 /**
  * Get file URL from multer file object.
  *
- * H-8 (Phase 1b production-readiness fix): the bucket is **private**, so
- * the constructed public-URL path (`AWS_S3_BASE_URL/<key>`) would return
- * 403 in production. In production we now always return a **signed** GET
- * URL with a 1-hour TTL. Consumers must NOT cache the URL forever — they
+ * The bucket is **private**, so the constructed public-URL path
+ * (`AWS_S3_BASE_URL/<key>`) would return 403 in production. In production
+ * we always return a **signed** GET URL with a 1-hour TTL. Consumers must
+ * NOT cache the URL forever — they
  * should either persist the `key` and re-mint via `getSignedUrlForKey`,
  * or rely on a short refresh cycle (e.g. Next.js Image with default
  * revalidation). In development the function may still return the

@@ -144,16 +144,6 @@
   font-family: var(--font-ar, "Cairo", sans-serif);
 }
 
-.activeBadge {
-  background: #eaf4ef;
-  color: #2a8c5b;
-}
-
-.inactiveBadge {
-  background: #f9ebea;
-  color: #c0392b;
-}
-
 /* Price Section — mirrors host priceSection */
 .priceSection {
   padding: 1.25rem 1.75rem;

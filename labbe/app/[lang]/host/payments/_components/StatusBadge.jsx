@@ -1,26 +1,19 @@
 "use client";
 import React from "react";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./StatusBadge.module.css";
 
-const statusConfig = {
-  completed: { bg: "#EAF4EF", color: "#2A8C5B" },
-  pending: { bg: "#FBF3E6", color: "#D38200" },
-  failed: { bg: "#F9EBEA", color: "#C0392B" },
-  refunded: { bg: "#E3F2FD", color: "#1565C0" },
-  cancelled: { bg: "#F9EBEA", color: "#C0392B" },
-};
-
 const StatusBadge = ({ status, text }) => {
-  const config = statusConfig[status] || statusConfig.pending;
+  const { fg, bg } = getStatusVisual(status, "payment");
 
   return (
     <div
       className={styles.badge}
       style={{
-        background: config.bg,
+        background: bg,
       }}
     >
-      <span style={{ color: config.color }}>{text}</span>
+      <span style={{ color: fg }}>{text}</span>
     </div>
   );
 };

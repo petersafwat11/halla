@@ -36,7 +36,7 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 60000,
-  // Phase 1a: HttpOnly access_token / refresh_token cookies must flow on
+  // HttpOnly access_token / refresh_token cookies must flow on
   // every cross-origin request (Vercel → Railway in prod). Without this
   // login responses won't persist cookies and silent-refresh can't work.
   withCredentials: true,
@@ -70,12 +70,9 @@ const _refreshOnce = async () => {
 
 // Request interceptor for timing + request id.
 //
-// B-1 fix: this interceptor used to read a JS-readable `token` cookie and
-// attach it as `Authorization: Bearer …`. That mirror cookie defeated the
-// HttpOnly cookie design (XSS could exfiltrate it). Authentication on web
-// is now exclusively the HttpOnly `access_token` cookie which the browser
-// attaches automatically because of `withCredentials: true` above. The JS
-// layer never sees the access token.
+// Authentication on web is exclusively the HttpOnly `access_token` cookie
+// which the browser attaches automatically because of `withCredentials: true`
+// above. The JS layer never sees the access token.
 // Guest post-event interaction endpoints. These are authenticated by the
 // guest *session* JWT (issued by /post-event/validate), NOT the host HttpOnly
 // cookie. The JWT lives in the JS-readable `guestToken` cookie, so we attach
@@ -125,7 +122,7 @@ axiosInstance.interceptors.response.use(
     // Parse and normalize error
     const parsedError = parseError(error);
 
-    // Phase 1a: on 401, attempt one silent refresh and replay the original
+    // On 401, attempt one silent refresh and replay the original
     // request before bouncing the user. We skip retry on auth routes
     // themselves (login / refresh / logout) to avoid loops, and skip when
     // we've already retried this request.
@@ -170,7 +167,7 @@ axiosInstance.interceptors.response.use(
         if (hadSession) {
           // The HttpOnly access/refresh cookies are cleared server-side by
           // /auth/logout; here we only clear the JS-readable routing hints.
-          Cookies.remove('token'); // legacy cookie cleanup (B-1)
+          Cookies.remove('token'); // legacy cookie cleanup
           Cookies.remove('userType');
           Cookies.remove('profileCompleted');
           setTimeout(() => {
@@ -346,8 +343,8 @@ export const useApiMutation = (options = {}) => {
  */
 export const downloadExportFile = async ({ path, filename, params = {} }) => {
   try {
-    // B-1: HttpOnly access_token cookie travels automatically via
-    // `credentials: "include"`. We no longer read a JS token cookie.
+    // HttpOnly access_token cookie travels automatically via
+    // `credentials: "include"`.
     const url = `${API_BASE_URL}${path}`;
 
     const response = await fetch(url, {

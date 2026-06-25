@@ -50,7 +50,7 @@ const PostEventPage = () => {
     error: validateError,
   } = useValidatePostEventToken(token);
 
-  // Phase 8 — memoised so it's stable across renders and the
+  // Memoised so it's stable across renders and the
   // `authError` useMemo below can list it as an explicit dep without
   // re-running on every parent render.
   const validatePayload = useMemo(

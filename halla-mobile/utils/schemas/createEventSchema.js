@@ -1,7 +1,6 @@
 /**
- * Compat re-export. Canonical create-event schema lives in
- * `@halla/shared/schemas/events`. Each export is a factory `(t) => ZodSchema`
- * — call sites pass `t` so validation messages are translated.
+ * Each export is a factory `(t) => ZodSchema` — call sites pass `t` so
+ * validation messages are translated.
  */
 import {
   buildDynamicTemplateSchema as sharedBuildDynamicTemplateSchema,

@@ -28,7 +28,6 @@ const formatTime = (time) => {
  * the open/close state under heavy parent re-renders (e.g. inside StepThree's
  * template modal where the live canvas watches every field change). The
  * symptom was the picker refusing to open on tap (it looked "disabled").
- * Mirrors the same fix already applied to TextInput.
  */
 const TimePickerField = ({
   label,

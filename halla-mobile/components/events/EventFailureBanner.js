@@ -1,18 +1,7 @@
 /**
- * EventFailureBanner — mobile (Phase 3c.5).
- *
- * Mirrors `labbe/app/[lang]/host/events/[id]/_components/EventFailureBanner.jsx`.
- * Renders a "we're sorry" banner when the event status is `failed`, plus a
- * softer "we're retrying" announcement for `scheduled` events that have
- * already burned at least one launch attempt.
- *
- * Mobile event-detail rendering verification (per the prompt §5.5):
- *   - The mobile `EventDetails` screen exists (`components/events/EventDetails.js`)
- *     and is reachable via `EventsScreen.js` → `details` view.
- *   - Step 3, 4, 5 of the mobile create-event wizard, the WhatsApp preview,
- *     and template selection are NOT verified in this banner; that's
- *     Phase 4 (mobile parity). Banner only requires the detail screen to
- *     render, which it does.
+ * EventFailureBanner — renders a "we're sorry" banner when the event status is
+ * `failed`, plus a softer "we're retrying" announcement for `scheduled` events
+ * that have already burned at least one launch attempt.
  *
  * The retry button uses the `useRetryLaunch` hook from
  * `hooks/events/mutations/useEventMutation.js`.
@@ -27,8 +16,8 @@ import { useTranslation } from '../../localization/hooks/useTranslation';
 
 const MAX_VISIBLE_ATTEMPTS = 5;
 
-// M-20: mirrors LAUNCH_BACKOFF_MS in scheduledTasks.js (after L-7 trim).
-// Duplicated to avoid pulling server-only code into the RN bundle.
+// Mirrors LAUNCH_BACKOFF_MS in scheduledTasks.js — duplicated to avoid
+// pulling server-only code into the RN bundle.
 const RETRY_BACKOFF_MS = [
   5 * 60 * 1000,
   30 * 60 * 1000,
@@ -92,8 +81,7 @@ export default function EventFailureBanner({ event, currentUser, onRetry }) {
     : null;
 
   if (status === EVENT_STATUS.SCHEDULED && attemptCount > 0 && !event?.launchedAt) {
-    // M-20: countdown to next attempt — derived the same way as the web
-    // banner, with English fallback when lang === 'en'.
+    // Countdown to the next attempt, with English fallback when lang === 'en'.
     const backoff =
       RETRY_BACKOFF_MS[Math.min(attemptCount - 1, RETRY_BACKOFF_MS.length - 1)] || 0;
     const nextAt = lastAttemptAt ? lastAttemptAt + backoff : null;

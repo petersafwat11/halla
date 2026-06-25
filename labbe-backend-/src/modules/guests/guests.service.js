@@ -193,7 +193,7 @@ class GuestsService {
 
     const [guests, total] = await Promise.all([
       Guest.find(query)
-        .select('name phone status rsvp checkIn invitation addedBy createdAt')
+        .select('name phone category status rsvp checkIn invitation addedBy createdAt')
         .populate('addedBy', 'username')
         .sort({ name: 1 })
         .skip(skip)
@@ -272,7 +272,7 @@ class GuestsService {
       throw new NotFoundError('Guest');
     }
 
-    const allowedFields = ['name', 'phone', 'status'];
+    const allowedFields = ['name', 'phone', 'category', 'status'];
     const updateObj = {};
     allowedFields.forEach((field) => {
       if (updateData[field] !== undefined) {
@@ -345,7 +345,7 @@ class GuestsService {
     const event = await Event.findOne(this._eventScope(eventId, actor))
       .populate({
         path: 'guestList',
-        select: 'name phone status rsvp checkIn invitation addedBy',
+        select: 'name phone category status rsvp checkIn invitation addedBy',
         populate: { path: 'addedBy', select: 'username' },
       });
 
@@ -359,6 +359,7 @@ class GuestsService {
     const guestsForExport = (event.guestList || []).map((guest) => ({
       Name: guest.name || '',
       Phone: guest.phone || '',
+      Category: guest.category || '',
       Status: guest.status || 'invited',
       'Response Date': guest.rsvp?.respondedAt
         ? formatRiyadh(guest.rsvp.respondedAt)
@@ -527,6 +528,92 @@ class GuestsService {
     };
   }
 
+  /**
+   * Guest book — the host's reusable contacts across all their events.
+   *
+   * Scoped by the host's own events (Event.host), NOT by `addedBy`, so a
+   * guest an admin added on the host's behalf still appears in the host's
+   * book. Dedupes by phone (newest occurrence wins for the display
+   * name/category) and is filterable by free-text category + name/phone
+   * search. Read-only — touches no event and consumes no quota.
+   *
+   * @param {Object|string} actor - req.user or userId
+   * @param {{ search?: string, category?: string }} filters
+   * @param {{ page?: number, limit?: number }} options
+   * @returns {Promise<{ data: Array, categories: string[], pagination: Object }>}
+   */
+  async getMyContacts(actor, filters = {}, options = {}) {
+    const { search, category } = filters;
+    const { page = 1, limit = 50 } = options;
+    const skip = (page - 1) * limit;
+    const userId = this._actorId(actor);
+
+    // Resolve the host's events. Admin-on-behalf guests still belong here.
+    const eventIds = await Event.find({
+      host: userId,
+      status: { $ne: 'deleted' },
+    }).distinct('_id');
+
+    if (!eventIds.length) {
+      return { data: [], categories: [], pagination: { page, limit, total: 0, pages: 0 } };
+    }
+
+    const match = { event: { $in: eventIds }, deleted: { $ne: true } };
+    if (category) match.category = category;
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rx = new RegExp(escaped, 'i');
+      match.$or = [{ name: rx }, { phone: rx }];
+    }
+
+    // Dedupe by phone; newest occurrence wins for the display name/category.
+    const [agg] = await Guest.aggregate([
+      { $match: match },
+      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: '$phone',
+          name: { $first: '$name' },
+          phone: { $first: '$phone' },
+          category: { $first: '$category' },
+          lastUsedAt: { $first: '$createdAt' },
+          eventCount: { $sum: 1 },
+        },
+      },
+      { $sort: { lastUsedAt: -1 } },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          meta: [{ $count: 'total' }],
+        },
+      },
+    ]);
+
+    const data = (agg?.data || []).map((c) => ({
+      name: c.name,
+      phone: c.phone,
+      category: c.category || null,
+      lastUsedAt: c.lastUsedAt,
+      eventCount: c.eventCount,
+    }));
+    const total = agg?.meta?.[0]?.total || 0;
+
+    // Distinct categories across the whole book (independent of paging/filter).
+    const categories = (
+      await Guest.distinct('category', {
+        event: { $in: eventIds },
+        deleted: { $ne: true },
+        category: { $nin: [null, ''] },
+      })
+    ).sort((a, b) => a.localeCompare(b));
+
+    return {
+      data,
+      categories,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    };
+  }
+
   // ============================================
   // PRIVATE HELPERS
   // ============================================
@@ -555,6 +642,7 @@ class GuestsService {
       id: guest._id,
       name: guest.name,
       phone: guest.phone,
+      category: guest.category || null,
       status: guest.status,
       rsvp: guest.rsvp,
       checkIn: guest.checkIn,

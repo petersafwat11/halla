@@ -53,7 +53,7 @@ class SubscriptionsService {
       };
     }
 
-    // Per-event re-creation gate (Phase 4). A per-event plan is "used up" the
+    // Per-event re-creation gate. A per-event plan is "used up" the
     // moment sending starts (even one guest), so:
     //   - firstSendAt set      → permanently blocked (cancel/delete never frees it)
     //   - an active event already exists under this subscription → blocked

@@ -1,5 +1,5 @@
 /**
- * Reset-password completion screen (Phase 4b).
+ * Reset-password completion screen.
  *
  * Lands here from a deep link such as:
  *   - `halla://reset-password/<token>`            (custom scheme)

@@ -1,7 +1,7 @@
 /**
  * Timezone utility.
  *
- * Phase 1b foundation (PIPELINE-F05). Convention:
+ * Convention:
  *
  *   - All timestamps are stored as UTC `Date` instances in MongoDB.
  *   - Backend never depends on `process.env.TZ` or `Date#getHours()` for
@@ -12,8 +12,7 @@
  *     `moment-timezone`. If we expand beyond KSA we swap this module's
  *     internals for a real TZ library; consumers do not change.
  *
- * The frontend formatter (`formatInUserTimezone`) lives next to the
- * frontend code per the master plan; this module is backend-only.
+ * This module is backend-only.
  */
 
 const DEFAULT_TZ = "Asia/Riyadh";
@@ -81,10 +80,8 @@ const parseEventTime = (eventDoc, tz = DEFAULT_TZ) => {
     return new Date(naiveUtc - RIYADH_OFFSET_MINUTES * 60 * 1000);
   }
 
-  // M-4: previously this fell back to a naive UTC interpretation, which
-  // silently lied to the caller for any non-Riyadh tz arg (returned the
-  // wrong absolute instant by up to ±14 hours). Fail loudly instead so
-  // callers either pass `Asia/Riyadh` explicitly or wire in `date-fns-tz`.
+  // Fail loudly so callers either pass `Asia/Riyadh` explicitly or wire in
+  // `date-fns-tz`.
   throw new Error(
     `Unsupported timezone: ${tz}. Supported: Asia/Riyadh`
   );
@@ -93,10 +90,9 @@ const parseEventTime = (eventDoc, tz = DEFAULT_TZ) => {
 /**
  * Format a Date in Asia/Riyadh wall-clock using `Intl.DateTimeFormat`.
  *
- * M-5: replaces ad-hoc `toLocaleString()` / `toLocaleDateString()` calls in
- * exports and notifications. Without an explicit `timeZone` option,
- * `toLocaleString()` follows the host TZ, so a server running in UTC
- * formats Riyadh-evening events as the previous day.
+ * Without an explicit `timeZone` option, `toLocaleString()` follows the host
+ * TZ, so a server running in UTC formats Riyadh-evening events as the
+ * previous day.
  *
  * @param {Date|string|number} date
  * @param {Object} [opts]
@@ -146,7 +142,7 @@ const formatRiyadh = (date, opts = {}) => {
  * @returns {boolean}
  */
 const isDue = (eventDoc, now = new Date(), windowSeconds = 60) => {
-  // M-4: `parseEventTime` is now strict about unsupported timezones. Always
+  // `parseEventTime` is strict about unsupported timezones. Always
   // pass DEFAULT_TZ so the cron path can never throw on an unexpected tz
   // arg surfaced from event metadata.
   let scheduled;

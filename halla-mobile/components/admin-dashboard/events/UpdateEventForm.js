@@ -43,8 +43,8 @@ const mapApiToFormValues = (eventData) => {
     name: m.name || "",
     phone: m.phone || m.mobile || "",
   }));
-  // Phase 4c W2-MOBILE-RENAME — read canonical fields first, fall back
-  // to legacy `invitationSettings.*` during the dual-write window.
+  // Read canonical fields first, fall back to legacy
+  // `invitationSettings.*` during the dual-write window.
   const inv = eventData.invitationSettings || {};
   const canonicalReplies = eventData.guestReplies || {};
 

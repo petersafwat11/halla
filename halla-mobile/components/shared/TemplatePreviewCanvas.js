@@ -1,5 +1,5 @@
 /**
- * TemplatePreviewCanvas (mobile) — Phase 4c hardening (post-review).
+ * TemplatePreviewCanvas (mobile).
  *
  * React-Native counterpart of the web `TemplatePreviewCanvas.jsx`.
  * Renders the template's background image plus text overlays at the
@@ -18,9 +18,9 @@
  *     height: tpl.naturalHeight,
  *   });
  *
- * Mirrors the web component's overlay coordinate system: positions are
- * percentages of natural image dimensions; OverlayItem positions
- * absolutely with a `translate(-50%, -50%)` centering offset.
+ * Overlay coordinate system: positions are percentages of natural image
+ * dimensions; OverlayItem positions absolutely with a
+ * `translate(-50%, -50%)` centering offset.
  */
 
 import React, { useEffect, useState } from "react";
@@ -32,8 +32,7 @@ import { resolveTemplateFont } from "../../utils/cairoFont";
 
 const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
 
-// Render `time`-typed values as "HH:MM" 24h. Mirrors the web canvas —
-// see `labbe/components/shared/TemplatePreviewCanvas.jsx`.
+// Render `time`-typed values as "HH:MM" 24h.
 function formatFieldValue(field, raw, t) {
   if (raw === undefined || raw === null || raw === "") return null;
   if (field?.type === "time") {

@@ -52,7 +52,7 @@ const ADMIN_PAGES = {
   DASHBOARD: 'dashboard',
   HOSTS: 'hosts',
   // Business accounts (role:host + accountType:'business'). super_admin/admin
-  // = FULL, moderator = NONE (locked owner decision). Host = NONE.
+  // = FULL, moderator = NONE. Host = NONE.
   BUSINESSES: 'businesses',
   VENDORS: 'vendors',
   EVENTS: 'events',
@@ -62,9 +62,8 @@ const ADMIN_PAGES = {
   MANAGE_PLANS: 'manage_plans',
   SETTINGS: 'settings',
   DISCOUNTS: 'discounts',
-  // Phase 4c W0-VISUAL-BACKEND + W0-MODEL: visual-template editor +
-  // category manager + Taqnyat-template assignments. RBAC defaults from
-  // D4c-3:
+  // Visual-template editor + category manager + Taqnyat-template
+  // assignments. RBAC defaults:
   //   templates           super_admin/admin = FULL, moderator = EDIT
   //   template_categories super_admin/admin = FULL, moderator = VIEW
   //   taqnyat_templates   super_admin/admin = FULL, moderator = NONE

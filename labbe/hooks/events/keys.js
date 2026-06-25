@@ -1,11 +1,8 @@
 // Event key factory.
 //
-// The existing event hook files in hooks/events/{queries,mutations}/ still
-// reference their keys as literal arrays (`["events", eventId]` etc.) — the
-// factory is byte-identical to those literals, so it interoperates without
-// any cache migration. The individual files can adopt the factory
-// incrementally; cross-domain callers (checkout, post-event, etc.) use the
-// factory exclusively per the Phase 5 convention.
+// Keys must stay byte-identical to the literal arrays (`["events", eventId]`
+// etc.) that some event hook files use directly, so the two interoperate
+// against the same query cache.
 export const eventsKeys = {
   all: ["events"],
   myEvents: () => [...eventsKeys.all, "my-events"],

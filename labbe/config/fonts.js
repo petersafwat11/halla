@@ -1,9 +1,8 @@
 /**
- * Fonts Config — Phase 4c W1-VISUAL
+ * Fonts Config
  *
- * Mirrors the backend `fontRegistry.js` constant (per v4.1 §A-6,
- * [PATCH 8]). Frontend resolves display names via
- * `t('fonts.<id>.displayName')` — names live in locale files, not here.
+ * Frontend resolves display names via `t('fonts.<id>.displayName')` —
+ * names live in locale files, not here.
  *
  * The default value below is a reasonable boot-time fallback. The
  * `useFonts` query (`hooks/templates/queries.js`) hydrates the live

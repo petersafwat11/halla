@@ -27,6 +27,7 @@ import {
  *   subtitleAlt  (string?)   — Phone or third info line
  *   avatarColor  (string?)   — Initial-circle background color (default: primary[500])
  *   status       (string?)   — Passed to StatusBadge; omit to hide badge
+ *   statusDomain (string?)   — Optional domain for StatusBadge color overrides ("payment" | "subscription" | "delivery")
  *   chips        (array?)    — [{label, color, bg, icon?}] — small tag chips below header
  *   details      (array?)    — [{icon, text, color?}] — icon + text detail rows
  *   extraContent (ReactNode) — Custom content slot for stars, ticket rows, etc.
@@ -41,6 +42,7 @@ const AdminListItem = ({
   subtitleAlt,
   avatarColor = colors.primary[500],
   status,
+  statusDomain,
   chips,
   details,
   extraContent,
@@ -85,7 +87,9 @@ const AdminListItem = ({
               </Text>
             ) : null}
           </View>
-          {status ? <StatusBadge status={status} size="small" /> : null}
+          {status ? (
+            <StatusBadge status={status} domain={statusDomain} size="small" />
+          ) : null}
         </View>
 
         {/* ── Chips Row ── */}

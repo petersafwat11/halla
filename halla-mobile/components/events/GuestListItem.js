@@ -1,16 +1,16 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { getStatusVisual } from "../../constants/statusColors";
 
 /**
- * Phase 4 W2-QR + W2-GAT: long-press menu now also offers
+ * The long-press menu offers:
  *   - "Rotate QR" (regenerates the guest's QR; old QR returns 410
  *     `qr_rotated`); and
  *   - "Revoke post-event access" (revokes the GuestAccessToken used
  *     for post-event content; old token returns 410 `qr_revoked`).
  *
- * Edit and delete remain on the inline action row for parity with the
- * pre-Phase-4 UX.
+ * Edit and delete remain on the inline action row.
  */
 const GuestListItem = ({
   guest,
@@ -25,20 +25,17 @@ const GuestListItem = ({
   onToggle,
 }) => {
   const getStatusStyle = (status) => {
+    // Backend RSVP default (no response) → treat as "invited" for the tone.
     switch (status) {
       case "confirmed":
       case "checked_in":
-        return { backgroundColor: "#EAF4EF", color: "#2A8C5B", label: "سأحضر" };
+        return { ...getStatusVisual(status), label: "سأحضر" };
       case "declined":
-        return { backgroundColor: "#F5ECE4", color: "#8A6541", label: "اعتذر" };
+        return { ...getStatusVisual("declined"), label: "اعتذر" };
       case "maybe":
-        return { backgroundColor: "#FEFCE8", color: "#CA8A04", label: "ربما" };
+        return { ...getStatusVisual("maybe"), label: "ربما" };
       default:
-        return {
-          backgroundColor: "#F5ECE4",
-          color: "#8A6541",
-          label: "لم يرد",
-        };
+        return { ...getStatusVisual("invited"), label: "لم يرد" };
     }
   };
 
@@ -151,8 +148,8 @@ const GuestListItem = ({
           <Text style={styles.responseDate}>{guest.responseDate || "لم يرد بعد"}</Text>
         </View>
 
-        <View style={[styles.statusBadge, { backgroundColor: statusStyle.backgroundColor }]}>
-          <Text style={[styles.statusText, { color: statusStyle.color }]}>
+        <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+          <Text style={[styles.statusText, { color: statusStyle.fg }]}>
             {statusStyle.label}
           </Text>
         </View>

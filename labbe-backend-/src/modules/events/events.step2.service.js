@@ -55,7 +55,7 @@ module.exports = {
         : userContext;
 
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext))
-      .populate('guestList', 'name email phone status');
+      .populate('guestList', 'name phone status category');
     if (!event) throw new NotFoundError("Event");
 
     if (['completed', 'cancelled'].includes(event.status)) {
@@ -126,11 +126,11 @@ module.exports = {
       incomingPhones.add(normPhone);
       const existing = existingByPhone.get(normPhone);
       if (existing) {
-        if (existing.name !== incoming.name || (incoming.email && existing.email !== incoming.email)) {
+        if (existing.name !== incoming.name || (incoming.category !== undefined && existing.category !== incoming.category)) {
           toUpdate.push({
             _id: existing._id,
             name: incoming.name,
-            ...(incoming.email && { email: incoming.email }),
+            ...(incoming.category !== undefined && { category: incoming.category }),
           });
         }
         keptGuestIds.push(existing._id);
@@ -138,7 +138,7 @@ module.exports = {
         toCreate.push({
           name: incoming.name,
           phone: incoming.phone,
-          email: incoming.email || '',
+          ...(incoming.category !== undefined && { category: incoming.category }),
           event: eventId,
           status: 'invited',
           addedBy: userId,
@@ -182,7 +182,7 @@ module.exports = {
         for (const u of toUpdate) {
           await Guest.findByIdAndUpdate(
             u._id,
-            { name: u.name, ...(u.email !== undefined && { email: u.email }) },
+            { name: u.name, ...(u.category !== undefined && { category: u.category }) },
             { session }
           );
         }
@@ -223,14 +223,14 @@ module.exports = {
         // is DEFERRED until the staff save succeeds — this preserves
         // each existing guest document's `qrcode`, `rsvp`, `checkIn`,
         // and any other fields not loaded into the populated event
-        // (only name/email/phone/status are populated above). If we
+        // (only name/phone/status/category are populated above). If we
         // deleted-then-restored on rollback we'd regenerate the QR via
         // GuestModel's pre-save hook, which would invalidate any
         // invitation links already shared.
         //
         // Sequence:
         //   1. Update kept guests in place. Stash pre-image so we can
-        //      restore the name/email on rollback (best-effort).
+        //      restore the name/category on rollback (best-effort).
         //   2. Create the brand-new guests.
         //   3. Save the event with guestList = [kept, new] — the
         //      to-delete docs still exist in the Guest collection but
@@ -272,7 +272,7 @@ module.exports = {
               try {
                 await Guest.findByIdAndUpdate(guestId, {
                   name: pre.name,
-                  ...(pre.email !== undefined && { email: pre.email }),
+                  ...(pre.category !== undefined && { category: pre.category }),
                 });
               } catch (_) { /* best-effort */ }
             }
@@ -307,12 +307,12 @@ module.exports = {
             if (existing) {
               updatePreImages.set(existing._id.toString(), {
                 name: existing.name,
-                email: existing.email,
+                category: existing.category,
               });
             }
             await Guest.findByIdAndUpdate(
               u._id,
-              { name: u.name, ...(u.email !== undefined && { email: u.email }) }
+              { name: u.name, ...(u.category !== undefined && { category: u.category }) }
             );
           }
         } catch (updateErr) {
@@ -394,7 +394,7 @@ module.exports = {
 
     const updated = await Event.findById(eventId).populate(
       "guestList",
-      "name email phone status"
+      "name phone status category"
     );
     return { event: updated, addedCount };
   },

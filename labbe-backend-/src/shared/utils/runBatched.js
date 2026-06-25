@@ -1,5 +1,5 @@
 /**
- * Batched parallel runner with concurrency + per-second rate cap (Phase 3b.1).
+ * Batched parallel runner with concurrency + per-second rate cap.
  *
  * The naive `for guest of guests { await taqnyat.send(); await sleep(100); }`
  * loop blocks event-loop progress for ~100 seconds per 1000 guests, which
@@ -7,7 +7,7 @@
  * bounded concurrent fan-out that respects Taqnyat's per-second rate
  * cap.
  *
- * Defaults (PHASE_3abc_PLAN.md, decision D3):
+ * Defaults:
  *   concurrency = 5
  *   ratePerSecond = 10
  *
@@ -37,7 +37,7 @@ async function runBatched(items, worker, opts = {}) {
   let failed = 0;
   const startTimes = []; // sliding window of recent start timestamps (ms)
 
-  // M-21: 429 backoff. The fixed prefix throttle does NOT decay when the
+  // 429 backoff. The fixed prefix throttle does NOT decay when the
   // upstream (Taqnyat) signals it's overloaded — once we start hitting
   // 429s, the failures cascade because we keep firing at the static cap.
   // We adapt the rate downward when 429s appear and recover after a

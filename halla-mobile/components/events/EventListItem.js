@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { getStatusVisual } from "../../constants/statusColors";
 
 const EventListItem = ({ event, onPress }) => {
   const formatDateTime = () => {
@@ -23,23 +24,28 @@ const EventListItem = ({ event, onPress }) => {
   const noResponse = Math.max(0, guestCount - confirmed - declined);
 
   const getStatusStyle = (status) => {
+    const v = getStatusVisual(status);
     switch (status) {
       case "live":
-        return { bg: "#EAF4EF", color: "#2A8C5B", label: "مباشرة" };
+        return { bg: v.bg, color: v.fg, label: "مباشرة" };
       case "scheduled":
-        return { bg: "#DBEAFE", color: "#1E40AF", label: "مجدولة" };
+        return { bg: v.bg, color: v.fg, label: "مجدولة" };
       case "draft":
-        return { bg: "#FFF3E0", color: "#F57C00", label: "مسودة" };
+        return { bg: v.bg, color: v.fg, label: "مسودة" };
       case "completed":
-        return { bg: "#F2F2F2", color: "#656565", label: "منتهية" };
+        return { bg: v.bg, color: v.fg, label: "منتهية" };
       case "cancelled":
-        return { bg: "#FEE2E2", color: "#991B1B", label: "ملغية" };
+        return { bg: v.bg, color: v.fg, label: "ملغية" };
       default:
-        return { bg: "#F2F2F2", color: "#656565", label: status || "غير محدد" };
+        return { bg: v.bg, color: v.fg, label: status || "غير محدد" };
     }
   };
 
   const status = getStatusStyle(event.status);
+  // Stat dots — route through the same helper so dots match the badge palette.
+  const confirmedDot = getStatusVisual("confirmed").fg;
+  const declinedDot = getStatusVisual("declined").fg;
+  const noResponseDot = getStatusVisual("invited").fg;
 
   return (
     <TouchableOpacity
@@ -85,15 +91,15 @@ const EventListItem = ({ event, onPress }) => {
       {/* Stats row */}
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
-          <View style={[styles.statDot, { backgroundColor: "#2A8C5B" }]} />
+          <View style={[styles.statDot, { backgroundColor: confirmedDot }]} />
           <Text style={styles.statText}>موافق {confirmed}</Text>
         </View>
         <View style={styles.statItem}>
-          <View style={[styles.statDot, { backgroundColor: "#C0392B" }]} />
+          <View style={[styles.statDot, { backgroundColor: declinedDot }]} />
           <Text style={styles.statText}>معتذر {declined}</Text>
         </View>
         <View style={styles.statItem}>
-          <View style={[styles.statDot, { backgroundColor: "#A0A0A0" }]} />
+          <View style={[styles.statDot, { backgroundColor: noResponseDot }]} />
           <Text style={styles.statText}>لم يرد {noResponse}</Text>
         </View>
       </View>

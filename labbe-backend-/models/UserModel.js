@@ -145,10 +145,10 @@ const vendorDataSchema = new mongoose.Schema(
     adminNotes: String,
     rejectionReason: String,
 
-    // FLOW-24-F02: profile-completion flag (auto-set when required vendor fields are present)
+    // profile-completion flag (auto-set when required vendor fields are present)
     profileCompleted: { type: Boolean, default: false },
 
-    // FLOW-24-F02: status-change audit timestamps and actor
+    // status-change audit timestamps and actor
     approvedAt: { type: Date, default: null },
     rejectedAt: { type: Date, default: null },
     rejectedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
@@ -309,10 +309,8 @@ const userSchema = new mongoose.Schema(
     },
 
     // ============ NOTIFICATION PREFERENCES ============
-    // Shape mirrors the role-aware schemas in
-    // `@halla/shared/schemas/settings`. Mixed because keys vary by role
-    // (host has appNotifications only; admin has both app +
-    // email; vendor has neither — vendor prefs were removed). The active
+    // Mixed because keys vary by role (host has appNotifications only;
+    // admin has both app + email; vendor has neither). The active
     // notifications service reads `appNotifications[<key>]` to decide
     // whether to create an in-app notification.
     notificationPreferences: {
@@ -336,7 +334,7 @@ const userSchema = new mongoose.Schema(
     },
 
     // ============ PREFERENCES ============
-    // FLOW-07-F03: top-level language preference; returned on profile fetch
+    // top-level language preference; returned on profile fetch
     // so mobile clients can sync from server rather than storing locally only.
     preferredLanguage: {
       type: String,
@@ -374,7 +372,7 @@ const userSchema = new mongoose.Schema(
 // Compound indexes for common queries
 userSchema.index({ role: 1, status: 1 });
 userSchema.index({ role: 1, createdAt: -1 });
-// Account-type segregation (personal vs business host queries). [#5]
+// Account-type segregation (personal vs business host queries).
 userSchema.index({ role: 1, accountType: 1, status: 1 });
 userSchema.index({ "profile.vendorData.serviceCategories": 1 });
 userSchema.index({ "profile.vendorData.vendorStatus": 1 });
@@ -537,7 +535,7 @@ userSchema.methods.createPasswordResetToken = function () {
     .update(resetToken)
     .digest("hex");
 
-  this.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour (FLOW-06-F01)
+  this.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour
 
   return resetToken;
 };
@@ -565,8 +563,8 @@ userSchema.methods.createEmailVerificationCode = function () {
  * @returns {boolean}
  */
 userSchema.methods.verifyEmailCode = function (code) {
-  // M-14 fix: hashed-code comparison must be constant-time. The previous
-  // `===` short-circuits on first byte mismatch and leaks per-byte timing
+  // Hashed-code comparison must be constant-time. A plain `===`
+  // short-circuits on first byte mismatch and leaks per-byte timing
   // information that, combined with the 6-digit numeric input space, can be
   // exploited to recover a verification code over many attempts. Use
   // `crypto.timingSafeEqual` over equal-length buffers.
@@ -605,7 +603,7 @@ userSchema.methods.isLocked = function () {
  */
 userSchema.methods.incLoginAttempts = async function () {
   const MAX_LOGIN_ATTEMPTS = 5;
-  const LOCK_TIME = 30 * 60 * 1000; // 30 minutes (FLOW-01-F07 / FLOW-05-F01)
+  const LOCK_TIME = 30 * 60 * 1000; // 30 minutes
 
   // If we have a previous lock that has expired, reset
   if (this.lockUntil && this.lockUntil < Date.now()) {
@@ -716,7 +714,7 @@ userSchema.methods.toPublicJSON = async function () {
 
     // Business accounts (role:host + accountType:'business') need their
     // `businessData` surfaced alongside `roleData` (=hostData). The whole
-    // `profile` is dropped below, so copy it out explicitly. [#6]
+    // `profile` is dropped below, so copy it out explicitly.
     if (obj.accountType === ACCOUNT_TYPES.BUSINESS && obj.profile.businessData) {
       obj.businessData = obj.profile.businessData;
     }

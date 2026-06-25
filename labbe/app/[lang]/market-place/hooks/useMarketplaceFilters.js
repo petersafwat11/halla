@@ -17,7 +17,7 @@ export const useMarketplaceFilters = () => {
   const searchQuery = searchParams.get("search") || "";
   const regionId = searchParams.get("regionId") || "";
   const cityId = searchParams.get("cityId") || "";
-  // Phase 8 — memoised so the `|| []` fallback doesn't produce a fresh
+  // Memoised so the `|| []` fallback doesn't produce a fresh
   // array every render and bust the `activeFilters` useMemo below.
   const districtIds = useMemo(
     () => searchParams.get("districtIds")?.split(",").filter(Boolean) || [],

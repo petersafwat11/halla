@@ -48,6 +48,7 @@ import {
   PAGES,
 } from "../../utils/adminPermissions";
 import { saveBlobAndShare } from "../../utils/download";
+import { getStatusVisual } from "../../constants/statusColors";
 
 import TopBar from "../../components/plans/TopBar";
 import {
@@ -75,10 +76,7 @@ import {
 /**
  * Single-event details screen — host + admin combined.
  *
- * Mirrors the two web pages
- *   labbe/app/[lang]/host/events/[id]/page.jsx          (HostEventHeader)
- *   labbe/app/[lang]/admin-dash/events/[id]/page.jsx    (AdminEventHeader)
- * in one place. Role differences are minimal and gated inline:
+ * Role differences are minimal and gated inline:
  *   - admin sees the host badge next to the title + host info section
  *   - admin sees the subscription card and the destructive Delete button
  *     in `EventActionsHeader` (passed via `isAdmin`)
@@ -92,13 +90,18 @@ import {
  * branch-on-role on the client.
  */
 
+const toCfg = (status, labelKey) => {
+  const { fg, bg } = getStatusVisual(status);
+  return { color: fg, bg, labelKey };
+};
+
 const STATUS_CONFIG = {
-  scheduled: { color: "#3498DB", bg: "#E8F4FD", labelKey: "scheduled" },
-  live: { color: "#2A8C5B", bg: "#EAF4EF", labelKey: "live" },
-  completed: { color: "#666666", bg: "#F5F5F5", labelKey: "completed" },
-  draft: { color: "#D38200", bg: "#FBF3E6", labelKey: "draft" },
-  cancelled: { color: "#C0392B", bg: "#F9EBEA", labelKey: "cancelled" },
-  failed: { color: "#C0392B", bg: "#F9EBEA", labelKey: "failed" },
+  scheduled: toCfg("scheduled", "scheduled"),
+  live: toCfg("live", "live"),
+  completed: toCfg("completed", "completed"),
+  draft: toCfg("draft", "draft"),
+  cancelled: toCfg("cancelled", "cancelled"),
+  failed: toCfg("failed", "failed"),
 };
 
 const formatDate = (iso) => {
@@ -130,15 +133,13 @@ const EventDetailsScreen = () => {
   const currentUser = useAuthStore((s) => s.user);
   // Inverse check — hosts get the host UX, everyone else (admin / super_admin /
   // moderator) gets the admin UX.
-  // This matches the web split between host/events/[id] and admin-dash/events/[id].
   const isAdmin = !!role && role !== "host";
   const canEdit = canEditPage(role, PAGES.EVENTS);
   const canDelete = canDeleteOnPage(role, PAGES.EVENTS);
 
   const { data: resp, isLoading, refetch, isRefetching, error } = useSingleEventStats(eventId);
-  // Canonical guest list — matches web's `GuestTable` (uses
-  // `useEventGuests`). Falling back to `event.guestList` only — like the
-  // previous mobile screen did — leaves hosts with an empty list when
+  // Canonical guest list via `useEventGuests`. Falling back to
+  // `event.guestList` only leaves hosts with an empty list when
   // the backend `getEventById` populator hasn't shipped to the env yet
   // (which is exactly the "guests don't load" symptom the user reported).
   const { data: guestsResp, refetch: refetchGuests } = useEventGuests(eventId);
@@ -386,9 +387,7 @@ const EventDetailsScreen = () => {
     try {
       // The mutation returns the XLSX blob; it does NOT persist it. We have to
       // hand the blob to `saveBlobAndShare` (write to cache + native share
-      // sheet) — mirroring EventList's host events export. Previously this
-      // awaited the mutation and showed a success toast while silently
-      // dropping the blob, so nothing was ever exported.
+      // sheet).
       const result = await exportGuestsMutation.mutateAsync({ eventId });
       if (!result?.blob) {
         throw new Error(t("guest.alerts.exportError", "تعذر تصدير قائمة الضيوف"));
@@ -646,20 +645,15 @@ const EventDetailsScreen = () => {
     );
   }
 
-  const statusCfg = STATUS_CONFIG[event?.status] || {
-    color: "#666666",
-    bg: "#F5F5F5",
-    labelKey: "unknown",
-  };
+  const statusCfg = STATUS_CONFIG[event?.status] || toCfg("unknown", "unknown");
   const statusLabel = t(
     `eventDetails.statuses.${statusCfg.labelKey}`,
     statusCfg.labelKey
   );
 
-  // Match the web HostEventHeader/AdminEventHeader resolution order so
-  // the same backend payload renders an identical heading on both tiers.
-  // Host endpoint nests under `eventDetails.title`; the legacy admin
-  // payload kept `title` at the top level — fall through both.
+  // Resolution order so the same backend payload renders an identical
+  // heading on both tiers. Host endpoint nests under `eventDetails.title`;
+  // the admin payload keeps `title` at the top level — fall through both.
   const eventTitle =
     event?.eventDetails?.title ||
     event?.title ||
@@ -683,10 +677,10 @@ const EventDetailsScreen = () => {
   // shortcut whenever there are confirmed guests (no quota gate).
   const hasConfirmedGuests = stats.confirmed > 0;
 
-  // Pass the full event so `useEventActionGate` sees every field the web
+  // Pass the full event so `useEventActionGate` sees every field the
   // hook reads (taqnyatTemplate, staffList, status, launchSettings, …).
-  // The previous stripped projection lost fields whenever the API shape
-  // shifted, which silently disabled the action buttons.
+  // A stripped projection loses fields whenever the API shape shifts,
+  // which silently disables the action buttons.
   const headerEvent = {
     ...event,
     id: event.id || event._id,
@@ -758,7 +752,7 @@ const EventDetailsScreen = () => {
           </View>
         ) : null}
 
-        {/* Failure / retry banner (mobile parity with web's EventFailureBannerClient) */}
+        {/* Failure / retry banner */}
         <EventFailureBanner
           event={event}
           currentUser={currentUser}
@@ -993,7 +987,7 @@ const EventDetailsScreen = () => {
 
           {/* Quick "Didn't respond or maybe" filter — the resend audience.
               Shown in select mode so the host can narrow the list, select all,
-              then resend. Mirrors the web's noResponseOrMaybe filter option. */}
+              then resend. */}
           {activeTab === "guests" && selectMode && (
             <View style={styles.filterChipRow}>
               <TouchableOpacity

@@ -1,7 +1,5 @@
 /**
- * Read-only payment detail surface for admins. Mirrors the web
- * PaymentDetailModal — same canonical fields, same refund/capture/void
- * action set, same Idempotency-Key minting per modal session.
+ * Read-only payment detail surface for admins.
  *
  * RBAC: only super_admin / admin see write actions. Status-aware visibility
  * gates further:

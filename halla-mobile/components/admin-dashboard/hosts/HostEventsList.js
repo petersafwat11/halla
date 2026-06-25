@@ -10,6 +10,7 @@ import {
   textStyles,
   backgrounds,
 } from "../../../styles/tokens";
+import { getStatusVisual } from "../../../constants/statusColors";
 
 const formatDate = (d, locale) => {
   if (!d) return null;
@@ -20,18 +21,10 @@ const formatDate = (d, locale) => {
   });
 };
 
-const getStatusColor = (status) => {
-  switch (status) {
-    case "published": return colors.success[500];
-    case "pending_scheduling": return colors.natural[450];
-    case "ended":     return colors.error[500];
-    default:          return colors.natural[400];
-  }
-};
-
 const EventCard = ({ event, onPress }) => {
   const { t, currentLanguage } = useTranslation("admin");
-  const statusColor = getStatusColor(event.status);
+  const statusVisual = getStatusVisual(event.status);
+  const statusColor = statusVisual.fg;
   const rawStatus = event.status || "pending_scheduling";
   const humanizedStatus = rawStatus
     .replace(/[_-]/g, " ")
@@ -46,7 +39,7 @@ const EventCard = ({ event, onPress }) => {
           <Text style={styles.eventTitle} numberOfLines={1}>
             {event.title || t("hostEvents.untitled")}
           </Text>
-          <View style={[styles.statusChip, { backgroundColor: `${statusColor}20` }]}>
+          <View style={[styles.statusChip, { backgroundColor: statusVisual.bg }]}>
             <Text style={[styles.statusText, { color: statusColor }]}>
               {t(`hostEvents.statuses.${rawStatus}`, humanizedStatus)}
             </Text>

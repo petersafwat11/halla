@@ -42,6 +42,24 @@ exports.submitRSVP = catchAsync(async (req, res) => {
 // ============================================
 
 /**
+ * Get my contacts — the host's reusable guest book across all their events.
+ * GET /api/v2/guests/my-contacts
+ */
+exports.getMyContacts = catchAsync(async (req, res) => {
+  const { page, limit, search, category } = req.query;
+  const result = await guestsService.getMyContacts(
+    req.user,
+    { search, category },
+    { page: parseInt(page) || 1, limit: parseInt(limit) || 50 }
+  );
+  sendSuccess(res, {
+    contacts: result.data,
+    categories: result.categories,
+    pagination: result.pagination,
+  });
+});
+
+/**
  * Get event guests
  * GET /api/v2/guests/events/:eventId
  */

@@ -317,7 +317,7 @@ const moyasarProvider = {
     }
   },
 
-  // ─── INVOICES (Phase 3 — recurring billing) ──────────────────────
+  // ─── INVOICES (recurring billing) ──────────────────────
   async createInvoice({ amount, currency = "SAR", description, callbackUrl, metadata }) {
     if (!process.env.MOYASAR_API_KEY) {
       return { success: false, error: "MOYASAR_API_KEY missing", provider: "moyasar" };

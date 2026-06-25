@@ -7,4 +7,5 @@ export const guestsKeys = {
     invitationToken,
   ],
   forEvent: (eventId) => [...guestsKeys.all, "events", eventId],
+  myContacts: (params) => [...guestsKeys.all, "my-contacts", params || {}],
 };

@@ -1,8 +1,8 @@
 /**
  * Business Plan Assignment Service
  *
- * The durable assignment + payment + entitlement state machine
- * (business-account plan #1/#2/#5). Two modes:
+ * The durable assignment + payment + entitlement state machine for
+ * business-account plans. Two modes:
  *
  *   A. GRANT    — admin directly grants a plan (no payment; setup waived).
  *   B. CHECKOUT — admin issues a hosted checkout link (WhatsApp + SMS fallback);
@@ -66,7 +66,7 @@ class BusinessAssignmentService {
   /**
    * Supersede an existing PENDING_PAYMENT assignment so a new one can be issued.
    * Refuses if an in-flight `payment_processing`/`paid` assignment exists — those
-   * must NOT be cancelled by a new assignment. [#3-of-review]
+   * must NOT be cancelled by a new assignment.
    */
   async _supersedePending(businessUserId, replacementId = null) {
     const inFlight = await BusinessPlanAssignment.findOne({
@@ -305,7 +305,7 @@ class BusinessAssignmentService {
   /**
    * Public summary for the hosted checkout page. NO sensitive business data —
    * only what's needed to render the plan + setup-fee summary. Token is NOT
-   * consumed here (consumed on submit). [#security]
+   * consumed here (consumed on submit).
    */
   async getPublicSummary(rawToken) {
     const hash = hashCheckoutToken(rawToken);
@@ -522,9 +522,7 @@ class BusinessAssignmentService {
     // reconciliation cron) can all reach here with status=PAID within
     // milliseconds; only the version-matching winner proceeds to create the
     // subscription, carry invites, and cancel old subs. Losers return idempotent
-    // success. (Previously _activateSubscription ran BEFORE the CAS, so two
-    // concurrent callers could each create a subscription / double-carry invites
-    // / double-cancel old subs before the CAS picked a winner.)
+    // success.
     const claimed = await BusinessPlanAssignment.transition(
       assignment._id,
       ASSIGNMENT_STATUS.PAID,
@@ -571,7 +569,7 @@ class BusinessAssignmentService {
 
       // Settle the setup fee PAID permanently. Best-effort: a failure here does
       // NOT roll back the (already active) subscription — it is logged for
-      // reconciliation. amount = the snapshotted setup line (0 for q/a). [#5]
+      // reconciliation. amount = the snapshotted setup line (0 for q/a).
       try {
         const setupLine = payment
           ? (payment.lineItems || []).find((li) => li.type === 'setup_fee')
@@ -641,7 +639,6 @@ class BusinessAssignmentService {
   /**
    * Create the business subscription + carry over invites from a replaced
    * business subscription (merged-pool carryover), then cancel the old one.
-   * [#7 invite-pool carryover]
    */
   async _activateSubscriptionLegacy({ businessUserId, plan, assignment, paymentRecord }) {
     const existingActive = await Subscription.find({

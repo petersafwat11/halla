@@ -1,8 +1,7 @@
 /**
  * Resolve Taqnyat WhatsApp template `{{N}}` placeholders against an
- * event/guest/host context. Mirrors the backend resolver in
- * `messaging.formatting.js#getEventBodyParams` so client previews match
- * what the recipient actually sees at send time.
+ * event/guest/host context, so client previews match what the recipient
+ * actually sees at send time.
  *
  * Two resolution modes:
  *   1. Per-template `varMapping[]` (admin-curated dotted source keys).

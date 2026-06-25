@@ -110,7 +110,7 @@ const mapApiToFormValues = (eventData) => {
  * 404 for unauthorised roles, but a client-side gate produces a clearer
  * UX message and avoids a wasted round-trip on the wizard load.
  *
- * Mirrors the same scopes used on the backend:
+ * Scopes:
  *   - SUPER_ADMIN / ADMIN / MODERATOR — can edit any event the API returns.
  *   - HOST — only events they own.
  */
@@ -173,9 +173,8 @@ const useEventLoadAndGate = ({ eventId, currentStep }) => {
           // `data` itself. Without unwrapping it, `event.host` was `undefined`
           // so the host role-gate (`canEditEvent`) returned false ("ليست لديك
           // صلاحية لتعديل هذه المناسبة") and `mapApiToFormValues` read the wrong
-          // level, leaving the wizard blank for every role. Mirrors the same
-          // unwrap in `hooks/events/queries.js` (useSingleEventStats); fall
-          // back to `data` for resilience if the shape ever flattens.
+          // level, leaving the wizard blank for every role. Fall back to `data`
+          // for resilience if the shape ever flattens.
           setEventData(json.data.event || json.data);
         } else {
           setLoadError(t("events.update.loadError"));

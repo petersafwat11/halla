@@ -24,7 +24,8 @@ const saudiPhone = z
 const guestEntry = z.object({
   name: z.string().trim().min(1, 'guest name is required').max(120),
   phone: saudiPhone,
-  email: z.string().email().optional().or(z.literal('')),
+  // Optional free-text grouping label, reused across events. No fixed enum.
+  category: z.string().trim().max(60).optional(),
   status: z.enum(Object.values(GUEST_STATUS)).optional(),
 }).passthrough();
 

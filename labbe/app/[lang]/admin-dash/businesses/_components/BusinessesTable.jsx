@@ -13,6 +13,7 @@ import AddBusinessPopup from "./AddBusinessPopup";
 import EditBusinessPopup from "../[id]/_components/EditBusinessPopup";
 import AssignPlanPopup from "../[id]/_components/AssignPlanPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./BusinessesTable.module.css";
 
 export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
@@ -137,19 +138,19 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
 
   const renderCell = (key, value) => {
     if (key === "status") {
-      const statusConfig = {
-        active: { bg: "#EAF4EF", color: "#2A8C5B", text: t("status.active") },
-        suspended: { bg: "#F9EBEA", color: "#C0392B", text: t("status.suspended") },
-        inactive: { bg: "#F2F2F2", color: "#767676", text: t("status.inactive") },
+      const labels = {
+        active: t("status.active"),
+        suspended: t("status.suspended"),
+        inactive: t("status.inactive"),
       };
-      const config = statusConfig[value] || statusConfig.inactive;
+      const { fg, bg } = getStatusVisual(value);
       return (
         <div
           className={`${styles.statusBadge} ${styles.statusBadgeReadonly}`}
-          style={{ background: config.bg }}
+          style={{ background: bg }}
         >
-          <span className={styles.statusBadgeText} style={{ color: config.color }}>
-            {config.text}
+          <span className={styles.statusBadgeText} style={{ color: fg }}>
+            {labels[value] || labels.inactive}
           </span>
         </div>
       );

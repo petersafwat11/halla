@@ -3,21 +3,24 @@ import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import { colors, spacing, borderRadius, typography, backgrounds } from "../../../styles/tokens";
+import { getStatusVisual } from "../../../constants/statusColors";
 
-const STATUS_CONFIG = {
-  approved: { color: colors.success[500], bg: "#e8f5ee", labelKey: "approved" },
-  active: { color: colors.success[500], bg: "#e8f5ee", labelKey: "approved" },
-  pending: { color: colors.warning[500], bg: "#fff4e0", labelKey: "pending" },
-  rejected: { color: colors.error[500], bg: "#fdecea", labelKey: "rejected" },
-  suspended: { color: colors.error[500], bg: "#fdecea", labelKey: "suspended" },
-  inactive: { color: colors.natural[450], bg: colors.natural[150], labelKey: "suspended" },
+// Map each status to its i18n label key (colors come from getStatusVisual).
+const STATUS_LABEL_KEY = {
+  approved: "approved",
+  active: "approved",
+  pending: "pending",
+  rejected: "rejected",
+  suspended: "suspended",
+  inactive: "suspended",
 };
 
 const VendorHeroCard = ({ vendor }) => {
   const { t } = useTranslation("admin");
   const status = vendor?.status || "pending";
-  const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
-  const statusLabel = t(`vendorDetails.statuses.${statusCfg.labelKey}`, statusCfg.labelKey);
+  const statusVisual = getStatusVisual(status);
+  const labelKey = STATUS_LABEL_KEY[status] || STATUS_LABEL_KEY.pending;
+  const statusLabel = t(`vendorDetails.statuses.${labelKey}`, labelKey);
   const roleData = vendor?.roleData || vendor?.vendorData || {};
   const displayName = roleData?.brandName || vendor?.brandName || vendor?.username || "—";
   const ownerName = roleData?.ownerFullName || roleData?.ownerName || vendor?.name || "—";
@@ -46,9 +49,9 @@ const VendorHeroCard = ({ vendor }) => {
       )}
 
       <View style={styles.badgeRow}>
-        <View style={[styles.statusChip, { backgroundColor: statusCfg.bg }]}>
-          <View style={[styles.statusDot, { backgroundColor: statusCfg.color }]} />
-          <Text style={[styles.statusLabel, { color: statusCfg.color }]}>
+        <View style={[styles.statusChip, { backgroundColor: statusVisual.bg }]}>
+          <View style={[styles.statusDot, { backgroundColor: statusVisual.fg }]} />
+          <Text style={[styles.statusLabel, { color: statusVisual.fg }]}>
             {statusLabel}
           </Text>
         </View>

@@ -1,6 +1,7 @@
 "use client";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./SubscriptionInfo.module.css";
 
 function formatNumber(num) {
@@ -8,16 +9,19 @@ function formatNumber(num) {
   return num?.toLocaleString() || "0";
 }
 
+function visualFor(status) {
+  const { fg, bg } = getStatusVisual(status);
+  return { color: fg, bgColor: bg, status };
+}
+
 function getStatusInfo(used, limit, isUnlimited) {
   if (isUnlimited || limit === -1 || limit === "unlimited") {
-    return { color: "#10B981", bgColor: "#ECFDF5", status: "good" };
+    return visualFor("good");
   }
   const percentage = limit > 0 ? (used / limit) * 100 : 0;
-  if (percentage >= 90)
-    return { color: "#EF4444", bgColor: "#FEF2F2", status: "critical" };
-  if (percentage >= 70)
-    return { color: "#F59E0B", bgColor: "#FFFBEB", status: "warning" };
-  return { color: "#10B981", bgColor: "#ECFDF5", status: "good" };
+  if (percentage >= 90) return visualFor("critical");
+  if (percentage >= 70) return visualFor("warning");
+  return visualFor("good");
 }
 
 function getProgressPercentage(used, limit, isUnlimited) {

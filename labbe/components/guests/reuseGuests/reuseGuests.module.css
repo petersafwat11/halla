@@ -1,0 +1,176 @@
+.modal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(560px, 92vw);
+  max-height: 80vh;
+  padding: 4px 2px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.close {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: 4px 8px;
+}
+.close:hover {
+  opacity: 1;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+}
+
+.search,
+.categorySelect {
+  padding: 10px 12px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 10px;
+  font: inherit;
+  background: transparent;
+  color: inherit;
+}
+.search {
+  flex: 1;
+}
+.categorySelect {
+  min-width: 130px;
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 180px;
+  max-height: 42vh;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 12px;
+}
+
+.state {
+  padding: 28px 16px;
+  text-align: center;
+  opacity: 0.65;
+  font-size: 0.9rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+  cursor: pointer;
+}
+.row:last-child {
+  border-bottom: none;
+}
+.rowSelected {
+  background: rgba(194, 142, 92, 0.1);
+}
+.rowDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.rowName {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rowPhone {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  direction: ltr;
+  text-align: right;
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge {
+  font-size: 0.72rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(194, 142, 92, 0.15);
+  color: #a8743f;
+  white-space: nowrap;
+}
+
+.added {
+  font-size: 0.72rem;
+  opacity: 0.6;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-size: 0.85rem;
+}
+.pager button {
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.pager button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
+  padding-top: 12px;
+}
+
+.count {
+  font-size: 0.85rem;
+}
+.capacity {
+  opacity: 0.6;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}

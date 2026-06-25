@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import styles from "./stepTwo.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
+import CategoryCombobox from "./CategoryCombobox";
 import ActionButtons from "./actionButtons/ActionButtons";
 import { exportToXLSX, importFromXLSX } from "@/utils/xlsxUtils";
 
@@ -19,6 +20,7 @@ const GuestImporter = ({
   setImportErrors,
   setImportLimitInfo,
   setShowImportLimitPopup,
+  categories = [],
 }) => {
   const { t } = useTranslation("createEvent");
   const fileInputRef = useRef(null);
@@ -71,6 +73,7 @@ const GuestImporter = ({
       const newItem = {
         name: currentItem.name?.trim() || "",
         mobile: currentItem.mobile?.trim() || "",
+        category: currentItem.category?.trim() || "",
         // `Date.now()` alone collides if the user double-taps Add on a
         // slow mobile (two adds in the same millisecond → same id →
         // React row key collision). Matches transformGuestList's
@@ -90,6 +93,7 @@ const GuestImporter = ({
       const updatedItem = {
         name: currentItem.name?.trim() || "",
         mobile: currentItem.mobile?.trim() || "",
+        category: currentItem.category?.trim() || "",
         id,
       };
       const updatedList = guestList.map((item) =>
@@ -106,8 +110,11 @@ const GuestImporter = ({
     const headers = [
       { key: "name", label: t("excel_guest_name") },
       { key: "mobile", label: t("excel_phone_number") },
+      { key: "category", label: t("excel_category") },
     ];
-    const sampleData = [{ name: t("excel_sample_name"), mobile: "512345678" }];
+    const sampleData = [
+      { name: t("excel_sample_name"), mobile: "512345678", category: t("excel_sample_category") },
+    ];
     const fileName = t("excel_template_filename");
     const result = exportToXLSX(headers, sampleData, fileName, true);
     if (!result.success) console.error("Error downloading template");
@@ -129,6 +136,9 @@ const GuestImporter = ({
         const headers = [
           { key: "name", label: t("excel_guest_name") },
           { key: "mobile", label: t("excel_phone_number") },
+          // Optional column — present in the downloaded template, but the
+          // importer accepts files without it.
+          { key: "category", label: t("excel_category"), optional: true },
         ];
         const validateRow = (row) => {
           const errors = [];
@@ -138,23 +148,33 @@ const GuestImporter = ({
           } else if (!/^5[0-9]{8}$/.test(row.mobile)) {
             errors.push(t("validation.mobile_format_import"));
           }
+          // category is optional and free-text — no validation.
           return { isValid: errors.length === 0, errors };
         };
         const result = await importFromXLSX(file, headers, validateRow);
         if (result.success) {
           const existingMobiles = guestList.map((item) => item.mobile);
           const duplicates = [];
-          const validData = result.data.filter((item, index) => {
-            if (existingMobiles.includes(item.mobile)) {
-              duplicates.push({
-                row: index + 2,
-                errors: [t("validation.mobile_duplicate_import")],
-              });
-              return false;
-            }
-            existingMobiles.push(item.mobile);
-            return true;
-          });
+          const validData = result.data
+            .filter((item, index) => {
+              if (existingMobiles.includes(item.mobile)) {
+                duplicates.push({
+                  row: index + 2,
+                  errors: [t("validation.mobile_duplicate_import")],
+                });
+                return false;
+              }
+              existingMobiles.push(item.mobile);
+              return true;
+            })
+            // Normalize to the form-guest shape (with an id + category) so
+            // imported rows are editable/removable like manually-added ones.
+            .map((item) => ({
+              name: (item.name || "").trim(),
+              mobile: (item.mobile || "").trim(),
+              category: (item.category || "").trim(),
+              id: `${Date.now()}_${Math.random()}`,
+            }));
           // Limit to remaining guest quota
           const currentRemaining = isUnlimited
             ? Infinity
@@ -189,6 +209,15 @@ const GuestImporter = ({
 
   const isEditing = currentItem.id !== undefined;
 
+  // Datalist options: the host's saved category labels merged with any
+  // already present on the current guest list.
+  const categoryOptions = Array.from(
+    new Set([
+      ...(categories || []),
+      ...guestList.map((g) => g.category).filter(Boolean),
+    ])
+  );
+
   return (
     <>
       {/* Manual Add Section */}
@@ -218,6 +247,14 @@ const GuestImporter = ({
             value={currentItem.mobile || ""}
             onChange={(e) => handleInputChange("mobile", e.target.value)}
             error={showValidationErrors ? localErrors.mobile : ""}
+            disabled={isLimitReached && !currentItem.id}
+          />
+          <CategoryCombobox
+            label={t("category")}
+            placeholder={t("category_placeholder")}
+            value={currentItem.category || ""}
+            onChange={(e) => handleInputChange("category", e.target.value)}
+            options={categoryOptions}
             disabled={isLimitReached && !currentItem.id}
           />
         </div>

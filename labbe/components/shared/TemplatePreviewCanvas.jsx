@@ -1,6 +1,6 @@
 "use client";
 /**
- * TemplatePreviewCanvas — Phase 4c W1-VISUAL
+ * TemplatePreviewCanvas
  *
  * Read-only canvas the host sees in StepThree (after picking a template
  * and filling the form) AND the admin sees in "Preview as Host" mode.

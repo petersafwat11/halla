@@ -66,31 +66,6 @@
   font-weight: 600;
 }
 
-.statusActive {
-  background: #d4edda;
-  color: #155724;
-}
-
-.statusPending {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.statusApproved {
-  background: #d4edda;
-  color: #155724;
-}
-
-.statusSuspended {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.statusRejected {
-  background: #f8d7da;
-  color: #721c24;
-}
-
 .rating {
   background: rgba(255, 255, 255, 0.2);
   padding: 0.65rem 1.3rem;

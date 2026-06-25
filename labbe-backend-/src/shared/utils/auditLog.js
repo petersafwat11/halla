@@ -1,9 +1,9 @@
 /**
  * Audit log helper for non-HTTP code paths (cron jobs, webhook workers).
  *
- * Phase 1b: Express middleware lives in `src/shared/middleware/auditLog.js`
- * and is the primary writer. This module is for places that don't have a
- * `res` object — schedule fires, queue consumers, internal admin actions.
+ * The Express middleware in `src/shared/middleware/auditLog.js` is the
+ * primary writer. This module is for places that don't have a `res` object
+ * — schedule fires, queue consumers, internal admin actions.
  *
  * Failures are swallowed (the underlying `AuditLog.log` already catches
  * mongoose errors) — audit logging must never break the operation it

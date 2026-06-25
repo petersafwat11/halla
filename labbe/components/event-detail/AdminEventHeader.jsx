@@ -36,11 +36,10 @@ export default function AdminEventHeader({ data }) {
 
   // Spread the full event so every field the shared `useEventActionGate`
   // hook reads (`taqnyatTemplate`, `status`, `launchSettings`,
-  // `staffList`, …) reaches `EventActionsHeader`. The previous hand-picked
-  // projection dropped `taqnyatTemplate` + `status`, which made
-  // `hasTemplate=false` and silently hid every action button on the admin
-  // single-event page. Mirrors the spread `EventDetailsScreen.js` already
-  // uses on mobile.
+  // `staffList`, …) reaches `EventActionsHeader`. A hand-picked
+  // projection that drops `taqnyatTemplate` + `status` makes
+  // `hasTemplate=false` and silently hides every action button on the admin
+  // single-event page.
   const event = {
     ...(data?.event || {}),
     id: eventId,

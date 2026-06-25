@@ -10,6 +10,7 @@ import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
 import { useEventsTableExport } from "./EventsTableToolbar";
 import { useEventsTableActions } from "./EventsTableActions";
+import { getStatusVisual } from "@/utils/statusColors";
 
 const EventsTable = () => {
   const { t } = useTranslation("host-events");
@@ -79,50 +80,19 @@ const EventsTable = () => {
         onRowHover={handleRowHover}
         renderCell={(key, value, row) => {
           if (key === "status") {
-            const statusConfig = {
-              live: {
-                bg: "#EAF4EF",
-                color: "#2A8C5B",
-                text: t("eventStatus.live", "مباشرة"),
-              },
-              scheduled: {
-                bg: "#DBEAFE",
-                color: "#1E40AF",
-                text: t("eventStatus.scheduled", "مجدولة"),
-              },
-              pending_scheduling: {
-                bg: "#FBF3E6",
-                color: "#D38200",
-                text: t("eventStatus.pending_scheduling", "في انتظار الجدولة"),
-              },
-              completed: {
-                bg: "#E5E7EB",
-                color: "#374151",
-                text: t("eventStatus.completed", "منتهية"),
-              },
-              cancelled: {
-                bg: "#F9EBEA",
-                color: "#C0392B",
-                text: t("eventStatus.cancelled", "ملغية"),
-              },
-              failed: {
-                bg: "#FEE2E2",
-                color: "#B91C1C",
-                text: t("eventStatus.failed", "فشل الإرسال"),
-              },
-              deleted: {
-                bg: "#F3F4F6",
-                color: "#6B7280",
-                text: t("eventStatus.deleted", "محذوفة"),
-              },
+            const statusText = {
+              live: t("eventStatus.live", "مباشرة"),
+              scheduled: t("eventStatus.scheduled", "مجدولة"),
+              pending_scheduling: t("eventStatus.pending_scheduling", "في انتظار الجدولة"),
+              completed: t("eventStatus.completed", "منتهية"),
+              cancelled: t("eventStatus.cancelled", "ملغية"),
+              failed: t("eventStatus.failed", "فشل الإرسال"),
+              deleted: t("eventStatus.deleted", "محذوفة"),
             };
+            const { fg, bg } = getStatusVisual(value);
             // Unknown status → neutral chip showing the real status, never a
             // misleading "pending scheduling" fallback.
-            const config = statusConfig[value] || {
-              bg: "#E5E7EB",
-              color: "#374151",
-              text: t(`eventStatus.${value}`, value || "-"),
-            };
+            const text = statusText[value] || t(`eventStatus.${value}`, value || "-");
             return (
               <div
                 style={{
@@ -131,17 +101,17 @@ const EventsTable = () => {
                   justifyContent: "center",
                   alignItems: "center",
                   borderRadius: "9999px",
-                  background: config.bg,
+                  background: bg,
                 }}
               >
                 <span
                   style={{
-                    color: config.color,
+                    color: fg,
                     fontFamily: "Cairo",
                     fontSize: "1.2rem",
                   }}
                 >
-                  {config.text}
+                  {text}
                 </span>
               </div>
             );

@@ -1,15 +1,10 @@
 /**
- * Notification Preferences — re-exports + UI option config
+ * Notification Preferences — re-exports shared schemas + UI option config
  *
- * Validation schemas now live in `@halla/shared/schemas/settings`
- * (per Phase 1). This file:
- *   - re-exports the shared schemas (back-compat for existing imports)
- *   - keeps the UI option configurations local because they reference
- *     web-side i18n keys + Arabic label defaults and don't belong in
- *     the cross-platform shared package
- *
- * Phase 8 will revisit whether the option configs should move to a
- * `labbe/staticData/` location once the rest of the cleanup lands.
+ * The validation schemas are re-exported from
+ * `@halla/shared/schemas/settings`. The UI option configurations are kept
+ * local because they reference web-side i18n keys + Arabic label defaults
+ * and don't belong in the cross-platform shared package.
  */
 
 export {

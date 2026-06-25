@@ -2,8 +2,7 @@
  * Resolve an ApiError (or any plain object with the same fields) to a
  * translated user-facing message via the `auth` namespace.
  *
- * Lookup priority (matches web's `getAuthErrorMessage` and mobile's
- * `authErrorMessage` — both apps had identical logic before unification):
+ * Lookup priority:
  *   1) OTP subtype  (otpErrorType + meta cooldown/attemptsLeft)
  *   2) Account status (suspended / pending / rejected / inactive)
  *   3) Account lockout with dynamic `remainingMinutes`

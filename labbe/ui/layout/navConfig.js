@@ -31,9 +31,8 @@ import { ACCESS_LEVELS } from "@halla/shared/constants/permissions";
 
 /**
  * Role enums, hierarchy helpers, and access levels come from
- * `@halla/shared/constants` (mirror of backend). Re-exported here so
- * existing consumer imports `from "@/ui/layout/navConfig"` continue to
- * work without churn.
+ * `@halla/shared/constants`. Re-exported here so consumer imports
+ * `from "@/ui/layout/navConfig"` keep working.
  */
 export { USER_ROLES, ADMIN_ROLES, isAdminRole, ACCESS_LEVELS };
 
@@ -192,7 +191,7 @@ export const adminNavItems = [
     labelKey: "adminSidebar.settings",
     defaultLabel: "الإعدادات",
   },
-  // Phase 4c W1-VISUAL — visual templates editor + categories
+  // Visual templates editor + categories
   {
     key: "templates",
     path: "/admin-dash/templates",
@@ -208,7 +207,7 @@ export const adminNavItems = [
     labelKey: "adminSidebar.templateCategories",
     defaultLabel: "فئات القوالب",
   },
-  // Phase 4c W1-TAQNYAT-ADMIN — Taqnyat-template assignments
+  // Taqnyat-template assignments
   {
     key: "taqnyat_templates",
     path: "/admin-dash/taqnyat-templates",
@@ -275,7 +274,6 @@ const ROLE_NAV_ACCESS = {
     "manage-plans",
     "discounts",
     "settings",
-    // Phase 4c W1-VISUAL + W1-TAQNYAT-ADMIN
     "templates",
     "template_categories",
     "taqnyat_templates",
@@ -292,7 +290,6 @@ const ROLE_NAV_ACCESS = {
     "payments",
     "discounts",
     "settings",
-    // Phase 4c W1-VISUAL + W1-TAQNYAT-ADMIN
     "templates",
     "template_categories",
     "taqnyat_templates",
@@ -307,7 +304,7 @@ const ROLE_NAV_ACCESS = {
     "payments", // VIEW access
     "discounts", // FULL access
     "settings",
-    // Phase 4c W1-VISUAL — moderator gets EDIT on templates, VIEW on categories
+    // Moderator gets EDIT on templates, VIEW on categories
     "templates",
     "template_categories",
   ],

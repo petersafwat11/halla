@@ -1,6 +1,6 @@
 /**
  * Admin Shared Service
- * Private helpers and cross-area utilities extracted from AdminService.
+ * Private helpers and cross-area utilities.
  * All functions are exported as plain named functions.
  */
 

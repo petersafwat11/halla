@@ -3,7 +3,7 @@ const config = require("../../config");
 const { ValidationError } = require("../../shared/errors");
 
 /**
- * FLOW-28-F02: Export row cap.
+ * Export row cap.
  *
  * Reads `EXPORT_MAX_ROWS` from env (default 10,000). Throws a 422
  * ValidationError if the document count exceeds the limit.

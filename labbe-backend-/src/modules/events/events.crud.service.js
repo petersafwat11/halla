@@ -13,7 +13,6 @@ const {
   PackageLimitError,
 } = require("../../shared/errors");
 
-// Import existing models during migration
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
@@ -135,8 +134,7 @@ module.exports = {
   /**
    * Build a scoped Mongo query for a single event lookup.
    *
-   * Host-facing endpoints used to filter on `{ host: userId }` only, so an
-   * admin/moderator viewing the same event got 404. Roles:
+   * Roles:
    *
    *   - HOST                          → own event only
    *   - SUPER_ADMIN, ADMIN, MODERATOR → any event (platform-wide)
@@ -188,7 +186,7 @@ module.exports = {
       // by rsvp.response / rsvp.responded) and by the guest-table reminder
       // badges. Without them, the picker shows zero eligible guests for the
       // confirmed bucket and the badges never light up.
-      .populate("guestList", "name email phone status rsvp invitation")
+      .populate("guestList", "name phone category status rsvp invitation")
       .populate("host", "username email phoneNumber")
       // Populate the canonical refs so the wizard can highlight the
       // saved template (Step 3) and show body text (Step 4) on edit.
@@ -493,7 +491,7 @@ module.exports = {
       // Deterministic delivery mode + (for business hosts) an immutable logo
       // copy + snapshotted business name. Pre-generate the event _id so the
       // copied S3 key is event-owned. Reject creation if the copy fails; the
-      // copied object is cleaned up if the event create later throws. [#9 #23]
+      // copied object is cleaned up if the event create later throws.
       const owner = await User.findById(userId).select('accountType name avatar');
       const preEventId = new mongoose.Types.ObjectId();
       eventData._id = preEventId;
@@ -544,7 +542,7 @@ module.exports = {
       // Populate and return
       const populatedEvent = await Event.findById(event._id)
         .populate("host", "username email phoneNumber")
-        .populate("guestList", "name email phone status");
+        .populate("guestList", "name phone category status");
 
       this._notifyEventCreated(populatedEvent, userId, guestIds.length).catch(
         (e) => logger.warn('event creation notification failed', { err: e?.message })
@@ -619,7 +617,7 @@ module.exports = {
     // NOTE: cancellation does NOT release invites. `invitesConsumed` now
     // reflects actually-sent messages (charged at send time), which are
     // non-refundable. Per-event re-creation after cancel/delete is handled by
-    // the event-creation gate (Phase 4), not by releasing the pool here.
+    // the event-creation gate, not by releasing the pool here.
 
     // Notify about status change (non-blocking)
     this._notifyEventStatusChange(event, status, userId, isAdmin).catch((e) =>
@@ -819,9 +817,8 @@ module.exports = {
       location: event.eventDetails?.location,
       status: event.status,
       // Rendered invitation card image (baked template OR custom upload).
-      // Mirrors the web's resolution order in `mapEventToFormValues`
-      // (`labbe/hooks/events/useEventForm.js`). Without this the mobile
-      // EventListItem had no `image` URL and fell back to its placeholder.
+      // Without this the mobile EventListItem had no `image` URL and fell
+      // back to its placeholder.
       image:
         event.visualTemplate?.bakedImagePath || event.templateImage || null,
       guestCount: event.guestList?.length || 0,

@@ -1,8 +1,7 @@
 /**
  * RefreshToken Model
  *
- * Server-side store for the refresh half of the access/refresh token pair
- * introduced in Phase 1a (FLOW-01-F02 + FLOW-01-F05).
+ * Server-side store for the refresh half of the access/refresh token pair.
  *
  * Design notes:
  * - The token value itself is never stored. We only persist `tokenHash` so a
@@ -48,7 +47,7 @@ const refreshTokenSchema = new mongoose.Schema(
 
 refreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// L-4: compound index to make user-scoped active-token lookups O(log n).
+// Compound index to make user-scoped active-token lookups O(log n).
 // `revokeAllForUser` and the replay-detection follow-up both filter by
 // `{ userId, revokedAt: null }`; without this index they fall back to a
 // userId-only scan that walks revoked rows too.

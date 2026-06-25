@@ -48,7 +48,7 @@ export const transformGuestList = (guests = []) =>
     id: guest._id || guest.id || Date.now() + Math.random(),
     name: guest.name || "",
     mobile: guest.phone || "",
-    email: guest.email || "",
+    category: guest.category || "",
   }));
 
 export const transformStaffList = (staff = []) =>
@@ -150,7 +150,7 @@ export const buildEventPayload = (data) => ({
   guestList: (data.guestList || []).map((guest) => ({
     name: guest.name,
     phone: guest.mobile || guest.phone,
-    email: guest.email || "",
+    ...(guest.category ? { category: guest.category } : {}),
   })),
   staffList: (data.staffList || []).map((s) => ({
     name: s.name,
@@ -362,7 +362,7 @@ export const useEventForm = (options = {}) => {
               guestList: (formData.guestList || []).map((guest) => ({
                 name: guest.name,
                 phone: guest.mobile || guest.phone || "",
-                email: guest.email || "",
+                ...(guest.category ? { category: guest.category } : {}),
               })),
               supervisorsList: (formData.staffList || []).map((s) => ({
                 name: s.name,

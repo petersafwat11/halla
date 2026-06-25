@@ -1,9 +1,8 @@
 /**
- * seedInitialTemplates — Phase 4c hardening (post-review).
+ * seedInitialTemplates.
  *
  * Idempotently seeds the canonical visual-template categories and a
- * placeholder Template document per `INITIAL_TEMPLATE_NAMES` (v4.1
- * §B-17).
+ * placeholder Template document per `INITIAL_TEMPLATE_NAMES`.
  *
  * The seeded Templates use placeholder image references that an admin
  * replaces via `/admin-dash/templates/[id]` once real artwork is

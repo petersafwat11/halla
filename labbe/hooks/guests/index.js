@@ -1,3 +1,3 @@
-export { useGuestByToken, useGuestInvitation } from "./queries";
+export { useGuestByToken, useGuestInvitation, useMyContacts } from "./queries";
 export { useGuestMutation } from "./mutations";
 export { guestsKeys } from "./keys";

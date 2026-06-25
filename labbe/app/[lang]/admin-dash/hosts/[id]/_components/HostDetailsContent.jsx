@@ -10,6 +10,7 @@ import SubscriptionAssignmentPopup from "../../../_components/SubscriptionAssign
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { FiMail, FiPhone, FiCalendar, FiClock, FiShield, FiUsers, FiCreditCard, FiAlertCircle } from "react-icons/fi";
 import { FaCrown } from "react-icons/fa";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./HostDetailsContent.module.css";
 
 const initials = (name) =>
@@ -24,11 +25,23 @@ const planMeta = (planType) => {
     || { label: planType, color: "var(--c-n400)", bg: "var(--c-n200)" };
 };
 
-const subStatusMeta = (status, t) => ({ active: { label: t("subscription.active", "Active"), color: "var(--c-success-500,#2a8c5b)", bg: "var(--c-success-50,#eaf4ef)" }, trial: { label: t("subscription.trial", "Trial"), color: "#9B59B6", bg: "#f5eef8" }, expired: { label: t("hostDetails.ended", "Expired"), color: "var(--c-error-500,#c0392b)", bg: "var(--c-error-50,#f9ebea)" }, cancelled: { label: t("subscription.inactive", "Cancelled"), color: "var(--c-n400)", bg: "var(--c-n200)" } }[status] || { label: status || "—", color: "var(--c-n400)", bg: "var(--c-n200)" });
+const subStatusMeta = (status, t) => {
+  const label = ({ active: t("subscription.active", "Active"), trial: t("subscription.trial", "Trial"), expired: t("hostDetails.ended", "Expired"), cancelled: t("subscription.inactive", "Cancelled") }[status]) || status || "—";
+  const { fg, bg } = getStatusVisual(status, "subscription");
+  return { label, color: fg, bg };
+};
 
-const hostStatusMeta = (status, t) => ({ active: { label: t("status.active", "Active"), color: "var(--c-success-500,#2a8c5b)", bg: "var(--c-success-50,#eaf4ef)" }, suspended: { label: t("status.suspended", "Suspended"), color: "var(--c-error-500,#c0392b)", bg: "var(--c-error-50,#f9ebea)" }, inactive: { label: t("status.inactive", "Inactive"), color: "var(--c-n400)", bg: "var(--c-n200)" } }[status] || { label: status || "—", color: "var(--c-n400)", bg: "var(--c-n200)" });
+const hostStatusMeta = (status, t) => {
+  const label = ({ active: t("status.active", "Active"), suspended: t("status.suspended", "Suspended"), inactive: t("status.inactive", "Inactive") }[status]) || status || "—";
+  const { fg, bg } = getStatusVisual(status);
+  return { label, color: fg, bg };
+};
 
-const eventStatusMeta = (status, t) => ({ scheduled: { label: t("eventStatus.scheduled", "Scheduled"), color: "var(--c-warning-500,#d38200)", bg: "var(--c-warning-50,#fbf3e6)" }, live: { label: t("eventStatus.live", "Live"), color: "var(--c-success-500,#2a8c5b)", bg: "var(--c-success-50,#eaf4ef)" }, completed: { label: t("eventStatus.completed", "Completed"), color: "var(--c-n400)", bg: "var(--c-n200)" }, pending_scheduling: { label: t("eventStatus.pending_scheduling", "Pending Scheduling"), color: "var(--c-n400)", bg: "var(--c-n200)" } }[status] || { label: status || "—", color: "var(--c-n400)", bg: "var(--c-n200)" });
+const eventStatusMeta = (status, t) => {
+  const label = ({ scheduled: t("eventStatus.scheduled", "Scheduled"), live: t("eventStatus.live", "Live"), completed: t("eventStatus.completed", "Completed"), pending_scheduling: t("eventStatus.pending_scheduling", "Pending Scheduling") }[status]) || status || "—";
+  const { fg, bg } = getStatusVisual(status);
+  return { label, color: fg, bg };
+};
 
 const fmtDate = (d, locale) =>
   d ? new Date(d).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" }) : "—";

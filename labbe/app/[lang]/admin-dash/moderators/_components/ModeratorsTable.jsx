@@ -16,6 +16,7 @@ import Table from "@/ui/commen/new-table/Table";
 import AddModeratorPopup from "./AddModeratorPopup";
 import EditModeratorPopup from "./EditModeratorPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./ModeratorsTable.module.css";
 
 export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShowAddPopup: externalSetShowAdd }) {
@@ -138,18 +139,18 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
 
   const renderCell = (key, value, row) => {
     if (key === "status") {
-      const statusConfig = {
-        active: { bg: "#EAF4EF", color: "#2A8C5B", text: t("table.status.active", "Active") },
-        inactive: { bg: "#F9EBEA", color: "#C0392B", text: t("table.status.inactive", "Inactive") },
-        pending: { bg: "#FBF3E6", color: "#D38200", text: t("table.status.pending", "Pending") },
+      const labels = {
+        active: t("table.status.active", "Active"),
+        inactive: t("table.status.inactive", "Inactive"),
+        pending: t("table.status.pending", "Pending"),
       };
-      const config = statusConfig[value] || statusConfig.pending;
+      const { fg, bg } = getStatusVisual(value);
       return (
         <div
           className={`${styles.statusBadge} ${styles.statusBadgeReadonly}`}
-          style={{ background: config.bg }}
+          style={{ background: bg }}
         >
-          <span className={styles.statusBadgeText} style={{ color: config.color }}>{config.text}</span>
+          <span className={styles.statusBadgeText} style={{ color: fg }}>{labels[value] || labels.pending}</span>
         </div>
       );
     }

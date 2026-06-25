@@ -10,11 +10,11 @@ import { useFormContext, Controller } from "react-hook-form";
 
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the
- * `useState` hook lives at the top level of a real component — previously
- * the hook was called inside the render prop function, a Rules-of-Hooks
- * violation that desynchronised focus state when the parent form re-rendered
- * heavily (e.g. inside StepThree's template modal where the live canvas
- * watches every field change). The symptom was inputs refusing focus.
+ * `useState` hook lives at the top level of a real component — calling the
+ * hook inside the render prop function is a Rules-of-Hooks violation that
+ * desynchronises focus state when the parent form re-renders heavily (e.g.
+ * inside StepThree's template modal where the live canvas watches every
+ * field change), with the symptom that inputs refuse focus.
  */
 const TextInputField = ({
   label,

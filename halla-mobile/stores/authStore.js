@@ -311,7 +311,7 @@ export const useAuthStore = create((set, get) => ({
   },
 
   /**
-   * Phase 4b: complete the forgot-password flow with the email's token.
+   * Complete the forgot-password flow with the email's token.
    * Backend returns a fresh token pair so the user is logged in
    * immediately on success.
    */
@@ -400,7 +400,7 @@ export const useAuthStore = create((set, get) => ({
   getRole: () => get().role,
 
   /**
-   * Business-account getters (B4-MOBILE).
+   * Business-account getters.
    *
    * A business account is `role:host` + `accountType:'business'`. The
    * `accountType`, `businessData`, and `mustChangePassword` fields ride on the

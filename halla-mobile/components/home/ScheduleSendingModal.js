@@ -37,8 +37,7 @@ const getMinSendDate = (isTrial) => {
 };
 
 // Schema is plan-aware: validate against the same min-send day used by the
-// picker bound, NOT a hardcoded "2 days from now" (which previously blocked
-// trial hosts from scheduling inside the 2-day window).
+// picker bound, so trial hosts can schedule inside the 2-day window.
 const buildSchema = (t, isTrial) =>
   z
     .object({

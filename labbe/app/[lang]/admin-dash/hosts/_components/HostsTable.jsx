@@ -16,6 +16,7 @@ import Table from "@/ui/commen/new-table/Table";
 import AddHostPopup from "./AddHostPopup";
 import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./HostsTable.module.css";
 
 export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPopup: externalSetShowAdd }) {
@@ -150,19 +151,19 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
 
   const renderCell = (key, value, row) => {
     if (key === "status") {
-      const statusConfig = {
-        active: { bg: "#EAF4EF", color: "#2A8C5B", text: t("status.active", "Active") },
-        pending: { bg: "#FBF3E6", color: "#D38200", text: t("hostDetails.pending", "Pending") },
-        suspended: { bg: "#F9EBEA", color: "#C0392B", text: t("status.suspended", "Suspended") },
+      const labels = {
+        active: t("status.active", "Active"),
+        pending: t("hostDetails.pending", "Pending"),
+        suspended: t("status.suspended", "Suspended"),
       };
-      const config = statusConfig[value] || statusConfig.active;
+      const { fg, bg } = getStatusVisual(value);
       return (
         <div
           className={`${styles.statusBadge} ${styles.statusBadgeReadonly}`}
-          style={{ background: config.bg }}
+          style={{ background: bg }}
         >
-          <span className={styles.statusBadgeText} style={{ color: config.color }}>
-            {config.text}
+          <span className={styles.statusBadgeText} style={{ color: fg }}>
+            {labels[value] || labels.active}
           </span>
         </div>
       );

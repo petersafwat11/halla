@@ -14,10 +14,10 @@ const Button = ({
   style,
   href,
 }) => {
-  // Phase 4c W1-VISUAL: admin templates pages use `variant="danger"`
-  // and `size="small"`. Map unknown variants/sizes back to the
-  // supported set (primary | secondary, regular | small) so the
-  // unstyled fallback never ships in production.
+  // Admin templates pages use `variant="danger"` and `size="small"`.
+  // Map unknown variants/sizes back to the supported set
+  // (primary | secondary, regular | small) so the unstyled fallback
+  // never ships in production.
   const safeVariant = ["primary", "secondary", "danger"].includes(variant)
     ? variant
     : "primary";

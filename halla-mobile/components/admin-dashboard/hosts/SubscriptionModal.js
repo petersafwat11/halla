@@ -5,8 +5,7 @@ import ManagePlanModal from "../common/ManagePlanModal";
 /**
  * Host "Manage Subscription" entry point. Thin wrapper over the shared
  * two-mode ManagePlanModal (change plan + extra invites) so host and
- * business admin flows share one implementation — mirrors the web
- * SubscriptionAssignmentPopup → ManagePlanPopup unification.
+ * business admin flows share one implementation.
  */
 const SubscriptionModal = ({ visible, onClose, host }) => (
   <ManagePlanModal

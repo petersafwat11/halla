@@ -1,10 +1,10 @@
 "use client";
 /**
- * OverlayItem — Phase 4c W1-VISUAL
+ * OverlayItem
  *
- * Per v4.1 §A-3 (coordinate system). Renders a single overlay (text
- * field or decoration) absolutely positioned by % of natural image
- * dimensions. The container size is the rendered image's pixel size.
+ * Renders a single overlay (text field or decoration) absolutely
+ * positioned by % of natural image dimensions. The container size is the
+ * rendered image's pixel size.
  *
  * Sort overlays + decorations by `zIndex ASC` then array order on the
  * caller side; this component is dumb about ordering.

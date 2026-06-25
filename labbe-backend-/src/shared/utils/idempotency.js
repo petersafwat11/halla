@@ -4,7 +4,7 @@
  * `withIdempotency(key, fn, opts)` — guard a non-HTTP code path (cron,
  * webhook worker, outbound payment call) against double execution.
  *
- * Race-safe contract (post-H-6):
+ * Race-safe contract:
  *   1. Insert a `pending` row up-front via upsert keyed on
  *      `{ userId, scope, key }`. If we lost the race (existing row),
  *      we either replay the cached `completed` body, poll for a peer

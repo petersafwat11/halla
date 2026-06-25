@@ -22,8 +22,8 @@ const GuestTableImpl = ({
     <div className={styles.tableContainer}>
       <Table
         title={t("guest_list_title")}
-        headers={[t("name"), t("mobile")]}
-        headerKeys={["name", "mobile"]}
+        headers={[t("name"), t("mobile"), t("category")]}
+        headerKeys={["name", "mobile", "category"]}
         data={guestList}
         // On live events, existing rows become read-only — host can still
         // add new guests via the form above, but cannot edit or delete

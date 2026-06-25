@@ -22,7 +22,7 @@ const eventsController = require("./events.controller");
 // the staff module.
 const staffController = require("../staff/staff.controller");
 
-// Middleware (using existing during migration)
+// Middleware
 const { protect } = require("../../shared/middleware/auth");
 const { restrictTo } = require("../../shared/middleware/rbac");
 const {
@@ -924,7 +924,7 @@ router.get(
 );
 
 // ============================================
-// LAUNCH RETRY (3c.1)
+// LAUNCH RETRY
 // ============================================
 
 /**
@@ -999,7 +999,7 @@ router.post(
 );
 
 // ============================================
-// ADMIN EVENT ROUTES — extracted to events.admin.routes.js
+// ADMIN EVENT ROUTES
 // ============================================
 router.use("/admin", adminRouter);
 

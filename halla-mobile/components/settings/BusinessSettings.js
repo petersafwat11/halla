@@ -13,7 +13,7 @@ import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 
 /**
- * Business-account settings (mobile parity with web BusinessSettings):
+ * Business-account settings:
  * edit the public description (profile.businessData.description) and the
  * logo (top-level avatar). Both are sent in a single multipart
  * PATCH /users/profile via the shared onProfileUpdate handler — the backend

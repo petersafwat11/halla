@@ -2,9 +2,8 @@
  * BusinessPlanAssignment
  *
  * A DURABLE record of an admin assigning a business plan to a business account
- * (business-account plan #1/#2/#5). Replaces the naive "checkout URL + boolean"
- * with a persisted state machine that webhook + browser callback +
- * reconciliation can drive without ever double-activating.
+ * (business-account plan #1/#2/#5). A persisted state machine that webhook +
+ * browser callback + reconciliation can drive without ever double-activating.
  *
  * MODES
  *   - 'grant'    (mode A): direct grant, no payment, setup fee waived. Goes

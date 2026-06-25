@@ -21,9 +21,7 @@ const OTPVerificationForm = ({
   loading = false,
   // Initial cooldown — used until the parent's onResend reports the
   // server-side cooldown (`cooldownSeconds`). Default matches the
-  // backend's OTP_CONFIG.cooldownSeconds (30s); previously hardcoded
-  // to 90s here, which let users tap Resend ~60s before the server
-  // would actually accept it.
+  // backend's OTP_CONFIG.cooldownSeconds (30s).
   resendTimer = 30,
 }) => {
   const { t } = useTranslation("auth");

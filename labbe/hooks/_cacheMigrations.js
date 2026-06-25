@@ -1,15 +1,14 @@
-// Phase 5 — cache-migration registry.
+// Cache-migration registry.
 //
-// When a domain's query-key shape changes during the hooks/<domain>/ migration,
-// register an entry here so already-running browser sessions invalidate the
-// old keys explicitly on first load and don't silently serve stale cache.
+// When a domain's query-key shape changes, register an entry here so
+// already-running browser sessions invalidate the old keys explicitly on first
+// load and don't silently serve stale cache.
 //
 // Each entry has a stable `name`; once applied, the name is stored in
 // localStorage so the migration only runs once per browser per name.
 //
 // For domains whose new factory produces byte-identical arrays to the old
-// literal keys (locations, templates, taqnyat-templates, scheduled-extra-reminders),
-// no entry is needed — the cache hits naturally.
+// literal keys, no entry is needed — the cache hits naturally.
 
 const STORAGE_KEY = "halaa.cacheMigrations.applied";
 

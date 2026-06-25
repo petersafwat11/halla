@@ -1,22 +1,19 @@
 /**
  * Audit log middleware.
  *
- * Phase 1b foundation — wires the existing `AuditLogModel` (which was
- * present but never written to). Wraps a route handler and writes an
- * audit entry **after** the handler successfully responds. We never
- * mutate the response or block on the log write: failures are logged to
- * stderr and dropped.
+ * Wraps a route handler and writes an audit entry **after** the handler
+ * successfully responds, via the `AuditLogModel`. We never mutate the
+ * response or block on the log write: failures are logged to stderr and
+ * dropped.
  *
- * Phase 1b production-readiness fixes:
- *   - H-9: support a `captureBefore` async hook that runs PRE-handler so
+ *   - Supports a `captureBefore` async hook that runs PRE-handler so
  *     the audit row can record the prior state of the resource. The
  *     before-state is stashed on `res.locals.auditBefore` and merged into
  *     the `changes` object alongside whatever `changesFrom` returns.
- *   - M-8: walk every `changes`/`metadata` payload through a sensitive-
- *     field redactor before writing the audit row. Today the middleware
- *     fails open (warn-only) on log-write errors; that's intentional but
- *     TODO Phase 5 — flip to fail-closed for compliance once ops have a
- *     bypass path.
+ *   - Walks every `changes`/`metadata` payload through a sensitive-
+ *     field redactor before writing the audit row. The middleware
+ *     fails open (warn-only) on log-write errors; that's intentional, so
+ *     audit logging never breaks the primary action.
  *
  * Usage:
  *
@@ -58,7 +55,7 @@ const auditLog = (opts) => {
   }
 
   return async function auditLogMiddleware(req, res, next) {
-    // H-9: snapshot the resource BEFORE the handler runs so we have a
+    // Snapshot the resource BEFORE the handler runs so we have a
     // before-image to pair with the after-image. Failures here must not
     // block the request — fall through with `auditBefore` undefined.
     if (typeof opts.captureBefore === "function") {
@@ -87,7 +84,7 @@ const auditLog = (opts) => {
         console.error("[auditLog] derivation error:", e.message);
       }
 
-      // H-9: merge captured before-state into the changes payload. If the
+      // Merge captured before-state into the changes payload. If the
       // caller already set `changes.before`, prefer their value.
       if (res.locals && res.locals.auditBefore !== undefined) {
         changes = changes || {};
@@ -96,7 +93,7 @@ const auditLog = (opts) => {
         }
       }
 
-      // M-8: redact any sensitive fields (passwords, tokens, etc.) before
+      // Redact any sensitive fields (passwords, tokens, etc.) before
       // the row hits Mongo. Fail-open is preserved on the underlying
       // logAudit call.
       changes = redactSensitive(changes);
@@ -117,9 +114,8 @@ const auditLog = (opts) => {
         ip: req.ip,
         userAgent: req.get("user-agent") || "",
       }).catch((err) => {
-        // M-8 (fail-open, by design): audit logging must never break the
-        // primary action. TODO Phase 5: switch to fail-closed for
-        // compliance once we have a documented break-glass path.
+        // Fail-open, by design: audit logging must never break the
+        // primary action.
         console.error("[auditLog] write failed:", err.message);
       });
     });

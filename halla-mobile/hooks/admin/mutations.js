@@ -174,55 +174,6 @@ const _invalidateBusiness = async (queryClient, businessId) => {
   }
 };
 
-export function useCreateBusiness() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (businessData) => {
-      const response = await adminRequest(
-        ENDPOINTS.ADMIN.BUSINESSES.CREATE,
-        "POST",
-        businessData,
-      );
-      return assertOk(response);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminKeys.businessesAll() });
-    },
-  });
-}
-
-export function useUpdateBusiness() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ businessId, name, description }) => {
-      const response = await adminRequest(
-        ENDPOINTS.ADMIN.BUSINESSES.UPDATE(businessId),
-        "PATCH",
-        { name, description },
-      );
-      return assertOk(response);
-    },
-    onSuccess: async (_data, { businessId }) =>
-      _invalidateBusiness(queryClient, businessId),
-  });
-}
-
-export function useUpdateBusinessLogo() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ businessId, data }) => {
-      const response = await adminRequest(
-        ENDPOINTS.ADMIN.BUSINESSES.UPDATE_LOGO(businessId),
-        "PATCH",
-        data,
-      );
-      return assertOk(response);
-    },
-    onSuccess: async (_data, { businessId }) =>
-      _invalidateBusiness(queryClient, businessId),
-  });
-}
-
 /**
  * Assign / change a business plan. mode 'grant' activates immediately
  * (setup fee waived); mode 'checkout' returns a payment link in

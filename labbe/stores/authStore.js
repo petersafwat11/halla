@@ -24,12 +24,11 @@ export const USER_STATUS = {
 
 // ============================================
 // AUTH STORE - STATE ONLY
-// All API logic moved to hooks/auth/mutations.js
+// API logic lives in hooks/auth/mutations.js.
 //
 // Tokens live in HttpOnly cookies (`access_token`, `refresh_token`).
 // JS never reads them — the store therefore holds no `token` field
-// (Phase 6 alignment with mobile, which uses secure-store for refresh
-// and keeps access in-memory).
+// (mobile uses secure-store for refresh and keeps access in-memory).
 //
 // `status` is the canonical 4-state machine shared with mobile:
 //   checking → loading → authenticated | unauthenticated

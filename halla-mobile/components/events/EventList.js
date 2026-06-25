@@ -77,7 +77,7 @@ const EventList = ({
   const [exporting, setExporting] = useState(false);
   const exportEventsMutation = useExportEvents();
 
-  // Phase 4 W3-ADMIN — host export of all events to XLSX. The blob is
+  // Host export of all events to XLSX. The blob is
   // saved to cache and the native share sheet is opened so the user
   // can pipe it to Files / Mail / Drive.
   const handleExport = async () => {

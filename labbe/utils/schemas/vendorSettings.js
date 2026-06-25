@@ -1,11 +1,9 @@
 /**
  * Vendor Settings — section schemas (UI metadata + shared Zod)
  *
- * The Zod validation rules now live in
- * `@halla/shared/schemas/vendor` (per Phase 1). This file keeps the
- * web-side `{ sectionKey, titleKey, zodSchema, fields, ... }` wrappers
- * that `DynamicForm` consumes for rendering, so consumers keep their
- * exact import shape.
+ * The Zod validation rules come from `@halla/shared/schemas/vendor`.
+ * This file holds the web-side `{ sectionKey, titleKey, zodSchema,
+ * fields, ... }` wrappers that `DynamicForm` consumes for rendering.
  *
  * Field metadata (labels in Arabic, placeholder copy, input types) is
  * a web-side rendering concern and intentionally stays here, not in
@@ -116,8 +114,7 @@ export const vendorSettingsSchemas = (t) => ({
 });
 
 // ---------------------------------------------------------------------------
-// Validation helpers (Zod-backed) — kept here so DynamicForm consumers
-// don't need to relink. They delegate to the shared schemas above.
+// Validation helpers (Zod-backed) — they delegate to the shared schemas above.
 // ---------------------------------------------------------------------------
 
 export const validateField = (value, field, formData = {}, schema = null) => {

@@ -31,8 +31,8 @@ const InvitationScreen = ({ route }) => {
   // the loaded guest. This makes the post-submit transition immediate
   // without having to re-fetch.
   const [submitChoice, setSubmitChoice] = useState(null);
-  // Optional RSVP details — mirrors the web portal so a guest who opens the
-  // invitation link in the app (universal link) can add the same info.
+  // Optional RSVP details — a guest who opens the invitation link in the app
+  // (universal link) can add this info.
   const [message, setMessage] = useState("");
   const [dietaryRestrictions, setDietaryRestrictions] = useState("");
   const [plusOnes, setPlusOnes] = useState("");

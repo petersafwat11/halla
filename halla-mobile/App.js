@@ -133,15 +133,12 @@ function AppContent() {
 
   // Deep-link config. Links use the `halla://` scheme (declared in
   // app.json) plus universal-link variants for the production domain.
-  //
-  // Universal-link variants for the production domain land in a follow
-  // up (requires apple-app-site-association + assetlinks.json hosting).
   const linking = useMemo(
     () => ({
       prefixes: ["halla://", "https://halaa.com.sa"],
       config: {
         screens: {
-          // Phase 4b: forgot-password completion. Backend's email links
+          // Forgot-password completion. Backend's email links
           // point to `https://halaa.com.sa/reset-password/<token>`; the
           // universal link variant carries the user into this screen
           // with the token in route params. The custom scheme variant

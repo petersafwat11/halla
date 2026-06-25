@@ -21,6 +21,7 @@ const addGuestSchema = z
   .object({
     name: z.string().trim().min(1, 'name is required').max(120),
     phone: saudiPhone,
+    category: z.string().trim().max(60).optional(),
   })
   .strict();
 
@@ -28,6 +29,7 @@ const updateGuestSchema = z
   .object({
     name: z.string().trim().min(1).max(120).optional(),
     phone: saudiPhone.optional(),
+    category: z.string().trim().max(60).optional(),
     status: z.enum(Object.values(GUEST_STATUS)).optional(),
   })
   .strict()

@@ -1,8 +1,6 @@
 /**
  * Server-side authentication utilities
  * For use in Server Components to check user roles and permissions
- *
- * SYNCED WITH BACKEND: utils/constants.js
  */
 
 import { cookies } from "next/headers";
@@ -34,9 +32,8 @@ export const ADMIN_PAGES = {
   MODERATORS: "moderators",
   MANAGE_PLANS: "manage-plans",
   SETTINGS: "settings",
-  // Phase 4c W1-VISUAL — visual templates editor + categories +
-  // Taqnyat-template assignments. Matches backend
-  // src/shared/constants/permissions.js ADMIN_PAGES.
+  // Visual templates editor + categories + Taqnyat-template
+  // assignments.
   TEMPLATES: "templates",
   TEMPLATE_CATEGORIES: "template_categories",
   TAQNYAT_TEMPLATES: "taqnyat_templates",

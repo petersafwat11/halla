@@ -1,11 +1,9 @@
 /**
  * API Configuration
  *
- * Phase 1 unification: the endpoint registry is now shared with web via
- * `@halla/shared/api/paths` (`API_PATHS`, camelCase). This file is a thin
- * UPPER_SNAKE_CASE wrapper that preserves the legacy `ENDPOINTS.X.Y`
- * call sites used across mobile services. Phase 5/8 will migrate
- * services to import `API_PATHS` directly and this wrapper will be deleted.
+ * UPPER_SNAKE_CASE wrapper over the shared endpoint registry
+ * (`@halla/shared/api/paths`, camelCase) that preserves the `ENDPOINTS.X.Y`
+ * call sites used across mobile services.
  *
  * `API_BASE_URL` stays here — it's platform-specific (mobile points
  * straight at production over HTTPS; web routes via Next rewrites).
@@ -14,7 +12,6 @@
 import { API_PATHS } from "@halla/shared/api/paths";
 
 // Backend base URL. Production VPS (Contabo, nginx → labbe-backend on :8000)
-// — see DEPLOYMENT_RECORD_2026-05-14.md
 export const API_BASE_URL = "https://halaa.com.sa/api/v2";
 export const WEB_BASE_URL = "https://halaa.com.sa";
 

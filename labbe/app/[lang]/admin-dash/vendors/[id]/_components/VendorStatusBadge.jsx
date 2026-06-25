@@ -1,38 +1,25 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./VendorDetailsWrapper.module.css";
 
 export default function VendorStatusBadge({ status }) {
   const { t } = useTranslation("adminVendorDetails");
 
-  const statusConfig = {
-    active: {
-      label: t("status.active"),
-      className: styles.statusActive,
-    },
-    pending: {
-      label: t("status.underReview"),
-      className: styles.statusPending,
-    },
-    approved: {
-      label: t("status.approved"),
-      className: styles.statusApproved,
-    },
-    suspended: {
-      label: t("status.suspended"),
-      className: styles.statusSuspended,
-    },
-    rejected: {
-      label: t("status.rejected"),
-      className: styles.statusRejected,
-    },
+  const labelMap = {
+    active: t("status.active"),
+    pending: t("status.underReview"),
+    approved: t("status.approved"),
+    suspended: t("status.suspended"),
+    rejected: t("status.rejected"),
   };
 
-  const config = statusConfig[status] || statusConfig.pending;
+  const label = labelMap[status] || labelMap.pending;
+  const { fg, bg } = getStatusVisual(status);
   return (
-    <span className={`${styles.statusBadge} ${config.className}`}>
-      {config.label}
+    <span className={styles.statusBadge} style={{ background: bg, color: fg }}>
+      {label}
     </span>
   );
 }

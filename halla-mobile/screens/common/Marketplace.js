@@ -11,7 +11,7 @@ import { backgrounds, colors, spacing } from "../../styles/tokens";
 
 const EMPTY_FILTERS = { serviceType: "all", regionId: "", cityId: "", districtIds: [], minPrice: "", maxPrice: "", minRating: "" };
 
-// Canonical service-category → Ionicons map (mirrors the web category strip).
+// Canonical service-category → Ionicons map.
 const CATEGORY_ICONS = {
   all: "grid-outline",
   eventPlanning: "calendar-outline",

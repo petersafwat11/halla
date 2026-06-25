@@ -8,9 +8,6 @@ import StepFour from "../../create-event/_components/stepFour/StepFour";
 /**
  * Builds the per-step configuration (title, description, component, props)
  * for the update-event wizard.
- *
- * Extracted from UpdateEventWizard to keep the parent component
- * under the 250-line limit (Rule 1 / Rule 9).
  */
 const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
   useMemo(

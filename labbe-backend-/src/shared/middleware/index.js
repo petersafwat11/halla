@@ -9,7 +9,7 @@ const subscription = require("./subscription");
 const validation = require("./validation");
 
 module.exports = {
-  // Authentication (Phase 1a — token issuance moved to authService.issueTokenPair)
+  // Authentication
   protect: auth.protect,
   optionalAuth: auth.optionalAuth,
 

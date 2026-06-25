@@ -23,7 +23,6 @@ const {
   PAID_REMINDER_MIN_GAP_MS,
 } = require("../../shared/utils/schedulingWindow");
 
-// Import existing models during migration
 const Event = require("../../../models/EventModel");
 
 // File upload helper
@@ -32,8 +31,8 @@ const { getFileUrl } = require('../../shared/utils/fileUpload');
 // Lazily-required at the call site to keep boot-time cycles minimal.
 const Template = require('../../../models/TemplateModel');
 const { validateTemplateData } = require('./templateDataValidator');
-// Post-review polish — extracted error codes shared between
-// updateGuestList and updateEventStep2 so they can't drift.
+// Error codes shared between updateGuestList and updateEventStep2 so
+// they can't drift.
 const { EVENT_EDIT_LOCKED, REMINDER_OUT_OF_RANGE } = require('../../shared/constants/events');
 
 const { logAudit } = require('../../shared/utils/auditLog');
@@ -128,7 +127,7 @@ module.exports = {
    *
    * Accepts the full user context so the unified update wizard works for
    * admin / moderator / super_admin, not only the host.
-   * Scope resolution mirrors `getEventById` via `_buildScopedEventQuery`.
+   * Scope is resolved via `_buildScopedEventQuery`.
    *
    * @param {string} eventId
    * @param {Object} details
@@ -235,10 +234,8 @@ module.exports = {
       }
     }
 
-    // Canonical-only writes. The legacy `invitationSettings.*`
-    // dual-write was removed when the wizard moved to the canonical
-    // shape; clients now send `visualTemplate / taqnyatTemplate /
-    // guestReplies / templateImage` directly.
+    // Canonical-only writes: clients send `visualTemplate /
+    // taqnyatTemplate / guestReplies / templateImage` directly.
     if (settings.visualTemplate !== undefined) {
       let next;
       if (settings.visualTemplate.isCustomUpload) {

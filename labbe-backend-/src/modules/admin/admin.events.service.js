@@ -30,7 +30,7 @@ async function getEventById(eventId) {
 
   const event = await Event.findOne(query)
     .populate('host', 'username email phoneNumber name')
-    .populate('guestList', 'name email phone status rsvpStatus checkedIn')
+    .populate('guestList', 'name phone category status rsvp checkIn')
     .lean();
 
   if (!event) {

@@ -10,23 +10,3 @@
   font-family: Cairo, sans-serif;
   font-size: 1.2rem;
 }
-
-.statusApproved {
-  background: #EAF4EF;
-  color: #2A8C5B;
-}
-
-.statusPending {
-  background: #FBF3E6;
-  color: #D38200;
-}
-
-.statusRejected {
-  background: #F9EBEA;
-  color: #C0392B;
-}
-
-.statusSuspended {
-  background: #F9EBEA;
-  color: #C0392B;
-}

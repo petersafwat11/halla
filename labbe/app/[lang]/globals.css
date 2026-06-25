@@ -86,6 +86,22 @@
   --color-warning-800: #744800;
   --color-warning-900: #593700;
 
+  /* ── Status badge tones (mirror utils/statusColors.js & mobile constants/statusColors.js) ── */
+  --status-success-fg: #2a8c5b;
+  --status-success-bg: #eaf4ef;
+  --status-warning-fg: #d38200;
+  --status-warning-bg: #fbf3e6;
+  --status-danger-fg: #c0392b;
+  --status-danger-bg: #f9ebea;
+  --status-info-fg: #3498db;
+  --status-info-bg: #e8f4fd;
+  --status-neutral-fg: #656565;
+  --status-neutral-bg: #f2f2f2;
+  --status-purple-fg: #9b59b6;
+  --status-purple-bg: #f5eef8;
+  --status-indigo-fg: #4338ca;
+  --status-indigo-bg: #eef2ff;
+
   /* ── Black alpha ── */
   --color-black-10: rgba(0, 0, 0, 0.1);
   --color-black-20: rgba(0, 0, 0, 0.2);

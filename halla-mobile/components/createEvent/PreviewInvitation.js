@@ -8,7 +8,6 @@ import {
   ScrollView,
   Image,
   SafeAreaView,
-  I18nManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -21,12 +20,12 @@ import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 import { resolveMediaUri } from "../../utils/resolveMediaUri";
 
 /**
- * Invitation preview popup. Renders a WhatsApp-style bubble with the
- * customised template image (preferred) or, if available, a live
- * `TemplatePreviewCanvas` rendered from the picked template + overlay data.
- *
- * Mirrors the data shape used by the web `WhatsappPreview` so the
- * call site (`StepThree` / `StepFour`) can pass the same props.
+ * Invitation preview popup. Renders the message exactly as web's
+ * WhatsappPreview does — a WhatsApp conversation with the customised template
+ * image (4:5), the resolved message body, a timestamp with the blue
+ * double-check, and the three quick-reply CTA buttons. Web is the source of
+ * truth; the only deliberate deviation is omitting web's fake iOS device
+ * bezel/notch/status-bar (redundant inside a real phone).
  */
 const PreviewInvitation = ({
   visible = false,
@@ -88,15 +87,6 @@ const PreviewInvitation = ({
     t,
   ]);
 
-  const displayTitle = useMemo(() => {
-    const brideName = templateData?.brideName;
-    const groomName = templateData?.groomName;
-    if (brideName && groomName) {
-      return t("preview_wedding_title", { brideName, groomName });
-    }
-    return eventTitle || t("preview_default_title");
-  }, [templateData, eventTitle, t]);
-
   const bakedImageSource = useMemo(() => {
     const uri = resolveMediaUri(templateImage);
     return uri ? { uri } : null;
@@ -112,6 +102,8 @@ const PreviewInvitation = ({
     return 4 / 5;
   }, [template, templateImage]);
 
+  const messageTime = t("preview_timestamp", "9:41");
+
   return (
     <Modal
       visible={visible}
@@ -120,7 +112,7 @@ const PreviewInvitation = ({
       statusBarTranslucent
     >
       <SafeAreaView style={styles.modalContainer}>
-        {/* Header */}
+        {/* Screen header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{t("preview_title")}</Text>
           <TouchableOpacity
@@ -133,14 +125,30 @@ const PreviewInvitation = ({
           </TouchableOpacity>
         </View>
 
+        {/* WhatsApp top bar */}
+        <View style={styles.waBar}>
+          <Ionicons name="chevron-back" size={22} color="#FFF" />
+          <View style={styles.waAvatar}>
+            <Text style={styles.waAvatarText}>H</Text>
+          </View>
+          <View style={styles.waInfo}>
+            <Text style={styles.waName} numberOfLines={1}>
+              Halaa Events
+            </Text>
+            <Text style={styles.waStatus}>online</Text>
+          </View>
+          <Ionicons name="ellipsis-vertical" size={18} color="#FFF" />
+        </View>
+
+        {/* Chat area */}
         <ScrollView
-          style={styles.previewContainer}
-          contentContainerStyle={styles.previewContent}
+          style={styles.chatArea}
+          contentContainerStyle={styles.chatContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Chat Bubble */}
-          <View style={styles.chatBubble}>
-            <View style={[styles.templateImageWrap, { aspectRatio }]}>
+          {/* Received message card */}
+          <View style={styles.msgCard}>
+            <View style={[styles.msgImageWrap, { aspectRatio }]}>
               {bakedImageSource ? (
                 <Image
                   source={bakedImageSource}
@@ -163,69 +171,68 @@ const PreviewInvitation = ({
               )}
             </View>
 
-            <View style={styles.eventDetails}>
-              {!!displayTitle && (
-                <Text style={styles.eventTitle}>{displayTitle}</Text>
-              )}
+            {resolvedBody ? (
+              <Text style={styles.msgBody}>{resolvedBody}</Text>
+            ) : (
+              <Text style={styles.msgPlaceholder}>
+                {t(
+                  "preview_body_placeholder",
+                  "اختر قالب رسالة في الخطوة السابقة لمعاينة النص هنا"
+                )}
+              </Text>
+            )}
 
-              {!!resolvedBody && (
-                <Text style={styles.invitationMessage}>{resolvedBody}</Text>
-              )}
-
-              {!!formattedDate && (
-                <View style={styles.detailRow}>
-                  <Ionicons name="calendar-outline" size={16} color="#656565" />
-                  <Text style={styles.detailText}>
-                    {t("preview_date_prefix")} {formattedDate}
-                  </Text>
-                </View>
-              )}
-
-              {!!eventTime && (
-                <View style={styles.detailRow}>
-                  <Ionicons name="time-outline" size={16} color="#656565" />
-                  <Text style={styles.detailText}>
-                    {t("time_prefix")} {eventTime}
-                  </Text>
-                </View>
-              )}
-
-              {!!location && (
-                <View style={styles.detailRow}>
-                  <Ionicons name="location-outline" size={16} color="#656565" />
-                  <Text style={styles.detailText}>{location}</Text>
-                </View>
-              )}
+            <View style={styles.msgMeta}>
+              <Text style={styles.msgTime}>{messageTime}</Text>
+              <Ionicons name="checkmark-done" size={15} color="#53BDEB" />
             </View>
+          </View>
 
-            <View style={styles.actionButtons}>
-              <View style={[styles.actionButton, styles.confirmButton]}>
-                <Text style={[styles.actionButtonText, styles.confirmButtonText]}>
-                  {t("whatsapp_invitation_preview_attending", t("attending"))}
-                </Text>
-              </View>
-              <View style={styles.actionButton}>
-                <Text style={styles.actionButtonText}>
-                  {t("whatsapp_invitation_preview_declining", t("absence"))}
-                </Text>
-              </View>
-              <View style={styles.actionButton}>
-                <Text style={styles.actionButtonText}>
-                  {t("whatsapp_invitation_preview_maybe", t("maybe"))}
-                </Text>
-              </View>
+          {/* Quick-reply CTA buttons */}
+          <View style={styles.ctaGroup}>
+            <View style={styles.ctaBtn}>
+              <Ionicons name="checkmark-sharp" size={15} color="#0096DE" />
+              <Text style={styles.ctaText}>
+                {t("whatsapp_invitation_preview_attending", t("attending"))}
+              </Text>
             </View>
-
-            <Text style={styles.timestamp}>{t("preview_timestamp")}</Text>
+            <View style={styles.ctaDivider} />
+            <View style={styles.ctaBtn}>
+              <Ionicons name="close-sharp" size={15} color="#0096DE" />
+              <Text style={styles.ctaText}>
+                {t("whatsapp_invitation_preview_declining", t("absence"))}
+              </Text>
+            </View>
+            <View style={styles.ctaDivider} />
+            <View style={styles.ctaBtn}>
+              <Ionicons name="help" size={15} color="#0096DE" />
+              <Text style={styles.ctaText}>
+                {t("whatsapp_invitation_preview_maybe", t("maybe"))}
+              </Text>
+            </View>
           </View>
         </ScrollView>
+
+        {/* Input bar */}
+        <View style={styles.inputBar}>
+          <View style={styles.inputField}>
+            <Text style={styles.inputPlaceholder}>
+              {t("preview_input_placeholder", "رسالة")}
+            </Text>
+          </View>
+          <View style={styles.micBtn}>
+            <Ionicons name="mic" size={18} color="#FFF" />
+          </View>
+        </View>
       </SafeAreaView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalContainer: { flex: 1, backgroundColor: "#E5DDD5" },
+  modalContainer: { flex: 1, backgroundColor: "#EFEAE2" },
+
+  /* Screen header */
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -249,85 +256,165 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 18,
   },
-  previewContainer: { flex: 1 },
-  previewContent: { padding: 16 },
-  chatBubble: {
-    backgroundColor: "#FFF",
-    borderRadius: 12,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 3,
-    elevation: 2,
-    width: "100%",
-  },
-  templateImageWrap: {
-    width: "100%",
-    backgroundColor: "#F5F1EA",
-    overflow: "hidden",
-  },
-  templateImage: { width: "100%", height: "100%" },
-  eventDetails: { padding: 16, gap: 10 },
-  eventTitle: {
-    fontSize: 18,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    textAlign: "center",
-  },
-  invitationMessage: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
-    color: "#2C2C2C",
-    lineHeight: 22,
-    textAlign: "center",
-  },
-  detailRow: {
+
+  /* WhatsApp top bar */
+  waBar: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 4,
+    gap: 10,
+    backgroundColor: "#00A884",
+    paddingHorizontal: 12,
+    paddingVertical: 9,
   },
-  detailText: {
-    fontSize: 13,
-    fontFamily: "Cairo_400Regular",
-    color: "#656565",
-    flex: 1,
-  },
-  actionButtons: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 12,
-    gap: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-  },
-  actionButton: {
-    flex: 1,
-    minWidth: "30%",
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    backgroundColor: "#F5F5F5",
+  waAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#FFF",
     alignItems: "center",
     justifyContent: "center",
   },
-  confirmButton: { backgroundColor: "#C28E5C" },
-  actionButtonText: {
-    fontSize: 12,
+  waAvatarText: {
+    fontSize: 15,
     fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
+    color: "#00785A",
   },
-  confirmButtonText: { color: "#FFF" },
-  timestamp: {
+  waInfo: { flex: 1, minWidth: 0 },
+  waName: {
+    color: "#FFF",
+    fontSize: 15,
+    fontFamily: "Cairo_700Bold",
+    lineHeight: 18,
+  },
+  waStatus: {
+    color: "rgba(255,255,255,0.78)",
     fontSize: 11,
     fontFamily: "Cairo_400Regular",
-    color: "#8E8E8E",
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    // Sent-message timestamp sits at the message's END edge and follows
-    // the UI direction (left in RTL, right in LTR).
-    textAlign: I18nManager.isRTL ? "left" : "right",
+    lineHeight: 14,
+  },
+
+  /* Chat area */
+  chatArea: { flex: 1, backgroundColor: "#EFEAE2" },
+  chatContent: { padding: 14, gap: 8 },
+
+  /* Message card */
+  msgCard: {
+    width: "100%",
+    backgroundColor: "#FFF",
+    borderRadius: 9,
+    borderTopLeftRadius: 4,
+    overflow: "hidden",
+    shadowColor: "#0B141A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  msgImageWrap: {
+    width: "100%",
+    backgroundColor: "#F1E8D6",
+    overflow: "hidden",
+    margin: 4,
+    marginBottom: 0,
+    borderRadius: 6,
+    alignSelf: "stretch",
+  },
+  templateImage: { width: "100%", height: "100%" },
+  msgBody: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 2,
+    color: "#111B21",
+    fontSize: 14,
+    fontFamily: "Cairo_400Regular",
+    lineHeight: 24,
+    textAlign: "right",
+    writingDirection: "rtl",
+  },
+  msgPlaceholder: {
+    paddingHorizontal: 12,
+    paddingTop: 14,
+    paddingBottom: 2,
+    color: "#8696A0",
+    fontSize: 13,
+    fontFamily: "Cairo_400Regular",
+    lineHeight: 20,
+    textAlign: "right",
+    writingDirection: "rtl",
+    fontStyle: "italic",
+  },
+  msgMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingTop: 2,
+    paddingBottom: 8,
+  },
+  msgTime: {
+    color: "#667781",
+    fontSize: 11,
+    fontFamily: "Cairo_400Regular",
+  },
+
+  /* CTA buttons */
+  ctaGroup: {
+    width: "100%",
+    backgroundColor: "#FFF",
+    borderRadius: 9,
+    overflow: "hidden",
+    shadowColor: "#0B141A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  ctaBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+  },
+  ctaText: {
+    color: "#027EB5",
+    fontSize: 14,
+    fontFamily: "Cairo_500Medium",
+  },
+  ctaDivider: { height: 1, backgroundColor: "#E9EDEF" },
+
+  /* Input bar */
+  inputBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 9,
+    paddingVertical: 8,
+    backgroundColor: "#F0F2F5",
+  },
+  inputField: {
+    flex: 1,
+    backgroundColor: "#FFF",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  inputPlaceholder: {
+    color: "#8696A0",
+    fontSize: 13,
+    fontFamily: "Cairo_400Regular",
+    textAlign: "right",
+    writingDirection: "rtl",
+  },
+  micBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "#00A884",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 

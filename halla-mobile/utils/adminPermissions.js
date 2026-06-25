@@ -1,12 +1,9 @@
 /**
  * Admin Permissions — mobile.
  *
- * Role/page/access-level enums live in `@halla/shared/constants` (mirror
- * of backend). The per-role ACCESS_MATRIX below stays mobile-local
- * because it currently diverges from web and backend; reconciling it is
- * a product decision pending (see UNIFICATION_REPORT.md Phase 8 slice 3
- * follow-ups). Once reconciled, this file collapses to a thin
- * re-export.
+ * Role/page/access-level enums live in `@halla/shared/constants`. The
+ * per-role ACCESS_MATRIX below stays mobile-local because it currently
+ * diverges from web and backend.
  */
 
 import {
@@ -27,7 +24,7 @@ export { ACCESS_LEVELS };
 
 /**
  * Page keys — mobile alias preserving the existing `PAGES` import surface.
- * Mirrors backend ADMIN_PAGES + a mobile-only `PLANS: "plans"` key.
+ * Extends ADMIN_PAGES with a mobile-only `PLANS: "plans"` key.
  *
  * Backend treats `plans` as a host/vendor page (not admin-permissioned)
  * and only has `MANAGE_PLANS`. Mobile's admin UI exposes a `plans` page
@@ -44,9 +41,8 @@ export const PAGES = {
 };
 
 /**
- * Mobile access matrix — keep in sync with backend `ROLE_PAGE_ACCESS`
- * once the cross-app reconciliation lands. Today's matrix matches mobile
- * UX expectations and diverges from backend on these rows:
+ * Mobile access matrix. Matches mobile UX expectations and diverges from
+ * backend on these rows:
  *   MODERATOR.SETTINGS:        backend NONE, mobile VIEW
  *   MODERATOR.TEMPLATES_*:     mobile lacks these keys (see backend)
  */

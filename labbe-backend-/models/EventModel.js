@@ -160,8 +160,7 @@ const guestRepliesSchema = new mongoose.Schema(
 
 // Launch Settings sub-schema
 //
-// Phase 3a.5 dropped the Taqnyat native-scheduling path entirely: there is
-// no longer a `taqnyatDeleteId` field — every event launches via the cron
+// There is no `taqnyatDeleteId` field — every event launches via the cron
 // regardless of channel. If a legacy document still has `taqnyatDeleteId`
 // in the database, Mongoose will quietly ignore it on read; no migration is
 // needed.
@@ -226,7 +225,7 @@ const messagingStatusSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    // FLOW-20-F02: Staff SMS send failures (separate from guest failures)
+    // Staff SMS send failures (separate from guest failures)
     staffFailedCount: {
       type: Number,
       default: 0,
@@ -266,8 +265,7 @@ const eventSchema = new mongoose.Schema(
     staffList: [staffSchema],
 
     // Canonical invitation shape (Step 3 visual + Step 4 Taqnyat +
-    // auto-replies). The legacy `invitationSettings` mirror was
-    // removed when the wizard moved to canonical-only writes.
+    // auto-replies).
     visualTemplate: canonicalVisualTemplateSchema,
     taqnyatTemplate: canonicalTaqnyatTemplateSchema,
     guestReplies: guestRepliesSchema,
@@ -304,7 +302,7 @@ const eventSchema = new mongoose.Schema(
       ref: "Plan",
     },
 
-    // ─── Business-account branding + delivery SNAPSHOT (business-account #9/#23/#24)
+    // ─── Business-account branding + delivery SNAPSHOT
     // Server-owned, snapshotted at creation, NEVER read live and NEVER client-
     // submitted. For business hosts the logo is copied to an event-owned
     // immutable S3 key and the business NAME is snapshotted too, so a later
@@ -434,7 +432,7 @@ const eventSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    // FLOW-16-F03: last test message timestamp for per-event throttle
+    // last test message timestamp for per-event throttle
     lastTestAt: { type: Date },
 
     // Messaging Status (for bulk sending tracking)
@@ -443,9 +441,9 @@ const eventSchema = new mongoose.Schema(
       default: () => ({}),
     },
 
-    // ---------- Phase 3a / 3c launch lifecycle tracking ----------
+    // ---------- launch lifecycle tracking ----------
 
-    // Cron worker lock (Phase 3a.3). Set when a cron tick begins a bulk
+    // Cron worker lock. Set when a cron tick begins a bulk
     // send for this event so a parallel tick can't start a second send.
     // Cleared when the send finishes (success or failure). A lock older
     // than 10 minutes is treated as stale and forcibly retaken.
@@ -454,7 +452,7 @@ const eventSchema = new mongoose.Schema(
       lockedBy: String,
     },
 
-    // Launch attempt tracking (Phase 3c.1). Incremented on every retry
+    // Launch attempt tracking. Incremented on every retry
     // attempt; reset to 0 by the manual-retry endpoint.
     attemptCount: {
       type: Number,

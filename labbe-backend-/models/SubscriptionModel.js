@@ -232,8 +232,7 @@ subscriptionSchema.virtual("eventsRemaining").get(function () {
   return Math.max(0, (maxEvents || 1) - (this.usage?.eventsCreated || 0));
 });
 
-// Total invite capacity under the unified pool model: invitePool +
-// compensationPool. `maxInvitesPerEvent` is obsolete and no longer read here.
+// Total invite capacity: invitePool + compensationPool.
 // invitePool === null/undefined means an unlimited plan → -1.
 subscriptionSchema.virtual("maxInvites").get(function () {
   if (this.invitePool === null || this.invitePool === undefined) return -1;
@@ -341,11 +340,10 @@ subscriptionSchema.methods.renew = async function () {
   this.activatedAt = new Date();
   this.expiresAt = new Date(this.activatedAt.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
-  // Rebuild the pool from the plan's BASE entitlement. Previously renewal only
-  // reset `invitesConsumed`, leaving `invitePool` at whatever value purchased
-  // extra-invite add-ons had inflated it to — so one-time extras silently
-  // carried over period after period. Renewal restores base + base-derived
-  // compensation; the host must re-purchase extras for the new period.
+  // Rebuild the pool from the plan's BASE entitlement so one-time extra-invite
+  // add-ons do not carry over period after period. Renewal restores base +
+  // base-derived compensation; the host must re-purchase extras for the new
+  // period.
   const basePool = plan?.limits?.invitePool ?? null;
   if (basePool !== null) {
     this.invitePool = basePool;
@@ -403,11 +401,10 @@ subscriptionSchema.methods.upgradeTo = async function (
     this.pricePaid.amount = pricePaid;
   }
 
-  // Rebuild the pool from the NEW plan's base entitlement. Without this an
-  // upgrade swapped `planId` but left `invitePool`/`compensationPool` at the
-  // old plan's values, so the host kept paying for the new tier while still
-  // capped at the old one. Carry forward already-consumed invites (clamped to
-  // the new capacity) so an upgrade never resurrects spent invites.
+  // Rebuild the pool from the NEW plan's base entitlement so the host's
+  // capacity matches the tier they now pay for. Carry forward already-consumed
+  // invites (clamped to the new capacity) so an upgrade never resurrects spent
+  // invites.
   const Plan = mongoose.model('Plan');
   const plan = await Plan.findById(newPlanId).select('limits');
   const basePool = plan?.limits?.invitePool ?? null;
@@ -537,13 +534,6 @@ subscriptionSchema.statics.createForUser = async function (userId, plan, options
     createdBy: options.createdBy || {},
   });
 };
-
-// NOTE: the legacy `consumeInvites` / `releaseInvites` statics were removed.
-// They had zero callers under the unified-pool model, and `releaseInvites`
-// could drive `invitesConsumed` below zero (no floor). Consumption now happens
-// inline at send time (messaging.send.service / events.resend.service) with a
-// capacity clamp; there is no "release" — `invitesConsumed` reflects only
-// actually-sent, non-refundable messages.
 
 /**
  * Get best subscription to use for an event with specified guest count

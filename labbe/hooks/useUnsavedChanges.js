@@ -1,6 +1,6 @@
 "use client";
 /**
- * useUnsavedChanges — Phase 4c W1-VISUAL (v4.2 Patch B)
+ * useUnsavedChanges
  *
  * Guards against accidental navigation when a form is dirty. Two cases:
  *   1. Browser-level navigation (tab close, F5, address-bar entry) via
@@ -9,9 +9,8 @@
  *      monkey-patching window.history.pushState/replaceState — which is
  *      what Next.js App Router uses under the hood for soft navigation.
  *
- * Zero new dependencies — `react-router-dom` and `react-use` are
- * intentionally NOT installed (D4c-5). The patch reads `isDirty` from
- * a ref so it always sees the latest value without re-patching.
+ * The patch reads `isDirty` from a ref so it always sees the latest value
+ * without re-patching.
  */
 
 import { useEffect, useRef } from "react";

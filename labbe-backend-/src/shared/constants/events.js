@@ -1,9 +1,9 @@
 /**
- * Events module shared constants — Phase 4b W0-RBAC + Phase 4d W0-ATOMIC.
+ * Events module shared constants.
  *
- * Extracted (post-review polish) so the capacity-guard error code lives
- * in one place — both `updateGuestList` and `updateEventStep2` now
- * import the same string instead of duplicating the literal.
+ * Centralized so the capacity-guard error code lives in one place — both
+ * `updateGuestList` and `updateEventStep2` import the same string instead
+ * of duplicating the literal.
  */
 
 /**
@@ -54,7 +54,7 @@ const SCHEDULE_MAX_LEAD_DAYS = 3;
 const SCHEDULE_INVALID = "SCHEDULE_INVALID";
 
 /**
- * FLOW-13-F01: Thrown when a host attempts to modify locked fields
+ * Thrown when a host attempts to modify locked fields
  * (date, time, location) within 24h of a scheduled event's launch.
  */
 const EVENT_EDIT_LOCKED = "EVENT_EDIT_LOCKED";

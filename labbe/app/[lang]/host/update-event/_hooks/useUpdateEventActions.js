@@ -11,9 +11,6 @@ import {
 /**
  * Encapsulates the save / cancel mutation logic for the update-event wizard.
  *
- * Extracted from UpdateEventWizard to keep the parent component
- * under the 250-line limit (Rule 1 / Rule 9).
- *
  * Returns { updateEventSection, handleSave, handleCancel }.
  */
 const useUpdateEventActions = ({

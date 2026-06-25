@@ -55,7 +55,7 @@ function getS3() {
   return s3Client;
 }
 
-// CloudFront when provisioned (Phase 5), otherwise the bucket URL.
+// CloudFront when provisioned, otherwise the bucket URL.
 function s3KeyToUrl(key) {
   if (!key) return null;
   if (process.env.CLOUDFRONT_DOMAIN) {

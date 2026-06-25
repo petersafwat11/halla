@@ -3,9 +3,7 @@
  *
  * Both apps render the same notification payload coming off
  * `/notifications` — same icon set (lucide-name strings), same priority
- * palette, same "time ago" tokens. These three helpers were duplicated
- * verbatim in `labbe/services/notification.js` and
- * `halla-mobile/services/notificationService.js`; they now live here.
+ * palette, same "time ago" tokens.
  */
 
 /**

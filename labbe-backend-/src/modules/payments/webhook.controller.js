@@ -193,7 +193,7 @@ exports.handle = async (req, res) => {
 };
 
 /**
- * Phase 3 (recurring billing) — handle `invoice_paid` / `invoice_failed`.
+ * Handle `invoice_paid` / `invoice_failed` (recurring billing).
  * Looks up the Subscription that opened the invoice (stored as
  * `metadata.pendingInvoiceId`) and renews / marks past_due accordingly.
  */

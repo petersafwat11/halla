@@ -93,7 +93,7 @@ const getExpiringSubscriptions = async (daysAhead = 7) => {
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + daysAhead);
 
-  // Subscription schema field is `expiresAt` (renamed from `endDate`).
+  // Subscription schema field is `expiresAt`.
   return Subscription.find({
     status: { $in: ["active", "trial"] },
     expiresAt: { $gte: now, $lte: futureDate },
@@ -107,23 +107,20 @@ const getExpiringSubscriptions = async (daysAhead = 7) => {
 /**
  * Check for scheduled event launches - runs every minute.
  *
- * Phase 1b (PIPELINE-F05): the previous implementation compared
- * `now.getHours()/getMinutes()` (server local time) against the host's
- * scheduled wall-clock string. That broke whenever the server timezone
- * wasn't Asia/Riyadh — UTC servers would fire 3 hours late, etc. We now
- * fetch the day's scheduled events and use `timezone.isDue` to compare in
+ * Fetches the day's scheduled events and uses `timezone.isDue` to compare in
  * real UTC, deriving the Riyadh wall-clock from the host's chosen
- * `scheduledTime`.
+ * `scheduledTime`. Comparing `now.getHours()/getMinutes()` (server local
+ * time) against the host's scheduled wall-clock string would break whenever
+ * the server timezone wasn't Asia/Riyadh — UTC servers would fire 3 hours
+ * late, etc.
  *
- * Phase 3a:
- *   - PIPELINE-F01 / FLOW-14-F01: send-then-mark-live ordering.
- *     `sendBulk` runs first; only on success do we flip the event to
- *     `live`. On failure the status stays `scheduled` (the retry cron
- *     handles re-attempts; after exhaustion it transitions to `failed`).
- *   - 3a.3 send lock: acquired via `eventLock.acquire` before any send,
+ *   - Send-then-mark-live ordering: `sendBulk` runs first; only on success
+ *     do we flip the event to `live`. On failure the status stays
+ *     `scheduled` (the retry cron handles re-attempts; after exhaustion it
+ *     transitions to `failed`).
+ *   - Send lock: acquired via `eventLock.acquire` before any send,
  *     released in `finally`. Prevents a dual-tick race from double-firing.
- *   - 3a.5: the Taqnyat native-scheduling skip branch is removed. Every
- *     event launches via this cron regardless of channel.
+ *   - Every event launches via this cron regardless of channel.
  */
 const scheduleEventLaunch = () => {
   cron.schedule("* * * * *", async () => {
@@ -177,10 +174,10 @@ async function runEventLaunch(event, workerId) {
     return { launched: false, reason: "no_guests" };
   }
 
-  // Centralized dispatch-policy gate (business-account #11). The cron path
-  // historically skipped the subscription/owner checks that HTTP routes
-  // enforce — a subscription active at schedule time that lapses before the
-  // cron fires would still send. Consult the single guard here.
+  // Centralized dispatch-policy gate. Without it the cron path skips the
+  // subscription/owner checks that HTTP routes enforce — a subscription
+  // active at schedule time that lapses before the cron fires would still
+  // send. Consult the single guard here.
   const dispatchPolicy = require("../../modules/messaging/messaging.dispatchPolicy.service");
   const decision = await dispatchPolicy.assertCanDispatch(
     event,
@@ -191,8 +188,8 @@ async function runEventLaunch(event, workerId) {
     return { launched: false, reason: `dispatch_blocked:${decision.reason}` };
   }
 
-  // B-5: filter out guests whose invitation has already been delivered.
-  // Previously every retry called sendBulk over the FULL guestList. The
+  // Filter out guests whose invitation has already been delivered. Calling
+  // sendBulk over the FULL guestList on every retry duplicates SMS: the
   // per-attempt idempotency fingerprint (`event.lastAttemptAt.getTime()`)
   // changes on each attempt, so the idempotency cache does NOT deduplicate
   // across attempts — a successfully-delivered guest would receive a fresh
@@ -214,7 +211,7 @@ async function runEventLaunch(event, workerId) {
     // successful launch (e.g. all attempts succeeded incrementally). Flip
     // straight to `live` without dispatching.
     //
-    // HIGH-5 review: if attemptCount is 0, this means we're being asked
+    // If attemptCount is 0, this means we're being asked
     // to launch an event whose guests ALREADY all show invitation.sent
     // — without any cron attempt having fired. That can only happen if
     // an admin / seed / support tool flipped the flag manually. Audit
@@ -269,9 +266,9 @@ async function runEventLaunch(event, workerId) {
     }
   }
 
-  // H-17: dynamically size the lock TTL based on the worst-case sendBulk
-  // duration for this guestlist. With ratePerSecond=10 the previous fixed
-  // 10-min TTL was too small for >6000 guests; a second cron tick would
+  // Dynamically size the lock TTL based on the worst-case sendBulk
+  // duration for this guestlist. With ratePerSecond=10 a fixed
+  // 10-min TTL is too small for >6000 guests; a second cron tick would
   // reacquire the stale lock mid-send and double-fire the entire batch.
   const dynamicTtl = eventLock.estimateLockTtl(guestIds.length);
   const lock = await eventLock.acquire(eventId, workerId, { ttlMs: dynamicTtl });
@@ -280,7 +277,7 @@ async function runEventLaunch(event, workerId) {
     return { launched: false, reason: "locked" };
   }
 
-  // H-17: heartbeat refreshes lockedAt every minute so even if our TTL
+  // Heartbeat refreshes lockedAt every minute so even if our TTL
   // estimate was wrong the lock stays alive while we're actively running.
   const beat = eventLock.heartbeat(eventId, workerId);
 
@@ -685,7 +682,7 @@ const scheduleEventCompletion = () => {
 /**
  * Helper: format a Date for Arabic reminders.
  *
- * M-5: explicit Asia/Riyadh time zone — without it, a UTC server formats
+ * Explicit Asia/Riyadh time zone — without it, a UTC server formats
  * Riyadh-evening events as the previous calendar day in the reminder SMS.
  */
 const { formatRiyadh, parseReminderTime } = require("./timezone");
@@ -701,9 +698,8 @@ const _formatDateAr = (date) => {
  * The free auto-reminder targets CONFIRMED guests only, using the
  * `(event.eventDetails.type, reminder_confirmed)` template. Non-responders /
  * maybe / declined guests get NOTHING from the auto-reminder — re-engaging
- * them is a pool-charged action (resend invite / extra reminder). The
- * hardcoded `halaa_reminder_*` names from the old implementation are removed
- * entirely; templates are looked up by `(category, reminder_confirmed)`.
+ * them is a pool-charged action (resend invite / extra reminder). Templates
+ * are looked up by `(category, reminder_confirmed)`.
  * A missing template audits and skips — it does not crash the tick.
  */
 const scheduleGuestReminders = () => {
@@ -778,7 +774,7 @@ async function _runAutoReminderForEvent(event) {
   const category = event.eventDetails?.type || null;
   const eventId = event._id;
 
-  // Centralized dispatch-policy gate (business-account #11) — reminders are a
+  // Centralized dispatch-policy gate — reminders are a
   // guest-facing send path, so a suspended owner / lapsed-or-refunding
   // subscription / terminal event must NOT trigger reminder dispatch.
   const dispatchPolicy = require("../../modules/messaging/messaging.dispatchPolicy.service");
@@ -886,11 +882,10 @@ async function _runAutoReminderForEvent(event) {
 /**
  * Subscription status auto-update — runs daily at 1:00 AM.
  *
- * Queries `expiresAt` (the
- * real field) and emit a `subscription.expired` audit row per
+ * Queries `expiresAt` and emits a `subscription.expired` audit row per
  * transitioned record so admins can trace the lifecycle event.
  *
- * M-17: wrapped in `cronLease.withLease` so multi-instance deploys
+ * Wrapped in `cronLease.withLease` so multi-instance deploys
  * don't fire the cron N times on the same minute and produce duplicate
  * audit + notification rows.
  */
@@ -934,8 +929,8 @@ const scheduleSubscriptionStatusUpdate = () => {
           },
         });
 
-        // H-12: notify the user when their subscription transitions to
-        // expired. Previously hosts were silently downgraded, with no
+        // Notify the user when their subscription transitions to
+        // expired. Without this hosts are silently downgraded, with no
         // in-app or email signal — they would only realise when they
         // tried to create an event and hit the quota wall. We send an
         // in-app notification + a renewal email (best-effort, gated on
@@ -988,13 +983,13 @@ const scheduleSubscriptionStatusUpdate = () => {
 };
 
 /**
- * Launch retry cron — runs every 5 minutes (Phase 3c.1, FLOW-15-F02).
+ * Launch retry cron — runs every 5 minutes.
  *
  * For events that are still `scheduled` after their launch tick failed
  * (or never matched the 60s isDue window), this cron re-attempts the
  * bulk send within a 24h pre-launch retry window.
  *
- * Backoff (PHASE_3abc_PLAN.md, decision D5):
+ * Backoff:
  *   attempt 1 → already happened in scheduleEventLaunch
  *   attempt 2 → 5 min after lastAttemptAt
  *   attempt 3 → 30 min
@@ -1003,18 +998,18 @@ const scheduleSubscriptionStatusUpdate = () => {
  *   attempt 6 → 12 h
  * After `MAX_ATTEMPTS = 5` retries (so attemptCount === 5), or if now is
  * more than `RETRY_WINDOW_MS = 24h` past the scheduled launch time, the
- * event flips to `failed` and notifications fire (FLOW-15-F05).
+ * event flips to `failed` and notifications fire.
  *
  * Manual retry resets `attemptCount = 0` and pushes the event back to
  * `scheduled`; the next minute-tick of `scheduleEventLaunch` picks it up.
  */
 const MAX_LAUNCH_ATTEMPTS = 5;
 const LAUNCH_RETRY_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
-// L-7: backoff array length must be MAX_LAUNCH_ATTEMPTS - 1 (the gaps
-// between attempts). The previous 5-entry array left the 5th value
-// (`12h`) unreachable — `_isRetryDue` returns false once attempt >=
-// MAX_LAUNCH_ATTEMPTS so index 4 is never consulted. We trim to four
-// entries to make the contract explicit and prevent doc/code drift.
+// Backoff array length must be MAX_LAUNCH_ATTEMPTS - 1 (the gaps
+// between attempts). A 5th value (`12h`) would be unreachable —
+// `_isRetryDue` returns false once attempt >= MAX_LAUNCH_ATTEMPTS so
+// index 4 is never consulted. Four entries keep the contract explicit
+// and prevent doc/code drift.
 //   attempt 1 → wait LAUNCH_BACKOFF_MS[0] = 5 min  → attempt 2
 //   attempt 2 → wait LAUNCH_BACKOFF_MS[1] = 30 min → attempt 3
 //   attempt 3 → wait LAUNCH_BACKOFF_MS[2] = 2 h    → attempt 4
@@ -1072,12 +1067,9 @@ const _markFailedAndNotify = async (event, reason) => {
   // Idempotent notification dispatch — even if this terminal-fail handler
   // somehow fires twice, the host/admin/super-admin only see one.
   //
-  // B-6: previously this relied on `notificationService.sendToUser(..., true)`
-  // to dispatch the email, which silently swallowed a TypeError because
-  // `email.send.notification` didn't exist. We now (a) call the dedicated
-  // `email.send.eventLaunchFailed` template directly, AND (b) keep the
-  // sendToUser call so the in-app notification still lands. Either path
-  // failing logs but does not throw.
+  // (a) call the dedicated `email.send.eventLaunchFailed` template directly,
+  // AND (b) keep the sendToUser call so the in-app notification still lands.
+  // Either path failing logs but does not throw.
   const notifyKey = `event_failed_notify:${eventId}`;
   const notifyRequestHash = sha256({ eventId: String(eventId) });
   await withIdempotency(notifyKey, async () => {
@@ -1187,11 +1179,11 @@ const scheduleEventRetry = () => {
 // ============================================
 
 /**
- * FLOW-27-F02: Deliver scheduled notifications that have passed their scheduledFor time.
+ * Deliver scheduled notifications that have passed their scheduledFor time.
  *
  * Runs every 5 minutes. Finds notifications where:
- *   isScheduled === true  (i.e. status "pending" in spec terms)
- *   scheduledFor <= now   (spec calls this field "scheduledAt")
+ *   isScheduled === true
+ *   scheduledFor <= now
  *
  * Uses runBatched for bulk delivery (concurrency 10, 50/sec — purely
  * in-process Mongo writes, no external rate cap applies).
@@ -1272,7 +1264,7 @@ const scheduleNotificationDelivery = () => {
 };
 
 // ─────────────────────────────────────────────────────────────────
-// Phase 1 §5.2 — Payment reconciliation cron (every 5 minutes).
+// Payment reconciliation cron (every 5 minutes).
 // Catches Payment rows stuck in `pending` / `pending_3ds` for > 2 min,
 // pulls fresh state from Moyasar, and finalizes any outstanding
 // subscription / addon intent the way the webhook would.
@@ -1305,7 +1297,7 @@ const schedulePaymentReconcile = () => {
 };
 
 // ─────────────────────────────────────────────────────────────────
-// Phase 3 §6.2 — Subscription renewal cron (daily at 02:00).
+// Subscription renewal cron (daily at 02:00).
 // For every active subscription expiring in <= 3 days that has no
 // pending invoice yet, ask the subscription service to open a
 // Moyasar invoice and email the host the payment link.
@@ -1363,7 +1355,7 @@ const scheduleSubscriptionRenewal = () => {
   });
 };
 
-// Expire stale business checkout links hourly (business-account #1). Retained
+// Expire stale business checkout links hourly. Retained
 // records — `expireStale` only flips pending_payment → expired, never deletes.
 const scheduleBusinessLinkExpiry = () => {
   cron.schedule("30 * * * *", async () => {

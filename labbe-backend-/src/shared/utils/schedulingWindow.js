@@ -1,5 +1,5 @@
 /**
- * Scheduling-window utility — Phase 3 (trial-vs-paid windows + event-date floors).
+ * Scheduling-window utility (trial-vs-paid windows + event-date floors).
  *
  * Single source of truth for the scheduling math shared across:
  *   - messaging.schedule.service.scheduleBulkSend  (window: SOON / LATE)

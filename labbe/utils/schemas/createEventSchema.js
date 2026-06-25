@@ -1,9 +1,7 @@
 /**
- * Compat re-export. Canonical create-event schema lives in
- * `@halla/shared/schemas/events`. The `buildDynamicTemplateSchema` helper
- * now takes `fontIds` as a parameter — web binds it to the live
- * `FONT_IDS` from `@/config/fonts` below so existing call sites stay
- * unchanged.
+ * `buildDynamicTemplateSchema` takes `fontIds` as a parameter — web binds
+ * it to the live `FONT_IDS` from `@/config/fonts` below so existing call
+ * sites stay unchanged.
  */
 "use client";
 import {

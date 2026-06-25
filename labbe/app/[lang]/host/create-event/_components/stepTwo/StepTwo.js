@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,13 @@ import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import Button from "@/ui/commen/button/Button";
 import GuestImporter from "./GuestImporter";
 import GuestTable from "./GuestTable";
+import ReuseGuestsModal from "@/components/guests/reuseGuests/ReuseGuestsModal";
+import { useMyContacts } from "@/hooks/guests/queries";
+import { toastUtils } from "@/utils/toastUtils";
+import {
+  isContactPickerSupported,
+  pickPhoneContacts,
+} from "@/utils/contacts/phoneContacts";
 
 /**
  * When an event is `live`, the update wizard passes `allowAddOnly={true}`
@@ -23,7 +30,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
   const pathname = usePathname();
   const { t } = useTranslation("createEvent");
 
-  const [currentItem, setCurrentItem] = useState({ name: "", mobile: "" });
+  const [currentItem, setCurrentItem] = useState({ name: "", mobile: "", category: "" });
   // Mirrors `currentItem.id` so the delete callbacks below don't take a
   // dependency on it. Without this, every keystroke in the importer
   // inputs would change `currentItem`, change `handleRemove`/`handleBulkDelete`
@@ -36,6 +43,18 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
     inserted: 0,
     skipped: 0,
   });
+  const [showReuseModal, setShowReuseModal] = useState(false);
+  // Contact Picker API is Android-Chrome only; resolve client-side to avoid
+  // a hydration mismatch.
+  const [supportsPicker, setSupportsPicker] = useState(false);
+  useEffect(() => {
+    setSupportsPicker(isContactPickerSupported());
+  }, []);
+
+  // The host's saved category labels — feeds the manual-add combobox and is
+  // independent of the reuse modal's own paged fetch.
+  const { data: contactsMeta } = useMyContacts({ page: 1, limit: 1 });
+  const savedCategories = contactsMeta?.data?.categories || [];
 
   const setCurrentItemTracked = useCallback((updater) => {
     setCurrentItem((prev) => {
@@ -64,7 +83,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
   const isLimitReached = !isUnlimited && guestList.length >= guestLimit;
 
   const resetCurrentItem = useCallback(() => {
-    setCurrentItemTracked({ name: "", mobile: "" });
+    setCurrentItemTracked({ name: "", mobile: "", category: "" });
   }, [setCurrentItemTracked]);
 
   // Remove handler — reads `currentItem.id` from the ref so it stays
@@ -103,12 +122,66 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         setCurrentItemTracked({
           name: item.name || "",
           mobile: item.mobile || "",
+          category: item.category || "",
           id: item.id,
         });
       }
     },
     [guestList, setCurrentItemTracked]
   );
+
+  const remainingCapacity = isUnlimited
+    ? Infinity
+    : Math.max(0, guestLimit - guestList.length);
+
+  // Shared merge path for the reuse picker AND phone import: dedupe by phone
+  // against the current list, respect the remaining list capacity (free at
+  // list time — no invite is consumed), and surface a skipped count. The
+  // existing create/step2 save then persists category + guests.
+  const mergeIncomingGuests = useCallback(
+    (incoming) => {
+      const existing = new Set(guestList.map((g) => g.mobile));
+      const fresh = [];
+      for (const c of incoming || []) {
+        if (!c.mobile || existing.has(c.mobile)) continue;
+        existing.add(c.mobile);
+        fresh.push({
+          name: c.name || "",
+          mobile: c.mobile,
+          category: c.category || "",
+          id: `${Date.now()}_${Math.random()}`,
+        });
+      }
+      const remaining = isUnlimited
+        ? Infinity
+        : Math.max(0, guestLimit - guestList.length);
+      const toAdd = fresh.slice(0, remaining);
+      const skipped = fresh.length - toAdd.length;
+      if (toAdd.length > 0) {
+        setValue("guestList", [...guestList, ...toAdd], { shouldValidate: true });
+      }
+      if (skipped > 0) {
+        setImportLimitInfo({ inserted: toAdd.length, skipped });
+        setShowImportLimitPopup(true);
+      }
+      return { added: toAdd.length, skipped };
+    },
+    [guestList, setValue, isUnlimited, guestLimit]
+  );
+
+  const handlePhonePick = useCallback(async () => {
+    try {
+      const picked = await pickPhoneContacts();
+      const { added } = mergeIncomingGuests(picked);
+      if (added > 0) {
+        toastUtils.success(t("phone_import_added", { count: added }));
+      }
+    } catch (e) {
+      if (e?.message !== "contact_picker_unsupported") {
+        toastUtils.error(t("phone_import_failed"));
+      }
+    }
+  }, [mergeIncomingGuests, t]);
 
   return (
     <div className={styles.stepTwo}>
@@ -138,6 +211,33 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         </div>
       )}
 
+      {/* Additional guest sources: reuse the host's guest book, and (on
+          supported browsers / Android Chrome) import from phone contacts.
+          Both merge into the local list and persist via the normal save. */}
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          flexWrap: "wrap",
+          marginBottom: "8px",
+        }}
+      >
+        <Button
+          variant="secondary"
+          title={t("add_from_my_guests")}
+          onClick={() => setShowReuseModal(true)}
+          disabled={isLimitReached}
+        />
+        {supportsPicker && (
+          <Button
+            variant="secondary"
+            title={t("import_from_phone")}
+            onClick={handlePhonePick}
+            disabled={isLimitReached}
+          />
+        )}
+      </div>
+
       <GuestImporter
         guestList={guestList}
         setValue={setValue}
@@ -150,6 +250,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         setImportErrors={setImportErrors}
         setImportLimitInfo={setImportLimitInfo}
         setShowImportLimitPopup={setShowImportLimitPopup}
+        categories={savedCategories}
       />
 
       {/* Import Errors Display */}
@@ -207,6 +308,20 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
           </div>
         </div>
       </PopupWrapper>
+
+      {/* Reuse-from-guest-book picker */}
+      <ReuseGuestsModal
+        isOpen={showReuseModal}
+        onClose={() => setShowReuseModal(false)}
+        onAdd={(selected) => {
+          const { added } = mergeIncomingGuests(selected);
+          if (added > 0) {
+            toastUtils.success(t("reuse_guests_added_toast", { count: added }));
+          }
+        }}
+        existingMobiles={guestList.map((g) => g.mobile)}
+        remainingCapacity={remainingCapacity}
+      />
     </div>
   );
 };

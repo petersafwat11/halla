@@ -15,6 +15,7 @@ import {
   textStyles,
   backgrounds,
 } from "../../../styles/tokens";
+import { getStatusVisual } from "../../../constants/statusColors";
 
 function getDiscountStatus(discount) {
   if (discount.validUntil && new Date(discount.validUntil) < new Date())
@@ -23,13 +24,6 @@ function getDiscountStatus(discount) {
     return "exhausted";
   return discount.isActive ? "active" : "inactive";
 }
-
-const STATUS_CONFIG = {
-  active:    { bg: "#EAF4EF", color: "#2A8C5B" },
-  inactive:  { bg: "#F5F5F5", color: "#666666" },
-  expired:   { bg: "#F9EBEA", color: "#C0392B" },
-  exhausted: { bg: "#FBF3E6", color: "#D38200" },
-};
 
 const DiscountListItem = ({
   discount,
@@ -42,7 +36,7 @@ const DiscountListItem = ({
   const { t } = useTranslation("admin");
 
   const status = getDiscountStatus(discount);
-  const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.inactive;
+  const statusVisual = getStatusVisual(status);
   const statusLabel = t(`discounts.status.${status}`);
 
   const valueLabel =
@@ -67,8 +61,8 @@ const DiscountListItem = ({
           <Ionicons name="pricetag-outline" size={16} color={colors.primary[500]} />
           <Text style={styles.codeText}>{discount.code}</Text>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: statusCfg.bg }]}>
-          <Text style={[styles.statusText, { color: statusCfg.color }]}>
+        <View style={[styles.statusBadge, { backgroundColor: statusVisual.bg }]}>
+          <Text style={[styles.statusText, { color: statusVisual.fg }]}>
             {statusLabel}
           </Text>
         </View>

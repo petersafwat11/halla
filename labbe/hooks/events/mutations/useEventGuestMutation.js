@@ -5,9 +5,7 @@ import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
 import { buildMutationOptions } from "./_shared";
 
-// Action keys handled by this sub-mutation. Guest add/update/delete
-// have moved to the canonical `useGuestMutation` factory in
-// `hooks/guests/`.
+// Action keys handled by this sub-mutation.
 export const GUEST_ACTIONS = ["updateGuestList"];
 
 const buildMutations = (queryClient) => ({

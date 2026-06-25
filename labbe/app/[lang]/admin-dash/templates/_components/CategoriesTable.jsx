@@ -15,6 +15,7 @@ import Table from "@/ui/commen/new-table/Table";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import CategoryFormPopup from "./CategoryFormPopup";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./CategoriesTable.module.css";
 
 export default function CategoriesTable({ showCreatePopup, setShowCreatePopup }) {
@@ -116,20 +117,21 @@ export default function CategoriesTable({ showCreatePopup, setShowCreatePopup })
 
   const renderCell = (key, value, row) => {
     if (key === "active") {
-      const config = value
-        ? { bg: "#EAF4EF", color: "#2A8C5B", text: t("templates.categories.status.active", "نشط") }
-        : { bg: "#F9EBEA", color: "#C0392B", text: t("templates.categories.status.inactive", "غير نشط") };
+      const text = value
+        ? t("templates.categories.status.active", "نشط")
+        : t("templates.categories.status.inactive", "غير نشط");
+      const { fg, bg } = getStatusVisual(value ? "active" : "inactive");
       return (
         <div
           className={`${styles.statusBadge} ${canUpdate ? styles.statusBadgeClickable : styles.statusBadgeReadonly}`}
-          style={{ background: config.bg }}
+          style={{ background: bg }}
           onClick={() => {
             if (!canUpdate) return;
             handleToggleActive(row.id, !value);
           }}
         >
-          <span className={styles.statusBadgeText} style={{ color: config.color }}>
-            {config.text}
+          <span className={styles.statusBadgeText} style={{ color: fg }}>
+            {text}
           </span>
         </div>
       );

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import StatusBadge from "../common/StatusBadge";
+import { getStatusVisual } from "../../../constants/statusColors";
 import {
   colors,
   spacing,
@@ -33,10 +34,7 @@ const HostHeroCard = ({ host }) => {
     null;
   const planStyle = getPlanStyle(subscription?.planType);
 
-  const statusDotColor =
-    host.status === "active"    ? colors.success[500] :
-    host.status === "suspended" ? colors.error[500]   :
-    colors.natural[300];
+  const statusDotColor = getStatusVisual(host.status).fg;
 
   return (
     <View style={styles.card}>

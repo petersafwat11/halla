@@ -1,13 +1,14 @@
 "use client";
 import React from "react";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./listItem.module.css";
 
 const STATUS_CONFIG = {
-  checked_in: { variant: "checkedIn", labelKey: "filters.checkedIn" },
-  confirmed: { variant: "confirmed", labelKey: "filters.confirmed" },
-  declined: { variant: "declined", labelKey: "filters.declined" },
-  maybe: { variant: "maybe", labelKey: "filters.maybe" },
-  invited: { variant: "invited", labelKey: "filters.invited" },
+  checked_in: { labelKey: "filters.checkedIn" },
+  confirmed: { labelKey: "filters.confirmed" },
+  declined: { labelKey: "filters.declined" },
+  maybe: { labelKey: "filters.maybe" },
+  invited: { labelKey: "filters.invited" },
 };
 
 export default function ListItem({ guest, onGuestClick, t }) {
@@ -15,6 +16,7 @@ export default function ListItem({ guest, onGuestClick, t }) {
 
   const effectiveStatus = checkIn?.checkedInAt ? "checked_in" : status;
   const statusConfig = STATUS_CONFIG[effectiveStatus];
+  const statusVisual = statusConfig ? getStatusVisual(effectiveStatus) : null;
 
   return (
     <div className={styles.guestCard}>
@@ -44,9 +46,11 @@ export default function ListItem({ guest, onGuestClick, t }) {
 
         {statusConfig && t && (
           <span
-            className={`${styles.statusBadge} ${
-              styles[`statusBadge--${statusConfig.variant}`]
-            }`}
+            className={styles.statusBadge}
+            style={{
+              background: statusVisual.bg,
+              color: statusVisual.fg,
+            }}
           >
             {t(statusConfig.labelKey)}
           </span>

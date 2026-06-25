@@ -46,6 +46,7 @@ module.exports = {
     const docs = Array.from(seen.values()).map(guest => ({
       name: guest.name,
       phone: guest.phone,
+      ...(guest.category !== undefined && { category: guest.category }),
       event: eventId,
       status: "invited",
       invitedBy: guest.invitedBy || null,
@@ -117,7 +118,7 @@ module.exports = {
 
     const updatedEvent = await Event.findById(eventId).populate(
       "guestList",
-      "name email phone status"
+      "name phone status category"
     );
 
     return { event: updatedEvent, addedCount: guestIds.length };
@@ -168,7 +169,7 @@ module.exports = {
         : userContext;
 
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext))
-      .populate('guestList', 'name email phone status');
+      .populate('guestList', 'name phone status category');
     if (!event) throw new NotFoundError("Event");
 
     // Enforce the list cap against the subscription's total invite capacity
@@ -232,11 +233,11 @@ module.exports = {
       const existing = existingByPhone.get(normPhone);
       if (existing) {
         // Keep existing guest — preserves RSVP status, QR code, check-in history
-        // Update name/email if the host changed them
-        if (existing.name !== incoming.name || (incoming.email && existing.email !== incoming.email)) {
+        // Update name/category if the host changed them
+        if (existing.name !== incoming.name || (incoming.category !== undefined && existing.category !== incoming.category)) {
           await Guest.findByIdAndUpdate(existing._id, {
             name: incoming.name,
-            ...(incoming.email && { email: incoming.email }),
+            ...(incoming.category !== undefined && { category: incoming.category }),
           });
         }
         keptGuestIds.push(existing._id);
@@ -244,7 +245,7 @@ module.exports = {
         toCreate.push({
           name: incoming.name,
           phone: incoming.phone,
-          email: incoming.email || '',
+          ...(incoming.category !== undefined && { category: incoming.category }),
           event: eventId,
           status: 'invited',
           addedBy: userId,
@@ -284,7 +285,7 @@ module.exports = {
 
     const updated = await Event.findById(eventId).populate(
       "guestList",
-      "name email phone status"
+      "name phone status category"
     );
 
     logAudit({

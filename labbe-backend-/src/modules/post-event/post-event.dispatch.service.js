@@ -75,8 +75,7 @@ const buildSendArgs = (event, guest, template, accessLink, expiresAt) => {
 
 /**
  * Dispatch one WhatsApp template message, routing through the image-header
- * variant when the template requires an IMAGE header. Mirrors the pattern
- * in `events.staff.service.notifyStaff`.
+ * variant when the template requires an IMAGE header.
  */
 const dispatchTemplate = (phone, template, language, bodyParams, imageUrl, smsFallback) => {
   if (imageUrl) {

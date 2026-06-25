@@ -1,16 +1,12 @@
 /**
- * gcOrphanTemplateImages — Phase 4c W0-VISUAL-BACKEND
+ * gcOrphanTemplateImages
  *
- * Per v4.1 §A-7.1. Walk every S3 key under `templates/*` whose
- * LastModified is older than 24 h, then delete the ones that have no
- * matching `imageS3Key` or `thumbnailS3Key` row in the Template
- * collection.
+ * Walk every S3 key under `templates/*` whose LastModified is older than
+ * 24 h, then delete the ones that have no matching `imageS3Key` or
+ * `thumbnailS3Key` row in the Template collection.
  *
  * Run manually:
  *   node scripts/gcOrphanTemplateImages.js [--dry-run]
- *
- * Phase 5 hand-off: register as a daily cron via scheduledTasks once
- * stable in staging.
  */
 
 const path = require("path");

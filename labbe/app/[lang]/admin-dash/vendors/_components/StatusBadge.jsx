@@ -1,18 +1,12 @@
 "use client";
 
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./StatusBadge.module.css";
 
-const statusClassMap = {
-  approved: styles.statusApproved,
-  pending: styles.statusPending,
-  rejected: styles.statusRejected,
-  suspended: styles.statusSuspended,
-};
-
 export default function StatusBadge({ status, statusTextMap }) {
-  const colorClass = statusClassMap[status] || styles.statusPending;
+  const { fg, bg } = getStatusVisual(status);
   return (
-    <div className={`${styles.statusBadge} ${colorClass}`}>
+    <div className={styles.statusBadge} style={{ background: bg, color: fg }}>
       <span>{statusTextMap[status] || status}</span>
     </div>
   );

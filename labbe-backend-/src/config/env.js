@@ -27,8 +27,8 @@ const envSchema = Joi.object({
   DATABASE_PASSWORD: Joi.string().allow('').default(''),
   DATABASE_CERT_PATH: Joi.string().allow('').default('').description('Path to X.509 certificate .pem file for MongoDB Atlas'),
 
-  // JWT Authentication — short-lived access token + rotating refresh token (Phase 1a)
-  // Access token defaults: 15 minutes (FLOW-01-F01).
+  // JWT Authentication — short-lived access token + rotating refresh token.
+  // Access token defaults: 15 minutes.
   // Refresh tokens are stored server-side in `refreshtokens` collection with a TTL index;
   // their lifetime is REFRESH_TOKEN_EXPIRES_DAYS days.
   JWT_SECRET: Joi.string().min(32).required().description('JWT signing secret'),
@@ -69,7 +69,7 @@ const envSchema = Joi.object({
   UPLOAD_PATH: Joi.string().default('./public/uploads'),
   MAX_FILE_SIZE: Joi.number().default(5 * 1024 * 1024), // 5MB
 
-  // Phase 4b W0-RBAC (D4b-3): minimum lead time for messaging.scheduleBulkSend.
+  // Minimum lead time for messaging.scheduleBulkSend.
   // PAID plans: 24h. Backend rejects schedules below this with SCHEDULE_TOO_SOON
   // so callers can't bypass the client-side picker minimum.
   SCHEDULE_MIN_LEAD_HOURS: Joi.number().min(0).default(24),
@@ -79,7 +79,7 @@ const envSchema = Joi.object({
   // users can quickly test the scheduling flow.
   TRIAL_SCHEDULE_MIN_LEAD_MINUTES: Joi.number().min(0).default(15),
 
-  // FLOW-28-F02: maximum number of rows allowed in a single export.
+  // Maximum number of rows allowed in a single export.
   // Default 10,000. Exports exceeding this limit return 422 with instructions
   // to narrow filters.
   EXPORT_MAX_ROWS: Joi.number().min(100).default(10_000),

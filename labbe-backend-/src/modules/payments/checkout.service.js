@@ -53,7 +53,7 @@ class CheckoutService {
         throw new ValidationError('This plan is reserved for business accounts');
       }
       // No self-purchase before the first admin activation. Require an existing
-      // active/trial business subscription (self-upgrade only). [#6 #29]
+      // active/trial business subscription (self-upgrade only).
       const activeBusinessSub = await Subscription.findOne({
         userId,
         status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
@@ -384,9 +384,9 @@ class CheckoutService {
           'event-scoped addons cannot be combined with checkout; purchase them after the event is created.'
         );
       }
-      // NOTE: extra_invites ARE valid on per-event plans under the unified-pool
-      // model — per-event plans now carry an invitePool (Phase 0), and the
-      // addon folds straight into it via applyQuota. Do NOT reject here.
+      // NOTE: extra_invites ARE valid on per-event plans — per-event plans carry
+      // an invitePool, and the addon folds straight into it via applyQuota. Do
+      // NOT reject here.
       return { ...item, price, scope };
     });
   }
@@ -519,8 +519,7 @@ class CheckoutService {
 
     // Plan/payment emails always fire — host has no opt-out for these.
     // `_fulfillBundle` only receives `userId`, so load the user here (the
-    // outer `checkout()` `user` binding is not in scope on this path, which
-    // previously threw a ReferenceError on the confirmation-email block).
+    // outer `checkout()` `user` binding is not in scope on this path).
     const user = await User.findById(userId).select('email name username role');
     if (user?.email) {
       const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
@@ -548,10 +547,10 @@ class CheckoutService {
   }
 
   async _createSubscriptionFromCheckoutLegacy({ userId, plan, planCode, paymentRecord }) {
-    // Mirrors subscribe()'s post-charge ordering: cancel existing actives only
-    // AFTER we know the charge succeeded (paymentRecord is set or the plan is
-    // free). On creation failure with a paid charge, raise pending_refund and
-    // surface the user-facing "money taken" message.
+    // Post-charge ordering: cancel existing actives only AFTER we know the
+    // charge succeeded (paymentRecord is set or the plan is free). On creation
+    // failure with a paid charge, raise pending_refund and surface the
+    // user-facing "money taken" message.
     const existingActive = await Subscription.find({
       userId,
       status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
@@ -619,7 +618,7 @@ class CheckoutService {
 
     // Business self-upgrade: carry remaining (base+compensation−consumed)
     // invites from the subscription(s) being replaced onto the new one's
-    // compensation pool, per the merged-pool carryover rule. [#7] Only for
+    // compensation pool, per the merged-pool carryover rule. Only for
     // business plans; host checkout behaviour is unchanged.
     if (plan.availableFor === 'business' && existingActive.length > 0) {
       let carried = 0;

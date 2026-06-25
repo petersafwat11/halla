@@ -1,16 +1,14 @@
-// Phase 5 — mobile cache-migration registry.
+// Mobile cache-migration registry.
 //
-// Mirror of labbe/hooks/_cacheMigrations.js. When a domain's query-key shape
-// changes during the hooks/<domain>/ migration on mobile, register an entry
-// here so already-installed app versions invalidate the old keys explicitly
-// on first launch and don't silently serve stale cache.
+// When a domain's query-key shape changes, register an entry here so
+// already-installed app versions invalidate the old keys explicitly on first
+// launch and don't silently serve stale cache.
 //
 // Mobile risk is higher than web because users hold app versions for weeks,
 // so any key-shape rename must come with a registry entry.
 //
 // For domains whose new factory produces byte-identical arrays to the old
-// literal keys (the pilot domains: locations, templates, taqnyat-templates,
-// scheduled-extra-reminders), no entry is needed — the cache hits naturally.
+// literal keys, no entry is needed — the cache hits naturally.
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 

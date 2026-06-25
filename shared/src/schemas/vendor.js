@@ -1,12 +1,6 @@
 /**
  * Vendor schemas — vendor settings sections + service form.
  *
- * Hosts the union of the pure-Zod portions of:
- *   - `labbe/utils/schemas/vendorSettings.js` (web — schemas split out from
- *     the section objects; field metadata stays in the app file since it
- *     drives `DynamicForm` rendering)
- *   - `halla-mobile/utils/schemas/vendorSchemas.js`
- *
  * Factory functions; pass `t` for translation, omit for opaque keys.
  * Field shapes mirror backend `users.validation.js#vendorData`.
  */

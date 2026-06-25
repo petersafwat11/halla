@@ -6,21 +6,8 @@ import { FiEye, FiUserPlus, FiCheckSquare, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
+import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./TicketsTable.module.css";
-
-const STATUS_CLASS_MAP = {
-  open: styles.statusOpen,
-  in_progress: styles.statusInProgress,
-  waiting_response: styles.statusWaitingResponse,
-  resolved: styles.statusResolved,
-  closed: styles.statusClosed,
-};
-
-const PRIORITY_CLASS_MAP = {
-  low: styles.priorityLow,
-  medium: styles.priorityMedium,
-  high: styles.priorityHigh,
-};
 
 export default function TicketTableContent({
   t, tableData, canUpdate, canDelete, filters, data,
@@ -78,17 +65,17 @@ export default function TicketTableContent({
 
   const renderCell = useCallback((key, value, row) => {
     if (key === "status") {
-      const colorClass = STATUS_CLASS_MAP[value] || styles.statusOpen;
+      const { fg, bg } = getStatusVisual(value);
       return (
-        <div className={`${styles.statusBadge} ${colorClass}`}>
+        <div className={styles.statusBadge} style={{ background: bg, color: fg }}>
           <span>{i18nT(`status.${value}`, value)}</span>
         </div>
       );
     }
     if (key === "priority") {
-      const colorClass = PRIORITY_CLASS_MAP[value] || styles.priorityMedium;
+      const { fg, bg } = getStatusVisual(value);
       return (
-        <div className={`${styles.priorityBadge} ${colorClass}`}>
+        <div className={styles.priorityBadge} style={{ background: bg, color: fg }}>
           <span>{i18nT(`priority.${value}`, value)}</span>
         </div>
       );

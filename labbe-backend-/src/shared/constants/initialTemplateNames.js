@@ -1,5 +1,5 @@
 /**
- * INITIAL_TEMPLATE_NAMES — Phase 4c reference seed list (per v4.1 §B-17).
+ * INITIAL_TEMPLATE_NAMES
  *
  * The set of canonical visual-template names that ship with a fresh
  * Halaa deployment. The seed script (`scripts/seedInitialTemplates.js`)

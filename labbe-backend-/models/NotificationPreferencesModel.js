@@ -5,13 +5,6 @@ const mongoose = require("mongoose");
  * Stores user notification preferences for all roles with flexible schema
  * App notifications = notification bell + in-app notifications
  * Email notifications = emails sent to user's email address
- *
- * FLOW-27-F03: This model has one caller — src/shared/utils/notificationService.js —
- * which uses it to check per-user preferences before sending emails. The model is fully
- * functional; it is NOT wired to any UI preference page yet (host settings screen
- * deferred to a future milestone). All preference checks are therefore based on the
- * role-specific defaults defined in getDefaultAppNotifications /
- * getDefaultEmailNotifications below.
  */
 const notificationsSchema = new mongoose.Schema(
   {

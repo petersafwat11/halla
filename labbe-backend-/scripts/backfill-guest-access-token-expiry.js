@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 /**
- * Phase 3e.4 / FLOW-21-F03 / decision D8 — backfill `expiresAt` on legacy
- * `GuestAccessToken` rows that are missing it.
+ * Backfill `expiresAt` on legacy `GuestAccessToken` rows that are missing it.
  *
  * The current schema requires `expiresAt`, so all post-creation tokens
  * already carry one. This script defends against any pre-existing rows
@@ -13,8 +12,7 @@
  *   node scripts/backfill-guest-access-token-expiry.js --apply  (writes)
  *   node scripts/backfill-guest-access-token-expiry.js --apply --days=180
  *
- * Safety: do NOT run during a live launch window. The Phase 3de close-out
- * prompt is the expected runner.
+ * Safety: do NOT run during a live launch window.
  */
 
 require("dotenv").config({ path: require("path").resolve(__dirname, "../config.env") });
@@ -55,7 +53,7 @@ async function main() {
       `Will set expiresAt = createdAt + ${DAYS} days.`
   );
 
-  // M-23: warn the operator about TTL-driven deletion side-effects.
+  // Warn the operator about TTL-driven deletion side-effects.
   // When `expiresAt` is set in the past (i.e. createdAt + DAYS < now), the
   // TTL background sweeper will delete the row within ~60 seconds. For a
   // 90-day backfill on tokens older than 90 days, those rows ARE expired
@@ -88,7 +86,7 @@ async function main() {
     process.exit(0);
   }
 
-  // M-23: bulk-write in batches of 500. Each row needs an individual
+  // Bulk-write in batches of 500. Each row needs an individual
   // expiresAt (createdAt + DAYS), so we can't issue a single updateMany;
   // bulkWrite gives us O(roundtrip / 500) instead of O(roundtrip) per
   // row. At 100K rows this drops a multi-hour run to ~minutes.

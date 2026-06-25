@@ -1,10 +1,9 @@
 "use client";
 
 /**
- * WhatsApp customer-service contact button (Phase 3c.3).
+ * WhatsApp customer-service contact button.
  *
- * Reusable across the failure UI (Phase 3c.4), Phase 4 mobile-parity work,
- * and Phase 5 polish. Generates a `wa.me/<number>?text=<msg>` link.
+ * Generates a `wa.me/<number>?text=<msg>` link.
  *
  * The customer-service number is centralized here. The current value
  * matches the placeholder used elsewhere in landing UI; replace

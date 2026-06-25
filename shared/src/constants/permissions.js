@@ -1,13 +1,11 @@
 /**
- * Admin-panel page keys + access levels — mirror
- * `labbe-backend-/src/shared/constants/permissions.js`.
+ * Admin-panel page keys + access levels.
  *
- * The per-role access matrix (`ROLE_PAGE_ACCESS`) is *not* mirrored here
- * yet because web and mobile currently disagree with each other and with
+ * The per-role access matrix (`ROLE_PAGE_ACCESS`) is *not* defined here
+ * because web and mobile currently disagree with each other and with
  * backend on several rows (e.g. MODERATOR.settings — backend NONE, web
  * FULL, mobile VIEW). Reconciling the matrix is a product decision
- * pending — once resolved, lift `ROLE_PAGE_ACCESS` here and delete the
- * per-app copies. See UNIFICATION_REPORT.md Phase 8 slice 3 follow-ups.
+ * pending, so each app keeps its own copy for now.
  */
 
 export const ADMIN_PAGES = Object.freeze({

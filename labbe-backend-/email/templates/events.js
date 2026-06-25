@@ -620,7 +620,7 @@ const eventCompletedEmail = (data, lang = "ar") => {
 };
 
 /**
- * Event launch failed email (B-6 / FLOW-15-F05).
+ * Event launch failed email.
  *
  * Sent to the host when a scheduled launch exhausts every retry attempt
  * and falls into terminal `failed` state. Plain, calm tone — the host
@@ -685,12 +685,8 @@ const eventLaunchFailedEmail = (data, lang = "ar") => {
 /**
  * Generic notification email — used by `notifications.service.sendToUser`
  * when no dedicated template exists for the notification `type`.
- *
- * Previously the service called `email.send.notification(...)` but no such
- * method existed, so a TypeError was caught silently by the call-site's
- * `.catch` and no email was sent (B-6). Adding the helper here closes
- * that gap; type-specific templates (e.g. eventLaunchFailedEmail) take
- * precedence in the service.
+ * Type-specific templates (e.g. eventLaunchFailedEmail) take precedence
+ * in the service.
  *
  * @param {Object} data - { title, message, actionUrl }
  * @param {string} lang

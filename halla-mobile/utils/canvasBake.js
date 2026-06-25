@@ -1,14 +1,10 @@
 /**
- * canvasBake — Phase 4c W2-MOBILE-WIZARD
+ * canvasBake
  *
  * Bakes a React Native view (the visual-template canvas) into a PNG
  * file that can be uploaded as the WhatsApp header image.
  *
- * Mobile equivalent of the web `htmlToImageConvert` helper. Uses
- * `react-native-view-shot` (already installed at v4.0.3 — per
- * PHASE_4C_PLAN §0 row 9; the deps `html-to-image` + `html2canvas`
- * lingering in halla-mobile/package.json are dead and dropped in this
- * sub-track).
+ * Uses `react-native-view-shot`.
  *
  * Usage:
  *   const ref = useRef(null);

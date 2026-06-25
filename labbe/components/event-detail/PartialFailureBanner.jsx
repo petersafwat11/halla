@@ -5,8 +5,7 @@
  * banner when the event has actually launched (status `live`) but the
  * bulk send didn't deliver to every guest (`messagingStatus.failedCount
  * > 0`). `EventFailureBanner` only fires for `status === 'failed'`
- * (full-launch failure) and for in-flight retries — partial delivery
- * on a live event was previously invisible to the host.
+ * (full-launch failure) and for in-flight retries.
  *
  * Any failed → show. The host can decide whether to retry the failed
  * sends from the existing failure list (out of scope here) or accept

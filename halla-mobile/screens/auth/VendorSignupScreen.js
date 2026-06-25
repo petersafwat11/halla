@@ -50,10 +50,8 @@ const STEP_FIELDS = {
 /**
  * Map backend Zod field names (FLAT — `email`, `brandName`, ...) to the
  * nested form paths react-hook-form uses (`identity.email`, ...). The
- * backend's vendorSignupSchema lives in
- * labbe-backend-/src/modules/auth/auth.validation.js and validates a
- * flat FormData payload (see buildVendorFormData), so its error paths
- * are flat. Without this lookup, every backend validation error would
+ * backend validates a flat FormData payload, so its error paths are
+ * flat. Without this lookup, every backend validation error would
  * silently no-op when we try to attach it to the form.
  */
 const VENDOR_FIELD_MAP = {

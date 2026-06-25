@@ -1,6 +1,5 @@
 /**
- * StepFive (mobile) — messaging + auto-replies + host note. Mirrors the
- * web StepFive (`labbe/.../stepFive/StepFive.js`).
+ * StepFive (mobile) — messaging + auto-replies + host note.
  *
  * Dual-writes legacy + canonical keys:
  *   guestReplies.{onAttend,onAbsent,onExpected}  ⇄ {attendance,absence,

@@ -171,7 +171,7 @@ class DashboardService {
       ]),
       Ticket.countDocuments({}),
       Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED }),
-      // Business-account reporting (segregated from personal hosts). [#16]
+      // Business-account reporting (segregated from personal hosts).
       User.countDocuments(businessHostFilter()),
       User.countDocuments(businessHostFilter({ status: USER_STATUS.ACTIVE })),
       User.countDocuments(businessHostFilter({ createdAt: { $gte: startDate, $lte: endDate } })),
@@ -293,7 +293,7 @@ class DashboardService {
         numberOfClicks: v.numberOfClicks || 0,
       })),
       analytics,
-      // Account-type segregated reporting totals. [#16]
+      // Account-type segregated reporting totals.
       reporting: {
         totalPersonalHosts: totalHosts,
         totalBusinesses,
@@ -348,9 +348,8 @@ class DashboardService {
         ? Math.round(((guestStats.confirmed + guestStats.declined) / guestStats.total) * 100)
         : 0;
 
-      // Quota mirrors the create-event surface (events.stats-export.service.js):
-      // pool plans → use the shared pool counters; per-event plans → use the
-      // per-event cap minus already-added guests. `null` remainingGuests means
+      // Quota: pool plans → use the shared pool counters; per-event plans → use
+      // the per-event cap minus already-added guests. `null` remainingGuests means
       // unlimited (admin/super-admin plans where invitePool is null).
       const planType = subscription?.planId?.planType;
       const planLimits = subscription?.planId?.limits || {};

@@ -111,11 +111,9 @@ staffAccessTokenSchema.statics.createForStaff = async function (
 
 // Static method to validate token.
 //
-// H-20: structured reason codes mirror GuestAccessToken.validateToken so the
-// scanner / staff frontend can render distinct UX (revoked → "your access
-// was revoked", expired → "your shift access expired", invalid → "this code
-// is not recognised"). Previously every failure returned the same opaque
-// "Token invalid or expired" string, which made support triage impossible.
+// Structured reason codes let the scanner / staff frontend render distinct UX
+// (revoked → "your access was revoked", expired → "your shift access expired",
+// invalid → "this code is not recognised").
 staffAccessTokenSchema.statics.validateToken = async function (token) {
   if (!token || typeof token !== "string") {
     return {

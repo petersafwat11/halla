@@ -1,14 +1,20 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { getStatusVisual } from "../../../constants/statusColors";
+
+const toColor = (status) => {
+  const { fg, bg } = getStatusVisual(status);
+  return { bg, text: fg };
+};
 
 const STATUS_COLORS = {
-  invited:    { bg: "#F3F4F6", text: "#6B7280" },
-  confirmed:  { bg: "#EAF4EF", text: "#2A8C5B" },
-  declined:   { bg: "#F9EBEA", text: "#C0392B" },
-  maybe:      { bg: "#FFF9E6", text: "#CA8A04" },
-  checked_in: { bg: "#EEF2FF", text: "#4338CA" },
-  no_show:    { bg: "#F3F4F6", text: "#9CA3AF" },
+  invited:    toColor("invited"),
+  confirmed:  toColor("confirmed"),
+  declined:   toColor("declined"),
+  maybe:      toColor("maybe"),
+  checked_in: toColor("checked_in"),
+  no_show:    toColor("no_show"),
 };
 
 const GuestCard = ({ guest, onCheckIn, t }) => {

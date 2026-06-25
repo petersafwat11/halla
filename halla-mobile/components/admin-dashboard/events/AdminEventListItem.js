@@ -6,16 +6,8 @@ import { useUpdateAdminEventStatus, useDeleteAdminEvent } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { colors } from "../../../styles/tokens";
+import { getStatusVisual } from "../../../constants/statusColors";
 import AdminListItem from "../common/AdminListItem";
-
-// Avatar colors keyed by event status — gives immediate visual status signal
-const STATUS_AVATAR_COLOR = {
-  scheduled: "#3498DB",
-  live: colors.success[500],
-  completed: colors.natural[450],
-  pending_scheduling: colors.primary[500],
-  cancelled: colors.error[500],
-};
 
 const formatDate = (d) => {
   if (!d) return "—";
@@ -51,7 +43,7 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
   const isSuspendable = canEdit && (statusKey === "scheduled" || statusKey === "pending_scheduling");
   const showStatusBtn = canEdit && (isCancellable || isActivatable);
 
-  const avatarColor = STATUS_AVATAR_COLOR[statusKey] || colors.natural[450];
+  const avatarColor = getStatusVisual(event.status).fg;
 
   const handleSuspend = () => {
     Alert.alert(

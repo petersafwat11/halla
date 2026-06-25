@@ -32,9 +32,6 @@ import VendorPublicProfileScreen from "../screens/common/VendorPublicProfileScre
 import EventsScreen from "../screens/host/EventsScreen";
 import CreateEventScreen from "../screens/common/CreateEventScreen";
 import EventDetailsScreen from "../screens/common/EventDetailsScreen";
-// Phase 4d W1-MOBILE-UPDATE: single unified update wizard for every
-// role. The legacy `screens/host/UpdateEventScreen.js` is now a thin
-// re-export shim for any other import paths still in flight.
 import UpdateEventScreen from "../screens/common/update-event/UpdateEventScreen";
 import NotificationsScreen from "../screens/common/NotificationsScreen";
 import VendorServicesScreen from "../screens/vendor/VendorServicesScreen";
@@ -57,7 +54,7 @@ const HomeStackNav = createStackNavigator();
 const VendorHomeStackNav = createStackNavigator();
 const MarketplaceStackNav = createStackNavigator();
 
-// Plans tab — branches on account type (B4-MOBILE). A business account is still
+// Plans tab — branches on account type. A business account is still
 // `role:host` (so it uses host navigation), but its "Plans" tab must show the
 // business plans screen instead of the personal-host one.
 function PlansTabScreen() {
@@ -411,7 +408,7 @@ export default function AppNavigator() {
     case "moderator":
       return <AdminStack />;
     default:
-      // FLOW-05-F03: never silently route to HostStack. An unmapped role is
+      // Never silently route to HostStack. An unmapped role is
       // a real bug — surface it instead of pretending the user is a host.
       console.error("Unsupported account role:", role);
       return (

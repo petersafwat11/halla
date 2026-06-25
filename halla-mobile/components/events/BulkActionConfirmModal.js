@@ -11,8 +11,7 @@ import { useTranslation } from "../../localization";
 
 /**
  * Confirmation modal for the pool-charged guest-list bulk actions
- * (resend invitation / extra reminder). Mirrors the web
- * `BulkActionConfirmModal`. Shows the cost summary —
+ * (resend invitation / extra reminder). Shows the cost summary —
  * "Will send to N · costs N invites · M remaining" — and disables the confirm
  * button when the selection exceeds the host's remaining invites
  * (`null` remaining = truly unlimited, never blocked).

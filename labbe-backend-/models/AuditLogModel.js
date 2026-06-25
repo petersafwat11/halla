@@ -38,12 +38,6 @@ const auditLogSchema = new mongoose.Schema(
     },
 
     // What type of resource was affected
-    //
-    // Phase 3de extends the enum with `staff_access_token`,
-    // `guest_access_token`, and `rsvp` so the new revoke / rotate /
-    // RSVP-idempotency audit rows have a precise target. Phase 5's
-    // audit-log-everywhere pass should add `plan` / `addon` (already
-    // tracked in the Phase 2 hand-off list).
     targetType: {
       type: String,
       enum: [
@@ -58,16 +52,14 @@ const auditLogSchema = new mongoose.Schema(
         "staff_access_token",
         "guest_access_token",
         "rsvp",
-        // Phase 4c: visual templates + categories + Taqnyat-template
+        // Visual templates + categories + Taqnyat-template
         // assignments. lowercase per existing convention.
         "template",
         "template_category",
         "taqnyat_template",
-        // Phase 5: Phase 2 hand-off — plan + addon rows were using
-        // targetType:"system"; now have their own enum values.
         "plan",
         "addon",
-        // Phase 6 — payment system: refund / capture / void / webhook /
+        // Payment system: refund / capture / void / webhook /
         // reconcile / pending_refund all target a Payment row.
         "payment",
         "discount",

@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLanguage, useTranslation } from "../../localization";
+import { getStatusVisual } from "../../constants/statusColors";
 
 const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
   const { t } = useTranslation("tickets");
@@ -24,23 +25,6 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
     }).start();
   }, []);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "open":
-        return "#f39c12";
-      case "in_progress":
-        return "#3498db";
-      case "waiting_response":
-        return "#9b59b6";
-      case "resolved":
-        return "#27ae60";
-      case "closed":
-        return "#95a5a6";
-      default:
-        return "#f39c12";
-    }
-  };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
@@ -52,7 +36,7 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
   };
 
   const { date, time } = formatDate(ticket.createdAt);
-  const statusColor = getStatusColor(ticket.status);
+  const { fg: statusFg, bg: statusBg } = getStatusVisual(ticket.status);
 
   return (
     <Animated.View
@@ -65,9 +49,9 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: `${statusColor}20` }]}
+            { backgroundColor: statusBg }]}
         >
-          <Text style={[styles.statusText, { color: statusColor }]}>
+          <Text style={[styles.statusText, { color: statusFg }]}>
             {t(`status.${ticket.status}`)}
           </Text>
         </View>

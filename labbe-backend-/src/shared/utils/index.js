@@ -12,7 +12,6 @@ module.exports = {
   catchAsync,
   ...responseHelper,
   s3Upload,
-  // Idempotency helpers (Phase 1b foundation, post-H-5/H-6 fixes)
   withIdempotency: idempotency.withIdempotency,
   sha256: idempotency.sha256,
   IdempotencyConflictError: idempotency.IdempotencyConflictError,

@@ -1,12 +1,9 @@
 /**
  * Centralized error handling for the web app.
  *
- * Phase 2 unification: `ErrorTypes`, `STATUS_CODE_MESSAGES`, and
- * `getAuthErrorMessage` (aliased to `authErrorMessage`) now live in
- * `@halla/shared/errors`. Web-specific helpers (toast wiring,
- * `parseError` that reads axios's response shape, `handleError`,
- * retry-with-backoff) stay here — they depend on `toastUtils` and the
- * axios `error.response` convention.
+ * The toast wiring, `parseError` (reads axios's `error.response` shape),
+ * `handleError`, and retry-with-backoff helpers depend on `toastUtils`
+ * and the axios `error.response` convention, so they live here.
  */
 
 import { toastUtils } from "@/utils/toastUtils";
@@ -22,9 +19,7 @@ export { ErrorTypes };
 /**
  * Parse error and extract useful information.
  *
- * Reads the axios `error.response.{status,data}` shape — fetch-based
- * mobile uses `requestJson` / `apiErrorFromResponse` from
- * `@halla/shared/errors` instead.
+ * Reads the axios `error.response.{status,data}` shape.
  */
 export const parseError = (error) => {
   if (error.response) {
@@ -75,8 +70,6 @@ export const parseError = (error) => {
   };
 };
 
-// Canonical auth-error resolver lives in shared; web keeps the legacy
-// `getAuthErrorMessage` export name to avoid touching consumers.
 export const getAuthErrorMessage = sharedAuthErrorMessage;
 
 export const handleError = (error, t, options = {}) => {

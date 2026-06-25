@@ -152,6 +152,40 @@ router.use(protect);
 
 /**
  * @swagger
+ * /guests/my-contacts:
+ *   get:
+ *     summary: Get my contacts (guest book)
+ *     description: >
+ *       Returns the authenticated host's reusable past guests across all of
+ *       their events, deduped by phone, with the distinct category list.
+ *       Read-only; scoped to the host's own events. Used by the
+ *       "Add from your guests" picker.
+ *     tags: [Guests]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/PageParam'
+ *       - $ref: '#/components/parameters/LimitParam'
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by guest name or phone
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filter by category label
+ *     responses:
+ *       200:
+ *         description: Contacts retrieved successfully
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.get('/my-contacts', guestsController.getMyContacts);
+
+/**
+ * @swagger
  * /guests/events/{eventId}:
  *   get:
  *     summary: Get event guests

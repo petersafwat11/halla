@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 /**
  * App-level error boundary.
  *
- * Phase 4 W0-ERR: catches uncaught render-time errors anywhere in the
+ * Catches uncaught render-time errors anywhere in the
  * tree and renders a recoverable fallback UI. Without this, a single
  * runtime exception in a deeply-nested component renders the whole
  * navigator unmounted (white screen) until the app is force-quit.

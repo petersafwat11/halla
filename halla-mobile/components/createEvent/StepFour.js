@@ -1,12 +1,11 @@
 /**
- * StepFour (mobile) — Taqnyat picker + auto-replies (5-step wizard)
+ * StepFour (mobile) — Taqnyat picker + auto-replies.
  *
  * Step 4 combines the Taqnyat-template picker with the auto-replies
  * editor below it.
  *
- * Saves under both legacy `selectedTemplate` and canonical
- * `taqnyatTemplate.templateRef`. Auto-replies dual-write canonical
- * guestReplies.* + legacy keys.
+ * Saves under both `selectedTemplate` and `taqnyatTemplate.templateRef`.
+ * Auto-replies write guestReplies.* plus the legacy keys.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -29,6 +28,7 @@ import {
 import { useHostTaqnyatTemplates } from "../../hooks/taqnyatTemplates";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
+import PreviewInvitation from "./PreviewInvitation";
 
 const CATEGORY_LABELS_AR = {
   wedding: "حفل زفاف",
@@ -68,6 +68,7 @@ const StepFour = () => {
   const { setValue, watch } = useFormContext();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [activeTab, setActiveTab] = useState("onAttend");
+  const [showPreview, setShowPreview] = useState(false);
   const { t } = useTranslation("createEvent");
 
   const categoryLabel = (cat) =>
@@ -85,9 +86,8 @@ const StepFour = () => {
     (state) => state.user?.name || state.user?.username || ""
   );
 
-  // Build a preview-resolution context once per form change. Mirrors the
-  // backend resolver in `messaging.formatting.js#getEventBodyParams` so
-  // template previews on screen match what the guest will receive.
+  // Build a preview-resolution context once per form change so template
+  // previews on screen match what the guest will receive.
   const previewContext = useMemo(() => {
     const locale = (t("preview_date_locale", "ar-SA") || "ar-SA").toString();
     let dateFormatted = "";
@@ -173,6 +173,17 @@ const StepFour = () => {
             <Text style={styles.subtitle}>{t("step4_description")}</Text>
           )}
         </View>
+
+        {selectedTemplate ? (
+          <TouchableOpacity
+            style={styles.previewButton}
+            onPress={() => setShowPreview(true)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="eye-outline" size={18} color="#C28E5C" />
+            <Text style={styles.previewButtonText}>{t("preview_template")}</Text>
+          </TouchableOpacity>
+        ) : null}
 
         {isLoading ? (
           <View style={styles.loadingBox}>
@@ -279,6 +290,19 @@ const StepFour = () => {
           />
         </View>
       </ScrollView>
+
+      <PreviewInvitation
+        visible={showPreview}
+        onClose={() => setShowPreview(false)}
+        templateImage={watch("templateImage")}
+        eventTitle={eventName || ""}
+        previewBody={selectedTemplate?.bodyText || ""}
+        selectedTemplate={selectedTemplate}
+        eventDate={eventDate}
+        eventTime={eventTime}
+        location={address?.address || ""}
+        templateData={visualTemplate?.data || {}}
+      />
     </Animated.View>
   );
 };
@@ -295,6 +319,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#666",
     marginTop: 4,
+  },
+  previewButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#C28E5C",
+    backgroundColor: "#FDF9F4",
+    marginBottom: 16,
+  },
+  previewButtonText: {
+    fontSize: 14,
+    fontFamily: "Cairo_700Bold",
+    color: "#A87040",
   },
   loadingBox: { padding: 32, alignItems: "center" },
   emptyBox: {

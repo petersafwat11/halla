@@ -1,19 +1,11 @@
 import React from "react";
-import { colors } from "../../../styles/tokens";
+import { getStatusVisual } from "../../../constants/statusColors";
 import AdminListItem from "../common/AdminListItem";
-
-// Backend admin transform emits canonical `completed`, never `success`.
-const STATUS_AVATAR_COLOR = {
-  completed: colors.success[500],
-  failed: colors.error[500],
-  pending: colors.warning[500],
-};
 
 const PaymentListItem = ({ payment, onPress }) => {
   const currency = payment.currency || "SAR";
   const amount = payment.amount != null ? `${payment.amount} ${currency}` : "—";
-  const avatarColor =
-    STATUS_AVATAR_COLOR[payment.status] || colors.primary[500];
+  const avatarColor = getStatusVisual(payment.status, "payment").fg;
   const formattedDate = payment.createdAt
     ? new Date(payment.createdAt).toLocaleDateString()
     : null;
@@ -37,6 +29,7 @@ const PaymentListItem = ({ payment, onPress }) => {
       subtitleAlt={subtitleAlt}
       avatarColor={avatarColor}
       status={payment.status}
+      statusDomain="payment"
       details={details}
       onPress={onPress ? () => onPress(payment) : undefined}
     />

@@ -1,10 +1,7 @@
 /**
  * Event schemas — create, update, guest, staff, location, template.
  *
- * Reconciles backend (`events.validation.js`, `guests.validation.js`)
- * with both apps' existing client schemas. The guest contact rule is
- * the canonical one from the backend: phone required, email optional
- * (Phase 1 resolves the web "phone OR email" divergence).
+ * The guest contact rule: phone required, email optional.
  *
  * `buildDynamicTemplateSchema` accepts an explicit `fontIds` array so
  * the helper works without web's `@/config/fonts` import; both apps

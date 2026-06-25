@@ -2,7 +2,7 @@
  * Email Service - Backward Compatibility Layer
  *
  * This file provides backward compatibility with the old email service API.
- * All functionality has been moved to the new organized email module at /email
+ * The functionality is implemented in the organized email module at /email.
  *
  * @deprecated Use require('../email') instead for new code
  * @see ../email/index.js

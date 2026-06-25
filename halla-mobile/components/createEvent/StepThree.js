@@ -42,7 +42,6 @@ const ACCEPTED_EXT = /\.(jpe?g|png|webp)$/i;
 /**
  * Step 3 (mobile) — visual template selection.
  *
- * Mirrors the web flow in `labbe/app/[lang]/host/create-event/_components/stepThree`:
  *   - Step body shows the template thumbnail grid only (no inline canvas overlay).
  *   - Selecting a card opens an in-page modal (TemplateForm equivalent) where the
  *     host fills the dynamic fields with a live preview canvas alongside.

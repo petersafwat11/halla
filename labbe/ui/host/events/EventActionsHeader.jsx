@@ -31,8 +31,6 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
   // visibility identically. (Manual-retry RBAC stays in
   // `EventFailureBanner`; here we only need the test/schedule/staff
   // gates so the existing `event` prop is enough.)
-  // Resend invite moved OUT of the header into the guest-table bulk
-  // actions (pool-charged, repeatable) — no longer gated here.
   const { canSendTest, canSchedule, hasStaff, isCompleted } =
     useEventActionGate({ event, testMessageSent });
 

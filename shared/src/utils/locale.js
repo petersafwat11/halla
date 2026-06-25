@@ -2,7 +2,7 @@
  * Locale helpers — platform-pure (no `react-native`, `next/*`, or
  * runtime DOM access). Safe to import from web, mobile, and tests.
  *
- * Phase 4 W0-RTL: numeric/currency/date formatters that respect the
+ * Numeric/currency/date formatters that respect the
  * user's locale. Arabic uses the `ar-SA` locale so numerals render as
  * `٠١٢٣٤٥٦٧٨٩`, Latin numerals stay `0-9` for `en`.
  *
@@ -98,8 +98,7 @@ export const localizeDigits = (input, locale = "ar") => {
 
 /**
  * Format a Date or ISO string as a localized date+time. The host's
- * device timezone is used; this matches Phase 1's "convert at display
- * time" rule.
+ * device timezone is used (convert at display time).
  *
  * @param {Date|string|number} input
  * @param {string} [locale="ar"]

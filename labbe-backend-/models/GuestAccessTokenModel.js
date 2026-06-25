@@ -56,10 +56,10 @@ const guestAccessTokenSchema = new mongoose.Schema(
 
     // Token status
     //
-    // Phase 3e.3 / 3e.4: `revokedReason` distinguishes a rotation
-    // (host pressed "rotate QR") from a manual revoke (host pressed
-    // "revoke QR"). The validation middleware uses this to render
-    // `qr_rotated` vs `qr_revoked` in the 410 Gone body.
+    // `revokedReason` distinguishes a rotation (host pressed "rotate QR")
+    // from a manual revoke (host pressed "revoke QR"). The validation
+    // middleware uses this to render `qr_rotated` vs `qr_revoked` in the
+    // 410 Gone body.
     isRevoked: {
       type: Boolean,
       default: false,
@@ -168,11 +168,9 @@ guestAccessTokenSchema.statics.createForAllGuests = async function (
 
 // Static method to validate token.
 //
-// Phase 3e.3 / 3e.4 (decisions D7 / D8): the failure response now carries
-// a structured `reason` string (`qr_rotated` | `qr_revoked` | `qr_expired`
-// | `qr_invalid`) so the controller can return 410 Gone with a precise
-// body. The previous "Token invalid or expired" string is kept as the
-// fallback for tokens that simply don't exist.
+// The failure response carries a structured `reason` string (`qr_rotated`
+// | `qr_revoked` | `qr_expired` | `qr_invalid`) so the controller can
+// return 410 Gone with a precise body.
 guestAccessTokenSchema.statics.validateToken = async function (
   token,
   deviceInfo = {}

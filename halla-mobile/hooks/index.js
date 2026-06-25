@@ -1,8 +1,8 @@
 // Centralized hooks barrel.
 //
-// Each domain folder owns its own queries/mutations/keys (see Phase 5
-// in UNIFICATION_REPORT.md). This barrel re-exports the public hook
-// surface so consumers can `import { useFoo } from "../../hooks"`
+// Each domain folder owns its own queries/mutations/keys. This barrel
+// re-exports the public hook surface so consumers can
+// `import { useFoo } from "../../hooks"`
 // without knowing the domain split. Domain-specific consumers should
 // import from the domain folder directly (`../../hooks/<domain>`) to
 // avoid pulling unrelated hooks into their bundle.

@@ -243,11 +243,10 @@ exports.updateStaffList = catchAsync(async (req, res) => {
  * when `staffList` is absent.
  *
  * Both `guestList` AND a staff key (either `staffList` or
- * `supervisorsList`) are REQUIRED. The previous behaviour silently
- * defaulted missing keys to `[]`, which let a partial request empty
- * the existing list. The atomic endpoint is "replace both" — callers
- * that only want to edit one side must use the legacy `/guest-list` or
- * `/staff-list` compat endpoints (kept for one release cycle).
+ * `supervisorsList`) are REQUIRED; defaulting a missing key to `[]`
+ * would let a partial request empty the existing list. The atomic
+ * endpoint is "replace both" — callers that only want to edit one side
+ * must use the `/guest-list` or `/staff-list` endpoints.
  */
 exports.updateEventStep2 = catchAsync(async (req, res) => {
   // Zod schema enforces guestList + at least one of staffList/supervisorsList.
@@ -398,7 +397,7 @@ exports.notifyStaff = catchAsync(async (req, res) => {
 });
 
 // ============================================
-// LAUNCH RETRY (3c.1)
+// LAUNCH RETRY
 // ============================================
 
 /**
@@ -449,8 +448,8 @@ exports.extraReminder = catchAsync(async (req, res) => {
 });
 
 // ============================================
-// ADMIN ENDPOINTS — extracted to events.admin.controller.js, re-exported
-// here so any external imports of `events.controller` keep working.
+// ADMIN ENDPOINTS — re-exported here so imports of `events.controller`
+// resolve the admin handlers defined in events.admin.controller.js.
 // ============================================
 const adminController = require("./events.admin.controller");
 exports.getAllEvents = adminController.getAllEvents;

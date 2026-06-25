@@ -19,7 +19,7 @@ import { formatTemplateDate } from "@halla/shared/utils/formatTemplateDate";
  * the open/close state when the parent form re-rendered heavily (e.g. inside
  * StepThree's template modal where the live canvas watches every field
  * change). The symptom was the picker refusing to open on tap (it looked
- * "disabled"). Mirrors the same fix already applied to TextInput.
+ * "disabled").
  */
 const DatePickerField = ({
   label,

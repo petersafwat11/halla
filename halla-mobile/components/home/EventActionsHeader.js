@@ -62,10 +62,8 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
   const eventId = event?.id || event?._id;
   const updateRoute = isAdmin ? "UpdateEvent" : "UpdateEventScreen";
 
-  // Shared gate — matches web host single-event header so the two
-  // platforms can't drift. Visibility rules now require an active
-  // template before test/schedule, and an actual staff entry before
-  // Notify Staff (previously this only checked event status).
+  // Shared gate. Visibility rules require an active template before
+  // test/schedule, and an actual staff entry before Notify Staff.
   const { canSendTest, canSchedule, hasStaff, isCompleted } =
     useEventActionGate({ event, testMessageSent });
 

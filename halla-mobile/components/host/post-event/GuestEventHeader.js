@@ -4,8 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 /**
  * List header for the guest post-event screen. Renders the event +
- * guest meta strip and the thank-you card. Lives in its own file so
- * the screen stays under the 350-line cap.
+ * guest meta strip and the thank-you card.
  */
 const GuestEventHeader = ({ eventInfo, guestInfo, thankYouMessage, postsCount, t }) => (
   <View>

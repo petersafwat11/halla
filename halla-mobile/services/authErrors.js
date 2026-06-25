@@ -1,10 +1,9 @@
 /**
  * Mobile auth error utilities.
  *
- * Phase 2 unification: `ApiError` and `authErrorMessage` now live in
- * `@halla/shared/errors`. This file keeps mobile-specific HTTP helpers
- * (`requestJson`, `postJson`, `postForm`, `patchJson`) that wrap
- * `fetchWithTimeout` — fetch-specific code that can't move into shared.
+ * The mobile-specific HTTP helpers (`requestJson`, `postJson`, `postForm`,
+ * `patchJson`) wrap `fetchWithTimeout` — fetch-specific code that can't move
+ * into shared, so it stays here.
  */
 
 import { fetchWithTimeout } from "./http";

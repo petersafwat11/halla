@@ -1,13 +1,13 @@
 /**
- * Event-level launch lock (Phase 3a.3).
+ * Event-level launch lock.
  *
  * Two cron ticks (or a cron tick and a manual retry) firing within the
  * same minute would otherwise both call `sendBulk` and double-message
  * every guest. The fix: a per-event lock stamped onto the Event document
  * before any send runs.
  *
- * Implementation: Option A from PHASE_3abc_PLAN.md — `launchLock.lockedAt`
- * and `launchLock.lockedBy` directly on the Event doc. No new collection.
+ * Implementation: `launchLock.lockedAt` and `launchLock.lockedBy`
+ * directly on the Event doc. No new collection.
  *
  * Acquire: atomic `findOneAndUpdate` that succeeds only if the existing
  * lock is null OR older than `STALE_AFTER_MS` (10 min). Stale locks are
@@ -26,12 +26,12 @@ const HEARTBEAT_INTERVAL_MS = 60 * 1000; // 1 minute
 const TTL_BUFFER_MS = 2 * 60 * 1000;
 
 /**
- * H-17: estimate how long a `sendBulk` for `guestCount` invitees will take
+ * Estimate how long a `sendBulk` for `guestCount` invitees will take
  * given the rate cap (10 sends/sec × concurrency 5). Used by the cron path
  * to derive a safe TTL — at 6000 guests sendBulk runs ~10min, a 10min lock
  * with no heartbeat would expire the moment the second cron tick fires.
  *
- * Returns a value in ms, never less than the legacy 10-minute floor.
+ * Returns a value in ms, never less than the 10-minute floor.
  */
 function estimateLockTtl(guestCount, ratePerSecond = 10) {
   if (!guestCount || guestCount <= 0) return STALE_AFTER_MS;
@@ -99,17 +99,14 @@ async function acquire(eventId, workerId, opts = {}) {
 /**
  * Release the lock. Idempotent — safe to call multiple times.
  *
- * H-3 review: previously the filter was `{ _id: eventId }` with no
- * holder check. If a stale lock had already been re-acquired by another
- * worker (because our heartbeat stalled past the TTL), the original
- * worker calling `release()` here would clear THE OTHER worker's lock
- * out from under them, opening a window where a third tick can acquire
- * and double-fire. We now scope the clear by `lockedBy` so we only
- * release a lock we still own.
+ * The clear is scoped by `lockedBy` so we only release a lock we still
+ * own. If a stale lock had already been re-acquired by another worker
+ * (because our heartbeat stalled past the TTL), an unscoped clear would
+ * wipe THE OTHER worker's lock out from under them, opening a window
+ * where a third tick can acquire and double-fire.
  *
- * If `workerId` is undefined (legacy callers / safety net), we fall
- * back to the unscoped clear with a warning. Mark every active call
- * site to pass it.
+ * If `workerId` is undefined, we fall back to the unscoped clear with a
+ * warning.
  */
 async function release(eventId, workerId) {
   const filter = { _id: eventId };
@@ -130,7 +127,7 @@ async function release(eventId, workerId) {
 }
 
 /**
- * H-17: heartbeat helper. Refreshes the lock's `lockedAt` timestamp so a
+ * Heartbeat helper. Refreshes the lock's `lockedAt` timestamp so a
  * long-running `sendBulk` doesn't trip the stale window and let a second
  * worker double-fire. Returns a `stop()` function the caller MUST invoke
  * before releasing the lock (typically inside `finally`).
