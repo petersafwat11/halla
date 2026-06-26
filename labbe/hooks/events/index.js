@@ -27,6 +27,7 @@ export {
     useRetryLaunch,
     useResendInvite,
     useExtraReminder,
+    useSendNewGuests,
 } from "./mutations/useEventMutation";
 
 // Form Management

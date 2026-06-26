@@ -12,13 +12,15 @@
   justify-content: center;
 }
 
-/* Full size popup - fixed 80%/90% dimensions (for templateForm, etc.) */
+/* Full size popup - large editors (e.g. templateForm). Capped to a
+   balanced, contained size on big screens so the preview + form stay in
+   proportion (was 1440×900, which left the form far too wide). */
 .popupLayoutContent {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(94vw, 1440px);
-  height: min(92vh, 900px);
+  width: min(94vw, 1000px);
+  height: min(90vh, 840px);
   transform: translate(-50%, -50%);
   min-width: 300px;
   min-height: 300px;

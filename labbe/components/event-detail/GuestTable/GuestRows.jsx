@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { FiEdit2, FiTrash2, FiSend, FiBell } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiRefreshCw, FiSlash } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import {
   renderSentViaBadge,
@@ -17,11 +17,11 @@ export default function GuestRows({
   onStatusFilterChange,
   onEditGuest,
   onDeleteGuest,
+  onRotateQr,
+  onRevokeAccess,
   onSendInvitation,
   onSendReminder,
   onExportGuests,
-  onBulkResend,
-  onBulkExtraReminder,
 }) {
   const guestsList = guests || [];
 
@@ -44,25 +44,9 @@ export default function GuestRows({
   const activeDropdownValue =
     statusFilter && statusFilter !== "totalGuests" ? statusFilter : null;
 
-  // Two pool-charged bulk actions. The handlers receive the selected row
-  // ids from the Table; the parent re-filters them to the right audience
-  // (non-responders/maybe for resend, confirmed for extra reminder) and
-  // confirms the cost before sending.
-  const bulkActions = [];
-  if (onBulkResend) {
-    bulkActions.push({
-      icon: <FiSend size={16} />,
-      text: t("singleEvent.bulkActions.resend", "Resend invitation"),
-      onClick: (selectedIds) => onBulkResend(selectedIds),
-    });
-  }
-  if (onBulkExtraReminder) {
-    bulkActions.push({
-      icon: <FiBell size={16} />,
-      text: t("singleEvent.bulkActions.extraReminder", "Extra reminder"),
-      onClick: (selectedIds) => onBulkExtraReminder(selectedIds),
-    });
-  }
+  // Pool-charged send actions (resend / extra reminder / new guests) now live
+  // in the single-event header's "Send messages" menu, not in the table's
+  // bulk-selection bar — so there are no bulk actions or row checkboxes here.
 
   // Column keys must match `headers` 1:1 in the same order. The Table
   // component falls back to `Object.keys(row)` when `headerKeys` isn't
@@ -127,10 +111,33 @@ export default function GuestRows({
             if (guest) onDeleteGuest(guest);
           },
         },
+        ...(onRotateQr
+          ? [
+              {
+                type: "dropdown",
+                icon: <FiRefreshCw size={16} />,
+                text: t("table.actions.rotateQr", "تحديث رمز الدخول"),
+                onClick: (row) => {
+                  const guest = guestsList.find((g) => g.id === row.id);
+                  if (guest) onRotateQr(guest);
+                },
+              },
+            ]
+          : []),
+        ...(onRevokeAccess
+          ? [
+              {
+                type: "dropdown",
+                icon: <FiSlash size={16} />,
+                text: t("table.actions.revokeAccess", "إلغاء الوصول"),
+                onClick: (row) => {
+                  const guest = guestsList.find((g) => g.id === row.id);
+                  if (guest) onRevokeAccess(guest);
+                },
+              },
+            ]
+          : []),
       ]}
-      bulkActions={bulkActions}
-      inlineBulkActions={true}
-      showCheckboxes={bulkActions.length > 0}
       moreOptions={[
         {
           text: t("messaging.sendInvitations", "إرسال الدعوات"),

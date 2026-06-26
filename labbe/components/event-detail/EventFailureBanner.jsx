@@ -154,7 +154,7 @@ export default function EventFailureBanner({ event, currentUser, lang = "ar" }) 
   // unauthorized users.
   const { canManualRetry: canRetry } = useEventActionGate({
     event,
-    user: currentUser,
+    currentUser,
   });
 
   const handleRetry = async () => {

@@ -101,6 +101,7 @@ export const ENDPOINTS = {
     RETRY_LAUNCH: API_PATHS.events.retryLaunch,
     RESEND_INVITE: API_PATHS.events.resendInvite,
     EXTRA_REMINDER: API_PATHS.events.extraReminder,
+    SEND_NEW_GUESTS: API_PATHS.events.sendNewGuests,
     UPDATE_REMINDER_SETTINGS: API_PATHS.events.updateReminderSettings,
     LIST_STAFF_TOKENS: API_PATHS.events.listStaffTokens,
     REVOKE_STAFF: API_PATHS.events.revokeStaffAccess,
@@ -109,6 +110,7 @@ export const ENDPOINTS = {
   GUESTS: {
     INVITATION: API_PATHS.guests.getByInvitationCode,
     RSVP: API_PATHS.guests.submitRSVP,
+    MY_CONTACTS: API_PATHS.guests.getMyContacts,
     EVENT_GUESTS: API_PATHS.guests.getEventGuests,
     EXPORT: API_PATHS.guests.exportGuests,
     ROTATE_QR: API_PATHS.guests.rotateQR,

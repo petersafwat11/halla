@@ -23,9 +23,11 @@ export default function AdminEventHeader({ data }) {
   const [showStaffPopup, setShowStaffPopup] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [statusPending, setStatusPending] = useState(false);
 
   const deleteEvent = useAdminEventMutation("delete");
   const updateEvent = useAdminEventMutation("update");
+  const updateStatus = useAdminEventMutation("updateStatus");
 
   const isArabic = i18n.language === "ar";
   const eventTitle =
@@ -126,6 +128,60 @@ export default function AdminEventHeader({ data }) {
     router.refresh();
   };
 
+  // ── Admin status transitions (parity with the mobile EventActionsSection) ──
+  // Contextual actions derived from the current status; mirrors the same
+  // publish / end / cancel / reschedule transitions the mobile screen exposes.
+  const status = data?.event?.status;
+  const statusActions = [];
+  if (status === "pending_scheduling") {
+    statusActions.push({
+      key: "publish",
+      next: "scheduled",
+      label: t("singleEvent.statusActions.publish", "نشر المناسبة"),
+      confirm: t("singleEvent.statusConfirm.publish", "نشر هذه المناسبة الآن؟"),
+    });
+  }
+  if (status === "scheduled" || status === "live") {
+    statusActions.push({
+      key: "end",
+      next: "completed",
+      label: t("singleEvent.statusActions.end", "إنهاء المناسبة"),
+      confirm: t("singleEvent.statusConfirm.end", "إنهاء هذه المناسبة؟"),
+    });
+  }
+  if (status && status !== "cancelled") {
+    statusActions.push({
+      key: "cancel",
+      next: "cancelled",
+      label: t("singleEvent.statusActions.cancel", "إلغاء المناسبة"),
+      confirm: t("singleEvent.statusConfirm.cancel", "إلغاء هذه المناسبة؟"),
+    });
+  }
+  if (status === "cancelled" || status === "completed") {
+    statusActions.push({
+      key: "reschedule",
+      next: "scheduled",
+      label: t("singleEvent.statusActions.reschedule", "إعادة جدولة"),
+      confirm: t("singleEvent.statusConfirm.reschedule", "إعادة جدولة هذه المناسبة؟"),
+    });
+  }
+
+  const handleStatusChange = async (nextStatus, confirmMessage) => {
+    if (!window.confirm(confirmMessage)) return;
+    setStatusPending(true);
+    try {
+      await updateStatus.mutateAsync({ eventId, status: nextStatus });
+      toastUtils.success(
+        t("singleEvent.statusUpdateSuccess", "تم تحديث حالة المناسبة")
+      );
+      router.refresh();
+    } catch (error) {
+      handleError(error, t, { fallbackMessage: "singleEvent.statusUpdateError" });
+    } finally {
+      setStatusPending(false);
+    }
+  };
+
   return (
     <>
       <div className={styles.header}>
@@ -158,6 +214,18 @@ export default function AdminEventHeader({ data }) {
 
         <div className={styles.actions}>
           <EventActionsHeader event={event} isAdmin={true} />
+
+          {/* Status transitions — publish / end / cancel / reschedule */}
+          {statusActions.map((a) => (
+            <button
+              key={a.key}
+              className={styles.outlineButton}
+              onClick={() => handleStatusChange(a.next, a.confirm)}
+              disabled={statusPending || updateStatus.isPending}
+            >
+              <span>{a.label}</span>
+            </button>
+          ))}
 
           {/* Moderators */}
            <button

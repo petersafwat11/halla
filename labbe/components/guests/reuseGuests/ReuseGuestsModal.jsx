@@ -1,209 +1,112 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { FiUserPlus } from "react-icons/fi";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import Button from "@/ui/commen/button/Button";
+import Table from "@/ui/commen/new-table/Table";
 import { useMyContacts } from "@/hooks/guests/queries";
-import styles from "./reuseGuests.module.css";
+import styles from "../guestPicker.module.css";
 
 /**
  * "Add from your guests" — pick from the host's reusable guest book (past
- * guests across all their events), filtered by category + search. Selected
- * contacts are merged into the current Step-2 guest list via `onAdd`; this
- * modal never persists anything itself (persistence flows through the normal
- * create/step2 save). Rows already on the current list are disabled.
+ * guests across all their events) using the shared Table (search + category
+ * filter + checkboxes). Selection is added via the Table's bulk action and
+ * returned through `onAdd`; persistence flows through the normal Step-2 save.
+ * Guests already on the current list are hidden.
  */
-const ReuseGuestsModal = ({
-  isOpen,
-  onClose,
-  onAdd,
-  existingMobiles = [],
-  remainingCapacity = Infinity,
-}) => {
+const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
   const { t } = useTranslation("createEvent");
-
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState({}); // mobile -> { name, mobile, category }
 
-  const limit = 20;
-  const existingSet = useMemo(
-    () => new Set(existingMobiles),
-    [existingMobiles]
-  );
-
-  // Debounce the search box so we don't refetch on every keystroke.
   useEffect(() => {
-    const id = setTimeout(() => setDebouncedSearch(search.trim()), 300);
-    return () => clearTimeout(id);
-  }, [search]);
-
-  // Reset paging when filters change.
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, category]);
-
-  // Clear transient state whenever the modal closes.
-  useEffect(() => {
-    if (!isOpen) {
-      setSearch("");
-      setDebouncedSearch("");
-      setCategory("");
-      setPage(1);
-      setSelected({});
-    }
+    if (!isOpen) setCategory("");
   }, [isOpen]);
 
   const { data, isLoading, isError } = useMyContacts(
-    { search: debouncedSearch || undefined, category: category || undefined, page, limit },
+    { page: 1, limit: 200, category: category || undefined },
     { enabled: isOpen }
   );
 
-  const contacts = data?.data?.contacts || [];
   const categories = data?.data?.categories || [];
-  const pagination = data?.data?.pagination || { page: 1, pages: 1, total: 0 };
+  const existingSet = useMemo(() => new Set(existingMobiles), [existingMobiles]);
+  const rows = useMemo(() => {
+    const contacts = data?.data?.contacts || [];
+    return contacts
+      .filter((c) => !existingSet.has(c.phone))
+      .map((c) => ({ id: c.phone, name: c.name, phone: c.phone, category: c.category || "" }));
+  }, [data, existingSet]);
 
-  const selectedCount = Object.keys(selected).length;
-  const atCapacity =
-    Number.isFinite(remainingCapacity) && selectedCount >= remainingCapacity;
-
-  const toggle = (contact) => {
-    if (existingSet.has(contact.phone)) return;
-    setSelected((prev) => {
-      const next = { ...prev };
-      if (next[contact.phone]) {
-        delete next[contact.phone];
-      } else {
-        if (atCapacity) return prev; // capacity guard
-        next[contact.phone] = {
-          name: contact.name || "",
-          mobile: contact.phone,
-          category: contact.category || "",
-        };
-      }
-      return next;
-    });
+  const addByIds = (ids) => {
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    const list = ids
+      .map((id) => byId.get(id))
+      .filter(Boolean)
+      .map((r) => ({ name: r.name, mobile: r.phone, category: r.category }));
+    if (list.length) onAdd(list);
+    onClose();
   };
 
-  const handleAdd = () => {
-    const list = Object.values(selected);
-    if (list.length > 0) onAdd(list);
-    onClose();
+  const filterOptions = [
+    { label: t("reuse_guests_all_categories"), value: "", onClick: () => setCategory("") },
+    ...categories.map((c) => ({ label: c, value: c, onClick: () => setCategory(c) })),
+  ];
+
+  const renderCell = (key, value) => {
+    if (key === "category") return value ? <span className={styles.badge}>{value}</span> : "-";
+    if (key === "phone") {
+      return <span style={{ direction: "ltr", display: "inline-block" }}>{value}</span>;
+    }
+    return value || "-";
   };
 
   return (
     <PopupWrapper isOpen={isOpen} onClose={onClose}>
-      <div className={styles.modal} dir="rtl">
+      <div className={styles.popup}>
         <div className={styles.header}>
-          <h3 className={styles.title}>{t("reuse_guests_title")}</h3>
-          <button className={styles.close} onClick={onClose} aria-label="close">
-            ✕
+          <h2 className={styles.title}>{t("reuse_guests_title")}</h2>
+          <button className={styles.closeButton} onClick={onClose} type="button" aria-label={t("close")}>
+            ×
           </button>
         </div>
 
-        <p className={styles.subtitle}>{t("reuse_guests_subtitle")}</p>
+        <div className={styles.content}>
+          <p className={styles.subtitle}>{t("reuse_guests_subtitle")}</p>
 
-        <div className={styles.filters}>
-          <input
-            className={styles.search}
-            placeholder={t("reuse_guests_search_placeholder")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <select
-            className={styles.categorySelect}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">{t("reuse_guests_all_categories")}</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.list}>
-          {isLoading && <div className={styles.state}>{t("loading")}</div>}
-          {isError && <div className={styles.state}>{t("reuse_guests_error")}</div>}
-          {!isLoading && !isError && contacts.length === 0 && (
+          {isLoading ? (
+            <div className={styles.state}>{t("loading")}</div>
+          ) : isError ? (
+            <div className={styles.state}>{t("reuse_guests_error")}</div>
+          ) : rows.length === 0 ? (
             <div className={styles.state}>{t("reuse_guests_empty")}</div>
+          ) : (
+            <Table
+              headers={[t("name"), t("mobile"), t("category")]}
+              headerKeys={["name", "phone", "category"]}
+              data={rows}
+              showSearch
+              showFilter={categories.length > 0}
+              filterOptions={filterOptions}
+              activeFilter={category}
+              showExport={false}
+              showCheckboxes
+              inlineBulkActions
+              searchPlaceholder={t("reuse_guests_search_placeholder")}
+              renderCell={renderCell}
+              bulkActions={[
+                {
+                  text: t("reuse_guests_add_selected"),
+                  icon: <FiUserPlus size={16} />,
+                  onClick: addByIds,
+                },
+              ]}
+            />
           )}
-          {!isLoading &&
-            !isError &&
-            contacts.map((c) => {
-              const already = existingSet.has(c.phone);
-              const isSelected = !!selected[c.phone];
-              const disabled = already || (!isSelected && atCapacity);
-              return (
-                <label
-                  key={c.phone}
-                  className={`${styles.row} ${disabled ? styles.rowDisabled : ""} ${
-                    isSelected ? styles.rowSelected : ""
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    disabled={disabled}
-                    onChange={() => toggle(c)}
-                  />
-                  <span className={styles.rowMain}>
-                    <span className={styles.rowName}>{c.name}</span>
-                    <span className={styles.rowPhone}>{c.phone}</span>
-                  </span>
-                  <span className={styles.rowMeta}>
-                    {c.category && <span className={styles.badge}>{c.category}</span>}
-                    {already && (
-                      <span className={styles.added}>{t("reuse_guests_added")}</span>
-                    )}
-                  </span>
-                </label>
-              );
-            })}
         </div>
-
-        {pagination.pages > 1 && (
-          <div className={styles.pager}>
-            <button
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              {t("previous")}
-            </button>
-            <span>
-              {pagination.page} / {pagination.pages}
-            </span>
-            <button
-              disabled={page >= pagination.pages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              {t("next")}
-            </button>
-          </div>
-        )}
 
         <div className={styles.footer}>
-          <span className={styles.count}>
-            {t("reuse_guests_selected", { count: selectedCount })}
-            {Number.isFinite(remainingCapacity) && (
-              <span className={styles.capacity}>
-                {" "}
-                · {t("reuse_guests_remaining", { count: remainingCapacity })}
-              </span>
-            )}
-          </span>
-          <div className={styles.actions}>
-            <Button variant="secondary" title={t("close")} onClick={onClose} />
-            <Button
-              variant="primary"
-              title={t("reuse_guests_add", { count: selectedCount })}
-              onClick={handleAdd}
-              disabled={selectedCount === 0}
-            />
+          <div className={styles.footerActions}>
+            <Button variant="secondary" title={t("close")} onClick={onClose} type="button" />
           </div>
         </div>
       </div>

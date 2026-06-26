@@ -15,6 +15,7 @@ import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
 import { messagingKeys } from "./keys";
 import { eventsKeys } from "@/hooks/events/keys";
+import { guestsKeys } from "@/hooks/guests/keys";
 import { dashboardKeys } from "@/hooks/dashboard/keys";
 
 // Mint a UUID v4 with a degraded fallback for environments that lack
@@ -33,6 +34,10 @@ const useMessagingInvalidations = () => {
     if (eventId) {
       queryClient.invalidateQueries({ queryKey: messagingKeys.stats(eventId) });
       queryClient.invalidateQueries({ queryKey: eventsKeys.detail(eventId) });
+      // Sending an invite/reminder mutates per-guest invitation state
+      // (sent / status / auto-reminder badges), so refresh the guest table
+      // the event-detail page renders from `useEventGuests`.
+      queryClient.invalidateQueries({ queryKey: guestsKeys.forEvent(eventId) });
     }
     queryClient.invalidateQueries({ queryKey: dashboardKeys.host() });
   };

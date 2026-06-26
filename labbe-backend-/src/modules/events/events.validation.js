@@ -151,6 +151,13 @@ const extraReminderSchema = z.object({
   guestIds: z.array(objectId).optional(),
 }).passthrough();
 
+const sendNewGuestsSchema = z.object({
+  channel: z.enum(['sms', 'whatsapp']).optional(),
+  // Optional explicit target set. Always narrowed to never-sent guests
+  // (invitation.sent != true) in the service — can only narrow, never widen.
+  guestIds: z.array(objectId).optional(),
+}).passthrough();
+
 module.exports = {
   createEventSchema,
   updateEventDetailsSchema,
@@ -169,4 +176,5 @@ module.exports = {
   updateReminderSettingsSchema,
   resendInviteSchema,
   extraReminderSchema,
+  sendNewGuestsSchema,
 };

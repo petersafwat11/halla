@@ -78,6 +78,7 @@ export const addListItem = (item, currentList = [], type = "guest") => {
     id: Date.now(),
     name: item.name.trim(),
     phone: (item.phone || item.mobile || "").trim(),
+    category: (item.category || "").trim(),
   };
   return { success: true, list: [...currentList, newItem], errors: null };
 };
@@ -95,6 +96,7 @@ export const editListItem = (id, updatedData, currentList = [], type = "guest") 
     id,
     name: updatedData.name.trim(),
     phone: (updatedData.phone || updatedData.mobile || "").trim(),
+    category: (updatedData.category || "").trim(),
   };
   return {
     success: true,
@@ -123,11 +125,15 @@ export const generateCSVTemplate = (type = "guest") => {
           : "events:csv.headers.staffName",
     },
     { key: "mobile", label: "events:csv.headers.phone" },
+    // Guests only — optional free-text grouping label.
+    ...(type === "guest"
+      ? [{ key: "category", label: "events:csv.headers.category" }]
+      : []),
   ];
 
   const sampleData = [
-    { name: "أحمد محمد", mobile: "512345678" },
-    { name: "فاطمة علي", mobile: "598765432" },
+    { name: "أحمد محمد", mobile: "512345678", category: "العائلة" },
+    { name: "فاطمة علي", mobile: "598765432", category: "العمل" },
   ];
 
   const fileName = type === "guest" ? "guests-template" : "moderators-template";
@@ -161,6 +167,7 @@ export const processImportedCSV = (importedData = [], currentList = []) => {
       id: Date.now() + index,
       name: item.name.trim(),
       phone,
+      category: (item.category || "").trim(),
     });
     existingPhones.push(phone);
   });
@@ -257,7 +264,7 @@ export const transformFormDataToPayload = (formData) => ({
   guestList: (formData.guestList || []).map((guest) => ({
     name: guest.name,
     phone: guest.phone || guest.mobile,
-    email: guest.email || "",
+    ...(guest.category ? { category: guest.category } : {}),
   })),
   staffList: (formData.staffList || []).map((moderator) => ({
     name: moderator.name,

@@ -1,7 +1,10 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useAdminBusinessesInfinite } from "../../../hooks";
+import { useAuthStore } from "../../../stores/authStore";
+import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import TopBar from "../../../components/plans/TopBar";
@@ -10,7 +13,10 @@ import {
   SearchBar,
   ManagePlanModal,
 } from "../../../components/admin-dashboard/common";
-import { BusinessListItem } from "../../../components/admin-dashboard/businesses";
+import {
+  BusinessListItem,
+  AddBusinessModal,
+} from "../../../components/admin-dashboard/businesses";
 import {
   colors,
   spacing,
@@ -24,9 +30,12 @@ const FILTERS = ["all", "active", "suspended", "inactive"];
 const AdminBusinessesScreen = ({ navigation }) => {
   const { t } = useTranslation("admin");
   const toast = useToast();
+  const role = useAuthStore((state) => state.user?.role);
+  const canEdit = canEditPage(role, PAGES.BUSINESSES);
 
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [addModalVisible, setAddModalVisible] = useState(false);
 
   const filters = useMemo(
     () => ({ search, status: activeFilter }),
@@ -73,7 +82,21 @@ const AdminBusinessesScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
-        <TopBar title={t("businesses.title")} showBack={true} />
+        <TopBar
+          title={t("businesses.title")}
+          showBack={true}
+          rightContent={
+            canEdit ? (
+              <TouchableOpacity
+                onPress={() => setAddModalVisible(true)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityLabel={t("businesses.create.title", "Add Business")}
+              >
+                <Ionicons name="add" size={26} color={colors.natural[50]} />
+              </TouchableOpacity>
+            ) : null
+          }
+        />
 
         <View style={styles.controls}>
           <SearchBar
@@ -127,6 +150,12 @@ const AdminBusinessesScreen = ({ navigation }) => {
           entity={selectedBusiness}
           entityType="business"
           onSave={() => refetch()}
+        />
+
+        <AddBusinessModal
+          visible={addModalVisible}
+          onClose={() => setAddModalVisible(false)}
+          onSaved={() => refetch()}
         />
       </View>
     </SafeAreaView>

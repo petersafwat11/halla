@@ -256,6 +256,33 @@
       "noConfirmedNow": "لا يوجد ضيوف مؤكدون للتذكير بعد.",
       "error": "تعذّر إكمال الإجراء"
     },
+    "sendActions": {
+      "menu": "إرسال الرسائل",
+      "items": {
+        "newGuests": "إرسال دعوة للضيوف الجدد",
+        "resend": "إعادة إرسال الدعوة",
+        "extraReminder": "تذكير إضافي"
+      },
+      "disabled": {
+        "sendFirst": "أرسِل الدعوات الأولية أولًا",
+        "noNewGuests": "لا يوجد ضيوف جدد للإرسال إليهم",
+        "noResend": "ردّ الجميع بالفعل",
+        "noConfirmed": "لا يوجد ضيوف مؤكدون بعد"
+      },
+      "noNewGuestsToast": "لا يوجد ضيوف جدد لإرسال الدعوات إليهم.",
+      "expired": "انتهت صلاحية باقة هذه المناسبة أو لم يعد الإرسال متاحًا.",
+      "popup": {
+        "selectAll": "تحديد الكل",
+        "counter": "{{count}} محدد · {{remaining}} دعوة متبقية",
+        "counterUnlimited": "{{count}} محدد",
+        "cost": "سيُرسل هذا {{count}} رسالة ويستهلك {{count}} دعوة.",
+        "costUnlimited": "سيُرسل هذا {{count}} رسالة.",
+        "empty": "لا يوجد ضيوف مطابقون لهذا الإجراء.",
+        "colName": "الضيف",
+        "colPhone": "الجوال",
+        "colStatus": "الحالة"
+      }
+    },
     "header": {
       "eventDetails": "تفاصيل المناسبة",
       "editGuests": "تعديل الضيوف",

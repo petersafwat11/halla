@@ -8,7 +8,13 @@ import {
   ScrollView,
   Image,
   SafeAreaView,
+  Dimensions,
 } from "react-native";
+
+// Cap the invitation image to half the screen height so a tall template
+// never makes the preview "very long" — the image stays fully visible
+// (contain) and the chat scrolls for the rest. Fits all screen sizes.
+const PREVIEW_IMG_MAX_H = Math.round(Dimensions.get("window").height * 0.5);
 import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
@@ -148,7 +154,7 @@ const PreviewInvitation = ({
         >
           {/* Received message card */}
           <View style={styles.msgCard}>
-            <View style={[styles.msgImageWrap, { aspectRatio }]}>
+            <View style={[styles.msgImageWrap, { aspectRatio, maxHeight: PREVIEW_IMG_MAX_H }]}>
               {bakedImageSource ? (
                 <Image
                   source={bakedImageSource}

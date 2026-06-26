@@ -283,6 +283,48 @@ export function useDeleteBusiness() {
   });
 }
 
+/**
+ * Create a business account. `data` is FormData
+ * (name, phoneNumber, email, password, description, optional logo).
+ * Mirrors web's useAdminBusinessMutation("create").
+ */
+export function useCreateBusiness() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data) => {
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.CREATE,
+        "POST",
+        data,
+      );
+      return assertOk(response);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: adminKeys.businessesAll() });
+    },
+  });
+}
+
+/**
+ * Replace a business logo. `data` is FormData with a single `logo` field.
+ * Mirrors web's useAdminBusinessMutation("updateLogo").
+ */
+export function useUpdateBusinessLogo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ businessId, data }) => {
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.BUSINESSES.UPDATE_LOGO(businessId),
+        "PATCH",
+        data,
+      );
+      return assertOk(response);
+    },
+    onSuccess: async (_data, { businessId }) =>
+      _invalidateBusiness(queryClient, businessId),
+  });
+}
+
 // ============================================
 // VENDORS
 // ============================================

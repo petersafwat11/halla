@@ -252,6 +252,33 @@
       "noConfirmedNow": "No confirmed guests to remind yet.",
       "error": "Could not complete the action"
     },
+    "sendActions": {
+      "menu": "Send messages",
+      "items": {
+        "newGuests": "Send invite to new guests",
+        "resend": "Resend invitation",
+        "extraReminder": "Extra reminder"
+      },
+      "disabled": {
+        "sendFirst": "Send the initial invitations first",
+        "noNewGuests": "No new guests to send to",
+        "noResend": "Everyone has responded",
+        "noConfirmed": "No confirmed guests yet"
+      },
+      "noNewGuestsToast": "No new guests to send invitations to.",
+      "expired": "This event's plan has expired or sending is no longer allowed.",
+      "popup": {
+        "selectAll": "Select all",
+        "counter": "{{count}} selected · {{remaining}} invites left",
+        "counterUnlimited": "{{count}} selected",
+        "cost": "This will send {{count}} message(s) and use {{count}} invite(s).",
+        "costUnlimited": "This will send {{count}} message(s).",
+        "empty": "No guests match this action.",
+        "colName": "Guest",
+        "colPhone": "Phone",
+        "colStatus": "Status"
+      }
+    },
     "header": {
       "eventDetails": "Event Details",
       "editGuests": "Edit Guests",

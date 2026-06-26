@@ -1344,6 +1344,41 @@
     "deleteConfirm": {
       "title": "Delete Business",
       "message": "Are you sure you want to delete this business?"
+    },
+    "create": {
+      "kicker": "Business",
+      "title": "Add Business",
+      "name": "Name",
+      "namePlaceholder": "Business name",
+      "nameRequired": "Name is required",
+      "email": "Email",
+      "emailPlaceholder": "name@example.com",
+      "emailRequired": "Email is required",
+      "phone": "Phone number",
+      "phonePlaceholder": "5xxxxxxxx",
+      "phoneRequired": "Phone number is required",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "passwordRequired": "Password is required",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional",
+      "logo": "Logo",
+      "logoPlaceholder": "Choose an image",
+      "submit": "Add business",
+      "saving": "Saving...",
+      "success": "Business created",
+      "error": "Could not create business"
+    },
+    "editLogo": {
+      "kicker": "Logo",
+      "title": "Change logo",
+      "logo": "Logo",
+      "logoPlaceholder": "Choose an image",
+      "noFile": "Choose an image first",
+      "save": "Save",
+      "saving": "Saving...",
+      "success": "Logo updated",
+      "error": "Could not update logo"
     }
   },
   "businessDetails": {
@@ -1369,6 +1404,8 @@
     "noPlan": "No active subscription",
     "managePlan": "Manage Plan",
     "managePlanSublabel": "Change plan or add extra invites",
+    "editLogo": "Change logo",
+    "editLogoSublabel": "Upload a new business logo",
     "adminActions": "Admin Actions",
     "activate": "Activate Business",
     "suspend": "Suspend Business",

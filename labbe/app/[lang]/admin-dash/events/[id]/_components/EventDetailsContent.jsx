@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useCallback } from "react";
-import { useSingleEventStats } from "@/hooks/events";
+import { useSingleEventStats, useEvent } from "@/hooks/events";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -18,6 +18,11 @@ export default function EventDetailsContent({ eventId }) {
   const router = useRouter();
   const { t } = useTranslation("adminEvents");
   const { data, isLoading, error } = useSingleEventStats(eventId);
+  // The stats endpoint hard-codes `subscription: null`; the enriched summary
+  // lives on the getEventById payload. This query is already fetched on this
+  // page by RemainingInvitesBanner/AutoReminderInfoText, so reading it here is
+  // deduped by React Query — no extra request.
+  const { data: eventResp } = useEvent(eventId);
 
   const [statusFilter, setStatusFilter] = useState(null);
   const tableRef = useRef(null);
@@ -44,6 +49,8 @@ export default function EventDetailsContent({ eventId }) {
   }
 
   const eventData = data?.data || data;
+  const fullEvent = eventResp?.data?.event || eventResp?.event || null;
+  const subscription = fullEvent?.subscription || eventData?.subscription || null;
   const guests = eventData?.guests || [];
 
   return (
@@ -51,8 +58,8 @@ export default function EventDetailsContent({ eventId }) {
       <AdminEventHeader data={eventData} />
 
       <div className={styles.contentWrapper}>
-        {eventData?.subscription && (
-          <SubscriptionInfo subscription={eventData.subscription} />
+        {subscription && (
+          <SubscriptionInfo subscription={subscription} />
         )}
 
         <RemainingInvitesBanner eventId={eventId} />

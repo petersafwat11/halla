@@ -97,6 +97,10 @@ export function useRevokeStaffAccess() {
     },
     onSuccess: (_, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: eventsKeys.staffTokens(eventId) });
+      // The EventDetails moderator list renders from `useSingleEventStats`
+      // (single-stats key), not the staff-tokens query — invalidate it so the
+      // revoked badge refreshes without a manual pull-to-refresh.
+      queryClient.invalidateQueries({ queryKey: eventsKeys.singleStats(eventId) });
     },
   });
 }

@@ -143,7 +143,8 @@
     "headers": {
       "guestName": "Guest name",
       "staffName": "Staff name",
-      "phone": "Phone"
+      "phone": "Phone",
+      "category": "Category"
     }
   },
   "guest": {
@@ -257,6 +258,30 @@
     "send": "Send",
     "cancel": "Cancel",
     "unlimited": "Unlimited"
+  },
+  "sendActions": {
+    "menu": "Send messages",
+    "items": {
+      "newGuests": "Send invite to new guests",
+      "resend": "Resend invitation",
+      "extraReminder": "Extra reminder"
+    },
+    "disabled": {
+      "sendFirst": "Send the initial invitations first",
+      "noNewGuests": "No new guests to send to",
+      "noResend": "Everyone has responded",
+      "noConfirmed": "No confirmed guests yet"
+    },
+    "noNewGuestsToast": "No new guests to send invitations to.",
+    "expired": "This event's plan has expired or sending is no longer allowed.",
+    "popup": {
+      "selectAll": "Select all",
+      "counter": "{{count}} selected · {{remaining}} invites left",
+      "counterUnlimited": "{{count}} selected",
+      "cost": "This will send {{count}} message(s) and use {{count}} invite(s).",
+      "costUnlimited": "This will send {{count}} message(s).",
+      "empty": "No guests match this action."
+    }
   },
   "remainingInvites": {
     "label": "Invites left",

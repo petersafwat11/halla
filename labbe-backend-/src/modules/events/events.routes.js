@@ -54,6 +54,7 @@ const {
   updateReminderSettingsSchema,
   resendInviteSchema,
   extraReminderSchema,
+  sendNewGuestsSchema,
 } = require("./events.validation");
 
 const adminRouter = require("./events.admin.routes");
@@ -996,6 +997,21 @@ router.post(
   idempotency({ scope: "events.extra_reminder" }),
   validateZod(extraReminderSchema),
   eventsController.extraReminder
+);
+
+// ============================================
+// SEND NEW GUESTS — initial pool-charged send to guests added after launch
+// (invitation.sent != true). Reuses the launch send primitive (flip + charge +
+// firstSendAt) and bumps the event sent-count additively. Same idempotency
+// contract as resend-invite / extra-reminder.
+// ============================================
+router.post(
+  "/:id/send-new-guests",
+  validateObjectId("id"),
+  requireSubscription,
+  idempotency({ scope: "events.send_new_guests" }),
+  validateZod(sendNewGuestsSchema),
+  eventsController.sendNewGuests
 );
 
 // ============================================

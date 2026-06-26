@@ -103,5 +103,7 @@ export const useRetryLaunch = () => useEventSettingsMutation("retryLaunch");
 export const useResendInvite = () => useEventSettingsMutation("resendInvite");
 // Pool-charged extra reminder to CONFIRMED guests (optional guestIds).
 export const useExtraReminder = () => useEventSettingsMutation("extraReminder");
+// Pool-charged initial send to NEW guests added after launch (optional guestIds).
+export const useSendNewGuests = () => useEventSettingsMutation("sendNewGuests");
 
 export default useEventMutation;

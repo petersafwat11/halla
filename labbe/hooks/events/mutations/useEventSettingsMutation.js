@@ -15,6 +15,7 @@ export const SETTINGS_ACTIONS = [
   "retryLaunch",
   "resendInvite",
   "extraReminder",
+  "sendNewGuests",
 ];
 
 const buildMutations = (queryClient) => ({
@@ -118,7 +119,7 @@ const buildMutations = (queryClient) => ({
       return apiRequest({
         method: "POST",
         path: API_PATHS.events.retryLaunch(eventId),
-        headers: { "Idempotency-Key": idempotencyKey },
+        config: { headers: { "Idempotency-Key": idempotencyKey } },
       });
     },
     onSuccess: (_, { eventId }) => {
@@ -133,12 +134,15 @@ const buildMutations = (queryClient) => ({
   // The server charges the host's invite pool and 402s INSUFFICIENT_INVITES
   // when the selection exceeds remaining invites.
   resendInvite: {
-    mutationFn: ({ eventId, channel = "sms", guestIds }) => {
+    mutationFn: ({ eventId, channel, guestIds }) => {
       const idempotencyKey =
         typeof crypto !== "undefined" && crypto.randomUUID
           ? `resend-${eventId}-${crypto.randomUUID()}`
           : `resend-${eventId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const data = { channel };
+      // Channel is resolved server-side (follows the event template) when the
+      // caller doesn't force one — only include it when explicitly provided.
+      const data = {};
+      if (channel) data.channel = channel;
       if (Array.isArray(guestIds) && guestIds.length > 0) {
         data.guestIds = guestIds;
       }
@@ -146,7 +150,7 @@ const buildMutations = (queryClient) => ({
         method: "POST",
         path: API_PATHS.events.resendInvite(eventId),
         data,
-        headers: { "Idempotency-Key": idempotencyKey },
+        config: { headers: { "Idempotency-Key": idempotencyKey } },
       });
     },
     onSuccess: (_, { eventId }) => {
@@ -173,7 +177,36 @@ const buildMutations = (queryClient) => ({
         method: "POST",
         path: API_PATHS.events.extraReminder(eventId),
         data,
-        headers: { "Idempotency-Key": idempotencyKey },
+        config: { headers: { "Idempotency-Key": idempotencyKey } },
+      });
+    },
+    onSuccess: (_, { eventId }) => {
+      queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["guests", "events", eventId] });
+    },
+  },
+
+  // Send to new guests — initial pool-charged send to never-sent guests
+  // (added after launch). Channel is resolved server-side (follows the event
+  // template). Pass `guestIds` to scope the send. The server 402s
+  // INSUFFICIENT_INVITES and 403s when the event's plan has expired.
+  sendNewGuests: {
+    mutationFn: ({ eventId, guestIds, channel }) => {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? `send-new-${eventId}-${crypto.randomUUID()}`
+          : `send-new-${eventId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const data = {};
+      if (channel) data.channel = channel;
+      if (Array.isArray(guestIds) && guestIds.length > 0) {
+        data.guestIds = guestIds;
+      }
+      return apiRequest({
+        method: "POST",
+        path: API_PATHS.events.sendNewGuests(eventId),
+        data,
+        config: { headers: { "Idempotency-Key": idempotencyKey } },
       });
     },
     onSuccess: (_, { eventId }) => {

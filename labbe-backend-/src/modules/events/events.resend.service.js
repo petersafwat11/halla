@@ -20,6 +20,8 @@ const logger = require("../../shared/utils/logger");
 const taqnyatTemplatesService = require("../taqnyat-templates/taqnyat-templates.service");
 const messagingReminderService = require("../messaging/messaging.reminder.service");
 const dispatchPolicy = require("../messaging/messaging.dispatchPolicy.service");
+const messagingSendService = require("../messaging/messaging.send.service");
+const { isAdminRole } = require("../../shared/constants/roles");
 const {
   TAQNYAT_SENDER,
   getEventBodyParams,
@@ -130,7 +132,145 @@ async function _chargeInvites(subscriptionId, count) {
   );
 }
 
+/**
+ * Resolve the send channel for a resend / new-guest send. Mirrors the initial
+ * launch: an explicit `sms` is honored; otherwise WhatsApp is used only when
+ * the event actually has a Taqnyat template selected, falling back to SMS when
+ * it doesn't (so a `whatsapp` request without a template never throws
+ * per-guest). Keeps these sends on the same channel the guest first received.
+ * @private
+ */
+function _resolveChannel(event, requested) {
+  if (requested === "sms") return "sms";
+  return event?.taqnyatTemplate?.templateRef ? "whatsapp" : "sms";
+}
+
 module.exports = {
+  /**
+   * Send the initial invitation to NEW guests — those added after launch (or
+   * otherwise never sent): `invitation.sent != true`. Optional `guestIds` may
+   * only NARROW that set. POOL-CHARGED — reuses the same per-guest
+   * `sendToGuest` primitive as the initial launch, so each success flips
+   * `invitation.sent`, charges one invite (clamped, double-charge-proof) and
+   * stamps `firstSendAt`. The event sent-count is bumped ADDITIVELY so the
+   * original launch stats are preserved, not reset.
+   *
+   * @param {string} eventId
+   * @param {object} body  — { channel?: 'sms' | 'whatsapp', guestIds?: string[] }
+   * @param {object} user  — req.user
+   * @returns {object} { reminded, successful, failed }
+   */
+  async sendToNewGuests(eventId, body = {}, user) {
+    const query = this._buildScopedEventQuery(eventId, user);
+    const event = await Event.findOne(query).populate("host", "name username");
+
+    if (!event) {
+      throw new NotFoundError("Event");
+    }
+
+    await _assertDispatchAllowed(event, "send-new-guests");
+
+    // Audience: never-sent guests only. Explicit guestIds may narrow, never
+    // widen (the gate is server-enforced).
+    const guestQuery = {
+      event: eventId,
+      deleted: { $ne: true },
+      "invitation.sent": { $ne: true },
+    };
+    if (Array.isArray(body.guestIds) && body.guestIds.length > 0) {
+      guestQuery._id = { $in: body.guestIds };
+    }
+
+    const targetGuests = await Guest.find(guestQuery).select("_id");
+
+    if (targetGuests.length === 0) {
+      return {
+        success: true,
+        code: "NO_NEW_GUESTS",
+        message: "No new guests to send invitations to.",
+        reminded: 0,
+        successful: 0,
+        failed: 0,
+      };
+    }
+
+    // Budget pre-check (402 if over plan).
+    await _assertInviteBudget(event.subscriptionId, targetGuests.length);
+
+    const channel = _resolveChannel(event, body.channel);
+    const isAdmin = isAdminRole(user?.role);
+
+    // Reuse the launch primitive: it flips invitation.sent, charges the pool
+    // once per success (clamped) and stamps firstSendAt — so we must NOT also
+    // call _chargeInvites here (that would double-charge).
+    const batched = await runBatched(
+      targetGuests,
+      async (guest) =>
+        messagingSendService.sendToGuest({
+          guestId: guest._id,
+          eventId,
+          channel,
+          userId: user?._id,
+          isAdmin,
+        }),
+      { concurrency: 5, ratePerSecond: 5 }
+    );
+
+    const successful = batched.results.filter(
+      (r) => r.ok && r.value?.success
+    ).length;
+    const failed = batched.total - successful;
+
+    // Reflect the sends in the event's running counter ADDITIVELY so the
+    // initial-launch stats are preserved, not reset.
+    if (successful > 0) {
+      await Event.findByIdAndUpdate(eventId, {
+        $inc: { "messagingStatus.sentCount": successful },
+      }).catch((err) =>
+        logger.warn("[sendToNewGuests] sentCount bump failed", {
+          eventId: String(eventId),
+          err: err?.message,
+        })
+      );
+    }
+
+    try {
+      await logAudit({
+        action: "events.send_new_guests",
+        actor: { _id: user?._id || null, role: user?.role || "unknown" },
+        targetType: "event",
+        targetId: eventId,
+        metadata: {
+          channel,
+          total: targetGuests.length,
+          successful,
+          failed,
+          explicitGuestIds:
+            Array.isArray(body.guestIds) && body.guestIds.length > 0,
+        },
+        status:
+          failed === 0 ? "success" : successful === 0 ? "failure" : "partial",
+      });
+    } catch (_) {
+      /* audit must never break the operation */
+    }
+
+    logger.info("[sendToNewGuests] done", {
+      eventId: String(eventId),
+      channel,
+      total: targetGuests.length,
+      successful,
+      failed,
+    });
+
+    return {
+      success: true,
+      reminded: targetGuests.length,
+      successful,
+      failed,
+    };
+  },
+
   /**
    * Resend invitation to non-responders / "maybe" guests (default audience),
    * or to an explicit `guestIds` set. POOL-CHARGED and REPEATABLE — there are
@@ -145,8 +285,6 @@ module.exports = {
    * @returns {object} { reminded, successful, failed }
    */
   async resendInvite(eventId, body = {}, user) {
-    const channel = body.channel || "sms";
-
     const query = this._buildScopedEventQuery(eventId, user);
     const event = await Event.findOne(query)
       .populate({
@@ -163,6 +301,10 @@ module.exports = {
     // subscription / owner mismatch / under-refund all block the send here, not
     // just on the cron path.
     await _assertDispatchAllowed(event, "resend-invite");
+
+    // Channel follows the event's template (WhatsApp when one is configured,
+    // else SMS); an explicit body.channel:'sms' still forces SMS.
+    const channel = _resolveChannel(event, body.channel);
 
     // ---------- Find target guests ----------
     // Resend is ONLY for the permitted audience: guests already sent an

@@ -43,6 +43,12 @@
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to help you select event locations."
         }
       ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "نستخدم جهات اتصالك فقط لتختار ضيوف هذه المناسبة. لا نرفع دفتر هاتفك."
+        }
+      ],
       "expo-splash-screen"
     ],
     "newArchEnabled": true,

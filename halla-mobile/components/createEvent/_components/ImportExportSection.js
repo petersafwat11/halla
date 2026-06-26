@@ -29,6 +29,7 @@ export default function ImportExportSection({ isLimitReached, isUnlimited, guest
   const GUEST_HEADERS = [
     { key: "name", label: t("excel_guest_name") },
     { key: "phone", label: t("excel_phone_number") },
+    { key: "category", label: t("excel_category"), optional: true },
   ];
 
   const validateImportRow = useCallback((rowData) => {
@@ -43,7 +44,7 @@ export default function ImportExportSection({ isLimitReached, isUnlimited, guest
   }, [t]);
 
   const handleExportTemplate = useCallback(async () => {
-    const sampleData = [{ name: t("excel_sample_name"), phone: "512345678" }];
+    const sampleData = [{ name: t("excel_sample_name"), phone: "512345678", category: t("excel_sample_category") }];
     const result = await exportTemplateXLSX(GUEST_HEADERS, sampleData, t("excel_template_filename"));
     if (!result.success) Alert.alert(t("errors.boundary"), result.message);
   }, [t]);
@@ -67,12 +68,22 @@ export default function ImportExportSection({ isLimitReached, isUnlimited, guest
       }
 
       const existingPhones = (formData.guestList || []).map((g) => g.phone || g.mobile);
-      const uniqueGuests = result.data.filter((g) => {
-        const phone = (g.phone || "").trim();
-        if (existingPhones.includes(phone)) return false;
-        existingPhones.push(phone);
-        return true;
-      });
+      const uniqueGuests = result.data
+        .filter((g) => {
+          const phone = (g.phone || "").trim();
+          if (existingPhones.includes(phone)) return false;
+          existingPhones.push(phone);
+          return true;
+        })
+        // Normalize to the form-guest shape (with an id + category) so imported
+        // rows are editable/removable and render in the list (keyExtractor
+        // needs an id).
+        .map((g, i) => ({
+          id: Date.now() + i,
+          name: (g.name || "").trim(),
+          phone: (g.phone || "").trim(),
+          category: (g.category || "").trim(),
+        }));
 
       const remaining = !isUnlimited && guestLimit > 0
         ? Math.max(0, guestLimit - (formData.guestList || []).length)

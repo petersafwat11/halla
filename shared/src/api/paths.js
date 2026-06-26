@@ -114,6 +114,10 @@ const PATHS = {
     // Extra reminder — pool-charged, immediate, CONFIRMED guests only, using the
     // approved reminder_confirmed template. Optional guestIds.
     extraReminder: (id) => `/events/${id}/extra-reminder`,
+
+    // Send to new guests — initial pool-charged send to guests added after
+    // launch (invitation.sent != true). Optional guestIds narrows the set.
+    sendNewGuests: (id) => `/events/${id}/send-new-guests`,
   },
 
   // ============================================

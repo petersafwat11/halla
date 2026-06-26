@@ -59,6 +59,43 @@ export default function SubscriptionInfo({ subscription }) {
 
   const stats = useMemo(() => {
     if (!subscription) return [];
+    // The getEventById enrichment is a lean summary
+    // (`{ status, expiresAt, invitesRemaining, planType }`) with no per-quota
+    // breakdown. When that's all we have, surface the one real number — the
+    // pooled invites remaining (`null` = unlimited) — instead of three rows of
+    // fabricated zeros. The rich `guests`/`events`/`compensationInvitations`
+    // shape below still renders whenever the backend provides it.
+    const hasQuotaBreakdown = Boolean(
+      subscription.guests ||
+        subscription.events ||
+        subscription.compensationInvitations
+    );
+    if (!hasQuotaBreakdown && subscription.invitesRemaining !== undefined) {
+      return [
+        {
+          id: "invites",
+          label: t("singleEvent.subscription.remainingInvites", "الدعوات المتبقية"),
+          value:
+            subscription.invitesRemaining == null
+              ? "∞"
+              : formatNumber(subscription.invitesRemaining),
+          total: null,
+          used: 0,
+          isUnlimited: subscription.invitesRemaining == null,
+          icon: (color) => (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ),
+        },
+      ];
+    }
     return [
     {
       id: "guests",

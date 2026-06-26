@@ -1,4 +1,4 @@
-export { useEventGuests, default } from "./queries";
+export { useEventGuests, useMyContacts, default } from "./queries";
 export {
   useAddGuest,
   useUpdateGuest,

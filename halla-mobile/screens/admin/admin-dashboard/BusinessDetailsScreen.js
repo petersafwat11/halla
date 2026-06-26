@@ -28,6 +28,7 @@ import TopBar from "../../../components/plans/TopBar";
 import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
 import StatusBadge from "../../../components/admin-dashboard/common/StatusBadge";
 import ManagePlanModal from "../../../components/admin-dashboard/common/ManagePlanModal";
+import { ReplaceLogoModal } from "../../../components/admin-dashboard/businesses";
 import {
   backgrounds,
   spacing,
@@ -172,6 +173,7 @@ const BusinessDetailsScreen = () => {
   const revokeAssignment = useRevokeBusinessAssignment();
   const regenerateAssignment = useRegenerateBusinessAssignment();
   const [planModalVisible, setPlanModalVisible] = useState(false);
+  const [logoModalVisible, setLogoModalVisible] = useState(false);
 
   useEffect(() => {
     if (error) toast.error(t("businessDetails.loadFailed"));
@@ -461,6 +463,14 @@ const BusinessDetailsScreen = () => {
               onPress={() => setPlanModalVisible(true)}
             />
             <ActionRow
+              icon="image-outline"
+              iconBg={`${colors.primary[500]}15`}
+              iconColor={colors.primary[500]}
+              label={t("businessDetails.editLogo", "Change logo")}
+              sublabel={t("businessDetails.editLogoSublabel", "Upload a new business logo")}
+              onPress={() => setLogoModalVisible(true)}
+            />
+            <ActionRow
               icon={isSuspended ? "checkmark-circle-outline" : "pause-circle-outline"}
               iconBg={isSuspended ? colors.success[50] : colors.warning[50]}
               iconColor={isSuspended ? colors.success[500] : colors.warning[500]}
@@ -482,6 +492,14 @@ const BusinessDetailsScreen = () => {
         entity={business}
         entityType="business"
         onSave={() => refetch()}
+      />
+
+      <ReplaceLogoModal
+        visible={logoModalVisible}
+        onClose={() => setLogoModalVisible(false)}
+        businessId={business.id || business._id}
+        businessName={business.name}
+        onSaved={() => refetch()}
       />
     </SafeAreaView>
   );

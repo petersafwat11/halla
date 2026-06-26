@@ -36,6 +36,19 @@ const invalidateSingleEvent = (queryClient, eventId) => {
   }
 };
 
+// Same as `invalidateSingleEvent` but also refreshes the per-event guest list
+// (`["guests","events",eventId]`, what `useEventGuests` renders). Pool-charged
+// sends (resend invite / extra reminder) mutate per-guest invitation state, so
+// the guest list must refetch — invalidating only `["events"]` leaves it stale.
+const invalidateSingleEventAndGuests = (queryClient, eventId) => {
+  invalidateSingleEvent(queryClient, eventId);
+  if (eventId) {
+    queryClient.invalidateQueries({
+      queryKey: ["guests", "events", eventId],
+    });
+  }
+};
+
 const jsonRequest = async (path, options = {}) => {
   const fetchOpts = {
     method: options.method || "GET",
@@ -426,8 +439,10 @@ const ACTIONS = {
   // Server charges the host's invite pool and 402s INSUFFICIENT_INVITES when
   // the selection exceeds remaining invites.
   resendInvite: {
-    mutationFn: async ({ eventId, channel = "sms", guestIds }) => {
-      const body = { channel };
+    mutationFn: async ({ eventId, channel, guestIds }) => {
+      // Channel follows the event template server-side unless explicitly forced.
+      const body = {};
+      if (channel) body.channel = channel;
       if (Array.isArray(guestIds) && guestIds.length > 0) {
         body.guestIds = guestIds;
       }
@@ -446,7 +461,7 @@ const ACTIONS = {
       return data;
     },
     onSuccess: (_data, vars, _ctx, queryClient) =>
-      invalidateSingleEvent(queryClient, vars?.eventId),
+      invalidateSingleEventAndGuests(queryClient, vars?.eventId),
   },
 
   // Extra reminder — pool-charged, immediate, CONFIRMED guests only, using the
@@ -473,7 +488,36 @@ const ACTIONS = {
       return data;
     },
     onSuccess: (_data, vars, _ctx, queryClient) =>
-      invalidateSingleEvent(queryClient, vars?.eventId),
+      invalidateSingleEventAndGuests(queryClient, vars?.eventId),
+  },
+
+  // Send to new guests — initial pool-charged send to never-sent guests
+  // (added after launch). Channel resolved server-side (follows the event
+  // template). Pass `guestIds` to scope; server 402s INSUFFICIENT_INVITES and
+  // 403s when the event's plan has expired.
+  sendNewGuests: {
+    mutationFn: async ({ eventId, guestIds, channel }) => {
+      const body = {};
+      if (channel) body.channel = channel;
+      if (Array.isArray(guestIds) && guestIds.length > 0) {
+        body.guestIds = guestIds;
+      }
+      const response = await apiFetch(ENDPOINTS.EVENTS.SEND_NEW_GUESTS(eventId), {
+        method: "POST",
+        body,
+        headers: { "Idempotency-Key": newIdempotencyKey(`send-new-${eventId}`) },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const err = new Error(data.message || "Failed to send to new guests");
+        err.code = data.code;
+        err.status = response.status;
+        throw err;
+      }
+      return data;
+    },
+    onSuccess: (_data, vars, _ctx, queryClient) =>
+      invalidateSingleEventAndGuests(queryClient, vars?.eventId),
   },
 
   /**
@@ -552,6 +596,8 @@ export const useUpdateReminderSettings = () =>
 export const useResendInvite = () => useEventMutation("resendInvite");
 // Pool-charged extra reminder to CONFIRMED guests (optional guestIds).
 export const useExtraReminder = () => useEventMutation("extraReminder");
+// Pool-charged initial send to NEW guests added after launch (optional guestIds).
+export const useSendNewGuests = () => useEventMutation("sendNewGuests");
 
 // Exports
 export const useExportEvents = () => useEventMutation("exportEvents");

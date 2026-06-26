@@ -22,7 +22,7 @@ const mapApiToFormValues = (eventData) => {
     id: g._id || i,
     name: g.name || "",
     phone: g.phone || g.mobile || "",
-    email: g.email || "",
+    category: g.category || "",
   }));
   const staffList = (eventData.staffList || []).map((m, i) => ({
     id: m._id || i,

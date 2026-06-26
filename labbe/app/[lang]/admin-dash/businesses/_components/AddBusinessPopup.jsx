@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
+import UploadFileStandalone from "@/ui/commen/inputs/uploadFile/UploadFileStandalone";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import styles from "./AddBusinessPopup.module.css";
@@ -90,12 +91,11 @@ export default function AddBusinessPopup({ onClose }) {
 
             <div className={styles.formGroup}>
               <label>{t("form.logo")}</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+              <UploadFileStandalone
+                acceptImages
+                value={logoFile ? [logoFile] : []}
+                onChange={(files) => setLogoFile(files[0] || null)}
               />
-              <span className={styles.hint}>{t("form.logoHint")}</span>
             </div>
 
             <div className={styles.actions}>

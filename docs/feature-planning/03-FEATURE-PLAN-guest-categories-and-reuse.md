@@ -11,10 +11,12 @@
 |---|---|---|
 | **Backend** | `category` field + index, email removal, category carry-through (create/step2/guest-list/add/update), Excel export column, **`GET /guests/my-contacts`** guest-book endpoint | **DONE** — `node --check` clean |
 | **Web** | email removal, category in payloads, manual-add category combobox, Excel category column, guest-table category column, **"Add from your guests" reuse picker**, **Chrome Contact Picker** (Android-Chrome progressive enhancement), i18n (ar/en) | **DONE** — lint/parse clean |
-| **Mobile (expo)** | native `expo-contacts` import + category + reuse picker | **PLANNED** — §8 below, implementation-ready |
-| **Web vCard/CSV upload + Google/Microsoft OAuth** | universal/one-click cloud import | **FUTURE** — owner decision (see discussion); not in this build |
+| **Mobile (expo)** | native `expo-contacts` import + category + reuse picker + email removal | **DONE** — lint clean. ⚠️ run `npx expo install expo-contacts` + rebuild dev client before running (native module) |
+| **Excel/CSV guest import** | upload an `.xlsx`/`.csv` guest list (name/phone/category) | ✅ DONE (web + mobile) — category column added; web `accept` now includes `.csv` |
+| **vCard (`.vcf`) upload** | import actual *phone contacts* on any browser/device, with per-platform export instructions | ✅ DONE (web + mobile) — see §8.5 |
+| **Google/Microsoft OAuth import** | one-click cloud-contacts import (any browser) | **FUTURE** — owner decision; needs OAuth verification |
 
-Contact-import sources shipped this round: **Chrome Contact Picker** (web, where supported) + **reuse guest book** (web, all browsers) + **Excel** (web, all browsers). Mobile native (`expo-contacts`) is the next track.
+Contact-import sources shipped: **native phone contacts** (mobile, `expo-contacts`) + **Chrome Contact Picker** (web Android-Chrome) + **vCard `.vcf` file upload** (web + mobile, **all browsers/devices**) + **reuse guest book** (web + mobile) + **Excel/CSV guest-list import** (web + mobile). The only remaining option is the heavier Google/Microsoft OAuth cloud layer.
 
 ---
 
@@ -179,11 +181,11 @@ File: [`labbe/utils/contacts/phoneContacts.js`](../../labbe/utils/contacts/phone
 
 ---
 
-## 8. Mobile native import — Expo (`expo-contacts`) — implementation-ready spec
+## 8. Mobile native import — Expo (`expo-contacts`) — ✅ implemented
 
-Mobile (`halla-mobile/`, **React Native / Expo**, Cairo-only) gets the **real** native phonebook import — the heart of the client's original ask. This is the one place a true device-contacts read is possible. It reuses the same backend (no new endpoint) and the same guest-book endpoint as web.
+Mobile (`halla-mobile/`, **React Native / Expo**, Cairo-only) now has the **real** native phonebook import — the heart of the client's original ask — plus categories + the reuse guest book, all reusing the same backend (no new write endpoint) and the same `GET /guests/my-contacts` endpoint as web. Appears in **both** create Step 2 and the update wizard (the update screen wraps the create `StepTwo`).
 
-> ⚠️ `halla-mobile/hooks/events/useEventForm.js` and `components/createEvent/StepTwo.js` are currently in active local WIP (`git status` shows them modified). Land/commit that WIP first so these changes apply cleanly.
+> ⚠️ **One required manual step before running:** `npx expo install expo-contacts` then **rebuild the dev client** (contacts is a native module — Expo Go / an un-rebuilt client won't have it). The code guards on `isContactsAvailable()`, so the "Import from contacts" button stays hidden until the native module is linked — the rest of the feature (categories, reuse, Excel) works regardless. `app.json` already has the config plugin; `package.json` already lists `expo-contacts` (`~15.0.8` — `expo install` will pin the exact SDK-54 version).
 
 ### 8.1 Dependency + native config
 - `npx expo install expo-contacts` (managed workflow — adds the dependency and is config-plugin aware).
@@ -217,6 +219,18 @@ Mobile (`halla-mobile/`, **React Native / Expo**, Cairo-only) gets the **real** 
 
 ---
 
+## 8.5 vCard (`.vcf`) file import — ✅ implemented (web + mobile, all browsers/devices)
+
+The universal contact-import path: the user **exports a `.vcf`** from their phone/computer and **uploads** it; we parse it on-device and they pick who to invite. Works on **every browser and OS** (iPhone Safari, desktop, Firefox) — the gap the Chrome Contact Picker can't cover.
+
+- **Shared parser:** [`shared/src/utils/vcard.js`](../../shared/src/utils/vcard.js) — `parseVCards(text)` → `[{name, phones[]}]`. Handles multiple cards, `FN` (with structured `N` fallback → "Given Family", incl. Arabic), `TEL` in plain + vCard-4 `tel:` URI forms, RFC line folding, and best-effort QUOTED-PRINTABLE (old Android 2.1 Arabic names). Pure/platform-agnostic; unit-checked.
+- **Clear instructions UI (the key ask):** both modals open on **platform tabs — iPhone / Android / Computer** — auto-selected to the user's device (web: UA sniff; mobile: `Platform.OS`), each with numbered export steps, a privacy note, and a prominent "Choose file". This is what makes a technical format approachable for non-technical hosts.
+- **Web:** [`labbe/components/guests/vcardImport/VCardImportModal.jsx`](../../labbe/components/guests/vcardImport/VCardImportModal.jsx) (+css) — `FileReader` reads the file in-browser; `accept=".vcf,text/vcard,text/x-vcard"`. Wired into Step 2 (create + update).
+- **Mobile:** [`halla-mobile/components/guests/VCardImportModal.js`](../../halla-mobile/components/guests/VCardImportModal.js) — `expo-document-picker` + `expo-file-system` read the `.vcf`; independent of `expo-contacts`. Wired into `GuestFormSection`.
+- **Pipeline:** parse → Saudi-normalize (first valid number per contact) → dedupe → selectable list + optional category → `mergeIncomingGuests` → existing create/step2 save. **No backend, no upload of the file, no new endpoint.** Empty/error states covered ("no valid Saudi numbers", "couldn't read file").
+
+---
+
 ## 9. QA / test plan (senior QA)
 
 **Inherited-for-free (assert they still hold via the existing path):**
@@ -244,10 +258,11 @@ Mobile (`halla-mobile/`, **React Native / Expo**, Cairo-only) gets the **real** 
 | **3 — FE category UI** | manual combobox, table column, Excel column, email removal in `useEventForm`. | ✅ DONE |
 | **4 — Reuse picker** | `ReuseGuestsModal` + `useMyContacts`, wired into create + update Step 2. **(the headline value)** | ✅ DONE |
 | **5 — Web phone picker** | Chrome Contact Picker, feature-detected progressive enhancement. | ✅ DONE |
-| **6 — Mobile native import** | `expo-contacts` track (§8). | ⏳ NEXT |
-| **7 — (future) web cloud import** | vCard/CSV upload + Google/Microsoft OAuth. | 🔮 owner decision |
+| **6 — Mobile native import** | `expo-contacts` track (§8) — native picker + category + reuse, on create + update. | ✅ DONE |
+| **7 — vCard `.vcf` file import** | universal all-browser/-device import with per-platform instructions (§8.5) + `.csv` accept. | ✅ DONE |
+| **8 — (future) cloud import** | Google/Microsoft OAuth one-click. | 🔮 owner decision |
 
-Phases 1–5 (web + backend) are complete and verified. Phase 6 (mobile) is spec'd in §8 and ready to build once the mobile WIP lands. Phase 7 is the future cross-browser cloud-import layer for the owner to decide on.
+Phases 1–7 (backend + web + mobile + vCard) are complete and lint/syntax/JSON-clean. Phase 8 (OAuth cloud import) is the only remaining option, for the owner to decide on. The one manual step for the native mobile contacts picker is `npx expo install expo-contacts` + a dev-client rebuild; **vCard import needs no install** (uses already-present `expo-document-picker`/`expo-file-system`).
 
 ---
 

@@ -34,18 +34,20 @@ const EditGuestOrModeratorsModal = ({
   const { t } = useTranslation("events");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [category, setCategory] = useState("");
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (item) {
       setName(item.name || "");
       setPhone(item.phone || item.mobile || "");
+      setCategory(item.category || "");
       setErrors({});
     }
   }, [item]);
 
   const handleSave = () => {
-    const result = onSave(item.id, { name, phone });
+    const result = onSave(item.id, { name, phone, category });
 
     if (result && !result.success && result.errors) {
       // Validators return i18n keys; translate before surfacing.
@@ -111,6 +113,16 @@ const EditGuestOrModeratorsModal = ({
               keyboardType="phone-pad"
               error={errors.phone}
             />
+
+            {type === "guest" && (
+              <TextInput
+                label="التصنيف"
+                placeholder="اختر أو أنشئ تصنيفاً"
+                value={category}
+                onChangeText={setCategory}
+                maxLength={60}
+              />
+            )}
           </View>
 
           {/* Actions */}

@@ -99,6 +99,11 @@ const ListOfGuestsORModerators = ({
           <Text style={styles.listItemPhone}>
             {item.phone || item.mobile}
           </Text>
+          {item.category ? (
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryBadgeText}>{item.category}</Text>
+            </View>
+          ) : null}
         </View>
       </View>
 
@@ -268,7 +273,21 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#656565",
     writingDirection: "ltr"
-  },  listItemActions: {
+  },
+  categoryBadge: {
+    alignSelf: "flex-start",
+    marginTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: "#EFE3D4",
+  },
+  categoryBadgeText: {
+    fontSize: 11,
+    fontFamily: "Cairo_500Medium",
+    color: "#8A6B47",
+  },
+  listItemActions: {
     flexDirection: "row",
     gap: 12
   },

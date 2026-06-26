@@ -32,8 +32,7 @@ import {
   useAddEventStaff,
   useUpdateEventStaff,
   useDeleteEventStaff,
-  useResendInvite,
-  useExtraReminder,
+  useRetryLaunch,
 } from "../../hooks/events/mutations/useEventMutation";
 import { useRevokeStaffAccess } from "../../hooks/staff";
 import { useSendReminder } from "../../hooks/messaging";
@@ -63,7 +62,9 @@ import ModeratorListItem from "../../components/events/ModeratorListItem";
 import AddGuestOrModeratorPopup from "../../components/events/AddGuestOrmoderatorPopup";
 import EventFailureBanner from "../../components/events/EventFailureBanner";
 import AutoReminderInfoText from "../../components/admin-dashboard/events/AutoReminderInfoText";
-import BulkActionConfirmModal from "../../components/events/BulkActionConfirmModal";
+import SendActionsSheet from "../../components/events/SendActionsSheet";
+import SendActionModal from "../../components/events/SendActionModal";
+import { hasSendStarted, isTerminalEvent } from "../../components/events/sendAudiences";
 
 import {
   colors,
@@ -153,12 +154,11 @@ const EventDetailsScreen = () => {
   const addGuestMutation = useAddGuest();
   const exportGuestsMutation = useExportGuests();
   const sendReminderMutation = useSendReminder();
-  const resendInviteMutation = useResendInvite();
-  const extraReminderMutation = useExtraReminder();
   const addStaffMutation = useAddEventStaff();
   const updateStaffMutation = useUpdateEventStaff();
   const deleteStaffMutation = useDeleteEventStaff();
   const revokeStaffMutation = useRevokeStaffAccess();
+  const retryLaunchMutation = useRetryLaunch();
 
   const event = useMemo(
     () => resp?.event || resp?.data?.event || resp?.data || null,
@@ -188,15 +188,23 @@ const EventDetailsScreen = () => {
     refetchGuests();
   }, [refetch, refetchGuests]);
 
+  // Actually retry the failed launch (POST /events/:id/retry-launch) instead of
+  // just refetching stats. The EventFailureBanner owns the retrying/error UI and
+  // awaits this promise, so let errors propagate (e.g. 409 EVENT_NOT_RETRYABLE)
+  // and refetch on success so the banner clears once the status flips.
+  const handleRetryLaunch = useCallback(async () => {
+    await retryLaunchMutation.mutateAsync({ eventId });
+    await refetch();
+  }, [retryLaunchMutation, eventId, refetch]);
+
   const [activeTab, setActiveTab] = useState("guests");
   const [search, setSearch] = useState("");
   const [popup, setPopup] = useState({ open: false, type: "guest", initialData: null });
   const [statusFilter, setStatusFilter] = useState(null);
-  // Select-mode for the guests tab — turns rows into selectable checkboxes and
-  // reveals the bottom bulk-action bar (resend invitation / extra reminder).
-  const [selectMode, setSelectMode] = useState(false);
-  const [selectedGuestIds, setSelectedGuestIds] = useState(() => new Set());
-  const [bulkModal, setBulkModal] = useState({ open: false, type: null, count: 0, guestIds: [] });
+  // Consolidated send actions (resend / extra reminder / new guests) live behind
+  // the "Send messages" sheet on the guests tab.
+  const [showSendSheet, setShowSendSheet] = useState(false);
+  const [activeSendAction, setActiveSendAction] = useState(null);
   const scrollViewRef = useRef(null);
   const tabsRef = useRef(null);
   const tabsYRef = useRef(null);
@@ -430,133 +438,8 @@ const EventDetailsScreen = () => {
   }, [eventId, sendReminderMutation, t, toast]);
 
   // ===== Select-mode + bulk pool-charged actions =====
-  const toggleSelectGuest = useCallback((guest) => {
-    const id = String(guest._id || guest.guestId || guest.id);
-    setSelectedGuestIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  const exitSelectMode = useCallback(() => {
-    setSelectMode(false);
-    setSelectedGuestIds(new Set());
-  }, []);
-
-  // Re-filter the selected ids to the right audience for each action so the
-  // host can select freely and we still only charge for eligible guests.
-  const resolveBulkGuestIds = useCallback(
-    (allowedStatuses) =>
-      guests
-        .filter((g) => {
-          const id = String(g._id || g.guestId || g.id);
-          return (
-            selectedGuestIds.has(id) &&
-            allowedStatuses.includes(g.status || "invited")
-          );
-        })
-        .map((g) => g._id || g.guestId || g.id),
-    [guests, selectedGuestIds]
-  );
-
-  const handleBulkResend = useCallback(() => {
-    const ids = resolveBulkGuestIds(STATUS_FILTER_MAP.noResponseOrMaybe);
-    if (ids.length === 0) {
-      toast.error(
-        t(
-          "events:bulkActions.noEligibleResend",
-          "لا يمكن إعادة دعوة أي من الضيوف المحددين (فقط من لم يردّ أو اختار ربما)."
-        )
-      );
-      return;
-    }
-    setBulkModal({ open: true, type: "resend", count: ids.length, guestIds: ids });
-  }, [resolveBulkGuestIds, STATUS_FILTER_MAP, t, toast]);
-
-  const handleBulkExtraReminder = useCallback(() => {
-    const ids = resolveBulkGuestIds(["confirmed"]);
-    if (ids.length === 0) {
-      toast.error(
-        t(
-          "events:bulkActions.noEligibleReminder",
-          "لا يوجد بين الضيوف المحددين من أكّد الحضور."
-        )
-      );
-      return;
-    }
-    setBulkModal({ open: true, type: "extraReminder", count: ids.length, guestIds: ids });
-  }, [resolveBulkGuestIds, t, toast]);
-
-  const handleConfirmBulkAction = useCallback(async () => {
-    const { type, guestIds } = bulkModal;
-    if (!guestIds || guestIds.length === 0) return;
-    const mutation = type === "resend" ? resendInviteMutation : extraReminderMutation;
-    try {
-      const result = await mutation.mutateAsync({ eventId, guestIds });
-      const data = result?.data || result || {};
-      const total = data.reminded ?? guestIds.length;
-
-      // Nothing was sent. Resend only targets guests already sent an invitation
-      // (`invitation.sent: true`), so a host who never sent the initial invites
-      // lands here even though the status filter matched. Surface *why* instead
-      // of a misleading "0/0 sent".
-      if (total === 0) {
-        if (data.code === "SEND_INVITES_FIRST") {
-          toast.error(
-            t(
-              "events:bulkActions.sendInvitesFirst",
-              "أرسِل الدعوات الأولية أولًا، ثم استخدم إعادة الإرسال لمن لم يردّ أو اختار ربما."
-            )
-          );
-        } else {
-          toast.info(
-            t(
-              type === "resend"
-                ? "events:bulkActions.noEligibleNow"
-                : "events:bulkActions.noConfirmedNow",
-              type === "resend"
-                ? "لقد ردّ الجميع — لا يوجد من يمكن إعادة دعوته."
-                : "لا يوجد ضيوف مؤكدون للتذكير بعد."
-            )
-          );
-        }
-        setBulkModal({ open: false, type: null, count: 0, guestIds: [] });
-        exitSelectMode();
-        return;
-      }
-
-      const successful = data.successful ?? guestIds.length;
-      toast.success(
-        t("events:bulkActions.sentResult", {
-          defaultValue: "{{successful}}/{{total}} تم الإرسال",
-          successful,
-          total,
-        })
-      );
-      setBulkModal({ open: false, type: null, count: 0, guestIds: [] });
-      exitSelectMode();
-    } catch (error) {
-      if (error?.code === "INSUFFICIENT_INVITES" || error?.status === 402) {
-        toast.error(
-          t(
-            "events:bulkActions.insufficientInvites",
-            "لا يوجد رصيد كافٍ من الدعوات — اشترِ المزيد من الباقات."
-          )
-        );
-      } else if (error?.code === "NO_REMINDER_TEMPLATE") {
-        toast.error(
-          t(
-            "events:bulkActions.noReminderTemplate",
-            "لا يوجد قالب تذكير مُعد لهذه الفئة. تواصل مع الدعم."
-          )
-        );
-      } else {
-        toast.error(error?.message || t("events:bulkActions.error", "تعذّر إتمام العملية"));
-      }
-    }
-  }, [bulkModal, resendInviteMutation, extraReminderMutation, eventId, t, toast, exitSelectMode]);
+  // Send actions (resend / extra reminder / new guests) are handled by the
+  // shared SendActionModal, opened from the "Send messages" sheet.
 
   // ===== Admin status / delete handlers =====
   const handleStatusChange = (newStatus, titleKey, messageKey, btnLabelKey, destructive = false) => {
@@ -756,7 +639,7 @@ const EventDetailsScreen = () => {
         <EventFailureBanner
           event={event}
           currentUser={currentUser}
-          onRetry={() => refetch()}
+          onRetry={handleRetryLaunch}
         />
 
         {/* Action bar — test message, schedule, notify staff, share post-event, manage dropdown, delete (admin) */}
@@ -765,6 +648,10 @@ const EventDetailsScreen = () => {
             event={headerEvent}
             isAdmin={isAdmin}
             onDeleted={() => navigation.goBack()}
+            // Admin delete is owned by EventActionsSection below (audited
+            // /admin/events/:id route). Suppress the header's host-route delete
+            // so an admin doesn't see two delete buttons hitting two endpoints.
+            showAdminDelete={false}
           />
         </View>
 
@@ -985,31 +872,6 @@ const EventDetailsScreen = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Quick "Didn't respond or maybe" filter — the resend audience.
-              Shown in select mode so the host can narrow the list, select all,
-              then resend. */}
-          {activeTab === "guests" && selectMode && (
-            <View style={styles.filterChipRow}>
-              <TouchableOpacity
-                style={[
-                  styles.filterChip,
-                  statusFilter === "noResponseOrMaybe" && styles.filterChipActive,
-                ]}
-                onPress={() => handleFilterPress("noResponseOrMaybe")}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    statusFilter === "noResponseOrMaybe" && styles.filterChipTextActive,
-                  ]}
-                >
-                  {t("events:stats.noResponseOrMaybe", "لم يردّ أو ربما")}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
           {activeTab === "guests" && (
             <View style={styles.guestActionsRow}>
               {/* The normal reminder is now FREE and confirmed-only — show it
@@ -1029,22 +891,18 @@ const EventDetailsScreen = () => {
                   </Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity
-                style={[styles.outlineActionBtn, selectMode && styles.outlineActionBtnActive]}
-                onPress={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={selectMode ? "close-outline" : "checkbox-outline"}
-                  size={14}
-                  color="#6B4E33"
-                />
-                <Text style={styles.outlineActionText}>
-                  {selectMode
-                    ? t("events:selectMode.cancel", "إلغاء التحديد")
-                    : t("events:selectMode.select", "تحديد")}
-                </Text>
-              </TouchableOpacity>
+              {!isTerminalEvent(event) && hasSendStarted(event) && (
+                <TouchableOpacity
+                  style={styles.outlineActionBtn}
+                  onPress={() => setShowSendSheet(true)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="paper-plane-outline" size={14} color="#6B4E33" />
+                  <Text style={styles.outlineActionText}>
+                    {t("events:sendActions.menu", "إرسال الرسائل")}
+                  </Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 style={styles.outlineActionBtn}
                 onPress={handleExportGuests}
@@ -1084,11 +942,6 @@ const EventDetailsScreen = () => {
                     onDelete={handleDeleteGuest}
                     onRotateQr={handleRotateQr}
                     onRevokeAccess={handleRevokeAccess}
-                    selectable={selectMode}
-                    selected={selectedGuestIds.has(
-                      String(g._id || g.guestId || g.id)
-                    )}
-                    onToggle={toggleSelectGuest}
                   />
                 ))
               )
@@ -1116,57 +969,24 @@ const EventDetailsScreen = () => {
         <View style={{ height: spacing[32] }} />
       </ScrollView>
 
-      {/* Bottom bulk-action bar — visible only in select mode on the guests tab */}
-      {activeTab === "guests" && selectMode && (
-        <View style={styles.bulkBar}>
-          <Text style={styles.bulkBarCount}>
-            {t("events:selectMode.selectedCount", {
-              defaultValue: "{{count}} محدد",
-              count: selectedGuestIds.size,
-            })}
-          </Text>
-          <View style={styles.bulkBarActions}>
-            <TouchableOpacity
-              style={[
-                styles.bulkBarBtn,
-                selectedGuestIds.size === 0 && styles.bulkBarBtnDisabled,
-              ]}
-              onPress={handleBulkResend}
-              disabled={selectedGuestIds.size === 0}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="paper-plane-outline" size={14} color="#FFF" />
-              <Text style={styles.bulkBarBtnText}>
-                {t("events:bulkActions.resend", "إعادة إرسال الدعوة")}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.bulkBarBtn,
-                styles.bulkBarBtnSecondary,
-                selectedGuestIds.size === 0 && styles.bulkBarBtnDisabled,
-              ]}
-              onPress={handleBulkExtraReminder}
-              disabled={selectedGuestIds.size === 0}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="notifications-outline" size={14} color="#6B4E33" />
-              <Text style={[styles.bulkBarBtnText, styles.bulkBarBtnTextSecondary]}>
-                {t("events:bulkActions.extraReminder", "تذكير إضافي")}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
+      <SendActionsSheet
+        visible={showSendSheet}
+        event={event}
+        guests={guests}
+        onPick={(a) => {
+          setShowSendSheet(false);
+          setActiveSendAction(a);
+        }}
+        onClose={() => setShowSendSheet(false)}
+      />
 
-      <BulkActionConfirmModal
-        visible={bulkModal.open}
-        type={bulkModal.type}
-        count={bulkModal.count}
+      <SendActionModal
+        visible={!!activeSendAction}
+        action={activeSendAction}
+        eventId={eventId}
+        guests={guests}
         invitesRemaining={invitesRemaining}
-        isLoading={resendInviteMutation.isPending || extraReminderMutation.isPending}
-        onConfirm={handleConfirmBulkAction}
-        onClose={() => setBulkModal({ open: false, type: null, count: 0, guestIds: [] })}
+        onClose={() => setActiveSendAction(null)}
       />
 
       <AddGuestOrModeratorPopup

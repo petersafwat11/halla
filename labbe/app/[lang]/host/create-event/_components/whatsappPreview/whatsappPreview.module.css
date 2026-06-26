@@ -70,6 +70,9 @@
 
 .phone {
   width: 100%;
+  /* Bound the device to the viewport so the mockup never grows "very long";
+     the chat area scrolls within it on shorter screens. */
+  max-height: min(78vh, 64rem);
   background: #efeae2;
   border-radius: 2.8rem;
   overflow: hidden;
@@ -236,6 +239,9 @@
   flex-direction: column;
   gap: 0.6rem;
   flex: 1;
+  /* Scroll within the bounded phone instead of stretching it tall. */
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* ─── Message card (received, full width) ─────── */
@@ -264,6 +270,9 @@
 .msgImageWrap {
   width: 100%;
   aspect-ratio: 4 / 5;
+  /* Cap the tall invitation image so the bubble doesn't dominate the
+     preview; the image is contained (fully visible) within the cap. */
+  max-height: min(34vh, 26rem);
   overflow: hidden;
   background: linear-gradient(160deg, #f7f1e6 0%, #ece2cf 100%);
   display: flex;
@@ -272,6 +281,7 @@
   position: relative;
   margin: 0.4rem 0.4rem 0;
   border-radius: 0.6rem;
+  flex-shrink: 0;
 }
 
 .msgImage {

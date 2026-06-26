@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
+import UploadFileStandalone from "@/ui/commen/inputs/uploadFile/UploadFileStandalone";
 import Button from "@/ui/commen/button/Button";
 import styles from "./BusinessPopup.module.css";
 
@@ -41,12 +42,11 @@ export default function ReplaceLogoPopup({ businessId, onClose }) {
         <form onSubmit={onSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label>{t("form.logo")}</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+            <UploadFileStandalone
+              acceptImages
+              value={logoFile ? [logoFile] : []}
+              onChange={(files) => setLogoFile(files[0] || null)}
             />
-            <span className={styles.hint}>{t("form.logoHint")}</span>
           </div>
 
           <div className={styles.actions}>

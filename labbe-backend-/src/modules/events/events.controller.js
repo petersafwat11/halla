@@ -448,6 +448,24 @@ exports.extraReminder = catchAsync(async (req, res) => {
 });
 
 // ============================================
+// SEND NEW GUESTS
+// ============================================
+
+/**
+ * Send the initial invitation to guests added after launch (never-sent guests,
+ * invitation.sent != true). Optional guestIds narrows the set.
+ * POST /api/v2/events/:id/send-new-guests
+ */
+exports.sendNewGuests = catchAsync(async (req, res) => {
+  const result = await eventsService.sendToNewGuests(
+    req.params.id,
+    req.body,
+    req.user
+  );
+  sendSuccess(res, result, "Invitations sent to new guests");
+});
+
+// ============================================
 // ADMIN ENDPOINTS — re-exported here so imports of `events.controller`
 // resolve the admin handlers defined in events.admin.controller.js.
 // ============================================

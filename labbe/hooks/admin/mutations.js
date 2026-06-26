@@ -354,8 +354,14 @@ export const useAdminEventMutation = (action) => {
           path: API_PATHS.admin.events.updateStatus(eventId),
           data: { status },
         }),
-      onSuccess: () => {
+      onSuccess: (_, { eventId }) => {
         queryClient.invalidateQueries({ queryKey: eventsKeys.all });
+        // The single-event detail page renders from useEvent + useSingleEventStats,
+        // both under the `["events", eventId]` prefix — invalidate it so the status
+        // badge and status-gated actions update immediately after the change.
+        if (eventId) {
+          queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+        }
       },
     },
     delete: {

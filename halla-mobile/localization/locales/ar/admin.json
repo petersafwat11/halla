@@ -1344,6 +1344,41 @@
     "deleteConfirm": {
       "title": "حذف حساب الأعمال",
       "message": "هل أنت متأكد من حذف حساب الأعمال هذا؟"
+    },
+    "create": {
+      "kicker": "حساب أعمال",
+      "title": "إضافة حساب أعمال",
+      "name": "الاسم",
+      "namePlaceholder": "اسم النشاط التجاري",
+      "nameRequired": "الاسم مطلوب",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "name@example.com",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "5xxxxxxxx",
+      "phoneRequired": "رقم الهاتف مطلوب",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "8 أحرف على الأقل",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "description": "الوصف",
+      "descriptionPlaceholder": "اختياري",
+      "logo": "الشعار",
+      "logoPlaceholder": "اختر صورة",
+      "submit": "إضافة الحساب",
+      "saving": "جارٍ الحفظ...",
+      "success": "تم إنشاء الحساب",
+      "error": "تعذّر إنشاء الحساب"
+    },
+    "editLogo": {
+      "kicker": "الشعار",
+      "title": "تغيير الشعار",
+      "logo": "الشعار",
+      "logoPlaceholder": "اختر صورة",
+      "noFile": "اختر صورة أولاً",
+      "save": "حفظ",
+      "saving": "جارٍ الحفظ...",
+      "success": "تم تحديث الشعار",
+      "error": "تعذّر تحديث الشعار"
     }
   },
   "businessDetails": {
@@ -1369,6 +1404,8 @@
     "noPlan": "لا يوجد اشتراك نشط",
     "managePlan": "إدارة الباقة",
     "managePlanSublabel": "تغيير الباقة أو إضافة دعوات",
+    "editLogo": "تغيير الشعار",
+    "editLogoSublabel": "رفع شعار جديد للنشاط التجاري",
     "adminActions": "إجراءات المسؤول",
     "activate": "تفعيل الحساب",
     "suspend": "إيقاف الحساب",

@@ -8,7 +8,6 @@ import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
 import styles from "@/app/[lang]/host/events/[id]/singleEvent.module.css";
 import GuestRows from "./GuestRows";
 import GuestPopups from "./GuestPopups";
-import BulkActionConfirmModal from "./BulkActionConfirmModal";
 import useGuestTableActions from "./useGuestTableActions";
 
 const STATUS_FILTER_MAP = {
@@ -29,6 +28,8 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
   const { data: guestsData } = useEventGuests(eventId);
   const deleteGuestMutation = useGuestMutation("delete");
   const updateGuestMutation = useGuestMutation("update");
+  const rotateGuestMutation = useGuestMutation("rotateQr");
+  const revokeAccessMutation = useGuestMutation("revokeAccess");
 
   const event = eventData?.data?.event || null;
   const guests = guestsData?.data || [];
@@ -60,6 +61,8 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
     invitesRemaining,
     deleteGuestMutation,
     updateGuestMutation,
+    rotateGuestMutation,
+    revokeAccessMutation,
     deleteModal,
     setDeleteModal,
     setShowEditPopup,
@@ -83,24 +86,13 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
           onStatusFilterChange={onStatusFilterChange}
           onEditGuest={actions.handleEditGuest}
           onDeleteGuest={actions.handleDeleteGuest}
+          onRotateQr={actions.handleRotateQr}
+          onRevokeAccess={actions.handleRevokeAccess}
           onSendInvitation={actions.handleSendInvitation}
           onSendReminder={actions.handleSendReminder}
           onExportGuests={actions.handleExportGuests}
-          onBulkResend={actions.handleBulkResend}
-          onBulkExtraReminder={actions.handleBulkExtraReminder}
         />
       </div>
-
-      <BulkActionConfirmModal
-        isOpen={actions.bulkModal.isOpen}
-        type={actions.bulkModal.type}
-        count={actions.bulkModal.guestIds.length}
-        invitesRemaining={actions.invitesRemaining}
-        isLoading={actions.isBulkPending}
-        onConfirm={actions.handleConfirmBulkAction}
-        onClose={actions.closeBulkModal}
-        t={t}
-      />
 
       <GuestPopups
         eventId={eventId}

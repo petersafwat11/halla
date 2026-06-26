@@ -6,6 +6,7 @@ import Image from "next/image";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import TestMessagePopup from "@/ui/host/main-page/TestMessagePopup";
 import ScheduleSendingPopup from "@/ui/host/popups/scheduleSendingPopup/ScheduleSendingPopup";
+import SendMessagesMenu from "@/components/event-detail/sendActions/SendMessagesMenu";
 import { useEventMutation } from "@/hooks/events";
 import { toast } from "react-toastify";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
@@ -98,6 +99,9 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
             <Image src="/svg/events/calendar-edit.svg" alt="calendar" width={12} height={12} />
           </button>
         )}
+        {/* Consolidated send actions (resend / extra reminder / new guests).
+            Self-hides until a send has started and on terminal events. */}
+        <SendMessagesMenu event={event} eventId={effectiveEventId} />
         {hasStaff && (
           <button
             className={styles.outlineButton}

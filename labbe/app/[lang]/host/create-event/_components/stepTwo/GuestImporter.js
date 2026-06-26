@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import styles from "./stepTwo.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
-import CategoryCombobox from "./CategoryCombobox";
+import CategorySelect from "@/ui/commen/inputs/CategorySelect/CategorySelect";
 import ActionButtons from "./actionButtons/ActionButtons";
 import { exportToXLSX, importFromXLSX } from "@/utils/xlsxUtils";
 
@@ -249,11 +249,14 @@ const GuestImporter = ({
             error={showValidationErrors ? localErrors.mobile : ""}
             disabled={isLimitReached && !currentItem.id}
           />
-          <CategoryCombobox
+          <CategorySelect
             label={t("category")}
             placeholder={t("category_placeholder")}
+            searchPlaceholder={t("category_search")}
+            noneLabel={t("category_none")}
+            createLabel={(q) => t("category_create", { q })}
             value={currentItem.category || ""}
-            onChange={(e) => handleInputChange("category", e.target.value)}
+            onChange={(val) => handleInputChange("category", val)}
             options={categoryOptions}
             disabled={isLimitReached && !currentItem.id}
           />
@@ -274,7 +277,7 @@ const GuestImporter = ({
         type="file"
         ref={fileInputRef}
         onChange={handleImportCSV}
-        accept=".xlsx,.xls"
+        accept=".xlsx,.xls,.csv"
         style={{ display: "none" }}
       />
     </>

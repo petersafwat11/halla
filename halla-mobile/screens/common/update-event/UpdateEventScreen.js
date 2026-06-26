@@ -105,7 +105,7 @@ const UpdateEventScreen = () => {
             guestList: (data.guestList || []).map((g) => ({
               name: g.name,
               phone: g.phone || g.mobile || "",
-              email: g.email || "",
+              ...(g.category ? { category: g.category } : {}),
             })),
             staffList: (data.staffList || []).map((s) => ({
               name: s.name,

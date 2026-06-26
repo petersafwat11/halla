@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, Alert } from "react-native";
+import { View, Alert, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "../../../localization";
 import EventsService from "../../../hooks/events/useEventForm";
@@ -12,6 +12,12 @@ import GuestForm from "./GuestForm";
 import ModeratorForm from "./ModeratorForm";
 import ImportExportSection from "./ImportExportSection";
 import ViewListButton from "./ViewListButton";
+import ReuseGuestsModal from "../../guests/ReuseGuestsModal";
+import VCardImportModal from "../../guests/VCardImportModal";
+import ContactsImportModal from "./ContactsImportModal";
+import { useMyContacts } from "../../../hooks/guests";
+import { mergeIncomingGuests } from "../../../utils/guests/mergeIncomingGuests";
+import { isContactsAvailable } from "../../../utils/contacts/phoneContacts";
 
 const GuestFormSection = ({
   guestList,
@@ -28,6 +34,45 @@ const GuestFormSection = ({
   const [activeTab, setActiveTab] = useState("guests");
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [showModeratorModal, setShowModeratorModal] = useState(false);
+  const [showReuseModal, setShowReuseModal] = useState(false);
+  const [showContactsModal, setShowContactsModal] = useState(false);
+  const [showVcardModal, setShowVcardModal] = useState(false);
+
+  // Native contacts only where the module is installed + linked (graceful
+  // when the dev client hasn't been rebuilt after `expo install`).
+  const contactsSupported = isContactsAvailable();
+
+  // The host's saved category labels — feeds the manual-add chips. Read-only;
+  // the reuse modal does its own paged fetch.
+  const { data: contactsMeta } = useMyContacts({ page: 1, limit: 1 });
+  const savedCategories = contactsMeta?.data?.categories || [];
+
+  const existingPhones = (guestList || []).map((g) => g.phone || g.mobile);
+  const remainingCapacity = isUnlimited
+    ? Infinity
+    : Math.max(0, (guestLimit || 0) - (guestList || []).length);
+
+  // Shared merge for the reuse picker AND native contacts: dedupe by phone,
+  // respect remaining capacity (free at list time), persist via the normal save.
+  const handleMergeIncoming = useCallback(
+    (incoming) => {
+      const { list, added, skipped } = mergeIncomingGuests(
+        incoming,
+        formData.guestList || [],
+        { isUnlimited, guestLimit }
+      );
+      if (added > 0) setValue("guestList", list, { shouldValidate: true });
+      if (skipped > 0) {
+        Alert.alert(
+          t("guest_limit_reached"),
+          t("import_limit_partial", { inserted: added, skipped })
+        );
+      } else if (added > 0) {
+        Alert.alert(t("bulk_import"), t("reuse_guests_added_toast", { count: added }));
+      }
+    },
+    [formData.guestList, isUnlimited, guestLimit, setValue, t]
+  );
 
   const handleEditGuest = useCallback(
     (id, updatedGuest) => {
@@ -108,12 +153,46 @@ const GuestFormSection = ({
 
       {activeTab === "guests" ? (
         <View>
-          <GuestForm isLimitReached={isLimitReached} />
+          <GuestForm isLimitReached={isLimitReached} categories={savedCategories} />
           <ImportExportSection
             isLimitReached={isLimitReached}
             isUnlimited={isUnlimited}
             guestLimit={guestLimit}
           />
+          <View style={styles.sourceRow}>
+            <TouchableOpacity
+              style={[styles.sourceBtn, isLimitReached && styles.sourceBtnDisabled]}
+              onPress={() => setShowReuseModal(true)}
+              disabled={isLimitReached}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}>
+                {t("add_from_my_guests")}
+              </Text>
+            </TouchableOpacity>
+            {contactsSupported && (
+              <TouchableOpacity
+                style={[styles.sourceBtn, isLimitReached && styles.sourceBtnDisabled]}
+                onPress={() => setShowContactsModal(true)}
+                disabled={isLimitReached}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}>
+                  {t("import_from_phone")}
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={[styles.sourceBtn, isLimitReached && styles.sourceBtnDisabled]}
+              onPress={() => setShowVcardModal(true)}
+              disabled={isLimitReached}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}>
+                {t("vcard_button")}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
         <ModeratorForm />
@@ -149,12 +228,50 @@ const GuestFormSection = ({
         onEdit={handleEditModerator}
         onRemove={handleRemoveModerator}
       />
+
+      <ReuseGuestsModal
+        visible={showReuseModal}
+        onClose={() => setShowReuseModal(false)}
+        onAdd={handleMergeIncoming}
+        existingPhones={existingPhones}
+        remainingCapacity={remainingCapacity}
+        isUnlimited={isUnlimited}
+      />
+
+      {contactsSupported && (
+        <ContactsImportModal
+          visible={showContactsModal}
+          onClose={() => setShowContactsModal(false)}
+          onAdd={handleMergeIncoming}
+        />
+      )}
+
+      <VCardImportModal
+        visible={showVcardModal}
+        onClose={() => setShowVcardModal(false)}
+        onAdd={handleMergeIncoming}
+      />
     </View>
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   container: { flex: 1 },
-};
+  sourceRow: { flexDirection: "row", gap: 10, marginTop: 12 },
+  sourceBtn: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: "#C28E5C",
+    backgroundColor: "#FFF",
+  },
+  sourceBtnDisabled: { borderColor: "#E0E0E0", backgroundColor: "#F9F9F9" },
+  sourceBtnText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#C28E5C" },
+  sourceBtnTextDisabled: { color: "#AAAAAA" },
+});
 
 export default GuestFormSection;

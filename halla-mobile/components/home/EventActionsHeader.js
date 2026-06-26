@@ -18,7 +18,7 @@ const EVENT_EDIT_STEPS = [
   { step: 4, labelKey: "lastEvent.dropdown.invitationCustomization", fallback: "تخصيص الدعوة" },
 ];
 
-const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
+const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete = true }) => {
   const navigation = useNavigation();
   const { t } = useTranslation(["events", "home"]);
   const toast = useToast();
@@ -197,7 +197,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted }) => {
             </TouchableOpacity>
           )}
 
-          {isAdmin && (
+          {isAdmin && showAdminDelete && (
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={handleDelete}

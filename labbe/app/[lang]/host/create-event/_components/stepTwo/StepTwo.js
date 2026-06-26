@@ -10,6 +10,7 @@ import Button from "@/ui/commen/button/Button";
 import GuestImporter from "./GuestImporter";
 import GuestTable from "./GuestTable";
 import ReuseGuestsModal from "@/components/guests/reuseGuests/ReuseGuestsModal";
+import VCardImportModal from "@/components/guests/vcardImport/VCardImportModal";
 import { useMyContacts } from "@/hooks/guests/queries";
 import { toastUtils } from "@/utils/toastUtils";
 import {
@@ -44,6 +45,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
     skipped: 0,
   });
   const [showReuseModal, setShowReuseModal] = useState(false);
+  const [showVcardModal, setShowVcardModal] = useState(false);
   // Contact Picker API is Android-Chrome only; resolve client-side to avoid
   // a hydration mismatch.
   const [supportsPicker, setSupportsPicker] = useState(false);
@@ -236,6 +238,12 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
             disabled={isLimitReached}
           />
         )}
+        <Button
+          variant="secondary"
+          title={t("vcard_button")}
+          onClick={() => setShowVcardModal(true)}
+          disabled={isLimitReached}
+        />
       </div>
 
       <GuestImporter
@@ -313,6 +321,20 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
       <ReuseGuestsModal
         isOpen={showReuseModal}
         onClose={() => setShowReuseModal(false)}
+        onAdd={(selected) => {
+          const { added } = mergeIncomingGuests(selected);
+          if (added > 0) {
+            toastUtils.success(t("reuse_guests_added_toast", { count: added }));
+          }
+        }}
+        existingMobiles={guestList.map((g) => g.mobile)}
+        remainingCapacity={remainingCapacity}
+      />
+
+      {/* Import from an uploaded contacts file (.vcf) — all browsers */}
+      <VCardImportModal
+        isOpen={showVcardModal}
+        onClose={() => setShowVcardModal(false)}
         onAdd={(selected) => {
           const { added } = mergeIncomingGuests(selected);
           if (added > 0) {

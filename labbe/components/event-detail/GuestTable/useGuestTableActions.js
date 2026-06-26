@@ -1,28 +1,19 @@
 "use client";
-import { useState } from "react";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import { handleError } from "@/services/errorHandlingService";
 import { downloadExportFile } from "@/services/http";
 import { API_PATHS } from "@halla/shared/api/paths";
 import { useSendReminder } from "@/hooks/messaging";
-import { useResendInvite, useExtraReminder } from "@/hooks/events";
-
-// Audience the resend action targets: guests who haven't responded or said
-// "maybe". The combined `noResponseOrMaybe` table filter maps to the same set.
-const RESEND_STATUSES = ["invited", "pending", "maybe"];
-// Extra reminder targets CONFIRMED guests only (matches the backend, which
-// uses the approved `reminder_confirmed` template). `checked_in` guests have
-// already arrived, so they're excluded.
-const EXTRA_REMINDER_STATUSES = ["confirmed"];
 
 export default function useGuestTableActions({
   t,
   eventId,
   guests,
-  invitesRemaining,
   deleteGuestMutation,
   updateGuestMutation,
+  rotateGuestMutation,
+  revokeAccessMutation,
   deleteModal,
   setDeleteModal,
   setShowEditPopup,
@@ -35,20 +26,6 @@ export default function useGuestTableActions({
 }) {
   const queryClient = useQueryClient();
   const sendReminderMutation = useSendReminder();
-  const resendInviteMutation = useResendInvite();
-  const extraReminderMutation = useExtraReminder();
-
-  // Bulk-action confirmation modal state. We snapshot the resolved guestIds
-  // here because the shared Table clears its own selection immediately after
-  // firing the bulk action — the modal can't re-read it later.
-  const [bulkModal, setBulkModal] = useState({
-    isOpen: false,
-    type: null, // "resend" | "extraReminder"
-    guestIds: [],
-  });
-
-  const closeBulkModal = () =>
-    setBulkModal({ isOpen: false, type: null, guestIds: [] });
 
   const handleExportGuests = async () => {
     try {
@@ -185,117 +162,55 @@ export default function useGuestTableActions({
     setSelectedGuests([]);
   };
 
-  // ── Bulk pool-charged actions ───────────────────────────────────────────
-  // Re-filter the selected ids to the right audience for each action so the
-  // host can "select all" after filtering and we still only charge for the
-  // eligible guests.
-  const resolveBulkGuestIds = (selectedIds, allowedStatuses) => {
-    const idSet = new Set((selectedIds || []).map((id) => String(id)));
-    return guests
-      .filter(
-        (g) =>
-          idSet.has(String(g.id)) &&
-          allowedStatuses.includes(g.status || "invited")
+  // Rotate a guest's QR/access token — invalidates the old code and issues a
+  // fresh one (backend re-delivers it). Parity with the mobile long-press menu.
+  const handleRotateQr = async (guest) => {
+    if (!guest?.id) {
+      toast.error(t("errors.noGuestId", "Guest ID not found"));
+      return;
+    }
+    if (
+      !window.confirm(
+        t("singleEvent.guestTable.rotateQrConfirm", "تحديث رمز الدخول لهذا الضيف؟")
       )
-      .map((g) => g.id);
-  };
-
-  const handleBulkResend = (selectedIds) => {
-    const guestIds = resolveBulkGuestIds(selectedIds, RESEND_STATUSES);
-    if (guestIds.length === 0) {
-      toast.error(
-        t(
-          "singleEvent.bulkActions.noEligibleResend",
-          "None of the selected guests can be re-invited (only non-responders or maybe)."
-        )
-      );
+    )
       return;
-    }
-    setBulkModal({ isOpen: true, type: "resend", guestIds });
-  };
-
-  const handleBulkExtraReminder = (selectedIds) => {
-    const guestIds = resolveBulkGuestIds(selectedIds, EXTRA_REMINDER_STATUSES);
-    if (guestIds.length === 0) {
-      toast.error(
-        t(
-          "singleEvent.bulkActions.noEligibleReminder",
-          "None of the selected guests are confirmed."
-        )
-      );
-      return;
-    }
-    setBulkModal({ isOpen: true, type: "extraReminder", guestIds });
-  };
-
-  const handleConfirmBulkAction = async () => {
-    const { type, guestIds } = bulkModal;
-    if (!guestIds || guestIds.length === 0) return;
-    const mutation =
-      type === "resend" ? resendInviteMutation : extraReminderMutation;
     try {
-      const result = await mutation.mutateAsync({ eventId, guestIds });
-      const data = result?.data || result || {};
-      const total = data.reminded ?? guestIds.length;
-
-      // Nothing was sent. The backend filters resend to guests who were already
-      // sent an invitation (`invitation.sent: true`), so a host who never sent
-      // the initial invites lands here even though the status filter matched.
-      // Surface *why* instead of a misleading "0/0 sent" success toast.
-      if (total === 0) {
-        if (data.code === "SEND_INVITES_FIRST") {
-          toast.error(
-            t(
-              "singleEvent.bulkActions.sendInvitesFirst",
-              "Send the initial invitations first, then use resend for guests who haven't responded or chose maybe."
-            )
-          );
-        } else {
-          toast.info(
-            t(
-              type === "resend"
-                ? "singleEvent.bulkActions.noEligibleNow"
-                : "singleEvent.bulkActions.noConfirmedNow",
-              type === "resend"
-                ? "Everyone has already responded — no one left to re-invite."
-                : "No confirmed guests to remind yet."
-            )
-          );
-        }
-        closeBulkModal();
-        return;
-      }
-
-      const successful = data.successful ?? guestIds.length;
+      await rotateGuestMutation.mutateAsync({ eventId, guestId: guest.id });
       toast.success(
-        t("singleEvent.bulkActions.sentResult", {
-          defaultValue: "{{successful}}/{{total}} sent",
-          successful,
-          total,
-        })
+        t("singleEvent.guestTable.rotateQrSuccess", "تم تحديث رمز الدخول")
       );
-      closeBulkModal();
     } catch (error) {
-      const code = error?.response?.data?.code;
-      if (code === "INSUFFICIENT_INVITES") {
-        toast.error(
-          t(
-            "singleEvent.bulkActions.insufficientInvites",
-            "Not enough invites — buy more in Plans."
-          )
-        );
-      } else if (code === "NO_REMINDER_TEMPLATE") {
-        toast.error(
-          t(
-            "singleEvent.bulkActions.noReminderTemplate",
-            "No reminder template is configured for this category. Contact support."
-          )
-        );
-      } else {
-        handleError(error, t, {
-          fallbackMessage: "singleEvent.bulkActions.error",
-        });
-      }
+      handleError(error, t, {
+        fallbackMessage: "singleEvent.guestTable.rotateQrError",
+      });
+    }
+  };
+
+  // Revoke a guest's access to post-event content (idempotent on the backend).
+  const handleRevokeAccess = async (guest) => {
+    if (!guest?.id) {
+      toast.error(t("errors.noGuestId", "Guest ID not found"));
+      return;
+    }
+    if (
+      !window.confirm(
+        t(
+          "singleEvent.guestTable.revokeAccessConfirm",
+          "إلغاء صلاحية وصول هذا الضيف لمحتوى ما بعد المناسبة؟"
+        )
+      )
+    )
+      return;
+    try {
+      await revokeAccessMutation.mutateAsync({ eventId, guestId: guest.id });
+      toast.success(
+        t("singleEvent.guestTable.revokeAccessSuccess", "تم إلغاء صلاحية الوصول")
+      );
+    } catch (error) {
+      handleError(error, t, {
+        fallbackMessage: "singleEvent.guestTable.revokeAccessError",
+      });
     }
   };
 
@@ -313,14 +228,7 @@ export default function useGuestTableActions({
     handleSendInvitation,
     handleConfirmSendInvitation,
     handleCloseInvitationPopup,
-    // Bulk actions
-    handleBulkResend,
-    handleBulkExtraReminder,
-    handleConfirmBulkAction,
-    closeBulkModal,
-    bulkModal,
-    invitesRemaining,
-    isBulkPending:
-      resendInviteMutation.isPending || extraReminderMutation.isPending,
+    handleRotateQr,
+    handleRevokeAccess,
   };
 }
