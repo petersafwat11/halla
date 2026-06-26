@@ -11,7 +11,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTranslation } from "../../localization";
 import TextInput from "../commen/TextInput";
 import MapPicker from "../commen/MapPicker";
-import EventTypeModal from "./eventTypeModal";
+import DropdownInput from "../commen/DropdownInput";
 import Svg, { Path } from "react-native-svg";
 import { useMySubscription } from "../../hooks/users";
 
@@ -58,18 +58,6 @@ const LocationIcon = () => (
   </Svg>
 );
 
-const ChevronDownIcon = () => (
-  <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <Path
-      d="M5 7.5L10 12.5L15 7.5"
-      stroke="#656565"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-);
-
 const EVENT_TYPE_VALUES = ["wedding", "birthday", "graduation", "meeting", "conference", "other"];
 
 const EVENT_TYPE_EMOJIS = {
@@ -101,23 +89,19 @@ const StepOne = () => {
     return d;
   }, [isTrial]);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [showEventTypeModal, setShowEventTypeModal] = useState(false);
 
-  const eventType = watch("eventType");
   const eventDate = watch("eventDate");
   const eventTime = watch("eventTime");
 
-  const eventTypes = useMemo(() =>
-    EVENT_TYPE_VALUES.map((value) => ({
-      value,
-      label: t(`event_types.${value}`),
-      emoji: EVENT_TYPE_EMOJIS[value] || "",
-    })), [t]);
-
-  const getEventTypeLabel = () => {
-    const type = eventTypes.find((tp) => tp.value === eventType);
-    return type ? `${type.emoji} ${type.label}` : t("event_type_placeholder");
-  };
+  // Options for the shared DropdownInput — keep the emoji inline with the label.
+  const eventTypeOptions = useMemo(
+    () =>
+      EVENT_TYPE_VALUES.map((value) => ({
+        value,
+        label: `${EVENT_TYPE_EMOJIS[value] || ""} ${t(`event_types.${value}`)}`.trim(),
+      })),
+    [t]
+  );
 
   const formatDate = (date) => {
     if (!date) return "";
@@ -160,25 +144,14 @@ const StepOne = () => {
         rules={{ required: t("title_required") }}
       />
 
-      {/* Event Type */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>{t("event_type_label")}</Text>
-        <TouchableOpacity
-          style={styles.selectButton}
-          onPress={() => setShowEventTypeModal(true)}
-          activeOpacity={0.7}
-        >
-          <ChevronDownIcon />
-          <Text
-            style={[
-              styles.selectButtonText,
-              !eventType && styles.selectButtonPlaceholder,
-            ]}
-          >
-            {getEventTypeLabel()}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* Event Type — shared dropdown */}
+      <DropdownInput
+        name="eventType"
+        label={t("event_type_label")}
+        placeholder={t("event_type_placeholder")}
+        modalTitle={t("event_type_label")}
+        options={eventTypeOptions}
+      />
 
       {/* Event Date */}
       <View style={styles.inputGroup}>
@@ -267,17 +240,6 @@ const StepOne = () => {
             return true;
           },
         }}
-      />
-      {/* Event Type Modal */}
-      <EventTypeModal
-        visible={showEventTypeModal}
-        onClose={() => setShowEventTypeModal(false)}
-        onSelect={(type) => {
-          setValue("eventType", type, { shouldValidate: true });
-          setShowEventTypeModal(false);
-        }}
-        selectedType={eventType}
-        eventTypes={eventTypes}
       />
     </View>
   );

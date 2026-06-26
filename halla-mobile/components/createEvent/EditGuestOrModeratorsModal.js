@@ -10,6 +10,7 @@ import {
 import { useTranslation } from "../../localization";
 import TextInput from "../commen/TextInput";
 import Button from "../commen/Button";
+import CategorySelect from "../commen/CategorySelect";
 import Svg, { Path } from "react-native-svg";
 
 const CloseIcon = () => (
@@ -29,7 +30,8 @@ const EditGuestOrModeratorsModal = ({
   onClose,
   item,
   type = "guest",
-  onSave
+  onSave,
+  categories = []
 }) => {
   const { t } = useTranslation("events");
   const [name, setName] = useState("");
@@ -115,12 +117,11 @@ const EditGuestOrModeratorsModal = ({
             />
 
             {type === "guest" && (
-              <TextInput
+              <CategorySelect
                 label="التصنيف"
-                placeholder="اختر أو أنشئ تصنيفاً"
                 value={category}
-                onChangeText={setCategory}
-                maxLength={60}
+                onChange={setCategory}
+                options={categories}
               />
             )}
           </View>

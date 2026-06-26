@@ -7,6 +7,21 @@ import { useTranslation } from "react-i18next";
 import { ar } from "date-fns/locale";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
+// Localized fallbacks. DateRange lives in the shared admin header, which
+// renders on admin pages that don't all load the `adminModerators` namespace.
+// When that namespace is missing, t(...) returns the raw key (and the months
+// lookup returns a string, not an array — crashing .map). These fallbacks keep
+// the picker working and readable regardless of the page's loaded namespaces.
+const MONTHS_FALLBACK = {
+  ar: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+};
+
+const LABELS_FALLBACK = {
+  ar: { allTime: "الكل", today: "اليوم", lastWeek: "آخر أسبوع", lastMonth: "آخر شهر", lastQuarter: "آخر 3 أشهر", lastYear: "آخر سنة", cancel: "إلغاء", apply: "تطبيق" },
+  en: { allTime: "All Time", today: "Today", lastWeek: "Last Week", lastMonth: "Last Month", lastQuarter: "Last Quarter", lastYear: "Last Year", cancel: "Cancel", apply: "Apply" },
+};
+
 function startOfWeek(date) {
   const d = new Date(date);
   const day = d.getDay();
@@ -55,8 +70,14 @@ export default function DateRange({
   }, [isOpen, selectedRange]);
 
   const isArabic = i18n.language === "ar";
+  const fb = isArabic ? LABELS_FALLBACK.ar : LABELS_FALLBACK.en;
+  const monthsFallback = isArabic ? MONTHS_FALLBACK.ar : MONTHS_FALLBACK.en;
 
-  const months = t("dateRange.months", { returnObjects: true });
+  const monthsRaw = t("dateRange.months", {
+    returnObjects: true,
+    defaultValue: monthsFallback,
+  });
+  const months = Array.isArray(monthsRaw) ? monthsRaw : monthsFallback;
 
   const years = Array.from({ length: 21 }, (_, i) => 2015 + i);
 
@@ -101,36 +122,36 @@ export default function DateRange({
     return [
       {
         key: "all",
-        label: t("dateRange.allTime"),
+        label: t("dateRange.allTime", fb.allTime),
         value: allTime,
       },
       {
         key: "today",
-        label: t("dateRange.today"),
+        label: t("dateRange.today", fb.today),
         value: { from: todayStart, to: todayEnd },
       },
       {
         key: "week",
-        label: t("dateRange.lastWeek"),
+        label: t("dateRange.lastWeek", fb.lastWeek),
         value: { from: weekStart, to: endDate },
       },
       {
         key: "month",
-        label: t("dateRange.lastMonth"),
+        label: t("dateRange.lastMonth", fb.lastMonth),
         value: { from: monthStart, to: endDate },
       },
       {
         key: "quarter",
-        label: t("dateRange.lastQuarter"),
+        label: t("dateRange.lastQuarter", fb.lastQuarter),
         value: { from: quarterStart, to: endDate },
       },
       {
         key: "year",
-        label: t("dateRange.lastYear"),
+        label: t("dateRange.lastYear", fb.lastYear),
         value: { from: yearStart, to: endDate },
       },
     ];
-  }, [t]);
+  }, [t, fb]);
 
   const handlePreviousMonth = () => {
     setCurrentMonth(
@@ -242,7 +263,7 @@ export default function DateRange({
         {/* Footer Buttons */}
         <div className={styles.footer}>
           <button type="button" className={styles.cancelBtn} onClick={onClose}>
-            {t("dateRange.cancel")}
+            {t("dateRange.cancel", fb.cancel)}
           </button>
           <button
             type="button"
@@ -254,7 +275,7 @@ export default function DateRange({
               onClose();
             }}
           >
-            {t("dateRange.apply")}
+            {t("dateRange.apply", fb.apply)}
           </button>
         </div>
       </div>

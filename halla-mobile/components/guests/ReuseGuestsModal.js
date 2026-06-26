@@ -18,8 +18,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import Button from "../commen/Button";
+import CategoryPickerSheet from "../commen/CategoryPickerSheet";
 import { useMyContacts } from "../../hooks/guests/queries";
 
 const CloseIcon = () => (
@@ -42,6 +44,7 @@ const ReuseGuestsModal = ({
   const [category, setCategory] = useState("");
   const [limit, setLimit] = useState(50);
   const [selected, setSelected] = useState({}); // phone -> { name, phone, category }
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
   const existingSet = useMemo(() => new Set(existingPhones), [existingPhones]);
 
@@ -61,8 +64,21 @@ const ReuseGuestsModal = ({
       setCategory("");
       setLimit(50);
       setSelected({});
+      setShowCategoryPicker(false);
     }
   }, [visible]);
+
+  // Stamp a chosen label onto every selected contact (overrides their
+  // guest-book category for this add).
+  const handleAssignCategory = (cat) => {
+    setSelected((prev) => {
+      const next = {};
+      Object.keys(prev).forEach((phone) => {
+        next[phone] = { ...prev[phone], category: cat };
+      });
+      return next;
+    });
+  };
 
   const { data, isLoading, isError } = useMyContacts(
     { search: debouncedSearch || undefined, category: category || undefined, page: 1, limit },
@@ -199,17 +215,38 @@ const ReuseGuestsModal = ({
           )}
 
           <View style={styles.footer}>
-            <Text style={styles.count}>{t("reuse_guests_selected", { count: selectedCount })}</Text>
+            <View style={styles.footerTopRow}>
+              <Text style={styles.count}>{t("reuse_guests_selected", { count: selectedCount })}</Text>
+              {selectedCount > 0 && (
+                <TouchableOpacity
+                  style={styles.linkCategoryBtn}
+                  onPress={() => setShowCategoryPicker(true)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="pricetag-outline" size={16} color="#C28E5C" />
+                  <Text style={styles.linkCategoryText}>{t("link_to_category")}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <View style={styles.footerActions}>
-              <Button
-                text={t("reuse_guests_add", { count: selectedCount })}
-                onPress={handleAdd}
-                disabled={selectedCount === 0}
-              />
+              <View style={styles.footerButton}>
+                <Button text={t("confirm")} onPress={handleAdd} disabled={selectedCount === 0} />
+              </View>
+              <View style={styles.footerButton}>
+                <Button text={t("cancel")} variant="secondary" onPress={onClose} />
+              </View>
             </View>
           </View>
         </Pressable>
       </Pressable>
+
+      <CategoryPickerSheet
+        visible={showCategoryPicker}
+        onClose={() => setShowCategoryPicker(false)}
+        onSelect={handleAssignCategory}
+        options={categories}
+        title={t("link_to_category_title")}
+      />
     </Modal>
   );
 };
@@ -270,8 +307,27 @@ const styles = StyleSheet.create({
     borderTopColor: "#F0F0F0",
     gap: 10,
   },
-  count: { fontSize: 13, fontFamily: "Cairo_500Medium", color: "#656565", textAlign: "center" },
-  footerActions: { width: "100%" },
+  footerTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  count: { fontSize: 13, fontFamily: "Cairo_500Medium", color: "#656565" },
+  linkCategoryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E7D8C6",
+    backgroundColor: "#F9F4EF",
+  },
+  linkCategoryText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#8A6B47" },
+  footerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
+  footerButton: { flex: 1 },
 });
 
 export default ReuseGuestsModal;

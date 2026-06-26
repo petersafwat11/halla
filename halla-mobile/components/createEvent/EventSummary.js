@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,13 @@ import {
   Linking,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  resolveTaqnyatPlaceholders,
+  buildTaqnyatPreviewContext,
+} from "@halla/shared/utils";
 import { useTranslation } from "../../localization";
+import { useAuthStore } from "../../stores/authStore";
 import Svg, { Path } from "react-native-svg";
 
 const StatStaffIcon = () => (
@@ -130,6 +136,9 @@ const EventSummary = () => {
   const staffList = watch("staffList") || [];
   const selectedTemplate = watch("selectedTemplate") || null;
   const confirmReviewed = watch("confirmReviewed") || false;
+  const hostName = useAuthStore(
+    (state) => state.user?.name || state.user?.username || ""
+  );
 
   const eventTypeLabel = eventType
     ? t(`event_types.${eventType}`, t(eventType) || eventType)
@@ -137,6 +146,48 @@ const EventSummary = () => {
 
   const dateStr = formatDate(eventDate);
   const dateTime = dateStr && eventTime ? `${dateStr} - ${eventTime}` : dateStr;
+
+  // Resolve the invitation template placeholders ({{1}}..{{5}}) so the summary
+  // shows the real message — the same resolution StepFour/PreviewInvitation use.
+  const resolvedInvitation = useMemo(() => {
+    const bodyText = selectedTemplate?.bodyText;
+    if (!bodyText) return "";
+    const locale = (t("preview_date_locale", "ar-SA") || "ar-SA").toString();
+    let dateFormatted = "";
+    if (eventDate) {
+      try {
+        dateFormatted = new Date(eventDate).toLocaleDateString(locale, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      } catch {
+        dateFormatted = "";
+      }
+    }
+    const context = buildTaqnyatPreviewContext({
+      guestName: t("preview_guest_placeholder", "ضيفنا الكريم"),
+      eventTitle: eventName,
+      dateFormatted,
+      eventTime,
+      locationAddress: address?.address || "",
+      hostName,
+    });
+    return resolveTaqnyatPlaceholders(
+      bodyText,
+      selectedTemplate?.varMapping,
+      context
+    );
+  }, [
+    selectedTemplate?.bodyText,
+    selectedTemplate?.varMapping,
+    eventName,
+    eventDate,
+    eventTime,
+    address?.address,
+    hostName,
+    t,
+  ]);
   const mapLink =
     address?.latitude && address?.longitude
       ? `https://maps.google.com/?q=${address.latitude},${address.longitude}`
@@ -178,8 +229,8 @@ const EventSummary = () => {
           <Text style={styles.detailsHeader}>{t("event_details")}</Text>
           <View style={styles.detailsContent}>
             {!!eventName && <Text style={styles.eventTitle}>{eventName}</Text>}
-            {!!selectedTemplate?.bodyText && (
-              <Text style={styles.invitationText}>{selectedTemplate.bodyText}</Text>
+            {!!resolvedInvitation && (
+              <Text style={styles.invitationText}>{resolvedInvitation}</Text>
             )}
 
             <View style={styles.eventDetails}>
@@ -223,7 +274,9 @@ const EventSummary = () => {
           <View
             style={[styles.checkbox, confirmReviewed && styles.checkboxChecked]}
           >
-            {confirmReviewed && <Text style={styles.checkmark}>✓</Text>}
+            {confirmReviewed && (
+              <Ionicons name="checkmark" size={15} color="#FFF" />
+            )}
           </View>
           <Text style={styles.checkboxLabel}>{t("confirm_reviewed")}</Text>
         </TouchableOpacity>
@@ -353,11 +406,6 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: "#C28E5C",
     borderColor: "#C28E5C",
-  },
-  checkmark: {
-    fontSize: 13,
-    color: "#FFF",
-    fontFamily: "Cairo_700Bold",
   },
   checkboxLabel: {
     flex: 1,

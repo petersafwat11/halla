@@ -41,7 +41,14 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
+  /* NOT overflow:hidden — that turns the grid into a scroll container, so the
+     CategorySelect dropdown's autoFocus search input triggers scrollIntoView
+     and scrolls the name/mobile inputs out of view ("inputs disappear"). Use
+     min-width:0 to contain grid blowout instead (the real intent here). */
+  min-width: 0;
+}
+.formGrid > * {
+  min-width: 0;
 }
 .toggleContainer {
   position: absolute;

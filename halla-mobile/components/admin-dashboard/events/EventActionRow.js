@@ -1,9 +1,12 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../../localization";
 import { colors, spacing } from "../../../styles/tokens";
 
-const EventActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading, last, destructive }) => (
+const EventActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading, last, destructive }) => {
+  const { isRTL } = useTranslation();
+  return (
   <TouchableOpacity
     style={[styles.actionRow, !last && styles.actionRowBorder]}
     onPress={onPress}
@@ -23,9 +26,10 @@ const EventActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loa
         {sublabel ? <Text style={styles.actionSub}>{sublabel}</Text> : null}
       </View>
     </View>
-    <Ionicons name="chevron-forward" size={18} color={colors.natural[300]} />
+    <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.natural[300]} />
   </TouchableOpacity>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   actionRow: {

@@ -76,7 +76,9 @@ const StepFour = () => {
 
   const visualTemplate = watch("visualTemplate");
   const selectedTemplate = watch("selectedTemplate");
-  const category = visualTemplate?.categories?.[0] || "";
+  // Filter templates by the event category chosen in step 1 (eventType),
+  // not the visual template picked in step 3.
+  const category = watch("eventType") || "";
   const guestReplies = watch("guestReplies") || {};
   const eventName = watch("eventName");
   const eventDate = watch("eventDate");

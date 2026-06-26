@@ -22,14 +22,25 @@ const BusinessListItem = ({ business, onPress, onManagePlan, selected = false, o
   const deleteBusiness = useDeleteBusiness();
   const toast = useToast();
 
-  const handleStatusChange = async () => {
+  const handleStatusChange = () => {
     const newStatus = status === "active" ? "suspended" : "active";
-    try {
-      await updateStatus.mutateAsync({ businessId, status: newStatus });
-      toast.success(t("businesses.actions.statusUpdated"));
-    } catch {
-      toast.error(t("businesses.actions.statusUpdateFailed"));
-    }
+    const isSuspending = newStatus === "suspended";
+    const actionLabel = isSuspending ? t("common.suspend") : t("common.activate");
+    Alert.alert(actionLabel, `${actionLabel} "${name || ""}"?`, [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: actionLabel,
+        style: isSuspending ? "destructive" : "default",
+        onPress: async () => {
+          try {
+            await updateStatus.mutateAsync({ businessId, status: newStatus });
+            toast.success(t("businesses.actions.statusUpdated"));
+          } catch {
+            toast.error(t("businesses.actions.statusUpdateFailed"));
+          }
+        },
+      },
+    ]);
   };
 
   const handleDelete = () => {

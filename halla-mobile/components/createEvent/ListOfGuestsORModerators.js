@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,10 @@ import {
   ScrollView,
   FlatList
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../localization";
 import EditGuestOrModeratorsModal from "./EditGuestOrModeratorsModal";
+import CategoryPickerSheet from "../commen/CategoryPickerSheet";
 import Svg, { Path } from "react-native-svg";
 
 const CloseIcon = () => (
@@ -67,10 +70,45 @@ const ListOfGuestsORModerators = ({
   list = [],
   type = "guest",
   onEdit,
-  onRemove
+  onRemove,
+  // Guests only: enable multi-select + bulk "link to category".
+  onAssignCategory,
+  categories = []
 }) => {
+  const { t } = useTranslation("createEvent");
   const [editingItem, setEditingItem] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [selected, setSelected] = useState({}); // id -> true
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+
+  const selectable = type === "guest" && typeof onAssignCategory === "function";
+  const selectedIds = Object.keys(selected).filter((id) => selected[id]);
+  const selectedCount = selectedIds.length;
+
+  // Drop the selection whenever the list modal closes.
+  useEffect(() => {
+    if (!visible) {
+      setSelected({});
+      setShowCategoryPicker(false);
+    }
+  }, [visible]);
+
+  const toggleSelect = (id) => {
+    setSelected((prev) => {
+      const next = { ...prev };
+      if (next[id]) delete next[id];
+      else next[id] = true;
+      return next;
+    });
+  };
+
+  const handleAssign = (category) => {
+    const ids = list
+      .map((it) => it.id)
+      .filter((id) => selected[id]);
+    if (ids.length) onAssignCategory(ids, category);
+    setSelected({});
+  };
 
   const handleEdit = (item) => {
     setEditingItem(item);
@@ -89,6 +127,15 @@ const ListOfGuestsORModerators = ({
   const renderItem = ({ item }) => (
     <View style={styles.listItem}>
       <View style={styles.listItemLeft}>
+        {selectable && (
+          <TouchableOpacity
+            style={[styles.checkbox, selected[item.id] && styles.checkboxOn]}
+            onPress={() => toggleSelect(item.id)}
+            activeOpacity={0.7}
+          >
+            {selected[item.id] && <Ionicons name="checkmark" size={16} color="#FFF" />}
+          </TouchableOpacity>
+        )}
         <View style={styles.avatarContainer}>
           <PersonIcon />
         </View>
@@ -166,6 +213,9 @@ const ListOfGuestsORModerators = ({
                 keyExtractor={(item) => item.id.toString()}
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}
+                // flexShrink so a long list scrolls within the sheet instead of
+                // pushing the selection bar (link-to-category) past the 90% cut.
+                style={styles.listFlex}
               />
             ) : (
               <View style={styles.emptyState}>
@@ -174,9 +224,36 @@ const ListOfGuestsORModerators = ({
                 </Text>
               </View>
             )}
+
+            {/* Bulk "link to category" bar — shown when guests are selected */}
+            {selectable && selectedCount > 0 && (
+              <View style={styles.selectionBar}>
+                <Text style={styles.selectionCount}>
+                  {t("reuse_guests_selected", { count: selectedCount })}
+                </Text>
+                <TouchableOpacity
+                  style={styles.linkCategoryBtn}
+                  onPress={() => setShowCategoryPicker(true)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="pricetag-outline" size={18} color="#FFF" />
+                  <Text style={styles.linkCategoryText}>{t("link_to_category")}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </Pressable>
         </Pressable>
       </Modal>
+
+      {selectable && (
+        <CategoryPickerSheet
+          visible={showCategoryPicker}
+          onClose={() => setShowCategoryPicker(false)}
+          onSelect={handleAssign}
+          options={categories}
+          title={t("link_to_category_title")}
+        />
+      )}
 
       {/* Edit Modal */}
       {editingItem && (
@@ -189,6 +266,7 @@ const ListOfGuestsORModerators = ({
           item={editingItem}
           type={type}
           onSave={handleSaveEdit}
+          categories={categories}
         />
       )}
     </>
@@ -236,6 +314,9 @@ const styles = StyleSheet.create({
   headerSublistContent: {
     padding: 24
   },
+  listFlex: {
+    flexShrink: 1
+  },
   listItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -251,6 +332,47 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     flex: 1
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: "#C28E5C",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFF"
+  },
+  checkboxOn: { backgroundColor: "#C28E5C" },
+  selectionBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+    backgroundColor: "#FFF"
+  },
+  selectionCount: {
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#656565"
+  },
+  linkCategoryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    backgroundColor: "#C28E5C"
+  },
+  linkCategoryText: {
+    fontSize: 14,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#FFF"
   },
   avatarContainer: {
     width: 48,

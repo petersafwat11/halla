@@ -36,6 +36,10 @@ const EventListItem = ({ event, onPress }) => {
         return { bg: v.bg, color: v.fg, label: "منتهية" };
       case "cancelled":
         return { bg: v.bg, color: v.fg, label: "ملغية" };
+      case "pending_scheduling":
+        return { bg: v.bg, color: v.fg, label: "في انتظار الجدولة" };
+      case "suspended":
+        return { bg: v.bg, color: v.fg, label: "موقوفة" };
       default:
         return { bg: v.bg, color: v.fg, label: status || "غير محدد" };
     }

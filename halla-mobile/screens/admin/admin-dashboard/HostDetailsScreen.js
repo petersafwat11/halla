@@ -93,7 +93,9 @@ const statStyles = StyleSheet.create({
   badgeText: { fontSize: 11, fontWeight: typography.fontWeight.semibold },
 });
 
-const ActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading, last }) => (
+const ActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading, last }) => {
+  const { isRTL } = useTranslation();
+  return (
   <TouchableOpacity style={[actionStyles.row, !last && actionStyles.rowBorder]} onPress={onPress} disabled={loading} activeOpacity={0.7}>
     <View style={actionStyles.rowLeft}>
       <View style={[actionStyles.iconWrap, { backgroundColor: iconBg }]}>
@@ -104,9 +106,10 @@ const ActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading,
         <Text style={actionStyles.sublabel}>{sublabel}</Text>
       </View>
     </View>
-    <Ionicons name="chevron-forward" size={16} color={colors.natural[300]} />
+    <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={16} color={colors.natural[300]} />
   </TouchableOpacity>
-);
+  );
+};
 
 const actionStyles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: spacing[16], paddingVertical: spacing[12] },

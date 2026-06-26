@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { View, Alert, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "../../../localization";
 import EventsService from "../../../hooks/events/useEventForm";
@@ -103,6 +104,25 @@ const GuestFormSection = ({
     [formData.guestList, setValue, t],
   );
 
+  // Bulk "link to category" — stamp the chosen label onto the selected guests.
+  const handleAssignGuestCategory = useCallback(
+    (ids, category) => {
+      const idSet = new Set(ids);
+      const updated = (formData.guestList || []).map((g) =>
+        idSet.has(g.id) ? { ...g, category } : g
+      );
+      setValue("guestList", updated, { shouldValidate: true });
+    },
+    [formData.guestList, setValue],
+  );
+
+  const guestCategoryOptions = Array.from(
+    new Set([
+      ...savedCategories,
+      ...(guestList || []).map((g) => g.category).filter(Boolean),
+    ])
+  );
+
   const handleEditModerator = useCallback(
     (id, updatedModerator) => {
       const result = EventsService.editListItem(id, updatedModerator, formData.staffList || [], "moderator");
@@ -166,7 +186,15 @@ const GuestFormSection = ({
               disabled={isLimitReached}
               activeOpacity={0.7}
             >
-              <Text style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}>
+              <Ionicons
+                name="people-outline"
+                size={18}
+                color={isLimitReached ? "#AAAAAA" : "#C28E5C"}
+              />
+              <Text
+                style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}
+                numberOfLines={1}
+              >
                 {t("add_from_my_guests")}
               </Text>
             </TouchableOpacity>
@@ -177,7 +205,15 @@ const GuestFormSection = ({
                 disabled={isLimitReached}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}>
+                <Ionicons
+                  name="call-outline"
+                  size={18}
+                  color={isLimitReached ? "#AAAAAA" : "#C28E5C"}
+                />
+                <Text
+                  style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}
+                  numberOfLines={1}
+                >
                   {t("import_from_phone")}
                 </Text>
               </TouchableOpacity>
@@ -188,7 +224,15 @@ const GuestFormSection = ({
               disabled={isLimitReached}
               activeOpacity={0.7}
             >
-              <Text style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}>
+              <Ionicons
+                name="document-text-outline"
+                size={18}
+                color={isLimitReached ? "#AAAAAA" : "#C28E5C"}
+              />
+              <Text
+                style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}
+                numberOfLines={1}
+              >
                 {t("vcard_button")}
               </Text>
             </TouchableOpacity>
@@ -217,6 +261,8 @@ const GuestFormSection = ({
         type="guest"
         onEdit={handleEditGuest}
         onRemove={handleRemoveGuest}
+        onAssignCategory={handleAssignGuestCategory}
+        categories={guestCategoryOptions}
       />
 
       <ListOfGuestsORModerators
@@ -257,13 +303,21 @@ const GuestFormSection = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  sourceRow: { flexDirection: "row", gap: 10, marginTop: 12 },
+  sourceRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 12,
+  },
   sourceBtn: {
-    flex: 1,
+    flexBasis: "47%",
+    flexGrow: 1,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 11,
-    paddingHorizontal: 12,
+    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     borderRadius: 10,
     borderWidth: 1.5,
     borderColor: "#C28E5C",

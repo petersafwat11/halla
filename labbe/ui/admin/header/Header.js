@@ -19,7 +19,14 @@ const Header = ({
   addButtonIcon,
   onAddButtonClick,
 }) => {
-  const { t } = useTranslation("adminModerators");
+  const { t, i18n } = useTranslation("adminModerators");
+  // Fallbacks for pages that don't load the `adminModerators` namespace —
+  // without them t(...) returns the raw key as the button label.
+  const isArabic = i18n.language === "ar";
+  const labelFallback = {
+    dateRange: isArabic ? "حدد مدة زمنية" : "Select time period",
+    all: isArabic ? "الكل" : "All",
+  };
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
@@ -59,11 +66,11 @@ const Header = ({
 
   const formatDateRangeText = () => {
     if (!selectedDateRange) {
-      return t("header.dateRange");
+      return t("header.dateRange", labelFallback.dateRange);
     }
 
     if (!selectedDateRange?.from) {
-      return t("dateRange.all");
+      return t("dateRange.all", labelFallback.all);
     }
 
     const fromDate = format(selectedDateRange.from, "d MMM yyyy", {

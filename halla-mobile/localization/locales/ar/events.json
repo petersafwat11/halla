@@ -158,6 +158,7 @@
       "updateSuccess": "تم تعديل الضيف بنجاح",
       "deleteConfirmTitle": "تأكيد الحذف",
       "deleteConfirmBody": "هل أنت متأكد من حذف هذا الضيف؟",
+      "staffDeleteConfirmBody": "هل أنت متأكد من حذف هذا المشرف؟",
       "deleteSuccess": "تم حذف الضيف بنجاح",
       "deleteError": "حدث خطأ أثناء الحذف",
       "staffAddSuccess": "تم إضافة المشرف بنجاح",

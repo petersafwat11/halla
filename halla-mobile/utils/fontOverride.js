@@ -5,8 +5,39 @@ const RN = require("react-native");
 const OriginalText = RN.Text;
 const OriginalTextInput = RN.TextInput;
 
+// @expo/vector-icons renders each glyph through a plain <Text> whose
+// fontFamily is the icon set's own font (e.g. "ionicons", "material",
+// "material-community", "FontAwesome5Free-Solid"). Forcing Cairo on those
+// would map the icon's Private-Use codepoint onto a font that lacks it, so
+// the glyph falls back to a random CJK/box character. Exempt them here.
+const ICON_FONT_FAMILIES = new Set([
+  "anticon",
+  "entypo",
+  "evilicons",
+  "feather",
+  "FontAwesome",
+  "Fontisto",
+  "foundation",
+  "ionicons",
+  "material",
+  "material-community",
+  "octicons",
+  "simple-line-icons",
+  "zocial",
+]);
+
+const isIconFontFamily = (fontFamily) =>
+  typeof fontFamily === "string" &&
+  (ICON_FONT_FAMILIES.has(fontFamily) || fontFamily.startsWith("FontAwesome"));
+
 const patchStyle = (style) => {
   const flatStyle = RN.StyleSheet.flatten(style) || {};
+
+  // Never rewrite an icon font — let the glyph render in its own family.
+  if (isIconFontFamily(flatStyle.fontFamily)) {
+    return style;
+  }
+
   const fontFamily = normalizeCairoFamily(flatStyle.fontFamily, flatStyle.fontWeight);
 
   // Already a loaded Cairo variant — leave the style untouched.

@@ -1,10 +1,11 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FiUserPlus } from "react-icons/fi";
+import { FiTag } from "react-icons/fi";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import Button from "@/ui/commen/button/Button";
 import Table from "@/ui/commen/new-table/Table";
+import CategoryAssignModal from "@/components/guests/categoryAssign/CategoryAssignModal";
 import { useMyContacts } from "@/hooks/guests/queries";
 import styles from "../guestPicker.module.css";
 
@@ -18,9 +19,19 @@ import styles from "../guestPicker.module.css";
 const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
   const { t } = useTranslation("createEvent");
   const [category, setCategory] = useState("");
+  const [selectedIds, setSelectedIds] = useState([]);
+  // Per-row category override set via "link to category" — applied to the
+  // chosen guests when they're added (overrides their guest-book category).
+  const [categoryOverrides, setCategoryOverrides] = useState({});
+  const [showCategoryAssign, setShowCategoryAssign] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) setCategory("");
+    if (!isOpen) {
+      setCategory("");
+      setSelectedIds([]);
+      setCategoryOverrides({});
+      setShowCategoryAssign(false);
+    }
   }, [isOpen]);
 
   const { data, isLoading, isError } = useMyContacts(
@@ -34,17 +45,39 @@ const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
     const contacts = data?.data?.contacts || [];
     return contacts
       .filter((c) => !existingSet.has(c.phone))
-      .map((c) => ({ id: c.phone, name: c.name, phone: c.phone, category: c.category || "" }));
-  }, [data, existingSet]);
+      .map((c) => ({
+        id: c.phone,
+        name: c.name,
+        phone: c.phone,
+        // A "link to category" override wins over the guest-book category.
+        category: categoryOverrides[c.phone] ?? c.category ?? "",
+      }));
+  }, [data, existingSet, categoryOverrides]);
 
-  const addByIds = (ids) => {
+  const categoryOptions = useMemo(
+    () => Array.from(new Set([...categories, ...rows.map((r) => r.category).filter(Boolean)])),
+    [categories, rows]
+  );
+
+  const handleConfirm = () => {
     const byId = new Map(rows.map((r) => [r.id, r]));
-    const list = ids
+    const list = selectedIds
       .map((id) => byId.get(id))
       .filter(Boolean)
       .map((r) => ({ name: r.name, mobile: r.phone, category: r.category }));
     if (list.length) onAdd(list);
     onClose();
+  };
+
+  // Stamp the chosen label onto every currently-selected row.
+  const handleAssignCategory = (cat) => {
+    setCategoryOverrides((prev) => {
+      const next = { ...prev };
+      selectedIds.forEach((id) => {
+        next[id] = cat;
+      });
+      return next;
+    });
   };
 
   const filterOptions = [
@@ -90,26 +123,53 @@ const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
               activeFilter={category}
               showExport={false}
               showCheckboxes
-              inlineBulkActions
               searchPlaceholder={t("reuse_guests_search_placeholder")}
               renderCell={renderCell}
-              bulkActions={[
-                {
-                  text: t("reuse_guests_add_selected"),
-                  icon: <FiUserPlus size={16} />,
-                  onClick: addByIds,
-                },
-              ]}
+              onSelectionChange={setSelectedIds}
             />
           )}
         </div>
 
         <div className={styles.footer}>
+          {selectedIds.length > 0 ? (
+            <button
+              type="button"
+              className={styles.footerLinkBtn}
+              onClick={() => setShowCategoryAssign(true)}
+            >
+              <FiTag size={16} />
+              <span>{t("link_to_category")}</span>
+            </button>
+          ) : (
+            <span />
+          )}
           <div className={styles.footerActions}>
-            <Button variant="secondary" title={t("close")} onClick={onClose} type="button" />
+            <Button
+              variant="primary"
+              className={styles.footerBtn}
+              title={t("confirm")}
+              onClick={handleConfirm}
+              disabled={selectedIds.length === 0}
+              type="button"
+            />
+            <Button
+              variant="secondary"
+              className={styles.footerBtn}
+              title={t("cancel")}
+              onClick={onClose}
+              type="button"
+            />
           </div>
         </div>
       </div>
+
+      <CategoryAssignModal
+        isOpen={showCategoryAssign}
+        onClose={() => setShowCategoryAssign(false)}
+        onConfirm={handleAssignCategory}
+        options={categoryOptions}
+        count={selectedIds.length}
+      />
     </PopupWrapper>
   );
 };

@@ -95,8 +95,7 @@
       "sharePostEvent": "مشاركة صفحة ما بعد المناسبة"
     },
     "quota": {
-      "remainingGuests": "ضيوف المناسبة المتبقين",
-      "compensationMessages": "الرسائل التعويضية المتبقية",
+      "remainingInvites": "الدعوات المتبقية",
       "unlimited": "غير محدود"
     }
   },

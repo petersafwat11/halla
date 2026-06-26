@@ -3,7 +3,6 @@
   "tabs": {
     "account": "إعدادات الحساب",
     "notifications": "الإشعارات",
-    "about": "نبذة عنا",
     "privacy": "سياسة الخصوصية",
     "terms": "الشروط والأحكام",
     "logout": "تسجيل الخروج",
@@ -96,5 +95,8 @@
     "title": "الخصوصية",
     "privacyPolicy": "سياسة الخصوصية",
     "termsOfService": "شروط الخدمة"
+  },
+  "legal": {
+    "lastUpdated": "آخر تحديث"
   }
 }

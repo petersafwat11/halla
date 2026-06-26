@@ -36,7 +36,9 @@ export default function TemplateCard({
     extrapolate: "clamp",
   });
 
-  const imgUri = template.thumbnailUrl || template.imageUrl;
+  // Prefer the full rendered preview (with the invitation text baked in) over
+  // the bare thumbnail/background — this is what web shows.
+  const imgUri = template.imageUrl || template.thumbnailUrl;
   const imgSource = template.src || (imgUri ? { uri: imgUri } : null);
 
   return (
@@ -74,12 +76,12 @@ export default function TemplateCard({
 const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
-    height: 150,
-    borderRadius: 6,
+    height: 164,
+    borderRadius: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0.625 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1.875,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
     elevation: 3,
   },
   cardSelected: {
@@ -94,17 +96,13 @@ const styles = StyleSheet.create({
   background: {
     width: "100%",
     height: "100%",
-    borderRadius: 3.738,
+    borderRadius: 8,
     backgroundColor: "#FFFAEA",
     overflow: "hidden",
   },
   image: {
-    width: 103,
-    height: 138,
-    borderRadius: 6.417,
-    position: "absolute",
-    left: 10,
-    top: 6,
+    width: "100%",
+    height: "100%",
   },
   placeholder: {
     backgroundColor: "#F2ECD8",

@@ -26,6 +26,8 @@ import PlansSummaryScreen from "../screens/host/PlansSummaryScreen";
 import SettingsScreen from "../screens/host/SettingsScreen";
 import AccountSettingsScreen from "../screens/host/AccountSettingsScreen";
 import NotificationSettingsScreen from "../screens/common/NotificationSettingsScreen";
+import PrivacyScreen from "../screens/legal/PrivacyScreen";
+import TermsScreen from "../screens/legal/TermsScreen";
 import TicketsScreen from "../screens/common/TicketsScreen";
 import Marketplace from "../screens/common/Marketplace";
 import VendorPublicProfileScreen from "../screens/common/VendorPublicProfileScreen";
@@ -69,6 +71,8 @@ function SettingsStackNavigator() {
       <SettingsStackNav.Screen name="SettingsMain" component={SettingsScreen} />
       <SettingsStackNav.Screen name="AccountSettings" component={AccountSettingsScreen} />
       <SettingsStackNav.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
+      <SettingsStackNav.Screen name="Privacy" component={PrivacyScreen} />
+      <SettingsStackNav.Screen name="Terms" component={TermsScreen} />
     </SettingsStackNav.Navigator>
   );
 }
@@ -79,6 +83,8 @@ function VendorSettingsStackNavigator() {
     <VendorSettingsStackNav.Navigator screenOptions={{ headerShown: false }}>
       <VendorSettingsStackNav.Screen name="VendorSettingsMain" component={VendorSettingsScreen} />
       <VendorSettingsStackNav.Screen name="VendorAccountSetup" component={VendorAccountSetupScreen} />
+      <VendorSettingsStackNav.Screen name="Privacy" component={PrivacyScreen} />
+      <VendorSettingsStackNav.Screen name="Terms" component={TermsScreen} />
     </VendorSettingsStackNav.Navigator>
   );
 }

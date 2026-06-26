@@ -382,8 +382,7 @@ const swaggerOptions = {
                 quota: {
                   type: 'object',
                   properties: {
-                    remainingGuests: { type: 'integer', nullable: true, description: 'null = unlimited' },
-                    compensationMessages: { type: 'integer' },
+                    remainingInvites: { type: 'integer', nullable: true, description: "Invites remaining on the event's stamped plan (invitePool + compensationPool - invitesConsumed). null = unlimited" },
                   },
                 },
                 testMessageSent: { type: 'boolean' },

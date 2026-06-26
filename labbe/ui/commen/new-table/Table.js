@@ -32,6 +32,10 @@ const Table = ({
   // 3-dots dropdown. Opt-in so existing tables keep the dropdown; the
   // guest table turns this on for a clearer resend/reminder UX.
   inlineBulkActions = false,
+  // Optional: lift the current checkbox selection out of the table so a
+  // parent (e.g. a modal footer) can drive its own confirm button instead of
+  // the inline bulk-action buttons. Fires with the array of selected row ids.
+  onSelectionChange = null,
   pagination = null,
 }) => {
   const { t } = useTranslation("table");
@@ -44,6 +48,15 @@ const Table = ({
     export: exportLabel || t("export", "تصدير البيانات"),
   };
   const [selectedRows, setSelectedRows] = useState([]);
+
+  // Lift selection to a parent when requested. Deps are [selectedRows] only —
+  // the callback identity is intentionally excluded so a parent passing a fresh
+  // function each render can't trigger an update loop.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    onSelectionChange?.(selectedRows);
+  }, [selectedRows]);
+
   const [actionsDropdownOpen, setActionsDropdownOpen] = useState(null);
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [bulkActionsDropdownOpen, setBulkActionsDropdownOpen] = useState(false);

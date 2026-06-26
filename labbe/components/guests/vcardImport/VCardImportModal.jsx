@@ -1,7 +1,6 @@
 "use client";
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FiUserPlus } from "react-icons/fi";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import Button from "@/ui/commen/button/Button";
 import Table from "@/ui/commen/new-table/Table";
@@ -34,6 +33,10 @@ const VCardImportModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
   const [parsed, setParsed] = useState(null); // null = instructions | [] = none | [{name,mobile}]
   const [error, setError] = useState("");
   const [category, setCategory] = useState("");
+  const [selectedIds, setSelectedIds] = useState([]);
+  // Bumped on each file parse so the Table fully remounts (and clears its
+  // internal checkbox state) when a different file is chosen.
+  const [importNonce, setImportNonce] = useState(0);
 
   const existingSet = useMemo(() => new Set(existingMobiles), [existingMobiles]);
 
@@ -44,6 +47,7 @@ const VCardImportModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
       setParsed(null);
       setError("");
       setCategory("");
+      setSelectedIds([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }, [isOpen]);
@@ -52,6 +56,8 @@ const VCardImportModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setError("");
+    setSelectedIds([]);
+    setImportNonce((n) => n + 1);
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
@@ -77,10 +83,10 @@ const VCardImportModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
     reader.readAsText(file);
   };
 
-  const addByIds = (ids) => {
+  const handleConfirm = () => {
     const byId = new Map((parsed || []).map((r) => [r.id, r]));
     const cat = category.trim();
-    const list = ids
+    const list = selectedIds
       .map((id) => byId.get(id))
       .filter(Boolean)
       .map((r) => ({ name: r.name, mobile: r.phone, category: cat }));
@@ -153,6 +159,7 @@ const VCardImportModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
                 maxLength={60}
               />
               <Table
+                key={importNonce}
                 headers={[t("name"), t("mobile")]}
                 headerKeys={["name", "phone"]}
                 data={parsed}
@@ -160,25 +167,32 @@ const VCardImportModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
                 showFilter={false}
                 showExport={false}
                 showCheckboxes
-                inlineBulkActions
                 searchPlaceholder={t("reuse_guests_search_placeholder")}
                 renderCell={renderCell}
-                bulkActions={[
-                  {
-                    text: t("reuse_guests_add_selected"),
-                    icon: <FiUserPlus size={16} />,
-                    onClick: addByIds,
-                  },
-                ]}
+                onSelectionChange={setSelectedIds}
               />
             </>
           )}
         </div>
 
         <div className={styles.footer}>
-          <div className={styles.footerActions}>
-            <Button variant="secondary" title={t("close")} onClick={onClose} type="button" />
-          </div>
+          {parsed && parsed.length > 0 && (
+            <Button
+              variant="primary"
+              className={styles.footerBtn}
+              title={t("confirm")}
+              onClick={handleConfirm}
+              disabled={selectedIds.length === 0}
+              type="button"
+            />
+          )}
+          <Button
+            variant="secondary"
+            className={styles.footerBtn}
+            title={t("cancel")}
+            onClick={onClose}
+            type="button"
+          />
         </div>
 
         <input ref={fileInputRef} type="file" accept=".vcf,text/vcard,text/x-vcard" onChange={handleFile} style={{ display: "none" }} />

@@ -17,16 +17,15 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleTabChange = (tabId) => {
-    if (tabId === "about" || tabId === "privacy" || tabId === "terms") {
-      toast.info(t("tabs.comingSoon"));
-      return;
-    }
-
     // Navigate to the specific settings screen
     if (tabId === "account") {
       navigation.navigate("AccountSettings");
     } else if (tabId === "notifications") {
       navigation.navigate("NotificationSettings");
+    } else if (tabId === "privacy") {
+      navigation.navigate("Privacy");
+    } else if (tabId === "terms") {
+      navigation.navigate("Terms");
     }
   };
 

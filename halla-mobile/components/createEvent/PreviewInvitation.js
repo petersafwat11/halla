@@ -7,14 +7,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  SafeAreaView,
+  Pressable,
   Dimensions,
 } from "react-native";
 
-// Cap the invitation image to half the screen height so a tall template
-// never makes the preview "very long" — the image stays fully visible
-// (contain) and the chat scrolls for the rest. Fits all screen sizes.
-const PREVIEW_IMG_MAX_H = Math.round(Dimensions.get("window").height * 0.5);
+// Cap the invitation image so a tall template never makes the preview "very
+// long" — the image stays fully visible (contain) and the chat scrolls for the
+// rest. Kept modest so the whole popup card stays compact on all screen sizes.
+const PREVIEW_IMG_MAX_H = Math.round(Dimensions.get("window").height * 0.34);
 import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
@@ -49,7 +49,7 @@ const PreviewInvitation = ({
   eventTime = "",
   location = "",
 }) => {
-  const { t } = useTranslation("createEvent");
+  const { t, isRTL } = useTranslation("createEvent");
   const hostName = useAuthStore(
     (state) => state.user?.name || state.user?.username || ""
   );
@@ -113,11 +113,13 @@ const PreviewInvitation = ({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
+      transparent
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <SafeAreaView style={styles.modalContainer}>
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <Pressable style={styles.card} onPress={(e) => e.stopPropagation()}>
         {/* Screen header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{t("preview_title")}</Text>
@@ -133,7 +135,7 @@ const PreviewInvitation = ({
 
         {/* WhatsApp top bar */}
         <View style={styles.waBar}>
-          <Ionicons name="chevron-back" size={22} color="#FFF" />
+          <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={22} color="#FFF" />
           <View style={styles.waAvatar}>
             <Text style={styles.waAvatarText}>H</Text>
           </View>
@@ -230,13 +232,26 @@ const PreviewInvitation = ({
             <Ionicons name="mic" size={18} color="#FFF" />
           </View>
         </View>
-      </SafeAreaView>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalContainer: { flex: 1, backgroundColor: "#EFEAE2" },
+  /* Dimmed backdrop + centered popup card (no longer full-screen) */
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+  },
+  card: {
+    height: "82%",
+    backgroundColor: "#EFEAE2",
+    borderRadius: 18,
+    overflow: "hidden",
+  },
 
   /* Screen header */
   header: {

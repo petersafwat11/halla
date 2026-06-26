@@ -2,13 +2,11 @@ import { View, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../../localization";
 import { useAuthStore } from "../../../stores/authStore";
-import { useToast } from "../../../contexts/ToastContext";
 import SettingsTabs from "../../../components/settings/SettingsTabs";
 import TopBar from "../../../components/plans/TopBar";
 
 export default function AdminSettingsScreen({ navigation }) {
   const { t } = useTranslation("admin");
-  const toast = useToast();
   const { logout } = useAuthStore();
 
   const handleLogout = async () => {
@@ -16,14 +14,14 @@ export default function AdminSettingsScreen({ navigation }) {
   };
 
   const handleTabChange = (tabId) => {
-    if (tabId === "about" || tabId === "privacy" || tabId === "terms") {
-      toast.info(t("settings.comingSoon"));
-      return;
-    }
     if (tabId === "account") {
       navigation.navigate("AdminAccountSettings");
     } else if (tabId === "notifications") {
       navigation.navigate("AdminNotificationSettings");
+    } else if (tabId === "privacy") {
+      navigation.navigate("Privacy");
+    } else if (tabId === "terms") {
+      navigation.navigate("Terms");
     }
   };
 

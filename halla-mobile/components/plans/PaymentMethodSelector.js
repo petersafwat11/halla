@@ -222,7 +222,7 @@ const PaymentMethodSelector = ({
           <View style={styles.field}>
             <Text style={styles.label}>{t("checkout.card.name")}</Text>
             <TextInput
-              style={[styles.input, errors.name && styles.inputError]}
+              style={[styles.input, styles.ltrInput, errors.name && styles.inputError]}
               placeholder={t("checkout.card.name")}
               placeholderTextColor={colors.natural[350]}
               value={card.name || ""}
@@ -489,6 +489,9 @@ const styles = StyleSheet.create({
   ltrInput: {
     textAlign: "left",
     writingDirection: "ltr",
+    // `direction` forces the input's layout LTR even when the app runs RTL —
+    // without it Android keeps the caret/placeholder pinned to the right.
+    direction: "ltr",
   },
   inputError: {
     borderColor: colors.error ? colors.error[500] : "#F43F5E",

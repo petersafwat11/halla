@@ -59,7 +59,7 @@ const MENU_ITEMS = [
 ];
 
 const AdminMoreScreen = ({ navigation }) => {
-  const { t } = useTranslation("admin");
+  const { t, isRTL } = useTranslation("admin");
   const { user } = useAuthStore();
   const userRole = user?.role;
 
@@ -91,7 +91,7 @@ const AdminMoreScreen = ({ navigation }) => {
               <Text style={styles.menuItemLabel}>{t(item.labelKey)}</Text>
             </View>
             <Ionicons
-              name="chevron-forward"
+              name={isRTL ? "chevron-back" : "chevron-forward"}
               size={20}
               color={colors.natural[350]}
             />

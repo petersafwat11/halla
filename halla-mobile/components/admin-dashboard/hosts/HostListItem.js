@@ -21,14 +21,25 @@ const HostListItem = ({ host, onPress, onManageSubscription, selected = false, o
   const deleteHost = useDeleteHost();
   const toast = useToast();
 
-  const handleStatusChange = async () => {
+  const handleStatusChange = () => {
     const newStatus = status === "active" ? "suspended" : "active";
-    try {
-      await updateStatus.mutateAsync({ hostId, status: newStatus });
-      toast.success(t("hosts.actions.statusUpdated"));
-    } catch {
-      toast.error(t("hosts.actions.statusUpdateFailed"));
-    }
+    const isSuspending = newStatus === "suspended";
+    const actionLabel = isSuspending ? t("common.suspend") : t("common.activate");
+    Alert.alert(actionLabel, `${actionLabel} "${name || ""}"?`, [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: actionLabel,
+        style: isSuspending ? "destructive" : "default",
+        onPress: async () => {
+          try {
+            await updateStatus.mutateAsync({ hostId, status: newStatus });
+            toast.success(t("hosts.actions.statusUpdated"));
+          } catch {
+            toast.error(t("hosts.actions.statusUpdateFailed"));
+          }
+        },
+      },
+    ]);
   };
 
   const handleDelete = () => {

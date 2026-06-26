@@ -19,9 +19,11 @@ const VendorSettingsScreen = ({ navigation }) => {
   const handleTabChange = (tabId) => {
     if (tabId === "accountSetup") {
       navigation.navigate("VendorAccountSetup");
-      return;
+    } else if (tabId === "privacy") {
+      navigation.navigate("Privacy");
+    } else if (tabId === "terms") {
+      navigation.navigate("Terms");
     }
-    toast.info(t("settings.notifications.comingSoon"));
   };
 
   return (

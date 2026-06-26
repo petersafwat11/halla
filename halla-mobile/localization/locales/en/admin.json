@@ -85,6 +85,10 @@
     "tickets": {
       "title": "Open Tickets",
       "subtitle": "{{count}} resolved this period"
+    },
+    "businesses": {
+      "title": "Total Businesses",
+      "subtitle": "{{count}} active"
     }
   },
   "hosts": {
@@ -404,7 +408,9 @@
       "inactive": "Inactive",
       "pending": "Pending",
       "verified": "Verified",
-      "suspended": "Suspended"
+      "suspended": "Suspended",
+      "approved": "Approved",
+      "rejected": "Rejected"
     },
     "categories": {
       "catering": "Catering",
@@ -528,7 +534,8 @@
       "completed": "Completed",
       "cancelled": "Cancelled",
       "suspended": "Suspended",
-      "pending": "Pending Approval"
+      "pending": "Pending Approval",
+      "pending_scheduling": "Pending Scheduling"
     },
     "status": {
       "upcoming": "Upcoming",
@@ -539,7 +546,9 @@
       "completed": "Completed",
       "cancelled": "Cancelled",
       "suspended": "Suspended",
-      "pending": "Pending"
+      "pending": "Pending",
+      "pending_scheduling": "Pending Scheduling",
+      "deleted": "Deleted"
     },
     "stats": {
       "total": "Total",

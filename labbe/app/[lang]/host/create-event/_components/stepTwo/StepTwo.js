@@ -11,6 +11,7 @@ import GuestImporter from "./GuestImporter";
 import GuestTable from "./GuestTable";
 import ReuseGuestsModal from "@/components/guests/reuseGuests/ReuseGuestsModal";
 import VCardImportModal from "@/components/guests/vcardImport/VCardImportModal";
+import CategoryAssignModal from "@/components/guests/categoryAssign/CategoryAssignModal";
 import { useMyContacts } from "@/hooks/guests/queries";
 import { toastUtils } from "@/utils/toastUtils";
 import {
@@ -46,6 +47,9 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
   });
   const [showReuseModal, setShowReuseModal] = useState(false);
   const [showVcardModal, setShowVcardModal] = useState(false);
+  // Bulk "link to category": holds the ids selected in the table when the
+  // assign popup is open, so confirming applies the chosen label to them.
+  const [categoryAssignIds, setCategoryAssignIds] = useState(null);
   // Contact Picker API is Android-Chrome only; resolve client-side to avoid
   // a hydration mismatch.
   const [supportsPicker, setSupportsPicker] = useState(false);
@@ -114,6 +118,37 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
       }
     },
     [guestList, setValue, resetCurrentItem]
+  );
+
+  // Bulk "link to category" — open the assign popup for the selected rows,
+  // then stamp the chosen label onto each on confirm (local list; persists via
+  // the normal Step-2 save). Empty value clears the category.
+  const handleBulkCategory = useCallback((selectedIds) => {
+    if (!selectedIds || selectedIds.length === 0) return;
+    setCategoryAssignIds(selectedIds);
+  }, []);
+
+  const applyCategoryToIds = useCallback(
+    (category) => {
+      const ids = new Set(categoryAssignIds || []);
+      const updatedList = guestList.map((g) =>
+        ids.has(g.id) ? { ...g, category } : g
+      );
+      setValue("guestList", updatedList, { shouldValidate: true });
+      setCategoryAssignIds(null);
+    },
+    [categoryAssignIds, guestList, setValue]
+  );
+
+  const categoryOptions = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...savedCategories,
+          ...guestList.map((g) => g.category).filter(Boolean),
+        ])
+      ),
+    [savedCategories, guestList]
   );
 
   // Edit click handler — populates the importer form with the row's values.
@@ -279,6 +314,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         handleEditClick={handleEditClick}
         handleRemove={handleRemove}
         handleBulkDelete={handleBulkDelete}
+        handleBulkCategory={handleBulkCategory}
       />
 
       {/* Import Limit Popup */}
@@ -343,6 +379,15 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         }}
         existingMobiles={guestList.map((g) => g.mobile)}
         remainingCapacity={remainingCapacity}
+      />
+
+      {/* Bulk link-to-category for the selected guests */}
+      <CategoryAssignModal
+        isOpen={categoryAssignIds !== null}
+        onClose={() => setCategoryAssignIds(null)}
+        onConfirm={applyCategoryToIds}
+        options={categoryOptions}
+        count={categoryAssignIds?.length || 0}
       />
     </div>
   );

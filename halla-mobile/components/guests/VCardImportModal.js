@@ -234,11 +234,14 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
                   onChangeText={setCategory}
                   maxLength={60}
                 />
-                <Button
-                  text={t("reuse_guests_add", { count: selectedCount })}
-                  onPress={handleAdd}
-                  disabled={selectedCount === 0}
-                />
+                <View style={styles.footerActions}>
+                  <View style={styles.footerButton}>
+                    <Button text={t("confirm")} onPress={handleAdd} disabled={selectedCount === 0} />
+                  </View>
+                  <View style={styles.footerButton}>
+                    <Button text={t("cancel")} variant="secondary" onPress={handleClose} />
+                  </View>
+                </View>
               </View>
             </>
           )}
@@ -313,6 +316,8 @@ const styles = StyleSheet.create({
   rowName: { fontSize: 15, fontFamily: "Cairo_600SemiBold", color: "#2C2C2C" },
   rowPhone: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#656565", writingDirection: "ltr" },
   footer: { paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: "#F0F0F0", gap: 12 },
+  footerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
+  footerButton: { flex: 1 },
   categoryInput: {
     borderWidth: 1,
     borderColor: "#E0E0E0",

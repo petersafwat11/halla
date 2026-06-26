@@ -7,26 +7,19 @@ export default function LastEventQuota({ quota }) {
   const { t } = useTranslation("home-events");
   if (!quota) return null;
 
-  // Backend returns null for unlimited.
+  // Backend returns null for unlimited, a number (including 0) otherwise.
   const remaining =
-    quota.remainingGuests == null
+    quota.remainingInvites == null
       ? t("lastEvent.quota.unlimited", "Unlimited")
-      : quota.remainingGuests;
+      : quota.remainingInvites;
 
   return (
     <div className={styles.subscriptionQuota}>
       <div className={styles.quotaItem}>
         <div className={styles.quotaLabel}>
-          {t("lastEvent.quota.remainingGuests")}
+          {t("lastEvent.quota.remainingInvites")}
         </div>
         <div className={styles.quotaValue}>{remaining}</div>
-      </div>
-      <div className={styles.quotaSeparator} />
-      <div className={styles.quotaItem}>
-        <div className={styles.quotaLabel}>
-          {t("lastEvent.quota.compensationMessages")}
-        </div>
-        <div className={styles.quotaValue}>{quota.compensationMessages ?? 0}</div>
       </div>
     </div>
   );

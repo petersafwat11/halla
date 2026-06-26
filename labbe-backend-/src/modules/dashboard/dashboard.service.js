@@ -19,7 +19,6 @@ const Subscription = require('../../../models/SubscriptionModel');
 const Ticket = require('../../../models/TicketModel');
 const Guest = require('../../../models/GuestModel');
 const Service = require('../../../models/ServiceModel');
-const { isPoolPlan, COMPENSATION_PERCENTAGE } = require('../../shared/constants/plans');
 const { signStoredImage } = require('../../shared/utils/s3Upload');
 const {
   personalHostFilter,
@@ -325,7 +324,7 @@ class DashboardService {
       Event.countDocuments({ host: userId, status: EVENT_STATUS.PENDING_SCHEDULING }),
       Subscription.findOne({ userId, status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } }).populate('planId').lean(),
       Event.findOne({ host: userId, status: { $nin: [EVENT_STATUS.DELETED, EVENT_STATUS.CANCELLED] } })
-        .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings testMessageSent templateImage visualTemplate taqnyatTemplate guestReplies')
+        .select('eventDetails.title eventDetails.date eventDetails.time eventDetails.location eventDetails.locationName status guestList createdAt launchSettings testMessageSent templateImage visualTemplate taqnyatTemplate guestReplies subscriptionId')
         .sort({ createdAt: -1 })
         .populate('guestList')
         .populate({ path: 'taqnyatTemplate.templateRef' })
@@ -348,37 +347,38 @@ class DashboardService {
         ? Math.round(((guestStats.confirmed + guestStats.declined) / guestStats.total) * 100)
         : 0;
 
-      // Quota: pool plans → use the shared pool counters; per-event plans → use
-      // the per-event cap minus already-added guests. `null` remainingGuests means
-      // unlimited (admin/super-admin plans where invitePool is null).
-      const planType = subscription?.planId?.planType;
-      const planLimits = subscription?.planId?.limits || {};
+      // Quota: invites remaining on the plan ATTACHED TO THE EVENT (the
+      // subscription stamped at creation), NOT the host's current plan — an
+      // ended event must reflect the pool it was created under. Read the
+      // stamped sub directly by id; this is display (not send-enforcement) so
+      // we deliberately don't gate on its active/expired status — the event's
+      // frozen plan IS the answer. Fall back to the current active
+      // subscription only for legacy events that were never stamped.
+      //
+      // Formula mirrors the send budget used everywhere else (messaging.send,
+      // events.resend, refund clawback): invitePool + compensationPool -
+      // invitesConsumed. This already folds in compensation and any purchased
+      // extra invites (pool/org addons $inc invitePool). invitePool null ⇒
+      // unlimited; a missing/unresolvable stamped sub ⇒ 0 (never "unlimited").
+      let quotaSub = subscription;
+      if (lastEvent.subscriptionId) {
+        quotaSub = await Subscription.findById(lastEvent.subscriptionId)
+          .select('invitePool compensationPool invitesConsumed')
+          .lean();
+      }
 
-      let remainingGuests;
-      let compensationMessages;
-      if (subscription && isPoolPlan(planType)) {
-        // Pool plans: invitesRemaining = invitePool + compensationPool - invitesConsumed.
-        // compensationMessages surfaces the compensation slice of that pool.
-        remainingGuests =
-          subscription.invitePool == null
-            ? null
-            : Math.max(
-                0,
-                (subscription.invitePool || 0) +
-                  (subscription.compensationPool || 0) -
-                  (subscription.invitesConsumed || 0)
-              );
-        compensationMessages = subscription.compensationPool ?? 0;
+      let remainingInvites;
+      if (!quotaSub) {
+        remainingInvites = 0;
+      } else if (quotaSub.invitePool == null) {
+        remainingInvites = null;
       } else {
-        const maxInvitesPerEvent = planLimits.maxInvitesPerEvent ?? null;
-        remainingGuests =
-          maxInvitesPerEvent == null || maxInvitesPerEvent === -1
-            ? null
-            : Math.max(0, maxInvitesPerEvent - guests.length);
-        compensationMessages =
-          maxInvitesPerEvent != null && maxInvitesPerEvent !== -1
-            ? Math.floor((COMPENSATION_PERCENTAGE / 100) * maxInvitesPerEvent)
-            : 0;
+        remainingInvites = Math.max(
+          0,
+          (quotaSub.invitePool || 0) +
+            (quotaSub.compensationPool || 0) -
+            (quotaSub.invitesConsumed || 0)
+        );
       }
 
       // Step-3 invitation image (baked template or custom upload). Stored as a
@@ -402,8 +402,7 @@ class DashboardService {
         responseRate: `${responseRate}%`,
         stats: guestStats,
         quota: {
-          remainingGuests,
-          compensationMessages,
+          remainingInvites,
         },
         testMessageSent: lastEvent.testMessageSent || false,
         launchSettings: lastEvent.launchSettings || null,

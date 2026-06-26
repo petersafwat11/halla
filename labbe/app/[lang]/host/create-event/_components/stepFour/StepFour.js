@@ -2,8 +2,8 @@
 /**
  * StepFour — Taqnyat picker + auto-replies (5-step wizard)
  *
- * Step 4 combines the Taqnyat-template picker (filtered by the category
- * locked in step 3) with the auto-replies editor below it.
+ * Step 4 combines the Taqnyat-template picker (filtered by the event
+ * category chosen in step 1) with the auto-replies editor below it.
  *
  * Saves the host's pick into:
  *   - selectedTemplate (legacy, for messaging.service compat)
@@ -73,7 +73,6 @@ const StepFour = () => {
   const { t, i18n } = useTranslation("createEvent");
   const [activeTab, setActiveTab] = useState("attending");
 
-  const visualTemplate = watch("visualTemplate");
   const selectedTemplate = watch("selectedTemplate");
   const guestReplies = watch("guestReplies") || {};
   const eventName = watch("eventName");
@@ -114,7 +113,9 @@ const StepFour = () => {
     });
   }, [eventName, eventDate, eventTime, address?.address, hostName, i18n?.language]);
 
-  const category = visualTemplate?.categories?.[0] || "";
+  // Filter templates by the event category chosen in step 1 (eventType),
+  // not the visual template picked in step 3.
+  const category = watch("eventType") || "";
 
   const { data, isLoading, error } = useHostTaqnyatTemplates(
     { category: category || undefined, type: "invite" },

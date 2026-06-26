@@ -371,14 +371,27 @@ const EventDetailsScreen = () => {
     });
   };
 
-  const handleDeleteModerator = async (m) => {
+  const handleDeleteModerator = (m) => {
     const staffId = m._id || m.id;
-    try {
-      await deleteStaffMutation.mutateAsync({ eventId, staffId });
-      toast.success(t("guest.alerts.staffDeleteSuccess", "تم حذف المشرف بنجاح"));
-    } catch (e) {
-      toast.error(e?.message || t("guest.alerts.staffDeleteError", "حدث خطأ أثناء حذف المشرف"));
-    }
+    Alert.alert(
+      t("guest.alerts.deleteConfirmTitle", "تأكيد الحذف"),
+      t("guest.alerts.staffDeleteConfirmBody", "هل أنت متأكد من حذف هذا المشرف؟"),
+      [
+        { text: t("guest.alerts.cancel", "إلغاء"), style: "cancel" },
+        {
+          text: t("guest.alerts.delete", "حذف"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteStaffMutation.mutateAsync({ eventId, staffId });
+              toast.success(t("guest.alerts.staffDeleteSuccess", "تم حذف المشرف بنجاح"));
+            } catch (e) {
+              toast.error(e?.message || t("guest.alerts.staffDeleteError", "حدث خطأ أثناء حذف المشرف"));
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleRevokeModerator = async (m) => {

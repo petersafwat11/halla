@@ -1,0 +1,384 @@
+{
+  "ar": {
+    "badge": "الشروط والأحكام",
+    "title": "الشروط والأحكام",
+    "subtitle": "منصة هلا",
+    "lastUpdated": "24 نوفمبر 2025",
+    "effectiveDate": null,
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "المادة الأولى",
+        "title": "التعاريف",
+        "body": "لأغراض هذه الشروط والأحكام، يقصد بالشركة مؤسسة هلا الرقمية للتقنية بصفتها المالك والمشغل لمنصة وتطبيق هلا والمسجلة لدى وزارة التجارة في المملكة العربية السعودية. ويقصد بمنصة وتطبيق هلا المنصة الإلكترونية والتطبيق المرتبط بها اللذان يهدفان إلى خدمة أصحاب المناسبات مثل حفلات الزفاف والخطوبة والتخرج والاستقبالات والاجتماعات العائلية وغيرها، من خلال إدارة وتوجيه الدعوات وتنظيم دخول المدعوين وإدارة بياناتهم. ويقصد بالمستخدم أي شخص طبيعي أو اعتباري يقوم باستخدام منصة أو تطبيق هلا بأي صفة كانت، سواء كان زائراً أو صاحب مناسبة أو داعياً إضافياً أو مدعوّاً أو مشرف بوابة أو مصمم بطاقات دعوة أو ممثلاً عن جهة أو مؤسسة أو شركة."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "المادة الثانية",
+        "title": "المقدمة وقبول الشروط",
+        "body": "ترحب الشركة بالمستخدم وتشكره على استخدامه لمنصة وتطبيق هلا وما يرتبط بهما من منتجات وخدمات ومزايا. وتشكل هذه الشروط والأحكام اتفاقاً رسمياً ملزماً بين الشركة والمستخدم، ويعد دخول المستخدم إلى منصة أو تطبيق هلا أو استخدامه لأي من خدماتهما قبولاً كاملاً وغير مشروط بجميع ما ورد في هذه الشروط والأحكام. وفي حال عدم موافقة المستخدم على أي جزء من هذه الشروط، يتوجب عليه التوقف فوراً عن استخدام منصة وتطبيق هلا، ويعتبر استمرار استخدامه بعد ذلك إقراراً صريحاً بموافقته على هذه الشروط."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "المادة الثالثة",
+        "title": "لغة الشروط وحجيتها",
+        "body": "تعتمد النسخة العربية من هذه الشروط والأحكام بوصفها النسخة الرسمية والملزمة التي تحكم العلاقة بين الشركة والمستخدم. وفي حال توفير ترجمة لهذه الشروط إلى أي لغة أخرى، فإن ذلك يكون لغايات التسهيل فقط، وفي حال وجود أي تعارض بين النص العربي وأي ترجمة أخرى، تكون العبرة بما ورد في النسخة العربية دون غيرها."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "المادة الرابعة",
+        "title": "التعديلات وتحديث المنصة",
+        "body": "تحتفظ الشركة بحقها في تحديث منصة وتطبيق هلا من وقت لآخر، كما يجوز لها وفق تقديرها المنفرد تعديل أي جزء من محتواهما أو تغيير أي خدمة أو تعليقها أو إيقافها، بما في ذلك إيقاف أو تغيير أي ميزة أو قاعدة بيانات أو محتوى، وذلك في أي وقت. ويجوز للشركة إشعار المستخدم بهذه التعديلات عن طريق نشر إخطار داخل المنصة أو التطبيق أو إرسال إشعار عبر البريد الإلكتروني أو الرسائل النصية أو أي وسيلة اتصال أخرى معتمدة. كما يجوز للشركة تقييد بعض الميزات أو الخدمات أو الحد من وصول المستخدم إلى أجزاء معينة من منصة أو تطبيق هلا أو إلى المنصة أو التطبيق بالكامل دون التزام بالإنذار المسبق أو تحمل أي مسؤولية عن ذلك. ويقر المستخدم بأن محتوى منصة وتطبيق هلا قد لا يكون محدثاً في جميع الأوقات، وأن الشركة لا تقدم أي تعهد بخلو المحتوى من الأخطاء أو المعلومات غير الدقيقة."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "المادة الخامسة",
+        "title": "أهلية المستخدم واستخدام المنصة نيابة عن الغير",
+        "body": "يشترط لاستعمال منصة وتطبيق هلا أن يكون المستخدم قد أتم ثلاث عشرة سنة ميلادية على الأقل. وإذا كان عمره أقل من ثماني عشرة سنة، فيجب أن يحصل على إذن صريح من أحد والديه أو من وصيه القانوني، وعلى ولي الأمر أو الوصي قراءة هذه الشروط مع المستخدم القاصر، ويعد السماح له باستخدام المنصة أو التطبيق قبولاً بهذه الشروط وتحملًا للمسؤولية عنه. وإذا كان المستخدم يمثل شركة أو مؤسسة أو جهة حكومية أو منشأة ربحية أو غير ربحية، فإنه يقر بأن لديه الصلاحية النظامية للتصرف نيابة عن تلك الجهة ويؤكد التزامها بهذه الشروط والأحكام."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "المادة السادسة",
+        "title": "أحقية الحصول على الخدمات",
+        "body": "يقر المستخدم بأنه لم يسبق أن تم تعطيل استخدامه لمنصة أو تطبيق هلا أو منعه من استخدام أي خدمة للشركة في أي وقت سابق، كما يقر بأنه ليس منافساً لمنصة أو تطبيق هلا، ولا يقدم أي منتج أو خدمة منافسة بشكل مباشر أو غير مباشر، ويقر كذلك بأنه يتمتع بالأهلية النظامية والشرعية الكاملة للتعاقد، وأن استخدامه للمنصة والتطبيق لن يترتب عليه مخالفة لأي نظام أو عقد يكون طرفاً فيه."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "المادة السابعة",
+        "title": "تعهدات وضمانات المستخدم",
+        "body": "يلتزم المستخدم عند استخدامه لمنصة وتطبيق هلا بأن يمتثل لجميع الأنظمة واللوائح المعمول بها في المملكة العربية السعودية، وأن يقدم بيانات صحيحة ودقيقة وكاملة عند طلبها، وأن يقوم بتحديث تلك البيانات كلما طرأ عليها تغيير. كما يلتزم بمراجعة الإشعارات والتحديثات التي ترسلها الشركة والامتثال لما يرد فيها، وأن يستخدم منصة وتطبيق هلا لأغراض مشروعة فقط وألا يستغلهما في أي أفعال احتيالية أو مخالفة للأنظمة أو الآداب العامة. ويقر بعدم استخدام المنصة أو التطبيق لإيذاء أي شخص أو مضايقته أو إزعاجه، وبالموافقة على تبادل المعلومات ذات الصلة بعملياته وتعاملاته داخل منظومة هلا مع الجهات ذات العلاقة بالمقدار اللازم لتقديم الخدمة وتقييمها. كما يتعهد بعدم تعطيل أو محاولة تعطيل التشغيل السليم لمنصة أو تطبيق هلا وعدم محاولة الإضرار بهما بأي وسيلة، وعدم نسخ أو إعادة توزيع أي من محتوياتهما أو برمجياتهما أو تصميماتهما دون إذن خطي مسبق من الشركة. ويلتزم المستخدم بالمحافظة على سرية بيانات دخوله إلى حسابه، بما في ذلك كلمة المرور وأي وسائل تحقق أخرى، وعدم مشاركتها مع الغير، وتقديم كل ما تطلبه الشركة من دلائل ومستندات تثبت هويته متى طلبت ذلك. ويقر بأن للشركة الحق المطلق في رفض إتاحة استخدام منصة أو تطبيق هلا له أو تقييد استخدامه دون بيان الأسباب."
+      },
+      {
+        "id": "article-8",
+        "num": "8",
+        "label": "المادة الثامنة",
+        "title": "نطاق الترخيص باستخدام منصة وتطبيق هلا",
+        "body": "تمنح الشركة للمستخدم ترخيصاً شخصياً محدوداً وغير حصري وغير قابل للتحويل أو التنازل أو الترخيص من الباطن وغير قابل للإلغاء، وذلك لاستخدام منصة وتطبيق هلا للغرض الشخصي المشروع المتوافق مع هذه الشروط. ولا يجوز للمستخدم إتاحة المنصة أو التطبيق للغير أو تأجيرهما أو إعادة بيعهما أو توزيع أي جزء منهما أو ترخيصهما من الباطن أو إنشاء أعمال مشتقة منهما أو محاولة الوصول إلى الشفرة المصدرية أو البنية الداخلية لهما بأي وسيلة من وسائل الهندسة العكسية أو غيرها. كما لا يجوز له حذف أو تغيير أي إشعارات بالحقوق أو العلامات أو التحذيرات المدرجة ضمن المنصة أو التطبيق، أو السماح لغيره باستخدام بيانات دخوله، أو تمكين أي شخص غير مخول من الوصول إلى حسابه."
+      },
+      {
+        "id": "article-9",
+        "num": "9",
+        "label": "المادة التاسعة",
+        "title": "الحقوق الفكرية والعلامات التجارية",
+        "body": "تعتبر جميع محتويات منصة وتطبيق هلا بما في ذلك على سبيل المثال لا الحصر الشفرات البرمجية وقواعد البيانات والتصميمات والواجهات والنصوص والصور والرسومات والشعارات والأيقونات وأسماء الخدمات والعلامات التجارية والأسماء التجارية والأعمال الفنية والمرئية والسمعية، مملوكة للشركة أو مرخَّصة لها، ومحميّة بموجب أنظمة حقوق الملكية الفكرية المعمول بها في المملكة العربية السعودية والاتفاقيات الدولية ذات الصلة. ويُحظر على المستخدم نسخ أو إعادة إنتاج أو نشر أو بث أو توزيع أو ترخيص أو استغلال أي من تلك المحتويات لأي غرض غير شخصي وغير تجاري إلا بعد الحصول على موافقة خطية مسبقة من الشركة."
+      },
+      {
+        "id": "article-10",
+        "num": "10",
+        "label": "المادة العاشرة",
+        "title": "التسجيل في منصة وتطبيق هلا",
+        "body": "قد يتطلب استخدام بعض الخدمات قيام المستخدم بإنشاء حساب وتسجيل بعض بياناته الشخصية مثل الاسم ورقم الجوال والبريد الإلكتروني وأي بيانات أخرى تطلبها الشركة. ويقر المستخدم بأنه لن يقوم بالتسجيل أو محاولة التسجيل إلا من خلال الواجهات والقنوات التي تحددها الشركة، وأنه مسؤول عن صحة البيانات التي يقدمها وعن تحديثها متى لزم الأمر. ويعد استمرار استخدام الحساب على المنصة أو التطبيق إقراراً من المستخدم بمسؤوليته عن جميع الأنشطة التي تتم باستخدام ذلك الحساب."
+      },
+      {
+        "id": "article-11",
+        "num": "11",
+        "label": "المادة الحادية عشرة",
+        "title": "أمن الحساب وكلمة المرور",
+        "body": "يتحمل المستخدم كامل المسؤولية عن الحفاظ على سرية بيانات الدخول إلى حسابه، بما في ذلك كلمة المرور ورمز التحقق وأي وسائل أخرى تعتمدها الشركة للتحقق من الهوية. ويقر بأنه المسؤول الوحيد عن كافة العمليات التي تتم عبر حسابه، ويلتزم بإبلاغ الشركة فوراً عند علمه بأي استخدام غير مصرح به لحسابه أو أي اختراق أو فقدان لبيانات الدخول. وتؤكد الشركة أن موظفيها لا يطلبون من المستخدم الإفصاح عن كلمة المرور أو رموز التحقق ذات الاستخدام لمرة واحدة، وأي إفصاح عن تلك البيانات يكون على مسؤولية المستخدم وحده."
+      },
+      {
+        "id": "article-12",
+        "num": "12",
+        "label": "المادة الثانية عشرة",
+        "title": "الدخول غير المصرح به ومحاولات الإضرار",
+        "body": "يحظر على المستخدم محاولة الدخول إلى منصة أو تطبيق هلا بطرق لا تتوافق مع الوسائل الرسمية التي تحددها الشركة، كما يحظر عليه محاولة اختراق الأنظمة أو إدخال فيروسات أو شفرات خبيثة أو أي مواد ضارة تقنياً، أو القيام بأي أفعال من شأنها الإضرار بالمنصة أو التطبيق أو التقليل من أداء الخدمات أو إعاقة تشغيلها أو التأثير على الخوادم أو الشبكات المرتبطة بها. ويعد أي تصرف من هذا القبيل مخالفة جسيمة يترتب عليها إنهاء حق المستخدم في استخدام المنصة أو التطبيق فوراً، بالإضافة إلى إمكان ملاحقته نظامياً ومطالبته بالتعويض عن الأضرار."
+      },
+      {
+        "id": "article-13",
+        "num": "13",
+        "label": "المادة الثالثة عشرة",
+        "title": "سياسة البيع والشراء والدفع",
+        "body": "تحتفظ الشركة بحقها في تعديل أسعار الخدمات والمنتجات المتاحة عبر منصة وتطبيق هلا في أي وقت، وعلى المستخدم الاطلاع على الأسعار المحدثة قبل إتمام عملية الشراء. وتتيح الشركة وسائل دفع معتمدة مثل البطاقات الائتمانية وبطاقات مدى ووسائل الدفع الرقمية والتحويل البنكي، ويجوز لها إضافة أو إيقاف أي وسيلة دفع وفقاً لتقديرها. ويقر المستخدم بالتأكد من توافر الرصيد الكافي في وسيلة الدفع التي يستخدمها، وبأن المبالغ المدفوعة نظير الخدمات التي تم تنفيذها وجرى من خلالها إرسال الدعوات لا تكون قابلة للاسترداد إلا في الحالات التي تعلنها الشركة صراحةً. وفي حال عدم سداد رسوم خدمة أو مناسبة جديدة خلال المدة التي تحددها الشركة، يحق للشركة تعليق المناسبة أو حذفها بعد مدة قد تصل إلى ثلاثين يوماً، كما يحق لها تعليق أو إيقاف الحساب في حال تراكم مناسبات غير مسددة. وتكون رسوم الخدمات غير شاملة لأي مصاريف تحويل أو ضرائب أو رسوم حكومية أخرى ما لم يذكر خلاف ذلك، ويتحمل المستخدم تلك التكاليف عند الاقتضاء."
+      },
+      {
+        "id": "article-14",
+        "num": "14",
+        "label": "المادة الرابعة عشرة",
+        "title": "سياسة الاسترجاع والإلغاء",
+        "body": "يجوز للمستخدم، وفقاً للضوابط التي تعتمدها الشركة، طلب إلغاء المناسبة واسترجاع المبلغ المدفوع إذا لم يكن قد استخدم أو أرسل أي من بطاقات الدعوة المرتبطة بتلك المناسبة، وكان طلب الإلغاء قبل موعد المناسبة بمدة لا تقل عن اثنتين وسبعين ساعة. وإذا تضمنت الخدمة طلب تصميم خاص مدفوع، فيجوز للشركة خصم قيمة التصميم الذي تم تنفيذه واسترجاع باقي المبلغ للمستخدم متى استوفى شروط الإلغاء المشار إليها. وتحتفظ الشركة بحقها في بيان الحالات التي يقبل فيها الاسترجاع أو يرفض، بما يتوافق مع طبيعة الخدمة الرقمية."
+      },
+      {
+        "id": "article-15",
+        "num": "15",
+        "label": "المادة الخامسة عشرة",
+        "title": "التعويض عن الأضرار",
+        "body": "بموافقة المستخدم على هذه الشروط واستخدامه لمنصة وتطبيق هلا، يوافق على أن يدافع عن الشركة ويعوضها ويبرئ ذمتها هي وشركاتها التابعة ومرخِّصيها ومسؤوليها وموظفيها ووكلاءها من أي مطالبات أو أضرار أو خسائر أو مسؤوليات أو تكاليف أو مصروفات، بما في ذلك أتعاب المحاماة المعقولة، والتي تنشأ عن أو ترتبط بأي إخلال من المستخدم بهذه الشروط أو بأي أنظمة أو لوائح معمول بها، أو انتهاكه لأي حقوق للغير، أو إساءة استخدامه للمنصة أو التطبيق أو الخدمات."
+      },
+      {
+        "id": "article-16",
+        "num": "16",
+        "label": "المادة السادسة عشرة",
+        "title": "الاستخدامات المحظورة",
+        "body": "يحظر على المستخدم استخدام منصة وتطبيق هلا في أي نشاط يخالف أحكام الشريعة الإسلامية أو الأنظمة المعمول بها في المملكة العربية السعودية أو الآداب والذوق العام. ويشمل ذلك على سبيل المثال لا الحصر توجيه دعوات ذات محتوى غير لائق أو تحريضي أو سياسي أو طائفي أو دعوات ذات طابع إعلاني مزعج أو إرسال دعوات إلى أرقام عشوائية أو خاطئة أو انتحال أسماء أشخاص آخرين أو استخدام صور أو مقاطع فيديو مخالفة لحقوق الملكية الفكرية أو قوانين المحتوى أو استخدام المنصة أو التطبيق لأغراض الإعلانات أو الحملات الترويجية غير المصرح بها أو تشغيل دعوات أو عمليات آلية عبر برامج روبوت أو سكربتات على نحو يضر بالمنصة أو مستخدميها."
+      },
+      {
+        "id": "article-17",
+        "num": "17",
+        "label": "المادة السابعة عشرة",
+        "title": "المخالفات الجسيمة وإيقاف الحساب",
+        "body": "تعتبر مخالفة أي حكم من أحكام هذه الشروط استخداماً غير مشروع يخول الشركة، وفق تقديرها المنفرد، تعليق أو إيقاف حساب المستخدم بشكل مؤقت أو دائم دون التزام بتعويضه أو رد أي مبالغ مدفوعة في بعض الحالات. ويشمل ذلك الأفعال التي تلحق ضرراً بالمنصة أو بالشركة أو بالمستخدمين، أو أي ممارسات احتيالية أو سرقة أو استخدام وسائل دفع غير نظامية أو محاولة بيع الحساب أو التوسط في عمليات خارج نطاق المنصة أو انتحال الشخصية أو تكرار المخالفات."
+      },
+      {
+        "id": "article-18",
+        "num": "18",
+        "label": "المادة الثامنة عشرة",
+        "title": "التعليقات والتقييمات",
+        "body": "إذا أتيحت للمستخدم إمكانية إضافة تعليق أو تقييم على الخدمات، فيقر بأن تعليقاته يجب أن تكون صادقة وتعبر عن تجربته الفعلية مع المنصة أو الخدمات أو مشرفي البوابات، وأن الشركة تملك وحدها الحق في قبول نشر هذه التعليقات أو رفضها أو حذفها، كما تؤول ملكية المحتوى التعليقي للشركة التي يحق لها إعادة إنتاجه أو تعديله أو نقله أو ترجمته أو استخدامه بأي طريقة تراها مناسبة دون التزام بدفع أي مقابل للمستخدم. ويمنع على المستخدم استخدام التعليقات في الإساءة أو السب أو التجريح أو نشر خطاب الكراهية أو التحريض أو أي محتوى مخالف للأنظمة أو الآداب."
+      },
+      {
+        "id": "article-19",
+        "num": "19",
+        "label": "المادة التاسعة عشرة",
+        "title": "حدود المسؤولية",
+        "body": "تُقدّم منصة وتطبيق هلا والخدمات المرتبطة بهما كما هي ووفقاً لما هو متاح دون أي ضمانات صريحة أو ضمنية تتعلق بملاءمة الخدمات لغرض معين أو بخلوها من الأخطاء أو بانقطاعها أو باستمرارية عملها دون أعطال. ولا تتحمل الشركة أو موظفوها أو وكلاؤها أو مرخِّصوها أي مسؤولية عن أي أضرار مباشرة أو غير مباشرة أو تبعية أو خاصة أو طارئة تنشأ عن استخدام المنصة أو التطبيق أو العجز عن استخدامهما أو الاعتماد على أي من خدماتهما أو عن تعطل أنظمة الاتصالات أو مزودي الخدمات أو عدم وصول بعض الدعوات أو تأخرها، وذلك في الحدود التي يسمح بها النظام. ويقر المستخدم بأن مسؤولية الشركة في الاحتفاظ بالبيانات لا تتجاوز مدة سنتين."
+      },
+      {
+        "id": "article-20",
+        "num": "20",
+        "label": "المادة العشرون",
+        "title": "الأطراف الثالثة والروابط الخارجية",
+        "body": "قد تتضمن منصة وتطبيق هلا روابط لمواقع أو تطبيقات أو خدمات لأطراف ثالثة لا تخضع لسيطرة الشركة، وفي هذه الحالة لا تتحمل الشركة أي مسؤولية عن محتوى تلك المواقع أو عن ممارساتها أو عن سياسات الخصوصية الخاصة بها، ويكون دخول المستخدم لها أو تعامله معها على مسؤوليته وحده. وينبغي على المستخدم مراجعة شروط الاستخدام وسياسات الخصوصية الخاصة بتلك المواقع قبل استخدامها."
+      },
+      {
+        "id": "article-21",
+        "num": "21",
+        "label": "المادة الحادية والعشرون",
+        "title": "مدة العقد وإنهاؤه",
+        "body": "يعد هذا العقد المبرم بين الشركة والمستخدم غير محدد المدة، ويجوز للمستخدم إنهاؤه في أي وقت بإغلاق حسابه والتوقف عن استخدام منصة وتطبيق هلا. كما يجوز للشركة إنهاء العقد أو تعليق أو إيقاف حق المستخدم في الوصول إلى المنصة أو التطبيق أو استخدام الخدمات في أي وقت وبأثر فوري إذا رأت أن المستخدم قد خالف أي حكم من أحكام هذه الشروط أو أساء استخدام الخدمات أو لأي سبب آخر تراه ملائماً وفق تقديرها المطلق، دون التزام بإشعاره مسبقاً."
+      },
+      {
+        "id": "article-22",
+        "num": "22",
+        "label": "المادة الثانية والعشرون",
+        "title": "بطلان أحد الأحكام",
+        "body": "لا يؤثر بطلان أي حكم من أحكام هذه الشروط على صحة باقي الأحكام الأخرى، وفي حال تبين أن أي حكم باطل أو غير قابل للتطبيق في ظرف معين، يستبدل به حكم آخر أقرب ما يكون في أثره إلى الحكم الباطل وبما يتوافق مع الأنظمة وبما يحقق الغرض التجاري والقانوني المقصود من هذه الشروط."
+      },
+      {
+        "id": "article-23",
+        "num": "23",
+        "label": "المادة الثالثة والعشرون",
+        "title": "الإخطارات والتواصل",
+        "body": "يجوز للشركة توجيه الإخطارات إلى المستخدم عن طريق نشر إشعار عام داخل منصة أو تطبيق هلا أو عن طريق إرسال بريد إلكتروني إلى العنوان المسجل في حسابه أو رسالة نصية إلى رقم جواله أو عبر أي وسيلة اتصال أخرى يزود بها المستخدم الشركة. ويُعد أي إشعار يتم إرساله بهذه الطرق قد تم تبليغه للمستخدم تبليغاً صحيحاً."
+      },
+      {
+        "id": "article-24",
+        "num": "24",
+        "label": "المادة الرابعة والعشرون",
+        "title": "الإعلانات",
+        "body": "تقر بأن بعض خدمات منصة وتطبيق هلا قد تكون مدعومة بإيرادات إعلانية، وبناءً على ذلك يجوز للشركة عرض إعلانات ومواد ترويجية في مساحات مخصصة داخل المنصة أو التطبيق أو ضمن الرسائل التسويقية، وقد تستهدف هذه الإعلانات محتوى أو استفسارات أو بيانات استخدام معينة، ويعد استمرارك في استخدام الخدمات قبولاً منك بظهور تلك الإعلانات."
+      },
+      {
+        "id": "article-25",
+        "num": "25",
+        "label": "المادة الخامسة والعشرون",
+        "title": "الفيروسات والأمن التقني",
+        "body": "لا تقدم الشركة أي ضمان بأن منصة وتطبيق هلا أو الخوادم المرتبطة بهما أو الرسائل الإلكترونية الصادرة عنها خالية تماماً من الفيروسات أو الشفرات الخبيثة أو الأخطاء التقنية، ويتعين على المستخدم اتخاذ ما يلزم من وسائل الحماية التقنية المناسبة. ويحظر على المستخدم إدخال أو محاولة إدخال أي برامج أو أكواد ضارة أو محاولة تنفيذ هجمات حجب الخدمة أو اختراق الخوادم أو قواعد البيانات المرتبطة بالمنصة أو التطبيق."
+      },
+      {
+        "id": "article-26",
+        "num": "26",
+        "label": "المادة السادسة والعشرون",
+        "title": "القانون الواجب التطبيق والاختصاص القضائي",
+        "body": "تخضع هذه الشروط والأحكام وما ينشأ عنها من نزاعات أو خلافات للقوانين والأنظمة المعمول بها في المملكة العربية السعودية، وتفسر وفقاً لها. ويكون الاختصاص بنظر أي نزاع ينشأ عن تفسير أو تنفيذ هذه الشروط للمحاكم المختصة في المملكة العربية السعودية، ما لم تتفق الشركة والمستخدم على وسيلة بديلة لتسوية النزاع وفقاً للأنظمة."
+      }
+    ]
+  },
+  "en": {
+    "badge": "Terms & Conditions",
+    "title": "Terms and Conditions",
+    "subtitle": "Halaa Platform",
+    "lastUpdated": "03 February 2026",
+    "effectiveDate": null,
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "Article One",
+        "title": "Definitions",
+        "body": "For the purposes of these Terms and Conditions, \"the Company\" refers to Halaa Digital Technology Establishment, as the owner and operator of the Halaa Platform and Application, duly registered with the Ministry of Commerce in the Kingdom of Saudi Arabia.\n\n\"Halaa Platform and Application\" refers to the electronic platform and its associated mobile application intended to serve event hosts — such as weddings, engagements, graduations, receptions, family gatherings, and similar events — by managing and directing invitations, organizing guest entry, and managing guest data.\n\n\"User\" refers to any natural or legal person who uses the Halaa Platform or Application in any capacity whatsoever, whether as a visitor, event host, additional inviter, invitee, gate supervisor, invitation designer, or representative of an entity, institution, or company."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "Article Two",
+        "title": "Introduction and Acceptance of Terms",
+        "body": "The Company welcomes the User and thanks them for using the Halaa Platform and Application and their associated products, services, and features.\n\nThese Terms and Conditions constitute a binding legal agreement between the Company and the User. Accessing or using the Halaa Platform or Application constitutes full and unconditional acceptance of all provisions herein.\n\nIf the User does not agree to any part of these Terms, they must immediately cease using the Halaa Platform and Application. Continued use thereafter shall be deemed explicit acknowledgment and acceptance of these Terms."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "Article Three",
+        "title": "Language and Legal Authority",
+        "body": "The Arabic version of these Terms and Conditions shall be the official and legally binding version governing the relationship between the Company and the User.\n\nAny translation into another language is provided for convenience only. In the event of any conflict between the Arabic text and any translation, the Arabic version shall prevail."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "Article Four",
+        "title": "Amendments and Platform Updates",
+        "body": "The Company reserves the right to update the Halaa Platform and Application from time to time and may, at its sole discretion, amend any content, modify, suspend, or discontinue any service, feature, database, or content at any time.\n\nThe Company may notify Users of such changes via in-platform notices, email, SMS, or any other approved communication method.\n\nThe Company may also restrict certain features or limit User access to parts or all of the Platform or Application without prior notice and without liability. The User acknowledges that content may not always be up to date and that the Company makes no guarantees regarding the accuracy or error-free nature of the content."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "Article Five",
+        "title": "User Eligibility and Use on Behalf of Others",
+        "body": "Use of the Halaa Platform and Application requires the User to be at least thirteen (13) years old.\n\nIf the User is under eighteen (18) years of age, they must obtain explicit consent from a parent or legal guardian, who must review these Terms. Allowing a minor to use the Platform constitutes acceptance of these Terms and responsibility for the minor's actions.\n\nIf the User represents a company, institution, governmental entity, or for-profit or non-profit organization, they confirm having legal authority to act on behalf of such entity and bind it to these Terms."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "Article Six",
+        "title": "Eligibility to Receive Services",
+        "body": "The User represents that they have not previously been suspended or banned from using the Halaa Platform or any Company service, are not a competitor of the Platform, and do not offer competing products or services directly or indirectly.\n\nThe User further represents that they possess full legal capacity to contract and that their use of the Platform and Application does not violate any law or contractual obligation."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "Article Seven",
+        "title": "User Representations and Warranties",
+        "body": "The User undertakes to comply with all applicable laws and regulations in the Kingdom of Saudi Arabia, provide accurate and complete information, and update such information as necessary.\n\nThe User agrees to review Company notifications and comply with them, use the Platform only for lawful purposes, and refrain from fraud, misuse, or violations of public order or morals.\n\nThe User agrees not to harm, harass, or disturb others, and consents to the exchange of information related to their activities within the Halaa ecosystem as necessary to provide and evaluate services.\n\nThe User undertakes not to disrupt or attempt to disrupt Platform operations, not to copy, redistribute, or exploit content or software without prior written consent, and to safeguard login credentials. The Company reserves the absolute right to deny or restrict User access without providing reasons."
+      },
+      {
+        "id": "article-8",
+        "num": "8",
+        "label": "Article Eight",
+        "title": "License Scope",
+        "body": "The Company grants the User a limited, personal, non-exclusive, non-transferable, non-sublicensable, and revocable license to use the Halaa Platform and Application for lawful personal purposes in accordance with these Terms.\n\nThe User may not lease, sell, sublicense, distribute, reverse-engineer, or create derivative works, nor remove proprietary notices or allow unauthorized access to their account."
+      },
+      {
+        "id": "article-9",
+        "num": "9",
+        "label": "Article Nine",
+        "title": "Intellectual Property and Trademarks",
+        "body": "All content of the Halaa Platform and Application — including software code, databases, designs, interfaces, text, images, graphics, logos, icons, service names, trademarks, trade names, and audiovisual works — is owned by or licensed to the Company and protected under Saudi intellectual property laws and international treaties.\n\nThe User may not reproduce, distribute, or exploit any content for non-personal or commercial purposes without prior written consent. Users are granted a limited right to view and use accessible content for personal, non-commercial use while preserving all proprietary notices."
+      },
+      {
+        "id": "article-10",
+        "num": "10",
+        "label": "Article Ten",
+        "title": "Registration",
+        "body": "Certain services require account creation and submission of personal data such as name, mobile number, email, and other requested information.\n\nThe User is responsible for providing accurate information and for all activities conducted through their account."
+      },
+      {
+        "id": "article-11",
+        "num": "11",
+        "label": "Article Eleven",
+        "title": "Account Security",
+        "body": "The User is solely responsible for maintaining the confidentiality of login credentials and for all actions conducted through their account.\n\nThe User must notify the Company immediately of any unauthorized access. Company employees will never request passwords or one-time verification codes; disclosure is at the User's own risk."
+      },
+      {
+        "id": "article-12",
+        "num": "12",
+        "label": "Article Twelve",
+        "title": "Unauthorized Access and Harmful Acts",
+        "body": "Users are prohibited from unauthorized access attempts, hacking, introducing malware, or actions that damage or disrupt the Platform, servers, or networks.\n\nSuch actions constitute serious violations resulting in immediate termination of access and potential legal action."
+      },
+      {
+        "id": "article-13",
+        "num": "13",
+        "label": "Article Thirteen",
+        "title": "Sales, Purchases, and Payments",
+        "body": "The Company may modify service prices at any time. Users must review current pricing before purchase.\n\nAccepted payment methods include credit cards, Mada cards, digital payments, and bank transfers.\n\nExecuted services and sent invitations are non-refundable except where expressly stated. Failure to pay may result in suspension or deletion of events or accounts. Service fees exclude transfer fees, taxes, or governmental charges unless stated otherwise."
+      },
+      {
+        "id": "article-14",
+        "num": "14",
+        "label": "Article Fourteen",
+        "title": "Refund and Cancellation Policy",
+        "body": "Users may request cancellation and refunds in accordance with Company guidelines if no invitations have been sent and the request is made at least 72 hours before the event.\n\nCustom design fees may be deducted. The Company retains discretion regarding refund eligibility based on the digital nature of services."
+      },
+      {
+        "id": "article-15",
+        "num": "15",
+        "label": "Article Fifteen",
+        "title": "Indemnification",
+        "body": "The User agrees to indemnify and hold harmless the Company, its affiliates, licensors, officers, employees, and agents from any claims, losses, damages, liabilities, or expenses — including reasonable attorneys' fees — arising from violations of these Terms, applicable laws, third-party rights, or misuse of the Platform."
+      },
+      {
+        "id": "article-16",
+        "num": "16",
+        "label": "Article Sixteen",
+        "title": "Prohibited Uses",
+        "body": "Users may not use the Platform for activities violating Islamic law, Saudi regulations, public morals, or good taste, including but not limited to inappropriate, political, sectarian, misleading, or spam invitations; impersonation; unauthorized advertising; or automated misuse."
+      },
+      {
+        "id": "article-17",
+        "num": "17",
+        "label": "Article Seventeen",
+        "title": "Serious Violations and Account Suspension",
+        "body": "Any violation of these Terms constitutes unlawful use, entitling the Company to suspend or terminate accounts permanently or temporarily without compensation.\n\nThis includes fraud, illegal payments, impersonation, repeated violations, misuse for fictitious events, or intellectual property infringement."
+      },
+      {
+        "id": "article-18",
+        "num": "18",
+        "label": "Article Eighteen",
+        "title": "Reviews and Feedback",
+        "body": "Where feedback is permitted, Users must provide truthful reviews. The Company reserves the right to publish, reject, remove, modify, translate, or reuse submitted content without compensation. Abusive or unlawful content is strictly prohibited."
+      },
+      {
+        "id": "article-19",
+        "num": "19",
+        "label": "Article Nineteen",
+        "title": "Limitation of Liability",
+        "body": "The Platform and services are provided \"as is\" and \"as available\" without warranties of uninterrupted or error-free operation.\n\nThe Company shall not be liable for direct or indirect damages arising from use, inability to use, communication failures, service delays, or data loss, to the extent permitted by law. The Company's obligation to retain data does not exceed two (2) years."
+      },
+      {
+        "id": "article-20",
+        "num": "20",
+        "label": "Article Twenty",
+        "title": "Third Parties and External Links",
+        "body": "The Platform may include links to third-party services beyond Company control. The Company bears no responsibility for such content, practices, or privacy policies. Use is at the User's own risk."
+      },
+      {
+        "id": "article-21",
+        "num": "21",
+        "label": "Article Twenty-One",
+        "title": "Term and Termination",
+        "body": "This agreement is of indefinite duration. Users may terminate it by closing their account.\n\nThe Company may terminate or suspend access immediately at its sole discretion for violations or misuse, without prior notice."
+      },
+      {
+        "id": "article-22",
+        "num": "22",
+        "label": "Article Twenty-Two",
+        "title": "Severability",
+        "body": "Invalidity of any provision shall not affect the validity of remaining provisions. Invalid provisions shall be replaced with lawful ones achieving the closest legal and commercial effect."
+      },
+      {
+        "id": "article-23",
+        "num": "23",
+        "label": "Article Twenty-Three",
+        "title": "Notices and Communications",
+        "body": "Notices may be delivered via in-platform announcements, email, SMS, or other provided contact methods and shall be deemed duly served."
+      },
+      {
+        "id": "article-24",
+        "num": "24",
+        "label": "Article Twenty-Four",
+        "title": "Advertising",
+        "body": "Some services may be supported by advertising. The Company may display promotional materials within the Platform or marketing communications. Continued use constitutes acceptance of such advertising."
+      },
+      {
+        "id": "article-25",
+        "num": "25",
+        "label": "Article Twenty-Five",
+        "title": "Viruses and Technical Security",
+        "body": "The Company does not guarantee that the Platform, servers, or communications are free from malware or technical errors. Users must implement appropriate safeguards.\n\nAny attempt to introduce harmful code or conduct cyberattacks constitutes a serious violation."
+      },
+      {
+        "id": "article-26",
+        "num": "26",
+        "label": "Article Twenty-Six",
+        "title": "Governing Law and Jurisdiction",
+        "body": "These Terms and any disputes arising therefrom shall be governed by and construed in accordance with the laws of the Kingdom of Saudi Arabia.\n\nJurisdiction shall lie exclusively with the competent courts of the Kingdom, unless the parties agree on an alternative lawful dispute resolution method."
+      }
+    ]
+  }
+}

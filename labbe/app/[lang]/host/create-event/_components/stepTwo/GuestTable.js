@@ -3,7 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./stepTwo.module.css";
 import Table from "@/ui/commen/new-table/Table";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiTag } from "react-icons/fi";
 
 const GuestTableImpl = ({
   guestList,
@@ -11,6 +11,7 @@ const GuestTableImpl = ({
   handleEditClick,
   handleRemove,
   handleBulkDelete,
+  handleBulkCategory,
 }) => {
   const { t } = useTranslation("createEvent");
 
@@ -49,12 +50,19 @@ const GuestTableImpl = ({
             ? []
             : [
                 {
+                  icon: <FiTag size={16} />,
+                  text: t("link_to_category"),
+                  onClick: (selectedIds) => handleBulkCategory(selectedIds),
+                },
+                {
                   icon: <FiTrash2 size={16} />,
                   text: t("delete_selected"),
+                  destructive: true,
                   onClick: (selectedIds) => handleBulkDelete(selectedIds),
                 },
               ]
         }
+        inlineBulkActions
         showSearch={true}
         showFilter={false}
         showExport={false}

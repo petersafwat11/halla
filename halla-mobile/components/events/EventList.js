@@ -153,28 +153,28 @@ const EventList = ({
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      {/* Stats Cards — same style as home StatsCards */}
+      {/* Stats Cards — mirror the admin-dashboard StatCard look */}
       <View style={styles.statsContainer}>
-        <View style={[styles.statCard, { backgroundColor: "#F9F4EF" }]}>
-          <View style={styles.statIconContainer}>
+        <View style={styles.statCard}>
+          <View style={[styles.statIconBox, { backgroundColor: "#C28E5C18" }]}>
             <PeopleIcon color="#C28E5C" />
           </View>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>إجمالي الضيوف</Text>
           <Text style={styles.statValue}>{allGuests}</Text>
+          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>إجمالي الضيوف</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: "#EAF4EF" }]}>
-          <View style={styles.statIconContainer}>
+        <View style={styles.statCard}>
+          <View style={[styles.statIconBox, { backgroundColor: "#2A8C5B18" }]}>
             <CheckCircleIcon color="#2A8C5B" />
           </View>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>عدد القبول</Text>
           <Text style={styles.statValue}>{attendanceRate}</Text>
+          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>عدد القبول</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: "#FBF3E6" }]}>
-          <View style={styles.statIconContainer}>
+        <View style={styles.statCard}>
+          <View style={[styles.statIconBox, { backgroundColor: "#D3820018" }]}>
             <ChartIcon color="#D38200" />
           </View>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>معدل الاستجابة</Text>
           <Text style={styles.statValue}>{responseRate}%</Text>
+          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>معدل الاستجابة</Text>
         </View>
       </View>
 
@@ -287,44 +287,45 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: "row",
-    gap: 16,
+    gap: 10,
     marginBottom: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   statCard: {
     flex: 1,
     padding: 12,
     flexDirection: "column",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 8,
-    borderRadius: 12,
+    borderRadius: 14,
+    backgroundColor: "#FFF",
     borderWidth: 1,
-    borderColor: "#F2F2F2",
+    borderColor: "#F0EAE2",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  statIconContainer: {
-    padding: 4,
+  statIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 7,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     lineHeight: 28,
   },
   statLabel: {
-    fontSize: 12,
-    fontFamily: "Cairo_700Bold",
+    fontSize: 11,
+    fontFamily: "Cairo_500Medium",
     color: "#656565",
     lineHeight: 16,
-    letterSpacing: 0.06,
-    textAlign: "center",
+    textAlign: "left",
   },
   searchRow: {
     flexDirection: "row",

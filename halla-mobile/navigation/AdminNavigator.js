@@ -39,6 +39,8 @@ import AdminPlansScreen from "../screens/admin/admin-dashboard/AdminPlansScreen"
 import AdminSettingsScreen from "../screens/admin/admin-dashboard/AdminSettingsScreen";
 import AdminAccountSettingsScreen from "../screens/admin/admin-dashboard/AdminAccountSettingsScreen";
 import AdminNotificationSettingsScreen from "../screens/admin/admin-dashboard/AdminNotificationSettingsScreen";
+import PrivacyScreen from "../screens/legal/PrivacyScreen";
+import TermsScreen from "../screens/legal/TermsScreen";
 import AdminMoreScreen from "../screens/admin/admin-dashboard/AdminMoreScreen";
 import AdminDiscountsScreen from "../screens/admin/admin-dashboard/AdminDiscountsScreen";
 import AdminTemplatesScreen from "../screens/admin/admin-dashboard/AdminTemplatesScreen";
@@ -234,6 +236,20 @@ function MoreStackNavigator() {
         <MoreStack.Screen
           name="AdminNotificationSettings"
           component={AdminNotificationSettingsScreen}
+          options={{ headerShown: false }}
+        />
+      )}
+      {canViewPage(userRole, PAGES.SETTINGS) && (
+        <MoreStack.Screen
+          name="Privacy"
+          component={PrivacyScreen}
+          options={{ headerShown: false }}
+        />
+      )}
+      {canViewPage(userRole, PAGES.SETTINGS) && (
+        <MoreStack.Screen
+          name="Terms"
+          component={TermsScreen}
           options={{ headerShown: false }}
         />
       )}

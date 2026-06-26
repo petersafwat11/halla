@@ -164,10 +164,10 @@
   cursor: pointer;
 }
 
-/* Footer */
+/* Footer — confirm at the start, cancel at the end, each filling half */
 .footer {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px 24px 24px;
@@ -179,7 +179,39 @@
 }
 .footerActions {
   display: flex;
-  gap: 12px;
+  gap: 16px;
+  flex: 1;
+}
+.footerBtn {
+  flex: 1;
+  padding: 1.4rem 1.6rem;
+  font-size: 1.6rem;
+}
+
+/* "Link to category" affordance — a lighter button shown at the footer start
+   when rows are selected, so confirm/cancel stay primary. */
+.footerLinkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid #e7d8c6;
+  border-radius: 12px;
+  background: #f9f4ef;
+  color: #6b4e33;
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.footerLinkBtn:hover {
+  background: #f1e6d8;
+  border-color: #c28e5c;
+}
+.footerLinkBtn svg {
+  color: #c28e5c;
 }
 
 /* ---- vCard import: platform tabs + instructions ---- */

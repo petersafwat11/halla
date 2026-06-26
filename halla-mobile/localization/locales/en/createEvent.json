@@ -33,6 +33,10 @@
   "guest_invited_by_required": "Invited by is required.",
   "guest_list_required": "At least one guest is required.",
   "cancel": "Cancel",
+  "confirm": "Confirm",
+  "link_to_category": "Link to category",
+  "link_to_category_title": "Link guests to a category",
+  "link_to_category_subtitle": "Choose a category to apply to the {{count}} selected guests.",
   "save": "Save",
   "page_title": "Create Event",
   "page_description": "Follow the steps below to create an event easily",
@@ -324,6 +328,7 @@
     "birthday": "Birthday",
     "graduation": "Graduation",
     "engagement": "Engagement",
+    "meeting": "Meeting",
     "conference": "Conference",
     "other": "Other"
   },

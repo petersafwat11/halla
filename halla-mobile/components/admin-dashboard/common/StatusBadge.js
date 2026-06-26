@@ -3,6 +3,26 @@ import { View, Text, StyleSheet } from "react-native";
 import PropTypes from "prop-types";
 import { borderRadius, typography, spacing } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
+import { useTranslation } from "../../../localization";
+
+// Status strings can arrive from several admin domains (events, vendors,
+// hosts, businesses). Their human labels live under those subtrees in the
+// `admin` namespace, so we probe them in order and fall back to a readable
+// title-cased version of the raw status when none is translated.
+const STATUS_LABEL_GROUPS = [
+  "events.status",
+  "vendors.status",
+  "hosts.status",
+  "businesses.status",
+];
+
+const titleCase = (status) =>
+  String(status || "")
+    .replace(/[_-]/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 
 /**
  * StatusBadge - Color-coded status indicators
@@ -16,18 +36,22 @@ import { getStatusVisual } from "../../../constants/statusColors";
  * @param {string} props.size - Badge size: small or medium
  */
 const StatusBadge = ({ status, domain, size = "medium" }) => {
+  const { t } = useTranslation("admin");
+
   const getStatusColor = () => {
     const { fg, bg } = getStatusVisual(status, domain);
     return { background: bg, text: fg };
   };
 
   const getStatusLabel = () => {
-    // Convert status to readable format
-    return status
-      .replace(/[_-]/g, " ")
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
+    const fallback = titleCase(status);
+    for (const group of STATUS_LABEL_GROUPS) {
+      const key = `${group}.${status}`;
+      const value = t(key);
+      // i18next returns the key itself when a translation is missing.
+      if (value && value !== key) return value;
+    }
+    return fallback;
   };
 
   const statusColors = getStatusColor();

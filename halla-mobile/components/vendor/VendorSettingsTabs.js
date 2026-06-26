@@ -4,10 +4,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization/hooks/useTranslation";
 
 const VendorSettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
-  const { t } = useTranslation("settings");
+  const { t, isRTL } = useTranslation("settings");
   const tabs = [
     { id: "accountSetup", label: t("tabs.account"), icon: "person-outline" },
-    { id: "about", label: t("tabs.about"), icon: "information-circle-outline" },
     { id: "privacy", label: t("tabs.privacy"), icon: "shield-checkmark-outline" },
     { id: "terms", label: t("tabs.terms"), icon: "document-text-outline" },
   ];
@@ -34,7 +33,7 @@ const VendorSettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
             </Text>
           </View>
           <Ionicons
-            name="chevron-forward-outline"
+            name={isRTL ? "chevron-back-outline" : "chevron-forward-outline"}
             size={20}
             color={activeTab === tab.id ? "#c28e5c" : "#999"}
           />

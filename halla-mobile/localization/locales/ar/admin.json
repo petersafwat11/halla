@@ -85,6 +85,10 @@
     "tickets": {
       "title": "التذاكر المفتوحة",
       "subtitle": "{{count}} محلولة هذه الفترة"
+    },
+    "businesses": {
+      "title": "إجمالي الأعمال",
+      "subtitle": "{{count}} نشط"
     }
   },
   "hosts": {
@@ -404,7 +408,9 @@
       "inactive": "غير نشط",
       "pending": "قيد الانتظار",
       "verified": "موثق",
-      "suspended": "موقوف"
+      "suspended": "موقوف",
+      "approved": "مقبول",
+      "rejected": "مرفوض"
     },
     "categories": {
       "catering": "تقديم الطعام",
@@ -528,7 +534,8 @@
       "completed": "المكتملة",
       "cancelled": "الملغاة",
       "suspended": "موقوفة",
-      "pending": "قيد الموافقة"
+      "pending": "قيد الموافقة",
+      "pending_scheduling": "في انتظار الجدولة"
     },
     "status": {
       "upcoming": "قادمة",
@@ -539,7 +546,9 @@
       "completed": "مكتملة",
       "cancelled": "ملغاة",
       "suspended": "موقوفة",
-      "pending": "قيد الانتظار"
+      "pending": "قيد الانتظار",
+      "pending_scheduling": "في انتظار الجدولة",
+      "deleted": "محذوفة"
     },
     "stats": {
       "total": "الإجمالي",

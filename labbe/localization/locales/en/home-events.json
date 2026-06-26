@@ -92,8 +92,7 @@
       "sharePostEvent": "Share Post-Event Page"
     },
     "quota": {
-      "remainingGuests": "Remaining Guests",
-      "compensationMessages": "Remaining Compensation Messages",
+      "remainingInvites": "Remaining invites",
       "unlimited": "Unlimited"
     }
   },
