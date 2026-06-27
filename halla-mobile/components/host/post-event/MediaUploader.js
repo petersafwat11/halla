@@ -101,9 +101,7 @@ const MediaUploader = ({
           <View style={styles.pickerRow}>
             <TouchableOpacity
               style={styles.pickerOption}
-              onPress={() =>
-                handlePickByType(ImagePicker.MediaTypeOptions.Images)
-              }
+              onPress={() => handlePickByType(["images"])}
               activeOpacity={0.7}
             >
               <Ionicons name="image" size={22} color="#FFF" />
@@ -111,9 +109,7 @@ const MediaUploader = ({
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.pickerOption}
-              onPress={() =>
-                handlePickByType(ImagePicker.MediaTypeOptions.Videos)
-              }
+              onPress={() => handlePickByType(["videos"])}
               activeOpacity={0.7}
             >
               <Ionicons name="videocam" size={22} color="#FFF" />
