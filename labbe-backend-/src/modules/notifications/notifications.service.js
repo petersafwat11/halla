@@ -9,6 +9,7 @@ const { USER_STATUS } = require("../../shared/constants");
 const { withIdempotency, sha256 } = require("../../shared/utils/idempotency");
 
 const Notification = require("../../../models/NotificationModel");
+const pushService = require("./push.service");
 
 // ============================================
 // NOTIFICATION TYPE -> APP-PREFERENCE KEY
@@ -253,6 +254,26 @@ class NotificationsService {
           priority: notificationData.priority,
           isRead: false,
         });
+
+        // Best-effort push fan-out to the user's devices. Fires once per
+        // idempotency key (inside this guarded block), never awaited so it
+        // can't delay or fail in-app notification creation. The data payload
+        // carries what the client needs to deep-link on tap.
+        pushService
+          .sendToUser(userId, {
+            title: notificationData.title,
+            titleAr: notificationData.titleAr,
+            body: notificationData.message,
+            bodyAr: notificationData.messageAr,
+            data: {
+              type,
+              notificationId: String(notification._id),
+              entityId: notificationData.data?.entityId,
+              actionUrl: notificationData.actionUrl,
+            },
+          })
+          .catch(() => {});
+
         return this._formatNotification(notification);
       },
       {

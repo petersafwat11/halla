@@ -528,6 +528,32 @@ router.get("/me", authController.getMe);
 
 /**
  * @swagger
+ * /auth/update-push-token:
+ *   patch:
+ *     summary: Register the caller's Expo push token (mobile)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [pushToken]
+ *             properties:
+ *               pushToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Push token registered
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ */
+router.patch("/update-push-token", authController.updatePushToken);
+
+/**
+ * @swagger
  * /auth/update-password:
  *   patch:
  *     summary: Update password

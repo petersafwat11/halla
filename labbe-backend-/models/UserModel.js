@@ -241,6 +241,15 @@ const userSchema = new mongoose.Schema(
 
     avatar: String,
 
+    // Expo push tokens for this user's devices. Registered by the mobile app
+    // on login/foreground (PATCH /auth/update-push-token) and pruned when Expo
+    // reports DeviceNotRegistered during delivery. A user may have several
+    // (multiple devices); deduped on write.
+    pushTokens: {
+      type: [String],
+      default: [],
+    },
+
     // ============ AUTHENTICATION ============
     password: {
       type: String,

@@ -96,7 +96,8 @@
         }
       ],
       "expo-document-picker",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "@sentry/react-native/expo"
     ],
     "newArchEnabled": true,
     "sdkVersion": "54.0.0",
