@@ -56,7 +56,21 @@ Phase 1 blockers implemented and committed on this branch (decisions taken: **na
 | Force-password-change gate (2.6) | ✅ Done | Gated in `AppNavigator` before the role switch |
 | Backend: trust proxy, webhook HMAC, secrets hygiene (1.6) | ✅ Done (code) | `.gitignore`+`config.env.example`+`SECURITY_NOTES.md`; **manual: untrack/rotate/purge + set prod env** |
 
-**Still required (larger follow-on / external):** native IAP integration (§1, the dominant item), push backend+client (1.5), crash reporting (2.3), maps API key (2.4), `MediaTypeOptions` migration (2.5), `xlsx` CVE (2.7), EAS submit config (2.8), store accounts + listings + demo accounts + closed-testing (§6), and the manual security steps in `labbe-backend-/SECURITY_NOTES.md`.
+Phase 2/3 + follow-on work implemented since (also committed on this branch):
+
+| Item | Status | Notes |
+|---|---|---|
+| Push notifications (1.5) | ✅ Done | Backend token storage + Expo Server SDK delivery + invalid-token prune; client handler/channel/tap-routing |
+| Crash reporting (2.3) | ✅ Done | `@sentry/react-native` + Expo plugin; init + ErrorBoundary reporting (DSN via env) |
+| Native IAP — RevenueCat (§1) | 🟡 Scaffolded | Client service/hook/init + backend webhook (grants via `changePlan`); needs RC/store config + plans-screen wiring + device test — see `IAP_SETUP.md` |
+| Maps API key (2.4) | ✅ Done (env) | `app.config.js` injects `GOOGLE_MAPS_API_KEY`; set the key to fix the Android map |
+| `MediaTypeOptions` migration (2.5) | ✅ Done | 5 call sites → string-array form |
+| `xlsx` CVE (2.7) | ✅ Done | Aliased to patched `@e965/xlsx@0.20.3` across mobile/web/backend |
+| EAS submit config (2.8) | ✅ Scaffolded | `eas.json` submit + env; fill Apple/Play credentials |
+| Reviewer demo login (§6) | ✅ Done | Env-gated reviewer test number + fixed OTP; crypto-secure OTP generation |
+| Backend OTP/auth hardening (2.11) | ✅ Done (partial) | `crypto.randomInt` OTP; trust proxy + webhook HMAC shipped earlier |
+
+**Still external (no code — needs accounts/content):** store listings + screenshots + privacy/data-safety forms (§6/§8, consolidated in `docs/store-launch-checklist.md`), the fill-in values for the scaffolded items (Team ID, Play SHA-256, RC keys, Maps key), the manual security steps in `labbe-backend-/SECURITY_NOTES.md`, and the Google account-type / closed-testing decision.
 
 ---
 
