@@ -28,6 +28,7 @@ import AppNavigator from "./navigation/AppNavigator";
 import LanguageSelector from "./components/languagePrefrence/LanguageSelector";
 import { ENDPOINTS } from "./config/api";
 import { apiFetch } from "./services/http";
+import { initPurchases } from "./services/purchases";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 // ------------------------------------------------- //
@@ -154,6 +155,7 @@ function AppContent() {
   const restoreSession = useAuthStore((state) => state.restoreSession);
   const authStatus = useAuthStore((state) => state.status);
   const authToken = useAuthStore((state) => state.token);
+  const authUser = useAuthStore((state) => state.user);
 
   useEffect(() => {
     restoreSession();
@@ -181,8 +183,10 @@ function AppContent() {
   useEffect(() => {
     if (authStatus === "authenticated" && authToken) {
       registerForPushNotifications();
+      // Attach in-app purchases to this user (no-op on web / without keys).
+      initPurchases(authUser?._id || authUser?.id);
     }
-  }, [authStatus, authToken]);
+  }, [authStatus, authToken, authUser]);
 
   const handleLanguageSelect = async (code) => {
     await changeLanguage(code);
