@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../../localization";
 import { useAuthStore } from "../../../stores/authStore";
 import SettingsTabs from "../../../components/settings/SettingsTabs";
+import DeleteAccountSection from "../../../components/settings/DeleteAccountSection";
 import TopBar from "../../../components/plans/TopBar";
 
 export default function AdminSettingsScreen({ navigation }) {
@@ -39,6 +40,7 @@ export default function AdminSettingsScreen({ navigation }) {
               onTabChange={handleTabChange}
               onLogout={handleLogout}
             />
+            <DeleteAccountSection />
           </ScrollView>
         </View>
       </View>
