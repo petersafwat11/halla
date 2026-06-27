@@ -62,7 +62,7 @@ Phase 2/3 + follow-on work implemented since (also committed on this branch):
 |---|---|---|
 | Push notifications (1.5) | ✅ Done | Backend token storage + Expo Server SDK delivery + invalid-token prune; client handler/channel/tap-routing |
 | Crash reporting (2.3) | ✅ Done | `@sentry/react-native` + Expo plugin; init + ErrorBoundary reporting (DSN via env) |
-| Native IAP — RevenueCat (§1) | 🟡 Scaffolded | Client service/hook/init + backend webhook (grants via `changePlan`); needs RC/store config + plans-screen wiring + device test — see `IAP_SETUP.md` |
+| Native IAP — RevenueCat (§1) | 🟡 Code complete | Client service/hook/init + **plans-summary screen wired** (IAP on native / Moyasar on web, gated) + backend webhook (grants via `changePlan`); needs RC/store product config + device/sandbox test — see `IAP_SETUP.md`. Add-ons/discounts remain web-only |
 | Maps API key (2.4) | ✅ Done (env) | `app.config.js` injects `GOOGLE_MAPS_API_KEY`; set the key to fix the Android map |
 | `MediaTypeOptions` migration (2.5) | ✅ Done | 5 call sites → string-array form |
 | `xlsx` CVE (2.7) | ✅ Done | Aliased to patched `@e965/xlsx@0.20.3` across mobile/web/backend |

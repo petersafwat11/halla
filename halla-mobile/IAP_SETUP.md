@@ -36,33 +36,22 @@ accounts and a device/sandbox.
    secret; configure the **RevenueCat → webhook** to
    `https://halaa.com.sa/api/v2/payments/revenuecat/webhook` with that same
    Authorization header.
-4. **Wire the purchase UI (the one code change left):** on native platforms,
-   replace the Moyasar checkout call with the IAP flow. In the plans/summary
-   screen (`screens/host/PlansSummaryScreen.js`):
-
-   ```js
-   import { Platform } from "react-native";
-   import { useOffering, usePurchasePackage, useRestorePurchases } from "../../hooks/purchases";
-
-   // ...inside the component:
-   const { data: offering } = useOffering();
-   const purchase = usePurchasePackage();
-
-   const onSubscribe = async (planCode) => {
-     if (Platform.OS === "web") {
-       return runMoyasarCheckout();           // existing web path — unchanged
-     }
-     const pkg = offering?.availablePackages?.find(
-       (p) => p.product.identifier === productIdForPlan(planCode)
-     );
-     if (!pkg) return toast.error("Plan unavailable");
-     await purchase.mutateAsync(pkg);          // RevenueCat → store sheet
-     // Backend webhook grants the plan; refetch the subscription afterwards.
-   };
-   ```
-
-   Also add a **"Restore purchases"** button (App Store review requires it)
-   using `useRestorePurchases`.
+4. **Purchase UI — ✅ wired** in `screens/host/PlansSummaryScreen.js`:
+   - Web (`Platform.OS === "web"`) keeps the Moyasar card checkout unchanged.
+   - Native (iOS/Android) hides the card/discount UI and the footer button runs
+     the RevenueCat purchase (`usePurchasePackage`) for the plan's package, then
+     navigates Home (the backend webhook grants the plan). A **Restore
+     Purchases** button is included (required by App Store review).
+   - **Package matching:** `findPackageForPlan` resolves the RC package by, in
+     order, `plan.iapProductId` → `package.identifier === plan.code` →
+     `product.identifier === plan.code`. So either **name each RevenueCat package
+     with the plan code**, or have the backend include an `iapProductId` on the
+     plan. Verify this matches your RC product setup.
+   - **Limitation:** store IAPs are fixed SKUs, so **add-ons and discount codes
+     are not bundled** in the native purchase (they remain web/Moyasar features).
+     If add-ons must be sold on mobile, model them as their own IAP products and
+     extend the purchase flow, or use App Store / Play **offer codes** for
+     discounts. The backend webhook already maps any purchased product → plan.
 5. **Build & test:** IAP needs a **native build** (not Expo Go) — `eas build`
    then test purchases in the App Store / Play **sandbox** before submitting.
 
