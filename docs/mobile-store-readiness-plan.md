@@ -39,6 +39,27 @@ The app is **functionally rich and well-engineered** — clean role-gated naviga
 
 ---
 
+## 0a. Implementation status (this branch: `claude/mobile-app-store-readiness-3b9b0i`)
+
+Phase 1 blockers implemented and committed on this branch (decisions taken: **native IAP via RevenueCat** for payments, **build push**, start Phase 1):
+
+| Item | Status | Notes |
+|---|---|---|
+| App icon / splash / adaptive / notification icon (1.1) | ✅ Done | Generated from the 1024² brand logo; `app.json` repointed |
+| Expo plugins + iOS usage strings + encryption decl (1.2/2.1) | ✅ Done | `expo-image-picker`/`-notifications`/`-document-picker` registered; `ITSAppUsesNonExemptEncryption:false` |
+| Universal links — app.json config (1.4) | ✅ Done | `associatedDomains` + autoVerify `intentFilters` |
+| Universal links — `.well-known` files (1.4) | ✅ Scaffolded | Web route handlers serve AASA + assetlinks; **need real Team ID + Play SHA-256** via env |
+| Android permissions dedupe (2.2) | ✅ Done | Deduped; `versionCode`/`buildNumber` added |
+| In-app account deletion — mobile UI (1.3) | ✅ Done | `DeleteAccountSection` on host/vendor/admin settings; bilingual |
+| Account deletion — backend `DELETE /users/profile` (1.3) | ✅ Done | Anonymize + cascade + token revoke + S3 cleanup |
+| `USER_STATUS.DELETED` fix (1.3) | ✅ Done | Unblocks the 4 runtime-broken admin delete paths |
+| Force-password-change gate (2.6) | ✅ Done | Gated in `AppNavigator` before the role switch |
+| Backend: trust proxy, webhook HMAC, secrets hygiene (1.6) | ✅ Done (code) | `.gitignore`+`config.env.example`+`SECURITY_NOTES.md`; **manual: untrack/rotate/purge + set prod env** |
+
+**Still required (larger follow-on / external):** native IAP integration (§1, the dominant item), push backend+client (1.5), crash reporting (2.3), maps API key (2.4), `MediaTypeOptions` migration (2.5), `xlsx` CVE (2.7), EAS submit config (2.8), store accounts + listings + demo accounts + closed-testing (§6), and the manual security steps in `labbe-backend-/SECURITY_NOTES.md`.
+
+---
+
 ## 1. ⚠️ Payments — must re-architect to native billing (the dominant work item)
 
 **The finding (verified against live code + 2026 policy).** The app sells **digital goods consumed in-app** — subscription plans (`per-event`, `quarterly`, `annual`) and add-ons (extra invites, design templates) — charging cards directly via **Moyasar** 3-D Secure. Evidence: `hooks/checkout/mutations.js`, `screens/host/PlansScreen.js`/`PlansSummaryScreen.js`, `components/plans/PaymentMethodSelector.js`, `utils/paymentBrowser.js`; backend `src/modules/payments/checkout.service.js`. No StoreKit / Play Billing exists.
