@@ -223,6 +223,9 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|public|assets|svg|robots.txt|sitemap.xml).*)",
+    // `.well-known` is excluded so the i18n router doesn't redirect the
+    // universal/app-link association files (Apple/Google fetch them at the
+    // exact path with no redirects allowed).
+    "/((?!api|_next/static|_next/image|favicon.ico|public|assets|svg|robots.txt|sitemap.xml|.well-known).*)",
   ],
 };
