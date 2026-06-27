@@ -554,7 +554,8 @@ userSchema.methods.createPasswordResetToken = function () {
  * @returns {string} 6-digit verification code
  */
 userSchema.methods.createEmailVerificationCode = function () {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  // Cryptographically secure 6-digit code (uniform, unpredictable).
+  const code = crypto.randomInt(100000, 1000000).toString();
 
   this.emailVerificationCode = crypto
     .createHash("sha256")
