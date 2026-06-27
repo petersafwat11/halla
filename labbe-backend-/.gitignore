@@ -4,8 +4,15 @@ npm-debug.log
 yarn-debug.log
 yarn-error.log
 
-# Environment variables (keep committed)
-# .env intentionally tracked
+# Environment variables — secrets MUST NOT be committed.
+# `config.env` and the DB cert were previously tracked; see SECURITY_NOTES.md
+# for the required `git rm --cached`, key-rotation, and history-purge steps.
+# Use config.env.example as the template.
+config.env
+*.env
+!config.env.example
+certs/
+*.pem
 
 # IDE
 .idea

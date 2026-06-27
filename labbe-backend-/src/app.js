@@ -51,6 +51,12 @@ const templatesModule = require("./modules/templates");
 const createApp = () => {
   const app = express();
 
+  // Trust the reverse proxy (nginx) in front of the app so `req.ip` is the
+  // real client IP from X-Forwarded-For rather than the proxy's address.
+  // Without this, every IP-keyed rate limiter and login-lockout buckets all
+  // traffic under the single proxy IP. `1` = trust exactly one proxy hop.
+  app.set("trust proxy", 1);
+
   // ============================================
   // SECURITY MIDDLEWARE
   // ============================================
