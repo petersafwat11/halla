@@ -1,12 +1,18 @@
 const { NotFoundError, ValidationError } = require("../../shared/errors");
 
 const User = require("../../../models/UserModel");
+const Event = require("../../../models/EventModel");
+const Guest = require("../../../models/GuestModel");
+const Notification = require("../../../models/NotificationModel");
+const NotificationPreferences = require("../../../models/NotificationPreferencesModel");
+const RefreshToken = require("../../../models/RefreshTokenModel");
 const {
   processUploadedFiles,
   deleteFromS3,
 } = require("../../shared/utils/s3Upload");
 const otpService = require("../auth/otp.service");
 const logger = require("../../shared/utils/logger");
+const { USER_STATUS, EVENT_STATUS } = require("../../shared/constants/status");
 const {
   validateAndFormatPhone,
   normalizePhoneNumber,
@@ -404,6 +410,117 @@ class UsersService {
     if (!user) throw new NotFoundError("User");
 
     return { preferences: user.notificationPreferences };
+  }
+
+  /**
+   * Self-service account deletion (Apple 5.1.1(v) / Google Play data-deletion).
+   *
+   * Removes/anonymizes the user's personal data: soft-deletes + anonymizes the
+   * User (so financial/audit foreign keys stay valid), cascade-soft-deletes
+   * owned events and their guests (third-party guest PII), drops
+   * notifications/preferences, revokes all sessions, and best-effort deletes the
+   * user's S3 assets (avatar + vendor documents incl. national ID). Payments,
+   * subscriptions, and audit logs are retained for legal/accounting per policy.
+   *
+   * Cascade steps are best-effort (logged, non-fatal) so a single failure can't
+   * leave the account un-closed; the final User anonymization always runs.
+   */
+  async deleteMyAccount(userId) {
+    const user = await User.findById(userId);
+    if (!user) throw new NotFoundError("User");
+
+    // 1) Revoke every active session immediately.
+    try {
+      await RefreshToken.updateMany(
+        { userId, revokedAt: null },
+        { $set: { revokedAt: new Date() } }
+      );
+    } catch (err) {
+      logger.warn("[users.service] deleteMyAccount: token revoke failed", {
+        userId: String(userId),
+        error: err.message,
+      });
+    }
+
+    // 2) Collect the user's S3 keys before anonymizing the record.
+    const vd = user.profile?.vendorData || {};
+    const s3Keys = [
+      user.avatar,
+      vd.businessLogo,
+      vd.nationalIdImage,
+      vd.commercialRecordImage,
+      vd.profileFile,
+      ...(Array.isArray(vd.portfolioImages) ? vd.portfolioImages : []),
+    ].filter((k) => typeof k === "string" && k && !k.startsWith("http"));
+
+    // 3) Cascade owned events + their guests (clears third-party guest PII).
+    try {
+      const events = await Event.find({ host: userId }).select("_id");
+      const eventIds = events.map((e) => e._id);
+      if (eventIds.length) {
+        await Event.updateMany(
+          { _id: { $in: eventIds } },
+          { $set: { status: EVENT_STATUS.DELETED, deletedAt: new Date() } }
+        );
+        await Guest.updateMany(
+          { event: { $in: eventIds } },
+          { $set: { deleted: true, deletedAt: new Date() } }
+        );
+      }
+    } catch (err) {
+      logger.warn("[users.service] deleteMyAccount: event cascade failed", {
+        userId: String(userId),
+        error: err.message,
+      });
+    }
+
+    // 4) Drop notifications + preferences.
+    try {
+      await Notification.deleteMany({ userId });
+      await NotificationPreferences.deleteMany({ userId });
+    } catch (err) {
+      logger.warn("[users.service] deleteMyAccount: notification cleanup failed", {
+        userId: String(userId),
+        error: err.message,
+      });
+    }
+
+    // 5) Best-effort S3 cleanup (avatar + vendor documents).
+    for (const key of s3Keys) {
+      try {
+        await deleteFromS3(key);
+      } catch (err) {
+        logger.warn("[users.service] deleteMyAccount: S3 delete failed", {
+          key,
+          error: err.message,
+        });
+      }
+    }
+
+    // 6) Anonymize PII + close the account. `$unset` (not null) on the
+    //    unique-sparse contact fields avoids unique-index collisions across
+    //    multiple deleted accounts. updateOne bypasses pre-save hooks/validators.
+    await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          name: "Deleted User",
+          status: USER_STATUS.DELETED,
+          deletedAt: new Date(),
+          deletedBy: userId,
+        },
+        $unset: {
+          email: "",
+          mobile: "",
+          phoneNumber: "",
+          username: "",
+          avatar: "",
+          pushTokens: "",
+        },
+      }
+    );
+
+    return { deleted: true };
   }
 }
 

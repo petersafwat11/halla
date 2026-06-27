@@ -20,6 +20,7 @@ const {
   sendSuccess,
 } = require("../../shared/utils/responseHelper");
 const authService = require("./auth.service");
+const pushService = require("../notifications/push.service");
 const config = require("../../config");
 const { logAudit } = require("../../shared/utils/auditLog");
 
@@ -390,6 +391,18 @@ exports.updatePassword = catchAsync(async (req, res) => {
 exports.getMe = catchAsync(async (req, res) => {
   const result = await authService.getMe(req.user._id);
   sendSuccess(res, result);
+});
+
+/**
+ * PATCH /api/v2/auth/update-push-token
+ * Register the caller's Expo push token (mobile). Deduped on the user doc.
+ */
+exports.updatePushToken = catchAsync(async (req, res) => {
+  const result = await pushService.registerToken(
+    req.user._id,
+    req.body.pushToken
+  );
+  sendSuccess(res, result, "Push token registered");
 });
 
 /**

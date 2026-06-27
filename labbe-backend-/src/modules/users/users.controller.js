@@ -65,6 +65,11 @@ exports.deleteVendorImage = catchAsync(async (req, res) => {
   sendSuccess(res, result, "Image deleted successfully");
 });
 
+exports.deleteMyAccount = catchAsync(async (req, res) => {
+  const result = await usersService.deleteMyAccount(req.user._id);
+  sendSuccess(res, result, "Account deleted successfully");
+});
+
 exports.getNotificationPreferences = catchAsync(async (req, res) => {
   const result = await usersService.getNotificationPreferences(req.user._id);
   sendSuccess(res, result);

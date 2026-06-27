@@ -47,6 +47,7 @@ import ManagePostEventScreen from "../screens/common/ManagePostEventScreen";
 import PaymentReturnScreen from "../screens/host/PaymentReturnScreen";
 import PaymentsScreen from "../screens/host/PaymentsScreen";
 import InvitationScreen from "../screens/guest-portal/InvitationScreen";
+import ForcePasswordChangeScreen from "../screens/host/ForcePasswordChangeScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -384,10 +385,28 @@ function AdminStack() {
   );
 }
 
+// Forced password-change gate. Admin-created business accounts carry
+// `mustChangePassword:true` and are 403-gated (PASSWORD_CHANGE_REQUIRED) on
+// every endpoint by the backend until they set their own password — so the
+// client must keep them on this single screen with no tab to escape to.
+// ForcePasswordChangeScreen rotates the session on success, which clears the
+// flag and lets the root navigator fall through to the normal role stack.
+function ForcePasswordChangeStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="ForcePasswordChange"
+        component={ForcePasswordChangeScreen}
+      />
+    </Stack.Navigator>
+  );
+}
+
 // Root Navigator - switches between Auth and role-based stacks based on auth status
 export default function AppNavigator() {
   const status = useAuthStore((state) => state.status);
   const role = useAuthStore((state) => state.role);
+  const user = useAuthStore((state) => state.user);
 
   // Show loading while checking auth status
   if (status === "checking") {
@@ -401,6 +420,13 @@ export default function AppNavigator() {
   // Show auth stack if not authenticated
   if (status !== "authenticated") {
     return <AuthStack />;
+  }
+
+  // Forced password change takes precedence over every role stack — see
+  // ForcePasswordChangeStack above. Without this gate such accounts route
+  // straight to HostStack and hit a 403 on every screen with no way out.
+  if (user?.mustChangePassword === true) {
+    return <ForcePasswordChangeStack />;
   }
 
   // Show appropriate stack based on user role

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as Sentry from "@sentry/react-native";
 
 /**
  * App-level error boundary.
@@ -16,9 +17,8 @@ import { Ionicons } from "@expo/vector-icons";
  * underlying issue persists (e.g. a corrupted persisted store), the
  * boundary catches the next render and surfaces the same UI again.
  *
- * Production usage: in a release build, log the error to Sentry or
- * Crashlytics here. Today we only `console.error` so dev sessions can
- * surface the stack.
+ * Errors are reported to Sentry (componentDidCatch) when a DSN is configured,
+ * and always `console.error`'d so dev sessions can surface the stack.
  */
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -33,6 +33,10 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, info) {
     // eslint-disable-next-line no-console
     console.error("[ErrorBoundary] Uncaught render error:", error, info?.componentStack);
+    // Report to Sentry (no-op when no DSN is configured).
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info?.componentStack } },
+    });
     this.setState({ info });
   }
 

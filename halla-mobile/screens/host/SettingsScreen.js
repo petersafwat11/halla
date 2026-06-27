@@ -4,6 +4,7 @@ import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import SettingsTabs from "../../components/settings/SettingsTabs";
+import DeleteAccountSection from "../../components/settings/DeleteAccountSection";
 import { TopBar } from "../../components/plans";
 
 export default function SettingsScreen({ navigation }) {
@@ -43,6 +44,7 @@ export default function SettingsScreen({ navigation }) {
               onTabChange={handleTabChange}
               onLogout={handleLogout}
             />
+            <DeleteAccountSection />
           </ScrollView>
         </View>
       </View>

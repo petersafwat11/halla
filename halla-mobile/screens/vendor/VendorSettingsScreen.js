@@ -5,6 +5,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import TopBar from "../../components/plans/TopBar";
 import VendorSettingsTabs from "../../components/vendor/VendorSettingsTabs";
+import DeleteAccountSection from "../../components/settings/DeleteAccountSection";
 
 const VendorSettingsScreen = ({ navigation }) => {
   const { t } = useTranslation("vendor");
@@ -40,6 +41,7 @@ const VendorSettingsScreen = ({ navigation }) => {
               onTabChange={handleTabChange}
               onLogout={handleLogout}
             />
+            <DeleteAccountSection />
           </ScrollView>
         </View>
       </View>

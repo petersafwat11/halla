@@ -19,7 +19,20 @@ const OTP_CONFIG = {
 };
 
 const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  // Cryptographically secure 6-digit code (crypto.randomInt is uniform and
+  // unpredictable, unlike Math.random()).
+  return crypto.randomInt(100000, 1000000).toString();
+};
+
+/**
+ * App Store / Google Play reviewers cannot receive an SMS OTP. A single,
+ * env-gated reviewer test number accepts a fixed OTP so reviewers can sign in
+ * to an existing reviewer account. Scoped to ONE number and inactive unless
+ * REVIEWER_TEST_PHONE (and, for verification, REVIEWER_TEST_OTP) are set.
+ */
+const isReviewerPhone = (normalizedPhone) => {
+  const rp = process.env.REVIEWER_TEST_PHONE;
+  return !!rp && normalizePhoneNumber(rp) === normalizedPhone;
 };
 
 /**
@@ -33,6 +46,12 @@ const generateOTP = () => {
  */
 const sendOTP = async (phoneNumber, lang = 'ar') => {
   const normalizedPhone = normalizePhoneNumber(phoneNumber);
+
+  // Reviewer test number: never send a real SMS (the fixed OTP is verified
+  // directly in verifyOTP). Avoids SMS cost/spam and works without a device.
+  if (isReviewerPhone(normalizedPhone)) {
+    return { success: true, messageId: 'reviewer-bypass' };
+  }
 
   const recent = await OTP.findOne({ phoneNumber: normalizedPhone });
   if (recent && (Date.now() - recent.createdAt.getTime()) < OTP_CONFIG.cooldownSeconds * 1000) {
@@ -101,6 +120,16 @@ const sendOTP = async (phoneNumber, lang = 'ar') => {
 
 const verifyOTP = async (phoneNumber, otp) => {
   const normalizedPhone = normalizePhoneNumber(phoneNumber);
+
+  // Reviewer test number: accept the fixed OTP (env-gated, single number).
+  if (
+    isReviewerPhone(normalizedPhone) &&
+    process.env.REVIEWER_TEST_OTP &&
+    otp === process.env.REVIEWER_TEST_OTP
+  ) {
+    return { success: true };
+  }
+
   // exclude already-used records to prevent replay attacks
   const stored = await OTP.findOne({ phoneNumber: normalizedPhone, used: { $ne: true } });
 

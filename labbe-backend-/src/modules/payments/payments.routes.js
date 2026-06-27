@@ -3,6 +3,7 @@ const router = express.Router();
 
 const paymentsController = require('./payments.controller');
 const checkoutController = require('./checkout.controller');
+const revenuecatController = require('./revenuecat.controller');
 const { protect } = require('../../shared/middleware/auth');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { idempotency } = require('../../shared/middleware/idempotency');
@@ -59,6 +60,21 @@ router.post('/webhook', paymentsController.webhook);
  *       302: { description: Redirect to the app deep link }
  */
 router.get('/app-return', paymentsController.appReturn);
+
+/**
+ * @swagger
+ * /payments/revenuecat/webhook:
+ *   post:
+ *     summary: RevenueCat in-app-purchase webhook
+ *     description: >
+ *       Grants/extends a subscription when RevenueCat reports a validated IAP.
+ *       Authenticated via the Authorization header (REVENUECAT_WEBHOOK_AUTH).
+ *     tags: [Payments]
+ *     responses:
+ *       200: { description: Processed or intentionally ignored }
+ *       401: { description: Bad/missing Authorization header }
+ */
+router.post('/revenuecat/webhook', revenuecatController.webhook);
 
 router.use(protect);
 

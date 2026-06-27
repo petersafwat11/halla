@@ -11,9 +11,14 @@
 
 import { API_PATHS } from "@halla/shared/api/paths";
 
-// Backend base URL. Production VPS (Contabo, nginx → labbe-backend on :8000)
-export const API_BASE_URL = "https://halaa.com.sa/api/v2";
-export const WEB_BASE_URL = "https://halaa.com.sa";
+// Backend base URL. Production VPS (Contabo, nginx → labbe-backend on :8000).
+// Overridable per EAS build profile via EXPO_PUBLIC_API_URL (see eas.json) so
+// dev/QA builds can point at staging without touching code; falls back to
+// production.
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL || "https://halaa.com.sa/api/v2";
+export const WEB_BASE_URL =
+  process.env.EXPO_PUBLIC_WEB_URL || "https://halaa.com.sa";
 
 export const ENDPOINTS = {
   AUTH: {

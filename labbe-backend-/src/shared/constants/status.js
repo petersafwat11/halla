@@ -13,6 +13,10 @@ const USER_STATUS = {
   SUSPENDED: 'suspended',
   REJECTED: 'rejected',
   INACTIVE: 'inactive',
+  // Account closed (self-service deletion or admin removal). Previously
+  // referenced by admin services but never defined here, so `USER_STATUS.DELETED`
+  // was `undefined` and `user.save()` threw a status-enum ValidationError.
+  DELETED: 'deleted',
 };
 
 /**

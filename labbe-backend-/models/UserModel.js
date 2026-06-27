@@ -241,6 +241,15 @@ const userSchema = new mongoose.Schema(
 
     avatar: String,
 
+    // Expo push tokens for this user's devices. Registered by the mobile app
+    // on login/foreground (PATCH /auth/update-push-token) and pruned when Expo
+    // reports DeviceNotRegistered during delivery. A user may have several
+    // (multiple devices); deduped on write.
+    pushTokens: {
+      type: [String],
+      default: [],
+    },
+
     // ============ AUTHENTICATION ============
     password: {
       type: String,
@@ -545,7 +554,8 @@ userSchema.methods.createPasswordResetToken = function () {
  * @returns {string} 6-digit verification code
  */
 userSchema.methods.createEmailVerificationCode = function () {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  // Cryptographically secure 6-digit code (uniform, unpredictable).
+  const code = crypto.randomInt(100000, 1000000).toString();
 
   this.emailVerificationCode = crypto
     .createHash("sha256")

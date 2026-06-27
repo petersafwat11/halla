@@ -13,20 +13,48 @@ const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 /**
  * Verify the Meta/WhatsApp HMAC signature on the incoming webhook payload.
  *
- * TEMPORARILY DISABLED (2026-06-01). Taqnyat forwards inbound RSVP button
- * replies signed with a Meta App Secret we don't currently have on hand —
- * every request was 401ing and guests stopped receiving auto-replies. Until
- * the real secret is wired (Meta Business Manager → WhatsApp app → App
- * Secret) we accept all payloads. Re-enable by restoring the HMAC check
- * below and setting `WHATSAPP_APP_SECRET` to the real value.
+ * Computes `HMAC-SHA256(rawBody, WHATSAPP_APP_SECRET)` and compares it against
+ * the `x-hub-signature-256` header in constant time, failing closed on a
+ * missing/mismatched signature. `req.rawBody` is captured for this route only
+ * (see app.js `captureRawForWebhook`) because the HMAC is over the exact bytes.
  *
- * Original behaviour (kept inline for reference): compute
- * `HMAC-SHA256(rawBody, WHATSAPP_APP_SECRET)`, compare against
- * `x-hub-signature-256`, fail closed on mismatch.
+ * Degraded mode: if `WHATSAPP_APP_SECRET` is not configured we cannot verify,
+ * so we log an error and accept the payload rather than dropping every inbound
+ * RSVP reply (which is why verification was disabled in the past). PRODUCTION
+ * MUST set `WHATSAPP_APP_SECRET` (Meta Business Manager → WhatsApp app → App
+ * Secret) to actually enforce verification and close the forgery gap.
  */
-// eslint-disable-next-line no-unused-vars
 const verifyWebhookSignature = (req) => {
-  return { ok: true, reason: 'verification_disabled' };
+  const appSecret = process.env.WHATSAPP_APP_SECRET;
+
+  if (!appSecret) {
+    logger.error(
+      '[webhook] WHATSAPP_APP_SECRET is not set — inbound webhook signatures are NOT verified. ' +
+        'Set it in production to close this forgery gap.'
+    );
+    return { ok: true, reason: 'app_secret_not_configured' };
+  }
+
+  const signature = req.get('x-hub-signature-256') || '';
+  if (!signature || !req.rawBody) {
+    return { ok: false, reason: 'missing_signature' };
+  }
+
+  const expected =
+    'sha256=' +
+    crypto.createHmac('sha256', appSecret).update(req.rawBody).digest('hex');
+
+  const sigBuf = Buffer.from(signature);
+  const expBuf = Buffer.from(expected);
+  // timingSafeEqual throws on length mismatch — guard first.
+  if (
+    sigBuf.length !== expBuf.length ||
+    !crypto.timingSafeEqual(sigBuf, expBuf)
+  ) {
+    return { ok: false, reason: 'signature_mismatch' };
+  }
+
+  return { ok: true };
 };
 
 /**

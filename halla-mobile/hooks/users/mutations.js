@@ -38,3 +38,20 @@ export function useUpdateNotificationSettings() {
     },
   });
 }
+
+/**
+ * Self-service account deletion (Apple 5.1.1(v) / Google Play data-deletion).
+ * The authenticated user is deleted server-side (PII anonymized, owned data
+ * cascaded, refresh tokens revoked); on success we wipe the React Query cache.
+ * Callers must also clear the auth session (e.g. `authStore.logout()`).
+ */
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => usersApi.deleteAccount(),
+    onSuccess: () => {
+      queryClient.clear();
+    },
+  });
+}

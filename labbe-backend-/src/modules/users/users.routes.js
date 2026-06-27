@@ -52,6 +52,15 @@ router.patch(
 );
 
 /**
+ * DELETE /users/profile
+ * Self-service account deletion (Apple 5.1.1(v) / Google Play data-deletion).
+ * Anonymizes the user's PII, cascade-soft-deletes owned events + guests,
+ * revokes all sessions, and removes S3 assets. Authenticated by the access
+ * token (the mobile client gates this behind a type-to-confirm dialog).
+ */
+router.delete("/profile", usersController.deleteMyAccount);
+
+/**
  * POST /users/profile/phone/send-otp
  * Sends an SMS OTP to a candidate new phone number. The number is validated
  * and checked for uniqueness before the OTP is sent.

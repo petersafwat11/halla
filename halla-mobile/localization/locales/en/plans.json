@@ -199,7 +199,16 @@
       "expiryInvalid": "Expiry date looks invalid.",
       "cvcInvalid": "CVC looks invalid.",
       "stcMobileInvalid": "Enter a valid Saudi mobile number (starts with 05).",
-      "applepayUnavailable": "Apple Pay is not yet available on mobile. Please choose another method."
+      "applepayUnavailable": "Apple Pay is not yet available on mobile. Please choose another method.",
+      "iapUnavailable": "In-app purchases aren't available on this device.",
+      "planUnavailable": "This plan isn't available for purchase right now."
+    },
+    "iap": {
+      "note": "Billed securely through the App Store / Google Play.",
+      "restore": "Restore Purchases",
+      "restoring": "Restoring...",
+      "restored": "Purchases restored",
+      "restoreFailed": "Could not restore purchases"
     }
   },
   "features": {

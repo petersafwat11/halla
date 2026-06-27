@@ -21,6 +21,9 @@
     "./hooks": "./src/hooks/index.js",
     "./hooks/*": "./src/hooks/*.js"
   },
+  "dependencies": {
+    "xlsx": "npm:@e965/xlsx@^0.20.3"
+  },
   "peerDependencies": {
     "zod": "^3 || ^4"
   },

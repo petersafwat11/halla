@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   I18nManager,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,6 +15,12 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import { useCheckout, useValidateDiscount } from "../../hooks";
+import {
+  useOffering,
+  usePurchasePackage,
+  useRestorePurchases,
+} from "../../hooks/purchases";
+import { isPurchasesAvailable } from "../../services/purchases";
 import TopBar from "../../components/plans/TopBar";
 import PlanSummaryCard from "../../components/plans/PlanSummaryCard";
 import DiscountCodeCard from "../../components/plans/DiscountCodeCard";
@@ -35,6 +42,25 @@ const buildCheckoutAddons = (items = []) =>
     return base;
   });
 
+// Find the RevenueCat package that corresponds to our plan. Tries (in order):
+// an explicit store product id carried on the plan, the package identifier ==
+// plan code, then the product identifier == plan code. Configure RevenueCat
+// packages accordingly (see IAP_SETUP.md).
+const findPackageForPlan = (offering, plan) => {
+  const packages = offering?.availablePackages;
+  if (!packages?.length || !plan) return null;
+  const code = plan.code;
+  const productId =
+    plan.iapProductId || plan.appleProductId || plan.googleProductId;
+  return (
+    (productId &&
+      packages.find((p) => p.product?.identifier === productId)) ||
+    packages.find((p) => p.identifier === code) ||
+    packages.find((p) => p.product?.identifier === code) ||
+    null
+  );
+};
+
 const PlansSummaryScreen = () => {
   const { t, currentLanguage } = useTranslation("plans");
   const navigation = useNavigation();
@@ -42,6 +68,13 @@ const PlansSummaryScreen = () => {
   const toast = useToast();
   const checkoutMutation = useCheckout();
   const validateDiscount = useValidateDiscount();
+
+  // Platform gate: web keeps the Moyasar card checkout; iOS/Android must use
+  // native in-app billing (App Store / Google Play) per store policy in KSA.
+  const isWeb = Platform.OS === "web";
+  const { data: offering } = useOffering();
+  const purchaseMutation = usePurchasePackage();
+  const restoreMutation = useRestorePurchases();
 
   const { selectedPlan, addonItems = [], addonTotal = 0 } = route.params || {};
 
@@ -267,7 +300,46 @@ const PlansSummaryScreen = () => {
     }
   };
 
-  const isProcessing = checkoutMutation.isPending;
+  // Native in-app purchase (iOS/Android). Buys the plan's store product via
+  // RevenueCat; the backend webhook grants the subscription. Note: store IAPs
+  // are fixed SKUs, so add-ons and discount codes (web/Moyasar features) are
+  // not bundled here — see IAP_SETUP.md.
+  const handleNativePurchase = async () => {
+    if (!selectedPlan) return;
+    if (!isPurchasesAvailable()) {
+      toast.error(t("checkout.errors.iapUnavailable", "In-app purchases aren't available on this device."));
+      return;
+    }
+    const pkg = findPackageForPlan(offering, selectedPlan);
+    if (!pkg) {
+      toast.error(t("checkout.errors.planUnavailable", "This plan isn't available for purchase right now."));
+      return;
+    }
+    try {
+      await purchaseMutation.mutateAsync(pkg);
+      toast.success(t("toasts.subscriptionCreated"));
+      navigation.navigate("MainTabs", { screen: "Home" });
+    } catch (error) {
+      // RevenueCat flags user-initiated cancellation — not an error to surface.
+      if (error?.userCancelled) return;
+      // eslint-disable-next-line no-console
+      console.error("[iap] purchase failed", { message: error?.message });
+      toast.error(error?.message || t("toasts.subscriptionFailed"));
+    }
+  };
+
+  const handleRestore = async () => {
+    try {
+      await restoreMutation.mutateAsync();
+      toast.success(t("checkout.iap.restored", "Purchases restored"));
+    } catch (error) {
+      toast.error(error?.message || t("checkout.iap.restoreFailed", "Could not restore purchases"));
+    }
+  };
+
+  const isProcessing = isWeb
+    ? checkoutMutation.isPending
+    : purchaseMutation.isPending;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -294,45 +366,89 @@ const PlansSummaryScreen = () => {
 
           <AddonsSummaryCard addonItems={addonItems} t={t} />
 
-          <DiscountCodeCard
-            discountCode={discountCode}
-            applied={discountApplied}
-            loading={validating}
-            amount={discountAmount}
-            appliedCode={appliedCode}
-            errorMessage={discountError}
-            onCodeChange={handleDiscountCodeChange}
-            onApply={handleApplyDiscount}
-            onRemove={handleRemoveDiscount}
-            t={t}
-          />
+          {/* Discount codes apply only to the web/Moyasar checkout — store
+              IAPs don't support arbitrary codes (use App Store / Play offer
+              codes instead). */}
+          {isWeb && (
+            <DiscountCodeCard
+              discountCode={discountCode}
+              applied={discountApplied}
+              loading={validating}
+              amount={discountAmount}
+              appliedCode={appliedCode}
+              errorMessage={discountError}
+              onCodeChange={handleDiscountCodeChange}
+              onApply={handleApplyDiscount}
+              onRemove={handleRemoveDiscount}
+              t={t}
+            />
+          )}
 
-          <View style={styles.methodCard}>
-            <View style={styles.methodCardHeader}>
-              <Ionicons
-                name="wallet-outline"
-                size={16}
-                color={colors.primary[500]}
-              />
-              <Text style={styles.methodCardTitle}>
-                {t("summary.payment.method")}
-              </Text>
+          {isWeb ? (
+            <View style={styles.methodCard}>
+              <View style={styles.methodCardHeader}>
+                <Ionicons
+                  name="wallet-outline"
+                  size={16}
+                  color={colors.primary[500]}
+                />
+                <Text style={styles.methodCardTitle}>
+                  {t("summary.payment.method")}
+                </Text>
               </View>
-            <View style={styles.methodCardBody}>
-              <PaymentMethodSelector
-                value={paymentMethod}
-                onChange={(m) => {
-                  setPaymentMethod(m);
-                  setErrors({});
-                }}
-                onCardChange={setCardData}
-                onMobileChange={setStcMobile}
-                cardData={cardData}
-                stcMobile={stcMobile}
-                errors={errors}
-              />
+              <View style={styles.methodCardBody}>
+                <PaymentMethodSelector
+                  value={paymentMethod}
+                  onChange={(m) => {
+                    setPaymentMethod(m);
+                    setErrors({});
+                  }}
+                  onCardChange={setCardData}
+                  onMobileChange={setStcMobile}
+                  cardData={cardData}
+                  stcMobile={stcMobile}
+                  errors={errors}
+                />
+              </View>
             </View>
-          </View>
+          ) : (
+            <View style={styles.methodCard}>
+              <View style={styles.methodCardBody}>
+                <View style={styles.iapNoteRow}>
+                  <Ionicons
+                    name="lock-closed"
+                    size={16}
+                    color={colors.primary[500]}
+                  />
+                  <Text style={styles.iapNoteText}>
+                    {t(
+                      "checkout.iap.note",
+                      Platform.OS === "ios"
+                        ? "Billed securely through the App Store."
+                        : "Billed securely through Google Play."
+                    )}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.restoreButton}
+                  onPress={handleRestore}
+                  disabled={restoreMutation.isPending}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="refresh"
+                    size={15}
+                    color={colors.primary[600]}
+                  />
+                  <Text style={styles.restoreButtonText}>
+                    {restoreMutation.isPending
+                      ? t("checkout.iap.restoring", "Restoring...")
+                      : t("checkout.iap.restore", "Restore Purchases")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
 
           <PaymentSummaryCard
             planPrice={planPrice}
@@ -373,7 +489,7 @@ const PlansSummaryScreen = () => {
                 styles.proceedButton,
                 isProcessing && styles.proceedButtonDisabled,
               ]}
-              onPress={handlePayment}
+              onPress={isWeb ? handlePayment : handleNativePurchase}
               disabled={isProcessing}
               activeOpacity={0.85}
             >
@@ -470,6 +586,30 @@ const styles = StyleSheet.create({
   },
   methodCardBody: {
     padding: spacing[16],
+  },
+  iapNoteRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
+  },
+  iapNoteText: {
+    flexShrink: 1,
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.body.small,
+    color: colors.natural[450],
+  },
+  restoreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing[6],
+    marginTop: spacing[12],
+    paddingVertical: spacing[8],
+  },
+  restoreButtonText: {
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.body.small,
+    color: colors.primary[600],
   },
 
   /* ---------- Footer ---------- */
