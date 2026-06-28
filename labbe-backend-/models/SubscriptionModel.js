@@ -129,6 +129,15 @@ const subscriptionSchema = new mongoose.Schema(
       expiryYear: Number,
     },
 
+    // ============ STORE / IAP (RevenueCat) (§9.2) ============
+    // Null for web/admin subscriptions. Set for native store subscriptions so
+    // access is derived from the canonical store entitlement/expiry, not guessed.
+    provider: { type: String, default: null }, // revenuecat | appstore | playstore
+    storeProductId: { type: String, default: null },
+    storeOriginalTransactionId: { type: String, default: null },
+    storeExpiresAt: { type: Date, default: null },
+    storeAutoRenewStatus: { type: Boolean, default: null },
+
     // ============ CREATED BY ============
     createdBy: {
       type: createdBySchema,
@@ -153,6 +162,14 @@ const subscriptionSchema = new mongoose.Schema(
 subscriptionSchema.index({ userId: 1, status: 1 });
 subscriptionSchema.index({ status: 1, expiresAt: 1 });
 subscriptionSchema.index({ planId: 1, status: 1 });
+// Idempotency backstop: one subscription per RevenueCat event id (§9.2).
+subscriptionSchema.index(
+  { "metadata.rcEventId": 1 },
+  {
+    unique: true,
+    partialFilterExpression: { "metadata.rcEventId": { $type: "string" } },
+  }
+);
 
 // ============================================
 // VIRTUALS

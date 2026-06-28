@@ -15,9 +15,20 @@
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const realFingerprint = process.env.ANDROID_CERT_FINGERPRINT;
+
+  // Loud failure (§5.1): without the real Play App Signing SHA-256, Android App
+  // Links will NOT verify and reset/invitation links won't open the app.
+  if (!realFingerprint && process.env.NODE_ENV === "production") {
+    // eslint-disable-next-line no-console
+    console.error(
+      "[assetlinks] ANDROID_CERT_FINGERPRINT is not set in production — serving a PLACEHOLDER fingerprint. " +
+        "Android App Link verification will FAIL until the real Play App Signing SHA-256 is configured."
+    );
+  }
+
   const fingerprints = (
-    process.env.ANDROID_CERT_FINGERPRINT ||
-    "REPLACE_WITH_SHA256_FINGERPRINT_FROM_PLAY_APP_SIGNING"
+    realFingerprint || "REPLACE_WITH_SHA256_FINGERPRINT_FROM_PLAY_APP_SIGNING"
   )
     .split(",")
     .map((f) => f.trim())

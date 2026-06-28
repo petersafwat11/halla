@@ -15,7 +15,12 @@ const {
   parseFormDataJsonFields,
 } = require("../../shared/middleware/validation");
 const { uploadUserProfile } = require("../../shared/utils/s3Upload");
-const { otpLimiter, otpHourlyLimiter } = require("../../shared/middleware/rateLimiter");
+const {
+  otpLimiter,
+  otpHourlyLimiter,
+  uploadLimiter,
+  deletionLimiter,
+} = require("../../shared/middleware/rateLimiter");
 const { AppError } = require("../../shared/errors");
 const {
   updatePasswordSchema,
@@ -28,9 +33,32 @@ const {
   deleteImageSchema,
 } = require("./users.validation");
 
+// Public (no auth): deletion-status lookup by unguessable requestId. The
+// /delete-account page + app poll this after the session is gone (§4.1/§4.3).
+router.get("/deletion-status/:requestId", usersController.getDeletionStatus);
+
 router.use(protect);
 
 router.get("/profile", usersController.getMyProfile);
+
+/**
+ * GET /users/pre-deletion-info
+ * Pre-deletion warning info: active store (IAP) subscription flag + the
+ * store-manager URLs + the retention disclosure (§4.2).
+ */
+router.get("/pre-deletion-info", usersController.getPreDeletionInfo);
+
+/**
+ * POST /users/pre-deletion-otp
+ * Sends a reauth OTP to the current user's verified phone (password-less
+ * accounts) before deletion. OTP rate-limited.
+ */
+router.post(
+  "/pre-deletion-otp",
+  otpLimiter,
+  otpHourlyLimiter,
+  usersController.sendDeletionOtp
+);
 
 /**
  * PATCH /users/profile
@@ -40,6 +68,7 @@ router.get("/profile", usersController.getMyProfile);
  */
 router.patch(
   "/profile",
+  uploadLimiter,
   uploadUserProfile,
   validateZod(updateProfileSchema),
   usersController.updateMyProfile
@@ -54,11 +83,14 @@ router.patch(
 /**
  * DELETE /users/profile
  * Self-service account deletion (Apple 5.1.1(v) / Google Play data-deletion).
- * Anonymizes the user's PII, cascade-soft-deletes owned events + guests,
- * revokes all sessions, and removes S3 assets. Authenticated by the access
- * token (the mobile client gates this behind a type-to-confirm dialog).
+ * REAUTHENTICATED — body carries `{ password }` or `{ otp }` (§4.1). Idempotent;
+ * returns `{ requestId, status }`. Anonymizes the user's PII + nested profile,
+ * third-party guest names/phones, post-event media/comments, vendor services,
+ * support tickets, notifications, and all S3 assets; revokes every session
+ * (issued access JWTs also stop working via the protect DELETED-status check);
+ * retains only the pseudonymized legal/accounting rows in the retention matrix.
  */
-router.delete("/profile", usersController.deleteMyAccount);
+router.delete("/profile", deletionLimiter, usersController.deleteMyAccount);
 
 /**
  * POST /users/profile/phone/send-otp
@@ -120,6 +152,7 @@ const validateSectionBody = (req, res, next) => {
 
 router.patch(
   "/profile/:section",
+  uploadLimiter,
   uploadUserProfile,
   parseFormDataJsonFields([
     "serviceCategories",

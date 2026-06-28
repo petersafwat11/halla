@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
+import { useReportPostEventContent } from "@/hooks/postEvent";
 import styles from "./postMediaGallery.module.css";
 
 /**
@@ -35,9 +37,27 @@ const MediaItem = ({ item, className, onOpen }) => {
   );
 };
 
-const PostMediaGallery = ({ media = [] }) => {
+const PostMediaGallery = ({ media = [], eventId }) => {
   const { t } = useTranslation("postEvent");
   const [lightbox, setLightbox] = useState(null);
+  const report = useReportPostEventContent();
+
+  const reportMedia = (item) => {
+    if (!eventId || !item?._id || report.isPending) return;
+    report.mutate(
+      {
+        eventId,
+        targetType: "post_event_media",
+        targetId: item._id,
+        reason: "other",
+      },
+      {
+        onSuccess: () =>
+          toast.success(t("report.submitted", "Reported. Our team will review this.")),
+        onError: () => toast.error(t("report.failed", "Couldn't submit the report.")),
+      }
+    );
+  };
 
   if (!media.length) return null;
 
@@ -61,8 +81,34 @@ const PostMediaGallery = ({ media = [] }) => {
         {visible.map((item, idx) => {
           const isLastWithMore = count > 4 && idx === 3;
           return (
-            <div key={item._id || idx} className={styles.cell}>
+            <div key={item._id || idx} className={styles.cell} style={{ position: "relative" }}>
               <MediaItem item={item} onOpen={setLightbox} />
+              {eventId ? (
+                <button
+                  type="button"
+                  onClick={() => reportMedia(item)}
+                  disabled={report.isPending}
+                  aria-label={t("report.report", "Report")}
+                  title={t("report.report", "Report")}
+                  style={{
+                    position: "absolute",
+                    top: 6,
+                    insetInlineEnd: 6,
+                    background: "rgba(0,0,0,0.45)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 999,
+                    width: 28,
+                    height: 28,
+                    cursor: "pointer",
+                    fontSize: 13,
+                    lineHeight: "28px",
+                    padding: 0,
+                  }}
+                >
+                  ⚑
+                </button>
+              ) : null}
               {isLastWithMore && (
                 <button
                   type="button"

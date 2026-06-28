@@ -406,6 +406,16 @@ exports.updatePushToken = catchAsync(async (req, res) => {
 });
 
 /**
+ * PATCH /api/v2/auth/remove-push-token
+ * Unregister the caller's Expo push token on logout so a shared device stops
+ * receiving notifications for this account (§7.3).
+ */
+exports.removePushToken = catchAsync(async (req, res) => {
+  const result = await pushService.removeToken(req.user._id, req.body.pushToken);
+  sendSuccess(res, result, "Push token removed");
+});
+
+/**
  * Complete host profile
  * PATCH /api/v2/auth/complete-profile
  *

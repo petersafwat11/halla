@@ -28,6 +28,7 @@ const { ROLES } = require('../../shared/constants/roles');
 const { resolveTaqnyatTemplateRef } = require('../events/templateRefResolver');
 
 const dispatchService = require('./post-event.dispatch.service');
+const moderationService = require('../moderation/moderation.service');
 
 // ============================================
 // SCOPED QUERY HELPER
@@ -534,6 +535,10 @@ class PostEventService {
   }
 
   async addComment(eventId, mediaId, body, files, guestUser) {
+    // UGC gate (§6): require accepted Terms/Community Rules + filter the text.
+    await moderationService.assertUgcTermsAccepted('guest', guestUser.guestId);
+    moderationService.assertCleanText(body.text);
+
     const content = await PostEventContent.findOne({
       event: eventId,
       'settings.isPublished': true,
@@ -564,7 +569,7 @@ class PostEventService {
     };
   }
 
-  async getComments(eventId, mediaId, { page = 1, limit = 20 }) {
+  async getComments(eventId, mediaId, { page = 1, limit = 20 }, viewer) {
     const content = await PostEventContent.findOne({
       event: eventId,
       'settings.isPublished': true,
@@ -574,7 +579,14 @@ class PostEventService {
     const item = content.media.id(mediaId);
     if (!item) throw new NotFoundError('Media not found');
 
-    const visible = (item.comments || []).filter((c) => !c.isHidden);
+    // Hide comments from authors the viewer has blocked (§6).
+    const blockedSet = await moderationService.getBlockedKeySet(
+      viewer?.guestId ? 'guest' : null,
+      viewer?.guestId
+    );
+    const visible = (item.comments || []).filter(
+      (c) => !c.isHidden && !blockedSet.has(`guest:${c.guest}`)
+    );
     const total = visible.length;
     const skip = (page - 1) * limit;
     const paginated = visible
@@ -616,6 +628,10 @@ class PostEventService {
   }
 
   async addPostComment(eventId, body, files, guestUser) {
+    // UGC gate (§6): require accepted Terms/Community Rules + filter the text.
+    await moderationService.assertUgcTermsAccepted('guest', guestUser.guestId);
+    moderationService.assertCleanText(body.text);
+
     const content = await PostEventContent.findOne({
       event: eventId,
       'settings.isPublished': true,
@@ -652,14 +668,21 @@ class PostEventService {
     };
   }
 
-  async getPostComments(eventId, { page = 1, limit = 20 }) {
+  async getPostComments(eventId, { page = 1, limit = 20 }, viewer) {
     const content = await PostEventContent.findOne({
       event: eventId,
       'settings.isPublished': true,
     });
     if (!content) throw new NotFoundError('Content not found');
 
-    const visible = (content.comments || []).filter((c) => !c.isHidden);
+    // Hide comments from authors the viewer has blocked (§6).
+    const blockedSet = await moderationService.getBlockedKeySet(
+      viewer?.guestId ? 'guest' : null,
+      viewer?.guestId
+    );
+    const visible = (content.comments || []).filter(
+      (c) => !c.isHidden && !blockedSet.has(`guest:${c.guest}`)
+    );
     const total = visible.length;
     const skip = (page - 1) * limit;
     const paginated = visible

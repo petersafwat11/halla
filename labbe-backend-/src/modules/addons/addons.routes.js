@@ -5,6 +5,7 @@ const { restrictTo } = require('../../shared/middleware/rbac');
 const { idempotency } = require('../../shared/middleware/idempotency');
 const { auditLog } = require('../../shared/middleware/auditLog');
 const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
+const { purchaseLimiter } = require('../../shared/middleware/rateLimiter');
 const { ROLES } = require('../../shared/constants');
 const {
   getAvailableAddons,
@@ -95,6 +96,7 @@ router.get('/', getAvailableAddons);
 router.post(
   '/purchase',
   authenticate,
+  purchaseLimiter,
   validateZod(purchaseAddonSchema),
   idempotency({ scope: 'addons.purchase' }),
   purchaseAddon

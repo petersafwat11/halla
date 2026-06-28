@@ -15,5 +15,7 @@ export {
   useUnpublishPostEventContent,
   useGeneratePostEventTokens,
   useSendPostEventAccessLinks,
+  useReportPostEventContent,
+  useBlockPostEventActor,
 } from "./mutations";
 export { postEventKeys } from "./keys";

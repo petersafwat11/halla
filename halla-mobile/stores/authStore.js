@@ -21,6 +21,9 @@ import {
   loadUserShadow,
   clearUserShadow,
 } from "../services/secureStorage";
+import { apiFetch } from "../services/http";
+import { ENDPOINTS } from "../config/api";
+import { onSignedOut } from "../services/purchases";
 
 /**
  * Mobile auth store.
@@ -46,6 +49,9 @@ const initialState = {
   status: "checking",
   error: null,
   tempMobile: null,
+  // The Expo push token registered for the CURRENT account. Tracked so logout
+  // can unregister it for this account before clearing the session (§7.3).
+  pushToken: null,
 };
 
 /**
@@ -365,12 +371,34 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  setPushToken: (pushToken) => set({ pushToken }),
+
   logout: async () => {
-    const { token, refreshToken } = get();
+    const { token, refreshToken, pushToken } = get();
+    // Unregister this device's push token for the signed-out account FIRST,
+    // while the access token is still valid — otherwise a shared device keeps
+    // receiving the previous account's notifications (§7.3).
+    if (pushToken) {
+      try {
+        await apiFetch(ENDPOINTS.AUTH.REMOVE_PUSH_TOKEN, {
+          method: "PATCH",
+          body: { pushToken },
+        });
+      } catch (e) {
+        // best-effort; don't block logout on token cleanup.
+      }
+    }
     try {
       await logoutAPI({ accessToken: token, refreshToken });
     } catch (e) {
       // already swallowed in service; defensive.
+    }
+    // Disable IAP for the signed-out account WITHOUT calling Purchases.logOut()
+    // (which would create an anonymous RevenueCat id). §9.1.
+    try {
+      onSignedOut();
+    } catch (e) {
+      /* native module may be absent (web) */
     }
     await clearRefreshToken();
     await clearUserShadow();

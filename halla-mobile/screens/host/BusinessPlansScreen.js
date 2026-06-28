@@ -16,6 +16,7 @@ import { useTranslation } from "../../localization";
 import TopBar from "../../components/plans/TopBar";
 import CurrentPlanCard from "../../components/plans/CurrentPlanCard";
 import BusinessPlanCard from "../../components/plans/BusinessPlanCard";
+import AddonsSection from "../../components/plans/AddonsSection";
 import { useBusinessPlans, useMySubscription } from "../../hooks";
 import {
   colors,
@@ -52,6 +53,8 @@ const BusinessPlansScreen = () => {
   const queryClient = useQueryClient();
 
   const [billingTier, setBillingTier] = useState("quarterly");
+  const [addonItems, setAddonItems] = useState([]);
+  const [addonTotal, setAddonTotal] = useState(0);
 
   const {
     data: response,
@@ -88,8 +91,8 @@ const BusinessPlansScreen = () => {
         planFamily: plan.planFamily || "business",
         billingType: plan.billingType || billingTier,
       },
-      addonItems: [],
-      addonTotal: 0,
+      addonItems,
+      addonTotal,
     });
   };
 
@@ -200,6 +203,19 @@ const BusinessPlansScreen = () => {
             />
           ))
         )}
+
+        {/* Business add-ons (incl. branding customization). Attaches to the
+            active subscription, so only shown to active subscribers. Selections
+            ride the chosen plan into the PlansSummary checkout. */}
+        {hasActiveSubscription ? (
+          <AddonsSection
+            showBusiness
+            onAddonsChange={(items, sum) => {
+              setAddonItems(items);
+              setAddonTotal(sum);
+            }}
+          />
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

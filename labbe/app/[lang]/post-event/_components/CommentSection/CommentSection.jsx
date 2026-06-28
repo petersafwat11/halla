@@ -94,6 +94,7 @@ const CommentSection = ({ eventId, inputRef }) => {
           loading={commentsLoading}
           loadingText={t("loading")}
           emptyText={t("comments.empty")}
+          eventId={eventId}
         />
 
         {page < totalPages && (

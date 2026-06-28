@@ -7,6 +7,7 @@ const taqnyat = require('../../infrastructure/taqnyat');
 const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
 const Subscription = require('../../../models/SubscriptionModel');
+const EventEntitlement = require('../../../models/EventEntitlementModel');
 const { maybeNotifyPlanLimit } = require('../../shared/utils/planLimitWarning');
 const config = require('../../config');
 const { runBatched } = require('../../shared/utils/runBatched');
@@ -294,12 +295,23 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
       // subscription. This is the authoritative "sending started" signal for
       // the per-event re-creation gate (set even at capacity, when the message
       // still goes out but isn't charged below).
-      await Subscription.updateOne(
+      const firstStamp = await Subscription.updateOne(
         { _id: event.subscriptionId, firstSendAt: null },
         { $set: { firstSendAt: new Date() } }
-      ).catch((err) =>
-        logger.error('[sendToGuest] firstSendAt stamp failed', { guestId, err: err?.message })
-      );
+      ).catch((err) => {
+        logger.error('[sendToGuest] firstSendAt stamp failed', { guestId, err: err?.message });
+        return null;
+      });
+
+      // §9.4: on the FIRST send, mark a linked store event-entitlement consumed
+      // (best-effort ledger sync; access/consume is enforced by the subscription
+      // firstSendAt gate above).
+      if (firstStamp?.modifiedCount === 1) {
+        await EventEntitlement.updateOne(
+          { subscriptionId: event.subscriptionId, status: 'unused' },
+          { $set: { status: 'consumed', consumedEventId: event._id, consumedAt: new Date() } }
+        ).catch(() => {});
+      }
 
       // Unified pool: per-event and pool subscriptions both carry an
       // invitePool. Skip unlimited plans (invitePool null). The batch-level

@@ -24,6 +24,8 @@ module.exports = ({ config }) => {
   config.extra = {
     ...(config.extra || {}),
     sentryDsn: process.env.SENTRY_DSN || "",
+    // Tags Sentry events by environment (set per EAS profile, e.g. production).
+    sentryEnvironment: process.env.SENTRY_ENVIRONMENT || "production",
     revenueCat: {
       iosKey: process.env.REVENUECAT_IOS_KEY || "",
       androidKey: process.env.REVENUECAT_ANDROID_KEY || "",

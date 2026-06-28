@@ -33,6 +33,10 @@ const {
 const { uploadTemplateImage } = require("../../shared/utils/fileUpload");
 const { idempotency } = require("../../shared/middleware/idempotency");
 const {
+  createEventLimiter,
+  uploadLimiter,
+} = require("../../shared/middleware/rateLimiter");
+const {
   validateObjectId,
   validateZod,
   parseFormDataJsonFields,
@@ -239,6 +243,7 @@ router.get("/export/events", eventsController.exportEventsAsExcel);
  */
 router.post(
   "/",
+  createEventLimiter,
   requireSubscription,
   checkEventLimit,
   checkGuestLimit((req) => {
@@ -488,6 +493,7 @@ router.patch(
 router.patch(
   "/:id/invitation-settings",
   validateObjectId("id"),
+  uploadLimiter,
   uploadTemplateImage,
   parseFormDataJsonFields([
     "selectedTemplate",

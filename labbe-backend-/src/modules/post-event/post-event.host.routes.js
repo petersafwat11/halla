@@ -14,8 +14,10 @@ const { idempotency } = require("../../shared/middleware/idempotency");
 const {
   authLimiter,
   otpHourlyLimiter,
+  uploadLimiter,
 } = require("../../shared/middleware/rateLimiter");
 const { uploadMedia } = require("../../shared/utils/s3Upload");
+const { requireUserUgcTerms } = require("../moderation/requireUgcTerms");
 const {
   uploadMediaSchema,
   updateThankYouMessageSchema,
@@ -92,6 +94,8 @@ router.get(
 router.post(
   "/:eventId/media",
   validateObjectId("eventId"),
+  requireUserUgcTerms,
+  uploadLimiter,
   uploadMedia.array("files", 20),
   validateZod(uploadMediaSchema),
   postEventController.uploadMedia

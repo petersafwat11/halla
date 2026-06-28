@@ -1,11 +1,12 @@
 /**
  * Reset-password completion screen.
  *
- * Lands here from a deep link such as:
- *   - `halla://reset-password/<token>`            (custom scheme)
- *   - `https://halaa.com.sa/reset-password/<token>` (universal/app link)
+ * Lands here from the canonical reset deep link (§5.1):
+ *   - `https://halaa.com.sa/<lang>/change-password?token=<token>` (universal/app link)
+ *   - `halla://change-password?token=<token>`                     (custom scheme)
  *
- * The token is read from `route.params.token`. On success the backend
+ * The token is read from `route.params.token` (React Navigation parses the
+ * `?token=` query string into params). On success the backend
  * issues a fresh token pair and the auth store transitions to
  * `authenticated`, so the navigator's root-state effect lands the user
  * on the correct home tab automatically.

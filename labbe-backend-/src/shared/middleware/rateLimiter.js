@@ -4,9 +4,31 @@
  * Supports Redis store for distributed rate limiting
  */
 
+const crypto = require("crypto");
 const rateLimit = require("express-rate-limit");
 const { RATE_LIMIT, ROLES } = require("../constants");
 const logger = require("../utils/logger");
+
+/**
+ * NAT-safe client key for the global backstop limiter.
+ *
+ * Saudi mobile traffic is heavily behind carrier-grade NAT, so pooling every
+ * device under one IP would throttle real users. We therefore bucket by the
+ * caller's bearer/cookie token when present (each device carries a distinct
+ * token) and only fall back to IP for genuinely anonymous traffic. The token
+ * is hashed and used ONLY as a rate-limit bucket key — it is never trusted for
+ * authentication here.
+ */
+const natSafeClientKey = (req) => {
+  if (req.user?._id) return `u:${req.user._id.toString()}`;
+  const auth = req.get("authorization");
+  const bearer = auth && auth.startsWith("Bearer ") ? auth.slice(7) : null;
+  const token = bearer || req.cookies?.access_token;
+  if (token) {
+    return `t:${crypto.createHash("sha1").update(token).digest("hex")}`;
+  }
+  return `ip:${req.ip}`;
+};
 
 // Redis store setup (optional - falls back to memory store)
 let RedisStore = null;
@@ -258,6 +280,73 @@ const bulkOperationLimiter = createLimiter({
   },
 });
 
+/**
+ * Global API Backstop Limiter (§3.2)
+ * Generous ceiling mounted on every /api/v2 route as a blanket abuse backstop.
+ * Deliberately high (1000 / 15 min) so it never throttles a normal interactive
+ * session: authenticated traffic is keyed by user id, and unauthenticated
+ * guest reads are keyed by IP where carrier-grade NAT can pool many real users
+ * behind one address. Webhooks (Meta/RevenueCat/Moyasar) carry their own
+ * limiter and are hit from provider IPs at higher volume, so they are skipped
+ * here. Tight, security-sensitive limits live on the specific routes below.
+ */
+const globalLimiter = createLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  message: {
+    en: "Too many requests, please slow down and try again shortly",
+    ar: "طلبات كثيرة جداً، يرجى التمهل والمحاولة بعد قليل",
+  },
+  keyGenerator: natSafeClientKey,
+  skip: (req) =>
+    req.path.startsWith("/health") || req.path.includes("/webhook"),
+});
+
+/**
+ * Account Deletion Rate Limiter (§3.2 / §4)
+ * 5 attempts per hour. Deletion is reauthenticated and irreversible, so it is
+ * keyed by the authenticated user id (NAT-safe).
+ */
+const deletionLimiter = createLimiter({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: {
+    en: "Too many account-deletion attempts. Please try again later",
+    ar: "محاولات حذف حساب كثيرة جداً. يرجى المحاولة لاحقاً",
+  },
+  keyGenerator: (req) => req.user?._id?.toString() || req.ip,
+});
+
+/**
+ * Purchase / Payment Rate Limiter (§3.2)
+ * 15 attempts per 10 minutes for paid actions (addon purchase, checkout,
+ * subscription reconcile). Authenticated → keyed by user id.
+ */
+const purchaseLimiter = createLimiter({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 15,
+  message: {
+    en: "Too many payment attempts. Please try again shortly",
+    ar: "محاولات دفع كثيرة جداً. يرجى المحاولة بعد قليل",
+  },
+  keyGenerator: (req) => req.user?._id?.toString() || req.ip,
+});
+
+/**
+ * UGC Report Rate Limiter (§6)
+ * 20 reports per hour. Prevents report-spam/brigading of a moderation queue.
+ * Keyed by authenticated user id, falling back to IP for guest reporters.
+ */
+const reportLimiter = createLimiter({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20,
+  message: {
+    en: "Too many reports submitted. Please try again later",
+    ar: "تم إرسال عدد كبير من البلاغات. يرجى المحاولة لاحقاً",
+  },
+  keyGenerator: (req) => req.user?._id?.toString() || req.ip,
+});
+
 module.exports = {
   apiLimiter,
   authLimiter,
@@ -269,6 +358,10 @@ module.exports = {
   uploadLimiter,
   createEventLimiter,
   bulkOperationLimiter,
+  globalLimiter,
+  deletionLimiter,
+  purchaseLimiter,
+  reportLimiter,
   // Utility functions
   createLimiter,
   initRedisStore,

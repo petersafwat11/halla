@@ -10,12 +10,18 @@ const router = express.Router();
 const postEventController = require("./post-event.controller");
 const { guestAuth } = require("../../shared/middleware/guestAuth");
 const { validateObjectId, validateZod } = require("../../shared/middleware/validation");
-const { authLimiter } = require("../../shared/middleware/rateLimiter");
+const { authLimiter, reportLimiter } = require("../../shared/middleware/rateLimiter");
 const { uploadMultipleImages } = require("../../shared/utils/s3Upload");
 const {
   addCommentSchema,
   paginationSchema,
 } = require("./post-event.validation");
+const {
+  reportSchema,
+  blockSchema,
+  unblockSchema,
+  acceptPoliciesSchema,
+} = require("../moderation/moderation.validation");
 
 // ============================================
 // PUBLIC: Token validation
@@ -245,6 +251,45 @@ router.get(
   guestAuth,
   validateZod(paginationSchema, "query"),
   postEventController.getPostComments
+);
+
+// ============================================
+// GUEST UGC MODERATION (§6): policy acceptance, report content, block author
+// ============================================
+router.get(
+  "/:eventId/policies",
+  validateObjectId("eventId"),
+  guestAuth,
+  postEventController.guestPolicies
+);
+router.post(
+  "/:eventId/policies/accept",
+  validateObjectId("eventId"),
+  guestAuth,
+  validateZod(acceptPoliciesSchema),
+  postEventController.guestAcceptPolicies
+);
+router.post(
+  "/:eventId/report",
+  validateObjectId("eventId"),
+  guestAuth,
+  reportLimiter,
+  validateZod(reportSchema),
+  postEventController.guestReport
+);
+router.post(
+  "/:eventId/block",
+  validateObjectId("eventId"),
+  guestAuth,
+  validateZod(blockSchema),
+  postEventController.guestBlock
+);
+router.delete(
+  "/:eventId/block",
+  validateObjectId("eventId"),
+  guestAuth,
+  validateZod(unblockSchema),
+  postEventController.guestUnblock
 );
 
 module.exports = router;

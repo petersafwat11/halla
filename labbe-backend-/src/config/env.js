@@ -45,15 +45,17 @@ const envSchema = Joi.object({
 
 
 
-  // WhatsApp / Taqnyat webhook security
-  // TEMPORARILY OPTIONAL (2026-06-01): HMAC verification on
-  // POST /messaging/webhook is disabled while we don't have the real Meta
-  // App Secret. See messaging.webhook.controller.js `verifyWebhookSignature`.
-  // When the secret is restored, switch this back to `.min(1).required()`.
+  // WhatsApp / Taqnyat webhook security.
+  // Kept schema-optional so boot never crashes during the secret-store
+  // migration (§3.1), but enforcement is FAIL-CLOSED at runtime in production:
+  // messaging.webhook.controller.js rejects unsigned/unverifiable calls, and
+  // readiness.js lists it as a production-required secret (warns, or fails the
+  // deploy when STRICT_CONFIG=true). Set it in production to receive RSVP
+  // replies. See messaging.webhook.controller.js `verifyWebhookSignature`.
   WHATSAPP_APP_SECRET: Joi.string()
     .allow('')
     .optional()
-    .description('Meta/WhatsApp app secret used to verify x-hub-signature-256 on webhook calls (verification currently disabled)'),
+    .description('Meta/WhatsApp app secret used to verify x-hub-signature-256 on webhook calls (fail-closed in production)'),
 
   // Redis (Optional)
   REDIS_URL: Joi.string().allow(''),

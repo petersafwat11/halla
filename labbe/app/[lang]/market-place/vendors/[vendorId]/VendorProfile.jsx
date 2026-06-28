@@ -10,6 +10,7 @@ import { buildVendorContactMessage, buildWhatsAppUrl } from "@halla/shared/utils
 import en from "@/localization/locales/en/marketplace.json";
 import ar from "@/localization/locales/ar/marketplace.json";
 import ShareButton from "./ShareButton";
+import ReportVendorButton from "./ReportVendorButton";
 import SafeImage from "./SafeImage";
 import styles from "./page.module.css";
 
@@ -74,7 +75,10 @@ export default function VendorProfile({
     <main className={styles.page} dir={rtl ? "rtl" : "ltr"}>
       <div className={styles.topbar}>
         <Link href={marketplaceHref} className={styles.backLink}><BackIcon size={18} />{copy.vendor?.backToMarketplace}</Link>
-        <ShareButton label={copy.vendor?.share} copiedLabel={copy.vendor?.linkCopied} title={vendor.brandName} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <ShareButton label={copy.vendor?.share} copiedLabel={copy.vendor?.linkCopied} title={vendor.brandName} />
+          <ReportVendorButton vendorId={vendor.id || vendor._id} lang={lang} label={copy.vendor?.report} />
+        </div>
       </div>
 
       <section className={styles.hero}>

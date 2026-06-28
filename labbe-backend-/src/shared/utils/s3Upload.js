@@ -702,7 +702,19 @@ const deleteFile = async (filePathOrUrl, baseDir = path.join(__dirname, "../../.
   return false;
 };
 
-// File filters
+// File filters (§6 hardening): validate the file EXTENSION in addition to the
+// declared MIME so a spoofed Content-Type alone can't smuggle a disallowed
+// payload through. (multer-s3 streams to S3, so true magic-byte inspection is a
+// scan-service concern — see `scanUploadHook` below.)
+const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+const VIDEO_EXTS = [".mp4", ".mov", ".m4v", ".webm", ".3gp"];
+const DOC_EXTS = [".pdf", ".doc", ".docx", ".xls", ".xlsx"];
+const extOf = (name = "") => {
+  const m = String(name).toLowerCase().match(/\.[a-z0-9]+$/);
+  return m ? m[0] : "";
+};
+const extAllowed = (name, exts) => exts.includes(extOf(name));
+
 const imageFilter = (req, file, cb) => {
   const allowedTypes = [
     "image/jpeg",
@@ -712,7 +724,7 @@ const imageFilter = (req, file, cb) => {
     "image/webp",
   ];
 
-  if (allowedTypes.includes(file.mimetype)) {
+  if (allowedTypes.includes(file.mimetype) && extAllowed(file.originalname, IMAGE_EXTS)) {
     cb(null, true);
   } else {
     cb(
@@ -723,10 +735,11 @@ const imageFilter = (req, file, cb) => {
 };
 
 const mediaFilter = (req, file, cb) => {
-  if (
-    file.mimetype.startsWith("image/") ||
-    file.mimetype.startsWith("video/")
-  ) {
+  const isImage =
+    file.mimetype.startsWith("image/") && extAllowed(file.originalname, IMAGE_EXTS);
+  const isVideo =
+    file.mimetype.startsWith("video/") && extAllowed(file.originalname, VIDEO_EXTS);
+  if (isImage || isVideo) {
     cb(null, true);
   } else {
     cb(new Error("Only image and video files are allowed"), false);
@@ -745,7 +758,10 @@ const documentFilter = (req, file, cb) => {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ];
 
-  if (allowedTypes.includes(file.mimetype)) {
+  if (
+    allowedTypes.includes(file.mimetype) &&
+    extAllowed(file.originalname, [...IMAGE_EXTS, ".pdf", ".doc", ".docx"])
+  ) {
     cb(null, true);
   } else {
     cb(new Error("Only images and documents are allowed"), false);
@@ -766,11 +782,24 @@ const generalFilter = (req, file, cb) => {
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ];
 
-  if (allowedTypes.includes(file.mimetype)) {
+  if (
+    allowedTypes.includes(file.mimetype) &&
+    extAllowed(file.originalname, [...IMAGE_EXTS, ...DOC_EXTS])
+  ) {
     cb(null, true);
   } else {
     cb(new Error("File type not allowed. Only images, PDFs, and documents are accepted."), false);
   }
+};
+
+/**
+ * Malware-scan hook point (§6). Pluggable: by default a no-op pass. Wire a real
+ * scanner (ClamAV / a scanning service) + S3 quarantine here when available —
+ * the full async scan + quarantine bucket is infrastructure (EXTERNAL §6).
+ * @returns {Promise<{clean: boolean, reason?: string}>}
+ */
+const scanUploadHook = async (/* { key, bucket } */) => {
+  return { clean: true };
 };
 
 // Create S3 storage instance.
@@ -899,6 +928,7 @@ module.exports = {
   mediaFilter,
   documentFilter,
   generalFilter,
+  scanUploadHook,
 
   // Pre-configured multer instances
   uploadImage,

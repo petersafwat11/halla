@@ -6,13 +6,40 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   usePostEventComments,
   useAddPostEventComment,
   useTogglePostEventLike,
+  useReportPostEventContent,
+  useBlockPostEventActor,
 } from "../../../../hooks/postEvent";
+import { useLanguage } from "../../../../localization";
+
+// Inline AR/EN copy for the report/block actions (no extra i18n keys needed).
+const MOD_COPY = {
+  menuReport: { en: "Report comment", ar: "الإبلاغ عن التعليق" },
+  reportPost: { en: "Report this post", ar: "الإبلاغ عن هذا المنشور" },
+  report: { en: "Report", ar: "إبلاغ" },
+  menuBlock: { en: "Block user", ar: "حظر المستخدم" },
+  cancel: { en: "Cancel", ar: "إلغاء" },
+  reportTitle: { en: "Report this comment?", ar: "الإبلاغ عن هذا التعليق؟" },
+  reportMsg: { en: "Pick a reason", ar: "اختر السبب" },
+  rSpam: { en: "Spam", ar: "محتوى مزعج" },
+  rHarass: { en: "Harassment", ar: "تحرّش / إساءة" },
+  rOther: { en: "Other", ar: "أخرى" },
+  reported: { en: "Reported. Thank you.", ar: "تم الإبلاغ. شكرًا لك." },
+  blockTitle: { en: "Block this user?", ar: "حظر هذا المستخدم؟" },
+  blockMsg: {
+    en: "You won't see their content anymore.",
+    ar: "لن ترى محتواهم بعد الآن.",
+  },
+  block: { en: "Block", ar: "حظر" },
+  blocked: { en: "Blocked.", ar: "تم الحظر." },
+  failed: { en: "Something went wrong.", ar: "حدث خطأ ما." },
+};
 
 const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
   const liked = !!post.userLiked;
@@ -24,6 +51,98 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
 
   const toggleLike = useTogglePostEventLike();
   const addComment = useAddPostEventComment();
+  const reportContent = useReportPostEventContent();
+  const blockActor = useBlockPostEventActor();
+
+  const { currentLanguage } = useLanguage();
+  const lang = currentLanguage === "ar" ? "ar" : "en";
+  const tx = (k) => MOD_COPY[k][lang];
+
+  const submitReport = (c, reason) => {
+    reportContent.mutate(
+      {
+        eventId,
+        sessionToken,
+        targetType: "post_event_comment",
+        targetId: c._id,
+        reportedActorType: "guest",
+        reportedActorId: c.guest?._id,
+        reason,
+      },
+      {
+        onSuccess: () => toast?.success(tx("reported")),
+        onError: () => toast?.error(tx("failed")),
+      }
+    );
+  };
+
+  const handleReport = (c) => {
+    Alert.alert(tx("reportTitle"), tx("reportMsg"), [
+      { text: tx("rSpam"), onPress: () => submitReport(c, "spam") },
+      { text: tx("rHarass"), onPress: () => submitReport(c, "harassment") },
+      { text: tx("rOther"), onPress: () => submitReport(c, "other") },
+      { text: tx("cancel"), style: "cancel" },
+    ]);
+  };
+
+  const handleBlock = (c) => {
+    Alert.alert(tx("blockTitle"), tx("blockMsg"), [
+      {
+        text: tx("block"),
+        style: "destructive",
+        onPress: () =>
+          blockActor.mutate(
+            {
+              eventId,
+              postId: post._id,
+              sessionToken,
+              blockedActorType: "guest",
+              blockedActorId: c.guest?._id,
+            },
+            {
+              onSuccess: () => toast?.success(tx("blocked")),
+              onError: () => toast?.error(tx("failed")),
+            }
+          ),
+      },
+      { text: tx("cancel"), style: "cancel" },
+    ]);
+  };
+
+  const openCommentMenu = (c) => {
+    if (!c.guest?._id) return;
+    Alert.alert(c.guest?.name || "", undefined, [
+      { text: tx("menuReport"), onPress: () => handleReport(c) },
+      { text: tx("menuBlock"), style: "destructive", onPress: () => handleBlock(c) },
+      { text: tx("cancel"), style: "cancel" },
+    ]);
+  };
+
+  // Report the post/media itself (not a comment).
+  const submitPostReport = (reason) => {
+    reportContent.mutate(
+      {
+        eventId,
+        sessionToken,
+        targetType: "post_event_media",
+        targetId: post._id,
+        reason,
+      },
+      {
+        onSuccess: () => toast?.success(tx("reported")),
+        onError: () => toast?.error(tx("failed")),
+      }
+    );
+  };
+
+  const handleReportPost = () => {
+    Alert.alert(tx("reportPost"), tx("reportMsg"), [
+      { text: tx("rSpam"), onPress: () => submitPostReport("spam") },
+      { text: tx("rHarass"), onPress: () => submitPostReport("harassment") },
+      { text: tx("rOther"), onPress: () => submitPostReport("other") },
+      { text: tx("cancel"), style: "cancel" },
+    ]);
+  };
 
   const commentsQuery = usePostEventComments(
     eventId,
@@ -101,6 +220,17 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
           <Ionicons name="chatbubble-outline" size={20} color="#666" />
           <Text style={styles.actionCount}>{commentsCount}</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.reportAction]}
+          onPress={handleReportPost}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={tx("reportPost")}
+        >
+          <Ionicons name="flag-outline" size={18} color="#999" />
+          <Text style={styles.reportText}>{tx("report")}</Text>
+        </TouchableOpacity>
       </View>
 
       {showComments && (
@@ -129,6 +259,15 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
                   </Text>
                   <Text style={styles.commentText}>{c.text}</Text>
                 </View>
+                <TouchableOpacity
+                  style={styles.commentMenuBtn}
+                  onPress={() => openCommentMenu(c)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={tx("menuReport")}
+                >
+                  <Ionicons name="ellipsis-horizontal" size={16} color="#999" />
+                </TouchableOpacity>
               </View>
             ))
           )}
@@ -178,6 +317,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   actionBtn: { flexDirection: "row", alignItems: "center", gap: 6 },
+  reportAction: { marginLeft: "auto" },
+  reportText: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#999" },
   actionCount: {
     fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
@@ -204,6 +345,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
+  commentMenuBtn: { paddingHorizontal: 4, paddingTop: 6 },
   commentName: {
     fontSize: 13,
     fontFamily: "Cairo_700Bold",

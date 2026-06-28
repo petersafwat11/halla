@@ -122,6 +122,13 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
+  // Account deletion (§4.1): immediately invalidate already-issued access
+  // tokens. Refresh tokens are revoked at deletion time; this closes the
+  // remaining access-JWT window for a deleted/anonymized account.
+  if (user.status === USER_STATUS.DELETED) {
+    return next(new AppError("This account has been deleted", 401));
+  }
+
   // 6. Attach user to request
   req.user = user;
 

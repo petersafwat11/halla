@@ -49,7 +49,8 @@ export function useDeleteAccount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => usersApi.deleteAccount(),
+    // body carries the reauth credential: `{ password }` or `{ otp }` (§4.1).
+    mutationFn: async (body = {}) => usersApi.deleteAccount(body),
     onSuccess: () => {
       queryClient.clear();
     },

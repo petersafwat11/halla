@@ -57,6 +57,9 @@ const NOTIFICATION_TYPES = {
   REVENUE_REPORT: "revenue_report",
   USAGE_REPORT: "usage_report",
 
+  // Moderation (§6)
+  MODERATION_WARNING: "moderation_warning",
+
   // General
   ANNOUNCEMENT: "announcement",
   CUSTOM: "custom",

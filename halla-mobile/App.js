@@ -40,10 +40,61 @@ const sentryDsn =
   Constants.expoConfig?.extra?.sentryDsn ||
   Constants.manifest?.extra?.sentryDsn;
 
+const appVersion = Constants.expoConfig?.version || "0.0.0";
+const sentryEnvironment = __DEV__
+  ? "development"
+  : Constants.expoConfig?.extra?.sentryEnvironment || "production";
+
+// PII scrubbing (§7.3): never let auth material / personal identifiers reach
+// Sentry. Strips auth headers + cookies and redacts sensitive keys anywhere in
+// the event payload before send.
+const SENSITIVE_KEY_RE =
+  /(password|token|otp|secret|authorization|cookie|national|iqama|phone|email|pushtoken)/i;
+const redactDeep = (obj, depth = 0) => {
+  if (!obj || typeof obj !== "object" || depth > 6) return;
+  for (const k of Object.keys(obj)) {
+    if (SENSITIVE_KEY_RE.test(k)) {
+      obj[k] = "[redacted]";
+      continue;
+    }
+    if (obj[k] && typeof obj[k] === "object") redactDeep(obj[k], depth + 1);
+  }
+};
+const scrubPII = (event) => {
+  try {
+    if (event.request?.headers) {
+      for (const h of ["Authorization", "authorization", "Cookie", "cookie"]) {
+        delete event.request.headers[h];
+      }
+    }
+    redactDeep(event.extra);
+    redactDeep(event.contexts);
+    if (event.request?.data) redactDeep(event.request.data);
+    // Drop user email/ip — keep only an opaque id if present.
+    if (event.user) {
+      delete event.user.email;
+      delete event.user.ip_address;
+      delete event.user.username;
+    }
+  } catch {
+    /* never block error reporting on scrub failure */
+  }
+  return event;
+};
+
 Sentry.init({
   dsn: sentryDsn,
   enabled: !!sentryDsn,
-  tracesSampleRate: 0.2,
+  environment: sentryEnvironment,
+  release: `halla@${appVersion}`,
+  dist: String(
+    Constants.expoConfig?.ios?.buildNumber ||
+      Constants.expoConfig?.android?.versionCode ||
+      "1"
+  ),
+  tracesSampleRate: __DEV__ ? 1.0 : 0.2,
+  sendDefaultPii: false,
+  beforeSend: scrubPII,
 });
 
 // ------------------------------------------------- //
@@ -102,6 +153,8 @@ const registerForPushNotifications = async () => {
     const pushToken = tokenData.data;
 
     if (pushToken) {
+      // Remember the token so logout can unregister it for this account (§7.3).
+      useAuthStore.getState().setPushToken?.(pushToken);
       await apiFetch(ENDPOINTS.AUTH.UPDATE_PUSH_TOKEN, {
         method: "PATCH",
         body: { pushToken },
@@ -183,8 +236,10 @@ function AppContent() {
   useEffect(() => {
     if (authStatus === "authenticated" && authToken) {
       registerForPushNotifications();
-      // Attach in-app purchases to this user (no-op on web / without keys).
-      initPurchases(authUser?._id || authUser?.id);
+      // Attach in-app purchases to this user via the STABLE billing id (never
+      // the Mongo _id / phone / email — §9.1). No-op on web / without keys /
+      // until billingUserId is present.
+      initPurchases(authUser?.billingUserId);
     }
   }, [authStatus, authToken, authUser]);
 
@@ -206,20 +261,27 @@ function AppContent() {
   // app.json) plus universal-link variants for the production domain.
   const linking = useMemo(
     () => ({
-      prefixes: ["halla://", "https://halaa.com.sa"],
+      // The locale-prefixed universal-link variants are listed BEFORE the bare
+      // host so React Navigation strips the `/<lang>` segment, letting one
+      // screen pattern serve `/ar/...`, `/en/...`, and unprefixed links.
+      prefixes: [
+        "halla://",
+        "https://halaa.com.sa/ar",
+        "https://halaa.com.sa/en",
+        "https://halaa.com.sa",
+      ],
       config: {
         screens: {
-          // Forgot-password completion. Backend's email links
-          // point to `https://halaa.com.sa/reset-password/<token>`; the
-          // universal link variant carries the user into this screen
-          // with the token in route params. The custom scheme variant
-          // (`halla://reset-password/<token>`) is also supported for
-          // dev/QA flows.
-          ResetPassword: "reset-password/:token",
-          // Guest invitation portal — `halla://invitation/<code>`. The
-          // screen is registered on AuthStack so SMS/WhatsApp taps from
-          // an unauthenticated device land directly without forcing a
-          // login first.
+          // Forgot-password completion (§5.1). The canonical email link is
+          // `https://halaa.com.sa/<lang>/change-password?token=<token>`; the
+          // universal link opens this screen with the token from the query
+          // string (`route.params.token`). The custom-scheme variant
+          // (`halla://change-password?token=<token>`) is also supported.
+          ResetPassword: "change-password",
+          // Guest invitation portal — `halla://invitation/<code>` and
+          // `https://halaa.com.sa/<lang>/invitation/<code>`. Registered on
+          // AuthStack so SMS/WhatsApp taps from an unauthenticated device land
+          // directly without forcing a login first.
           Invitation: "invitation/:code",
           // 3DS callback. Moyasar appends `?id=<moyasarId>&status=…` to
           // the redirect URL we hand it at checkout time. The screen

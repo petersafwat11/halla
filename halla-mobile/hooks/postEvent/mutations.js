@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { API_BASE_URL, ENDPOINTS } from "../../config/api";
+import { apiFetch } from "../../services/http";
 import { postEventKeys } from "./keys";
 import {
   hostPostEventRequest,
@@ -79,8 +80,18 @@ export function useAddPostEventComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ eventId, postId, formData, sessionToken }) =>
-      postEventGuestRequest(
+    mutationFn: async ({ eventId, postId, formData, sessionToken }) => {
+      // UGC gate (§6): record the guest's Community-Rules acceptance first.
+      await postEventGuestRequest(
+        `${API_BASE_URL}/post-event/${eventId}/policies/accept`,
+        {
+          method: "POST",
+          headers: postEventWithSession(sessionToken),
+          body: JSON.stringify({}),
+        },
+        "Failed to accept policies",
+      );
+      return postEventGuestRequest(
         `${API_BASE_URL}${ENDPOINTS.POST_EVENT.ADD_COMMENT(eventId, postId)}`,
         {
           method: "POST",
@@ -88,7 +99,8 @@ export function useAddPostEventComment() {
           body: formData,
         },
         "Failed to add comment",
-      ),
+      );
+    },
     onSuccess: (_data, { eventId, postId }) => {
       // Invalidate every paginated comments page for this post.
       queryClient.invalidateQueries({
@@ -103,13 +115,63 @@ export function useAddPostEventComment() {
 export function useUploadPostEventMedia() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ eventId, formData }) =>
-      hostPostEventRequest(ENDPOINTS.POST_EVENT.UPLOAD_MEDIA(eventId), {
+    mutationFn: async ({ eventId, formData }) => {
+      // UGC gate (§6): host accepts current Terms/Community Rules before
+      // uploading public media (backend requires it).
+      await apiFetch(ENDPOINTS.MODERATION.ACCEPT, { method: "POST", body: {} });
+      return hostPostEventRequest(ENDPOINTS.POST_EVENT.UPLOAD_MEDIA(eventId), {
         method: "POST",
         body: formData,
-      }),
+      });
+    },
     onSuccess: (_data, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: postEventKeys.hostContent(eventId) });
+    },
+  });
+}
+
+/**
+ * Report post-event UGC (comment/media). Params: { eventId, sessionToken,
+ * targetType, targetId, reportedActorType?, reportedActorId?, reason, details? }.
+ */
+export function useReportPostEventContent() {
+  return useMutation({
+    mutationFn: ({ eventId, sessionToken, ...body }) =>
+      postEventGuestRequest(
+        `${API_BASE_URL}/post-event/${eventId}/report`,
+        {
+          method: "POST",
+          headers: postEventWithSession(sessionToken),
+          body: JSON.stringify(body),
+        },
+        "Failed to submit report",
+      ),
+  });
+}
+
+/**
+ * Block a UGC author (guest). Their content disappears from the blocker's view
+ * on next fetch. Params: { eventId, postId, sessionToken, blockedActorType,
+ * blockedActorId }.
+ */
+export function useBlockPostEventActor() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ eventId, sessionToken, blockedActorType, blockedActorId }) =>
+      postEventGuestRequest(
+        `${API_BASE_URL}/post-event/${eventId}/block`,
+        {
+          method: "POST",
+          headers: postEventWithSession(sessionToken),
+          body: JSON.stringify({ blockedActorType, blockedActorId }),
+        },
+        "Failed to block",
+      ),
+    onSuccess: (_data, { eventId, postId }) => {
+      queryClient.invalidateQueries({
+        queryKey: postEventKeys.commentsForPost(eventId, postId),
+      });
+      queryClient.invalidateQueries({ queryKey: postEventKeys.content(eventId) });
     },
   });
 }

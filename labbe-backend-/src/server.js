@@ -8,6 +8,7 @@ const config = require('./config');
 const { connectDB } = require('./config/database');
 const createApp = require('./app');
 const { initScheduledTasks } = require('./shared/utils/scheduledTasks');
+const { assertProductionConfigOrWarn } = require('./shared/utils/readiness');
 
 // Ensure business-account models are registered with Mongoose before app starts
 require('../models/BusinessSetupFeeModel');
@@ -18,6 +19,11 @@ require('../models/BusinessPlanAssignmentModel');
  */
 const startServer = async () => {
   try {
+    // Validate production config before doing anything else. Warns on missing
+    // required secrets / allowed origins; fails closed (exits) when
+    // STRICT_CONFIG=true so an incomplete deploy can't go live. (§3.2)
+    assertProductionConfigOrWarn();
+
     // Connect to database
     await connectDB();
 
@@ -42,12 +48,22 @@ const startServer = async () => {
 ╚════════════════════════════════════════════╝
       `);
 
-      // WhatsApp webhook HMAC verification is TEMPORARILY DISABLED
-      // (2026-06-01). See messaging.webhook.controller.js for the rationale
-      // and how to re-enable it.
-      console.log(
-        '⚠️  WhatsApp webhook HMAC verification: DISABLED — accepting all payloads on /messaging/webhook'
-      );
+      // WhatsApp webhook HMAC verification (§3.2). Enforced/fail-closed in
+      // production; skipped only in non-production when no secret is set.
+      const waSecretSet = Boolean(process.env.WHATSAPP_APP_SECRET);
+      if (config.env === 'production') {
+        console.log(
+          waSecretSet
+            ? '🔒 WhatsApp webhook HMAC verification: ENABLED'
+            : '⛔ WhatsApp webhook HMAC verification: WHATSAPP_APP_SECRET missing — /messaging/webhook will REJECT all calls (fail closed). Set the secret to receive RSVP replies.'
+        );
+      } else {
+        console.log(
+          waSecretSet
+            ? '🔒 WhatsApp webhook HMAC verification: ENABLED'
+            : '⚠️  WhatsApp webhook HMAC verification: SKIPPED (non-production, secret not set)'
+        );
+      }
     });
 
     // Handle unhandled rejections

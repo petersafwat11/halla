@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Linking,
   ScrollView,
@@ -15,7 +16,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMarketplaceVendor } from "../../hooks/marketplace";
 import { buildVendorContactMessage, buildWhatsAppUrl, normalizeWhatsAppNumber } from "@halla/shared/utils/marketplace";
 import { useTranslation } from "../../localization";
-import { WEB_BASE_URL } from "../../config/api";
+import { WEB_BASE_URL, ENDPOINTS } from "../../config/api";
+import { apiFetch } from "../../services/http";
 import { backgrounds, borderRadius, colors, spacing } from "../../styles/tokens";
 
 const SOCIAL_ICONS = { instagram: "logo-instagram", facebook: "logo-facebook", tiktok: "logo-tiktok", twitter: "logo-twitter" };
@@ -69,6 +71,37 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
   };
   const whatsapp = () => openWhatsApp(buildVendorContactMessage({ language: isAr ? "ar" : "en", vendorName: vendor.brandName, vendorUrl }));
   const share = () => Share.share({ message: `${vendor.brandName}\n${vendorUrl}` });
+
+  // Report this vendor profile (§6). Authenticated app user → /moderation/report.
+  const reportVendor = async (reason) => {
+    try {
+      const res = await apiFetch(ENDPOINTS.MODERATION.REPORT, {
+        method: "POST",
+        body: {
+          targetType: "vendor_profile",
+          targetId: vendor.id,
+          reportedActorType: "user",
+          reportedActorId: vendor.id,
+          reason,
+        },
+      });
+      if (!res.ok) throw new Error("report_failed");
+      Alert.alert(
+        t("vendor.reported", "Reported"),
+        t("vendor.reportedMsg", "Thank you. Our team will review this.")
+      );
+    } catch {
+      Alert.alert(t("errors.generic", "Something went wrong"));
+    }
+  };
+  const handleReport = () => {
+    Alert.alert(t("vendor.report", "Report vendor"), t("vendor.reportReason", "Pick a reason"), [
+      { text: t("vendor.rSpam", "Spam"), onPress: () => reportVendor("spam") },
+      { text: t("vendor.rImpersonation", "Impersonation"), onPress: () => reportVendor("impersonation") },
+      { text: t("vendor.rOther", "Other"), onPress: () => reportVendor("other") },
+      { text: t("cancel", "Cancel"), style: "cancel" },
+    ]);
+  };
   const categories = (vendor.categories || []).map((key) => t(`sections.${key}`, key));
   const services = vendor.services || [];
   const portfolio = vendor.portfolio || [];
@@ -83,6 +116,7 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
           <View style={styles.heroButtons}>
             <TouchableOpacity style={styles.roundButton} onPress={() => navigation.goBack()} accessibilityLabel={t("vendor.backToMarketplace")}><Ionicons name={isAr ? "arrow-forward" : "arrow-back"} size={22} color={colors.natural[50]} /></TouchableOpacity>
             <TouchableOpacity style={styles.roundButton} onPress={share} accessibilityLabel={t("vendor.share")}><Ionicons name="share-outline" size={22} color={colors.natural[50]} /></TouchableOpacity>
+            <TouchableOpacity style={styles.roundButton} onPress={handleReport} accessibilityLabel={t("vendor.report", "Report vendor")}><Ionicons name="flag-outline" size={20} color={colors.natural[50]} /></TouchableOpacity>
           </View>
         </View>
 

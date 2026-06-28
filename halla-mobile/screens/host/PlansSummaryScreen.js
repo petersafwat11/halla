@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   I18nManager,
   Platform,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,7 +21,8 @@ import {
   usePurchasePackage,
   useRestorePurchases,
 } from "../../hooks/purchases";
-import { isPurchasesAvailable } from "../../services/purchases";
+import { isPurchasesAvailable, canPurchase } from "../../services/purchases";
+import { apiFetch } from "../../services/http";
 import TopBar from "../../components/plans/TopBar";
 import PlanSummaryCard from "../../components/plans/PlanSummaryCard";
 import DiscountCodeCard from "../../components/plans/DiscountCodeCard";
@@ -61,6 +63,30 @@ const findPackageForPlan = (offering, plan) => {
   );
 };
 
+// Deterministic store code for an add-on item (mirrors the backend
+// parseAddonCode): extra_invites_<qty> | design_template_<type> |
+// business_customization. RevenueCat packages must be configured with this as
+// the package/product identifier (see docs/store-readiness-SKU-matrix.md).
+const addonStoreCode = (addon) => {
+  const type = addon.addonType || addon.type;
+  if (type === "extra_invites") return `extra_invites_${addon.quantity}`;
+  if (type === "design_template")
+    return `design_template_${addon.templateType || addon.type}`;
+  if (type === "business_customization") return "business_customization";
+  return null;
+};
+
+const findPackageForAddon = (offering, addon) => {
+  const packages = offering?.availablePackages;
+  const code = addonStoreCode(addon);
+  if (!packages?.length || !code) return null;
+  return (
+    packages.find((p) => p.identifier === code) ||
+    packages.find((p) => p.product?.identifier === code) ||
+    null
+  );
+};
+
 const PlansSummaryScreen = () => {
   const { t, currentLanguage } = useTranslation("plans");
   const navigation = useNavigation();
@@ -79,6 +105,24 @@ const PlansSummaryScreen = () => {
   const { selectedPlan, addonItems = [], addonTotal = 0 } = route.params || {};
 
   const billingType = selectedPlan?.billingType || "event";
+
+  // The store package + its display price. On native we show the store's
+  // priceString (the ACTUAL charged amount) — never the backend SAR (§9.3).
+  const storePkg = useMemo(
+    () => (isWeb ? null : findPackageForPlan(offering, selectedPlan)),
+    [isWeb, offering, selectedPlan]
+  );
+  const storePriceString = storePkg?.product?.priceString || null;
+
+  // Store-specific Manage/Cancel deep link (App Store / Google Play) — required
+  // by App Review and surfaced next to Restore on native.
+  const openStoreManager = () => {
+    const url =
+      Platform.OS === "ios"
+        ? "https://apps.apple.com/account/subscriptions"
+        : "https://play.google.com/store/account/subscriptions";
+    Linking.openURL(url).catch(() => {});
+  };
 
   const [discountCode, setDiscountCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -304,10 +348,34 @@ const PlansSummaryScreen = () => {
   // RevenueCat; the backend webhook grants the subscription. Note: store IAPs
   // are fixed SKUs, so add-ons and discount codes (web/Moyasar features) are
   // not bundled here — see IAP_SETUP.md.
+  // Wait for the backend to grant access (webhook → reconcile) before showing
+  // success, so entitlement state is canonical rather than optimistic (§9.3).
+  const reconcileBackend = async (attempts = 8, delayMs = 1500) => {
+    for (let i = 0; i < attempts; i += 1) {
+      try {
+        const res = await apiFetch("/payments/revenuecat/reconcile", {
+          method: "GET",
+        });
+        const body = await res.json().catch(() => ({}));
+        const data = body?.data || body;
+        if (data?.hasBackendAccess) return true;
+      } catch {
+        /* keep polling */
+      }
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+    return false;
+  };
+
   const handleNativePurchase = async () => {
     if (!selectedPlan) return;
-    if (!isPurchasesAvailable()) {
-      toast.error(t("checkout.errors.iapUnavailable", "In-app purchases aren't available on this device."));
+    // Gate on an IDENTIFIED, signed-in RevenueCat user (§9.1) — never purchase
+    // on an anonymous id.
+    if (!canPurchase()) {
+      toast.error(
+        t("checkout.errors.iapUnavailable", "In-app purchases aren't available right now.")
+      );
       return;
     }
     const pkg = findPackageForPlan(offering, selectedPlan);
@@ -317,7 +385,40 @@ const PlansSummaryScreen = () => {
     }
     try {
       await purchaseMutation.mutateAsync(pkg);
-      toast.success(t("toasts.subscriptionCreated"));
+      // No optimistic success — confirm the backend grant first.
+      const granted = await reconcileBackend();
+
+      // Buy each selected add-on as its own store product. Done AFTER the plan
+      // is granted so pool/org add-ons attach to the new subscription. IAP has
+      // no multi-product basket, so each add-on opens its own store sheet.
+      let addonFailures = 0;
+      for (const addon of addonItems) {
+        const apkg = findPackageForAddon(offering, addon);
+        if (!apkg) {
+          addonFailures += 1;
+          continue;
+        }
+        try {
+          await purchaseMutation.mutateAsync(apkg);
+        } catch (addonErr) {
+          if (!addonErr?.userCancelled) addonFailures += 1;
+        }
+      }
+
+      if (addonFailures > 0) {
+        toast.info(
+          t(
+            "checkout.iap.addonsPartial",
+            "Plan active. Some add-ons couldn't be purchased — you can buy them later."
+          )
+        );
+      } else {
+        toast[granted ? "success" : "info"](
+          granted
+            ? t("toasts.subscriptionCreated")
+            : t("checkout.iap.processing", "Purchase received — your plan will activate shortly.")
+        );
+      }
       navigation.navigate("MainTabs", { screen: "Home" });
     } catch (error) {
       // RevenueCat flags user-initiated cancellation — not an error to surface.
@@ -331,6 +432,7 @@ const PlansSummaryScreen = () => {
   const handleRestore = async () => {
     try {
       await restoreMutation.mutateAsync();
+      await reconcileBackend(4, 1500);
       toast.success(t("checkout.iap.restored", "Purchases restored"));
     } catch (error) {
       toast.error(error?.message || t("checkout.iap.restoreFailed", "Could not restore purchases"));
@@ -446,6 +548,20 @@ const PlansSummaryScreen = () => {
                       : t("checkout.iap.restore", "Restore Purchases")}
                   </Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.restoreButton}
+                  onPress={openStoreManager}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="settings-outline"
+                    size={15}
+                    color={colors.primary[600]}
+                  />
+                  <Text style={styles.restoreButtonText}>
+                    {t("checkout.iap.manage", "Manage subscription")}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           )}
@@ -475,12 +591,19 @@ const PlansSummaryScreen = () => {
                 {t("summary.paymentSummary.total")}
               </Text>
               <View style={styles.footerTotalAmountRow}>
-                <Text style={styles.footerTotalAmount}>
-                  {finalTotal.toFixed(0)}
-                </Text>
-                <Text style={styles.footerTotalCurrency}>
-                  {t("summary.currency")}
-                </Text>
+                {!isWeb && storePriceString ? (
+                  // Native: the store's actual charged price (priceString).
+                  <Text style={styles.footerTotalAmount}>{storePriceString}</Text>
+                ) : (
+                  <>
+                    <Text style={styles.footerTotalAmount}>
+                      {finalTotal.toFixed(0)}
+                    </Text>
+                    <Text style={styles.footerTotalCurrency}>
+                      {t("summary.currency")}
+                    </Text>
+                  </>
+                )}
               </View>
             </View>
 

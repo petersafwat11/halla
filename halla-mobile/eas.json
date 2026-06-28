@@ -21,8 +21,12 @@
     },
     "production": {
       "autoIncrement": true,
+      "ios": {
+        "image": "latest"
+      },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://halaa.com.sa/api/v2"
+        "EXPO_PUBLIC_API_URL": "https://halaa.com.sa/api/v2",
+        "SENTRY_ENVIRONMENT": "production"
       }
     }
   },

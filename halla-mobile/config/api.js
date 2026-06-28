@@ -41,6 +41,7 @@ export const ENDPOINTS = {
     SEND_VERIFICATION_CODE: API_PATHS.auth.sendVerificationCode,
     VERIFY_EMAIL: API_PATHS.auth.verifyEmail,
     UPDATE_PUSH_TOKEN: API_PATHS.auth.updatePushToken,
+    REMOVE_PUSH_TOKEN: "/auth/remove-push-token",
   },
 
   DASHBOARD: {
@@ -140,6 +141,16 @@ export const ENDPOINTS = {
     SEND_PHONE_CHANGE_OTP: API_PATHS.users.sendPhoneChangeOtp,
     UPDATE_PHONE: API_PATHS.users.updatePhone,
     DELETE_VENDOR_IMAGE: API_PATHS.users.deleteVendorImage,
+    PRE_DELETION_INFO: "/users/pre-deletion-info",
+    PRE_DELETION_OTP: "/users/pre-deletion-otp",
+  },
+
+  MODERATION: {
+    // ACCEPT: host UGC terms gate (post-event media upload).
+    ACCEPT: "/moderation/accept",
+    // REPORT: report a user/vendor (e.g. vendor public profile). Post-event
+    // guest report/block use the event-scoped /post-event/:id/report|block.
+    REPORT: "/moderation/report",
   },
 
   VENDORS: {

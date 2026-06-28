@@ -17,7 +17,18 @@
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const appID = process.env.APPLE_APP_ID || "TEAMID.com.halla.app";
+  const realAppID = process.env.APPLE_APP_ID;
+  const appID = realAppID || "TEAMID.com.halla.app";
+
+  // Loud failure (§5.1): a placeholder appID will NOT validate universal links.
+  // In production this must be set to "<TEAM_ID>.com.halla.app".
+  if (!realAppID && process.env.NODE_ENV === "production") {
+    // eslint-disable-next-line no-console
+    console.error(
+      "[AASA] APPLE_APP_ID is not set in production — serving a PLACEHOLDER appID. " +
+        "Universal links (reset password / invitations) will NOT open the app until the real Team ID is configured."
+    );
+  }
 
   const body = {
     applinks: {
@@ -25,7 +36,17 @@ export async function GET() {
       details: [
         {
           appID,
-          paths: ["/reset-password/*", "/invitation/*"],
+          // Canonical reset path is locale-prefixed change-password; keep
+          // unprefixed + /ar + /en variants so the link opens the app
+          // regardless of locale. Invitation paths mirror the same shape.
+          paths: [
+            "/change-password*",
+            "/ar/change-password*",
+            "/en/change-password*",
+            "/invitation/*",
+            "/ar/invitation/*",
+            "/en/invitation/*",
+          ],
         },
       ],
     },

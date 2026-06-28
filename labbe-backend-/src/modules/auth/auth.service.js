@@ -972,7 +972,13 @@ class AuthService {
     await user.save({ validateBeforeSave: false });
 
     const lang = user.preferredLanguage || language;
-    const resetURL = `${config.frontend.url}/${lang}/reset-password?token=${resetToken}`;
+    // Canonical reset URL (§5.1): /<lang>/change-password?token=<token>. This is
+    // the ONE shape shared by the web form, the mobile universal/app link, the
+    // AASA + Android intent filters, and React Navigation's linking config. Do
+    // NOT reintroduce a second `/reset-password` shape — a partial change
+    // breaks reset for everyone. (A /reset-password→/change-password redirect is
+    // kept on web only as a safety net for already-sent emails.)
+    const resetURL = `${config.frontend.url}/${lang}/change-password?token=${resetToken}`;
 
     await emailModule.send.passwordReset(
       user.email,

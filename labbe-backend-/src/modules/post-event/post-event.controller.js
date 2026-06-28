@@ -10,6 +10,52 @@ const {
   sendDeleted,
 } = require("../../shared/utils/responseHelper");
 const postEventService = require("./post-event.service");
+const moderationService = require("../moderation/moderation.service");
+
+// ── Guest UGC moderation (§6): policy acceptance, report, block ─────────────
+exports.guestPolicies = catchAsync(async (req, res) => {
+  const result = await moderationService.getPolicyStatus(
+    "guest",
+    req.guestUser.guestId
+  );
+  sendSuccess(res, result);
+});
+
+exports.guestAcceptPolicies = catchAsync(async (req, res) => {
+  const result = await moderationService.acceptPolicies(
+    "guest",
+    req.guestUser.guestId,
+    { documents: req.body?.documents, locale: req.body?.locale, ip: req.ip }
+  );
+  sendSuccess(res, result, "Accepted");
+});
+
+exports.guestReport = catchAsync(async (req, res) => {
+  const result = await moderationService.createReport({
+    reporterType: "guest",
+    reporterId: req.guestUser.guestId,
+    ...req.body,
+    contextEventId: req.params.eventId,
+  });
+  sendSuccess(res, result, "Report submitted", 201);
+});
+
+exports.guestBlock = catchAsync(async (req, res) => {
+  const result = await moderationService.block("guest", req.guestUser.guestId, {
+    ...req.body,
+    contextEventId: req.params.eventId,
+  });
+  sendSuccess(res, result, "Blocked");
+});
+
+exports.guestUnblock = catchAsync(async (req, res) => {
+  const result = await moderationService.unblock(
+    "guest",
+    req.guestUser.guestId,
+    req.body
+  );
+  sendSuccess(res, result, "Unblocked");
+});
 
 /**
  * Validate guest access token.
@@ -159,7 +205,8 @@ exports.getComments = catchAsync(async (req, res) => {
   const result = await postEventService.getComments(
     req.params.eventId,
     req.params.postId,
-    { page: req.query.page, limit: req.query.limit }
+    { page: req.query.page, limit: req.query.limit },
+    req.guestUser
   );
   sendSuccess(res, result);
 });
@@ -195,10 +242,11 @@ exports.addPostComment = catchAsync(async (req, res) => {
  * GET /api/v2/post-event/:eventId/comments
  */
 exports.getPostComments = catchAsync(async (req, res) => {
-  const result = await postEventService.getPostComments(req.params.eventId, {
-    page: req.query.page,
-    limit: req.query.limit,
-  });
+  const result = await postEventService.getPostComments(
+    req.params.eventId,
+    { page: req.query.page, limit: req.query.limit },
+    req.guestUser
+  );
   sendSuccess(res, result);
 });
 

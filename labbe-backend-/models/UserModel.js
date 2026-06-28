@@ -250,6 +250,17 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
 
+    // Stable, random, opaque billing identifier used as the RevenueCat App User
+    // ID (§9.1). Deliberately NOT the Mongo _id / phone / email — those must
+    // never be exposed to the store/RevenueCat. Generated on creation; existing
+    // users are backfilled by scripts/backfill-billing-user-id.js.
+    billingUserId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      default: () => crypto.randomUUID(),
+    },
+
     // ============ AUTHENTICATION ============
     password: {
       type: String,

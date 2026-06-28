@@ -65,9 +65,39 @@ exports.deleteVendorImage = catchAsync(async (req, res) => {
   sendSuccess(res, result, "Image deleted successfully");
 });
 
+exports.getPreDeletionInfo = catchAsync(async (req, res) => {
+  const result = await usersService.getPreDeletionInfo(req.user._id);
+  // Tell the client which reauth credential to collect: password accounts use
+  // their password; phone-only (password-less) accounts verify via OTP.
+  result.reauthMethod = req.user.password ? "password" : "otp";
+  sendSuccess(res, result);
+});
+
+// Sends a reauth OTP to the current user's verified phone (for password-less
+// accounts about to delete). Rate-limited at the route.
+exports.sendDeletionOtp = catchAsync(async (req, res) => {
+  const result = await usersService.sendDeletionReauthOtp(req.user);
+  sendSuccess(res, result, "Verification code sent");
+});
+
 exports.deleteMyAccount = catchAsync(async (req, res) => {
-  const result = await usersService.deleteMyAccount(req.user._id);
-  sendSuccess(res, result, "Account deleted successfully");
+  // Reauthentication gate (§4.1): require the account password or a verified
+  // OTP before this irreversible action. Throws REAUTH_* codes the client uses
+  // to prompt for the right credential.
+  const { password, otp } = req.body || {};
+  await usersService.verifyReauth(req.user, { password, otp });
+
+  const result = await usersService.deleteMyAccount(req.user._id, {
+    channel: "app",
+  });
+  sendSuccess(res, result, "Account deletion processed");
+});
+
+// Public (no auth): the /delete-account page + app poll deletion status by the
+// unguessable requestId, since the user's session is gone after deletion.
+exports.getDeletionStatus = catchAsync(async (req, res) => {
+  const result = await usersService.getDeletionStatus(req.params.requestId);
+  sendSuccess(res, result);
 });
 
 exports.getNotificationPreferences = catchAsync(async (req, res) => {

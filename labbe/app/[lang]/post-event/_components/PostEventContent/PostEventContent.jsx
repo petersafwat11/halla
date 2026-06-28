@@ -68,7 +68,9 @@ const PostEventContent = ({ content, eventInfo, guestId, eventId, loading }) => 
 
           {caption && <p className={styles.caption}>{caption}</p>}
 
-          {media.length > 0 && <PostMediaGallery media={media} />}
+          {media.length > 0 && (
+            <PostMediaGallery media={media} eventId={eventId} />
+          )}
 
           {(likesCount > 0 || commentsCount > 0) && (
             <div className={styles.countsRow}>

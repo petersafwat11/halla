@@ -23,7 +23,7 @@ import {
  * Moyasar charge for plan + addons − discount). This component never calls
  * the addons-purchase endpoint directly.
  */
-const AddonsSection = ({ onAddonsChange }) => {
+const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
   const { t } = useTranslation("plans");
   const { data: catalogResponse, isLoading, error } = useAvailableAddons();
   const catalog = catalogResponse?.data || null;
@@ -32,26 +32,31 @@ const AddonsSection = ({ onAddonsChange }) => {
     () => ({
       extraInvites: catalog?.extra_invites || [],
       designTemplate: catalog?.design_template || [],
+      businessCustomization: catalog?.business_customization || null,
     }),
     [catalog]
   );
+  const bizPrice = tiers.businessCustomization?.price || 0;
 
   // Extra-invite tiers stack: the user can pick MULTIPLE tiers that add up.
   // We track the selected tiers by their (unique) `quantity` so each one
   // becomes its own `extra_invites` line item at checkout. Design template
-  // stays single-select (mutually-exclusive radio choice).
+  // and business customization stay single-select (toggle).
   const [extraInvites, setExtraInvites] = useState([]);
   const [designTemplate, setDesignTemplate] = useState(null);
+  const [businessCustom, setBusinessCustom] = useState(false);
 
   const invitesSubtotal = extraInvites.reduce(
     (acc, tier) => acc + (tier.price || 0),
     0
   );
 
-  const selectedCount = extraInvites.length + (designTemplate ? 1 : 0);
-  const total = invitesSubtotal + (designTemplate?.price || 0);
+  const selectedCount =
+    extraInvites.length + (designTemplate ? 1 : 0) + (businessCustom ? 1 : 0);
+  const total =
+    invitesSubtotal + (designTemplate?.price || 0) + (businessCustom ? bizPrice : 0);
 
-  const notify = (invList, des) => {
+  const notify = (invList, des, biz) => {
     const items = invList.map((tier) => ({
       addonType: "extra_invites",
       type: "extra_invites",
@@ -67,9 +72,18 @@ const AddonsSection = ({ onAddonsChange }) => {
         price: des.price,
       });
     }
+    if (biz) {
+      items.push({
+        addonType: "business_customization",
+        type: "business_customization",
+        quantity: 1,
+        price: bizPrice,
+      });
+    }
     const sum =
       invList.reduce((acc, tier) => acc + (tier.price || 0), 0) +
-      (des?.price || 0);
+      (des?.price || 0) +
+      (biz ? bizPrice : 0);
     onAddonsChange?.(items, sum);
   };
 
@@ -79,17 +93,23 @@ const AddonsSection = ({ onAddonsChange }) => {
       ? extraInvites.filter((t) => t.quantity !== tier.quantity)
       : [...extraInvites, tier];
     setExtraInvites(next);
-    notify(next, designTemplate);
+    notify(next, designTemplate, businessCustom);
   };
   const toggleDes = (tier) => {
     const next = designTemplate?.type === tier.type ? null : tier;
     setDesignTemplate(next);
-    notify(extraInvites, next);
+    notify(extraInvites, next, businessCustom);
+  };
+  const toggleBiz = () => {
+    const next = !businessCustom;
+    setBusinessCustom(next);
+    notify(extraInvites, designTemplate, next);
   };
 
   const clearAll = () => {
     setExtraInvites([]);
     setDesignTemplate(null);
+    setBusinessCustom(false);
     onAddonsChange?.([], 0);
   };
 
@@ -202,6 +222,61 @@ const AddonsSection = ({ onAddonsChange }) => {
           })}
         </View>
       </AddonCard>
+
+      {showBusiness && tiers.businessCustomization ? (
+        <AddonCard
+          icon="briefcase-outline"
+          iconBgGradient={[colors.accent[100], colors.primary[200]]}
+          iconColor={colors.secondary[700]}
+          title={t("addons.businessCustomization.title", {
+            defaultValue: "Business branding",
+          })}
+          description={t("addons.businessCustomization.description", {
+            defaultValue:
+              tiers.businessCustomization.descriptionEn ||
+              "Custom webpage + official WhatsApp templates",
+          })}
+          isActive={businessCustom}
+          activePrice={businessCustom ? bizPrice : null}
+          t={t}
+        >
+          <TouchableOpacity
+            style={[styles.designRow, businessCustom && styles.designRowActive]}
+            onPress={toggleBiz}
+            activeOpacity={0.85}
+          >
+            <View
+              style={[
+                styles.designRadio,
+                businessCustom && styles.designRadioActive,
+              ]}
+            >
+              {businessCustom ? (
+                <Ionicons name="checkmark" size={12} color={colors.natural[50]} />
+              ) : null}
+            </View>
+            <Text
+              style={[
+                styles.designName,
+                businessCustom && styles.designNameActive,
+              ]}
+              numberOfLines={2}
+            >
+              {tiers.businessCustomization.nameEn ||
+                t("addons.businessCustomization.title", {
+                  defaultValue: "Business branding",
+                })}
+            </Text>
+            <Text style={styles.designPrice}>
+              {bizPrice}
+              <Text style={styles.designPriceUnit}>
+                {" "}
+                {t("common.currency.sar")}
+              </Text>
+            </Text>
+          </TouchableOpacity>
+        </AddonCard>
+      ) : null}
 
       <SummaryBar
         t={t}

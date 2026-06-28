@@ -18,21 +18,28 @@ const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
  * missing/mismatched signature. `req.rawBody` is captured for this route only
  * (see app.js `captureRawForWebhook`) because the HMAC is over the exact bytes.
  *
- * Degraded mode: if `WHATSAPP_APP_SECRET` is not configured we cannot verify,
- * so we log an error and accept the payload rather than dropping every inbound
- * RSVP reply (which is why verification was disabled in the past). PRODUCTION
- * MUST set `WHATSAPP_APP_SECRET` (Meta Business Manager → WhatsApp app → App
- * Secret) to actually enforce verification and close the forgery gap.
+ * Fail-closed in production (§3.2): if `WHATSAPP_APP_SECRET` is not configured
+ * we cannot verify, so production REJECTS the payload rather than trusting
+ * forgeable input. Non-production keeps the degraded "accept" path so local /
+ * staging RSVP testing isn't blocked by a missing secret. PRODUCTION MUST set
+ * `WHATSAPP_APP_SECRET` (Meta Business Manager → WhatsApp app → App Secret)
+ * before deploy or inbound webhooks will be dropped.
  */
 const verifyWebhookSignature = (req) => {
   const appSecret = process.env.WHATSAPP_APP_SECRET;
 
   if (!appSecret) {
-    logger.error(
-      '[webhook] WHATSAPP_APP_SECRET is not set — inbound webhook signatures are NOT verified. ' +
-        'Set it in production to close this forgery gap.'
+    if (process.env.NODE_ENV === 'production') {
+      logger.error(
+        '[webhook] WHATSAPP_APP_SECRET is not set in production — rejecting webhook (fail closed). ' +
+          'Set the Meta App Secret to receive inbound RSVP replies.'
+      );
+      return { ok: false, reason: 'app_secret_not_configured' };
+    }
+    logger.warn(
+      '[webhook] WHATSAPP_APP_SECRET not set (non-production) — skipping signature verification.'
     );
-    return { ok: true, reason: 'app_secret_not_configured' };
+    return { ok: true, reason: 'app_secret_not_configured_dev' };
   }
 
   const signature = req.get('x-hub-signature-256') || '';

@@ -54,8 +54,30 @@ export const usersApi = {
       "Failed to update password",
     ),
 
-  deleteAccount: () =>
-    _request(ENDPOINTS.USERS.PROFILE, { method: "DELETE" }, "Failed to delete account"),
+  // Pre-deletion info: active store-subscription warning + retention disclosure
+  // + which reauth method to collect (password vs otp).
+  preDeletionInfo: () =>
+    _request(
+      ENDPOINTS.USERS.PRE_DELETION_INFO,
+      { method: "GET" },
+      "Failed to load deletion info",
+    ),
+
+  // Sends a reauth OTP to the user's verified phone (password-less accounts).
+  sendDeletionOtp: () =>
+    _request(
+      ENDPOINTS.USERS.PRE_DELETION_OTP,
+      { method: "POST" },
+      "Failed to send verification code",
+    ),
+
+  // Reauthenticated deletion: body carries `{ password }` or `{ otp }`.
+  deleteAccount: (body = {}) =>
+    _request(
+      ENDPOINTS.USERS.PROFILE,
+      { method: "DELETE", body },
+      "Failed to delete account",
+    ),
 
   sendPhoneChangeOtp: (phoneNumber) =>
     _request(

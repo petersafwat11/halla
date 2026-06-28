@@ -16,6 +16,8 @@ const swaggerUi = require("swagger-ui-express");
 const config = require("./config");
 const swaggerSpec = require("./config/swagger");
 const { globalErrorHandler, AppError } = require("./shared/errors");
+const { globalLimiter } = require("./shared/middleware/rateLimiter");
+const { getReadiness } = require("./shared/utils/readiness");
 
 // Module routes
 const { authRoutes } = require("./modules/auth");
@@ -38,6 +40,7 @@ const { discountsRoutes } = require("./modules/discounts");
 const addonsRoutes = require("./modules/addons/addons.routes");
 const { routes: paymentsRoutes } = require("./modules/payments");
 const businessRoutes = require("./modules/business/business.routes");
+const { routes: moderationRoutes } = require("./modules/moderation");
 // Taqnyat-template cache + sync + admin assignment
 // (public list + admin sub-router under /admin/taqnyat-templates).
 const taqnyatTemplatesModule = require("./modules/taqnyat-templates");
@@ -149,12 +152,20 @@ const createApp = () => {
       req.rawBody = buf;
     }
   };
-  app.use(
-    express.json({
-      limit: "10kb",
-      verify: captureRawForWebhook,
-    })
-  );
+  // The API stays tightly capped at 10kb, but store webhooks (RevenueCat) can
+  // carry larger payloads (subscriber attributes, aliases, offering metadata),
+  // so the RC webhook route gets a higher limit to avoid 413 → infinite retries.
+  const standardJson = express.json({ limit: "10kb", verify: captureRawForWebhook });
+  const webhookJson = express.json({ limit: "1mb", verify: captureRawForWebhook });
+  app.use((req, res, next) => {
+    if (
+      req.originalUrl &&
+      req.originalUrl.includes("/payments/revenuecat/webhook")
+    ) {
+      return webhookJson(req, res, next);
+    }
+    return standardJson(req, res, next);
+  });
   app.use(express.urlencoded({ extended: true, limit: "10kb" }));
   app.use(cookieParser());
 
@@ -196,6 +207,20 @@ const createApp = () => {
     });
   });
 
+  // Readiness probe (§3.2): reports DB connectivity, required-secret presence,
+  // and allowed-origin config. Returns 503 when not ready so an orchestrator /
+  // load balancer can keep an incompletely-configured instance out of
+  // rotation. Never leaks secret values — only which keys are missing.
+  app.get("/health/ready", (req, res) => {
+    const result = getReadiness();
+    res.status(result.ready ? 200 : 503).json({
+      status: result.ready ? "ready" : "not_ready",
+      timestamp: new Date().toISOString(),
+      environment: config.env,
+      checks: result.checks,
+    });
+  });
+
   // ============================================
   // API DOCUMENTATION (Swagger)
   // ============================================
@@ -221,6 +246,10 @@ const createApp = () => {
 
   // Mount routes under /api/v2 only.
   const mountRoutes = (prefix) => {
+    // Global abuse backstop on every API route (§3.2). Generous, NAT-safe
+    // keying (by token/user, falling back to IP) and skips health + webhooks.
+    // Tight, security-sensitive limits live on the specific routes themselves.
+    app.use(prefix, globalLimiter);
     app.use(`${prefix}/auth`, authRoutes);
     app.use(`${prefix}/users`, usersRoutes);
     app.use(`${prefix}/subscriptions`, subscriptionsRoutes);
@@ -241,6 +270,7 @@ const createApp = () => {
     app.use(`${prefix}/addons`, addonsRoutes);
     app.use(`${prefix}/payments`, paymentsRoutes);
     app.use(`${prefix}/business`, businessRoutes);
+    app.use(`${prefix}/moderation`, moderationRoutes);
     // Visual templates + categories + Taqnyat templates.
     // Admin sub-routers are mounted under /admin/<resource> alongside
     // the public host-facing routers under /<resource>.

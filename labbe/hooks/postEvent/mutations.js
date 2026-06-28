@@ -36,7 +36,14 @@ export const useTogglePostEventLike = () => {
 export const useAddPostEventComment = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ eventId, data }) => {
+    mutationFn: async ({ eventId, data }) => {
+      // UGC gate (§6): record the guest's acceptance of the current
+      // Terms/Community Rules before posting (backend requires it).
+      await apiRequest({
+        method: "POST",
+        path: `/post-event/${eventId}/policies/accept`,
+        data: {},
+      });
       const isFormData =
         typeof FormData !== "undefined" && data instanceof FormData;
       return apiRequest({
@@ -64,14 +71,52 @@ export const useAddPostEventComment = () => {
 export const useUploadPostEventMedia = () => {
   const invalidate = useInvalidateHostContent();
   return useMutation({
-    mutationFn: ({ eventId, formData }) =>
-      apiRequest({
+    mutationFn: async ({ eventId, formData }) => {
+      // UGC gate (§6): host must accept the current Terms/Community Rules
+      // before uploading public media (backend requires it).
+      await apiRequest({ method: "POST", path: "/moderation/accept", data: {} });
+      return apiRequest({
         method: "POST",
         path: API_PATHS.postEvent.uploadMedia(eventId),
         data: formData,
         config: { headers: { "Content-Type": "multipart/form-data" } },
-      }),
+      });
+    },
     onSuccess: (_, { eventId }) => invalidate(eventId),
+  });
+};
+
+/**
+ * Report a piece of post-event UGC (comment/media). Body:
+ * `{ targetType, targetId, reportedActorType?, reportedActorId?, reason, details? }`.
+ */
+export const useReportPostEventContent = () =>
+  useMutation({
+    mutationFn: ({ eventId, ...body }) =>
+      apiRequest({
+        method: "POST",
+        path: `/post-event/${eventId}/report`,
+        data: body,
+      }),
+  });
+
+/**
+ * Block a UGC author (guest). Body: `{ blockedActorType, blockedActorId }`.
+ * Their content disappears from the blocker's view on next fetch.
+ */
+export const useBlockPostEventActor = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ eventId, blockedActorType, blockedActorId }) =>
+      apiRequest({
+        method: "POST",
+        path: `/post-event/${eventId}/block`,
+        data: { blockedActorType, blockedActorId },
+      }),
+    onSuccess: (_, { eventId }) => {
+      queryClient.invalidateQueries({ queryKey: postEventKeys.comments(eventId) });
+      queryClient.invalidateQueries({ queryKey: postEventKeys.content(eventId) });
+    },
   });
 };
 

@@ -101,6 +101,18 @@ class PushService {
     );
     return { registered: true };
   }
+
+  /**
+   * Remove a push token from a user (§7.3). Called on logout so a shared device
+   * stops receiving notifications for the signed-out account. Idempotent.
+   * @param {string} userId
+   * @param {string} token - Expo push token to remove
+   */
+  async removeToken(userId, token) {
+    if (!token) return { removed: false };
+    await User.updateOne({ _id: userId }, { $pull: { pushTokens: token } });
+    return { removed: true };
+  }
 }
 
 module.exports = new PushService();

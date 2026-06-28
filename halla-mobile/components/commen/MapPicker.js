@@ -103,7 +103,12 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
         Alert.alert("الأذونات", "يرجى السماح بالوصول إلى الموقع لاستخدام هذه الميزة");
         return;
       }
-      const location = await Location.getCurrentPositionAsync({});
+      // Coarse accuracy only — the app no longer requests ACCESS_FINE_LOCATION
+      // (§7.2). City/area precision is enough to pick an event location, and the
+      // user can still fine-tune by dragging the pin or searching by text.
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Low,
+      });
       const { latitude, longitude } = location.coords;
       const addresses = await Location.reverseGeocodeAsync({ latitude, longitude });
       if (addresses?.length > 0) {

@@ -6,12 +6,24 @@ const Guest = require("../../../models/GuestModel");
 const Notification = require("../../../models/NotificationModel");
 const NotificationPreferences = require("../../../models/NotificationPreferencesModel");
 const RefreshToken = require("../../../models/RefreshTokenModel");
+const Ticket = require("../../../models/TicketModel");
+const PostEventContent = require("../../../models/PostEventContentModel");
+const Service = require("../../../models/ServiceModel");
+const Subscription = require("../../../models/SubscriptionModel");
+const AccountDeletionRequest = require("../../../models/AccountDeletionRequestModel");
 const {
   processUploadedFiles,
   deleteFromS3,
 } = require("../../shared/utils/s3Upload");
 const otpService = require("../auth/otp.service");
 const logger = require("../../shared/utils/logger");
+const { logAudit } = require("../../shared/utils/auditLog");
+const { containsProhibited } = require("../../shared/utils/contentFilter");
+const {
+  RETAINED,
+  LEGAL_FINALIZED,
+  DISCLOSURE,
+} = require("../../shared/constants/dataRetention");
 const { USER_STATUS, EVENT_STATUS } = require("../../shared/constants/status");
 const {
   validateAndFormatPhone,
@@ -151,6 +163,29 @@ class UsersService {
     ];
     if (!validSections.includes(section)) {
       throw new ValidationError(`Invalid profile section: ${section}`);
+    }
+
+    // UGC text filter (§6): vendor profile copy is shown to other users.
+    if (section === "vendorData") {
+      const textFields = [
+        "brandName",
+        "ownerFullName",
+        "serviceDescription",
+        "taglineAr",
+        "taglineEn",
+        "aboutAr",
+        "aboutEn",
+        "otherData",
+      ];
+      for (const f of textFields) {
+        if (data[f] && containsProhibited(data[f]).blocked) {
+          const err = new ValidationError(
+            "Your profile text contains content that isn't allowed"
+          );
+          err.code = "PROHIBITED_CONTENT";
+          throw err;
+        }
+      }
     }
 
     if (section === "vendorData" && data.socialLinks?.whatsapp) {
@@ -413,114 +448,397 @@ class UsersService {
   }
 
   /**
-   * Self-service account deletion (Apple 5.1.1(v) / Google Play data-deletion).
-   *
-   * Removes/anonymizes the user's personal data: soft-deletes + anonymizes the
-   * User (so financial/audit foreign keys stay valid), cascade-soft-deletes
-   * owned events and their guests (third-party guest PII), drops
-   * notifications/preferences, revokes all sessions, and best-effort deletes the
-   * user's S3 assets (avatar + vendor documents incl. national ID). Payments,
-   * subscriptions, and audit logs are retained for legal/accounting per policy.
-   *
-   * Cascade steps are best-effort (logged, non-fatal) so a single failure can't
-   * leave the account un-closed; the final User anonymization always runs.
+   * Verify reauthentication before a destructive account action (SHIP §4.1).
+   * Accepts the account password, or a verified OTP to the user's phone for
+   * OTP-only accounts. `user` must be loaded WITH +password (the protect
+   * middleware already selects it). Throws ValidationError (with a `code`) on
+   * failure so the client can branch (password vs OTP).
    */
-  async deleteMyAccount(userId) {
-    const user = await User.findById(userId);
-    if (!user) throw new NotFoundError("User");
-
-    // 1) Revoke every active session immediately.
-    try {
-      await RefreshToken.updateMany(
-        { userId, revokedAt: null },
-        { $set: { revokedAt: new Date() } }
-      );
-    } catch (err) {
-      logger.warn("[users.service] deleteMyAccount: token revoke failed", {
-        userId: String(userId),
-        error: err.message,
-      });
+  async verifyReauth(user, { password, otp } = {}) {
+    // Password accounts MUST reauthenticate with their password (knowledge
+    // factor) — we don't let a password user fall back to phone-possession OTP
+    // for an irreversible action. Phone-only (password-less) accounts use OTP.
+    if (user.password) {
+      if (!password) {
+        const err = new ValidationError("Password required");
+        err.code = "REAUTH_PASSWORD_REQUIRED";
+        throw err;
+      }
+      const ok =
+        typeof user.comparePassword === "function" &&
+        (await user.comparePassword(password));
+      if (!ok) {
+        const err = new ValidationError("Incorrect password");
+        err.code = "REAUTH_FAILED";
+        throw err;
+      }
+      return true;
     }
 
-    // 2) Collect the user's S3 keys before anonymizing the record.
+    if (!otp) {
+      const err = new ValidationError("Verification code required");
+      err.code = "REAUTH_OTP_REQUIRED";
+      throw err;
+    }
+    if (!user.phoneNumber) {
+      const err = new ValidationError("No phone number on file for verification");
+      err.code = "NO_PHONE";
+      throw err;
+    }
+    const result = await otpService.verifyOTP(user.phoneNumber, otp);
+    if (!result?.success) {
+      const err = new ValidationError("Invalid or expired code");
+      err.code = "REAUTH_FAILED";
+      throw err;
+    }
+    return true;
+  }
+
+  _deletionResult(reqDoc) {
+    return {
+      requestId: reqDoc.requestId,
+      status: reqDoc.status,
+      retained: DISCLOSURE,
+    };
+  }
+
+  /**
+   * Send a reauth OTP to the current user's verified phone (for password-less
+   * accounts deleting via OTP). §4.1.
+   */
+  async sendDeletionReauthOtp(user) {
+    if (!user.phoneNumber) {
+      const err = new ValidationError("No phone number on file for verification");
+      err.code = "NO_PHONE";
+      throw err;
+    }
+    const result = await otpService.sendOTP(
+      user.phoneNumber,
+      user.preferredLanguage || "ar"
+    );
+    if (!result?.success) {
+      const err = new ValidationError("Could not send verification code");
+      err.code = "OTP_SEND_FAILED";
+      throw err;
+    }
+    return { sent: true };
+  }
+
+  /**
+   * Info shown BEFORE deletion so the client can warn the user (SHIP §4.2).
+   * Flags an active store (IAP) subscription that keeps billing after the Halaa
+   * account is gone, with the platform-correct store subscription manager URL.
+   */
+  async getPreDeletionInfo(userId) {
+    let hasActiveStoreSubscription = false;
+    try {
+      const sub = await Subscription.findOne({
+        userId,
+        status: { $in: ["active", "trial"] },
+      }).lean();
+      hasActiveStoreSubscription = Boolean(
+        sub &&
+          (sub.provider === "revenuecat" ||
+            sub.provider === "appstore" ||
+            sub.provider === "playstore" ||
+            sub?.metadata?.source === "revenuecat")
+      );
+    } catch {
+      /* non-fatal */
+    }
+    return {
+      hasActiveStoreSubscription,
+      storeManageUrls: {
+        ios: "https://apps.apple.com/account/subscriptions",
+        android: "https://play.google.com/store/account/subscriptions",
+      },
+      retained: DISCLOSURE,
+      retentionFinalized: LEGAL_FINALIZED,
+    };
+  }
+
+  /**
+   * Self-service account deletion (Apple 5.1.1(v) / Google Play data-deletion;
+   * SHIP §4.1). Idempotent, reauthenticated workflow shared by app + web:
+   *
+   *  - immediately revokes all sessions (refresh tokens); already-issued access
+   *    JWTs stop working because the soft-deleted user is excluded by the
+   *    UserModel pre-find hook (protect's findById returns null → 401), with the
+   *    explicit DELETED-status branch in protect as a belt-and-suspenders guard;
+   *  - deletes/anonymizes ALL personal data: User PII + nested profile, owned
+   *    events, third-party guest names/phones/RSVP, post-event photos/videos/
+   *    comments (+ their S3), vendor services (+ S3), support tickets,
+   *    notifications, and every collected S3 object;
+   *  - RETAINS only the legal/accounting rows in the (configurable) retention
+   *    matrix, pseudonymized (the referenced user is anonymized);
+   *  - records a durable AccountDeletionRequest (requestId + status + steps) and
+   *    an append-only audit event (IDs/status only, never PII).
+   *
+   * Steps are best-effort + recorded; a mandatory-step failure yields a
+   * 'partial' status (not 'completed') instead of a false success. The final
+   * User anonymization always runs so the account is closed regardless.
+   */
+  async deleteMyAccount(userId, { channel = "app" } = {}) {
+    const user = await User.findById(userId);
+    const latest = await AccountDeletionRequest.findOne({ userId }).sort({
+      createdAt: -1,
+    });
+
+    // Idempotent: already deleted/anonymized → return the latest request.
+    if (!user) {
+      if (latest) return this._deletionResult(latest);
+      throw new NotFoundError("User");
+    }
+
+    const reqDoc =
+      latest && latest.status === "processing"
+        ? latest
+        : await AccountDeletionRequest.create({
+            userId,
+            channel,
+            retainedDisclosure: { retained: RETAINED, legalFinalized: LEGAL_FINALIZED },
+          });
+
+    const steps = [];
+    let mandatoryFailed = false;
+    const run = async (name, fn, mandatory = false) => {
+      try {
+        await fn();
+        steps.push({ name, status: "ok", mandatory });
+      } catch (err) {
+        steps.push({ name, status: "failed", mandatory, error: err.message });
+        if (mandatory) mandatoryFailed = true;
+        logger.warn(`[deleteMyAccount] step '${name}' failed`, {
+          userId: String(userId),
+          error: err.message,
+        });
+      }
+    };
+
+    const isS3Key = (k) =>
+      typeof k === "string" &&
+      k &&
+      !k.startsWith("http") &&
+      !k.startsWith("/uploads/") &&
+      !k.startsWith("uploads/");
+    const s3Keys = new Set();
+    const addKey = (k) => {
+      if (isS3Key(k)) s3Keys.add(k);
+    };
+
+    // 1) Revoke every active session immediately (mandatory).
+    await run(
+      "revoke_sessions",
+      async () => {
+        await RefreshToken.updateMany(
+          { userId, revokedAt: null },
+          { $set: { revokedAt: new Date() } }
+        );
+      },
+      true
+    );
+
+    // User-owned S3 keys: avatar + vendor documents/portfolio/price packages.
     const vd = user.profile?.vendorData || {};
-    const s3Keys = [
+    [
       user.avatar,
       vd.businessLogo,
       vd.nationalIdImage,
       vd.commercialRecordImage,
       vd.profileFile,
       ...(Array.isArray(vd.portfolioImages) ? vd.portfolioImages : []),
-    ].filter((k) => typeof k === "string" && k && !k.startsWith("http"));
+      ...(Array.isArray(vd.pricePackages) ? vd.pricePackages : []),
+    ].forEach(addKey);
 
-    // 3) Cascade owned events + their guests (clears third-party guest PII).
-    try {
-      const events = await Event.find({ host: userId }).select("_id");
-      const eventIds = events.map((e) => e._id);
-      if (eventIds.length) {
-        await Event.updateMany(
-          { _id: { $in: eventIds } },
-          { $set: { status: EVENT_STATUS.DELETED, deletedAt: new Date() } }
+    // 2) Cascade owned events + anonymize their guests' third-party PII.
+    await run(
+      "anonymize_events_and_guests",
+      async () => {
+        const events = await Event.find({ host: userId }).select(
+          "_id templateImage branding"
         );
-        await Guest.updateMany(
-          { event: { $in: eventIds } },
-          { $set: { deleted: true, deletedAt: new Date() } }
-        );
-      }
-    } catch (err) {
-      logger.warn("[users.service] deleteMyAccount: event cascade failed", {
-        userId: String(userId),
-        error: err.message,
-      });
-    }
-
-    // 4) Drop notifications + preferences.
-    try {
-      await Notification.deleteMany({ userId });
-      await NotificationPreferences.deleteMany({ userId });
-    } catch (err) {
-      logger.warn("[users.service] deleteMyAccount: notification cleanup failed", {
-        userId: String(userId),
-        error: err.message,
-      });
-    }
-
-    // 5) Best-effort S3 cleanup (avatar + vendor documents).
-    for (const key of s3Keys) {
-      try {
-        await deleteFromS3(key);
-      } catch (err) {
-        logger.warn("[users.service] deleteMyAccount: S3 delete failed", {
-          key,
-          error: err.message,
+        const eventIds = events.map((e) => e._id);
+        events.forEach((e) => {
+          addKey(e.templateImage);
+          addKey(e.branding?.logoKey);
         });
-      }
-    }
-
-    // 6) Anonymize PII + close the account. `$unset` (not null) on the
-    //    unique-sparse contact fields avoids unique-index collisions across
-    //    multiple deleted accounts. updateOne bypasses pre-save hooks/validators.
-    await User.updateOne(
-      { _id: userId },
-      {
-        $set: {
-          name: "Deleted User",
-          status: USER_STATUS.DELETED,
-          deletedAt: new Date(),
-          deletedBy: userId,
-        },
-        $unset: {
-          email: "",
-          mobile: "",
-          phoneNumber: "",
-          username: "",
-          avatar: "",
-          pushTokens: "",
-        },
-      }
+        if (eventIds.length) {
+          // Soft-delete AND scrub the PII-bearing event fields (title,
+          // location, description, branding) so no personal content survives —
+          // the row is kept only for accounting/referential integrity, matching
+          // the "events are removed" disclosure.
+          await Event.updateMany(
+            { _id: { $in: eventIds } },
+            {
+              $set: {
+                status: EVENT_STATUS.DELETED,
+                deletedAt: new Date(),
+                "eventDetails.title": "Deleted Event",
+              },
+              $unset: {
+                "eventDetails.location": "",
+                "eventDetails.description": "",
+                branding: "",
+              },
+            }
+          );
+          await Guest.updateMany(
+            { event: { $in: eventIds } },
+            {
+              $set: {
+                deleted: true,
+                deletedAt: new Date(),
+                name: "Deleted Guest",
+                phone: "",
+                "rsvp.message": "",
+                "rsvp.dietaryRestrictions": "",
+                "checkIn.checkedInByStaff.name": "",
+                "checkIn.checkedInByStaff.phone": "",
+              },
+            }
+          );
+        }
+      },
+      true
     );
 
-    return { deleted: true };
+    // 3) Delete post-event content (media/comments + their images), collecting
+    //    S3 keys first.
+    await run(
+      "delete_post_event_content",
+      async () => {
+        const contents = await PostEventContent.find({ host: userId }).lean();
+        for (const c of contents) {
+          (c.media || []).forEach((m) => {
+            addKey(m.url);
+            (m.comments || []).forEach((cm) =>
+              (cm.images || []).forEach((img) => addKey(img.url))
+            );
+          });
+          (c.comments || []).forEach((cm) =>
+            (cm.images || []).forEach((img) => addKey(img.url))
+          );
+        }
+        await PostEventContent.deleteMany({ host: userId });
+      },
+      true
+    );
+
+    // 4) Delete the user's vendor services + their images.
+    await run(
+      "delete_vendor_services",
+      async () => {
+        const services = await Service.find({ vendorId: userId })
+          .select("image")
+          .lean();
+        services.forEach((s) => addKey(s.image));
+        await Service.deleteMany({ vendorId: userId });
+      },
+      true
+    );
+
+    // 5) Delete support tickets (contain user-submitted text).
+    await run(
+      "delete_tickets",
+      async () => {
+        await Ticket.deleteMany({ user: userId });
+      },
+      true
+    );
+
+    // 6) Drop notifications + preferences.
+    await run(
+      "delete_notifications",
+      async () => {
+        await Notification.deleteMany({ userId });
+        await NotificationPreferences.deleteMany({ userId });
+      },
+      true
+    );
+
+    // 7) Best-effort S3 cleanup (non-mandatory — a failure marks the request
+    //    'partial' and can be retried, but must never block closing the account).
+    await run(
+      "delete_s3_objects",
+      async () => {
+        const failures = [];
+        for (const key of s3Keys) {
+          const ok = await deleteFromS3(key);
+          if (ok === false) failures.push(key);
+        }
+        if (failures.length) {
+          throw new Error(`${failures.length} S3 object(s) not deleted`);
+        }
+      },
+      false
+    );
+
+    // 8) Anonymize PII + close the account (mandatory, always last). `$unset`
+    //    on unique-sparse contact fields avoids unique-index collisions across
+    //    deleted accounts; updateOne bypasses pre-save hooks/validators.
+    await run(
+      "anonymize_user",
+      async () => {
+        await User.updateOne(
+          { _id: userId },
+          {
+            $set: {
+              name: "Deleted User",
+              status: USER_STATUS.DELETED,
+              deletedAt: new Date(),
+              deletedBy: userId,
+            },
+            $unset: {
+              email: "",
+              mobile: "",
+              phoneNumber: "",
+              username: "",
+              avatar: "",
+              pushTokens: "",
+              "profile.vendorData": "",
+              "profile.businessData": "",
+              "profile.hostData.bio": "",
+              "profile.hostData.company": "",
+              "profile.hostData.position": "",
+            },
+          }
+        );
+      },
+      true
+    );
+
+    reqDoc.steps = steps;
+    reqDoc.status = mandatoryFailed ? "partial" : "completed";
+    reqDoc.completedAt = new Date();
+    await reqDoc.save();
+
+    // Append-only audit event (IDs/status only — never deleted PII).
+    logAudit({
+      action: "user.account_deleted",
+      actor: { _id: userId, role: user.role },
+      targetType: "user",
+      targetId: userId,
+      metadata: { requestId: reqDoc.requestId, channel, status: reqDoc.status },
+      status: mandatoryFailed ? "failure" : "success",
+    }).catch(() => {});
+
+    return this._deletionResult(reqDoc);
+  }
+
+  /**
+   * Public status lookup for the /delete-account page + app (keyed by the
+   * unguessable requestId; returns status only, never PII).
+   */
+  async getDeletionStatus(requestId) {
+    const reqDoc = await AccountDeletionRequest.findOne({ requestId }).lean();
+    if (!reqDoc) throw new NotFoundError("Deletion request");
+    return {
+      requestId: reqDoc.requestId,
+      status: reqDoc.status,
+      requestedAt: reqDoc.requestedAt,
+      completedAt: reqDoc.completedAt || null,
+      retained: DISCLOSURE,
+    };
   }
 }
 

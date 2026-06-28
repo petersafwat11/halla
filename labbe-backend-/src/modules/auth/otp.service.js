@@ -25,12 +25,17 @@ const generateOTP = () => {
 };
 
 /**
- * App Store / Google Play reviewers cannot receive an SMS OTP. A single,
- * env-gated reviewer test number accepts a fixed OTP so reviewers can sign in
- * to an existing reviewer account. Scoped to ONE number and inactive unless
- * REVIEWER_TEST_PHONE (and, for verification, REVIEWER_TEST_OTP) are set.
+ * Fixed-OTP reviewer bypass — DISABLED IN PRODUCTION (§5.2 / decision D7).
+ *
+ * A fixed-OTP production bypass is an unnecessary risk: App Store / Google Play
+ * reviewers sign in with dedicated email/password accounts (no OTP, no SMS, no
+ * MFA — see scripts/seedReviewerAccounts.js), so the bypass is never needed in
+ * a production build. It is hard-gated off when NODE_ENV==='production' even if
+ * REVIEWER_TEST_PHONE/REVIEWER_TEST_OTP are set, and remains available only in
+ * non-production for local QA of the phone-OTP flow.
  */
 const isReviewerPhone = (normalizedPhone) => {
+  if (process.env.NODE_ENV === 'production') return false;
   const rp = process.env.REVIEWER_TEST_PHONE;
   return !!rp && normalizePhoneNumber(rp) === normalizedPhone;
 };

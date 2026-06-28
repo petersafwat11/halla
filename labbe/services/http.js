@@ -78,7 +78,7 @@ const _refreshOnce = async () => {
 // cookie. The JWT lives in the JS-readable `guestToken` cookie, so we attach
 // it here as a Bearer header — scoped to exactly these paths so host requests
 // (which use the HttpOnly access_token cookie) are never affected.
-const GUEST_POST_EVENT_RE = /\/post-event\/[^/]+\/(content|like|comments)(?:[/?]|$)/;
+const GUEST_POST_EVENT_RE = /\/post-event\/[^/]+\/(content|like|comments|report|block|policies)(?:[/?]|$)/;
 
 axiosInstance.interceptors.request.use(
   (config) => {

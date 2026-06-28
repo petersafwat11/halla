@@ -382,6 +382,111 @@ class AddonsService {
     return addon;
   }
 
+  /**
+   * Grant an add-on from a store (RevenueCat/IAP) purchase — no charge here
+   * (the store already collected payment; the money is recorded in the Payment
+   * ledger by the RevenueCat webhook). Mirrors the post-charge half of
+   * `purchaseAddon`: create the Addon row + apply quota. Idempotent on the store
+   * transaction id so a re-delivered webhook never double-grants. (§9.4 add-ons)
+   *
+   * @param {Object} p
+   * @param {string} p.userId
+   * @param {string} p.addonType  - extra_invites | design_template | business_customization
+   * @param {number} [p.quantity] - extra_invites
+   * @param {string} [p.templateType] - design_template
+   * @param {string} p.providerTransactionId - store transaction id (dedupe key)
+   * @param {string} [p.rcEventId]
+   * @param {string} [p.store]
+   */
+  async grantAddonFromStore({
+    userId,
+    addonType,
+    quantity,
+    templateType,
+    providerTransactionId,
+    rcEventId,
+    store,
+  }) {
+    if (!Object.values(ADDON_TYPES).includes(addonType)) {
+      throw new ValidationError(`Invalid addon type: ${addonType}`);
+    }
+    // Idempotent: a re-delivered store transaction must not double-grant.
+    if (providerTransactionId) {
+      const existing = await Addon.findOne({
+        "metadata.providerTransactionId": providerTransactionId,
+      });
+      if (existing) return existing;
+    }
+
+    const price = computePrice(addonType, { quantity, templateType });
+    // No eventId at store-purchase time → default scope per type (extra_invites
+    // = pool, design_template/business_customization = org).
+    const scope = resolveScope(addonType, undefined, {});
+
+    // pool/org add-ons attach to the user's active subscription. The mobile flow
+    // buys the plan and waits for reconcile BEFORE buying add-ons, so the
+    // subscription exists by now.
+    let subscriptionId = null;
+    if (scope === "pool" || scope === "org") {
+      const activeSubs = await Subscription.findActiveForUser(userId);
+      subscriptionId = activeSubs[0]?._id || null;
+    }
+
+    const initialStatus =
+      addonType === ADDON_TYPES.BUSINESS_CUSTOMIZATION
+        ? "pending_provisioning"
+        : "active";
+
+    const addon = await Addon.create({
+      userId,
+      addonType,
+      quantity: quantity || 1,
+      templateType: templateType || null,
+      price,
+      currency: "SAR",
+      subscriptionId,
+      status: initialStatus,
+      scope,
+      metadata: {
+        source: "revenuecat",
+        providerTransactionId: providerTransactionId || null,
+        rcEventId: rcEventId || null,
+        store: store || null,
+        activatedAt:
+          initialStatus === "active" ? new Date().toISOString() : null,
+      },
+    });
+
+    if (initialStatus === "active") {
+      try {
+        await applyQuota(addon, {});
+      } catch (quotaErr) {
+        logger.error("[addons.grantFromStore] applyQuota failed", {
+          addonId: addon._id,
+          error: quotaErr?.message,
+        });
+      }
+    }
+
+    logAudit({
+      action: "addon.purchased_iap",
+      actor: { _id: userId, role: ROLES.HOST },
+      targetType: "system",
+      targetId: addon._id,
+      metadata: {
+        addonId: addon._id,
+        addonType,
+        quantity: quantity || 1,
+        scope,
+        status: initialStatus,
+        providerTransactionId: providerTransactionId || null,
+        rcEventId: rcEventId || null,
+      },
+    }).catch(() => {});
+
+    return addon;
+  }
+
   // ---- internals ----
 
   async _loadAndValidateTargetEvent({ scope, eventId, userId, addonType }) {

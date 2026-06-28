@@ -44,3 +44,23 @@ Thumbs.db
 
 # Local DB logical backups
 **/_db-backup-*/
+
+# Secrets & credentials (NEVER commit real values — examples only)
+# NOTE: existing tracked copies must be removed with `git rm --cached` and the
+# history purged as part of the credential-rotation step (see
+# docs/store-readiness-EXTERNAL-STEPS.md). These patterns stop NEW copies.
+**/.env
+**/.env.*
+**/config.env
+**/*.pem
+**/*.cer
+**/*.crt
+**/play-service-account*.json
+**/service-account*.json
+**/*service-account*.json
+**/google-services.json
+**/GoogleService-Info.plist
+# Keep committed examples
+!**/.env.example
+!**/.env.*.example
+!**/config.env.example

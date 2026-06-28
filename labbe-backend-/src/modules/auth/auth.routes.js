@@ -554,6 +554,18 @@ router.patch("/update-push-token", authController.updatePushToken);
 
 /**
  * @swagger
+ * /auth/remove-push-token:
+ *   patch:
+ *     summary: Unregister the caller's Expo push token (logout)
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Push token removed
+ */
+router.patch("/remove-push-token", authController.removePushToken);
+
+/**
+ * @swagger
  * /auth/update-password:
  *   patch:
  *     summary: Update password

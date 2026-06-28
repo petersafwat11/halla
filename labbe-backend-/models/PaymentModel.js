@@ -149,10 +149,22 @@ const paymentSchema = new mongoose.Schema(
     providerStatus: { type: String }, // raw Moyasar status
 
     // ─── PROVIDER IDS ───
-    provider: { type: String, default: "moyasar" }, // moyasar | stub
+    provider: { type: String, default: "moyasar" }, // moyasar | revenuecat | appstore | playstore
     moyasarPaymentId: { type: String, default: null }, // POST /v1/payments → id
     moyasarInvoiceId: { type: String, default: null }, // if paid via invoice
     givenId: { type: String, default: null }, // UUID v4 we sent for idempotency
+
+    // ─── STORE / IAP PROVIDER FIELDS (§9.2) ───
+    // One auditable ledger row per store purchase/renewal. `currency` (above)
+    // stores the ACTUAL charged currency from the store, never a hardcoded SAR.
+    providerTransactionId: { type: String, default: null }, // store transaction id
+    originalTransactionId: { type: String, default: null }, // store original txn id
+    store: { type: String, default: null }, // APP_STORE | PLAY_STORE
+    storeProductId: { type: String, default: null },
+    environment: { type: String, default: null }, // SANDBOX | PRODUCTION
+    rcEventId: { type: String, default: null }, // RevenueCat event.id (traceability)
+    purchasedAt: { type: Date, default: null },
+    expiresAt: { type: Date, default: null },
 
     // ─── PAYMENT METHOD ───
     paymentMethod: {
@@ -219,6 +231,15 @@ paymentSchema.index(
   {
     unique: true,
     partialFilterExpression: { moyasarPaymentId: { $type: "string" } },
+  }
+);
+// One ledger row per store transaction — duplicate webhook/restore can't
+// double-record. Partial+unique so non-store (null) rows don't collide. (§9.2)
+paymentSchema.index(
+  { providerTransactionId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { providerTransactionId: { $type: "string" } },
   }
 );
 paymentSchema.index({ userId: 1, status: 1, createdAt: -1 });

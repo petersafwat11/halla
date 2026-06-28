@@ -8,6 +8,7 @@ const { protect } = require('../../shared/middleware/auth');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { idempotency } = require('../../shared/middleware/idempotency');
 const { validateZod, validateObjectId } = require('../../shared/middleware/validation');
+const { purchaseLimiter } = require('../../shared/middleware/rateLimiter');
 const { ADMIN_PAGES } = require('../../shared/constants');
 const { checkoutSchema } = require('./checkout.validation');
 const { refundSchema, captureSchema } = require('./payments.validation');
@@ -80,6 +81,21 @@ router.use(protect);
 
 /**
  * @swagger
+ * /payments/revenuecat/reconcile:
+ *   get:
+ *     summary: Reconcile the caller's store purchases (Path B, §9.3)
+ *     description: Returns the canonical backend subscription + unused event
+ *       entitlement + live store snapshot so the client can wait for the
+ *       webhook-driven grant before showing success.
+ *     tags: [Payments]
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Canonical entitlement state }
+ */
+router.get("/revenuecat/reconcile", revenuecatController.reconcile);
+
+/**
+ * @swagger
  * /payments/checkout:
  *   post:
  *     summary: Bundled plan + addons checkout
@@ -116,6 +132,7 @@ router.use(protect);
  */
 router.post(
   '/checkout',
+  purchaseLimiter,
   validateZod(checkoutSchema),
   idempotency({ scope: 'payments.checkout' }),
   checkoutController.checkout
