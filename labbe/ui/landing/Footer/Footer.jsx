@@ -97,6 +97,9 @@ const Footer = ({ lang = "ar" }) => {
 
       {/* ── Bottom bar ── */}
       <div className={styles.bottomBar}>
+        <span className={styles.legalName} dir="ltr">
+          {t("footer.legalName")}
+        </span>
         <span className={styles.copyright}>{t("footer.copyright")}</span>
       </div>
     </footer>

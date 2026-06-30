@@ -568,6 +568,14 @@
   gap: 12px;
 }
 
+.legalName {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
 .copyright {
   font-size: 13px;
   color: #ffffff;
@@ -638,5 +646,10 @@
   .langLink,
   .copyright {
     font-size: 12px;
+  }
+
+  .legalName {
+    font-size: 13px;
+    line-height: 19px;
   }
 }
