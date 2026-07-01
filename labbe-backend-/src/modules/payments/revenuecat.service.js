@@ -16,6 +16,7 @@ const { SUBSCRIPTION_STATUS } = require("../../shared/constants");
 const { isPerEventPlan, isPoolPlan, isUnlimited } = require("../../shared/constants/plans");
 const subscriptionLifecycle = require("../subscriptions/subscriptionLifecycle.service");
 const addonsService = require("../addons/addons.service");
+const commerceCatalog = require("../../shared/commerce");
 const rcApi = require("./revenuecat.api");
 
 const User = require("../../../models/UserModel");
@@ -34,23 +35,32 @@ class RevenueCatProcessError extends Error {
   }
 }
 
-const parsePlanMap = () => {
+const parseEnvMap = (raw) => {
   try {
-    return JSON.parse(process.env.REVENUECAT_PRODUCT_PLAN_MAP || "{}");
+    return JSON.parse(raw || "{}");
   } catch {
     return {};
   }
 };
 
-// Add-on product map: { "<store_product_id>": "<addon_code>" } where addon_code
-// is one of: extra_invites_<qty>, design_template_<type>, business_customization.
-const parseAddonMap = () => {
-  try {
-    return JSON.parse(process.env.REVENUECAT_ADDON_PRODUCT_MAP || "{}");
-  } catch {
-    return {};
-  }
-};
+// Product → code maps. The generated canonical catalog (CAT-01,
+// `shared/commerce`) provides the DEFAULT proposed { <store_product_id>:
+// <code> } map for every store-eligible plan/add-on; the
+// REVENUECAT_PRODUCT_PLAN_MAP / REVENUECAT_ADDON_PRODUCT_MAP env JSON overrides
+// per key (env wins), so ops can point a real console product id at a code
+// without a code change. This replaces the previously hand-maintained env-only
+// maps with a thin generated consumer. An unmapped product id still resolves to
+// null → the caller dead-letters it (semantics unchanged).
+const parsePlanMap = () => ({
+  ...commerceCatalog.getStorePlanProductMap(),
+  ...parseEnvMap(process.env.REVENUECAT_PRODUCT_PLAN_MAP),
+});
+
+// Add-on codes: extra_invites_<qty>, design_template_<type>, business_customization.
+const parseAddonMap = () => ({
+  ...commerceCatalog.getStoreAddonProductMap(),
+  ...parseEnvMap(process.env.REVENUECAT_ADDON_PRODUCT_MAP),
+});
 
 /** Parse an add-on code → { addonType, quantity?, templateType? } or null. */
 const parseAddonCode = (code) => {

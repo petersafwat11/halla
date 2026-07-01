@@ -6,6 +6,10 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "migrate:vendor-copy": "node scripts/migrate-vendor-localized-copy.js",
+    "catalog:generate": "node scripts/generateStoreCatalog.js",
+    "catalog:check": "node scripts/generateStoreCatalog.js --check",
+    "catalog:test": "node --test test/store-catalog.test.js",
+    "catalog:verify": "node scripts/generateStoreCatalog.js --check && node --test test/store-catalog.test.js",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js"
   },

@@ -1,15 +1,49 @@
 # Halaa store-readiness — Decision Record (Phase 0)
 
-**Date:** 2026-06-28
+**Drafted:** 2026-06-28 (analysis + recommendations)
+**Owner decisions signed:** 2026-07-01
 **Author:** Claude Code (coordinating engineer)
 **Scope of this session:** decision + baseline only. No production store SKUs were
-created; no catalog/feature code was changed. This record makes a concrete
-recommendation for every Phase-0 decision and isolates the few choices that
-genuinely require an owner/legal/finance signature.
+created; no catalog/feature code was changed. This record made a concrete
+recommendation for every Phase-0 decision; the owner has now signed each one below.
 
 **Source-of-truth order** (per `store-readiness-CLAUDE-MASTER-PLAN.md` §"Source-of-truth order"):
 owner's latest dated decision → master plan + corrective review → specialized plans →
-SHIP plan → older notes.
+SHIP plan → older notes. **The signed owner decisions of 2026-07-01 (below) are now the
+top of that order and govern all conflicts.**
+
+---
+
+## ★ SIGNED OWNER DECISIONS — 2026-07-01 (authoritative)
+
+All Phase-0 decisions are **RESOLVED**. Where the owner's choice differs from the
+draft recommendation, the owner's choice governs.
+
+| ID | Decision | Signed outcome |
+|---|---|---|
+| **DEC-01** | Canonical catalog | **KEEP six-tier / 34 plans.** The current backend/DB/web catalog is the canonical source of truth. This is an **explicit dated owner decision that supersedes** the ten-tier `plans-rewrite-2026-05.md` signoff and the draft recommendation. Store products are created **from the current 34-plan catalog + current add-ons**, not the ten-tier document. Do **not** restore the 250/300/350/400 tiers. |
+| **DEC-02 / MOB-04** | Business first self-serve purchase | **Allowed on BOTH web and mobile.** Admin assignment remains available but is **not** the only path. Current-plan comparison must be by **exact plan code/product**, not `planType`. (Overrides the draft "native-only, web managed" recommendation.) |
+| **DEC-03 / DEC-03L** | Design-template add-ons | **Consumable / single-use managed service requests** (purchase → admin dashboard → assign designer → WhatsApp with the user → prepare → revisions → complete). **Not** reusable non-consumables; **no** Restore-Purchases obligation. **Refund: non-refundable from purchase/request creation.** |
+| — | Extra invites add-on | **Unchanged** — consumable, repeatable top-ups per current backend logic. |
+| — | Business customization add-on | **Unchanged** — managed/provisioned service via admin flow, current definition. |
+| **DEC-04** | RevenueCat transfer | **"Keep with original App User ID."** No automatic cross-account transfer; no dual access; entitlements stay tied to the original Halaa user; real migrations handled manually by support/admin. (Matches the draft recommendation.) |
+| **PRICE-OWNER** | Prices / tax | **Current backend/DB/web catalog and prices are final.** Store products (Google Play / App Store) are set up from the current 34 plans, six-tier structure, current add-ons, and current pricing source. **No** separate ten-tier price mapping. |
+
+**Gate:** SKU/manifest work (CAT-01) is cleared to proceed **from the current
+catalog** now that this record is updated — but immutable SKU creation itself remains a
+later, separately-scoped step (not this session).
+
+**Implementation follow-ups created by these decisions** (tracked in CORRECTIVE-STATUS,
+not decisions): (a) delete the stale "54 entries/54-plan" comments at
+`planDefaults.js:221` and `seedPlans.js:1` so the code matches the ratified 34; (b)
+`MOB-04`/web — enable first self-serve business purchase on both surfaces + compare by
+code; (c) design-template webhook/refund handling must treat store-initiated refunds as
+exceptions (Halaa policy = non-refundable, but Apple/Google can still force a store
+refund, which the reducer must reconcile).
+
+The sections below preserve the original analysis and evidence that led to each
+decision. Where a section still reads "recommendation/BLOCKED," the **signed outcome
+above governs.**
 
 ## Evidence integrity caveat (read first)
 
@@ -95,16 +129,19 @@ plans) or the current **six-tier** (25→200, 34 plans)?
   restoring ten-tier is purely additive (+250/300/350/400 per family, +20 codes → 54),
   and those four tiers' prices are already specified and approved in §3.
 
-**Recommendation: restore the ten-tier catalog (54 DB plans) as canonical.** It is the
-only owner-signed catalog and the master-plan fallback; "deliberate-looking in code"
-is not the same as owner-approved, and the git trail shows it was not approved.
+**Draft recommendation (2026-06-28):** restore the ten-tier catalog (54 DB plans),
+since it was the only *previously* signed catalog and the master-plan fallback.
 
-**Classification: `BLOCKED_NEEDS_OWNER`** — store product IDs are immutable once
-created, so this needs one dated owner line. Default pre-filled = ten-tier. If the
-owner instead wants to **ratify** six-tier, that must be an explicit dated decision
-that knowingly supersedes `plans-rewrite-2026-05.md` (and we then also delete the
-stale "54" comments). Either way, the canonical catalog must be frozen **before**
-`CAT-01` (machine-readable manifest) and any SKU creation.
+**★ OWNER DECISION (2026-07-01): KEEP six-tier / 34 plans — RESOLVED.** The owner
+explicitly chose the current backend/DB/web catalog as the canonical source of truth
+and stated this decision **supersedes** the ten-tier `plans-rewrite-2026-05.md` signoff
+and the master-plan §0.1 fallback. The 250/300/350/400 tiers stay removed. Store
+products are created from the current **34 plans + 22 add-ons** (→ **54 store products
+per platform**: 32 sellable plans + 22 add-ons). This is the affirmative dated
+ratification the draft asked for, so the catalog is now **frozen at six-tier** and
+`CAT-01` may proceed from it. Follow-up: delete the stale "54" comments at
+`planDefaults.js:221` / `seedPlans.js:1` so the code matches the ratified 34
+(implementation task under `CAT-02`, not a decision).
 
 ---
 
@@ -132,17 +169,18 @@ plan self-serve, or is the first plan admin-activated only?
     (≈line 49); both `handleSelectPlan` (≈line 94) and `handleProceedToPayment`
     (≈line 108) hard-block with toast *"An admin must activate your first plan."*
 
-**Recommendation (native = decided):** **YES — an eligible business account may buy its
-first self-serve plan natively.** The native code blocking it is a **bug against an
-existing decision (D8)**, to be fixed under `MOB-04` (allow first self-serve purchase
-of the simplified tiers; compare current plan by code, not `planType`). D8 governs
-**native only**; the web lock is plausibly the intentional **managed-B2B onboarding**
-path (web still carries the setup fee + tax + negotiated quote). Recommended default:
-**keep web managed-admin-first; allow native self-serve first purchase.**
+**Draft recommendation (2026-06-28):** native self-serve = YES (per D8); keep web
+managed-admin-first.
 
-**Classification: RESOLVED by D8** (native). One narrow product **confirm** requested
-(not a hard blocker): confirm web stays managed-first. This decision is considered
-resolved for the purpose of "DEC-02 resolved."
+**★ OWNER DECISION (2026-07-01): first self-serve business purchase allowed on BOTH web
+and mobile — RESOLVED.** The owner overrode the "web stays managed" half: eligible
+business users self-purchase their first plan on **both** surfaces, then upgrade /
+downgrade / cancel / manage normally. Admin assignment remains available but is **not**
+the only path. Both the mobile guard (`BusinessPlansScreen.js` `hasActiveSubscription`)
+and the web guard (`useBusinessPlansPageState.js:94,108`) must be removed for eligible
+first purchase, and **current-plan comparison must be by exact plan code/product, not
+`planType`** (fixes the over-broad `isCurrent`). Implementation tracked as `MOB-04`
+(mobile + web).
 
 ---
 
@@ -184,8 +222,16 @@ Proven from `addons.js`, `addons.pricing.js`, `addons.quota.js`, `addons.service
   ticket.
 - **Refund:** for **fulfilled** creative work this is a **legal/commercial policy**
   (before-work-starts vs after) — see DEC-03L.
-- **Classification: type = `BLOCKED_NEEDS_OWNER` (legal — affects restore obligation);
-  recommend (a) consumable.**
+- **★ OWNER DECISION (2026-07-01): consumable / single-use managed service request —
+  RESOLVED (option a).** Confirmed real flow: user purchases/requests a design → the
+  request appears in the **admin dashboard** → admin **assigns a designer** → designer
+  coordinates with the user over **WhatsApp** → designer prepares the design → user may
+  **request changes** → both agree → request **completed**. It is a one-time service
+  request, **not** a reusable asset, and carries **no Restore-Purchases obligation**.
+  **Refund policy: non-refundable from purchase/request creation** (once created it is a
+  service request handled by the design/admin process). Store-initiated refunds
+  (Apple/Google may force one) remain an exception the webhook reducer must reconcile,
+  but Halaa does not proactively refund. DEC-03L is therefore **RESOLVED**.
 
 ### D.3 Business customization — 1 product, 2500 SAR (`addons.js:26`)
 - **Current code behavior:** created as `pending_provisioning`, then an admin flips it
@@ -204,7 +250,7 @@ Proven from `addons.js`, `addons.pricing.js`, `addons.quota.js`, `addons.service
 | Add-on | Type (recommended) | Lifetime | Repurchase | Fulfillment | Refund |
 |---|---|---|---|---|---|
 | Extra invites (16) | consumable | with sub pool / event guestLimit | repeatable | auto (applyQuota), IAP idempotent | clawback unused only *(not yet built — ADD-02)* |
-| Design templates (5) | **consumable** *(owner to confirm vs non-consumable)* | order record (no counter) | repeatable | manual creative delivery | fulfilled-work policy = **legal** |
+| Design templates (5) | **consumable / single-use managed service** (owner-signed) | one service request (no counter, no restore) | repeatable (new request each time) | admin-assigned designer → WhatsApp → revisions → complete | **non-refundable from creation** (owner-signed) |
 | Business customization (1) | non-consumable, 1/org | persists per org | one active per org *(add guard)* | admin provisioning, ~1wk | before/after work = **legal** |
 
 ---
@@ -273,10 +319,14 @@ passing the current Play product + an approved mode.
     is unaffected). **Trade-off:** a *legitimate* account migration then needs a
     support-assisted transfer rather than self-serve.
 
-**Classification:** restore semantics = **RECOMMENDED (technical)**; the **transfer/
-account-switch policy** (transfer-to-new-ID vs keep-with-original; dual-access stance)
-= **`BLOCKED_NEEDS_OWNER` (commercial/anti-abuse)**, recommended default
-"keep-with-original, no dual access."
+**★ OWNER DECISION (2026-07-01): "Keep with original App User ID" — RESOLVED.**
+Purchases/subscriptions/entitlements stay tied to the **original** Halaa user account.
+**No** automatic cross-account transfer when the same Apple/Google store account signs
+in elsewhere; **no** dual access; entitlements are never mixed between Halaa accounts.
+A genuine account migration is handled **manually by support/admin**, not automatically
+by RevenueCat restore behavior. Restore semantics (subs via store, consumables via the
+authenticated backend ledger) are adopted as recommended. Set the RevenueCat project
+**transfer behavior = "Keep with original App User ID."**
 
 ---
 
@@ -290,44 +340,62 @@ account-switch policy** (transfer-to-new-ID vs keep-with-original; dual-access s
   (admin), and the **negotiated/managed** `business_quarterly`/`business_annual`
   **contracts** (the quote/tax/setup-fee B2B flow stays web/admin-only). Only the
   **simplified self-serve** business tiers (setup fee waived in-app) are sold natively.
-- **Price-approval owner — `BLOCKED_NEEDS_OWNER` (commercial).** Plan price *values*
-  are already approved (existing six tiers + §3 for 250→400; add-ons in `addons.js`),
-  but no named owner has signed the **store price-tier mapping + Saudi tax category**
-  (digital goods, VAT 15%) that the billing completion gate requires
-  ("finance/legal approve … pricing, tax categories, refund behavior"). Name the
-  finance/legal approver before SKU creation. Recommended default: Saudi VAT 15%,
-  standard-rated digital goods; finance owner to confirm store tier rounding.
+- **Price-approval — ★ OWNER DECISION (2026-07-01): current catalog and prices are
+  final — RESOLVED.** Store products (Google Play / App Store) are set up from the
+  **current backend/DB/web catalog**: the current 34 plans, six-tier structure, current
+  add-ons, and current pricing source. **No** separate ten-tier price mapping is
+  created. Remaining work is purely mechanical (map each current SAR price to the
+  nearest store price tier; Saudi VAT is collected by the stores at the standard 15%) —
+  no further price sign-off is required before SKU creation.
 
 ---
 
-## H. Decision classification summary
+## H. Decision classification summary (all RESOLVED — signed 2026-07-01)
 
-| ID | Decision | Recommendation | Status |
+| ID | Decision | Signed outcome | Status |
 |---|---|---|---|
-| DEC-01 | Catalog: ten-tier vs six-tier | **Restore ten-tier (54)** | `BLOCKED_NEEDS_OWNER` (immutable SKUs) |
-| DEC-02 | Business first self-serve purchase | **Native YES** (fix MOB-04); web stays managed | RESOLVED by D8 (+1 web confirm) |
-| DEC-03 (extra invites) | type/lifetime/repurchase/fulfillment | consumable, repeatable, auto, clawback-unused | RECOMMENDED (technical) |
-| DEC-03 (design templates) | consumable vs non-consumable | **consumable** | `BLOCKED_NEEDS_OWNER` (legal/restore) |
-| DEC-03 (business customization) | type/fulfillment | non-consumable, 1/org, admin-provisioned | RECOMMENDED (technical) |
-| DEC-03L | refund policy, fulfilled creative services | before/after work-start terms | `BLOCKED_NEEDS_OWNER` (legal) |
-| MOB-02 | Google replacement modes | immediate upgrade / deferred downgrade | RECOMMENDED (technical) |
-| DEC-04 (restore) | restore semantics | subs via store; consumables via backend ledger | RECOMMENDED (technical) |
-| DEC-04 (transfer) | transfer/account-switch policy | keep-with-original, no dual access | `BLOCKED_NEEDS_OWNER` (commercial) |
-| D2 | Territories | Saudi only | DECIDED (restate) |
-| D8-excl | Managed-B2B exclusions | trial/unlimited/managed contracts not native | DECIDED (confirm) |
-| PRICE-OWNER | price-tier + tax-category approver | name finance owner; Saudi VAT 15% | `BLOCKED_NEEDS_OWNER` (commercial) |
+| DEC-01 | Catalog: ten-tier vs six-tier | **Keep six-tier / 34** (supersedes ten-tier signoff) | RESOLVED (owner) |
+| DEC-02 | Business first self-serve purchase | **Allowed on web + mobile**; compare by exact code | RESOLVED (owner) |
+| DEC-03 (extra invites) | type/lifetime/repurchase/fulfillment | consumable, repeatable, auto (unchanged) | RESOLVED (owner) |
+| DEC-03 / DEC-03L (design templates) | type + refund | single-use managed service request; **non-refundable from creation**; no restore | RESOLVED (owner) |
+| DEC-03 (business customization) | type/fulfillment | managed/provisioned service via admin (unchanged) | RESOLVED (owner) |
+| MOB-02 | Google replacement modes | immediate upgrade / deferred downgrade | RECOMMENDED (technical, no owner gate) |
+| DEC-04 (restore) | restore semantics | subs via store; consumables via backend ledger | RESOLVED (owner) |
+| DEC-04 (transfer) | transfer/account-switch policy | **Keep with original App User ID**; no dual access | RESOLVED (owner) |
+| D2 | Territories | Saudi only | DECIDED (D2) |
+| D8-excl | Managed-B2B exclusions | trial/unlimited not native; managed contracts web-only | DECIDED (D8) |
+| PRICE-OWNER | prices / tax | **current catalog & prices final**; no ten-tier mapping; Saudi VAT 15% | RESOLVED (owner) |
 
-**Genuinely owner-gated (the only items needing your signature):** DEC-01,
-DEC-03 (design-template type), DEC-03L (fulfilled-service refund policy),
-DEC-04 (transfer policy), PRICE-OWNER — plus one one-line web confirm for DEC-02.
-
-Until DEC-01, DEC-03 (design type + refund), and DEC-04 (transfer) are signed, the
-next session is **not** cleared to create the canonical manifest (`CAT-01`) or any
-immutable store products.
+**No Phase-0 decision remains owner-gated.** The canonical catalog is frozen at
+**six-tier / 34 plans + 22 add-ons**. `CAT-01` (machine-readable manifest) may proceed
+**from the current catalog**; immutable SKU creation remains a later, separately-scoped
+step and must not run until the manifest is built and reviewed.
 
 ---
 
-## I. Owner decision form
+## I. Signed Phase-0 decision log
 
-See the end of the coordinating message for the one-message form. Record answers here
-(dated) once received; this file then becomes the signed Phase-0 decision log.
+Owner decisions received and recorded **2026-07-01** (full text in the session
+transcript). This section, together with the ★ block at the top, is the signed Phase-0
+decision log. Summary of the eight owner instructions:
+
+1. **DEC-01** — keep current six-tier / 34-plan catalog; explicitly supersedes ten-tier;
+   store products from current backend/DB/web catalog + current add-ons; do not restore
+   250/300/350/400.
+2. **DEC-02 / MOB-04** — allow first self-serve business purchase on **both** web and
+   mobile; admin assignment optional, not sole path; compare current plan by exact
+   code/product.
+3. **DEC-03 / DEC-03L** — design templates = single-use managed service requests
+   (admin-assigned designer, WhatsApp coordination, revisions, completion); consumable;
+   **non-refundable from purchase/request creation**; no reusable-asset / restore
+   behavior.
+4. **Extra invites** — unchanged (consumable, repeatable top-ups).
+5. **Business customization** — unchanged (managed/provisioned service via admin flow).
+6. **DEC-04** — keep purchases/subscriptions with the original Halaa account; no
+   automatic RevenueCat cross-account transfer; no dual access; manual migration by
+   support only → transfer behavior = "Keep with original App User ID."
+7. **PRICE-OWNER** — current backend/DB/web catalog and prices are final; no separate
+   ten-tier price mapping.
+8. Update the decision record + corrective status (done); next implementation direction
+   follows the above; do not create immutable SKUs until this record reflects the
+   decisions (it now does).

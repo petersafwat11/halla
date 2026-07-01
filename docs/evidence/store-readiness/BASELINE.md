@@ -130,3 +130,43 @@ build/tooling-chain (not runtime request-path) packages.
 | Web prod audit | 2 moderate | 2 moderate ✓ |
 | Mobile prod audit | 20 moderate | 20 moderate ✓ |
 | **Web production build** | **not proven** | **SUCCEEDS (Next 15.5.18, warnings only)** ✓ NEW |
+
+## 10. CAT-01 canonical catalog (2026-07-01, no DB)
+
+Machine-readable canonical store catalog built + validated from source, credential- and
+DB-free. Source: `labbe-backend-/src/shared/commerce/` (`catalog.schema.js`,
+`catalog.overlay.js`, `buildCatalog.js`); generator `scripts/generateStoreCatalog.js`.
+
+```
+$ cd labbe-backend- && npm run catalog:verify
+✓ catalog in sync — 7 artifacts match source (no drift).
+ℹ tests 25   ℹ pass 25   ℹ fail 0        exit=0
+
+$ npm test                     # full backend suite (incl. 25 new catalog contracts)
+ℹ tests 42   ℹ pass 42   ℹ fail 0        exit=0
+```
+
+Proven counts (contract tests): **34** DB plans · **32** store-eligible plans (18 event
+consumables + 14 subscriptions) · **22** add-ons (16 extra-invite + 5 design + 1 business
+customization) · **54** proposed store products per platform · **2** internal
+(trial+unlimited, 0 store products) · six-tier only (no 250/300/350/400). All Apple /
+Google / RevenueCat identifiers are **PROPOSED** (`com.halla.<code>`) — nothing created
+in any console.
+
+Generated artifacts (reproducible; `npm run catalog:generate`):
+`labbe-backend-/src/shared/commerce/storeCatalog.generated.json` +
+`docs/evidence/store-readiness/generated/{sku-matrix,apple-product-map,google-product-map,revenuecat-mapping,metadata-inventory,expected-counts}.generated.md`.
+
+**Drift gate proven live:** corrupting a generated artifact makes `catalog:check` exit 1
+with a remediation message; `catalog:generate` restores it deterministically (exit 0).
+
+Stale cleanup: removed the "54 entries"/"54-plan" comments at `planDefaults.js` +
+`seedPlans.js`. Backend has no eslint config/lint script (per §4 only web+mobile lint),
+so no backend lint gate applies. Web/mobile were **not changed** this session (catalog is
+backend-only + docs), so their §4/§5 baseline status stands.
+
+Pre-existing, unrelated failure (NOT a regression, NOT part of `npm test`):
+`node scripts/static-checks-payments.js` check #12 fails — it greps `payments.routes.js`
+for the old `restrictTo(SUPER_ADMIN, ADMIN)` string, but those admin actions were
+refactored to `requirePageAccess(ADMIN_PAGES.PAYMENTS, 'manage')` (still gated — not a
+security gap). The static-check is stale; left untouched (out of scope for CAT-01).

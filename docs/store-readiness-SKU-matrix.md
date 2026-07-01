@@ -1,5 +1,16 @@
 # Path B store SKU matrix (§9.4/§9.5) — console config checklist
 
+> **Authoritative machine-generated matrix (CAT-01, 2026-07-01):** the canonical,
+> reproducible SKU matrix and provider maps are now **generated** from
+> `labbe-backend-/src/shared/commerce/` — see
+> `docs/evidence/store-readiness/generated/{sku-matrix,apple-product-map,google-product-map,revenuecat-mapping,metadata-inventory,expected-counts}.generated.md`
+> and the manifest `labbe-backend-/src/shared/commerce/storeCatalog.generated.json`.
+> Regenerate + drift-check: `cd labbe-backend- && npm run catalog:verify`. This file
+> is retained for the console-workflow narrative below (promotions, sandbox matrix,
+> not-sold-natively); on any conflict the generated artifacts govern. Totals:
+> **six-tier / 34 plans → 32 sellable + 22 add-ons = 54 proposed products per platform**;
+> all ids are PROPOSED (`com.halla.<code>`), not yet created.
+
 Every row = one store product to create in **App Store Connect** + **Google Play**
 + map in **RevenueCat** and in `REVENUECAT_PRODUCT_PLAN_MAP` (JSON
 `{ "<store_product_id>": "<plan_code>" }`). Type drives behavior: **subscription**
@@ -39,8 +50,8 @@ like plans). Map the store product id → the same code in the new env var
 | add-on code (= RC package identifier) | type | backend |
 |---|---|---|
 | `extra_invites_10` … `_20/_30/_40/_50/_75/_100/_125/_150/_200/_250/_300/_350/_400/_450/_500` (16 tiers) | **consumable** | bumps the active subscription's invite pool |
-| `design_template_ready_made` / `_custom_male` / `_custom_themed` / `_animated` / `_3d` (5) | **consumable/non-consumable** | grants the design add-on |
-| `business_customization` | **consumable** | org branding (provisioned by admin → `pending_provisioning`) |
+| `design_template_ready_made` / `_custom_male` / `_custom_themed` / `_animated` / `_3d` (5) | **consumable** (single-use managed service, DEC-03L; no restore; **non-refundable from creation**) | request → admin dashboard → assign designer → WhatsApp → revisions → complete |
+| `business_customization` | **consumable** (managed service, DEC-03; refund = **legal review** before/after work — distinct from design) | org branding (provisioned by admin → `pending_provisioning`) |
 
 ```
 REVENUECAT_ADDON_PRODUCT_MAP = {

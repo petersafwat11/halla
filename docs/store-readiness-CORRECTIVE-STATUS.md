@@ -20,26 +20,82 @@ Update evidence links and `Last verified` on every state change. A task reaches 
   **web production build SUCCEEDS** (Next 15.5.18, warnings only) — previously "no
   build proof." Tests 17/17, lints pass, Expo Doctor 18/18, audits 0 / 2 / 20 moderate
   (no non-breaking fix path).
-- **Decisions adjudicated:** DEC-02 **RESOLVED** by D8 (native self-serve business
-  first purchase = YES; web stays managed). Technical recommendations recorded for
-  add-on extra-invites/business-customization, Google replacement modes (`MOB-02`), and
-  restore semantics (`DEC-04`). Still genuinely owner-gated: **DEC-01** (ten-tier
-  signature), **DEC-03L** (design-template type + fulfilled-service refund),
-  **DEC-04** (transfer policy), **PRICE-OWNER**. Next session is **not** cleared for
-  manifest/SKU creation until those are signed.
+- **Decisions adjudicated (draft):** DEC-02 resolved by D8; recommendations recorded for
+  the rest. Owner-gated items DEC-01 / DEC-03L / DEC-04-transfer / PRICE-OWNER were sent
+  to the owner as a decision form.
+
+### Owner sign-off — 2026-07-01 (all Phase-0 decisions RESOLVED)
+
+The owner signed every Phase-0 blocker (full text in transcript; recorded in
+`store-readiness-DECISION-RECORD.md` ★ block):
+
+- **DEC-01 → keep six-tier / 34 plans**, explicitly superseding the ten-tier signoff;
+  store products come from the current backend/DB/web catalog + current add-ons.
+- **DEC-02 / MOB-04 → first self-serve business purchase allowed on BOTH web and
+  mobile**; compare current plan by exact code (not `planType`).
+- **DEC-03 / DEC-03L → design templates = single-use managed service requests,
+  non-refundable from creation**, no restore obligation.
+- **DEC-04 → "Keep with original App User ID"** (no auto transfer, no dual access).
+- **PRICE-OWNER → current catalog & prices final** (no ten-tier mapping; Saudi VAT 15%).
+
+Catalog is now **frozen at six-tier / 34 + 22 add-ons**. `CAT-01`/`CAT-02`/`CAT-03`
+are unblocked and proceed **from the current catalog**. Immutable SKU creation is still
+a later, separately-scoped step (build + review the manifest first).
+
+### CAT-01/02/03 update — 2026-07-01 (canonical catalog session — implemented + unit-verified)
+
+The machine-readable canonical catalog is built and validated with **no DB, provider,
+or credential access**:
+
+- **Canonical source** — `labbe-backend-/src/shared/commerce/` (`catalog.schema.js`
+  Zod contract · `catalog.overlay.js` signed store overlay · `buildCatalog.js`
+  derivation from `planDefaults.js` + `addons.js`). Placed in the backend (CJS) rather
+  than billing-plan §0.2's suggested `shared/commerce/` because the backend does **not**
+  import the ESM `@halla/shared` workspace (verified: 0 imports); a CJS→ESM runtime
+  bridge would be fragile. Web/mobile stay API-driven and do not consume this module.
+- **Generated artifacts** (reproducible via `npm run catalog:generate`) —
+  `labbe-backend-/src/shared/commerce/storeCatalog.generated.json` (manifest) +
+  `docs/evidence/store-readiness/generated/*.md` (SKU matrix, Apple map, Google
+  product/base-plan map, RevenueCat offering/package/entitlement map, AR/EN metadata
+  inventory, expected-count report). **All external identifiers are PROPOSED**
+  (`com.halla.<code>`) — no Apple/Google/RevenueCat products were created.
+- **Counts proven by contract tests** — 34 DB plans, **32 store-eligible plans**,
+  **22 add-ons**, **54 proposed products/platform**, 2 internal (trial+unlimited),
+  0 trial/unlimited store products, six-tier only (no 250/300/350/400).
+- **Runtime consumer** — `revenuecat.service.js` `parsePlanMap`/`parseAddonMap` now
+  layer the generated proposed maps **under** the `REVENUECAT_PRODUCT_PLAN_MAP` /
+  `REVENUECAT_ADDON_PRODUCT_MAP` env overrides (env wins); unmapped-product →
+  dead-letter semantics unchanged. This is a map-source swap only — **not** webhook
+  state-machine work (that stays BILL-01/03, Session 2).
+- **Drift gate** — `npm run catalog:verify` (Zod validate + deterministic regenerate +
+  fail-on-drift + 25 contract tests); credential-free and DB-free.
+- **Stale cleanup** — removed the "54 entries"/"54-plan" comments at `planDefaults.js`
+  and `seedPlans.js` (DECISION-RECORD follow-up).
+- **Tests** — backend `npm test` = **42/42** (17 pre-existing + 25 new catalog contracts).
+
+**Documented non-blocking ambiguity — business_customization store type.** SIGNED
+DEC-03 says "unchanged managed service" (silent on store type); DECISION-RECORD §D.4
+*recommends* "non-consumable / 1-per-org"; the prior SKU-matrix said "consumable".
+Resolved as **consumable** (a non-consumable owes Apple Restore Purchases, but there is
+no restorable digital entitlement — it is a service — so non-consumable is
+self-contradictory; "consumable" also matches the signed single-use design-template
+shape and the prior SKU-matrix). We deliberately did **not** add the §D.3 one-per-org
+guard (new commercial behavior "unchanged" forbids — Session-2+). Its refund stays
+**distinct** from design templates: `managed_service_legal_review`, not
+`non_refundable_from_creation`.
 
 | ID | Task | Owner | State | Evidence | Blocker | Last verified |
 |---|---|---|---|---|---|---|
 | BASE-01 | Phase-0 baseline (git/tests/lint/build/doctor/audit/static inventory) | Claude/QA | CAPTURED | `evidence/store-readiness/BASELINE.md` | — | 2026-06-28 |
-| DEC-01 | Six-tier vs ten-tier catalog decision | Owner/Product | BLOCKED_NEEDS_OWNER | `DECISION-RECORD §B`; git `64b5b1dd`; `REVIEW-FINDINGS P0-01` | **Recommend ten-tier (54)** — needs dated owner signature (immutable SKUs) | 2026-06-28 |
-| DEC-02 | Business first native purchase decision | Owner/Product | RESOLVED (D8) | `DECISION-RECORD §C`; SHIP §2 (D8) | Native self-serve = YES (fix `MOB-04`); web stays managed (1-line confirm) | 2026-06-28 |
-| DEC-03 | Add-on type/lifetime/repurchase/fulfillment (technical) | Product/Backend | RESOLVED (recommend) | `DECISION-RECORD §D` | Extra-invites + business-customization semantics recommended | 2026-06-28 |
-| DEC-03L | Design-template type + fulfilled-service refund policy | Owner/Legal | BLOCKED_NEEDS_OWNER | `DECISION-RECORD §D.2/§H` | Consumable-vs-non-consumable (restore) + before/after-work refund | 2026-06-28 |
-| DEC-04 | RevenueCat transfer/account-switch policy | Owner/Product | BLOCKED_NEEDS_OWNER | `DECISION-RECORD §F` | Restore semantics recommended; **transfer policy** still owner-gated (recommend keep-with-original) | 2026-06-28 |
-| PRICE-OWNER | Store price-tier mapping + Saudi tax-category approver | Owner/Finance/Legal | BLOCKED_NEEDS_OWNER | `DECISION-RECORD §G` | Name finance approver; recommend Saudi VAT 15% standard-rated | 2026-06-28 |
-| CAT-01 | Canonical machine-readable store catalog | Backend/Mobile | NOT_STARTED |  | DEC-01/DEC-03L | 2026-06-28 |
-| CAT-02 | Plan constants/defaults/seed/API parity | Backend | NOT_STARTED | `DECISION-RECORD §A` (proven six-tier/34) | DEC-01 (recommend ten-tier) | 2026-06-28 |
-| CAT-03 | Web/mobile catalog rendering parity | Web/Mobile | NOT_STARTED | Both API-driven, no hardcoded cap (`DECISION-RECORD §A`) | CAT-01/02 | 2026-06-28 |
+| DEC-01 | Six-tier vs ten-tier catalog decision | Owner/Product | RESOLVED (owner 2026-07-01) | `DECISION-RECORD §B ★`; git `64b5b1dd` | **Keep six-tier / 34** — supersedes ten-tier signoff; SKUs from current catalog | 2026-07-01 |
+| DEC-02 | Business first self-serve purchase (web+mobile) | Owner/Product | RESOLVED (owner 2026-07-01) | `DECISION-RECORD §C ★` | Allowed on **both** surfaces; compare by exact code → implement in `MOB-04` | 2026-07-01 |
+| DEC-03 | Add-on type/lifetime/repurchase/fulfillment | Product/Backend | RESOLVED (owner 2026-07-01) | `DECISION-RECORD §D` | Extra-invites + business-customization unchanged | 2026-07-01 |
+| DEC-03L | Design-template type + refund policy | Owner/Legal | RESOLVED (owner 2026-07-01) | `DECISION-RECORD §D.2 ★` | Single-use managed service; **non-refundable from creation**; no restore | 2026-07-01 |
+| DEC-04 | RevenueCat transfer/account-switch policy | Owner/Product | RESOLVED (owner 2026-07-01) | `DECISION-RECORD §F ★` | "Keep with original App User ID"; no auto transfer / no dual access | 2026-07-01 |
+| PRICE-OWNER | Store price-tier mapping + tax category | Owner/Finance | RESOLVED (owner 2026-07-01) | `DECISION-RECORD §G ★` | Current catalog & prices final; no ten-tier mapping; Saudi VAT 15% | 2026-07-01 |
+| CAT-01 | Canonical machine-readable store catalog | Backend | UNIT_VERIFIED | `src/shared/commerce/*` + `evidence/store-readiness/generated/*`; `npm run catalog:verify` (25/25) | Built, Zod-validated, drift-gated; identifiers PROPOSED (no SKUs created) | 2026-07-01 |
+| CAT-02 | Plan constants/defaults/seed/API parity + delete stale "54" comments | Backend | UNIT_VERIFIED | `planDefaults.js`/`seedPlans.js` "54" comments removed; `store-catalog.test.js` asserts source+seed parity | Source/seed parity + comment cleanup done + tested. **Live GET /plans DB parity still pending** (no DB this session — shared staging cluster) | 2026-07-01 |
+| CAT-03 | Web/mobile catalog rendering parity | Web/Mobile | UNIT_VERIFIED | Explore audit: both fully API-driven, no hardcoded codes/tiers; cross-surface stale-code scan (0 hits) in `store-catalog.test.js` | No frontend change needed for the catalog contract. **Exact-code business `isCurrent`/first-purchase = MOB-04** (Session 2), not this session | 2026-07-01 |
 | BILL-01 | Strict webhook envelope/catalog validation | Backend | IMPLEMENTED_UNVERIFIED | Existing controller partial only | Missing strict fields/tests | 2026-06-28 |
 | BILL-02 | Processing lease/transaction/replay safety | Backend | NOT_STARTED |  |  | 2026-06-28 |
 | BILL-03 | Pure RevenueCat lifecycle reducer/tests | Backend | NOT_STARTED |  |  | 2026-06-28 |
@@ -53,12 +109,12 @@ Update evidence links and `Last verified` on every state change. A task reaches 
 | EVT-01 | Event-package preflight used by mobile/backend | Backend/Mobile | NOT_STARTED | `REVIEW-FINDINGS P0-03` |  | 2026-06-28 |
 | EVT-02 | Atomic event grant/consume/refund | Backend | IMPLEMENTED_UNVERIFIED | Existing entitlement/first-send code | Race/refund tests missing | 2026-06-28 |
 | ADD-01 | Unique/atomic store add-on fulfillment | Backend | NOT_STARTED | `REVIEW-FINDINGS P0-10` |  | 2026-06-28 |
-| ADD-02 | Add-on refund/reversal state machines | Backend | NOT_STARTED | `REVIEW-FINDINGS P0-11`; `DECISION-RECORD §D` | DEC-03L (fulfilled-service refund policy) | 2026-06-28 |
+| ADD-02 | Add-on refund/reversal state machines | Backend | NOT_STARTED | `REVIEW-FINDINGS P0-11`; `DECISION-RECORD §D` | Unblocked: design = non-refundable (DEC-03L); build extra-invite clawback-unused + store-refund reconcile | 2026-07-01 |
 | ADD-03 | Standalone native add-on purchase/history | Mobile | NOT_STARTED |  | ADD-01/02 | 2026-06-28 |
 | MOB-01 | Exact expected-purchase reconciliation | Backend/Mobile | NOT_STARTED | `REVIEW-FINDINGS P0-02` |  | 2026-06-28 |
 | MOB-02 | Google subscription replacement modes | Mobile | NOT_STARTED | `REVIEW-FINDINGS P0-07`; `DECISION-RECORD §E` | Mode decided (immediate upgrade / deferred downgrade) — implementation pending | 2026-06-28 |
 | MOB-03 | Store-only prices/periods/disclosures/legal links | Mobile | NOT_STARTED | `REVIEW-FINDINGS P0-13` | Legal docs | 2026-06-28 |
-| MOB-04 | Business tier/first purchase/current-code fixes | Mobile/Backend | NOT_STARTED | `REVIEW-FINDINGS P0-12`; `DECISION-RECORD §C` | Decision RESOLVED (D8: native first purchase = YES, compare by code) — implementation pending | 2026-06-28 |
+| MOB-04 | Business first self-serve purchase + current-code fixes (web + mobile) | Web/Mobile/Backend | NOT_STARTED | `REVIEW-FINDINGS P0-12`; `DECISION-RECORD §C ★` | Owner-decided: enable on BOTH surfaces, compare by exact code — implementation pending | 2026-07-01 |
 | DEL-01 | Model/processor deletion-retention matrix | Backend/Legal | NOT_STARTED | `LEGAL plan §7` | Legal signoff | 2026-06-28 |
 | DEL-02 | Complete retryable deletion worker | Backend | NOT_STARTED | `REVIEW-FINDINGS P1-02` | DEL-01 | 2026-06-28 |
 | DEL-03 | Throwaway DB/S3 deletion proof | QA | NOT_STARTED |  | DEL-02 | 2026-06-28 |
@@ -74,7 +130,7 @@ Update evidence links and `Last verified` on every state change. A task reaches 
 | SEO-03 | Sitemap/robots/manifest/icons | Web | NOT_STARTED |  | SEO-01 | 2026-06-28 |
 | ASO-01 | Versioned Apple/Google AR/EN listing metadata | Product/Legal | NOT_STARTED |  | Approved copy | 2026-06-28 |
 | ASO-02 | Store/product screenshot assets | Design/QA | NOT_STARTED |  | Release-candidate build | 2026-06-28 |
-| REV-01 | Reviewer accounts use valid paid plan and smoke pass | Backend/QA | NOT_STARTED | `REVIEW-FINDINGS P1-01` | DEC-01 (valid code depends on frozen catalog) | 2026-06-28 |
+| REV-01 | Reviewer accounts use valid paid plan and smoke pass | Backend/QA | NOT_STARTED | `REVIEW-FINDINGS P1-01` | Unblocked — pick a valid six-tier code (e.g. `premium_monthly_100`) | 2026-07-01 |
 | SEC-01 | Rotate/untrack/purge/secret scan | Owner/Ops | NOT_STARTED | Existing external steps | Coordinated credentials/history work | 2026-06-28 |
 | ART-IOS | Signed IPA inspection + iPhone/iPad QA | Mobile/QA | NOT_STARTED |  | Apple/EAS credentials | 2026-06-28 |
 | ART-AND | Signed AAB inspection + 16 KB/prelaunch QA | Mobile/QA | NOT_STARTED |  | Play/EAS credentials | 2026-06-28 |

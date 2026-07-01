@@ -1,5 +1,7 @@
 /**
- * Seed Halaa plans — 54-plan structure (rev. 2)
+ * Seed Halaa plans — 34-plan six-tier catalog (canonical per DEC-01, signed
+ * 2026-07-01; the ten-tier plans-rewrite-2026-05 signoff is superseded).
+ * EXPECTED_TOTAL below is 34; keep it in sync with PLAN_DEFAULTS.
  * Idempotent: upserts by `code` so re-running is safe.
  *
  * Usage:
