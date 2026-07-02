@@ -407,6 +407,59 @@ no source changed).
 Apple/Google/RevenueCat/EAS access (no provider MCP connected, none registrable) + owner
 account/agreement/credential bootstrap. **No `READY_FOR_SANDBOX` claim is made** (Phase-5 exit not reached).
 
+### Session 9 — full sandbox matrix + release-candidate QA authoring (2026-07-02, no builds/console/devices/sandbox accounts)
+
+Authored the COMPLETE, executable sandbox + release-candidate QA matrix (master plan Phase 6 +
+billing plan Phase 8 + external runbook §11) — the exact plan the owner's QA runs once signed builds
+and console config exist. **This session executed ZERO rows and invented no transaction id, RevenueCat
+event, device result, screenshot, quota, or QA outcome.** It has no signed IPA/AAB (`ART-IOS`/`ART-AND`
+BLOCKED), no Apple/Google/RevenueCat/EAS console config (`MCP-02/03/04/05` BLOCKED), no physical
+iPhone/iPad/Android phone+tablet, and no Apple Sandbox / Google license-test accounts — so a single real
+sandbox purchase is impossible here, and dashboard "test events" are (per the plan) not a substitute.
+**Docs only — no source touched.** Gates re-confirmed: `npm run catalog:verify` **26** (drift-clean +
+write-readiness contracts — confirms the catalog the matrix references is intact).
+
+- **`evidence/store-readiness/SANDBOX-QA-MATRIX.md`.** **60 rows** across 9 categories with stable
+  IDs (`SBX-SUB-*`×11 · `SBX-EVT-*`×6 · `SBX-ADD-*`×7 · `SBX-CHG-*`×4 · `SBX-RST-*`×4 · `SBX-WHK-*`×7 ·
+  `SBX-AND-*`×3 · `SBX-OFR-*`×2 · `FUNC-*`×16). Each row gives: precondition, exact **real-store** steps
+  (Apple Sandbox / Google license-test / internal track), the §0.2 capture set (store txn id, RC
+  event+customer+product, backend record + before/after quota, device/build, screenshot/video, expected
+  vs actual, tester, date — **all blank until run**), the EXPECTED result derived from the contract, and a
+  **`Confirms / Device-only`** column citing the committed test that already proves the backend half.
+- **Grounded in the implemented contract.** Every lifecycle row cites the pure reducer + its exhaustive
+  tests (`revenuecat-reducer.test.js`), the webhook engine integration (`billing-webhook.integration.test.js`
+  — grant/ledger/redaction, duplicate, atomic-lease exactly-once, dead-letter, fail-closed EXPIRATION,
+  refund→reversed, stuck-lease reclaim), fulfillment (`billing-fulfillment.integration.test.js` — event
+  grant/guard/race/refund/reversal, add-on quota/clawback-unused-only/reversal/design store-forced refund),
+  exact-reconcile (`revenuecat-reconcile-exact.test.js` — P0-02 never-success-from-unrelated-access +
+  eligibility), the **Android null-orderId event fallback** (`revenuecat-event-fallback.test.js`, 9 cases
+  incl. the cross-account negative), and the mobile orchestration (`usePurchaseFlow.js` — deferred→scheduled,
+  refreshable pending, cancellation≠error, idempotent).
+- **Honest confirms-vs-DEVICE-ONLY split — a DISJOINT partition (57 + 3 = 60).** The purchase/runtime act
+  of **every** row is DEVICE-ONLY (real store sheet, real receipt, real webhook emission + timing); a row
+  is placed by whether a committed test locks its **load-bearing** claim. **57 rows** carry a committed
+  code-verified "confirms" (backend interpretation already locked → on-device is a confirmation, not a
+  first test) — six of them keeping a per-row DEVICE-ONLY caveat in the row text for StoreKit/Play
+  **proration timing** (`SBX-CHG-01..04`), the **store single-active** group enforcement (`SBX-RST-03`),
+  and the **transfer no-dual-access** project setting (`SBX-RST-04`), because each row's *primary* logic is
+  tested. **3 rows are genuine DEVICE-ONLY first-verification** with no prior backend proof of the
+  load-bearing claim: `SBX-OFR-01` (offers/promo — no backend contract), `FUNC-07` (push), and `SBX-EVT-03`
+  (the first-send `unused→consumed` **trigger** at `messaging.send.service.js:306-314` is **untested** —
+  flagged as an integration gap, not implied covered; committed tests cover only the state *mapping*). Where
+  a test leaned on the stubbed canonical snapshot (`rcApi.getRecurringSnapshot`), the row confirms the
+  reducer/controller branch and marks the **real provider snapshot round-trip DEVICE-ONLY** — no over-claim.
+- **DECISION-RECORD invariant mapping (matrix §10).** Maps each signed invariant that must hold on-device —
+  single active subscription, keep-with-original transfer / no dual access, design add-on non-refundable-from-
+  creation, business first self-serve by exact code, event exact-reconcile + Android null-orderId event
+  fallback, add-on Android null-orderId → refreshable pending — to its backend code half (already verified)
+  and the DEVICE-ONLY / console enforcer (store subscription group, RevenueCat transfer-behavior setting)
+  that only sandbox can confirm.
+
+**End state:** `BLOCKED_NEEDS_OWNER` — `QA-BILL` + `QA-RC` matrix is authored and fully grounded, but
+execution is blocked on `ART-*` (signed builds) + `MCP-*` (console config) + real devices + Apple/Google
+sandbox accounts. `GO-01`/`GO-02` remain `NOT_STARTED` (unchanged). Nothing reaches `SANDBOX_VERIFIED`;
+no `READY_FOR_SECOND_PERSON_REVIEW` claim is made.
+
 | ID | Task | Owner | State | Evidence | Blocker | Last verified |
 |---|---|---|---|---|---|---|
 | BASE-01 | Phase-0 baseline (git/tests/lint/build/doctor/audit/static inventory) | Claude/QA | CAPTURED | `evidence/store-readiness/BASELINE.md` | — | 2026-06-28 |
@@ -464,7 +517,7 @@ account/agreement/credential bootstrap. **No `READY_FOR_SANDBOX` claim is made**
 | MCP-03 | Google app/listing/product configuration | Claude/Owner | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/PROVIDER-CONFIG-RUNBOOK.md` §4 (+ `generated/google-product-map`) | Runbook written (14 `subs`+base plan, 40 `inapp` consume-on-grant; `productId:basePlanId`). Needs Play app record + service-account + merchant/tax | 2026-07-02 |
 | MCP-04 | RevenueCat apps/products/entitlement/offerings/webhook | Claude/Owner | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/PROVIDER-CONFIG-RUNBOOK.md` §5 (+ `generated/revenuecat-mapping`) | Runbook written (54 products; **1 entitlement `recurring_access` on ONLY the 14 subs**; 4 offerings 24/8/21/1; two-hop ASSN+RTDN→RC→backend webhook; transfer=Keep-with-original). Needs RC project/apps/keys | 2026-07-02 |
 | MCP-05 | Console readback zero-drift diff | Claude/QA | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/PROVIDER-CONFIG-RUNBOOK.md` §8 | Diff procedure specified (per-product `console_entitlement == manifest.revenueCatEntitlementId` ⇒ 14 subs carry it, 0 others; counts/ids/prices/offerings). Needs a console export to diff (none exists) | 2026-07-02 |
-| QA-BILL | Apple + Google full sandbox matrix | QA | NOT_STARTED | `BILLING plan Phase 8` | Code + store config | 2026-06-28 |
-| QA-RC | Full release-candidate functional/accessibility QA | QA | NOT_STARTED | `MASTER Phase 6` | Signed builds | 2026-06-28 |
+| QA-BILL | Apple + Google full sandbox matrix | QA | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/SANDBOX-QA-MATRIX.md` (§1–§8 `SBX-*`, 44 billing rows + §10 invariant map; billing plan Phase 8) | Matrix authored + code-grounded; execution needs **ART-\*** (signed builds) + **MCP-\*** (console config) + real devices + Apple/Google sandbox accounts. No row executed; no evidence invented | 2026-07-02 |
+| QA-RC | Full release-candidate functional/accessibility QA | QA | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/SANDBOX-QA-MATRIX.md` (§9 `FUNC-*`, 16 rows; master plan Phase 6) | Matrix authored + code-grounded; execution needs signed builds (**ART-\***) + real iPhone/iPad/Android phone+tablet. No row executed; no evidence invented | 2026-07-02 |
 | GO-01 | Second-person evidence review | Owner/Reviewer | NOT_STARTED |  | All prior gates | 2026-06-28 |
 | GO-02 | Ready for owner submission approval | Owner | NOT_STARTED |  | GO-01 | 2026-06-28 |
