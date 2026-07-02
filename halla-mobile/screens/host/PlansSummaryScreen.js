@@ -15,20 +15,28 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
-import { useCheckout, useValidateDiscount } from "../../hooks";
+import { useCheckout, useValidateDiscount, useMySubscription } from "../../hooks";
 import {
-  useOffering,
-  usePurchasePackage,
+  useAllOfferings,
+  useStoreCatalog,
   useRestorePurchases,
+  usePurchaseFlow,
 } from "../../hooks/purchases";
-import { isPurchasesAvailable, canPurchase } from "../../services/purchases";
-import { apiFetch } from "../../services/http";
+import { canPurchase } from "../../services/purchases";
+import { eventPreflight, reconcileGeneric } from "../../services/billingApi";
+import { getEntry, resolvePurchasable } from "../../services/billing/catalog";
+import { classifyChange, selectReplacementMode, isDeferredChange } from "../../services/billing/changeMode";
+import { subscriptionCode } from "../../services/billing/currentPlan";
+import { isRestorable, showsManageSubscription } from "../../services/billing/disclosures";
 import TopBar from "../../components/plans/TopBar";
 import PlanSummaryCard from "../../components/plans/PlanSummaryCard";
 import DiscountCodeCard from "../../components/plans/DiscountCodeCard";
 import PaymentSummaryCard from "../../components/plans/PaymentSummaryCard";
 import AddonsSummaryCard from "../../components/plans/AddonsSummaryCard";
 import PaymentMethodSelector from "../../components/plans/PaymentMethodSelector";
+import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
+import DisclosureList from "../../components/plans/DisclosureList";
+import PurchaseLegalLinks from "../../components/plans/PurchaseLegalLinks";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const buildCheckoutAddons = (items = []) =>
@@ -44,49 +52,6 @@ const buildCheckoutAddons = (items = []) =>
     return base;
   });
 
-// Find the RevenueCat package that corresponds to our plan. Tries (in order):
-// an explicit store product id carried on the plan, the package identifier ==
-// plan code, then the product identifier == plan code. Configure RevenueCat
-// packages accordingly (see IAP_SETUP.md).
-const findPackageForPlan = (offering, plan) => {
-  const packages = offering?.availablePackages;
-  if (!packages?.length || !plan) return null;
-  const code = plan.code;
-  const productId =
-    plan.iapProductId || plan.appleProductId || plan.googleProductId;
-  return (
-    (productId &&
-      packages.find((p) => p.product?.identifier === productId)) ||
-    packages.find((p) => p.identifier === code) ||
-    packages.find((p) => p.product?.identifier === code) ||
-    null
-  );
-};
-
-// Deterministic store code for an add-on item (mirrors the backend
-// parseAddonCode): extra_invites_<qty> | design_template_<type> |
-// business_customization. RevenueCat packages must be configured with this as
-// the package/product identifier (see docs/store-readiness-SKU-matrix.md).
-const addonStoreCode = (addon) => {
-  const type = addon.addonType || addon.type;
-  if (type === "extra_invites") return `extra_invites_${addon.quantity}`;
-  if (type === "design_template")
-    return `design_template_${addon.templateType || addon.type}`;
-  if (type === "business_customization") return "business_customization";
-  return null;
-};
-
-const findPackageForAddon = (offering, addon) => {
-  const packages = offering?.availablePackages;
-  const code = addonStoreCode(addon);
-  if (!packages?.length || !code) return null;
-  return (
-    packages.find((p) => p.identifier === code) ||
-    packages.find((p) => p.product?.identifier === code) ||
-    null
-  );
-};
-
 const PlansSummaryScreen = () => {
   const { t, currentLanguage } = useTranslation("plans");
   const navigation = useNavigation();
@@ -98,21 +63,49 @@ const PlansSummaryScreen = () => {
   // Platform gate: web keeps the Moyasar card checkout; iOS/Android must use
   // native in-app billing (App Store / Google Play) per store policy in KSA.
   const isWeb = Platform.OS === "web";
-  const { data: offering } = useOffering();
-  const purchaseMutation = usePurchasePackage();
+  const { data: offeringsAll } = useAllOfferings();
+  const { data: catalogData } = useStoreCatalog();
+  const { data: subscriptionData } = useMySubscription();
   const restoreMutation = useRestorePurchases();
+  const flow = usePurchaseFlow();
 
   const { selectedPlan, addonItems = [], addonTotal = 0 } = route.params || {};
 
   const billingType = selectedPlan?.billingType || "event";
 
-  // The store package + its display price. On native we show the store's
-  // priceString (the ACTUAL charged amount) — never the backend SAR (§9.3).
-  const storePkg = useMemo(
-    () => (isWeb ? null : findPackageForPlan(offering, selectedPlan)),
-    [isWeb, offering, selectedPlan]
+  const catalogEntries = catalogData?.entries || [];
+  const subscription = subscriptionData?.data?.subscription || null;
+
+  // Store catalog entry + resolved package for the plan (native only). The
+  // display price comes ONLY from the store package; a missing package disables
+  // the CTA with a safe unavailable state — never a backend price (§2/§5.5).
+  const storeEntry = useMemo(
+    () => (isWeb ? null : getEntry(catalogEntries, selectedPlan?.code)),
+    [isWeb, catalogEntries, selectedPlan]
   );
-  const storePriceString = storePkg?.product?.priceString || null;
+  const resolved = useMemo(
+    () => (isWeb ? null : resolvePurchasable(catalogEntries, offeringsAll, selectedPlan?.code)),
+    [isWeb, catalogEntries, offeringsAll, selectedPlan]
+  );
+  const storePriceString = resolved?.priceString || null;
+  const storeAvailable = !!resolved?.available;
+
+  // Subscription change classification → Google replacement mode (P0-07/MOB-02).
+  const currentEntry = useMemo(
+    () => getEntry(catalogEntries, subscriptionCode(subscription)),
+    [catalogEntries, subscription]
+  );
+  const changeType = useMemo(
+    () => classifyChange(currentEntry, storeEntry),
+    [currentEntry, storeEntry]
+  );
+  const changeInfo = useMemo(() => {
+    if (isWeb || changeType === "new" || !currentEntry) return null;
+    return {
+      oldProductIdentifier: currentEntry.androidProductId,
+      replacementMode: selectReplacementMode(changeType),
+    };
+  }, [isWeb, changeType, currentEntry]);
 
   // Store-specific Manage/Cancel deep link (App Store / Google Play) — required
   // by App Review and surfaced next to Restore on native.
@@ -345,103 +338,55 @@ const PlansSummaryScreen = () => {
   };
 
   // Native in-app purchase (iOS/Android). Buys the plan's store product via
-  // RevenueCat; the backend webhook grants the subscription. Note: store IAPs
-  // are fixed SKUs, so add-ons and discount codes (web/Moyasar features) are
-  // not bundled here — see IAP_SETUP.md.
-  // Wait for the backend to grant access (webhook → reconcile) before showing
-  // success, so entitlement state is canonical rather than optimistic (§9.3).
-  const reconcileBackend = async (attempts = 8, delayMs = 1500) => {
-    for (let i = 0; i < attempts; i += 1) {
-      try {
-        const res = await apiFetch("/payments/revenuecat/reconcile", {
-          method: "GET",
-        });
-        const body = await res.json().catch(() => ({}));
-        const data = body?.data || body;
-        if (data?.hasBackendAccess) return true;
-      } catch {
-        /* keep polling */
-      }
-      // eslint-disable-next-line no-await-in-loop
-      await new Promise((r) => setTimeout(r, delayMs));
-    }
-    return false;
-  };
-
-  const handleNativePurchase = async () => {
-    if (!selectedPlan) return;
-    // Gate on an IDENTIFIED, signed-in RevenueCat user (§9.1) — never purchase
-    // on an anonymous id.
+  // RevenueCat, then reconciles the EXACT attempted purchase (catalogCode +
+  // store transaction) — success ONLY when that exact item is fulfilled, never
+  // from generic access (P0-02). Idempotent: usePurchaseFlow ignores re-taps
+  // while a run is in flight. Add-ons are completed on the dedicated Add-ons
+  // screen after the plan is active (each with its own preflight + reconcile).
+  const runNativePurchase = () => {
     if (!canPurchase()) {
-      toast.error(
-        t("checkout.errors.iapUnavailable", "In-app purchases aren't available right now.")
-      );
+      toast.error(t("checkout.errors.iapUnavailable", "In-app purchases aren't available right now."));
       return;
     }
-    const pkg = findPackageForPlan(offering, selectedPlan);
-    if (!pkg) {
+    if (!storeEntry || !storeAvailable) {
       toast.error(t("checkout.errors.planUnavailable", "This plan isn't available for purchase right now."));
       return;
     }
-    try {
-      await purchaseMutation.mutateAsync(pkg);
-      // No optimistic success — confirm the backend grant first.
-      const granted = await reconcileBackend();
+    const isEvent = storeEntry.kind === "event_consumable";
+    flow.run({
+      entry: storeEntry,
+      pkg: resolved.pkg,
+      operation: changeType !== "new" ? "change" : "purchase",
+      changeInfo,
+      // A deferred downgrade won't be active until renewal — don't poll for it.
+      deferred: isDeferredChange(changeType),
+      preflight: isEvent ? () => eventPreflight(storeEntry.internalCode) : null,
+    });
+  };
 
-      // Buy each selected add-on as its own store product. Done AFTER the plan
-      // is granted so pool/org add-ons attach to the new subscription. IAP has
-      // no multi-product basket, so each add-on opens its own store sheet.
-      let addonFailures = 0;
-      for (const addon of addonItems) {
-        const apkg = findPackageForAddon(offering, addon);
-        if (!apkg) {
-          addonFailures += 1;
-          continue;
-        }
-        try {
-          await purchaseMutation.mutateAsync(apkg);
-        } catch (addonErr) {
-          if (!addonErr?.userCancelled) addonFailures += 1;
-        }
-      }
-
-      if (addonFailures > 0) {
-        toast.info(
-          t(
-            "checkout.iap.addonsPartial",
-            "Plan active. Some add-ons couldn't be purchased — you can buy them later."
-          )
-        );
-      } else {
-        toast[granted ? "success" : "info"](
-          granted
-            ? t("toasts.subscriptionCreated")
-            : t("checkout.iap.processing", "Purchase received — your plan will activate shortly.")
-        );
-      }
-      navigation.navigate("MainTabs", { screen: "Home" });
-    } catch (error) {
-      // RevenueCat flags user-initiated cancellation — not an error to surface.
-      if (error?.userCancelled) return;
-      // eslint-disable-next-line no-console
-      console.error("[iap] purchase failed", { message: error?.message });
-      toast.error(error?.message || t("toasts.subscriptionFailed"));
+  const onPurchaseSuccessContinue = () => {
+    flow.reset();
+    if (!isWeb && addonItems.length > 0) {
+      navigation.navigate("AddonsPurchase", { pendingAddons: addonItems });
+      return;
     }
+    navigation.navigate("MainTabs", { screen: "Home" });
   };
 
   const handleRestore = async () => {
     try {
       await restoreMutation.mutateAsync();
-      await reconcileBackend(4, 1500);
+      // Subscriptions restore via the store; consumables are NOT restorable —
+      // reconcile the authoritative backend ledger after (§9).
+      await reconcileGeneric();
       toast.success(t("checkout.iap.restored", "Purchases restored"));
     } catch (error) {
       toast.error(error?.message || t("checkout.iap.restoreFailed", "Could not restore purchases"));
     }
   };
 
-  const isProcessing = isWeb
-    ? checkoutMutation.isPending
-    : purchaseMutation.isPending;
+  const isProcessing = isWeb ? checkoutMutation.isPending : flow.isBusy;
+  const nativeUnavailable = !isWeb && !storeAvailable;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -462,6 +407,7 @@ const PlansSummaryScreen = () => {
             billingType={billingType}
             locale={currentLanguage}
             planPrice={planPrice}
+            priceDisplay={!isWeb ? storePriceString : null}
             addonItems={addonItems}
             t={t}
           />
@@ -531,48 +477,54 @@ const PlansSummaryScreen = () => {
                     )}
                   </Text>
                 </View>
-                <TouchableOpacity
-                  style={styles.restoreButton}
-                  onPress={handleRestore}
-                  disabled={restoreMutation.isPending}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name="refresh"
-                    size={15}
-                    color={colors.primary[600]}
-                  />
-                  <Text style={styles.restoreButtonText}>
-                    {restoreMutation.isPending
-                      ? t("checkout.iap.restoring", "Restoring...")
-                      : t("checkout.iap.restore", "Restore Purchases")}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.restoreButton}
-                  onPress={openStoreManager}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name="settings-outline"
-                    size={15}
-                    color={colors.primary[600]}
-                  />
-                  <Text style={styles.restoreButtonText}>
-                    {t("checkout.iap.manage", "Manage subscription")}
-                  </Text>
-                </TouchableOpacity>
+                {/* Restore is for subscriptions only — consumables/add-ons are
+                    not restorable durable entitlements (§9). */}
+                {isRestorable(storeEntry) && (
+                  <TouchableOpacity
+                    style={styles.restoreButton}
+                    onPress={handleRestore}
+                    disabled={restoreMutation.isPending}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="refresh" size={15} color={colors.primary[600]} />
+                    <Text style={styles.restoreButtonText}>
+                      {restoreMutation.isPending
+                        ? t("checkout.iap.restoring", "Restoring...")
+                        : t("checkout.iap.restore", "Restore Purchases")}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                {/* Manage Subscription only for recurring products (§5.4). */}
+                {showsManageSubscription(storeEntry) && (
+                  <TouchableOpacity
+                    style={styles.restoreButton}
+                    onPress={openStoreManager}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="settings-outline" size={15} color={colors.primary[600]} />
+                    <Text style={styles.restoreButtonText}>
+                      {t("checkout.iap.manage", "Manage subscription")}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           )}
 
-          <PaymentSummaryCard
-            planPrice={planPrice}
-            discountAmount={discountAmount}
-            finalTotal={finalTotal}
-            t={t}
-            addonTotal={addonTotal}
-          />
+          {/* Store disclosures + legal links (native purchase surface — §7). */}
+          {!isWeb && storeEntry ? <DisclosureList entry={storeEntry} t={t} /> : null}
+
+          {/* Backend SAR totals are the Moyasar (web) breakdown — hidden on
+              native, where the store package price is authoritative (P0-13). */}
+          {isWeb && (
+            <PaymentSummaryCard
+              planPrice={planPrice}
+              discountAmount={discountAmount}
+              finalTotal={finalTotal}
+              t={t}
+              addonTotal={addonTotal}
+            />
+          )}
 
           <View style={styles.secureRow}>
             <Ionicons
@@ -582,6 +534,8 @@ const PlansSummaryScreen = () => {
             />
             <Text style={styles.termsNotice}>{t("summary.termsNotice")}</Text>
           </View>
+
+          {!isWeb && <PurchaseLegalLinks t={t} lang={currentLanguage} />}
         </ScrollView>
 
         <SafeAreaView edges={["bottom"]} style={styles.footerSafe}>
@@ -591,9 +545,16 @@ const PlansSummaryScreen = () => {
                 {t("summary.paymentSummary.total")}
               </Text>
               <View style={styles.footerTotalAmountRow}>
-                {!isWeb && storePriceString ? (
-                  // Native: the store's actual charged price (priceString).
-                  <Text style={styles.footerTotalAmount}>{storePriceString}</Text>
+                {!isWeb ? (
+                  // Native: the store's actual charged price (priceString). If the
+                  // package is missing, show unavailable — never a backend price.
+                  storePriceString ? (
+                    <Text style={styles.footerTotalAmount}>{storePriceString}</Text>
+                  ) : (
+                    <Text style={styles.footerUnavailable}>
+                      {t("checkout.iap.unavailable", "Unavailable")}
+                    </Text>
+                  )
                 ) : (
                   <>
                     <Text style={styles.footerTotalAmount}>
@@ -610,10 +571,10 @@ const PlansSummaryScreen = () => {
             <TouchableOpacity
               style={[
                 styles.proceedButton,
-                isProcessing && styles.proceedButtonDisabled,
+                (isProcessing || nativeUnavailable) && styles.proceedButtonDisabled,
               ]}
-              onPress={isWeb ? handlePayment : handleNativePurchase}
-              disabled={isProcessing}
+              onPress={isWeb ? handlePayment : runNativePurchase}
+              disabled={isProcessing || nativeUnavailable}
               activeOpacity={0.85}
             >
               {isProcessing ? (
@@ -638,6 +599,18 @@ const PlansSummaryScreen = () => {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
+
+        {/* Native purchase lifecycle: preflight → purchase → exact reconcile.
+            Renders the deterministic states with safe AR/EN copy. */}
+        {!isWeb && (
+          <PurchaseStatusModal
+            status={flow.status}
+            t={t}
+            onClose={flow.reset}
+            onRefresh={flow.refresh}
+            onSuccessContinue={onPurchaseSuccessContinue}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -778,6 +751,11 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_600SemiBold",
     fontSize: typography.fontSize.body.small,
     color: colors.primary[600],
+  },
+  footerUnavailable: {
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.body.small,
+    color: colors.natural[450],
   },
   proceedButton: {
     flexDirection: "row",

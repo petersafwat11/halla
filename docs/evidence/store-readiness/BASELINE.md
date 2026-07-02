@@ -205,3 +205,36 @@ were latent (the script exited at `#12` before reaching them), not regressions.
 
 **Not run / not proven this session (unchanged):** Apple/Google/RevenueCat console,
 store sandbox matrix, signed IPA/AAB, real provider-snapshot integration, mobile UI.
+
+## 12. Session 3 — mobile/web native purchase UI + business self-serve (2026-07-02, no DB/provider/console)
+
+Mobile RevenueCat purchase UI wired onto the Session-2 backend contracts; business
+first self-serve enabled on web + mobile (DEC-02); store-only prices/disclosures/legal
+links enforced. No console/sandbox/signed-build/DB access.
+
+```
+$ cd labbe-backend- && npm run catalog:verify
+✓ catalog in sync — 7 artifacts match source (no drift).   ℹ tests 26  pass 26  fail 0
+
+$ npm test                       # full suite incl. 5 new store-catalog contracts
+ℹ tests 180   ℹ pass 180   ℹ fail 0        exit=0
+
+$ MOYASAR_API_KEY=dummy node scripts/static-checks-payments.js
+static-checks-payments: OK (18 / 18)       exit=0
+
+$ cd halla-mobile && npm test    # node --test "__tests__/**/*.test.js" (NEW)
+ℹ tests 29    ℹ pass 29    ℹ fail 0         exit=0
+
+$ npm run lint                   # eslint . --max-warnings 0
+(clean)                                     exit=0
+
+$ cd labbe && npm run lint       # eslint . --max-warnings 100
+✖ 34 problems (0 errors, 34 warnings)       exit=0   (unchanged from baseline)
+
+$ npm run build                  # next build
+▲ Next.js 15.5.18 — compiled with warnings; route table emitted   exit=0
+```
+
+New mobile test files (all green): `__tests__/billing/{catalog,changeMode,reconcileState,disclosures,currentPlan}.test.js` (29 total). New backend test: `test/revenuecat-store-catalog.test.js` (5). New mobile `test` script: `node --test "__tests__/**/*.test.js"` (Node's directory-arg form is a single-file in Node 24 — the quoted glob is required).
+
+**Deltas vs Session 2:** backend suite 175 → **180**; mobile gained a unit-test runner (0 → **29**); web build re-proven after the business-self-serve + i18n changes. Expo Doctor / audits not re-run this session (no dependency changes beyond the mobile `test` script + no new runtime deps). **Nothing reached SANDBOX_VERIFIED** — Apple/Google/RevenueCat console, sandbox matrix, and signed IPA/AAB remain out of scope.

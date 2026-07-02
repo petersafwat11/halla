@@ -23,6 +23,7 @@ import ResetPasswordScreen from "../screens/auth/ResetPasswordScreen";
 import PlansScreen from "../screens/host/PlansScreen";
 import BusinessPlansScreen from "../screens/host/BusinessPlansScreen";
 import PlansSummaryScreen from "../screens/host/PlansSummaryScreen";
+import AddonsPurchaseScreen from "../screens/host/AddonsPurchaseScreen";
 import SettingsScreen from "../screens/host/SettingsScreen";
 import AccountSettingsScreen from "../screens/host/AccountSettingsScreen";
 import NotificationSettingsScreen from "../screens/common/NotificationSettingsScreen";
@@ -340,6 +341,7 @@ function HostStack() {
       <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
       <Stack.Screen name="UpdateEventScreen" component={UpdateEventScreen} />
       <Stack.Screen name="PlansSummary" component={PlansSummaryScreen} />
+      <Stack.Screen name="AddonsPurchase" component={AddonsPurchaseScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
       <Stack.Screen name="ManagePostEvent" component={ManagePostEventScreen} />

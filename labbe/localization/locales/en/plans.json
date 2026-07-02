@@ -31,6 +31,10 @@
   },
   "business": {
     "subtitle": "Browse and upgrade your business subscription plan",
+    "getStarted": {
+      "subtitle": "Choose a business plan below to activate your account. You can upgrade, downgrade, or cancel anytime."
+    },
+    "currentBadge": "Current plan",
     "noPlans": "No business plans are available in this billing period.",
     "updatedSuccessfully": "Business settings updated successfully",
     "updateFailed": "Failed to update business settings",

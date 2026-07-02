@@ -15,11 +15,13 @@ const BUSINESS_FAMILIES = ["event", "quarterly", "annual"];
 /**
  * Business variant of the plans page state. Mirrors usePlansPageState but:
  *  - reads /plans/business ({ event, quarterly, annual }) instead of /plans/host
- *  - lets an ACTIVE business self-upgrade to another business plan and checkout
- *    via the same /payments/checkout flow (backend accepts business plan codes
- *    for an active business account)
- *  - blocks self-purchase entirely when the business has no active subscription
- *    (no-sub UX — an admin must activate the first plan)
+ *  - lets an eligible business account self-purchase its FIRST plan and
+ *    upgrade/downgrade among business plans via /payments/checkout (DEC-02,
+ *    signed 2026-07-01 — no admin pre-activation required; the backend enforces
+ *    audience eligibility). Admin assignment remains available but is not the
+ *    only path.
+ *  - current plan is matched by EXACT plan code, never planType (P0-12), so two
+ *    business tiers that share a planType don't both read as "current".
  */
 export const useBusinessPlansPageState = () => {
   const { t } = useTranslation("plans");
@@ -43,12 +45,19 @@ export const useBusinessPlansPageState = () => {
   const subscription = subscriptionData?.data?.subscription ?? null;
   const usage = subscription?.usage || null;
 
-  // A business may only self-upgrade once it already has an active (or trial)
-  // subscription. /subscriptions/my only ever returns an active/trial row, so
-  // the mere presence of a subscription with one of those statuses is enough.
+  // Retained for display (welcome vs. current-plan UI). It NO LONGER gates
+  // purchase — an eligible business self-purchases its first plan (DEC-02).
   const hasActiveSubscription =
     !!subscription &&
     ["active", "trial"].includes(subscription.status);
+
+  // Exact current-plan code (never planType — P0-12).
+  const currentPlanCode =
+    subscription?.planCode || subscription?.planId?.code || subscription?.code || null;
+  const isCurrentPlan = useCallback(
+    (plan) => !!plan && !!currentPlanCode && plan.code === currentPlanCode,
+    [currentPlanCode]
+  );
 
   const plansByFamily = useMemo(() => {
     const out = {};
@@ -91,24 +100,16 @@ export const useBusinessPlansPageState = () => {
   const handleSelectPlan = useCallback(
     (plan) => {
       if (!plan) return;
-      if (!hasActiveSubscription) {
-        // No-sub UX: self-purchase is disabled until an admin activates a plan.
-        toastUtils.error(t("business.noSub.purchaseBlocked"));
-        return;
-      }
+      // DEC-02: eligible business accounts self-purchase (incl. first plan).
       setSelectedPlan(plan);
       setSelectedFamily("business");
       setShowSummary(true);
     },
-    [hasActiveSubscription, t]
+    []
   );
 
   const handleProceedToPayment = useCallback(async () => {
     if (!selectedPlan) return;
-    if (!hasActiveSubscription) {
-      toastUtils.error(t("business.noSub.purchaseBlocked"));
-      return;
-    }
     try {
       const result = await checkoutMutation.mutateAsync({
         planCode: selectedPlan.code,
@@ -128,7 +129,6 @@ export const useBusinessPlansPageState = () => {
     }
   }, [
     selectedPlan,
-    hasActiveSubscription,
     checkoutMutation,
     appliedDiscountCode,
     buildSource,
@@ -152,6 +152,8 @@ export const useBusinessPlansPageState = () => {
     subscription,
     usage,
     hasActiveSubscription,
+    currentPlanCode,
+    isCurrentPlan,
     currentPlans,
     isLoading,
     plansError,

@@ -77,10 +77,33 @@ async function findAddonByTxn(txnId, session = null) {
   return q;
 }
 
+/**
+ * Event fallback for exact reconciliation when the store transaction id the SDK
+ * returned does not equal the webhook's `transaction_id` (observed on Android,
+ * where a null Play orderId yields a synthetic SDK id). Safe because
+ * `event-preflight` blocks buying an event package while an UNUSED entitlement
+ * already exists for that user — so at purchase time there is no pre-existing
+ * unused entitlement for `planCode`, and a spent one is `consumed` (excluded
+ * here), not `unused`. Never widens to a different product. User-scoped, so the
+ * result is inherently owned by the caller.
+ */
+async function findNewestUnusedEventForCode(userId, planCode, session = null) {
+  if (!userId || !planCode) return null;
+  const q = EventEntitlement.findOne({
+    userId,
+    planCode,
+    status: "unused",
+    resolution: { $in: ["fulfilled", "none"] },
+  }).sort({ createdAt: -1 });
+  if (session) q.session(session);
+  return q;
+}
+
 module.exports = {
   matchesLineage,
   findSubscriptionByLineage,
   findEventEntitlementByTxn,
+  findNewestUnusedEventForCode,
   findAddonByTxn,
   STORE_PROVIDERS,
 };

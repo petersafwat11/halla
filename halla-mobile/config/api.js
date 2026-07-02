@@ -82,6 +82,17 @@ export const ENDPOINTS = {
     VOID: API_PATHS.payments.void,
   },
 
+  // Native store-billing (RevenueCat / StoreKit / Play Billing). Mobile-only;
+  // web uses Moyasar (PAYMENTS.CHECKOUT). See @halla/shared/api/paths.
+  REVENUECAT: {
+    RECONCILE: API_PATHS.revenuecat.reconcile,
+    RECONCILE_EXACT: API_PATHS.revenuecat.reconcileExact,
+    EVENT_PREFLIGHT: API_PATHS.revenuecat.eventPreflight,
+    ADDON_PREFLIGHT: API_PATHS.revenuecat.addonPreflight,
+    FULFILLMENT: API_PATHS.revenuecat.fulfillment,
+    STORE_CATALOG: API_PATHS.revenuecat.storeCatalog,
+  },
+
   EVENTS: {
     BASE: "/events",
     MY_EVENTS: API_PATHS.events.getMyEvents,

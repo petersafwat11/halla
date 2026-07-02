@@ -177,6 +177,21 @@ const PATHS = {
   },
 
   // ============================================
+  // REVENUECAT (native IAP — mobile; all authenticated under /payments)
+  // ============================================
+  // Mobile-only store-billing surface. Web uses Moyasar (`hostPayments`) and
+  // never these. `storeCatalog` returns store-safe catalog metadata only —
+  // never RevenueCat server keys / webhook auth / private config.
+  revenuecat: {
+    reconcile: "/payments/revenuecat/reconcile",
+    reconcileExact: "/payments/revenuecat/reconcile-exact",
+    eventPreflight: "/payments/revenuecat/event-preflight",
+    addonPreflight: "/payments/revenuecat/addon-preflight",
+    fulfillment: "/payments/revenuecat/fulfillment",
+    storeCatalog: "/payments/revenuecat/catalog",
+  },
+
+  // ============================================
   // DISCOUNTS
   // ============================================
   discounts: {
@@ -467,6 +482,7 @@ export const {
   guests,
   subscriptions,
   hostPayments,
+  revenuecat,
   discounts,
   addons,
   tickets,

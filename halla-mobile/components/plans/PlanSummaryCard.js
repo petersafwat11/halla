@@ -14,6 +14,9 @@ const PlanSummaryCard = ({
   billingType,
   locale,
   planPrice,
+  // When set (native IAP), the store's localized price string is shown and the
+  // backend SAR amount + currency label are suppressed (P0-13 / §5.4).
+  priceDisplay = null,
   addonItems = [],
   t,
 }) => {
@@ -80,8 +83,14 @@ const PlanSummaryCard = ({
             <Text style={styles.planType}>{planSubtitle}</Text>
           </View>
           <View style={styles.planPrice}>
-            <Text style={styles.priceAmount}>{planPrice}</Text>
-            <Text style={styles.priceCurrency}>{t("summary.currency")}</Text>
+            {priceDisplay ? (
+              <Text style={styles.priceAmount}>{priceDisplay}</Text>
+            ) : (
+              <>
+                <Text style={styles.priceAmount}>{planPrice}</Text>
+                <Text style={styles.priceCurrency}>{t("summary.currency")}</Text>
+              </>
+            )}
           </View>
         </View>
 

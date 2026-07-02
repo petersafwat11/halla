@@ -17,9 +17,10 @@ import {
  * Body paragraphs are separated by "\n\n".
  */
 const LegalScreen = ({ data }) => {
-  const { t, isRTL } = useTranslation("settings");
+  const { t } = useTranslation("settings");
 
-  const textAlign = isRTL ? "right" : "left";
+  // Text alignment + row direction follow the app's global direction
+  // (I18nManager, set at the layout level) — no per-component isRTL branching.
   const sections = Array.isArray(data?.sections) ? data.sections : [];
 
   return (
@@ -38,15 +39,15 @@ const LegalScreen = ({ data }) => {
               </View>
             )}
             {!!data?.title && (
-              <Text style={[styles.title, { textAlign }]}>{data.title}</Text>
+              <Text style={styles.title}>{data.title}</Text>
             )}
             {!!data?.subtitle && (
-              <Text style={[styles.subtitle, { textAlign }]}>
+              <Text style={styles.subtitle}>
                 {data.subtitle}
               </Text>
             )}
             {!!data?.lastUpdated && (
-              <Text style={[styles.lastUpdated, { textAlign }]}>
+              <Text style={styles.lastUpdated}>
                 {t("legal.lastUpdated", { defaultValue: "Last updated" })}:{" "}
                 {data.lastUpdated}
               </Text>
@@ -58,23 +59,18 @@ const LegalScreen = ({ data }) => {
             const paragraphs = String(section.body || "").split("\n\n");
             return (
               <View key={section.id} style={styles.card}>
-                <View
-                  style={[
-                    styles.cardHeader,
-                    { flexDirection: isRTL ? "row-reverse" : "row" },
-                  ]}
-                >
+                <View style={styles.cardHeader}>
                   <View style={styles.numBadge}>
                     <Text style={styles.numBadgeText}>{section.num}</Text>
                   </View>
                   <View style={styles.cardHeaderText}>
                     {!!section.label && (
-                      <Text style={[styles.sectionLabel, { textAlign }]}>
+                      <Text style={styles.sectionLabel}>
                         {section.label}
                       </Text>
                     )}
                     {!!section.title && (
-                      <Text style={[styles.sectionTitle, { textAlign }]}>
+                      <Text style={styles.sectionTitle}>
                         {section.title}
                       </Text>
                     )}
@@ -84,7 +80,7 @@ const LegalScreen = ({ data }) => {
                 {paragraphs.map((paragraph, index) => (
                   <Text
                     key={`${section.id}-p${index}`}
-                    style={[styles.paragraph, { textAlign }]}
+                    style={styles.paragraph}
                   >
                     {paragraph}
                   </Text>
@@ -154,6 +150,9 @@ const styles = StyleSheet.create({
     borderColor: colors.natural[200],
   },
   cardHeader: {
+    // `row` automatically renders as row-reverse under a global RTL direction
+    // (I18nManager) — no isRTL branching needed.
+    flexDirection: "row",
     alignItems: "center",
     gap: spacing[12],
     marginBottom: spacing[12],

@@ -18,6 +18,7 @@ import CurrentPlanCard from "../../components/plans/CurrentPlanCard";
 import BusinessPlanCard from "../../components/plans/BusinessPlanCard";
 import AddonsSection from "../../components/plans/AddonsSection";
 import { useBusinessPlans, useMySubscription } from "../../hooks";
+import { isCurrentPlan } from "../../services/billing/currentPlan";
 import {
   colors,
   spacing,
@@ -32,17 +33,16 @@ import {
  * by AppNavigator when `accountType === 'business'`. Business plans come from
  * the public `/plans/business` endpoint as `{ event:[], quarterly:[], annual:[] }`.
  *
- * UX rules (mirrors backend gating):
- *   - No active subscription  → no self-purchase. Show a "pending activation /
- *     contact admin" banner; plan cards render locked (read-only). Admins assign
- *     the first business plan out-of-band.
- *   - Active subscription     → self-upgrade among business plans is allowed.
- *     Tapping a plan routes to the shared PlansSummary checkout flow (same flow
- *     host self-purchase uses), which handles 3DS + the PaymentReturn deep link.
+ * UX rules (DEC-02 / MOB-04, signed 2026-07-01):
+ *   - First self-serve purchase is ALLOWED for eligible business accounts on
+ *     both web and mobile — no admin pre-activation required. A no-subscription
+ *     business sees a "choose a plan to get started" intro (not a contact-admin
+ *     lock) and can purchase directly.
+ *   - Tapping a plan routes to the shared PlansSummary flow (native IAP on
+ *     device, Moyasar on web).
  *
- * The active/assigned plan is matched by `planType` against the live
- * subscription and rendered with a "current" badge (its own upgrade CTA is
- * suppressed).
+ * The current plan is matched by EXACT plan code (never `planType`) so two
+ * business tiers that share a planType don't both read as "current" (P0-12).
  */
 
 const BILLING_TIERS = ["event", "quarterly", "annual"];
@@ -143,18 +143,19 @@ const BusinessPlansScreen = () => {
       >
         <CurrentPlanCard subscription={subscription} usage={usage} />
 
-        {/* No active subscription → pending-activation / contact-admin banner */}
+        {/* No active subscription → self-serve intro (DEC-02: first purchase is
+            allowed; no admin-activation lock). */}
         {!hasActiveSubscription ? (
           <View style={styles.pendingBanner}>
             <View style={styles.pendingIcon}>
-              <Ionicons name="time-outline" size={22} color={colors.primary[500]} />
+              <Ionicons name="sparkles-outline" size={22} color={colors.primary[500]} />
             </View>
             <View style={styles.pendingTextWrap}>
               <Text style={styles.pendingTitle}>
-                {t("business.pendingActivation.title")}
+                {t("business.getStarted.title")}
               </Text>
               <Text style={styles.pendingSubtitle}>
-                {t("business.pendingActivation.subtitle")}
+                {t("business.getStarted.subtitle")}
               </Text>
             </View>
           </View>
@@ -194,11 +195,10 @@ const BusinessPlansScreen = () => {
             <BusinessPlanCard
               key={plan.id || plan.code}
               plan={plan}
-              isCurrent={
-                hasActiveSubscription &&
-                subscription?.planType === plan.planType
-              }
-              canSelfUpgrade={hasActiveSubscription}
+              // EXACT-code current-plan match (never planType) — DEC-02/P0-12.
+              isCurrent={hasActiveSubscription && isCurrentPlan(subscription, plan)}
+              // First self-serve purchase allowed for eligible business accounts.
+              canSelfUpgrade
               onUpgrade={handleUpgrade}
             />
           ))

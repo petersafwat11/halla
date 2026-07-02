@@ -106,6 +106,8 @@ router.post("/revenuecat/reconcile-exact", validateZod(reconcileExactSchema), re
 router.post("/revenuecat/event-preflight", validateZod(preflightSchema), revenuecatReconcile.eventPreflight);
 router.post("/revenuecat/addon-preflight", validateZod(preflightSchema), revenuecatReconcile.addonPreflight);
 router.get("/revenuecat/fulfillment", revenuecatReconcile.fulfillmentStatus);
+// Store-safe catalog for the mobile client (no price/secret — MOB-03).
+router.get("/revenuecat/catalog", revenuecatReconcile.storeCatalog);
 
 // Staff dead-letter operations (gated by requirePageAccess(PAYMENTS,'manage')).
 router.get("/revenuecat/dead-letters", requirePageAccess(ADMIN_PAGES.PAYMENTS, "manage"), revenuecatAdmin.listDeadLetters);

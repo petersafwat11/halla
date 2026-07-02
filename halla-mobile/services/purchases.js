@@ -87,16 +87,66 @@ export const getCurrentOffering = async () => {
   return offerings?.current || null;
 };
 
-/** Purchase a package; resolves to the updated CustomerInfo. */
-export const purchasePackage = async (pkg) => {
+/**
+ * All configured offerings, indexed by identifier ({ host_plans, business_plans,
+ * host_addons, business_addons } — billing §5.5). Returns `offerings.all` (a map
+ * keyed by offering id) so the client can resolve a package from ANY offering by
+ * its canonical lookup key, not just `current`.
+ */
+export const getAllOfferings = async () => {
+  if (!isPurchasesAvailable()) return null;
+  const offerings = await Purchases.getOfferings();
+  return offerings?.all || null;
+};
+
+/**
+ * Purchase a package. Resolves to the FULL correlation set the exact-reconcile
+ * contract needs (P0-02 / MOB-01): the store `transactionId` + `storeProductId`,
+ * plus `customerInfo` and the raw `transaction`. Never discard these — the
+ * backend reconciles the EXACT attempted transaction, not "some access".
+ *
+ * `changeInfo` (Android subscription upgrade/downgrade, P0-07/MOB-02):
+ *   { oldProductIdentifier, replacementMode } where replacementMode is a
+ *   STORE_REPLACEMENT_MODE key string (e.g. "CHARGE_PRORATED_PRICE",
+ *   "DEFERRED"). iOS ignores it — StoreKit resolves plan changes at the
+ *   subscription-group level — so it is applied on Android only.
+ */
+export const purchasePackage = async (pkg, changeInfo = null) => {
   if (!canPurchase()) {
     throw new Error("In-app purchases are not available on this device.");
   }
-  const { customerInfo } = await Purchases.purchasePackage(pkg);
-  return customerInfo;
+
+  let productChangeInfo = null;
+  if (Platform.OS === "android" && changeInfo?.oldProductIdentifier) {
+    const modes = Purchases?.STORE_REPLACEMENT_MODE || {};
+    productChangeInfo = {
+      oldProductIdentifier: changeInfo.oldProductIdentifier,
+      // Enum values ARE the string keys; map through the enum when present so we
+      // stay correct across SDK versions, else fall back to the literal.
+      replacementMode: modes[changeInfo.replacementMode] || changeInfo.replacementMode,
+    };
+  }
+
+  const result = await Purchases.purchasePackage(pkg, null, productChangeInfo);
+  const transaction = result?.transaction || null;
+  return {
+    customerInfo: result?.customerInfo || null,
+    productIdentifier: result?.productIdentifier || null,
+    transaction,
+    // The store transaction id used for exact reconciliation.
+    transactionId: transaction?.transactionIdentifier || null,
+    // The store product id (== com.halla.<code>); used as the reconcile fallback
+    // correlator and to verify the effective product.
+    storeProductId: transaction?.productIdentifier || result?.productIdentifier || null,
+  };
 };
 
-/** Restore previously-purchased entitlements (required by App Store review). */
+/**
+ * Restore previously-purchased entitlements (required by App Store review).
+ * Subscriptions restore via the store; consumables/event packages/add-ons are
+ * NOT restorable durable entitlements — the authenticated backend ledger is
+ * authoritative for those (reconcile after restore). Resolves to CustomerInfo.
+ */
 export const restorePurchases = async () => {
   if (!canPurchase()) return null;
   return Purchases.restorePurchases();

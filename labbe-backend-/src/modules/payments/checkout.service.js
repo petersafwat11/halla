@@ -44,24 +44,15 @@ class CheckoutService {
 
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError('User');
-    // Business plans are self-purchasable ONLY by an already-active business
-    // account (self-upgrade among business plans). A no-subscription business
-    // is admin-assigned only — that path goes through the assignment service,
-    // not this self-checkout. A personal host can never buy a business plan.
+    // DEC-02 (signed 2026-07-01): an eligible business account may self-purchase
+    // its FIRST business plan on web AND mobile — no admin pre-activation
+    // required. Only the audience gate remains: a non-business account can never
+    // buy a business plan, and a personal host can never buy one either.
+    // Managed/negotiated business contracts still flow through the admin
+    // assignment service; this self-checkout covers the self-serve business tiers.
     if (plan.availableFor === 'business') {
       if (user.accountType !== 'business') {
         throw new ValidationError('This plan is reserved for business accounts');
-      }
-      // No self-purchase before the first admin activation. Require an existing
-      // active/trial business subscription (self-upgrade only).
-      const activeBusinessSub = await Subscription.findOne({
-        userId,
-        status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
-      });
-      if (!activeBusinessSub) {
-        throw new ValidationError(
-          'Your business plan must be activated by an administrator before you can change it.'
-        );
       }
     }
     if (plan.availableFor === 'host' && user.role !== ROLES.HOST) {

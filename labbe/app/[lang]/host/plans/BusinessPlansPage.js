@@ -8,7 +8,6 @@ import {
   BusinessBillingToggle,
 } from "./_components";
 import Summary from "./summary/Summary";
-import NoSubscriptionBanner from "@/ui/host/subscription/NoSubscriptionBanner";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { useBusinessPlansPageState } from "./_hooks/useBusinessPlansPageState";
 import { subscriptionsKeys } from "@/hooks/subscriptions/keys";
@@ -16,10 +15,11 @@ import { plansKeys } from "@/hooks/plans/keys";
 import styles from "./plans.module.css";
 
 /**
- * Business variant of the plans page. An ACTIVE business account can browse the
- * business plans and self-upgrade through the shared checkout Summary. A
- * business with no active subscription sees a "contact admin / activate a plan"
- * banner and cannot self-purchase (no-sub UX).
+ * Business variant of the plans page. An eligible business account can browse
+ * the business plans and self-purchase — including its FIRST plan — through the
+ * shared checkout Summary (DEC-02, signed 2026-07-01). No admin pre-activation
+ * is required; the backend enforces audience eligibility. The current plan is
+ * matched by EXACT code and rendered as "current" (its CTA disabled).
  */
 const BusinessPlansPage = () => {
   const queryClient = useQueryClient();
@@ -30,6 +30,7 @@ const BusinessPlansPage = () => {
     subscription,
     usage,
     hasActiveSubscription,
+    isCurrentPlan,
     currentPlans,
     isLoading,
     plansError,
@@ -105,7 +106,9 @@ const BusinessPlansPage = () => {
         </div>
       ) : (
         <div className={styles.content}>
-          {!hasActiveSubscription && <NoSubscriptionBanner />}
+          {!hasActiveSubscription && (
+            <p className={styles.pageSubtitle}>{t("business.getStarted.subtitle")}</p>
+          )}
 
           <CurrentPlanCard subscription={subscription} usage={usage} />
 
@@ -127,12 +130,15 @@ const BusinessPlansPage = () => {
                   plan={plan}
                   billingType={billingType}
                   isPopular={idx === 1}
-                  disabled={!hasActiveSubscription}
+                  // Only the current plan is disabled — first purchase + up/downgrade
+                  // are allowed for eligible business accounts (DEC-02).
+                  isCurrent={isCurrentPlan(plan)}
+                  disabled={isCurrentPlan(plan)}
                   lang={lang}
                   ctaLabel={
-                    hasActiveSubscription
-                      ? t("buttons.subscribeNow")
-                      : t("business.noSub.cta")
+                    isCurrentPlan(plan)
+                      ? t("business.currentBadge")
+                      : t("buttons.subscribeNow")
                   }
                   onSelect={handleSelectPlan}
                 />

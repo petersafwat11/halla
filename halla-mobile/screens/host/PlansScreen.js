@@ -55,13 +55,17 @@ const PlansScreen = () => {
   const isLoading = plansLoading || subLoading;
   const loadError = plansError || subError;
 
+  // Defensive: trial/unlimited are never store products and must never render as
+  // purchasable cards (§2). They are not in the basic/premium groups the API
+  // returns, but we drop them explicitly regardless.
+  const STORE_HIDDEN = useMemo(() => new Set(["trial", "unlimited"]), []);
   const basicPlans = useMemo(
-    () => response?.data?.basic?.[billingType] || [],
-    [response, billingType]
+    () => (response?.data?.basic?.[billingType] || []).filter((p) => !STORE_HIDDEN.has(p?.planType)),
+    [response, billingType, STORE_HIDDEN]
   );
   const premiumPlans = useMemo(
-    () => response?.data?.premium?.[billingType] || [],
-    [response, billingType]
+    () => (response?.data?.premium?.[billingType] || []).filter((p) => !STORE_HIDDEN.has(p?.planType)),
+    [response, billingType, STORE_HIDDEN]
   );
 
   // Default the shared invite count whenever billing type changes or data loads
@@ -180,6 +184,20 @@ const PlansScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <CurrentPlanCard subscription={subscription} usage={usage} />
+
+        {/* Standalone add-ons: extra invites / design templates for an active
+            plan (ADD-03). Each is purchased with its own preflight + reconcile. */}
+        {subscription ? (
+          <TouchableOpacity
+            style={styles.addonsEntry}
+            onPress={() => navigation.navigate("AddonsPurchase")}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add-circle-outline" size={18} color={colors.primary[600]} />
+            <Text style={styles.addonsEntryText}>{t("addons.manageEntry")}</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.primary[400]} />
+          </TouchableOpacity>
+        ) : null}
 
         {/* Billing Type Toggle (event / monthly) */}
         <View style={styles.billingPills}>
@@ -324,6 +342,24 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     fontSize: typography.fontSize.body.medium,
     color: colors.natural[450],
+  },
+  addonsEntry: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
+    backgroundColor: colors.natural[50],
+    borderWidth: 1,
+    borderColor: colors.primary[200],
+    borderRadius: borderRadius[12],
+    paddingVertical: spacing[12],
+    paddingHorizontal: spacing[16],
+    marginBottom: spacing[16],
+  },
+  addonsEntryText: {
+    flex: 1,
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.body.small,
+    color: colors.primary[700],
   },
   infoNote: {
     flexDirection: "row",

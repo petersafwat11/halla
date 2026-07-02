@@ -33,12 +33,20 @@ exports.reconcileExact = catchAsync(async (req, res) => {
   }
 
   const lin = { originalTransactionId: transactionId, transactionId, productId: catalogItem.iosProductId };
-  const [subscription, eventEntitlement, addon, event] = await Promise.all([
+  let [subscription, eventEntitlement, addon, event] = await Promise.all([
     catalogItem.kind === "subscription" ? lineage.findSubscriptionByLineage(user._id, lin) : null,
     catalogItem.kind === "event_consumable" ? lineage.findEventEntitlementByTxn(transactionId) : null,
     catalogItem.catalogType === "addon" ? lineage.findAddonByTxn(transactionId) : null,
     transactionId ? RevenueCatEvent.findOne({ transactionId }).sort({ createdAt: -1 }) : null,
   ]);
+
+  // Event fallback: the store txn id the SDK returned may not equal the webhook's
+  // (Android). If the exact-txn lookup missed, the exact product's newest UNUSED
+  // entitlement owned by the caller IS the just-made purchase (preflight
+  // guarantees no pre-existing unused one for this code). Never a different product.
+  if (!eventEntitlement && catalogItem.kind === "event_consumable") {
+    eventEntitlement = await lineage.findNewestUnusedEventForCode(user._id, catalogCode);
+  }
 
   // Ownership guard: never leak another account's record.
   const owns = (doc) => !doc || String(doc.userId) === String(user._id);
@@ -124,5 +132,32 @@ exports.fulfillmentStatus = catchAsync(async (req, res) => {
     addon: addon ? { id: addon._id, addonType: addon.addonType, status: addon.status, refundState: addon.refundState, clawedBackDelta: addon.clawedBackDelta } : null,
     eventEntitlement: ent ? { id: ent._id, status: ent.status, resolution: ent.resolution } : null,
     webhook: event ? { status: event.status, reason: event.reason, at: event.processedAt } : null,
+  });
+});
+
+/**
+ * GET /payments/revenuecat/catalog (authenticated) — store-safe catalog for the
+ * mobile client (MOB-03). Returns ONLY store-eligible entries (so trial/unlimited
+ * never appear) projected to the store-safe allowlist (no price/currency, no
+ * server config/secret/keys), plus a per-caller `eligibleForCaller` flag derived
+ * from the signed audience mapping. The client maps its internal plan/add-on
+ * codes to RevenueCat products/packages/offerings from this, and takes display
+ * prices/periods from the store package — never from here.
+ */
+exports.storeCatalog = catchAsync(async (req, res) => {
+  const user = req.user;
+  const integrity = commerce.getCatalogIntegrity();
+  const entries = commerce.getStoreSafeCatalog().map((e) => ({
+    ...e,
+    eligibleForCaller: checkEligible(user, e).ok,
+  }));
+
+  return sendSuccess(res, {
+    catalogVersion: integrity.catalogVersion || null,
+    catalogHash: integrity.catalogHash || null,
+    recurringEntitlementId: commerce.RECURRING_ENTITLEMENT_ID,
+    offerings: ["host_plans", "business_plans", "host_addons", "business_addons"],
+    count: entries.length,
+    entries,
   });
 });

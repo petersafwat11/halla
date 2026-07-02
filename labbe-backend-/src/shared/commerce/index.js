@@ -102,6 +102,73 @@ function getEntryByCode(code) {
   return getCatalog().find((e) => e.internalCode === code) || null;
 }
 
+/**
+ * Store-safe projection — the ONLY catalog fields a mobile client may receive
+ * from GET /payments/revenuecat/catalog. This is an explicit ALLOWLIST.
+ *
+ * Deliberately OMITS `price` / `currency`: native display prices/periods MUST
+ * come from the RevenueCat/store package, never a backend static price (§2 /
+ * P0-13). It also carries no server config, secret, webhook auth, or provider
+ * API key — only PROPOSED public product ids, package lookup keys, offering
+ * ids, AR/EN metadata, and policy/disclosure flags.
+ */
+const STORE_SAFE_FIELDS = Object.freeze([
+  "internalCode",
+  "catalogType",
+  "family",
+  "planType",
+  "kind",
+  "eligibleAudiences",
+  "eligibleRoles",
+  "eligibleAccountTypes",
+  "tier",
+  "sortOrder",
+  "billingPeriod",
+  "nameAr",
+  "nameEn",
+  "descriptionAr",
+  "descriptionEn",
+  "storeEligible",
+  "appleProductType",
+  "googleProductType",
+  "googleConsumable",
+  "revenueCatType",
+  "iosProductId",
+  "androidProductId",
+  "androidBasePlanId",
+  "revenueCatPackageLookupKey",
+  "revenueCatEntitlementId",
+  "revenueCatOfferingId",
+  "fulfillment",
+  "repurchasePolicy",
+  "restoreBehavior",
+  "refundPolicy",
+  "providerRefundReconcile",
+  "isTrial",
+  "isUnlimited",
+  "hasManagedAcquisitionPath",
+  "setupFeeWaivedInStore",
+  "currentPlanIdentityKey",
+]);
+
+/** Project one catalog entry to the store-safe allowlist. */
+function storeSafeEntry(entry) {
+  const out = {};
+  for (const key of STORE_SAFE_FIELDS) out[key] = entry[key];
+  return out;
+}
+
+/**
+ * Store-eligible catalog projected to store-safe fields only. Returning
+ * store-eligible entries auto-excludes trial/unlimited (they are never store
+ * products — §2), so a client that renders this list cannot show them.
+ */
+function getStoreSafeCatalog() {
+  return getCatalog()
+    .filter((e) => e.storeEligible)
+    .map(storeSafeEntry);
+}
+
 /** Set of store-eligible internal codes for a catalog type ('plan' | 'addon'). */
 function storeEligibleCodes(catalogType) {
   return new Set(
@@ -116,6 +183,8 @@ module.exports = {
   getCatalog,
   getCatalogIntegrity,
   getEntryByCode,
+  getStoreSafeCatalog,
+  STORE_SAFE_FIELDS,
   storeEligibleCodes,
   getStorePlanProductMap,
   getStoreAddonProductMap,
