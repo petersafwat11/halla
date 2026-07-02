@@ -357,6 +357,56 @@ symbolicated-crash proof, the iPhone/iPad/Android phone+tablet device matrix, an
 all require Apple/Google/EAS credentials, build infra, and physical devices. `ART-IOS`/`ART-AND` stay
 pre-build; nothing reaches `ARTIFACT_VERIFIED` or `SANDBOX_VERIFIED`.
 
+### Session 8 — provider MCP capability report + console-config runbook (2026-07-02, no provider MCP/console/DB)
+
+Ran master plan **Phase 5** step 1 (MCP capability discovery) and produced the exact, manifest-derived
+console-configuration runbook for Apple / Google Play / RevenueCat / EAS. **This session has NO
+authenticated provider MCP** — and the MCP registry has **no connector** for any of the four consoles to
+authorize even later. Therefore **no console write and no before-state export were possible or simulated;
+no product/offering/price/console id was invented.** Touched **docs only** — no source. Gates re-confirmed
+green: backend `npm run catalog:verify` **26** (drift-clean + write-readiness contracts), `npm test`
+**231/231** (one flaky `MongoMemoryReplSet` integration hiccup on a single run cleared on isolated re-run —
+no source changed).
+
+- **MCP capability report (MCP-01).** `evidence/store-readiness/MCP-CAPABILITY-REPORT.md`. Probed the
+  registry **read-only**: `search_mcp_registry` returned **0** results for Apple / Google Play / RevenueCat /
+  EAS; `list_connectors` = ∅. Connected servers are all **non-provider** (Postman, Figma, browser/desktop
+  automation, session/registry/docs tooling); the OAuth-pending plugin servers (Asana/Atlassian/Intercom/
+  Linear/Notion/Slack/Figma) are also non-provider — authorizing them would **not** unblock store config.
+  Documented what each provider MCP/API would require (key/service-account/project by NAME), the manual
+  actions no API can do (app-record creation, agreements/tax/banking), and the resolved-input blockers.
+  **MCP-01 is not a bare "done":** the capability report is delivered; the runbook's **before-state export
+  half is `BLOCKED_NEEDS_OWNER`** (nothing to snapshot without console access).
+- **Provider-config runbook (MCP-02/03/04/05).** `evidence/store-readiness/PROVIDER-CONFIG-RUNBOOK.md` —
+  supplements (does not restate) `EXTERNAL-MCP-RUNBOOK.md`. Enumerates, by the manifest's PROPOSED ids
+  (frozen — not re-derived): **Apple** 40 `consumable` IAPs + 14 auto-renewable subs in **one PROPOSED
+  subscription group `halla_recurring`** with tier-ordered levels (the one structure the manifest doesn't
+  encode → owner-confirm); **Google** 14 `subs`+base plan (`monthly`/`quarterly`/`annual`) + 40 `inapp`
+  consume-on-grant, `productId:basePlanId`; **RevenueCat** 54 products, **4 offerings (24/8/21/1 = 54
+  packages)**, **ONE entitlement `recurring_access` attached to ONLY the 14 subs**, the **two-hop** flow
+  (Apple ASSN + Google RTDN → RevenueCat → backend webhook `…/api/v2/payments/revenuecat/webhook`), transfer
+  = "Keep with original App User ID" (DEC-04); **EAS/backend** secret **NAMES + config keys** only. Prices
+  carry the manifest **SAR target + "pick nearest SA price point at console time"** — **no invented
+  price-tier numbers/console ids**. The **manual-prerequisite checklist** is folded into runbook **§1**
+  (references `SIGNED-BUILD-RUNBOOK.md` §2 + `EXTERNAL-MCP-RUNBOOK.md` §2). The **readback + zero-drift
+  diff** procedure is **§8**.
+- **"Consumables never attach to `recurring_access`" — encoded + diff-checked.** The runbook states it
+  literally (§5.3), and the §8 readback diff asserts **per product** `console_entitlement ==
+  manifest.revenueCatEntitlementId` ⇒ **exactly the 14 subscriptions** carry `recurring_access` and **0**
+  consumables/add-ons carry any entitlement (a consumable on `recurring_access` = hard-fail-stop).
+- **Manifest write-readiness — VERIFIED (not changed).** `npm run catalog:verify` (**26**) proves,
+  DB/credential-free, every write-readiness property via `test/store-catalog.test.js`: **unique** internal
+  codes / Apple ids / Google `productId::basePlanId` combos / RC lookup keys; **no consumable/add-on carries
+  `recurring_access`** ("…recurring entitlement id" test: non-subs = null, exactly 14 subs carry it);
+  **trial/unlimited absent** from store ("zero trial/unlimited store products": `storeEligible:false`, null
+  ids, `nonStore:2`); **Google `productId:basePlanId` well-formed** (every sub has non-null
+  `androidBasePlanId` ∈ {monthly,quarterly,annual}). Offering package counts independently confirmed
+  24+8+21+1 = 54. CAT-01 manifest left **untouched** (frozen).
+
+**End state:** `BLOCKED_NEEDS_OWNER` — provider console configuration requires authenticated
+Apple/Google/RevenueCat/EAS access (no provider MCP connected, none registrable) + owner
+account/agreement/credential bootstrap. **No `READY_FOR_SANDBOX` claim is made** (Phase-5 exit not reached).
+
 | ID | Task | Owner | State | Evidence | Blocker | Last verified |
 |---|---|---|---|---|---|---|
 | BASE-01 | Phase-0 baseline (git/tests/lint/build/doctor/audit/static inventory) | Claude/QA | CAPTURED | `evidence/store-readiness/BASELINE.md` | — | 2026-06-28 |
@@ -409,11 +459,11 @@ pre-build; nothing reaches `ARTIFACT_VERIFIED` or `SANDBOX_VERIFIED`.
 | CFG-07 | Signed-build config audit + review-safe hardening | Mobile | UNIT_VERIFIED | `evidence/store-readiness/SIGNED-BUILD-RUNBOOK.md` §1; `app.json` (image-picker `cameraPermission/microphonePermission:false`, location `locationAlways*:false`); introspect-verified iOS Info.plist = 3 AR/EN used-permission strings only; `expo-doctor` 18/18, `expo config` public+introspect exit 0, mobile `npm test` 33/33, lint 0 | Config resolves + review-safe as far as static/local tooling proves. Binary-level items (privacy manifest, 16KB/Billing, entitlements, signing) = owner artifact-verify | 2026-07-02 |
 | ART-IOS | Signed IPA inspection + iPhone/iPad QA | Mobile/QA | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/SIGNED-BUILD-RUNBOOK.md` §2/§4/§5/§7 | **Apple Developer + ASC API key + EAS account + macOS/Xcode + iPhone/iPad** — cannot build/inspect/device-test here. Config pre-verified (CFG-07); no artifact evidence invented | 2026-07-02 |
 | ART-AND | Signed AAB inspection + 16 KB/prelaunch QA | Mobile/QA | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/SIGNED-BUILD-RUNBOOK.md` §2/§6/§7 | **Play Console + service-account JSON + EAS account + Android phone/tablet** — cannot build/inspect/pre-launch here. Config pre-verified (CFG-07); no artifact evidence invented | 2026-07-02 |
-| MCP-01 | MCP capability report + before exports | Claude/Ops | NOT_STARTED | `EXTERNAL-MCP-RUNBOOK` | Provider connectors/auth | 2026-06-28 |
-| MCP-02 | Apple app/listing/product configuration | Claude/Owner | NOT_STARTED |  | DEC/CAT/Apple bootstrap | 2026-06-28 |
-| MCP-03 | Google app/listing/product configuration | Claude/Owner | NOT_STARTED |  | DEC/CAT/Play bootstrap | 2026-06-28 |
-| MCP-04 | RevenueCat apps/products/entitlement/offerings/webhook | Claude/Owner | NOT_STARTED |  | MCP-02/03 | 2026-06-28 |
-| MCP-05 | Console readback zero-drift diff | Claude/QA | NOT_STARTED |  | MCP-02/03/04 | 2026-06-28 |
+| MCP-01 | MCP capability report + before exports | Claude/Ops | capability report DELIVERED · before-export BLOCKED_NEEDS_OWNER | `evidence/store-readiness/MCP-CAPABILITY-REPORT.md` | **No provider MCP connected or registrable** (registry search = 0 for Apple/Google/RevenueCat/EAS; `list_connectors`=∅). Capability report + resolved-input blockers done; **before-state export impossible without console access** | 2026-07-02 |
+| MCP-02 | Apple app/listing/product configuration | Claude/Owner | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/PROVIDER-CONFIG-RUNBOOK.md` §3 (+ `generated/apple-product-map`) | Runbook written (40 consumables + 14 subs in one proposed subscription group `halla_recurring`; levels owner-confirm). Needs ASC API key/Team ID/app record + Paid Apps agreement | 2026-07-02 |
+| MCP-03 | Google app/listing/product configuration | Claude/Owner | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/PROVIDER-CONFIG-RUNBOOK.md` §4 (+ `generated/google-product-map`) | Runbook written (14 `subs`+base plan, 40 `inapp` consume-on-grant; `productId:basePlanId`). Needs Play app record + service-account + merchant/tax | 2026-07-02 |
+| MCP-04 | RevenueCat apps/products/entitlement/offerings/webhook | Claude/Owner | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/PROVIDER-CONFIG-RUNBOOK.md` §5 (+ `generated/revenuecat-mapping`) | Runbook written (54 products; **1 entitlement `recurring_access` on ONLY the 14 subs**; 4 offerings 24/8/21/1; two-hop ASSN+RTDN→RC→backend webhook; transfer=Keep-with-original). Needs RC project/apps/keys | 2026-07-02 |
+| MCP-05 | Console readback zero-drift diff | Claude/QA | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/PROVIDER-CONFIG-RUNBOOK.md` §8 | Diff procedure specified (per-product `console_entitlement == manifest.revenueCatEntitlementId` ⇒ 14 subs carry it, 0 others; counts/ids/prices/offerings). Needs a console export to diff (none exists) | 2026-07-02 |
 | QA-BILL | Apple + Google full sandbox matrix | QA | NOT_STARTED | `BILLING plan Phase 8` | Code + store config | 2026-06-28 |
 | QA-RC | Full release-candidate functional/accessibility QA | QA | NOT_STARTED | `MASTER Phase 6` | Signed builds | 2026-06-28 |
 | GO-01 | Second-person evidence review | Owner/Reviewer | NOT_STARTED |  | All prior gates | 2026-06-28 |
