@@ -5,7 +5,8 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "legal:verify": "node scripts/verify-legal.mjs"
   },
   "exports": {
     ".": "./src/index.js",
@@ -19,7 +20,9 @@
     "./utils": "./src/utils/index.js",
     "./utils/*": "./src/utils/*.js",
     "./hooks": "./src/hooks/index.js",
-    "./hooks/*": "./src/hooks/*.js"
+    "./hooks/*": "./src/hooks/*.js",
+    "./legal": "./src/legal/index.js",
+    "./legal/*": "./src/legal/*.js"
   },
   "dependencies": {
     "xlsx": "npm:@e965/xlsx@^0.20.3"

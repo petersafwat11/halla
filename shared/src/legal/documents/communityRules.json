@@ -1,0 +1,130 @@
+{
+  "ar": {
+    "documentType": "community-rules",
+    "version": "2026-07-02",
+    "locale": "ar",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": null,
+    "lastUpdated": "02 يوليو 2026",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "badge": "قواعد المجتمع",
+    "title": "قواعد المجتمع ومعايير المحتوى",
+    "subtitle": "منصة هلا",
+    "changeSummary": "بنية أولية لقواعد المحتوى الذي ينشئه المستخدمون بانتظار الاعتماد النهائي.",
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "البند الأول",
+        "title": "نطاق القواعد",
+        "body": "تنطبق هذه القواعد على كل محتوى ينشئه المستخدمون أو الضيوف أو مقدّمو الخدمات داخل منصة هلا، ويشمل ذلك أسماء المناسبات والرسائل والصور ومقاطع الفيديو والتعليقات وأوصاف الخدمات وأي محتوى آخر يُرفع أو يُرسل عبر المنصة. ويُعد قبول هذه القواعد وقبول الشروط والأحكام شرطاً لإنشاء أي محتوى."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "البند الثاني",
+        "title": "المحتوى المحظور",
+        "body": "يُحظر نشر أو إرسال أي محتوى غير مشروع أو مسيء أو يحض على الكراهية أو العنف، أو ذي طابع جنسي أو فاضح، أو خادع أو احتيالي، أو رسائل مزعجة أو دعائية غير مصرح بها، أو انتحال شخصية الغير، أو محتوى ينتهك حقوق الملكية الفكرية، أو ينتهك خصوصية الآخرين، أو يعرّض سلامتهم للخطر. كما يُحظر أي محتوى يخالف الشريعة الإسلامية أو الأنظمة المعمول بها في المملكة العربية السعودية أو الآداب العامة."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "البند الثالث",
+        "title": "القُصّر والمعلومات الحساسة",
+        "body": "يجب عدم استخدام المنصة لنشر معلومات حساسة عن القُصّر دون إذن وليّ الأمر، ويجب توخّي الحذر عند التعامل مع بيانات المناسبات والضيوف التي قد تتضمن معلومات شخصية. ولا يجوز جمع أو نشر بيانات الأشخاص دون سند مشروع."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "البند الرابع",
+        "title": "الإبلاغ والحظر",
+        "body": "توفّر المنصة وسائل للإبلاغ عن المحتوى أو المستخدمين المخالفين وحظرهم. عند الحظر يختفي محتوى الطرف المحظور من العرض لدى الطرف الحاظر. ونشجّع المستخدمين على الإبلاغ الفوري عن أي مخالفة عبر أدوات الإبلاغ المتاحة في الشاشات ذات الصلة."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "البند الخامس",
+        "title": "إجراءات المراجعة والتظلّم",
+        "body": "قد تقوم المنصة بإخفاء أو إزالة المحتوى المخالف، أو تقييد الحساب أو تعليقه. ويحق للمستخدم التظلّم من أي إجراء عبر قنوات التواصل الرسمية، وتُراجع التظلّمات وفق سياسات المنصة. [BLOCKED_NEEDS_OWNER: تفاصيل آلية التظلّم والجهة المختصة بمراجعته]."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "البند السادس",
+        "title": "أوقات الاستجابة والتصعيد الطارئ",
+        "body": "نسعى للاستجابة لبلاغات المحتوى خلال مدة معقولة. وفي حالات الخطر الوشيك على السلامة يُرجى التواصل مع الجهات المختصة مباشرة. [BLOCKED_NEEDS_OWNER: تحديد مدد الاستجابة المعلنة وقناة التصعيد الطارئ الرسمية]."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "البند السابع",
+        "title": "المخالفات المتكررة وإيقاف الحساب",
+        "body": "قد يؤدي تكرار المخالفات إلى تعليق الحساب أو إيقافه بشكل دائم وفق تقدير المنصة، مع مراعاة جسامة المخالفة وتاريخ المستخدم. وتحتفظ المنصة بحقها في اتخاذ الإجراءات النظامية اللازمة عند الاقتضاء."
+      }
+    ]
+  },
+  "en": {
+    "documentType": "community-rules",
+    "version": "2026-07-02",
+    "locale": "en",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": null,
+    "lastUpdated": "02 July 2026",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "badge": "Community Rules",
+    "title": "Community Rules and Content Standards",
+    "subtitle": "Halaa Platform",
+    "changeSummary": "Initial structure for user-generated content standards, pending final approval.",
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "Article One",
+        "title": "Scope of the Rules",
+        "body": "These rules apply to all content created by users, guests, or vendors within the Halaa Platform, including event names, messages, photos, videos, comments, service descriptions, and any other content uploaded or sent through the platform. Acceptance of these rules and of the Terms and Conditions is a prerequisite to creating any content."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "Article Two",
+        "title": "Prohibited Content",
+        "body": "You may not post or send any content that is unlawful, abusive, hateful, or violent; sexual or obscene; deceptive or fraudulent; spam or unauthorized advertising; impersonates others; infringes intellectual property rights; invades others' privacy; or endangers others' safety. Any content that violates Islamic law, the regulations of the Kingdom of Saudi Arabia, or public morals is also prohibited."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "Article Three",
+        "title": "Minors and Sensitive Information",
+        "body": "The platform must not be used to publish sensitive information about minors without guardian consent, and care must be taken with event and guest data that may contain personal information. Collecting or publishing individuals' data without a lawful basis is not permitted."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "Article Four",
+        "title": "Reporting and Blocking",
+        "body": "The platform provides tools to report and block violating content or users. When a user is blocked, the blocked party's content disappears from the blocker's view. We encourage users to report any violation promptly using the reporting tools available on the relevant screens."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "Article Five",
+        "title": "Moderation and Appeals",
+        "body": "The platform may hide or remove violating content, or restrict or suspend an account. Users may appeal any action through official contact channels, and appeals are reviewed in accordance with platform policies. [BLOCKED_NEEDS_OWNER: details of the appeal mechanism and the body responsible for reviewing it]."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "Article Six",
+        "title": "Response Times and Emergency Escalation",
+        "body": "We aim to respond to content reports within a reasonable time. In cases of imminent risk to safety, please contact the competent authorities directly. [BLOCKED_NEEDS_OWNER: define the published response targets and the official emergency escalation channel]."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "Article Seven",
+        "title": "Repeat Offenders and Account Suspension",
+        "body": "Repeated violations may result in temporary or permanent account suspension at the platform's discretion, taking into account the severity of the violation and the user's history. The platform reserves the right to take necessary legal action where appropriate."
+      }
+    ]
+  }
+}

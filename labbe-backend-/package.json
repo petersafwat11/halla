@@ -10,6 +10,10 @@
     "catalog:check": "node scripts/generateStoreCatalog.js --check",
     "catalog:test": "node --test test/store-catalog.test.js",
     "catalog:verify": "node scripts/generateStoreCatalog.js --check && node --test test/store-catalog.test.js",
+    "legal:generate": "node scripts/generateLegalManifest.js",
+    "legal:check": "node scripts/generateLegalManifest.js --check",
+    "legal:test": "node --test test/legal-manifest.test.js",
+    "legal:verify": "node scripts/generateLegalManifest.js --check && node --test test/legal-manifest.test.js",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js"
   },

@@ -201,7 +201,9 @@
     "helpLinks": [
       { "name": "Terms & Conditions", "href": "/terms" },
       { "name": "Privacy Policy", "href": "/privacy" },
-      { "name": "Cancellation & Refund", "href": "/refund" }
+      { "name": "Cancellation & Refund", "href": "/refund" },
+      { "name": "Community Rules", "href": "/community-rules" },
+      { "name": "Support & Contact", "href": "/support" }
     ],
     "copyright": "© 2026 Halaa. All rights reserved.",
     "legalName": "Afaq hala Company For Communications and Information"
@@ -235,7 +237,9 @@
     "siblings": {
       "privacy": "Privacy Policy",
       "terms": "Terms & Conditions",
-      "refund": "Cancellation & Refund"
+      "refund": "Cancellation & Refund",
+      "communityRules": "Community Rules",
+      "support": "Support & Contact"
     },
     "metadata": {
       "terms": {

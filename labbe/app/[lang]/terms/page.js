@@ -1,18 +1,14 @@
 import initTranslations from "@/localization/i18n";
 import LegalPage from "@/ui/landing/Legal/LegalPage";
-import termsData from "@/ui/landing/Legal/data/terms.json";
+import { getLegalDocument } from "@halla/shared/legal";
 import Header from "@/ui/landing/Header/Header";
 import Footer from "@/ui/landing/Footer/Footer";
 
 const SIBLINGS = [
-  {
-    href: "/privacy",
-    titleKey: "legal.siblings.privacy",
-  },
-  {
-    href: "/refund",
-    titleKey: "legal.siblings.refund",
-  },
+  { href: "/privacy", titleKey: "legal.siblings.privacy" },
+  { href: "/refund", titleKey: "legal.siblings.refund" },
+  { href: "/community-rules", titleKey: "legal.siblings.communityRules" },
+  { href: "/support", titleKey: "legal.siblings.support" },
 ];
 
 export async function generateMetadata({ params }) {
@@ -32,7 +28,7 @@ export async function generateMetadata({ params }) {
 export default async function TermsPage({ params }) {
   const resolvedParams = await params;
   const { lang } = resolvedParams;
-  const doc = termsData[lang] || termsData.ar;
+  const doc = getLegalDocument("terms", lang);
 
   return (
     <>

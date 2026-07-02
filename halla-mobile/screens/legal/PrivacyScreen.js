@@ -1,11 +1,11 @@
 import React from "react";
 import { useTranslation } from "../../localization";
+import { getLegalDocument } from "@halla/shared/legal";
 import LegalScreen from "./LegalScreen";
-import privacyData from "./data/privacy.json";
 
 const PrivacyScreen = () => {
   const { currentLanguage } = useTranslation();
-  const data = privacyData[currentLanguage] || privacyData.ar;
+  const data = getLegalDocument("privacy", currentLanguage);
 
   return <LegalScreen data={data} />;
 };

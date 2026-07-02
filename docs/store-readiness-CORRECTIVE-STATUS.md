@@ -180,6 +180,64 @@ and `DeleteObjectCommand` is already used in prod (`safeDeleteOldKey`), which is
 circumstantial. The fail-closed deletion design is safe either way (Delete denied ⇒
 `pending_retry`, never a false `completed`). Confirm before GO.
 
+### Session 5 — Shared legal package, web/mobile legal UI, policy manifest, CI (2026-07-02, no DB/provider/console)
+
+Built ONE versioned AR/EN legal source consumed by web + mobile, a backend-generated hashed
+policy manifest, live public web routes, mobile legal screens for every role + signup +
+checkout + UGC-acceptance, a symmetric-controls mobile app bar, and parity/version/schema/URL
+CI checks. **No legal copy is approved** — every document is `ownerApproval: BLOCKED_NEEDS_OWNER`.
+Evidence: `evidence/store-readiness/LEGAL-PARITY.md`. Gates (final tree): backend `npm test`
+**215 → 231** (+16 `legal-manifest.test.js`), `catalog:verify` **26**, new `legal:verify` **16**,
+payment static **18/18**; web `npm run lint` 0-err + `npm run build` **exit 0** (all 6 legal
+routes) + **render-verified** via `next start`+curl (AR/EN privacy, community-rules, support);
+mobile `npm test` **29 → 33** (+4 `legalContent.test.js`) + lint 0; shared `verify-legal.mjs` pass.
+
+- **Shared package (LEG-01).** `shared/src/legal/` in the ESM `@halla/shared` workspace
+  (web/mobile `import`; backend reads JSON via `fs`, no ESM bridge — legal content is inert
+  JSON, unlike the CAT-01 catalog). `documents/{privacy,terms,communityRules,refund,deletion,support}.json`
+  in the exact render shape both `LegalPage` (web) and `LegalScreen` (mobile) already
+  consumed + envelope metadata; `documents.js`/`manifest.js`/`contact.js`/`index.js`;
+  `exports` extended (`./legal`, `./legal/*`). Privacy/Terms/Refund carried over
+  **byte-for-byte** from the old web JSON (still owner-gated). Refund gained store-billing
+  sections reflecting SIGNED DEC-03L/DEC-04 substance (auto-renew, consumables
+  non-restorable, design non-refundable-from-creation, store-refund effects,
+  keep-with-original, Saudi VAT 15%). Deletion describes the ACTUAL Session-4 behavior
+  (retryable/truthful, RevenueCat `retained_by_policy`); durations owner-gated. Community
+  Rules + Support are new structured docs. **Duplicate copies removed** (web
+  `ui/landing/Legal/data/*`, mobile `screens/legal/data/*`) after both consumers migrated.
+- **Policy manifest + P1-07.** `src/shared/legal/{legalContent,legalManifest}.js` +
+  `scripts/generateLegalManifest.js` (`--check` drift gate) → `legalPolicies.generated.json`
+  (6 docs, per-doc version/URLs/sectionIds/SHA-256 hash + `manifestHash`). `policies.js` now
+  **derives** `POLICY_VERSIONS`/`POLICY_URLS` from the manifest (was hardcoded); acceptance
+  keys `terms`/`community`/`privacy` preserved (`community`→`community-rules`), so the
+  acceptance API + `TermsAcceptance` rows are unchanged (community version → `2026-07-02`
+  re-prompts, by design). `legal:*` scripts isolated from `catalog:*` (catalog stays 26).
+- **Web routes (P1-03).** Live AR/EN `/[lang]/{privacy,terms,refund,community-rules,support}`
+  (server-rendered from the shared package) + deletion mapped to existing `/[lang]/delete-account`.
+  The mobile-hardlinked `{terms,privacy,refund}` slugs are locked by tests. Backend
+  community-rules URL now 200 (was 404). Canonical + AR/EN `hreflang` + OG + `robots:index`
+  metadata on legal routes (`legalMetadata.js`).
+- **Mobile P1-08 + surfaces.** TopBar rewritten → symmetric 44×44 start/end slots +
+  **absolutely-centered title** (independent of side controls, no RTL↔LTR shift), logical
+  start/end (no `row-reverse`, no double reversal), back chevron from resolved direction,
+  truncation + a11y header; back-compat for all ~20 callers. LegalScreen: logical alignment,
+  `flex-start` header (Dynamic Type no-clip), header a11y roles, mixed-direction, safe-area.
+  6 screens registered for host/vendor/admin; signup + checkout + UGC-publish disclosures via
+  `components/legal/LegalLinks.js`.
+- **Contact single source (P1-06).** `@halla/shared/legal` `LEGAL_CONTACT` is the one source;
+  web `LegalPage`/`Footer`/`delete-account` read from it (provisional, owner-gated). No
+  hardcoded `support@halaa.*` remains in web/mobile source (grep-clean). Footer email
+  `.net`→`.com.sa` de-conflict (owner must confirm).
+
+**Verification boundaries (honest):** Metro bundling of `@halla/shared/legal` NOT exercised
+(mobile tests read JSON via `fs`; proven-by-precedent via `api/paths` + old `./data/*.json`);
+web bundling IS proven (build + render). TopBar verified by lint/compile + the two widest
+prop-patterns walked, NOT on-device (non-legal screens not visually QA'd). Guest-portal UGC
+accept disclosure not added (host UGC + signup + checkout were). **All legal copy remains
+`BLOCKED_NEEDS_OWNER`** — see LEGAL-PARITY.md for the exact list (entity name 2-way conflict,
+support email 2-way conflict, phone/WhatsApp, address, SLAs, retention durations, refund
+wording, jurisdiction, + carried-over privacy/terms/refund).
+
 | ID | Task | Owner | State | Evidence | Blocker | Last verified |
 |---|---|---|---|---|---|---|
 | BASE-01 | Phase-0 baseline (git/tests/lint/build/doctor/audit/static inventory) | Claude/QA | CAPTURED | `evidence/store-readiness/BASELINE.md` | — | 2026-06-28 |
@@ -215,13 +273,13 @@ circumstantial. The fail-closed deletion design is safe either way (Delete denie
 | DEL-01 | Model/processor deletion-retention matrix | Backend/Legal | INTEGRATION_VERIFIED | `evidence/store-readiness/DELETION-MATRIX.md`; `deletion.service.js`/`deletion.collect.js`/`deletion.processors.js` | Matrix built + implemented; **legal must sign `RETENTION_MATRIX_FINALIZED`** before ACCEPTED | 2026-07-02 |
 | DEL-02 | Complete retryable deletion worker | Backend | INTEGRATION_VERIFIED | `deletion.service.js` (truthful `pending_retry`), `deletion.retry.js` + `account_deletion_retry` cron, `ProcessorErasure` model, RC `account_deleted` (`revenuecat.service.js`); `resolveDeletableS3Key` fixes full-URL media (P1-02) | S3 DeleteObject capability = live-cred verification gap (fail-closed safe) | 2026-07-02 |
 | DEL-03 | Throwaway DB/S3 deletion proof | QA | INTEGRATION_VERIFIED | `test/account-deletion.integration.test.js` (7: no non-retained PII, token invalidation, idempotence, partial-retry, retained-rows, S3-variant collection, persistent-failure→terminal-failed) + `revenuecat-post-deletion.test.js` (2); MongoMemoryReplSet + in-memory S3 stub | — | 2026-07-02 |
-| UGC-01 | Live AR/EN Community Rules/Support | Web/Mobile/Legal | NOT_STARTED | `REVIEW-FINDINGS P1-03` | Approved content/contact — **deferred to legal/SEO session** (out of Session-4 backend scope) | 2026-06-28 |
+| UGC-01 | Live AR/EN Community Rules/Support | Web/Mobile/Legal | UNIT_VERIFIED (structure) | `evidence/store-readiness/LEGAL-PARITY.md`; web `/[lang]/community-rules` + `/[lang]/support` render-verified; mobile screens; `legal-manifest.test.js`(16) | Structure live + rendered; **all copy `BLOCKED_NEEDS_OWNER`** (SLAs/escalation/entity/contact). Backend community-rules URL now 200 (was 404) | 2026-07-02 |
 | UGC-02 | Policy gate on every UGC write | Backend/Web/Mobile | UNIT_VERIFIED | `requireUserUgcTerms`+text-filter on both service writes + host media/thank-you; vendorData filtered; guest comments service-gated (`assertUgcTermsAccepted`+`assertCleanText`); `evidence/store-readiness/UGC-ROUTE-INVENTORY.md`; `test/ugc-enforcement.integration.test.js` (6) | Enforcement flag `UGC_TERMS_ENFORCED` flips ON post client-rollout (by design); events/RSVP/tickets = documented non-public-UGC (justified) | 2026-07-02 |
 | UGC-03 | Block/moderation filtering on every read | Backend/Web/Mobile | UNIT_VERIFIED | `getBlockedKeySet` on post-event reads; suspension via `status=ACTIVE` on public vendor/service reads (test proves suspended excluded); `_mutateContent` hide/remove | **Gap:** viewer-block filtering on the anonymous public marketplace reads not yet threaded (documented in inventory) | 2026-07-02 |
 | UGC-04 | Quarantine/magic-byte/malware pipeline | Backend/Infra | UNIT_VERIFIED | `src/shared/utils/uploadScan.js` (magic-byte allowlist + fail-closed policy + pluggable scanner) wired to `scanUploadHook`; `test/upload-scan.test.js` (11, malicious fixtures) | Real ClamAV/scanner infra + physical quarantine bucket = EXTERNAL §6 (pluggable interface done) | 2026-07-02 |
-| LEG-01 | Shared canonical AR/EN legal package | Shared/Web/Mobile | NOT_STARTED | `LEGAL plan` | Legal copy | 2026-06-28 |
-| LEG-02 | Mobile legal header/RTL/accessibility fix | Mobile | NOT_STARTED | `REVIEW-FINDINGS P1-08` |  | 2026-06-28 |
-| LEG-03 | Legal parity/version/URL CI checks | CI | NOT_STARTED |  | LEG-01 | 2026-06-28 |
+| LEG-01 | Shared canonical AR/EN legal package | Shared/Web/Mobile | UNIT_VERIFIED | `shared/src/legal/*` (6 docs, `documents.js`/`manifest.js`/`contact.js`); web build+render; `legal-manifest.test.js`(16) + `legalContent.test.js`(4) + `verify-legal.mjs` | One source consumed by web+mobile; backend manifest via `fs`; duplicates removed. **All copy `BLOCKED_NEEDS_OWNER`** (carried-over privacy/terms/refund + new docs) | 2026-07-02 |
+| LEG-02 | Mobile legal header/RTL/accessibility fix | Mobile | IMPLEMENTED_UNVERIFIED | `components/plans/TopBar.js` (symmetric 44×44 + absolutely-centered title, no `row-reverse`); `screens/legal/LegalScreen.js` (logical align, Dynamic Type, a11y, safe-area, mixed-direction); mobile lint 0 | Structure + lint/compile + widest-prop-pattern walk. **On-device/iPad visual QA pending** (SANDBOX/device); non-legal TopBar callers not visually QA'd | 2026-07-02 |
+| LEG-03 | Legal parity/version/URL CI checks | CI | UNIT_VERIFIED | backend `npm run legal:verify` (drift + 16); shared `node scripts/verify-legal.mjs` (AR/EN parity + schema + URL/slug); `policies.js` derived from manifest (P1-07) | Parity/version/schema/URL/slug gates green; isolated from `catalog:verify` (26 unchanged) | 2026-07-02 |
 | SEO-01 | Route index/noindex inventory | Web | NOT_STARTED | `SEO-ASO plan` |  | 2026-06-28 |
 | SEO-02 | Metadata/canonical/hreflang/OG/schema | Web | NOT_STARTED |  | SEO-01 | 2026-06-28 |
 | SEO-03 | Sitemap/robots/manifest/icons | Web | NOT_STARTED |  | SEO-01 | 2026-06-28 |

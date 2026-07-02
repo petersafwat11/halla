@@ -11,16 +11,23 @@ import {
 } from "../../styles/tokens";
 
 /**
- * Reusable legal document screen (Privacy Policy / Terms & Conditions).
- * Receives a localized `data` object of shape:
+ * Reusable legal document screen (Privacy / Terms / Community Rules / Refund /
+ * Deletion / Support). Receives a localized `data` object of shape:
  *   { badge, title, subtitle, lastUpdated, sections: [{ id, num, label, title, body }] }
  * Body paragraphs are separated by "\n\n".
+ *
+ * Direction is handled GLOBALLY (I18nManager, set at the layout level): there is
+ * NO per-component isRTL text/row branching. `flex-start`/`flex-end` are logical
+ * start/end and auto-flip under RTL; `row` auto-flips to row-reverse. Text uses
+ * the ambient writing direction so mixed LTR tokens (email, URLs, numbers)
+ * embedded in Arabic render correctly via the platform bidi algorithm.
+ *
+ * Accessibility: title/section titles expose header roles and the screen scales
+ * with Dynamic Type (font scaling is left enabled); cards shrink rather than clip.
  */
 const LegalScreen = ({ data }) => {
   const { t } = useTranslation("settings");
 
-  // Text alignment + row direction follow the app's global direction
-  // (I18nManager, set at the layout level) — no per-component isRTL branching.
   const sections = Array.isArray(data?.sections) ? data.sections : [];
 
   return (
@@ -39,12 +46,12 @@ const LegalScreen = ({ data }) => {
               </View>
             )}
             {!!data?.title && (
-              <Text style={styles.title}>{data.title}</Text>
+              <Text style={styles.title} accessibilityRole="header">
+                {data.title}
+              </Text>
             )}
             {!!data?.subtitle && (
-              <Text style={styles.subtitle}>
-                {data.subtitle}
-              </Text>
+              <Text style={styles.subtitle}>{data.subtitle}</Text>
             )}
             {!!data?.lastUpdated && (
               <Text style={styles.lastUpdated}>
@@ -60,17 +67,17 @@ const LegalScreen = ({ data }) => {
             return (
               <View key={section.id} style={styles.card}>
                 <View style={styles.cardHeader}>
+                  {/* Section number stays visually stable (LTR digit) while the
+                      title/body follow the ambient locale direction. */}
                   <View style={styles.numBadge}>
                     <Text style={styles.numBadgeText}>{section.num}</Text>
                   </View>
                   <View style={styles.cardHeaderText}>
                     {!!section.label && (
-                      <Text style={styles.sectionLabel}>
-                        {section.label}
-                      </Text>
+                      <Text style={styles.sectionLabel}>{section.label}</Text>
                     )}
                     {!!section.title && (
-                      <Text style={styles.sectionTitle}>
+                      <Text style={styles.sectionTitle} accessibilityRole="header">
                         {section.title}
                       </Text>
                     )}
@@ -112,6 +119,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing[20],
   },
   badge: {
+    // Logical start alignment — auto-flips under a global RTL direction.
     alignSelf: "flex-start",
     backgroundColor: colors.primary[100],
     borderRadius: borderRadius[20],
@@ -150,10 +158,11 @@ const styles = StyleSheet.create({
     borderColor: colors.natural[200],
   },
   cardHeader: {
-    // `row` automatically renders as row-reverse under a global RTL direction
-    // (I18nManager) — no isRTL branching needed.
+    // `row` auto-renders as row-reverse under a global RTL direction — no isRTL
+    // branching. `flex-start` keeps the number badge at the top when a long
+    // scaled title wraps (Dynamic Type) instead of centering + clipping.
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: spacing[12],
     marginBottom: spacing[12],
   },
@@ -172,6 +181,7 @@ const styles = StyleSheet.create({
   },
   cardHeaderText: {
     flex: 1,
+    flexShrink: 1,
   },
   sectionLabel: {
     fontSize: 11,

@@ -26,6 +26,26 @@ const SettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
       label: t("tabs.terms"),
       icon: "document-text-outline",
     },
+    {
+      id: "communityRules",
+      label: t("tabs.communityRules"),
+      icon: "people-outline",
+    },
+    {
+      id: "refund",
+      label: t("tabs.refund"),
+      icon: "card-outline",
+    },
+    {
+      id: "deletion",
+      label: t("tabs.deletion"),
+      icon: "trash-outline",
+    },
+    {
+      id: "support",
+      label: t("tabs.support"),
+      icon: "help-buoy-outline",
+    },
   ];
 
   return (

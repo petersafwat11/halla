@@ -12,24 +12,37 @@ import {
 } from "react-icons/io";
 import AppStoreButtons from "../../commen/AppStoreButtons/AppStoreButtons";
 import { useTranslation } from "react-i18next";
+import { LEGAL_CONTACT } from "@halla/shared/legal";
+
+// Single source of truth for contact (`@halla/shared/legal`). PROVISIONAL and
+// owner-gated (BLOCKED_NEEDS_OWNER): the support email conflict (halaa.net vs
+// halaa.com.sa) resolves to the domain-consistent halaa.com.sa placeholder here
+// until the owner confirms — no more per-file hardcoded contact strings.
+const SUPPORT_EMAIL = LEGAL_CONTACT.supportEmail.provisional;
+const PHONE = LEGAL_CONTACT.phone.provisional;
+const PHONE_DIGITS = String(PHONE).replace(/[^0-9+]/g, "");
 
 const Footer = ({ lang = "ar" }) => {
   const { t } = useTranslation("landing");
   const helpLinks = t("footer.helpLinks", { returnObjects: true });
+  const address =
+    lang === "ar"
+      ? LEGAL_CONTACT.postalAddress.provisional.ar
+      : LEGAL_CONTACT.postalAddress.provisional.en;
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.contactSection}>
           <h3 className={styles.sectionTitle}>{t("footer.contactTitle")}</h3>
           <div className={styles.contactInfo}>
-            <a href="tel:+966552619282" className={styles.contactLink}>
+            <a href={`tel:${PHONE_DIGITS}`} className={styles.contactLink}>
               <Image src="/svg/phone.svg" alt="phone" width={18} height={18} className={styles.contactIcon} />
-              <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>+966 55 261 9282</span>
+              <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{PHONE}</span>
             </a>
 
-            <a href="mailto:support@halaa.net" className={styles.contactLink}>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className={styles.contactLink}>
               <Image src="/svg/email.svg" alt="email" width={18} height={18} className={styles.contactIcon} />
-              <span>support@halaa.net</span>
+              <span>{SUPPORT_EMAIL}</span>
             </a>
 
             <address className={styles.addressLink}>
@@ -40,7 +53,7 @@ const Footer = ({ lang = "ar" }) => {
                 height={18}
                 className={styles.contactIcon}
               />
-              <span>شارع المتحف - جدة - الرمز البريدي 23326</span>
+              <span>{address}</span>
             </address>
 
             <div className={styles.socialLinks}>

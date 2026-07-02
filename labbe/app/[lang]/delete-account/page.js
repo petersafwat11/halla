@@ -13,8 +13,11 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { apiRequest } from "@/services/http";
+import { LEGAL_CONTACT } from "@halla/shared/legal";
 
-const SUPPORT_EMAIL = "support@halaa.com.sa";
+// Single source of truth for contact (`@halla/shared/legal`); PROVISIONAL +
+// owner-gated (BLOCKED_NEEDS_OWNER) until the support-email conflict is resolved.
+const SUPPORT_EMAIL = LEGAL_CONTACT.supportEmail.provisional;
 
 const COPY = {
   title: { en: "Delete your Halaa account", ar: "حذف حساب هلا" },

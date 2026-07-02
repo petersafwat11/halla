@@ -5,6 +5,10 @@
     "notifications": "Notifications",
     "privacy": "Privacy Policy",
     "terms": "Terms & Conditions",
+    "communityRules": "Community Rules",
+    "refund": "Cancellation & Refund",
+    "deletion": "Delete Account & Data",
+    "support": "Support & Contact",
     "logout": "Logout",
     "comingSoon": "Coming soon"
   },
@@ -108,6 +112,7 @@
     "termsOfService": "Terms of Service"
   },
   "legal": {
-    "lastUpdated": "Last updated"
+    "lastUpdated": "Last updated",
+    "ugcAcceptNotice": "By publishing content you accept our:"
   }
 }

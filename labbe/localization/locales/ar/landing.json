@@ -201,7 +201,9 @@
     "helpLinks": [
       { "name": "الشروط والأحكام", "href": "/terms" },
       { "name": "سياسة الخصوصية", "href": "/privacy" },
-      { "name": "سياسة الإلغاء والاسترداد", "href": "/refund" }
+      { "name": "سياسة الإلغاء والاسترداد", "href": "/refund" },
+      { "name": "قواعد المجتمع", "href": "/community-rules" },
+      { "name": "الدعم والتواصل", "href": "/support" }
     ],
     "copyright": "جميع الحقوق محفوظة © 2026 هلا",
     "legalName": "Afaq hala Company For Communications and Information"
@@ -235,7 +237,9 @@
     "siblings": {
       "privacy": "سياسة الخصوصية",
       "terms": "الشروط والأحكام",
-      "refund": "سياسة الإلغاء والاسترداد"
+      "refund": "سياسة الإلغاء والاسترداد",
+      "communityRules": "قواعد المجتمع",
+      "support": "الدعم والتواصل"
     },
     "metadata": {
       "terms": {

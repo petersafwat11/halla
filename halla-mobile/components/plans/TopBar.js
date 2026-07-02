@@ -11,6 +11,26 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { colors, spacing, typography } from "../../styles/tokens";
 
+/**
+ * Symmetric three-column app bar (P1-08).
+ *
+ * Layout: [ start slot ] [ centered title ] [ end slot ]
+ *  - start / end slots are equal-width and hold 44x44 controls (or custom
+ *    content), so the title is mathematically centered independent of the side
+ *    controls and does NOT shift between RTL and LTR.
+ *  - The bar is direction-agnostic: it uses logical start/end via a plain `row`
+ *    (React Native auto-flips `row` under a global RTL direction / I18nManager),
+ *    so there is NO hardcoded `row-reverse` and no manual double reversal.
+ *  - The back chevron is chosen once from the resolved layout direction.
+ *  - Minimum touch target is 44x44; the title truncates and exposes a
+ *    screen-reader header label.
+ *
+ * Back-compat: existing callers pass any of `title`, `showBack`, `onBack`,
+ * `leftContent`, `rightContent`. When custom `leftContent`/`rightContent` is
+ * provided (e.g. a wide greeting block or action icons) the slot grows to fit it.
+ */
+const TOUCH = 44;
+
 const TopBar = ({
   title,
   showBack = false,
@@ -19,23 +39,26 @@ const TopBar = ({
   leftContent = null,
 }) => {
   const navigation = useNavigation();
+
   const handleBack = () => {
     if (onBack) {
       onBack();
       return;
     }
-
     if (navigation?.canGoBack()) {
       navigation.goBack();
     }
   };
 
-  const renderLeft = () => {
+  // Logical start slot: back control > custom content > spacer.
+  const renderStart = () => {
     if (showBack) {
       return (
         <TouchableOpacity
-          style={styles.backButton}
+          style={styles.control}
           onPress={handleBack}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
           hitSlop={{ top: spacing[8], bottom: spacing[8], left: spacing[8], right: spacing[8] }}
         >
           <Ionicons
@@ -46,12 +69,18 @@ const TopBar = ({
         </TouchableOpacity>
       );
     }
-
     if (leftContent) {
-      return <View style={styles.leftCustom}>{leftContent}</View>;
+      return <View style={styles.slotContent}>{leftContent}</View>;
     }
+    return <View style={styles.control} />;
+  };
 
-    return <View style={styles.placeholder} />;
+  // Logical end slot: custom content > spacer (keeps title centered).
+  const renderEnd = () => {
+    if (rightContent) {
+      return <View style={[styles.slotContent, styles.slotEnd]}>{rightContent}</View>;
+    }
+    return <View style={styles.control} />;
   };
 
   return (
@@ -59,15 +88,25 @@ const TopBar = ({
       <StatusBar barStyle="light-content" backgroundColor={colors.primary[500]} />
 
       <View style={styles.content}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>{title}</Text>
-          {renderLeft()}
-        </View>
-        {rightContent ? (
-          <View style={styles.rightContent}>{rightContent}</View>
-        ) : (
-          <View style={styles.placeholder} />
+        {/* Absolutely-centered title layer: centered across the full bar width,
+            independent of the side slots, so it never shifts between RTL/LTR.
+            Rendered behind the slots and padded away from the 44px controls. */}
+        {!!title && (
+          <View style={styles.titleLayer} pointerEvents="none">
+            <Text
+              style={styles.title}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              accessibilityRole="header"
+            >
+              {title}
+            </Text>
+          </View>
         )}
+
+        <View style={styles.startSlot}>{renderStart()}</View>
+        <View style={styles.spacer} />
+        <View style={styles.endSlot}>{renderEnd()}</View>
       </View>
     </View>
   );
@@ -79,39 +118,51 @@ const styles = StyleSheet.create({
     paddingTop: StatusBar.currentHeight || 0,
   },
   content: {
+    // `row` auto-flips under a global RTL direction (I18nManager) — logical
+    // start/end, no hardcoded row-reverse.
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: spacing[24],
-    paddingVertical: spacing[8],
-    height: 57,
+    paddingHorizontal: spacing[16],
+    minHeight: 57,
     width: "100%",
   },
-  backButton: {
-    width: 24,
-    height: 24,
+  // Equal-width side slots keep the absolutely-centered title balanced.
+  startSlot: {
+    minWidth: TOUCH,
     justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholder: {
-    width: 24,
-    height: 24,
-  },
-  leftCustom: {
-    minWidth: 24,
     alignItems: "flex-start",
-    justifyContent: "center",
   },
-  rightContent: {
-    minWidth: 24,
+  endSlot: {
+    minWidth: TOUCH,
+    justifyContent: "center",
     alignItems: "flex-end",
   },
-  titleContainer: {
-    flexDirection: "row-reverse",
+  spacer: {
+    flex: 1,
+  },
+  control: {
+    width: TOUCH,
+    height: TOUCH,
+    justifyContent: "center",
     alignItems: "center",
-    gap: spacing[10],
+  },
+  slotContent: {
+    justifyContent: "center",
+    minHeight: TOUCH,
+  },
+  slotEnd: {
+    alignItems: "flex-end",
+  },
+  // Title layer spans the whole bar and centers its text; the 44px horizontal
+  // insets keep long titles from colliding with the corner controls.
+  titleLayer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: TOUCH + spacing[8],
   },
   title: {
+    textAlign: "center",
     fontSize: typography.fontSize.body.medium,
     fontWeight: typography.fontWeight.semibold,
     color: colors.natural[50],

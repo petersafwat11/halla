@@ -1,17 +1,13 @@
 import LegalPage from "@/ui/landing/Legal/LegalPage";
-import privacyData from "@/ui/landing/Legal/data/privacy.json";
+import { getLegalDocument } from "@halla/shared/legal";
 import Header from "@/ui/landing/Header/Header";
 import Footer from "@/ui/landing/Footer/Footer";
 
 const SIBLINGS = [
-  {
-    href: "/terms",
-    titleKey: "legal.siblings.terms",
-  },
-  {
-    href: "/refund",
-    titleKey: "legal.siblings.refund",
-  },
+  { href: "/terms", titleKey: "legal.siblings.terms" },
+  { href: "/refund", titleKey: "legal.siblings.refund" },
+  { href: "/community-rules", titleKey: "legal.siblings.communityRules" },
+  { href: "/support", titleKey: "legal.siblings.support" },
 ];
 
 export async function generateMetadata({ params }) {
@@ -27,7 +23,7 @@ export async function generateMetadata({ params }) {
 
 export default async function PrivacyPage({ params }) {
   const { lang } = await params;
-  const doc = privacyData[lang] || privacyData.ar;
+  const doc = getLegalDocument("privacy", lang);
 
   return (
     <>

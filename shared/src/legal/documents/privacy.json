@@ -1,10 +1,16 @@
 {
   "ar": {
+    "documentType": "privacy",
+    "version": "2026-03-01",
+    "locale": "ar",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": "01 مارس 2026",
+    "lastUpdated": "01 مارس 2026",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
     "badge": "سياسة الخصوصية",
     "title": "سياسة الخصوصية",
     "subtitle": "منصة هلا",
-    "lastUpdated": "01 مارس 2026",
-    "effectiveDate": "01 مارس 2026",
+    "changeSummary": "توحيد المصدر القانوني في حزمة مشتركة (بنية فقط).",
     "sections": [
       {
         "id": "article-1",
@@ -86,11 +92,17 @@
     ]
   },
   "en": {
+    "documentType": "privacy",
+    "version": "2026-03-01",
+    "locale": "en",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": "01 March 2026",
+    "lastUpdated": "01 March 2026",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
     "badge": "Privacy Policy",
     "title": "Privacy Policy",
     "subtitle": "Halaa Platform",
-    "lastUpdated": "01 March 2026",
-    "effectiveDate": "01 March 2026",
+    "changeSummary": "Consolidated into a single shared source (structure only).",
     "sections": [
       {
         "id": "article-1",

@@ -4,11 +4,16 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { LEGAL_CONTACT } from "@halla/shared/legal";
 import styles from "./LegalPage.module.css";
 
-/* ─── Contact constants ─── */
-const CONTACT_EMAIL = "mailto:support@halaa.net";
-const CONTACT_WA = "https://wa.me/966552619282";
+/* ─── Contact — single source of truth (`@halla/shared/legal` LEGAL_CONTACT).
+   Values are PROVISIONAL and owner-gated (BLOCKED_NEEDS_OWNER): a real
+   support-email conflict (halaa.net vs halaa.com.sa) must be resolved by the
+   owner. Rendered from the shared module so there is exactly one place to update
+   once approved — no more hardcoded per-file contact strings. ─── */
+const CONTACT_EMAIL = `mailto:${LEGAL_CONTACT.supportEmail.provisional}`;
+const CONTACT_WA = `https://wa.me/${String(LEGAL_CONTACT.whatsapp.provisional).replace(/[^0-9]/g, "")}`;
 
 /* ─── Icons ─── */
 const IconChevronDown = () => (

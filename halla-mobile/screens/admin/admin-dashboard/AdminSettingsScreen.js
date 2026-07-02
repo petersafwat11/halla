@@ -23,6 +23,14 @@ export default function AdminSettingsScreen({ navigation }) {
       navigation.navigate("Privacy");
     } else if (tabId === "terms") {
       navigation.navigate("Terms");
+    } else if (tabId === "communityRules") {
+      navigation.navigate("CommunityRules");
+    } else if (tabId === "refund") {
+      navigation.navigate("Refund");
+    } else if (tabId === "deletion") {
+      navigation.navigate("Deletion");
+    } else if (tabId === "support") {
+      navigation.navigate("Support");
     }
   };
 

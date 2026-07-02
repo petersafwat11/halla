@@ -41,6 +41,10 @@ import AdminAccountSettingsScreen from "../screens/admin/admin-dashboard/AdminAc
 import AdminNotificationSettingsScreen from "../screens/admin/admin-dashboard/AdminNotificationSettingsScreen";
 import PrivacyScreen from "../screens/legal/PrivacyScreen";
 import TermsScreen from "../screens/legal/TermsScreen";
+import CommunityRulesScreen from "../screens/legal/CommunityRulesScreen";
+import RefundScreen from "../screens/legal/RefundScreen";
+import DeletionScreen from "../screens/legal/DeletionScreen";
+import SupportScreen from "../screens/legal/SupportScreen";
 import AdminMoreScreen from "../screens/admin/admin-dashboard/AdminMoreScreen";
 import AdminDiscountsScreen from "../screens/admin/admin-dashboard/AdminDiscountsScreen";
 import AdminTemplatesScreen from "../screens/admin/admin-dashboard/AdminTemplatesScreen";
@@ -250,6 +254,34 @@ function MoreStackNavigator() {
         <MoreStack.Screen
           name="Terms"
           component={TermsScreen}
+          options={{ headerShown: false }}
+        />
+      )}
+      {canViewPage(userRole, PAGES.SETTINGS) && (
+        <MoreStack.Screen
+          name="CommunityRules"
+          component={CommunityRulesScreen}
+          options={{ headerShown: false }}
+        />
+      )}
+      {canViewPage(userRole, PAGES.SETTINGS) && (
+        <MoreStack.Screen
+          name="Refund"
+          component={RefundScreen}
+          options={{ headerShown: false }}
+        />
+      )}
+      {canViewPage(userRole, PAGES.SETTINGS) && (
+        <MoreStack.Screen
+          name="Deletion"
+          component={DeletionScreen}
+          options={{ headerShown: false }}
+        />
+      )}
+      {canViewPage(userRole, PAGES.SETTINGS) && (
+        <MoreStack.Screen
+          name="Support"
+          component={SupportScreen}
           options={{ headerShown: false }}
         />
       )}

@@ -27,6 +27,7 @@ import MediaUploader from "../../components/host/post-event/MediaUploader";
 import MessagingTemplatePicker from "../../components/host/post-event/MessagingTemplatePicker";
 import AccessLinksSheet from "../../components/host/post-event/AccessLinksSheet";
 import PublishControls from "../../components/host/post-event/PublishControls";
+import LegalLinks from "../../components/legal/LegalLinks";
 
 const StatusBanner = ({ isPublished, t }) => (
   <View
@@ -268,6 +269,13 @@ const ManagePostEventScreen = ({ navigation, route }) => {
           onOpenAccessLinks={() => setAccessSheetOpen(true)}
           onUnpublish={handleUnpublish}
           t={t}
+        />
+
+        {/* UGC disclosure at the acceptance point (§4.3): publishing records
+            acceptance of the current Terms + Community Rules. */}
+        <LegalLinks
+          noticeKey="legal.ugcAcceptNotice"
+          docTypes={["terms", "community-rules"]}
         />
 
         <View style={{ height: 40 }} />

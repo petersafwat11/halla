@@ -5,6 +5,10 @@
     "notifications": "الإشعارات",
     "privacy": "سياسة الخصوصية",
     "terms": "الشروط والأحكام",
+    "communityRules": "قواعد المجتمع",
+    "refund": "الإلغاء والاسترداد",
+    "deletion": "حذف الحساب والبيانات",
+    "support": "الدعم والتواصل",
     "logout": "تسجيل الخروج",
     "comingSoon": "قريباً"
   },
@@ -108,6 +112,7 @@
     "termsOfService": "شروط الخدمة"
   },
   "legal": {
-    "lastUpdated": "آخر تحديث"
+    "lastUpdated": "آخر تحديث",
+    "ugcAcceptNotice": "بنشر المحتوى فإنك توافق على:"
   }
 }

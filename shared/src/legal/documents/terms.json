@@ -1,10 +1,16 @@
 {
   "ar": {
+    "documentType": "terms",
+    "version": "2026-02-03",
+    "locale": "ar",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": null,
+    "lastUpdated": "24 نوفمبر 2025",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
     "badge": "الشروط والأحكام",
     "title": "الشروط والأحكام",
     "subtitle": "منصة هلا",
-    "lastUpdated": "24 نوفمبر 2025",
-    "effectiveDate": null,
+    "changeSummary": "توحيد المصدر القانوني في حزمة مشتركة (بنية فقط).",
     "sections": [
       {
         "id": "article-1",
@@ -191,11 +197,17 @@
     ]
   },
   "en": {
+    "documentType": "terms",
+    "version": "2026-02-03",
+    "locale": "en",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": null,
+    "lastUpdated": "03 February 2026",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
     "badge": "Terms & Conditions",
     "title": "Terms and Conditions",
     "subtitle": "Halaa Platform",
-    "lastUpdated": "03 February 2026",
-    "effectiveDate": null,
+    "changeSummary": "Consolidated into a single shared source (structure only).",
     "sections": [
       {
         "id": "article-1",

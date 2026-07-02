@@ -29,6 +29,10 @@ import AccountSettingsScreen from "../screens/host/AccountSettingsScreen";
 import NotificationSettingsScreen from "../screens/common/NotificationSettingsScreen";
 import PrivacyScreen from "../screens/legal/PrivacyScreen";
 import TermsScreen from "../screens/legal/TermsScreen";
+import CommunityRulesScreen from "../screens/legal/CommunityRulesScreen";
+import RefundScreen from "../screens/legal/RefundScreen";
+import DeletionScreen from "../screens/legal/DeletionScreen";
+import SupportScreen from "../screens/legal/SupportScreen";
 import TicketsScreen from "../screens/common/TicketsScreen";
 import Marketplace from "../screens/common/Marketplace";
 import VendorPublicProfileScreen from "../screens/common/VendorPublicProfileScreen";
@@ -75,6 +79,10 @@ function SettingsStackNavigator() {
       <SettingsStackNav.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
       <SettingsStackNav.Screen name="Privacy" component={PrivacyScreen} />
       <SettingsStackNav.Screen name="Terms" component={TermsScreen} />
+      <SettingsStackNav.Screen name="CommunityRules" component={CommunityRulesScreen} />
+      <SettingsStackNav.Screen name="Refund" component={RefundScreen} />
+      <SettingsStackNav.Screen name="Deletion" component={DeletionScreen} />
+      <SettingsStackNav.Screen name="Support" component={SupportScreen} />
     </SettingsStackNav.Navigator>
   );
 }
@@ -87,6 +95,10 @@ function VendorSettingsStackNavigator() {
       <VendorSettingsStackNav.Screen name="VendorAccountSetup" component={VendorAccountSetupScreen} />
       <VendorSettingsStackNav.Screen name="Privacy" component={PrivacyScreen} />
       <VendorSettingsStackNav.Screen name="Terms" component={TermsScreen} />
+      <VendorSettingsStackNav.Screen name="CommunityRules" component={CommunityRulesScreen} />
+      <VendorSettingsStackNav.Screen name="Refund" component={RefundScreen} />
+      <VendorSettingsStackNav.Screen name="Deletion" component={DeletionScreen} />
+      <VendorSettingsStackNav.Screen name="Support" component={SupportScreen} />
     </VendorSettingsStackNav.Navigator>
   );
 }

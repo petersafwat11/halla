@@ -9,6 +9,10 @@ const VendorSettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
     { id: "accountSetup", label: t("tabs.account"), icon: "person-outline" },
     { id: "privacy", label: t("tabs.privacy"), icon: "shield-checkmark-outline" },
     { id: "terms", label: t("tabs.terms"), icon: "document-text-outline" },
+    { id: "communityRules", label: t("tabs.communityRules"), icon: "people-outline" },
+    { id: "refund", label: t("tabs.refund"), icon: "card-outline" },
+    { id: "deletion", label: t("tabs.deletion"), icon: "trash-outline" },
+    { id: "support", label: t("tabs.support"), icon: "help-buoy-outline" },
   ];
 
   return (

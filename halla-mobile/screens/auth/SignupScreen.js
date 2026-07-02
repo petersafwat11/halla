@@ -21,6 +21,7 @@ import {
 } from "../../components/auth";
 import RoleSelectionView from "../../components/auth/RoleSelectionView";
 import TopBar from "../../components/plans/TopBar";
+import LegalLinks from "../../components/legal/LegalLinks";
 
 const { width } = Dimensions.get("window");
 
@@ -208,7 +209,15 @@ export default function SignupScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.content}>{renderStep()}</View>
+          <View style={styles.content}>
+            {renderStep()}
+            {/* Unauthenticated legal disclosure — opens the canonical web pages
+                (same shared content the in-app legal screens render). */}
+            <LegalLinks
+              prefix={t("signup.legalNotice")}
+              docTypes={["terms", "privacy", "community-rules"]}
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
       </View>
