@@ -118,3 +118,13 @@ Every in-repo engineering gate is green and independently re-verified; the commi
 **FINAL VERDICT: `NO_GO`.**
 
 Path to `READY_FOR_OWNER_SUBMISSION_APPROVAL`: execute B1→B8 in order, evidencing each in-repo, then re-run this audit.
+
+---
+
+## 8. Coordinator sign-off (2026-07-02)
+
+The lead coordinator accepts this independent audit and its `NO_GO` verdict, with three reconciliations for the record:
+
+- **Runbook cert gap (§2, §5-B1) is now FIXED — in the same commit as this report (`47ab2dfc`).** §2/§5 preserve the audit's *original* finding (the runbook omitted `certs/mongodb-x509.pem`); that omission has since been corrected — `SEC-01-OWNER-RUNBOOK.md` §1 inventory, §2 rotation (regenerate + revoke the X.509 cert), §3 untrack, and BOTH §4 purge commands (`git filter-repo` + BFG) now include the cert. So the audit's "must be corrected" is satisfied; no open runbook gap remains. The cert itself is still tracked-in-history → SEC-01 rotation/purge (B1) is still required.
+- **Shape of the coordinator review (so "coordinator-verified" is calibrated honestly).** Each of Sessions 3–9 was reviewed **risk-weighted**, not as a literal line-by-line read of all ~200 changed files: deep on the payment-authorization / reconcile / deletion / secret-handling paths, plus independent re-runs of every gate, scope/secret scans on every commit, and adversarial checks on the highest-risk logic (e.g. the event-fallback invariant, the truthful-deletion state machine, the default-deny SEO policy). Two real defects were found and closed this way (an untested reconcile fallback → `revenuecat-event-fallback.test.js`; an untested first-send consume trigger → `event-firstsend-consume.integration.test.js`), and this independent audit caught a third (the tracked cert). Lower-risk UI/wiring/i18n/doc changes were verified via passing gates + targeted spot-checks, not exhaustive reading.
+- **Git state.** 12 commits sit on local `master`, **UNPUSHED** (origin is 12 behind). Pushing is the owner's decision and is **not** required to act on this report — and critically, **pushing does not affect SEC-01**: the secrets are already in origin's history (`config.env` since `1462526a`), so credential **rotation** is the only remedy whether or not these local commits are pushed. No push, PR, submission, publish, release, credential rotation, or history rewrite was performed by this run.
