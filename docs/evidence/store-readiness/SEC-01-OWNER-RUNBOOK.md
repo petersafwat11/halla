@@ -1,6 +1,6 @@
 # SEC-01 — secret rotation + history-purge runbook (OWNER-ONLY)
 
-**Status:** `BLOCKED_NEEDS_OWNER` · **Assessed:** 2026-07-02 · **Scope:** Session 4.
+**Status:** `BLOCKED_NEEDS_OWNER` · **Assessed:** 2026-07-02 (Session 4; `mongodb-x509.pem` added by the Session-10 independent audit) · **Scope:** Session 4 + Session-10 correction.
 
 > **This runbook contains NO secret values.** It documents the tracking status and the exact
 > owner-gated steps to rotate credentials and purge git history. Session 4 deliberately did
@@ -17,8 +17,9 @@ this work):
 
 | File | Tracked? | In `.gitignore`? | Meaning |
 |---|---|---|---|
-| `labbe-backend-/config.env` | **YES** (`git ls-files`) | YES (`.gitignore:11`, `*.env`) | Tracked BEFORE it was gitignored; `.gitignore` does **not** untrack an already-committed file. Present in history. |
-| `halla-mobile/.env` | **YES** (`git ls-files`) | YES (root `.gitignore:52`) | Same — tracked + ignored; present in history. |
+| `labbe-backend-/config.env` | **YES** (`git ls-files`) | YES (`.gitignore:11`, `*.env`) | Tracked BEFORE it was gitignored; `.gitignore` does **not** untrack an already-committed file. Present in history. **Real secrets**: DB SRV+password, `JWT_SECRET`, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, `MOYASAR_API_KEY` + `MOYASAR_WEBHOOK_SECRET`, `TAQNYAT_API_KEY`, `EMAIL_PASSWORD`. |
+| `labbe-backend-/certs/mongodb-x509.pem` | **YES** (`git ls-files`) | YES (`certs/`, `*.pem`, root `**/*.pem`) | **MongoDB Atlas client X.509 cert — contains a `BEGIN PRIVATE KEY` block.** Tracked + in history → the private key is recoverable from any clone; must be **regenerated + purged**. ⚠️ Added 2026-07-02: the Session-10 independent audit caught this file — it was **omitted** from the original Session-4 inventory/purge steps. |
+| `halla-mobile/.env` | **YES** (`git ls-files`) | YES (root `.gitignore:52`) | Tracked + ignored + in history, but holds **only** `EXPO_PUBLIC_HALLA_WHATSAPP_NUMBER` — **public config, NOT a secret** (`EXPO_PUBLIC_*` is bundled into the app). No rotation needed; untrack for hygiene only. |
 
 `config.env.example` (secret-free template) is correctly kept via `!config.env.example`.
 Because the live files are committed, their secrets are recoverable from **any clone and the
@@ -30,9 +31,11 @@ Rotate every credential that has ever been in a committed `config.env` / `.env`.
 are compromised. Provider-by-provider (do NOT paste any value into this doc, evidence, chat,
 or a commit):
 
-1. **Database (MongoDB Atlas)** — create a new DB user / rotate the password (and the DB
-   cert if tracked); update the deploy secret store; verify the VPS boots against the new
-   creds; then delete the old user. (Note: `halaa-staging` is shared local+prod — coordinate.)
+1. **Database (MongoDB Atlas)** — create a new DB user / rotate the password **AND regenerate
+   the X.509 client cert `labbe-backend-/certs/mongodb-x509.pem`** (it is tracked + in history —
+   treat the private key as compromised); update the deploy secret store; verify the VPS boots
+   against the new creds + new cert; then delete the old user and **revoke the old cert**.
+   (Note: `halaa-staging` is shared local+prod — coordinate.)
 2. **Moyasar** — roll the API key(s) in the Moyasar dashboard; update the backend secret;
    confirm a test payment + webhook still authenticate.
 3. **RevenueCat** — rotate the webhook auth value + any REST API key; update
@@ -61,9 +64,9 @@ the tracked `config.env`:
 #    - move the real config to an untracked path or the platform secret store,
 #    - confirm a boot from that source in staging.
 # 2. Untrack (keeps the working-tree file, removes it from the index going forward):
-git rm --cached labbe-backend-/config.env halla-mobile/.env
-git commit -m "chore(sec): stop tracking secret env files (SEC-01)"
-# 3. .gitignore already covers them (config.env, *.env, **/.env, **/config.env),
+git rm --cached labbe-backend-/config.env labbe-backend-/certs/mongodb-x509.pem halla-mobile/.env
+git commit -m "chore(sec): stop tracking secret env + cert files (SEC-01)"
+# 3. .gitignore already covers them (config.env, *.env, **/.env, certs/, *.pem),
 #    so they won't be re-added.
 ```
 
@@ -79,6 +82,7 @@ pip install git-filter-repo
 git clone --mirror <repo-url> halla-purge && cd halla-purge
 git filter-repo \
   --path labbe-backend-/config.env \
+  --path labbe-backend-/certs/mongodb-x509.pem \
   --path halla-mobile/.env \
   --invert-paths
 git push --force --all
@@ -88,7 +92,7 @@ git push --force --tags
 **Option B — BFG Repo-Cleaner:**
 ```bash
 # From a fresh mirror clone:
-java -jar bfg.jar --delete-files config.env --delete-files .env halla-purge.git
+java -jar bfg.jar --delete-files config.env --delete-files mongodb-x509.pem --delete-files .env halla-purge.git
 cd halla-purge.git && git reflog expire --expire=now --all && git gc --prune=now --aggressive
 git push --force
 ```
