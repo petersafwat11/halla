@@ -144,11 +144,15 @@ assert(
     /\/:id\/void/.test(paymentsRoutesSrc),
   'payments.routes.js missing refund/capture/void admin actions'
 );
+// Admin write actions are gated by the CURRENT permission architecture —
+// requirePageAccess(ADMIN_PAGES.PAYMENTS, 'manage') — not the obsolete
+// restrictTo(SUPER_ADMIN, ADMIN) text. The 'manage' verb resolves to FULL
+// access AND role ∈ {SUPER_ADMIN, ADMIN} in canAccessPage (permissions.js).
 assert(
-  paymentsRoutesSrc.includes('restrictTo(ROLES.SUPER_ADMIN, ROLES.ADMIN)'),
-  'payments.routes.js admin actions not gated by restrictTo(SUPER_ADMIN, ADMIN)'
+  /requirePageAccess\(\s*ADMIN_PAGES\.PAYMENTS\s*,\s*['"]manage['"]\s*\)/.test(paymentsRoutesSrc),
+  "payments.routes.js admin write actions not gated by requirePageAccess(ADMIN_PAGES.PAYMENTS, 'manage')"
 );
-ok('payments.routes.js exposes refund/capture/void gated by SUPER_ADMIN/ADMIN');
+ok("payments.routes.js gates refund/capture/void via requirePageAccess(PAYMENTS,'manage')");
 
 // 13. AddonModel status enum extended with pending_3ds.
 const addonModelSrc = read('models/AddonModel.js');
@@ -183,6 +187,10 @@ assert(
 ok('AuditLogModel.targetType enum includes "payment"');
 
 // 17. No leftover paymentTransactionId writes in the active service paths.
+// (subSvcSrc was previously undefined here — a dormant bug masked by check #12
+// exiting first; defined now so the suite runs to completion. addonSvcSrc is
+// already read above at check #7.)
+const subSvcSrc = read('src/modules/subscriptions/subscriptions.service.js');
 const subSvcLegacy = subSvcSrc.match(/paymentTransactionId\s*[=:]\s*[^/]/g) || [];
 assert(
   subSvcLegacy.length === 0,
@@ -195,17 +203,20 @@ assert(
 );
 ok('subscriptions/addons services no longer write paymentTransactionId');
 
-// 18. Frontend api.config has hostPayments + payments.refund/capture/void.
-const feApiSrc = read('../labbe/services/new-backend/api.config.js');
+// 18. Shared FE api paths declare hostPayments + payments.refund/capture/void.
+// (Repointed from the removed labbe/services/new-backend/api.config.js to the
+// current canonical shared paths module consumed by web + mobile — a stale-path
+// fix, dormant until check #12 stopped exiting early.)
+const feApiSrc = read('../shared/src/api/paths.js');
 assert(
   /hostPayments:\s*\{/.test(feApiSrc) &&
     /poll3ds:/.test(feApiSrc) &&
     /payments:\s*\{[\s\S]*refund:/.test(feApiSrc) &&
     /capture:/.test(feApiSrc) &&
     /void:/.test(feApiSrc),
-  'labbe/services/new-backend/api.config.js missing hostPayments or payments admin write paths'
+  'shared/src/api/paths.js missing hostPayments or payments admin write paths'
 );
-ok('labbe api.config.js declares hostPayments + payments.refund/capture/void');
+ok('shared/src/api/paths.js declares hostPayments + payments.refund/capture/void');
 
 // eslint-disable-next-line no-console
 console.log(`\nstatic-checks-payments: OK (${checks} / 18)`);

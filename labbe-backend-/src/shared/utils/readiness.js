@@ -47,8 +47,22 @@ const getReadiness = () => {
   // entirely broken in production.
   const origins = { ok: isPresent("FRONTEND_URL") };
 
-  const ready = db.ok && secrets.ok && origins.ok;
-  return { ready, checks: { db, secrets, origins } };
+  // Native billing (§9): when enabled, missing/malformed/placeholder/
+  // contradictory RevenueCat config or a corrupt/hash-mismatched catalog
+  // manifest FAILS readiness observably. Loaded lazily so simply requiring this
+  // module never pulls the commerce/catalog chain into unrelated code paths.
+  let billing = { ok: true, enabled: false };
+  try {
+    // eslint-disable-next-line global-require
+    const { getBillingReadiness } = require("../../modules/payments/revenuecat.config");
+    const r = getBillingReadiness();
+    billing = { ok: r.ready, enabled: r.enabled, checks: r.checks, errors: r.errors };
+  } catch (err) {
+    billing = { ok: false, enabled: true, errors: [`billing readiness threw: ${err.message}`] };
+  }
+
+  const ready = db.ok && secrets.ok && origins.ok && billing.ok;
+  return { ready, checks: { db, secrets, origins, billing } };
 };
 
 /**
@@ -57,12 +71,16 @@ const getReadiness = () => {
  */
 const assertProductionConfigOrWarn = ({ strict } = {}) => {
   if (process.env.NODE_ENV !== "production") return;
-  const { secrets, origins } = getReadiness().checks;
+  const { secrets, origins, billing } = getReadiness().checks;
   const problems = [];
   if (!secrets.ok) {
     problems.push(`missing required secrets: ${secrets.missing.join(", ")}`);
   }
   if (!origins.ok) problems.push("FRONTEND_URL (allowed origin) is not set");
+  // Only gate on billing when native billing is explicitly enabled.
+  if (billing && billing.enabled && !billing.ok) {
+    problems.push(`native billing not ready: ${(billing.errors || []).join("; ")}`);
+  }
   if (problems.length === 0) return;
 
   const strictMode = strict ?? process.env.STRICT_CONFIG === "true";

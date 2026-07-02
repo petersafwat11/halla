@@ -14,8 +14,12 @@ const paymentProvider = require('../../infrastructure/paymentProvider');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { computePrice, resolveScope } = require('./addons.pricing');
-const { applyQuota } = require('./addons.quota');
+const { applyQuota, clawbackExtraInvites } = require('./addons.quota');
+// Late-bound handle so the store-grant path's quota call is stubbable in tests
+// (the in-transaction rollback path, §10).
+const addonsQuota = require('./addons.quota');
 const { recordPendingRefund } = require('./addons.refund');
+const { withTransaction } = require('../../shared/utils/withTransaction');
 
 class AddonsService {
   getAvailableAddons() {
@@ -403,41 +407,49 @@ class AddonsService {
     addonType,
     quantity,
     templateType,
+    catalogCode,
     providerTransactionId,
+    originalTransactionId,
     rcEventId,
     store,
+    environment,
+    catalogVersion,
+    catalogHash,
   }) {
     if (!Object.values(ADDON_TYPES).includes(addonType)) {
       throw new ValidationError(`Invalid addon type: ${addonType}`);
     }
-    // Idempotent: a re-delivered store transaction must not double-grant.
+    // Idempotent on the FIRST-CLASS unique provider transaction id (ADD-01;
+    // fixes P0-10 which relied on a non-unique metadata lookup + no index).
     if (providerTransactionId) {
-      const existing = await Addon.findOne({
-        "metadata.providerTransactionId": providerTransactionId,
-      });
+      const existing = await Addon.findOne({ providerTransactionId });
       if (existing) return existing;
     }
 
     const price = computePrice(addonType, { quantity, templateType });
-    // No eventId at store-purchase time → default scope per type (extra_invites
-    // = pool, design_template/business_customization = org).
     const scope = resolveScope(addonType, undefined, {});
 
-    // pool/org add-ons attach to the user's active subscription. The mobile flow
-    // buys the plan and waits for reconcile BEFORE buying add-ons, so the
-    // subscription exists by now.
+    // Resolve the EXACT target subscription BEFORE creating `active` (P0-10).
     let subscriptionId = null;
     if (scope === "pool" || scope === "org") {
-      const activeSubs = await Subscription.findActiveForUser(userId);
+      const activeSubs = (await Subscription.findActiveForUser(userId)) || [];
       subscriptionId = activeSubs[0]?._id || null;
     }
 
+    // Per-type initial state:
+    //  business_customization → pending_provisioning (managed service).
+    //  design_template        → paid (managed-service workflow paid→…→fulfilled).
+    //  extra_invites          → active (quota applied atomically below).
     const initialStatus =
       addonType === ADDON_TYPES.BUSINESS_CUSTOMIZATION
         ? "pending_provisioning"
-        : "active";
+        : addonType === ADDON_TYPES.DESIGN_TEMPLATE
+          ? "paid"
+          : "active";
 
-    const addon = await Addon.create({
+    const needsQuota = addonType === ADDON_TYPES.EXTRA_INVITES && initialStatus === "active";
+
+    const baseDoc = {
       userId,
       addonType,
       quantity: quantity || 1,
@@ -445,27 +457,46 @@ class AddonsService {
       price,
       currency: "SAR",
       subscriptionId,
-      status: initialStatus,
       scope,
-      metadata: {
-        source: "revenuecat",
-        providerTransactionId: providerTransactionId || null,
-        rcEventId: rcEventId || null,
-        store: store || null,
-        activatedAt:
-          initialStatus === "active" ? new Date().toISOString() : null,
-      },
-    });
+      source: "revenuecat",
+      providerTransactionId: providerTransactionId || null,
+      originalTransactionId: originalTransactionId || null,
+      store: store || null,
+      environment: environment || null,
+      revenueCatEventId: rcEventId || null,
+      catalogCode: catalogCode || null,
+      catalogVersion: catalogVersion || null,
+      catalogHash: catalogHash || null,
+      metadata: { source: "revenuecat", rcEventId: rcEventId || null, store: store || null },
+    };
 
-    if (initialStatus === "active") {
-      try {
-        await applyQuota(addon, {});
-      } catch (quotaErr) {
-        logger.error("[addons.grantFromStore] applyQuota failed", {
-          addonId: addon._id,
-          error: quotaErr?.message,
-        });
-      }
+    // Missing quota target is an ERROR, not a silent success (P0-10): record a
+    // durable failed_quota + refund_required row and alert.
+    if (needsQuota && !subscriptionId) {
+      const failed = await Addon.create({ ...baseDoc, status: "failed_quota", refundState: "refund_required", grantedDelta: quantity || 1 });
+      await recordPendingRefund({ userId, amount: price, currency: "SAR", reason: "addon_iap_missing_target_subscription", addonType, scope, providerTransactionId }).catch(() => {});
+      logger.error("[addons.grantFromStore] no target subscription for pool/org add-on → failed_quota", { addonId: failed._id, providerTransactionId });
+      return failed;
+    }
+
+    // SUCCESS path: create + apply quota ATOMICALLY.
+    let addon;
+    try {
+      addon = await withTransaction(async (session) => {
+        const [a] = await Addon.create(
+          [{ ...baseDoc, status: initialStatus, grantedDelta: needsQuota ? quantity || 1 : null, metadata: { ...baseDoc.metadata, activatedAt: initialStatus === "active" ? new Date().toISOString() : null } }],
+          session ? { session } : undefined
+        );
+        if (needsQuota) await addonsQuota.applyQuota(a, { session });
+        return a;
+      }, { label: "addon.grantFromStore" });
+    } catch (err) {
+      if (err.code === 11000) return Addon.findOne({ providerTransactionId }); // concurrent dup
+      // Quota failed AFTER charge → durable observable failure + refund queue.
+      addon = await Addon.create({ ...baseDoc, status: "failed_quota", refundState: "refund_required", grantedDelta: needsQuota ? quantity || 1 : null, metadata: { ...baseDoc.metadata, quotaError: err.message } });
+      await recordPendingRefund({ userId, amount: price, currency: "SAR", reason: "addon_iap_quota_failed", detail: err.message, addonType, scope, providerTransactionId }).catch(() => {});
+      logger.error("[addons.grantFromStore] applyQuota failed → failed_quota", { addonId: addon._id, error: err.message });
+      return addon;
     }
 
     logAudit({
@@ -473,17 +504,83 @@ class AddonsService {
       actor: { _id: userId, role: ROLES.HOST },
       targetType: "system",
       targetId: addon._id,
-      metadata: {
-        addonId: addon._id,
-        addonType,
-        quantity: quantity || 1,
-        scope,
-        status: initialStatus,
-        providerTransactionId: providerTransactionId || null,
-        rcEventId: rcEventId || null,
-      },
+      metadata: { addonId: addon._id, addonType, quantity: quantity || 1, scope, status: addon.status, providerTransactionId: providerTransactionId || null, rcEventId: rcEventId || null },
     }).catch(() => {});
 
+    return addon;
+  }
+
+  /**
+   * Store-driven refund/reversal of an add-on (ADD-02 · §8), keyed to the EXACT
+   * provider transaction. Refund handling differs by signed policy:
+   *  - extra_invites (clawback_unused): reclaim only the still-unused delta,
+   *    never below consumed usage.
+   *  - design_template (non_refundable_from_creation): Halaa does not refund, but
+   *    a store-FORCED refund is recorded + reconciled WITHOUT pretending the
+   *    service work was undone.
+   *  - business_customization (managed_service_legal_review): route to legal
+   *    review; no automatic reversal.
+   * Idempotent on the refund state.
+   */
+  async refundAddonFromStore({ providerTransactionId, rcEventId }) {
+    if (!providerTransactionId) return null;
+    const addon = await Addon.findOne({ providerTransactionId });
+    if (!addon) return null;
+    if (addon.refundState === "refunded" || addon.refundState === "reversed") return addon; // idempotent
+
+    if (addon.addonType === ADDON_TYPES.EXTRA_INVITES) {
+      const reclaimed = await withTransaction(async (session) => clawbackExtraInvites(addon, { session }), { label: "addon.refundClawback" });
+      addon.clawedBackDelta = (addon.clawedBackDelta || 0) + reclaimed;
+      addon.refundState = "refunded";
+      addon.status = "refunded";
+      addon.refundedAt = new Date();
+      addon.refundReason = `store_refund_clawback_unused(reclaimed=${reclaimed})`;
+      await addon.save();
+      logger.warn("[addons.refundFromStore] extra_invites clawback", { addonId: addon._id, reclaimed });
+      return addon;
+    }
+
+    if (addon.addonType === ADDON_TYPES.DESIGN_TEMPLATE) {
+      // Signed DEC-03L: non-refundable from creation. A store-forced refund is
+      // recorded + reconciled but the delivered/creative work is NOT undone.
+      addon.refundState = "refunded";
+      addon.refundedAt = new Date();
+      addon.refundReason = "store_forced_refund_non_refundable_policy";
+      await addon.save();
+      await recordPendingRefund({ userId: addon.userId, amount: addon.price, currency: addon.currency, reason: "design_template_store_forced_refund", addonType: addon.addonType, providerTransactionId }).catch(() => {});
+      return addon;
+    }
+
+    // business_customization → managed-service legal review, no auto reversal.
+    addon.refundState = "manual_review";
+    addon.refundedAt = new Date();
+    addon.refundReason = "managed_service_legal_review";
+    await addon.save();
+    await recordPendingRefund({ userId: addon.userId, amount: addon.price, currency: addon.currency, reason: "business_customization_store_refund_manual_review", addonType: addon.addonType, providerTransactionId }).catch(() => {});
+    return addon;
+  }
+
+  /**
+   * Reverse a prior refund for the EXACT transaction (REFUND_REVERSED), once.
+   * For extra_invites, restore exactly the clawed-back delta.
+   */
+  async reverseAddonRefund({ providerTransactionId }) {
+    if (!providerTransactionId) return null;
+    const addon = await Addon.findOne({ providerTransactionId });
+    if (!addon) return null;
+    if (addon.refundState === "reversed" || addon.refundState === "none") return addon; // idempotent
+
+    if (addon.addonType === ADDON_TYPES.EXTRA_INVITES && (addon.clawedBackDelta || 0) > 0 && addon.subscriptionId) {
+      const restore = addon.clawedBackDelta;
+      await withTransaction(async (session) => {
+        await Subscription.findByIdAndUpdate(addon.subscriptionId, { $inc: { invitePool: restore } }, session ? { session } : {});
+      }, { label: "addon.reverseRefund" });
+      addon.clawedBackDelta = 0;
+      addon.status = "active";
+    }
+    addon.refundState = "reversed";
+    addon.refundReason = `reversed(${addon.refundReason || ""})`;
+    await addon.save();
     return addon;
   }
 

@@ -23,18 +23,40 @@
 
 const { buildCatalog, catalogCounts } = require("./buildCatalog");
 const { RECURRING_ENTITLEMENT_ID } = require("./catalog.schema");
+const { verifyManifest } = require("./catalog.integrity");
 
 let _manifest = null;
+let _loadError = null;
 try {
   // eslint-disable-next-line global-require
   _manifest = require("./storeCatalog.generated.json");
-} catch {
+} catch (err) {
   _manifest = null; // not generated yet / unreadable — degrade gracefully
+  _loadError = err.message;
+}
+
+/** Raw committed manifest (or null). */
+function getManifest() {
+  return _manifest;
 }
 
 /** Catalog entries from the committed manifest (fail-safe empty array). */
 function getCatalog() {
   return _manifest?.entries || [];
+}
+
+/**
+ * Runtime catalog integrity (§1). Fail-safe: never throws. Returns the verified
+ * version/hash when the committed manifest is present and self-consistent, else
+ * `{ ok:false, reason }` so billing readiness can fail OBSERVABLY (a corrupt /
+ * hash-mismatched / missing production manifest is a hard billing-not-ready
+ * condition — the runtime never silently accepts catalog drift).
+ */
+function getCatalogIntegrity() {
+  if (!_manifest) {
+    return { ok: false, reason: _loadError ? "manifest_unreadable" : "manifest_missing", catalogVersion: null, catalogHash: null, entryCount: 0 };
+  }
+  return verifyManifest(_manifest);
 }
 
 const memo = {};
@@ -74,8 +96,27 @@ function getStoreAddonProductMap() {
   });
 }
 
+/** Fast lookup of a catalog entry by its internal code (fail-safe). */
+function getEntryByCode(code) {
+  if (!code) return null;
+  return getCatalog().find((e) => e.internalCode === code) || null;
+}
+
+/** Set of store-eligible internal codes for a catalog type ('plan' | 'addon'). */
+function storeEligibleCodes(catalogType) {
+  return new Set(
+    getCatalog()
+      .filter((e) => e.catalogType === catalogType && e.storeEligible)
+      .map((e) => e.internalCode)
+  );
+}
+
 module.exports = {
+  getManifest,
   getCatalog,
+  getCatalogIntegrity,
+  getEntryByCode,
+  storeEligibleCodes,
   getStorePlanProductMap,
   getStoreAddonProductMap,
   // build-time / test helpers (validate on call)

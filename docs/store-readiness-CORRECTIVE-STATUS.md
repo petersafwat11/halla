@@ -84,6 +84,23 @@ guard (new commercial behavior "unchanged" forbids — Session-2+). Its refund s
 **distinct** from design templates: `managed_service_legal_review`, not
 `non_refundable_from_creation`.
 
+### Session 2 — Backend billing lifecycle, entitlements, fulfillment (2026-07-01, no DB/provider)
+
+Implemented the RevenueCat billing engine as a reducer-driven, idempotent, lineage-scoped state machine, unit- AND integration-verified against an **ephemeral local MongoMemoryReplSet** (real transactions + unique-index dedupe; the shared `halaa-staging` cluster was never touched; the RevenueCat subscriber snapshot is stubbed — real provider/sandbox proof is still pending).
+
+- **Catalog integrity (§1).** Manifest now carries `catalogVersion`/`catalogHash`/`entryCount` (`catalog.integrity.js`); `commerce.getCatalogIntegrity()` fails closed on a missing/corrupt/hash-mismatched manifest. New strict `catalog.resolver.js` layers env overrides only when valid — rejects invalid JSON, unknown codes, cross-type mappings, canonical conflicts, and duplicate cross-map ids (closes the P0-14 silent-`{}` path). Catalog version/hash is stamped on billing readiness AND every durable event/entitlement/add-on record.
+- **Strict envelope (§2).** `revenuecat.envelope.js` validates api_version / event id+type / app id / environment / store / app-user-id / transaction ids / product↔type compatibility / exact recurring entitlement / catalog availability, classifying every authenticated event as accept | ignore | dead_letter (distinct `catalog_unavailable`). Payloads are normalized into typed columns at ingest and stored **redacted** (`revenuecat.normalize.js`) — no receipts/tokens/subscriber PII.
+- **Atomic processing + replay (§3).** Durable insert → atomic lease claim (`processing`/`leaseOwner`/`leaseUntil`, mirrors `cronLease`) → transaction-safe execution → resolution history. Concurrent duplicates grant exactly once; a live lease returns 500 so RevenueCat retries after lease expiry — **RC-retry-after-lease-expiry is the LIVE reclaim path**. A `reclaimStuckLeases()` sweep is implemented + tested (index `{processing,leaseUntil}` present) but **not yet wired to the reconcile cron tick** (defense-in-depth, deferrable). Staff dead-letter list/inspect/replay/resolve endpoints gated by `requirePageAccess(ADMIN_PAGES.PAYMENTS,'manage')`. Stale payment static-check #12 updated (+ two dormant script bugs unmasked & fixed) → **18/18**.
+- **Pure reducer (§4).** `revenuecat.reducer.js` — DB-free, exhaustive over all event types + cancel-reason branches + snapshot-failure + out-of-order; 38 unit tests.
+- **Canonical snapshot + lineage (§5).** `revenuecat.api.js` distinguishes unavailable (retry, never revoke — P0-08) from 404; recurring state scoped to the ONE configured entitlement (P0-09); `revenuecat.lineage.js` locates state by transaction/original-transaction/product lineage (never "first active sub"). Purchased-currency amount+currency preserved; USD kept separate (P0-05).
+- **Exact reconciliation (§6).** `POST /revenuecat/reconcile-exact` returns deterministic pending|fulfilled|active|consumed|superseded|refund_required|refunded|manual_review|failed for the EXACT attempted item — never success from unrelated access (P0-02). GET `/reconcile` shape preserved for mobile.
+- **Event entitlements (§7).** One durable grant per provider txn; race-delivered packages recorded + routed to `manual_review` (non-blocking, fixes P0-03); refund-before-use revokes + keeps audit; `event-preflight` endpoint.
+- **Add-on fulfillment/reversal (§8).** First-class unique `providerTransactionId` (fixes P0-10 double-grant); atomic create+quota; missing target → `failed_quota`/`refund_required`; extra-invites clawback unused-only (never below consumed) + reversal; design-template store-forced refund recorded without undoing work (DEC-03L); business-customization → managed-service legal review. `addon-preflight` + `fulfillment` endpoints.
+- **Config/readiness (§9).** `revenuecat.config.js` Zod-validates all native-billing config (fail closed on missing/malformed/placeholder/contradictory); wired into `/health/ready` + boot gate; secret-free `config.env.example` block added.
+- **Tests (§10).** +128 backend tests (pure reducer/envelope/redaction/integrity/resolver/config/eligibility/reconcile-exact + replica-set integration for grant/dedup/concurrency/lease/refund/clawback/dead-letter/replay/authz/PII). Full suite **175/175**; `catalog:verify` drift+**26**; payment static **18/18**. **business_customization interpretation preserved** (consumable/repeatable, `managed_service_legal_review`, no restorable entitlement).
+
+**Still pending (NOT done this session, by design):** Apple/Google/RevenueCat console + sandbox matrix, signed IPA/AAB, mobile purchase UI (Session 3 consumes the new contracts), real provider-snapshot integration.
+
 | ID | Task | Owner | State | Evidence | Blocker | Last verified |
 |---|---|---|---|---|---|---|
 | BASE-01 | Phase-0 baseline (git/tests/lint/build/doctor/audit/static inventory) | Claude/QA | CAPTURED | `evidence/store-readiness/BASELINE.md` | — | 2026-06-28 |
@@ -96,22 +113,22 @@ guard (new commercial behavior "unchanged" forbids — Session-2+). Its refund s
 | CAT-01 | Canonical machine-readable store catalog | Backend | UNIT_VERIFIED | `src/shared/commerce/*` + `evidence/store-readiness/generated/*`; `npm run catalog:verify` (25/25) | Built, Zod-validated, drift-gated; identifiers PROPOSED (no SKUs created) | 2026-07-01 |
 | CAT-02 | Plan constants/defaults/seed/API parity + delete stale "54" comments | Backend | UNIT_VERIFIED | `planDefaults.js`/`seedPlans.js` "54" comments removed; `store-catalog.test.js` asserts source+seed parity | Source/seed parity + comment cleanup done + tested. **Live GET /plans DB parity still pending** (no DB this session — shared staging cluster) | 2026-07-01 |
 | CAT-03 | Web/mobile catalog rendering parity | Web/Mobile | UNIT_VERIFIED | Explore audit: both fully API-driven, no hardcoded codes/tiers; cross-surface stale-code scan (0 hits) in `store-catalog.test.js` | No frontend change needed for the catalog contract. **Exact-code business `isCurrent`/first-purchase = MOB-04** (Session 2), not this session | 2026-07-01 |
-| BILL-01 | Strict webhook envelope/catalog validation | Backend | IMPLEMENTED_UNVERIFIED | Existing controller partial only | Missing strict fields/tests | 2026-06-28 |
-| BILL-02 | Processing lease/transaction/replay safety | Backend | NOT_STARTED |  |  | 2026-06-28 |
-| BILL-03 | Pure RevenueCat lifecycle reducer/tests | Backend | NOT_STARTED |  |  | 2026-06-28 |
-| BILL-04 | Correct cancellation/refund/reversal behavior | Backend | NOT_STARTED | `REVIEW-FINDINGS P0-04` |  | 2026-06-28 |
-| BILL-05 | Correct purchased-currency ledger fields | Backend | NOT_STARTED | `REVIEW-FINDINGS P0-05` |  | 2026-06-28 |
-| BILL-06 | Un-cancellation without refill | Backend | NOT_STARTED | `REVIEW-FINDINGS P0-06` |  | 2026-06-28 |
-| BILL-07 | Canonical fail-closed exact-entitlement snapshot | Backend | NOT_STARTED | `REVIEW-FINDINGS P0-08/09` |  | 2026-06-28 |
-| BILL-08 | Transaction-scoped subscription lifecycle | Backend | NOT_STARTED |  |  | 2026-06-28 |
-| BILL-09 | Dead-letter alert/list/replay workflow | Backend/Ops | NOT_STARTED |  |  | 2026-06-28 |
-| BILL-10 | Native billing strict readiness/config schema | Backend/Ops | NOT_STARTED | `REVIEW-FINDINGS P0-14` |  | 2026-06-28 |
-| EVT-01 | Event-package preflight used by mobile/backend | Backend/Mobile | NOT_STARTED | `REVIEW-FINDINGS P0-03` |  | 2026-06-28 |
-| EVT-02 | Atomic event grant/consume/refund | Backend | IMPLEMENTED_UNVERIFIED | Existing entitlement/first-send code | Race/refund tests missing | 2026-06-28 |
-| ADD-01 | Unique/atomic store add-on fulfillment | Backend | NOT_STARTED | `REVIEW-FINDINGS P0-10` |  | 2026-06-28 |
-| ADD-02 | Add-on refund/reversal state machines | Backend | NOT_STARTED | `REVIEW-FINDINGS P0-11`; `DECISION-RECORD §D` | Unblocked: design = non-refundable (DEC-03L); build extra-invite clawback-unused + store-refund reconcile | 2026-07-01 |
-| ADD-03 | Standalone native add-on purchase/history | Mobile | NOT_STARTED |  | ADD-01/02 | 2026-06-28 |
-| MOB-01 | Exact expected-purchase reconciliation | Backend/Mobile | NOT_STARTED | `REVIEW-FINDINGS P0-02` |  | 2026-06-28 |
+| BILL-01 | Strict webhook envelope/catalog validation | Backend | INTEGRATION_VERIFIED | `revenuecat.envelope.js`/`.normalize.js`/`catalog.integrity.js`/`catalog.resolver.js`; `revenuecat-envelope.test.js`(19)+`-catalog-integrity`(18)+`-normalize`(9); `billing-webhook.integration`(10) | Real provider/sandbox pending | 2026-07-01 |
+| BILL-02 | Processing lease/transaction/replay safety | Backend | INTEGRATION_VERIFIED | atomic lease claim in `revenuecat.controller.js`; `withTransaction.js`; `billing-webhook.integration` (duplicate+concurrent exactly-once) | — | 2026-07-01 |
+| BILL-03 | Pure RevenueCat lifecycle reducer/tests | Backend | UNIT_VERIFIED | `revenuecat.reducer.js`; `revenuecat-reducer.test.js` (38, all event types + branches) | — | 2026-07-01 |
+| BILL-04 | Correct cancellation/refund/reversal behavior | Backend | INTEGRATION_VERIFIED | reducer branches by cancel_reason/kind/lineage; `billing-webhook`/`billing-fulfillment` refund+revoke tests | `REVIEW-FINDINGS P0-04` closed | 2026-07-01 |
+| BILL-05 | Correct purchased-currency ledger fields | Backend | INTEGRATION_VERIFIED | `writeLedger` uses `price_in_purchased_currency`+currency; USD in metadata; `-normalize` + webhook ledger assert | `P0-05` closed | 2026-07-01 |
+| BILL-06 | Un-cancellation without refill | Backend | UNIT_VERIFIED | reducer `CLEAR_CANCEL_FLAG`; `revenuecat-reducer.test.js` (no refill) | `P0-06` closed | 2026-07-01 |
+| BILL-07 | Canonical fail-closed exact-entitlement snapshot | Backend | INTEGRATION_VERIFIED | `revenuecat.api.js` unavailable≠404, entitlement-scoped; EXPIRATION-no-snapshot→500 test | `P0-08/09` closed | 2026-07-01 |
+| BILL-08 | Transaction-scoped subscription lifecycle | Backend | INTEGRATION_VERIFIED | `revenuecat.lineage.js` + typed txn columns; revoke-exact test | — | 2026-07-01 |
+| BILL-09 | Dead-letter alert/list/replay workflow | Backend/Ops | INTEGRATION_VERIFIED | `revenuecat.admin.controller.js` + routes (`requirePageAccess(PAYMENTS,'manage')`); `billing-deadletter.integration`(6) | — | 2026-07-01 |
+| BILL-10 | Native billing strict readiness/config schema | Backend/Ops | UNIT_VERIFIED | `revenuecat.config.js`+`readiness.js`+`config.env.example`; `revenuecat-config.test.js`(9) | `P0-14` closed | 2026-07-01 |
+| EVT-01 | Event-package preflight used by mobile/backend | Backend/Mobile | INTEGRATION_VERIFIED (backend) | `POST /revenuecat/event-preflight`; guard fix in `EventEntitlement.hasUnused`; `billing-fulfillment` | Mobile client wiring = Session 3 | 2026-07-01 |
+| EVT-02 | Atomic event grant/consume/refund | Backend | INTEGRATION_VERIFIED | `grantConsumable` race-routing + refund; `billing-fulfillment` (grant/guard/race/refund) | `P0-03` dead-grant fixed | 2026-07-01 |
+| ADD-01 | Unique/atomic store add-on fulfillment | Backend | INTEGRATION_VERIFIED | first-class unique `providerTransactionId`; atomic create+quota; `billing-fulfillment` (idempotent/failed_quota) | `P0-10` closed | 2026-07-01 |
+| ADD-02 | Add-on refund/reversal state machines | Backend | INTEGRATION_VERIFIED | clawback-unused + reversal + design/business policies; `billing-fulfillment` | `P0-11` closed | 2026-07-01 |
+| ADD-03 | Standalone native add-on purchase/history | Mobile | NOT_STARTED | backend `addon-preflight`/`fulfillment` endpoints ready | ADD-01/02 done; mobile UI = Session 3 | 2026-07-01 |
+| MOB-01 | Exact expected-purchase reconciliation | Backend/Mobile | INTEGRATION_VERIFIED (backend) | `POST /revenuecat/reconcile-exact` + `reconcileExact.js`; `revenuecat-reconcile-exact.test.js`(16) | `P0-02` closed; mobile adoption = Session 3 | 2026-07-01 |
 | MOB-02 | Google subscription replacement modes | Mobile | NOT_STARTED | `REVIEW-FINDINGS P0-07`; `DECISION-RECORD §E` | Mode decided (immediate upgrade / deferred downgrade) — implementation pending | 2026-06-28 |
 | MOB-03 | Store-only prices/periods/disclosures/legal links | Mobile | NOT_STARTED | `REVIEW-FINDINGS P0-13` | Legal docs | 2026-06-28 |
 | MOB-04 | Business first self-serve purchase + current-code fixes (web + mobile) | Web/Mobile/Backend | NOT_STARTED | `REVIEW-FINDINGS P0-12`; `DECISION-RECORD §C ★` | Owner-decided: enable on BOTH surfaces, compare by exact code — implementation pending | 2026-07-01 |

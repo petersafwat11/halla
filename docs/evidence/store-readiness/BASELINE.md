@@ -165,8 +165,43 @@ Stale cleanup: removed the "54 entries"/"54-plan" comments at `planDefaults.js` 
 so no backend lint gate applies. Web/mobile were **not changed** this session (catalog is
 backend-only + docs), so their §4/§5 baseline status stands.
 
-Pre-existing, unrelated failure (NOT a regression, NOT part of `npm test`):
-`node scripts/static-checks-payments.js` check #12 fails — it greps `payments.routes.js`
-for the old `restrictTo(SUPER_ADMIN, ADMIN)` string, but those admin actions were
-refactored to `requirePageAccess(ADMIN_PAGES.PAYMENTS, 'manage')` (still gated — not a
-security gap). The static-check is stale; left untouched (out of scope for CAT-01).
+Pre-existing static-check staleness (fixed in Session 2, see §11): `check #12`
+grepped `payments.routes.js` for the old `restrictTo(SUPER_ADMIN, ADMIN)` string,
+now refactored to `requirePageAccess(ADMIN_PAGES.PAYMENTS, 'manage')`.
+
+## 11. Session 2 — backend billing lifecycle (2026-07-01, no DB/provider)
+
+Native RevenueCat billing engine implemented + verified against an **ephemeral
+local `MongoMemoryReplSet`** (real transactions, real unique-index dedupe). The
+shared `halaa-staging` cluster was **never** touched; the RevenueCat subscriber
+snapshot is **stubbed** (no provider/console/sandbox access this session).
+
+```
+$ cd labbe-backend- && npm run catalog:verify
+✓ catalog in sync — 7 artifacts match source (no drift).   ℹ tests 26  pass 26  fail 0
+
+$ npm test                       # full suite incl. new billing unit + integration
+ℹ tests 175   ℹ pass 175   ℹ fail 0        exit=0
+
+$ MOYASAR_API_KEY=dummy node scripts/static-checks-payments.js
+static-checks-payments: OK (18 / 18)       exit=0
+```
+
+New test files (all green): `revenuecat-reducer`(38) · `revenuecat-envelope`(19) ·
+`revenuecat-catalog-integrity`(18) · `revenuecat-reconcile-exact`(16) ·
+`revenuecat-normalize`(9) · `revenuecat-config`(9) · `billing-webhook.integration`(10) ·
+`billing-fulfillment.integration`(8) · `billing-deadletter.integration`(6).
+
+Manifest now stamped with `catalogVersion=1.0.0` + `catalogHash` (sha256 over the
+canonical entries); drift gate + 26 contracts still pass. Dev-dependency added:
+`mongodb-memory-server@^11` (test-only; downloads a local mongod, no network at
+test time after first fetch).
+
+Static-check fixes: `check #12` updated to assert the current
+`requirePageAccess(ADMIN_PAGES.PAYMENTS,'manage')` gate; two **dormant** bugs it had
+masked were also fixed (`#17` undefined `subSvcSrc`; `#18` stale
+`labbe/services/new-backend/api.config.js` path → `shared/src/api/paths.js`). These
+were latent (the script exited at `#12` before reaching them), not regressions.
+
+**Not run / not proven this session (unchanged):** Apple/Google/RevenueCat console,
+store sandbox matrix, signed IPA/AAB, real provider-snapshot integration, mobile UI.

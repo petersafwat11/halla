@@ -1,6 +1,9 @@
 {
   "$comment": "GENERATED — do not edit. Source: labbe-backend-/src/shared/commerce/{catalog.overlay,catalog.schema,buildCatalog}.js. Regenerate: npm run catalog:generate. All ios/android/revenuecat identifiers are PROPOSED and NOT yet created.",
   "generator": "labbe-backend-/scripts/generateStoreCatalog.js",
+  "catalogVersion": "1.0.0",
+  "catalogHash": "32eeeac40ea355e2a77c7a35d0b8b28cd7fd623e802947e2c5e893782220737d",
+  "entryCount": 56,
   "recurringEntitlementId": "recurring_access",
   "counts": {
     "dbPlans": 34,

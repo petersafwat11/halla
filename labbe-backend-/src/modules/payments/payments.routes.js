@@ -4,6 +4,13 @@ const router = express.Router();
 const paymentsController = require('./payments.controller');
 const checkoutController = require('./checkout.controller');
 const revenuecatController = require('./revenuecat.controller');
+const revenuecatReconcile = require('./revenuecat.reconcile.controller');
+const revenuecatAdmin = require('./revenuecat.admin.controller');
+const {
+  reconcileExactSchema,
+  preflightSchema,
+  resolveSchema,
+} = require('./revenuecat.reconcile.validation');
 const { protect } = require('../../shared/middleware/auth');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { idempotency } = require('../../shared/middleware/idempotency');
@@ -93,6 +100,18 @@ router.use(protect);
  *       200: { description: Canonical entitlement state }
  */
 router.get("/revenuecat/reconcile", revenuecatController.reconcile);
+
+// Exact expected-purchase reconciliation + preflight (authenticated).
+router.post("/revenuecat/reconcile-exact", validateZod(reconcileExactSchema), revenuecatReconcile.reconcileExact);
+router.post("/revenuecat/event-preflight", validateZod(preflightSchema), revenuecatReconcile.eventPreflight);
+router.post("/revenuecat/addon-preflight", validateZod(preflightSchema), revenuecatReconcile.addonPreflight);
+router.get("/revenuecat/fulfillment", revenuecatReconcile.fulfillmentStatus);
+
+// Staff dead-letter operations (gated by requirePageAccess(PAYMENTS,'manage')).
+router.get("/revenuecat/dead-letters", requirePageAccess(ADMIN_PAGES.PAYMENTS, "manage"), revenuecatAdmin.listDeadLetters);
+router.get("/revenuecat/dead-letters/:id", validateObjectId("id"), requirePageAccess(ADMIN_PAGES.PAYMENTS, "manage"), revenuecatAdmin.inspectDeadLetter);
+router.post("/revenuecat/dead-letters/:id/replay", validateObjectId("id"), requirePageAccess(ADMIN_PAGES.PAYMENTS, "manage"), revenuecatAdmin.replayDeadLetter);
+router.post("/revenuecat/dead-letters/:id/resolve", validateObjectId("id"), requirePageAccess(ADMIN_PAGES.PAYMENTS, "manage"), validateZod(resolveSchema), revenuecatAdmin.resolveDeadLetter);
 
 /**
  * @swagger

@@ -18,6 +18,7 @@ const fs = require("fs");
 const path = require("path");
 const { buildCatalog, catalogCounts } = require("../src/shared/commerce/buildCatalog");
 const { RECURRING_ENTITLEMENT_ID } = require("../src/shared/commerce/catalog.schema");
+const { computeManifestMeta } = require("../src/shared/commerce/catalog.integrity");
 
 const backendRoot = path.join(__dirname, "..");
 const repoRoot = path.join(backendRoot, "..");
@@ -184,12 +185,18 @@ function renderExpectedCounts(catalog, counts) {
 function buildArtifacts() {
   const catalog = buildCatalog(); // validates or throws
   const counts = catalogCounts(catalog);
+  const meta = computeManifestMeta(catalog); // { catalogVersion, catalogHash, entryCount }
 
   const manifest = {
     $comment:
       "GENERATED — do not edit. Source: labbe-backend-/src/shared/commerce/{catalog.overlay,catalog.schema,buildCatalog}.js. " +
       "Regenerate: npm run catalog:generate. All ios/android/revenuecat identifiers are PROPOSED and NOT yet created.",
     generator: "labbe-backend-/scripts/generateStoreCatalog.js",
+    // Version + deterministic content hash (§1). Billing readiness and every
+    // durable webhook event stamp these; a mismatch fails billing observably.
+    catalogVersion: meta.catalogVersion,
+    catalogHash: meta.catalogHash,
+    entryCount: meta.entryCount,
     recurringEntitlementId: RECURRING_ENTITLEMENT_ID,
     counts,
     entries: catalog,
