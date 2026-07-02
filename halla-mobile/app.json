@@ -95,7 +95,9 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "يستخدم هلا موقعك لمساعدتك في اختيار موقع المناسبة على الخريطة. Halaa uses your location to help you pick the event location on the map."
+          "locationWhenInUsePermission": "يستخدم هلا موقعك لمساعدتك في اختيار موقع المناسبة على الخريطة. Halaa uses your location to help you pick the event location on the map.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false
         }
       ],
       [
@@ -107,7 +109,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "يستخدم هلا صور جهازك لإضافة صور المناسبات والملف الشخصي وصور الخدمات. Halaa uses your photos to add event, profile, and service images."
+          "photosPermission": "يستخدم هلا صور جهازك لإضافة صور المناسبات والملف الشخصي وصور الخدمات. Halaa uses your photos to add event, profile, and service images.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ],
       [

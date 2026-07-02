@@ -307,6 +307,56 @@ tags (owner + privacy-inventory gated, §6), full marketplace SSR (listing stays
 vendor profiles ARE server-rendered + indexable), live-backend vendor sitemap population, and
 all owner-gated store/marketing/legal copy.
 
+### Session 7 — Signed-build config audit + review-safe hardening + owner runbook (2026-07-02, no credentials/build/devices)
+
+Ran the full **read-only** signed-build config audit against the **actual resolved Expo config**
+(not the status doc), applied two **verifiable, App-Store-review-safe** iOS-permission hardenings,
+and wrote the exact `BLOCKED_NEEDS_OWNER` runbook so a real signed build succeeds first try. This
+environment has **no** Apple/Google/EAS credentials, macOS/Xcode, or devices — so **no signed
+IPA/AAB was produced or inspected, and no build id / checksum / SDK-inspection / device-test result
+was invented**. Gates (unchanged by config edits): `npx expo-doctor` **18/18**, `npx expo config
+--type public` exit 0, `npx expo config --type introspect` exit 0, mobile `npm test` **33/33**,
+mobile `npm run lint` **0**. Full audit + runbook: `evidence/store-readiness/SIGNED-BUILD-RUNBOOK.md`.
+
+- **Config-readiness audit (20 items).** SDK 54 / RN 0.81.5 / newArch; version `1.0.0`;
+  iOS `buildNumber "1"` + Android `versionCode 1` both auto-incremented by `eas.json
+  production.autoIncrement:true`; bundle id **`com.halla.app`** = Android package = `@halla/shared/brand`
+  = CAT-01 `com.halla.<code>` namespace; iPad support on (`supportsTablet` + `~ipad` all-orientations);
+  `halla://` scheme + `com.halla.app` URL type; associated/app-link domains `halaa.com.sa`
+  (AASA/assetlinks need the FINAL Team ID + Play signing SHA — owner); merged Android permissions
+  consistent with a photo-picker/coarse-location/contacts app that never uses camera/mic/precise-location;
+  Sentry release/dist/PII-scrub wired in `App.js`. PASS on all except the owner-gated items below.
+- **Hardening applied (`app.json`, introspect-verified) — the key finding.** `expo config --type
+  introspect` (the layer Apple review sees — it runs the config-plugin mods that inject `Info.plist`)
+  revealed **four default-English placeholder usage strings** for permissions the app **never uses**
+  (verified in source: no `launchCameraAsync`, no `expo-camera`, no audio recording, when-in-use
+  location only): `NSCameraUsageDescription`, `NSMicrophoneUsageDescription`,
+  `NSLocationAlwaysAndWhenInUseUsageDescription`, `NSLocationAlwaysUsageDescription`. Apple **rejects**
+  apps declaring unused permissions / shipping non-localized default strings. Fixed via the documented,
+  verifiable plugin mechanism (`@expo/config-plugins applyPermissions` deletes an Info.plist key when the
+  option is `false`): `expo-image-picker` → `cameraPermission:false` + `microphonePermission:false`;
+  `expo-location` → `locationAlwaysAndWhenInUsePermission:false` + `locationAlwaysPermission:false`.
+  **Post-hardening introspect (verified):** the built `Info.plist` now has **exactly 3** usage strings —
+  `NSPhotoLibraryUsageDescription`, `NSContactsUsageDescription`, `NSLocationWhenInUseUsageDescription`
+  (all AR/EN, all for permissions the app actually uses), no `UIBackgroundModes`.
+- **Deliberately NOT edited (moved to owner artifact-verify steps).** iOS **privacy manifest** /
+  required-reason APIs (aggregated **per-pod at native build** — confirmed AsyncStorage ships its own
+  `PrivacyInfo.xcprivacy`; hand-authoring risks wrong reason codes → verify the aggregated manifest in
+  the IPA); **16 KB page size / 64-bit / targetSdk 35 / Play Billing version** (SDK-54 defaults; the
+  bundled `com.android.billingclient:billing` version is a transitive dep of `purchases-hybrid-common:18.15.1`
+  and is **not determinable pre-build** — verify in the AAB, and only if it is 7.x does the 2026-08-31
+  Play deprecation apply); **entitlements / associated-domains / signing** (`codesign`/`bundletool`
+  on the binary); **ATS** `NSAllowsArbitraryLoads:true` (Expo default; app is HTTPS — needs on-device
+  verification before tightening); **`eas.json` submit `REPLACE_WITH_*`** iOS IDs (owner values — left as
+  explicit placeholders, not invented). EAS-secret **names** enumerated (incl. `SENTRY_ORG`/`SENTRY_PROJECT`/
+  `SENTRY_AUTH_TOKEN` — the `expo config` "Missing config for organization, project" warning means symbol
+  upload needs them) — no secret VALUES written.
+
+**Still `BLOCKED_NEEDS_OWNER` (cannot be done here):** signed IPA/AAB builds + binary inspection +
+symbolicated-crash proof, the iPhone/iPad/Android phone+tablet device matrix, and sandbox billing —
+all require Apple/Google/EAS credentials, build infra, and physical devices. `ART-IOS`/`ART-AND` stay
+pre-build; nothing reaches `ARTIFACT_VERIFIED` or `SANDBOX_VERIFIED`.
+
 | ID | Task | Owner | State | Evidence | Blocker | Last verified |
 |---|---|---|---|---|---|---|
 | BASE-01 | Phase-0 baseline (git/tests/lint/build/doctor/audit/static inventory) | Claude/QA | CAPTURED | `evidence/store-readiness/BASELINE.md` | — | 2026-06-28 |
@@ -356,8 +406,9 @@ all owner-gated store/marketing/legal copy.
 | ASO-02 | Store/product screenshot assets | Design/QA | NOT_STARTED | `docs/store-readiness/store-metadata/screenshot-brief.md` (AR/EN device/shot plan) | Brief written; assets need the release-candidate signed IPA/AAB (ART-IOS/ART-AND) | 2026-07-02 |
 | REV-01 | Reviewer accounts use valid paid plan and smoke pass | Backend/QA | IMPLEMENTED_UNVERIFIED | `scripts/seedReviewerAccounts.js` (valid `premium_monthly_100` default; **no trial fallback — fails closed**; +business-host `business_quarterly`; scripted smoke login; passwords env-only) | Script correct + loads; a live seed+login run needs a DB (not run — shared staging cluster) | 2026-07-02 |
 | SEC-01 | Rotate/untrack/purge/secret scan | Owner/Ops | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/SEC-01-OWNER-RUNBOOK.md` | Tracked `config.env`+`halla-mobile/.env` confirmed (in history); rotation + `git rm --cached` + history purge are OWNER-GATED (tracked config.env needed for boot). No secrets in any file. | 2026-07-02 |
-| ART-IOS | Signed IPA inspection + iPhone/iPad QA | Mobile/QA | NOT_STARTED |  | Apple/EAS credentials | 2026-06-28 |
-| ART-AND | Signed AAB inspection + 16 KB/prelaunch QA | Mobile/QA | NOT_STARTED |  | Play/EAS credentials | 2026-06-28 |
+| CFG-07 | Signed-build config audit + review-safe hardening | Mobile | UNIT_VERIFIED | `evidence/store-readiness/SIGNED-BUILD-RUNBOOK.md` §1; `app.json` (image-picker `cameraPermission/microphonePermission:false`, location `locationAlways*:false`); introspect-verified iOS Info.plist = 3 AR/EN used-permission strings only; `expo-doctor` 18/18, `expo config` public+introspect exit 0, mobile `npm test` 33/33, lint 0 | Config resolves + review-safe as far as static/local tooling proves. Binary-level items (privacy manifest, 16KB/Billing, entitlements, signing) = owner artifact-verify | 2026-07-02 |
+| ART-IOS | Signed IPA inspection + iPhone/iPad QA | Mobile/QA | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/SIGNED-BUILD-RUNBOOK.md` §2/§4/§5/§7 | **Apple Developer + ASC API key + EAS account + macOS/Xcode + iPhone/iPad** — cannot build/inspect/device-test here. Config pre-verified (CFG-07); no artifact evidence invented | 2026-07-02 |
+| ART-AND | Signed AAB inspection + 16 KB/prelaunch QA | Mobile/QA | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/SIGNED-BUILD-RUNBOOK.md` §2/§6/§7 | **Play Console + service-account JSON + EAS account + Android phone/tablet** — cannot build/inspect/pre-launch here. Config pre-verified (CFG-07); no artifact evidence invented | 2026-07-02 |
 | MCP-01 | MCP capability report + before exports | Claude/Ops | NOT_STARTED | `EXTERNAL-MCP-RUNBOOK` | Provider connectors/auth | 2026-06-28 |
 | MCP-02 | Apple app/listing/product configuration | Claude/Owner | NOT_STARTED |  | DEC/CAT/Apple bootstrap | 2026-06-28 |
 | MCP-03 | Google app/listing/product configuration | Claude/Owner | NOT_STARTED |  | DEC/CAT/Play bootstrap | 2026-06-28 |
