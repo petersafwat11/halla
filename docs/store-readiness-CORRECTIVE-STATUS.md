@@ -238,6 +238,75 @@ accept disclosure not added (host UGC + signup + checkout were). **All legal cop
 support email 2-way conflict, phone/WhatsApp, address, SLAs, retention durations, refund
 wording, jurisdiction, + carried-over privacy/terms/refund).
 
+### Session 6 — Web SEO + mobile ASO metadata (2026-07-02, no DB/provider/console)
+
+Built the bilingual discovery-metadata layer for public web pages + versioned Apple/Google
+listing TEMPLATES, without exposing any private/token route to search engines. **No console
+writes, no signed builds, no DB.** Store listing/marketing copy is owner-gated (only
+signed-fact-derivable fields are filled). Gates (final tree): web `npm run lint` **0 errors /
+34 pre-existing warnings** + `npm run build` **exit 0** (sitemap/robots/manifest/icons/OG all
+emit) + **render-verified** via `next start`+curl; new web `npm test` **29/29**
+(`node --test`); shared `aso:verify` (over-limit 0) + `legal:verify` **16** + lint 0; backend
+`npm test` **231/231** (unchanged — backend source untouched), `catalog:verify` **26**,
+payment static **18/18**.
+
+- **Executable route policy (SEO-01).** `shared/src/brand/routePolicy.js`
+  (`@halla/shared/brand`) is the SIGNED, executable index/noindex inventory — `robotsFor()` +
+  `ROUTE_INVENTORY`, imported by BOTH pages and tests. Human-readable rendering:
+  `docs/store-readiness-SEO-ROUTE-INVENTORY.md`. **DEFAULT-DENY:** the root layout
+  (`app/[lang]/layout.js`) sets `robots:{index:false,follow:false}`; because App-Router
+  metadata inherits and `robots` is replace-on-override, **every route is `noindex` unless it
+  explicitly opts in.** Only landing/marketplace/vendor (via `buildMetadata`→
+  `robotsFor(INDEXABLE)`) and the 6 legal routes opt in. An indexable private/token/auth/
+  dashboard route is therefore structurally impossible (verified live: login/signup/
+  verify-email/forget/change/reset-password/post-event/staff = `noindex,nofollow`; host/
+  vendor-dashboard/admin-dash = 307→login then `noindex`).
+- **Brand facts single source (§1).** `shared/src/brand/brand.js` — canonical origin
+  (`https://halaa.com.sa`, derived from `LEGAL_CONTACT.domain`), brand spelling (`Halaa`/`هلا`
+  — never "Halla"), bundle/package `com.halla.app`, Saudi-only (D2), localized default
+  title/description, asset paths, `canonicalUrl`/`hreflangAlternates`. Contact identity is NOT
+  re-declared — it reuses `@halla/shared/legal` `LEGAL_CONTACT` (Session-5 blocked values).
+- **Metadata foundation (§3).** Root layout gains `metadataBase`, localized title
+  template/default (never Arabic-only for EN), manifest, per-locale canonical + reciprocal
+  ar/en/x-default `hreflang`, OG/Twitter defaults, theme color/viewport. Per-route
+  `generateMetadata` via `buildMetadata` on landing + marketplace + vendor. Legal routes'
+  4 inline pages (privacy/terms/refund) + client `delete-account` (via a co-located server
+  `layout.js`) were switched to `buildLegalMetadata` so they still `index` under the new
+  default-deny (verified: all 6 legal routes `index,follow` + self-canonical + hreflang).
+- **File-convention routes (§3.3).** `app/robots.js` (allow `/`, disallow private/token
+  prefixes, absolute host+sitemap), `app/sitemap.js` (**offline-safe**: always emits static
+  public URLs × ar/en with reciprocal alternates; approved-vendor rows best-effort in
+  try/catch + 4 s abort so the offline build never throws — vendor population needs a live
+  backend, documented), `app/manifest.js`, `app/icon.png` + `app/apple-icon.png`
+  (owner-provided `public/logo.png`), `app/opengraph-image.js` (build-generated Latin-text
+  brand card — valid 1200×630 PNG, no fabricated claims). Middleware matcher extended to skip
+  `opengraph-image` (dot-less → was 307→`/ar/opengraph-image` 404).
+- **Vendor JSON-LD hardened (§4).** `market-place/vendors/[vendorId]/page.js` now serializes
+  `LocalBusiness` JSON-LD attack-safe via `safeJsonLd` (escapes `<`,`>`,`&`,U+2028/9 → a
+  vendor can't inject `</script>` through `brandName`/`about`), uses ONLY the backend PUBLIC
+  projection fields (private identity/verification excluded by `PUBLIC_VENDOR_SELECT`, asserted
+  by `test/vendors.public.test.js`; the vendor's own business brand/about/contact are rendered
+  visibly on the page so they are public-by-design), fixed brand "Halla"→"Halaa", added
+  canonical + reciprocal hreflang + `areaServed`=SA + empty-key pruning.
+- **ASO templates + validator (§7–§9).** `docs/store-readiness/store-metadata/`:
+  `apple-listing.template.json` + `google-listing.template.json` (AR/EN; only signed-fact
+  fields `approved:true` — name/bundle/URLs/availability; all persuasive copy
+  `BLOCKED_NEEDS_OWNER`), `data-safety-worksheet.md` (Apple App Privacy + Play Data Safety from
+  the same privacy inventory; "no ad/tracking SDK" is a FACT → not-tracking), `screenshot-brief.md`,
+  `reviewer-notes.md` (credentials env-only), `product-metadata.md` (points to the CAT-01
+  generated inventory — no drift), `README.md` (exact BLOCKED list). Validator
+  `shared/scripts/validate-aso-metadata.mjs` (`aso:verify`) enforces store limits — **Apple
+  keywords = 100 BYTES** (Arabic ≈2 bytes/char), everything else chars.
+- **Tests (§10).** New web `node --test` suite (29): route policy/default-deny (10),
+  metadata/hreflang-reciprocity/JSON-LD-safety (11), sitemap-offline/robots (4),
+  ASO char/byte limits (6).
+
+**Still pending (NOT done, by design):** Apple/Google/RevenueCat console writes (MCP-02/03/04),
+screenshot assets (need signed IPA/AAB — ART-IOS/ART-AND, ASO-02), analytics/Search-Console
+tags (owner + privacy-inventory gated, §6), full marketplace SSR (listing stays client-rendered;
+vendor profiles ARE server-rendered + indexable), live-backend vendor sitemap population, and
+all owner-gated store/marketing/legal copy.
+
 | ID | Task | Owner | State | Evidence | Blocker | Last verified |
 |---|---|---|---|---|---|---|
 | BASE-01 | Phase-0 baseline (git/tests/lint/build/doctor/audit/static inventory) | Claude/QA | CAPTURED | `evidence/store-readiness/BASELINE.md` | — | 2026-06-28 |
@@ -280,11 +349,11 @@ wording, jurisdiction, + carried-over privacy/terms/refund).
 | LEG-01 | Shared canonical AR/EN legal package | Shared/Web/Mobile | UNIT_VERIFIED | `shared/src/legal/*` (6 docs, `documents.js`/`manifest.js`/`contact.js`); web build+render; `legal-manifest.test.js`(16) + `legalContent.test.js`(4) + `verify-legal.mjs` | One source consumed by web+mobile; backend manifest via `fs`; duplicates removed. **All copy `BLOCKED_NEEDS_OWNER`** (carried-over privacy/terms/refund + new docs) | 2026-07-02 |
 | LEG-02 | Mobile legal header/RTL/accessibility fix | Mobile | IMPLEMENTED_UNVERIFIED | `components/plans/TopBar.js` (symmetric 44×44 + absolutely-centered title, no `row-reverse`); `screens/legal/LegalScreen.js` (logical align, Dynamic Type, a11y, safe-area, mixed-direction); mobile lint 0 | Structure + lint/compile + widest-prop-pattern walk. **On-device/iPad visual QA pending** (SANDBOX/device); non-legal TopBar callers not visually QA'd | 2026-07-02 |
 | LEG-03 | Legal parity/version/URL CI checks | CI | UNIT_VERIFIED | backend `npm run legal:verify` (drift + 16); shared `node scripts/verify-legal.mjs` (AR/EN parity + schema + URL/slug); `policies.js` derived from manifest (P1-07) | Parity/version/schema/URL/slug gates green; isolated from `catalog:verify` (26 unchanged) | 2026-07-02 |
-| SEO-01 | Route index/noindex inventory | Web | NOT_STARTED | `SEO-ASO plan` |  | 2026-06-28 |
-| SEO-02 | Metadata/canonical/hreflang/OG/schema | Web | NOT_STARTED |  | SEO-01 | 2026-06-28 |
-| SEO-03 | Sitemap/robots/manifest/icons | Web | NOT_STARTED |  | SEO-01 | 2026-06-28 |
-| ASO-01 | Versioned Apple/Google AR/EN listing metadata | Product/Legal | NOT_STARTED |  | Approved copy | 2026-06-28 |
-| ASO-02 | Store/product screenshot assets | Design/QA | NOT_STARTED |  | Release-candidate build | 2026-06-28 |
+| SEO-01 | Route index/noindex inventory | Web | UNIT_VERIFIED | `docs/store-readiness-SEO-ROUTE-INVENTORY.md` + executable `shared/src/brand/routePolicy.js`; `labbe npm test` (route-policy 10) + live render sweep (all private/token routes noindex) | SIGNED default-deny inventory; every public route classified. Live GET-crawl of a real vendor needs a DB (not run) | 2026-07-02 |
+| SEO-02 | Metadata/canonical/hreflang/OG/schema | Web | UNIT_VERIFIED | `shared/src/brand/{brand,metadata,jsonld}.js`; root layout `metadataBase`+defaults; landing/marketplace/vendor + 6 legal routes; vendor JSON-LD `safeJsonLd` (public-only, `</script>`-safe); `labbe npm test` (metadata/hreflang/JSON-LD 11) + render-verified (index/canonical/hreflang) | Canonical + reciprocal ar/en/x-default hreflang + OG/Twitter + safe structured data live. Marketplace listing stays client-rendered (vendor profiles server-rendered + indexable) | 2026-07-02 |
+| SEO-03 | Sitemap/robots/manifest/icons | Web | UNIT_VERIFIED | `app/{robots,sitemap,manifest,opengraph-image}.js` + `app/{icon,apple-icon}.png`; `npm run build` emits all; `next start`+curl (robots.txt/sitemap.xml/manifest/OG PNG 1200×630); `labbe npm test` (sitemap-offline/robots 4) | Sitemap offline-safe (static set always; vendors best-effort); OG valid PNG. Middleware skips `opengraph-image`. Live-backend vendor rows pending | 2026-07-02 |
+| ASO-01 | Versioned Apple/Google AR/EN listing metadata | Product/Legal | IMPLEMENTED_UNVERIFIED | `docs/store-readiness/store-metadata/*` (apple/google listing templates, data-safety worksheet, reviewer notes, product-metadata, README); `shared/scripts/validate-aso-metadata.mjs` (`aso:verify`, Apple keywords=bytes); `labbe npm test` (char/byte 6) | Versioned TEMPLATES with approval gates; only signed-fact fields filled. **All persuasive/marketing + contact copy `BLOCKED_NEEDS_OWNER`** (exact list in README) | 2026-07-02 |
+| ASO-02 | Store/product screenshot assets | Design/QA | NOT_STARTED | `docs/store-readiness/store-metadata/screenshot-brief.md` (AR/EN device/shot plan) | Brief written; assets need the release-candidate signed IPA/AAB (ART-IOS/ART-AND) | 2026-07-02 |
 | REV-01 | Reviewer accounts use valid paid plan and smoke pass | Backend/QA | IMPLEMENTED_UNVERIFIED | `scripts/seedReviewerAccounts.js` (valid `premium_monthly_100` default; **no trial fallback — fails closed**; +business-host `business_quarterly`; scripted smoke login; passwords env-only) | Script correct + loads; a live seed+login run needs a DB (not run — shared staging cluster) | 2026-07-02 |
 | SEC-01 | Rotate/untrack/purge/secret scan | Owner/Ops | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/SEC-01-OWNER-RUNBOOK.md` | Tracked `config.env`+`halla-mobile/.env` confirmed (in history); rotation + `git rm --cached` + history purge are OWNER-GATED (tracked config.env needed for boot). No secrets in any file. | 2026-07-02 |
 | ART-IOS | Signed IPA inspection + iPhone/iPad QA | Mobile/QA | NOT_STARTED |  | Apple/EAS credentials | 2026-06-28 |

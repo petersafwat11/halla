@@ -1,8 +1,8 @@
-import initTranslations from "@/localization/i18n";
 import LegalPage from "@/ui/landing/Legal/LegalPage";
 import { getLegalDocument } from "@halla/shared/legal";
 import Header from "@/ui/landing/Header/Header";
 import Footer from "@/ui/landing/Footer/Footer";
+import { buildLegalMetadata } from "@/ui/landing/Legal/legalMetadata";
 
 const SIBLINGS = [
   { href: "/privacy", titleKey: "legal.siblings.privacy" },
@@ -12,17 +12,15 @@ const SIBLINGS = [
 ];
 
 export async function generateMetadata({ params }) {
-  const resolvedParams = await params;
-  const { lang } = resolvedParams;
-  const { t } = await initTranslations(lang, ["landing"]);
-
-  return {
-    title: t("legal.metadata.terms.title", "Terms & Conditions – Halaa"),
-    description: t(
-      "legal.metadata.terms.description",
-      "Terms and conditions for using the Halaa event management platform"
-    ),
-  };
+  const { lang } = await params;
+  return buildLegalMetadata({
+    documentType: "terms",
+    lang,
+    titleAr: "الشروط والأحكام – هلا",
+    titleEn: "Terms & Conditions – Halaa",
+    descAr: "الشروط والأحكام لاستخدام منصة هلا لإدارة المناسبات",
+    descEn: "Terms and conditions for using the Halaa event management platform",
+  });
 }
 
 export default async function TermsPage({ params }) {

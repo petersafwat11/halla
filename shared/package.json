@@ -6,7 +6,8 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "legal:verify": "node scripts/verify-legal.mjs"
+    "legal:verify": "node scripts/verify-legal.mjs",
+    "aso:verify": "node scripts/validate-aso-metadata.mjs"
   },
   "exports": {
     ".": "./src/index.js",
@@ -22,7 +23,9 @@
     "./hooks": "./src/hooks/index.js",
     "./hooks/*": "./src/hooks/*.js",
     "./legal": "./src/legal/index.js",
-    "./legal/*": "./src/legal/*.js"
+    "./legal/*": "./src/legal/*.js",
+    "./brand": "./src/brand/index.js",
+    "./brand/*": "./src/brand/*.js"
   },
   "dependencies": {
     "xlsx": "npm:@e965/xlsx@^0.20.3"

@@ -2,6 +2,7 @@ import LegalPage from "@/ui/landing/Legal/LegalPage";
 import { getLegalDocument } from "@halla/shared/legal";
 import Header from "@/ui/landing/Header/Header";
 import Footer from "@/ui/landing/Footer/Footer";
+import { buildLegalMetadata } from "@/ui/landing/Legal/legalMetadata";
 
 const SIBLINGS = [
   { href: "/terms", titleKey: "legal.siblings.terms" },
@@ -12,13 +13,14 @@ const SIBLINGS = [
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;
-  return {
-    title: lang === "ar" ? "سياسة الخصوصية – هلا" : "Privacy Policy – Halaa",
-    description:
-      lang === "ar"
-        ? "سياسة الخصوصية الخاصة بمنصة هلا لإدارة المناسبات"
-        : "Privacy policy for the Halaa event management platform",
-  };
+  return buildLegalMetadata({
+    documentType: "privacy",
+    lang,
+    titleAr: "سياسة الخصوصية – هلا",
+    titleEn: "Privacy Policy – Halaa",
+    descAr: "سياسة الخصوصية الخاصة بمنصة هلا لإدارة المناسبات",
+    descEn: "Privacy policy for the Halaa event management platform",
+  });
 }
 
 export default async function PrivacyPage({ params }) {

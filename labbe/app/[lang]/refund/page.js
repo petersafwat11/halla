@@ -2,6 +2,7 @@ import LegalPage from "@/ui/landing/Legal/LegalPage";
 import { getLegalDocument } from "@halla/shared/legal";
 import Header from "@/ui/landing/Header/Header";
 import Footer from "@/ui/landing/Footer/Footer";
+import { buildLegalMetadata } from "@/ui/landing/Legal/legalMetadata";
 
 const SIBLINGS = [
   { href: "/privacy", titleKey: "legal.siblings.privacy" },
@@ -12,13 +13,14 @@ const SIBLINGS = [
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;
-  return {
-    title: lang === "ar" ? "سياسة الإلغاء والاسترداد – هلا" : "Cancellation & Refund Policy – Halaa",
-    description:
-      lang === "ar"
-        ? "سياسة الإلغاء والتأجيل والاسترداد في منصة هلا"
-        : "Cancellation, postponement, and refund policy for the Halaa platform",
-  };
+  return buildLegalMetadata({
+    documentType: "refund",
+    lang,
+    titleAr: "سياسة الإلغاء والاسترداد – هلا",
+    titleEn: "Cancellation & Refund Policy – Halaa",
+    descAr: "سياسة الإلغاء والتأجيل والاسترداد في منصة هلا",
+    descEn: "Cancellation, postponement, and refund policy for the Halaa platform",
+  });
 }
 
 export default async function RefundPage({ params }) {

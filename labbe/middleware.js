@@ -226,6 +226,13 @@ export const config = {
     // `.well-known` is excluded so the i18n router doesn't redirect the
     // universal/app-link association files (Apple/Google fetch them at the
     // exact path with no redirects allowed).
-    "/((?!api|_next/static|_next/image|favicon.ico|public|assets|svg|robots.txt|sitemap.xml|.well-known).*)",
+    //
+    // The Next metadata file-convention routes that live at the APP ROOT (not
+    // under `[lang]`) are also excluded so they are NOT locale-redirected:
+    //   - `opengraph-image` is dot-less, so it would otherwise be rewritten to
+    //     `/ar/opengraph-image` (404). robots.txt/sitemap.xml/*.webmanifest and
+    //     icon.png/apple-icon.png already fall through via the dot-in-path skip,
+    //     but they are listed here too for clarity/robustness.
+    "/((?!api|_next/static|_next/image|favicon.ico|public|assets|svg|robots.txt|sitemap.xml|manifest.webmanifest|opengraph-image|icon.png|apple-icon.png|.well-known).*)",
   ],
 };

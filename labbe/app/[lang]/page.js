@@ -11,18 +11,20 @@ import FaqSection from "@/ui/landing/FaqSection";
 import Footer from "@/ui/landing/Footer/Footer";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import initTranslations from "@/localization/i18n";
+import { buildMetadata, ROUTE_CLASS, DEFAULT_METADATA } from "@halla/shared/brand";
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;
   const { t } = await initTranslations(lang, ["landing"]);
+  const loc = DEFAULT_METADATA[lang] || DEFAULT_METADATA.ar;
 
-  return {
-    title: t("metadata.title", "هلا — منصة إدارة المناسبات الذكية | Halaa"),
-    description: t(
-      "metadata.description",
-      "أنشئ مناسباتك، أرسل دعوات رقمية عبر واتساب، وتتبع الحضور في الوقت الفعلي."
-    ),
-  };
+  return buildMetadata({
+    lang,
+    path: "",
+    title: t("metadata.title", loc.title),
+    description: t("metadata.description", loc.description),
+    routeClass: ROUTE_CLASS.LANDING,
+  });
 }
 
 export default async function LandingPage({ params }) {
