@@ -21,12 +21,26 @@
  *   REVIEWER_HOST_PASSWORD='<strong-password>' \
  *   REVIEWER_VENDOR_EMAIL=review.vendor@halaa.com.sa \
  *   REVIEWER_VENDOR_PASSWORD='<strong-password>' \
- *   [REVIEWER_HOST_PLAN=premium_monthly] \
+ *   REVIEWER_BUSINESS_EMAIL=review.business@halaa.com.sa \
+ *   REVIEWER_BUSINESS_PASSWORD='<strong-password>' \
+ *   [REVIEWER_HOST_PLAN=premium_monthly_100] \
+ *   [REVIEWER_BUSINESS_PLAN=business_quarterly] \
  *   node scripts/seedReviewerAccounts.js
  *
  * Rotate the passwords after each review cycle (re-run with new values). Put the
  * final credentials + role-by-role steps in Apple Review Information and Google
  * Play "App access". Do NOT add these accounts to any admin/moderator role.
+ *
+ * REVIEW-FINDINGS P1-01 fixes:
+ *   - The default host plan is a VALID six-tier code (`premium_monthly_100`, an
+ *     invite-tier suffix is required — bare `premium_monthly` does not exist).
+ *   - NO silent `trial` fallback: if the configured paid plan code is missing
+ *     the script FAILS CLOSED (exit 1) instead of quietly granting a trial and
+ *     contradicting the "paid features" review promise.
+ *   - Seeds a BUSINESS-host reviewer (business self-serve is now reviewable —
+ *     DEC-02) in addition to personal-host + vendor.
+ *   - Runs a scripted SMOKE LOGIN (password compare) for every seeded account so
+ *     a broken credential is caught at seed time, not by the store reviewer.
  */
 
 const mongoose = require("mongoose");
@@ -51,12 +65,20 @@ const moderationService = require("../src/modules/moderation/moderation.service"
 const HOST_EMAIL = process.env.REVIEWER_HOST_EMAIL || "review.host@halaa.com.sa";
 const VENDOR_EMAIL =
   process.env.REVIEWER_VENDOR_EMAIL || "review.vendor@halaa.com.sa";
+const BUSINESS_EMAIL =
+  process.env.REVIEWER_BUSINESS_EMAIL || "review.business@halaa.com.sa";
 const HOST_PASSWORD = process.env.REVIEWER_HOST_PASSWORD;
 const VENDOR_PASSWORD = process.env.REVIEWER_VENDOR_PASSWORD;
-const HOST_PLAN_CODE = process.env.REVIEWER_HOST_PLAN || "premium_monthly";
+const BUSINESS_PASSWORD = process.env.REVIEWER_BUSINESS_PASSWORD;
+// VALID six-tier code (invite-tier suffix required). `premium_monthly` alone is
+// NOT a real plan code — see plans.js PLAN_CODES.
+const HOST_PLAN_CODE = process.env.REVIEWER_HOST_PLAN || "premium_monthly_100";
+const BUSINESS_PLAN_CODE =
+  process.env.REVIEWER_BUSINESS_PLAN || "business_quarterly";
 // Clearly-fake placeholder KSA mobiles (login is email/password; phone unused).
 const HOST_PHONE = process.env.REVIEWER_HOST_PHONE || "500000001";
 const VENDOR_PHONE = process.env.REVIEWER_VENDOR_PHONE || "500000002";
+const BUSINESS_PHONE = process.env.REVIEWER_BUSINESS_PHONE || "500000003";
 
 const RIYADH = {
   regionId: 1,
@@ -143,36 +165,86 @@ async function upsertUser(spec, password) {
   return { user, created: true };
 }
 
-async function ensureHostEntitlement(hostUser) {
+/**
+ * Ensure `user` has an ACTIVE subscription on the EXACT paid plan `planCode`.
+ * FAILS CLOSED (throws) if that plan code does not exist — NO silent trial
+ * fallback (P1-01). The reviewer must see the promised paid features, so a
+ * missing catalog entry is a hard error the operator must fix (reseed plans /
+ * pass a valid code), not something we paper over with a free trial.
+ */
+async function ensurePaidEntitlement(user, planCode) {
   const active = await Subscription.findOne({
-    userId: hostUser._id,
+    userId: user._id,
     status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] },
   });
   if (active) return active;
 
-  let plan =
-    (await Plan.findOne({ code: HOST_PLAN_CODE })) ||
-    (await Plan.findOne({ code: "trial" }));
+  const plan = await Plan.findOne({ code: planCode });
   if (!plan) {
     throw new Error(
-      `No plan found for '${HOST_PLAN_CODE}' or 'trial'. Run seedPlans.js first.`
+      `Reviewer plan code '${planCode}' not found in the catalog. ` +
+        `Refusing to fall back to 'trial' (that would contradict the paid-feature ` +
+        `review promise — P1-01). Pass a valid six-tier code via env and/or run ` +
+        `seedPlans.js first. Valid examples: premium_monthly_100, basic_monthly_100, ` +
+        `business_quarterly.`
     );
   }
-  const sub = await Subscription.createForUser(hostUser._id, plan, {
+  const sub = await Subscription.createForUser(user._id, plan, {
     status: SUBSCRIPTION_STATUS.ACTIVE,
     pricePaid: 0,
     currency: "SAR",
   });
-  hostUser.subscription = sub._id;
-  await hostUser.save({ validateBeforeSave: false });
+  user.subscription = sub._id;
+  await user.save({ validateBeforeSave: false });
   return sub;
 }
 
+const businessSpec = {
+  email: BUSINESS_EMAIL,
+  phoneNumber: BUSINESS_PHONE,
+  username: "ReviewerBusiness",
+  name: "Reviewer Business Host / حساب أعمال للمراجعة",
+  role: ROLES.HOST,
+  accountType: ACCOUNT_TYPES.BUSINESS,
+  status: USER_STATUS.ACTIVE,
+  emailVerified: true,
+  preferredLanguage: "en",
+  profile: {
+    hostData: {
+      profileCompleted: true,
+      emailVerified: true,
+      subscribedBefore: true,
+      bio: "App review demo BUSINESS host / حساب أعمال تجريبي لمراجعة المتجر",
+    },
+    businessData: {
+      description:
+        "Demo business account for store review (self-serve business plans). / حساب أعمال تجريبي لمراجعة المتجر.",
+    },
+  },
+};
+
+/**
+ * Scripted smoke login: verify the seeded account can authenticate with the
+ * password we just set (password compare only — no OTP/MFA/onboarding). Catches
+ * a broken credential at seed time rather than in the store reviewer's hands.
+ */
+async function smokeLogin(email, password) {
+  const u = await User.findOne({ email: email.toLowerCase() }).select("+password");
+  if (!u) throw new Error(`smoke login: user ${email} not found after seed`);
+  const ok =
+    typeof u.comparePassword === "function" && (await u.comparePassword(password));
+  if (!ok) throw new Error(`smoke login FAILED for ${email} (password mismatch)`);
+  if (u.status !== USER_STATUS.ACTIVE) {
+    throw new Error(`smoke login: ${email} is not ACTIVE (status=${u.status})`);
+  }
+  return true;
+}
+
 async function run() {
-  if (!HOST_PASSWORD || !VENDOR_PASSWORD) {
+  if (!HOST_PASSWORD || !VENDOR_PASSWORD || !BUSINESS_PASSWORD) {
     console.error(
-      "❌ REVIEWER_HOST_PASSWORD and REVIEWER_VENDOR_PASSWORD are required (set them in the environment). " +
-        "Refusing to seed with a default password."
+      "❌ REVIEWER_HOST_PASSWORD, REVIEWER_VENDOR_PASSWORD and REVIEWER_BUSINESS_PASSWORD " +
+        "are required (set them in the environment). Refusing to seed with a default password."
     );
     process.exit(1);
   }
@@ -195,9 +267,17 @@ async function run() {
   console.log("✅ Connected to database");
 
   const host = await upsertUser(hostSpec, HOST_PASSWORD);
-  const sub = await ensureHostEntitlement(host.user);
+  const sub = await ensurePaidEntitlement(host.user, HOST_PLAN_CODE);
   console.log(
-    `✅ Host ${host.created ? "created" : "updated"}: ${host.user.email} (entitlement: ${sub.status})`
+    `✅ Personal host ${host.created ? "created" : "updated"}: ${host.user.email} ` +
+      `(plan: ${HOST_PLAN_CODE}, entitlement: ${sub.status})`
+  );
+
+  const business = await upsertUser(businessSpec, BUSINESS_PASSWORD);
+  const bizSub = await ensurePaidEntitlement(business.user, BUSINESS_PLAN_CODE);
+  console.log(
+    `✅ Business host ${business.created ? "created" : "updated"}: ${business.user.email} ` +
+      `(plan: ${BUSINESS_PLAN_CODE}, entitlement: ${bizSub.status})`
   );
 
   const vendor = await upsertUser(vendorSpec, VENDOR_PASSWORD);
@@ -209,14 +289,22 @@ async function run() {
   // the UGC terms gate (they can still demonstrate the acceptance UI on a fresh
   // signup). §6.
   await moderationService.acceptPolicies("user", host.user._id, { locale: "en" });
+  await moderationService.acceptPolicies("user", business.user._id, { locale: "en" });
   await moderationService.acceptPolicies("user", vendor.user._id, { locale: "en" });
-  console.log("✅ Pre-accepted UGC terms for reviewer host + vendor");
+  console.log("✅ Pre-accepted UGC terms for reviewer host + business + vendor");
+
+  // Scripted smoke login (P1-01): fail the seed if any credential is broken.
+  await smokeLogin(host.user.email, HOST_PASSWORD);
+  await smokeLogin(business.user.email, BUSINESS_PASSWORD);
+  await smokeLogin(vendor.user.email, VENDOR_PASSWORD);
+  console.log("✅ Smoke login passed for host + business + vendor (email/password, no OTP)");
 
   console.log("\n" + "=".repeat(64));
   console.log("🎉 Reviewer accounts ready (email/password login, no OTP)");
   console.log("=".repeat(64));
-  console.log(`HOST   : ${host.user.email}`);
-  console.log(`VENDOR : ${vendor.user.email}`);
+  console.log(`PERSONAL HOST : ${host.user.email}  (plan ${HOST_PLAN_CODE})`);
+  console.log(`BUSINESS HOST : ${business.user.email}  (plan ${BUSINESS_PLAN_CODE})`);
+  console.log(`VENDOR        : ${vendor.user.email}`);
   console.log("Passwords: the values you passed via env (not printed).");
   console.log("Put these + role-by-role steps in Apple Review Info / Play App access.");
   console.log("=".repeat(64));

@@ -30,6 +30,12 @@ const {
 } = require('./services.validation');
 
 const { uploadServiceImage } = require('../../shared/utils/s3Upload');
+// UGC gate (§6 · UGC-02): vendor service name/description are PUBLIC marketplace
+// content, so creation/update requires accepted Terms + Community Rules. The
+// middleware is flag-gated (`UGC_TERMS_ENFORCED`, OFF until client rollout), so
+// mounting it is a no-op until the flag flips — but it closes the enforcement
+// gap for the public-content surface store reviewers inspect.
+const { requireUserUgcTerms } = require('../moderation/requireUgcTerms');
 
 /**
  * @swagger
@@ -238,6 +244,7 @@ router.get('/', servicesController.getMyServices);
  */
 router.post(
   '/',
+  requireUserUgcTerms,
   uploadServiceImage,
   parseFormDataJsonFields(['tags', 'serviceLocation', 'included']),
   validateZod(createServiceSchema),
@@ -291,6 +298,7 @@ router.post(
 router.patch(
   '/:id',
   validateObjectId('id'),
+  requireUserUgcTerms,
   uploadServiceImage,
   parseFormDataJsonFields(['tags', 'serviceLocation', 'included']),
   validateZod(updateServiceSchema),

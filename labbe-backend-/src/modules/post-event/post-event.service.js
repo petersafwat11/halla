@@ -268,6 +268,12 @@ class PostEventService {
   // ============================================
 
   async updateThankYouMessage(eventId, messageData, user) {
+    // UGC text filter (§6 · UGC-02): the thank-you title/description is shown to
+    // every guest on the post-event page, so it must pass the content filter.
+    for (const f of ['text', 'textAr', 'description', 'descriptionAr']) {
+      if (messageData[f]) moderationService.assertCleanText(messageData[f]);
+    }
+
     const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
 

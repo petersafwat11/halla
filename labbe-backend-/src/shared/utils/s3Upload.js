@@ -666,6 +666,42 @@ const _extractKeyFromOurS3Url = (url) => {
 };
 
 /**
+ * Resolve any stored image reference into a **deletable S3 key**, or null if it
+ * is not an object in our bucket (local-disk dev path, external CDN URL, empty).
+ *
+ * This is the deletion-path counterpart of `signStoredImage`. Account deletion
+ * (users.service.deleteMyAccount) previously used a naive `isS3Key` guard that
+ * treated ANY `http(s)://…` value as "not an S3 key" and skipped it — but
+ * post-event media (`media[].url`, `coverImage`, comment image `url`) is often
+ * persisted as a FULL bucket URL (e.g. `file.location`), so those personal
+ * objects were silently left in S3 forever (REVIEW-FINDINGS P1-02). This helper
+ * closes that gap by extracting the key from our-bucket URLs (canonical,
+ * virtual-host, and path-style) before deleting.
+ *
+ *   - bare S3 key (`events/…/x.jpg`)          → returned as-is
+ *   - our-bucket URL (any of the 3 shapes)     → extracted key
+ *   - `/uploads/…` local-disk dev path         → null (nothing in S3)
+ *   - external URL (different host)             → null (not ours to delete)
+ *   - null / undefined / non-string            → null
+ *
+ * @param {string|null|undefined} stored
+ * @returns {string|null}
+ */
+const resolveDeletableS3Key = (stored) => {
+  if (!stored || typeof stored !== "string") return null;
+  const s = stored.trim();
+  if (!s) return null;
+  // Local-disk dev paths are never in S3.
+  if (s.startsWith("/uploads/") || s.startsWith("uploads/")) return null;
+  if (s.startsWith("http://") || s.startsWith("https://")) {
+    // Only delete if the URL points at OUR bucket; external URLs are not ours.
+    return _extractKeyFromOurS3Url(s) || null;
+  }
+  // Bare key.
+  return s;
+};
+
+/**
  * Sign an array of stored image refs in parallel.
  * @param {Array<string>} refs
  * @returns {Promise<Array<string>>}
@@ -793,13 +829,26 @@ const generalFilter = (req, file, cb) => {
 };
 
 /**
- * Malware-scan hook point (§6). Pluggable: by default a no-op pass. Wire a real
- * scanner (ClamAV / a scanning service) + S3 quarantine here when available —
- * the full async scan + quarantine bucket is infrastructure (EXTERNAL §6).
- * @returns {Promise<{clean: boolean, reason?: string}>}
+ * Malware-scan hook point (§6 · UGC-04). When called with an in-memory buffer it
+ * runs the quarantine-first magic-byte + malware pipeline (`uploadScan`):
+ * magic-byte allowlist → pluggable scanner → FAIL-CLOSED policy. Callers that
+ * hold the upload buffer (e.g. a pre-persist validation step, or a
+ * quarantine-bucket promote job) pass `{ buffer, declaredMime }` and REJECT on
+ * `clean:false`. When called without a buffer it is a pass (nothing to inspect
+ * in that path) — magic bytes are only knowable from the bytes themselves.
+ *
+ * NOTE: multer-s3 streams straight to the bucket, so true magic-byte inspection
+ * is done either (a) on a buffered upload path, or (b) after landing the object
+ * in a quarantine prefix and reading it back — not mid-stream. This hook is the
+ * single policy entry point for both.
+ * @param {{buffer?: Buffer, declaredMime?: string}} [ctx]
+ * @returns {Promise<{clean: boolean, reason?: string, detected?: string}>}
  */
-const scanUploadHook = async (/* { key, bucket } */) => {
-  return { clean: true };
+const scanUploadHook = async (ctx = {}) => {
+  const { buffer, declaredMime } = ctx;
+  if (!Buffer.isBuffer(buffer)) return { clean: true };
+  const { scanBuffer } = require("./uploadScan");
+  return scanBuffer(buffer, { declaredMime });
 };
 
 // Create S3 storage instance.
@@ -921,6 +970,7 @@ module.exports = {
   extractStoredRef,
   signStoredImage,
   signStoredImages,
+  resolveDeletableS3Key,
   deleteFile,
 
   // File filters

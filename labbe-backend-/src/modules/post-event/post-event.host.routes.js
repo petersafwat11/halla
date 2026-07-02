@@ -165,6 +165,7 @@ router.delete(
 router.patch(
   "/:eventId/thank-you",
   validateObjectId("eventId"),
+  requireUserUgcTerms,
   validateZod(updateThankYouMessageSchema),
   postEventController.updateThankYouMessage
 );

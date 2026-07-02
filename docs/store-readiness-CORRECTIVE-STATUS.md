@@ -117,6 +117,69 @@ Session 3 wired the **mobile RevenueCat purchase UI** onto the Session-2 backend
 
 **★ Coordinator acceptance (2026-07-02).** The lead coordinator independently re-reviewed all 33 Session-3 files (not the report), re-ran every gate, and accepted Session 3 — committed atomically as **`bc08b258`** (43 files; +2586/−287; no push). Ranked-risk review of the backend payment paths confirmed: the `checkout.service.js` business unblock preserves the audience gate (a personal host / non-business account still cannot buy a business plan); the `findNewestUnusedEventForCode` reconcile fallback is caller-scoped, unused-only, and aligned with the `event-preflight` guard (`resolution∈{fulfilled}` ⟺ `subscriptionId≠null`, exactly the set preflight blocks); DEC-02 compares by exact code on both web and mobile with i18n keys present in both locales; the store-safe catalog omits price/secrets. **One defect was found and corrected before commit:** the event fallback had no test → a focused `test/revenuecat-event-fallback.test.js` (9 cases: newest-unused, caller-scoping, exact-code, status/resolution filters, and two `reconcileExact` integration cases incl. a cross-account negative) was added, taking the backend suite **180 → 189**. Pre-existing **SEC-01** (tracked `config.env` / `halla-mobile/.env`) was re-confirmed present but is out of Session-3 scope and owner-gated (rotation + history purge) — carried into Session 4/SEC-01; it was neither staged nor modified by this commit.
 
+### Session 4 — deletion, UGC, upload scanning, reviewer access, SEC-01 (2026-07-02, no DB/provider/console)
+
+Implemented the non-billing store-readiness blockers with targeted tests against an
+ephemeral `MongoMemoryReplSet` + isolated in-memory S3 stub (the shared cluster and real S3
+were never touched; no credentials). Backend `npm test` **189 → 215** (+26), `catalog:verify`
+drift-clean **26**, payment static-checks **18/18** — all green (coordinator-reverified).
+
+- **Account deletion (DEL-01/02/03 · P1-02 · LEGAL §7).** New retryable pipeline
+  `src/modules/account-deletion/{deletion.service,deletion.collect,deletion.processors,deletion.retry}.js`;
+  `users.service.deleteMyAccount` now delegates to it. Fixes the core P1-02 bug: the old
+  `isS3Key()` skipped **any** `http(s)://…` value, so full-URL post-event media
+  (`file.location`) was left in S3 forever. New `resolveDeletableS3Key()` (`s3Upload.js`)
+  normalizes bare keys AND our-bucket URLs (all 3 shapes) → deletable keys; the collector now
+  gathers **every** variant the audit flagged: `coverImage`, `media[].thumbnailUrl`,
+  `media[].comments[].images[].{url,thumbnail}`, post-level comment images, and
+  `visualTemplate.bakedImagePath`. Event `staffList[]` names/phones are now scrubbed. **Truthful
+  completion:** a residual S3 object (or failed non-mandatory step) yields **`pending_retry`**
+  (never a false `completed`); the leased `account_deletion_retry` cron converges it. New
+  `ProcessorErasure` model + records per processor: RevenueCat = `retained_by_policy` (DEC-04),
+  Sentry/messaging = `pending`, push = `not_applicable`. **Post-deletion RevenueCat handling:**
+  `processEvent` now classifies a trailing webhook for a deleted account as terminal
+  `account_deleted` (tombstone lookup by retained `billingUserId`) instead of an `unknown_user`
+  permanent dead-letter (LEGAL §7). Matrix: `evidence/store-readiness/DELETION-MATRIX.md`. Tests:
+  `account-deletion.integration.test.js` (7) + `revenuecat-post-deletion.test.js` (2).
+- **UGC enforcement (UGC-02/03 · P1-04).** Mounted `requireUserUgcTerms` **+ pre-write text
+  filter** on the PUBLIC marketplace + guest-facing writes that were missing them: both vendor
+  service writes (`POST /services`, `PATCH /services/:id` → `_assertCleanServiceText` on
+  name/description) and the host `thank-you` write (`assertCleanText`). Confirmed (read-only)
+  that guest comment writes are ALREADY service-gated (`assertUgcTermsAccepted('guest',…)` +
+  `assertCleanText`) for both media- and post-level comments — the audit's "guests bypass
+  entirely" was inaccurate; the `UGC_TERMS_ENFORCED` flag being OFF is intentional
+  deploy-sequencing. Every remaining write with no gate (events/RSVP/tickets) is annotated in
+  the inventory with the exact reason it is NOT a moderatable public surface. Suspension IS
+  enforced on public vendor/service reads (`status=ACTIVE`+`vendorStatus=APPROVED`). Inventory
+  + the one genuine deferral (viewer-block filtering on the anonymous marketplace read):
+  `evidence/store-readiness/UGC-ROUTE-INVENTORY.md`. Tests: `ugc-enforcement.integration.test.js` (6).
+- **Upload scanning (UGC-04 · P1-05).** New `src/shared/utils/uploadScan.js`: magic-byte
+  signature allowlist + declared-MIME-family consistency + dangerous-signature rejection
+  (ELF/PE/script/zip) + pluggable scanner + **fail-closed** policy (indeterminate/timeout/no
+  scanner ⇒ reject when `UPLOAD_SCAN_REQUIRED≠false`). Wired into `scanUploadHook`. Boundary:
+  real ClamAV/scanning-service infra + physical quarantine bucket remain infrastructure
+  (EXTERNAL §6). Tests: `upload-scan.test.js` (11, incl. spoofed-MIME + executable/script/EICAR
+  fixtures).
+- **Reviewer seeding (REV-01 · P1-01).** `scripts/seedReviewerAccounts.js`: default host plan
+  fixed to the VALID six-tier code `premium_monthly_100` (bare `premium_monthly` does not
+  exist); **removed the silent `trial` fallback** — now FAILS CLOSED if the paid code is
+  missing; added a **business-host** reviewer (`business_quarterly`, DEC-02) alongside
+  personal-host + vendor; added a scripted **smoke login** (password compare) per account.
+  Passwords remain env-only (no default) — confirmed none in git/evidence.
+- **SEC-01 = `BLOCKED_NEEDS_OWNER`.** Assessed: `labbe-backend-/config.env` and
+  `halla-mobile/.env` are both git-tracked (contain real secrets) AND gitignored (tracked
+  before ignore → still in history). Produced the OWNER-ONLY rotation + history-purge runbook
+  (`evidence/store-readiness/SEC-01-OWNER-RUNBOOK.md`) — provider-by-provider rotation order,
+  `git filter-repo`/BFG commands, `.gitignore` hardening, CI secret-scan recommendation. Did
+  NOT rotate, `git rm --cached`, or rewrite history (all owner-gated; the tracked `config.env`
+  is required for backend boot). No secret values placed in any file.
+
+**S3 verification gap (honest):** whether the backend IAM user can `s3:DeleteObject` is NOT
+provable without live creds — the documented explicit Deny is on `s3:GetObject` (read path)
+and `DeleteObjectCommand` is already used in prod (`safeDeleteOldKey`), which is
+circumstantial. The fail-closed deletion design is safe either way (Delete denied ⇒
+`pending_retry`, never a false `completed`). Confirm before GO.
+
 | ID | Task | Owner | State | Evidence | Blocker | Last verified |
 |---|---|---|---|---|---|---|
 | BASE-01 | Phase-0 baseline (git/tests/lint/build/doctor/audit/static inventory) | Claude/QA | CAPTURED | `evidence/store-readiness/BASELINE.md` | — | 2026-06-28 |
@@ -149,13 +212,13 @@ Session 3 wired the **mobile RevenueCat purchase UI** onto the Session-2 backend
 | MOB-02 | Google subscription replacement modes | Mobile | UNIT_VERIFIED | `services/billing/changeMode.js` (classify by catalog order; upgrade→CHARGE_PRORATED_PRICE, downgrade→DEFERRED, crossgrade→WITH_TIME_PRORATION); `purchasePackage` passes `{oldProductIdentifier,replacementMode}` on Android via `STORE_REPLACEMENT_MODE`; `changeMode.test.js`(6) | Selection logic unit-tested; **on-device Android proration behavior = sandbox** (pending) | 2026-07-02 |
 | MOB-03 | Store-only prices/periods/disclosures/legal links | Mobile | UNIT_VERIFIED | store price from RC package only (`resolvePurchasable`; backend catalog omits price); `DisclosureList`+`disclosures.js`; `PurchaseLegalLinks` → web Terms/Privacy/Refund; `catalog.test.js`/`disclosures.test.js`. New purchase surfaces are direction-agnostic (RTL handled globally via `I18nManager` at the layout — no per-component `isRTL`); `LegalScreen` refactored to drop its `isRTL` text/row branching (partial P1-08 fix) | Store-only price + disclosures + legal links present. **Gap:** no Support/Contact page (P1-03) — deferred to legal/SEO. On-device visual QA + sandbox pending | 2026-07-02 |
 | MOB-04 | Business first self-serve purchase + current-code fixes (web + mobile) | Web/Mobile/Backend | UNIT_VERIFIED | backend `checkout.service.js` drops the no-sub business block (audience gate kept); web `useBusinessPlansPageState` + `BusinessPlansPage` (exact-code `isCurrent`, self-serve banner); mobile `BusinessPlansScreen` (exact-code, first purchase); `currentPlan.test.js`(4, P0-12); web build passes | Enabled on BOTH surfaces; exact-code comparison. **First-purchase integration test not added** (no DB this session) | 2026-07-02 |
-| DEL-01 | Model/processor deletion-retention matrix | Backend/Legal | NOT_STARTED | `LEGAL plan §7` | Legal signoff | 2026-06-28 |
-| DEL-02 | Complete retryable deletion worker | Backend | NOT_STARTED | `REVIEW-FINDINGS P1-02` | DEL-01 | 2026-06-28 |
-| DEL-03 | Throwaway DB/S3 deletion proof | QA | NOT_STARTED |  | DEL-02 | 2026-06-28 |
-| UGC-01 | Live AR/EN Community Rules/Support | Web/Mobile/Legal | NOT_STARTED | `REVIEW-FINDINGS P1-03` | Approved content/contact | 2026-06-28 |
-| UGC-02 | Policy gate on every UGC write | Backend/Web/Mobile | NOT_STARTED |  | UGC-01 | 2026-06-28 |
-| UGC-03 | Block/moderation filtering on every read | Backend/Web/Mobile | NOT_STARTED | `REVIEW-FINDINGS P1-04` |  | 2026-06-28 |
-| UGC-04 | Quarantine/magic-byte/malware pipeline | Backend/Infra | NOT_STARTED |  | Scanner/infra | 2026-06-28 |
+| DEL-01 | Model/processor deletion-retention matrix | Backend/Legal | INTEGRATION_VERIFIED | `evidence/store-readiness/DELETION-MATRIX.md`; `deletion.service.js`/`deletion.collect.js`/`deletion.processors.js` | Matrix built + implemented; **legal must sign `RETENTION_MATRIX_FINALIZED`** before ACCEPTED | 2026-07-02 |
+| DEL-02 | Complete retryable deletion worker | Backend | INTEGRATION_VERIFIED | `deletion.service.js` (truthful `pending_retry`), `deletion.retry.js` + `account_deletion_retry` cron, `ProcessorErasure` model, RC `account_deleted` (`revenuecat.service.js`); `resolveDeletableS3Key` fixes full-URL media (P1-02) | S3 DeleteObject capability = live-cred verification gap (fail-closed safe) | 2026-07-02 |
+| DEL-03 | Throwaway DB/S3 deletion proof | QA | INTEGRATION_VERIFIED | `test/account-deletion.integration.test.js` (7: no non-retained PII, token invalidation, idempotence, partial-retry, retained-rows, S3-variant collection, persistent-failure→terminal-failed) + `revenuecat-post-deletion.test.js` (2); MongoMemoryReplSet + in-memory S3 stub | — | 2026-07-02 |
+| UGC-01 | Live AR/EN Community Rules/Support | Web/Mobile/Legal | NOT_STARTED | `REVIEW-FINDINGS P1-03` | Approved content/contact — **deferred to legal/SEO session** (out of Session-4 backend scope) | 2026-06-28 |
+| UGC-02 | Policy gate on every UGC write | Backend/Web/Mobile | UNIT_VERIFIED | `requireUserUgcTerms`+text-filter on both service writes + host media/thank-you; vendorData filtered; guest comments service-gated (`assertUgcTermsAccepted`+`assertCleanText`); `evidence/store-readiness/UGC-ROUTE-INVENTORY.md`; `test/ugc-enforcement.integration.test.js` (6) | Enforcement flag `UGC_TERMS_ENFORCED` flips ON post client-rollout (by design); events/RSVP/tickets = documented non-public-UGC (justified) | 2026-07-02 |
+| UGC-03 | Block/moderation filtering on every read | Backend/Web/Mobile | UNIT_VERIFIED | `getBlockedKeySet` on post-event reads; suspension via `status=ACTIVE` on public vendor/service reads (test proves suspended excluded); `_mutateContent` hide/remove | **Gap:** viewer-block filtering on the anonymous public marketplace reads not yet threaded (documented in inventory) | 2026-07-02 |
+| UGC-04 | Quarantine/magic-byte/malware pipeline | Backend/Infra | UNIT_VERIFIED | `src/shared/utils/uploadScan.js` (magic-byte allowlist + fail-closed policy + pluggable scanner) wired to `scanUploadHook`; `test/upload-scan.test.js` (11, malicious fixtures) | Real ClamAV/scanner infra + physical quarantine bucket = EXTERNAL §6 (pluggable interface done) | 2026-07-02 |
 | LEG-01 | Shared canonical AR/EN legal package | Shared/Web/Mobile | NOT_STARTED | `LEGAL plan` | Legal copy | 2026-06-28 |
 | LEG-02 | Mobile legal header/RTL/accessibility fix | Mobile | NOT_STARTED | `REVIEW-FINDINGS P1-08` |  | 2026-06-28 |
 | LEG-03 | Legal parity/version/URL CI checks | CI | NOT_STARTED |  | LEG-01 | 2026-06-28 |
@@ -164,8 +227,8 @@ Session 3 wired the **mobile RevenueCat purchase UI** onto the Session-2 backend
 | SEO-03 | Sitemap/robots/manifest/icons | Web | NOT_STARTED |  | SEO-01 | 2026-06-28 |
 | ASO-01 | Versioned Apple/Google AR/EN listing metadata | Product/Legal | NOT_STARTED |  | Approved copy | 2026-06-28 |
 | ASO-02 | Store/product screenshot assets | Design/QA | NOT_STARTED |  | Release-candidate build | 2026-06-28 |
-| REV-01 | Reviewer accounts use valid paid plan and smoke pass | Backend/QA | NOT_STARTED | `REVIEW-FINDINGS P1-01` | Unblocked — pick a valid six-tier code (e.g. `premium_monthly_100`) | 2026-07-01 |
-| SEC-01 | Rotate/untrack/purge/secret scan | Owner/Ops | NOT_STARTED | Existing external steps | Coordinated credentials/history work | 2026-06-28 |
+| REV-01 | Reviewer accounts use valid paid plan and smoke pass | Backend/QA | IMPLEMENTED_UNVERIFIED | `scripts/seedReviewerAccounts.js` (valid `premium_monthly_100` default; **no trial fallback — fails closed**; +business-host `business_quarterly`; scripted smoke login; passwords env-only) | Script correct + loads; a live seed+login run needs a DB (not run — shared staging cluster) | 2026-07-02 |
+| SEC-01 | Rotate/untrack/purge/secret scan | Owner/Ops | BLOCKED_NEEDS_OWNER | `evidence/store-readiness/SEC-01-OWNER-RUNBOOK.md` | Tracked `config.env`+`halla-mobile/.env` confirmed (in history); rotation + `git rm --cached` + history purge are OWNER-GATED (tracked config.env needed for boot). No secrets in any file. | 2026-07-02 |
 | ART-IOS | Signed IPA inspection + iPhone/iPad QA | Mobile/QA | NOT_STARTED |  | Apple/EAS credentials | 2026-06-28 |
 | ART-AND | Signed AAB inspection + 16 KB/prelaunch QA | Mobile/QA | NOT_STARTED |  | Play/EAS credentials | 2026-06-28 |
 | MCP-01 | MCP capability report + before exports | Claude/Ops | NOT_STARTED | `EXTERNAL-MCP-RUNBOOK` | Provider connectors/auth | 2026-06-28 |

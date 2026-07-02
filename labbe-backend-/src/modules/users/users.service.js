@@ -1,14 +1,6 @@
 const { NotFoundError, ValidationError } = require("../../shared/errors");
 
 const User = require("../../../models/UserModel");
-const Event = require("../../../models/EventModel");
-const Guest = require("../../../models/GuestModel");
-const Notification = require("../../../models/NotificationModel");
-const NotificationPreferences = require("../../../models/NotificationPreferencesModel");
-const RefreshToken = require("../../../models/RefreshTokenModel");
-const Ticket = require("../../../models/TicketModel");
-const PostEventContent = require("../../../models/PostEventContentModel");
-const Service = require("../../../models/ServiceModel");
 const Subscription = require("../../../models/SubscriptionModel");
 const AccountDeletionRequest = require("../../../models/AccountDeletionRequestModel");
 const {
@@ -17,14 +9,13 @@ const {
 } = require("../../shared/utils/s3Upload");
 const otpService = require("../auth/otp.service");
 const logger = require("../../shared/utils/logger");
-const { logAudit } = require("../../shared/utils/auditLog");
 const { containsProhibited } = require("../../shared/utils/contentFilter");
 const {
-  RETAINED,
   LEGAL_FINALIZED,
   DISCLOSURE,
 } = require("../../shared/constants/dataRetention");
-const { USER_STATUS, EVENT_STATUS } = require("../../shared/constants/status");
+const { USER_STATUS } = require("../../shared/constants/status");
+const deletionService = require("../account-deletion/deletion.service");
 const {
   validateAndFormatPhone,
   normalizePhoneNumber,
@@ -579,250 +570,20 @@ class UsersService {
    * User anonymization always runs so the account is closed regardless.
    */
   async deleteMyAccount(userId, { channel = "app" } = {}) {
-    const user = await User.findById(userId);
-    const latest = await AccountDeletionRequest.findOne({ userId }).sort({
-      createdAt: -1,
-    });
-
-    // Idempotent: already deleted/anonymized → return the latest request.
-    if (!user) {
-      if (latest) return this._deletionResult(latest);
-      throw new NotFoundError("User");
+    // Delegates to the dedicated, retryable deletion pipeline (DEL-01/02).
+    // The pipeline covers the full model/processor matrix, deletes ALL S3
+    // object variants (including full-URL post-event media the old code
+    // skipped), records downstream processor-erasure obligations, and returns a
+    // TRUTHFUL status: it never reports `completed` while personal S3 objects
+    // remain — those yield `pending_retry` and the deletion-retry cron
+    // converges the request. See modules/account-deletion/deletion.service.js.
+    try {
+      const reqDoc = await deletionService.runDeletion({ userId, channel });
+      return this._deletionResult(reqDoc);
+    } catch (err) {
+      if (err && err.statusCode === 404) throw new NotFoundError("User");
+      throw err;
     }
-
-    const reqDoc =
-      latest && latest.status === "processing"
-        ? latest
-        : await AccountDeletionRequest.create({
-            userId,
-            channel,
-            retainedDisclosure: { retained: RETAINED, legalFinalized: LEGAL_FINALIZED },
-          });
-
-    const steps = [];
-    let mandatoryFailed = false;
-    const run = async (name, fn, mandatory = false) => {
-      try {
-        await fn();
-        steps.push({ name, status: "ok", mandatory });
-      } catch (err) {
-        steps.push({ name, status: "failed", mandatory, error: err.message });
-        if (mandatory) mandatoryFailed = true;
-        logger.warn(`[deleteMyAccount] step '${name}' failed`, {
-          userId: String(userId),
-          error: err.message,
-        });
-      }
-    };
-
-    const isS3Key = (k) =>
-      typeof k === "string" &&
-      k &&
-      !k.startsWith("http") &&
-      !k.startsWith("/uploads/") &&
-      !k.startsWith("uploads/");
-    const s3Keys = new Set();
-    const addKey = (k) => {
-      if (isS3Key(k)) s3Keys.add(k);
-    };
-
-    // 1) Revoke every active session immediately (mandatory).
-    await run(
-      "revoke_sessions",
-      async () => {
-        await RefreshToken.updateMany(
-          { userId, revokedAt: null },
-          { $set: { revokedAt: new Date() } }
-        );
-      },
-      true
-    );
-
-    // User-owned S3 keys: avatar + vendor documents/portfolio/price packages.
-    const vd = user.profile?.vendorData || {};
-    [
-      user.avatar,
-      vd.businessLogo,
-      vd.nationalIdImage,
-      vd.commercialRecordImage,
-      vd.profileFile,
-      ...(Array.isArray(vd.portfolioImages) ? vd.portfolioImages : []),
-      ...(Array.isArray(vd.pricePackages) ? vd.pricePackages : []),
-    ].forEach(addKey);
-
-    // 2) Cascade owned events + anonymize their guests' third-party PII.
-    await run(
-      "anonymize_events_and_guests",
-      async () => {
-        const events = await Event.find({ host: userId }).select(
-          "_id templateImage branding"
-        );
-        const eventIds = events.map((e) => e._id);
-        events.forEach((e) => {
-          addKey(e.templateImage);
-          addKey(e.branding?.logoKey);
-        });
-        if (eventIds.length) {
-          // Soft-delete AND scrub the PII-bearing event fields (title,
-          // location, description, branding) so no personal content survives —
-          // the row is kept only for accounting/referential integrity, matching
-          // the "events are removed" disclosure.
-          await Event.updateMany(
-            { _id: { $in: eventIds } },
-            {
-              $set: {
-                status: EVENT_STATUS.DELETED,
-                deletedAt: new Date(),
-                "eventDetails.title": "Deleted Event",
-              },
-              $unset: {
-                "eventDetails.location": "",
-                "eventDetails.description": "",
-                branding: "",
-              },
-            }
-          );
-          await Guest.updateMany(
-            { event: { $in: eventIds } },
-            {
-              $set: {
-                deleted: true,
-                deletedAt: new Date(),
-                name: "Deleted Guest",
-                phone: "",
-                "rsvp.message": "",
-                "rsvp.dietaryRestrictions": "",
-                "checkIn.checkedInByStaff.name": "",
-                "checkIn.checkedInByStaff.phone": "",
-              },
-            }
-          );
-        }
-      },
-      true
-    );
-
-    // 3) Delete post-event content (media/comments + their images), collecting
-    //    S3 keys first.
-    await run(
-      "delete_post_event_content",
-      async () => {
-        const contents = await PostEventContent.find({ host: userId }).lean();
-        for (const c of contents) {
-          (c.media || []).forEach((m) => {
-            addKey(m.url);
-            (m.comments || []).forEach((cm) =>
-              (cm.images || []).forEach((img) => addKey(img.url))
-            );
-          });
-          (c.comments || []).forEach((cm) =>
-            (cm.images || []).forEach((img) => addKey(img.url))
-          );
-        }
-        await PostEventContent.deleteMany({ host: userId });
-      },
-      true
-    );
-
-    // 4) Delete the user's vendor services + their images.
-    await run(
-      "delete_vendor_services",
-      async () => {
-        const services = await Service.find({ vendorId: userId })
-          .select("image")
-          .lean();
-        services.forEach((s) => addKey(s.image));
-        await Service.deleteMany({ vendorId: userId });
-      },
-      true
-    );
-
-    // 5) Delete support tickets (contain user-submitted text).
-    await run(
-      "delete_tickets",
-      async () => {
-        await Ticket.deleteMany({ user: userId });
-      },
-      true
-    );
-
-    // 6) Drop notifications + preferences.
-    await run(
-      "delete_notifications",
-      async () => {
-        await Notification.deleteMany({ userId });
-        await NotificationPreferences.deleteMany({ userId });
-      },
-      true
-    );
-
-    // 7) Best-effort S3 cleanup (non-mandatory — a failure marks the request
-    //    'partial' and can be retried, but must never block closing the account).
-    await run(
-      "delete_s3_objects",
-      async () => {
-        const failures = [];
-        for (const key of s3Keys) {
-          const ok = await deleteFromS3(key);
-          if (ok === false) failures.push(key);
-        }
-        if (failures.length) {
-          throw new Error(`${failures.length} S3 object(s) not deleted`);
-        }
-      },
-      false
-    );
-
-    // 8) Anonymize PII + close the account (mandatory, always last). `$unset`
-    //    on unique-sparse contact fields avoids unique-index collisions across
-    //    deleted accounts; updateOne bypasses pre-save hooks/validators.
-    await run(
-      "anonymize_user",
-      async () => {
-        await User.updateOne(
-          { _id: userId },
-          {
-            $set: {
-              name: "Deleted User",
-              status: USER_STATUS.DELETED,
-              deletedAt: new Date(),
-              deletedBy: userId,
-            },
-            $unset: {
-              email: "",
-              mobile: "",
-              phoneNumber: "",
-              username: "",
-              avatar: "",
-              pushTokens: "",
-              "profile.vendorData": "",
-              "profile.businessData": "",
-              "profile.hostData.bio": "",
-              "profile.hostData.company": "",
-              "profile.hostData.position": "",
-            },
-          }
-        );
-      },
-      true
-    );
-
-    reqDoc.steps = steps;
-    reqDoc.status = mandatoryFailed ? "partial" : "completed";
-    reqDoc.completedAt = new Date();
-    await reqDoc.save();
-
-    // Append-only audit event (IDs/status only — never deleted PII).
-    logAudit({
-      action: "user.account_deleted",
-      actor: { _id: userId, role: user.role },
-      targetType: "user",
-      targetId: userId,
-      metadata: { requestId: reqDoc.requestId, channel, status: reqDoc.status },
-      status: mandatoryFailed ? "failure" : "success",
-    }).catch(() => {});
-
-    return this._deletionResult(reqDoc);
   }
 
   /**

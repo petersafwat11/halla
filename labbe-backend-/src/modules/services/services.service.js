@@ -7,8 +7,9 @@
 const Service = require('../../../models/ServiceModel');
 const User = require('../../../models/UserModel');
 const mongoose = require('mongoose');
-const { NotFoundError } = require('../../shared/errors');
+const { NotFoundError, ValidationError } = require('../../shared/errors');
 const { SERVICE_STATUS, VENDOR_STATUS } = require('../../shared/constants');
+const { containsProhibited } = require('../../shared/utils/contentFilter');
 const { extractStoredRef, signStoredImage } = require('../../shared/utils/s3Upload');
 const logger = require('../../shared/utils/logger');
 const { logAudit } = require('../../shared/utils/auditLog');
@@ -158,7 +159,25 @@ class ServicesService {
   /**
    * Create service
    */
+  /**
+   * Reject prohibited text in the PUBLIC-facing service copy (UGC-02). Mirrors
+   * the vendorData profile filter — service name/description appear in the
+   * marketplace, so they must pass the content filter before persisting.
+   */
+  _assertCleanServiceText(data = {}) {
+    for (const f of ['name', 'nameAr', 'description', 'descriptionAr']) {
+      if (data[f] && containsProhibited(data[f]).blocked) {
+        const err = new ValidationError(
+          "Your service text contains content that isn't allowed"
+        );
+        err.code = 'PROHIBITED_CONTENT';
+        throw err;
+      }
+    }
+  }
+
   async createService(vendorId, data, file = null) {
+    this._assertCleanServiceText(data);
     const serviceData = {
       ...data,
       vendorId,
@@ -194,6 +213,7 @@ class ServicesService {
    * Update service
    */
   async updateService(serviceId, vendorId, data, file = null) {
+    this._assertCleanServiceText(data);
     const service = await Service.findOne({ _id: serviceId, vendorId });
 
     if (!service) {

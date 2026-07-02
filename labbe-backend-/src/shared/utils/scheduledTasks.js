@@ -1355,6 +1355,40 @@ const scheduleSubscriptionRenewal = () => {
   });
 };
 
+// ─────────────────────────────────────────────────────────────────
+// Account-deletion cleanup retry cron (every 5 minutes).
+// Converges deletion requests stuck in `pending_retry` (account closed but
+// residual personal S3 objects not yet deleted) to `completed`. Leased so a
+// multi-node deploy doesn't double-process. DEL-02 / P1-02.
+// ─────────────────────────────────────────────────────────────────
+const scheduleAccountDeletionRetry = () => {
+  cron.schedule("*/5 * * * *", async () => {
+    const result = await cronLease.withLease(
+      "account_deletion_retry",
+      async () => {
+        try {
+          const { runDeletionRetryTick } = require("../../modules/account-deletion/deletion.retry");
+          const { scanned, completed } = await runDeletionRetryTick();
+          if (scanned > 0) {
+            // eslint-disable-next-line no-console
+            console.log(
+              `[Cron] account_deletion_retry: scanned=${scanned} completed=${completed}`
+            );
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("[Cron] account_deletion_retry error:", err.message);
+        }
+      },
+      { ttlMs: 4 * 60 * 1000 }
+    );
+    if (!result.ran) {
+      // eslint-disable-next-line no-console
+      console.log("[Cron] account_deletion_retry — skipped (lease held by another node)");
+    }
+  });
+};
+
 // Expire stale business checkout links hourly. Retained
 // records — `expireStale` only flips pending_payment → expired, never deletes.
 const scheduleBusinessLinkExpiry = () => {
@@ -1384,6 +1418,7 @@ const initScheduledTasks = () => {
   schedulePaymentReconcile();
   scheduleSubscriptionRenewal();
   scheduleBusinessLinkExpiry();
+  scheduleAccountDeletionRetry();
 
   console.log("[Cron] Scheduled tasks initialized:");
   console.log("  - Event reminders (host): Daily at 8:00 AM");

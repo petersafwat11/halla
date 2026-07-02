@@ -29,6 +29,7 @@ const User = require("../../../models/UserModel");
 const Subscription = require("../../../models/SubscriptionModel");
 const Payment = require("../../../models/PaymentModel");
 const EventEntitlement = require("../../../models/EventEntitlementModel");
+const AccountDeletionRequest = require("../../../models/AccountDeletionRequestModel");
 
 const ACTIVE_SUB = [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL];
 const STORE_PROVIDERS = lineage.STORE_PROVIDERS;
@@ -65,6 +66,21 @@ const resolveUser = async (appUserId, aliases = [], originalAppUserId = null) =>
       ...(objectIds.length ? [{ _id: { $in: objectIds } }] : []),
     ],
   }).select("role accountType billingUserId");
+};
+
+/**
+ * Find a deletion tombstone for a store App User ID. When an account is deleted
+ * its `billingUserId` is retained on the AccountDeletionRequest (a pseudonymous,
+ * non-PII key) so a post-deletion webhook can be recognized as belonging to a
+ * deleted account rather than an unknown user. Matches by billingUserId /
+ * original id / aliases (the same identity set the store may present).
+ */
+const findDeletionTombstone = async (appUserId, originalAppUserId = null, aliases = []) => {
+  const ids = [appUserId, originalAppUserId, ...(aliases || [])].filter(Boolean);
+  if (!ids.length) return null;
+  return AccountDeletionRequest.findOne({ billingUserId: { $in: ids } })
+    .select("requestId status")
+    .lean();
 };
 
 /**
@@ -354,7 +370,21 @@ const restoreReversedRefund = async (user, rc, decision) => {
 const processEvent = async (rcEvent) => {
   const rc = rcEvent; // typed columns live directly on the doc
   const user = await resolveUser(rc.appUserId, rc.aliases, rc.originalAppUserId);
-  if (!user) return { status: "dead_letter", reason: "unknown_user", links: {} };
+  if (!user) {
+    // The user may not be "unknown" — they may have DELETED their account. The
+    // UserModel pre-find hook excludes soft-deleted users, so resolveUser
+    // returns null for a deleted account. A trailing post-deletion webhook (a
+    // final EXPIRATION/CANCELLATION for the now-gone user) must be classified
+    // DETERMINISTICALLY as `account_deleted` — a terminal, NON-retryable
+    // disposition — rather than dead-lettering forever (LEGAL §7). Purchases
+    // stay with the original App User ID by signed decision DEC-04, so there is
+    // nothing to transfer or grant; we simply acknowledge and stop.
+    const tomb = await findDeletionTombstone(rc.appUserId, rc.originalAppUserId, rc.aliases);
+    if (tomb) {
+      return { status: "ignored", reason: "account_deleted", links: {}, action: "account_deleted" };
+    }
+    return { status: "dead_letter", reason: "unknown_user", links: {} };
+  }
 
   const links = { userId: user._id };
   const catalogItem = rc.catalogCode ? commerce.getEntryByCode(rc.catalogCode) : null;
