@@ -1,0 +1,35 @@
+# Version control
+.git
+**/.git
+.github
+
+# Dependencies & build artifacts (installed/built inside the image)
+**/node_modules
+**/.next
+**/.expo
+**/.turbo
+**/coverage
+**/dist
+**/build
+**/out
+
+# Secrets — NEVER copy into an image (provided at runtime via env_file / mounts)
+**/.env
+**/.env.*
+**/config.env
+**/*.pem
+**/certs/
+
+# Docs, plans, scratch (not needed to build/run)
+docs/
+*.docx
+**/*.md
+.claude
+
+# Mobile source is not part of the web/api images — keep only its manifest so
+# the npm workspace install can validate the lockfile.
+halaa-mobile/*
+!halaa-mobile/package.json
+
+# Local test/deploy scaffolding
+deploy-*.sh

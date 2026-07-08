@@ -1,0 +1,110 @@
+name: deploy
+
+# Build the web + api images in CI, push them to GHCR, then SSH to the VPS and
+# roll the compose stack forward. App secrets never leave the VPS — CI only holds
+# the SSH key + host.
+#
+# Required repo secrets:
+#   VPS_HOST      - VPS hostname/IP (e.g. 79.143.190.206)
+#   VPS_USER      - SSH user (e.g. root)
+#   VPS_SSH_KEY   - private SSH key (the ed25519 key authorized on the VPS)
+# One-time on the VPS: `docker login ghcr.io` with a read:packages PAT so
+# `docker compose pull` can fetch the private images, and place config.env +
+# certs/ in /opt/halaa (see the deployment doc).
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "halaa-web/**"
+      - "halaa-backend/**"
+      - "shared/**"
+      - "docker-compose.yml"
+      - "Caddyfile"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Existing image tag (git SHA) to roll back to. Blank = build current HEAD."
+        required: false
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  OWNER: petersafwat11
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: echo "tag=${{ github.event.inputs.image_tag || github.sha }}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # workflow_dispatch rollback: the tag already exists in GHCR, skip building.
+      - name: Build & push API
+        if: github.event.inputs.image_tag == ''
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: halaa-backend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER }}/halaa-api:${{ steps.meta.outputs.tag }}
+            ghcr.io/${{ env.OWNER }}/halaa-api:latest
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Build & push Web
+        if: github.event.inputs.image_tag == ''
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: halaa-web/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER }}/halaa-web:${{ steps.meta.outputs.tag }}
+            ghcr.io/${{ env.OWNER }}/halaa-web:latest
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Sync compose + Caddyfile to the VPS
+        run: |
+          scp -i ~/.ssh/id_deploy docker-compose.yml Caddyfile \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/halaa/"
+      - name: Roll the stack forward
+        run: |
+          ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -s <<EOF
+          set -euo pipefail
+          cd /opt/halaa
+          echo "IMAGE_TAG=${{ needs.build.outputs.tag }}" > .env
+          docker compose pull
+          # --wait blocks until every service is healthy (or fails the deploy).
+          docker compose up -d --wait --remove-orphans
+          docker compose ps
+          docker image prune -f
+          EOF
+      - name: Deployed
+        run: echo "Deployed tag ${{ needs.build.outputs.tag }} to ${{ secrets.VPS_HOST }}"

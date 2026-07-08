@@ -1,0 +1,39 @@
+name: image-ci
+
+# Validate that the web + api Docker images build (in a clean Linux env) on every
+# PR that touches the app or the Docker setup. Does not push — the deploy workflow
+# builds + pushes on master.
+
+on:
+  pull_request:
+    paths:
+      - "halaa-web/**"
+      - "halaa-backend/**"
+      - "shared/**"
+      - "**/Dockerfile"
+      - ".dockerignore"
+      - "docker-compose.yml"
+      - ".github/workflows/image-ci.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: halaa-backend/Dockerfile
+          push: false
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Build Web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: halaa-web/Dockerfile
+          push: false
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web

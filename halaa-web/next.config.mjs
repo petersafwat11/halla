@@ -1,5 +1,15 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Standalone server output for a minimal Docker runtime image. Trace from the
+  // monorepo root so the in-repo workspace package (@halaa/shared) is included.
+  output: "standalone",
+  outputFileTracingRoot: path.join(__dirname, ".."),
+
   // Ensure static assets are served from the correct path regardless of locale
   assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || "",
 

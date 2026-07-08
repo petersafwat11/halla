@@ -1,0 +1,29 @@
+# Halaa production reverse proxy — automatic HTTPS (Let's Encrypt).
+#
+# Cloudflare note: if the halaa.com.sa DNS record is PROXIED (orange cloud),
+# Caddy's public ACME challenge can be intercepted. For the cutover either set
+# the record to DNS-only (grey cloud) so Caddy can obtain a Let's Encrypt cert,
+# or switch to the Cloudflare DNS-01 challenge / a Cloudflare Origin certificate.
+
+{
+	email admin@halaa.com.sa
+}
+
+halaa.com.sa {
+	encode zstd gzip
+
+	# API + health probes → Express backend container
+	@api path /api/v2/* /api/* /health /health/*
+	handle @api {
+		reverse_proxy api:8000
+	}
+
+	# Everything else → Next.js web container
+	handle {
+		reverse_proxy web:3000
+	}
+}
+
+www.halaa.com.sa {
+	redir https://halaa.com.sa{uri} permanent
+}
