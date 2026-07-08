@@ -13,7 +13,7 @@ import {
   apiErrorFromResponse,
   apiErrorFromTransport,
   authErrorMessage as sharedAuthErrorMessage,
-} from "@halla/shared/errors";
+} from "@halaa/shared/errors";
 
 export { ApiError };
 

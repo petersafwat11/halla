@@ -8,7 +8,7 @@ import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
-import { editModeratorSchema } from "@halla/shared/schemas/admin";
+import { editModeratorSchema } from "@halaa/shared/schemas/admin";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import styles from "./AddModeratorPopup.module.css";

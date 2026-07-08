@@ -2,11 +2,11 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import useEventActionGate from "@halla/shared/hooks/useEventActionGate";
+import useEventActionGate from "@halaa/shared/hooks/useEventActionGate";
 
 /**
  * PartialFailureBanner — mobile mirror of
- * `labbe/app/[lang]/host/events/[id]/_components/PartialFailureBanner.jsx`.
+ * `halaa-web/app/[lang]/host/events/[id]/_components/PartialFailureBanner.jsx`.
  * Sibling of `EventFailureBanner`. Shown when an event went live (or
  * completed) but `messagingStatus.failedCount > 0` — i.e. the bulk
  * send didn't deliver to every guest.

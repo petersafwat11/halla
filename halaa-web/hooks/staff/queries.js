@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import { staffAuthConfig } from "@/utils/staffToken";
 import { staffKeys } from "./keys";
 import { eventsKeys } from "@/hooks/events/keys";

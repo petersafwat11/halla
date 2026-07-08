@@ -333,7 +333,7 @@ function AuthStack() {
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
       <Stack.Screen name="StaffPortal" component={StaffPortalScreen} />
       {/* Guest invitation — public, deep-linkable via
-          halla://invitation/<code>. No auth required; the invitation
+          halaa://invitation/<code>. No auth required; the invitation
           code itself is the proof of identity. */}
       <Stack.Screen name="Invitation" component={InvitationScreen} />
     </Stack.Navigator>

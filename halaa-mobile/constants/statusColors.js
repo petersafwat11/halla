@@ -1,12 +1,12 @@
 /**
  * statusColors — single source of truth for status-badge colors (MOBILE).
  *
- * Mirror of labbe/utils/statusColors.js — the two files MUST keep identical
+ * Mirror of halaa-web/utils/statusColors.js — the two files MUST keep identical
  * tone hexes and the identical status→tone map so a given status shows the
  * SAME color on web and mobile.
  *
  * Status vocabulary is grounded in the backend single source of truth:
- *   labbe-backend-/src/shared/constants/status.js  (+ PaymentModel.PAYMENT_STATUS)
+ *   halaa-backend/src/shared/constants/status.js  (+ PaymentModel.PAYMENT_STATUS)
  *
  * Usage:
  *   import { getStatusVisual } from "../constants/statusColors";

@@ -5,7 +5,7 @@
 import {
   buildDynamicTemplateSchema as sharedBuildDynamicTemplateSchema,
   buildDefaultValues as sharedBuildDefaultValues,
-} from "@halla/shared/schemas/events";
+} from "@halaa/shared/schemas/events";
 
 export {
   createEventSchema,
@@ -16,7 +16,7 @@ export {
   validateStep,
   EVENT_TYPES,
   hasRequiredStepData,
-} from "@halla/shared/schemas/events";
+} from "@halaa/shared/schemas/events";
 
 export const buildDynamicTemplateSchema = (fields, t) =>
   sharedBuildDynamicTemplateSchema(fields, { t, timeAsDate: true });

@@ -43,7 +43,7 @@ const body = (over = {}, evOver = {}) => ({
     environment: "PRODUCTION",
     transaction_id: "txn-" + Math.random().toString(36).slice(2),
     original_transaction_id: "otxn-1",
-    product_id: "com.halla.premium_monthly_100",
+    product_id: "com.halaa.premium_monthly_100",
     entitlement_ids: ["recurring_access"],
     price: 26.66,
     price_in_purchased_currency: 100,
@@ -60,7 +60,7 @@ test.before(async () => {
   delete process.env.REVENUECAT_APP_ID;
   delete process.env.REVENUECAT_ENVIRONMENT;
   // Stub the canonical snapshot (no provider access in tests).
-  snapshotStub = async () => ({ available: true, entitlementActive: true, effectiveProductId: "com.halla.premium_monthly_100", expiresAtMs: Date.now() + 30 * 86400000, reason: null });
+  snapshotStub = async () => ({ available: true, entitlementActive: true, effectiveProductId: "com.halaa.premium_monthly_100", expiresAtMs: Date.now() + 30 * 86400000, reason: null });
   rcApi.getRecurringSnapshot = (...a) => snapshotStub(...a);
 });
 test.after(async () => { await db.stop(); });
@@ -126,7 +126,7 @@ test("concurrent deliveries of the same event grant exactly once (atomic lease)"
 
 // ── dead-letter / ignore / manual-review persistence ─────────────────────────
 test("unmapped product is dead-lettered durably (not dropped, no grant)", async () => {
-  const res = await call(body({}, { product_id: "com.halla.nope" }));
+  const res = await call(body({}, { product_id: "com.halaa.nope" }));
   assert.equal(res.statusCode, 200);
   assert.equal(res.payload.status, "dead_letter");
   assert.equal(res.payload.reason, "unmapped_product");
@@ -186,7 +186,7 @@ test("refund→REFUND_REVERSED restores the EXACT revoked subscription end-to-en
   await call(body({}, { type: "CANCELLATION", cancel_reason: "CUSTOMER_SUPPORT", original_transaction_id: "otxn-1", transaction_id: "t-rr" }));
   assert.equal((await Subscription.findOne({})).status, "expired");
   // reversal with snapshot active → restore exactly that subscription
-  snapshotStub = async () => ({ available: true, entitlementActive: true, effectiveProductId: "com.halla.premium_monthly_100", expiresAtMs: Date.now() + 30 * 86400000 });
+  snapshotStub = async () => ({ available: true, entitlementActive: true, effectiveProductId: "com.halaa.premium_monthly_100", expiresAtMs: Date.now() + 30 * 86400000 });
   const res = await call(body({}, { type: "REFUND_REVERSED", original_transaction_id: "otxn-1", transaction_id: "t-rr" }));
   assert.equal(res.payload.status, "processed");
   assert.equal((await Subscription.findOne({})).status, "active");
@@ -200,10 +200,10 @@ test("REFUND_REVERSED on a subscription with NO snapshot is retryable (never bli
 });
 
 test("a crashed worker's stuck (processing, expired-lease) event is reclaimed + reprocessed", async () => {
-  snapshotStub = async () => ({ available: true, entitlementActive: true, effectiveProductId: "com.halla.premium_monthly_100", expiresAtMs: Date.now() + 30 * 86400000 });
+  snapshotStub = async () => ({ available: true, entitlementActive: true, effectiveProductId: "com.halaa.premium_monthly_100", expiresAtMs: Date.now() + 30 * 86400000 });
   // Simulate a worker that claimed then crashed: processing with a past lease.
   await RevenueCatEvent.create({
-    eventId: "stuck-1", type: "INITIAL_PURCHASE", appUserId: "biller-1", productId: "com.halla.premium_monthly_100",
+    eventId: "stuck-1", type: "INITIAL_PURCHASE", appUserId: "biller-1", productId: "com.halaa.premium_monthly_100",
     store: "APP_STORE", environment: "PRODUCTION", transactionId: "t-stuck", originalTransactionId: "otxn-s",
     entitlementIds: ["recurring_access"], priceInPurchasedCurrency: 100, currency: "SAR",
     catalogCode: "premium_monthly_100", status: "processing", processing: true, leaseUntil: new Date(Date.now() - 1000),

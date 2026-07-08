@@ -12,7 +12,7 @@ import StatsCards from "@/ui/host/main-page/StatsCards";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import SearchableSelect from "@/ui/commen/inputs/SearchableSelect/SearchableSelect";
 import EditPlanPopup from "./EditPlanPopup";
-import { getLocalized } from "@halla/shared/utils/locale";
+import { getLocalized } from "@halaa/shared/utils/locale";
 import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./ManagePlansContent.module.css";

@@ -7,7 +7,7 @@ import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import { useTicketAssignees, useTicketMutation } from "@/hooks/tickets";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
-import { assignTicketSchema } from "@halla/shared/schemas/admin";
+import { assignTicketSchema } from "@halaa/shared/schemas/admin";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import styles from "./AssignTicketPopup.module.css";

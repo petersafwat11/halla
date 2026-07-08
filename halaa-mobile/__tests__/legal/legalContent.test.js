@@ -1,6 +1,6 @@
 /**
  * Mobile-side structure test for the shared legal content the app renders
- * (LegalScreen consumes `@halla/shared/legal` getLegalDocument()).
+ * (LegalScreen consumes `@halaa/shared/legal` getLegalDocument()).
  *
  * Reads the shared canonical JSON via `fs` (portable under plain node --test,
  * matching how the backend manifest reads it) and asserts every mobile legal

@@ -3,7 +3,7 @@
     "name": "Halaa",
     "slug": "halla",
     "version": "1.0.0",
-    "scheme": "halla",
+    "scheme": "halaa",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,7 +18,7 @@
       "web"
     ],
     "android": {
-      "package": "com.halla.app",
+      "package": "com.halaa.app",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -79,7 +79,7 @@
       ]
     },
     "ios": {
-      "bundleIdentifier": "com.halla.app",
+      "bundleIdentifier": "com.halaa.app",
       "buildNumber": "1",
       "supportsTablet": true,
       "associatedDomains": [

@@ -6,7 +6,7 @@ import { useUpdateBusinessStatus, useDeleteBusiness } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { colors } from "../../../styles/tokens";
-import { getLocalized } from "@halla/shared/utils/locale";
+import { getLocalized } from "@halaa/shared/utils/locale";
 import AdminListItem from "../common/AdminListItem";
 
 const BusinessListItem = ({ business, onPress, onManagePlan, selected = false, onSelect }) => {

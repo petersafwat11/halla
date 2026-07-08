@@ -105,7 +105,7 @@ const _statsPollInterval = (eventStatus) => {
  * Fetch statistics for a single event.
  *
  * Signature is options-object first to match the web hook
- * (`labbe/hooks/events/queries/useSingleEventStats.js`). Calls that
+ * (`halaa-web/hooks/events/queries/useSingleEventStats.js`). Calls that
  * pass a positional eventStatus (legacy mobile pattern) still work
  * via a backwards-compatible shim — but new code should pass
  * `{ eventStatus }` so the two tiers stay structurally identical.

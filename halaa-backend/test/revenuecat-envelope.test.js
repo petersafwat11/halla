@@ -26,9 +26,9 @@ const baseCtx = () => ({
   integrity: maps.integrity,
 });
 
-const SUB = "com.halla.premium_monthly_100";
-const EVT = "com.halla.basic_event_50";
-const ADDON = "com.halla.extra_invites_50";
+const SUB = "com.halaa.premium_monthly_100";
+const EVT = "com.halaa.basic_event_50";
+const ADDON = "com.halaa.extra_invites_50";
 
 const body = (over = {}) => ({
   api_version: "1.0",
@@ -104,7 +104,7 @@ test("api_version not allowed → dead_letter", () => {
   assert.equal(validateEnvelope(b, baseCtx()).code, "api_version_not_allowed");
 });
 test("unmapped product → dead_letter", () => {
-  assert.equal(run({ product_id: "com.halla.does_not_exist" }).code, "unmapped_product");
+  assert.equal(run({ product_id: "com.halaa.does_not_exist" }).code, "unmapped_product");
 });
 test("missing transaction id on a purchase → dead_letter", () => {
   assert.equal(run({ transaction_id: undefined }).code, "missing_transaction_id");

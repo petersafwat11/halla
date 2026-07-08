@@ -11,11 +11,11 @@
  * The proposed product→code maps here REPLACE the hand-maintained
  * `REVENUECAT_PRODUCT_PLAN_MAP` / `REVENUECAT_ADDON_PRODUCT_MAP` env JSON as the
  * DEFAULT source (env still overrides — see revenuecat.service.js). All product
- * ids are PROPOSED (`com.halla.<code>`) and not yet created in any store.
+ * ids are PROPOSED (`com.halaa.<code>`) and not yet created in any store.
  *
  * NOTE ON PLACEMENT: this module lives in the backend (CJS) rather than
  * billing-plan §0.2's suggested `shared/commerce/` because the backend is
- * CommonJS and does NOT import the ESM `@halla/shared` workspace (verified: 0
+ * CommonJS and does NOT import the ESM `@halaa/shared` workspace (verified: 0
  * imports). Keeping it next to the price/name authority (`planDefaults.js` /
  * `addons.js`) avoids a fragile CJS→ESM runtime bridge. Web/mobile stay
  * API-driven and do not import this module.

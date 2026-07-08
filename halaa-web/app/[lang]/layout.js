@@ -22,7 +22,7 @@ import {
   BRAND_ASSETS,
   OG_LOCALE,
   hreflangAlternates,
-} from "@halla/shared/brand";
+} from "@halaa/shared/brand";
 
 /**
  * Localized root metadata (SEO-ASO-METADATA-PLAN §3.1). `metadataBase` makes all

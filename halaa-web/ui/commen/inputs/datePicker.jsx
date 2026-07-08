@@ -6,7 +6,7 @@ import { get } from 'lodash';
 import styles from './datePicker.module.css';
 import Image from 'next/image';
 import Calendar from './Calendar';
-import { formatTemplateDate } from '@halla/shared/utils/formatTemplateDate';
+import { formatTemplateDate } from '@halaa/shared/utils/formatTemplateDate';
 import { ar } from 'date-fns/locale';
 
 // Normalize a date to midnight so time-of-day never affects day comparisons

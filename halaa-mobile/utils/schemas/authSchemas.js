@@ -12,4 +12,4 @@ export {
   vendorSignupSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-} from "@halla/shared/schemas/auth";
+} from "@halaa/shared/schemas/auth";

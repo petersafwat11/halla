@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import { taqnyatTemplatesKeys } from "./keys";
 
 export function useSyncTaqnyat() {

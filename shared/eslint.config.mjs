@@ -1,7 +1,7 @@
 import js from '@eslint/js';
 import globals from 'globals';
 
-// Phase 9 lock-in config for @halla/shared.
+// Phase 9 lock-in config for @halaa/shared.
 //
 // Scope: shared must stay platform-neutral pure JS. It can pull in zod (peer)
 // but nothing app-specific or runtime-specific. The lint rules below catch

@@ -9,7 +9,7 @@
  * messages are pre-translated — web's `useForm` call sites do this
  * so the `Schema(t)` pattern keeps working unchanged.
  *
- * Patterns mirror `labbe-backend-/src/modules/auth/auth.validation.js`
+ * Patterns mirror `halaa-backend/src/modules/auth/auth.validation.js`
  * so client-side validation never accepts what the backend rejects.
  */
 import { z } from "zod";

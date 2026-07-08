@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import { discountsKeys } from "./keys";
 
 export const useCreateDiscount = () => {

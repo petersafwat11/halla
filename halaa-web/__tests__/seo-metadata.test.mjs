@@ -13,7 +13,7 @@ import {
   safeJsonLd,
   pruneEmpty,
   BRAND_NAME,
-} from "@halla/shared/brand";
+} from "@halaa/shared/brand";
 
 test("canonical origin is the infra-confirmed halaa.com.sa host", () => {
   assert.equal(CANONICAL_ORIGIN, "https://halaa.com.sa");

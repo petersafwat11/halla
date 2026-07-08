@@ -10,7 +10,7 @@ import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import {
   parseError,
   getAuthErrorMessage,

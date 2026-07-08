@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import Button from "@/ui/commen/button/Button";
 import Table from "@/ui/commen/new-table/Table";
-import { parseVCards } from "@halla/shared/utils/vcard";
+import { parseVCards } from "@halaa/shared/utils/vcard";
 import { normalizeSaudiMobile } from "@/utils/contacts/phoneContacts";
 import styles from "../guestPicker.module.css";
 

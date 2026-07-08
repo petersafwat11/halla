@@ -9,7 +9,7 @@
  *   - uses a two-phase source -> temporary -> target rename
  *   - rolls temporary files back if a rename fails
  *
- * Usage (from labbe-backend-):
+ * Usage (from halaa-backend):
  *   node scripts/renameFreshTemplateCards.js
  *   node scripts/renameFreshTemplateCards.js --apply
  */

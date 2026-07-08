@@ -9,7 +9,7 @@ import {
   prefetchServerData,
   QueryClientServerProvider,
 } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 
 const page = async () => {
   const cookieStore = await cookies();

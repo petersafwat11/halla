@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { requirePageAccess } from "@/services/serverAuth";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import { adminKeys } from "@/hooks/admin/keys";
 import BusinessDetailsContent from "./_components/BusinessDetailsContent";
 import styles from "./page.module.css";

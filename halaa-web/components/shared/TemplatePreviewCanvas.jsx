@@ -17,7 +17,7 @@
 import React, { forwardRef, useRef, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import OverlayItem from "./OverlayItem";
-import { formatTemplateDate } from "@halla/shared/utils/formatTemplateDate";
+import { formatTemplateDate } from "@halaa/shared/utils/formatTemplateDate";
 
 const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
 

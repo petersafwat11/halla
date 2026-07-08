@@ -19,7 +19,7 @@ import {
   isIndexable,
   canonicalUrl,
   hreflangAlternates,
-} from "@halla/shared/brand";
+} from "@halaa/shared/brand";
 
 const LOCALES = ["ar", "en"];
 

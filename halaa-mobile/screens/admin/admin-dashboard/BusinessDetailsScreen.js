@@ -23,7 +23,7 @@ import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
-import { getLocalized } from "@halla/shared/utils/locale";
+import { getLocalized } from "@halaa/shared/utils/locale";
 import TopBar from "../../../components/plans/TopBar";
 import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
 import StatusBadge from "../../../components/admin-dashboard/common/StatusBadge";

@@ -2,7 +2,7 @@
  * Notification Preferences — re-exports shared schemas + UI option config
  *
  * The validation schemas are re-exported from
- * `@halla/shared/schemas/settings`. The UI option configurations are kept
+ * `@halaa/shared/schemas/settings`. The UI option configurations are kept
  * local because they reference web-side i18n keys + Arabic label defaults
  * and don't belong in the cross-platform shared package.
  */
@@ -18,9 +18,9 @@ export {
   hostNotificationDefaults,
   adminNotificationDefaults,
   getNotificationDefaultsForRole,
-} from "@halla/shared/schemas/settings";
+} from "@halaa/shared/schemas/settings";
 
-import { USER_ROLES } from "@halla/shared/schemas/settings";
+import { USER_ROLES } from "@halaa/shared/schemas/settings";
 
 // ============================================
 // NOTIFICATION OPTIONS CONFIG BY ROLE

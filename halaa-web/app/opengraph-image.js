@@ -6,7 +6,7 @@
  * to be committed and it always resolves absolutely via `metadataBase`. Text is
  * intentionally LATIN ("Halaa") — `ImageResponse`'s built-in font does not carry
  * Arabic glyphs, and bundling a font here would risk the offline build. The
- * brand colors match `@halla/shared/brand`. This is a truthful brand card (no
+ * brand colors match `@halaa/shared/brand`. This is a truthful brand card (no
  * fabricated claims/ratings).
  */
 

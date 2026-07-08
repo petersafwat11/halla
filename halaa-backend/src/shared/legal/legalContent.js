@@ -1,9 +1,9 @@
 /**
  * Legal content reader (backend, CJS).
  *
- * The canonical legal documents live in the ESM `@halla/shared` workspace as
+ * The canonical legal documents live in the ESM `@halaa/shared` workspace as
  * inert JSON (`shared/src/legal/documents/*.json`). The backend is CommonJS and
- * does NOT import `@halla/shared` (see `commerce/index.js` for the same rule) —
+ * does NOT import `@halaa/shared` (see `commerce/index.js` for the same rule) —
  * but JSON is language-agnostic, so we read the SAME files via `fs`. This is the
  * single source shared with web + mobile; there is no duplicate copy in the
  * backend.
@@ -16,7 +16,7 @@
 const fs = require("fs");
 const path = require("path");
 
-// labbe-backend-/src/shared/legal -> repo root shared/src/legal/documents
+// halaa-backend/src/shared/legal -> repo root shared/src/legal/documents
 const DOCUMENTS_DIR = path.resolve(
   __dirname,
   "..",

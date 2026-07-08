@@ -1,6 +1,6 @@
 /**
  * LegalLinks — reusable inline legal links that open the canonical web legal
- * pages (backed by the SAME `@halla/shared/legal` content the app renders) in an
+ * pages (backed by the SAME `@halaa/shared/legal` content the app renders) in an
  * in-app browser. Works from unauthenticated surfaces (signup) where the in-app
  * legal screens (which live in authenticated stacks) aren't reachable.
  *
@@ -12,7 +12,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import * as WebBrowser from "expo-web-browser";
-import { LEGAL_ROUTES } from "@halla/shared/legal";
+import { LEGAL_ROUTES } from "@halaa/shared/legal";
 import { useTranslation } from "../../localization";
 import { WEB_BASE_URL } from "../../config/api";
 import { colors, spacing, typography } from "../../styles/tokens";

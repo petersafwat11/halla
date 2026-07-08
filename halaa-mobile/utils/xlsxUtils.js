@@ -1,7 +1,7 @@
 /**
  * Mobile XLSX I/O — expo-file-system + expo-sharing + expo-document-picker.
  * Header validation + row parsing are delegated to
- * `@halla/shared/utils/xlsx`.
+ * `@halaa/shared/utils/xlsx`.
  */
 import * as XLSX from "xlsx";
 // SDK 54 (expo-file-system 19) moved the classic file API to `/legacy`; the
@@ -13,7 +13,7 @@ import * as DocumentPicker from "expo-document-picker";
 import {
   buildWorkbook,
   parseXlsxRowsToObjects,
-} from "@halla/shared/utils/xlsx";
+} from "@halaa/shared/utils/xlsx";
 import { saveBase64ToDevice } from "./download";
 
 /**

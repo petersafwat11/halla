@@ -11,7 +11,7 @@ import {
   hasRequiredStepData as sharedHasRequiredStepData,
   buildDynamicTemplateSchema as sharedBuildDynamicTemplateSchema,
   buildDefaultValues as sharedBuildDefaultValues,
-} from "@halla/shared/schemas/events";
+} from "@halaa/shared/schemas/events";
 import { FONT_IDS } from "@/config/fonts";
 
 export const createEventSchema = sharedCreateEventSchema;

@@ -10,7 +10,7 @@ import ImagePreviewModal from "@/ui/vendor/modals/ImagePreviewModal";
 import PhoneChangeOtpModal from "../PhoneChangeOtpModal/PhoneChangeOtpModal";
 import { personalInfoSchema } from "@/utils/schemas/vendorSettings";
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import {
   SectionCard,
   FieldGrid,

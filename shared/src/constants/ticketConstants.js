@@ -1,5 +1,5 @@
 /**
- * Ticket enums — mirror `labbe-backend-/src/shared/constants/status.js`
+ * Ticket enums — mirror `halaa-backend/src/shared/constants/status.js`
  * (TICKET_STATUS, TICKET_PRIORITY) plus the FE-only TICKET_TYPES list.
  */
 

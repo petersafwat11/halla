@@ -20,7 +20,7 @@ import { useHostTaqnyatTemplates } from "@/hooks/taqnyatTemplates";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
-} from "@halla/shared/utils";
+} from "@halaa/shared/utils";
 import useAuthStore from "@/stores/authStore";
 
 const CheckIcon = () => (

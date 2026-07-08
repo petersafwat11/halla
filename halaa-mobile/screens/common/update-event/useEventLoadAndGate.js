@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import useEventActionGate from "@halla/shared/hooks/useEventActionGate";
+import useEventActionGate from "@halaa/shared/hooks/useEventActionGate";
 import { ENDPOINTS } from "../../../config/api";
 import EventsService from "../../../hooks/events/useEventForm";
 import { useTranslation } from "../../../localization";

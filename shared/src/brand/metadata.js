@@ -1,5 +1,5 @@
 /**
- * @halla/shared/brand/metadata — localized Next.js Metadata builder
+ * @halaa/shared/brand/metadata — localized Next.js Metadata builder
  * (SEO-ASO-METADATA-PLAN §3.2, §4).
  *
  * Produces a Metadata object with self-canonical, reciprocal AR/EN + x-default

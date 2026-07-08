@@ -43,7 +43,7 @@ const body = (over = {}, evOver = {}) => ({
     environment: "PRODUCTION",
     transaction_id: "txn-" + Math.random().toString(36).slice(2),
     original_transaction_id: "otxn-del-1",
-    product_id: "com.halla.premium_monthly_100",
+    product_id: "com.halaa.premium_monthly_100",
     entitlement_ids: ["recurring_access"],
     expiration_at_ms: Date.now(),
     ...evOver,

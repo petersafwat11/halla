@@ -135,7 +135,7 @@ export const purchasePackage = async (pkg, changeInfo = null) => {
     transaction,
     // The store transaction id used for exact reconciliation.
     transactionId: transaction?.transactionIdentifier || null,
-    // The store product id (== com.halla.<code>); used as the reconcile fallback
+    // The store product id (== com.halaa.<code>); used as the reconcile fallback
     // correlator and to verify the effective product.
     storeProductId: transaction?.productIdentifier || result?.productIdentifier || null,
   };

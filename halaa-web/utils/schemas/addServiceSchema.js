@@ -2,7 +2,7 @@
  * Add Service Schema
  * Zod validation schema + form metadata for the vendor add/edit service flow.
  * Factory function; pass `t` for translation, omit for opaque keys.
- * Structure mirrors halla-mobile/utils/schemas/vendorServiceSchema.js for parity.
+ * Structure mirrors halaa-mobile/utils/schemas/vendorServiceSchema.js for parity.
  */
 
 import { z } from "zod";

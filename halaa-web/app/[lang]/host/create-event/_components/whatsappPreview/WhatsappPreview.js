@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
-} from "@halla/shared/utils";
+} from "@halaa/shared/utils";
 import useAuthStore from "@/stores/authStore";
 
 const WhatsappPreview = ({

@@ -1,7 +1,7 @@
 /**
  * Web XLSX I/O — browser download (`XLSX.writeFile`) for export,
  * FileReader for import. Header validation + row parsing are delegated
- * to `@halla/shared/utils/xlsx`.
+ * to `@halaa/shared/utils/xlsx`.
  */
 import * as XLSX from "xlsx";
 import {
@@ -9,7 +9,7 @@ import {
   parseXlsxRowsToObjects,
   validateStaffRow,
   validateGuestRow,
-} from "@halla/shared/utils/xlsx";
+} from "@halaa/shared/utils/xlsx";
 
 export { validateStaffRow, validateGuestRow };
 

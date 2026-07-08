@@ -13,7 +13,7 @@
  * values only — no immutable Apple/Google/RevenueCat products are created.
  *
  * CommonJS + zod (backend is CJS and already depends on zod; it does NOT
- * import the ESM `@halla/shared` workspace — see the module README).
+ * import the ESM `@halaa/shared` workspace — see the module README).
  */
 
 const { z } = require("zod");
@@ -26,7 +26,7 @@ const RECURRING_ENTITLEMENT_ID = "recurring_access";
 
 // Deterministic store product-id prefix. ios id === android id so a single
 // product→code map covers both stores (SKU-matrix convention). PROPOSED.
-const PRODUCT_ID_PREFIX = "com.halla.";
+const PRODUCT_ID_PREFIX = "com.halaa.";
 
 const CATALOG_TYPES = ["plan", "addon"];
 const KINDS = ["subscription", "event_consumable", "addon_consumable", "internal"];

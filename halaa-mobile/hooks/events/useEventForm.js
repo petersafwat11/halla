@@ -5,7 +5,7 @@
  * keys (e.g. `events:validation.phoneRequired`) and the consuming components
  * resolve them via `t(key)`. Web does not need these helpers — its wizard
  * pipes through react-hook-form + zod on every step (see
- * `labbe/hooks/events/useEventForm.js`).
+ * `halaa-web/hooks/events/useEventForm.js`).
  *
  * File name kept as `useEventForm.js` for parity with web; the contents are
  * pure functions, not React hooks, so callers can `import` them anywhere.

@@ -1,6 +1,6 @@
 ﻿import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import { subscriptionsKeys } from "@/hooks/subscriptions/keys";
 import { plansKeys } from "@/hooks/plans/keys";

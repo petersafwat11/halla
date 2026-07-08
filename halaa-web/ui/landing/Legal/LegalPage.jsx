@@ -4,10 +4,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { LEGAL_CONTACT } from "@halla/shared/legal";
+import { LEGAL_CONTACT } from "@halaa/shared/legal";
 import styles from "./LegalPage.module.css";
 
-/* ─── Contact — single source of truth (`@halla/shared/legal` LEGAL_CONTACT).
+/* ─── Contact — single source of truth (`@halaa/shared/legal` LEGAL_CONTACT).
    Values are PROVISIONAL and owner-gated (BLOCKED_NEEDS_OWNER): a real
    support-email conflict (halaa.net vs halaa.com.sa) must be resolved by the
    owner. Rendered from the shared module so there is exactly one place to update

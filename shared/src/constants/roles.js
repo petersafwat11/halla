@@ -1,5 +1,5 @@
 /**
- * User roles + hierarchy — mirror `labbe-backend-/src/shared/constants/roles.js`.
+ * User roles + hierarchy — mirror `halaa-backend/src/shared/constants/roles.js`.
  *
  * Frontend role checks should import from here so a backend role rename
  * surfaces as a build failure rather than a silent auth bug.

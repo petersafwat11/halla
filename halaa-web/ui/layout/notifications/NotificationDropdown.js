@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { IoCheckmarkDoneOutline, IoTrashOutline } from "react-icons/io5";
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import { useNotificationMutation } from "@/hooks/notifications";
 import { notificationsKeys } from "@/hooks/notifications/keys";
 import NotificationItem from "./NotificationItem";

@@ -19,7 +19,7 @@ import TextInput from "../commen/TextInput";
 import TextAreaInput from "../commen/TextAreaInput";
 import Button from "../commen/Button";
 import MapPicker from "../commen/MapPicker";
-import { mobileServiceDetailsSchema as serviceDetailsSchema } from "@halla/shared/schemas/vendor";
+import { mobileServiceDetailsSchema as serviceDetailsSchema } from "@halaa/shared/schemas/vendor";
 import { usersApi } from "../../hooks/users/_api";
 
 /**

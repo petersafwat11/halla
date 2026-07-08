@@ -26,7 +26,7 @@ const JSON_PATH = path.join(backendRoot, "src/shared/commerce/storeCatalog.gener
 const DOCS_DIR = path.join(repoRoot, "docs/evidence/store-readiness/generated");
 
 const PROPOSED_BANNER =
-  "> **GENERATED — do not edit by hand.** Source: `labbe-backend-/src/shared/commerce/` " +
+  "> **GENERATED — do not edit by hand.** Source: `halaa-backend/src/shared/commerce/` " +
   "(`catalog.overlay.js` + `buildCatalog.js`). Regenerate with `npm run catalog:generate`.\n>\n" +
   "> All Apple / Google / RevenueCat identifiers below are **PROPOSED** and **NOT yet created** " +
   "in any store console. Prices are shown in SAR from the current backend catalog; the stores " +
@@ -189,9 +189,9 @@ function buildArtifacts() {
 
   const manifest = {
     $comment:
-      "GENERATED — do not edit. Source: labbe-backend-/src/shared/commerce/{catalog.overlay,catalog.schema,buildCatalog}.js. " +
+      "GENERATED — do not edit. Source: halaa-backend/src/shared/commerce/{catalog.overlay,catalog.schema,buildCatalog}.js. " +
       "Regenerate: npm run catalog:generate. All ios/android/revenuecat identifiers are PROPOSED and NOT yet created.",
-    generator: "labbe-backend-/scripts/generateStoreCatalog.js",
+    generator: "halaa-backend/scripts/generateStoreCatalog.js",
     // Version + deterministic content hash (§1). Billing readiness and every
     // durable webhook event stamp these; a mismatch fails billing observably.
     catalogVersion: meta.catalogVersion,

@@ -1,6 +1,6 @@
 /**
- * Barrel for `@halla/shared/schemas`. Prefer subpath imports
- * (`@halla/shared/schemas/auth`) over this barrel so bundlers tree-shake.
+ * Barrel for `@halaa/shared/schemas`. Prefer subpath imports
+ * (`@halaa/shared/schemas/auth`) over this barrel so bundlers tree-shake.
  */
 export * as _primitives from "./_shared.js";
 export * as auth from "./auth.js";

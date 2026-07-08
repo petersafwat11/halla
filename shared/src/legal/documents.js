@@ -4,7 +4,7 @@
  * The authoritative content lives as inert JSON under `./documents/*.json` in the
  * `{ ar, en }` render shape that BOTH the web `LegalPage` and the mobile
  * `LegalScreen` already consume. These thin ESM re-exports let web (Next) and
- * mobile (Metro) bundle the same source via `@halla/shared/legal`. The backend
+ * mobile (Metro) bundle the same source via `@halaa/shared/legal`. The backend
  * (CJS) does NOT import this module; it reads the same JSON via `fs` at
  * legal-manifest generation time (JSON is language-agnostic), mirroring the
  * commerce catalog manifest.

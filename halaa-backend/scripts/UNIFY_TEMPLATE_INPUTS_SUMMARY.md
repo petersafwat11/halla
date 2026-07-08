@@ -1,6 +1,6 @@
 # Template inputs unification — summary
 
-Script: `labbe-backend-/scripts/unifyTemplateInputs.js`
+Script: `halaa-backend/scripts/unifyTemplateInputs.js`
 
 Before running it, here's the summary of the inputs and what the script will change. Review and flag any choice that doesn't match the intent.
 

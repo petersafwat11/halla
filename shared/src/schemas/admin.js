@@ -2,7 +2,7 @@
  * Admin schemas — popups + admin-only operations.
  *
  * Hardcoded Arabic messages preserved verbatim from the original
- * `labbe/utils/schemas/adminPopupSchemas.js`. Future pass can convert
+ * `halaa-web/utils/schemas/adminPopupSchemas.js`. Future pass can convert
  * to the `(t) => ...` factory pattern used by `auth.js` / `events.js`.
  *
  * Source-of-truth alignment: backend admin/users validation modules.
@@ -110,7 +110,7 @@ export const sendNotificationSchema = z.object({
 // ============================================
 
 // Mirrors backend enum at
-// `labbe-backend-/src/modules/taqnyat-templates/taqnyat-templates.validation.js`.
+// `halaa-backend/src/modules/taqnyat-templates/taqnyat-templates.validation.js`.
 export const TAQNYAT_TEMPLATE_TYPES = [
   "invite",
   "reminder_confirmed",

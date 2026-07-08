@@ -8,7 +8,7 @@ import {
   safeJsonLd,
   pruneEmpty,
   canonicalUrl,
-} from "@halla/shared/brand";
+} from "@halaa/shared/brand";
 
 export const dynamic = "force-dynamic";
 

@@ -1,6 +1,6 @@
 "use client";
 import { useTranslation } from "react-i18next";
-import { getLocalized } from "@halla/shared/utils/locale";
+import { getLocalized } from "@halaa/shared/utils/locale";
 import PlanCard from "@/ui/plans/PlanCard/PlanCard";
 
 /**

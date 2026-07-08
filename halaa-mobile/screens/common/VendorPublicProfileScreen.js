@@ -14,7 +14,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useMarketplaceVendor } from "../../hooks/marketplace";
-import { buildVendorContactMessage, buildWhatsAppUrl, normalizeWhatsAppNumber } from "@halla/shared/utils/marketplace";
+import { buildVendorContactMessage, buildWhatsAppUrl, normalizeWhatsAppNumber } from "@halaa/shared/utils/marketplace";
 import { useTranslation } from "../../localization";
 import { WEB_BASE_URL, ENDPOINTS } from "../../config/api";
 import { apiFetch } from "../../services/http";

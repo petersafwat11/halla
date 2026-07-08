@@ -134,7 +134,7 @@ test("unique RevenueCat package lookup keys", () => {
   }
 });
 
-test("proposed product ids follow com.halla.<code> (ios === android)", () => {
+test("proposed product ids follow com.halaa.<code> (ios === android)", () => {
   for (const e of catalog.filter((x) => x.storeEligible)) {
     assert.equal(e.iosProductId, PRODUCT_ID_PREFIX + e.internalCode);
     assert.equal(e.androidProductId, e.iosProductId);
@@ -312,17 +312,17 @@ test("no removed ten-tier plan code appears in backend/web/mobile source", () =>
   for (const fam of families) for (const t of [250, 300, 350, 400]) staleCodes.push(`${fam}_${t}`);
 
   const roots = [
-    "labbe-backend-/src",
-    "labbe-backend-/scripts",
-    "labbe-backend-/models",
-    "labbe/app",
-    "labbe/ui",
-    "labbe/hooks",
-    "labbe/services",
-    "halla-mobile/screens",
-    "halla-mobile/components",
-    "halla-mobile/services",
-    "halla-mobile/hooks",
+    "halaa-backend/src",
+    "halaa-backend/scripts",
+    "halaa-backend/models",
+    "halaa-web/app",
+    "halaa-web/ui",
+    "halaa-web/hooks",
+    "halaa-web/services",
+    "halaa-mobile/screens",
+    "halaa-mobile/components",
+    "halaa-mobile/services",
+    "halaa-mobile/hooks",
     "shared/src",
   ];
   const SKIP = new Set(["node_modules", ".next", ".expo", "android", "ios", "build", "dist", "coverage", ".git"]);
@@ -365,8 +365,8 @@ test("no removed ten-tier plan code appears in backend/web/mobile source", () =>
 });
 
 test("stale '54-plan / 54 entries' comments were removed from source", () => {
-  const seed = fs.readFileSync(path.join(repoRoot, "labbe-backend-/scripts/seedPlans.js"), "utf8");
-  const defs = fs.readFileSync(path.join(repoRoot, "labbe-backend-/src/shared/constants/planDefaults.js"), "utf8");
+  const seed = fs.readFileSync(path.join(repoRoot, "halaa-backend/scripts/seedPlans.js"), "utf8");
+  const defs = fs.readFileSync(path.join(repoRoot, "halaa-backend/src/shared/constants/planDefaults.js"), "utf8");
   assert.ok(/EXPECTED_TOTAL = 34/.test(seed), "seedPlans EXPECTED_TOTAL must be 34");
   assert.ok(!/54-plan|54 entries|54 total/.test(seed), "seedPlans still has a stale 54 comment");
   assert.ok(!/54 entries|54-plan|54 total/.test(defs), "planDefaults still has a stale 54 comment");
@@ -385,7 +385,7 @@ test("all generated artifacts are reproducible and currently synchronized", () =
 });
 
 // ── runtime product→code maps (the RevenueCat webhook consumer) ────────────────
-test("generated product→code maps: 32 plans, 22 add-ons, com.halla.<code>, no trial/unlimited", () => {
+test("generated product→code maps: 32 plans, 22 add-ons, com.halaa.<code>, no trial/unlimited", () => {
   const planMap = commerce.getStorePlanProductMap();
   const addonMap = commerce.getStoreAddonProductMap();
 
@@ -394,11 +394,11 @@ test("generated product→code maps: 32 plans, 22 add-ons, com.halla.<code>, no 
   assert.equal(Object.keys(addonMap).length, 22);
 
   for (const [productId, code] of [...Object.entries(planMap), ...Object.entries(addonMap)]) {
-    assert.equal(productId, `com.halla.${code}`, `${productId} must be com.halla.<code>`);
+    assert.equal(productId, `com.halaa.${code}`, `${productId} must be com.halaa.<code>`);
   }
   // trial / unlimited must never resolve a store product.
-  assert.ok(!("com.halla.trial" in planMap), "trial must not be in the plan map");
-  assert.ok(!("com.halla.unlimited" in planMap), "unlimited must not be in the plan map");
+  assert.ok(!("com.halaa.trial" in planMap), "trial must not be in the plan map");
+  assert.ok(!("com.halaa.unlimited" in planMap), "unlimited must not be in the plan map");
 
   // Maps must resolve real catalog codes (no orphan values).
   const codes = new Set(catalog.map((e) => e.internalCode));

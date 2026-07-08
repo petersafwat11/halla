@@ -6,7 +6,7 @@ import {
   ArrowLeft, ArrowRight, Facebook, FileText, Globe2, Instagram, Link2, Mail, MapPin,
   MessageCircle, Phone, Star, Twitter,
 } from "lucide-react";
-import { buildVendorContactMessage, buildWhatsAppUrl } from "@halla/shared/utils/marketplace";
+import { buildVendorContactMessage, buildWhatsAppUrl } from "@halaa/shared/utils/marketplace";
 import en from "@/localization/locales/en/marketplace.json";
 import ar from "@/localization/locales/ar/marketplace.json";
 import ShareButton from "./ShareButton";

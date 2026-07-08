@@ -1,6 +1,6 @@
 // Audience definitions + gating for the consolidated "Send messages" actions
 // on the single-event screen. Mirror of the web helper
-// (labbe/components/event-detail/sendActions/sendAudiences.js) — keep the two
+// (halaa-web/components/event-detail/sendActions/sendAudiences.js) — keep the two
 // in sync. The backend re-enforces each audience, so these client filters are
 // for UX only (which rows to show, counts, enable/disable) — never authz.
 

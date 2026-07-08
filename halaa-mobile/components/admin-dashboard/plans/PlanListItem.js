@@ -1,8 +1,8 @@
 import React from "react";
 import { useTranslation } from "../../../localization";
 import { colors } from "../../../styles/tokens";
-import { getLocalized } from "@halla/shared/utils/locale";
-import { isPoolPlan } from "@halla/shared/constants/plans";
+import { getLocalized } from "@halaa/shared/utils/locale";
+import { isPoolPlan } from "@halaa/shared/constants/plans";
 import AdminListItem from "../common/AdminListItem";
 
 /**

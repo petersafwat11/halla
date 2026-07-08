@@ -11,7 +11,7 @@ delete process.env.INTERNAL_API_URL;
 
 import sitemap from "../app/sitemap.js";
 import robots from "../app/robots.js";
-import { ROUTE_INVENTORY, isIndexable } from "@halla/shared/brand";
+import { ROUTE_INVENTORY, isIndexable } from "@halaa/shared/brand";
 
 test("sitemap() resolves without a backend and never throws (offline build)", async () => {
   const entries = await sitemap();

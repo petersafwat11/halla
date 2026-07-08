@@ -257,7 +257,7 @@ function AppContent() {
     );
   }
 
-  // Deep-link config. Links use the `halla://` scheme (declared in
+  // Deep-link config. Links use the `halaa://` scheme (declared in
   // app.json) plus universal-link variants for the production domain.
   const linking = useMemo(
     () => ({
@@ -265,7 +265,7 @@ function AppContent() {
       // host so React Navigation strips the `/<lang>` segment, letting one
       // screen pattern serve `/ar/...`, `/en/...`, and unprefixed links.
       prefixes: [
-        "halla://",
+        "halaa://",
         "https://halaa.com.sa/ar",
         "https://halaa.com.sa/en",
         "https://halaa.com.sa",
@@ -276,9 +276,9 @@ function AppContent() {
           // `https://halaa.com.sa/<lang>/change-password?token=<token>`; the
           // universal link opens this screen with the token from the query
           // string (`route.params.token`). The custom-scheme variant
-          // (`halla://change-password?token=<token>`) is also supported.
+          // (`halaa://change-password?token=<token>`) is also supported.
           ResetPassword: "change-password",
-          // Guest invitation portal — `halla://invitation/<code>` and
+          // Guest invitation portal — `halaa://invitation/<code>` and
           // `https://halaa.com.sa/<lang>/invitation/<code>`. Registered on
           // AuthStack so SMS/WhatsApp taps from an unauthenticated device land
           // directly without forcing a login first.

@@ -39,7 +39,7 @@ export async function GET() {
       relation: ["delegate_permission/common.handle_all_urls"],
       target: {
         namespace: "android_app",
-        package_name: "com.halla.app",
+        package_name: "com.halaa.app",
         sha256_cert_fingerprints: fingerprints,
       },
     },

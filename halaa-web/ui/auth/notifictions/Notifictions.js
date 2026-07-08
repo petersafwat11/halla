@@ -5,7 +5,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ToggleInput from "@/ui/commen/inputs/toggelInput/ToggelInput";
 import Button from "@/ui/commen/button/Button";
-import { notificationsSchema } from "@halla/shared/schemas/settings";
+import { notificationsSchema } from "@halaa/shared/schemas/settings";
 import { toastUtils } from "@/utils/toastUtils";
 import styles from "./notifictions.module.css";
 

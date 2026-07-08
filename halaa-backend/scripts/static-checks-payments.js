@@ -204,7 +204,7 @@ assert(
 ok('subscriptions/addons services no longer write paymentTransactionId');
 
 // 18. Shared FE api paths declare hostPayments + payments.refund/capture/void.
-// (Repointed from the removed labbe/services/new-backend/api.config.js to the
+// (Repointed from the removed halaa-web/services/new-backend/api.config.js to the
 // current canonical shared paths module consumed by web + mobile — a stale-path
 // fix, dormant until check #12 stopped exiting early.)
 const feApiSrc = read('../shared/src/api/paths.js');

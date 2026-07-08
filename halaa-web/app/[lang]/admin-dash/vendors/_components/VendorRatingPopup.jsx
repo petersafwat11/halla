@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import StarRating from "@/ui/commen/inputs/starRating/StarRating";
-import { vendorRatingSchema } from "@halla/shared/schemas/admin";
+import { vendorRatingSchema } from "@halaa/shared/schemas/admin";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import { FiX } from "react-icons/fi";

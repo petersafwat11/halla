@@ -1,5 +1,5 @@
 /**
- * @halla/shared/brand — canonical brand + URL facts for web SEO and mobile ASO
+ * @halaa/shared/brand — canonical brand + URL facts for web SEO and mobile ASO
  * (SEO-ASO-METADATA-PLAN §1).
  *
  * This is the ONE place that declares the brand name, canonical origin, store
@@ -9,7 +9,7 @@
  *
  * SOURCE-OF-TRUTH RULES (do not violate):
  *   - Contact identity (support email, entity name, phone, address) is NOT
- *     declared here — it lives in `@halla/shared/legal` `LEGAL_CONTACT` and is
+ *     declared here — it lives in `@halaa/shared/legal` `LEGAL_CONTACT` and is
  *     `BLOCKED_NEEDS_OWNER`. Re-import it; never re-resolve the blocked values.
  *   - Only facts derivable from ALREADY-SIGNED decisions or observable in code
  *     are marked `approved: true` here (brand spelling, canonical origin/domain
@@ -35,10 +35,10 @@ export const BRAND_NAME = Object.freeze({
   siteName: "Halaa",
 });
 
-/** Store application identifiers (verified in `halla-mobile/app.json`). */
+/** Store application identifiers (verified in `halaa-mobile/app.json`). */
 export const APP_IDS = Object.freeze({
-  iosBundleId: "com.halla.app",
-  androidPackage: "com.halla.app",
+  iosBundleId: "com.halaa.app",
+  androidPackage: "com.halaa.app",
   // Deep-link scheme (app.json `scheme`).
   scheme: "halla",
 });

@@ -14,24 +14,24 @@ This is an **npm workspaces monorepo** with four packages:
 
 | Package           | Path               | What it is                                         | Stack                          |
 | ----------------- | ------------------ | -------------------------------------------------- | ------------------------------ |
-| **Web**           | `labbe/`           | Customer + admin web app                           | Next.js 15 (App Router), React 19 |
-| **Mobile**        | `halla-mobile/`    | iOS / Android / web app                            | Expo SDK 54, React Native 0.81 |
-| **Backend**       | `labbe-backend-/`  | REST API (`/api/v2`)                               | Express 4, MongoDB / Mongoose 8 |
+| **Web**           | `halaa-web/`           | Customer + admin web app                           | Next.js 15 (App Router), React 19 |
+| **Mobile**        | `halaa-mobile/`    | iOS / Android / web app                            | Expo SDK 54, React Native 0.81 |
+| **Backend**       | `halaa-backend/`  | REST API (`/api/v2`)                               | Express 4, MongoDB / Mongoose 8 |
 | **Shared**        | `shared/`          | Cross-app schemas, constants, API paths, utils     | Plain ESM, Zod                 |
 
 Each package has its own README with setup and run instructions:
 
-- [Web app → `labbe/README.md`](labbe/README.md)
-- [Mobile app → `halla-mobile/README.md`](halla-mobile/README.md)
-- [Backend API → `labbe-backend-/README.md`](labbe-backend-/README.md)
+- [Web app → `halaa-web/README.md`](halaa-web/README.md)
+- [Mobile app → `halaa-mobile/README.md`](halaa-mobile/README.md)
+- [Backend API → `halaa-backend/README.md`](halaa-backend/README.md)
 - [Shared package → `shared/README.md`](shared/README.md)
 
 ```
 halla/
-├── labbe/            # Next.js web (web + admin dashboard)
-├── halla-mobile/     # Expo / React Native app
-├── labbe-backend-/   # Express + MongoDB API
-├── shared/           # @halla/shared — code shared by web & mobile
+├── halaa-web/            # Next.js web (web + admin dashboard)
+├── halaa-mobile/     # Expo / React Native app
+├── halaa-backend/   # Express + MongoDB API
+├── shared/           # @halaa/shared — code shared by web & mobile
 ├── docs/             # Feature plans, architecture notes, migrations
 └── package.json      # Workspace root
 ```
@@ -42,14 +42,14 @@ halla/
 
 ```
         ┌─────────────┐     ┌──────────────┐
-        │  labbe (web)│     │ halla-mobile │
+        │  labbe (web)│     │ halaa-mobile │
         │  Next.js 15 │     │  Expo / RN   │
         └──────┬──────┘     └──────┬───────┘
                │   HTTPS /api/v2    │
                └─────────┬──────────┘
                          ▼
               ┌────────────────────┐
-              │  labbe-backend-    │  Express 4
+              │  halaa-backend    │  Express 4
               │  REST API /api/v2  │
               └─────────┬──────────┘
                         │
@@ -60,7 +60,7 @@ MongoDB    AWS S3    Moyasar    Taqnyat       Redis
 ```
 
 Web and mobile share validation schemas, status colors, API path constants, and helpers
-through the `@halla/shared` workspace package (consumed directly via symlink, no build step).
+through the `@halaa/shared` workspace package (consumed directly via symlink, no build step).
 
 ---
 
@@ -85,17 +85,17 @@ Then start each service (in separate terminals). All commands can be run from th
 `-w <workspace>`, or by `cd`-ing into the package directory.
 
 ```bash
-# 1. Backend API — http://localhost:8000  (needs labbe-backend-/.env, see its README)
-npm run dev -w labbe-backend-
+# 1. Backend API — http://localhost:8000  (needs halaa-backend/.env, see its README)
+npm run dev -w halaa-backend
 
-# 2. Web app — http://localhost:3000  (needs labbe/.env.local)
+# 2. Web app — http://localhost:3000  (needs halaa-web/.env.local)
 npm run dev -w labbe
 
 # 3. Mobile app — Expo dev server
-npm run start -w halla-mobile
+npm run start -w halaa-mobile
 ```
 
-> The web app proxies `/api/v2/*` to the backend in development (see `labbe/README.md`),
+> The web app proxies `/api/v2/*` to the backend in development (see `halaa-web/README.md`),
 > so start the backend first.
 
 ---
@@ -107,15 +107,15 @@ the full variable list:
 
 | App     | File                    | Notable variables                                              |
 | ------- | ----------------------- | -------------------------------------------------------------- |
-| Backend | `labbe-backend-/.env`   | `DATABASE`, `JWT_SECRET`, `MOYASAR_API_KEY`, `TAQNYAT_API_KEY`, `AWS_*` |
-| Web     | `labbe/.env.local`      | `BACKEND_PROXY_URL`, `NEXT_PUBLIC_API_URL`, `INTERNAL_API_URL`  |
-| Mobile  | `halla-mobile/.env`     | `EXPO_PUBLIC_HALLA_WHATSAPP_NUMBER` (API base is in `config/api.js`) |
+| Backend | `halaa-backend/.env`   | `DATABASE`, `JWT_SECRET`, `MOYASAR_API_KEY`, `TAQNYAT_API_KEY`, `AWS_*` |
+| Web     | `halaa-web/.env.local`      | `BACKEND_PROXY_URL`, `NEXT_PUBLIC_API_URL`, `INTERNAL_API_URL`  |
+| Mobile  | `halaa-mobile/.env`     | `EXPO_PUBLIC_HALAA_WHATSAPP_NUMBER` (API base is in `config/api.js`) |
 
 ---
 
 ## Tooling & conventions
 
-- **Validation:** [Zod](https://zod.dev) everywhere. Schemas are shared from `@halla/shared/schemas`.
+- **Validation:** [Zod](https://zod.dev) everywhere. Schemas are shared from `@halaa/shared/schemas`.
 - **State / data:** Zustand for client state, TanStack React Query for server state (both apps).
 - **i18n:** i18next + react-i18next; Arabic is the default locale with full RTL support.
 - **Payments:** Moyasar only (credit card, Apple Pay, STC Pay, 3-D Secure).

@@ -1,6 +1,6 @@
 # Mobile RTL / Alignment Report
 
-_Generated this session. Scope: entire `halla-mobile` app (`components/` + `screens/`, incl. admin dashboard)._
+_Generated this session. Scope: entire `halaa-mobile` app (`components/` + `screens/`, incl. admin dashboard)._
 
 ## Root cause
 

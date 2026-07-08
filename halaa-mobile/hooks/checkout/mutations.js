@@ -95,7 +95,7 @@ export const useCheckout = () => {
         // analogue (web completes 3DS via a same-origin redirect). Isolate
         // its failures so callers can surface the real reason instead of the
         // generic "subscription failed" fallback. In particular, Expo Go does
-        // not register the `halla://` return scheme, so openAuthSessionAsync
+        // not register the `halaa://` return scheme, so openAuthSessionAsync
         // can reject here — which a dev/standalone build fixes. Tagging the
         // error makes that diagnosable from the toast/console.
         let session;

@@ -9,7 +9,7 @@ import {
   robotsFor,
   isIndexable,
   ROUTE_INVENTORY,
-} from "@halla/shared/brand";
+} from "@halaa/shared/brand";
 
 const INDEXABLE_CLASSES = [
   ROUTE_CLASS.LANDING,

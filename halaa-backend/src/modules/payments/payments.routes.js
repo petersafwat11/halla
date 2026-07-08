@@ -54,7 +54,7 @@ router.post('/webhook', paymentsController.webhook);
  *     description: |
  *       Public redirect target handed to Moyasar as `callback_url` by the
  *       mobile app. Moyasar appends `?id=&status=`; this 302s to the
- *       `halla://host/payments/return` deep link so the in-app browser
+ *       `halaa://host/payments/return` deep link so the in-app browser
  *       returns the user to the app instead of the auth-gated web pages.
  *     tags: [Payments]
  *     parameters:

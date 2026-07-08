@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 
-// Phase 9 lock-in config for halla-mobile.
+// Phase 9 lock-in config for halaa-mobile.
 //
 // Intentionally narrow: only the rules that prevent the unification work from
 // regressing. Pre-existing JS quality issues (console.log audit, exhaustive-deps,
@@ -37,7 +37,7 @@ const lockInRules = {
         {
           name: '../hooks/useDebouncedValue',
           message:
-            "Phase 8: useDebouncedValue moved to @halla/shared. Import { useDebounce } from '@halla/shared/utils/useDebounce' instead.",
+            "Phase 8: useDebouncedValue moved to @halaa/shared. Import { useDebounce } from '@halaa/shared/utils/useDebounce' instead.",
         },
         {
           name: '../utils/DirectionUtils',
@@ -47,22 +47,22 @@ const lockInRules = {
         {
           name: '../utils/locale',
           message:
-            "Phase 8 slice 8: locale.js moved to @halla/shared. Import from '@halla/shared/utils/locale' instead.",
+            "Phase 8 slice 8: locale.js moved to @halaa/shared. Import from '@halaa/shared/utils/locale' instead.",
         },
         {
           name: '../utils/formatTemplateDate',
           message:
-            "Phase 8 slice 8: formatTemplateDate moved to @halla/shared. Import from '@halla/shared/utils/formatTemplateDate' instead.",
+            "Phase 8 slice 8: formatTemplateDate moved to @halaa/shared. Import from '@halaa/shared/utils/formatTemplateDate' instead.",
         },
         {
           name: '../utils/constants/eventStatus',
           message:
-            "Phase 8 slice 8: eventStatus moved to @halla/shared. Import from '@halla/shared/constants/eventStatus' instead.",
+            "Phase 8 slice 8: eventStatus moved to @halaa/shared. Import from '@halaa/shared/constants/eventStatus' instead.",
         },
         {
           name: '../utils/constants/plans',
           message:
-            "Phase 8 slice 8: plans helpers moved to @halla/shared. Import from '@halla/shared/constants/plans' instead.",
+            "Phase 8 slice 8: plans helpers moved to @halaa/shared. Import from '@halaa/shared/constants/plans' instead.",
         },
       ],
     },
@@ -72,7 +72,7 @@ const lockInRules = {
     {
       selector: "Literal[value=/\\/api\\/v[0-9]+\\//]",
       message:
-        "Hardcoded /api/v2/ literal: use API_PATHS from @halla/shared/api/paths so the prefix lives in one place. The lone exception is config/api.js (API_BASE_URL).",
+        "Hardcoded /api/v2/ literal: use API_PATHS from @halaa/shared/api/paths so the prefix lives in one place. The lone exception is config/api.js (API_BASE_URL).",
     },
   ],
 };

@@ -4,7 +4,7 @@
  * This is the single place that declares which legal documents exist, their
  * canonical public web paths, and which surfaces must expose them. The backend
  * generates a hashed `policyManifest` from the SAME document JSON (read via `fs`)
- * — see `labbe-backend-/scripts/generateLegalManifest.js`. The parity CI check
+ * — see `halaa-backend/scripts/generateLegalManifest.js`. The parity CI check
  * (`shared/scripts/verify-legal.mjs`) validates AR/EN section-id parity, schema,
  * URL shape, and registry↔document agreement.
  *

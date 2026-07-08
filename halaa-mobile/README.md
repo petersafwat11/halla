@@ -1,4 +1,4 @@
-# Halaa Mobile (`halla-mobile`)
+# Halaa Mobile (`halaa-mobile`)
 
 The Halaa mobile app for **iOS, Android, and web**, built with **Expo SDK 54** and
 **React Native 0.81**. One app serves hosts, vendors, admins, staff, and guests, in Arabic
@@ -17,7 +17,7 @@ Part of the [Halaa monorepo](../README.md).
 | Client state       | Zustand `5`                                                             |
 | Server state       | TanStack React Query `5`                                                |
 | HTTP client        | Axios with token-refresh + a custom `apiFetch` wrapper (auto-retry 401) |
-| Forms / validation | React Hook Form + Zod (schemas shared from `@halla/shared`)             |
+| Forms / validation | React Hook Form + Zod (schemas shared from `@halaa/shared`)             |
 | i18n               | i18next + react-i18next (`ar` default, `en`, RTL)                       |
 | Fonts              | **Cairo only** (`@expo-google-fonts/cairo`) — applied app-wide          |
 | Native modules     | Notifications, SecureStore, Location, Contacts, Image/Document Picker, Maps |
@@ -49,7 +49,7 @@ npm install                 # run once at the repo root
 Start the Expo dev server:
 
 ```bash
-npm run start -w halla-mobile   # or: cd halla-mobile && npm start
+npm run start -w halaa-mobile   # or: cd halaa-mobile && npm start
 ```
 
 Then press `i` (iOS), `a` (Android), or `w` (web) in the Expo CLI — or scan the QR code with
@@ -74,15 +74,15 @@ Expo Go.
 The API base URL is set in **`config/api.js`** (production: `https://halaa.com.sa/api/v2`).
 Point this at your local backend during development.
 
-Environment file — `halla-mobile/.env`:
+Environment file — `halaa-mobile/.env`:
 
 ```bash
-EXPO_PUBLIC_HALLA_WHATSAPP_NUMBER=966552619282
+EXPO_PUBLIC_HALAA_WHATSAPP_NUMBER=966552619282
 ```
 
 App config lives in `app.json` / `eas.json`:
 
-- **Scheme / deep links:** `halla://` plus universal links on `https://halaa.com.sa`
+- **Scheme / deep links:** `halaa://` plus universal links on `https://halaa.com.sa`
   (used for reset-password, invitation, and payment-return flows).
 - **Permissions:** Location (fine/coarse) and Contacts (with an Arabic permission prompt).
 - **New Architecture** is enabled.
@@ -93,7 +93,7 @@ App config lives in `app.json` / `eas.json`:
 ## Project structure
 
 ```
-halla-mobile/
+halaa-mobile/
 ├── App.js            # entry: providers, fonts, navigation root
 ├── assets/           # icons, logos, splash
 ├── navigation/       # AppNavigator, AdminNavigator (stacks + tabs)

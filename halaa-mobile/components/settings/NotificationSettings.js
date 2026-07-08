@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { mobileNotificationSettingsSchema as notificationSettingsSchema } from "@halla/shared/schemas/settings";
+import { mobileNotificationSettingsSchema as notificationSettingsSchema } from "@halaa/shared/schemas/settings";
 import { ToggleInput } from "../commen";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";

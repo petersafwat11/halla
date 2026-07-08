@@ -9,7 +9,7 @@
  * manifest.
  */
 
-import { LEGAL_ROUTES } from "@halla/shared/legal";
+import { LEGAL_ROUTES } from "@halaa/shared/legal";
 
 const ORIGIN = "https://halaa.com.sa";
 

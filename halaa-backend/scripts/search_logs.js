@@ -17,7 +17,7 @@ function search() {
         console.log(code);
         console.log("--------------------");
         // Write the recovered code directly to a file
-        fs.writeFileSync('D:\\halla\\labbe-backend-\\scripts\\verify_visual_alignment.js', code, 'utf8');
+        fs.writeFileSync('D:\\halla\\halaa-backend\\scripts\\verify_visual_alignment.js', code, 'utf8');
         console.log("Successfully wrote verify_visual_alignment.js!");
         break;
       }

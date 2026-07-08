@@ -100,8 +100,8 @@ test("PRODUCT_CHANGE not-yet-effective → deferred no-op (does NOT grant early)
   const d = reduce({
     type: "PRODUCT_CHANGE",
     catalogItem: SUB,
-    productId: "com.halla.premium_monthly_100",
-    snapshot: snapAvailableActive("com.halla.basic_monthly_50"), // still on old product
+    productId: "com.halaa.premium_monthly_100",
+    snapshot: snapAvailableActive("com.halaa.basic_monthly_50"), // still on old product
   });
   assert.equal(d.action, ACTIONS.CHANGE_DEFERRED_NOOP);
 });
@@ -110,8 +110,8 @@ test("PRODUCT_CHANGE canonical-effective now → CHANGE_EFFECTIVE_NOW", () => {
   const d = reduce({
     type: "PRODUCT_CHANGE",
     catalogItem: SUB,
-    productId: "com.halla.premium_monthly_100",
-    snapshot: snapAvailableActive("com.halla.premium_monthly_100"),
+    productId: "com.halaa.premium_monthly_100",
+    snapshot: snapAvailableActive("com.halaa.premium_monthly_100"),
   });
   assert.equal(d.action, ACTIONS.CHANGE_EFFECTIVE_NOW);
 });

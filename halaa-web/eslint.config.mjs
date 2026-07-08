@@ -36,64 +36,64 @@ const lockInRules = {
         {
           name: '@/services/new-backend/api.config',
           message:
-            "Phase 8: API_PATHS lives in @halla/shared. Import from '@halla/shared/api/paths' instead.",
+            "Phase 8: API_PATHS lives in @halaa/shared. Import from '@halaa/shared/api/paths' instead.",
         },
         {
           name: '@/hooks/useDebounce',
           message:
-            "Phase 8: useDebounce lives in @halla/shared. Import from '@halla/shared/utils/useDebounce' instead.",
+            "Phase 8: useDebounce lives in @halaa/shared. Import from '@halaa/shared/utils/useDebounce' instead.",
         },
         {
           name: '@/hooks/events/useEventActionGate',
           message:
-            "Phase 8: useEventActionGate lives in @halla/shared. Import from '@halla/shared/hooks/useEventActionGate' instead.",
+            "Phase 8: useEventActionGate lives in @halaa/shared. Import from '@halaa/shared/hooks/useEventActionGate' instead.",
         },
         {
           name: '@/utils/schemas/accountSettingsSchema',
           message:
-            "Phase 8: shim deleted. Import from '@halla/shared/schemas/settings' instead.",
+            "Phase 8: shim deleted. Import from '@halaa/shared/schemas/settings' instead.",
         },
         {
           name: '@/utils/schemas/adminPopupSchemas',
           message:
-            "Phase 8: shim deleted. Import from '@halla/shared/schemas/admin' instead.",
+            "Phase 8: shim deleted. Import from '@halaa/shared/schemas/admin' instead.",
         },
         {
           name: '@/utils/schemas/authSchema',
           message:
-            "Phase 8: shim deleted. Import from '@halla/shared/schemas/auth' instead.",
+            "Phase 8: shim deleted. Import from '@halaa/shared/schemas/auth' instead.",
         },
         {
           name: '@/utils/schemas/planSchema',
           message:
-            "Phase 8: shim deleted. Import from '@halla/shared/schemas/plans' instead.",
+            "Phase 8: shim deleted. Import from '@halaa/shared/schemas/plans' instead.",
         },
         {
           name: '@/utils/schemas/postEventSchemas',
           message:
-            "Phase 8: shim deleted. Import from '@halla/shared/schemas/post-event' instead.",
+            "Phase 8: shim deleted. Import from '@halaa/shared/schemas/post-event' instead.",
         },
         {
           name: '@/utils/schemas/settingsSchemas',
           message:
-            "Phase 8: shim deleted. Import from '@halla/shared/schemas/settings' instead.",
+            "Phase 8: shim deleted. Import from '@halaa/shared/schemas/settings' instead.",
         },
         {
           name: '@/utils/schemas/ticketSchema',
           message:
-            "Phase 8: shim deleted. Import from '@halla/shared/schemas/tickets' instead.",
+            "Phase 8: shim deleted. Import from '@halaa/shared/schemas/tickets' instead.",
         },
         {
           name: '@/utils/schemas/updateEventSchema',
           message:
-            "Phase 8: shim deleted. Import from '@halla/shared/schemas/events' instead.",
+            "Phase 8: shim deleted. Import from '@halaa/shared/schemas/events' instead.",
         },
       ],
       patterns: [
         {
           group: ['**/services/new-backend/*'],
           message:
-            'Phase 8: services/new-backend/ folder removed. Re-point to @/services/http or @halla/shared/api/paths.',
+            'Phase 8: services/new-backend/ folder removed. Re-point to @/services/http or @halaa/shared/api/paths.',
         },
       ],
     },
@@ -103,7 +103,7 @@ const lockInRules = {
     {
       selector: "Literal[value=/\\/api\\/v[0-9]+\\//]",
       message:
-        'Hardcoded /api/v2/ literal: use API_PATHS from @halla/shared/api/paths so the prefix lives in one place.',
+        'Hardcoded /api/v2/ literal: use API_PATHS from @halaa/shared/api/paths so the prefix lives in one place.',
     },
   ],
 };

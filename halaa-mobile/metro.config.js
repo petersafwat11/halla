@@ -26,10 +26,10 @@ config.resolver = {
   },
 };
 
-// Force a single React copy. @halla/shared lives outside this project
+// Force a single React copy. @halaa/shared lives outside this project
 // (D:\halla\shared) and imports `react`; standard node resolution finds the
 // root D:\halla\node_modules\react copy while app code + the renderer use
-// halla-mobile/node_modules/react — two React instances → null hook dispatcher
+// halaa-mobile/node_modules/react — two React instances → null hook dispatcher
 // → "Cannot read property 'useMemo' of null". extraNodeModules is only a
 // fallback and never fires here, so intercept resolution and pin every `react`
 // (and react subpath, e.g. react/jsx-runtime) to the local copy.

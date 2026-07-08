@@ -1,5 +1,5 @@
 import MarketplaceView from "./_components/MarketplaceView";
-import { buildMetadata, ROUTE_CLASS } from "@halla/shared/brand";
+import { buildMetadata, ROUTE_CLASS } from "@halaa/shared/brand";
 
 // NOTE: listing content is client-rendered (`MarketplaceView`). This adds
 // discovery metadata only; converting the listing to SSR for indexable

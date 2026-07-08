@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { mobileAccountSettingsSchema as accountSettingsSchema } from "@halla/shared/schemas/settings";
+import { mobileAccountSettingsSchema as accountSettingsSchema } from "@halaa/shared/schemas/settings";
 import { TextInput, PasswordInput } from "../commen";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";

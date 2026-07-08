@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { getLocalized, formatNumber } from "@halla/shared/utils/locale";
+import { getLocalized, formatNumber } from "@halaa/shared/utils/locale";
 import {
   colors,
   spacing,

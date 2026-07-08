@@ -13,7 +13,7 @@ import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/
 import VendorHeroCard from "../../../components/admin-dashboard/vendors/VendorHeroCard";
 import { colors, spacing, borderRadius, typography, backgrounds, textStyles } from "../../../styles/tokens";
 
-const IMAGE_BASE = "https://labbe-backend-production.up.railway.app";
+const IMAGE_BASE = "https://halaa-backendproduction.up.railway.app";
 const getImageUrl = (path) => {
   if (!path) return null;
   if (path.startsWith("http://") || path.startsWith("https://")) return path;

@@ -3,7 +3,7 @@
  *
  * Opens the canonical web legal pages in an in-app browser via expo-web-browser.
  * The web routes are now backed by the SAME shared legal content package
- * (`@halla/shared/legal`) that these mobile screens render, so web/mobile parity
+ * (`@halaa/shared/legal`) that these mobile screens render, so web/mobile parity
  * is guaranteed by construction. Paths come from the shared legal manifest
  * (`LEGAL_ROUTES`) so the links can never drift from the actual routes.
  *
@@ -13,7 +13,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import * as WebBrowser from "expo-web-browser";
-import { LEGAL_ROUTES } from "@halla/shared/legal";
+import { LEGAL_ROUTES } from "@halaa/shared/legal";
 import { WEB_BASE_URL } from "../../config/api";
 import { colors, spacing, typography } from "../../styles/tokens";
 

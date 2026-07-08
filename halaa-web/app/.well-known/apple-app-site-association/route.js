@@ -7,7 +7,7 @@
  * this exact path over HTTPS with no redirects and expects
  * Content-Type: application/json.
  *
- * SET `APPLE_APP_ID` to "<TEAM_ID>.com.halla.app" (Team ID from the Apple
+ * SET `APPLE_APP_ID` to "<TEAM_ID>.com.halaa.app" (Team ID from the Apple
  * Developer account). Until then this serves a placeholder appID that will NOT
  * validate — universal links won't open the app until the real Team ID is set.
  *
@@ -18,10 +18,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const realAppID = process.env.APPLE_APP_ID;
-  const appID = realAppID || "TEAMID.com.halla.app";
+  const appID = realAppID || "TEAMID.com.halaa.app";
 
   // Loud failure (§5.1): a placeholder appID will NOT validate universal links.
-  // In production this must be set to "<TEAM_ID>.com.halla.app".
+  // In production this must be set to "<TEAM_ID>.com.halaa.app".
   if (!realAppID && process.env.NODE_ENV === "production") {
     // eslint-disable-next-line no-console
     console.error(

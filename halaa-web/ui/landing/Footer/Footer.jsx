@@ -12,9 +12,9 @@ import {
 } from "react-icons/io";
 import AppStoreButtons from "../../commen/AppStoreButtons/AppStoreButtons";
 import { useTranslation } from "react-i18next";
-import { LEGAL_CONTACT } from "@halla/shared/legal";
+import { LEGAL_CONTACT } from "@halaa/shared/legal";
 
-// Single source of truth for contact (`@halla/shared/legal`). PROVISIONAL and
+// Single source of truth for contact (`@halaa/shared/legal`). PROVISIONAL and
 // owner-gated (BLOCKED_NEEDS_OWNER): the support email conflict (halaa.net vs
 // halaa.com.sa) resolves to the domain-consistent halaa.com.sa placeholder here
 // until the owner confirms — no more per-file hardcoded contact strings.

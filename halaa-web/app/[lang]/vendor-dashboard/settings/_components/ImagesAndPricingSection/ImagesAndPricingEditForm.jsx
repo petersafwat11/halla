@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import styles from "./imagesAndPricingEditForm.module.css";
 import { keyFromSignedUrl } from "@/utils/vendorHelpers";
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",

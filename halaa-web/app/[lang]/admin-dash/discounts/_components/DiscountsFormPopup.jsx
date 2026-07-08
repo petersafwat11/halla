@@ -11,7 +11,7 @@ import Button from "@/ui/commen/button/Button";
 import { useCreateDiscount, useUpdateDiscount } from "@/hooks/discounts";
 import DiscountsFormFields from "./DiscountsFormFields";
 import { buildPayload } from "./discountsFormUtils";
-import { discountSchema } from "@halla/shared/schemas/admin";
+import { discountSchema } from "@halaa/shared/schemas/admin";
 import styles from "./DiscountsFormPopup.module.css";
 
 export default function DiscountsFormPopup({ isOpen, onClose, editingDiscount }) {

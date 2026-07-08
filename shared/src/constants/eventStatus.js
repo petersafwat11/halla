@@ -1,5 +1,5 @@
 /**
- * Event status enum — frontend mirror of `labbe-backend-/src/shared/constants/status.js → EVENT_STATUS`.
+ * Event status enum — frontend mirror of `halaa-backend/src/shared/constants/status.js → EVENT_STATUS`.
  *
  * Frontend code should import from here instead of using string literals
  * so a backend rename surfaces as a build / lint failure rather than a

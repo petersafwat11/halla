@@ -37,7 +37,7 @@ import {
 import { useRevokeStaffAccess } from "../../hooks/staff";
 import { useSendReminder } from "../../hooks/messaging";
 
-import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halla/shared/constants/eventStatus";
+import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halaa/shared/constants/eventStatus";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";

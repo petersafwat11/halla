@@ -1,5 +1,5 @@
 /**
- * Plan helpers — mirror `labbe-backend-/src/shared/constants/plans.js`.
+ * Plan helpers — mirror `halaa-backend/src/shared/constants/plans.js`.
  *
  * A plan with planType ending in `_quarterly` / `_annual` (or the legacy
  * `business_quarterly` / `business_annual` codes) shares an invite pool

@@ -4,7 +4,7 @@ import {
   prefetchServerData,
   QueryClientServerProvider,
 } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import { requirePageAccess } from "@/services/serverAuth";
 import UpdateEventWizard from "../../host/update-event/_components/UpdateEventWizard";
 import styles from "./page.module.css";

@@ -7,10 +7,10 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { MdSend, MdClose, MdNotifications } from "react-icons/md";
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
-import { sendNotificationSchema } from "@halla/shared/schemas/admin";
+import { sendNotificationSchema } from "@halaa/shared/schemas/admin";
 import styles from "./SendNotificationPopup.module.css";
 
 const SendNotificationPopup = ({

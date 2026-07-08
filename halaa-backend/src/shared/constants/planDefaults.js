@@ -222,7 +222,7 @@ const businessEventPlan = (invites, price) => ({
 // Canonical per DEC-01 (signed 2026-07-01): keep six-tier / 34 plans; the
 // ten-tier plans-rewrite-2026-05 signoff is explicitly superseded. Do NOT
 // restore the 250/300/350/400 tiers. Store products are generated from this
-// catalog by labbe-backend-/scripts/generateStoreCatalog.js (CAT-01).
+// catalog by halaa-backend/scripts/generateStoreCatalog.js (CAT-01).
 // =============================================================================
 const PLAN_DEFAULTS = {
   [PLAN_CODES.TRIAL]: {

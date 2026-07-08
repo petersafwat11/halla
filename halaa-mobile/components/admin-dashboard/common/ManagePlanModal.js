@@ -30,7 +30,7 @@ import {
 } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { getLocalized } from "@halla/shared/utils/locale";
+import { getLocalized } from "@halaa/shared/utils/locale";
 
 const INVITE_PRESETS = [10, 25, 50, 100, 250, 500];
 

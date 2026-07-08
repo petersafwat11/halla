@@ -7,7 +7,7 @@ import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import { useTicketMutation } from "@/hooks/tickets";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
-import { ticketResponseSchema } from "@halla/shared/schemas/admin";
+import { ticketResponseSchema } from "@halaa/shared/schemas/admin";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import styles from "./TicketResponsePopup.module.css";

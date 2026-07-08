@@ -3,11 +3,11 @@
  *
  * Emits /manifest.webmanifest. Uses the owner-provided brand logo
  * (`public/logo.png`, 1024×1024) as the app icon and the canonical brand
- * name/colors from `@halla/shared/brand`. Bilingual name uses the Arabic default
+ * name/colors from `@halaa/shared/brand`. Bilingual name uses the Arabic default
  * (site default locale) with English in the description.
  */
 
-import { BRAND_NAME, BRAND_ASSETS } from "@halla/shared/brand";
+import { BRAND_NAME, BRAND_ASSETS } from "@halaa/shared/brand";
 
 export default function manifest() {
   return {

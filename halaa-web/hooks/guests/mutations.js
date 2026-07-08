@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, downloadExportFile } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import { guestsKeys } from "./keys";
 import { eventsKeys } from "@/hooks/events/keys";
 

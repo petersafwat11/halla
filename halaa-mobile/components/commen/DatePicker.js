@@ -10,7 +10,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { formatTemplateDate } from "@halla/shared/utils/formatTemplateDate";
+import { formatTemplateDate } from "@halaa/shared/utils/formatTemplateDate";
 
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the

@@ -13,7 +13,7 @@ import {
   validateListing,
   APPLE_LIMITS,
   GOOGLE_LIMITS,
-} from "@halla/shared/brand";
+} from "@halaa/shared/brand";
 
 test("charLength counts code points; byteLength counts UTF-8 bytes", () => {
   assert.equal(charLength("Halaa"), 5);

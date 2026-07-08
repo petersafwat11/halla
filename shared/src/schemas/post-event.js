@@ -2,7 +2,7 @@
  * Post-event guest portal schemas — token validation, content fetch,
  * comments, likes, host content management.
  *
- * Mirrors backend `labbe-backend-/src/modules/post-event/post-event.validation.js`.
+ * Mirrors backend `halaa-backend/src/modules/post-event/post-event.validation.js`.
  * Error messages stay opaque English; web/mobile screens translate via
  * i18n keys at the call site if needed.
  */

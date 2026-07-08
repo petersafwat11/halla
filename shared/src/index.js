@@ -1,6 +1,6 @@
-// @halla/shared — barrel.
+// @halaa/shared — barrel.
 // Re-exports the per-domain subpaths. Prefer subpath imports
-// (`@halla/shared/api/paths`, `@halla/shared/schemas/events`) over this
+// (`@halaa/shared/api/paths`, `@halaa/shared/schemas/events`) over this
 // barrel in app code so bundlers can tree-shake.
 
 export * as api from "./api/paths.js";

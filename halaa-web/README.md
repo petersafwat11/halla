@@ -17,7 +17,7 @@ Part of the [Halaa monorepo](../README.md).
 | Client state      | Zustand `5`                                                            |
 | Server state      | TanStack React Query `5`                                               |
 | HTTP client       | Axios (`services/http.js`)                                             |
-| Forms / validation| React Hook Form + Zod (schemas shared from `@halla/shared`)            |
+| Forms / validation| React Hook Form + Zod (schemas shared from `@halaa/shared`)            |
 | i18n              | i18next + react-i18next + next-i18n-router (`ar` default, `en`, RTL)   |
 | Charts            | Chart.js + Recharts                                                    |
 | Maps              | `@vis.gl/react-google-maps`                                           |
@@ -28,7 +28,7 @@ Part of the [Halaa monorepo](../README.md).
 ## Prerequisites
 
 - Node.js 20 LTS
-- A running [backend API](../labbe-backend-/README.md) (default `http://localhost:8000`)
+- A running [backend API](../halaa-backend/README.md) (default `http://localhost:8000`)
 
 ---
 
@@ -40,7 +40,7 @@ From the monorepo root, dependencies are installed via workspaces:
 npm install                 # run once at the repo root
 ```
 
-Create `labbe/.env.local` (see [Environment variables](#environment-variables)), then:
+Create `halaa-web/.env.local` (see [Environment variables](#environment-variables)), then:
 
 ```bash
 npm run dev -w labbe        # or: cd labbe && npm run dev
@@ -64,7 +64,7 @@ redirects to `/ar`.
 
 ## Environment variables
 
-Create `labbe/.env.local`:
+Create `halaa-web/.env.local`:
 
 ```bash
 # Dev-only: proxy all /api/v2/* through Next.js so HttpOnly auth cookies are stored
@@ -78,7 +78,7 @@ NEXT_PUBLIC_API_URL=/api/v2
 INTERNAL_API_URL=http://localhost:8000/api/v2
 
 # Halaa support contact (shown in UI / WhatsApp links)
-NEXT_PUBLIC_HALLA_WHATSAPP_NUMBER=966552619282
+NEXT_PUBLIC_HALAA_WHATSAPP_NUMBER=966552619282
 ```
 
 Optional / deployment:
@@ -98,7 +98,7 @@ Optional / deployment:
 ## Project structure
 
 ```
-labbe/
+halaa-web/
 ├── app/              # App Router. Routes are nested under [lang] for i18n.
 │   ├── admin-dash/   #   admin / moderator dashboard
 │   ├── host/         #   host portal (events, guests, plans)
@@ -128,7 +128,7 @@ labbe/
 - **Role-based access** — `middleware.js` gates routes by role (super_admin, admin, moderator,
   host, vendor) using the auth cookie.
 - **Shared code** — validation schemas, API path constants, and status colors come from
-  `@halla/shared` so the web and mobile apps stay in sync.
+  `@halaa/shared` so the web and mobile apps stay in sync.
 
 ---
 

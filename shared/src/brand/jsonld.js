@@ -1,5 +1,5 @@
 /**
- * @halla/shared/brand/jsonld — attack-safe JSON-LD serialization
+ * @halaa/shared/brand/jsonld — attack-safe JSON-LD serialization
  * (SEO-ASO-METADATA-PLAN §4 "safely serialize JSON-LD by escaping
  * `<`/script-breaking sequences").
  *

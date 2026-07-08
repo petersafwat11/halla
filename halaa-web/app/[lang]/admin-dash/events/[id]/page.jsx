@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { requirePageAccess } from "@/services/serverAuth";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import initTranslations from "@/localization/i18n";
 import ClientComponentsTranslationsProvider from "@/providers/ClientCompTrans";
 import EventDetailsContent from "./_components/EventDetailsContent";

@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FaLock } from "react-icons/fa";
-import { getLocalized } from "@halla/shared/utils/locale";
+import { getLocalized } from "@halaa/shared/utils/locale";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import PaymentMethodSelector from "@/app/[lang]/host/plans/_components/PaymentMethodSelector";
 import {

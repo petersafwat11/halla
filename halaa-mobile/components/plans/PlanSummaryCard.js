@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getLocalized } from "@halla/shared/utils/locale";
-import { COMPENSATION_PERCENTAGE } from "@halla/shared/constants/plans";
+import { getLocalized } from "@halaa/shared/utils/locale";
+import { COMPENSATION_PERCENTAGE } from "@halaa/shared/constants/plans";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const isMonthly = (billingType) =>

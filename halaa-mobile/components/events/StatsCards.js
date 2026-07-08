@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { formatCount } from "@halla/shared/utils/locale";
+import { formatCount } from "@halaa/shared/utils/locale";
 import { useLanguage } from "../../localization";
-import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halla/shared/constants/eventStatus";
+import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halaa/shared/constants/eventStatus";
 
 const StatsCards = ({ stats, eventStatus, activeFilter, onFilterPress }) => {
   const { currentLanguage } = useLanguage();

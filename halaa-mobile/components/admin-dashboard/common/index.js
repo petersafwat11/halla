@@ -2,7 +2,7 @@
  * Admin Dashboard Common Components
  *
  * Reusable UI components for the admin dashboard mobile app.
- * All components use the design system tokens from halla-mobile/styles/tokens.js
+ * All components use the design system tokens from halaa-mobile/styles/tokens.js
  */
 
 export { default as StatCard } from "./StatCard";

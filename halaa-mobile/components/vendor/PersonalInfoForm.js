@@ -19,7 +19,7 @@ import { useToast } from "../../contexts/ToastContext";
 import TextInput from "../commen/TextInput";
 import EmailInput from "../commen/EmailInput";
 import Button from "../commen/Button";
-import { mobilePersonalInfoSchema as personalInfoSchema } from "@halla/shared/schemas/vendor";
+import { mobilePersonalInfoSchema as personalInfoSchema } from "@halaa/shared/schemas/vendor";
 import { usersApi } from "../../hooks/users/_api";
 import PhoneChangeOtpModal from "./PhoneChangeOtpModal";
 

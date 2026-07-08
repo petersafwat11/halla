@@ -1,4 +1,4 @@
-# Halaa Backend API (`labbe-backend-`)
+# Halaa Backend API (`halaa-backend`)
 
 The REST API behind the Halaa web and mobile apps. **Express 4** on **MongoDB / Mongoose 8**,
 organized as feature modules under `src/modules`. Serves authentication, events, guests,
@@ -44,10 +44,10 @@ From the monorepo root (workspaces install all packages):
 npm install                 # run once at the repo root
 ```
 
-Create `labbe-backend-/.env` (see [Environment variables](#environment-variables)), then:
+Create `halaa-backend/.env` (see [Environment variables](#environment-variables)), then:
 
 ```bash
-npm run dev -w labbe-backend-     # or: cd labbe-backend- && npm run dev
+npm run dev -w halaa-backend     # or: cd halaa-backend && npm run dev
 ```
 
 The API listens on **http://localhost:8000** by default.
@@ -74,7 +74,7 @@ The API listens on **http://localhost:8000** by default.
 
 ## Environment variables
 
-Create `labbe-backend-/.env`. Required values are marked; the rest have sensible defaults.
+Create `halaa-backend/.env`. Required values are marked; the rest have sensible defaults.
 
 ```bash
 # ── Core ───────────────────────────────────────────────
@@ -146,7 +146,7 @@ EMAIL_FROM=noreply@halaa.sa
 ## Project structure
 
 ```
-labbe-backend-/
+halaa-backend/
 ├── src/
 │   ├── server.js          # entry: DB connect, cron tasks, graceful shutdown
 │   ├── app.js             # Express app: middleware, CORS, routes, error handling
@@ -195,7 +195,7 @@ across instances.
 ## Testing
 
 ```bash
-npm test -w labbe-backend-
+npm test -w halaa-backend
 ```
 
 Tests use the built-in Node test runner (`node --test`).

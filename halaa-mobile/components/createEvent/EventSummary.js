@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
-} from "@halla/shared/utils";
+} from "@halaa/shared/utils";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import Svg, { Path } from "react-native-svg";

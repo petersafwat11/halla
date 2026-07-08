@@ -11,7 +11,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WhatsAppContactButton from '../shared/WhatsAppContactButton';
-import { EVENT_STATUS } from '@halla/shared/constants/eventStatus';
+import { EVENT_STATUS } from '@halaa/shared/constants/eventStatus';
 import { useTranslation } from '../../localization/hooks/useTranslation';
 
 const MAX_VISIBLE_ATTEMPTS = 5;

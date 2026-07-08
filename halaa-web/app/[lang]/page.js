@@ -11,7 +11,7 @@ import FaqSection from "@/ui/landing/FaqSection";
 import Footer from "@/ui/landing/Footer/Footer";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import initTranslations from "@/localization/i18n";
-import { buildMetadata, ROUTE_CLASS, DEFAULT_METADATA } from "@halla/shared/brand";
+import { buildMetadata, ROUTE_CLASS, DEFAULT_METADATA } from "@halaa/shared/brand";
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;

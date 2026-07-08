@@ -1,7 +1,7 @@
 /**
  * Vendor Settings — section schemas (UI metadata + shared Zod)
  *
- * The Zod validation rules come from `@halla/shared/schemas/vendor`.
+ * The Zod validation rules come from `@halaa/shared/schemas/vendor`.
  * This file holds the web-side `{ sectionKey, titleKey, zodSchema,
  * fields, ... }` wrappers that `DynamicForm` consumes for rendering.
  *
@@ -15,7 +15,7 @@ import {
   serviceDetailsZodSchema,
   socialLinksZodSchema,
   imagesAndPricingZodSchema,
-} from "@halla/shared/schemas/vendor";
+} from "@halaa/shared/schemas/vendor";
 
 export const FIELD_TYPES = {
   TEXT: "text",

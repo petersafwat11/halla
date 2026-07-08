@@ -1,6 +1,6 @@
 /**
  * Ticket schemas — create, update, admin resolution, rating, filter.
- * Mirrors `labbe-backend-/src/modules/tickets/tickets.validation.js`.
+ * Mirrors `halaa-backend/src/modules/tickets/tickets.validation.js`.
  *
  * Callers bind `t` to the `tickets` namespace (`useTranslation("tickets")`)
  * so keys here are relative to that namespace — no `tickets.` prefix.

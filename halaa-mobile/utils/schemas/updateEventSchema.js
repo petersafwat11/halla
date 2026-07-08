@@ -6,4 +6,4 @@ export {
   updateEventSchema,
   updateStepValidationSchemas,
   validateUpdateStep,
-} from "@halla/shared/schemas/events";
+} from "@halaa/shared/schemas/events";

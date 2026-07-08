@@ -9,7 +9,7 @@ exports.webhook = webhookController.handle;
 // http(s) `callback_url` (it rejects custom schemes), and our web `/host/*`
 // pages are auth-gated — so a mobile user finishing 3DS would land on the
 // website login. The app instead hands Moyasar this endpoint; Moyasar
-// appends `?id=&status=`, and we hop to the `halla://` deep link, which the
+// appends `?id=&status=`, and we hop to the `halaa://` deep link, which the
 // app's in-app auth-session browser intercepts to return the user in-app.
 // Whitelisted to a fixed scheme/host so this can't be used as an open redirect.
 //
@@ -24,7 +24,7 @@ exports.appReturn = (req, res) => {
   if (req.query.status) params.set('status', String(req.query.status));
   const qs = params.toString();
   const path = `host/payments/return${qs ? `?${qs}` : ''}`;
-  const target = `halla://${path}`;
+  const target = `halaa://${path}`;
   // Android intent:// fallback — Custom Tabs honor it even when a bare
   // custom-scheme navigation is blocked.
   const intentUrl = `intent://${path}#Intent;scheme=halla;end`;

@@ -1,19 +1,19 @@
 # Template cards refresh — plan
 
-Goal: re-seed our template cards so the fields, overlay positions and decorations match the **polished reference designs** in `D:/halla/labbe/public/template-cards/` (numbered `1.png` – `16.png`, plus `14.jpg`). At the same time, **unify field naming** so that the same logical input always uses the same key / label / placeholder across every card.
+Goal: re-seed our template cards so the fields, overlay positions and decorations match the **polished reference designs** in `D:/halla/halaa-web/public/template-cards/` (numbered `1.png` – `16.png`, plus `14.jpg`). At the same time, **unify field naming** so that the same logical input always uses the same key / label / placeholder across every card.
 
 The two seed scripts being rewritten:
 
-- `labbe-backend-/scripts/seedTemplateCards.js` (wave 1, currently 6 templates)
-- `labbe-backend-/scripts/seedTemplateCardsWave2.js` (wave 2, currently 14 templates)
+- `halaa-backend/scripts/seedTemplateCards.js` (wave 1, currently 6 templates)
+- `halaa-backend/scripts/seedTemplateCardsWave2.js` (wave 2, currently 14 templates)
 
-The script that previously normalized DB documents — `labbe-backend-/scripts/unifyTemplateInputs.js` + `UNIFY_TEMPLATE_INPUTS_SUMMARY.md` — already encodes most of the shared vocabulary; we will reuse that vocabulary as the **source of truth** instead of re-deriving it.
+The script that previously normalized DB documents — `halaa-backend/scripts/unifyTemplateInputs.js` + `UNIFY_TEMPLATE_INPUTS_SUMMARY.md` — already encodes most of the shared vocabulary; we will reuse that vocabulary as the **source of truth** instead of re-deriving it.
 
 ---
 
 ## 1. Polished card → source image mapping (proposed)
 
-The polished mockups in `D:/halla/labbe/public/template-cards/` show what the card should *look like once a host has filled it in*. Each maps to one of the raw backgrounds in `D:/halla/template-cards/`. **Confirm this mapping before we start writing code** — three rows are guesses and the rest are visually obvious.
+The polished mockups in `D:/halla/halaa-web/public/template-cards/` show what the card should *look like once a host has filled it in*. Each maps to one of the raw backgrounds in `D:/halla/template-cards/`. **Confirm this mapping before we start writing code** — three rows are guesses and the rest are visually obvious.
 
 | # | Polished file | Source background (`D:/halla/template-cards/`) | Category | Working name |
 |---|---|---|---|---|

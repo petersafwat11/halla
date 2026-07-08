@@ -3,10 +3,10 @@
  * notification preferences (per-role).
  *
  * Hosts the union of:
- *   - `labbe/utils/schemas/settingsSchemas.js`        (web, factory `(t) => ...`)
- *   - `labbe/utils/schemas/accountSettingsSchema.js`  (web, factory `(t) => ...`)
- *   - `labbe/utils/schemas/notificationPreferencesSchemas.js` (web, zod parts only — UI options live in the app)
- *   - `halla-mobile/utils/schemas/settingsSchema.js`  (mobile, opaque i18n keys as messages)
+ *   - `halaa-web/utils/schemas/settingsSchemas.js`        (web, factory `(t) => ...`)
+ *   - `halaa-web/utils/schemas/accountSettingsSchema.js`  (web, factory `(t) => ...`)
+ *   - `halaa-web/utils/schemas/notificationPreferencesSchemas.js` (web, zod parts only — UI options live in the app)
+ *   - `halaa-mobile/utils/schemas/settingsSchema.js`  (mobile, opaque i18n keys as messages)
  *
  * Validation rules mirror backend `users.validation.js` /
  * `NotificationPreferencesModel`.
@@ -174,7 +174,7 @@ export const accountSettingsSchema = (t = idT) =>
 // ============================================================
 // ACCOUNT SETTINGS — mobile variant (plain schema, opaque i18n keys)
 //
-// Used by `halla-mobile/components/settings/AccountSettings.js`. The
+// Used by `halaa-mobile/components/settings/AccountSettings.js`. The
 // field name is `newPassword` (mobile) vs `password` (web). The
 // rename is intentional UI naming, not a divergent backend shape, so
 // both forms POST the same payload after mapping in the screen.
@@ -285,7 +285,7 @@ export const adminNotificationPreferencesSchema = z.object({
 
 // Role constants — duplicated here for back-compat with consumers that
 // imported `USER_ROLES` from the original schema file. New code should
-// import from `@halla/shared/constants/roles` once that lands.
+// import from `@halaa/shared/constants/roles` once that lands.
 export const USER_ROLES = {
   SUPER_ADMIN: "super_admin",
   ADMIN: "admin",

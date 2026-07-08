@@ -49,8 +49,8 @@ test("entries carry the fields the mobile needs to resolve RevenueCat products",
   for (const e of cat) {
     assert.equal(typeof e.internalCode, "string");
     assert.equal(e.revenueCatPackageLookupKey, e.internalCode);
-    assert.equal(e.iosProductId, `com.halla.${e.internalCode}`);
-    assert.equal(e.androidProductId, `com.halla.${e.internalCode}`);
+    assert.equal(e.iosProductId, `com.halaa.${e.internalCode}`);
+    assert.equal(e.androidProductId, `com.halaa.${e.internalCode}`);
     assert.ok(offerings.includes(e.revenueCatOfferingId));
     assert.ok(e.nameAr && e.nameEn, "AR/EN names required");
     assert.equal(e.currentPlanIdentityKey, e.internalCode);

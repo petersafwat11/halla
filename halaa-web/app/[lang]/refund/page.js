@@ -1,5 +1,5 @@
 import LegalPage from "@/ui/landing/Legal/LegalPage";
-import { getLegalDocument } from "@halla/shared/legal";
+import { getLegalDocument } from "@halaa/shared/legal";
 import Header from "@/ui/landing/Header/Header";
 import Footer from "@/ui/landing/Footer/Footer";
 import { buildLegalMetadata } from "@/ui/landing/Legal/legalMetadata";

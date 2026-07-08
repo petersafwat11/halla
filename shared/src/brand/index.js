@@ -1,5 +1,5 @@
 /**
- * @halla/shared/brand — canonical brand/URL facts + web SEO / mobile ASO
+ * @halaa/shared/brand — canonical brand/URL facts + web SEO / mobile ASO
  * helpers. See individual modules for source-of-truth rules. Nothing here
  * declares owner-gated contact/marketing copy (that lives in `../legal/contact`
  * and the owner-gated ASO templates).

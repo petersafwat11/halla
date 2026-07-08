@@ -1,7 +1,7 @@
 "use client";
 import { toast } from "react-toastify";
 import { downloadExportFile } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 
 /**
  * Hook that returns the export handler for the host events table toolbar.

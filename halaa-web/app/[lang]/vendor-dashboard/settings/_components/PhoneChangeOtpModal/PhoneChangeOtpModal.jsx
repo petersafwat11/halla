@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import styles from "./phoneChangeOtpModal.module.css";
 
 /**

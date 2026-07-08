@@ -79,9 +79,9 @@ test("the committed manifest passes runtime integrity", () => {
 test("resolver returns the canonical maps with no env overrides", () => {
   const r = resolveProductMaps({});
   assert.equal(r.ok, true);
-  // every store-eligible plan/add-on resolves com.halla.<code> → <code>
-  assert.equal(r.planMap["com.halla.premium_monthly_100"], "premium_monthly_100");
-  assert.equal(r.addonMap["com.halla.extra_invites_50"], "extra_invites_50");
+  // every store-eligible plan/add-on resolves com.halaa.<code> → <code>
+  assert.equal(r.planMap["com.halaa.premium_monthly_100"], "premium_monthly_100");
+  assert.equal(r.addonMap["com.halaa.extra_invites_50"], "extra_invites_50");
   assert.equal(r.errors.length, 0);
 });
 
@@ -98,7 +98,7 @@ test("resolver rejects invalid JSON (does NOT silently become empty)", () => {
   assert.equal(r.ok, false);
   assert.ok(r.errors.some((e) => e.code === "env_parse"));
   // canonical maps still resolve — fail closed on the bad entry, not the world
-  assert.equal(r.planMap["com.halla.premium_monthly_100"], "premium_monthly_100");
+  assert.equal(r.planMap["com.halaa.premium_monthly_100"], "premium_monthly_100");
 });
 
 test("resolver rejects an unknown target code", () => {
@@ -116,7 +116,7 @@ test("resolver rejects a cross-type mapping (plan map → add-on code)", () => {
 
 test("resolver rejects an override that conflicts with a canonical product id", () => {
   const r = resolveProductMaps({
-    REVENUECAT_PRODUCT_PLAN_MAP: JSON.stringify({ "com.halla.basic_event_25": "premium_monthly_100" }),
+    REVENUECAT_PRODUCT_PLAN_MAP: JSON.stringify({ "com.halaa.basic_event_25": "premium_monthly_100" }),
   });
   assert.equal(r.ok, false);
   assert.ok(r.errors.some((e) => e.code === "conflicts_canonical"));

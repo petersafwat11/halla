@@ -1,7 +1,7 @@
-import { getMediaUrl as _getMediaUrlShared } from "@halla/shared/utils/media";
+import { getMediaUrl as _getMediaUrlShared } from "@halaa/shared/utils/media";
 
 /**
- * Web wrapper around `@halla/shared/utils/media#getMediaUrl`. Reads the
+ * Web wrapper around `@halaa/shared/utils/media#getMediaUrl`. Reads the
  * Next.js public env var so call sites keep the original
  * `(pathOrUrl, fallback)` signature.
  *

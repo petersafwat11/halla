@@ -18,8 +18,8 @@ const ENTRIES = [
     isUnlimited: false,
     eligibleForCaller: true,
     revenueCatPackageLookupKey: "basic_monthly_25",
-    iosProductId: "com.halla.basic_monthly_25",
-    androidProductId: "com.halla.basic_monthly_25",
+    iosProductId: "com.halaa.basic_monthly_25",
+    androidProductId: "com.halaa.basic_monthly_25",
     revenueCatOfferingId: "host_plans",
   },
   {
@@ -30,8 +30,8 @@ const ENTRIES = [
     isUnlimited: false,
     eligibleForCaller: true,
     revenueCatPackageLookupKey: "basic_event_25",
-    iosProductId: "com.halla.basic_event_25",
-    androidProductId: "com.halla.basic_event_25",
+    iosProductId: "com.halaa.basic_event_25",
+    androidProductId: "com.halaa.basic_event_25",
     revenueCatOfferingId: "host_plans",
   },
   { internalCode: "trial", kind: "internal", storeEligible: false, isTrial: true, isUnlimited: false, eligibleForCaller: true },
@@ -43,8 +43,8 @@ const ENTRIES = [
     isUnlimited: false,
     eligibleForCaller: false, // caller is a personal host
     revenueCatPackageLookupKey: "business_quarterly",
-    iosProductId: "com.halla.business_quarterly",
-    androidProductId: "com.halla.business_quarterly",
+    iosProductId: "com.halaa.business_quarterly",
+    androidProductId: "com.halaa.business_quarterly",
     revenueCatOfferingId: "business_plans",
   },
 ];
@@ -52,13 +52,13 @@ const ENTRIES = [
 const OFFERINGS = {
   host_plans: {
     availablePackages: [
-      { identifier: "basic_monthly_25", product: { identifier: "com.halla.basic_monthly_25", priceString: "SAR 125.00" } },
-      { identifier: "basic_event_25", product: { identifier: "com.halla.basic_event_25", priceString: "SAR 95.00" } },
+      { identifier: "basic_monthly_25", product: { identifier: "com.halaa.basic_monthly_25", priceString: "SAR 125.00" } },
+      { identifier: "basic_event_25", product: { identifier: "com.halaa.basic_event_25", priceString: "SAR 95.00" } },
     ],
   },
   business_plans: {
     availablePackages: [
-      { identifier: "business_quarterly", product: { identifier: "com.halla.business_quarterly", priceString: "SAR 999.00" } },
+      { identifier: "business_quarterly", product: { identifier: "com.halaa.business_quarterly", priceString: "SAR 999.00" } },
     ],
   },
 };

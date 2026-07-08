@@ -2,7 +2,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useDebounce } from "@halla/shared/utils/useDebounce";
+import { useDebounce } from "@halaa/shared/utils/useDebounce";
 
 /**
  * Encapsulates all URL-based filter state and handlers for the Marketplace page.

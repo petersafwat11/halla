@@ -7,7 +7,7 @@
  *
  *   1. Moyasar's `callback_url` MUST be http(s). It rejects custom schemes
  *      ("URL protocol must be HTTP or HTTPS"), so we cannot hand it
- *      `halla://…` directly.
+ *      `halaa://…` directly.
  *   2. iOS `ASWebAuthenticationSession` (what openAuthSessionAsync uses)
  *      only auto-closes when the in-app browser navigates to a CUSTOM
  *      scheme returnUrl — an https returnUrl won't dismiss it.
@@ -17,7 +17,7 @@
  *     (BOUNCE_URL). The web `/host/*` pages are auth-gated; this endpoint
  *     is unauthenticated and does one thing.
  *   - Moyasar redirects there with `?id=<moyasarId>&status=…` appended.
- *   - The endpoint 302s to `halla://host/payments/return?id=…&status=…`.
+ *   - The endpoint 302s to `halaa://host/payments/return?id=…&status=…`.
  *   - openAuthSessionAsync sees that custom-scheme hop, auto-closes the
  *     sheet, and returns the URL to us — the user never leaves the app.
  *

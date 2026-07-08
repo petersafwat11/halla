@@ -1,5 +1,5 @@
 /**
- * @halla/shared/brand/storeLimits — App Store & Google Play metadata field
+ * @halaa/shared/brand/storeLimits — App Store & Google Play metadata field
  * limit validators (SEO-ASO-METADATA-PLAN §7.2, §7.3, §10).
  *
  * CRITICAL: Apple's keyword field is limited by BYTES (100), not characters.

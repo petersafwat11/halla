@@ -15,9 +15,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useRetryLaunch } from "@/hooks/events";
-import useEventActionGate from "@halla/shared/hooks/useEventActionGate";
+import useEventActionGate from "@halaa/shared/hooks/useEventActionGate";
 import { useTranslation } from "react-i18next";
-import { EVENT_STATUS } from "@halla/shared/constants/eventStatus";
+import { EVENT_STATUS } from "@halaa/shared/constants/eventStatus";
 import WhatsAppContactButton from "@/ui/commen/whatsappButton/WhatsAppContactButton";
 import styles from "./eventFailureBanner.module.css";
 

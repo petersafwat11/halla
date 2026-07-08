@@ -12,7 +12,7 @@ import {
   STATUS_CODE_MESSAGES,
   errorTypeFromStatus,
   authErrorMessage as sharedAuthErrorMessage,
-} from "@halla/shared/errors";
+} from "@halaa/shared/errors";
 
 export { ErrorTypes };
 

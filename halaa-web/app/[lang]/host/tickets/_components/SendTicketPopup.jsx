@@ -13,7 +13,7 @@ import {
   updateTicketSchema,
   TICKET_TYPES,
   getCreateTicketDefaults,
-} from "@halla/shared/schemas/tickets";
+} from "@halaa/shared/schemas/tickets";
 import { useTicketMutation } from "@/hooks/tickets";
 import { toast } from "react-toastify";
 

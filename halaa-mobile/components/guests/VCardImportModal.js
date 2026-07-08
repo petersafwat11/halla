@@ -27,7 +27,7 @@ import {
 import Svg, { Path } from "react-native-svg";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
-import { parseVCards } from "@halla/shared/utils/vcard";
+import { parseVCards } from "@halaa/shared/utils/vcard";
 import { useTranslation } from "../../localization";
 import Button from "../commen/Button";
 

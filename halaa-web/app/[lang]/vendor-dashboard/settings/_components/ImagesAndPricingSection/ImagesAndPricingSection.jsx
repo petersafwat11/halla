@@ -8,7 +8,7 @@ import ImagePreviewModal from "@/ui/vendor/modals/ImagePreviewModal";
 import ImagesAndPricingEditForm from "./ImagesAndPricingEditForm";
 import { keyFromSignedUrl } from "@/utils/vendorHelpers";
 import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 import {
   SectionCard,
   DocThumb,

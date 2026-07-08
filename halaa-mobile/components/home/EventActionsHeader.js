@@ -8,7 +8,7 @@ import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
 import { useNotifyStaff, useDeleteEvent } from "../../hooks/events/mutations/useEventMutation";
 import { useToast } from "../../contexts/ToastContext";
-import { useEventActionGate } from "@halla/shared/hooks/useEventActionGate";
+import { useEventActionGate } from "@halaa/shared/hooks/useEventActionGate";
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 

@@ -10,7 +10,7 @@ import SendMessagesMenu from "@/components/event-detail/sendActions/SendMessages
 import { useEventMutation } from "@/hooks/events";
 import { toast } from "react-toastify";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
-import { useEventActionGate } from "@halla/shared/hooks/useEventActionGate";
+import { useEventActionGate } from "@halaa/shared/hooks/useEventActionGate";
 import styles from "./EventActionsHeader.module.css";
 
 export default function EventActionsHeader({ event, isAdmin = false }) {

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import CardLayout from "@/ui/commen/card/CardLayout";
 import { useSingleEventStats, useEvent } from "@/hooks/events";
 import PartialFailureBanner from "./PartialFailureBanner";
-import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halla/shared/constants/eventStatus";
+import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halaa/shared/constants/eventStatus";
 import styles from "@/app/[lang]/host/events/[id]/singleEvent.module.css";
 
 export default function EventStats({ eventId, activeFilter, onFilterPress }) {

@@ -16,7 +16,7 @@ const sampleBody = () => ({
     app_user_id: "user-uuid",
     original_app_user_id: "user-uuid",
     aliases: ["user-uuid", "alias2"],
-    product_id: "com.halla.premium_monthly_100",
+    product_id: "com.halaa.premium_monthly_100",
     store: "APP_STORE",
     environment: "PRODUCTION",
     transaction_id: "txn_1",
@@ -38,7 +38,7 @@ test("normalizeEvent lifts every processing field into typed columns", () => {
   assert.equal(n.eventId, "evt_1");
   assert.equal(n.type, "INITIAL_PURCHASE");
   assert.equal(n.appUserId, "user-uuid");
-  assert.equal(n.productId, "com.halla.premium_monthly_100");
+  assert.equal(n.productId, "com.halaa.premium_monthly_100");
   assert.equal(n.transactionId, "txn_1");
   assert.equal(n.originalTransactionId, "otxn_1");
   assert.deepEqual(n.entitlementIds, ["recurring_access"]);
@@ -56,11 +56,11 @@ test("normalizeEvent keeps purchased-currency money separate from USD (P0-05)", 
 test("normalizeEvent prefers new_product_id for PRODUCT_CHANGE", () => {
   const b = sampleBody();
   b.event.type = "PRODUCT_CHANGE";
-  b.event.new_product_id = "com.halla.basic_monthly_50";
+  b.event.new_product_id = "com.halaa.basic_monthly_50";
   const n = normalizeEvent(b);
-  assert.equal(n.productId, "com.halla.basic_monthly_50");
-  assert.equal(n.newProductId, "com.halla.basic_monthly_50");
-  assert.equal(n.productIdRaw, "com.halla.premium_monthly_100");
+  assert.equal(n.productId, "com.halaa.basic_monthly_50");
+  assert.equal(n.newProductId, "com.halaa.basic_monthly_50");
+  assert.equal(n.productIdRaw, "com.halaa.premium_monthly_100");
 });
 
 test("normalizeEvent coerces bad shapes to null / empty, never throws", () => {
@@ -85,7 +85,7 @@ test("redactPayload removes subscriber PII", () => {
   const r = redactPayload(sampleBody());
   assert.equal(r.event.subscriber_attributes, "[REDACTED_PII]");
   // non-sensitive fields survive for audit
-  assert.equal(r.event.product_id, "com.halla.premium_monthly_100");
+  assert.equal(r.event.product_id, "com.halaa.premium_monthly_100");
   assert.equal(r.event.transaction_id, "txn_1");
 });
 

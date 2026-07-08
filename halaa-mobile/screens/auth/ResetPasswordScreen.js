@@ -3,7 +3,7 @@
  *
  * Lands here from the canonical reset deep link (§5.1):
  *   - `https://halaa.com.sa/<lang>/change-password?token=<token>` (universal/app link)
- *   - `halla://change-password?token=<token>`                     (custom scheme)
+ *   - `halaa://change-password?token=<token>`                     (custom scheme)
  *
  * The token is read from `route.params.token` (React Navigation parses the
  * `?token=` query string into params). On success the backend
@@ -33,7 +33,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
-import { resetPasswordSchema } from "@halla/shared/schemas/auth";
+import { resetPasswordSchema } from "@halaa/shared/schemas/auth";
 import { authErrorMessage } from "../../services/authErrors";
 import TopBar from "../../components/plans/TopBar";
 

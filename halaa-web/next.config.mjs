@@ -4,10 +4,10 @@ const nextConfig = {
   assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || "",
 
   // Transpile the in-repo workspace package so Next bundles it rather than
-  // externalizing as a node module. Required for `@halla/shared` (plain ESM).
-  transpilePackages: ["@halla/shared"],
+  // externalizing as a node module. Required for `@halaa/shared` (plain ESM).
+  transpilePackages: ["@halaa/shared"],
 
-  // Production deploys copy `shared/` into `frontend/node_modules/@halla/shared`
+  // Production deploys copy `shared/` into `frontend/node_modules/@halaa/shared`
   // as a real directory (not a symlink) to keep webpack's realpath() from
   // resolving back to the source tree, where peer deps like `xlsx` aren't
   // installed. Setting symlinks:false makes the local dev tree behave the same

@@ -61,7 +61,7 @@ function collectPackages(offerings, preferredOfferingId) {
 /**
  * Resolve the RevenueCat package for a catalog entry. Match order:
  *   package.identifier === lookupKey (canonical) →
- *   package.product.identifier === productId (com.halla.<code>) →
+ *   package.product.identifier === productId (com.halaa.<code>) →
  *   package.product.identifier === lookupKey (legacy naming).
  */
 function findPackage(offerings, entry) {

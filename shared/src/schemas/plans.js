@@ -2,7 +2,7 @@
  * Plans schemas — admin-only plan create/update forms.
  *
  * Mirrors backend canonical at
- * `labbe-backend-/src/modules/plans/plans.schemas.js`.
+ * `halaa-backend/src/modules/plans/plans.schemas.js`.
  *
  * Admin surface, so error messages stay in English (dev-facing) and the
  * factory-`t` pattern is unnecessary. If/when an end-user plan UX needs

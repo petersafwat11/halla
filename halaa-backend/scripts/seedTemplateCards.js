@@ -2,7 +2,7 @@
  * seedTemplateCards.js — TEMPLATE_CARDS_REFRESH_PLAN
  *
  * Single source of truth for 20 polished template cards:
- *   - 16 mapped from `labbe/public/template-cards/{1..16}.png` to source
+ *   - 16 mapped from `halaa-web/public/template-cards/{1..16}.png` to source
  *     backgrounds in `template-cards/*.jpg`.
  *   - 4 borrowed-layout cards for backgrounds with no polished mockup
  *     (wedding_navy_frame, wedding_white_frame, general_pilgrimage,

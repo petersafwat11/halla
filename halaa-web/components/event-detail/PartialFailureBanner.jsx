@@ -17,7 +17,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useEvent } from "@/hooks/events/queries/useEvent";
-import { useEventActionGate } from "@halla/shared/hooks/useEventActionGate";
+import { useEventActionGate } from "@halaa/shared/hooks/useEventActionGate";
 import useAuthStore from "@/stores/authStore";
 import styles from "./eventFailureBanner.module.css";
 

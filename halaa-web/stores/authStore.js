@@ -35,7 +35,7 @@ export const USER_STATUS = {
 // On the web side the localStorage rehydration is synchronous, so
 // `checking` is effectively a single frame on initial mount; we still
 // expose the same vocabulary so cross-app components can read one
-// shape (`@halla/shared/schemas/auth` → `authStoreSnapshotSchema`).
+// shape (`@halaa/shared/schemas/auth` → `authStoreSnapshotSchema`).
 // ============================================
 
 const useAuthStore = create(
@@ -153,7 +153,7 @@ const useAuthStore = create(
             // Lazy-load to avoid a circular import between the store and
             // the API client (which already imports the store indirectly).
             const { apiRequest } = await import("@/services/http");
-            const { API_PATHS } = await import("@halla/shared/api/paths");
+            const { API_PATHS } = await import("@halaa/shared/api/paths");
             await apiRequest({ method: "POST", path: API_PATHS.auth.logout });
           } catch (err) {
             // Network/other failure: still clear local state. Server-side

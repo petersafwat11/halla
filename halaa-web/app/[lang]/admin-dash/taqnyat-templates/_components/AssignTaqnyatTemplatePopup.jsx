@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useAssignTaqnyat } from "@/hooks/taqnyatTemplates";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
-import { assignTaqnyatSchema } from "@halla/shared/schemas/admin";
+import { assignTaqnyatSchema } from "@halaa/shared/schemas/admin";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";

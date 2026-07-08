@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
-import { editPlanSchema } from "@halla/shared/schemas/plans";
+import { editPlanSchema } from "@halaa/shared/schemas/plans";
 import { useAdminPlanMutation } from "@/hooks/admin";
 import styles from "./EditPlanPopup.module.css";
 

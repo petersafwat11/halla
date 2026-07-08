@@ -1,6 +1,6 @@
 /**
  * API path registry — single source of truth for both labbe (web) and
- * halla-mobile (mobile). Mirrors backend routes mounted at /api/v2/*.
+ * halaa-mobile (mobile). Mirrors backend routes mounted at /api/v2/*.
  *
  * Update paths here when the backend changes. All call sites resolve
  * paths through this object so a route rename is one diff, not 200.

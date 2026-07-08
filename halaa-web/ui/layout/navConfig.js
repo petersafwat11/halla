@@ -26,12 +26,12 @@ import {
   USER_ROLES,
   ADMIN_ROLES,
   isAdminRole,
-} from "@halla/shared/constants/roles";
-import { ACCESS_LEVELS } from "@halla/shared/constants/permissions";
+} from "@halaa/shared/constants/roles";
+import { ACCESS_LEVELS } from "@halaa/shared/constants/permissions";
 
 /**
  * Role enums, hierarchy helpers, and access levels come from
- * `@halla/shared/constants`. Re-exported here so consumer imports
+ * `@halaa/shared/constants`. Re-exported here so consumer imports
  * `from "@/ui/layout/navConfig"` keep working.
  */
 export { USER_ROLES, ADMIN_ROLES, isAdminRole, ACCESS_LEVELS };

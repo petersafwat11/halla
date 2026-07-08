@@ -12,7 +12,7 @@ import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
 import { ticketRatingSchema, defaultTicketRatingValues } from "@/utils/schemas/ticketRatingSchema";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
-import { TICKET_STATUS } from "@halla/shared/constants/ticketConstants";
+import { TICKET_STATUS } from "@halaa/shared/constants/ticketConstants";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import styles from "./page.module.css";
 

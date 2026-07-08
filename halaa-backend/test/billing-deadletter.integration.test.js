@@ -31,13 +31,13 @@ const deadLetterDoc = (over = {}) => ({
   status: "dead_letter",
   reason: "catalog_unavailable",
   appUserId: "biller-1",
-  productId: "com.halla.premium_monthly_100",
+  productId: "com.halaa.premium_monthly_100",
   transactionId: "t-" + Math.random().toString(36).slice(2),
   originalTransactionId: "o-1",
   entitlementIds: ["recurring_access"],
   priceInPurchasedCurrency: 100,
   currency: "SAR",
-  rawPayload: { api_version: "1.0", event: { id: "x", type: "INITIAL_PURCHASE", app_user_id: "biller-1", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "t-x", original_transaction_id: "o-1", product_id: "com.halla.premium_monthly_100", entitlement_ids: ["recurring_access"], subscriber_attributes: "[REDACTED_PII]" } },
+  rawPayload: { api_version: "1.0", event: { id: "x", type: "INITIAL_PURCHASE", app_user_id: "biller-1", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "t-x", original_transaction_id: "o-1", product_id: "com.halaa.premium_monthly_100", entitlement_ids: ["recurring_access"], subscriber_attributes: "[REDACTED_PII]" } },
   resolutionHistory: [{ action: "dead_letter", status: "dead_letter", reason: "catalog_unavailable", actor: "system" }],
   ...over,
 });
@@ -45,7 +45,7 @@ const deadLetterDoc = (over = {}) => ({
 test.before(async () => {
   await db.start();
   process.env.REVENUECAT_WEBHOOK_AUTH = "x";
-  rcApi.getRecurringSnapshot = async () => ({ available: true, entitlementActive: true, effectiveProductId: "com.halla.premium_monthly_100", expiresAtMs: Date.now() + 1e9 });
+  rcApi.getRecurringSnapshot = async () => ({ available: true, entitlementActive: true, effectiveProductId: "com.halaa.premium_monthly_100", expiresAtMs: Date.now() + 1e9 });
 });
 test.after(async () => { await db.stop(); });
 test.beforeEach(async () => {
@@ -92,8 +92,8 @@ test("replay re-resolves the product and processes it (grants the subscription)"
 
 test("replay of a still-unmapped product stays dead-lettered (no grant)", async () => {
   const ev = await RevenueCatEvent.create(deadLetterDoc({
-    productId: "com.halla.ghost",
-    rawPayload: { api_version: "1.0", event: { id: "y", type: "INITIAL_PURCHASE", app_user_id: "biller-1", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "t-y", original_transaction_id: "o-2", product_id: "com.halla.ghost", entitlement_ids: ["recurring_access"] } },
+    productId: "com.halaa.ghost",
+    rawPayload: { api_version: "1.0", event: { id: "y", type: "INITIAL_PURCHASE", app_user_id: "biller-1", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "t-y", original_transaction_id: "o-2", product_id: "com.halaa.ghost", entitlement_ids: ["recurring_access"] } },
   }));
   const res = await callCtrl(admin.replayDeadLetter, { params: { id: ev._id } });
   assert.equal(res.payload.data.outcome, "dead_letter");

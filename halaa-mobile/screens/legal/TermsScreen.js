@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "../../localization";
-import { getLegalDocument } from "@halla/shared/legal";
+import { getLegalDocument } from "@halaa/shared/legal";
 import LegalScreen from "./LegalScreen";
 
 const TermsScreen = () => {

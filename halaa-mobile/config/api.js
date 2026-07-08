@@ -2,14 +2,14 @@
  * API Configuration
  *
  * UPPER_SNAKE_CASE wrapper over the shared endpoint registry
- * (`@halla/shared/api/paths`, camelCase) that preserves the `ENDPOINTS.X.Y`
+ * (`@halaa/shared/api/paths`, camelCase) that preserves the `ENDPOINTS.X.Y`
  * call sites used across mobile services.
  *
  * `API_BASE_URL` stays here — it's platform-specific (mobile points
  * straight at production over HTTPS; web routes via Next rewrites).
  */
 
-import { API_PATHS } from "@halla/shared/api/paths";
+import { API_PATHS } from "@halaa/shared/api/paths";
 
 // Backend base URL. Production VPS (Contabo, nginx → labbe-backend on :8000).
 // Overridable per EAS build profile via EXPO_PUBLIC_API_URL (see eas.json) so
@@ -83,7 +83,7 @@ export const ENDPOINTS = {
   },
 
   // Native store-billing (RevenueCat / StoreKit / Play Billing). Mobile-only;
-  // web uses Moyasar (PAYMENTS.CHECKOUT). See @halla/shared/api/paths.
+  // web uses Moyasar (PAYMENTS.CHECKOUT). See @halaa/shared/api/paths.
   REVENUECAT: {
     RECONCILE: API_PATHS.revenuecat.reconcile,
     RECONCILE_EXACT: API_PATHS.revenuecat.reconcileExact,

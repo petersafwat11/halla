@@ -34,4 +34,4 @@ export * from "./users";
 export * from "./vendor";
 
 // Non-domain utility hooks.
-export { useDebounce } from "@halla/shared/utils/useDebounce";
+export { useDebounce } from "@halaa/shared/utils/useDebounce";

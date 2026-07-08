@@ -5,7 +5,7 @@ import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
 import { useTranslation } from "react-i18next";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { hostProfileCompletionSchema } from "@halla/shared/schemas/auth";
+import { hostProfileCompletionSchema } from "@halaa/shared/schemas/auth";
 import { useAuthMutation } from "@/hooks/auth";
 import useAuthStore from "@/stores/authStore";
 import useLanguageChange from "@/hooks/UseLanguageChange";

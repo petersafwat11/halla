@@ -1,4 +1,4 @@
-export const sharedPing = () => "@halla/shared:ok";
+export const sharedPing = () => "@halaa/shared:ok";
 
 export {
   getMarketplaceImageUrl,

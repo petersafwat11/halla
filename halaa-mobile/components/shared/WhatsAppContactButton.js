@@ -4,7 +4,7 @@
  * Generates a `wa.me/<number>?text=<msg>` link and opens it via
  * `Linking.openURL`.
  *
- * Replace `WHATSAPP_CONTACT_NUMBER` (or set EXPO_PUBLIC_HALLA_WHATSAPP_NUMBER
+ * Replace `WHATSAPP_CONTACT_NUMBER` (or set EXPO_PUBLIC_HALAA_WHATSAPP_NUMBER
  * in `.env`) when the production support number is known.
  */
 
@@ -13,7 +13,7 @@ import { TouchableOpacity, Text, Linking, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
 const WHATSAPP_CONTACT_NUMBER =
-  process.env.EXPO_PUBLIC_HALLA_WHATSAPP_NUMBER || '966552619282';
+  process.env.EXPO_PUBLIC_HALAA_WHATSAPP_NUMBER || '966552619282';
 
 export default function WhatsAppContactButton({
   contextMessage = '',

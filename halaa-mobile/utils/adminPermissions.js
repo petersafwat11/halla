@@ -1,7 +1,7 @@
 /**
  * Admin Permissions — mobile.
  *
- * Role/page/access-level enums live in `@halla/shared/constants`. The
+ * Role/page/access-level enums live in `@halaa/shared/constants`. The
  * per-role ACCESS_MATRIX below stays mobile-local because it currently
  * diverges from web and backend.
  */
@@ -16,7 +16,7 @@ import {
   getManageableRoles,
   ADMIN_PAGES,
   ACCESS_LEVELS,
-} from "@halla/shared/constants";
+} from "@halaa/shared/constants";
 
 export { ROLES, ADMIN_ROLES, PLATFORM_ADMIN_ROLES };
 export { isAdminRole, isPlatformAdmin, hasRoleAccess, getManageableRoles };

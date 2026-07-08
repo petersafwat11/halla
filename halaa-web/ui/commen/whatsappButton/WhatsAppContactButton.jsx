@@ -14,7 +14,7 @@ import React from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import styles from "./whatsAppContactButton.module.css";
 
-const WHATSAPP_CONTACT_NUMBER = process.env.NEXT_PUBLIC_HALLA_WHATSAPP_NUMBER || "966552619282";
+const WHATSAPP_CONTACT_NUMBER = process.env.NEXT_PUBLIC_HALAA_WHATSAPP_NUMBER || "966552619282";
 
 export default function WhatsAppContactButton({
   contextMessage = "",

@@ -1,6 +1,6 @@
 # Expected-count report (generated)
 
-> **GENERATED — do not edit by hand.** Source: `labbe-backend-/src/shared/commerce/` (`catalog.overlay.js` + `buildCatalog.js`). Regenerate with `npm run catalog:generate`.
+> **GENERATED — do not edit by hand.** Source: `halaa-backend/src/shared/commerce/` (`catalog.overlay.js` + `buildCatalog.js`). Regenerate with `npm run catalog:generate`.
 >
 > All Apple / Google / RevenueCat identifiers below are **PROPOSED** and **NOT yet created** in any store console. Prices are shown in SAR from the current backend catalog; the stores collect Saudi VAT (15%) and render the localized price string (PRICE-OWNER, signed 2026-07-01).
 

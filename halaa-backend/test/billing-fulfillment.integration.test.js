@@ -87,9 +87,9 @@ test("event REFUND_REVERSED restores a refunded-before-use package to unused + r
   const b = eventBody({ transaction_id: "etx-rev" });
   await call(b);
   const entBefore = await EventEntitlement.findOne({ providerTransactionId: "etx-rev" });
-  await call({ api_version: "1.0", event: { id: "ev-rev-refund", type: "REFUND", app_user_id: "fuser", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "etx-rev", product_id: "com.halla.basic_event_50", entitlement_ids: [] } });
+  await call({ api_version: "1.0", event: { id: "ev-rev-refund", type: "REFUND", app_user_id: "fuser", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "etx-rev", product_id: "com.halaa.basic_event_50", entitlement_ids: [] } });
   assert.equal((await EventEntitlement.findOne({ providerTransactionId: "etx-rev" })).status, "refunded");
-  const res = await call({ api_version: "1.0", event: { id: "ev-rev-restore", type: "REFUND_REVERSED", app_user_id: "fuser", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "etx-rev", product_id: "com.halla.basic_event_50", entitlement_ids: [] } });
+  const res = await call({ api_version: "1.0", event: { id: "ev-rev-restore", type: "REFUND_REVERSED", app_user_id: "fuser", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "etx-rev", product_id: "com.halaa.basic_event_50", entitlement_ids: [] } });
   assert.equal(res.payload.status, "processed");
   const entAfter = await EventEntitlement.findOne({ providerTransactionId: "etx-rev" });
   assert.equal(entAfter.status, "unused");
@@ -131,7 +131,7 @@ test("design-template store refund is recorded but the service work is NOT undon
 // ── EVENT ENTITLEMENTS (via full webhook) ────────────────────────────────────
 const eventBody = (over = {}) => ({
   api_version: "1.0",
-  event: { id: "ev-" + Math.random().toString(36).slice(2), type: "NON_RENEWING_PURCHASE", app_user_id: "fuser", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "etx-" + Math.random().toString(36).slice(2), product_id: "com.halla.basic_event_50", entitlement_ids: [], price_in_purchased_currency: 95, currency: "SAR", ...over },
+  event: { id: "ev-" + Math.random().toString(36).slice(2), type: "NON_RENEWING_PURCHASE", app_user_id: "fuser", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "etx-" + Math.random().toString(36).slice(2), product_id: "com.halaa.basic_event_50", entitlement_ids: [], price_in_purchased_currency: 95, currency: "SAR", ...over },
 });
 
 test("event package grant creates an unused entitlement + per-event sub and blocks a 2nd buy", async () => {
@@ -159,7 +159,7 @@ test("event package delivered while a recurring plan is active → manual_review
 test("refund of an unused event package revokes access + keeps the ledger row", async () => {
   const b = eventBody({ transaction_id: "etx-ref" });
   await call(b);
-  const refund = { api_version: "1.0", event: { id: "ev-ref", type: "REFUND", app_user_id: "fuser", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "etx-ref", product_id: "com.halla.basic_event_50", entitlement_ids: [] } };
+  const refund = { api_version: "1.0", event: { id: "ev-ref", type: "REFUND", app_user_id: "fuser", store: "APP_STORE", environment: "PRODUCTION", transaction_id: "etx-ref", product_id: "com.halaa.basic_event_50", entitlement_ids: [] } };
   const res = await call(refund);
   assert.equal(res.payload.status, "processed");
   const ent = await EventEntitlement.findOne({ providerTransactionId: "etx-ref" });

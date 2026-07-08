@@ -8,7 +8,7 @@ import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
 import OtpInput from "./otpInput/OtpInput";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { emailLoginSchema, phoneLoginSchema } from "@halla/shared/schemas/auth";
+import { emailLoginSchema, phoneLoginSchema } from "@halaa/shared/schemas/auth";
 import EmailSection from "./EmailForm";
 import PhoneSection from "./PhoneForm";
 import { useAuthMutation } from "@/hooks/auth";

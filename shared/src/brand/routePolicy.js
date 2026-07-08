@@ -1,5 +1,5 @@
 /**
- * @halla/shared/brand/routePolicy — SIGNED route index/noindex inventory
+ * @halaa/shared/brand/routePolicy — SIGNED route index/noindex inventory
  * (SEO-ASO-METADATA-PLAN §2, §11). SEO-01.
  *
  * This is the EXECUTABLE single source of truth for which web route classes are
