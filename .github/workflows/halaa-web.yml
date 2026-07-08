@@ -1,15 +1,15 @@
-name: labbe (web)
+name: halaa-web
 
 on:
   pull_request:
     paths:
-      - "labbe/**"
+      - "halaa-web/**"
       - "shared/**"
-      - ".github/workflows/labbe.yml"
+      - ".github/workflows/halaa-web.yml"
   push:
     branches: [master]
     paths:
-      - "labbe/**"
+      - "halaa-web/**"
       - "shared/**"
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: labbe
+        working-directory: halaa-web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,12 +28,12 @@ jobs:
       - name: Install (workspaces from repo root)
         working-directory: .
         run: npm install --no-audit --no-fund
-      # Phase 9 lock-in: lint @halla/shared first so a regression there fails
-      # the labbe pipeline (shared is in labbe's `paths:` trigger).
-      - name: Lint @halla/shared
+      # Lint the shared package first so a regression there fails this pipeline
+      # (shared/ is in halaa-web's paths: trigger).
+      - name: Lint shared
         working-directory: shared
         run: npm run lint
-      - name: Lint labbe
+      - name: Lint halaa-web
         run: npm run lint
       - name: Build
         run: npm run build

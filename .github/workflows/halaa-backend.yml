@@ -1,21 +1,23 @@
-name: labbe-backend
+name: halaa-backend
 
 on:
   pull_request:
     paths:
-      - "labbe-backend-/**"
-      - ".github/workflows/labbe-backend.yml"
+      - "halaa-backend/**"
+      - "shared/**"
+      - ".github/workflows/halaa-backend.yml"
   push:
     branches: [master]
     paths:
-      - "labbe-backend-/**"
+      - "halaa-backend/**"
+      - "shared/**"
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: labbe-backend-
+        working-directory: halaa-backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,8 +29,9 @@ jobs:
         working-directory: .
         run: npm install --no-audit --no-fund
       - name: Boot smoke (load main entry without listening)
-        run: node -e "require('./src/app.js')" || node -e "require('./src/server.js')"
+        run: node -e "require('./src/app.js')"
         env:
           NODE_ENV: test
-          # Backend won't actually connect — module load only validates require graph.
           DRY_RUN: "true"
+      - name: Catalog verify (store SKU drift + contracts)
+        run: npm run catalog:verify

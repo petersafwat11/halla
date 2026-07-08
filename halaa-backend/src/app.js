@@ -105,8 +105,7 @@ const createApp = () => {
     'http://localhost:19006',  // Expo web (legacy webpack)
     'http://localhost:19000',  // Expo dev tools (legacy)
     'http://10.0.2.2:8081',    // Android emulator → host loopback
-    'https://labbe.vercel.app',
-    config.frontend.url,
+    config.frontend.url,       // production web origin (https://halaa.com.sa)
   ].filter(Boolean);
 
   // LAN-IP origin for Expo dev when running the app on a physical device
@@ -123,7 +122,6 @@ const createApp = () => {
         if (
           allowedOrigins.includes(origin) ||
           /\.halaa\.(?:com\.)?sa$/.test(origin) ||
-          /^https:\/\/labbe(-[a-z0-9]+)?\.vercel\.app$/.test(origin) ||
           lanExpoOrigin.test(origin)
         ) {
           return callback(null, true);

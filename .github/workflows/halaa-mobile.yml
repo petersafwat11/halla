@@ -1,15 +1,15 @@
-name: halla-mobile
+name: halaa-mobile
 
 on:
   pull_request:
     paths:
-      - "halla-mobile/**"
+      - "halaa-mobile/**"
       - "shared/**"
-      - ".github/workflows/halla-mobile.yml"
+      - ".github/workflows/halaa-mobile.yml"
   push:
     branches: [master]
     paths:
-      - "halla-mobile/**"
+      - "halaa-mobile/**"
       - "shared/**"
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: halla-mobile
+        working-directory: halaa-mobile
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,20 +28,14 @@ jobs:
       - name: Install (workspaces from repo root)
         working-directory: .
         run: npm install --no-audit --no-fund
-      # Phase 9 lock-in: lint @halla/shared first so a regression there fails
-      # the mobile pipeline (shared is in mobile's `paths:` trigger).
-      - name: Lint @halla/shared
+      - name: Lint shared
         working-directory: shared
         run: npm run lint
-      - name: Lint halla-mobile
+      - name: Lint halaa-mobile
         run: npm run lint
       - name: Expo config check
         run: npx --yes expo config --type public > /dev/null
       - name: Metro bundle (production, android)
-        # Fast resolution + transform smoke supersedes the `expo prebuild
-        # --no-install` dry-run called for in Phase 9: bundle is strictly
-        # heavier (transforms + bundles JS, which prebuild doesn't do). Full
-        # native build runs on EAS.
-        run: npx --yes expo export --platform android --output-dir /tmp/halla-mobile-export --no-bytecode
+        run: npx --yes expo export --platform android --output-dir /tmp/halaa-mobile-export --no-bytecode
         env:
           EXPO_NO_TELEMETRY: "1"

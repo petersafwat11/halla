@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "labbe",
-    "halla-mobile",
-    "labbe-backend-",
+    "halaa-web",
+    "halaa-mobile",
+    "halaa-backend",
     "shared"
   ],
   "devDependencies": {
