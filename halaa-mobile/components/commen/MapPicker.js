@@ -71,7 +71,7 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
     try {
       const response = await fetchWithTimeout(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
-        { headers: { "User-Agent": "HallaMobileApp/1.0", Accept: "application/json" } }
+        { headers: { "User-Agent": "HalaaMobileApp/1.0", Accept: "application/json" } }
       );
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       setSearchResults(await response.json());

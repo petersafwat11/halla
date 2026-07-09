@@ -6,7 +6,7 @@
   },
   "personalInfo": {
     "title": "Personal Account Information",
-    "storeLogo": "Halla Marketplace Logo",
+    "storeLogo": "Halaa Marketplace Logo",
     "uploadImage": "Upload Images",
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
@@ -32,7 +32,7 @@
     "noLogo": "No logo"
   },
   "serviceDetails": {
-    "title": "Service or Halla Marketplace Details",
+    "title": "Service or Halaa Marketplace Details",
     "nationalIdLabel": "National ID Number - Residence Number",
     "commercialRegister": "Commercial Register Copy (Optional)",
     "otherLicenses": "Other Licenses (Optional)",

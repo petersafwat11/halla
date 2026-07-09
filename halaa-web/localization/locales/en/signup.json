@@ -45,7 +45,7 @@
       "description": "Follow these steps to create your account as a service provider and start displaying your services on the Halaa platform.",
       "steps": {
         "identity": "Basic Account Information",
-        "serviceData": "Service or Halla Marketplace Details",
+        "serviceData": "Service or Halaa Marketplace Details",
         "samplesAndPackages": "Images, Offers & Prices",
         "commercialVerification": "Commercial Verification",
         "commercialVerificationDescription": "Upload required documents for commercial verification.",
@@ -145,7 +145,7 @@
         }
       },
       "serviceData": {
-        "title": "Service or Halla Marketplace Details",
+        "title": "Service or Halaa Marketplace Details",
         "description": "Introduce visitors to your services and the areas you cover.",
         "serviceDescription": {
           "title": "Service Overview",

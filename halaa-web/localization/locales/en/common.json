@@ -35,7 +35,7 @@
     "hosts": "Hosts",
     "businesses": "Businesses",
     "vendors": "Vendors",
-    "marketplace": "Halla Marketplace",
+    "marketplace": "Halaa Marketplace",
     "events": "Events",
     "tickets": "Tickets",
     "payments": "Payments",
@@ -111,7 +111,7 @@
   },
   "vendorSidebar": {
     "services": "Services",
-    "marketplace": "Halla Marketplace",
+    "marketplace": "Halaa Marketplace",
     "tickets": "Tickets",
     "settings": "Settings"
   },

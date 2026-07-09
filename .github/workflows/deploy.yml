@@ -82,6 +82,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v4
       - name: Set up SSH
@@ -95,14 +98,19 @@ jobs:
           scp -i ~/.ssh/id_deploy docker-compose.yml Caddyfile \
             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/halaa/"
       - name: Roll the stack forward
+        # The VPS logs in to GHCR with the workflow's EPHEMERAL GITHUB_TOKEN (valid
+        # only for this run), pulls, rolls forward, then logs out — no persistent
+        # PAT stored on the server.
         run: |
-          ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -s <<EOF
+          ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -s <<'EOF'
           set -euo pipefail
           cd /opt/halaa
           echo "IMAGE_TAG=${{ needs.build.outputs.tag }}" > .env
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
           docker compose pull
           # --wait blocks until every service is healthy (or fails the deploy).
           docker compose up -d --wait --remove-orphans
+          docker logout ghcr.io >/dev/null 2>&1 || true
           docker compose ps
           docker image prune -f
           EOF

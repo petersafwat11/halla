@@ -35,11 +35,11 @@ export function buildVendorContactMessage({ language = "ar", vendorName, service
   const priceText = price != null ? ` (${price} ${currency || "SAR"})` : "";
   if (serviceName) {
     return isEnglish
-      ? `Hello, I would like to ask about “${serviceName}”${priceText} from ${vendorName}. I found the service on Halla: ${vendorUrl}`
+      ? `Hello, I would like to ask about “${serviceName}”${priceText} from ${vendorName}. I found the service on Halaa: ${vendorUrl}`
       : `مرحباً، أرغب في الاستفسار عن خدمة «${serviceName}»${priceText} لدى ${vendorName}. شاهدت الخدمة عبر منصة هلا: ${vendorUrl}`;
   }
   return isEnglish
-    ? `Hello, I would like to ask about the services offered by ${vendorName}. I found you on Halla: ${vendorUrl}`
+    ? `Hello, I would like to ask about the services offered by ${vendorName}. I found you on Halaa: ${vendorUrl}`
     : `مرحباً، أرغب في الاستفسار عن خدمات ${vendorName}. وجدتك عبر منصة هلا: ${vendorUrl}`;
 }
 
