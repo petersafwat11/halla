@@ -57,12 +57,13 @@ const GuestFormSection = ({
   // respect remaining capacity (free at list time), persist via the normal save.
   const handleMergeIncoming = useCallback(
     (incoming) => {
-      const { list, added, skipped } = mergeIncomingGuests(
+      const { list, added, skipped, skippedDuplicate } = mergeIncomingGuests(
         incoming,
         formData.guestList || [],
         { isUnlimited, guestLimit }
       );
       if (added > 0) setValue("guestList", list, { shouldValidate: true });
+      // Always give feedback so an import never silently "does nothing".
       if (skipped > 0) {
         Alert.alert(
           t("guest_limit_reached"),
@@ -70,6 +71,11 @@ const GuestFormSection = ({
         );
       } else if (added > 0) {
         Alert.alert(t("bulk_import"), t("reuse_guests_added_toast", { count: added }));
+      } else if (skippedDuplicate > 0) {
+        Alert.alert(
+          t("bulk_import"),
+          t("import_all_duplicates", "كل الأرقام المختارة مضافة بالفعل")
+        );
       }
     },
     [formData.guestList, isUnlimited, guestLimit, setValue, t]

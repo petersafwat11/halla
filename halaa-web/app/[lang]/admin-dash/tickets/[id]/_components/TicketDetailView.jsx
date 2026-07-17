@@ -15,6 +15,7 @@ import { toastUtils } from "@/utils/toastUtils";
 import styles from "./TicketDetailView.module.css";
 import TicketResponsePopup from "../../_components/TicketResponsePopup";
 import AssignTicketPopup from "../../_components/AssignTicketPopup";
+import MediaViewerModal from "@/ui/commen/popup/MediaViewerModal";
 
 const STATUS_CLASS_MAP = {
   open: styles.badgeOpen,
@@ -35,6 +36,7 @@ const TicketDetailView = ({ ticket }) => {
   const { t } = useTranslation("adminTickets");
   const [isResolvePopupOpen, setIsResolvePopupOpen] = useState(false);
   const [isAssignPopupOpen, setIsAssignPopupOpen] = useState(false);
+  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
 
   const reopenMutation = useTicketMutation("updateStatus");
 
@@ -126,6 +128,23 @@ const TicketDetailView = ({ ticket }) => {
             <p className={styles.message}>{ticket.message}</p>
           </div>
 
+          {ticket.attachment?.url && (
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                {t("attachment.title", "Attachment")}
+              </h3>
+              <button
+                type="button"
+                className={styles.attachmentButton}
+                onClick={() => setIsAttachmentOpen(true)}
+              >
+                {ticket.attachment.type === "video"
+                  ? t("attachment.viewVideo", "View video")
+                  : t("attachment.viewImage", "View image")}
+              </button>
+            </div>
+          )}
+
           {ticket.resolution && (
             <div className={`${styles.section} ${styles.resolutionSection}`}>
               <h3 className={styles.sectionTitle}>
@@ -184,6 +203,15 @@ const TicketDetailView = ({ ticket }) => {
           ticket={ticket}
           onClose={handleCloseAssign}
           onSuccess={handleAssignSuccess}
+        />
+      )}
+
+      {isAttachmentOpen && (
+        <MediaViewerModal
+          attachment={ticket.attachment}
+          onClose={() => setIsAttachmentOpen(false)}
+          closeLabel={t("attachment.close", "Close")}
+          openLabel={t("attachment.openNewTab", "Open in new tab")}
         />
       )}
     </div>

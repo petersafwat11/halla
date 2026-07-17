@@ -15,7 +15,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import * as Location from "expo-location";
-import { useLanguage } from "../../localization";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 import { fetchWithTimeout } from "../../services/http";
 
 const DEFAULT_LOCATION = {
@@ -27,7 +27,6 @@ const DEFAULT_LOCATION = {
 };
 
 const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }) => {
-  const { isRTL } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -263,7 +262,7 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
                       <Text style={styles.searchResultText} numberOfLines={2}>
                         {item.display_name}
                       </Text>
-                      <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color="#999" />
+                      <DirectionalIonicon name="chevron-forward" size={18} color="#999" />
                     </TouchableOpacity>
                   )}
                   ItemSeparatorComponent={() => <View style={styles.separator} />}

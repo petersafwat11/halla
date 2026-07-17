@@ -97,6 +97,9 @@ const getFolderForField = (fieldname, req) => {
     photos: `events/post-event/${eventId}/photos`,
     video: `events/post-event/${eventId}/videos`,
     images: `events/post-event/${eventId}/comments`,
+
+    // Support ticket attachment (single image or video)
+    ticketAttachment: `tickets/${userId}`,
   };
 
   return mappings[fieldname] || "temp";
@@ -132,6 +135,7 @@ const createLocalStorage = (baseDir) => {
         photos: "post-event",
         video: "post-event",
         images: "post-event",
+        ticketAttachment: "tickets",
       };
 
       const folder = folderMap[file.fieldname] || "general";

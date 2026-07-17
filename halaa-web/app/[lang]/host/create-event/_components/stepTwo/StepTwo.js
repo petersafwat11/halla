@@ -179,8 +179,13 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
     (incoming) => {
       const existing = new Set(guestList.map((g) => g.mobile));
       const fresh = [];
+      let skippedDuplicate = 0;
       for (const c of incoming || []) {
-        if (!c.mobile || existing.has(c.mobile)) continue;
+        if (!c.mobile) continue;
+        if (existing.has(c.mobile)) {
+          skippedDuplicate += 1;
+          continue;
+        }
         existing.add(c.mobile);
         fresh.push({
           name: c.name || "",
@@ -193,32 +198,55 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         ? Infinity
         : Math.max(0, guestLimit - guestList.length);
       const toAdd = fresh.slice(0, remaining);
-      const skipped = fresh.length - toAdd.length;
+      const skippedLimit = fresh.length - toAdd.length;
       if (toAdd.length > 0) {
         setValue("guestList", [...guestList, ...toAdd], { shouldValidate: true });
       }
-      if (skipped > 0) {
-        setImportLimitInfo({ inserted: toAdd.length, skipped });
+      if (skippedLimit > 0) {
+        setImportLimitInfo({ inserted: toAdd.length, skipped: skippedLimit });
         setShowImportLimitPopup(true);
       }
-      return { added: toAdd.length, skipped };
+      return { added: toAdd.length, skippedLimit, skippedDuplicate };
     },
     [guestList, setValue, isUnlimited, guestLimit]
   );
 
-  const handlePhonePick = useCallback(async () => {
-    try {
-      const picked = await pickPhoneContacts();
-      const { added } = mergeIncomingGuests(picked);
+  // Merge incoming contacts and ALWAYS surface the outcome so an import never
+  // silently "does nothing". `skippedInvalid` = picked numbers that aren't
+  // Saudi mobiles (phone import only). The quota case opens its own popup
+  // inside mergeIncomingGuests.
+  const addIncomingWithFeedback = useCallback(
+    (incoming, { skippedInvalid = 0 } = {}) => {
+      const { added, skippedDuplicate } = mergeIncomingGuests(incoming);
       if (added > 0) {
         toastUtils.success(t("phone_import_added", { count: added }));
+      } else if (skippedInvalid > 0) {
+        toastUtils.error(
+          t(
+            "phone_import_no_valid",
+            "لا توجد أرقام جوال سعودية صالحة في الاختيار (يجب أن تبدأ بـ 05)"
+          )
+        );
+      } else if (skippedDuplicate > 0) {
+        toastUtils.info(
+          t("phone_import_all_duplicates", "كل الأرقام المختارة مضافة بالفعل")
+        );
       }
+      return { added };
+    },
+    [mergeIncomingGuests, t]
+  );
+
+  const handlePhonePick = useCallback(async () => {
+    try {
+      const { contacts, skippedInvalid } = await pickPhoneContacts();
+      addIncomingWithFeedback(contacts, { skippedInvalid });
     } catch (e) {
       if (e?.message !== "contact_picker_unsupported") {
         toastUtils.error(t("phone_import_failed"));
       }
     }
-  }, [mergeIncomingGuests, t]);
+  }, [addIncomingWithFeedback, t]);
 
   return (
     <div className={styles.stepTwo}>
@@ -357,12 +385,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
       <ReuseGuestsModal
         isOpen={showReuseModal}
         onClose={() => setShowReuseModal(false)}
-        onAdd={(selected) => {
-          const { added } = mergeIncomingGuests(selected);
-          if (added > 0) {
-            toastUtils.success(t("reuse_guests_added_toast", { count: added }));
-          }
-        }}
+        onAdd={(selected) => addIncomingWithFeedback(selected)}
         existingMobiles={guestList.map((g) => g.mobile)}
         remainingCapacity={remainingCapacity}
       />
@@ -371,12 +394,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
       <VCardImportModal
         isOpen={showVcardModal}
         onClose={() => setShowVcardModal(false)}
-        onAdd={(selected) => {
-          const { added } = mergeIncomingGuests(selected);
-          if (added > 0) {
-            toastUtils.success(t("reuse_guests_added_toast", { count: added }));
-          }
-        }}
+        onAdd={(selected) => addIncomingWithFeedback(selected)}
         existingMobiles={guestList.map((g) => g.mobile)}
         remainingCapacity={remainingCapacity}
       />

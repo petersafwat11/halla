@@ -12,6 +12,7 @@ import { useAuthStore } from "../../../stores/authStore";
 import { canViewPage, PAGES } from "../../../utils/adminPermissions";
 import { colors, backgrounds, textStyles } from "../../../styles/tokens";
 import { useTranslation } from "../../../localization";
+import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 
 const MENU_ITEMS = [
   {
@@ -59,7 +60,7 @@ const MENU_ITEMS = [
 ];
 
 const AdminMoreScreen = ({ navigation }) => {
-  const { t, isRTL } = useTranslation("admin");
+  const { t } = useTranslation("admin");
   const { user } = useAuthStore();
   const userRole = user?.role;
 
@@ -90,8 +91,8 @@ const AdminMoreScreen = ({ navigation }) => {
               </View>
               <Text style={styles.menuItemLabel}>{t(item.labelKey)}</Text>
             </View>
-            <Ionicons
-              name={isRTL ? "chevron-back" : "chevron-forward"}
+            <DirectionalIonicon
+              name="chevron-forward"
               size={20}
               color={colors.natural[350]}
             />

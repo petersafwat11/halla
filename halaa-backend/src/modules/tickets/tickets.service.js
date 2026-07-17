@@ -26,6 +26,7 @@ const User = require("../../../models/UserModel");
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
+const { extractStoredRef, signStoredImage } = require('../../shared/utils/s3Upload');
 
 // Ticket source constants
 const TICKET_SOURCE = {
@@ -130,7 +131,7 @@ class TicketsService {
     ]);
 
     return {
-      data: tickets.map((t) => this._formatTicket(t)),
+      data: await Promise.all(tickets.map((t) => this._formatTicket(t))),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }
@@ -156,7 +157,7 @@ class TicketsService {
       throw new ForbiddenError("You do not have access to this ticket");
     }
 
-    return { ticket: this._formatTicket(ticket) };
+    return { ticket: await this._formatTicket(ticket) };
   }
 
   /**
@@ -165,15 +166,29 @@ class TicketsService {
    * @param {Object} user
    * @returns {Promise<Object>}
    */
-  async createTicket(ticketData, user) {
+  async createTicket(ticketData, user, file = null) {
     const { source, priority } = this.getTicketSourceAndPriority(user);
 
-    const ticket = await Ticket.create({
+    const ticketPayload = {
       ...ticketData,
       user: user._id,
       source,
       priority: ticketData.priority || priority,
-    });
+    };
+
+    // Optional attachment (image or video) uploaded via multipart. Persist the
+    // S3 key (extractStoredRef); it is signed to a public URL on read.
+    if (file) {
+      const isVideo = (file.mimetype || "").startsWith("video/");
+      ticketPayload.attachment = {
+        url: extractStoredRef(file),
+        type: isVideo ? "video" : "image",
+        mimeType: file.mimetype,
+        size: file.size,
+      };
+    }
+
+    const ticket = await Ticket.create(ticketPayload);
 
     // Notify user
     this._notifyTicketCreated(ticket, user).catch((err) => logger.error('ticket creation notification failed', err));
@@ -184,7 +199,7 @@ class TicketsService {
     // Audit: ticket created
     logAudit({ action: 'ticket.created', actor: { _id: user._id, role: user.role }, targetType: 'ticket', targetId: ticket._id, metadata: { source, priority: ticket.priority } }).catch((err) => logger.error('ticket creation audit log failed', err));
 
-    return { ticket: this._formatTicket(ticket) };
+    return { ticket: await this._formatTicket(ticket) };
   }
 
   /**
@@ -240,7 +255,7 @@ class TicketsService {
     // Notify user of status change
     this._notifyTicketStatusChange(ticket, status).catch((err) => logger.error('ticket status notification failed', err));
 
-    return { ticket: this._formatTicket(ticket) };
+    return { ticket: await this._formatTicket(ticket) };
   }
 
   /**
@@ -263,7 +278,7 @@ class TicketsService {
     // Notify assigned admin (non-blocking)
     this._notifyTicketAssigned(ticket, assigneeId).catch((err) => logger.error('ticket assignment notification failed', err));
 
-    return { ticket: this._formatTicket(ticket) };
+    return { ticket: await this._formatTicket(ticket) };
   }
 
   /**
@@ -307,7 +322,7 @@ class TicketsService {
     });
 
     await ticket.save();
-    return { ticket: this._formatTicket(ticket) };
+    return { ticket: await this._formatTicket(ticket) };
   }
 
   /**
@@ -340,7 +355,7 @@ class TicketsService {
     };
 
     await ticket.save();
-    return { ticket: this._formatTicket(ticket) };
+    return { ticket: await this._formatTicket(ticket) };
   }
 
   /**
@@ -414,13 +429,21 @@ class TicketsService {
   // PRIVATE HELPERS
   // ============================================
 
-  _formatTicket(ticket) {
+  async _formatTicket(ticket) {
     const formatted = {
       id: ticket._id,
       ticketNumber: ticket._id.toString().slice(-6),
       type: ticket.type,
       subject: ticket.subject,
       message: ticket.message,
+      attachment: ticket.attachment?.url
+        ? {
+          url: await signStoredImage(ticket.attachment.url),
+          type: ticket.attachment.type || null,
+          mimeType: ticket.attachment.mimeType || null,
+          size: ticket.attachment.size || null,
+        }
+        : null,
       status: ticket.status,
       priority: ticket.priority,
       source: ticket.source,

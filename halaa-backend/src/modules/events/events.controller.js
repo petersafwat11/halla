@@ -144,6 +144,7 @@ exports.createEvent = catchAsync(async (req, res) => {
     visualTemplate,
     taqnyatTemplate,
     guestReplies,
+    invitationType,
     launchSettings,
   } = req.body;
   const eventData = {
@@ -152,6 +153,7 @@ exports.createEvent = catchAsync(async (req, res) => {
     visualTemplate,
     taqnyatTemplate,
     guestReplies,
+    invitationType,
     launchSettings,
   };
 

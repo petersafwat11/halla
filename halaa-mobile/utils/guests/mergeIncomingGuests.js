@@ -13,10 +13,15 @@ export const mergeIncomingGuests = (incoming, currentList = [], caps = {}) => {
   const { isUnlimited = false, guestLimit = 0 } = caps;
   const existing = new Set((currentList || []).map((g) => g.phone || g.mobile));
   const fresh = [];
+  let skippedDuplicate = 0;
 
   (incoming || []).forEach((c, i) => {
     const phone = (c.phone || c.mobile || "").trim();
-    if (!phone || existing.has(phone)) return;
+    if (!phone) return;
+    if (existing.has(phone)) {
+      skippedDuplicate += 1;
+      return;
+    }
     existing.add(phone);
     fresh.push({
       id: Date.now() + i,
@@ -35,7 +40,9 @@ export const mergeIncomingGuests = (incoming, currentList = [], caps = {}) => {
   return {
     list: [...(currentList || []), ...toAdd],
     added: toAdd.length,
+    // `skipped` = dropped for capacity; `skippedDuplicate` = already in the list.
     skipped,
+    skippedDuplicate,
   };
 };
 

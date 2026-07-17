@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 import TemplateCategoryChips from "./_components/TemplateCategoryChips";
 import TemplateCard from "./_components/TemplateCard";
 import { useHostTemplates, useTemplateCategories } from "../../hooks/templates";
@@ -292,8 +293,8 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                   disabled={isRTL ? activeIdx >= maxIdx : activeIdx <= 0}
                   activeOpacity={0.7}
                 >
-                  <Ionicons
-                    name={isRTL ? "chevron-forward" : "chevron-back"}
+                  <DirectionalIonicon
+                    name="chevron-back"
                     size={18}
                     color="#6B4E33"
                   />
@@ -322,8 +323,8 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                   disabled={isRTL ? activeIdx <= 0 : activeIdx >= maxIdx}
                   activeOpacity={0.7}
                 >
-                  <Ionicons
-                    name={isRTL ? "chevron-back" : "chevron-forward"}
+                  <DirectionalIonicon
+                    name="chevron-forward"
                     size={18}
                     color="#6B4E33"
                   />

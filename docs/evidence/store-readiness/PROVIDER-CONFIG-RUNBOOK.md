@@ -3,10 +3,10 @@
 **Status:** `BLOCKED_NEEDS_OWNER` — this is the exact, ordered, **manifest-derived** set of console
 actions to run once authenticated Apple / Google Play / RevenueCat / EAS access exists. **No console
 write happened this session** (no provider MCP connected — see `MCP-CAPABILITY-REPORT.md`).
-**Prepared:** 2026-07-02 · **Executor (later):** owner or a Claude session with authorized provider MCPs.
+**Prepared:** 2026-07-02 · **Identifiers reconciled to `com.halaa.*` / `halaa-backend` / hash `7410b2c6…`:** 2026-07-11 · **Executor (later):** owner or a Claude session with authorized provider MCPs.
 
-> **Source of product identifiers:** `labbe-backend-/src/shared/commerce/storeCatalog.generated.json`
-> (catalogVersion **1.0.0**, catalogHash **32eeeac40ea355e2a77c7a35d0b8b28cd7fd623e802947e2c5e893782220737d**)
+> **Source of product identifiers:** `halaa-backend/src/shared/commerce/storeCatalog.generated.json`
+> (catalogVersion **1.0.0**, catalogHash **7410b2c6f950400ddfe62d0d2ba9e50caee361ca0594e5b6505b89e5050c0071**)
 > and its human-readable renderings in `docs/evidence/store-readiness/generated/`
 > (`apple-product-map`, `google-product-map`, `revenuecat-mapping`, `sku-matrix`, `expected-counts`).
 > **Do NOT re-derive, rename, or re-price** any product — the manifest is FROZEN (CAT-01). This runbook
@@ -40,21 +40,21 @@ the console; agreements/tax/banking are legal attestations).
 ### Apple (owner)
 - [ ] Active **organization** Apple Developer Program membership (D-U-N-S, Account Holder identity).
 - [ ] **Agreements, Tax, and Banking** — **Paid Apps agreement ACTIVE** (mandatory for IAP; products can't sell without it).
-- [ ] Bundle ID **`com.halla.app`** registered with the **In-App Purchase** capability (and Associated Domains, driven by `associatedDomains`).
-- [ ] **iOS app record** created manually in App Store Connect (name "Halaa", SKU, primary locale `ar-SA`, bundle id `com.halla.app`).
+- [ ] Bundle ID **`com.halaa.app`** registered with the **In-App Purchase** capability (and Associated Domains, driven by `associatedDomains`).
+- [ ] **iOS app record** created manually in App Store Connect (name "Halaa", SKU, primary locale `ar-SA`, bundle id `com.halaa.app`).
 - [ ] **App Store Connect API key** (`.p8`, App Manager least privilege) — record **Key ID** + **Issuer ID** + **Team ID** (values → secret manager).
 - [ ] **Sandbox tester** account(s) for the billing matrix.
 
 ### Google (owner)
 - [ ] Verified **organization** Play developer account + **payments/merchant profile** + tax info.
-- [ ] **Play app record** created manually for `com.halla.app`, default language approved.
+- [ ] **Play app record** created manually for `com.halaa.app`, default language approved.
 - [ ] **Play App Signing** enrolled; record **app-signing SHA-256** + **upload SHA-256**.
 - [ ] **Service account JSON** linked in Play Console (least privilege: manage releases + store listing) → secret manager / EAS file secret.
 - [ ] **License testers** + an **internal test track**.
 
 ### RevenueCat (owner)
 - [ ] Production **project** created.
-- [ ] **iOS app** (bundle `com.halla.app`) + **Android app** (package `com.halla.app`) added under the one project.
+- [ ] **iOS app** (bundle `com.halaa.app`) + **Android app** (package `com.halaa.app`) added under the one project.
 - [ ] **Secret API key** (server-side) + **public SDK keys** (`REVENUECAT_IOS_KEY`, `REVENUECAT_ANDROID_KEY`) issued.
 - [ ] **Transfer behavior** decision available: **"Keep with original App User ID"** (signed DEC-04) — set in §5.5.
 
@@ -75,8 +75,8 @@ Values below are **known/signed** (safe, secret-free). Everything marked `BLOCKE
 
 ```text
 # ── Known / signed (safe to use) ───────────────────────────────
-APPLE_BUNDLE_ID              = com.halla.app
-GOOGLE_PACKAGE_NAME          = com.halla.app
+APPLE_BUNDLE_ID              = com.halaa.app
+GOOGLE_PACKAGE_NAME          = com.halaa.app
 REVENUECAT_RECURRING_ENTITLEMENT_ID = recurring_access
 REVENUECAT_OFFERING_IDS      = host_plans, business_plans, host_addons, business_addons
 CANONICAL_ORIGIN             = https://halaa.com.sa
@@ -91,7 +91,7 @@ MARKETING_URL_AR/EN          = https://halaa.com.sa/{ar,en}
 APP_NAME_AR / APP_NAME_EN    = هلا / Halaa
 AVAILABILITY                 = SA (Saudi Arabia only)
 CATALOG_VERSION              = 1.0.0
-CATALOG_SHA256               = 32eeeac40ea355e2a77c7a35d0b8b28cd7fd623e802947e2c5e893782220737d
+CATALOG_SHA256               = 7410b2c6f950400ddfe62d0d2ba9e50caee361ca0594e5b6505b89e5050c0071
 EAS_PROJECT_ID               = d5570c5a-d11b-4716-81d6-108939d72b22   (app.json extra.eas.projectId)
 EAS_OWNER/SLUG               = petersafwat
 
@@ -132,7 +132,7 @@ apply the signed `store-metadata/data-safety-worksheet.md` (`NSPrivacyTracking=f
 ### 3.2 One-time IAPs — **18 event consumables + 22 add-on consumables = 40 `consumable` products**
 For **every row in the Apple map with `apple product type = consumable`** (all 40): create a **Consumable**
 IAP with:
-- **Immutable Product ID = the map's `proposed product id`** (e.g. `com.halla.basic_event_25`) — never rename.
+- **Immutable Product ID = the map's `proposed product id`** (e.g. `com.halaa.basic_event_25`) — never rename.
 - Reference name = the map's EN reference name.
 - **Price:** select the **nearest available Saudi-storefront price point** to the map's **SAR** value at
   console time. **Do not invent a price-tier number here** — the current Apple SA price-point table is not
@@ -153,12 +153,12 @@ AR/EN localization, tax category, family sharing **off**, review note + screensh
 **Subscription group + levels (PROPOSED — the one structure the manifest does not encode).** The manifest
 carries `revenueCatOfferingId`, `tier`, and `sortOrder`, **not** Apple subscription-group/level fields, so
 this must be proposed explicitly and **owner-confirmed**:
-- Create **one** subscription group, e.g. `halla_recurring` (proposed). Apple allows a customer only **one
+- Create **one** subscription group, e.g. `halaa_recurring` (proposed). Apple allows a customer only **one
   active subscription per group** — which matches the app's single-active-subscription design
   (`repurchasePolicy: single_active_subscription`) and the single `recurring_access` entitlement.
   **One-group-vs-two is itself an owner call:** personal (basic/premium) and business subs sit behind
   different audience gates (a personal host cannot cross to a business plan), so the owner may prefer two
-  groups (`halla_host` / `halla_business`) so a cross-audience change is never offered. Default proposal =
+  groups (`halaa_host` / `halaa_business`) so a cross-audience change is never offered. Default proposal =
   one group; owner confirms one vs two before creation.
 - **Levels represent benefit ordering** (upgrade/downgrade), not arbitrary price order. Propose levels by
   `sortOrder` within each family, higher tier = higher level (lower level number = higher rank in ASC):
@@ -194,7 +194,7 @@ availability + price (nearest SA price point to the SAR target, as §3.2). AR/EN
 grace/account-hold policy. **Activate only after RevenueCat import validation (§5.2).**
 
 > **Critical for RevenueCat:** RevenueCat's Google subscription **store identifier is `productId:basePlanId`**
-> (e.g. `com.halla.basic_monthly_25:monthly`), **not** just `productId`. §5.2 uses this.
+> (e.g. `com.halaa.basic_monthly_25:monthly`), **not** just `productId`. §5.2 uses this.
 
 ### 4.3 One-time products — **40 `inapp` products, consumed on grant**
 For every row with `google product type = inapp` (18 event + 22 add-on = 40): create the one-time product
@@ -215,16 +215,16 @@ confirm targetSdk 35 / 16 KB / Billing Library version / permissions.
 row per store-eligible product (package lookup key === internal code).
 
 ### 5.1 Store connections
-- **Apple app** (bundle `com.halla.app`) + in-app-purchase key / **App Store Server Notifications**.
-- **Android app** (package `com.halla.app`) + Play **service-account** credentials + **Google RTDN Pub/Sub**.
+- **Apple app** (bundle `com.halaa.app`) + in-app-purchase key / **App Store Server Notifications**.
+- **Android app** (package `com.halaa.app`) + Play **service-account** credentials + **Google RTDN Pub/Sub**.
 - **Two-hop flow (do not conflate):** Apple ASSN + Google RTDN point at **RevenueCat**; then **RevenueCat's
   webhook** (§5.6) points at the **backend**. The backend never receives ASSN/RTDN directly.
 - Production vs sandbox separation.
 
 ### 5.2 Products — **54 RevenueCat products (one per platform store product)**
 Import/create one RC product per store product. Verify each against the manifest:
-- **Apple identifier EXACT** = `iosProductId` (e.g. `com.halla.basic_monthly_25`).
-- **Google identifier = `productId:basePlanId`** for the 14 subs (e.g. `com.halla.basic_monthly_25:monthly`);
+- **Apple identifier EXACT** = `iosProductId` (e.g. `com.halaa.basic_monthly_25`).
+- **Google identifier = `productId:basePlanId`** for the 14 subs (e.g. `com.halaa.basic_monthly_25:monthly`);
   the 40 one-time products use the bare `androidProductId`.
 - Correct app/platform, type (subscription vs consumable), duration.
 
@@ -283,7 +283,7 @@ values — set them all or `/health/ready` stays red.
 
 **EAS (per environment):** `REVENUECAT_IOS_KEY`, `REVENUECAT_ANDROID_KEY`, `SENTRY_DSN`, `SENTRY_ORG`,
 `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`, `SENTRY_ENVIRONMENT`, `GOOGLE_MAPS_API_KEY` (restricted to
-`com.halla.app`), the production API URL (already per-profile in `eas.json`), and the `eas.json` submit
+`com.halaa.app`), the production API URL (already per-profile in `eas.json`), and the `eas.json` submit
 IDs (Apple ID / ascAppId / teamId — the `REPLACE_WITH_*` placeholders) + the Play service-account file secret.
 **Never reuse production RC keys in a Test-Store dev build.**
 
@@ -332,7 +332,7 @@ Produce `docs/evidence/store-readiness/FINAL-DIFF.md` with zero unexplained drif
 
 ## 9. Manifest write-readiness (verified this session — see also CORRECTIVE-STATUS)
 
-`cd labbe-backend- && npm run catalog:verify` (drift check + `test/store-catalog.test.js`) proves the manifest
+`cd halaa-backend && npm run catalog:verify` (drift check + `test/store-catalog.test.js`) proves the manifest
 is safe to hand a console, **DB/credential-free**:
 - **Unique ids** — unique internal codes, Apple ids, Google `productId::basePlanId` combos, RC lookup keys
   (`store-catalog.test.js` "unique …" tests).

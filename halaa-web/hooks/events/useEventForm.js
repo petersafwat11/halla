@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
+import { DEFAULT_INVITATION_TYPE } from "@/utils/invitationTypes";
 
 // Constants
 const DEFAULT_ADDRESS = {
@@ -30,6 +31,7 @@ const DEFAULT_FORM_VALUES = {
   // Step 4 - Taqnyat template + auto-replies
   selectedTemplate: null,
   taqnyatTemplate: null,
+  invitationType: DEFAULT_INVITATION_TYPE,
   guestReplies: {
     onAttend: "",
     onAbsent: "",
@@ -128,6 +130,7 @@ export const mapEventToFormValues = (event) => ({
   visualTemplate: populatedVisualTemplate(event),
   selectedTemplate: populatedSelectedTemplate(event),
   taqnyatTemplate: event.taqnyatTemplate || null,
+  invitationType: event.invitationType || DEFAULT_INVITATION_TYPE,
   guestReplies: {
     onAttend: event.guestReplies?.onAttend || "",
     onAbsent: event.guestReplies?.onAbsent || "",
@@ -186,6 +189,7 @@ export const buildEventPayload = (data) => ({
     onAbsent: data.guestReplies?.onAbsent || "",
     onExpected: data.guestReplies?.onExpected || "",
   },
+  invitationType: data.invitationType || DEFAULT_INVITATION_TYPE,
   templateImage: data.templateImage,
   launchSettings: {
     sendSchedule: data.sendSchedule || "now",
@@ -416,6 +420,7 @@ export const useEventForm = (options = {}) => {
                 onAbsent: formData.guestReplies?.onAbsent || "",
                 onExpected: formData.guestReplies?.onExpected || "",
               },
+              invitationType: formData.invitationType || DEFAULT_INVITATION_TYPE,
             },
             successMessage: t("success.template_selected"),
           };

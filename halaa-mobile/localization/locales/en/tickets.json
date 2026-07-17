@@ -21,7 +21,18 @@
     "submitEdit": "Update",
     "submitting": "Sending...",
     "updating": "Updating...",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "attachmentLabel": "Attachment (optional)",
+    "addImage": "Add image",
+    "addVideo": "Add video",
+    "removeAttachment": "Remove attachment",
+    "attachmentTooLarge": "File too large (max 50MB)",
+    "permissionRequired": "Permission required",
+    "permissionMessage": "Please allow photo library access to attach a file"
+  },
+  "card": {
+    "viewAttachment": "View attachment",
+    "playVideo": "Play video"
   },
   "types": {
     "technical": "Technical Issue",

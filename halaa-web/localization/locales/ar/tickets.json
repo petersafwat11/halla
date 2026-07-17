@@ -21,7 +21,17 @@
     "submitEdit": "تحديث",
     "submitting": "جاري الإرسال...",
     "updating": "جاري التحديث...",
-    "cancel": "الغاء"
+    "cancel": "الغاء",
+    "attachmentLabel": "مرفق (اختياري)",
+    "attachmentAdd": "إرفاق صورة أو فيديو",
+    "attachmentHint": "اختياري — صورة أو فيديو، بحد أقصى 50 ميجابايت",
+    "attachmentRemove": "إزالة المرفق",
+    "attachmentInvalidType": "يُسمح بملفات الصور أو الفيديو فقط",
+    "attachmentTooLarge": "الملف كبير جدًا (بحد أقصى 50 ميجابايت)",
+    "image": "صورة",
+    "video": "فيديو",
+    "mb": "ميجابايت",
+    "kb": "كيلوبايت"
   },
   "types": {
     "technical": "مشكلة تقنية",

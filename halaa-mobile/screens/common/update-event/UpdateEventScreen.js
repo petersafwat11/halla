@@ -133,6 +133,7 @@ const UpdateEventScreen = () => {
               onAbsent: data.absenceAutoReply || "",
               onExpected: data.expectedAttendanceAutoReply || "",
             },
+            invitationType: data.invitationType || undefined,
           });
         }
 

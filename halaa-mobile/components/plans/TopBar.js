@@ -5,11 +5,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
-  I18nManager,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { colors, spacing, typography } from "../../styles/tokens";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 
 /**
  * Symmetric three-column app bar (P1-08).
@@ -19,7 +18,7 @@ import { colors, spacing, typography } from "../../styles/tokens";
  *    content), so the title is mathematically centered independent of the side
  *    controls and does NOT shift between RTL and LTR.
  *  - The bar is direction-agnostic: it uses logical start/end via a plain `row`
- *    (React Native auto-flips `row` under a global RTL direction / I18nManager),
+ *    (React Native auto-flips `row` under the inherited layout direction),
  *    so there is NO hardcoded `row-reverse` and no manual double reversal.
  *  - The back chevron is chosen once from the resolved layout direction.
  *  - Minimum touch target is 44x44; the title truncates and exposes a
@@ -61,8 +60,8 @@ const TopBar = ({
           accessibilityLabel="Back"
           hitSlop={{ top: spacing[8], bottom: spacing[8], left: spacing[8], right: spacing[8] }}
         >
-          <Ionicons
-            name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
+          <DirectionalIonicon
+            name="chevron-back"
             size={24}
             color={colors.primary[50]}
           />
@@ -118,7 +117,7 @@ const styles = StyleSheet.create({
     paddingTop: StatusBar.currentHeight || 0,
   },
   content: {
-    // `row` auto-flips under a global RTL direction (I18nManager) — logical
+    // `row` auto-flips under the inherited RTL direction — logical
     // start/end, no hardcoded row-reverse.
     flexDirection: "row",
     alignItems: "center",

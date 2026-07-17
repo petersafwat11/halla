@@ -1,4 +1,11 @@
 {
+  "attachment": {
+    "title": "Attachment",
+    "viewImage": "View image",
+    "viewVideo": "View video",
+    "close": "Close",
+    "openNewTab": "Open in new tab"
+  },
   "header": {
     "title": "Support Tickets",
     "subtitle": "Manage and resolve support tickets",

@@ -27,48 +27,16 @@ const HeroSection = ({ lang = "ar" }) => {
 
         <div className={styles.imageGridWrapper}>
           <div className={styles.imageGrid}>
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/06755bccd0e180e1c8e1c29eeec229a5ddfc9d11?width=422"
-              alt=""
-              className={styles.img1}
-            />
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/52fa01fa93985438eef1ae0111837a4e2f8a88d7?width=386"
-              alt=""
-              className={styles.img2}
-            />
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/1307055cf8a07b8b6a663151ca4922ca0e3ed3d5?width=360"
-              alt=""
-              className={styles.img3}
-            />
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/956cca64f64c20f7ace9cdc9112ec9767880a121?width=667"
-              alt=""
-              className={styles.img4}
-            />
+            <img src="/landing/6.png" alt="" className={styles.img1} />
+            <img src="/landing/7.png" alt="" className={styles.img2} />
+            <img src="/landing/1.png" alt="" className={styles.img3} />
+            <img src="/landing/11.png" alt="" className={styles.img4} />
             <div className={styles.videoWrapper}>
-              <img
-                src="https://api.builder.io/api/v1/image/assets/TEMP/ad33659c33381eac40061641b81f19d65a13ad9f?width=667"
-                alt=""
-                className={styles.img5}
-              />
+              <img src="/landing/3.png" alt="" className={styles.img5} />
             </div>
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/35173bb94eff2bb4a1098c0e05253903fe77fdd2?width=422"
-              alt=""
-              className={styles.img6}
-            />
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/ceaa707b0ecb6f40405690236d33d3ac7d58398b?width=299"
-              alt=""
-              className={styles.img7}
-            />
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/e8939c56cdb6fd3f5a79eb3bb858552d4f96ce8c?width=360"
-              alt=""
-              className={styles.img8}
-            />
+            <img src="/landing/4.png" alt="" className={styles.img6} />
+            <img src="/landing/5.png" alt="" className={styles.img7} />
+            <img src="/landing/2.png" alt="" className={styles.img8} />
           </div>
         </div>
 

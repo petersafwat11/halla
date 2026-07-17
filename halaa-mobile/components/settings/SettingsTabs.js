@@ -2,9 +2,10 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 
 const SettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
-  const { t, isRTL } = useTranslation("settings");
+  const { t } = useTranslation("settings");
   const tabs = [
     {
       id: "account",
@@ -73,8 +74,8 @@ const SettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
               {tab.label}
             </Text>
           </View>
-          <Ionicons
-            name={isRTL ? "chevron-back-outline" : "chevron-forward-outline"}
+          <DirectionalIonicon
+            name="chevron-forward-outline"
             size={20}
             color={activeTab === tab.id ? "#c28e5c" : "#999"}
           />

@@ -46,6 +46,25 @@
   background: #f8fafc;
 }
 
+.attachmentButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #c28e5c;
+  background: #fbf6ef;
+  color: #a5713f;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.attachmentButton:hover {
+  background: #f3e6d5;
+}
+
 .resolveButton {
   background: #10b981;
   color: white;

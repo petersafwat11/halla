@@ -22,6 +22,7 @@ import {
 import RoleSelectionView from "../../components/auth/RoleSelectionView";
 import TopBar from "../../components/plans/TopBar";
 import LegalLinks from "../../components/legal/LegalLinks";
+import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 
 const { width } = Dimensions.get("window");
 
@@ -151,7 +152,8 @@ export default function SignupScreen({ navigation }) {
               onPress={handleBackToRole}
               style={styles.backButton}
             >
-              <Text style={styles.backButtonText}>← {t("common.back")}</Text>
+              <DirectionalIonicon name="arrow-back" size={18} color="#c28e5c" />
+              <Text style={styles.backButtonText}>{t("common.back")}</Text>
             </TouchableOpacity>
             <SignupMobileForm onSubmit={handleMobileSubmit} loading={loading} />
             {/* Login Link */}
@@ -249,6 +251,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     marginBottom: 16,
   },
   backButtonText: {

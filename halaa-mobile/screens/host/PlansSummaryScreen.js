@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  I18nManager,
   Platform,
   Linking,
 } from "react-native";
@@ -37,6 +36,7 @@ import PaymentMethodSelector from "../../components/plans/PaymentMethodSelector"
 import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
 import DisclosureList from "../../components/plans/DisclosureList";
 import PurchaseLegalLinks from "../../components/plans/PurchaseLegalLinks";
+import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const buildCheckoutAddons = (items = []) =>
@@ -589,8 +589,8 @@ const PlansSummaryScreen = () => {
                   <Text style={styles.proceedButtonText}>
                     {t("summary.activateButton")}
                   </Text>
-                  <Ionicons
-                    name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
+                  <DirectionalIonicon
+                    name="chevron-forward"
                     size={18}
                     color={colors.natural[50]}
                   />

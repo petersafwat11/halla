@@ -31,6 +31,7 @@ import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import TopBar from "../../../components/plans/TopBar";
+import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 import StatusBadge from "../../../components/admin-dashboard/common/StatusBadge";
 import {
   colors,
@@ -282,7 +283,7 @@ const PaymentDetailScreen = () => {
                 activeOpacity={0.8}
                 disabled={busy}
               >
-                <Ionicons name="return-up-back-outline" size={18} color={colors.error[500]} />
+                <DirectionalIonicon name="return-up-back-outline" size={18} color={colors.error[500]} />
                 <Text style={[styles.actionLabel, { color: colors.error[500] }]}>
                   {t("paymentDetail.actions.refund")}
                 </Text>

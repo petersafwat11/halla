@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,6 +19,7 @@ import {
 } from "../../hooks/postEvent";
 import PostCard from "../../components/host/post-event/post-card/PostCard";
 import GuestEventHeader from "../../components/host/post-event/GuestEventHeader";
+import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 
 const _resolveQrErrorKey = (error) => {
   const reason = error?.data?.body?.reason || error?.data?.reason;
@@ -144,7 +144,7 @@ export default function PostEventScreen({ navigation, route }) {
               style={styles.topBarBack}
               activeOpacity={0.7}
             >
-              <Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={24} color="#fff" />
+              <DirectionalIonicon name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
           )}
           <Text style={styles.topBarTitle}>

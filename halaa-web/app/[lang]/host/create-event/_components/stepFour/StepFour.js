@@ -22,6 +22,35 @@ import {
   buildTaqnyatPreviewContext,
 } from "@halaa/shared/utils";
 import useAuthStore from "@/stores/authStore";
+import {
+  INVITATION_TYPE_OPTIONS,
+  DEFAULT_INVITATION_TYPE,
+  invitationAllowsReply,
+} from "@/utils/invitationTypes";
+
+// Icons for the invitation-type cards. Reply (accept/decline) is shown as a
+// green check + red cross pair; QR entry is a QR glyph. Cards toggle each
+// icon's "on/off" (greyed) look via CSS to mirror the client's 4-card image.
+const TypeCheckIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="11" fill="#e7f6ee" />
+    <path d="M7 12.5L10.5 16L17 8.5" stroke="#2a8c5b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+const TypeXIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="11" fill="#fdeaea" />
+    <path d="M8 8L16 16M16 8L8 16" stroke="#e04f4f" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+const TypeQrIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="7" rx="1.4" stroke="#6b4fbb" strokeWidth="1.8" />
+    <rect x="14" y="3" width="7" height="7" rx="1.4" stroke="#6b4fbb" strokeWidth="1.8" />
+    <rect x="3" y="14" width="7" height="7" rx="1.4" stroke="#6b4fbb" strokeWidth="1.8" />
+    <rect x="14.5" y="14.5" width="6" height="6" rx="1" fill="#6b4fbb" />
+  </svg>
+);
 
 const CheckIcon = () => (
   <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
@@ -75,6 +104,8 @@ const StepFour = () => {
 
   const selectedTemplate = watch("selectedTemplate");
   const guestReplies = watch("guestReplies") || {};
+  const invitationType = watch("invitationType") || DEFAULT_INVITATION_TYPE;
+  const replyAllowed = invitationAllowsReply(invitationType);
   const eventName = watch("eventName");
   const eventDate = watch("eventDate");
   const eventTime = watch("eventTime");
@@ -159,6 +190,60 @@ const StepFour = () => {
   return (
     <div className={styles.stepFour}>
       <div className={styles.formSection}>
+        {/* ── Invitation type ──────────────────────────────────── */}
+        <div className={styles.inviteTypeSection}>
+          <div className={styles.repliesHeader}>
+            <label className={styles.sectionLabel}>
+              {t("invitation_type", "نوع الدعوة")}
+            </label>
+            <p className={styles.repliesHint}>
+              {t(
+                "invitation_type_hint",
+                "حدّد ما إذا كان بإمكان المدعو الرد (قبول/اعتذار) وما إذا كان سيصله رمز دخول (باركود)"
+              )}
+            </p>
+          </div>
+
+          <div className={styles.inviteTypeGrid}>
+            {INVITATION_TYPE_OPTIONS.map((opt, idx) => {
+              const isSelected = invitationType === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={`${styles.inviteTypeCard} ${isSelected ? styles.inviteTypeCardSelected : ""}`}
+                  onClick={() =>
+                    setValue("invitationType", opt.value, { shouldDirty: true })
+                  }
+                  aria-pressed={isSelected}
+                >
+                  <span className={styles.inviteTypeNum}>
+                    {String(idx + 1).padStart(2, "0")}
+                  </span>
+                  <div className={styles.inviteTypeIcons}>
+                    <span className={`${styles.inviteIcon} ${opt.reply ? "" : styles.inviteIconOff}`}>
+                      <TypeCheckIcon />
+                    </span>
+                    <span className={`${styles.inviteIcon} ${opt.reply ? "" : styles.inviteIconOff}`}>
+                      <TypeXIcon />
+                    </span>
+                    <span className={`${styles.inviteIcon} ${opt.qr ? "" : styles.inviteIconOff}`}>
+                      <TypeQrIcon />
+                    </span>
+                  </div>
+                  <p className={styles.inviteTypeTitle}>{t(opt.labelKey)}</p>
+                  <p className={styles.inviteTypeDesc}>{t(opt.descKey)}</p>
+                  {isSelected && (
+                    <span className={styles.checkBadge}>
+                      <CheckIcon />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* ── Taqnyat template picker ──────────────────────────── */}
         <div className={styles.templateSection}>
           <div className={styles.templateHeader}>
@@ -263,6 +348,8 @@ const StepFour = () => {
         </div>
 
         {/* ── Auto-replies ─────────────────────────────────────── */}
+        {/* Only reply-enabled invitation types send auto-replies, so hide the
+            editor for qr_only / none and explain why. */}
         <div className={styles.repliesSection}>
           <div className={styles.repliesHeader}>
             <label className={styles.sectionLabel}>
@@ -276,36 +363,47 @@ const StepFour = () => {
             </p>
           </div>
 
-          <div className={styles.tabsWrapper}>
-            {REPLY_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`${styles.tabBtn} ${activeTab === tab.key ? styles.tabBtnActive : ""}`}
-                onClick={() => setActiveTab(tab.key)}
-              >
-                {t(tab.labelKey, tab.fallback)}
-              </button>
-            ))}
-          </div>
+          {replyAllowed ? (
+            <>
+              <div className={styles.tabsWrapper}>
+                {REPLY_TABS.map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    className={`${styles.tabBtn} ${activeTab === tab.key ? styles.tabBtnActive : ""}`}
+                    onClick={() => setActiveTab(tab.key)}
+                  >
+                    {t(tab.labelKey, tab.fallback)}
+                  </button>
+                ))}
+              </div>
 
-          <textarea
-            value={replyText || ""}
-            onChange={handleReplyChange}
-            rows={4}
-            maxLength={500}
-            className={styles.replyTextarea}
-            placeholder={t("auto_reply_placeholder", "اكتب الرد التلقائي هنا")}
-            style={{
-              width: "100%",
-              padding: 12,
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              fontFamily: "inherit",
-              fontSize: 14,
-              direction: "rtl",
-            }}
-          />
+              <textarea
+                value={replyText || ""}
+                onChange={handleReplyChange}
+                rows={4}
+                maxLength={500}
+                className={styles.replyTextarea}
+                placeholder={t("auto_reply_placeholder", "اكتب الرد التلقائي هنا")}
+                style={{
+                  width: "100%",
+                  padding: 12,
+                  borderRadius: 8,
+                  border: "1px solid #ddd",
+                  fontFamily: "inherit",
+                  fontSize: 14,
+                  direction: "rtl",
+                }}
+              />
+            </>
+          ) : (
+            <div className={styles.repliesDisabledNote}>
+              {t(
+                "auto_replies_disabled_note",
+                "لا تحتوي هذه الدعوة على إمكانية الرد، لذلك لن تُرسل ردود تلقائية."
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

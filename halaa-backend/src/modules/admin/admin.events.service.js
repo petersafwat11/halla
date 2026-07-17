@@ -58,6 +58,7 @@ async function updateEventFull(eventId, updateData, context = {}) {
     'visualTemplate',
     'taqnyatTemplate',
     'guestReplies',
+    'invitationType',
     'templateImage',
   ];
   allowedFields.forEach((field) => {

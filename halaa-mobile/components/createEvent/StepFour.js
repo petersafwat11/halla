@@ -29,6 +29,11 @@ import { useHostTaqnyatTemplates } from "../../hooks/taqnyatTemplates";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import PreviewInvitation from "./PreviewInvitation";
+import {
+  INVITATION_TYPE_OPTIONS,
+  DEFAULT_INVITATION_TYPE,
+  invitationAllowsReply,
+} from "../../utils/invitationTypes";
 
 const CATEGORY_LABELS_AR = {
   wedding: "حفل زفاف",
@@ -80,6 +85,8 @@ const StepFour = () => {
   // not the visual template picked in step 3.
   const category = watch("eventType") || "";
   const guestReplies = watch("guestReplies") || {};
+  const invitationType = watch("invitationType") || DEFAULT_INVITATION_TYPE;
+  const replyAllowed = invitationAllowsReply(invitationType);
   const eventName = watch("eventName");
   const eventDate = watch("eventDate");
   const eventTime = watch("eventTime");
@@ -159,6 +166,62 @@ const StepFour = () => {
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* ── Invitation type ──────────────────────────────────── */}
+        <View style={styles.inviteTypeSection}>
+          <Text style={styles.sectionTitle}>{t("invitation_type", "نوع الدعوة")}</Text>
+          <Text style={styles.hint}>
+            {t(
+              "invitation_type_hint",
+              "حدّد ما إذا كان بإمكان المدعو الرد (قبول/اعتذار) وما إذا كان سيصله رمز دخول (باركود)"
+            )}
+          </Text>
+          <View style={styles.inviteTypeGrid}>
+            {INVITATION_TYPE_OPTIONS.map((opt, idx) => {
+              const isSelected = invitationType === opt.value;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[styles.inviteTypeCard, isSelected && styles.inviteTypeCardSelected]}
+                  onPress={() =>
+                    setValue("invitationType", opt.value, { shouldDirty: true })
+                  }
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.inviteTypeNumWrap}>
+                    <Text style={styles.inviteTypeNum}>
+                      {String(idx + 1).padStart(2, "0")}
+                    </Text>
+                  </View>
+                  <View style={styles.inviteTypeIcons}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color={opt.reply ? "#2A8C5B" : "#D2CEC8"}
+                    />
+                    <Ionicons
+                      name="close-circle"
+                      size={20}
+                      color={opt.reply ? "#E04F4F" : "#D2CEC8"}
+                    />
+                    <Ionicons
+                      name="qr-code"
+                      size={18}
+                      color={opt.qr ? "#6B4FBB" : "#D2CEC8"}
+                    />
+                  </View>
+                  <Text style={styles.inviteTypeTitle}>{t(opt.labelKey)}</Text>
+                  <Text style={styles.inviteTypeDesc}>{t(opt.descKey)}</Text>
+                  {isSelected && (
+                    <View style={styles.checkBadge}>
+                      <Ionicons name="checkmark" size={12} color="#FFF" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
         {/* ── Taqnyat template picker ──────────────────────────── */}
         <View style={styles.header}>
           <Text style={styles.sectionTitle}>{t("step4_title")}</Text>
@@ -260,36 +323,49 @@ const StepFour = () => {
           </View>
         )}
 
-        {/* ── Auto-replies ─────────────────────────────────────── */}
+        {/* ── Auto-replies (only for reply-enabled invitation types) ── */}
         <View style={styles.repliesSection}>
           <Text style={styles.sectionTitle}>{t("auto_replies")}</Text>
           <Text style={styles.hint}>{t("auto_replies_hint")}</Text>
 
-          <View style={styles.tabsRow}>
-            {REPLY_TABS.map((tab) => (
-              <TouchableOpacity
-                key={tab.key}
-                style={[styles.tabBtn, activeTab === tab.key && styles.tabBtnActive]}
-                onPress={() => setActiveTab(tab.key)}
-                activeOpacity={0.85}
-              >
-                <Text style={[styles.tabBtnText, activeTab === tab.key && styles.tabBtnTextActive]}>
-                  {t(tab.labelKey, tab.fallback)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {replyAllowed ? (
+            <>
+              <View style={styles.tabsRow}>
+                {REPLY_TABS.map((tab) => (
+                  <TouchableOpacity
+                    key={tab.key}
+                    style={[styles.tabBtn, activeTab === tab.key && styles.tabBtnActive]}
+                    onPress={() => setActiveTab(tab.key)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={[styles.tabBtnText, activeTab === tab.key && styles.tabBtnTextActive]}>
+                      {t(tab.labelKey, tab.fallback)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
 
-          <TextInput
-            value={activeReplyValue}
-            onChangeText={handleReplyChange}
-            placeholder={t("auto_reply_placeholder")}
-            placeholderTextColor="#999"
-            multiline
-            numberOfLines={4}
-            maxLength={500}
-            style={styles.textArea}
-          />
+              <TextInput
+                value={activeReplyValue}
+                onChangeText={handleReplyChange}
+                placeholder={t("auto_reply_placeholder")}
+                placeholderTextColor="#999"
+                multiline
+                numberOfLines={4}
+                maxLength={500}
+                style={styles.textArea}
+              />
+            </>
+          ) : (
+            <View style={styles.repliesDisabledNote}>
+              <Text style={styles.repliesDisabledText}>
+                {t(
+                  "auto_replies_disabled_note",
+                  "لا تحتوي هذه الدعوة على إمكانية الرد، لذلك لن تُرسل ردود تلقائية."
+                )}
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -497,6 +573,90 @@ const styles = StyleSheet.create({
   },
   tabBtnText: { fontSize: 13, color: "#666", fontFamily: "Cairo_500Medium" },
   tabBtnTextActive: { color: "#5A4A42", fontFamily: "Cairo_700Bold" },
+
+  // ── Invitation-type selector ──
+  inviteTypeSection: { marginBottom: 20 },
+  inviteTypeGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 12,
+  },
+  inviteTypeCard: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    position: "relative",
+    alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#E8E2DA",
+    backgroundColor: "#FFF",
+  },
+  inviteTypeCardSelected: {
+    borderColor: "#C28E5C",
+    backgroundColor: "#FDF9F4",
+    shadowColor: "#C28E5C",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  inviteTypeNumWrap: {
+    position: "absolute",
+    top: 8,
+    right: 10,
+    minWidth: 24,
+    height: 22,
+    paddingHorizontal: 6,
+    borderRadius: 999,
+    backgroundColor: "#F4EFE7",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  inviteTypeNum: {
+    fontSize: 11,
+    fontFamily: "Cairo_700Bold",
+    color: "#A87040",
+  },
+  inviteTypeIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  inviteTypeTitle: {
+    fontSize: 13,
+    fontFamily: "Cairo_700Bold",
+    color: "#2C2C2C",
+    textAlign: "center",
+  },
+  inviteTypeDesc: {
+    fontSize: 11,
+    fontFamily: "Cairo_400Regular",
+    color: "#8A7E74",
+    textAlign: "center",
+    marginTop: 3,
+    lineHeight: 16,
+  },
+  repliesDisabledNote: {
+    marginTop: 4,
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5DED4",
+    borderStyle: "dashed",
+    backgroundColor: "#FAF6EF",
+  },
+  repliesDisabledText: {
+    fontSize: 13,
+    fontFamily: "Cairo_400Regular",
+    color: "#8A7E74",
+    lineHeight: 22,
+    textAlign: "right",
+  },
 });
 
 export default StepFour;

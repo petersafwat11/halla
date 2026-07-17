@@ -53,6 +53,21 @@ const handleValidationErrorDB = (err) => {
 };
 
 /**
+ * Handle Multer upload errors (file too large, too many files, unexpected field)
+ * @param {Error} err
+ * @returns {AppError}
+ */
+const handleMulterError = (err) => {
+  const messages = {
+    LIMIT_FILE_SIZE: 'File too large. Please upload a smaller file.',
+    LIMIT_FILE_COUNT: 'Too many files uploaded.',
+    LIMIT_UNEXPECTED_FILE: 'Unexpected file field.',
+  };
+  const message = messages[err.code] || 'File upload failed.';
+  return new AppError(message, 400, err.code || 'UPLOAD_ERROR');
+};
+
+/**
  * Handle JWT invalid token error
  * @returns {AppError}
  */
@@ -168,6 +183,7 @@ module.exports = (err, req, res, next) => {
   error.isOperational = err.isOperational;
 
   if (err.name === 'CastError') error = handleCastErrorDB(err);
+  if (err.name === 'MulterError') error = handleMulterError(err);
   if (err.code === 11000) error = handleDuplicateFieldsDB(err);
   if (err.name === 'ValidationError' && err.errors) error = handleValidationErrorDB(err);
   if (err.name === 'JsonWebTokenError') error = handleJWTError();

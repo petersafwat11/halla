@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "../../localization";
 
 import TopBar from "../../components/plans/TopBar";
+import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import CurrentPlanCard from "../../components/plans/CurrentPlanCard";
 import HostPlanCard from "../../components/plans/HostPlanCard";
 import AddonsSection from "../../components/plans/AddonsSection";
@@ -195,7 +196,7 @@ const PlansScreen = () => {
           >
             <Ionicons name="add-circle-outline" size={18} color={colors.primary[600]} />
             <Text style={styles.addonsEntryText}>{t("addons.manageEntry")}</Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.primary[400]} />
+            <DirectionalIonicon name="chevron-forward" size={16} color={colors.primary[400]} />
           </TouchableOpacity>
         ) : null}
 

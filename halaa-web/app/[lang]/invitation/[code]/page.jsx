@@ -12,6 +12,7 @@ import PortalSkeleton from "./_components/PortalSkeleton";
 import PortalRsvpForm from "./_components/PortalRsvpForm";
 import PortalConfirmed from "./_components/PortalConfirmed";
 import PortalThankYou from "./_components/PortalThankYou";
+import PortalInfoOnly from "./_components/PortalInfoOnly";
 
 const DEFAULT_PRIMARY = "#2a8c5b";
 const DEFAULT_BG = "#faf7f1";
@@ -123,15 +124,49 @@ export default function GuestPortalPage() {
     );
   }
 
+  // Invitation type governs whether the RSVP form appears and whether a QR
+  // pass is shown. The backend computes these flags on the event payload.
+  const { allowsReply, includesQr } = event;
+
   const finalResponse = isChanging
     ? null
     : submittedResponse || guest.rsvp?.response;
   const guestsCount = 1 + Math.max(0, Number(guest.rsvp?.plusOnes) || 0);
 
+  // No-reply invitation types (qr_only / none): never show the RSVP form.
+  // qr_only shows the entry pass directly; none shows an info-only card.
+  if (!allowsReply) {
+    return (
+      <div className={styles.page} style={cssVars}>
+        {includesQr ? (
+          <PortalConfirmed
+            mode="pass"
+            showQr
+            guestName={guest.name}
+            event={event}
+            code={code}
+            guestsCount={guestsCount}
+            formatDate={formatDate}
+            t={t}
+          />
+        ) : (
+          <PortalInfoOnly
+            guestName={guest.name}
+            event={event}
+            formatDate={formatDate}
+            t={t}
+          />
+        )}
+      </div>
+    );
+  }
+
   if (finalResponse === "confirmed") {
     return (
       <div className={styles.page} style={cssVars}>
         <PortalConfirmed
+          mode="confirmed"
+          showQr={includesQr}
           guestName={guest.name}
           event={event}
           code={code}

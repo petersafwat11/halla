@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 
 const ROLES = [
   {
@@ -28,7 +29,7 @@ const ROLES = [
   },
 ];
 
-function RoleCard({ role, index, onPress, isRTL }) {
+function RoleCard({ role, index, onPress }) {
   const { t } = useTranslation("auth");
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(28)).current;
@@ -72,8 +73,8 @@ function RoleCard({ role, index, onPress, isRTL }) {
             {t(role.descKey)}
           </Text>
         </View>
-        <Ionicons
-          name={isRTL ? "chevron-back" : "chevron-forward"}
+        <DirectionalIonicon
+          name="chevron-forward"
           size={18}
           color="#a0a0a0"
           style={styles.chevron}
@@ -84,7 +85,7 @@ function RoleCard({ role, index, onPress, isRTL }) {
 }
 
 export default function RoleSelectionView({ onSelectRole, onLogin }) {
-  const { t, isRTL } = useTranslation("auth");
+  const { t } = useTranslation("auth");
 
   const headerOpacity = useRef(new Animated.Value(0)).current;
   const headerY = useRef(new Animated.Value(-18)).current;
@@ -127,7 +128,6 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
             role={role}
             index={i}
             onPress={onSelectRole}
-            isRTL={isRTL}
           />
         ))}
       </View>

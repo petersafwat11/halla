@@ -39,12 +39,15 @@ export const normalizeSaudiMobile = (raw) => {
 
 /**
  * Open the OS contact picker and return the user-selected contacts mapped to
- * `{ name, mobile }`. Only contacts with a valid Saudi mobile are returned
- * (first valid number wins when a contact has several). The browser only
- * ever returns the entries the user explicitly picks — never the full
- * phonebook.
+ * `{ name, mobile }`. Only contacts with a valid Saudi mobile are kept (first
+ * valid number wins when a contact has several). The browser only ever returns
+ * the entries the user explicitly picks — never the full phonebook.
  *
- * @returns {Promise<Array<{ name: string, mobile: string }>>}
+ * Returns BOTH the valid contacts and a count of picked contacts that were
+ * dropped for not having a valid Saudi mobile, so the caller can tell the user
+ * *why* nothing was added instead of failing silently.
+ *
+ * @returns {Promise<{ contacts: Array<{ name: string, mobile: string }>, skippedInvalid: number }>}
  * @throws {Error} 'contact_picker_unsupported' when the API is unavailable
  */
 export const pickPhoneContacts = async () => {
@@ -56,19 +59,20 @@ export const pickPhoneContacts = async () => {
     multiple: true,
   });
 
-  return (selected || [])
-    .map((c) => {
-      const name = (Array.isArray(c.name) ? c.name[0] : c.name) || "";
-      const tels = Array.isArray(c.tel) ? c.tel : c.tel ? [c.tel] : [];
-      let mobile = null;
-      for (const tel of tels) {
-        const norm = normalizeSaudiMobile(tel);
-        if (norm) {
-          mobile = norm;
-          break;
-        }
+  const mapped = (selected || []).map((c) => {
+    const name = (Array.isArray(c.name) ? c.name[0] : c.name) || "";
+    const tels = Array.isArray(c.tel) ? c.tel : c.tel ? [c.tel] : [];
+    let mobile = null;
+    for (const tel of tels) {
+      const norm = normalizeSaudiMobile(tel);
+      if (norm) {
+        mobile = norm;
+        break;
       }
-      return { name: name.trim(), mobile };
-    })
-    .filter((c) => c.name && c.mobile);
+    }
+    return { name: name.trim(), mobile };
+  });
+
+  const contacts = mapped.filter((c) => c.name && c.mobile);
+  return { contacts, skippedInvalid: mapped.length - contacts.length };
 };

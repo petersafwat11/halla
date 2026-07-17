@@ -18,6 +18,8 @@ const { protect } = require("../../shared/middleware/auth");
 const { restrictTo, requirePageAccess } = require("../../shared/middleware/rbac");
 const { ADMIN_PAGES } = require("../../shared/constants");
 const { validateObjectId, validateZod } = require("../../shared/middleware/validation");
+const { uploadMedia } = require("../../shared/utils/s3Upload");
+const { uploadLimiter } = require("../../shared/middleware/rateLimiter");
 const { ROLES } = require("../../shared/constants");
 const {
   createTicketSchema,
@@ -118,7 +120,17 @@ router.get(
 router
   .route("/")
   .get(validateZod(listTicketsQuerySchema, 'query'), ticketsController.getTickets)
-  .post(validateZod(createTicketSchema), ticketsController.createTicket);
+  .post(
+    // uploadLimiter (20/10min) guards the file-upload path against abuse; it is
+    // generous enough not to impede normal ticket creation. Note: unlike the
+    // marketplace/post-event UGC routes we deliberately do NOT gate ticket
+    // attachments behind requireUserUgcTerms — a support ticket is private
+    // admin-facing content (like an avatar), not published community UGC.
+    uploadLimiter,
+    uploadMedia.single("ticketAttachment"),
+    validateZod(createTicketSchema),
+    ticketsController.createTicket
+  );
 
 /**
  * @swagger

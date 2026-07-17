@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Alert, Anim
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
-import { useLanguage } from "../../localization";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
 import { useNotifyStaff, useDeleteEvent } from "../../hooks/events/mutations/useEventMutation";
@@ -22,7 +22,6 @@ const EVENT_EDIT_STEPS = [
 const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete = true }) => {
   const navigation = useNavigation();
   const { t } = useTranslation(["events", "home"]);
-  const { isRTL } = useLanguage();
   const toast = useToast();
   const [showTestModal, setShowTestModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -237,7 +236,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
                 <Text style={styles.menuItemText}>
                   {t(item.labelKey, item.fallback)}
                 </Text>
-                <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={14} color="#9CA3AF" />
+                <DirectionalIonicon name="chevron-forward" size={14} color="#9CA3AF" />
               </TouchableOpacity>
             ))}
             <TouchableOpacity

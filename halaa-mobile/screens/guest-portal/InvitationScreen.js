@@ -49,6 +49,13 @@ const InvitationScreen = ({ route }) => {
   const currentStatus = submitChoice || guest?.status || "invited";
   const hasResponded = ["confirmed", "declined", "maybe"].includes(currentStatus);
 
+  // Invitation type governs whether the RSVP buttons appear and whether a QR
+  // is shown. The backend computes these flags on the event payload.
+  const allowsReply = event?.allowsReply;
+  const includesQr = event?.includesQr;
+  const eventTitle =
+    event?.title || event?.eventDetails?.eventName || event?.name || "";
+
   // Memo'd styles that depend on the brand colors. The base palette is
   // copied verbatim into a static StyleSheet below; this overlay only
   // re-keys the brand-color surfaces so React Native can dedupe the
@@ -101,6 +108,46 @@ const InvitationScreen = ({ route }) => {
     );
   }
 
+  // No-reply invitation types (qr_only / none): never show RSVP buttons.
+  // qr_only shows the entry pass QR directly; none shows an info-only card.
+  if (!allowsReply) {
+    if (includesQr) {
+      const qrValue = guest.qrcode || guest.qrUrl || guest.token || code;
+      return (
+        <SafeAreaView style={[styles.container, { backgroundColor: FALLBACK_BG }]}>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            {logoUri ? (
+              <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="contain" />
+            ) : null}
+            <Text style={[styles.eventName, themedStyles.eventName]}>{eventTitle}</Text>
+            <Text style={styles.welcomeTitle}>{t("guest.portal.passTitle")}</Text>
+            <Text style={styles.welcomeBody}>
+              {t("guest.portal.passBody", { name: guest.name || "" })}
+            </Text>
+            <View style={styles.qrWrap}>
+              <QRCode value={String(qrValue)} size={220} />
+            </View>
+            <Text style={styles.qrLabel}>{t("guest.portal.qrLabel")}</Text>
+          </ScrollView>
+        </SafeAreaView>
+      );
+    }
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: FALLBACK_BG }]}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {logoUri ? (
+            <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="contain" />
+          ) : null}
+          <Text style={[styles.eventName, themedStyles.eventName]}>{eventTitle}</Text>
+          <Text style={styles.welcomeTitle}>{t("guest.portal.infoTitle")}</Text>
+          <Text style={styles.welcomeBody}>
+            {t("guest.portal.infoBody", { name: guest.name || "" })}
+          </Text>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   const handleRsvp = async (response) => {
     try {
       const trimmedMessage = message.trim();
@@ -140,10 +187,15 @@ const InvitationScreen = ({ route }) => {
           </Text>
           <Text style={styles.welcomeTitle}>{t("guest.portal.welcomeTitle")}</Text>
           <Text style={styles.welcomeBody}>{t("guest.portal.welcomeBody")}</Text>
-          <View style={styles.qrWrap}>
-            <QRCode value={String(qrValue)} size={220} />
-          </View>
-          <Text style={styles.qrLabel}>{t("guest.portal.qrLabel")}</Text>
+          {/* reply_only (02) confirmations carry no QR entry code. */}
+          {includesQr ? (
+            <>
+              <View style={styles.qrWrap}>
+                <QRCode value={String(qrValue)} size={220} />
+              </View>
+              <Text style={styles.qrLabel}>{t("guest.portal.qrLabel")}</Text>
+            </>
+          ) : null}
         </ScrollView>
       </SafeAreaView>
     );

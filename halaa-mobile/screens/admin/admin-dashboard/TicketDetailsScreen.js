@@ -22,6 +22,7 @@ import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
+import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 import { ResolveTicketModal, AssignTicketModal, TicketSectionCard, TicketInfoRow, TicketHeroCard } from "../../../components/admin-dashboard/tickets";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../styles/tokens";
 
@@ -50,7 +51,7 @@ const TicketDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { ticketId } = route.params;
-  const { t, isRTL } = useTranslation("admin");
+  const { t } = useTranslation("admin");
   const toast = useToast();
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = canEditPage(role, PAGES.TICKETS);
@@ -166,7 +167,7 @@ const TicketDetailsScreen = () => {
                   <View><Text style={styles.actionLabel}>{t("ticketDetails.assignTicket")}</Text>
                     <Text style={styles.actionSub}>{ticket.assignedTo ? t("ticketDetails.reassignTicketSublabel") : t("ticketDetails.assignTicketSublabel")}</Text></View>
                 </View>
-                <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.natural[300]} />
+                <DirectionalIonicon name="chevron-forward" size={18} color={colors.natural[300]} />
               </TouchableOpacity>
             )}
             {canEdit && ticket.status !== "resolved" && ticket.status !== "closed" && (
@@ -175,7 +176,7 @@ const TicketDetailsScreen = () => {
                   <View style={[styles.actionIcon, { backgroundColor: "#EAF4EF" }]}><Ionicons name="checkmark-circle-outline" size={18} color="#2A8C5B" /></View>
                   <View><Text style={styles.actionLabel}>{t("ticketDetails.resolveTicket")}</Text><Text style={styles.actionSub}>{t("ticketDetails.resolveTicketSublabel")}</Text></View>
                 </View>
-                <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.natural[300]} />
+                <DirectionalIonicon name="chevron-forward" size={18} color={colors.natural[300]} />
               </TouchableOpacity>
             )}
             {canEdit && (ticket.status === "resolved" || ticket.status === "closed") && (
@@ -186,7 +187,7 @@ const TicketDetailsScreen = () => {
                   </View>
                   <View><Text style={styles.actionLabel}>{t("ticketDetails.reopenTicket")}</Text><Text style={styles.actionSub}>{t("ticketDetails.reopenTicketSublabel")}</Text></View>
                 </View>
-                <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.natural[300]} />
+                <DirectionalIonicon name="chevron-forward" size={18} color={colors.natural[300]} />
               </TouchableOpacity>
             )}
             {canDelete && (
@@ -197,7 +198,7 @@ const TicketDetailsScreen = () => {
                   </View>
                   <View><Text style={[styles.actionLabel, { color: "#E74C3C" }]}>{t("ticketDetails.deleteTicket")}</Text><Text style={styles.actionSub}>{t("ticketDetails.deleteTicketSublabel")}</Text></View>
                 </View>
-                <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.natural[300]} />
+                <DirectionalIonicon name="chevron-forward" size={18} color={colors.natural[300]} />
               </TouchableOpacity>
             )}
           </TicketSectionCard>

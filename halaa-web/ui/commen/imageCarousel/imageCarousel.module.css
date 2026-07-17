@@ -12,11 +12,26 @@
   position: absolute;
   top: 0;
   left: 0;
+  overflow: hidden;
 }
 .image {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+.image_active {
+  opacity: 1;
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.35) 30%,
+    rgba(0, 0, 0, 0) 60%
+  );
+  pointer-events: none;
 }
 .text_container {
   z-index: 1;

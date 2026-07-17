@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import useEventActionGate from "@halaa/shared/hooks/useEventActionGate";
 import { ENDPOINTS } from "../../../config/api";
 import EventsService from "../../../hooks/events/useEventForm";
+import { DEFAULT_INVITATION_TYPE } from "../../../utils/invitationTypes";
 import { useTranslation } from "../../../localization";
 import { apiFetch } from "../../../services/http";
 import { useAuthStore } from "../../../stores/authStore";
@@ -102,6 +103,7 @@ const mapApiToFormValues = (eventData) => {
       onAbsent: replies.onAbsent || "",
       onExpected: replies.onExpected || "",
     },
+    invitationType: eventData.invitationType || DEFAULT_INVITATION_TYPE,
   };
 };
 

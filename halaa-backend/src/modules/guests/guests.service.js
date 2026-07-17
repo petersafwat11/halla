@@ -6,7 +6,11 @@
 
 const config = require('../../config');
 const { NotFoundError, ValidationError, ForbiddenError } = require('../../shared/errors');
-const { ROLES } = require('../../shared/constants');
+const {
+  ROLES,
+  invitationAllowsReply,
+  invitationIncludesQr,
+} = require('../../shared/constants');
 const logger = require('../../shared/utils/logger');
 const { signStoredImage } = require('../../shared/utils/s3Upload');
 
@@ -36,7 +40,7 @@ class GuestsService {
       qrcode: code,
     }).populate({
       path: 'event',
-      select: 'eventDetails status host branding invitationDeliveryMode',
+      select: 'eventDetails status host branding invitationDeliveryMode invitationType',
       populate: { path: 'host', select: 'username name' },
     });
 
@@ -84,6 +88,13 @@ class GuestsService {
       throw new ValidationError('This event is no longer accepting RSVPs');
     }
 
+    // Gate on invitation type: qr_only / none invitations don't offer a reply,
+    // so reject an RSVP even if a stale portal or a crafted request reaches
+    // here. The portal itself won't render the RSVP form for these types.
+    if (guest.event && !invitationAllowsReply(guest.event.invitationType)) {
+      throw new ValidationError('This event is no longer accepting RSVPs');
+    }
+
     const previousStatus = guest.status;
 
     guest.status = response;
@@ -115,7 +126,9 @@ class GuestsService {
       message,
     };
 
-    if (response === 'confirmed') {
+    // The entry-pass QR is only issued for QR-bearing invitation types
+    // (reply_and_qr). A reply_only confirmation returns a message with no pass.
+    if (response === 'confirmed' && invitationIncludesQr(event.invitationType)) {
       result.pass = buildEntryPass(event, guest, lang, this._brandForPass());
     }
 
@@ -704,6 +717,11 @@ class GuestsService {
       description: event.eventDetails?.description,
       hostName: event.host?.name || event.host?.username,
       deliveryMode: event.invitationDeliveryMode || null,
+      // Drives the portal's mode: reply types render the RSVP form; qr_only
+      // shows the entry pass directly; none shows an info-only card.
+      invitationType: event.invitationType || null,
+      allowsReply: invitationAllowsReply(event.invitationType),
+      includesQr: invitationIncludesQr(event.invitationType),
       branding,
     };
   }

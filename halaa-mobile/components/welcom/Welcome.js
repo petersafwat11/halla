@@ -4,10 +4,10 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
   Dimensions,
 } from "react-native";
 import { useTranslation } from "../../localization";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 
 const { width, height } = Dimensions.get("window");
 
@@ -71,11 +71,11 @@ const Welcome = ({ onLogin, onSignup }) => {
 
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           {currentIndex !== slides.length - 1 ? (
-            // <Text style={styles.nextButtonText}>←</Text>
             <View style={styles.arrowLeft}>
-              <Image
-                source={require("../../assets/home/arrow-left.png")}
-                style={styles.arrowLeftIcon}
+              <DirectionalIonicon
+                name="chevron-forward"
+                size={24}
+                color="#fff"
               />
             </View>
           ) : (
@@ -186,10 +186,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 12,
     backgroundColor: "#c28e5c",
-  },
-  arrowLeftIcon: {
-    width: 24,
-    height: 24,
   },
 });
 

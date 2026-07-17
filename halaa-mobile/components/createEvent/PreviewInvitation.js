@@ -24,6 +24,7 @@ import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 import { resolveMediaUri } from "../../utils/resolveMediaUri";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 
 /**
  * Invitation preview popup. Renders the message exactly as web's
@@ -49,7 +50,7 @@ const PreviewInvitation = ({
   eventTime = "",
   location = "",
 }) => {
-  const { t, isRTL } = useTranslation("createEvent");
+  const { t } = useTranslation("createEvent");
   const hostName = useAuthStore(
     (state) => state.user?.name || state.user?.username || ""
   );
@@ -135,7 +136,7 @@ const PreviewInvitation = ({
 
         {/* WhatsApp top bar */}
         <View style={styles.waBar}>
-          <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={22} color="#FFF" />
+          <DirectionalIonicon name="chevron-back" size={22} color="#FFF" />
           <View style={styles.waAvatar}>
             <Text style={styles.waAvatarText}>H</Text>
           </View>

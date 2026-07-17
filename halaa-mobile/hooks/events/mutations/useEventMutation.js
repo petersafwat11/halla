@@ -378,7 +378,7 @@ const ACTIONS = {
   },
 
   updateTaqnyatTemplate: {
-    mutationFn: ({ eventId, taqnyatTemplate, selectedTemplate }) => {
+    mutationFn: ({ eventId, taqnyatTemplate, selectedTemplate, guestReplies, invitationType }) => {
       const ref =
         taqnyatTemplate?.templateRef ||
         taqnyatTemplate?._id ||
@@ -388,6 +388,14 @@ const ACTIONS = {
       const settings = {};
       if (selectedTemplate !== undefined) settings.selectedTemplate = selectedTemplate;
       if (ref) settings.taqnyatTemplateRef = ref;
+      // Step 4 also carries the auto-reply text + the invitation type. These
+      // MUST be forwarded here — previously the mutation destructured only the
+      // template, so guestReplies edits on the update wizard were silently
+      // dropped (the success toast fired but nothing was saved).
+      if (guestReplies && typeof guestReplies === "object") {
+        settings.guestReplies = guestReplies;
+      }
+      if (invitationType !== undefined) settings.invitationType = invitationType;
       return _updateInvitationSettings(eventId, settings);
     },
     onSuccess: (_data, vars, _ctx, queryClient) =>

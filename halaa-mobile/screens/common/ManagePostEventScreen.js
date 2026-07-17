@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -28,6 +27,7 @@ import MessagingTemplatePicker from "../../components/host/post-event/MessagingT
 import AccessLinksSheet from "../../components/host/post-event/AccessLinksSheet";
 import PublishControls from "../../components/host/post-event/PublishControls";
 import LegalLinks from "../../components/legal/LegalLinks";
+import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 
 const StatusBanner = ({ isPublished, t }) => (
   <View
@@ -214,7 +214,7 @@ const ManagePostEventScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
-          <Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={20} color="#F9F4EF" />
+          <DirectionalIonicon name="arrow-back" size={20} color="#F9F4EF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t("host.title")}</Text>
         <View style={styles.headerRight} />

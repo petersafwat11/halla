@@ -1,4 +1,11 @@
 {
+  "attachment": {
+    "title": "المرفق",
+    "viewImage": "عرض الصورة",
+    "viewVideo": "عرض الفيديو",
+    "close": "إغلاق",
+    "openNewTab": "فتح في علامة تبويب جديدة"
+  },
   "header": {
     "title": "تذاكر الدعم",
     "subtitle": "إدارة وحل تذاكر الدعم",

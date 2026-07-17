@@ -165,6 +165,8 @@ export default function AdminCreateEvent() {
         fd.append("taqnyatTemplate", JSON.stringify(payload.taqnyatTemplate));
       if (payload.guestReplies)
         fd.append("guestReplies", JSON.stringify(payload.guestReplies));
+      if (payload.invitationType)
+        fd.append("invitationType", payload.invitationType);
       fd.append("launchSettings", JSON.stringify(payload.launchSettings));
 
       if (selectedHost?.createForSelf) {

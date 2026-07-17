@@ -61,7 +61,7 @@ exports.getTicketById = catchAsync(async (req, res) => {
  * POST /api/v2/tickets
  */
 exports.createTicket = catchAsync(async (req, res) => {
-  const result = await ticketsService.createTicket(req.body, req.user);
+  const result = await ticketsService.createTicket(req.body, req.user, req.file);
   sendCreated(res, result, "Ticket created successfully");
 });
 

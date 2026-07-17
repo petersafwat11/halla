@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { EVENT_STATUS, SUPERVISOR_STATUS } = require("../src/shared/constants");
+const { EVENT_STATUS, SUPERVISOR_STATUS, INVITATION_TYPE } = require("../src/shared/constants");
 const { isPerEventPlan } = require("../src/shared/constants/plans");
 
 // Statuses that FREE the per-event single-active-event slot (the event no
@@ -269,6 +269,15 @@ const eventSchema = new mongoose.Schema(
     visualTemplate: canonicalVisualTemplateSchema,
     taqnyatTemplate: canonicalTaqnyatTemplateSchema,
     guestReplies: guestRepliesSchema,
+    // Invitation type (Step 4) — controls whether guests can reply
+    // (accept/decline/maybe) and whether they get a QR entry code. Consumed by
+    // the RSVP webhook, the web RSVP portal, and the entry-pass/QR delivery.
+    // Default preserves the legacy behavior (reply buttons + QR on confirm).
+    invitationType: {
+      type: String,
+      enum: Object.values(INVITATION_TYPE),
+      default: INVITATION_TYPE.REPLY_AND_QR,
+    },
     // Header image uploaded by host (S3/local URL). Optional fallback
     // when the canvas-bake on the client fails — backend reads
     // `visualTemplate.bakedImagePath` first.

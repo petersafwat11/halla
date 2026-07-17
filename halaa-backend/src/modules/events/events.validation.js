@@ -4,7 +4,11 @@
  */
 
 const { z } = require('zod');
-const { EVENT_STATUS, SUPERVISOR_STATUS, GUEST_STATUS } = require('../../shared/constants');
+const { EVENT_STATUS, SUPERVISOR_STATUS, GUEST_STATUS, INVITATION_TYPE } = require('../../shared/constants');
+
+// Invitation type (Step 4) — reply×QR selector. Optional everywhere; the
+// model default (reply_and_qr) applies when omitted.
+const invitationTypeSchema = z.enum(Object.values(INVITATION_TYPE));
 
 const objectId = z
   .string()
@@ -57,6 +61,7 @@ const createEventSchema = z.object({
   visualTemplate: z.object({}).passthrough().optional(),
   taqnyatTemplate: z.object({}).passthrough().optional(),
   guestReplies: z.object({}).passthrough().optional(),
+  invitationType: invitationTypeSchema.optional(),
   launchSettings: z.object({}).passthrough().optional(),
 }).passthrough();
 
@@ -85,7 +90,9 @@ const updateStep2Schema = z.object({
   { path: ['staffList'], message: 'staffList (or supervisorsList) is required' }
 );
 
-const updateInvitationSettingsSchema = z.object({}).passthrough();
+const updateInvitationSettingsSchema = z.object({
+  invitationType: invitationTypeSchema.optional(),
+}).passthrough();
 
 const updateLaunchSettingsSchema = z.object({
   scheduledDate: z.union([z.string(), z.date()]).optional(),

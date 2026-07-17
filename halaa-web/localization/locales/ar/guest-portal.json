@@ -14,9 +14,15 @@
     },
     "pass": {
       "label": "بطاقة الدخول · Entry Pass",
+      "title": "بطاقة دخولك · Your entry pass",
+      "welcome": "أهلاً بك يا {{name}} — هذه بطاقة دخولك.",
       "showCode": "يُرجى إبراز الكود للدخول · Please show this code to enter",
       "guests": "ضيوف · Guests",
       "keepHandy": "يُرجى الاحتفاظ بهذا الرمز لإبرازه عند الدخول · Keep this code handy and show it at the door"
+    },
+    "info": {
+      "title": "أنت مدعو!",
+      "body": "أهلاً بك يا {{name}} — يسعدنا وجودك معنا."
     },
     "declined": {
       "title": "شكراً لإخبارنا",

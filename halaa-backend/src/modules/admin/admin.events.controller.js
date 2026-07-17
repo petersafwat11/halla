@@ -26,6 +26,8 @@ exports.createEventForHost = catchAsync(async (req, res) => {
   } catch (error) {
     throw new ValidationError(`Invalid JSON format: ${error.message}`);
   }
+  // Scalar — no JSON.parse needed.
+  if (req.body.invitationType) eventData.invitationType = req.body.invitationType;
 
   // Resolve target user
   let targetUserId = req.body.targetUserId;
@@ -110,6 +112,8 @@ exports.updateEventFull = catchAsync(async (req, res) => {
   } catch (error) {
     throw new ValidationError(`Invalid JSON format: ${error.message}`);
   }
+  // Scalar — no JSON.parse needed.
+  if (req.body.invitationType) updateData.invitationType = req.body.invitationType;
 
   const context = { adminId: req.user._id, file: req.file };
   const result = await adminService.updateEventFull(req.params.id, updateData, context);

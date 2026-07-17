@@ -21,7 +21,18 @@
     "submitEdit": "تحديث",
     "submitting": "جاري الإرسال...",
     "updating": "جاري التحديث...",
-    "cancel": "الغاء"
+    "cancel": "الغاء",
+    "attachmentLabel": "مرفق (اختياري)",
+    "addImage": "إضافة صورة",
+    "addVideo": "إضافة فيديو",
+    "removeAttachment": "إزالة المرفق",
+    "attachmentTooLarge": "حجم الملف كبير جداً (الحد الأقصى 50 ميجابايت)",
+    "permissionRequired": "الإذن مطلوب",
+    "permissionMessage": "يرجى السماح بالوصول إلى الصور لإرفاق ملف"
+  },
+  "card": {
+    "viewAttachment": "عرض المرفق",
+    "playVideo": "تشغيل الفيديو"
   },
   "types": {
     "technical": "مشكلة تقنية",

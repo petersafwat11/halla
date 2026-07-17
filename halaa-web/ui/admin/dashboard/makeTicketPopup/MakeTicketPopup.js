@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import styles from "./makeTicketPopup.module.css";
 import Image from "next/image";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
+import MediaAttachmentInput from "@/ui/commen/inputs/uploadFile/MediaAttachmentInput";
 import {
   createTicketSchema,
   TICKET_TYPES,
@@ -15,7 +16,11 @@ import { useTicketMutation } from "@/hooks/tickets";
 
 const MakeTicketPopup = ({ onClose, onSuccess }) => {
   const { t } = useTranslation("adminDashboard");
+  // Attachment labels live in the (globally-registered) tickets namespace.
+  const { t: tt } = useTranslation("tickets");
   const createMutation = useTicketMutation("createTicket");
+  // Optional attachment (image OR video), held outside react-hook-form.
+  const [attachment, setAttachment] = useState(null);
 
   const typeLabels = {
     technical: t("ticketTypes.technical", "تقني"),
@@ -47,8 +52,20 @@ const MakeTicketPopup = ({ onClose, onSuccess }) => {
 
   const onSubmit = async (data) => {
     try {
-      await createMutation.mutateAsync(data);
+      // Send multipart only when an attachment is present; else plain JSON.
+      let payload = data;
+      if (attachment) {
+        const formData = new FormData();
+        formData.append("subject", data.subject);
+        formData.append("type", data.type);
+        formData.append("message", data.message);
+        if (data.priority) formData.append("priority", data.priority);
+        formData.append("ticketAttachment", attachment);
+        payload = formData;
+      }
+      await createMutation.mutateAsync(payload);
       toast.success(t("createTicket.success", "تم إنشاء الشكوى بنجاح"));
+      setAttachment(null);
       onSuccess?.();
       onClose?.();
     } catch (error) {
@@ -143,6 +160,16 @@ const MakeTicketPopup = ({ onClose, onSuccess }) => {
                   rows={5}
                 />
               )}
+            />
+          </div>
+
+          <div className={styles.messageGroup}>
+            <MediaAttachmentInput
+              t={tt}
+              label={tt("popup.attachmentLabel")}
+              value={attachment}
+              onChange={setAttachment}
+              disabled={createMutation.isPending}
             />
           </div>
 

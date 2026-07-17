@@ -23,6 +23,8 @@ const buildMutations = (queryClient) => ({
       if (eventData.visualTemplate) formData.append("visualTemplate", JSON.stringify(eventData.visualTemplate));
       if (eventData.taqnyatTemplate) formData.append("taqnyatTemplate", JSON.stringify(eventData.taqnyatTemplate));
       if (eventData.guestReplies) formData.append("guestReplies", JSON.stringify(eventData.guestReplies));
+      // Scalar string field — backend reads it directly (no JSON parse).
+      if (eventData.invitationType) formData.append("invitationType", eventData.invitationType);
       if (eventData.launchSettings) formData.append("launchSettings", JSON.stringify(eventData.launchSettings));
       if (eventData.templateImage instanceof File) {
         formData.append("templateImage", eventData.templateImage);

@@ -11,6 +11,8 @@
  * pure functions, not React hooks, so callers can `import` them anywhere.
  */
 
+import { DEFAULT_INVITATION_TYPE } from "../../utils/invitationTypes";
+
 // ============================================================================
 // VALIDATION HELPERS
 // ============================================================================
@@ -301,6 +303,7 @@ export const transformFormDataToPayload = (formData) => ({
     onAbsent: formData.guestReplies?.onAbsent || "",
     onExpected: formData.guestReplies?.onExpected || "",
   },
+  invitationType: formData.invitationType || DEFAULT_INVITATION_TYPE,
   templateImage: formData.templateImage,
   launchSettings: {
     sendSchedule: formData.sendSchedule || "now",
@@ -339,6 +342,7 @@ export const getDefaultFormValues = () => ({
   // Step 4 — Taqnyat template + auto-replies
   selectedTemplate: null,
   taqnyatTemplate: null,
+  invitationType: DEFAULT_INVITATION_TYPE,
   guestReplies: { onAttend: "", onAbsent: "", onExpected: "" },
 
   // Launch settings

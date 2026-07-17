@@ -132,6 +132,10 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
       if (payload.guestReplies) {
         formDataObj.append("guestReplies", JSON.stringify(payload.guestReplies));
       }
+      if (payload.invitationType) {
+        // Scalar string field — backend reads it directly (no JSON parse).
+        formDataObj.append("invitationType", payload.invitationType);
+      }
       if (payload.launchSettings) {
         formDataObj.append("launchSettings", JSON.stringify(payload.launchSettings));
       }

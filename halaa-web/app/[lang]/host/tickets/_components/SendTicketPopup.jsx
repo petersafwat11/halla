@@ -7,6 +7,7 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
+import MediaAttachmentInput from "@/ui/commen/inputs/uploadFile/MediaAttachmentInput";
 import Button from "@/ui/commen/button/Button";
 import {
   createTicketSchema,
@@ -31,6 +32,9 @@ const SendTicketPopup = ({
   t,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Optional attachment (image OR video) — held outside react-hook-form since
+  // it is a File, not a JSON value. Only used when creating a ticket.
+  const [attachment, setAttachment] = useState(null);
   const isEditMode = !!editTicket;
 
   const schema = useMemo(
@@ -83,11 +87,24 @@ const SendTicketPopup = ({
         });
         toast.success(t("messages.updateSuccess"));
       } else {
-        response = await createMutation.mutateAsync(data);
+        // When an attachment is present, send multipart/form-data; otherwise
+        // keep the plain JSON path. apiRequest auto-switches on FormData.
+        let payload = data;
+        if (attachment) {
+          const formData = new FormData();
+          formData.append("subject", data.subject);
+          formData.append("type", data.type);
+          formData.append("message", data.message);
+          if (data.priority) formData.append("priority", data.priority);
+          formData.append("ticketAttachment", attachment);
+          payload = formData;
+        }
+        response = await createMutation.mutateAsync(payload);
         toast.success(t("messages.createSuccess"));
       }
 
       reset();
+      setAttachment(null);
       onClose();
       onSuccess?.(response?.data);
     } catch (error) {
@@ -100,6 +117,7 @@ const SendTicketPopup = ({
 
   const handleCancel = () => {
     reset();
+    setAttachment(null);
     onClose();
   };
 
@@ -171,6 +189,18 @@ const SendTicketPopup = ({
                 required
               />
             </div>
+
+            {!isEditMode && (
+              <div className={styles.inputWrapper}>
+                <MediaAttachmentInput
+                  t={t}
+                  label={t("popup.attachmentLabel")}
+                  value={attachment}
+                  onChange={setAttachment}
+                  disabled={isSubmitting}
+                />
+              </div>
+            )}
           </div>
 
           <div className={styles.actions}>

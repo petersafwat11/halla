@@ -19,6 +19,7 @@ import { useTranslation } from "../../localization";
 import { WEB_BASE_URL, ENDPOINTS } from "../../config/api";
 import { apiFetch } from "../../services/http";
 import { backgrounds, borderRadius, colors, spacing } from "../../styles/tokens";
+import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 
 const SOCIAL_ICONS = { instagram: "logo-instagram", facebook: "logo-facebook", tiktok: "logo-tiktok", twitter: "logo-twitter" };
 
@@ -114,7 +115,7 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
           {vendor.coverImage ? <Image source={{ uri: vendor.coverImage }} style={styles.cover} /> : <View style={styles.coverFallback}><Text style={styles.coverInitial}>{vendor.brandName?.charAt(0)}</Text></View>}
           <View style={styles.heroShade} />
           <View style={styles.heroButtons}>
-            <TouchableOpacity style={styles.roundButton} onPress={() => navigation.goBack()} accessibilityLabel={t("vendor.backToMarketplace")}><Ionicons name={isAr ? "arrow-forward" : "arrow-back"} size={22} color={colors.natural[50]} /></TouchableOpacity>
+            <TouchableOpacity style={styles.roundButton} onPress={() => navigation.goBack()} accessibilityLabel={t("vendor.backToMarketplace")}><DirectionalIonicon name="arrow-back" size={22} color={colors.natural[50]} /></TouchableOpacity>
             <TouchableOpacity style={styles.roundButton} onPress={share} accessibilityLabel={t("vendor.share")}><Ionicons name="share-outline" size={22} color={colors.natural[50]} /></TouchableOpacity>
             <TouchableOpacity style={styles.roundButton} onPress={handleReport} accessibilityLabel={t("vendor.report", "Report vendor")}><Ionicons name="flag-outline" size={20} color={colors.natural[50]} /></TouchableOpacity>
           </View>

@@ -7,6 +7,7 @@ import {
   Dimensions,
 } from "react-native";
 import LanguageReset from "./LanguageReset";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 
 const { width, height } = Dimensions.get("window");
 
@@ -64,7 +65,11 @@ const LanguageSelector = ({ onLanguageSelect }) => {
                   </Text>
                 </View>
                 <View style={styles.arrow}>
-                  <Text style={styles.arrowText}>→</Text>
+                  <DirectionalIonicon
+                    name="arrow-forward"
+                    size={18}
+                    color="#fff"
+                  />
                 </View>
               </View>
             </TouchableOpacity>
@@ -181,11 +186,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-  },
-  arrowText: {
-    color: "#fff",
-    fontSize: 18,
-    fontFamily: "Cairo_600SemiBold",
   },
   footer: {
     alignItems: "center",

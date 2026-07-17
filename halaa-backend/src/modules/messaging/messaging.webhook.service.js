@@ -13,6 +13,7 @@ const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { NotFoundError } = require('../../shared/errors');
+const { invitationIncludesQr } = require('../../shared/constants');
 const { TAQNYAT_SENDER } = require('./messaging.formatting');
 const {
   getReplyMessage,
@@ -154,9 +155,10 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
   // WhatsApp invites are Arabic-templated, so replies use Arabic.
   const replyMessage = getReplyMessage(rsvpStatus, event, 'ar');
 
-  // Only a CONFIRMED guest receives the entry pass (QR image + rich caption).
-  // Declined / maybe get a plain text reply — no QR.
-  if (rsvpStatus !== 'confirmed') {
+  // Only a CONFIRMED guest on a QR-bearing invitation type receives the entry
+  // pass (QR image + rich caption). Declined / maybe — and confirmed guests on
+  // a reply_only invitation (no QR) — get a plain text reply.
+  if (rsvpStatus !== 'confirmed' || !invitationIncludesQr(event.invitationType)) {
     try {
       const waResult = await taqnyat.sendWhatsAppText(phoneNumber, replyMessage);
       if (!waResult.success) throw new Error(waResult.error || 'WA text failed');

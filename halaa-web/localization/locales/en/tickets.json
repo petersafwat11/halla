@@ -21,7 +21,17 @@
     "submitEdit": "Update",
     "submitting": "Sending...",
     "updating": "Updating...",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "attachmentLabel": "Attachment (optional)",
+    "attachmentAdd": "Attach image or video",
+    "attachmentHint": "Optional — image or video, up to 50MB",
+    "attachmentRemove": "Remove attachment",
+    "attachmentInvalidType": "Only image or video files are allowed",
+    "attachmentTooLarge": "File is too large (max 50MB)",
+    "image": "Image",
+    "video": "Video",
+    "mb": "MB",
+    "kb": "KB"
   },
   "types": {
     "technical": "Technical Issue",

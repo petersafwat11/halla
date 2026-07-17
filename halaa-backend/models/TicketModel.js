@@ -31,6 +31,15 @@ const TicketSchema = new mongoose.Schema(
       minlength: 10,
       maxlength: 5000,
     },
+    // Optional attachment (single image OR video) uploaded with the ticket.
+    // `url` holds the S3 object key; it is converted to a public URL on read
+    // via signStoredImage (see tickets.service._formatTicket).
+    attachment: {
+      url: { type: String, trim: true },
+      type: { type: String, enum: ["image", "video"] },
+      mimeType: { type: String, trim: true },
+      size: { type: Number },
+    },
     type: {
       type: String,
       enum: [

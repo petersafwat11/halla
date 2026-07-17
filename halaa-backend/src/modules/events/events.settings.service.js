@@ -298,6 +298,9 @@ module.exports = {
         ...settings.guestReplies,
       };
     }
+    if (settings.invitationType !== undefined) {
+      event.invitationType = settings.invitationType;
+    }
     if (settings.templateImage !== undefined) {
       event.templateImage = settings.templateImage;
     }

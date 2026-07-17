@@ -9,6 +9,7 @@ import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
+import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
 import StatusBadge from "../../../components/admin-dashboard/common/StatusBadge";
 import HostHeroCard from "../../../components/admin-dashboard/hosts/HostHeroCard";
@@ -94,7 +95,6 @@ const statStyles = StyleSheet.create({
 });
 
 const ActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading, last }) => {
-  const { isRTL } = useTranslation();
   return (
   <TouchableOpacity style={[actionStyles.row, !last && actionStyles.rowBorder]} onPress={onPress} disabled={loading} activeOpacity={0.7}>
     <View style={actionStyles.rowLeft}>
@@ -106,7 +106,7 @@ const ActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading,
         <Text style={actionStyles.sublabel}>{sublabel}</Text>
       </View>
     </View>
-    <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={16} color={colors.natural[300]} />
+    <DirectionalIonicon name="chevron-forward" size={16} color={colors.natural[300]} />
   </TouchableOpacity>
   );
 };

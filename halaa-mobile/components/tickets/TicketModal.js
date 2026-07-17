@@ -9,9 +9,12 @@ import {
   ScrollView,
   Animated,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Image,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -21,6 +24,8 @@ import {
   getCreateTicketDefaults,
 } from "@halaa/shared/schemas/tickets";
 import { useLanguage, useTranslation } from "../../localization";
+
+const MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024; // 50 MB (matches backend cap)
 
 const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   const { t } = useTranslation("tickets");
@@ -44,6 +49,42 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
 
   const selectedType = watch("type");
 
+  // Single optional image/video attachment (create mode only). Kept in local
+  // state, NOT react-hook-form, since it's uploaded as multipart, not JSON.
+  const [attachment, setAttachment] = useState(null);
+
+  const handlePickAttachment = async (mediaTypes) => {
+    const { status } =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        t("popup.permissionRequired"),
+        t("popup.permissionMessage")
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes,
+      allowsMultipleSelection: false,
+      quality: 0.8
+    });
+    if (result.canceled || !result.assets?.length) return;
+    const asset = result.assets[0];
+    if (asset.fileSize && asset.fileSize > MAX_ATTACHMENT_BYTES) {
+      Alert.alert(t("popup.attachmentTooLarge"));
+      return;
+    }
+    const isVideo =
+      asset.type === "video" || /video/i.test(asset.mimeType || "");
+    // Replace any previously picked file — only ONE attachment is allowed.
+    setAttachment({
+      uri: asset.uri,
+      name: asset.fileName || (isVideo ? "video.mp4" : "photo.jpg"),
+      type: asset.mimeType || (isVideo ? "video/mp4" : "image/jpeg"),
+      isVideo
+    });
+  };
+
   React.useEffect(() => {
     if (visible) {
       Animated.parallel([
@@ -58,6 +99,10 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
           useNativeDriver: true
         })]).start();
     } else {
+      // Runs on both cancel/close AND successful submit (the screen sets
+      // visible=false directly), so clear the picked file here to avoid it
+      // leaking into the next new ticket. No-op in edit mode.
+      setAttachment(null);
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 300,
@@ -78,6 +123,24 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   };
 
   const handleFormSubmit = (data) => {
+    // With an attachment (create mode only) send multipart/form-data. The
+    // backend Zod schema is .strict(), so append ONLY known fields and guard
+    // priority. Field name MUST be exactly "ticketAttachment".
+    if (!isEditMode && attachment) {
+      const formData = new FormData();
+      formData.append("subject", data.subject);
+      formData.append("type", data.type);
+      formData.append("message", data.message);
+      if (data.priority) formData.append("priority", data.priority);
+      formData.append("ticketAttachment", {
+        uri: attachment.uri,
+        name: attachment.name,
+        type: attachment.type
+      });
+      onSubmit(formData);
+      return;
+    }
+    // No attachment: keep the plain-JSON path exactly as before.
     onSubmit(data);
   };
 
@@ -223,6 +286,65 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                 </Text>
               )}
             </View>
+
+            {/* Attachment (create mode only — edit path doesn't accept files) */}
+            {!isEditMode && (
+              <View style={styles.section}>
+                <Text style={styles.label}>
+                  {t("popup.attachmentLabel")}
+                </Text>
+
+                {attachment ? (
+                  <View style={styles.attachmentPreview}>
+                    {attachment.isVideo ? (
+                      <View style={styles.attachmentPreviewIcon}>
+                        <Ionicons name="videocam" size={24} color="#c28e5c" />
+                      </View>
+                    ) : (
+                      <Image
+                        source={{ uri: attachment.uri }}
+                        style={styles.attachmentPreviewImage}
+                      />
+                    )}
+                    <Text style={styles.attachmentName} numberOfLines={1}>
+                      {attachment.name}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.attachmentRemove}
+                      onPress={() => setAttachment(null)}
+                      accessibilityLabel={t("popup.removeAttachment")}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="close-circle" size={22} color="#e74c3c" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={styles.attachmentButtons}>
+                    <TouchableOpacity
+                      style={styles.attachmentButton}
+                      onPress={() => handlePickAttachment(["images"])}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="image-outline" size={18} color="#c28e5c" />
+                      <Text style={styles.attachmentButtonText}>
+                        {t("popup.addImage")}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.attachmentButton}
+                      onPress={() => handlePickAttachment(["videos"])}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="videocam-outline" size={18} color="#c28e5c" />
+                      <Text style={styles.attachmentButtonText}>
+                        {t("popup.addVideo")}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
           </ScrollView>
 
           {/* Actions */}
@@ -391,6 +513,59 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Cairo_600SemiBold",
     color: "#fff"
+  },
+  attachmentButtons: {
+    flexDirection: "row",
+    gap: 12
+  },
+  attachmentButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#c28e5c",
+    backgroundColor: "#faf5f0"
+  },
+  attachmentButtonText: {
+    fontSize: 14,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#c28e5c"
+  },
+  attachmentPreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#faf5f0"
+  },
+  attachmentPreviewImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: "#eee"
+  },
+  attachmentPreviewIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: "#f5ece4",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  attachmentName: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Cairo_400Regular",
+    color: "#2c2c2c"
+  },
+  attachmentRemove: {
+    padding: 2
   }
 });
 

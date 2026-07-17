@@ -50,12 +50,22 @@ export const ticketsApi = {
       { method: "GET" },
       "Failed to load rating info",
     ),
-  createTicket: async (data) =>
-    _request(
+  createTicket: async (data) => {
+    // Multipart uploads (image/video attachment) need a longer timeout than
+    // the default 30s. apiFetch auto-detects FormData and sets the multipart
+    // boundary; the JSON path is left untouched (inherits the 30s default).
+    const isFormData =
+      typeof FormData !== "undefined" && data instanceof FormData;
+    return _request(
       ENDPOINTS.TICKETS.BASE,
-      { method: "POST", body: data },
+      {
+        method: "POST",
+        body: data,
+        ...(isFormData ? { timeoutMs: 60 * 1000 } : {}),
+      },
       "Failed to create ticket",
-    ),
+    );
+  },
   updateTicket: async (ticketId, data) =>
     _request(
       ENDPOINTS.TICKETS.BY_ID(ticketId),
