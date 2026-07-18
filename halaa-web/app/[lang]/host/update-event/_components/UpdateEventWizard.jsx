@@ -206,6 +206,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
                   eventTime={formData.eventTime || ""}
                   locationAddress={formData.address?.address || ""}
                   locale={locale}
+                  invitationType={formData.invitationType}
                 />
               </div>
             )}

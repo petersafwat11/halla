@@ -6,6 +6,7 @@
       "eventType": "Event Type",
       "confirmed": "Confirmed",
       "declined": "Declined",
+      "maybe": "Maybe",
       "noResponse": "No Response",
       "dateTime": "Date & Time",
       "status": "Status"

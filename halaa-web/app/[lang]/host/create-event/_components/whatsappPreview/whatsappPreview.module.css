@@ -7,7 +7,7 @@
 /* ─── Outer card ──────────────────────────────── */
 .previewContainer {
   display: flex;
-  width: 38rem;
+  width: 32rem;
   flex-direction: column;
   align-items: center;
   flex-shrink: 0;
@@ -72,7 +72,8 @@
   width: 100%;
   /* Bound the device to the viewport so the mockup never grows "very long";
      the chat area scrolls within it on shorter screens. */
-  max-height: min(78vh, 64rem);
+  height: min(76vh, 60rem);
+  max-height: 60rem;
   background: #efeae2;
   border-radius: 2.8rem;
   overflow: hidden;
@@ -241,7 +242,7 @@
   flex: 1;
   /* Scroll within the bounded phone instead of stretching it tall. */
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* ─── Message card (received, full width) ─────── */
@@ -249,11 +250,14 @@
   width: 100%;
   background: #fff;
   border-radius: 0.4rem 0.9rem 0.9rem 0.9rem;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   box-shadow:
     0 1px 1px rgba(11, 20, 26, 0.08),
     0 1px 0.5px rgba(11, 20, 26, 0.06);
   position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .msgCard::before {
@@ -341,6 +345,7 @@
   box-shadow:
     0 1px 1px rgba(11, 20, 26, 0.08),
     0 1px 0.5px rgba(11, 20, 26, 0.06);
+  flex-shrink: 0;
 }
 
 .ctaBtn {
@@ -407,7 +412,7 @@
 /* ─── Tablet/Mobile breakpoints ───────────────── */
 @media (max-width: 1100px) {
   .previewContainer {
-    width: 34rem;
+    width: 30rem;
   }
 }
 
@@ -419,10 +424,22 @@
   .previewContainer.forceShow {
     display: flex !important;
     width: 100%;
-    max-width: 36rem;
+    max-width: 32rem;
   }
 
   .previewContainer.forceShow .previewCard {
     width: 100%;
+  }
+
+  .previewContainer.forceShow .phoneWrap {
+    padding: 1.5rem 1.4rem 1.8rem;
+  }
+
+  .previewContainer.forceShow .phone {
+    height: min(68dvh, 52rem);
+  }
+
+  .previewContainer.forceShow .msgImageWrap {
+    max-height: min(24dvh, 18rem);
   }
 }

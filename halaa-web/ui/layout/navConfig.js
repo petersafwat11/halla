@@ -60,6 +60,7 @@ export const hostNavItems = [
   {
     key: "events",
     path: "/host/events",
+    activePaths: ["/host/create-event", "/host/update-event"],
     icon: IoCalendar,
     labelKey: "sidebar.events",
     defaultLabel: "المناسبات",
@@ -151,6 +152,7 @@ export const adminNavItems = [
   {
     key: "events",
     path: "/admin-dash/events",
+    activePaths: ["/admin-dash/create-event", "/admin-dash/update-event"],
     icon: IoCalendar,
     labelKey: "adminSidebar.events",
     defaultLabel: "المناسبات",
@@ -551,8 +553,19 @@ export const getBasePath = (dashboardType) => {
  * @returns {boolean} Whether the item is active
  */
 export const isNavItemActive = (item, currentPath) => {
+  const normalizedPath = currentPath.startsWith("/")
+    ? currentPath
+    : `/${currentPath}`;
+  const isAliasActive = item.activePaths?.some(
+    (path) => normalizedPath === path || normalizedPath.startsWith(`${path}/`),
+  );
+
+  if (isAliasActive) return true;
+
   if (item.exactMatch) {
-    return currentPath === item.path.slice(1); // Remove leading slash
+    return normalizedPath === item.path;
   }
-  return currentPath.startsWith(item.path.slice(1));
+  return (
+    normalizedPath === item.path || normalizedPath.startsWith(`${item.path}/`)
+  );
 };

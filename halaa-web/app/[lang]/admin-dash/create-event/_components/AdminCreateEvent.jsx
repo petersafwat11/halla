@@ -356,7 +356,12 @@ export default function AdminCreateEvent() {
                 previewBody={formData.selectedTemplate?.bodyText || ""}
                 templateImage={formData.templateImage || formData.selectedTemplate?.image || "/svg/events/invitation.svg"}
                 templateData={formData.selectedTemplate?.data || {}}
+                selectedTemplate={formData.selectedTemplate}
+                eventDate={formData.eventDate || ""}
+                eventTime={formData.eventTime || ""}
+                locationAddress={formData.address?.address || ""}
                 locale={locale}
+                invitationType={formData.invitationType}
               />
             )}
           </div>
@@ -376,7 +381,12 @@ export default function AdminCreateEvent() {
                   previewBody={formData.selectedTemplate?.bodyText || ""}
                   templateImage={formData.templateImage || formData.selectedTemplate?.image || "/svg/events/invitation.svg"}
                   templateData={formData.selectedTemplate?.data || {}}
+                  selectedTemplate={formData.selectedTemplate}
+                  eventDate={formData.eventDate || ""}
+                  eventTime={formData.eventTime || ""}
+                  locationAddress={formData.address?.address || ""}
                   locale={locale}
+                  invitationType={formData.invitationType}
                   forceShow={true}
                 />
               </div>

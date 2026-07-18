@@ -339,12 +339,13 @@ class DashboardService {
         total: guests.length,
         confirmed: guests.filter(g => g.status === 'confirmed').length,
         declined: guests.filter(g => g.status === 'declined').length,
+        maybe: guests.filter(g => g.status === 'maybe').length,
         invited: guests.filter(g => g.status === 'invited').length,
         checkedIn: guests.filter(g => g.status === 'checked_in').length,
       };
 
       const responseRate = guestStats.total > 0
-        ? Math.round(((guestStats.confirmed + guestStats.declined) / guestStats.total) * 100)
+        ? Math.round(((guestStats.confirmed + guestStats.declined + guestStats.maybe) / guestStats.total) * 100)
         : 0;
 
       // Quota: invites remaining on the plan ATTACHED TO THE EVENT (the

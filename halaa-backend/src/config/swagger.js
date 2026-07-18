@@ -706,7 +706,7 @@ const swaggerOptions = {
         Guest: {
           type: 'object',
           properties: {
-            _id: {
+            id: {
               type: 'string',
             },
             name: {
@@ -715,11 +715,7 @@ const swaggerOptions = {
             },
             phone: {
               type: 'string',
-              example: '+966501234567',
-            },
-            email: {
-              type: 'string',
-              format: 'email',
+              example: '501234567',
             },
             category: {
               type: 'string',
@@ -727,27 +723,65 @@ const swaggerOptions = {
             },
             status: {
               type: 'string',
-              enum: ['pending', 'confirmed', 'declined', 'attended'],
-              example: 'pending',
+              enum: ['invited', 'confirmed', 'declined', 'maybe', 'checked_in', 'no_show'],
+              example: 'confirmed',
             },
-            invitationCode: {
-              type: 'string',
-            },
-            qrCode: {
-              type: 'string',
+            addedBy: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                id: { type: 'string' },
+                username: { type: 'string' },
+                name: { type: 'string' },
+              },
             },
             rsvp: {
               type: 'object',
               properties: {
+                responded: { type: 'boolean' },
                 respondedAt: {
                   type: 'string',
                   format: 'date-time',
                 },
+                response: {
+                  type: 'string',
+                  enum: ['pending', 'confirmed', 'declined', 'maybe'],
+                },
                 message: {
                   type: 'string',
                 },
+                dietaryRestrictions: { type: 'string' },
+                plusOnes: { type: 'integer' },
               },
             },
+            checkIn: {
+              type: 'object',
+              properties: {
+                checkedIn: { type: 'boolean' },
+                checkedInAt: { type: 'string', format: 'date-time' },
+              },
+            },
+            invitation: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                sent: { type: 'boolean' },
+                sentAt: { type: 'string', format: 'date-time' },
+                method: { type: 'string', enum: ['sms', 'whatsapp'] },
+                effectiveChannel: { type: 'string', enum: ['sms', 'whatsapp'] },
+                smsFallback: { type: 'boolean' },
+                status: {
+                  type: 'string',
+                  enum: ['pending', 'sent', 'delivered', 'read', 'failed'],
+                },
+                deliveredAt: { type: 'string', format: 'date-time' },
+                readAt: { type: 'string', format: 'date-time' },
+                autoReminderSent: { type: 'boolean' },
+                autoReminderSentAt: { type: 'string', format: 'date-time' },
+                autoReminderType: { type: 'string', enum: ['reminder_confirmed'] },
+              },
+            },
+            createdAt: { type: 'string', format: 'date-time' },
           },
         },
 

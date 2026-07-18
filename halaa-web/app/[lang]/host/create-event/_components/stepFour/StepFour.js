@@ -12,7 +12,7 @@
  * Auto-replies dual-write canonical guestReplies.* + legacy keys.
  */
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import styles from "./stepfour.module.css";
@@ -101,6 +101,7 @@ const StepFour = () => {
   const { setValue, watch } = useFormContext();
   const { t, i18n } = useTranslation("createEvent");
   const [activeTab, setActiveTab] = useState("attending");
+  const previousCategoryRef = useRef("");
 
   const selectedTemplate = watch("selectedTemplate");
   const guestReplies = watch("guestReplies") || {};
@@ -150,9 +151,18 @@ const StepFour = () => {
 
   const { data, isLoading, error } = useHostTaqnyatTemplates(
     { category: category || undefined, type: "invite" },
-    { enabled: true }
+    { enabled: Boolean(category) }
   );
   const templates = data?.data?.templates || [];
+
+  useEffect(() => {
+    const previousCategory = previousCategoryRef.current;
+    if (previousCategory && category && previousCategory !== category) {
+      setValue("selectedTemplate", null, { shouldDirty: true });
+      setValue("taqnyatTemplate", { templateRef: null }, { shouldDirty: true });
+    }
+    previousCategoryRef.current = category;
+  }, [category, setValue]);
 
   useEffect(() => {
     REPLY_TABS.forEach((tab) => {
@@ -173,6 +183,7 @@ const StepFour = () => {
       language: template.language || "ar",
       hasImageHeader: template.hasImageHeader || false,
       bodyText: template.bodyText,
+      category: template.category || category,
     };
     setValue("selectedTemplate", enriched, { shouldValidate: true });
     setValue("taqnyatTemplate", { templateRef: template._id }, { shouldValidate: false });

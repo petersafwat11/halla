@@ -231,6 +231,10 @@
   background: #eaf4ef;
 }
 
+.statBoxMaybe {
+  background: #fff7e6;
+}
+
 .statLabel {
   color: #2c2c2c;
   font-size: 12px;
@@ -245,6 +249,15 @@
 
 .statLabelApproved {
   color: #2a8c5b;
+}
+
+.statLabelMaybe,
+.statValueMaybe {
+  color: #b7791f;
+}
+
+.dotMaybe {
+  background: #b7791f;
 }
 
 .statValue {
@@ -637,4 +650,4 @@
 .flashingButton {
   animation: pulseFlashing 2.3s infinite;
   border-color: #c28e5c !important;
-}
+}

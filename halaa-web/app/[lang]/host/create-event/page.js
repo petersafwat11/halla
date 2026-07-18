@@ -265,6 +265,7 @@ const CreateEventV2 = () => {
                   eventTime={formData.eventTime || ""}
                   locationAddress={formData.address?.address || ""}
                   locale={locale}
+                  invitationType={formData.invitationType}
                 />
               </div>
             )}
@@ -297,7 +298,12 @@ const CreateEventV2 = () => {
                   previewBody={formData.selectedTemplate?.bodyText || ""}
                   templateImage={formData.templateImage || "/svg/events/invitation.svg"}
                   templateData={formData.visualTemplate?.data || {}}
+                  selectedTemplate={formData.selectedTemplate}
+                  eventDate={formData.eventDate || ""}
+                  eventTime={formData.eventTime || ""}
+                  locationAddress={formData.address?.address || ""}
                   locale={locale}
+                  invitationType={formData.invitationType}
                   forceShow={true}
                 />
               </div>

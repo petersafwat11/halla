@@ -61,15 +61,6 @@
   gap: 3rem;
 }
 
-.appText {
-  color: var(--text-title-black);
-  font-size: 2.2rem;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 2.64rem;
-  margin: 0;
-}
-
 /* ── Image Grid ── */
 .imageGridWrapper {
   flex-shrink: 0;
@@ -294,11 +285,6 @@
 
   .content {
     gap: 3.2rem;
-  }
-
-  .appText {
-    font-size: 2rem;
-    text-align: center;
   }
 
   .appButtons {

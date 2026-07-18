@@ -6,6 +6,7 @@
 
 const taqnyat = require('../../infrastructure/taqnyat');
 const Guest = require('../../../models/GuestModel');
+const { updateOutboundDeliveryStatus } = require('../../infrastructure/outboundMessageLog');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
 // Use the gated notifications service so a host who turned off
 // `guestResponses` in Settings doesn't get a WhatsApp-RSVP push.
@@ -13,7 +14,10 @@ const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { NotFoundError } = require('../../shared/errors');
-const { invitationIncludesQr } = require('../../shared/constants');
+const {
+  invitationAllowsReply,
+  invitationIncludesQr,
+} = require('../../shared/constants');
 const { TAQNYAT_SENDER } = require('./messaging.formatting');
 const {
   getReplyMessage,
@@ -24,6 +28,13 @@ const {
  * Update a guest's invitation delivery status from a webhook event.
  */
 async function updateDeliveryStatus(messageId, status, timestamp) {
+  await updateOutboundDeliveryStatus(messageId, status, timestamp).catch((error) => {
+    logger.error('[Messaging] Failed to update outbound delivery record', {
+      messageId,
+      status,
+      error: error.message,
+    });
+  });
   const guest = await Guest.findOne({ 'invitation.messageId': messageId });
   if (!guest) {
     throw new NotFoundError('Guest');
@@ -99,6 +110,16 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
   }
 
   const event = guest.event;
+
+  if (!invitationAllowsReply(event.invitationType)) {
+    logger.warn('[Messaging] Ignoring RSVP button for a no-reply invitation', {
+      eventId: event._id,
+      guestId: guest._id,
+      invitationType: event.invitationType,
+      messageId,
+    });
+    return { success: false, error: 'REPLY_NOT_ALLOWED' };
+  }
 
   const statusMap = {
     'سأحضر': 'confirmed',

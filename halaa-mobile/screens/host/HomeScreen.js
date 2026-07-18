@@ -42,7 +42,10 @@ const HomeScreen = ({ navigation }) => {
 
   const handleEditPress = (step) => {
     if (!eventId) return;
-    navigation.navigate("UpdateEventScreen", { eventId, step });
+    navigation.navigate("Events", {
+      screen: "UpdateEventScreen",
+      params: { eventId, step },
+    });
   };
 
   const handleTestMessagePress = () => setTestMessageModalVisible(true);
@@ -52,7 +55,12 @@ const HomeScreen = ({ navigation }) => {
     // /host/events/{id}), not the events list tab. Fall back to the list
     // only if we somehow have no event id.
     if (!navigation) return;
-    if (eventId) navigation.navigate("EventDetails", { eventId });
+    if (eventId) {
+      navigation.navigate("Events", {
+        screen: "EventDetails",
+        params: { eventId },
+      });
+    }
     else navigation.navigate("Events");
   };
 
@@ -67,12 +75,15 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate("MainTabs", { screen: "Plans" });
       return;
     }
-    navigation.navigate("CreateEventScreen");
+    navigation.navigate("Events", { screen: "CreateEventScreen" });
   };
 
   const handlePostEventPress = () => {
     if (!eventId) return;
-    navigation.navigate("ManagePostEvent", { eventId });
+    navigation.navigate("Events", {
+      screen: "ManagePostEvent",
+      params: { eventId },
+    });
   };
 
   const topBarActions = (

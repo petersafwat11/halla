@@ -8,6 +8,10 @@ import {
   buildTaqnyatPreviewContext,
 } from "@halaa/shared/utils";
 import useAuthStore from "@/stores/authStore";
+import {
+  DEFAULT_INVITATION_TYPE,
+  invitationAllowsReply,
+} from "@/utils/invitationTypes";
 
 const WhatsappPreview = ({
   eventTitle = "",
@@ -24,6 +28,7 @@ const WhatsappPreview = ({
   eventTime = "",
   locationAddress = "",
   locale = "ar",
+  invitationType = DEFAULT_INVITATION_TYPE,
   forceShow = false,
 }) => {
   const { t } = useTranslation("createEvent");
@@ -31,6 +36,7 @@ const WhatsappPreview = ({
   const hostName = useAuthStore(
     (state) => state.user?.name || state.user?.username || ""
   );
+  const showReplyActions = invitationAllowsReply(invitationType);
 
   const formattedDate = useMemo(() => {
     const dateSource = eventDate || entryDate;
@@ -214,19 +220,19 @@ const WhatsappPreview = ({
               </div>
 
               {/* CTA Buttons */}
-              <div className={styles.ctaGroup}>
+              {showReplyActions && <div className={styles.ctaGroup}>
                 <button className={styles.ctaBtn} type="button">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                     <path d="M20 6L9 17L4 12" stroke="#0096DE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  <span>سأحضر</span>
+                  <span>{t("whatsapp_invitation_preview_attending", t("attending"))}</span>
                 </button>
                 <div className={styles.ctaDivider} />
                 <button className={styles.ctaBtn} type="button">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                     <path d="M18 6L6 18M6 6L18 18" stroke="#0096DE" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
-                  <span>سأعتذر</span>
+                  <span>{t("whatsapp_invitation_preview_declining", t("absence"))}</span>
                 </button>
                 <div className={styles.ctaDivider} />
                 <button className={styles.ctaBtn} type="button">
@@ -234,9 +240,9 @@ const WhatsappPreview = ({
                     <circle cx="12" cy="12" r="9" stroke="#0096DE" strokeWidth="2"/>
                     <path d="M12 8v4M12 16h.01" stroke="#0096DE" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
-                  <span>ربما</span>
+                  <span>{t("whatsapp_invitation_preview_maybe", t("maybe"))}</span>
                 </button>
-              </div>
+              </div>}
             </div>
 
             {/* Bottom input bar */}

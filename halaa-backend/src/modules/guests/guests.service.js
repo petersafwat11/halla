@@ -207,7 +207,7 @@ class GuestsService {
     const [guests, total] = await Promise.all([
       Guest.find(query)
         .select('name phone category status rsvp checkIn invitation addedBy createdAt')
-        .populate('addedBy', 'username')
+        .populate('addedBy', 'username name')
         .sort({ name: 1 })
         .skip(skip)
         .limit(limit),
@@ -677,6 +677,7 @@ class GuestsService {
       addedBy: guest.addedBy ? {
         id: guest.addedBy._id,
         username: guest.addedBy.username,
+        name: guest.addedBy.name,
       } : null,
       createdAt: guest.createdAt,
     };

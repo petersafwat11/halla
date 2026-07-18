@@ -24,8 +24,8 @@ const {
   getEventImageUrl,
 } = require('./messaging.formatting');
 
-async function sendSMS(phoneNumber, message) {
-  return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER });
+async function sendSMS(phoneNumber, message, logContext = {}) {
+  return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER, logContext });
 }
 
 /**
@@ -60,6 +60,9 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
   let imageUrl = null;
   let bodyParams = null;
   let smsBody = null;
+  const logOptions = {
+    logContext: { eventId: event._id, purpose: 'event_test_message' },
+  };
   if (channel === 'whatsapp') {
     if (!templateName) {
       throw new AppError(
@@ -84,7 +87,8 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
           'ar',
           imageUrl,
           bodyParams,
-          smsFallback
+          smsFallback,
+          logOptions
         )
       : await taqnyat.sendWhatsAppTemplate(
           phoneNumber,
@@ -96,11 +100,12 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
               parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
             },
           ],
-          smsFallback
+          smsFallback,
+          logOptions
         );
   } else {
     smsBody = buildSmsBody(event, 'ضيف تجريبي', rsvpLink);
-    result = await sendSMS(phoneNumber, smsBody);
+    result = await sendSMS(phoneNumber, smsBody, logOptions.logContext);
   }
 
   logger.info('[sendTestMessage] result', {
@@ -188,6 +193,14 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
   let imageUrl = null;
   let bodyParams = null;
   let smsBody = null;
+  const logOptions = {
+    logContext: {
+      eventId: event._id,
+      guestId: guest._id,
+      userId: userId || null,
+      purpose: 'guest_invitation',
+    },
+  };
   if (channel === 'whatsapp') {
     if (!templateName) {
       throw new AppError(
@@ -214,7 +227,8 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
           'ar',
           imageUrl,
           bodyParams,
-          smsFallback
+          smsFallback,
+          logOptions
         )
       : await taqnyat.sendWhatsAppTemplate(
           guest.phone,
@@ -226,11 +240,12 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
               parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
             },
           ],
-          smsFallback
+          smsFallback,
+          logOptions
         );
   } else {
     smsBody = buildSmsBody(event, guest.name, rsvpLink);
-    result = await sendSMS(guest.phone, smsBody);
+    result = await sendSMS(guest.phone, smsBody, logOptions.logContext);
   }
 
   logger.info('[sendToGuest] result', {

@@ -206,8 +206,8 @@ router.get('/my-contacts', guestsController.getMyContacts);
  *         name: status
  *         schema:
  *           type: string
- *           enum: [pending, confirmed, declined, attended]
- *         description: Filter by RSVP status
+ *           enum: [invited, confirmed, declined, maybe, checked_in, no_show]
+ *         description: Filter by guest status
  *     responses:
  *       200:
  *         description: Guests retrieved successfully

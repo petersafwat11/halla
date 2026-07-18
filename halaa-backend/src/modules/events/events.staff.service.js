@@ -318,6 +318,16 @@ module.exports = {
           (eventLocation ? `📍 المكان: ${eventLocation}\n` : "") +
           `\nللدخول لصفحة المشرفين:\n${staffUrl}`;
         const smsFallback = { sender: 'HalaaApp', body: smsBody };
+        const logOptions = {
+          logContext: {
+            eventId: event._id,
+            userId,
+            purpose: 'staff_access',
+            metadata: { staffName: staffMember.name, staffPhone: staffMember.phone },
+          },
+        };
+
+        let sendResult;
 
         if (template) {
           // Per-iteration local — never mutates the shared event doc.
@@ -326,14 +336,15 @@ module.exports = {
           };
           const bodyParams = getEventBodyParams(event, staffMember.name, template, staffCtx);
           const imageUrl = getEventImageUrl(event, template);
-          const wa = imageUrl
+          sendResult = imageUrl
             ? await taqnyat.sendWhatsAppTemplateWithImage(
                 staffMember.phone,
                 template.templateName,
                 template.language,
                 imageUrl,
                 bodyParams,
-                smsFallback
+                smsFallback,
+                logOptions
               )
             : await taqnyat.sendWhatsAppTemplate(
                 staffMember.phone,
@@ -345,14 +356,26 @@ module.exports = {
                     parameters: bodyParams.map((text) => ({ type: 'text', text })),
                   },
                 ],
-                smsFallback
+                smsFallback,
+                logOptions
               );
-          if (!wa?.success) throw new Error(wa?.error || 'wa_failed');
         } else {
-          await taqnyat.sendSMS(staffMember.phone, smsBody, { sender: 'HalaaApp' });
+          sendResult = await taqnyat.sendSMS(staffMember.phone, smsBody, {
+            sender: 'HalaaApp',
+            ...logOptions,
+          });
+        }
+        if (!sendResult?.success || !sendResult?.messageId) {
+          throw new Error(sendResult?.error || 'provider_send_failed');
         }
         sent++;
-        results.push({ name: staffMember.name, phone: staffMember.phone, status: "sent" });
+        results.push({
+          name: staffMember.name,
+          phone: staffMember.phone,
+          status: "sent",
+          messageId: sendResult.messageId,
+          outboundMessageId: sendResult.outboundMessageId || null,
+        });
       } catch (error) {
         failed++;
         logger.warn('[notifyStaff] send failed', {
@@ -383,7 +406,19 @@ module.exports = {
       actor: { _id: userId },
       targetType: 'event',
       targetId: eventId,
-      metadata: { sent, failed, total: activeStaff.length },
+      metadata: {
+        sent,
+        failed,
+        total: activeStaff.length,
+        messages: results.map((result) => ({
+          staffName: result.name,
+          phone: result.phone,
+          status: result.status,
+          messageId: result.messageId || null,
+          outboundMessageId: result.outboundMessageId || null,
+          error: result.error || null,
+        })),
+      },
     }).catch(() => {});
 
     return { sent, failed, total: activeStaff.length, results };

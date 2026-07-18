@@ -314,6 +314,22 @@
   },
   "guestTableExtras": {
     "autoReminder": "Auto reminder",
-    "sent": "Sent"
+    "sent": "Sent",
+    "notSent": "Not sent",
+    "addedBy": "Added by",
+    "sentVia": "Sent via",
+    "responseTime": "Response time",
+    "noResponse": "No response yet",
+    "notAvailable": "—",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "smsFallback": "SMS (fallback)",
+    "status": {
+      "confirmed": "Confirmed",
+      "checkedIn": "Checked in",
+      "declined": "Declined",
+      "maybe": "Maybe",
+      "invited": "Invited"
+    }
   }
 }

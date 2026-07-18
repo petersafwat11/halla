@@ -33,6 +33,13 @@ export default function LastEventResponseStats({ event, isMobile }) {
               </div>
             </div>
             <div className={styles.legendItem}>
+              <div className={`${styles.legendDot} ${styles.dotMaybe}`}></div>
+              <div className={styles.legendText}>
+                <span>{t("table.maybe")}: </span>
+                <span>{stats.maybe ?? 0}</span>
+              </div>
+            </div>
+            <div className={styles.legendItem}>
               <div className={`${styles.legendDot} ${styles.dotGreen}`}></div>
               <div className={styles.legendText}>
                 <span>{t("lastEvent.approved")}: </span>
@@ -65,6 +72,14 @@ export default function LastEventResponseStats({ event, isMobile }) {
         </div>
         <div className={`${styles.statValue} ${styles.statValueApproved}`}>
           {stats.confirmed ?? 0}
+        </div>
+      </div>
+      <div className={`${styles.statBox} ${styles.statBoxMaybe}`}>
+        <div className={`${styles.statLabel} ${styles.statLabelMaybe}`}>
+          {t("table.maybe")}
+        </div>
+        <div className={`${styles.statValue} ${styles.statValueMaybe}`}>
+          {stats.maybe ?? 0}
         </div>
       </div>
     </div>

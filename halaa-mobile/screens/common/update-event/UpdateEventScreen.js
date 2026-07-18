@@ -294,6 +294,7 @@ const UpdateEventScreen = () => {
           eventDate={formData.eventDate}
           eventTime={formData.eventTime}
           location={formData.address?.address || ""}
+          invitationType={formData.invitationType}
         />
       </SafeAreaView>
     </FormProvider>

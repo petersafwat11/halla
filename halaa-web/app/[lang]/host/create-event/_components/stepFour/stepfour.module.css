@@ -462,7 +462,7 @@
 
 .inviteTypeGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -578,13 +578,34 @@
 }
 
 /* ─── Responsive ─────────────────────────────── */
+@media (max-width: 1400px) {
+  .inviteTypeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 600px) {
   .formSection {
     padding: 0 1.2rem;
   }
 
   .inviteTypeGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .inviteTypeCard {
+    gap: 0.6rem;
+    padding: 1.5rem 0.8rem 1.2rem;
+  }
+
+  .inviteTypeIcons {
+    gap: 0.35rem;
+  }
+
+  .inviteIcon {
+    width: 2.8rem;
+    height: 2.8rem;
   }
 
   .tabBtn {
@@ -604,5 +625,11 @@
   .bubbleText {
     font-size: 1.15rem;
     line-height: 1.85rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .inviteTypeGrid {
+    grid-template-columns: 1fr;
   }
 }

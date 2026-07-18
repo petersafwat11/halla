@@ -2,6 +2,16 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getStatusVisual } from "../../constants/statusColors";
+import { useTranslation } from "../../localization";
+
+const OBJECT_ID_PATTERN = /^[a-f\d]{24}$/i;
+
+const DetailRow = ({ label, value }) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>{label}</Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
 
 /**
  * The long-press menu offers:
@@ -24,22 +34,63 @@ const GuestListItem = ({
   selected = false,
   onToggle,
 }) => {
+  const { t } = useTranslation("events");
+
   const getStatusStyle = (status) => {
     // Backend RSVP default (no response) → treat as "invited" for the tone.
     switch (status) {
       case "confirmed":
+        return {
+          ...getStatusVisual("confirmed"),
+          label: t("guestTableExtras.status.confirmed", "Confirmed"),
+        };
       case "checked_in":
-        return { ...getStatusVisual(status), label: "سأحضر" };
+        return {
+          ...getStatusVisual("checked_in"),
+          label: t("guestTableExtras.status.checkedIn", "Checked in"),
+        };
       case "declined":
-        return { ...getStatusVisual("declined"), label: "اعتذر" };
+        return {
+          ...getStatusVisual("declined"),
+          label: t("guestTableExtras.status.declined", "Declined"),
+        };
       case "maybe":
-        return { ...getStatusVisual("maybe"), label: "ربما" };
+        return {
+          ...getStatusVisual("maybe"),
+          label: t("guestTableExtras.status.maybe", "Maybe"),
+        };
       default:
-        return { ...getStatusVisual("invited"), label: "لم يرد" };
+        return {
+          ...getStatusVisual("invited"),
+          label: t("guestTableExtras.status.invited", "Invited"),
+        };
     }
   };
 
   const statusStyle = getStatusStyle(guest.status);
+  const addedByValue =
+    guest.addedBy?.username ||
+    guest.addedBy?.name ||
+    (typeof guest.addedBy === "string" && !OBJECT_ID_PATTERN.test(guest.addedBy)
+      ? guest.addedBy
+      : null) ||
+    t("guestTableExtras.notAvailable", "—");
+  const invitation = guest.invitation || {};
+  const channel = invitation.effectiveChannel || invitation.method;
+  const sentViaValue = channel
+    ? channel === "whatsapp"
+      ? t("guestTableExtras.whatsapp", "WhatsApp")
+      : invitation.smsFallback
+      ? t("guestTableExtras.smsFallback", "SMS (fallback)")
+      : t("guestTableExtras.sms", "SMS")
+    : t("guestTableExtras.notAvailable", "—");
+  const autoReminderValue = invitation.autoReminderSent
+    ? guest.autoReminderDate
+      ? `${t("guestTableExtras.sent", "Sent")} · ${guest.autoReminderDate}`
+      : t("guestTableExtras.sent", "Sent")
+    : t("guestTableExtras.notSent", "Not sent");
+  const responseTimeValue =
+    guest.responseDate || t("guestTableExtras.noResponse", "No response yet");
 
   const handleRotateQr = () => {
     if (!onRotateQr) return;
@@ -141,18 +192,35 @@ const GuestListItem = ({
         </View>
       </View>
 
-      {/* Response */}
+      {/* Web-table parity: status, added by, delivery channel, reminder, response time. */}
       <View style={styles.responseCard}>
         <View style={styles.responseRow}>
-          <Text style={styles.responseLabel}>حالة الردود</Text>
-          <Text style={styles.responseDate}>{guest.responseDate || "لم يرد بعد"}</Text>
-        </View>
-
-        <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-          <Text style={[styles.statusText, { color: statusStyle.fg }]}>
-            {statusStyle.label}
+          <Text style={styles.responseLabel}>
+            {t("guestList.status", "Status")}
           </Text>
+          <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+            <Text style={[styles.statusText, { color: statusStyle.fg }]}>
+              {statusStyle.label}
+            </Text>
+          </View>
         </View>
+        <View style={styles.detailsDivider} />
+        <DetailRow
+          label={t("guestTableExtras.addedBy", "Added by")}
+          value={addedByValue}
+        />
+        <DetailRow
+          label={t("guestTableExtras.sentVia", "Sent via")}
+          value={sentViaValue}
+        />
+        <DetailRow
+          label={t("guestTableExtras.autoReminder", "Auto reminder")}
+          value={autoReminderValue}
+        />
+        <DetailRow
+          label={t("guestTableExtras.responseTime", "Response time")}
+          value={responseTimeValue}
+        />
       </View>
     </TouchableOpacity>
   );
@@ -248,24 +316,43 @@ const styles = StyleSheet.create({
     padding: 8,
     borderWidth: 1,
     borderColor: "#F5ECE4",
-    gap: 4,
+    gap: 8,
   },
   responseRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  responseDate: {
-    fontSize: 12,
-    fontFamily: "Cairo_400Regular",
-    color: "#656565",
-    lineHeight: 16,
-  },
   responseLabel: {
     fontSize: 12,
     fontFamily: "Cairo_500Medium",
     color: "#656565",
     lineHeight: 16,
+  },
+  detailsDivider: {
+    height: 1,
+    backgroundColor: "#F0E7DE",
+  },
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  detailLabel: {
+    flexShrink: 0,
+    fontSize: 11,
+    fontFamily: "Cairo_500Medium",
+    color: "#8A8A8A",
+    lineHeight: 17,
+  },
+  detailValue: {
+    flex: 1,
+    fontSize: 11,
+    fontFamily: "Cairo_500Medium",
+    color: "#2C2C2C",
+    lineHeight: 17,
+    textAlign: "right",
   },
   messageRow: {
     flexDirection: "row",

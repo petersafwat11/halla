@@ -89,7 +89,11 @@ const sendOTP = async (phoneNumber, lang = 'ar') => {
   };
 
   try {
-    const result = await taqnyat.sendSMS(normalizedPhone, messages[lang] || messages.ar, { sender: 'HalaaApp' });
+    const result = await taqnyat.sendSMS(normalizedPhone, messages[lang] || messages.ar, {
+      sender: 'HalaaApp',
+      sensitive: true,
+      logContext: { purpose: 'auth_otp', metadata: { language: lang } },
+    });
     // taqnyat.sendSMS also signals "soft" failures (HTTP 200 with no
     // messageId, or a recognised error envelope) by returning
     // { success: false, ... } instead of throwing. Without this check the

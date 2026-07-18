@@ -314,6 +314,22 @@
   },
   "guestTableExtras": {
     "autoReminder": "تذكير تلقائي",
-    "sent": "تم الإرسال"
+    "sent": "تم الإرسال",
+    "notSent": "لم يُرسل",
+    "addedBy": "أضافه",
+    "sentVia": "أُرسل عبر",
+    "responseTime": "وقت الرد",
+    "noResponse": "لم يرد بعد",
+    "notAvailable": "—",
+    "whatsapp": "واتساب",
+    "sms": "رسالة نصية",
+    "smsFallback": "رسالة نصية (بديلة)",
+    "status": {
+      "confirmed": "مؤكد",
+      "checkedIn": "حضر",
+      "declined": "معتذر",
+      "maybe": "ربما",
+      "invited": "مدعو"
+    }
   }
 }

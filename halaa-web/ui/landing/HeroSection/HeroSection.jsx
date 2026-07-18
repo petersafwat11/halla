@@ -20,7 +20,6 @@ const HeroSection = ({ lang = "ar" }) => {
           <p className={styles.description}>{t("hero.description")}</p>
 
           <div className={styles.ctaContainer}>
-            <p className={styles.appText}>{t("hero.appText")}</p>
             <AppStoreButtons lang={lang} direction="row" />
           </div>
         </div>

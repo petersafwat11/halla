@@ -67,13 +67,6 @@ function Sidebar({ className, dashboardType: propDashboardType }) {
   };
 
   // Check if item is active
-  const checkIsActive = (item) => {
-    if (item.exactMatch) {
-      return cleanPath === item.path.slice(1);
-    }
-    return cleanPath.startsWith(item.path.slice(1));
-  };
-
   // Determine if we should show the plan box (only for host dashboard)
   const showPlanBox = dashboardType === DASHBOARD_TYPES.HOST;
 
@@ -92,7 +85,7 @@ function Sidebar({ className, dashboardType: propDashboardType }) {
           <ul>
             {navItems.map((item) => {
               const IconComponent = item.icon;
-              const isActive = checkIsActive(item);
+              const isActive = isNavItemActive(item, cleanPath);
 
               return (
                 <li key={item.key}>

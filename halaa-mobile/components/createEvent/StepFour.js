@@ -18,6 +18,7 @@ import {
   ActivityIndicator,
   ScrollView,
   TextInput,
+  useWindowDimensions,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
@@ -74,7 +75,10 @@ const StepFour = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [activeTab, setActiveTab] = useState("onAttend");
   const [showPreview, setShowPreview] = useState(false);
+  const previousCategoryRef = useRef("");
   const { t } = useTranslation("createEvent");
+  const { width: viewportWidth } = useWindowDimensions();
+  const useSingleColumnTypes = viewportWidth < 360;
 
   const categoryLabel = (cat) =>
     cat ? t(`event_types.${cat}`, CATEGORY_LABELS_AR[cat] || cat) : "";
@@ -121,10 +125,13 @@ const StepFour = () => {
     });
   }, [eventName, eventDate, eventTime, address?.address, hostName, t]);
 
-  const { data, isLoading, error } = useHostTaqnyatTemplates({
-    category: category || undefined,
-    type: "invite",
-  });
+  const { data, isLoading, error } = useHostTaqnyatTemplates(
+    {
+      category: category || undefined,
+      type: "invite",
+    },
+    { enabled: Boolean(category) }
+  );
 
   const templates = data?.data?.templates || [];
 
@@ -141,6 +148,15 @@ const StepFour = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const previousCategory = previousCategoryRef.current;
+    if (previousCategory && category && previousCategory !== category) {
+      setValue("selectedTemplate", null, { shouldDirty: true });
+      setValue("taqnyatTemplate", { templateRef: null }, { shouldDirty: true });
+    }
+    previousCategoryRef.current = category;
+  }, [category, setValue]);
+
   const handleTemplateSelect = (template) => {
     const enriched = {
       id: template._id,
@@ -150,6 +166,7 @@ const StepFour = () => {
       language: template.language || "ar",
       hasImageHeader: template.hasImageHeader || false,
       bodyText: template.bodyText,
+      category: template.category || category,
     };
     setValue("selectedTemplate", enriched, { shouldValidate: true });
     setValue("taqnyatTemplate", { templateRef: template._id }, { shouldValidate: false });
@@ -181,7 +198,11 @@ const StepFour = () => {
               return (
                 <TouchableOpacity
                   key={opt.value}
-                  style={[styles.inviteTypeCard, isSelected && styles.inviteTypeCardSelected]}
+                  style={[
+                    styles.inviteTypeCard,
+                    useSingleColumnTypes && styles.inviteTypeCardSingleColumn,
+                    isSelected && styles.inviteTypeCardSelected,
+                  ]}
                   onPress={() =>
                     setValue("invitationType", opt.value, { shouldDirty: true })
                   }
@@ -380,6 +401,7 @@ const StepFour = () => {
         eventTime={eventTime}
         location={address?.address || ""}
         templateData={visualTemplate?.data || {}}
+        invitationType={invitationType}
       />
     </Animated.View>
   );
@@ -579,12 +601,12 @@ const styles = StyleSheet.create({
   inviteTypeGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
+    columnGap: 10,
+    rowGap: 10,
     marginTop: 12,
   },
   inviteTypeCard: {
-    flexBasis: "47%",
-    flexGrow: 1,
+    width: "48%",
     position: "relative",
     alignItems: "center",
     paddingVertical: 16,
@@ -593,6 +615,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#E8E2DA",
     backgroundColor: "#FFF",
+  },
+  inviteTypeCardSingleColumn: {
+    width: "100%",
   },
   inviteTypeCardSelected: {
     borderColor: "#C28E5C",

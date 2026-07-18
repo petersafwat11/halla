@@ -40,6 +40,7 @@
     "noResponse": "No response",
     "declined": "Declined",
     "approved": "Approved",
+    "maybe": "Maybe",
     "quota": {
       "remainingInvites": "Remaining invites",
       "unlimited": "Unlimited"

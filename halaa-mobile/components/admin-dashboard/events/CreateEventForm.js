@@ -365,6 +365,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
             eventDate={formData.eventDate}
             eventTime={formData.eventTime}
             location={formData.address?.address || ""}
+            invitationType={formData.invitationType}
           />
           <YourEventManagedByUsPopup
             visible={showInfoPopup}

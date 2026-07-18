@@ -25,6 +25,10 @@ import { useAuthStore } from "../../stores/authStore";
 import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 import { resolveMediaUri } from "../../utils/resolveMediaUri";
 import DirectionalIonicon from "../common/DirectionalIonicon";
+import {
+  DEFAULT_INVITATION_TYPE,
+  invitationAllowsReply,
+} from "../../utils/invitationTypes";
 
 /**
  * Invitation preview popup. Renders the message exactly as web's
@@ -49,6 +53,7 @@ const PreviewInvitation = ({
   eventDate = null,
   eventTime = "",
   location = "",
+  invitationType = DEFAULT_INVITATION_TYPE,
 }) => {
   const { t } = useTranslation("createEvent");
   const hostName = useAuthStore(
@@ -110,6 +115,7 @@ const PreviewInvitation = ({
   }, [template, templateImage]);
 
   const messageTime = t("preview_timestamp", "9:41");
+  const showReplyActions = invitationAllowsReply(invitationType);
 
   return (
     <Modal
@@ -197,8 +203,10 @@ const PreviewInvitation = ({
             </View>
           </View>
 
-          {/* Quick-reply CTA buttons */}
-          <View style={styles.ctaGroup}>
+        </ScrollView>
+
+          {/* Quick-reply CTA buttons stay visible below long message content. */}
+          {showReplyActions && <View style={styles.ctaGroup}>
             <View style={styles.ctaBtn}>
               <Ionicons name="checkmark-sharp" size={15} color="#0096DE" />
               <Text style={styles.ctaText}>
@@ -219,8 +227,7 @@ const PreviewInvitation = ({
                 {t("whatsapp_invitation_preview_maybe", t("maybe"))}
               </Text>
             </View>
-          </View>
-        </ScrollView>
+          </View>}
 
         {/* Input bar */}
         <View style={styles.inputBar}>
@@ -382,7 +389,9 @@ const styles = StyleSheet.create({
 
   /* CTA buttons */
   ctaGroup: {
-    width: "100%",
+    alignSelf: "stretch",
+    marginHorizontal: 14,
+    marginBottom: 8,
     backgroundColor: "#FFF",
     borderRadius: 9,
     overflow: "hidden",
@@ -391,6 +400,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 1,
     elevation: 1,
+    flexShrink: 0,
   },
   ctaBtn: {
     flexDirection: "row",

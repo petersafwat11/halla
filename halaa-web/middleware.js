@@ -123,15 +123,7 @@ export async function middleware(request) {
     (routePath.startsWith("/vendor/") &&
       !routePath.startsWith("/vendor-dashboard"));
 
-  // If user is authenticated and tries to access the landing page, auto-redirect to dashboard
-  if (userType && (routePath === "/" || routePath === "")) {
-    const redirectPath = getRedirectPath(userType);
-    return NextResponse.redirect(
-      new URL(`/${locale}${redirectPath}`, request.url)
-    );
-  }
-
-  // Allow public routes without auth
+  // Marketing pages stay accessible regardless of authentication state.
   if (
     routePath === "/" ||
     routePath === "" ||

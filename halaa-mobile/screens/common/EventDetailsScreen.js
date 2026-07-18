@@ -118,6 +118,21 @@ const formatDate = (iso) => {
   }
 };
 
+const formatDateTime = (iso) => {
+  if (!iso) return null;
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return null;
+  }
+};
+
 const buildLocationString = (loc) => {
   if (!loc) return null;
   const parts = [loc.name, loc.address, loc.city].filter(Boolean);
@@ -946,9 +961,12 @@ const EventDetailsScreen = () => {
                     guest={{
                       ...g,
                       responseDate: g.rsvp?.respondedAt
-                        ? formatDate(g.rsvp.respondedAt)
+                        ? formatDateTime(g.rsvp.respondedAt)
                         : g.respondedAt
-                        ? formatDate(g.respondedAt)
+                        ? formatDateTime(g.respondedAt)
+                        : null,
+                      autoReminderDate: g.invitation?.autoReminderSentAt
+                        ? formatDateTime(g.invitation.autoReminderSentAt)
                         : null,
                     }}
                     onEdit={handleEditGuest}

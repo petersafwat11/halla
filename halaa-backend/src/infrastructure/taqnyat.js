@@ -21,6 +21,7 @@
 const axios = require('axios');
 const { normalizePhoneNumber } = require('../shared/utils/phone');
 const logger = require('../shared/utils/logger');
+const { recordOutboundMessage } = require('./outboundMessageLog');
 
 const TAQNYAT_CONFIG = {
   baseUrl: process.env.TAQNYAT_BASE_URL || 'https://api.taqnyat.sa',
@@ -64,6 +65,7 @@ const handleWaError = (error) => {
     error: TAQNYAT_ERRORS[code] || data.reason || error.message,
     code,
     details: data.reason,
+    raw: data,
   };
 };
 
@@ -110,7 +112,7 @@ const extractWaMessageId = (data) => {
  */
 const finalizeWaResult = (data, context) => {
   const err = checkWaResponseForError(data);
-  if (err) return err;
+  if (err) return { ...err, raw: data };
 
   const messageId = extractWaMessageId(data);
   if (!messageId) {
@@ -122,8 +124,13 @@ const finalizeWaResult = (data, context) => {
       details: data,
     };
   }
-  return { success: true, messageId, status: 'sent' };
+  return { success: true, messageId, status: 'sent', raw: data };
 };
+
+async function persistResult(logData, result) {
+  const record = await recordOutboundMessage({ ...logData, result });
+  return record ? { ...result, outboundMessageId: record._id.toString() } : result;
+}
 
 // ============================================
 // SMS
@@ -139,21 +146,26 @@ const sendSMS = async (recipient, body, options = {}) => {
     ...(options.scheduledDatetime && { scheduledDatetime: options.scheduledDatetime }),
   };
 
-  const response = await smsClient.post('/v1/messages', payload);
-  // Spec: `{ statusCode, messageId, cost, currency, totalCount, msgLength, accepted, rejected }`
-  const data = response.data || {};
-  if (!data.messageId) {
-    logger.warn('[taqnyat] SMS response had no messageId', { raw: data });
-    return { success: false, error: 'Taqnyat returned no messageId', code: 'NO_MESSAGE_ID', details: data };
-  }
-  return {
-    success: true,
-    messageId: data.messageId,
-    status: 'sent',
-    statusCode: data.statusCode,
-    cost: data.cost,
-    currency: data.currency,
+  const logData = {
+    channel: 'sms', messageType: 'sms', recipients: payload.recipients,
+    sender: payload.sender, payload, context: options.logContext, sensitive: options.sensitive,
   };
+  try {
+    const response = await smsClient.post('/v1/messages', payload);
+    // Spec: `{ statusCode, messageId, cost, currency, totalCount, msgLength, accepted, rejected }`
+    const data = response.data || {};
+    const result = data.messageId
+      ? {
+          success: true, messageId: data.messageId, status: 'sent', statusCode: data.statusCode,
+          cost: data.cost, currency: data.currency, raw: data,
+        }
+      : { success: false, error: 'Taqnyat returned no messageId', code: 'NO_MESSAGE_ID', details: data, raw: data };
+    if (!data.messageId) logger.warn('[taqnyat] SMS response had no messageId', { raw: data });
+    return persistResult(logData, result);
+  } catch (error) {
+    await persistResult(logData, handleWaError(error));
+    throw error;
+  }
 };
 
 const sendBulkSMS = async (recipients, body, options = {}) => {
@@ -167,21 +179,25 @@ const sendBulkSMS = async (recipients, body, options = {}) => {
     ...(options.scheduledDatetime && { scheduledDatetime: options.scheduledDatetime }),
   };
 
-  const response = await smsClient.post('/v1/messages', payload);
-  const data = response.data || {};
-  if (!data.messageId) {
-    logger.warn('[taqnyat] bulk SMS response had no messageId', { raw: data });
-    return { success: false, error: 'Taqnyat returned no messageId', code: 'NO_MESSAGE_ID', details: data };
-  }
-  return {
-    success: true,
-    messageId: data.messageId,
-    recipientCount: normalizedRecipients.length,
-    status: 'sent',
-    statusCode: data.statusCode,
-    cost: data.cost,
-    currency: data.currency,
+  const logData = {
+    channel: 'sms', messageType: 'bulk_sms', recipients: normalizedRecipients,
+    sender: payload.sender, payload, context: options.logContext, sensitive: options.sensitive,
   };
+  try {
+    const response = await smsClient.post('/v1/messages', payload);
+    const data = response.data || {};
+    const result = data.messageId
+      ? {
+          success: true, messageId: data.messageId, recipientCount: normalizedRecipients.length,
+          status: 'sent', statusCode: data.statusCode, cost: data.cost, currency: data.currency, raw: data,
+        }
+      : { success: false, error: 'Taqnyat returned no messageId', code: 'NO_MESSAGE_ID', details: data, raw: data };
+    if (!data.messageId) logger.warn('[taqnyat] bulk SMS response had no messageId', { raw: data });
+    return persistResult(logData, result);
+  } catch (error) {
+    await persistResult(logData, handleWaError(error));
+    throw error;
+  }
 };
 
 // ============================================
@@ -193,7 +209,7 @@ const sendBulkSMS = async (recipients, body, options = {}) => {
  * `components` is the top-level array required by the Taqnyat spec —
  * `[{ type: "body", parameters: [...] }]`.
  */
-const sendWhatsAppTemplate = async (recipient, templateName, language, components, smsFallback = null) => {
+const sendWhatsAppTemplate = async (recipient, templateName, language, components, smsFallback = null, logOptions = {}) => {
   if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
     const payload = {
@@ -207,9 +223,23 @@ const sendWhatsAppTemplate = async (recipient, templateName, language, component
     if (smsFallback) payload.sms = smsFallback;
 
     const response = await waClient.post('/messages/', payload);
-    return finalizeWaResult(response.data, { templateName, recipient });
+    return persistResult({
+      channel: 'whatsapp', messageType: 'template', recipients: [payload.to],
+      sender: smsFallback?.sender || null, payload, context: logOptions.logContext,
+      sensitive: logOptions.sensitive,
+    }, finalizeWaResult(response.data, { templateName, recipient }));
   } catch (error) {
-    return handleWaError(error);
+    const result = handleWaError(error);
+    const payload = {
+      to: normalizePhoneNumber(recipient), type: 'template',
+      template: { name: templateName, language: { code: language } }, components,
+      ...(smsFallback && { sms: smsFallback }),
+    };
+    return persistResult({
+      channel: 'whatsapp', messageType: 'template', recipients: [payload.to],
+      sender: smsFallback?.sender || null, payload, context: logOptions.logContext,
+      sensitive: logOptions.sensitive,
+    }, result);
   }
 };
 
@@ -222,7 +252,8 @@ const sendWhatsAppTemplateWithImage = async (
   language,
   imageUrl,
   bodyParams,
-  smsFallback = null
+  smsFallback = null,
+  logOptions = {}
 ) => {
   if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
@@ -245,14 +276,32 @@ const sendWhatsAppTemplateWithImage = async (
     if (smsFallback) payload.sms = smsFallback;
 
     const response = await waClient.post('/messages/', payload);
-    return finalizeWaResult(response.data, { templateName, recipient, imageUrl });
+    return persistResult({
+      channel: 'whatsapp', messageType: 'template_image', recipients: [payload.to],
+      sender: smsFallback?.sender || null, payload, context: logOptions.logContext,
+      sensitive: logOptions.sensitive,
+    }, finalizeWaResult(response.data, { templateName, recipient, imageUrl }));
   } catch (error) {
-    return handleWaError(error);
+    const result = handleWaError(error);
+    const payload = {
+      to: normalizePhoneNumber(recipient), type: 'template',
+      template: { name: templateName, language: { code: language } },
+      components: [
+        { type: 'header', parameters: [{ type: 'image', image: { link: imageUrl } }] },
+        ...(bodyParams?.length ? [{ type: 'body', parameters: bodyParams.map((text) => ({ type: 'text', text })) }] : []),
+      ],
+      ...(smsFallback && { sms: smsFallback }),
+    };
+    return persistResult({
+      channel: 'whatsapp', messageType: 'template_image', recipients: [payload.to],
+      sender: smsFallback?.sender || null, payload, context: logOptions.logContext,
+      sensitive: logOptions.sensitive,
+    }, result);
   }
 };
 
 /** Free-form WhatsApp text (24-hr session window only). */
-const sendWhatsAppText = async (recipient, text) => {
+const sendWhatsAppText = async (recipient, text, logOptions = {}) => {
   if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
     const payload = {
@@ -261,14 +310,21 @@ const sendWhatsAppText = async (recipient, text) => {
       text: { body: text },
     };
     const response = await waClient.post('/messages/', payload);
-    return finalizeWaResult(response.data, { type: 'text', recipient });
+    return persistResult({
+      channel: 'whatsapp', messageType: 'text', recipients: [payload.to], payload,
+      context: logOptions.logContext, sensitive: logOptions.sensitive,
+    }, finalizeWaResult(response.data, { type: 'text', recipient }));
   } catch (error) {
-    return handleWaError(error);
+    const payload = { to: normalizePhoneNumber(recipient), type: 'text', text: { body: text } };
+    return persistResult({
+      channel: 'whatsapp', messageType: 'text', recipients: [payload.to], payload,
+      context: logOptions.logContext, sensitive: logOptions.sensitive,
+    }, handleWaError(error));
   }
 };
 
 /** Free-form WhatsApp image with caption (24-hr session window only). */
-const sendWhatsAppImage = async (recipient, imageUrl, caption) => {
+const sendWhatsAppImage = async (recipient, imageUrl, caption, logOptions = {}) => {
   if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
   try {
     const payload = {
@@ -277,9 +333,16 @@ const sendWhatsAppImage = async (recipient, imageUrl, caption) => {
       image: { link: imageUrl, caption },
     };
     const response = await waClient.post('/messages/', payload);
-    return finalizeWaResult(response.data, { type: 'image', recipient, imageUrl });
+    return persistResult({
+      channel: 'whatsapp', messageType: 'image', recipients: [payload.to], payload,
+      context: logOptions.logContext, sensitive: logOptions.sensitive,
+    }, finalizeWaResult(response.data, { type: 'image', recipient, imageUrl }));
   } catch (error) {
-    return handleWaError(error);
+    const payload = { to: normalizePhoneNumber(recipient), type: 'image', image: { link: imageUrl, caption } };
+    return persistResult({
+      channel: 'whatsapp', messageType: 'image', recipients: [payload.to], payload,
+      context: logOptions.logContext, sensitive: logOptions.sensitive,
+    }, handleWaError(error));
   }
 };
 
@@ -427,4 +490,6 @@ module.exports = {
   deleteTemplate,
   checkBalance,
   TAQNYAT_CONFIG,
+  // Transport injection point for isolated tests; never used by runtime code.
+  __test: { smsClient, waClient },
 };

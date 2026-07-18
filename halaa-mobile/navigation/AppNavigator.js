@@ -61,6 +61,7 @@ const VendorSettingsStackNav = createStackNavigator();
 const HomeStackNav = createStackNavigator();
 const VendorHomeStackNav = createStackNavigator();
 const MarketplaceStackNav = createStackNavigator();
+const HostEventsStackNav = createStackNavigator();
 
 // Plans tab — branches on account type. A business account is still
 // `role:host` (so it uses host navigation), but its "Plans" tab must show the
@@ -133,6 +134,18 @@ function MarketplaceStackNavigator() {
   );
 }
 
+function HostEventsStackNavigator() {
+  return (
+    <HostEventsStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <HostEventsStackNav.Screen name="EventsList" component={EventsScreen} />
+      <HostEventsStackNav.Screen name="CreateEventScreen" component={CreateEventScreen} />
+      <HostEventsStackNav.Screen name="EventDetails" component={EventDetailsScreen} />
+      <HostEventsStackNav.Screen name="UpdateEventScreen" component={UpdateEventScreen} />
+      <HostEventsStackNav.Screen name="ManagePostEvent" component={ManagePostEventScreen} />
+    </HostEventsStackNav.Navigator>
+  );
+}
+
 // Host Tab Navigator (for authenticated hosts)
 function HostTabNavigator() {
   const { t } = useTranslation("common");
@@ -180,7 +193,7 @@ function HostTabNavigator() {
       />
       <Tab.Screen
         name="Events"
-        component={EventsScreen}
+        component={HostEventsStackNavigator}
         options={{ tabBarLabel: t("navigation.events") }}
       />
       <Tab.Screen
@@ -349,14 +362,10 @@ function HostStack() {
       }}
     >
       <Stack.Screen name="MainTabs" component={HostTabNavigator} />
-      <Stack.Screen name="CreateEventScreen" component={CreateEventScreen} />
-      <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
-      <Stack.Screen name="UpdateEventScreen" component={UpdateEventScreen} />
       <Stack.Screen name="PlansSummary" component={PlansSummaryScreen} />
       <Stack.Screen name="AddonsPurchase" component={AddonsPurchaseScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
-      <Stack.Screen name="ManagePostEvent" component={ManagePostEventScreen} />
       <Stack.Screen name="Invitation" component={InvitationScreen} />
       <Stack.Screen name="PaymentReturn" component={PaymentReturnScreen} />
       <Stack.Screen name="Payments" component={PaymentsScreen} />

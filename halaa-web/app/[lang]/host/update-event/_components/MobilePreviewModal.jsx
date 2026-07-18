@@ -32,6 +32,7 @@ const MobilePreviewModal = ({ formData, locale, onClose }) => (
         eventTime={formData.eventTime || ""}
         locationAddress={formData.address?.address || ""}
         locale={locale}
+        invitationType={formData.invitationType}
         forceShow={true}
       />
     </div>
