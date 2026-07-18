@@ -140,6 +140,37 @@
   gap: 0.6rem;
 }
 
+.modeField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.capabilityCard {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid #e6ddd2;
+  border-radius: 0.8rem;
+  background: #fbf8f4;
+  color: #5d5147;
+  font-size: 1.2rem;
+}
+
+.capabilityCard strong {
+  color: #3a3028;
+}
+
+.capabilityCard small {
+  color: #8a6e52;
+  line-height: 1.5;
+}
+
+.capabilityCard .capabilityError {
+  color: #a33b32;
+  font-weight: 600;
+}
+
 .typeLabel {
   font-size: 1.3rem;
   font-weight: 500;

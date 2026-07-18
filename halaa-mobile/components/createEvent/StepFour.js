@@ -76,6 +76,7 @@ const StepFour = () => {
   const [activeTab, setActiveTab] = useState("onAttend");
   const [showPreview, setShowPreview] = useState(false);
   const previousCategoryRef = useRef("");
+  const previousInvitationTypeRef = useRef("");
   const { t } = useTranslation("createEvent");
   const { width: viewportWidth } = useWindowDimensions();
   const useSingleColumnTypes = viewportWidth < 360;
@@ -129,6 +130,7 @@ const StepFour = () => {
     {
       category: category || undefined,
       type: "invite",
+      invitationMode: invitationType,
     },
     { enabled: Boolean(category) }
   );
@@ -157,6 +159,15 @@ const StepFour = () => {
     previousCategoryRef.current = category;
   }, [category, setValue]);
 
+  useEffect(() => {
+    const previousMode = previousInvitationTypeRef.current;
+    if (previousMode && previousMode !== invitationType) {
+      setValue("selectedTemplate", null, { shouldDirty: true });
+      setValue("taqnyatTemplate", { templateRef: null }, { shouldDirty: true });
+    }
+    previousInvitationTypeRef.current = invitationType;
+  }, [invitationType, setValue]);
+
   const handleTemplateSelect = (template) => {
     const enriched = {
       id: template._id,
@@ -167,6 +178,8 @@ const StepFour = () => {
       hasImageHeader: template.hasImageHeader || false,
       bodyText: template.bodyText,
       category: template.category || category,
+      invitationMode: template.invitationMode || invitationType,
+      buttons: template.buttons || [],
     };
     setValue("selectedTemplate", enriched, { shouldValidate: true });
     setValue("taqnyatTemplate", { templateRef: template._id }, { shouldValidate: false });

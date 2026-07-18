@@ -44,11 +44,13 @@ const TEMPLATE_TYPES = [
   'post_event',
   'staff_access',
 ];
+const INVITATION_MODES = ['reply_and_qr', 'reply_only', 'qr_only', 'none'];
 
 const assignMappingSchema = z
   .object({
     category: z.string().nullable().optional(),
     type: z.enum(TEMPLATE_TYPES).nullable().optional(),
+    invitationMode: z.enum(INVITATION_MODES).nullable().optional(),
     varMapping: z.array(varMappingEntry).optional(),
     active: z.boolean().optional(),
     sortOrder: z.number().int().min(0).optional(),
@@ -57,11 +59,18 @@ const assignMappingSchema = z
   .superRefine((data, ctx) => {
     // staff_access is global (no category required); all other typed
     // assignments require a category so cron lookups by (category,type) work.
-    if (data.type && data.type !== 'staff_access' && data.category === '') {
+    if (data.type && data.type !== 'staff_access' && !data.category) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['category'],
         message: 'category is required for this template type',
+      });
+    }
+    if (data.type && data.type !== 'invite' && data.invitationMode) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['invitationMode'],
+        message: 'invitationMode is only valid for invite templates',
       });
     }
   });
@@ -70,6 +79,7 @@ const listForHostQuerySchema = z
   .object({
     category: z.string().optional(),
     type: z.enum(TEMPLATE_TYPES).optional(),
+    invitationMode: z.enum(INVITATION_MODES).optional(),
   })
   .strict();
 
@@ -78,4 +88,5 @@ module.exports = {
   assignMappingSchema,
   listForHostQuerySchema,
   TEMPLATE_TYPES,
+  INVITATION_MODES,
 };

@@ -39,16 +39,22 @@
     "description": "Elegant, fully customizable designs for weddings, formal events, and special celebrations — all sent automatically via WhatsApp."
   },
   "howItWorks": {
-    "eyebrow": "How It Works",
-    "title": "Four Steps to a Perfect Event",
-    "sub": "From creation to check-in — everything in one platform.",
+    "eyebrow": "Your guide to Halaa",
+    "title": "Your event is ready in five clear steps",
+    "sub": "A quick product tour showing exactly what to do, from adding event details to checking in your final guest.",
+    "stepLabel": "Step {{current}} of {{total}}",
+    "shortStep": "Step {{number}}",
+    "stepsLabel": "Steps to create and manage an event",
+    "goToStep": "Go to step {{number}}",
+    "swipeHint": "Swipe the preview or use the arrows to move between steps",
     "prevBtn": "Previous",
     "nextBtn": "Next",
     "steps": [
-      { "n": "1", "title": "Create Your Event", "desc": "Set the event type, add the location, timing, and guest details with ease." },
-      { "n": "2", "title": "Send Invitations", "desc": "Choose the ideal invitation design and message format, then send it to your guests via WhatsApp." },
-      { "n": "3", "title": "Track Responses", "desc": "Monitor guest responses through the smart and intuitive control panel." },
-      { "n": "4", "title": "Welcome Guests", "desc": "Track attendance on event day with speed and accuracy by scanning the QR code at the entrance." }
+      { "label": "Start with the basics", "title": "Add your event details", "desc": "Enter the event name, then choose its type, date, time, and venue. These details will appear on the invitation your guests receive.", "imageAlt": "Halaa screen for adding an event name, type, date, time, and location" },
+      { "label": "Review before sending", "title": "Send yourself a test invite", "desc": "Enter your mobile number and send a test copy to check the invitation and message exactly as your guests will see them.", "imageAlt": "Halaa dialog for sending a test invitation to a mobile number" },
+      { "label": "Choose the moment", "title": "Schedule your invitations", "desc": "Pick the send date and time, then confirm. Halaa will deliver every invitation automatically at the moment you choose.", "imageAlt": "Halaa dialog for choosing the invitation send date and time" },
+      { "label": "Stay on top of replies", "title": "Track responses and send reminders", "desc": "See who accepted, declined, or has not replied yet, and remind guests directly from the same event screen.", "imageAlt": "Halaa guest management screen showing invitation responses" },
+      { "label": "On event day", "title": "Check guests in", "desc": "Open the QR scanner at the entrance to record attendance instantly and follow every guest's status accurately.", "imageAlt": "Halaa event details and QR scanner screen for guest check-in" }
     ]
   },
   "testimonials": {

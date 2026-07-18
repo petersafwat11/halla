@@ -151,6 +151,14 @@ export default function TaqnyatTemplatesTable({
       );
     }
 
+    if (key === "invitationMode") {
+      return value ? (
+        <span className={styles.categoryAssigned}>
+          {t(`taqnyat.invitationModes.${value}`, value)}
+        </span>
+      ) : "—";
+    }
+
     return value;
   };
 
@@ -162,6 +170,7 @@ export default function TaqnyatTemplatesTable({
     status: tpl.status,
     category: tpl.category,
     type: tpl.type || null,
+    invitationMode: tpl.type === "invite" ? tpl.invitationMode : null,
     mappingCount: tpl.varMapping?.length || 0,
     active: tpl.active !== false,
   }));
@@ -207,6 +216,7 @@ export default function TaqnyatTemplatesTable({
             t("taqnyat.col.status", "الحالة"),
             t("taqnyat.col.category", "الفئة"),
             t("taqnyat.col.type", "النوع"),
+            t("taqnyat.col.invitationMode", "وضع الدعوة"),
             t("taqnyat.col.mappingCount", "المتغيرات"),
             t("taqnyat.col.active", "نشط"),
           ]}

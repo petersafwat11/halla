@@ -6,7 +6,11 @@
 
 const taqnyat = require('../../infrastructure/taqnyat');
 const Guest = require('../../../models/GuestModel');
-const { updateOutboundDeliveryStatus } = require('../../infrastructure/outboundMessageLog');
+const OutboundMessage = require('../../../models/OutboundMessageModel');
+const {
+  updateOutboundDeliveryStatus,
+  markOutboundSmsFallback,
+} = require('../../infrastructure/outboundMessageLog');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
 // Use the gated notifications service so a host who turned off
 // `guestResponses` in Settings doesn't get a WhatsApp-RSVP push.
@@ -58,6 +62,12 @@ async function updateDeliveryStatus(messageId, status, timestamp) {
  * imports.
  */
 async function markGuestAsSmsFallback(messageId) {
+  await markOutboundSmsFallback(messageId).catch((error) => {
+    logger.error('[Messaging] Failed to mark outbound SMS fallback', {
+      messageId,
+      error: error.message,
+    });
+  });
   return Guest.findOneAndUpdate(
     { 'invitation.messageId': messageId },
     {
@@ -78,7 +88,12 @@ async function markGuestAsSmsFallback(messageId) {
  * to SMS for the QR delivery if the WhatsApp 24h conversation window has
  * expired.
  */
-async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
+async function handleButtonResponse({
+  phoneNumber,
+  buttonText,
+  messageId,
+  originalMessageId,
+}) {
   // Build phone-format variants — Meta sends e.g. "966512345678"; the DB
   // may store "0512345678" or "512345678".
   const normalized = normalizePhoneNumber(phoneNumber);
@@ -89,9 +104,38 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
     phoneVariants.add('0' + digits.slice(3));
   }
 
-  const guest = await Guest.findOne({ phone: { $in: Array.from(phoneVariants) } })
-    .sort({ 'invitation.sentAt': -1 })
-    .populate('event');
+  let guest = null;
+  if (originalMessageId) {
+    const outbound = await OutboundMessage.findOne({
+      provider: 'taqnyat',
+      providerMessageId: originalMessageId,
+    }).select('guest purpose');
+
+    if (outbound?.purpose === 'event_test_message') {
+      logger.info('[Messaging] Ignoring button click from a test invitation', {
+        messageId,
+        originalMessageId,
+      });
+      return { success: false, error: 'TEST_REPLY_IGNORED' };
+    }
+
+    if (outbound?.guest) {
+      guest = await Guest.findOne({
+        _id: outbound.guest,
+        phone: { $in: Array.from(phoneVariants) },
+      }).populate('event');
+    }
+  }
+
+  if (!guest) {
+    logger.warn('[Messaging] Falling back to phone-only RSVP resolution', {
+      messageId,
+      originalMessageId: originalMessageId || null,
+    });
+    guest = await Guest.findOne({ phone: { $in: Array.from(phoneVariants) } })
+      .sort({ 'invitation.sentAt': -1 })
+      .populate('event');
+  }
 
   if (!guest || !guest.event) {
     logger.warn('[Messaging] Guest not found for phone variants — sending default reply', {
@@ -100,7 +144,9 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
     });
     const defaultReply = 'شكراً لردك! لم يتم العثور على بياناتك في النظام.';
     try {
-      await taqnyat.sendWhatsAppText(phoneNumber, defaultReply);
+      await taqnyat.sendWhatsAppText(phoneNumber, defaultReply, {
+        logContext: { purpose: 'rsvp_unknown_guest_reply' },
+      });
     } catch (e) {
       logger.error('[Messaging] Failed to send default reply to unknown guest', {
         error: e.message,
@@ -110,6 +156,14 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
   }
 
   const event = guest.event;
+  const replyLogOptions = {
+    logContext: {
+      eventId: event._id,
+      guestId: guest._id,
+      purpose: 'rsvp_auto_reply',
+      metadata: { inboundMessageId: messageId || null },
+    },
+  };
 
   if (!invitationAllowsReply(event.invitationType)) {
     logger.warn('[Messaging] Ignoring RSVP button for a no-reply invitation', {
@@ -181,13 +235,16 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
   // a reply_only invitation (no QR) — get a plain text reply.
   if (rsvpStatus !== 'confirmed' || !invitationIncludesQr(event.invitationType)) {
     try {
-      const waResult = await taqnyat.sendWhatsAppText(phoneNumber, replyMessage);
+      const waResult = await taqnyat.sendWhatsAppText(phoneNumber, replyMessage, replyLogOptions);
       if (!waResult.success) throw new Error(waResult.error || 'WA text failed');
     } catch (waErr) {
       logger.warn('[Messaging] WhatsApp text reply failed, falling back to SMS', {
         error: waErr.message,
       });
-      await taqnyat.sendSMS(phoneNumber, replyMessage, { sender: TAQNYAT_SENDER });
+      await taqnyat.sendSMS(phoneNumber, replyMessage, {
+        sender: TAQNYAT_SENDER,
+        logContext: { ...replyLogOptions.logContext, purpose: 'rsvp_auto_reply_sms_fallback' },
+      });
     }
     return { success: true, status: rsvpStatus };
   }
@@ -202,7 +259,12 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
   // sendWhatsAppImage uses the 24h conversation window (session message).
   // If the window has expired, fall back to SMS with the QR link as text.
   try {
-    const waResult = await taqnyat.sendWhatsAppImage(phoneNumber, qrCodeUrl, caption);
+    const waResult = await taqnyat.sendWhatsAppImage(
+      phoneNumber,
+      qrCodeUrl,
+      caption,
+      { ...replyLogOptions, logContext: { ...replyLogOptions.logContext, purpose: 'rsvp_qr_reply' } }
+    );
     if (!waResult.success) {
       throw new Error(waResult.error || 'WA image failed');
     }
@@ -214,7 +276,10 @@ async function handleButtonResponse({ phoneNumber, buttonText, messageId }) {
     await taqnyat.sendSMS(
       phoneNumber,
       `${caption}\nرمز الدخول الخاص بك: ${qrCodeUrl}`,
-      { sender: TAQNYAT_SENDER }
+      {
+        sender: TAQNYAT_SENDER,
+        logContext: { ...replyLogOptions.logContext, purpose: 'rsvp_qr_sms_fallback' },
+      }
     );
   }
 

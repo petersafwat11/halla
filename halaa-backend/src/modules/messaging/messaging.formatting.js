@@ -6,6 +6,7 @@
 const TaqnyatTemplate = require('../../../models/TaqnyatTemplateModel');
 const { formatRiyadh } = require('../../shared/utils/timezone');
 const logger = require('../../shared/utils/logger');
+const { INVITATION_TYPE } = require('../../shared/constants');
 
 const TAQNYAT_SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp';
 
@@ -139,6 +140,27 @@ function getEventImageUrl(event, taqnyatTemplate = null) {
   return null;
 }
 
+/** Build the provider parameter for a QR-only template's dynamic URL CTA. */
+function buildInvitationUrlButton(event, taqnyatTemplate, invitationCode, lang = 'ar') {
+  if (event?.invitationType !== INVITATION_TYPE.QR_ONLY) return null;
+  const button = (taqnyatTemplate?.buttons || []).find(
+    (candidate) => String(candidate?.type || '').toUpperCase() === 'URL'
+  );
+  if (!button || !/\{\{\d+\}\}/.test(button.url || '')) return null;
+
+  const staticPrefix = String(button.url).split(/\{\{\d+\}\}/)[0];
+  const text = /\/invitation\/$/.test(staticPrefix)
+    ? String(invitationCode)
+    : `${lang === 'en' ? 'en' : 'ar'}/invitation/${invitationCode}`;
+
+  return {
+    type: 'button',
+    sub_type: 'url',
+    index: String(button.index || 0),
+    parameters: [{ type: 'text', text }],
+  };
+}
+
 /**
  * Build body params for a post-event Taqnyat template variable.
  *
@@ -221,6 +243,7 @@ module.exports = {
   getEventBodyParams,
   buildSmsBody,
   getEventImageUrl,
+  buildInvitationUrlButton,
   getPostEventBodyParams,
   buildPostEventAccessLinkSmsBody,
 };

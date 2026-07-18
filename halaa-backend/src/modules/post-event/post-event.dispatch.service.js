@@ -77,7 +77,15 @@ const buildSendArgs = (event, guest, template, accessLink, expiresAt) => {
  * Dispatch one WhatsApp template message, routing through the image-header
  * variant when the template requires an IMAGE header.
  */
-const dispatchTemplate = (phone, template, language, bodyParams, imageUrl, smsFallback) => {
+const dispatchTemplate = (
+  phone,
+  template,
+  language,
+  bodyParams,
+  imageUrl,
+  smsFallback,
+  logOptions = {}
+) => {
   if (imageUrl) {
     return taqnyat.sendWhatsAppTemplateWithImage(
       phone,
@@ -85,7 +93,8 @@ const dispatchTemplate = (phone, template, language, bodyParams, imageUrl, smsFa
       language,
       imageUrl,
       bodyParams,
-      smsFallback
+      smsFallback,
+      logOptions
     );
   }
   return taqnyat.sendWhatsAppTemplate(
@@ -98,7 +107,8 @@ const dispatchTemplate = (phone, template, language, bodyParams, imageUrl, smsFa
         parameters: bodyParams.map((text) => ({ type: 'text', text })),
       },
     ],
-    smsFallback
+    smsFallback,
+    logOptions
   );
 };
 
@@ -192,7 +202,15 @@ async function sendBulkAccessLinks(
             language,
             bodyParams,
             imageUrl,
-            smsFallback
+            smsFallback,
+            {
+              logContext: {
+                eventId: event._id,
+                guestId: t.guest._id,
+                userId: actorId || null,
+                purpose: 'post_event_access',
+              },
+            }
           );
         },
         { scope: 'post_event_access', userId: actorId, requestHash }
@@ -352,7 +370,14 @@ async function autoNotifyAfterPublish(event, content) {
             language,
             bodyParams,
             imageUrl,
-            smsFallback
+            smsFallback,
+            {
+              logContext: {
+                eventId: event._id,
+                guestId: guest._id,
+                purpose: 'post_event_publish',
+              },
+            }
           );
         },
         { scope: 'post_event_publish', requestHash }

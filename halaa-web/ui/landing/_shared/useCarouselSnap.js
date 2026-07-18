@@ -16,11 +16,17 @@ const WHEEL_THROTTLE_MS = 420;
  *  - Direction-agnostic math: handles RTL containers where scrollLeft is
  *    negative without forcing dir="ltr" on the track.
  */
-export default function useCarouselSnap({ gap = 14, totalItems }) {
+export default function useCarouselSnap({
+  gap = 14,
+  totalItems,
+  captureWheel = true,
+}) {
   const trackRef = useRef(null);
   const throttleRef = useRef(false);
   const programmaticRef = useRef(false);
   const programmaticTimerRef = useRef(null);
+  const scrollFrameRef = useRef(null);
+  const metricsRef = useRef(null);
   const idxRef = useRef(0);
   const [idx, setIdx] = useState(0);
   const [maxIdx, setMaxIdx] = useState(0);
@@ -29,18 +35,21 @@ export default function useCarouselSnap({ gap = 14, totalItems }) {
     const el = trackRef.current;
     if (!el) return null;
     const cardW = el.firstElementChild?.offsetWidth || 0;
-    const step = cardW + gap;
+    const styles = getComputedStyle(el);
+    const renderedGap = Number.parseFloat(styles.columnGap || styles.gap);
+    const actualGap = Number.isFinite(renderedGap) ? renderedGap : gap;
+    const step = cardW + actualGap;
     if (step <= 0) return null;
     // Source of truth for the last reachable index is the actual scrollable
     // extent. Visible-count math (totalItems - floor((clientWidth+gap)/step))
     // overshoots when padding/trailing-gap make scrollWidth ≠ N×step, and a
     // dot the user can't actually reach feels broken.
-    const visible = Math.max(1, Math.floor((el.clientWidth + gap) / step));
+    const visible = Math.max(1, Math.floor((el.clientWidth + actualGap) / step));
     const visibleMax = Math.max(0, totalItems - visible);
     const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
     const scrollMax = Math.round(maxScrollLeft / step);
     const max = Math.min(visibleMax, scrollMax);
-    const isRTL = getComputedStyle(el).direction === "rtl";
+    const isRTL = styles.direction === "rtl";
     return { step, maxIdx: max, isRTL };
   }, [gap, totalItems]);
 
@@ -48,23 +57,41 @@ export default function useCarouselSnap({ gap = 14, totalItems }) {
     const update = () => {
       const m = getMetrics();
       if (!m) return;
+      metricsRef.current = m;
       setMaxIdx(m.maxIdx);
-      setIdx((i) => Math.min(i, m.maxIdx));
+      setIdx((i) => {
+        const next = Math.min(i, m.maxIdx);
+        idxRef.current = next;
+        return next;
+      });
     };
     update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    const el = trackRef.current;
+    const observer = typeof ResizeObserver === "undefined"
+      ? null
+      : new ResizeObserver(update);
+    if (el) observer?.observe(el);
+    if (el?.firstElementChild) observer?.observe(el.firstElementChild);
+    window.addEventListener("resize", update, { passive: true });
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", update);
+    };
   }, [getMetrics]);
 
   const scrollToIdx = useCallback(
     (i) => {
       const el = trackRef.current;
-      const m = getMetrics();
+      const m = metricsRef.current || getMetrics();
       if (!el || !m) return;
       const clamped = Math.min(Math.max(0, i), m.maxIdx);
       const target = clamped * m.step;
       programmaticRef.current = true;
-      el.scrollTo({ left: m.isRTL ? -target : target, behavior: "smooth" });
+      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      el.scrollTo({
+        left: m.isRTL ? -target : target,
+        behavior: reduceMotion ? "auto" : "smooth",
+      });
       idxRef.current = clamped;
       setIdx(clamped);
       clearTimeout(programmaticTimerRef.current);
@@ -80,18 +107,24 @@ export default function useCarouselSnap({ gap = 14, totalItems }) {
 
   const handleScroll = useCallback(() => {
     if (programmaticRef.current) return;
-    const el = trackRef.current;
-    const m = getMetrics();
-    if (!el || !m) return;
-    const pos = Math.abs(el.scrollLeft);
-    const next = Math.min(Math.max(0, Math.round(pos / m.step)), m.maxIdx);
-    idxRef.current = next;
-    setIdx(next);
+    if (scrollFrameRef.current !== null) return;
+
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      scrollFrameRef.current = null;
+      const el = trackRef.current;
+      const m = metricsRef.current || getMetrics();
+      if (!el || !m) return;
+      const pos = Math.abs(el.scrollLeft);
+      const next = Math.min(Math.max(0, Math.round(pos / m.step)), m.maxIdx);
+      if (idxRef.current === next) return;
+      idxRef.current = next;
+      setIdx(next);
+    });
   }, [getMetrics]);
 
   useEffect(() => {
     const el = trackRef.current;
-    if (!el) return;
+    if (!el || !captureWheel) return;
     const onWheel = (e) => {
       if (el.scrollWidth <= el.clientWidth) return;
       e.preventDefault();
@@ -105,9 +138,14 @@ export default function useCarouselSnap({ gap = 14, totalItems }) {
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [scrollToIdx]);
+  }, [captureWheel, scrollToIdx]);
 
-  useEffect(() => () => clearTimeout(programmaticTimerRef.current), []);
+  useEffect(() => () => {
+    clearTimeout(programmaticTimerRef.current);
+    if (scrollFrameRef.current !== null) {
+      cancelAnimationFrame(scrollFrameRef.current);
+    }
+  }, []);
 
   return { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll };
 }

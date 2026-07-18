@@ -27,14 +27,19 @@ router.use(protect);
  *   get:
  *     tags: [TaqnyatTemplates]
  *     summary: List active host-facing Taqnyat templates
- *     description: Returns active + APPROVED templates the host can pick in the wizard. Filtered by `category` when provided.
+ *     description: Returns active + APPROVED templates the host can pick in the wizard. Filtered by category, purpose, and invitation mode.
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: category
  *         schema: { type: string }
-  *         description: Halaa-side category code (e.g. wedding, engagement).
+ *         description: Halaa-side category code (e.g. wedding, engagement).
+ *       - in: query
+ *         name: invitationMode
+ *         schema:
+ *           type: string
+ *           enum: [reply_and_qr, reply_only, qr_only, none]
  *     responses:
  *       200:
  *         description: Templates list

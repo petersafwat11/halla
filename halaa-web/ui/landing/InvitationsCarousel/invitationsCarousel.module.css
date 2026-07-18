@@ -57,6 +57,7 @@
   width: 100%;
   max-width: 1400px;
   scrollbar-width: none;
+  overscroll-behavior-inline: contain;
 }
 
 .carousel::-webkit-scrollbar {
@@ -76,7 +77,9 @@
   overflow: hidden;
   transition: transform 0.3s;
   scroll-snap-align: start;
+  scroll-snap-stop: normal;
   flex-shrink: 0;
+  contain: layout paint style;
 }
 
 .invitationCard:hover {
@@ -92,6 +95,8 @@
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 /* ── Controls: arrows + sliding dots (mirrors VendorSearchSection) ── */
@@ -250,5 +255,17 @@
   .invitationCard img {
     width: 138px;
     height: 190px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel {
+    scroll-behavior: auto;
+  }
+
+  .invitationCard,
+  .ctrlBtn,
+  .dot {
+    transition: none;
   }
 }

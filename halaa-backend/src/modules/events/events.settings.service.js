@@ -4,7 +4,7 @@
  * @module modules/events/events.settings.service
  */
 
-const { EVENT_STATUS } = require("../../shared/constants");
+const { EVENT_STATUS, INVITATION_TYPE } = require("../../shared/constants");
 const {
   NotFoundError,
   ValidationError,
@@ -37,6 +37,7 @@ const { EVENT_EDIT_LOCKED, REMINDER_OUT_OF_RANGE } = require('../../shared/const
 
 const { logAudit } = require('../../shared/utils/auditLog');
 const { isAdminRole } = require('../../shared/constants/roles');
+const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
 
 module.exports = {
   /**
@@ -154,8 +155,16 @@ module.exports = {
     // re-validation only run when it does (a title-only edit on a
     // near-term event must not be rejected). Mirrors _checkEditLock.
     const dateTimeChanging = details.date !== undefined || details.time !== undefined;
+    const previousCategory = event.eventDetails?.type;
 
     event.eventDetails = { ...event.eventDetails, ...details };
+
+    // A WhatsApp template assignment is category-specific. Clear the stale
+    // reference atomically with the Step-1 category change; Step 4 will require
+    // the host to choose a compatible replacement before launch.
+    if (details.type && details.type !== previousCategory) {
+      event.taqnyatTemplate = { templateRef: null };
+    }
 
     if (dateTimeChanging) {
       const isTrial = isTrialFromPlan(event.planId);
@@ -304,6 +313,14 @@ module.exports = {
     if (settings.templateImage !== undefined) {
       event.templateImage = settings.templateImage;
     }
+
+    await taqnyatTemplatesService.assertInviteTemplateCompatible(
+      event.taqnyatTemplate?.templateRef,
+      {
+        category: event.eventDetails?.type,
+        invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+      }
+    );
 
     await event.save();
 

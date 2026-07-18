@@ -1,0 +1,106 @@
+/**
+ * Pure helpers for the controls embedded in approved WhatsApp templates.
+ * `type` describes the template purpose; `invitationMode` describes the
+ * exact invitation journey that the template is safe to power.
+ */
+
+const { INVITATION_TYPE } = require('../../shared/constants');
+
+const INVITATION_MODES = Object.values(INVITATION_TYPE);
+const REQUIRED_RSVP_BUTTON_TEXTS = ['سأحضر', 'سأعتذر', 'ربما'];
+
+function normalizeTemplateButtons(components = []) {
+  const buttonsComponent = components.find(
+    (component) => String(component?.type || '').toUpperCase() === 'BUTTONS'
+  );
+
+  return (buttonsComponent?.buttons || []).map((button, index) => ({
+    type: String(button?.type || '').toUpperCase(),
+    text: String(button?.text || '').trim(),
+    url: String(button?.url || ''),
+    index,
+  }));
+}
+
+function getButtonCapability(buttons = []) {
+  const normalized = buttons.map((button, index) => ({
+    type: String(button?.type || '').toUpperCase(),
+    text: String(button?.text || '').trim(),
+    url: String(button?.url || ''),
+    index: Number.isInteger(button?.index) ? button.index : index,
+  }));
+  const quickReplyCount = normalized.filter((button) => button.type === 'QUICK_REPLY').length;
+  const urlButtonCount = normalized.filter((button) => button.type === 'URL').length;
+  const dynamicUrlButtonCount = normalized.filter(
+    (button) => button.type === 'URL' && /\{\{\d+\}\}/.test(button.url)
+  ).length;
+  const unknownButtonCount = normalized.length - quickReplyCount - urlButtonCount;
+  const quickReplyTexts = normalized
+    .filter((button) => button.type === 'QUICK_REPLY')
+    .map((button) => button.text);
+  const quickReplyLabelsValid =
+    quickReplyTexts.length === REQUIRED_RSVP_BUTTON_TEXTS.length &&
+    REQUIRED_RSVP_BUTTON_TEXTS.every((text) => quickReplyTexts.includes(text));
+
+  let kind = 'unsupported';
+  let compatibleInvitationModes = [];
+  if (normalized.length === 0) {
+    kind = 'none';
+    compatibleInvitationModes = [INVITATION_TYPE.NONE];
+  } else if (
+    normalized.length === 3 &&
+    quickReplyCount === 3 &&
+    quickReplyLabelsValid
+  ) {
+    kind = 'three_quick_replies';
+    compatibleInvitationModes = [
+      INVITATION_TYPE.REPLY_AND_QR,
+      INVITATION_TYPE.REPLY_ONLY,
+    ];
+  } else if (normalized.length === 1 && dynamicUrlButtonCount === 1) {
+    kind = 'dynamic_url';
+    compatibleInvitationModes = [INVITATION_TYPE.QR_ONLY];
+  }
+
+  return {
+    kind,
+    buttonCount: normalized.length,
+    quickReplyCount,
+    urlButtonCount,
+    dynamicUrlButtonCount,
+    unknownButtonCount,
+    quickReplyLabelsValid,
+    compatibleInvitationModes,
+  };
+}
+
+function isTemplateCompatibleWithInvitationMode(template, invitationMode) {
+  if (!INVITATION_MODES.includes(invitationMode)) return false;
+  const capability = getButtonCapability(template?.buttons || []);
+
+  // Existing invite rows predate button metadata and mode assignment. Keep
+  // only that exact legacy path working until the admin re-saves the row.
+  if (
+    template?.type === 'invite' &&
+    template?.buttonsSynced !== true &&
+    invitationMode === INVITATION_TYPE.REPLY_AND_QR
+  ) {
+    return true;
+  }
+
+  return capability.compatibleInvitationModes.includes(invitationMode);
+}
+
+function effectiveInvitationMode(template) {
+  if (template?.invitationMode) return template.invitationMode;
+  return template?.type === 'invite' ? INVITATION_TYPE.REPLY_AND_QR : null;
+}
+
+module.exports = {
+  INVITATION_MODES,
+  normalizeTemplateButtons,
+  getButtonCapability,
+  isTemplateCompatibleWithInvitationMode,
+  effectiveInvitationMode,
+  REQUIRED_RSVP_BUTTON_TEXTS,
+};

@@ -20,8 +20,8 @@ const {
 const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 const logger = require('../../shared/utils/logger');
 
-async function sendSMS(phoneNumber, message) {
-  return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER });
+async function sendSMS(phoneNumber, message, logContext = {}) {
+  return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER, logContext });
 }
 
 /**
@@ -84,6 +84,14 @@ async function sendReminder({
   const batched = await runBatched(
     pendingGuests,
     async (guest) => {
+      const logOptions = {
+        logContext: {
+          eventId: event._id,
+          guestId: guest._id,
+          userId: userId || null,
+          purpose: 'guest_reminder_manual',
+        },
+      };
       const rsvpLink = `${config.frontend?.url || 'https://halaa.sa'}/rsvp/${eventId}/${guest._id}`;
       const defaultMessage = `تذكير: ${eventData.hostName} بانتظار ردك على دعوة "${eventData.title}". للرد: ${rsvpLink}`;
       const message = customMessage || defaultMessage;
@@ -103,10 +111,12 @@ async function sendReminder({
                 { type: 'text', text: eventData.date },
               ],
             },
-          ]
+          ],
+          null,
+          logOptions
         );
       } else {
-        result = await sendSMS(guest.phone, message);
+        result = await sendSMS(guest.phone, message, logOptions.logContext);
       }
 
       if (result.success) {
@@ -199,6 +209,14 @@ async function sendAutoReminderBatch({
       return withIdempotency(
         key,
         async () => {
+          const logOptions = {
+            logContext: {
+              eventId: event._id,
+              guestId: guest._id,
+              purpose: reminderType === 'extra' ? 'guest_reminder_extra' : 'guest_reminder_auto',
+              metadata: { reminderType },
+            },
+          };
           const bodyParams = getEventBodyParams(event, guest.name, template);
           const imageUrl = getEventImageUrl(event, template);
           const smsFallback = {
@@ -213,7 +231,8 @@ async function sendAutoReminderBatch({
                 template.language || 'ar',
                 imageUrl,
                 bodyParams,
-                smsFallback
+                smsFallback,
+                logOptions
               )
             : await taqnyat.sendWhatsAppTemplate(
                 guest.phone,
@@ -225,7 +244,8 @@ async function sendAutoReminderBatch({
                     parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
                   },
                 ],
-                smsFallback
+                smsFallback,
+                logOptions
               );
 
           const isRateLimited =

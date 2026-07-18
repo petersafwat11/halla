@@ -22,11 +22,13 @@ const messagingReminderService = require("../messaging/messaging.reminder.servic
 const dispatchPolicy = require("../messaging/messaging.dispatchPolicy.service");
 const messagingSendService = require("../messaging/messaging.send.service");
 const { isAdminRole } = require("../../shared/constants/roles");
+const { INVITATION_TYPE } = require('../../shared/constants');
 const {
   TAQNYAT_SENDER,
   getEventBodyParams,
   getEventImageUrl,
   buildSmsBody,
+  buildInvitationUrlButton,
 } = require("../messaging/messaging.formatting");
 
 /**
@@ -346,7 +348,15 @@ module.exports = {
     // ---------- Budget pre-check (402 if over plan) ----------
     await _assertInviteBudget(event.subscriptionId, targetGuests.length);
 
-    const template = event.taqnyatTemplate?.templateRef || null;
+    const template = channel === 'whatsapp'
+      ? await taqnyatTemplatesService.assertInviteTemplateCompatible(
+          event.taqnyatTemplate?.templateRef,
+          {
+            category: event.eventDetails?.type,
+            invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+          }
+        )
+      : event.taqnyatTemplate?.templateRef || null;
     const rsvpBaseUrl = config.frontend?.url || "https://halaa.sa";
 
     const batched = await runBatched(
@@ -354,11 +364,31 @@ module.exports = {
       async (guest) => {
         // Match the initial-send link shape (the old /rsvp/:eventId/:guestId
         // path 404s — the live guest portal is /invitation/:qrcode).
-        const rsvpLink = `${rsvpBaseUrl.replace(/\/$/, "")}/invitation/${guest.qrcode}`;
+        const rsvpLink = `${rsvpBaseUrl.replace(/\/$/, "")}/ar/invitation/${guest.qrcode}`;
+        const logOptions = {
+          logContext: {
+            eventId: event._id,
+            guestId: guest._id,
+            userId: user?._id || null,
+            purpose: 'guest_invitation_resend',
+          },
+          sensitive: true,
+        };
 
         if (channel === "whatsapp" && template) {
           const bodyParams = getEventBodyParams(event, guest.name, template);
           const imageUrl = getEventImageUrl(event, template);
+          const urlButton = buildInvitationUrlButton(event, template, guest.qrcode, 'ar');
+          const components = [
+            {
+              type: "body",
+              parameters: bodyParams.map((p) => ({
+                type: "text",
+                text: p,
+              })),
+            },
+            urlButton,
+          ].filter(Boolean);
           const smsFallback = {
             sender: TAQNYAT_SENDER,
             body: buildSmsBody(event, guest.name, rsvpLink),
@@ -371,22 +401,17 @@ module.exports = {
                 template.language || "ar",
                 imageUrl,
                 bodyParams,
-                smsFallback
+                smsFallback,
+                logOptions,
+                urlButton ? [urlButton] : []
               )
             : await taqnyat.sendWhatsAppTemplate(
                 guest.phone,
                 template.templateName,
                 template.language || "ar",
-                [
-                  {
-                    type: "body",
-                    parameters: bodyParams.map((p) => ({
-                      type: "text",
-                      text: p,
-                    })),
-                  },
-                ],
-                smsFallback
+                components,
+                smsFallback,
+                logOptions
               );
 
           return { guestId: guest._id, ...wa };
@@ -396,6 +421,7 @@ module.exports = {
         const smsBody = buildSmsBody(event, guest.name, rsvpLink);
         const result = await taqnyat.sendSMS(guest.phone, smsBody, {
           sender: TAQNYAT_SENDER,
+          logContext: logOptions.logContext,
         });
 
         return { guestId: guest._id, ...result };

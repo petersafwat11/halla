@@ -12,14 +12,25 @@ function sanitizePayload(payload, { sensitive = false } = {}) {
   const copy = JSON.parse(JSON.stringify(payload || {}));
   if (!sensitive) return { payload: copy, contentRedacted: false };
 
-  let original = null;
+  const originals = [];
+  const redact = (holder, key) => {
+    if (typeof holder?.[key] !== 'string') return;
+    originals.push(holder[key]);
+    holder[key] = REDACTED;
+  };
   if (typeof copy.body === "string") {
-    original = copy.body;
-    copy.body = REDACTED;
+    redact(copy, 'body');
   } else if (typeof copy.text?.body === "string") {
-    original = copy.text.body;
-    copy.text.body = REDACTED;
+    redact(copy.text, 'body');
   }
+  redact(copy.sms, 'body');
+  for (const component of copy.components || []) {
+    for (const parameter of component.parameters || []) {
+      redact(parameter, 'text');
+    }
+  }
+
+  const original = originals.length > 0 ? originals.join('\n') : null;
 
   return {
     payload: copy,
@@ -56,6 +67,7 @@ async function recordOutboundMessage({
       provider: "taqnyat",
       providerMessageId: result?.messageId || null,
       channel,
+      effectiveChannel: channel,
       messageType,
       status: success ? "sent" : "failed",
       recipients: normalizedRecipients,
@@ -74,7 +86,10 @@ async function recordOutboundMessage({
       purpose: context.purpose || null,
       context: context.metadata || {},
       providerStatusCode: result?.statusCode || result?.code || null,
-      cost: typeof result?.cost === "number" ? result.cost : null,
+      cost:
+        result?.cost !== undefined && result?.cost !== null && Number.isFinite(Number(result.cost))
+          ? Number(result.cost)
+          : null,
       currency: result?.currency || null,
       error: success
         ? undefined
@@ -114,8 +129,22 @@ async function updateOutboundDeliveryStatus(messageId, status, timestamp = new D
   );
 }
 
+async function markOutboundSmsFallback(messageId, timestamp = new Date()) {
+  if (!messageId) return null;
+  const at = timestamp ? new Date(timestamp) : new Date();
+  return OutboundMessage.findOneAndUpdate(
+    { provider: "taqnyat", providerMessageId: messageId },
+    {
+      $set: { effectiveChannel: "sms", status: "sent", lastDeliveryAt: at },
+      $push: { deliveryHistory: { status: "sms_fallback", timestamp: at, source: "provider_webhook" } },
+    },
+    { new: true }
+  );
+}
+
 module.exports = {
   recordOutboundMessage,
   updateOutboundDeliveryStatus,
+  markOutboundSmsFallback,
   sanitizePayload,
 };

@@ -4,7 +4,7 @@
  * @module modules/events/events.crud.service
  */
 
-const { EVENT_STATUS } = require("../../shared/constants");
+const { EVENT_STATUS, INVITATION_TYPE } = require("../../shared/constants");
 const { ROLES } = require("../../shared/constants/roles");
 const {
   NotFoundError,
@@ -33,6 +33,7 @@ const notificationService = require('../notifications/notifications.service');
 const SubscriptionsService = require('../subscriptions/subscriptions.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
+const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
 
 module.exports = {
   /**
@@ -493,6 +494,16 @@ module.exports = {
           eventData.visualTemplate.fieldValues || {}
         );
       }
+
+      // Freeze a valid Step-4 contract at creation time. Category, invitation
+      // mode, and the approved template's real WhatsApp controls must agree.
+      await taqnyatTemplatesService.assertInviteTemplateCompatible(
+        eventData.taqnyatTemplate?.templateRef,
+        {
+          category: eventData.eventDetails?.type,
+          invitationMode: eventData.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+        }
+      );
 
       // ─── Business-account branding + delivery SNAPSHOT (server-owned) ───
       // Deterministic delivery mode + (for business hosts) an immutable logo

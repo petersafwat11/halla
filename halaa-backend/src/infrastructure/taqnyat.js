@@ -253,20 +253,21 @@ const sendWhatsAppTemplateWithImage = async (
   imageUrl,
   bodyParams,
   smsFallback = null,
-  logOptions = {}
+  logOptions = {},
+  additionalComponents = []
 ) => {
   if (!TAQNYAT_CONFIG.apiKey) throw new Error('Taqnyat API key is not configured');
+  const components = [
+    { type: 'header', parameters: [{ type: 'image', image: { link: imageUrl } }] },
+  ];
+  if (bodyParams && bodyParams.length > 0) {
+    components.push({
+      type: 'body',
+      parameters: bodyParams.map((text) => ({ type: 'text', text })),
+    });
+  }
+  components.push(...(additionalComponents || []).filter(Boolean));
   try {
-    const components = [
-      { type: 'header', parameters: [{ type: 'image', image: { link: imageUrl } }] },
-    ];
-    if (bodyParams && bodyParams.length > 0) {
-      components.push({
-        type: 'body',
-        parameters: bodyParams.map((text) => ({ type: 'text', text })),
-      });
-    }
-
     const payload = {
       to: normalizePhoneNumber(recipient),
       type: 'template',
@@ -286,10 +287,7 @@ const sendWhatsAppTemplateWithImage = async (
     const payload = {
       to: normalizePhoneNumber(recipient), type: 'template',
       template: { name: templateName, language: { code: language } },
-      components: [
-        { type: 'header', parameters: [{ type: 'image', image: { link: imageUrl } }] },
-        ...(bodyParams?.length ? [{ type: 'body', parameters: bodyParams.map((text) => ({ type: 'text', text })) }] : []),
-      ],
+      components,
       ...(smsFallback && { sms: smsFallback }),
     };
     return persistResult({

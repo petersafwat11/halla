@@ -5,6 +5,7 @@
  */
 
 const config = require('../../config');
+const jwt = require('jsonwebtoken');
 const { NotFoundError, ValidationError, ForbiddenError } = require('../../shared/errors');
 const {
   ROLES,
@@ -36,6 +37,30 @@ class GuestsService {
    * @returns {Promise<Object>}
    */
   async getGuestByCode(code) {
+    if (String(code).startsWith('preview_')) {
+      try {
+        const decoded = jwt.verify(String(code).slice('preview_'.length), config.jwt.secret);
+        if (decoded.purpose !== 'invitation_preview' || !decoded.eventId) {
+          throw new Error('invalid preview token');
+        }
+        const event = await Event.findById(decoded.eventId)
+          .select('eventDetails status host branding invitationDeliveryMode invitationType')
+          .populate('host', 'username name');
+        if (!event) throw new Error('preview event not found');
+        return {
+          guest: {
+            id: null,
+            name: 'ضيف تجريبي',
+            status: 'invited',
+            rsvp: { response: null, plusOnes: 0 },
+          },
+          event: await this._formatEventForGuest(event),
+        };
+      } catch (_) {
+        throw new NotFoundError('Invitation preview');
+      }
+    }
+
     const guest = await Guest.findOne({
       qrcode: code,
     }).populate({
@@ -460,8 +485,18 @@ class GuestsService {
         const SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp';
         const message =
           `${guest.name || ''}، تم إصدار رابط جديد لمحتوى المناسبة. الرابط القديم لم يعد صالحاً.\n${qrUrl}`;
-        const sendResult = await taqnyat.sendSMS(guest.phone, message, { sender: SENDER });
+        const sendResult = await taqnyat.sendSMS(guest.phone, message, {
+          sender: SENDER,
+          logContext: {
+            eventId,
+            guestId,
+            userId: actor?._id || null,
+            purpose: 'guest_access_token_rotation',
+          },
+        });
         delivery.success = !!sendResult?.success;
+        delivery.messageId = sendResult?.messageId || null;
+        delivery.outboundMessageId = sendResult?.outboundMessageId || null;
         if (!delivery.success) delivery.error = sendResult?.error || 'send_failed';
       } catch (err) {
         delivery.success = false;

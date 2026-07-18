@@ -257,6 +257,8 @@
   "invitation_type_none_label": "Neither",
   "invitation_type_none_desc": "Invitation with no reply option and no entry barcode.",
   "taqnyat_load_failed": "Failed to load templates",
+  "no_taqnyat_templates": "No templates for this category and invitation mode",
+  "no_taqnyat_templates_hint": "Contact the admin to assign an approved template with the required WhatsApp controls",
   "try_again_later": "Please try again later",
   "attending": "Attending",
   "maybe": "Maybe",

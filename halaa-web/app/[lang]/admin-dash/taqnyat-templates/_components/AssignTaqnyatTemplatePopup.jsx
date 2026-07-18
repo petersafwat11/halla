@@ -46,11 +46,12 @@ const SOURCE_KEY_LABEL_KEY = {
 
 const TEMPLATE_TYPES = [
   "invite",
-  "reminder_pending",
   "reminder_confirmed",
   "post_event",
   "staff_access",
 ];
+
+const INVITATION_MODES = ["reply_and_qr", "reply_only", "qr_only", "none"];
 
 function VarMappingField({ name, index, control }) {
   const { t } = useTranslation("admin");
@@ -125,11 +126,17 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
     );
   }, [placeholders, template.varMapping]);
 
+  const initialInvitationMode =
+    template.invitationMode || (template.type === "invite" ? "reply_and_qr" : "");
+  const compatibleModes = template.buttonCapability?.compatibleInvitationModes ||
+    (template.invitationModeLegacy ? ["reply_and_qr"] : []);
+
   const methods = useForm({
     resolver: zodResolver(assignTaqnyatSchema),
     defaultValues: {
       category: template.category || "",
       type: template.type || "",
+      invitationMode: initialInvitationMode,
       active: template.active !== false,
       sortOrder: template.sortOrder || 0,
       varMapping: initialMapping,
@@ -137,16 +144,31 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
   });
 
   const selectedType = methods.watch("type");
+  const selectedInvitationMode = methods.watch("invitationMode");
+  const modeMismatch =
+    selectedType === "invite" &&
+    Boolean(template.buttonCapability || template.invitationModeLegacy) &&
+    !compatibleModes.includes(selectedInvitationMode);
 
   useEffect(() => {
     methods.reset({
       category: template.category || "",
       type: template.type || "",
+      invitationMode: initialInvitationMode,
       active: template.active !== false,
       sortOrder: template.sortOrder || 0,
       varMapping: initialMapping,
     });
-  }, [template, initialMapping, methods]);
+  }, [template, initialMapping, initialInvitationMode, methods]);
+
+  useEffect(() => {
+    if (selectedType === "invite" && !methods.getValues("invitationMode")) {
+      methods.setValue("invitationMode", "reply_and_qr");
+    }
+    if (selectedType !== "invite" && methods.getValues("invitationMode")) {
+      methods.setValue("invitationMode", "");
+    }
+  }, [selectedType, methods]);
 
   const onSubmit = async (data) => {
     const cleaned = data.varMapping.filter((m) => m.sourceKey);
@@ -156,6 +178,7 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
         body: {
           category: data.category || null,
           type: data.type || null,
+          invitationMode: data.type === "invite" ? data.invitationMode : null,
           active: data.active,
           sortOrder: data.sortOrder,
           varMapping: cleaned,
@@ -216,6 +239,56 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
               )}
             </div>
 
+            {selectedType === "invite" && (
+              <div className={styles.modeField}>
+                <label className={styles.typeLabel}>
+                  {t("taqnyat.fieldInvitationMode", "Invitation mode")}
+                </label>
+                <select
+                  {...methods.register("invitationMode")}
+                  className={styles.typeSelect}
+                >
+                  {INVITATION_MODES.map((mode) => (
+                    <option
+                      key={mode}
+                      value={mode}
+                      disabled={
+                        Boolean(template.buttonCapability || template.invitationModeLegacy) &&
+                        !compatibleModes.includes(mode)
+                      }
+                    >
+                      {t(`taqnyat.invitationModes.${mode}`, mode)}
+                    </option>
+                  ))}
+                </select>
+                <div className={styles.capabilityCard}>
+                  <strong>{t("taqnyat.detectedControls", "Detected WhatsApp controls")}</strong>
+                  <span>
+                    {t(
+                      `taqnyat.buttonCapabilities.${template.buttonCapability?.kind || "unverified"}`,
+                      template.buttonCapability?.kind || "unverified"
+                    )}
+                  </span>
+                  {template.invitationModeLegacy && (
+                    <small>
+                      {t(
+                        "taqnyat.legacyModeHint",
+                        "Legacy assignment: saving keeps this template on Reply + QR until changed."
+                      )}
+                    </small>
+                  )}
+                  {modeMismatch && (
+                    <small className={styles.capabilityError}>
+                      {t(
+                        "taqnyat.modeMismatch",
+                        "This template cannot be assigned to the selected mode."
+                      )}
+                    </small>
+                  )}
+                </div>
+              </div>
+            )}
+
             <h3 className={styles.varMappingTitle}>{t("taqnyat.varMapping", "تعيين المتغيرات")}</h3>
 
             {placeholders.length === 0 ? (
@@ -255,7 +328,7 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
                 variant="primary"
                 title={assign.isPending ? t("common.loading", "جاري الحفظ...") : t("save", "حفظ")}
                 type="submit"
-                disabled={assign.isPending}
+                disabled={assign.isPending || modeMismatch}
               />
             </div>
           </form>

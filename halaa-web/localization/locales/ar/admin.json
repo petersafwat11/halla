@@ -36,12 +36,30 @@
       "status": "الحالة",
       "category": "الفئة",
       "type": "النوع",
+      "invitationMode": "وضع الدعوة",
       "mappingCount": "المتغيرات",
       "active": "نشط"
     },
     "unassigned": "غير معينة",
     "unassignedType": "غير معيّن",
     "fieldType": "نوع القالب",
+    "fieldInvitationMode": "وضع الدعوة",
+    "detectedControls": "عناصر التحكم المكتشفة في واتساب",
+    "legacyModeHint": "تعيين قديم: عند الحفظ سيبقى هذا القالب للرد مع رمز الدخول حتى يتم تغييره.",
+    "modeMismatch": "لا يمكن تعيين هذا القالب لوضع الدعوة المحدد.",
+    "invitationModes": {
+      "reply_and_qr": "رد مع رمز دخول",
+      "reply_only": "رد فقط",
+      "qr_only": "رمز دخول فقط",
+      "none": "بدون رد أو رمز"
+    },
+    "buttonCapabilities": {
+      "three_quick_replies": "ثلاثة ردود سريعة: سأحضر، سأعتذر، ربما",
+      "dynamic_url": "زر رابط ديناميكي واحد لبطاقة دخول الضيف",
+      "none": "لا توجد أزرار واتساب",
+      "unsupported": "تركيبة أزرار غير مدعومة",
+      "unverified": "لم يتم التحقق من الأزرار بعد؛ قم بالمزامنة من Taqnyat"
+    },
     "uniquePerCategoryHint": "يُسمح بقالب واحد نشط فقط لكل فئة لهذا النوع. الحفظ سيُلغي تفعيل السابق.",
     "types": {
       "invite": "دعوة",

@@ -21,6 +21,7 @@ const outboundMessageSchema = new mongoose.Schema(
     provider: { type: String, required: true, default: "taqnyat", index: true },
     providerMessageId: { type: String, default: null, index: true },
     channel: { type: String, enum: ["sms", "whatsapp"], required: true, index: true },
+    effectiveChannel: { type: String, enum: ["sms", "whatsapp"], required: true, index: true },
     messageType: {
       type: String,
       enum: ["sms", "bulk_sms", "template", "template_image", "text", "image"],

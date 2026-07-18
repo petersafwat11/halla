@@ -118,9 +118,20 @@ export const TAQNYAT_TEMPLATE_TYPES = [
   "staff_access",
 ];
 
+export const TAQNYAT_INVITATION_MODES = [
+  "reply_and_qr",
+  "reply_only",
+  "qr_only",
+  "none",
+];
+
 export const assignTaqnyatSchema = z.object({
   category: z.string().optional().or(z.literal("")),
   type: z.enum(TAQNYAT_TEMPLATE_TYPES).optional().or(z.literal("")),
+  invitationMode: z
+    .enum(TAQNYAT_INVITATION_MODES)
+    .optional()
+    .or(z.literal("")),
   active: z.boolean().default(true),
   sortOrder: z.coerce.number().min(0).default(0),
   varMapping: z

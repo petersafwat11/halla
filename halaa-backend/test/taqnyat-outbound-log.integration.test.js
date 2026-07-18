@@ -4,6 +4,10 @@ const assert = require('node:assert/strict');
 const memoryDb = require('./helpers/memoryDb');
 const OutboundMessage = require('../models/OutboundMessageModel');
 const taqnyat = require('../src/infrastructure/taqnyat');
+const {
+  updateOutboundDeliveryStatus,
+  markOutboundSmsFallback,
+} = require('../src/infrastructure/outboundMessageLog');
 
 let originalSmsAdapter;
 let originalWaAdapter;
@@ -112,4 +116,49 @@ test('persists provider soft failures with response details', async () => {
   assert.equal(row.providerMessageId, null);
   assert.equal(row.error.code, '402');
   assert.equal(row.providerResponse.message, '402');
+});
+
+test('persists bulk SMS recipients and provider accounting data', async () => {
+  taqnyat.__test.smsClient.defaults.adapter = (config) => response(config, {
+    statusCode: 201,
+    messageId: 'sms-bulk-1',
+    cost: 0.24,
+    currency: 'SAR',
+    accepted: 2,
+  });
+
+  await taqnyat.sendBulkSMS(['0500115125', '0500115223'], 'event update');
+  const row = await OutboundMessage.findOne({ providerMessageId: 'sms-bulk-1' }).lean();
+  assert.equal(row.messageType, 'bulk_sms');
+  assert.equal(row.recipientCount, 2);
+  assert.equal(row.recipients.length, 2);
+  assert.equal(row.providerResponse.accepted, 2);
+});
+
+test('persists image sends and follows delivery/fallback webhooks', async () => {
+  taqnyat.__test.waClient.defaults.adapter = (config) => response(config, {
+    type: 'image',
+    statuses: { message_id: 'wamid.image-1', recipient: '966500115125' },
+  });
+
+  await taqnyat.sendWhatsAppImage(
+    '0500115125',
+    'https://example.test/qr.png',
+    'Your QR pass',
+    { logContext: { purpose: 'rsvp_qr_reply' } }
+  );
+
+  await updateOutboundDeliveryStatus('wamid.image-1', 'delivered', new Date('2026-07-18T12:00:00Z'));
+  await markOutboundSmsFallback('wamid.image-1', new Date('2026-07-18T12:01:00Z'));
+
+  const row = await OutboundMessage.findOne({ providerMessageId: 'wamid.image-1' }).lean();
+  assert.equal(row.messageType, 'image');
+  assert.equal(row.requestPayload.image.caption, 'Your QR pass');
+  assert.equal(row.effectiveChannel, 'sms');
+  assert.equal(row.status, 'sent');
+  assert.deepEqual(row.deliveryHistory.map((entry) => entry.status), [
+    'sent',
+    'delivered',
+    'sms_fallback',
+  ]);
 });

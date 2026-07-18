@@ -8,7 +8,7 @@ const Guest = require('../../../models/GuestModel');
 const Subscription = require('../../../models/SubscriptionModel');
 const User = require('../../../models/UserModel');
 const { NotFoundError } = require('../../shared/errors');
-const { ROLES, USER_STATUS, EVENT_STATUS } = require('../../shared/constants');
+const { ROLES, USER_STATUS, EVENT_STATUS, INVITATION_TYPE } = require('../../shared/constants');
 const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
@@ -21,6 +21,7 @@ const {
   isSendInWindow,
   storedSendInstant,
 } = require('../../shared/utils/schedulingWindow');
+const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
 
 /**
  * Get event by ID (admin)
@@ -117,6 +118,14 @@ async function updateEventFull(eventId, updateData, context = {}) {
       }
     }
   }
+
+  await taqnyatTemplatesService.assertInviteTemplateCompatible(
+    event.taqnyatTemplate?.templateRef,
+    {
+      category: event.eventDetails?.type,
+      invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+    }
+  );
 
   // Handle guest list update inside a transaction so deleteMany + insertMany are atomic
   if (updateData.guestList) {

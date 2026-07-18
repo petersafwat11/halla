@@ -102,6 +102,7 @@ const StepFour = () => {
   const { t, i18n } = useTranslation("createEvent");
   const [activeTab, setActiveTab] = useState("attending");
   const previousCategoryRef = useRef("");
+  const previousInvitationTypeRef = useRef("");
 
   const selectedTemplate = watch("selectedTemplate");
   const guestReplies = watch("guestReplies") || {};
@@ -150,7 +151,11 @@ const StepFour = () => {
   const category = watch("eventType") || "";
 
   const { data, isLoading, error } = useHostTaqnyatTemplates(
-    { category: category || undefined, type: "invite" },
+    {
+      category: category || undefined,
+      type: "invite",
+      invitationMode: invitationType,
+    },
     { enabled: Boolean(category) }
   );
   const templates = data?.data?.templates || [];
@@ -163,6 +168,15 @@ const StepFour = () => {
     }
     previousCategoryRef.current = category;
   }, [category, setValue]);
+
+  useEffect(() => {
+    const previousMode = previousInvitationTypeRef.current;
+    if (previousMode && previousMode !== invitationType) {
+      setValue("selectedTemplate", null, { shouldDirty: true });
+      setValue("taqnyatTemplate", { templateRef: null }, { shouldDirty: true });
+    }
+    previousInvitationTypeRef.current = invitationType;
+  }, [invitationType, setValue]);
 
   useEffect(() => {
     REPLY_TABS.forEach((tab) => {
@@ -184,6 +198,8 @@ const StepFour = () => {
       hasImageHeader: template.hasImageHeader || false,
       bodyText: template.bodyText,
       category: template.category || category,
+      invitationMode: template.invitationMode || invitationType,
+      buttons: template.buttons || [],
     };
     setValue("selectedTemplate", enriched, { shouldValidate: true });
     setValue("taqnyatTemplate", { templateRef: template._id }, { shouldValidate: false });

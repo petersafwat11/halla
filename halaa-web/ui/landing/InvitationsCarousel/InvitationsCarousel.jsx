@@ -25,14 +25,14 @@ const TEMPLATE_IMAGES = [
   "16.png",
 ];
 
-const GAP = 48;
 const VISIBLE_DOTS = 7;
 
 const InvitationsCarousel = ({ lang = "ar" }) => {
   const { t } = useTranslation("landing");
   const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
-    gap: GAP,
+    gap: 48,
     totalItems: TEMPLATE_IMAGES.length,
+    captureWheel: false,
   });
 
   return (
@@ -51,13 +51,16 @@ const InvitationsCarousel = ({ lang = "ar" }) => {
           {TEMPLATE_IMAGES.map((file, i) => (
             <div key={i} className={styles.invitationCard}>
               <Image
-                src={`/template-cards/${file}`}
+                src={`/template-card-thumbnails/${file.replace(/\.(png|jpe?g)$/i, ".webp")}`}
                 alt=""
                 width={208}
                 height={288}
                 sizes="(max-width: 480px) 138px, (max-width: 768px) 164px, 208px"
-                loading={i < 3 ? "eager" : "lazy"}
-                quality={80}
+                loading={i === 0 ? "eager" : "lazy"}
+                fetchPriority={i === 0 ? "high" : "auto"}
+                decoding="async"
+                draggable={false}
+                quality={78}
               />
             </div>
           ))}

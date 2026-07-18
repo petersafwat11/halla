@@ -28,6 +28,16 @@ const varMappingSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const templateButtonSchema = new mongoose.Schema(
+  {
+    type: { type: String, required: true },
+    text: { type: String, default: "" },
+    url: { type: String, default: "" },
+    index: { type: Number, required: true },
+  },
+  { _id: false }
+);
+
 const taqnyatTemplateSchema = new mongoose.Schema(
   {
     /** Meta-level template id from Taqnyat `/templates/`. Unique index declared below. */
@@ -73,6 +83,25 @@ const taqnyatTemplateSchema = new mongoose.Schema(
       index: true,
     },
 
+    /**
+     * The invitation journey this approved invite template is assigned to.
+     * Kept separate from `type`, which describes template purpose. Legacy
+     * invite rows with null mode are treated as `reply_and_qr` until an admin
+     * explicitly re-saves them.
+     */
+    invitationMode: {
+      type: String,
+      enum: ['reply_and_qr', 'reply_only', 'qr_only', 'none'],
+      default: null,
+      index: true,
+    },
+
+    /** Normalized controls synced from Meta/Taqnyat's BUTTONS component. */
+    buttons: { type: [templateButtonSchema], default: [] },
+
+    /** Distinguishes a verified no-button template from a pre-feature row. */
+    buttonsSynced: { type: Boolean, default: false },
+
     /** Body preview text from Meta — used in admin Assign dialog for context */
     bodyText: { type: String, default: "" },
 
@@ -111,6 +140,7 @@ const taqnyatTemplateSchema = new mongoose.Schema(
 
 taqnyatTemplateSchema.index({ taqnyatId: 1 }, { unique: true });
 taqnyatTemplateSchema.index({ category: 1, type: 1, active: 1, status: 1 });
+taqnyatTemplateSchema.index({ category: 1, type: 1, invitationMode: 1, active: 1, status: 1 });
 taqnyatTemplateSchema.index({ type: 1, active: 1, status: 1 });
 taqnyatTemplateSchema.index({ sortOrder: 1, createdAt: -1 });
 

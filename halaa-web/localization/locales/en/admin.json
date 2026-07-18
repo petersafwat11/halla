@@ -36,12 +36,30 @@
       "status": "Status",
       "category": "Category",
       "type": "Type",
+      "invitationMode": "Invitation Mode",
       "mappingCount": "Variables",
       "active": "Active"
     },
     "unassigned": "Unassigned",
     "unassignedType": "Unassigned",
     "fieldType": "Template type",
+    "fieldInvitationMode": "Invitation mode",
+    "detectedControls": "Detected WhatsApp controls",
+    "legacyModeHint": "Legacy assignment: saving keeps this template on Reply + QR until changed.",
+    "modeMismatch": "This template cannot be assigned to the selected mode.",
+    "invitationModes": {
+      "reply_and_qr": "Reply + QR",
+      "reply_only": "Reply only",
+      "qr_only": "QR only",
+      "none": "No reply, no QR"
+    },
+    "buttonCapabilities": {
+      "three_quick_replies": "Three quick replies: accept, decline and maybe",
+      "dynamic_url": "One dynamic URL button for the guest pass",
+      "none": "No WhatsApp buttons",
+      "unsupported": "Unsupported button combination",
+      "unverified": "Controls not yet verified; sync from Taqnyat"
+    },
     "uniquePerCategoryHint": "Only one active template is allowed per category for this type. Saving deactivates the previous one.",
     "types": {
       "invite": "Invitation",

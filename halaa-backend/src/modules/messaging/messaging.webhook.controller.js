@@ -152,6 +152,7 @@ exports.webhook = catchAsync(async (req, res) => {
           if (message.type === 'button' && message.button) {
             try {
               const messageId = message.id;
+              const originalMessageId = message.context?.id || null;
               const tsSec = parseInt(message.timestamp, 10);
               const bucketSeed = Number.isFinite(tsSec)
                 ? Math.floor(tsSec / 30)
@@ -168,6 +169,7 @@ exports.webhook = catchAsync(async (req, res) => {
                 phoneNumber: String(message.from),
                 buttonText: String(message.button.text),
                 messageId: messageId || null,
+                originalMessageId,
               });
               await withIdempotency(
                 dedupKey,
@@ -176,6 +178,7 @@ exports.webhook = catchAsync(async (req, res) => {
                     phoneNumber: message.from,
                     buttonText: message.button.text,
                     messageId,
+                    originalMessageId,
                   }),
                 { scope: 'webhook_dedup', requestHash }
               );

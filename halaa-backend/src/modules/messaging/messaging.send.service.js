@@ -10,6 +10,7 @@ const Subscription = require('../../../models/SubscriptionModel');
 const EventEntitlement = require('../../../models/EventEntitlementModel');
 const { maybeNotifyPlanLimit } = require('../../shared/utils/planLimitWarning');
 const config = require('../../config');
+const jwt = require('jsonwebtoken');
 const { runBatched } = require('../../shared/utils/runBatched');
 const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 const { logAudit } = require('../../shared/utils/auditLog');
@@ -22,7 +23,19 @@ const {
   getEventBodyParams,
   buildSmsBody,
   getEventImageUrl,
+  buildInvitationUrlButton,
 } = require('./messaging.formatting');
+const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
+const { INVITATION_TYPE } = require('../../shared/constants');
+
+function createInvitationPreviewCode(eventId) {
+  const token = jwt.sign(
+    { purpose: 'invitation_preview', eventId: String(eventId) },
+    config.jwt.secret,
+    { expiresIn: '15m' }
+  );
+  return `preview_${token}`;
+}
 
 async function sendSMS(phoneNumber, message, logContext = {}) {
   return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER, logContext });
@@ -50,10 +63,11 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
     }
   }
 
-  const frontendUrl = config.frontend?.url || 'https://halaa.sa';
-  const rsvpLink = `${frontendUrl}/rsvp/preview?event=${eventId}`;
+  const frontendUrl = (config.frontend?.url || 'https://halaa.sa').replace(/\/$/, '');
+  const previewCode = createInvitationPreviewCode(eventId);
+  const rsvpLink = `${frontendUrl}/ar/invitation/${previewCode}`;
 
-  const cached = await resolveTaqnyatTemplate(event);
+  let cached = await resolveTaqnyatTemplate(event);
   const templateName = cached?.templateName;
 
   let result;
@@ -62,6 +76,7 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
   let smsBody = null;
   const logOptions = {
     logContext: { eventId: event._id, purpose: 'event_test_message' },
+    sensitive: true,
   };
   if (channel === 'whatsapp') {
     if (!templateName) {
@@ -71,8 +86,24 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
         'NO_TEMPLATE_SELECTED'
       );
     }
+    cached = taqnyatTemplatesService.assertResolvedInviteTemplateCompatible(
+      cached,
+      {
+        category: event.eventDetails?.type,
+        invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+      }
+    );
     imageUrl = getEventImageUrl(event, cached);
     bodyParams = getEventBodyParams(event, 'ضيف تجريبي', cached);
+
+    const urlButton = buildInvitationUrlButton(event, cached, previewCode, 'ar');
+    const components = [
+      {
+        type: 'body',
+        parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
+      },
+      urlButton,
+    ].filter(Boolean);
 
     // Native SMS failover: Taqnyat dispatches SMS automatically when the
     // recipient has no WhatsApp capability. Mirror the per-guest path so
@@ -88,18 +119,14 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
           imageUrl,
           bodyParams,
           smsFallback,
-          logOptions
+          logOptions,
+          urlButton ? [urlButton] : []
         )
       : await taqnyat.sendWhatsAppTemplate(
           phoneNumber,
           templateName,
           'ar',
-          [
-            {
-              type: 'body',
-              parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
-            },
-          ],
+          components,
           smsFallback,
           logOptions
         );
@@ -184,9 +211,9 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
   // (route: app/[lang]/invitation/[code]). The old /rsvp/:eventId/:guestId
   // path had no corresponding page and 404'd.
   const rsvpBase = config.frontend?.url || 'https://halaa.sa';
-  const rsvpLink = `${rsvpBase.replace(/\/$/, '')}/invitation/${guest.qrcode}`;
+  const rsvpLink = `${rsvpBase.replace(/\/$/, '')}/ar/invitation/${guest.qrcode}`;
 
-  const cached = await resolveTaqnyatTemplate(event);
+  let cached = await resolveTaqnyatTemplate(event);
   const templateName = cached?.templateName;
 
   let result;
@@ -200,6 +227,7 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
       userId: userId || null,
       purpose: 'guest_invitation',
     },
+    sensitive: true,
   };
   if (channel === 'whatsapp') {
     if (!templateName) {
@@ -210,8 +238,23 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
       );
     }
 
+    cached = taqnyatTemplatesService.assertResolvedInviteTemplateCompatible(
+      cached,
+      {
+        category: event.eventDetails?.type,
+        invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+      }
+    );
     imageUrl = getEventImageUrl(event, cached);
     bodyParams = getEventBodyParams(event, guest.name, cached);
+    const urlButton = buildInvitationUrlButton(event, cached, guest.qrcode, 'ar');
+    const components = [
+      {
+        type: 'body',
+        parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
+      },
+      urlButton,
+    ].filter(Boolean);
 
     // SMS fallback automatically dispatched by Taqnyat when the guest
     // has no WhatsApp capability.
@@ -228,18 +271,14 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
           imageUrl,
           bodyParams,
           smsFallback,
-          logOptions
+          logOptions,
+          urlButton ? [urlButton] : []
         )
       : await taqnyat.sendWhatsAppTemplate(
           guest.phone,
           templateName,
           'ar',
-          [
-            {
-              type: 'body',
-              parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
-            },
-          ],
+          components,
           smsFallback,
           logOptions
         );

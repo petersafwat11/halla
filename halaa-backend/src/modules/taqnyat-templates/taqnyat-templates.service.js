@@ -10,6 +10,31 @@ const taqnyat = require('../../infrastructure/taqnyat');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const { AppError, NotFoundError, ValidationError } = require('../../shared/errors');
+const { INVITATION_TYPE } = require('../../shared/constants');
+const {
+  normalizeTemplateButtons,
+  getButtonCapability,
+  isTemplateCompatibleWithInvitationMode,
+  effectiveInvitationMode,
+} = require('./taqnyat-template-capabilities');
+
+const decorateTemplate = (template) => {
+  const invitationModeLegacy = template.type === 'invite' && !template.invitationMode;
+  const buttonCapability = getButtonCapability(template.buttons || []);
+  const legacyUnverified = template.type === 'invite' && template.buttonsSynced !== true;
+  return {
+    ...template,
+    invitationMode: effectiveInvitationMode(template),
+    invitationModeLegacy,
+    buttonCapability: legacyUnverified
+      ? {
+          ...buttonCapability,
+          kind: 'unverified',
+          compatibleInvitationModes: [effectiveInvitationMode(template)],
+        }
+      : buttonCapability,
+  };
+};
 
 const safeAudit = async (entry) => {
   try {
@@ -56,14 +81,20 @@ async function syncFromTaqnyat({ actor } = {}) {
     if (!taqnyatId) continue;
     seenIds.add(String(taqnyatId));
 
+    const componentDefinitionAvailable = Array.isArray(t.components);
     const bodyComponent = (t.components || []).find((c) => c.type === 'BODY') || {};
     const hasImageHeader = (t.components || []).some(
       (c) => c.type === 'HEADER' && c.format === 'IMAGE'
     );
+    const buttons = normalizeTemplateButtons(t.components || []);
 
     const nextStatus = (t.status || 'APPROVED').toUpperCase();
     const existing = await TaqnyatTemplate.findOne({ taqnyatId: String(taqnyatId) })
-      .select('status createdBy templateName');
+      .select('status createdBy templateName type invitationMode');
+    const shouldBackfillLegacyReplyMode =
+      existing?.type === 'invite' &&
+      !existing?.invitationMode &&
+      getButtonCapability(buttons).kind === 'three_quick_replies';
 
     // Preserve admin-curated fields (`category`, `varMapping`, `active`,
     // `sortOrder`) on update. `removedFromMeta` is forced false so a
@@ -75,13 +106,21 @@ async function syncFromTaqnyat({ actor } = {}) {
         language: t.language || 'ar',
         status: nextStatus,
         metaCategory: t.category || null,
-        bodyText: bodyComponent.text || '',
-        hasImageHeader: !!hasImageHeader,
+        ...(componentDefinitionAvailable && {
+          bodyText: bodyComponent.text || '',
+          hasImageHeader: !!hasImageHeader,
+          buttons,
+          buttonsSynced: true,
+        }),
+        ...(shouldBackfillLegacyReplyMode && {
+          invitationMode: INVITATION_TYPE.REPLY_AND_QR,
+        }),
         removedFromMeta: false,
         lastSyncedAt: new Date(),
       },
       $setOnInsert: {
         category: null,
+        invitationMode: null,
         varMapping: [],
         active: true,
         sortOrder: 0,
@@ -156,7 +195,7 @@ async function syncFromTaqnyat({ actor } = {}) {
   };
 }
 
-async function listForHost({ category, type = 'invite' } = {}) {
+async function listForHost({ category, type = 'invite', invitationMode } = {}) {
   const query = {
     active: true,
     status: 'APPROVED',
@@ -165,10 +204,27 @@ async function listForHost({ category, type = 'invite' } = {}) {
   };
   if (category) query.category = category;
 
-  return TaqnyatTemplate.find(query)
+  if (type === 'invite' && invitationMode) {
+    query.$or = invitationMode === INVITATION_TYPE.REPLY_AND_QR
+      ? [
+          { invitationMode },
+          { invitationMode: null },
+          { invitationMode: { $exists: false } },
+        ]
+      : [{ invitationMode }];
+  }
+
+  const templates = await TaqnyatTemplate.find(query)
     .sort({ sortOrder: 1, createdAt: -1 })
     .select('-createdBy -updatedBy -__v')
     .lean();
+  return templates
+    .filter((template) =>
+      type !== 'invite' ||
+      !invitationMode ||
+      isTemplateCompatibleWithInvitationMode(template, invitationMode)
+    )
+    .map(decorateTemplate);
 }
 
 /**
@@ -201,7 +257,8 @@ async function listForAdmin({ search, includeInactive = true } = {}) {
     ];
   }
 
-  return TaqnyatTemplate.find(query).sort({ sortOrder: 1, createdAt: -1 }).lean();
+  const templates = await TaqnyatTemplate.find(query).sort({ sortOrder: 1, createdAt: -1 }).lean();
+  return templates.map(decorateTemplate);
 }
 
 // Types that allow exactly one active doc per (category) — or globally for
@@ -217,9 +274,30 @@ async function assignMapping(id, updates, actor) {
   const doc = await TaqnyatTemplate.findById(id);
   if (!doc) throw new NotFoundError('TaqnyatTemplate');
 
+  const nextType = updates.type !== undefined ? updates.type || null : doc.type;
+  const requestedMode = updates.invitationMode !== undefined
+    ? updates.invitationMode || null
+    : doc.invitationMode;
+  const nextMode = nextType === 'invite'
+    ? requestedMode || effectiveInvitationMode(doc)
+    : null;
+
+  if (
+    nextType === 'invite' &&
+    !isTemplateCompatibleWithInvitationMode(doc.toObject(), nextMode)
+  ) {
+    const capability = getButtonCapability(doc.buttons || []);
+    throw new AppError(
+      `Template controls (${capability.kind}) are incompatible with invitation mode ${nextMode}`,
+      400,
+      'TAQNYAT_TEMPLATE_MODE_MISMATCH'
+    );
+  }
+
   if (updates.varMapping !== undefined) doc.varMapping = updates.varMapping;
   if (updates.category !== undefined) doc.category = updates.category || null;
   if (updates.type !== undefined) doc.type = updates.type || null;
+  doc.invitationMode = nextMode;
   if (updates.active !== undefined) doc.active = !!updates.active;
   if (typeof updates.sortOrder === 'number') doc.sortOrder = updates.sortOrder;
 
@@ -246,11 +324,58 @@ async function assignMapping(id, updates, actor) {
       templateName: doc.templateName,
       category: doc.category,
       type: doc.type,
+      invitationMode: doc.invitationMode,
       varMappingCount: doc.varMapping.length,
     },
   });
 
   return doc;
+}
+
+function assertResolvedInviteTemplateCompatible(template, { category, invitationMode } = {}) {
+  if (
+    !template ||
+    template.type !== 'invite' ||
+    template.active === false ||
+    template.status !== 'APPROVED' ||
+    template.removedFromMeta === true
+  ) {
+    throw new AppError(
+      'The selected WhatsApp invitation template is unavailable',
+      400,
+      'TAQNYAT_TEMPLATE_UNAVAILABLE'
+    );
+  }
+  if (category && template.category !== category) {
+    throw new AppError(
+      'The selected WhatsApp template does not match the event category',
+      400,
+      'TAQNYAT_TEMPLATE_CATEGORY_MISMATCH'
+    );
+  }
+  if (!isTemplateCompatibleWithInvitationMode(template, invitationMode)) {
+    throw new AppError(
+      'The selected WhatsApp template does not match the invitation mode',
+      400,
+      'TAQNYAT_TEMPLATE_MODE_MISMATCH'
+    );
+  }
+
+  return decorateTemplate(template);
+}
+
+async function assertInviteTemplateCompatible(templateRef, options = {}) {
+  if (!templateRef) {
+    throw new AppError(
+      'A WhatsApp invitation template is required',
+      400,
+      'NO_TEMPLATE_SELECTED'
+    );
+  }
+
+  const id = templateRef?._id || templateRef;
+  const template = await TaqnyatTemplate.findById(id).lean();
+  return assertResolvedInviteTemplateCompatible(template, options);
 }
 
 /**
@@ -321,11 +446,14 @@ async function createUpstreamTemplate(payload, actor) {
         metaCategory: category,
         bodyText,
         hasImageHeader: false,
+        buttons: [],
+        buttonsSynced: true,
         removedFromMeta: false,
         lastSyncedAt: new Date(),
       },
       $setOnInsert: {
         category: null,
+        invitationMode: null,
         varMapping: [],
         active: true,
         sortOrder: 0,
@@ -400,6 +528,8 @@ module.exports = {
   listForAdmin,
   assignMapping,
   findActiveByCategoryAndType,
+  assertInviteTemplateCompatible,
+  assertResolvedInviteTemplateCompatible,
   createUpstreamTemplate,
   deleteUpstreamTemplate,
 };

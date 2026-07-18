@@ -22,7 +22,7 @@ const TEMPLATE_LANG = process.env.WA_BUSINESS_CHECKOUT_LANG || 'ar';
  * @param {string} [p.businessName]
  * @returns {Promise<{success:boolean,messageId?:string,error?:string}>}
  */
-async function sendCheckoutLink({ to, link, businessName }) {
+async function sendCheckoutLink({ to, link, businessName, assignmentId, userId }) {
   if (!to) return { success: false, error: 'no_recipient' };
   try {
     const components = [
@@ -38,7 +38,20 @@ async function sendCheckoutLink({ to, link, businessName }) {
       // Native Taqnyat SMS failover body if WhatsApp is undeliverable.
       body: `هلا أعمال: لإتمام اشتراك منشأتك، افتح الرابط: ${link}`,
     };
-    return await taqnyat.sendWhatsAppTemplate(to, TEMPLATE_NAME, TEMPLATE_LANG, components, smsFallback);
+    return await taqnyat.sendWhatsAppTemplate(
+      to,
+      TEMPLATE_NAME,
+      TEMPLATE_LANG,
+      components,
+      smsFallback,
+      {
+        logContext: {
+          userId: userId || null,
+          purpose: 'business_checkout_link',
+          metadata: { assignmentId: assignmentId || null, businessName: businessName || null },
+        },
+      }
+    );
   } catch (err) {
     logger.warn('[businessLink] WhatsApp send failed', { error: err?.message });
     return { success: false, error: err?.message || 'send_failed' };
@@ -49,10 +62,20 @@ async function sendCheckoutLink({ to, link, businessName }) {
  * Explicit SMS fallback (used when WhatsApp returned a non-failover error).
  * @returns {Promise<{success:boolean,messageId?:string,error?:string}>}
  */
-async function sendSmsFallback({ to, link }) {
+async function sendSmsFallback({ to, link, assignmentId, userId }) {
   if (!to) return { success: false, error: 'no_recipient' };
   try {
-    return await taqnyat.sendSMS(to, `هلا أعمال: لإتمام اشتراك منشأتك، افتح الرابط: ${link}`);
+    return await taqnyat.sendSMS(
+      to,
+      `هلا أعمال: لإتمام اشتراك منشأتك، افتح الرابط: ${link}`,
+      {
+        logContext: {
+          userId: userId || null,
+          purpose: 'business_checkout_link_sms_fallback',
+          metadata: { assignmentId: assignmentId || null },
+        },
+      }
+    );
   } catch (err) {
     return { success: false, error: err?.message || 'sms_failed' };
   }
