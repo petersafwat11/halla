@@ -9,18 +9,24 @@ const { connectDB, disconnectDB } = require("../src/config/database");
 const Guest = require("../models/GuestModel");
 const Event = require("../models/EventModel");
 const TaqnyatTemplate = require("../models/TaqnyatTemplateModel");
+const {
+  TEMPLATE_FAMILY_TO_EVENT_CATEGORY,
+} = require("@halaa/shared/constants/eventCategories.cjs");
+const {
+  isObsoleteHalaInvitationTemplateName,
+} = require("../src/modules/taqnyat-templates/taqnyat-template-capabilities");
 
 const APPLY = process.argv.includes("--apply");
 const REPLY_MODES = ["reply_and_qr", "reply_only"];
 
 async function countLegacyState() {
-  const obsoleteTemplateIds = await TaqnyatTemplate.find({
-    active: { $ne: false },
-    $or: [
-      { invitationMode: "qr_only" },
-      { buttons: { $elemMatch: { text: "ربما" } } },
-    ],
-  }).distinct("_id");
+  const obsoleteTemplateIds = (
+    await TaqnyatTemplate.find({}).select("_id templateName").lean()
+  )
+    .filter((template) =>
+      isObsoleteHalaInvitationTemplateName(template.templateName)
+    )
+    .map((template) => template._id);
   const [guestResponses, qrEvents, expectedReplies, legacyInvitationModes, eventsUsingObsoleteTemplates] =
     await Promise.all([
       Guest.countDocuments({
@@ -76,6 +82,25 @@ async function assignApprovedReplacements() {
   return assignments;
 }
 
+async function alignOwnerTemplateCategories() {
+  const changes = [];
+  for (const [family, category] of Object.entries(
+    TEMPLATE_FAMILY_TO_EVENT_CATEGORY
+  )) {
+    const result = await TaqnyatTemplate.updateMany(
+      {
+        templateName: new RegExp(
+          `^halaa_${family}_(plain|reply_qr|reply_only)_ar_v[12]$`,
+          "i"
+        ),
+      },
+      { $set: { category } }
+    );
+    changes.push({ family, category, modified: result.modifiedCount });
+  }
+  return changes;
+}
+
 async function migrate() {
   await connectDB();
   try {
@@ -111,25 +136,24 @@ async function migrate() {
       { $unset: { "guestReplies.onExpected": "" } }
     );
 
-    const obsoleteTemplateIds = await TaqnyatTemplate.find({
-      $or: [
-        { invitationMode: "qr_only" },
-        { buttons: { $elemMatch: { text: "ربما" } } },
-      ],
-    }).distinct("_id");
-
-    const obsoleteResult = await TaqnyatTemplate.updateMany(
-      { _id: { $in: obsoleteTemplateIds } },
-      {
-        $set: { active: false },
-        $unset: { type: "", invitationMode: "" },
-      }
-    );
+    const obsoleteTemplateIds = (
+      await TaqnyatTemplate.find({}).select("_id templateName").lean()
+    )
+      .filter((template) =>
+        isObsoleteHalaInvitationTemplateName(template.templateName)
+      )
+      .map((template) => template._id);
 
     await Event.updateMany(
       { "taqnyatTemplate.templateRef": { $in: obsoleteTemplateIds } },
       { $unset: { "taqnyatTemplate.templateRef": "" } }
     );
+
+    const obsoleteResult = await TaqnyatTemplate.deleteMany({
+      _id: { $in: obsoleteTemplateIds },
+    });
+
+    const categoryAlignment = await alignOwnerTemplateCategories();
 
     const assignments = await assignApprovedReplacements();
     const after = await countLegacyState();
@@ -144,8 +168,9 @@ async function migrate() {
             qrEvents: qrEventResult.modifiedCount,
             legacyInvitationModes: legacyModeResult.modifiedCount,
             eventReplyFields: replyFieldResult.modifiedCount,
-            obsoleteTemplates: obsoleteResult.modifiedCount,
+            obsoleteTemplatesDeleted: obsoleteResult.deletedCount,
           },
+          categoryAlignment,
           approvedReplacementAssignments: assignments,
           after,
         },

@@ -7,15 +7,9 @@ const REQUESTED_META_CATEGORY = "UTILITY";
 const LANGUAGE = "ar";
 const ALLOW_CATEGORY_CHANGE = false;
 
-const CATEGORY_ASSIGNMENTS = Object.freeze({
-  wedding: "wedding",
-  engagement: "engagement",
-  conference: "conference",
-  ladies_event: "other",
-  baby_shower: "other",
-  birthday: "birthday",
-  general_event: "other",
-});
+const {
+  TEMPLATE_FAMILY_TO_EVENT_CATEGORY: CATEGORY_ASSIGNMENTS,
+} = require("@halaa/shared/constants/eventCategories.cjs");
 
 const MODE_DEFINITIONS = Object.freeze({
   reply_and_qr: { suffix: "reply_qr" },

@@ -18,15 +18,24 @@ const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
  * missing/mismatched signature. `req.rawBody` is captured for this route only
  * (see app.js `captureRawForWebhook`) because the HMAC is over the exact bytes.
  *
- * Fail-closed in production (§3.2): if `WHATSAPP_APP_SECRET` is not configured
- * we cannot verify, so production REJECTS the payload rather than trusting
- * forgeable input. Non-production keeps the degraded "accept" path so local /
- * staging RSVP testing isn't blocked by a missing secret. PRODUCTION MUST set
- * `WHATSAPP_APP_SECRET` (Meta Business Manager → WhatsApp app → App Secret)
- * before deploy or inbound webhooks will be dropped.
+ * `WHATSAPP_WEBHOOK_ALLOW_UNSIGNED` is a temporary operational escape hatch.
+ * It defaults to true for the current rollout, as requested by the product
+ * owner, so Taqnyat callbacks are accepted even without a Meta app secret.
+ * Set it to false after the signed callback secret is available.
  */
+const unsignedWebhookAllowed = () =>
+  String(process.env.WHATSAPP_WEBHOOK_ALLOW_UNSIGNED ?? 'true').toLowerCase() !==
+  'false';
+
 const verifyWebhookSignature = (req) => {
   const appSecret = process.env.WHATSAPP_APP_SECRET;
+
+  if (unsignedWebhookAllowed()) {
+    logger.warn(
+      '[webhook] Accepting unsigned WhatsApp callback because WHATSAPP_WEBHOOK_ALLOW_UNSIGNED is enabled.'
+    );
+    return { ok: true, reason: 'unsigned_webhooks_temporarily_allowed' };
+  }
 
   if (!appSecret) {
     if (process.env.NODE_ENV === 'production') {
@@ -240,5 +249,10 @@ exports.webhookVerify = catchAsync(async (req, res) => {
     res.status(403).send('Forbidden');
   }
 });
+
+exports.__test = {
+  verifyWebhookSignature,
+  unsignedWebhookAllowed,
+};
 
 exports.verifyWebhookSignature = verifyWebhookSignature;

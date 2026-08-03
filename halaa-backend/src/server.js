@@ -51,9 +51,14 @@ const startServer = async () => {
       // WhatsApp webhook HMAC verification (§3.2). Enforced/fail-closed in
       // production; skipped only in non-production when no secret is set.
       const waSecretSet = Boolean(process.env.WHATSAPP_APP_SECRET);
+      const waUnsignedAllowed =
+        String(process.env.WHATSAPP_WEBHOOK_ALLOW_UNSIGNED ?? 'true').toLowerCase() !==
+        'false';
       if (config.env === 'production') {
         console.log(
-          waSecretSet
+          waUnsignedAllowed
+            ? '⚠️  WhatsApp webhook HMAC verification: TEMPORARILY DISABLED (unsigned callbacks accepted)'
+            : waSecretSet
             ? '🔒 WhatsApp webhook HMAC verification: ENABLED'
             : '⛔ WhatsApp webhook HMAC verification: WHATSAPP_APP_SECRET missing — /messaging/webhook will REJECT all calls (fail closed). Set the secret to receive RSVP replies.'
         );

@@ -170,7 +170,11 @@ test("descriptive owner categories map to valid current Hala event types", () =>
   for (const category of ["ladies_event", "baby_shower", "general_event"]) {
     const records = result.records.filter((record) => record.category === category);
     assert.equal(records.length, 2);
-    assert.ok(records.every((record) => record.halaaCategory === "other"));
+    assert.ok(
+      records.every(
+        (record) => record.halaaCategory === CATEGORY_ASSIGNMENTS[category]
+      )
+    );
   }
 });
 

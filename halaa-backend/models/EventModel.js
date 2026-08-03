@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { EVENT_CATEGORY_VALUES } = require("../src/shared/constants");
 const { EVENT_STATUS, SUPERVISOR_STATUS, INVITATION_TYPE } = require("../src/shared/constants");
 const { isPerEventPlan } = require("../src/shared/constants/plans");
 
@@ -80,15 +81,7 @@ const eventDetailsSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: [
-        "wedding",
-        "birthday",
-        "graduation",
-        "engagement",
-        "meeting",
-        "conference",
-        "other",
-      ],
+      enum: EVENT_CATEGORY_VALUES,
       required: [true, "Event type is required"],
     },
     date: {

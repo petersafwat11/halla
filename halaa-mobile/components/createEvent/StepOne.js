@@ -14,6 +14,7 @@ import MapPicker from "../commen/MapPicker";
 import DropdownInput from "../commen/DropdownInput";
 import Svg, { Path } from "react-native-svg";
 import { useMySubscription } from "../../hooks/users";
+import { EVENT_CATEGORIES } from "@halaa/shared/constants/eventCategories";
 
 const CalendarIcon = () => (
   <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -58,17 +59,6 @@ const LocationIcon = () => (
   </Svg>
 );
 
-const EVENT_TYPE_VALUES = ["wedding", "birthday", "graduation", "meeting", "conference", "other"];
-
-const EVENT_TYPE_EMOJIS = {
-  wedding: "💍",
-  birthday: "🎂",
-  graduation: "🎓",
-  meeting: "👥",
-  conference: "🎤",
-  other: "📅",
-};
-
 const StepOne = () => {
   const { control, setValue, watch } = useFormContext();
   const { t } = useTranslation("createEvent");
@@ -96,9 +86,9 @@ const StepOne = () => {
   // Options for the shared DropdownInput — keep the emoji inline with the label.
   const eventTypeOptions = useMemo(
     () =>
-      EVENT_TYPE_VALUES.map((value) => ({
-        value,
-        label: `${EVENT_TYPE_EMOJIS[value] || ""} ${t(`event_types.${value}`)}`.trim(),
+      EVENT_CATEGORIES.map(({ code, labelKey, icon }) => ({
+        value: code,
+        label: `${icon || ""} ${t(labelKey)}`.trim(),
       })),
     [t]
   );

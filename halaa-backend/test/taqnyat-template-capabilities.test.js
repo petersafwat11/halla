@@ -7,6 +7,7 @@ const {
   isTemplateCompatibleWithInvitationMode,
   effectiveInvitationMode,
   isTemplateCategoryCompatible,
+  isObsoleteHalaInvitationTemplateName,
 } = require('../src/modules/taqnyat-templates/taqnyat-template-capabilities');
 
 test('two quick replies support both reply invitation modes', () => {
@@ -60,11 +61,34 @@ test('no-button templates support only the none mode', () => {
 
 test('general-event templates cover graduation and meeting categories', () => {
   const general = { category: 'other', templateName: 'halaa_general_event_reply_qr_ar_v2' };
-  const ladies = { category: 'other', templateName: 'halaa_ladies_event_reply_qr_ar_v2' };
+  const ladies = { category: 'ladies_event', templateName: 'halaa_ladies_event_reply_qr_ar_v2' };
   assert.equal(isTemplateCategoryCompatible(general, 'graduation'), true);
   assert.equal(isTemplateCategoryCompatible(general, 'meeting'), true);
   assert.equal(isTemplateCategoryCompatible(ladies, 'graduation'), false);
   assert.equal(isTemplateCategoryCompatible(general, 'wedding'), false);
+});
+
+test('legacy invitation templates stay suppressed from future Hala syncs', () => {
+  assert.equal(
+    isObsoleteHalaInvitationTemplateName('halaa_wedding_reply_ar_v1'),
+    true
+  );
+  assert.equal(
+    isObsoleteHalaInvitationTemplateName('halaa_wedding_qr_ar_v1'),
+    true
+  );
+  assert.equal(
+    isObsoleteHalaInvitationTemplateName('halaa_wedding_invite_gold'),
+    true
+  );
+  assert.equal(
+    isObsoleteHalaInvitationTemplateName('halaa_wedding_plain_ar_v1'),
+    false
+  );
+  assert.equal(
+    isObsoleteHalaInvitationTemplateName('halaa_wedding_reply_qr_ar_v2'),
+    false
+  );
 });
 
 test('legacy unverified invite rows remain reply_and_qr only', () => {

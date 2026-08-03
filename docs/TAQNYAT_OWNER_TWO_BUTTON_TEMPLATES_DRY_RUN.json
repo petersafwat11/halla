@@ -1,5 +1,5 @@
 {
-  "manifestHash": "cba062ef30b924f00fe6392680386280bccdc8c6f359f0590d5c8f89db5b9d58",
+  "manifestHash": "4f0cf19d75dc90690ee07f18733866ca74a418b605b0b00fdf3c6f14ec20ef02",
   "templateCount": 14,
   "templates": [
     {
@@ -527,7 +527,7 @@
     {
       "name": "halaa_ladies_event_reply_qr_ar_v2",
       "category": "ladies_event",
-      "halaaCategory": "other",
+      "halaaCategory": "ladies_event",
       "invitationMode": "reply_and_qr",
       "varMapping": [
         {
@@ -614,7 +614,7 @@
     {
       "name": "halaa_ladies_event_reply_only_ar_v2",
       "category": "ladies_event",
-      "halaaCategory": "other",
+      "halaaCategory": "ladies_event",
       "invitationMode": "reply_only",
       "varMapping": [
         {
@@ -701,7 +701,7 @@
     {
       "name": "halaa_baby_shower_reply_qr_ar_v2",
       "category": "baby_shower",
-      "halaaCategory": "other",
+      "halaaCategory": "baby_shower",
       "invitationMode": "reply_and_qr",
       "varMapping": [
         {
@@ -788,7 +788,7 @@
     {
       "name": "halaa_baby_shower_reply_only_ar_v2",
       "category": "baby_shower",
-      "halaaCategory": "other",
+      "halaaCategory": "baby_shower",
       "invitationMode": "reply_only",
       "varMapping": [
         {

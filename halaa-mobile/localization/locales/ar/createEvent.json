@@ -336,6 +336,8 @@
     "engagement": "خطوبة",
     "meeting": "اجتماع",
     "conference": "مؤتمر",
+    "ladies_event": "مناسبة نسائية",
+    "baby_shower": "استقبال مولود",
     "other": "أخرى"
   },
   "step1_title": "تفاصيل المناسبة",

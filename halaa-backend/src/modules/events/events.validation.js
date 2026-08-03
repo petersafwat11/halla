@@ -4,7 +4,13 @@
  */
 
 const { z } = require('zod');
-const { EVENT_STATUS, SUPERVISOR_STATUS, GUEST_STATUS, INVITATION_TYPE } = require('../../shared/constants');
+const {
+  EVENT_STATUS,
+  SUPERVISOR_STATUS,
+  GUEST_STATUS,
+  INVITATION_TYPE,
+  EVENT_CATEGORY_VALUES,
+} = require('../../shared/constants');
 
 // Invitation type (Step 4) — reply×QR selector. Optional everywhere; the
 // model default (reply_and_qr) applies when omitted.
@@ -41,7 +47,7 @@ const staffEntry = z.object({
 
 const eventDetailsSchema = z.object({
   title: z.string().trim().min(1).max(200),
-  type: z.string().trim().min(1).max(80).optional(),
+  type: z.enum(EVENT_CATEGORY_VALUES).optional(),
   date: z.union([z.string(), z.date()]).optional(),
   time: z.string().optional(),
   location: z.object({

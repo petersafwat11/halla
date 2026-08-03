@@ -336,7 +336,10 @@
     "birthday": "Birthday",
     "graduation": "Graduation",
     "engagement": "Engagement",
+    "meeting": "Meeting",
     "conference": "Conference",
+    "ladies_event": "Ladies’ Event",
+    "baby_shower": "Baby Shower",
     "other": "Other"
   },
   "step1_title": "Event Details",

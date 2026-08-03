@@ -6,6 +6,7 @@
 
 const swaggerJsdoc = require('swagger-jsdoc');
 const config = require('./index');
+const { EVENT_CATEGORY_VALUES } = require('../shared/constants');
 
 const swaggerOptions = {
   definition: {
@@ -627,7 +628,7 @@ const swaggerOptions = {
             },
             eventType: {
               type: 'string',
-              enum: ['wedding', 'corporate', 'birthday', 'conference', 'other'],
+              enum: EVENT_CATEGORY_VALUES,
             },
             date: {
               type: 'string',
@@ -1573,7 +1574,7 @@ const swaggerOptions = {
             },
             eventType: {
               type: 'string',
-              enum: ['wedding', 'corporate', 'birthday', 'conference', 'other'],
+              enum: EVENT_CATEGORY_VALUES,
             },
             date: {
               type: 'string',

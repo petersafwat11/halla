@@ -8,6 +8,7 @@ import DatePicker from "@/ui/commen/inputs/datePicker";
 import TimePicker from "@/ui/commen/inputs/TimePicker";
 import MapInput from "@/ui/commen/inputs/MapInput";
 import { useEventSubscriptionInfo } from "@/hooks/events";
+import { EVENT_CATEGORIES } from "@halaa/shared/constants/eventCategories";
 
 const StepOne = () => {
   const { t } = useTranslation("createEvent");
@@ -28,14 +29,14 @@ const StepOne = () => {
   }, [isTrial]);
 
   // Event type options with translations
-  const eventTypeOptions = [
-    { value: "wedding", label: t("event_types.wedding") },
-    { value: "birthday", label: t("event_types.birthday") },
-    { value: "graduation", label: t("event_types.graduation") },
-    { value: "engagement", label: t("event_types.engagement") },
-    { value: "conference", label: t("event_types.conference") },
-    { value: "other", label: t("event_types.other") },
-  ];
+  const eventTypeOptions = useMemo(
+    () =>
+      EVENT_CATEGORIES.map(({ code, labelKey }) => ({
+        value: code,
+        label: t(labelKey),
+      })),
+    [t]
+  );
 
   return (
     <div className={styles.step_one}>

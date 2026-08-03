@@ -6,6 +6,7 @@
  */
 
 const TaqnyatTemplate = require('../../../models/TaqnyatTemplateModel');
+const Event = require('../../../models/EventModel');
 const taqnyat = require('../../infrastructure/taqnyat');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
@@ -18,6 +19,7 @@ const {
   isTemplateCategoryCompatible,
   GENERAL_EVENT_FALLBACK_CATEGORIES,
   effectiveInvitationMode,
+  isObsoleteHalaInvitationTemplateName,
 } = require('./taqnyat-template-capabilities');
 
 const decorateTemplate = (template) => {
@@ -79,6 +81,9 @@ async function syncFromTaqnyat({ actor } = {}) {
   const upserted = [];
   const notificationService = require('../notifications/notifications.service');
   for (const t of upstream) {
+    // Keep historical templates upstream for audit, but never recreate their
+    // obsolete RSVP/QR controls in Hala's local selectable catalog.
+    if (isObsoleteHalaInvitationTemplateName(t.name)) continue;
     const taqnyatId = t.id || t.template_id || t.name;
     if (!taqnyatId) continue;
     seenIds.add(String(taqnyatId));
@@ -177,6 +182,22 @@ async function syncFromTaqnyat({ actor } = {}) {
     }
   }
 
+  const obsoleteLocalRows = await TaqnyatTemplate.find({})
+    .select('_id templateName')
+    .lean();
+  const obsoleteLocalIds = obsoleteLocalRows
+    .filter((template) =>
+      isObsoleteHalaInvitationTemplateName(template.templateName)
+    )
+    .map((template) => template._id);
+  if (obsoleteLocalIds.length > 0) {
+    await Event.updateMany(
+      { 'taqnyatTemplate.templateRef': { $in: obsoleteLocalIds } },
+      { $unset: { 'taqnyatTemplate.templateRef': '' } }
+    );
+    await TaqnyatTemplate.deleteMany({ _id: { $in: obsoleteLocalIds } });
+  }
+
   // Soft-delete templates that no longer exist upstream so the host
   // wizard stops surfacing them; admin assignments stay intact.
   const orphanResult = await TaqnyatTemplate.updateMany(
@@ -193,6 +214,7 @@ async function syncFromTaqnyat({ actor } = {}) {
         upstreamCount: upstream.length,
         upsertedCount: upserted.length,
         orphanedCount: orphanResult.modifiedCount || 0,
+        obsoleteLocalDeletedCount: obsoleteLocalIds.length,
       },
     });
   }
@@ -201,6 +223,7 @@ async function syncFromTaqnyat({ actor } = {}) {
     upserted,
     count: upserted.length,
     orphanedCount: orphanResult.modifiedCount || 0,
+    obsoleteLocalDeletedCount: obsoleteLocalIds.length,
   };
 }
 

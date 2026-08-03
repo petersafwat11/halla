@@ -12,6 +12,7 @@ const plans = require('./plans');
 const { PLAN_DEFAULTS } = require('./planDefaults');
 const { ADDON_TYPES, EXTRA_INVITES_TIERS, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION } = require('./addons');
 const { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } = require('./serviceCategories');
+const eventCategories = require('@halaa/shared/constants/eventCategories.cjs');
 const {
   isPerEventPlan, isPoolPlan, isManagedPlan, getPlanFamily, getBillingType,
   PLAN_FAMILIES, BILLING_TYPES, COMPENSATION_PERCENTAGE,
@@ -30,6 +31,7 @@ module.exports = {
   BUSINESS_CUSTOMIZATION,
   SERVICE_CATEGORIES,
   SERVICE_CATEGORY_LABELS,
+  ...eventCategories,
   isPerEventPlan,
   isPoolPlan,
   isManagedPlan,

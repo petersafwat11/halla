@@ -18,6 +18,7 @@
     "./errors": "./src/errors/index.js",
     "./constants": "./src/constants/index.js",
     "./constants/*": "./src/constants/*.js",
+    "./constants/eventCategories.cjs": "./src/constants/eventCategories.cjs",
     "./utils": "./src/utils/index.js",
     "./utils/*": "./src/utils/*.js",
     "./hooks": "./src/hooks/index.js",

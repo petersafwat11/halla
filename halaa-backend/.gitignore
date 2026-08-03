@@ -26,6 +26,7 @@ logs
 *.log
 /.taqnyat-owner-template-submission-state.json
 /.taqnyat-owner-two-button-submission-state.json
+/.taqnyat-owner-*-state.json
 
 # Claude
 .claude/

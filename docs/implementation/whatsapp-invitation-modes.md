@@ -10,6 +10,8 @@ Hala supports exactly three invitation journeys.
 
 The Step 3 invitation design is supplied as the IMAGE header for every invitation template. The body uses the seven-variable mapping documented in the owner manifest. QR delivery is a session follow-up after confirmation; it is never a URL button on the initial template.
 
-Provider templates with a third reply or a direct QR URL are legacy and unsupported. They remain unavailable to hosts even if the provider retains their historical definitions.
+Provider templates with a third reply or a direct QR URL are legacy and unsupported. They are permanently excluded from the Hala catalog even if the provider retains their historical definitions.
 
-The owner catalog's `general_event` copy is the intentional fallback for the app's `graduation` and `meeting` categories. Category validation accepts only that general template for those two categories; specialized ladies-event and baby-shower templates are not used as fallbacks.
+Event categories come from `shared/src/constants/eventCategories.cjs` in backend, web, and mobile. Ladies' events and baby showers have distinct categories. The owner catalog's `general_event` copy is the intentional fallback for `other`, `graduation`, and `meeting`; specialized ladies-event and baby-shower templates are never used as general fallbacks.
+
+During the current rollout, `WHATSAPP_WEBHOOK_ALLOW_UNSIGNED` defaults to `true`, so Taqnyat callbacks are accepted without `WHATSAPP_APP_SECRET`. This is temporary and intentionally trades webhook authentication for compatibility. Set the flag to `false` after the Meta App Secret is configured to restore HMAC verification.

@@ -19,9 +19,17 @@ const mongoose = require("mongoose");
 const PRODUCTION_REQUIRED_SECRETS = [
   "JWT_SECRET",
   "DATABASE",
-  "WHATSAPP_APP_SECRET", // inbound webhook signature verification (fail closed)
   "MOYASAR_API_KEY", // web payments
   "MOYASAR_WEBHOOK_SECRET", // Moyasar webhook auth
+];
+
+const unsignedWhatsAppWebhooksAllowed = () =>
+  String(process.env.WHATSAPP_WEBHOOK_ALLOW_UNSIGNED ?? "true").toLowerCase() !==
+  "false";
+
+const getProductionRequiredSecrets = () => [
+  ...PRODUCTION_REQUIRED_SECRETS,
+  ...(!unsignedWhatsAppWebhooksAllowed() ? ["WHATSAPP_APP_SECRET"] : []),
 ];
 
 const isPresent = (key) =>
@@ -30,7 +38,7 @@ const isPresent = (key) =>
 const checkSecrets = () => {
   const isProd = process.env.NODE_ENV === "production";
   const required = isProd
-    ? PRODUCTION_REQUIRED_SECRETS
+    ? getProductionRequiredSecrets()
     : ["JWT_SECRET", "DATABASE"];
   const missing = required.filter((k) => !isPresent(k));
   return { ok: missing.length === 0, missing };
@@ -102,4 +110,5 @@ module.exports = {
   getReadiness,
   assertProductionConfigOrWarn,
   PRODUCTION_REQUIRED_SECRETS,
+  getProductionRequiredSecrets,
 };

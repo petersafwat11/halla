@@ -9,6 +9,7 @@
  */
 import { z } from "zod";
 import { saudiPhone, requiredString } from "./_shared.js";
+import { EVENT_CATEGORY_VALUES } from "../constants/eventCategories.js";
 
 const idT = (k) => k;
 
@@ -55,15 +56,7 @@ const dateLike = z
     return isNaN(d.getTime()) ? null : d;
   });
 
-export const EVENT_TYPES = [
-  "wedding",
-  "birthday",
-  "graduation",
-  "engagement",
-  "meeting",
-  "conference",
-  "other",
-];
+export const EVENT_TYPES = EVENT_CATEGORY_VALUES;
 
 // ============================================================
 // CREATE EVENT

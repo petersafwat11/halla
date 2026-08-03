@@ -4,11 +4,25 @@
  * exact invitation journey that the template is safe to power.
  */
 
-const { INVITATION_TYPE } = require('../../shared/constants');
+const {
+  INVITATION_TYPE,
+  GENERAL_EVENT_FALLBACK_CATEGORIES: GENERAL_EVENT_FALLBACK_CATEGORY_VALUES,
+} = require('../../shared/constants');
 
 const INVITATION_MODES = Object.values(INVITATION_TYPE);
 const REQUIRED_RSVP_BUTTON_TEXTS = ['سأحضر', 'سأعتذر'];
-const GENERAL_EVENT_FALLBACK_CATEGORIES = new Set(['graduation', 'meeting']);
+const OBSOLETE_INVITATION_TEMPLATE_NAMES = new Set([
+  'halaa_event_reminder',
+  'halaa_invitation_v1',
+  'halaa_invitation_v2',
+  'halaa_wedding_invite_gold',
+  'halaa_wedding_invite_v1',
+]);
+const OBSOLETE_OWNER_TEMPLATE_PATTERN =
+  /^halaa_(wedding|engagement|conference|ladies_event|baby_shower|birthday|general_event)_(reply|qr)_ar_v1$/i;
+const GENERAL_EVENT_FALLBACK_CATEGORIES = new Set(
+  GENERAL_EVENT_FALLBACK_CATEGORY_VALUES
+);
 
 function isTemplateCategoryCompatible(template, category) {
   if (!category || template?.category === category) return true;
@@ -16,6 +30,14 @@ function isTemplateCategoryCompatible(template, category) {
     GENERAL_EVENT_FALLBACK_CATEGORIES.has(category) &&
     template?.category === 'other' &&
     /^halaa_general_event_/i.test(String(template?.templateName || ''))
+  );
+}
+
+function isObsoleteHalaInvitationTemplateName(name) {
+  const normalized = String(name || '').toLowerCase();
+  return (
+    OBSOLETE_INVITATION_TEMPLATE_NAMES.has(normalized) ||
+    OBSOLETE_OWNER_TEMPLATE_PATTERN.test(normalized)
   );
 }
 
@@ -112,4 +134,5 @@ module.exports = {
   REQUIRED_RSVP_BUTTON_TEXTS,
   GENERAL_EVENT_FALLBACK_CATEGORIES,
   isTemplateCategoryCompatible,
+  isObsoleteHalaInvitationTemplateName,
 };

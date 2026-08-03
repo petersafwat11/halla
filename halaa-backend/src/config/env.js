@@ -56,6 +56,10 @@ const envSchema = Joi.object({
     .allow('')
     .optional()
     .description('Meta/WhatsApp app secret used to verify x-hub-signature-256 on webhook calls (fail-closed in production)'),
+  WHATSAPP_WEBHOOK_ALLOW_UNSIGNED: Joi.string()
+    .valid('true', 'false')
+    .default('true')
+    .description('Temporary rollout flag: accept WhatsApp callbacks without HMAC verification'),
 
   // Redis (Optional)
   REDIS_URL: Joi.string().allow(''),

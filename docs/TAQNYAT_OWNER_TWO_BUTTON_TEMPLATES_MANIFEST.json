@@ -139,7 +139,7 @@
     {
       "name": "halaa_ladies_event_reply_qr_ar_v2",
       "category": "ladies_event",
-      "halaaCategory": "other",
+      "halaaCategory": "ladies_event",
       "invitationMode": "reply_and_qr",
       "body": "المكرمة {{1}}\nيا هلا...\nتتشرف {{2}} بدعوتك لحضور {{3}} ومشاركتنا أجواء هذه المناسبة الجميلة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
       "bodyExamples": [
@@ -155,7 +155,7 @@
     {
       "name": "halaa_ladies_event_reply_only_ar_v2",
       "category": "ladies_event",
-      "halaaCategory": "other",
+      "halaaCategory": "ladies_event",
       "invitationMode": "reply_only",
       "body": "المكرمة {{1}}\nيا هلا...\nتتشرف {{2}} بدعوتك لحضور {{3}} ومشاركتنا أجواء هذه المناسبة الجميلة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
       "bodyExamples": [
@@ -171,7 +171,7 @@
     {
       "name": "halaa_baby_shower_reply_qr_ar_v2",
       "category": "baby_shower",
-      "halaaCategory": "other",
+      "halaaCategory": "baby_shower",
       "invitationMode": "reply_and_qr",
       "body": "أهلًا وسهلًا {{1}}\nالحمد لله الذي أتمّ علينا نعمته ووهبنا أجمل عطاياه.\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا فرحة استقبال المولود، وبحضورك تكبر فرحتنا.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
       "bodyExamples": [
@@ -187,7 +187,7 @@
     {
       "name": "halaa_baby_shower_reply_only_ar_v2",
       "category": "baby_shower",
-      "halaaCategory": "other",
+      "halaaCategory": "baby_shower",
       "invitationMode": "reply_only",
       "body": "أهلًا وسهلًا {{1}}\nالحمد لله الذي أتمّ علينا نعمته ووهبنا أجمل عطاياه.\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا فرحة استقبال المولود، وبحضورك تكبر فرحتنا.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
       "bodyExamples": [
